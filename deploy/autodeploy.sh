@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -68,6 +68,17 @@ SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
 # сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# adblock (Supreme AdBlock — ЧИСТ СТАТИЧЕН сайт, без билд/Node/база). Разширението
+# тегли filters.json от адреса; index/privacy са малка витрина + политика за
+# поверителност. Обслужва се от Caddy (авто-TLS). Файловете идват от репото
+# (adblock/server/), няма тайни. TLS зависи от DNS запис към VPS-а (ръчна стъпка).
+ADBLOCK_WWW="${ADBLOCK_WWW:-/var/www/adblock}"
+ADBLOCK_DOMAIN="${ADBLOCK_DOMAIN:-adblock.carbonstealth.eu}"
+CADDY_SITES_DIR="${CADDY_SITES_DIR:-/etc/caddy/sites}"
+CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
+CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
+ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -445,6 +456,75 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
+# Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
+# Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
+# import в главния Caddyfile). Валидира преди reload → нула downtime. Идемпотентно:
+# повторно пускане само презаписва файловете и презарежда конфига. Няма тайни.
+deploy_adblock() {
+  local d="$SRC/adblock/server"
+  [ -d "$d" ] || { warn "Няма adblock/server/ в архива — пропускам."; return; }
+  log "Разгръщам adblock (статичен сайт зад Caddy)…"
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+
+  # 1) Обслужвани файлове → www root. Копираме САМО трите файла (без README и др.),
+  # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
+  mkdir -p "$ADBLOCK_WWW"
+  rsync -a "$d/index.html" "$d/privacy.html" "$d/filters.json" "$ADBLOCK_WWW"/
+  chmod 755 "$ADBLOCK_WWW"
+  chmod 644 "$ADBLOCK_WWW"/index.html "$ADBLOCK_WWW"/privacy.html "$ADBLOCK_WWW"/filters.json
+  # Собственик като другите статични пътища: caddy юзъра ако съществува, иначе root
+  # (файловете и без това са world-readable — Caddy ги чете).
+  if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
+  ok "adblock файлове → $ADBLOCK_WWW"
+
+  # 2) Caddy сайт-блок. Ако Caddy липсва, оставяме файловете на място и предупреждаваме
+  # (не чупим деплоя на другите проекти).
+  if ! command -v caddy >/dev/null; then
+    warn "adblock: липсва caddy — файловете са в $ADBLOCK_WWW, но сайт-блокът не е инсталиран (инсталирай Caddy 2.9+)."
+    return
+  fi
+  mkdir -p "$CADDY_SITES_DIR"
+  local site="$CADDY_SITES_DIR/adblock.caddy"
+  # Бекъп на текущия сайт-блок (ако има) за rollback при невалиден конфиг.
+  [ -f "$site" ] && cp -a "$site" "${site}.bak-$TS"
+  install -m 644 "$d/Caddyfile" "$site"
+  # Увери се, че главният Caddyfile import-ва sites/ (идемпотентно). import е
+  # относителен спрямо Caddyfile-а → sites/*.caddy = $CADDY_SITES_DIR/*.caddy.
+  if [ -f "$CADDY_MAIN" ]; then
+    grep -q 'import sites/\*' "$CADDY_MAIN" \
+      || printf '\n# Сайт-блокове по подразбиране (adblock и др.)\nimport sites/*.caddy\n' >> "$CADDY_MAIN"
+  else
+    printf '# Главен Caddyfile\nimport sites/*.caddy\n' > "$CADDY_MAIN"
+  fi
+
+  # 3) Валидирай ПРЕДИ reload — невалиден конфиг не стига до живия Caddy.
+  if ! caddy validate --config "$CADDY_MAIN" --adapter caddyfile >/dev/null 2>&1; then
+    deploy_failed=1
+    warn "adblock: caddy validate провал — връщам стария сайт-блок, НЕ презареждам."
+    if [ -f "${site}.bak-$TS" ]; then mv -f "${site}.bak-$TS" "$site"; else rm -f "$site"; fi
+    return
+  fi
+  rm -f "${site}.bak-$TS"
+
+  # 4) Reload без downtime (graceful). Предпочитаме systemd, иначе caddy reload.
+  if command -v systemctl >/dev/null && systemctl list-unit-files 2>/dev/null | grep -q "^${CADDY_SERVICE}.service"; then
+    systemctl reload "$CADDY_SERVICE" || systemctl restart "$CADDY_SERVICE"
+  else
+    caddy reload --config "$CADDY_MAIN" --adapter caddyfile
+  fi
+  ok "adblock: Caddy сайт-блок инсталиран и презареден ($ADBLOCK_DOMAIN)."
+
+  # 5) Health (best-effort): публичният HTTPS минава само след като DNS A/AAAA
+  # сочи VPS-а и Caddy издаде TLS сертификат — това е РЪЧНА стъпка на собственика.
+  # Затова провалът тук е предупреждение, не блокира деплоя на другите проекти.
+  if curl -fsS -o /dev/null --max-time 5 "$ADBLOCK_HEALTH_URL"; then
+    ok "adblock е жив ($ADBLOCK_HEALTH_URL)"
+  else
+    warn "adblock: публичният health още не минава ($ADBLOCK_HEALTH_URL). Файловете и Caddy конфигът са на място — провери DNS A/AAAA към VPS-а и TLS сертификата."
+  fi
+}
+
 health() {
   local url="$1" name="$2" i
   for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -463,6 +543,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    adblock)    deploy_adblock ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

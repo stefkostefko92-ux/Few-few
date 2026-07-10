@@ -40,6 +40,16 @@
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
+- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира само
+  трите обслужвани файла (`adblock/server/{index.html,privacy.html,filters.json}`) в
+  `/var/www/adblock`, инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
+  `/etc/caddy/sites/adblock.caddy` + `import sites/*.caddy` в главния Caddyfile),
+  `caddy validate` **преди** reload (нула downtime; при невалиден конфиг — връща стария
+  блок и не презарежда). Разширението тегли `filters.json`; `index.html` е витрина, а
+  `/privacy` (rewrite към `privacy.html`) е политиката за поверителност от Web Store.
+  Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
+  за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
+  е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -48,7 +58,9 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock` | кои проекти да се разгръщат тук |
+| `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
+| `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
