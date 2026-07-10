@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.9.0
+
+- Rebrand to **Supreme AdBlock** with the new shield logo (background removed):
+  fresh 16/32/48/128 icons and store icon from the real artwork, updated popup,
+  settings, promo tiles, screenshots, privacy page and all docs. Package renamed
+  to supreme-adblock-<version>.zip.
+
 ## 3.8.2
 
 - Move the live filter update to a dedicated subdomain

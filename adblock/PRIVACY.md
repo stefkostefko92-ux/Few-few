@@ -1,8 +1,8 @@
-# Privacy Policy, The Best Ads Block
+# Privacy Policy, Supreme AdBlock
 
 _Last updated: June 2026_
 
-The Best Ads Block is built to protect your privacy, not to collect data.
+Supreme AdBlock is built to protect your privacy, not to collect data.
 
 ## What we collect
 

@@ -1,6 +1,6 @@
 # Chrome Web Store — complete submission pack
 
-Everything needed to publish **The Best Ads Block** is in this repo and this
+Everything needed to publish **Supreme AdBlock** is in this repo and this
 file. Follow it top to bottom; nothing else to figure out.
 
 ## 0. One-time prerequisites
@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/the-best-ads-block-3.8.2.zip
+bash tools/package.sh      # → dist/supreme-adblock-3.8.2.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -35,7 +35,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 3. Listing fields (paste as-is)
 
-- **Name:** `The Best ads block`
+- **Name:** `Supreme AdBlock`
 - **Summary (132 max):**
   `Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.`
 - **Category:** Productivity
@@ -77,7 +77,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 6. Dashboard steps
 
-1. **New item** → upload `dist/the-best-ads-block-3.8.2.zip`.
+1. **New item** → upload `dist/supreme-adblock-3.8.2.zip`.
 2. Fill the listing (§3), upload the icon + 5 screenshots + promo tiles (§2).
 3. Complete the **Privacy practices** tab (§4) and paste permission
    justifications (§5).

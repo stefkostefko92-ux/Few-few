@@ -231,7 +231,7 @@ $("exportBtn").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "the-best-ads-block-settings.json";
+    a.download = "supreme-adblock-settings.json";
     a.click();
     URL.revokeObjectURL(a.href);
   });

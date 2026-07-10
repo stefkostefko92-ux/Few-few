@@ -9,7 +9,7 @@ set -euo pipefail
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 mkdir -p dist
 ver="$(node -p "require('./package.json').version" 2>/dev/null || echo dev)"
-out="dist/the-best-ads-block-$ver.zip"
+out="dist/supreme-adblock-$ver.zip"
 rm -f "$out"
 
 zip -r "$out" . \

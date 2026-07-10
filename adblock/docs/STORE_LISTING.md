@@ -1,7 +1,7 @@
 # Chrome Web Store listing
 
 ## Name
-The Best ads block
+Supreme AdBlock
 
 ## Summary (132 chars max)
 Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.
@@ -11,7 +11,7 @@ Productivity / Tools
 
 ## Detailed description
 
-The Best Ads Block keeps the web clean and fast, without watching what you do.
+Supreme AdBlock keeps the web clean and fast, without watching what you do.
 
 - Blocks YouTube video ads (pre-roll & mid-roll) at the source
 - Removes banners, pop-ups, pop-unders and native "recommended" ads

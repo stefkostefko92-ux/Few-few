@@ -1,4 +1,4 @@
-# The Best Ads Block — `adblock/`
+# Supreme AdBlock — `adblock/`
 
 Chrome extension (Manifest V3) за блокиране на реклами. Част от моно-репото на
 Carbon Stealth; няма общ код с другите продукти.

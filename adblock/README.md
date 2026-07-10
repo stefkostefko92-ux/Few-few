@@ -1,4 +1,4 @@
-# 🛡️ The Best Ads Block
+# 🛡️ Supreme AdBlock
 
 A fast, private Chrome extension (Manifest V3) that blocks **every kind of ad**
 everywhere, **YouTube video ads** (pre-roll / mid-roll), banners, pop-ups,
@@ -74,7 +74,7 @@ can't be used (it would break playback). Three layers handle it:
 ## Building the store package
 
 ```
-bash tools/package.sh     # writes dist/the-best-ads-block-<version>.zip
+bash tools/package.sh     # writes dist/supreme-adblock-<version>.zip
 python3 tools/generate_rules.py   # regenerate rules/
 python3 tools/generate_icons.py   # regenerate icons/
 ```
