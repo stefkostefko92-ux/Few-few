@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import PismoStudio from "@/components/studios/PismoStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
@@ -59,8 +60,9 @@ export default function PismoPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">
-          ✉️ Мотивационно писмо
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/pismo.png" alt="" width={56} height={56} className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Мотивационно писмо
         </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           Най-трудната част от кандидатстването — по-лесна: попълни за коя

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Logo from "@/components/Logo";
 import BannerZone from "@/components/BannerZone";
@@ -8,10 +9,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const TOOLS = [
+const TOOLS: Array<{
+  href: string;
+  emoji: string;
+  icon?: string;
+  title: string;
+  text: string;
+  accent: string;
+}> = [
   {
     href: "/etiketi",
     emoji: "🏷️",
+    icon: "/icons/etiketi.png",
     title: "Етикети",
     text: "За буркани, кутии, тетрадки, продукти. Избираш размер и цвят, пишеш текста — цял лист А4, готов за рязане.",
     accent: "bg-tera-pale text-tera-dark",
@@ -19,6 +28,7 @@ const TOOLS = [
   {
     href: "/vizitki",
     emoji: "💼",
+    icon: "/icons/vizitki.png",
     title: "Визитки",
     text: "Стандартни 90 × 54 mm, топли шаблони, 10 визитки на лист. Име, телефон, имейл — и си готов за срещата.",
     accent: "bg-med-pale text-med-dark",
@@ -26,6 +36,7 @@ const TOOLS = [
   {
     href: "/cv",
     emoji: "📄",
+    icon: "/icons/cv.png",
     title: "Автобиография (CV)",
     text: "Модерен, класически или Europass шаблон. Попълваш стъпка по стъпка, а AI помага с описанията.",
     accent: "bg-gora-pale text-gora-dark",
@@ -33,6 +44,7 @@ const TOOLS = [
   {
     href: "/pismo",
     emoji: "✉️",
+    icon: "/icons/pismo.png",
     title: "Мотивационно писмо",
     text: "Най-трудната част от кандидатстването — AI пише чернова по 2–3 неща за теб, ти я правиш своя.",
     accent: "bg-paper-deep text-ink-soft",
@@ -54,6 +66,7 @@ const TOOLS = [
   {
     href: "/pokani",
     emoji: "🎉",
+    icon: "/icons/pokani.png",
     title: "Покани и картички",
     text: "За рожден ден, кръщене, сватба или юбилей — топъл шаблон, 2 покани на лист А4, готови за рязане.",
     accent: "bg-gora-pale text-gora-dark",
@@ -154,12 +167,23 @@ export default function HomePage() {
               href={t.href}
               className="card-warm group flex flex-col p-6 transition hover:-translate-y-1 hover:shadow-lift"
             >
-              <span
-                className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${t.accent}`}
-                aria-hidden
-              >
-                {t.emoji}
-              </span>
+              {t.icon ? (
+                <Image
+                  src={t.icon}
+                  alt=""
+                  width={72}
+                  height={72}
+                  className="h-16 w-16 object-contain drop-shadow-sm transition group-hover:scale-105"
+                  aria-hidden
+                />
+              ) : (
+                <span
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${t.accent}`}
+                  aria-hidden
+                >
+                  {t.emoji}
+                </span>
+              )}
               <h2 className="font-display mt-4 text-2xl font-bold">{t.title}</h2>
               <p className="mt-2 flex-1 text-ink-soft">{t.text}</p>
               <span className="mt-4 font-semibold text-tera-dark transition group-hover:translate-x-1">
