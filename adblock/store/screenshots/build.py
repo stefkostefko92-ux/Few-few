@@ -99,7 +99,7 @@ def popup(blocked="1,204", data="68 MB", time="14 min", host="nytimes.com"):
     <div class="site"><span class="h">{host}</span><span class="a">Blocking</span></div>
     <div class="acts"><div class="act">🎯 Hide element</div><div class="act">⚙️ Settings</div></div>
   </div>
-  <div class="foot"><span>v3.9.0</span><span class="dot">248+ filters</span></div>
+  <div class="foot"><span>v4.0.0</span><span class="dot">40,000+ filters</span></div>
 </div>"""
 
 def slide(kicker, h1_html, sub, feats, visual):
@@ -145,12 +145,12 @@ SLIDES = [
     ("Free · Private · Fast",
      'Block ads <span class="c">everywhere</span>',
      "One click and the web is clean. Banners, pop-ups, trackers and YouTube video ads — gone.",
-     ["YouTube pre-roll & mid-roll ads", "Banners, pop-ups & pop-unders", "Trackers and analytics", "Lighter, faster pages"],
+     ["YouTube pre-roll & mid-roll ads", "EasyList & EasyPrivacy built in", "Banners, pop-ups & trackers", "Lighter, faster pages"],
      popup()),
     ("YouTube",
      'YouTube video ads, <span class="c">gone</span>',
      "Pre-roll and mid-roll ads are removed at the source, so videos just play.",
-     ["Removes ads before they start", "Auto-skips anything that slips through", "Plays the video even on flagged accounts"],
+     ["Ads suppressed at the source", "No fake-buffering slowdowns", "Feed & search ads removed too", "Plays even on flagged accounts"],
      popup(blocked="3,782", data="1.4 GB", time="52 min", host="youtube.com")),
     ("Unique",
      'Blocks ads <span class="c">no list knows</span>',
@@ -160,7 +160,7 @@ SLIDES = [
     ("Your controls",
      'Powerful, <span class="c">in your hands</span>',
      "Per-site allowlist, custom filters, element picker, themes and cross-device sync.",
-     ["Allow ads on sites you support", "Write your own filters", "Right-click to hide anything"],
+     ["Allow ads on sites you support", "uBlock-style procedural filters", "Tracking-parameter removal", "Right-click to hide anything"],
      features_panel()),
     ("Private by design",
      '100% free. <span class="c">Zero tracking.</span>',
