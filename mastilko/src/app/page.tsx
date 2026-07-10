@@ -21,7 +21,7 @@ const TOOLS: Array<{
   {
     href: "/etiketi",
     emoji: "🏷️",
-    icon: "/icons/etiketi.png",
+    icon: "/icons/etiketi.webp",
     title: "Етикети",
     text: "За буркани, кутии, тетрадки, продукти. Избираш размер и цвят, пишеш текста — цял лист А4, готов за рязане.",
     accent: "bg-tera-pale text-tera-dark",
@@ -29,7 +29,7 @@ const TOOLS: Array<{
   {
     href: "/vizitki",
     emoji: "💼",
-    icon: "/icons/vizitki.png",
+    icon: "/icons/vizitki.webp",
     title: "Визитки",
     text: "Стандартни 90 × 54 mm, топли шаблони, 10 визитки на лист. Име, телефон, имейл — и си готов за срещата.",
     accent: "bg-med-pale text-med-dark",
@@ -37,7 +37,7 @@ const TOOLS: Array<{
   {
     href: "/cv",
     emoji: "📄",
-    icon: "/icons/cv.png",
+    icon: "/icons/cv.webp",
     title: "Автобиография (CV)",
     text: "Модерен, класически или Europass шаблон. Попълваш стъпка по стъпка, а AI помага с описанията.",
     accent: "bg-gora-pale text-gora-dark",
@@ -45,7 +45,7 @@ const TOOLS: Array<{
   {
     href: "/pismo",
     emoji: "✉️",
-    icon: "/icons/pismo.png",
+    icon: "/icons/pismo.webp",
     title: "Мотивационно писмо",
     text: "Най-трудната част от кандидатстването — AI пише чернова по 2–3 неща за теб, ти я правиш своя.",
     accent: "bg-paper-deep text-ink-soft",
@@ -53,7 +53,7 @@ const TOOLS: Array<{
   {
     href: "/gramoti",
     emoji: "🏆",
-    icon: "/icons/gramoti.png",
+    icon: "/icons/gramoti.webp",
     title: "Грамоти и сертификати",
     text: "За училища, клубове и фирми — красива грамота на хоризонтален А4 с рамка. Попълваш за кого и за какво.",
     accent: "bg-med-pale text-med-dark",
@@ -61,7 +61,7 @@ const TOOLS: Array<{
   {
     href: "/wifi",
     emoji: "📶",
-    icon: "/icons/wifi.png",
+    icon: "/icons/wifi.webp",
     title: "WiFi стикер с QR",
     text: "Гостите сканират кода и телефонът се свързва сам, без парола. За кафенета, къщи за гости и офиси.",
     accent: "bg-tera-pale text-tera-dark",
@@ -69,7 +69,7 @@ const TOOLS: Array<{
   {
     href: "/pokani",
     emoji: "🎉",
-    icon: "/icons/pokani.png",
+    icon: "/icons/pokani.webp",
     title: "Покани и картички",
     text: "За рожден ден, кръщене, сватба или юбилей — топъл шаблон, 2 покани на лист А4, готови за рязане.",
     accent: "bg-gora-pale text-gora-dark",
@@ -77,7 +77,7 @@ const TOOLS: Array<{
   {
     href: "/tabelki",
     emoji: "🪧",
-    icon: "/icons/tabelki.png",
+    icon: "/icons/tabelki.webp",
     title: "Табелки и надписи",
     text: "„Отворено/Затворено“, работно време, надпис за врата. Готови заготовки, избираш цвят, принтираш на А4.",
     accent: "bg-paper-deep text-ink-soft",
@@ -137,15 +137,15 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/etiketi" className="btn-primary">
-              <Image src="/icons/etiketi.png" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              <Image src="/icons/etiketi.webp" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
               Направи етикети
             </Link>
             <Link href="/vizitki" className="btn-secondary">
-              <Image src="/icons/vizitki.png" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              <Image src="/icons/vizitki.webp" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
               Визитки
             </Link>
             <Link href="/cv" className="btn-secondary">
-              <Image src="/icons/cv.png" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              <Image src="/icons/cv.webp" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
               CV
             </Link>
           </div>

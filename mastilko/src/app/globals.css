@@ -124,11 +124,6 @@ body {
 .vivid .field-label {
   color: rgba(220, 235, 247, 0.8);
 }
-/* Херо-логото получава меко синьо сияние. */
-.vivid .drop-shadow-lg {
-  filter: drop-shadow(0 0 26px rgba(91, 180, 232, 0.5))
-    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
-}
 /* Двете размазани декоративни петна в херото → сини сияния вместо топли. */
 .vivid .bg-med-pale.blur-3xl {
   background-color: rgba(91, 180, 232, 0.22) !important;

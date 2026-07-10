@@ -7,14 +7,14 @@ import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const TOOLS = [
-  { href: "/etiketi", label: "Етикети", icon: "/icons/etiketi.png" },
-  { href: "/vizitki", label: "Визитки", icon: "/icons/vizitki.png" },
-  { href: "/cv", label: "Автобиография (CV)", icon: "/icons/cv.png" },
-  { href: "/pismo", label: "Мотивационно писмо", icon: "/icons/pismo.png" },
-  { href: "/gramoti", label: "Грамоти и сертификати", icon: "/icons/gramoti.png" },
-  { href: "/pokani", label: "Покани и картички", icon: "/icons/pokani.png" },
-  { href: "/tabelki", label: "Табелки и надписи", icon: "/icons/tabelki.png" },
-  { href: "/wifi", label: "WiFi стикер", icon: "/icons/wifi.png" },
+  { href: "/etiketi", label: "Етикети", icon: "/icons/etiketi.webp" },
+  { href: "/vizitki", label: "Визитки", icon: "/icons/vizitki.webp" },
+  { href: "/cv", label: "Автобиография (CV)", icon: "/icons/cv.webp" },
+  { href: "/pismo", label: "Мотивационно писмо", icon: "/icons/pismo.webp" },
+  { href: "/gramoti", label: "Грамоти и сертификати", icon: "/icons/gramoti.webp" },
+  { href: "/pokani", label: "Покани и картички", icon: "/icons/pokani.webp" },
+  { href: "/tabelki", label: "Табелки и надписи", icon: "/icons/tabelki.webp" },
+  { href: "/wifi", label: "WiFi стикер", icon: "/icons/wifi.webp" },
 ];
 
 export default function Header() {
@@ -24,7 +24,7 @@ export default function Header() {
     <header className="no-print sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur dark:bg-[#241d19]/85">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight">
-          <Logo className="h-9 w-9" />
+          <Logo className="h-9 w-9" decorative />
           <span>
             Мастилко
             <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10 vivid:bg-[#5bb4e8]/15 vivid:text-[#8fd0f5]">

@@ -11,16 +11,20 @@ const GLOW =
 export default function Logo({
   className = "h-8 w-8",
   priority = false,
+  // Когато до логото има видим текст „Мастилко" (хедър/футър), подай decorative,
+  // за да не се дублира в достъпното име (alt="").
+  decorative = false,
 }: {
   className?: string;
   priority?: boolean;
+  decorative?: boolean;
 }) {
   return (
     <Image
-      src="/mascot.png"
-      alt="Мастилко — маскот"
-      width={512}
-      height={512}
+      src="/mascot.webp"
+      alt={decorative ? "" : "Мастилко — маскот"}
+      width={384}
+      height={384}
       priority={priority}
       unoptimized
       style={{ filter: GLOW }}

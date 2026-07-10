@@ -61,7 +61,7 @@ export default function PismoPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
         <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
-          <Image src="/icons/pismo.png" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          <Image src="/icons/pismo.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
           Мотивационно писмо
         </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
