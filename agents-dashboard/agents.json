@@ -8474,6 +8474,11 @@
       "activity": [
         {
           "date": "2026-07-10",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „carbonstealth (React 18 + tsc -b): custom hook да НЕ анотира връщания ref като React.Re…\" (+1)"
+        },
+        {
+          "date": "2026-07-10",
           "type": "learning",
           "summary": "Научи: „Vite 6 + tsc -b: vite.config.ts използва node:url/import.meta.url и се компилира от tsc…\" · 2 в карантина"
         },
