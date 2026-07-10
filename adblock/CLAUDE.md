@@ -10,10 +10,11 @@ Carbon Stealth; няма общ код с другите продукти.
 ## Структура
 
 ```
-manifest.json           MV3 конфигурация (v3.7.0)
+manifest.json           MV3 конфигурация (v4.0.0)
 background.js           service worker — рулсети, allowlist, статистики, съобщения
 theme.js                прилага Carbon Stealth / светла тема
-content.js / .css       козметично скриване + Smart Detection (евристика)
+content.js / .css       козметика (вкл. процедурни селектори) + Smart Detection
+cosmetic_generic.css    EasyList генерична козметика (гейтната с html[data-tbab-on])
 meta.js                 Facebook / Instagram sponsored постове
 cookies.js / .css       затваряне на cookie/consent банери (вкл. Shadow DOM)
 antiadblock.js / .css   махане на "disable adblocker" стени
@@ -22,17 +23,19 @@ youtube_loader.js       инжектира youtube_main в MAIN world (с bypass
 youtube_main.js         MAIN world — маха рекламните полета от player отговора
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
 youtube.css             скрива рекламните UI елементи на YouTube
-rules/                  declarativeNetRequest статични правила (248)
+rules/                  DNR статични правила: ad_rules + youtube_rules +
+                        easylist/easyprivacy/urlhaus/removeparam (билднати от
+                        tools/build_filters.mjs) + козметичен bundle + counts
 popup/ · options/       UI (popup + настройки)
 icons/ · _locales/      икони · локализация
-tools/                  генератори на правила/икони + `package.sh` (билд на .zip)
+tools/                  build_filters.mjs (EasyList→DNR) + генератори + package.sh
 store/ · docs/          store графики + листинг/submission текстове
 ```
 
 ## Качествен гейт (преди „готово")
 
 ```
-node -c *.js popup/*.js options/*.js         # syntax на всички скриптове
+node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
 bash tools/package.sh                         # билд + самопроверка на пакета
 ```
@@ -40,14 +43,18 @@ bash tools/package.sh                         # билд + самопровер�
 ## Инварианти (не чупи)
 
 - **Единствена цел** (Web Store): блокиране на реклами/тракери. **Без remote
-  code, никога.** Единствената мрежова заявка е дневен GET на
-  `adblock.carbonstealth.eu/filters.json` — само ДАННИ (домейни за блокиране +
-  CSS селектори), които се валидират строго и не се изпълняват. Данни са
-  разрешени в MV3; код не е.
-- YouTube: **не** блокираме `googlevideo.com` и не пипаме `/player` заявката;
-  само махаме рекламните полета от отговора. Ако акаунт е флагнат и YouTube
-  откаже възпроизвеждане, `youtube_loader` прави еднократен bypass reload, за да
-  зареди видеото (с реклами) вместо празен плейър.
+  code, никога.** Единствените мрежови заявки са дневен GET на
+  `adblock.carbonstealth.eu/filters.json` (+ `.sig` — Ed25519 подпис, проверява
+  се при конфигуриран ключ) — само ДАННИ (домейни, CSS селектори, YT полета),
+  които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
+- YouTube: **не** блокираме `googlevideo.com`. Player ЗАЯВКАТА получава само
+  добавени boolean флагове (isInlinePlaybackNoAd — спира доставката на реклами
+  при източника); никога не пипаме съществуващи полета (подписи/timestamps) и
+  всичко е try/catch с pass-through. От отговорите само махаме рекламните
+  полета/renderer-и на място. Ако акаунт е флагнат и YouTube откаже
+  възпроизвеждане, `youtube_loader` прави еднократен bypass reload, за да
+  зареди видеото (с реклами) вместо празен плейър; disableRequestFlags в
+  filters.json е аварийният стоп за флаговете.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —

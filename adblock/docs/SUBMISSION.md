@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-3.9.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-4.0.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -77,7 +77,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 6. Dashboard steps
 
-1. **New item** → upload `dist/supreme-adblock-3.9.0.zip`.
+1. **New item** → upload `dist/supreme-adblock-4.0.0.zip`.
 2. Fill the listing (§3), upload the icon + 5 screenshots + promo tiles (§2).
 3. Complete the **Privacy practices** tab (§4) and paste permission
    justifications (§5).
@@ -85,7 +85,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (3.9.0)
+- [ ] `manifest.json` and `package.json` versions match (4.0.0)
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
 - [ ] A normal site loads correctly; ads are blocked
