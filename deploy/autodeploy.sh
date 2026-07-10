@@ -468,14 +468,21 @@ deploy_adblock() {
   log "Разгръщам adblock (статичен сайт зад Caddy)…"
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
 
-  # 1) Обслужвани файлове → www root. Копираме САМО трите файла (без README и др.),
+  # 1) Обслужвани файлове → www root. Копираме избрани файлове (без README/конфиг),
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
-  rsync -a "$d/index.html" "$d/privacy.html" "$d/filters.json" "$ADBLOCK_WWW"/
+  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt og.png; do
+    [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
+  done
+  # IndexNow ключ: материализираме <key>.txt в www root от indexnow_key.txt.
+  if [ -f "$d/indexnow_key.txt" ]; then
+    INKEY=$(tr -d '[:space:]' < "$d/indexnow_key.txt")
+    [ -n "$INKEY" ] && printf '%s' "$INKEY" > "$ADBLOCK_WWW/$INKEY.txt"
+  fi
   chmod 755 "$ADBLOCK_WWW"
-  chmod 644 "$ADBLOCK_WWW"/index.html "$ADBLOCK_WWW"/privacy.html "$ADBLOCK_WWW"/filters.json
+  find "$ADBLOCK_WWW" -maxdepth 1 -type f -exec chmod 644 {} +
   # Собственик като другите статични пътища: caddy юзъра ако съществува, иначе root
-  # (файловете и без това са world-readable — Caddy ги чете).
+  # (файловете и без това са world-readable — уеб сървърът ги чете).
   if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
   ok "adblock файлове → $ADBLOCK_WWW"
 
@@ -531,6 +538,7 @@ deploy_adblock() {
     else
       warn "adblock: публичният health още не минава ($ADBLOCK_HEALTH_URL) — провери DNS A запис към този VPS."
     fi
+    indexnow_ping "${INKEY:-}"
     return
   fi
   if ! command -v caddy >/dev/null; then
@@ -576,6 +584,7 @@ deploy_adblock() {
   else
     warn "adblock: публичният health още не минава ($ADBLOCK_HEALTH_URL). Файловете и Caddy конфигът са на място — провери DNS A/AAAA към VPS-а и TLS сертификата."
   fi
+  indexnow_ping "${INKEY:-}"
 }
 
 health() {
@@ -585,6 +594,19 @@ health() {
     sleep 3
   done
   warn "$name НЕ отговаря на $url"; return 1
+}
+
+# IndexNow: уведомява Bing/Yandex/Seznam/Naver с един POST (api.indexnow.org
+# ги разпраща). Ключът е публичен (hostнат като <key>.txt). Best-effort.
+indexnow_ping() {
+  local key="$1"; [ -n "$key" ] || return 0
+  local base="https://$ADBLOCK_DOMAIN"
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/privacy"'"]}'
+  if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
+    ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
+  else
+    warn "adblock: IndexNow ping не мина (сайтът трябва да е публично достъпен с $key.txt)."
+  fi
 }
 
 for p in $PROJECTS; do

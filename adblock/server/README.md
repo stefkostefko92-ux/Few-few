@@ -85,3 +85,21 @@ openssl pkeyutl -sign -inkey /etc/caddy/adblock-signing.key -rawin \
 
 Once the key is set and a release ships with `SIG_PUBKEY_B64` filled in, flip
 `SIG_REQUIRED = true` in the next release to make signatures mandatory.
+
+## SEO / GEO / AEO
+
+The landing page ships full discoverability metadata, served from this folder:
+
+- `robots.txt` + `sitemap.xml` — crawl directives and URL index.
+- `llms.txt` — a plain-text brief for AI / answer engines (GEO).
+- `og.png` (1200x630) — Open Graph / Twitter card image.
+- Inline JSON-LD in `index.html` — SoftwareApplication, Organization, WebSite
+  and FAQPage structured data (rich results + AEO).
+- `indexnow_key.txt` — the IndexNow key. On deploy, `autodeploy.sh` materialises
+  `<key>.txt` in the web root and POSTs the URL list to api.indexnow.org, which
+  notifies Bing, Yandex, Seznam and Naver automatically. Manual re-ping:
+  `bash tools/indexnow.sh`.
+
+Google has no instant-submit API; it discovers changes via the sitemap. For the
+fastest Google indexing, add the property in Google Search Console once and
+submit the sitemap URL (`https://adblock.carbonstealth.eu/sitemap.xml`).
