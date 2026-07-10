@@ -12,18 +12,23 @@ import NotFound from './NotFound';
 import BootScreen from '@/components/BootScreen';
 
 export function BlogIndex({ pathname }: { pathname: string }): React.JSX.Element {
-  const { lang } = useContent();
+  const { lang, content } = useContent();
   const navigate = useNavigate();
   const { data } = useAsync(loadBlog, []);
+  // Локализирани заглавие/описание от content.pages вместо хардкоднат текст
+  const pageMeta = content.pages['blog'];
   useSeo(pathname, {
-    title: lang === 'bg' ? 'Блог | Carbon Stealth' : 'Blog | Carbon Stealth',
+    title: pageMeta?.title,
+    description: pageMeta?.metaDescription,
   });
 
   if (!data) return <BootScreen />;
 
   return (
     <PageShell>
-      <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', marginBottom: 40 }}>BLOG</h1>
+      <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', marginBottom: 40 }}>
+        {pageMeta?.h1 ?? 'Blog'}
+      </h1>
       <div style={{ display: 'grid', gap: 4 }}>
         {Object.keys(data.posts).map((slug) => {
           const post = data.posts[slug][lang];

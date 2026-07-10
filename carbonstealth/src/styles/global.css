@@ -6,6 +6,9 @@
   пълна анимация за всички. Единствената граница: без стробоскоп (>3 премигвания/сек).
 */
 
+/* Self-host шрифтове (без Google CDN — нула pre-consent трансфер, по-бърз LCP) */
+@import './fonts.css';
+
 :root {
   /* --- палитра (design-tokens.json) --- */
   --cyan: #00e5ff;
@@ -326,4 +329,43 @@ h4 {
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(var(--cyan-rgb), 0.3);
+}
+
+/* --- достъпност --- */
+
+/* Визуално скрит, но достъпен за екранни четци (label-и на формата) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Прескочи до съдържанието — първи фокусируем елемент (WCAG 2.4.1) */
+.cs-skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 10000;
+  padding: 10px 18px;
+  background: var(--cyan);
+  color: #000;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cs-skip-link:focus {
+  top: 12px;
+}
+
+/* Тикерът спира при hover/фокус — WCAG 2.2.2 „Pause, Stop, Hide" (ниво A) */
+div:hover > .cs-ticker-track,
+div:focus > .cs-ticker-track,
+div:focus-within > .cs-ticker-track {
+  animation-play-state: paused !important;
 }

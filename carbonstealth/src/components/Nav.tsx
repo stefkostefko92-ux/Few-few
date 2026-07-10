@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useContent } from '@/lib/content-context';
-import { homePath, langPrefix, LANGS } from '@/lib/i18n';
+import { homePath, LANGS } from '@/lib/i18n';
+import { alternatePathFor } from '@/lib/seo';
 import { scrollToId } from '@/lib/scroll';
 import type { Lang } from '@/lib/types';
 
@@ -55,15 +56,14 @@ export default function Nav(): React.JSX.Element {
   };
 
   const switchLang = (l: Lang): void => {
-    // Замяна на езиковия префикс, запазвайки текущия път
-    let path = location.pathname;
-    path = path.replace(/^\/(en|bg)(\/|$)/, '/');
-    const next = l === 'it' ? path : langPrefix(l) + path;
-    navigate(next.replace(/\/{2,}/g, '/') || '/');
+    // Слъговете са локализирани (servizi ↔ services ↔ uslugi), затова
+    // алтернативата се резолвира през hreflang картата от seo.json.
     setOpen(false);
+    void alternatePathFor(location.pathname, l).then((next) => navigate(next));
   };
 
   return (
+    <>
     <nav
       style={{
         position: 'fixed',
@@ -143,7 +143,8 @@ export default function Nav(): React.JSX.Element {
         <button
           className="cs-burger"
           onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
+          aria-label={ui.nav_menu ?? 'Menu'}
+          aria-expanded={open}
           style={{
             display: 'none',
             width: 34,
@@ -157,39 +158,44 @@ export default function Nav(): React.JSX.Element {
         </button>
       </div>
 
-      {/* Мобилно меню */}
-      {open && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: '60px 0 0 0',
-            background: 'rgba(0,0,0,.97)',
-            backdropFilter: 'blur(12px)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-            padding: 40,
-            zIndex: 999,
-          }}
-        >
-          {SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => goSection(s.id)}
-              style={{
-                fontSize: 20,
-                textAlign: 'left',
-                color: 'var(--off-white)',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-              }}
-            >
-              {ui[s.key]}
-            </button>
-          ))}
-        </div>
-      )}
     </nav>
+
+    {/* Мобилно меню — извън <nav>, защото backdrop-filter на родителя прави
+        containing block за position:fixed и чупи позиционирането/фона. */}
+    {open && (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          paddingTop: 100,
+          background: 'rgba(0,0,0,.97)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+          paddingLeft: 40,
+          paddingRight: 40,
+          zIndex: 999,
+        }}
+      >
+        {SECTIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => goSection(s.id)}
+            style={{
+              fontSize: 20,
+              textAlign: 'left',
+              color: 'var(--off-white)',
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+            }}
+          >
+            {ui[s.key]}
+          </button>
+        ))}
+      </div>
+    )}
+    </>
   );
 }

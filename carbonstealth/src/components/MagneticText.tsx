@@ -27,8 +27,12 @@ export default function MagneticText({
     let raf = 0;
 
     const loop = (): void => {
-      for (const l of letters) {
-        const r = l.getBoundingClientRect();
+      // Две фази — първо всички четения (rect), после всички писания на стил.
+      // Смесени read/write форсират reflow на всяка буква (layout thrash).
+      const rects = letters.map((l) => l.getBoundingClientRect());
+      for (let i = 0; i < letters.length; i++) {
+        const l = letters[i];
+        const r = rects[i];
         const cx = r.left + r.width / 2;
         const cy = r.top + r.height / 2;
         const dx = cx - pointer.x;

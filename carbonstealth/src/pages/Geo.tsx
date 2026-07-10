@@ -11,16 +11,23 @@ import NotFound from './NotFound';
 import BootScreen from '@/components/BootScreen';
 
 export function GeoIndex({ pathname }: { pathname: string }): React.JSX.Element {
-  const { lang } = useContent();
+  const { lang, content } = useContent();
   const navigate = useNavigate();
   const { data } = useAsync(loadGeo, []);
-  useSeo(pathname, { title: 'GEO | Carbon Stealth' });
+  // Локализирани заглавие/описание от content.pages вместо хардкоднат текст
+  const pageMeta = content.pages['geo'];
+  useSeo(pathname, {
+    title: pageMeta?.title,
+    description: pageMeta?.metaDescription,
+  });
 
   if (!data) return <BootScreen />;
 
   return (
     <PageShell>
-      <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', marginBottom: 40 }}>GEO</h1>
+      <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', marginBottom: 40 }}>
+        {pageMeta?.h1 ?? 'Geo'}
+      </h1>
       <div
         style={{
           display: 'grid',

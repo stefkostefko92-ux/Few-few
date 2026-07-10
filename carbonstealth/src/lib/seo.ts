@@ -20,6 +20,86 @@ async function getSeoMap(): Promise<Map<string, SeoPage>> {
   return m;
 }
 
+/**
+ * Пътят на същата страница на друг език, резолвиран през hreflang
+ * алтернативите от seo.json (слъговете са локализирани: servizi ↔ services ↔
+ * uslugi). При липсваща алтернатива — началната страница на целевия език.
+ */
+export async function alternatePathFor(pathname: string, lang: string): Promise<string> {
+  const map = await getSeoMap();
+  const p = map.get(pathOf(pathname));
+  const alt = p?.hreflang?.[lang];
+  if (alt) return pathOf(alt);
+  return lang === 'it' ? '/' : `/${lang}/`;
+}
+
+/** Генерира meta keywords от SEO данните на страницата + бранд базата за езика. */
+export function buildKeywords(
+  lang: string,
+  title: string,
+  description: string,
+  extra: string[] = [],
+): string {
+  const base: Record<string, string[]> = {
+    it: [
+      'Carbon Stealth VCC',
+      'agenzia digitale',
+      'sviluppo siti web',
+      'e-commerce',
+      'software ERP',
+      'app mobile',
+      'SEO',
+      'AEO',
+      'hosting cloud',
+      'Bulgaria',
+      'Italia',
+    ],
+    en: [
+      'Carbon Stealth VCC',
+      'digital agency',
+      'web development',
+      'e-commerce',
+      'ERP software',
+      'mobile apps',
+      'SEO',
+      'AEO',
+      'cloud hosting',
+      'Bulgaria',
+      'Europe',
+    ],
+    bg: [
+      'Carbon Stealth VCC',
+      'дигитална агенция',
+      'изработка на сайт',
+      'онлайн магазин',
+      'ERP софтуер',
+      'мобилни приложения',
+      'SEO',
+      'AEO',
+      'облачен хостинг',
+      'България',
+      'Бобов дол',
+    ],
+  };
+  // Съществителни от заглавието/описанието (без служебни думи и брандови повторения)
+  const derived = `${title} ${description}`
+    .replace(/[|—–\-·,.:;()€]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 4 && !/^\d+$/.test(w))
+    .slice(0, 8);
+  const all = [...(base[lang] ?? base.it), ...extra, ...derived];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const k of all) {
+    const key = k.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(k);
+    }
+  }
+  return out.slice(0, 20).join(', ');
+}
+
 function setMeta(attr: 'name' | 'property', key: string, value: string): void {
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
   if (!el) {
@@ -89,6 +169,9 @@ export function useSeo(pathname: string, override?: SeoOverride): void {
       if (description) {
         setMeta('name', 'description', description);
       }
+      // Meta keywords — на всяка страница (изискване на собственика)
+      const kwLang = p?.lang ?? 'it';
+      setMeta('name', 'keywords', buildKeywords(kwLang, title, description));
 
       if (p) {
         setLink('canonical', p.canonical);
@@ -104,12 +187,30 @@ export function useSeo(pathname: string, override?: SeoOverride): void {
           a.setAttribute('data-cs-seo', '');
           document.head.appendChild(a);
         }
-        // Open Graph
+        // Open Graph — пълният блок от seo.json + гарантиран og:image
+        const ogImage = p.og?.['og:image'] ?? 'https://carbonstealth.eu/og-image.png';
         setMeta('property', 'og:title', p.og?.['og:title'] ?? title);
         setMeta('property', 'og:description', p.og?.['og:description'] ?? description);
         setMeta('property', 'og:url', p.canonical);
         setMeta('property', 'og:type', p.og?.['og:type'] ?? 'website');
         setMeta('property', 'og:site_name', 'Carbon Stealth VCC');
+        setMeta('property', 'og:image', ogImage);
+        setMeta('property', 'og:image:width', p.og?.['og:image:width'] ?? '1200');
+        setMeta('property', 'og:image:height', p.og?.['og:image:height'] ?? '630');
+        if (p.og?.['og:locale']) setMeta('property', 'og:locale', p.og['og:locale']);
+        // Twitter карта
+        setMeta('name', 'twitter:card', p.twitter?.['twitter:card'] ?? 'summary_large_image');
+        setMeta('name', 'twitter:title', p.twitter?.['twitter:title'] ?? title);
+        setMeta(
+          'name',
+          'twitter:description',
+          p.twitter?.['twitter:description'] ?? description,
+        );
+        setMeta('name', 'twitter:image', p.twitter?.['twitter:image'] ?? ogImage);
+        // Индексиране + гео сигнали (от стария сайт)
+        setMeta('name', 'robots', p.robots ?? 'index, follow, max-image-preview:large, max-snippet:-1');
+        if (p.geoRegion) setMeta('name', 'geo.region', p.geoRegion);
+        if (p.geoPlacename) setMeta('name', 'geo.placename', p.geoPlacename);
       }
 
       if (override?.jsonLd) injectJsonLd(override.jsonLd);

@@ -62,18 +62,20 @@ export default function Cursor(): React.JSX.Element | null {
 
     const onDown = (): void => {
       pointer.down = true;
-      ring.style.transform += ' scale(0.8)';
     };
     const onUp = (): void => {
       pointer.down = false;
     };
 
-    // rAF за плавно догонване на ринга + затихване на следата
+    // rAF за плавно догонване на ринга + затихване на следата.
+    // Click-свиването живее тук, защото лупата презаписва transform всеки кадър.
     let raf = 0;
     const loop = (): void => {
       rx += (pointer.x - rx) * 0.18;
       ry += (pointer.y - ry) * 0.18;
-      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)${
+        pointer.down ? ' scale(0.8)' : ''
+      }`;
       // леко избледняване на фосфора
       ctx.fillStyle = 'rgba(0,0,0,0.06)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);

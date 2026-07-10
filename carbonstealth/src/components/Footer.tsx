@@ -12,6 +12,10 @@ export default function Footer(): React.JSX.Element {
 
   const prefix = lang === 'it' ? '' : `/${lang}`;
 
+  // Част от href-овете в данните вече носят езиковия префикс — не го дублираме.
+  const withPrefix = (href: string): string =>
+    href.startsWith(prefix + '/') && prefix !== '' ? href : prefix + href;
+
   const go = (target?: string): void => {
     if (!target) return;
     if (target.startsWith('http')) {
@@ -33,11 +37,11 @@ export default function Footer(): React.JSX.Element {
           <li key={i}>
             {l.href ? (
               <a
-                href={prefix + l.href}
+                href={l.href.includes('.xml') ? l.href : withPrefix(l.href)}
                 onClick={(e) => {
                   if (l.href && l.href.startsWith('/') && !l.href.includes('.xml')) {
                     e.preventDefault();
-                    navigate(prefix + l.href);
+                    navigate(withPrefix(l.href));
                   }
                 }}
                 style={{ fontSize: 11, color: 'var(--text)' }}
@@ -105,7 +109,8 @@ export default function Footer(): React.JSX.Element {
           ))}
         </div>
 
-        <div style={{ marginTop: 24, fontSize: 10, color: 'var(--muted)', lineHeight: 2 }}>
+        {/* Импресум реквизитите са правно задължителни → контраст ≥ 4.5:1 */}
+        <div style={{ marginTop: 24, fontSize: 11, color: 'var(--text)', lineHeight: 2 }}>
           <div>
             {f.registeredOfficeLabel} {f.registeredOffice}
           </div>

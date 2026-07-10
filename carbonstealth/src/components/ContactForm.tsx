@@ -62,11 +62,19 @@ export default function ContactForm(): React.JSX.Element {
   return (
     <form onSubmit={onSubmit} style={{ display: 'grid', gap: 14 }}>
       <div className="cs-form-row" style={{ display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
-        <input name="name" required placeholder={ui.form_name} style={inputStyle} />
-        <input name="email" type="email" required placeholder={ui.form_email} style={inputStyle} />
+        <div>
+          <label htmlFor="cs-f-name" className="sr-only">{ui.form_name}</label>
+          <input id="cs-f-name" name="name" required placeholder={ui.form_name} style={inputStyle} />
+        </div>
+        <div>
+          <label htmlFor="cs-f-email" className="sr-only">{ui.form_email}</label>
+          <input id="cs-f-email" name="email" type="email" required placeholder={ui.form_email} style={inputStyle} />
+        </div>
       </div>
-      <input name="phone" placeholder={ui.form_phone} style={inputStyle} />
-      <textarea name="message" required rows={5} placeholder={ui.form_msg} style={inputStyle} />
+      <label htmlFor="cs-f-phone" className="sr-only">{ui.form_phone}</label>
+      <input id="cs-f-phone" name="phone" placeholder={ui.form_phone} style={inputStyle} />
+      <label htmlFor="cs-f-msg" className="sr-only">{ui.form_msg}</label>
+      <textarea id="cs-f-msg" name="message" required rows={5} placeholder={ui.form_msg} style={inputStyle} />
       {/* Honeypot — скрит от хора, залавя ботове */}
       <input
         name="_gotcha"
@@ -100,8 +108,8 @@ export default function ContactForm(): React.JSX.Element {
         {status === 'sending' ? content.misc.form_sending ?? '...' : ui.form_send}
       </button>
       {status === 'error' && (
-        <p style={{ fontSize: 11, color: 'var(--red)' }}>
-          {ui.form_email} → {site.email}
+        <p style={{ fontSize: 11, color: 'var(--red)' }} role="alert">
+          {ui.form_error ?? 'Error'} <a href={`mailto:${site.email}`} style={{ color: 'var(--cyan)' }}>{site.email}</a>
         </p>
       )}
     </form>

@@ -185,6 +185,9 @@ export interface SeoPage {
   hreflang: Record<string, string>;
   og?: Record<string, string>;
   twitter?: Record<string, string>;
+  robots?: string;
+  geoRegion?: string;
+  geoPlacename?: string;
 }
 
 export interface SeoData {

@@ -3,10 +3,10 @@ import { useContent } from '@/lib/content-context';
 import { homePath } from '@/lib/i18n';
 
 export default function NotFound(): React.JSX.Element {
-  const { lang } = useContent();
+  const { lang, content } = useContent();
   const navigate = useNavigate();
   return (
-    <main
+    <div
       style={{
         minHeight: '80dvh',
         display: 'flex',
@@ -28,6 +28,9 @@ export default function NotFound(): React.JSX.Element {
       >
         404
       </div>
+      <p style={{ fontSize: 12, letterSpacing: '.15em', color: 'var(--text)', textTransform: 'uppercase' }}>
+        {content.ui.nf_text ?? 'Not found'}
+      </p>
       <button
         onClick={() => navigate(homePath(lang))}
         data-cursor
@@ -43,6 +46,6 @@ export default function NotFound(): React.JSX.Element {
       >
         ← Carbon Stealth
       </button>
-    </main>
+    </div>
   );
 }

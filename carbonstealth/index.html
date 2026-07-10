@@ -8,13 +8,37 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <title>Carbon Stealth VCC</title>
+    <!-- Шрифтовете са self-host (public/fonts/) — без Google CDN. Preload на
+         критичните за LCP файлове. -->
+    <link rel="preload" href="/fonts/inter-tight-100-900-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/space-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="alternate" type="application/rss+xml" title="Carbon Stealth Blog" href="/feed.xml" />
+    <!-- CS:SEO — per-route блокът се подменя от scripts/prerender.mjs при build -->
+    <title>Carbon Stealth VCC | Sviluppo Siti Web, ERP e SEO | Agenzia Digitale</title>
+    <meta name="description" content="Agenzia digitale per Italia e Bulgaria: sviluppo siti web da €800, e-commerce, software ERP, app mobile e SEO/AEO. Preventivo gratuito in 24 ore." />
+    <meta name="keywords" content="Carbon Stealth VCC, agenzia digitale, sviluppo siti web, e-commerce, software ERP, app mobile, SEO, AEO, hosting cloud, Bulgaria, Italia" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="geo.region" content="BG-14" />
+    <meta name="geo.placename" content="Bobov Dol" />
+    <link rel="canonical" href="https://carbonstealth.eu/" />
+    <link rel="alternate" hreflang="it" href="https://carbonstealth.eu/" />
+    <link rel="alternate" hreflang="en" href="https://carbonstealth.eu/en/" />
+    <link rel="alternate" hreflang="bg" href="https://carbonstealth.eu/bg/" />
+    <link rel="alternate" hreflang="x-default" href="https://carbonstealth.eu/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Carbon Stealth VCC" />
+    <meta property="og:title" content="Carbon Stealth VCC | Sviluppo Siti Web, ERP e SEO | Agenzia Digitale" />
+    <meta property="og:description" content="Web development, ERP software, mobile apps, game dev, IoT, SEO/GEO/AEO. Based in Bobov Dol, Bulgaria. Serving Europe." />
+    <meta property="og:url" content="https://carbonstealth.eu/" />
+    <meta property="og:image" content="https://carbonstealth.eu/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="it_IT" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Carbon Stealth VCC | Digital Solutions Agency" />
+    <meta name="twitter:description" content="Web development, ERP, mobile apps, game dev, IoT, SEO/AEO. Bulgaria." />
+    <meta name="twitter:image" content="https://carbonstealth.eu/og-image.png" />
+    <!-- /CS:SEO -->
   </head>
   <body>
     <div id="root">

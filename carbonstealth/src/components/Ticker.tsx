@@ -4,8 +4,11 @@ import { useContent } from '@/lib/content-context';
 export default function Ticker(): React.JSX.Element {
   const { content } = useContent();
   const text = content.ui.ticker;
+  // WCAG 2.2.2 (ниво A): авто-движението има механизъм за пауза — hover/фокус
+  // (класът .cs-ticker-track спира анимацията през global.css).
   return (
     <div
+      tabIndex={0}
       style={{
         overflow: 'hidden',
         whiteSpace: 'nowrap',
@@ -15,7 +18,7 @@ export default function Ticker(): React.JSX.Element {
         background: '#000',
       }}
     >
-      <div style={{ display: 'inline-block', animation: 'cs-ticker 30s linear infinite' }}>
+      <div className="cs-ticker-track" style={{ display: 'inline-block', animation: 'cs-ticker 30s linear infinite' }}>
         {[0, 1].map((i) => (
           <span
             key={i}

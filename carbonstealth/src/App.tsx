@@ -1,7 +1,7 @@
 // Корен на приложението: Lenis скрол, custom cursor, роутинг + резолвер.
 // Цялата информационна архитектура е data-driven — резолверът картографира
 // pathname към страница по данните (content.pages / blog / geo), без route таблица.
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import { useLenis } from '@/hooks/useLenis';
 import { useAsync } from '@/hooks/useAsync';
@@ -64,12 +64,56 @@ function Layout(): React.JSX.Element {
     if (!location.hash) scrollTop();
   }, [location.pathname, location.hash]);
 
-  if (!state.data) return <BootScreen />;
+  const ctx = useMemo(
+    () =>
+      state.data
+        ? { lang, content: state.data.content, site: state.data.site }
+        : null,
+    [lang, state.data],
+  );
+
+  // Провал при зареждане на данните → ясно съобщение вместо вечен boot екран
+  if (state.error) {
+    return (
+      <main
+        style={{
+          minHeight: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          color: 'var(--red)',
+          fontFamily: 'var(--font-mono)',
+        }}
+      >
+        <div style={{ fontSize: 14, letterSpacing: '.1em' }}>CONNECTION ERROR</div>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '12px 24px',
+            border: '1px solid var(--cyan)',
+            color: 'var(--cyan)',
+            cursor: 'pointer',
+            letterSpacing: '.15em',
+            fontSize: 12,
+          }}
+        >
+          RETRY ↻
+        </button>
+      </main>
+    );
+  }
+
+  if (!ctx) return <BootScreen />;
 
   return (
-    <ContentProvider value={{ lang, content: state.data.content, site: state.data.site }}>
+    <ContentProvider value={ctx}>
+      <a href="#main" className="cs-skip-link">
+        {ctx.content.ui.skip_link ?? 'Skip to content'}
+      </a>
       <Nav />
-      {resolvePage(location.pathname)}
+      <main id="main">{resolvePage(location.pathname)}</main>
       <Ticker />
       <Footer />
       <CookieBanner />

@@ -7,8 +7,9 @@ import { homePath } from '@/lib/i18n';
 export default function PageShell({ children }: { children: ReactNode }): React.JSX.Element {
   const { lang } = useContent();
   const navigate = useNavigate();
+  // <main> ориентирът е един — в App; тук е обикновен контейнер.
   return (
-    <main style={{ minHeight: '80dvh', paddingTop: 100 }}>
+    <div style={{ minHeight: '80dvh', paddingTop: 100 }}>
       <div className="cs-container" style={{ maxWidth: 900 }}>
         <button
           onClick={() => navigate(homePath(lang))}
@@ -26,6 +27,6 @@ export default function PageShell({ children }: { children: ReactNode }): React.
         </button>
         {children}
       </div>
-    </main>
+    </div>
   );
 }

@@ -14,13 +14,13 @@ const cache = new Map<string, Promise<unknown>>();
 
 function load<T>(file: string): Promise<T> {
   if (!cache.has(file)) {
-    cache.set(
-      file,
-      fetch(`${import.meta.env.BASE_URL}data/${file}`).then((r) => {
-        if (!r.ok) throw new Error(`Неуспешно зареждане на ${file}: ${r.status}`);
-        return r.json();
-      }),
-    );
+    const p = fetch(`${import.meta.env.BASE_URL}data/${file}`).then((r) => {
+      if (!r.ok) throw new Error(`Неуспешно зареждане на ${file}: ${r.status}`);
+      return r.json();
+    });
+    // Провалено зареждане не остава в кеша — следващият опит тегли наново.
+    p.catch(() => cache.delete(file));
+    cache.set(file, p);
   }
   return cache.get(file) as Promise<T>;
 }
