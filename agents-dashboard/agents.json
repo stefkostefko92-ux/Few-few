@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-09",
+    "updated": "2026-07-10",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -3239,9 +3239,20 @@
           "date": "2026-07-06",
           "event": "v10.4 — учене",
           "detail": "Научи: CLDR 48 plural категории се различават: bg=one/other, en=one/other, но it=one/MANY/othe… (+6 още)"
+        },
+        {
+          "version": "10.5.0",
+          "date": "2026-07-10",
+          "event": "v10.5 — учене",
+          "detail": "Научи: linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
