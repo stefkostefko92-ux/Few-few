@@ -587,6 +587,32 @@ await test('забравена парола: непознат имейл не и
   assert.equal(outbox.length, before, 'не трябва да се праща писмо за несъществуващ акаунт');
 });
 
+await test('Мастилко → Визитка: prefill попълва профила (без имейл)', async () => {
+  jar.clear();
+  const res = await request('/register', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      name: 'Петър Живков',
+      email: 'jiv@example.com',
+      password: 'parola12345',
+      type: 'personal',
+      from: 'mastilko',
+      role: 'Дизайнер',
+      company: 'Ателие Живков',
+      phone: '+359 111',
+      website: 'jivkov.bg', // без протокол — Визитка добавя https://
+    }),
+  });
+  assert.equal(res.status, 302);
+  const dash = await (await request('/dashboard')).text();
+  assert.match(dash, /Дизайнер/);
+  assert.match(dash, /Ателие Живков/);
+  assert.match(dash, /https:\/\/jivkov\.bg/);
+  // Контактният имейл НЕ се попълва (privacy-by-default) — полето остава празно.
+  assert.match(dash, /name="contact_email"[^>]*value=""/);
+});
+
 // ─── Портфейли (Apple Wallet / Google Wallet) ────────────────────────────────
 
 await test('портфейл: изключен без сертификати — 404 + „Скоро" тийзър', async () => {

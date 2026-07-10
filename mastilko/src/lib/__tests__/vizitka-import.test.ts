@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mapVizitkaToCard, vizitkaApiUrl } from "../vizitka-import";
+import {
+  mapVizitkaToCard,
+  vizitkaApiUrl,
+  vizitkaRegisterUrl,
+} from "../vizitka-import";
 
 const FULL = {
   source: "vizitka",
@@ -69,4 +73,30 @@ test("дългите стойности се отрязват до 60 знака
 
 test("vizitkaApiUrl енкодва токена", () => {
   assert.ok(vizitkaApiUrl("a.b.c").endsWith("/api/print/a.b.c"));
+});
+
+test("vizitkaRegisterUrl носи данните на дизайна с from=mastilko", () => {
+  const url = vizitkaRegisterUrl({
+    name: "Мария Иванова",
+    role: "Сладкар",
+    company: "Мечта",
+    phone: "+359 88",
+    website: "mechta.bg",
+    type: "company",
+  });
+  const q = new URL(url).searchParams;
+  assert.ok(url.includes("/register?"));
+  assert.equal(q.get("from"), "mastilko");
+  assert.equal(q.get("name"), "Мария Иванова");
+  assert.equal(q.get("role"), "Сладкар");
+  assert.equal(q.get("company"), "Мечта");
+  assert.equal(q.get("website"), "mechta.bg");
+  assert.equal(q.get("type"), "company");
+});
+
+test("vizitkaRegisterUrl пропуска празните полета", () => {
+  const q = new URL(vizitkaRegisterUrl({ name: "Само име" })).searchParams;
+  assert.equal(q.get("name"), "Само име");
+  assert.equal(q.get("role"), null);
+  assert.equal(q.get("type"), null);
 });

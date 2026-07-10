@@ -10,6 +10,31 @@ export const VIZITKA_URL = (
 export const vizitkaApiUrl = (token: string) =>
   `${VIZITKA_URL}/api/print/${encodeURIComponent(token)}`;
 
+// „Направи я жива визитка" (Мастилко → Визитка): праща данните на дизайна към
+// регистрацията на Визитка, за да напълни новата (скрита) визитка. Само текстови
+// полета в URL-а; Визитка НЕ попълва имейл (privacy-by-default).
+export function vizitkaRegisterUrl(card: {
+  name?: string;
+  role?: string;
+  company?: string;
+  phone?: string;
+  website?: string;
+  type?: string;
+}): string {
+  const q = new URLSearchParams({ from: "mastilko" });
+  const put = (k: string, v?: string) => {
+    const s = (v ?? "").trim().slice(0, 200);
+    if (s) q.set(k, s);
+  };
+  put("name", card.name);
+  put("role", card.role);
+  put("company", card.company);
+  put("phone", card.phone);
+  put("website", card.website);
+  if (card.type === "company") q.set("type", "company");
+  return `${VIZITKA_URL}/register?${q.toString()}`;
+}
+
 // Отговорът от Визитка (buildPrintPayload). Валидираме недоверен вход защитно.
 const str = z.string().optional();
 export const VizitkaPayloadSchema = z
