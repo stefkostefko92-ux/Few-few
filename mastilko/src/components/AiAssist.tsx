@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@/components/Icon";
 import { askAi, splitSuggestions, type AiMode } from "@/lib/ai-client";
 
 interface Props {
@@ -68,7 +69,7 @@ export default function AiAssist({ mode, input, label, onPick, single }: Props) 
         aria-busy={busy}
         className="btn-secondary text-sm"
       >
-        <span aria-hidden>✨</span>
+        <Icon name="sparkles" className="h-4 w-4" />
         {busy ? "Мастилко мисли…" : label}
       </button>
       <p className="mt-1 text-xs text-ink-faint">

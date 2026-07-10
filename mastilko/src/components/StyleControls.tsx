@@ -3,6 +3,7 @@
 import { DECORS, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
+import Icon from "@/components/Icon";
 
 interface Props {
   value: StyleState;
@@ -33,7 +34,7 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor }: 
           onChange={(e) => onChange({ customColors: e.target.checked })}
           className="h-4 w-4 accent-tera"
         />
-        🎨 Свои цветове
+        <Icon name="palette" className="h-4 w-4" /> Свои цветове
       </label>
 
       {value.customColors && (

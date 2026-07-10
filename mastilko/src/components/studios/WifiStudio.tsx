@@ -6,6 +6,7 @@ import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState 
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
@@ -120,7 +121,7 @@ export default function WifiStudio() {
         </div>
 
         <p className="text-xs text-ink-faint">
-          💡 Съвет: разлепен стикер с паролата е достъпен за всеки, който вижда
+          <Icon name="bulb" className="mr-1 h-4 w-4 align-[-3px]" /> Съвет: разлепен стикер с паролата е достъпен за всеки, който вижда
           листа — за заведения ползвай отделна гост-мрежа.
         </p>
         <ProjectFile state={s} filename="mastilko-wifi"

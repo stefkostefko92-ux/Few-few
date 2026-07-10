@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import Logo from "@/components/Logo";
+import Icon from "@/components/Icon";
 import BannerZone from "@/components/BannerZone";
 import { PUBLISHER, POSTAL_ADDRESS, ID, SITE_URL } from "@/lib/site";
 
@@ -136,13 +137,16 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/etiketi" className="btn-primary">
-              🏷️ Направи етикети
+              <Image src="/icons/etiketi.png" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              Направи етикети
             </Link>
             <Link href="/vizitki" className="btn-secondary">
-              💼 Визитки
+              <Image src="/icons/vizitki.png" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              Визитки
             </Link>
             <Link href="/cv" className="btn-secondary">
-              📄 CV
+              <Image src="/icons/cv.png" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              CV
             </Link>
           </div>
         </div>
@@ -220,7 +224,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4">
         <div className="card-warm relative overflow-hidden bg-gradient-to-br from-white/90 to-med-pale/70 p-8 sm:p-10">
           <h2 className="font-display text-3xl font-bold">
-            ✨ Малко магия от Gemini — безплатно
+            <Icon name="sparkles" className="mr-1 h-7 w-7 align-[-4px] text-med-dark" /> Малко магия от Gemini — безплатно
           </h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
             Не ти хрумва текст за етикета? Трябва ти слоган за визитката или

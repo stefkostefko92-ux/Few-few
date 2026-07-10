@@ -1,5 +1,7 @@
 "use client";
 
+import Icon from "@/components/Icon";
+
 interface Props {
   /** Кратко описание какво ще се отпечата, напр. „21 етикета на лист А4“. */
   summary: string;
@@ -17,7 +19,7 @@ export default function PrintBar({ summary }: Props) {
         </p>
       </div>
       <button type="button" onClick={() => window.print()} className="btn-primary shrink-0">
-        <span aria-hidden>🖨️</span> Принтирай / запази PDF
+        <Icon name="print" /> Принтирай / запази PDF
       </button>
     </div>
   );

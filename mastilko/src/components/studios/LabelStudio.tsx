@@ -6,6 +6,7 @@ import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
@@ -257,7 +258,7 @@ export default function LabelStudio() {
 
         <div className="card-warm space-y-3 p-5">
           <label htmlFor="aiDesc" className="field-label">
-            ✨ Не ти хрумва текст? Опиши за какво е етикетът:
+            <Icon name="sparkles" className="mr-1 h-4 w-4 align-[-3px]" /> Не ти хрумва текст? Опиши за какво е етикетът:
           </label>
           <input
             id="aiDesc"

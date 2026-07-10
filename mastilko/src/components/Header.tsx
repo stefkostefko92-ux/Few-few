@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const TOOLS = [
-  { href: "/etiketi", label: "Етикети", emoji: "🏷️" },
-  { href: "/vizitki", label: "Визитки", emoji: "💼" },
-  { href: "/cv", label: "Автобиография (CV)", emoji: "📄" },
-  { href: "/pismo", label: "Мотивационно писмо", emoji: "✉️" },
-  { href: "/gramoti", label: "Грамоти и сертификати", emoji: "🏆" },
-  { href: "/pokani", label: "Покани и картички", emoji: "🎉" },
-  { href: "/tabelki", label: "Табелки и надписи", emoji: "🪧" },
-  { href: "/wifi", label: "WiFi стикер", emoji: "📶" },
+  { href: "/etiketi", label: "Етикети", icon: "/icons/etiketi.png" },
+  { href: "/vizitki", label: "Визитки", icon: "/icons/vizitki.png" },
+  { href: "/cv", label: "Автобиография (CV)", icon: "/icons/cv.png" },
+  { href: "/pismo", label: "Мотивационно писмо", icon: "/icons/pismo.png" },
+  { href: "/gramoti", label: "Грамоти и сертификати", icon: "/icons/gramoti.png" },
+  { href: "/pokani", label: "Покани и картички", icon: "/icons/pokani.png" },
+  { href: "/tabelki", label: "Табелки и надписи", icon: "/icons/tabelki.png" },
+  { href: "/wifi", label: "WiFi стикер", icon: "/icons/wifi.png" },
 ];
 
 export default function Header() {
@@ -58,7 +59,7 @@ export default function Header() {
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10"
                     >
-                      <span aria-hidden className="text-lg">{t.emoji}</span>
+                      <Image src={t.icon} alt="" width={36} height={36} unoptimized className="h-8 w-8 shrink-0 object-contain" aria-hidden />
                       {t.label}
                     </Link>
                   ))}

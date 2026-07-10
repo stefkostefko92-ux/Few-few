@@ -76,7 +76,7 @@ export default function AdminBanners() {
         body: JSON.stringify({ banners }),
       });
       if (!res.ok) throw new Error();
-      setMsg("Запазено ✔");
+      setMsg("Запазено.");
     } catch {
       setMsg("Запазването не успя.");
     } finally {

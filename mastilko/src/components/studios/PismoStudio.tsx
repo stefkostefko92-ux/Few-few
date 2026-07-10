@@ -4,6 +4,7 @@ import { z } from "zod";
 import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
+import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -114,7 +115,7 @@ export default function PismoStudio() {
         <div className="card-warm space-y-3 p-5">
           <div>
             <label htmlFor="pismo-strengths" className="field-label">
-              ✨ Защо ти? (2–3 неща за AI черновата)
+              <Icon name="sparkles" className="mr-1 h-4 w-4 align-[-3px]" /> Защо ти? (2–3 неща за AI черновата)
             </label>
             <textarea
               id="pismo-strengths"
