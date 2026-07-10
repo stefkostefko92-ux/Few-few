@@ -7,7 +7,7 @@ Supreme AdBlock
 Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.
 
 ## Category
-Productivity / Tools
+Productivity
 
 ## Detailed description
 
@@ -39,8 +39,11 @@ Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 
 ## Permission justifications
 - declarativeNetRequest: block ad and tracker requests using filter rules.
+- declarativeNetRequestFeedback: count blocked requests per tab for the toolbar badge.
 - storage: save your settings and counters locally.
 - tabs: show the current site and per-tab blocked count in the popup.
+- alarms: schedule the daily filter update and the temporary-pause timer.
+- contextMenus: the right-click "Block an element here" entry.
 - host permissions (<all_urls>): apply blocking and cosmetic filtering on the
   pages you browse; all processing is local.
 

@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: June 2026_
+_Last updated: July 2026_
 
 Supreme AdBlock is built to protect your privacy, not to collect data.
 
