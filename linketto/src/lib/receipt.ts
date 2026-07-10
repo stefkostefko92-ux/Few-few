@@ -86,7 +86,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Netto (IVA esclusa)',
     discount: 'Codice promozionale applicato',
     vatNote:
-      "Il venditore è il fornitore di riferimento. Linketto è una piattaforma intermediaria; il venditore fornisce il contenuto ed è responsabile dell'IVA e dell'eventuale fattura fiscale dovuta.",
+      "Il contratto di acquisto si conclude tra te e il creator (venditore). Ai fini IVA, Linketto (Carbon Stealth VCC) agisce come fornitore presunto ai sensi dell'articolo 9 bis del regolamento di esecuzione (UE) n. 282/2011 e applica e versa l'IVA dovuta in base al Paese dell'acquirente. L'importo indicato è il prezzo finale pagato, IVA inclusa ove dovuta. Questo documento è una conferma di acquisto, non una fattura fiscale.",
     traderYes: 'Il venditore ha dichiarato il proprio status: professionista.',
     traderNo: 'Il venditore ha dichiarato il proprio status: privato (venditore non professionale).',
     print: 'Stampa / Salva come PDF',
@@ -107,7 +107,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Neto (sin IVA)',
     discount: 'Código promocional aplicado',
     vatNote:
-      'El vendedor es el proveedor responsable. Linketto es una plataforma intermediaria; el vendedor proporciona el contenido y es responsable del IVA y de cualquier factura fiscal que corresponda.',
+      'El contrato de compra se celebra entre tú y el creador (vendedor). A efectos del IVA, Linketto (Carbon Stealth VCC) actúa como proveedor presunto según el artículo 9 bis del Reglamento de Ejecución (UE) n.º 282/2011 y repercute y declara el IVA debido según el país del comprador. El importe mostrado es el precio final pagado, con el IVA incluido cuando corresponda. Este documento es una confirmación de compra, no una factura fiscal.',
     traderYes: 'El vendedor ha declarado su condición: profesional.',
     traderNo: 'El vendedor ha declarado su condición: particular (vendedor no profesional).',
     print: 'Imprimir / Guardar como PDF',
@@ -128,7 +128,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Netto (ohne USt.)',
     discount: 'Angewendeter Gutscheincode',
     vatNote:
-      'Der Verkäufer ist der leistende Anbieter. Linketto ist eine vermittelnde Plattform; der Verkäufer stellt den Inhalt bereit und ist für die Umsatzsteuer und eine etwaige Steuerrechnung verantwortlich.',
+      'Der Kaufvertrag kommt zwischen dir und dem Creator (Verkäufer) zustande. Für Umsatzsteuerzwecke handelt Linketto (Carbon Stealth VCC) als fingierter Leistungserbringer nach Artikel 9a der Durchführungsverordnung (EU) Nr. 282/2011 und berechnet und führt die geschuldete Umsatzsteuer nach dem Land des Käufers ab. Der angezeigte Betrag ist der final gezahlte Preis, inklusive Umsatzsteuer, soweit diese anfällt. Dieses Dokument ist eine Kaufbestätigung, keine Steuerrechnung.',
     traderYes: 'Der Verkäufer hat seinen Status angegeben: Unternehmer.',
     traderNo: 'Der Verkäufer hat seinen Status angegeben: Privatperson (nicht gewerblicher Verkäufer).',
     print: 'Drucken / Als PDF speichern',
@@ -149,7 +149,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Net (hors TVA)',
     discount: 'Code promo appliqué',
     vatNote:
-      "Le vendeur est le fournisseur responsable. Linketto est une plateforme intermédiaire ; le vendeur fournit le contenu et est responsable de la TVA et de toute facture fiscale due.",
+      "Le contrat d'achat est conclu entre vous et le créateur (vendeur). Aux fins de la TVA, Linketto (Carbon Stealth VCC) agit en qualité de fournisseur présumé au titre de l'article 9 bis du règlement d'exécution (UE) n° 282/2011 et facture et reverse la TVA due selon le pays de l'acheteur. Le montant indiqué est le prix final payé, TVA comprise le cas échéant. Ce document est une confirmation d'achat, non une facture fiscale.",
     traderYes: 'Le vendeur a déclaré son statut : professionnel.',
     traderNo: 'Le vendeur a déclaré son statut : particulier (vendeur non professionnel).',
     print: 'Imprimer / Enregistrer en PDF',
