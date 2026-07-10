@@ -1177,9 +1177,20 @@
           "date": "2026-07-10",
           "event": "v11.4 — учене",
           "detail": "Научи: SupremeDiscordBot getServerTier (backend/src/lib/premium.js:215) е plan-first: paidPlan… (+1 още)"
+        },
+        {
+          "version": "11.5.0",
+          "date": "2026-07-10",
+          "event": "v11.5 — учене",
+          "detail": "Научи: MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста…\" (+1 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
