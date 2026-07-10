@@ -6644,9 +6644,20 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST… (+2 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-10",
+          "event": "v10.4 — учене",
+          "detail": "Научи: Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…\" · 5 в карантина"
+        },
         {
           "date": "2026-07-10",
           "type": "quarantine",
