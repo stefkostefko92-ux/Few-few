@@ -10,6 +10,7 @@ import {
   adminForceLogoutAction,
   adminMarkPayoutPaidAction,
   adminRefundPurchaseAction,
+  adminRetryPayoutAction,
   adminResolveReportAction,
   adminSetPasswordAction,
   adminSetPublishedAction,
@@ -247,6 +248,29 @@ export default async function AdminPage({
                       <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
                         {t('notDelivered')}
                       </span>
+                    )}
+                    {/* Провален превод към продавача → видим + ретрайваем */}
+                    {purchase.payoutFailedAt && !purchase.stripeTransferId && (
+                      <form
+                        action={adminRetryPayoutAction}
+                        className="ml-2 inline-flex items-center gap-1"
+                      >
+                        <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
+                          {t('payoutFailed')}
+                        </span>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input
+                          type="hidden"
+                          name="purchaseId"
+                          value={purchase.id}
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                        >
+                          {t('payoutRetry')}
+                        </button>
+                      </form>
                     )}
                   </span>
                   {purchase.refundedAt ? (

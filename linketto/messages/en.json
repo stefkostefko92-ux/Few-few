@@ -505,6 +505,8 @@
     "referralCredit": "referral bonus",
     "payoutsTitle": "Payout requests — pending ({count})",
     "payoutsEmpty": "No pending requests.",
-    "payoutMarkPaid": "Mark as paid"
+    "payoutMarkPaid": "Mark as paid",
+    "payoutFailed": "Seller payout failed",
+    "payoutRetry": "Retry payout"
   }
 }

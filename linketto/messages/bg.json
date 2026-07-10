@@ -505,6 +505,8 @@
     "referralCredit": "реферал бонус",
     "payoutsTitle": "Заявки за изплащане — чакащи ({count})",
     "payoutsEmpty": "Няма чакащи заявки.",
-    "payoutMarkPaid": "Маркирай като платено"
+    "payoutMarkPaid": "Маркирай като платено",
+    "payoutFailed": "Провален превод към продавача",
+    "payoutRetry": "Преведи пак"
   }
 }

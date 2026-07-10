@@ -362,6 +362,8 @@ model Purchase {
   netAmountCents  Int? // amountCents - vatAmountCents (базата за комисионата)
   buyerCountry    String? // държава на купувача (billing адрес от Stripe)
   stripeTransferId String? // преводът към продавача (separate charges & transfers)
+  payoutFailedAt  DateTime? // преводът се провали → админът вижда и ретрайва
+  chargedOn       String   @default("platform") // "platform" (separate) | "destination" (заварени)
   receiptNumber   Int      @default(autoincrement()) @unique // непрекъсната номерация (Н-18)
   buyerEmail      String?
   locale          String? // език на купувача — за имейла на неговия език

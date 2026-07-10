@@ -177,27 +177,33 @@ export async function startProductPurchaseAction(
     // Преводът на неговия дял (нето − комисиона) се създава от webhook-а,
     // когато Stripe Tax вече е сметнал ДДС по държавата на купувача.
     // Цената е КРАЙНА (tax-inclusive) — купувачът плаща точно показаното.
-    session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: 'eur',
-            unit_amount: unitAmount,
-            ...(stripeTaxEnabled() ? { tax_behavior: 'inclusive' } : {}),
-            product_data: productName,
+    // try/catch: при включен Stripe Tax без данъчни регистрации в
+    // Dashboard-а заявката се проваля → грациозен shopError, не 500.
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: 'eur',
+              unit_amount: unitAmount,
+              ...(stripeTaxEnabled() ? { tax_behavior: 'inclusive' } : {}),
+              product_data: productName,
+            },
           },
-        },
-      ],
-      ...(stripeTaxEnabled() ? { automatic_tax: { enabled: true } } : {}),
-      // planId е снапшот за webhook-а — комисионата се смята върху нетото
-      // там, по плана на продавача към момента на продажбата.
-      metadata: { ...metadata, plan: planId },
-      locale: 'auto',
-      success_url: successUrl,
-      cancel_url: `${baseUrl()}${back}`,
-    });
+        ],
+        ...(stripeTaxEnabled() ? { automatic_tax: { enabled: true } } : {}),
+        // planId е снапшот за webhook-а — комисионата се смята върху нетото
+        // там, по плана на продавача към момента на продажбата.
+        metadata: { ...metadata, plan: planId },
+        locale: 'auto',
+        success_url: successUrl,
+        cancel_url: `${baseUrl()}${back}`,
+      });
+    } catch {
+      redirect(`${back}${hl ? '&' : '?'}shopError=1`);
+    }
   }
   redirect(session.url ?? `${back}${hl ? '&' : '?'}shopError=1`);
 }
@@ -245,13 +251,15 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
     redirect(`/${uiLocale}/dashboard?error=refund`);
   }
   try {
-    if (purchase.stripeTransferId) {
-      // Separate charges & transfers (TAX.md): първо прибираме дела на
-      // продавача (reversal; повторен опит се проваля тихо), после
-      // връщаме на купувача.
-      await stripe.transfers
-        .createReversal(purchase.stripeTransferId)
-        .catch(() => undefined);
+    if (purchase.chargedOn === 'platform') {
+      // Separate charges & transfers (TAX.md): прибираме дела на продавача,
+      // АКО е преведен (при провален превод няма какво да се връща;
+      // повторен reversal се проваля тихо), после връщаме на купувача.
+      if (purchase.stripeTransferId) {
+        await stripe.transfers
+          .createReversal(purchase.stripeTransferId)
+          .catch(() => undefined);
+      }
       await stripe.refunds.create({
         payment_intent: purchase.stripePaymentIntentId,
       });

@@ -3,6 +3,7 @@ import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
 import { PLANS, totalFeeCents, type PlanId } from '@/lib/plans';
+import { payoutSeller } from '@/lib/payout';
 import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
 import { referralRewardCents } from '@/lib/referral';
 
@@ -92,65 +93,6 @@ async function revokeOneOffEntitlements(paymentIntentId: string): Promise<void> 
   }
 }
 
-// Превежда дела на продавача (нето − комисиона) при separate charges &
-// transfers — плащането е при платформата (ДДС-то остава при нас, TAX.md),
-// а продавачът получава своя дял. source_transaction връзва наличността
-// на превода към сетълмента на плащането. Идемпотентно по stripeSessionId;
-// при провал stripeTransferId остава null → покрива се ръчно от админа.
-async function payoutSeller(
-  purchaseId: string,
-  session: Stripe.Checkout.Session,
-  amountCents: number,
-): Promise<void> {
-  const stripe = getStripe();
-  if (!stripe || amountCents <= 0) return;
-  const purchase = await prisma.purchase.findUnique({
-    where: { id: purchaseId },
-    include: {
-      product: {
-        include: {
-          profile: {
-            include: { user: { select: { stripeAccountId: true } } },
-          },
-        },
-      },
-    },
-  });
-  const accountId = purchase?.product.profile.user.stripeAccountId;
-  if (!purchase || !accountId || purchase.stripeTransferId) return;
-  const pi =
-    typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : session.payment_intent?.id;
-  if (!pi) return;
-  try {
-    const intent = await stripe.paymentIntents.retrieve(pi);
-    const chargeId =
-      typeof intent.latest_charge === 'string'
-        ? intent.latest_charge
-        : (intent.latest_charge?.id ?? null);
-    if (!chargeId) return;
-    const transfer = await stripe.transfers.create(
-      {
-        amount: amountCents,
-        currency: 'eur',
-        destination: accountId,
-        source_transaction: chargeId,
-      },
-      { idempotencyKey: `transfer-${purchase.stripeSessionId}` },
-    );
-    await prisma.purchase
-      .update({
-        where: { id: purchaseId },
-        data: { stripeTransferId: transfer.id },
-      })
-      .catch(() => undefined);
-  } catch {
-    // Преводът не мина (рядко: изтрит/ограничен акаунт) — покупката стои
-    // без stripeTransferId и се разрешава ръчно; купувачът НЕ е засегнат.
-  }
-}
-
 // Доставка на купеното по имейл — от webhook-а, независимо от success_url
 // redirect-а (затворен таб не бива да значи „платил без достъп“).
 // Идемпотентно: праща само ако още не е доставено.
@@ -224,6 +166,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch {
     return NextResponse.json({ error: 'invalid signature' }, { status: 400 });
   }
+
+  // false → отговаряме 500 и Stripe ретрайва събитието (обработчиците са
+  // идемпотентни) — така транзиентно провален превод към продавача се лекува.
+  let payoutOk = true;
 
   switch (event.type) {
     // И двете събития: completed се излъчва и при delayed-notification методи
@@ -307,9 +253,11 @@ export async function POST(request: Request): Promise<NextResponse> {
             update: {},
           })
           .catch(() => null);
-        // Делът на продавача (нето − комисиона) — веднъж, при първия запис.
-        if (!existing && purchase) {
-          await payoutSeller(purchase.id, session, netCents - feeCents);
+        // Делът на продавача — при ВСЯКА доставка (не само първата):
+        // вътрешните гардове пазят от двоен превод, а извикването на всеки
+        // ретрай лекува транзиентните провали (виж payoutSeller).
+        if (purchase) {
+          payoutOk = (await payoutSeller(purchase.id)) && payoutOk;
         }
         // Промо код: увеличаваме броя ползвания веднъж (само при първи запис),
         // атомарно и само ако е под лимита (пази брояча от преразходване).
@@ -335,7 +283,10 @@ export async function POST(request: Request): Promise<NextResponse> {
         typeof charge.payment_intent === 'string'
           ? charge.payment_intent
           : charge.payment_intent?.id;
-      if (pi) {
+      // Действаме само при ПЪЛЕН refund — частичен (напр. жест от
+      // Dashboard) не бива да отнема целия достъп, да маркира покупката
+      // като върната, нито да прибира дела на продавача.
+      if (pi && charge.amount_refunded === charge.amount) {
         await prisma.purchase
           .updateMany({
             where: { stripePaymentIntentId: pi },
@@ -344,24 +295,22 @@ export async function POST(request: Request): Promise<NextResponse> {
           .catch(() => undefined);
         // Върнати пари → връща се и достъпът до курса.
         await revokeOneOffEntitlements(pi).catch(() => undefined);
-        // Separate charges & transfers: при ПЪЛЕН refund (вкл. от Stripe
-        // Dashboard) връщаме и дела на продавача (пълен reversal —
-        // идемпотентен: повторният опит върху върнат превод се проваля тихо).
-        if (charge.amount_refunded === charge.amount) {
-          const refundedPurchases = await prisma.purchase.findMany({
-            where: { stripePaymentIntentId: pi },
-            select: { id: true, stripeTransferId: true },
-          });
-          for (const p of refundedPurchases) {
-            if (!p.stripeTransferId) continue;
-            await stripe.transfers
-              .createReversal(
-                p.stripeTransferId,
-                {},
-                { idempotencyKey: `reversal-${p.id}` },
-              )
-              .catch(() => undefined);
-          }
+        // Separate charges & transfers: връщаме и дела на продавача
+        // (пълен reversal — идемпотентен: повторният опит върху върнат
+        // превод се проваля тихо).
+        const refundedPurchases = await prisma.purchase.findMany({
+          where: { stripePaymentIntentId: pi },
+          select: { id: true, stripeTransferId: true },
+        });
+        for (const p of refundedPurchases) {
+          if (!p.stripeTransferId) continue;
+          await stripe.transfers
+            .createReversal(
+              p.stripeTransferId,
+              {},
+              { idempotencyKey: `reversal-${p.id}` },
+            )
+            .catch(() => undefined);
         }
       }
       break;
@@ -457,5 +406,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       break;
   }
 
-  return NextResponse.json({ received: true });
+  return NextResponse.json(
+    { received: true },
+    { status: payoutOk ? 200 : 500 },
+  );
 }
