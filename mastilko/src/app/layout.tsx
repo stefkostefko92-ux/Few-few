@@ -76,7 +76,9 @@ const underdog = Underdog({ subsets: ["cyrillic", "latin"], display: "swap", pre
 const seymour = Seymour_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-seymour" });
 
 // Ръкописни
-const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-pacifico" });
+// Pacifico е и брандовият шрифт на надписа „Мастилко" (като в логото) — ползва
+// се в хедъра/футъра на всяка страница, затова се preload-ва.
+const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", weight: "400", variable: "--font-pacifico" });
 const caveat = Caveat({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-caveat" });
 const marck = Marck_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-marck" });
 const badscript = Bad_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-badscript" });

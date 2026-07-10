@@ -20,6 +20,14 @@ body {
   background-size: 22px 22px;
 }
 
+/* Брандовият надпис „Мастилко" — със същия ръкописен шрифт като в логото
+   (Pacifico). Ползва се за името на марката (хедър, футър). */
+.wordmark {
+  font-family: var(--font-pacifico), cursive;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
 /* Тъмна тема — топло „нощно“ мастилено, но печатните листове остават бели. */
 .dark body {
   @apply bg-[#241d19] text-paper;
