@@ -9013,9 +9013,20 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: DNR redirect action има 4 взаимно изключващи се ключа: url, extensionPath (започва с /)… (+8 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-10",
+          "event": "v10.3 — учене",
+          "detail": "Научи: CWS screenshots трябва да са 24-bit PNG без алфа (colortype 2/RGB) или JPEG, 1280x800 и… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „CWS screenshots трябва да са 24-bit PNG без алфа (colortype 2/RGB) или JPEG, 1280x800 и…\" (+1 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
