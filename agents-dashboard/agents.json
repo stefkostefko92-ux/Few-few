@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-09",
+    "updated": "2026-07-10",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -2528,9 +2528,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123… (+2 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-10",
+          "event": "v10.4 — учене",
+          "detail": "Научи: React SPA без SSR със статичен index.html, сервиран от Express catch-all за всички руто… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „React SPA без SSR със статичен index.html, сервиран от Express catch-all за всички руто…\" (+1 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
