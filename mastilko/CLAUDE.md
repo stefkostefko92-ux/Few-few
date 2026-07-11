@@ -42,7 +42,7 @@ npm run lint && npm run typecheck && npm test   # качествена порт�
   текст, че въведеното отива към Google — пази това при промени (GDPR).
 - Топлата палитра (paper/ink/tera/med/gora) е в `tailwind.config.ts`;
   темите за етикети/визитки — `src/lib/themes.ts`. Маскотът (синя мастилена
-  капка) е `public/mascot.png` + пълното лого `public/logo-full.png` (качени
+  капка) е `public/mascot.webp` + пълното лого `public/logo-full.png` (качени
   от собственика — не ги генерирай наново).
 
 ## Структура
