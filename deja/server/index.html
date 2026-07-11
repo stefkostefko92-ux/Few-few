@@ -3,12 +3,80 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Déjà — вторият мозък на браузъра ти</title>
+    <title>Déjà — вторият мозък на браузъра ти | семантично търсене в прочетеното</title>
     <meta
       name="description"
-      content="Déjà помни не къде си бил, а какво си научил. Семантично търсене в прочетеното — 100% локално, 100% лично."
+      content="Déjà помни не къде си бил, а какво си научил. Семантично търсене в прочетеното — обработката е 100% локална, данните са 100% твои."
     />
     <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="canonical" href="https://deja.carbonstealth.eu/" />
+    <meta name="theme-color" content="#0e0e14" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Déjà" />
+    <meta property="og:locale" content="bg_BG" />
+    <meta property="og:url" content="https://deja.carbonstealth.eu/" />
+    <meta property="og:title" content="Déjà — семантично търсене в прочетеното, изцяло на твоето устройство" />
+    <meta
+      property="og:description"
+      content="Chrome разширение, което помни не къде си бил, а какво си научил. Търси в историята на браузъра си на човешки език — без cloud, без телеметрия."
+    />
+    <meta property="og:image" content="https://deja.carbonstealth.eu/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Déjà намира стара статия по смисъла ѝ, а не по ключова дума." />
+
+    <!-- Twitter/X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Déjà — семантично търсене в прочетеното, изцяло на твоето устройство" />
+    <meta name="twitter:description" content="Търси в историята на браузъра си на човешки език. Локална обработка, 0% cloud." />
+    <meta name="twitter:image" content="https://deja.carbonstealth.eu/og-cover.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://deja.carbonstealth.eu/#org",
+            "name": "Carbon Stealth VCC",
+            "url": "https://carbonstealth.eu",
+            "sameAs": ["https://carbonstealth.eu"]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://deja.carbonstealth.eu/#website",
+            "url": "https://deja.carbonstealth.eu/",
+            "name": "Déjà",
+            "inLanguage": "bg",
+            "publisher": { "@id": "https://deja.carbonstealth.eu/#org" }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://deja.carbonstealth.eu/#app",
+            "name": "Déjà",
+            "url": "https://deja.carbonstealth.eu/",
+            "applicationCategory": "BrowserApplication",
+            "operatingSystem": "Chrome, Brave, Edge, Chromium",
+            "inLanguage": "bg",
+            "description": "Chrome разширение за семантично търсене в историята на браузъра. Индексира текста на прочетените страници локално и позволява търсене на човешки език. Обработката е изцяло на устройството — прочетеното не напуска браузъра.",
+            "featureList": [
+              "Семантично търсене по смисъл, не по ключова дума",
+              "Локална обработка, без cloud и телеметрия",
+              "Многоезично търсене (50+ езика)",
+              "Автоматично забравяне и списък за изключени сайтове"
+            ],
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+            "screenshot": "https://deja.carbonstealth.eu/demo.png",
+            "installUrl": "https://chrome.google.com/webstore",
+            "publisher": { "@id": "https://deja.carbonstealth.eu/#org" },
+            "isPartOf": { "@id": "https://deja.carbonstealth.eu/#website" }
+          }
+        ]
+      }
+    </script>
     <style>
       :root {
         --bg: #0e0e14;
@@ -355,7 +423,20 @@
           transition: none;
         }
       }
+
+      nav a:hover,
+      nav a:focus-visible,
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      .btn:focus-visible,
+      nav a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
     </style>
+    <noscript><style>.surface{opacity:1 !important;transform:none !important}</style></noscript>
   </head>
   <body>
     <div class="wrap">
@@ -378,14 +459,33 @@
         <p class="local">100% локално. 100% лично.</p>
         <!-- TODO: замени href с реалния Web Store линк след публикация -->
         <a class="btn" href="https://chrome.google.com/webstore">Добави в Chrome — безплатно</a>
-        <p class="note">Работи изцяло на твоето устройство. Никакви данни не напускат браузъра ти.</p>
+        <p class="note">Работи изцяло на твоето устройство. Прочетеното от теб не напуска браузъра — никога.*</p>
+        <p class="note" style="font-size: 12px; margin-top: 6px">
+          * Единственото изключение: AI моделът се тегли <b>еднократно</b> от Hugging Face (вижда
+          се само твоят IP, не прочетеното). <a href="/privacy" style="color: var(--soft)">Подробно</a>.
+        </p>
         <img
           class="demo surface"
           src="demo.png"
           alt="Déjà намира статията за домати на балкона по заявка „как се гледат чери домати в саксия“"
           width="1280"
           height="800"
+          loading="lazy"
+          decoding="async"
         />
+      </section>
+
+      <!-- Кратко определение за хора и AI (answer-first) -->
+      <section class="surface">
+        <h2>Какво е Déjà?</h2>
+        <p class="lead">
+          <b>Déjà е безплатно разширение за Chrome (и Brave, Edge, всеки Chromium браузър), което
+          превръща историята на браузъра ти в търсачка по смисъл.</b> Докато четеш, Déjà индексира
+          текста на страниците локално и после ги намира по това, което помниш — на човешки език,
+          а не по точно заглавие или URL. Целият анализ се случва на твоето устройство: никакъв
+          сървър, никаква телеметрия, никакъв cloud. Работи на 50+ езика — питаш на български,
+          дори статията да е била на английски.
+        </p>
       </section>
 
       <!-- The Problem -->
@@ -485,7 +585,10 @@
           </div>
           <div class="card">
             <h3>Интелигентни филтри</h3>
-            <p>Пароли, чатове, банкови страници и имейли никога не се индексират.</p>
+            <p>
+              Страниците за вход, поща, чат, банкиране и плащания се пропускат автоматично
+              (вграден списък по адрес). Можеш да добавиш и свои.
+            </p>
           </div>
         </div>
       </section>
@@ -513,6 +616,39 @@
         </div>
       </section>
 
+      <!-- FAQ (текстът е дословно същият като FAQPage схемата по-долу) -->
+      <section class="surface">
+        <h2>Често задавани въпроси</h2>
+        <div class="cards">
+          <div class="card">
+            <h3>Как да търся в историята си по смисъл?</h3>
+            <p>
+              Отваряш Déjà и пишеш каквото помниш с думи прости — напр. „статия за евтина
+              алтернатива на литиевите батерии“. Déjà сравнява заявката с прочетеното по значение
+              и връща най-близката страница, дори тези думи да не се срещат в нея.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Déjà изпраща ли данните ми в облак?</h3>
+            <p>
+              Не. Целият текст, индексът и търсенето живеят само в твоя браузър. Няма сървър, няма
+              телеметрия. AI моделът се тегли еднократно и после работи офлайн.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Безплатно ли е и на кои браузъри работи?</h3>
+            <p>Напълно безплатно. Работи на Chrome, Brave, Edge и всеки Chromium-базиран браузър.</p>
+          </div>
+          <div class="card">
+            <h3>На какви езици работи търсенето?</h3>
+            <p>
+              На 50+ езика. Можеш да търсиш на български статия, която си чел на английски — Déjà
+              разбира смисъла между езиците.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <!-- Final CTA -->
       <section id="cta" class="final surface">
         <h2>Спрете да търсите. Започнете да намирате.</h2>
@@ -529,10 +665,52 @@
       <footer>
         © 2026 Déjà · Личната ви информация си остава ваша. ·
         <a href="/privacy">Политика за поверителност</a><br />
+        <!-- TODO преди публикация: попълни регистриран адрес, рег. № и имейл (Дир. 2000/31 чл. 5) -->
+        Издател: <b>Carbon Stealth VCC</b> · <a href="https://carbonstealth.eu">Контакти</a><br />
         Създаден от <a href="https://carbonstealth.eu">Carbon Stealth VCC</a>
       </footer>
     </div>
 
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Как да търся в историята си по смисъл?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Отваряш Déjà и пишеш каквото помниш с думи прости — напр. „статия за евтина алтернатива на литиевите батерии“. Déjà сравнява заявката с прочетеното по значение и връща най-близката страница, дори тези думи да не се срещат в нея."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Déjà изпраща ли данните ми в облак?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Не. Целият текст, индексът и търсенето живеят само в твоя браузър. Няма сървър, няма телеметрия. AI моделът се тегли еднократно и после работи офлайн."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Безплатно ли е и на кои браузъри работи?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Напълно безплатно. Работи на Chrome, Brave, Edge и всеки Chromium-базиран браузър."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "На какви езици работи търсенето?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "На 50+ езика. Можеш да търсиш на български статия, която си чел на английски — Déjà разбира смисъла между езиците."
+            }
+          }
+        ]
+      }
+    </script>
     <script>
       // „изплуване“ при скрол — уважава prefers-reduced-motion (CSS-ът го изключва)
       const io = new IntersectionObserver(

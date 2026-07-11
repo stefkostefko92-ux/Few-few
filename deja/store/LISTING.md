@@ -1,7 +1,11 @@
 # Déjà — Chrome Web Store листинг
 
-Материали за качване в CWS Developer Dashboard. Скрийншотите са в
-`store/screenshots/` (1280×800). Пакетът: `npm run zip` → `release/deja-<версия>.zip`.
+Материали за качване в CWS Developer Dashboard. Пакетът: `npm run zip` →
+`release/deja-<версия>.zip`.
+
+**Скрийншоти:** CWS приема САМО 1280×800 или 640×400. Качи само трите валидни:
+`search-bg.png`, `options-bg.png`, `welcome-bg.png` (1280×800). `popup-bg`,
+`landing-*` са за друга употреба — НЕ ги качвай като store скрийншоти.
 
 ## Single purpose (за review-а, EN)
 

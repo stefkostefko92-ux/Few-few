@@ -18,6 +18,9 @@ const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 // --- offscreen документ (там живее моделът) ---
 
 let creating = null;
+// In-memory е безопасно: отвореният Port държи SW жив през целия embed —
+// ако SW умре, няма in-flight embed за пазене.
+let embedInFlight = 0;
 
 async function ensureOffscreen() {
   const contexts = await chrome.runtime.getContexts({
@@ -49,23 +52,29 @@ async function ensureOffscreen() {
 async function embed(texts) {
   await ensureOffscreen();
   const { modelHost } = await getSettings();
-  await chrome.storage.local.set({ lastEmbedAt: Date.now() });
-  return new Promise((resolve, reject) => {
-    const port = chrome.runtime.connect({ name: 'deja-embed' });
-    let settled = false;
-    port.onMessage.addListener((res) => {
-      settled = true;
-      port.disconnect();
-      if (res?.ok) resolve(res.vectors.map((v) => new Float32Array(v)));
-      else reject(new Error(res?.error || 'embed се провали без отговор'));
+  embedInFlight++;
+  try {
+    return await new Promise((resolve, reject) => {
+      const port = chrome.runtime.connect({ name: 'deja-embed' });
+      let settled = false;
+      port.onMessage.addListener((res) => {
+        settled = true;
+        port.disconnect();
+        if (res?.ok) resolve(res.vectors.map((v) => new Float32Array(v)));
+        else reject(new Error(res?.error || 'embed се провали без отговор'));
+      });
+      port.onDisconnect.addListener(() => {
+        if (!settled) {
+          reject(new Error(chrome.runtime.lastError?.message || 'портът към offscreen се затвори'));
+        }
+      });
+      port.postMessage({ texts, modelHost: modelHost || null });
     });
-    port.onDisconnect.addListener(() => {
-      if (!settled) {
-        reject(new Error(chrome.runtime.lastError?.message || 'портът към offscreen се затвори'));
-      }
-    });
-    port.postMessage({ texts, modelHost: modelHost || null });
-  });
+  } finally {
+    embedInFlight--;
+    // idle часовникът на GC-то тръгва СЛЕД работата, не в началото ѝ
+    chrome.storage.local.set({ lastEmbedAt: Date.now() });
+  }
 }
 
 // --- индексиране ---
@@ -146,7 +155,9 @@ function mutatePending(fn) {
 
 function addPending(page) {
   return mutatePending((pending) => {
-    pending[urlKeyOf(page.url)] = { ...page, tries: 0 };
+    // tok = самоличност на записа: drain-ът пипа записа само ако е СЪЩАТА
+    // версия — иначе междувременно пристигнала v2 на страницата се затрива
+    pending[urlKeyOf(page.url)] = { ...page, tries: 0, tok: crypto.randomUUID() };
   });
 }
 
@@ -170,6 +181,7 @@ async function drainPending() {
       }
       let keptForLater = false;
       await mutatePending((fresh) => {
+        if (fresh[key]?.tok !== item.tok) return; // дошла е по-нова версия — не я пипай
         if (!failed) {
           delete fresh[key];
           return;
@@ -177,7 +189,7 @@ async function drainPending() {
         const tries = (fresh[key]?.tries || 0) + 1;
         if (tries >= MAX_INDEX_TRIES) delete fresh[key];
         else {
-          fresh[key] = { ...item, tries };
+          fresh[key] = { ...item, tries }; // item носи същия tok
           keptForLater = true;
         }
       });
@@ -288,6 +300,7 @@ async function pruneByRetention() {
 // Offscreen документ без AUDIO_PLAYBACK reason живее вечно → моделът държи
 // ~120MB RAM. Затваряме го след бездействие; следващият embed го пресъздава.
 async function closeIdleOffscreen() {
+  if (embedInFlight > 0) return; // тече дълъг embed (напр. студено теглене на модела)
   const contexts = await chrome.runtime.getContexts({
     contextTypes: ['OFFSCREEN_DOCUMENT'],
   });
