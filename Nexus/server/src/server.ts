@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './bootEnv'; // must run before any guard reads NODE_ENV
 import path from 'path';
 import express from 'express';
 import cors from 'cors';
@@ -242,6 +243,11 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 
 // Ensure DB is initialized before listening
 getDb();
+
+// GDPR retention: prune event_log to the declared window on boot, then daily.
+import { pruneEventLog } from './lib/logger';
+pruneEventLog();
+setInterval(() => { pruneEventLog(); }, 24 * 60 * 60 * 1000).unref();
 
 import { initObservability, installProcessGuards } from './lib/observability';
 initObservability();

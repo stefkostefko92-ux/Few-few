@@ -5,13 +5,15 @@ import { useStore } from '../lib/store';
 import type { Quest } from '../lib/types';
 import QuestRun from './QuestRun';
 
-const REGION_KEY: Record<string, string> = {
-  whispering_woods: 'whisperingWoods',
-  mistmoor_hills: 'mistmoorHills',
-  crystal_caverns: 'crystalCaverns',
-  ashen_wastes: 'ashenWastes',
-  shadowfell: 'shadowfell',
-};
+// Canonical low→high region order (matches the hunting region ladder and
+// the world map). Used to sort the filter chips; unknown slugs sink to the
+// end instead of interleaving randomly.
+const REGION_ORDER = [
+  'whispering_woods', 'mistmoor_hills', 'crystal_caverns', 'ashen_wastes', 'shadowfell',
+  'emberreach', 'hammerhand_pass', 'conclave_aedric', 'saltmarsh', 'frostvale', 'black_spire',
+  'stormpeaks', 'voidshade_hollow', 'mooncradle', 'worldspine', 'eternal_throne',
+];
+const humanizeRegion = (s: string): string => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Quests(): React.ReactElement {
   const { t } = useTranslation();
@@ -21,7 +23,11 @@ export default function Quests(): React.ReactElement {
   const [region, setRegion] = useState<string>('all');
   const [active, setActive] = useState<Quest | null>(null);
 
-  const regionName = (r: string): string => (REGION_KEY[r] ? t(`quests.regions.${REGION_KEY[r]}.name`) : r);
+  // Names/lore come from the shared world.regions catalogue so every seeded
+  // region (all 16, not just the first five) is localised; a humanised slug
+  // is the last-resort fallback so a chip never shows a raw "black_spire".
+  const regionName = (r: string): string => t(`world.regions.${r}.name`, { defaultValue: humanizeRegion(r) });
+  const regionLore = (r: string): string => t(`world.regions.${r}.lore`, { defaultValue: '' });
 
   async function load() {
     try {
@@ -35,8 +41,8 @@ export default function Quests(): React.ReactElement {
 
   const regions = useMemo(
     () => Array.from(new Set(quests.map((q) => q.region))).sort((a, b) => {
-      const order = ['whispering_woods', 'mistmoor_hills', 'crystal_caverns', 'ashen_wastes', 'shadowfell'];
-      return order.indexOf(a) - order.indexOf(b);
+      const ia = REGION_ORDER.indexOf(a); const ib = REGION_ORDER.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
     }),
     [quests],
   );
@@ -63,8 +69,8 @@ export default function Quests(): React.ReactElement {
             ))}
           </div>
         </div>
-        {region !== 'all' && REGION_KEY[region] && (
-          <div className="card" style={{ marginBottom: 16, fontStyle: 'italic' }}>{t(`quests.regions.${REGION_KEY[region]}.lore`)}</div>
+        {region !== 'all' && regionLore(region) && (
+          <div className="card" style={{ marginBottom: 16, fontStyle: 'italic' }}>{regionLore(region)}</div>
         )}
         <div className="grid-cards">
           {filtered.map((q) => {

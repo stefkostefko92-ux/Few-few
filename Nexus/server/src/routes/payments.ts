@@ -99,6 +99,9 @@ const checkoutSchema = z.object({
 });
 
 router.post('/checkout', async (req, res) => {
+  // Чист 503, ако сме в production без конфигуриран Stripe — иначе долу
+  // stripe клонът щеше да гръмне в TypeError (null.checkout) → грозен 500.
+  if (refuseInProduction(res)) return;
   const parse = checkoutSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const char = getChar(req.auth!.uid);
@@ -249,11 +252,43 @@ function applyPurchase(purchaseId: number): { ok: true; granted: any } | { ok: f
     // Clear the last-rename timer so the player can immediately rename for free.
     updates.push('last_rename_at = 0');
   }
-  if (updates.length) {
-    params.push(char.id);
-    db.prepare(`UPDATE characters SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+
+  // Атомарен claim + кредит в ЕДНА транзакция. Условният UPDATE
+  // (WHERE status='pending') е гейтът: само ЕДИН викащ печели прехода
+  // pending→completed. Повторен webhook, повторен /verify, crash-ретрай
+  // или няколко инстанции виждат changes===0 и НЕ кредитират втори път.
+  // better-sqlite3 сериализира записите, а транзакцията прави флипа на
+  // статуса + кредита неделими (crash между тях е невъзможен). Валутата
+  // в разписката ползва ISO кода на поръчката (EUR), без твърд знак „$".
+  const cur = (row.currency || 'eur').toUpperCase();
+  const claimed = db.transaction((): boolean => {
+    const claim = db.prepare(
+      `UPDATE purchases SET status = 'completed', completed_at = ? WHERE id = ? AND status = 'pending'`,
+    ).run(Date.now(), purchaseId);
+    if (claim.changes !== 1) return false; // друг актьор вече е кредитирал
+
+    if (updates.length) {
+      db.prepare(`UPDATE characters SET ${updates.join(', ')} WHERE id = ?`).run(...params, char.id);
+    }
+    // Mail receipt — вътре в транзакцията, за да не изпрати разписка, ако
+    // claim-ът се провали (идемпотентност).
+    db.prepare(
+      `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
+    ).run(
+      char.id,
+      'The Royal Mint',
+      `Receipt — ${row.kind.replace(/_/g, ' ')}`,
+      `Your purchase of ${row.kind.replace(/_/g, ' ')} for ${(row.amount_cents / 100).toFixed(2)} ${cur} was completed.${effects.gems ? ` +${effects.gems} gems credited.` : ''}${effects.name_change ? ' Your rename cooldown has been cleared.' : ''}`,
+      Date.now(),
+    );
+    return true;
+  })();
+
+  if (!claimed) {
+    // Ефектите вече са приложени от друг актьор — идемпотентно връщане,
+    // без повторно кредитиране/лог/разписка.
+    return { ok: true, granted: effects };
   }
-  db.prepare(`UPDATE purchases SET status = 'completed', completed_at = ? WHERE id = ?`).run(Date.now(), purchaseId);
 
   logEvent({
     category: 'payment',
@@ -266,23 +301,13 @@ function applyPurchase(purchaseId: number): { ok: true; granted: any } | { ok: f
     meta: { kind: row.kind, amount_cents: row.amount_cents, currency: row.currency, granted: effects },
   });
 
-  // Mail receipt
-  db.prepare(
-    `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
-  ).run(
-    char.id,
-    'The Royal Mint',
-    `Receipt — ${row.kind.replace(/_/g, ' ')}`,
-    `Your purchase of ${row.kind.replace(/_/g, ' ')} for $${(row.amount_cents / 100).toFixed(2)} ${(row.currency || 'usd').toUpperCase()} was completed.${effects.gems ? ` +${effects.gems} gems credited.` : ''}${effects.name_change ? ' Your rename cooldown has been cleared.' : ''}`,
-    Date.now(),
-  );
-
   return { ok: true, granted: effects };
 }
 
 /* ---- Stripe redirect handler (success_url comes back here via the client) ---- */
 const verifySchema = z.object({ session_id: z.string().optional(), purchase_id: z.number().optional() });
 router.post('/verify', async (req, res) => {
+  if (refuseInProduction(res)) return;
   const parse = verifySchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const char = getChar(req.auth!.uid);

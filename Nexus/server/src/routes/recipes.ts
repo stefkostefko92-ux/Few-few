@@ -193,7 +193,7 @@ router.post('/brew', (req, res) => {
       const trophyItem = db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any;
       if (!trophyItem) { const e: any = new Error('Monster Trophies do not exist on this server yet.'); e.clientSafe = true; e.status = 400; throw e; }
       const have = db
-        .prepare("SELECT SUM(quantity) AS qty FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0")
+        .prepare("SELECT SUM(quantity) AS qty FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 AND vaulted_guild_id = 0")
         .get(char.id, trophyItem.id) as { qty: number } | undefined;
       const needTrophies = recipe.inputs.find((i) => i.slug === 'monster_trophy')?.quantity || 0;
       if ((have?.qty || 0) < needTrophies) { const e: any = new Error(`Need ${needTrophies} Monster Trophies (claim them from the Bounty Board).`); e.clientSafe = true; e.status = 400; throw e; }
@@ -203,7 +203,7 @@ router.post('/brew', (req, res) => {
       if (debit.changes !== 1) { const e: any = new Error(`Need ${recipe.gold_cost}g for the forge bill.`); e.clientSafe = true; e.status = 400; throw e; }
       let remaining = needTrophies;
       const stacks = db
-        .prepare('SELECT id, quantity FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 ORDER BY id ASC')
+        .prepare('SELECT id, quantity FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 AND vaulted_guild_id = 0 ORDER BY id ASC')
         .all(char.id, trophyItem.id) as { id: number; quantity: number }[];
       for (const s of stacks) {
         if (remaining <= 0) break;
@@ -251,22 +251,25 @@ router.post('/socket', (req, res) => {
     const result = db.transaction(() => {
       const gem = db
         .prepare(
-          `SELECT inv.id AS inv_id, inv.quantity, items.slug, items.name
+          `SELECT inv.id AS inv_id, inv.quantity, inv.vaulted_guild_id, items.slug, items.name
            FROM inventory inv JOIN items ON items.id = inv.item_id
            WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.gemInventoryId, char.id) as any;
       if (!gem) { const e: any = new Error('Gem not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      if (gem.vaulted_guild_id) { const e: any = new Error('Withdraw the gem from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
       const recipe = RECIPES.find((r) => r.gem_slug === gem.slug);
       if (!recipe) { const e: any = new Error('That item is not a gem.'); e.clientSafe = true; e.status = 400; throw e; }
       const weapon = db
         .prepare(
-          `SELECT inv.id AS inv_id, inv.equipped, items.id AS item_id, items.name, items.category
+          `SELECT inv.id AS inv_id, inv.equipped, inv.listed, inv.vaulted_guild_id, items.id AS item_id, items.name, items.category
            FROM inventory inv JOIN items ON items.id = inv.item_id
            WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.weaponInventoryId, char.id) as any;
       if (!weapon) { const e: any = new Error('Weapon not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      if (weapon.vaulted_guild_id) { const e: any = new Error('Withdraw the weapon from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
+      if (weapon.listed) { const e: any = new Error('Cancel the market listing first'); e.clientSafe = true; e.status = 400; throw e; }
       if (weapon.category !== 'weapon') { const e: any = new Error('Only weapons accept gems.'); e.clientSafe = true; e.status = 400; throw e; }
       const existing = db
         .prepare('SELECT enchant_count, bonuses_json FROM inventory_enchants WHERE inventory_id = ?')

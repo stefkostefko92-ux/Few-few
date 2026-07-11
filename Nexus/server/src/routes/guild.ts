@@ -15,6 +15,7 @@ import {
 } from '../game/guild';
 import { trackBattlePass } from './battlepass';
 import { logFromRequest } from '../lib/logger';
+import { checkText } from '../lib/textFilter';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -135,6 +136,21 @@ router.post('/create', (req, res) => {
   if (!parse.success) {
     res.status(400).json({ error: parse.error.flatten() });
     return;
+  }
+  // DSA чл. 28 — публични гилдийни полета: име, таг (2–5 симв. пак може да
+  // изпише обида) и мото (свободен текст).
+  for (const [field, val, mode] of [
+    ['name', parse.data.name, 'name'],
+    ['tag', parse.data.tag, 'name'],
+    ['motto', parse.data.motto, 'text'],
+  ] as const) {
+    if (!val) continue;
+    const chk = checkText(val, mode);
+    if (!chk.ok) {
+      logFromRequest(req, { category: 'moderation', action: 'guild_blocked', level: 'warn', message: `blocked guild ${field} (${chk.category})` });
+      res.status(400).json({ error: `That guild ${field} isn’t allowed. Please choose another.` });
+      return;
+    }
   }
   const char = getCharacter(req.auth!.uid);
   if (!char) {
@@ -442,7 +458,7 @@ router.post('/upgrade/track', (req, res) => {
   });
 });
 
-router.post('/upgrade/slots', (req, res) => {
+const upgradeSlots = (req: any, res: any): void => {
   // Legacy 1..5 member-slots upgrade — kept on its own track since
   // uncapped guild membership breaks balance.
   const char = getCharacter(req.auth!.uid);
@@ -498,10 +514,14 @@ router.post('/upgrade/slots', (req, res) => {
     meta: { guild_id: g.guild.id, new_level: next, slots, xp_spent: needXp, gems_spent: needGems },
   });
   res.json({ ok: true, level: next, member_slots: slots, gems_spent: needGems });
-});
+};
+router.post('/upgrade/slots', upgradeSlots);
 
-/* Back-compat: old single /upgrade endpoint becomes an alias for /upgrade/slots. */
-router.post('/upgrade', (req, res, next) => { (req.url as any) = '/upgrade/slots'; next(); });
+/* Back-compat: the old single /upgrade endpoint maps to the same handler.
+ * (Previously this rewrote req.url + called next(), but /upgrade/slots is
+ * registered earlier so next() never re-matched it — every /upgrade POST
+ * 404'd and the client's "Expand roster" button was dead.) */
+router.post('/upgrade', upgradeSlots);
 
 /* ===== Chat ===== */
 
@@ -531,6 +551,13 @@ router.post('/chat', (req, res) => {
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const g = getCharGuild(char.id);
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  // Реалновременен публичен чат → филтрирай преди публикуване (DSA чл. 28).
+  const chatCheck = checkText(parse.data.message, 'text');
+  if (!chatCheck.ok) {
+    logFromRequest(req, { category: 'moderation', action: 'chat_blocked', level: 'warn', message: `blocked guild chat (${chatCheck.category})` });
+    res.status(400).json({ error: 'Your message contains content that isn’t allowed.' });
+    return;
+  }
   const info = getDb().prepare(`INSERT INTO guild_chat (guild_id, character_id, message, created_at) VALUES (?, ?, ?, ?)`)
     .run(g.guild.id, char.id, parse.data.message, Date.now());
   res.json({ ok: true, id: info.lastInsertRowid });
@@ -853,13 +880,14 @@ router.post('/vault/deposit', (req, res) => {
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
   const inv = db
     .prepare(
-      `SELECT inv.id, inv.character_id, inv.equipped, inv.soul_bound, inv.listed,
+      `SELECT inv.id, inv.character_id, inv.equipped, inv.soul_bound, inv.listed, inv.vaulted_guild_id,
               items.category, items.name
        FROM inventory inv JOIN items ON items.id = inv.item_id
        WHERE inv.id = ? AND inv.character_id = ?`,
     )
     .get(invId, char.id) as any;
   if (!inv) { res.status(404).json({ error: 'Item not in your bag' }); return; }
+  if (inv.vaulted_guild_id) { res.status(400).json({ error: 'Already in the guild vault' }); return; }
   if (inv.equipped) { res.status(400).json({ error: 'Unequip it first' }); return; }
   if (inv.listed) { res.status(400).json({ error: 'It is listed on the market' }); return; }
   if (inv.soul_bound) { res.status(400).json({ error: 'Soul-bound items cannot be donated' }); return; }
@@ -903,12 +931,20 @@ router.post('/vault/take', (req, res) => {
   if (row.guild_id !== g.guild.id) { res.status(403).json({ error: 'Not your guild\'s vault.' }); return; }
 
   const tx = db.transaction(() => {
-    // Transfer ownership to the taker and clear the vault flag.
-    db.prepare('UPDATE inventory SET character_id = ?, vaulted_guild_id = 0, equipped = 0, slot = \'\' WHERE id = ?')
-      .run(char.id, row.inventory_id);
+    // CAS on vaulted_guild_id so exactly one taker wins even if two vault
+    // rows ever pointed at the same item; clear `listed` so a taken item
+    // can never stay stuck in a market-listed state.
+    const moved = db.prepare('UPDATE inventory SET character_id = ?, vaulted_guild_id = 0, listed = 0, equipped = 0, slot = \'\' WHERE id = ? AND vaulted_guild_id = ?')
+      .run(char.id, row.inventory_id, row.guild_id);
+    if (moved.changes !== 1) { const e: any = new Error('Item already taken'); e.clientSafe = true; e.status = 409; throw e; }
     db.prepare('DELETE FROM guild_vault WHERE id = ?').run(row.id);
   });
-  tx();
+  try {
+    tx();
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
+  }
   res.json({ ok: true, item_name: row.item_name });
 });
 

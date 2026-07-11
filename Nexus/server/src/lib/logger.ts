@@ -17,7 +17,7 @@ import { getDb } from '../db';
 export type LogCategory =
   | 'auth' | 'character' | 'combat' | 'inventory' | 'market' | 'guild'
   | 'payment' | 'admin' | 'daily' | 'wheel' | 'achievement' | 'camp'
-  | 'system' | 'security' | 'dsa';
+  | 'system' | 'security' | 'dsa' | 'moderation';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -239,6 +239,22 @@ export function logEvent(event: LogEvent): number {
     if (inserted > 0) getDb().prepare('UPDATE event_log SET webhook_sent = 1 WHERE id = ?').run(inserted);
   }
   return inserted;
+}
+
+/**
+ * Retention: delete event_log rows older than `maxAgeMs` (default 90 days),
+ * matching the window stated in the privacy policy. Without this the table
+ * kept IP + hashed identifiers indefinitely, contradicting the declared
+ * retention. Called on boot and daily from server.ts.
+ */
+export function pruneEventLog(maxAgeMs: number = 90 * 24 * 60 * 60 * 1000): number {
+  try {
+    const cutoff = Date.now() - maxAgeMs;
+    const r = getDb().prepare('DELETE FROM event_log WHERE ts < ?').run(cutoff);
+    return r.changes as number;
+  } catch {
+    return 0;
+  }
 }
 
 /* Convenience helper that pulls IP/country/route from a Request. */

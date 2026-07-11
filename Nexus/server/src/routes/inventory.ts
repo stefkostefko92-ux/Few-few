@@ -58,13 +58,17 @@ router.post('/equip', (req, res) => {
   }
   const row = db
     .prepare(
-      `SELECT inv.id as inv_id, inv.equipped, inv.slot, inv.listed, items.* FROM inventory inv
+      `SELECT inv.id as inv_id, inv.equipped, inv.slot, inv.listed, inv.vaulted_guild_id, items.* FROM inventory inv
        JOIN items ON inv.item_id = items.id
        WHERE inv.id = ? AND inv.character_id = ?`,
     )
     .get(parse.data.inventoryId, char.id) as any;
   if (!row) {
     res.status(404).json({ error: 'Item not found' });
+    return;
+  }
+  if (row.vaulted_guild_id) {
+    res.status(400).json({ error: 'Withdraw the item from the guild vault first.' });
     return;
   }
   // A market-listed item is committed to its listing; equipping it would
@@ -219,15 +223,16 @@ router.post('/sell', (req, res) => {
     const result = db.transaction(() => {
       const row = db
         .prepare(
-          `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.listed, items.* FROM inventory inv
+          `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.listed, inv.vaulted_guild_id, items.* FROM inventory inv
            JOIN items ON inv.item_id = items.id WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.inventoryId, ch.id) as any;
       if (!row) { const e: any = new Error('Item not found'); e.clientSafe = true; e.status = 404; throw e; }
+      if (row.vaulted_guild_id) { const e: any = new Error('Withdraw the item from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
       if (row.equipped) { const e: any = new Error('Unequip before selling'); e.clientSafe = true; e.status = 400; throw e; }
       if (row.listed) { const e: any = new Error('Cancel the market listing first'); e.clientSafe = true; e.status = 400; throw e; }
       const dec = db.prepare(
-        'UPDATE inventory SET quantity = quantity - 1 WHERE id = ? AND character_id = ? AND quantity >= 1 AND equipped = 0 AND listed = 0',
+        'UPDATE inventory SET quantity = quantity - 1 WHERE id = ? AND character_id = ? AND quantity >= 1 AND equipped = 0 AND listed = 0 AND vaulted_guild_id = 0',
       ).run(row.inv_id, ch.id);
       if (dec.changes !== 1) { const e: any = new Error('Item not found'); e.clientSafe = true; e.status = 404; throw e; }
       db.prepare('DELETE FROM inventory WHERE id = ? AND quantity <= 0').run(row.inv_id);

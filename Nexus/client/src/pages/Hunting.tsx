@@ -31,13 +31,17 @@ export default function Hunting(): React.ReactElement {
   const autoEntered = useRef(false);
 
   async function load() {
-    const r = await api.get('/hunting/regions');
-    setRegions(r.regions);
-    const want = searchParams.get('region');
-    if (want && !autoEntered.current) {
-      autoEntered.current = true;
-      const target = (r.regions as Region[]).find((x) => x.region === want);
-      if (target?.unlocked) hunt(want);
+    try {
+      const r = await api.get('/hunting/regions');
+      setRegions(r.regions);
+      const want = searchParams.get('region');
+      if (want && !autoEntered.current) {
+        autoEntered.current = true;
+        const target = (r.regions as Region[]).find((x) => x.region === want);
+        if (target?.unlocked) hunt(want);
+      }
+    } catch (e: any) {
+      toast(e.message, 'error');
     }
   }
   useEffect(() => { load(); }, []);

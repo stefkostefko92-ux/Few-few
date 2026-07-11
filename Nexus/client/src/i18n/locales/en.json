@@ -134,7 +134,7 @@
     "step2Body": "Items dropped during combat land in your bag. Click any equipment piece to equip it — hover to compare stats against what you wear now.",
     "step2Cta": "Open inventory",
     "step3Title": "Explore the Realm",
-    "step3Body": "Fifteen regions await, from Whispering Woods to the Eternal Throne at Lv 350. Each region drops gear from its tier.",
+    "step3Body": "Sixteen regions await, from Whispering Woods to the Eternal Throne at Lv 350. Each region drops gear from its tier.",
     "step3Cta": "View map",
     "step4Title": "Sharpen at the Forge",
     "step4Body": "Once you have a few pieces, pour gold into the Forge to enchant them — better odds at lower tiers.",
@@ -291,7 +291,7 @@
     "playFree": "Play Free",
     "heroEyebrow": "A Browser MMORPG · Free to Play · No Download",
     "heroTagline": "A realm with a long memory.",
-    "heroSubtitle": "Four classes. Fifteen regions to push through. Ten tiers of gear, an ELO arena, an auction house that runs in real time, and a Tower of Trials whose leaderboard updates while you sleep. Free, browser-based, no installer. Sign up takes thirty seconds.",
+    "heroSubtitle": "Four classes. Sixteen regions to push through. Ten tiers of gear, an ELO arena, an auction house that runs in real time, and a Tower of Trials whose leaderboard updates while you sleep. Free, browser-based, no installer. Sign up takes thirty seconds.",
     "heroCtaPlay": "Take Up The Sword",
     "heroCtaHow": "See How It Plays",
     "footageBy": "Footage by {{author}}",
@@ -319,7 +319,7 @@
     "featHuntingTitle": "Hunting that fills the Bestiary",
     "featHuntingBody": "Pick a region, pick a window. Each kill rolls a 22% drop and counts toward bounty, battle pass, and weekly trial in one go.",
     "featArenaTitle": "ELO arena, real ladder",
-    "featArenaBody": "Matchmade duels against fifteen NPC trainers and every player at your rating band. K=32, so a streak shows up fast.",
+    "featArenaBody": "Matchmade duels against sixteen NPC trainers and every player at your rating band. K=32, so a streak shows up fast.",
     "featDailyTitle": "Daily tribute that rewards habit",
     "featDailyBody": "Seven-day streak cycle with gem milestones at day fourteen and thirty. Miss a day and the streak resets; nothing is sold back to you.",
     "featWheelTitle": "One spin a day, no shop",
@@ -450,13 +450,13 @@
     "trainer": "Trainer",
     "elo": "{{n}} ELO",
     "winsLosses": "{{w}}W / {{l}}L",
-    "challenge": "Challenge (5 EN)",
+    "challenge": "Challenge",
     "noOpponents": "No worthy opponents nearby. Grow stronger.",
     "vsTitle": "{{hero}}  VS  {{foe}}"
   },
   "hunting": {
     "title": "Hunting Grounds",
-    "subtitle": "Repeatable encounters — random foe. Each hunt sets a random 1-20 min cooldown (reduced by mounts).",
+    "subtitle": "Repeatable encounters — random foe. Each hunt sets a random 3-6 min cooldown (reduced by mounts).",
     "wildEncounter": "Wild Encounter — {{name}}",
     "victoryText": "Foe down. The hunt continues.",
     "defeatText": "You stagger back, bruised.",
@@ -505,29 +505,7 @@
     "requiresLv": "Requires Lv {{n}}",
     "tooTired": "Too Tired",
     "embark": "Embark",
-    "empty": "No quests here right now.",
-    "regions": {
-      "whisperingWoods": {
-        "name": "Whispering Woods",
-        "lore": "Moss-clad oaks, scampering creatures, the road from Oaken Hollow."
-      },
-      "mistmoorHills": {
-        "name": "Mistmoor Hills",
-        "lore": "Heather and fog. Orcs ride the high passes."
-      },
-      "crystalCaverns": {
-        "name": "Crystal Caverns",
-        "lore": "A labyrinth of glittering ore and ancient stone."
-      },
-      "ashenWastes": {
-        "name": "Ashen Wastes",
-        "lore": "Burned plains where revenants drift, and drakes wheel above."
-      },
-      "shadowfell": {
-        "name": "The Shadowfell",
-        "lore": "The Shadow Lord's domain. The realm's final test."
-      }
-    }
+    "empty": "No quests here right now."
   },
   "questRun": {
     "roadUnwinds": "The road unwinds before you…",
@@ -1455,69 +1433,73 @@
   },
   "world": {
     "title": "Map of Nexus",
-    "subtitle": "From Oaken Hollow to the Eternal Throne — fifteen realms charted on a relic of the last cartographer.",
+    "subtitle": "From Oaken Hollow to the Eternal Throne — sixteen realms charted on a relic of the last cartographer.",
     "enter": "Enter",
     "requiresLv": "Requires Lv {{level}}",
     "regions": {
       "whispering_woods": {
         "name": "Whispering Woods",
-        "lore": "A green wood near Oaken Hollow."
+        "lore": "A green wood near Oaken Hollow — every hero’s first road."
       },
       "mistmoor_hills": {
         "name": "Mistmoor Hills",
-        "lore": "Fog-laced highlands stalked by orcs."
+        "lore": "Fog-laced highlands where orcs ride the high passes."
       },
       "crystal_caverns": {
         "name": "Crystal Caverns",
-        "lore": "Glittering tunnels beneath the mountains."
+        "lore": "A labyrinth of glittering ore beneath the mountains."
       },
       "ashen_wastes": {
         "name": "Ashen Wastes",
-        "lore": "Burned plains roamed by drakes."
+        "lore": "Burned plains where revenants drift and drakes wheel above."
       },
       "shadowfell": {
         "name": "The Shadowfell",
-        "lore": "The Shadow Lord's domain. Bring everything."
+        "lore": "The Shadow Lord’s domain. Bring everything."
       },
       "emberreach": {
         "name": "Emberreach",
         "lore": "Smouldering canyons where dragonkind nest."
       },
-      "frostspire": {
-        "name": "Frostspire",
-        "lore": "Glacial peaks under a sky of perpetual aurora."
+      "hammerhand_pass": {
+        "name": "Hammerhand Pass",
+        "lore": "A dwarf-cut mountain road guarding the ore caravans."
       },
-      "drowned_coast": {
-        "name": "Drowned Coast",
-        "lore": "Sunken cities along a haunted shoreline."
+      "conclave_aedric": {
+        "name": "Conclave of Aedric",
+        "lore": "A cloistered city of mages and their unquiet apprentices."
+      },
+      "saltmarsh": {
+        "name": "Saltmarsh",
+        "lore": "Sunken cities along a haunted, brackish shoreline."
+      },
+      "frostvale": {
+        "name": "Frostvale",
+        "lore": "Glacial valleys under a sky of perpetual aurora."
+      },
+      "black_spire": {
+        "name": "Black Spire",
+        "lore": "A volcanic fortress-tower ruled by a fallen king."
       },
       "stormpeaks": {
-        "name": "Stormpeaks",
+        "name": "The Stormpeaks",
         "lore": "Lightning-wracked summits ruled by storm giants."
       },
-      "blighted_expanse": {
-        "name": "Blighted Expanse",
-        "lore": "A withered moor where the dead walk."
+      "voidshade_hollow": {
+        "name": "Voidshade Hollow",
+        "lore": "A bottomless chasm that devours its own gravity."
       },
-      "obsidian_dominion": {
-        "name": "Obsidian Dominion",
-        "lore": "A volcanic fortress-state ruled by a fallen king."
-      },
-      "astral_rift": {
-        "name": "Astral Rift",
+      "mooncradle": {
+        "name": "Mooncradle",
         "lore": "A tear in reality where stars bleed into the sky."
       },
-      "voidmaw": {
-        "name": "Voidmaw",
-        "lore": "A bottomless chasm devouring its own gravity."
-      },
-      "dragon_roost": {
-        "name": "Dragon Roost",
-        "lore": "The wyrm-king's mountain throne."
+      "worldspine": {
+        "name": "The Worldspine",
+        "lore": "The wyrm-king’s mountain throne, spine of the known world."
       },
       "eternal_throne": {
-        "name": "Eternal Throne",
-        "lore": "Where the Last Sovereign waits."
+        "name": "The Eternal Throne",
+        "lore": "Where the Last Sovereign waits at the end of all roads."
       }
     }
   },

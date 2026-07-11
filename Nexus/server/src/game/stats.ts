@@ -196,7 +196,15 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   // (int_*3 + wis*2) for spell sustain — damage parity is fair. All
   // four classes now share the same 0.6 dmg coefficient on their
   // primary stat.
-  const classDmg = ch.class === 'mage' ? int_ * 0.6 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
+  // Balance: each class scales its primary damage off its identity stat.
+  // Rogue used to fall through to `str * 0.6`, but a rogue invests dex
+  // (base str 5 / dex 8) for dodge/crit/speed — so it was damage-starved
+  // unless it abandoned its own profile. Rogue now scales on dex like the
+  // ranger; warrior keeps str, mage keeps int.
+  const classDmg =
+    ch.class === 'mage' ? int_ * 0.6 :
+    (ch.class === 'ranger' || ch.class === 'rogue') ? dex * 0.6 :
+    str * 0.6;
   const skill = classWeaponSkill(ch.class, weaponSub, ch);
 
   // Mages use mag_dmg, every other class uses phys_dmg. Defense in the

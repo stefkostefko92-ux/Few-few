@@ -172,6 +172,7 @@ export function applySchema(db: Database.Database): void {
       created_at   INTEGER NOT NULL,
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
+    CREATE INDEX IF NOT EXISTS idx_mail_char ON mail(character_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS achievements (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -217,6 +218,18 @@ export function applySchema(db: Database.Database): void {
       xp_pile         INTEGER NOT NULL DEFAULT 0,
       items_json      TEXT NOT NULL DEFAULT '[]',
       started_at      INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    -- Per-dungeon cooldown lock. Each dungeon defines its own cooldown_hours
+    -- (24/8/12/16/20) — the intended "daily-ish" gate. Previously that field
+    -- was dead and dungeons re-ran on the shared 7-10min action cooldown,
+    -- which turned the endgame dungeon into an XP/gold printing press.
+    CREATE TABLE IF NOT EXISTS dungeon_cooldowns (
+      character_id      INTEGER NOT NULL,
+      slug              TEXT NOT NULL,
+      next_available_at INTEGER NOT NULL,
+      PRIMARY KEY (character_id, slug),
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
 
