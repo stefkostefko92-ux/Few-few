@@ -42,8 +42,11 @@ HTTP заглавия — това е технически неизбежно п
 
 ## Издател и контакт
 
-**Издател:** Carbon Stealth VCC <!-- TODO: добави регистриран адрес преди публикация -->
-**Контакт по поверителност:** <!-- TODO: добави имейл преди публикация --> · https://carbonstealth.eu
+**Издател:** Carbon Stealth VCC, ЕИК 208725180, ул. „Самуил“ 3, 2670 Бобов дол, България
+**Контакт по поверителност:** privacy@carbonstealth.eu · **Общи въпроси:** info@carbonstealth.eu · https://carbonstealth.eu
 
 Не е назначено длъжностно лице по защита на данните (DPO) — не обработваме
 лични данни на наши сървъри.
+
+English version: https://deja.carbonstealth.eu/privacy (каноничната за Chrome
+Web Store; тази българска версия е на /privacy-bg).

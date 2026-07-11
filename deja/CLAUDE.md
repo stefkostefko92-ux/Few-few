@@ -86,7 +86,8 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 - WebGPU (fp16) с тих fallback към WASM (q8) — offscreen документите често
   нямат GPU достъп, WASM е гарантираният път.
 - i18n: `_locales/{bg,en,it}` + `lib/i18n.js` (data-i18n атрибути). BG е
-  източникът на истината. `default_locale: "bg"`.
+  източникът на истината за низовете, но `default_locale: "en"` — пазарът е
+  международен, EN е основният CWS листинг (BG/IT са допълнителни).
 - CWS материали: `store/LISTING.md` (single purpose, обосновка на права,
   описания) + `store/screenshots/` (генерирани с scratchpad Playwright скрипт).
 

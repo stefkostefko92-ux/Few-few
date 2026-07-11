@@ -3,8 +3,8 @@
   "name": "__MSG_extName__",
   "short_name": "Déjà",
   "description": "__MSG_extDesc__",
-  "version": "0.3.0",
-  "default_locale": "bg",
+  "version": "0.4.0",
+  "default_locale": "en",
   "minimum_chrome_version": "116",
   "permissions": ["storage", "offscreen", "unlimitedStorage", "alarms"],
   "background": {
