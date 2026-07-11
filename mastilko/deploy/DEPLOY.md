@@ -63,13 +63,16 @@ systemctl restart mastilko
 
 - **Sitemap:** `https://mastilko-bg.com/sitemap.xml` (автоматичен, всички
   страници). **robots.txt** сочи към него.
-- **Bing (IndexNow):** ключът се сервира на
+- **Bing (IndexNow) — напълно автоматично, без акаунт:** ключът се сервира на
   `https://mastilko-bg.com/a7165a3a38349feabee2f8ce359f4002.txt`
-  (`public/`-файл). autodeploy пингва IndexNow при всеки успешен деплой; можеш и
-  ръчно: `sudo -u mastilko node /opt/mastilko/scripts/indexnow.mjs`.
-  Еднократно регистрирай сайта в **Bing Webmaster Tools**
-  (bing.com/webmasters) и подай sitemap-а — IndexNow ускорява само
-  преоткриването.
+  (`public/`-файл) и доказва собствеността — **не е нужен Bing Webmaster
+  акаунт**. autodeploy пингва IndexNow при **всеки успешен деплой**, като
+  URL-ите се четат от **живия sitemap** (единствен източник — нова страница се
+  подава автоматично, без ръчна синхронизация). Ръчно при нужда:
+  `sudo -u mastilko node /opt/mastilko/scripts/indexnow.mjs`.
+  Регистрацията в **Bing Webmaster Tools** (bing.com/webmasters) е
+  **по избор** — само за табло/статистики; индексирането не я изисква, а
+  sitemap-ът се и авто-открива през robots.txt.
 - **Google:** добави имота в **Google Search Console**
   (search.google.com/search-console), потвърди собствеността (DNS TXT или
   HTML), подай sitemap-а. Google не ползва IndexNow — разчита на sitemap +
