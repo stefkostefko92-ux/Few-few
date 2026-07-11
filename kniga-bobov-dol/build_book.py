@@ -21,7 +21,7 @@ from reportlab.platypus import (
 
 from content_a import PREDGOVOR, PART1, PART2, PART3
 from content_b import PART4, PART5, PART6
-from content_c import PART7, PART8, EPILOG, ZA_AVTORA, IZTOCHNICI
+from content_c import PART7, PART8, EPILOG, CHISLA, ZA_AVTORA, IZTOCHNICI
 
 W, H = A5
 
@@ -675,6 +675,36 @@ class Illustration(Flowable):
             c.line(cx - 14 if left else cx, yy + 1, cx if left else cx + 14, yy + 1)
 
 
+# ── Фотография с рамка ─────────────────────────────────────────────────────
+from reportlab.lib.utils import ImageReader
+
+PHOTO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'photos')
+
+
+class Photo(Flowable):
+    def __init__(self, filename, width=300):
+        super().__init__()
+        self.path = os.path.join(PHOTO_DIR, filename)
+        img = ImageReader(self.path)
+        iw, ih = img.getSize()
+        self.width = width
+        self.height = width * ih / float(iw)
+        self._img = img
+
+    def wrap(self, aw, ah):
+        self._aw = aw
+        return aw, self.height
+
+    def draw(self):
+        c = self.canv
+        x0 = (self._aw - self.width) / 2.0
+        c.drawImage(self._img, x0, 0, self.width, self.height,
+                    preserveAspectRatio=True)
+        c.setStrokeColor(BROWN)
+        c.setLineWidth(0.9)
+        c.rect(x0, 0, self.width, self.height, fill=0, stroke=1)
+
+
 # ── Страници: рамка, колонтитул, номер ────────────────────────────────────
 BOOK_HDR = 'БОБОВ ДОЛ · ХРОНИКА НА ЕДИН ГРАД'
 AUTH_HDR = 'СТЕФАН Л. КОСТАДИНОВ'
@@ -957,6 +987,12 @@ def blocks_to_flow(blocks, story):
                 group.append(para(blocks[i + 1][1], S['caption']))
                 skip_next = True
             story.append(KeepTogether(group))
+        elif kind == 'photo':
+            group = [Spacer(1, 6), Photo(b[1], 295)]
+            if i + 1 < len(blocks) and blocks[i + 1][0] == 'caption':
+                group.append(para(blocks[i + 1][1], S['caption']))
+                skip_next = True
+            story.append(KeepTogether(group))
         elif kind == 'caption':
             story.append(para(b[1], S['caption']))
         elif kind == 'bigword':
@@ -1020,7 +1056,8 @@ def toc_flow(story):
         for it in items:
             story.append(para(it, S['toc2']))
     story.append(Spacer(1, 6))
-    for it in ('Епилог', 'За автора', 'Източници и признателност'):
+    for it in ('Епилог', 'Бобов дол в числа', 'За автора',
+               'Източници и признателност'):
         story.append(para(it, S['toc2']))
     return story
 
@@ -1140,7 +1177,8 @@ def build():
     story.append(NoHeader())
     story.append(Spacer(1, 2))
     story.append(Illustration('timeline', 300, 435))
-    # за автора, източници
+    # приложение „Бобов дол в числа“, за автора, източници
+    blocks_to_flow(CHISLA, story)
     blocks_to_flow(ZA_AVTORA, story)
     blocks_to_flow(IZTOCHNICI, story)
     # задна корица
