@@ -8407,6 +8407,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-11",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Nexus combat конвейер: worktree копие има РАЗЛИЧНА номерация от споделения checkout (ра…\" (+1)"
+        },
+        {
           "date": "2026-07-09",
           "type": "learning",
           "summary": "Научи: „iOS Safari има само PARTIAL support за background-attachment:fixed през ВСИЧКИ версии 1…\" (+3 още)"
