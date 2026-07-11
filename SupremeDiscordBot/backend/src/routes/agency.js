@@ -58,26 +58,36 @@ router.post("/checkout", requireAuth, loadUser, requireStripe, async (req, res, 
   if (!priceId) return res.status(503).json({ error: `The ${plan}/${interval} plan is not configured on this server.` });
 
   try {
-    // One active agency per user. Direct plan changes go through the portal.
-    const active = await prisma.agency.findFirst({ where: { ownerUserId: req.user.id, active: true } });
-    if (active) return res.status(400).json({ error: "You already have an active agency plan. Manage it from the billing portal." });
+    // Active-check + pending reuse/create under an advisory lock keyed on the
+    // owner: two near-simultaneous checkouts would otherwise both pass the
+    // "no active agency" test and create two pending rows → two Checkout
+    // sessions → potentially two live subscriptions (double billing).
+    const seatLimit = PLANS[plan].maxServers;
+    const agencyOrNull = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"agency-owner:" + req.user.id}))`;
+      const active = await tx.agency.findFirst({ where: { ownerUserId: req.user.id, active: true } });
+      if (active) return null; // one active agency per user; plan changes → portal
+      // Reuse a pending agency row for this user if one exists, else create.
+      const pending = await tx.agency.findFirst({ where: { ownerUserId: req.user.id, active: false } });
+      if (pending) {
+        return tx.agency.update({ where: { id: pending.id }, data: { plan, seatLimit, billingInterval: interval } });
+      }
+      return tx.agency.create({ data: { ownerUserId: req.user.id, plan, seatLimit, billingInterval: interval, planSource: "stripe" } });
+    });
+    if (!agencyOrNull) {
+      return res.status(400).json({ error: "You already have an active agency plan. Manage it from the billing portal." });
+    }
+    let agency = agencyOrNull;
 
-    // F7 — withdrawal-rights consent evidence (Art. 16(m) Directive 2011/83/EU).
+    // F7 — withdrawal-rights consent evidence. Digital SERVICE → the right of
+    // withdrawal is lost only on full performance (Art. 16(a) Directive
+    // 2011/83/EU as amended by (EU) 2019/2161); matches the checkbox wording.
     await prisma.auditLog.create({
       data: {
         actorId: req.user.id, action: "WITHDRAWAL_CONSENT", targetId: req.user.id,
-        metadata: { scope: "agency", plan, legalBasis: "Art. 16(m) Directive 2011/83/EU", consentedAt: new Date().toISOString() },
+        metadata: { scope: "agency", plan, legalBasis: "Art. 16(a) Directive 2011/83/EU", consentedAt: new Date().toISOString() },
       },
     }).catch(() => {});
-
-    // Reuse a pending agency row for this user/plan if one exists, else create.
-    let agency = await prisma.agency.findFirst({ where: { ownerUserId: req.user.id, active: false } });
-    const seatLimit = PLANS[plan].maxServers;
-    if (agency) {
-      agency = await prisma.agency.update({ where: { id: agency.id }, data: { plan, seatLimit, billingInterval: interval } });
-    } else {
-      agency = await prisma.agency.create({ data: { ownerUserId: req.user.id, plan, seatLimit, billingInterval: interval, planSource: "stripe" } });
-    }
 
     let customerId = agency.stripeCustomerId;
     if (!customerId) {
@@ -99,6 +109,9 @@ router.post("/checkout", requireAuth, loadUser, requireStripe, async (req, res, 
         automatic_tax: { enabled: true },
         tax_id_collection: { enabled: true },
         customer_update: { address: "auto", name: "auto" },
+        // ЕС доказателство за местоположение (2 непротиворечиви елемента за
+        // дигитални услуги) + пълен billing адрес на фактурата (чл. 114 ЗДДС).
+        billing_address_collection: "required",
         success_url: `${process.env.FRONTEND_URL}/dashboard?agency=active`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard?agency=canceled`,
         metadata: { agencyId: agency.id, plan, interval, kind: "agency" },
@@ -118,6 +131,10 @@ router.post("/portal", requireAuth, loadUser, requireStripe, async (req, res, ne
     const portal = await stripe.billingPortal.sessions.create({
       customer: agency.stripeCustomerId,
       return_url: `${process.env.FRONTEND_URL}/dashboard`,
+      // Включва subscription_update (agency5↔agency10) — виж stripe-setup.sh.
+      ...(process.env.STRIPE_PORTAL_CONFIGURATION_ID && {
+        configuration: process.env.STRIPE_PORTAL_CONFIGURATION_ID,
+      }),
     });
     res.json({ url: portal.url });
   } catch (err) { next(err); }

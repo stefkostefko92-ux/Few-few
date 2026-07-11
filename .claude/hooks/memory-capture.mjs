@@ -215,7 +215,10 @@ function gitCommitLocal(agentId) {
       { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
     try { execSync("git diff --cached --quiet", { cwd: PROJECT_DIR, stdio: "ignore" }); return; } // нищо staged → нищо за commit
     catch { /* има staged промени → commit */ }
-    execSync(`git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
+    // Committer = Claude <noreply@anthropic.com> — иначе stop-hook-ът за
+    // Verified commits флагва всеки auto-commit (носи и SubagentStop контекст:
+    // авторството личи от commit съобщението, не от имейла).
+    execSync(`git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
       { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
   } catch { /* никога не блокирай агента заради git */ }
 }

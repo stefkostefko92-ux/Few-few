@@ -74,6 +74,53 @@ A5_M=${AGENCY5%|*};        A5_Y=${AGENCY5#*|}
 A10_M=${AGENCY10%|*};      A10_Y=${AGENCY10#*|}
 echo "  ✓ Тарифите са готови (цените са с включен ДДС)."
 
+# ─── 1б. Customer Portal конфигурация (plan switch Premium↔White-label) ──────
+# Без изрична конфигурация порталът по подразбиране позволява само отказ/карта —
+# смяна на план е ИЗКЛЮЧЕНА, т.е. съществуващ абонат няма път за upgrade.
+# Създаваме конфигурация със subscription_update за 4-те продукта и я подаваме
+# от backend-а (STRIPE_PORTAL_CONFIGURATION_ID) при създаване на portal сесия.
+PORTAL_MARKER="supreme_v3_portal"
+# id-то е в НАЧАЛОТО на всеки config обект, metadata.marker — в КРАЯ (много
+# редове по-долу), затова grep -B2 не ги сдвоява. Сплескваме JSON-а и взимаме
+# ПОСЛЕДНОТО bpc_ id преди първата поява на marker-а — това е обектът, който
+# го съдържа (всеки config носи точно едно bpc_ id, в началото си).
+PORTAL_ID=$(curl -sS "${AUTH[@]}" "$API/billing_portal/configurations?limit=100" \
+  | tr -d '\n' \
+  | grep -o ".*\"marker\": *\"$PORTAL_MARKER\"" \
+  | grep -o '"id": *"bpc_[^"]*"' | tail -1 | sed 's/.*"\(bpc_[^"]*\)"/\1/')
+if [ -z "$PORTAL_ID" ]; then
+  echo "→ Създавам Customer Portal конфигурация (plan switch)..."
+  PREM_PROD=$(product_of_price "$PREM_M"); WL_PROD=$(product_of_price "$WL_M")
+  A5_PROD=$(product_of_price "$A5_M");     A10_PROD=$(product_of_price "$A10_M")
+  PORTAL_ID=$(curl -sS "${AUTH[@]}" "$API/billing_portal/configurations" \
+    -d "business_profile[headline]=Supreme Bot — manage your subscription" \
+    -d "features[invoice_history][enabled]=true" \
+    -d "features[payment_method_update][enabled]=true" \
+    -d "features[subscription_cancel][enabled]=true" \
+    -d "features[subscription_cancel][mode]=at_period_end" \
+    -d "features[subscription_update][enabled]=true" \
+    -d "features[subscription_update][default_allowed_updates][]=price" \
+    -d "features[subscription_update][proration_behavior]=create_prorations" \
+    -d "features[subscription_update][products][0][product]=$PREM_PROD" \
+    -d "features[subscription_update][products][0][prices][]=$PREM_M" \
+    -d "features[subscription_update][products][0][prices][]=$PREM_Y" \
+    -d "features[subscription_update][products][1][product]=$WL_PROD" \
+    -d "features[subscription_update][products][1][prices][]=$WL_M" \
+    -d "features[subscription_update][products][1][prices][]=$WL_Y" \
+    -d "features[subscription_update][products][2][product]=$A5_PROD" \
+    -d "features[subscription_update][products][2][prices][]=$A5_M" \
+    -d "features[subscription_update][products][2][prices][]=$A5_Y" \
+    -d "features[subscription_update][products][3][product]=$A10_PROD" \
+    -d "features[subscription_update][products][3][prices][]=$A10_M" \
+    -d "features[subscription_update][products][3][prices][]=$A10_Y" \
+    -d "metadata[marker]=$PORTAL_MARKER" \
+    | jq_id bpc)
+  [ -n "$PORTAL_ID" ] && echo "  ✓ Portal конфигурация: $PORTAL_ID" \
+    || echo "  ⚠ Portal конфигурацията не се създаде — smяната на план ще иска ръчна настройка (Dashboard → Settings → Billing → Customer portal)."
+else
+  echo "  ✓ Portal конфигурацията вече съществува: $PORTAL_ID"
+fi
+
 # ─── 2. Webhook endpoint (7-те събития, които backend-ът обработва) ──────────
 WH_URL="${DOMAIN}/api/stripe/webhook"
 EXISTING_WH=$(curl -sS "${AUTH[@]}" "$API/webhook_endpoints?limit=100" | grep -c "\"url\": *\"$WH_URL\"" || true)
@@ -120,6 +167,20 @@ echo "  STRIPE_PRICE_AGENCY5_MONTH=${A5_M}"
 echo "  STRIPE_PRICE_AGENCY5_YEAR=${A5_Y}"
 echo "  STRIPE_PRICE_AGENCY10_MONTH=${A10_M}"
 echo "  STRIPE_PRICE_AGENCY10_YEAR=${A10_Y}"
+echo "  STRIPE_PORTAL_CONFIGURATION_ID=${PORTAL_ID:-<виж Dashboard>}"
 echo ""
-echo "Ръчно остава само: Dashboard → Settings → Tax → потвърди origin address"
-echo "(ul. Samuil 3, 2670 Bobov dol, BG), и при >€10k/год. трансгранични B2C — OSS."
+echo "══ РЪЧНИ стъпки (Dashboard/НАП — API не ги покрива) ══"
+echo "  1. Dashboard → Settings → Business → Public details:"
+echo "     statement descriptor = SUPREMEBOT (≤22 знака — иначе неразпознат"
+echo "     charge на извлечението → chargeback-ове)"
+echo "  2. Dashboard → Settings → Invoicing → Invoice template:"
+echo "     footer: Carbon Stealth VCC · ул. Самуил 3, 2670 Бобов дол · ЕИК"
+echo "     208725180 · ДДС BG208725180; вкл. показване на account tax ID"
+echo "     (реквизити по чл. 114 ЗДДС — потвърди номерацията със счетоводителя)"
+echo "  3. Dashboard → Settings → Tax: потвърди origin address (ul. Samuil 3,"
+echo "     2670 Bobov dol, BG) и че €10k EU B2C прагът се МОНИТОРИРА;"
+echo "     при преминаването му: OSS регистрация в НАП + OSS registration тук"
+echo "     (Stripe НЕ превключва автоматично към destination ДДС!)"
+echo "  4. НАП: регистрация на електронния магазин (Приложение 33, Наредба"
+echo "     Н-18) ПРЕДИ първата продажба; фискален бон не се дължи при само"
+echo "     неприсъствени картови плащания (документ по чл. 52о = Stripe invoice)"

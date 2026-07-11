@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy — Supreme AdBlock</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #060608; color: #f5f5f0;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 48px 20px 80px;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  header .dot { width: 12px; height: 12px; border-radius: 3px; background: #00e5ff; }
+  h1 { font-size: 26px; letter-spacing: 0.3px; }
+  .sub { color: #8c8c84; font-size: 14px; margin-bottom: 36px; }
+  h2 { font-size: 18px; margin: 32px 0 10px; color: #00e5ff; }
+  p { color: #d9d9d2; margin: 10px 0; }
+  ul { margin: 10px 0 10px 22px; color: #d9d9d2; }
+  li { margin: 4px 0; }
+  strong { color: #f5f5f0; }
+  code { background: #14161a; border: 1px solid #262a31; border-radius: 4px; padding: 1px 6px; font-size: 14px; }
+  a { color: #00e5ff; }
+  footer { margin-top: 48px; color: #8c8c84; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <header><span class="dot"></span><h1>Supreme AdBlock — Privacy Policy</h1></header>
+  <div class="sub">Last updated: July 2026</div>
+
+  <p>Supreme AdBlock is built to protect your privacy, not to collect data.</p>
+
+  <h2>What we collect</h2>
+  <p><strong>Nothing.</strong> The extension has no analytics, no telemetry and no
+  accounts. We do not see which sites you visit, and no browsing data ever leaves
+  your device.</p>
+
+  <h2>What is stored locally</h2>
+  <p>Kept only in your browser's local storage, never transmitted:</p>
+  <ul>
+    <li>Whether protection is on or off</li>
+    <li>Your allowlisted sites</li>
+    <li>Feature toggles (cookie banners, anti-adblock, Meta posts, theme)</li>
+    <li>Elements you hid manually with the picker</li>
+    <li>A local counter of how many ads were blocked</li>
+  </ul>
+  <p>You can clear all of it from the extension's settings, or by removing the extension.</p>
+
+  <h2>Network requests we make</h2>
+  <p>One, and only for filter updates. About once a day the extension downloads a
+  small filter file (<code>filters.json</code>) from
+  <code>adblock.carbonstealth.eu</code> so blocking stays current as ad networks and
+  sites change. This request contains <strong>no information about you</strong> — no
+  identifiers, no browsing data. It is a plain GET of a public file, treated purely
+  as data (block rules and CSS selectors); no downloaded code is ever executed. You
+  can turn auto-update off in the settings.</p>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><code>declarativeNetRequest</code> — block ad/tracker requests via rules.</li>
+    <li><code>storage</code> — save your settings locally.</li>
+    <li><code>tabs</code> — show the per-tab blocked count and current site in the popup.</li>
+    <li><code>alarms</code> — schedule the daily filter update and the pause timer.</li>
+    <li><code>contextMenus</code> — the right-click "Block an element here" entry.</li>
+    <li>host access (<code>&lt;all_urls&gt;</code>) — apply blocking on the pages you
+    visit. Page content is processed locally and never sent anywhere.</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Questions? Reach us at <a href="https://carbonstealth.eu">carbonstealth.eu</a>.</p>
+
+  <footer>Supreme AdBlock, by Carbon Stealth. Released under the MIT License.</footer>
+</main>
+</body>
+</html>

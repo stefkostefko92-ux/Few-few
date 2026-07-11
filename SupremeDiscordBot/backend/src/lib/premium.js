@@ -239,6 +239,37 @@ export async function getServerTier(serverId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PRISMA WHERE FRAGMENTS — „ефективно premium"
+// ═══════════════════════════════════════════════════════════════════════════
+// Agency seat НЕ сетва Server.isPremium/plan (покритието се резолвира в
+// getServerTier през agency.active), а trial живее само в trialEndsAt. Затова
+// batch заявки, които гейтват на суровия isPremium, изпускат agency-покрити и
+// trial сървъри (напр. изтриване на транскрипти на платен agency клиент).
+// Всички списъчни заявки трябва да минават през тези фрагменти.
+
+/** Server е ефективно premium: собствен план ИЛИ активен trial ИЛИ активна агенция. */
+export function effectivePremiumWhere(now = new Date()) {
+  return {
+    OR: [
+      { isPremium: true },
+      { trialEndsAt: { gt: now } },
+      { agency: { is: { active: true } } },
+    ],
+  };
+}
+
+/** Отрицанието: server НЕ Е ефективно premium (за free-tier клийнъп заявки). */
+export function effectiveFreeWhere(now = new Date()) {
+  return {
+    AND: [
+      { isPremium: false },
+      { OR: [{ trialEndsAt: null }, { trialEndsAt: { lte: now } }] },
+      { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] },
+    ],
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // ENFORCEMENT HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 

@@ -20,7 +20,7 @@ const PREMIUM_FEATURES = [
   "Claim · escalate · round-robin assignment",
   "Sticky + scheduled + recurring messages",
   "Giveaways, polls & advanced analytics",
-  "AI auto-replies (Claude) — human in the loop",
+  "AI auto-replies — human in the loop",
   "Webhooks (HMAC) + public REST API",
   "Unlimited transcript retention + CSV/PDF export",
 ];
@@ -58,8 +58,11 @@ export default function PremiumPage() {
   const [plan, setPlan] = useState("premium");
   const [interval, setInterval] = useState("month");
 
-  // F7 — изрично съгласие за загуба на 14-дневното право на отказ (чл. 16(м)
-  // Дир. 2011/83/ЕС). Неотметнато по подразбиране; задължително преди checkout.
+  // F7 — изрично съгласие по чл. 16(а) Дир. 2011/83/ЕС (дигитална УСЛУГА:
+  // правото на отказ се губи едва при пълно изпълнение; при по-ранен отказ се
+  // дължи пропорционална сума — чл. 14(3)). Неотметнато по подразбиране;
+  // задължително преди checkout. Пращаме РЕАЛНАТА state стойност, за да не се
+  // разсинхронизира UI-гейтът от логваното доказателство.
   const [withdrawalConsent, setWithdrawalConsent] = useState(false);
 
   const checkoutMut = useMutation({
@@ -68,20 +71,18 @@ export default function PremiumPage() {
     // requireServerAdmin); тялото носи { plan, interval, withdrawalConsent }.
     mutationFn: () =>
       api
-        .post(`/stripe/create-checkout/${serverId}`, { plan, interval, withdrawalConsent: true })
+        .post(`/stripe/create-checkout/${serverId}`, { plan, interval, withdrawalConsent })
         .then((r) => r.data),
     onSuccess: (data) => { window.location.href = data.url; },
   });
 
-  // v3.0 — Agency планове (до 5 / до 10 сървъра, един абонамент). Отделен
-  // endpoint (/api/agency/checkout), добавян от друг workstream.
+  // v3.0 — Agency планове (до 5 / до 10 сървъра, един абонамент).
   const [agencyPlan, setAgencyPlan] = useState("agency5");
   const [agencyInterval, setAgencyInterval] = useState("month");
   const [agencyConsent, setAgencyConsent] = useState(false);
   const agencyMut = useMutation({
-    // F7 — Agency е също дигитална услуга с незабавен достъп → изричното съгласие
-    // за загуба на 14-дневното право на отказ е задължително (чл. 16(м)).
-    mutationFn: () => createAgencyCheckout({ plan: agencyPlan, interval: agencyInterval, withdrawalConsent: true }),
+    // F7 — Agency е също дигитална услуга: същото чл. 16(а) съгласие.
+    mutationFn: () => createAgencyCheckout({ plan: agencyPlan, interval: agencyInterval, withdrawalConsent: agencyConsent }),
     onSuccess: (data) => { window.location.href = data.url; },
   });
 
@@ -284,10 +285,14 @@ export default function PremiumPage() {
 
           <div className="mb-6" aria-live="polite">
             <p className="text-3xl font-bold text-cs-text">
-              {isPremium ? "€9.99" : upgradePrice}
+              {isPremium
+                ? (PLAN_PRICING[status?.plan]?.[status?.billingInterval || "month"] || PLAN_PRICING.premium.month)
+                : upgradePrice}
             </p>
             <p className="text-sm text-cs-muted mt-1">
-              {isPremium ? "per server / month" : `${PLAN_LABEL[plan]} · ${perLabel}`}
+              {isPremium
+                ? `${PLAN_LABEL[status?.plan] || "Premium"} · per server / ${status?.billingInterval === "year" ? "year" : "month"}`
+                : `${PLAN_LABEL[plan]} · ${perLabel}`}
             </p>
           </div>
 
@@ -315,14 +320,16 @@ export default function PremiumPage() {
               </button>
             ) : (
               <>
-                {/* F7 — обща цена с ДДС (преддоговорна информация, чл. 6 / ЗЗП чл. 47) */}
+                {/* F7 — обща цена с ДДС + авто-подновяване (преддоговорна
+                    информация, чл. 6(1)(д),(о) Дир. 2011/83 / ЗЗП чл. 47) */}
                 <p className="text-xs text-cs-muted mb-3">
-                  {upgradePrice}/{interval === "year" ? "year" : "month"}, VAT included where applicable
+                  {upgradePrice}/{interval === "year" ? "year" : "month"}, VAT included where applicable ·
+                  renews automatically each {interval === "year" ? "year" : "month"} until cancelled
                 </p>
 
                 {/* F7 — задължителна, неотметната по подразбиране отметка за
                     изрично съгласие незабавно изпълнение → загуба на 14-дневното
-                    право на отказ (чл. 16(м) Дир. 2011/83/ЕС). Достъпно: label е
+                    право на отказ (чл. 16(а) Дир. 2011/83/ЕС). Достъпно: label е
                     свързан с input, target ≥24px, видим focus ring. */}
                 <label
                   htmlFor="withdrawal-consent"
@@ -431,6 +438,9 @@ export default function PremiumPage() {
                 {agencyMut.isPending ? "Redirecting…" : `Get ${PLAN_LABEL[agencyPlan]}`}
               </button>
             </div>
+            {/* F7 — чл. 16(а): за дигитална УСЛУГА правото на отказ се губи
+                едва при ПЪЛНО изпълнение, не „щом абонаментът е активен".
+                Формулировката е идентична с per-server отметката. */}
             <label className="flex items-start gap-2 mt-4 text-xs text-cs-muted cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -439,10 +449,15 @@ export default function PremiumPage() {
                 className="mt-0.5 accent-cs-cyan"
               />
               <span>
-                I request access to start immediately and acknowledge I lose my 14-day right of
-                withdrawal once the subscription is active (Art. 16(m), Directive 2011/83/EU).
+                I expressly request that the subscription (a digital service) starts immediately.
+                I understand that if I withdraw before it is fully performed I owe a proportionate
+                amount for what was provided, and that my 14-day right of withdrawal is lost only
+                once the service has been fully performed (Art. 16(a), Directive 2011/83/EU).
               </span>
             </label>
+            <p className="text-[11px] text-cs-dim mt-2">
+              Renews automatically each {agencyInterval === "year" ? "year" : "month"} until cancelled · VAT included where applicable
+            </p>
             {agencyMut.isError && (
               <p role="alert" className="text-danger text-sm mt-3">
                 {agencyMut.error?.response?.data?.error || "Agency checkout is not available yet. Please try again later."}
@@ -496,7 +511,7 @@ export default function PremiumPage() {
           { q: "Can I use Premium on multiple servers?", a: "Premium and White-label are per-server. To cover several servers under one subscription, use an Agency plan (up to 5 or 10 servers)." },
           { q: "What is the White-label bot?", a: "On the White-label plan your server runs its own Discord bot token, so the bot appears with your own name, avatar, and status instead of the shared bot." },
           { q: "Monthly or annual?", a: "Both. Annual billing is roughly two months free compared to paying monthly." },
-          { q: "How do I get a refund?", a: "Contact support within 7 days of your purchase for a full refund." },
+          { q: "How do I get a refund?", a: "Contact support within 7 days of your purchase for a full refund. EU/EEA consumers additionally have a 14-day statutory right of withdrawal (see Terms §6) — if you withdraw before the service is fully performed, you pay only a proportionate amount for what was provided." },
         ].map(({ q, a }) => (
           <div key={q} className="cs-card">
             <p className="font-medium text-cs-text mb-1">{q}</p>

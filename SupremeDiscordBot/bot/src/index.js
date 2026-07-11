@@ -586,8 +586,9 @@ app.post("/internal/ai-reply", async (req, res) => {
       }
     }
     const tr = getTranslator(lang || "en");
-    // Името на модела не се локализира (собствено име); по подразбиране Claude.
-    const modelName = model || "Anthropic Claude";
+    // Името на модела не се локализира (собствено име). Идва от backend-а
+    // (AI_MODEL_NAME) — fallback за стари payload-и без поле model.
+    const modelName = model || "Google Gemini Flash";
 
     // EU AI Act Article 50 compliance — clear and prominent disclosure
     // that user is interacting with AI-generated content
@@ -658,6 +659,12 @@ client.once(Events.ClientReady, async () => {
   // After main client is ready, boot white-label clients for Premium servers
   // (Events.ClientReady — forward-compatible за discord.js v15).
   await bootAllCustomClients(client);
+
+  // Native monetization: reconcile the FULL active entitlement list against the
+  // backend. Discord never redelivers entitlement gateway events, so this sweep
+  // is what catches grants/expiries missed while the bot was offline.
+  const { runEntitlementReconcile } = await import("./utils/entitlementReconcile.js");
+  await runEntitlementReconcile(client);
 });
 
 // Graceful shutdown — destroy white-label sessions and the main client so

@@ -12,7 +12,7 @@
 
 ## Entity Information
 
-- **Legal name:** Carbon Stealth VCC (Veggie Company Company)
+- **Legal name:** Carbon Stealth VCC <!-- ТОЧНАТА правна форма: потвърди с юриста (въпрос №11 от досието) -->
 - **Registration:** EIK 208725180, VAT BG208725180, Bulgaria
 - **Representative:** Stefan Lyubomirov Kostadinov (Managing Director)
 - **Data Protection Officer:** Not yet appointed (threshold Article 37 not yet met; volunteer designation planned)
@@ -40,7 +40,7 @@
 | **Data categories** | Ticket content (messages), Discord IDs of participants, attachments URLs, timestamps |
 | **Data subjects** | Discord community members who open tickets |
 | **Recipients** | Customer's authorized staff only; Supreme Bot internal staff for technical support (rare) |
-| **3rd country transfers** | Anthropic USA if AI auto-reply enabled — SCC safeguards |
+| **3rd country transfers** | Google (USA) if AI auto-reply enabled — SCC safeguards |
 | **Retention period** | Free tier: 30 days after close; Premium: indefinite (Customer-controlled); Anonymized on account deletion |
 | **Security measures** | Database-level encryption, TLS, channel-level Discord permissions |
 
@@ -63,10 +63,10 @@
 |---|---|
 | **Purpose** | Process Premium subscriptions and issue invoices |
 | **Legal basis** | Article 6(1)(b) — Contract; Article 6(1)(c) — Legal obligation (tax records) |
-| **Data categories** | Stripe customer ID, subscription ID, payment status, invoice metadata |
+| **Data categories** | Stripe customer ID, subscription ID, payment status, invoice metadata; Discord entitlement ID, SKU ID and purchase status (native Discord purchases) |
 | **Data subjects** | Paying customers |
-| **Recipients** | Stripe (payment processor); Bulgarian tax authorities (annual VAT declarations) |
-| **3rd country transfers** | None (Stripe EU subsidiary processes EU customers) |
+| **Recipients** | Stripe (payment processor); Discord Inc. (merchant of record for native App purchases); Bulgarian tax authorities (annual VAT declarations) |
+| **3rd country transfers** | Discord Inc. (USA) — SCC; Stripe EU subsidiary processes EU customers |
 | **Retention period** | 7 years (Bulgarian tax law retention requirement) |
 | **Security measures** | Stripe PCI-DSS compliance; no raw card data stored on Supreme Bot systems |
 
@@ -78,9 +78,9 @@
 | **Legal basis** | Article 6(1)(b) — Contract performance (opt-in Premium feature) |
 | **Data categories** | Ticket content, server name, custom system prompt |
 | **Data subjects** | Ticket creators (indirectly — their first message is sent for AI processing) |
-| **Recipients** | Anthropic PBC (USA) — AI inference provider |
-| **3rd country transfers** | USA — SCC safeguards; Anthropic commits to not using API data for training |
-| **Retention period** | Not retained by Supreme Bot beyond normal ticket message retention; Anthropic retains for 30 days per their policy |
+| **Recipients** | Google LLC (USA) — AI inference provider (Gemini API) |
+| **3rd country transfers** | USA — SCC safeguards. ВНИМАНИЕ: безплатният Gemini API tier позволява на Google да използва подадено съдържание за подобряване на услугите (възможно и човешки преглед) — отразено в Privacy §5; при преминаване на платен tier обнови реда |
+| **Retention period** | Not retained by Supreme Bot beyond normal ticket message retention; Google retains for 30 days per their policy |
 | **Special measures** | EU AI Act Article 50 disclosure: AI origin clearly shown in Discord embed; Opt-in only |
 
 ## Processing Activity 6 — Audit Logs

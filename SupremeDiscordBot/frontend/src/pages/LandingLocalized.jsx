@@ -231,6 +231,11 @@ export default function LandingLocalized({ locale }) {
               <TierCard icon={Building2} tier={t.tiers.agency5} interval={interval} onCta={handleLogin} compact />
               <TierCard icon={Building2} tier={t.tiers.agency10} interval={interval} onCta={handleLogin} compact />
             </div>
+            {/* Преддоговорна информация (чл. 6(1)(д),(о) Дир. 2011/83): ДДС в
+                цената + авто-подновяване — задължителна на ВСЕКИ език, не само EN. */}
+            {t.priceNote && (
+              <p className="text-center text-xs text-cs-dim font-mono mt-8">{t.priceNote}</p>
+            )}
           </div>
         </section>
 

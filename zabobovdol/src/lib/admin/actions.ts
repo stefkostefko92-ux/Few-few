@@ -113,7 +113,7 @@ export async function saveRecord(
         redirect(
           `/admin/${resource.key}/${id ?? "new"}?error=` +
             encodeURIComponent(
-              `Полето „${field.label}" има непозволен адрес. Допустими са http(s), tel:, mailto: или вътрешен път.`,
+              `Полето „${field.label}“ има непозволен адрес. Допустими са http(s), tel:, mailto: или вътрешен път.`,
             ),
         );
       }
@@ -129,7 +129,7 @@ export async function saveRecord(
       if (!val) {
         redirect(
           `/admin/${resource.key}/${id ?? "new"}?error=` +
-            encodeURIComponent(`Полето „${field.label}" е задължително.`),
+            encodeURIComponent(`Полето „${field.label}“ е задължително.`),
         );
       }
     }
@@ -163,7 +163,7 @@ export async function saveRecord(
       action: "UPDATE",
       entity: resource.model,
       entityId: id,
-      summary: `Промяна: ${resource.labelSingular} „${title}"`,
+      summary: `Промяна: ${resource.labelSingular} „${title}“`,
     });
   } else {
     const created = await delegate(resource.model).create({ data });
@@ -171,7 +171,7 @@ export async function saveRecord(
       action: "CREATE",
       entity: resource.model,
       entityId: created.id,
-      summary: `Създаване: ${resource.labelSingular} „${title}"`,
+      summary: `Създаване: ${resource.labelSingular} „${title}“`,
     });
   }
 
@@ -195,7 +195,7 @@ export async function deleteRecord(
     action: "DELETE",
     entity: resource.model,
     entityId: id,
-    summary: `Изтриване: ${resource.labelSingular} „${title}"`,
+    summary: `Изтриване: ${resource.labelSingular} „${title}“`,
   });
 
   revalidatePath("/", "layout");

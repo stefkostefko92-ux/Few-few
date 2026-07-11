@@ -41,7 +41,7 @@ Three categories:
 - Session token compromise
 - API key leakage
 - Breach affecting 100-1000 subjects
-- Third-party sub-processor incident (Stripe, Discord, Hetzner, Anthropic)
+- Third-party sub-processor incident (Stripe, Discord, Hetzner, Google)
 
 ### Tier 3 — Medium (document, assess case-by-case)
 - Temporary DB unavailability (<4 hours)
@@ -147,7 +147,7 @@ Three categories:
 - Legal name: Carbon Stealth VCC
 - Registration: EIK 208725180, VAT BG208725180
 - Address: ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria
-- Contact: [Stefan Lyubomirov Kostadinov, privacy@carbonstealth.eu, +39 XXX XXX XXXX]
+- Contact: [Stefan Lyubomirov Kostadinov, privacy@carbonstealth.eu, +359 XX XXX XXXX]
 
 **Breach details:**
 - Date/time of breach: [ISO 8601 timestamp]

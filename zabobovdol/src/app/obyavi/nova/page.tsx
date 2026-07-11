@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/ui";
 import { LISTING_TYPE_LABELS } from "@/lib/categories";
 import { submitListing, type SubmitState } from "./actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: SubmitState = { ok: false };
 
@@ -130,6 +131,8 @@ export default function NewListingPage() {
             Посочете поне телефон или имейл за контакт. С подаването приемате
             обявата да бъде видима публично.
           </p>
+
+          <PrivacyNote />
 
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Изпращане…" : "Изпрати обявата"}

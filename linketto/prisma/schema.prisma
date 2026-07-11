@@ -1,0 +1,432 @@
+// Linketto — многоезичен link-in-bio. PostgreSQL.
+// Многоезичността е в ядрото на схемата: всяко потребителско съдържание
+// (профил, линк) има таблица с преводи по locale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+  FOUNDER // еднократна доживотна оферта за ранни потребители
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String
+  name                 String?
+  locale               String    @default("bg") // език на админа за този потребител
+  plan                 Plan      @default(FREE)
+  stripeCustomerId     String?   @unique
+  stripeAccountId      String?   @unique // Stripe Connect (Express) акаунт за магазина
+  stripeChargesEnabled Boolean   @default(false) // обновява се от account.updated webhook
+  isTrader             Boolean   @default(false) // Дир.2011/83 чл.6а: търговец (по декларация на продавача)
+  referralCode         String?   @unique // личен реферален код (за поканите)
+  referredById         String?   // кой е поканил този потребител
+  referralCreditCents  Int       @default(0) // натрупан бонус от рефералите
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  sessions             Session[]
+  profiles             Profile[]
+  loginEvents          LoginEvent[]
+  referralsMade        Referral[]   @relation("ReferralsMade")
+  payouts              ReferralPayout[] @relation("Payouts")
+}
+
+// Сигурност на входа: IP при успешен вход/регистрация (пази се 90 дни;
+// декларирано в политиката за поверителност). НЕ важи за посетители.
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// Реферална програма: един ред при УСПЕШЕН реферал (поканеният си купи
+// платен план). Уникален по referredUserId → един бонус на поканен.
+model Referral {
+  id             String   @id @default(cuid())
+  referrerId     String
+  referrer       User     @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUserId String   @unique
+  plan           Plan
+  rewardCents    Int
+  createdAt      DateTime @default(now())
+
+  @@index([referrerId, createdAt])
+}
+
+// Заявка за изплащане на натрупания реферал бонус (мин. €100). При заявка
+// балансът се снапшотва тук и User.referralCreditCents се нулира.
+model ReferralPayout {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("Payouts", fields: [userId], references: [id], onDelete: Cascade)
+  amountCents Int
+  method      String // IBAN / PayPal / Revolut — свободен текст от потребителя
+  status      String    @default("pending") // pending | paid
+  requestedAt DateTime  @default(now())
+  paidAt      DateTime?
+
+  @@index([status, requestedAt])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique // sha256 на cookie токена — суровият токен не се пази
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Profile {
+  id            String               @id @default(cuid())
+  userId        String
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug          String               @unique
+  customDomain  String?              @unique // собствен домейн (платени планове)
+  defaultLocale String               @default("bg")
+  theme         String               @default("aurora")
+  accent        String? // hex цвят, валидиран в кода
+  style         Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
+  bannedAt      DateTime? // модерация: баннат = невидим публично (без публичен банер)
+  published     Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  translations  ProfileTranslation[]
+  links         Link[]
+  clicks        ClickEvent[]
+  messages      ContactMessage[]
+  reports       Report[]
+  products      Product[]
+  coupons       Coupon[]
+  subscribers   Subscriber[]
+  bookings      Booking[]
+  shortLinks    ShortLink[]
+}
+
+// Съкратен линк с брояч на кликове (/s/<code>). Броячът е агрегат без
+// бисквитки/PII. Кодът е уникален глобално (собствено /s пространство).
+model ShortLink {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  code      String   @unique
+  targetUrl String
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+// Заявка за час/среща от BOOKING блок — публично действие (honeypot), чете
+// се в дашборда. Няма плащане тук (само заявка); календарът/потвърждението
+// са грижа на създателя.
+model Booking {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String?
+  email       String
+  preferredAt String? // предпочитан момент (свободен текст/ISO от формата)
+  message     String?
+  locale      String?
+  status      String   @default("new") // new | done
+  createdAt   DateTime @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+// Абонат за бюлетина на създателя (email capture). GDPR: двойно съгласие
+// (confirmedAt) + лесен отпис (unsubscribedAt) + токен за двете действия.
+// Аудиторията принадлежи на създателя (износ в CSV), не заключена в нас.
+model Subscriber {
+  id             String    @id @default(cuid())
+  profileId      String
+  profile        Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  email          String
+  locale         String? // език на записалия се — за бюлетин на неговия език
+  token          String    @unique // за потвърждение и отписване (неотгатваем)
+  confirmedAt    DateTime? // двойно съгласие: null = непотвърден
+  unsubscribedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@unique([profileId, email])
+  @@index([profileId, createdAt])
+}
+
+// Промо код за магазина: процентна отстъпка върху продукт. Дефинира се от
+// създателя; прилага се при checkout (сумата се преизчислява на сървъра).
+model Coupon {
+  id             String    @id @default(cuid())
+  profileId      String
+  profile        Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  code           String // нормализиран (главни букви), уникален в рамките на профила
+  percentOff     Int // 1..90
+  active         Boolean   @default(true)
+  maxRedemptions Int? // null = без лимит
+  timesRedeemed  Int       @default(0)
+  expiresAt      DateTime? // null = без срок
+  createdAt      DateTime  @default(now())
+
+  @@unique([profileId, code])
+  @@index([profileId])
+}
+
+model ProfileTranslation {
+  id          String  @id @default(cuid())
+  profileId   String
+  profile     Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locale      String
+  displayName String
+  bio         String?
+
+  @@unique([profileId, locale])
+}
+
+// Видове блокове (по модела на linkie.to): освен обикновени линкове —
+// заглавия, телефон, карта, видео/музикални embeds, „умни“ app линкове
+// (iOS/Android детекция) и контактна форма.
+enum BlockKind {
+  LINK
+  HEADER
+  PHONE
+  MAP
+  VIDEO
+  MUSIC
+  APP
+  FORM
+  TIP
+  VCARD
+  EMAIL // блок за записване в бюлетина (email capture, GDPR double opt-in)
+  POLL // анкета: въпрос + опции; гласове без бисквитки (агрегат)
+  BOOKING // заявка за час/среща (изпраща се към създателя)
+}
+
+model Link {
+  id           String            @id @default(cuid())
+  profileId    String
+  profile      Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  kind         BlockKind         @default(LINK)
+  position     Int               @default(0)
+  url          String? // основна цел; HEADER/FORM нямат, MUSIC/APP може само meta
+  meta         Json? // kind-специфични данни: {ios, android} / {spotify, apple} / {phone, email, org}
+  active       Boolean           @default(true)
+  showFrom     DateTime? // насрочване: блокът се показва от…
+  showUntil    DateTime? // …до (null = без ограничение)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  translations LinkTranslation[]
+  clicks       ClickEvent[]
+  pollVotes    PollVote[]
+
+  @@index([profileId, position])
+}
+
+// Глас в анкета (POLL блок) — агрегат без бисквитки/PII. Пазим само индекса
+// на избраната опция; повторно гласуване се пази best-effort от клиента.
+model PollVote {
+  id          String   @id @default(cuid())
+  linkId      String
+  link        Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  optionIndex Int
+  createdAt   DateTime @default(now())
+
+  @@index([linkId])
+}
+
+enum ProductType {
+  DIGITAL // еднократен дигитален продукт (таен линк) — досегашното
+  COURSE // курс със заключени уроци (еднократно плащане, доживотен достъп)
+  MEMBERSHIP // абонамент (recurring) — достъп до заключено съдържание докато е активен
+}
+
+// Магазин: дигитални продукти (доставка = таен линк след платена поръчка).
+// Плащането е destination charge към Stripe Connect акаунта на създателя,
+// а комисионата на Linketto (по плана: 8/4/0/0%) е application_fee.
+model Product {
+  id           String               @id @default(cuid())
+  profileId    String
+  profile      Profile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  position     Int                  @default(0)
+  priceCents   Int // в евроцентове, EUR
+  type         ProductType          @default(DIGITAL)
+  interval     String? // MEMBERSHIP: 'month' | 'year'
+  deliveryUrl  String? // DIGITAL: таен линк (COURSE/MEMBERSHIP ползват уроци)
+  active       Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  translations ProductTranslation[]
+  purchases    Purchase[]
+  lessons      Lesson[]
+  entitlements Entitlement[]
+
+  @@index([profileId, position])
+}
+
+// Урок в курс/членство — заключено съдържание (текст + по желание видео).
+model Lesson {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  position  Int      @default(0)
+  title     String
+  body      String? // текст на урока (по желание)
+  videoUrl  String? // YouTube/Vimeo embed (по желание)
+  createdAt DateTime @default(now())
+
+  @@index([productId, position])
+}
+
+// Право на достъп на купувач до курс/членство. Еднократен курс = доживотно
+// активно; членство = активно докато Stripe абонаментът е активен.
+model Entitlement {
+  id                   String    @id @default(cuid())
+  productId            String
+  product              Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  profileId            String
+  email                String
+  active               Boolean   @default(true)
+  stripeSubscriptionId String?   @unique
+  expiresAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([productId, email])
+  @@index([email])
+  @@index([profileId])
+}
+
+// Magic-link токен за вход на купувача (passwordless, еднократен).
+model BuyerToken {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+}
+
+// Сесия на купувача (за достъп до заключено съдържание) — както User
+// сесията: суровият токен е в cookie, в БД пазим само sha256.
+model BuyerSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model ProductTranslation {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String
+  description String?
+
+  @@unique([productId, locale])
+}
+
+// Записва се само от подписания Stripe webhook (checkout.session.completed).
+model Purchase {
+  id              String   @id @default(cuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  profileId       String
+  stripeSessionId String   @unique
+  stripePaymentIntentId String?  @unique // за refund/dispute проследяване
+  amountCents     Int // брутна платена сума (с вкл. ДДС, когато се дължи)
+  feeCents        Int // нашата комисиона към момента на продажбата
+  // ДДС слой (deemed supplier по чл. 9а Регл. 282/2011 — виж TAX.md):
+  // платформата дължи ДДС по държавата на купувача; пазим OSS записите.
+  vatAmountCents  Int      @default(0) // ДДС от Stripe Tax (0 без данъчен слой)
+  netAmountCents  Int? // amountCents - vatAmountCents (базата за комисионата)
+  buyerCountry    String? // държава на купувача (billing адрес от Stripe)
+  stripeTransferId String? // преводът към продавача (separate charges & transfers)
+  payoutFailedAt  DateTime? // преводът се провали → админът вижда и ретрайва
+  chargedOn       String   @default("platform") // "platform" (separate) | "destination" (заварени)
+  receiptNumber   Int      @default(autoincrement()) @unique // непрекъсната номерация (Н-18)
+  buyerEmail      String?
+  locale          String? // език на купувача — за имейла на неговия език
+  couponCode      String? // приложен промо код (ако е ползван)
+  deliveredAt     DateTime? // кога е изпратен имейлът с доставката
+  refundedAt      DateTime?
+  disputedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+// Съобщения от контактната форма (блок FORM) — публични, без акаунт.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name      String?
+  email     String?
+  message   String
+  locale    String?
+  createdAt DateTime @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+// DSA чл. 16: сигнали „уведомяване и действие" за публични профили.
+model Report {
+  id         String    @id @default(cuid())
+  profileId  String
+  profile    Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  category   String
+  message    String
+  email      String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([profileId, createdAt])
+}
+
+model LinkTranslation {
+  id     String @id @default(cuid())
+  linkId String
+  link   Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  locale String
+  title  String
+
+  @@unique([linkId, locale])
+}
+
+// Аналитика без бисквитки: никакви лични данни, никакъв IP.
+// Пазим само агрегируеми измерения.
+model ClickEvent {
+  id           String   @id @default(cuid())
+  profileId    String
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  linkId       String?
+  link         Link?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  locale       String? // на кой език е гледан профилът
+  referrerHost String? // само хостът, без пълния URL
+  country      String? // от CDN хедър, ако има (напр. CF-IPCountry)
+  createdAt    DateTime @default(now())
+
+  @@index([profileId, createdAt])
+  @@index([linkId, createdAt])
+}

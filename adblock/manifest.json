@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "The Best ads block",
-  "version": "3.7.1",
+  "name": "Supreme AdBlock",
+  "version": "4.0.1",
   "description": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
   "author": "Carbon Stealth",
   "homepage_url": "https://carbonstealth.eu",
-  "minimum_chrome_version": "102",
+  "minimum_chrome_version": "121",
   "default_locale": "en",
   "permissions": [
     "declarativeNetRequest",
@@ -23,7 +23,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "The Best ads block",
+    "default_title": "Supreme AdBlock",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -48,6 +48,12 @@
       "css": ["content.css"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "css": ["cosmetic_generic.css"],
+      "run_at": "document_start",
+      "all_frames": false
     },
     {
       "matches": ["<all_urls>"],
@@ -110,6 +116,26 @@
         "id": "youtube_rules",
         "enabled": true,
         "path": "rules/youtube_rules.json"
+      },
+      {
+        "id": "easylist",
+        "enabled": true,
+        "path": "rules/easylist.json"
+      },
+      {
+        "id": "easyprivacy",
+        "enabled": true,
+        "path": "rules/easyprivacy.json"
+      },
+      {
+        "id": "removeparam",
+        "enabled": true,
+        "path": "rules/removeparam.json"
+      },
+      {
+        "id": "urlhaus",
+        "enabled": false,
+        "path": "rules/urlhaus.json"
       }
     ]
   }

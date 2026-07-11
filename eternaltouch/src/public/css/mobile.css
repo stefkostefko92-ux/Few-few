@@ -1,0 +1,602 @@
+/* ════════════════════════════════════════════════════════════════════
+ *  ETERNAL TOUCH — Mobile optimization layer
+ *  Appended to style.css. Targets phones, tablets, and edge cases that
+ *  the legacy media queries don't cover.
+ *
+ *  Breakpoint system (deliberately explicit, mobile-first):
+ *    ≤ 380px  · narrow phones (iPhone SE, small Androids)
+ *    ≤ 480px  · standard phones
+ *    ≤ 768px  · large phones / phablets
+ *    ≤ 900px  · tablets in portrait
+ *    ≤ 1024px · small laptops
+ *
+ *  Principles:
+ *    1. Never disable user zoom (accessibility)
+ *    2. Touch targets ≥ 44×44 px (Apple HIG)
+ *    3. iOS safe-area insets respected (notch + home indicator)
+ *    4. Hover effects gated behind `(hover: hover)` — touch devices
+ *       don't get phantom hover states
+ *    5. No horizontal scroll at any width down to 320px
+ *    6. Tap-highlight color uses brand gold instead of default ugly grey
+ * ════════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────────
+ * 1. Global mobile fundamentals
+ * ────────────────────────────────────────────────────────────────── */
+
+/* Prevent iOS Safari from auto-inflating text in landscape */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Brand-coloured tap highlight (default is dark grey) */
+* {
+  -webkit-tap-highlight-color: rgba(201, 169, 110, 0.18); /* gold @ 18% */
+}
+
+/* Forms: prevent iOS auto-zoom on input focus.
+   iOS zooms when the input font-size is < 16px. Lock at 16px on small
+   screens. We only do this on touch devices to keep desktop typography. */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="search"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Honour iOS safe-area insets — site header, footer, fixed elements */
+.site-header,
+.site-footer,
+.cookie-banner {
+  padding-left:  max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+@supports (padding: max(0px)) {
+  .site-footer { padding-bottom: max(var(--space-7, 3rem), env(safe-area-inset-bottom)); }
+}
+
+/* Body never scrolls horizontally */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Images, video, embeds default to width-constrained */
+img, video, iframe, picture, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 2. Touch targets — guarantee 44×44 minimum
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .lang-switch a,
+  .main-nav a,
+  .menu-toggle,
+  .footer-links a,
+  .product-card,
+  .form-button,
+  .submit-btn {
+    min-height: 44px;
+  }
+
+  /* Touch-friendly tap padding for inline links inside paragraphs */
+  .about-body a,
+  .footer-meta a {
+    padding: 0.15em 0;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 3. Hover gating — only on devices that can actually hover
+ * ────────────────────────────────────────────────────────────────── */
+@media (hover: none) {
+  /* Cancel transform-on-hover effects that look broken when you tap */
+  .product-card:hover .product-card-image img,
+  .gallery-item:hover img,
+  .collection-card:hover img {
+    transform: none;
+  }
+  /* Re-enable on tap with :active, brief and subtle */
+  .product-card:active .product-card-image img,
+  .gallery-item:active img {
+    transform: scale(1.02);
+    transition: transform 0.18s ease-out;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 4. Hero — keep the editorial display look at every width
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .hero {
+    /* Use small-viewport units so iOS Safari URL bar doesn't shift the hero */
+    min-height: 80svh;
+    padding-top:    clamp(4rem, 18vh, 6rem);
+    padding-bottom: clamp(2rem, 8vh, 4rem);
+  }
+  .hero-title {
+    font-size: clamp(2.25rem, 9vw, 3.25rem);
+    line-height: 1.05;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  .hero-subtitle {
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 36ch;
+  }
+  .hero-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.28em;
+  }
+}
+@media (max-width: 380px) {
+  .hero-title { font-size: 2rem; }
+  .hero-subtitle { font-size: 0.95rem; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 5. About / Atelier section — logo + text stack gracefully
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .about {
+    grid-template-columns: 1fr;
+    gap: var(--space-6, 2rem);
+  }
+  .about-image-logo {
+    /* On phones the logo can breathe at a softer ratio */
+    aspect-ratio: 5 / 4;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .about-content {
+    padding: 0;
+    text-align: left;
+  }
+  .about-title {
+    font-size: clamp(2.25rem, 8vw, 3rem);
+  }
+}
+@media (max-width: 480px) {
+  .about-image-logo {
+    aspect-ratio: 4 / 3;
+    padding: clamp(1.5rem, 6vw, 2.5rem);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 6. Sections — proper vertical rhythm on mobile
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .section,
+  .section-deep,
+  .process,
+  .gallery-section,
+  .contact-section {
+    padding-top:    clamp(3rem, 9vw, 5rem);
+    padding-bottom: clamp(3rem, 9vw, 5rem);
+  }
+  .section-title {
+    font-size: clamp(2rem, 7.5vw, 2.75rem);
+    line-height: 1.1;
+  }
+  .section-header {
+    margin-bottom: clamp(2rem, 7vw, 3rem);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 7. Collections grid — clean stacking, full-bleed cards
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .collections-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-5, 1.75rem);
+  }
+  .collection-card {
+    aspect-ratio: 16 / 11;          /* wider on phones — cinematic feel */
+  }
+  .collection-card-overlay {
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 8. Product grid — already responsive, refine spacing
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-5, 1.75rem);
+  }
+  .product-card-meta {
+    padding: var(--space-3, 1rem) 0;
+    text-align: left;
+  }
+  .product-card-name {
+    font-size: 1.125rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 9. Gallery — replace the desktop 12-col mosaic with a clean
+ *    two-column mobile gallery that respects image proportions.
+ *    The desktop nth-child overrides need to be neutralised.
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .gallery-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: auto;            /* let images dictate height */
+    gap: 0.75rem;
+  }
+  .gallery-item,
+  .gallery-item:nth-child(n) {       /* neutralise specificity */
+    grid-column: span 1;
+    grid-row: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+@media (max-width: 380px) {
+  .gallery-grid { gap: 0.5rem; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 10. Process steps — already 1-col on small, refine spacing
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .process-step {
+    padding: 1.5rem 0;
+  }
+  .process-step-number {
+    font-size: 2.5rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 11. FAQ accordion — touch-friendly summary bars
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .faq-item summary,
+  details > summary {
+    min-height: 56px;        /* generous tap target */
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 12. Contact form — comfortable inputs, full-width submit
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .form-input,
+  .form-textarea {
+    padding: 0.875rem 1rem;
+    border-radius: 4px;
+    /* font-size: 16px already enforced globally to stop iOS zoom */
+  }
+  .form-textarea {
+    min-height: 140px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-3, 1rem);
+  }
+  .submit-btn,
+  .form-button {
+    width: 100%;
+    min-height: 52px;
+    font-size: 0.875rem;
+    letter-spacing: 0.18em;
+  }
+  .privacy-checkbox {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .privacy-checkbox input[type="checkbox"] {
+    min-width: 22px;
+    min-height: 22px;
+    margin-top: 0.15em;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 13. Header — language switch + hamburger comfortable spacing
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .site-header {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: 1rem;
+  }
+  .lang-switch {
+    gap: 0.4rem;
+  }
+  .lang-switch a {
+    padding: 0.5em 0.65em;
+    font-size: 0.7rem;
+  }
+  .menu-toggle {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+}
+
+/* Mobile menu drawer — already styled in legacy media query;
+   add safe-area + better spacing */
+@media (max-width: 768px) {
+  .main-nav.mobile-open {
+    padding-top:    max(6rem, calc(env(safe-area-inset-top) + 5rem));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    padding-left:   max(var(--gutter), env(safe-area-inset-left));
+    padding-right:  max(var(--gutter), env(safe-area-inset-right));
+    overflow-y: auto;
+  }
+  .main-nav.mobile-open a {
+    padding: 0.5rem 0;        /* generous tap target on each link */
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 14. Footer — single column, comfortable spacing
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .site-footer {
+    padding-top:    var(--space-7, 3rem);
+    padding-bottom: max(var(--space-6, 2.5rem), env(safe-area-inset-bottom));
+    text-align: left;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6, 2.5rem);
+  }
+  .footer-col {
+    align-items: flex-start;
+  }
+  .footer-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 15. Cookie banner — readable on the smallest phones
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cookie-banner {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 1.25rem max(1rem, env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+  .cookie-banner-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .cookie-banner-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+  .cookie-banner-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 16. Process indicator + scroll cue — hide on smallest screens
+ *     where they'd compete with content
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .scroll-indicator,
+  .scroll-cue {
+    display: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 17. Reduce body texture overlay on mobile — perf + clarity
+ * ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  body::before { opacity: 0.25; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 18. Reduced motion — respect user preference everywhere
+ * ────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 19. High-DPI mobile — sharper borders
+ * ────────────────────────────────────────────────────────────────── */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 2dppx) {
+  .about-image::before,
+  .product-card,
+  .collection-card {
+    border-width: 0.5px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  ADMIN PANEL — Mobile optimisation
+ * ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Sidebar becomes top horizontal scrollable nav */
+  .admin-body {
+    grid-template-columns: 1fr;
+  }
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    height: auto;
+    min-height: auto;
+    padding: 0.75rem 1rem;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .admin-brand {
+    padding: 0 0 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .admin-brand-mark { font-size: 0.85rem; }
+  .admin-brand-name { font-size: 0.9rem; }
+  .admin-brand-sub { display: none; }
+  .admin-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.25rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-nav a {
+    flex: 0 0 auto;
+    padding: 0.55em 0.85em;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    border-radius: 4px;
+  }
+  .admin-nav a .ic { display: none; }     /* save horizontal space */
+  .admin-foot {
+    flex-direction: row;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #2a2a2a;
+    margin-top: 0.5rem;
+  }
+  .admin-foot a { font-size: 0.75rem; padding: 0.4em 0.6em; }
+
+  /* Main content: smaller padding */
+  .admin-main {
+    padding: 1.25rem 1rem 3rem;
+  }
+  .admin-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .admin-page-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  .admin-actions {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Card grids: single column on phone */
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Image grid (product edit) — 2 columns instead of 4+ */
+  .img-grid,
+  .img-grid-managed {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  /* Forms: comfortable inputs */
+  .admin-form input[type="text"],
+  .admin-form input[type="email"],
+  .admin-form input[type="number"],
+  .admin-form textarea,
+  .admin-form select {
+    font-size: 16px !important;       /* prevent iOS zoom */
+    padding: 0.7em 0.85em;
+  }
+  .form-card {
+    padding: 1.25rem 1rem;
+  }
+  .form-card h3 {
+    font-size: 1rem;
+  }
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .form-actions button,
+  .form-actions a {
+    width: 100%;
+    min-height: 44px;
+    text-align: center;
+  }
+
+  /* Content management page — stack the language inputs */
+  .content-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .content-langs { gap: 0.5rem; }
+  .content-row-action button {
+    width: 100%;
+  }
+
+  /* Gallery admin: 2 columns of larger tiles instead of dense grid */
+  .gallery-admin-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Toggle pills line up vertically on narrow screens */
+  .quick-toggles {
+    gap: 0.4rem;
+  }
+  .toggle-pill {
+    flex: 1;
+    justify-content: center;
+    min-height: 36px;
+  }
+
+  /* Login form — comfortable */
+  .admin-login {
+    padding: 1.5rem 1rem;
+  }
+  .admin-login form {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Tighter still on narrow phones */
+  .admin-main { padding: 1rem 0.875rem 2.5rem; }
+  .admin-page-header h1 { font-size: 1.35rem; }
+  .form-card { padding: 1rem 0.875rem; }
+  .img-grid,
+  .img-grid-managed { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+}

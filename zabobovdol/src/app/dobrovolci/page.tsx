@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
+import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,7 @@ export default async function VolunteersPage() {
           За връзка с доброволец пишете на нас — не публикуваме лични телефони от
           съображения за сигурност.
         </p>
+        <ReportContent subject="Профил на доброволец" path="/dobrovolci" />
       </div>
     </>
   );

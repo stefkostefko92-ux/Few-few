@@ -113,25 +113,36 @@ router.post(
     return res.status(503).json({ error: `The ${plan}/${interval} plan is not configured on this server.` });
   }
 
-  // F7 — Право на отказ за дигитална услуга (чл. 16(м) Дир. 2011/83/ЕС; ЗЗП).
-  // Достъпът се активира незабавно, затова изискваме ИЗРИЧНО предварително
-  // съгласие от потребителя, че губи 14-дневното право на отказ за този период.
-  // Без булев true → отказваме да създадем сесия (не доверяваме липсващ/неистинен флаг).
+  // F7 — Право на отказ за дигитална УСЛУГА (чл. 16(а) Дир. 2011/83/ЕС, изм.
+  // Дир. (ЕС) 2019/2161; ЗЗП). Изпълнението започва незабавно с изричното
+  // искане на потребителя; правото на отказ се губи едва при ПЪЛНО изпълнение,
+  // а при по-ранен отказ се дължи пропорционална сума (чл. 14(3)). Изискваме
+  // изрично предварително съгласие — без булев true не създаваме сесия.
   if (withdrawalConsent !== true) {
     return res.status(400).json({
       error:
-        "Withdrawal-rights consent is required before starting the subscription (Art. 16(m) Directive 2011/83/EU).",
+        "Withdrawal-rights consent is required before starting the subscription (Art. 16(a) Directive 2011/83/EU).",
     });
   }
 
   try {
     const server = await prisma.server.findUnique({ where: { id: serverId } });
     if (!server) return res.status(404).json({ error: "Server not found" });
-    if (server.isPremium) return res.status(400).json({ error: "Server is already Premium" });
+    // Съществуващ абонат не минава през втори Checkout (би създал ВТОРИ
+    // паралелен абонамент → двойно таксуване). Смяната Premium↔White-label
+    // става през Customer Portal (subscription_update е включен от
+    // scripts/stripe-setup.sh; webhook-ът синхронизира новата тарифа).
+    if (server.isPremium) {
+      return res.status(400).json({
+        error: "This server already has an active subscription. Change plans from the billing portal (Manage Subscription).",
+        code: "USE_PORTAL",
+      });
+    }
 
     // F7 — Логваме съгласието като доказателство ПРЕДИ да създадем сесията
     // (timestamp идва от createdAt @default(now())). Доказва изричното съгласие
-    // при евентуален спор за правото на отказ.
+    // при евентуален спор за правото на отказ. legalBasis съвпада с текста,
+    // който потребителят реално вижда и приема в UI (чл. 16(а) — услуга).
     await prisma.auditLog.create({
       data: {
         actorId: req.user.id,
@@ -140,7 +151,7 @@ router.post(
         targetId: serverId,
         metadata: {
           withdrawalConsent: true,
-          legalBasis: "Art. 16(m) Directive 2011/83/EU",
+          legalBasis: "Art. 16(a) Directive 2011/83/EU",
           consentedAt: new Date().toISOString(),
         },
       },
@@ -193,6 +204,9 @@ router.post(
         automatic_tax: { enabled: true },
         tax_id_collection: { enabled: true },
         customer_update: { address: "auto", name: "auto" },
+        // ЕС доказателство за местоположение (2 непротиворечиви елемента за
+        // дигитални услуги) + пълен billing адрес на фактурата (чл. 114 ЗДДС).
+        billing_address_collection: "required",
         success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
         metadata: { serverId, plan, interval },
@@ -239,6 +253,12 @@ router.post(
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: server.stripeCustomerId,
       return_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}`,
+      // Конфигурацията от stripe-setup.sh включва subscription_update — това е
+      // ЕДИНСТВЕНИЯТ път за смяна Premium↔White-label (create-checkout блокира
+      // втори абонамент). Без env пада към default конфигурацията на акаунта.
+      ...(process.env.STRIPE_PORTAL_CONFIGURATION_ID && {
+        configuration: process.env.STRIPE_PORTAL_CONFIGURATION_ID,
+      }),
     });
 
     res.json({ url: portalSession.url });
@@ -400,6 +420,12 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // payment log-а, нито 20% комисионната за афилиейта.
         // Reflect the paid tier (a portal plan-change lands here as an invoice).
         const paidTier = planFromInvoice(invoice);
+        // Тих drift guard: платена фактура, чиято цена не мапва към тарифа,
+        // значи env price map е разминат с реалния Stripe акаунт — достъпът
+        // пак се дава (isPremium), но етикетът на тарифата би застоял.
+        if (!paidTier) {
+          console.warn(`⚠️ invoice.paid за ${server.id}: цената не мапва към тарифа (провери STRIPE_PRICE_* env)`);
+        }
 
         await runOnce(async (tx) => {
           // B2 — успешно плащане ПРОВИЗИРА достъп: платил клиент не бива да
@@ -416,6 +442,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
               ...(server.premiumSince ? {} : { premiumSince: new Date() }),
               // Sync the tier if the invoice's price maps to a known plan.
               ...(paidTier && { plan: paidTier.plan, billingInterval: paidTier.interval, planSource: "stripe" }),
+              // Немапната цена + текущ plan=free → безопасен под premium (не
+              // разчитаме на grandfather fallback-а, който дава whitelabel).
+              ...(!paidTier && server.plan === "free" && { plan: "premium", planSource: "stripe" }),
               pastDueSince: null,
             },
           });
@@ -539,6 +568,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
               isPremium: false,
               plan: "free",
               billingInterval: null,
+              // planSource също пада: иначе остатъчното "stripe" блокира
+              // по-късен Discord re-grant (mutual-exclusion guard-а).
+              planSource: null,
               stripeStatus: "canceled",
               stripeSubscriptionId: null,
               pastDueSince: null, // C3 — приключен абонамент, маркерът отпада.
@@ -623,6 +655,11 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Reflect the current tier from the subscription's price (covers portal
         // upgrades/downgrades between Premium and White-label).
         const subTier = planFromSubscription(sub);
+        // Тих drift guard (както при invoice.paid): активен абонамент без
+        // разпознаваема цена → env map разминат; логваме за диагностика.
+        if (["active", "trialing"].includes(sub.status) && !subTier) {
+          console.warn(`⚠️ subscription.updated за ${server.id}: цената не мапва към тарифа (провери STRIPE_PRICE_* env)`);
+        }
 
         await runOnce(async (tx) => {
           await tx.server.update({
@@ -639,6 +676,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
               }),
               // Keep the tier in sync whenever access is on and the price maps.
               ...(premiumOn && subTier && { plan: subTier.plan, billingInterval: subTier.interval, planSource: "stripe" }),
+              // Немапната цена + plan=free → безопасен под premium (иначе
+              // grandfather fallback-ът би дал whitelabel над-грант).
+              ...(premiumOn && !subTier && server.plan === "free" && { plan: "premium", planSource: "stripe" }),
               // Отнемане на достъп при изчерпани ретраи / изтекъл incomplete.
               ...(premiumOff && { isPremium: false, plan: "free", billingInterval: null }),
               // C3 — past_due: засичаме началото (само при първи преход).

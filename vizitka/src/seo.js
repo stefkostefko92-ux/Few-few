@@ -195,7 +195,7 @@ export function siteJsonLd(base) {
         inLanguage: 'bg',
         description:
           'Безплатна дигитална визитка с постоянен QR код — професионален профил (личен или фирмен), който винаги е актуален.',
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'BGN' },
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
         areaServed: { '@type': 'Country', name: 'Bulgaria' },
         provider: { '@id': `${base}/#organization` },
         publisher: { '@id': `${base}/#organization` },

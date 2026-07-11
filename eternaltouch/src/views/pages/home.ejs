@@ -1,0 +1,266 @@
+<!-- ════════════════════════════════════════════════ -->
+<!-- HERO                                              -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow"><%- content['hero.tagline'] || t('meta.tagline') %></div>
+
+    <h1 class="hero-title"><%- content['hero.title'] || 'Fatto a mano,<br><em>per durare</em>.' %></h1>
+
+    <p class="hero-subtitle"><%- content['hero.subtitle'] || t('meta.description') %></p>
+
+    <div class="hero-cta">
+      <a href="#collections" class="btn btn-arrow"><%= t('hero.discover') %></a>
+      <a href="#contact" class="btn btn-solid btn-arrow"><%= t('hero.writeToUs') %></a>
+    </div>
+  </div>
+
+  <div class="hero-scroll" aria-hidden="true">
+    <span><%= t('hero.scrollDown') %></span>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- COLLECTIONS                                       -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section" id="collections">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow" data-reveal><%= t('collections.eyebrow') %></div>
+      <h2 class="section-title" data-reveal data-reveal-delay="1"><%= t('collections.title') %></h2>
+      <p class="section-subtitle" data-reveal data-reveal-delay="2"><%= t('collections.subtitle') %></p>
+    </div>
+
+    <div class="collections-grid">
+      <% collections.forEach((c, i) => { %>
+        <a href="/collections/<%= c.slug %>" class="collection-card" data-reveal data-reveal-delay="<%= i + 1 %>">
+          <div class="collection-card-image">
+            <% if (c.coverImage) { %>
+              <img src="<%= c.coverImage %>" alt="<%= localized(c, 'name') %>" loading="lazy" decoding="async">
+            <% } else { %>
+              <!-- Placeholder pattern when no image yet -->
+              <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;">
+                <defs>
+                  <pattern id="dots-<%= i %>" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <circle cx="10" cy="10" r="1" fill="#C9A96E" opacity="0.3"/>
+                  </pattern>
+                </defs>
+                <rect width="300" height="400" fill="#F2EBDD"/>
+                <rect width="300" height="400" fill="url(#dots-<%= i %>)"/>
+                <text x="150" y="200" text-anchor="middle" font-family="Italiana, serif" font-size="56" fill="#B8956A" opacity="0.4"><%= String(i + 1).padStart(2, '0') %></text>
+              </svg>
+            <% } %>
+          </div>
+          <div class="collection-card-meta">
+            <span class="collection-card-number">— N° <%= String(i + 1).padStart(2, '0') %> —</span>
+            <h3 class="collection-card-name"><%= localized(c, 'name') %></h3>
+            <p class="collection-card-tagline"><%= localized(c, 'tagline') %></p>
+            <span class="collection-card-link"><%= t('common.discoverMore') %> →</span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- ABOUT (Atelier)                                  -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section section-deep" id="about">
+  <div class="container">
+    <div class="about">
+      <div class="about-image about-image-logo" data-reveal>
+        <img src="/images/logo-card.jpg" alt="Eternal Touch — Ателие, Бобов дол, България" width="1100" height="786" loading="lazy" decoding="async">
+      </div>
+
+      <div class="about-content" data-reveal data-reveal-delay="2">
+        <div class="eyebrow"><%- content['about.eyebrow'] || t('nav.about') %></div>
+        <h2 class="about-title"><%- content['about.title'] || 'La nostra storia.' %></h2>
+        <div class="about-body">
+          <%- content['about.body'] || '<p>Storia dell\'atelier...</p>' %>
+        </div>
+        <div class="about-signature">
+          <strong>Simona · Ivy · Maya</strong>
+          <span>— <%= t('contact.phoneIt') %> & <%= t('contact.phoneBg') %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PROCESS                                           -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="process" id="process">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow" data-reveal><%- content['process.eyebrow'] || t('nav.process') %></div>
+      <h2 class="section-title" data-reveal data-reveal-delay="1"><%- content['process.title'] || 'Il processo' %></h2>
+    </div>
+
+    <div class="process-steps">
+      <% [1,2,3,4].forEach(n => { %>
+        <div class="process-step" data-reveal data-reveal-delay="<%= n %>">
+          <div class="process-step-number"><%= String(n).padStart(2, '0') %></div>
+          <h3 class="process-step-title"><%- content[`process.step${n}.title`] || `Step ${n}` %></h3>
+          <p class="process-step-body"><%- content[`process.step${n}.body`] || '' %></p>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- GALLERY                                           -->
+<!-- ════════════════════════════════════════════════ -->
+<% if (gallery && gallery.length > 0) { %>
+<section class="section" id="gallery">
+  <div class="container-wide">
+    <div class="section-header">
+      <div class="eyebrow" data-reveal><%= t('gallery.eyebrow') %></div>
+      <h2 class="section-title" data-reveal data-reveal-delay="1"><%= t('gallery.title') %></h2>
+      <p class="section-subtitle" data-reveal data-reveal-delay="2"><%= t('gallery.subtitle') %></p>
+    </div>
+
+    <div class="gallery-grid" id="galleryGrid">
+      <% gallery.slice(0, 9).forEach((g, i) => { %>
+        <figure class="gallery-item" data-reveal data-reveal-delay="<%= Math.min(i + 1, 4) %>" data-image="<%= g.image %>">
+          <img src="<%= g.image %>" alt="<%= localized(g, 'title') || `Gallery ${i + 1}` %>" loading="lazy" decoding="async">
+        </figure>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- FAQ                                               -->
+<!-- ════════════════════════════════════════════════ -->
+<% if (content['faq.title']) { %>
+<section class="section section-faq" id="faq">
+  <div class="container">
+    <div class="section-header" data-reveal>
+      <div class="eyebrow"><%= content['faq.eyebrow'] || 'FAQ' %></div>
+      <h2 class="section-title"><%- content['faq.title'] %></h2>
+    </div>
+    <div class="faq-list">
+      <% for (let i = 1; i <= 6; i++) {
+           const q = content[`faq.q${i}.q`];
+           const a = content[`faq.q${i}.a`];
+           if (!q || !a) continue;
+      %>
+      <details class="faq-item" data-reveal data-reveal-delay="<%= Math.min(i, 4) %>">
+        <summary class="faq-question">
+          <span class="faq-q-text"><%- q %></span>
+          <span class="faq-icon" aria-hidden="true">+</span>
+        </summary>
+        <div class="faq-answer">
+          <p><%- a %></p>
+        </div>
+      </details>
+      <% } %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- CONTACT                                           -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="section-header" style="text-align: left; max-width: 100%;">
+      <div class="eyebrow" data-reveal><%- content['contact.eyebrow'] || t('contact.writeUs') %></div>
+      <h2 class="section-title" style="text-align: left;" data-reveal data-reveal-delay="1"><%- content['contact.title'] || t('contact.writeUs') %></h2>
+      <p class="section-subtitle" style="margin: 0; text-align: left;" data-reveal data-reveal-delay="2"><%- content['contact.subtitle'] || '' %></p>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-info" data-reveal>
+        <div class="contact-info-block">
+          <span class="contact-info-label">Email</span>
+          <a href="mailto:info@eternaltouch.it" class="contact-info-value">info@eternaltouch.it</a>
+        </div>
+
+        <div class="contact-info-block">
+          <span class="contact-info-label"><%= t('contact.callUs') %></span>
+          <a href="tel:+359877876709" class="contact-info-value">
+            +359 87 787 6709
+            <span class="country-tag">BG</span>
+          </a>
+          <span class="contact-info-name">Simona</span>
+
+          <a href="tel:+393936943854" class="contact-info-value" style="margin-top: 1rem;">
+            +39 393 694 3854
+            <span class="country-tag">IT</span>
+          </a>
+          <span class="contact-info-name">Ivy</span>
+
+          <a href="tel:+393921806719" class="contact-info-value" style="margin-top: 1rem;">
+            +39 392 180 6719
+            <span class="country-tag">IT</span>
+          </a>
+          <span class="contact-info-name">Maya</span>
+        </div>
+
+        <div class="contact-info-block">
+          <span class="contact-info-label"><%= t('contact.ourAddress') %></span>
+          <div class="contact-info-value" style="font-size: var(--fs-md);">
+            Ул. Самуил 3<br>Бобов дол 2670<br>България
+          </div>
+        </div>
+      </div>
+
+      <form class="contact-form" id="contactForm" data-reveal data-reveal-delay="2" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="cf-name"><%= t('contact.name') %></label>
+            <input class="form-input" type="text" id="cf-name" name="name" placeholder="<%= t('contact.namePlaceholder') %>" required maxlength="100" autocomplete="name" autocapitalize="words" spellcheck="false">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-email"><%= t('contact.email') %></label>
+            <input class="form-input" type="email" id="cf-email" name="email" placeholder="<%= t('contact.emailPlaceholder') %>" required maxlength="200" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="cf-phone"><%= t('contact.phone') %></label>
+            <input class="form-input" type="tel" id="cf-phone" name="phone" placeholder="<%= t('contact.phonePlaceholder') %>" maxlength="50" autocomplete="tel" inputmode="tel">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-subject"><%= t('contact.subject') %></label>
+            <input class="form-input" type="text" id="cf-subject" name="subject" placeholder="<%= t('contact.subjectPlaceholder') %>" maxlength="200">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cf-message"><%= t('contact.message') %></label>
+          <textarea class="form-textarea" id="cf-message" name="message" placeholder="<%= t('contact.messagePlaceholder') %>" required maxlength="5000" rows="5"></textarea>
+        </div>
+
+        <!-- Honeypot -->
+        <input type="text" name="_gotcha" class="form-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <!-- GDPR consent -->
+        <div class="form-consent">
+          <label class="form-consent-label">
+            <input type="checkbox" name="privacyConsent" required value="yes">
+            <span><%= t('contact.privacyConsent') %><a href="/privacy" target="_blank" rel="noopener"><%= t('contact.privacyConsentLink') %></a><%= t('contact.privacyConsentEnd') %></span>
+          </label>
+        </div>
+
+        <div class="form-submit-row">
+          <span class="form-status" id="formStatus" role="status" aria-live="polite"></span>
+          <button type="submit" class="btn btn-arrow"><%= t('contact.submit') %></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

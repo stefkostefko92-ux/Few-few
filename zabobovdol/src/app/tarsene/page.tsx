@@ -42,7 +42,7 @@ export default async function SearchPage({
   return (
     <>
       <PageHero
-        title={query ? `Резултати за „${query}"` : "Търсене"}
+        title={query ? `Резултати за „${query}“` : "Търсене"}
         crumbs={[{ name: "Търсене", path: "/tarsene" }]}
       />
       <div className="container-content py-10">
@@ -54,7 +54,7 @@ export default async function SearchPage({
           <EmptyState title="Напишете дума за търсене (поне 2 букви)." />
         ) : results.length === 0 ? (
           <EmptyState
-            title={`Нищо не е намерено за „${query}".`}
+            title={`Нищо не е намерено за „${query}“.`}
             hint="Опитайте с друга дума или попитайте дигиталния помощник долу вдясно."
           />
         ) : (

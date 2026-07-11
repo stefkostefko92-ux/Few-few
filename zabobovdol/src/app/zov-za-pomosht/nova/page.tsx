@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { PageHero } from "@/components/ui";
 import { submitHelpCause, type HelpState } from "./actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: HelpState = { ok: false };
 
@@ -90,6 +91,13 @@ export default function NewHelpCausePage() {
               Описание *
             </label>
             <textarea id="description" name="description" required rows={6} maxLength={4000} className="input" placeholder="Каква помощ е нужна или какво предлагате?" />
+            {/* Защита на чувствителни данни (чл. 9 GDPR): публикацията е публична. */}
+            <p className="mt-2 rounded-lg border border-gold-200 bg-gold-50 px-3 py-2 text-sm text-slate-700">
+              <strong>Важно:</strong> обявата е публична. Ако пишете за друг
+              човек, първо вземете съгласието му. <strong>Не посочвайте</strong>{" "}
+              здравословно състояние, диагнози или други чувствителни данни —
+              опишете само каква помощ е нужна.
+            </p>
           </div>
 
           <fieldset className="rounded-lg border border-slate-200 p-4">
@@ -116,6 +124,8 @@ export default function NewHelpCausePage() {
             Посочете поне телефон или имейл. Внимавайте при дарения — не превеждайте
             пари на непознати без проверка.
           </p>
+
+          <PrivacyNote />
 
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Изпращане…" : "Изпратете"}

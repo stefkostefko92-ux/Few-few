@@ -1,5 +1,7 @@
 // Fallback for any ad that still starts: skip it, fast-forward, mute, and
-// dismiss anti-adblock pause overlays. Also clears in-player ad UI.
+// handle YouTube's anti-adblock enforcement. Selector lists are seeded with
+// bundled defaults and extended by the live filter update (liveConfig.youtube),
+// so when YouTube renames its DOM we can fix it server-side without a re-review.
 (function () {
   "use strict";
 
@@ -9,7 +11,7 @@
   let prevRate = 1;
   let bypassReloaded = false; // guards the enforcement reload against loops
 
-  const SKIP = [
+  const SKIP_DEFAULT = [
     ".ytp-ad-skip-button",
     ".ytp-ad-skip-button-modern",
     ".ytp-skip-ad-button",
@@ -19,6 +21,34 @@
     "button.ytp-ad-skip-button-modern",
     ".ytp-ad-survey-answer-button",
   ];
+  // Elements that mean YouTube refused to play because it detected us. Kept
+  // specific (a generic error class would fire on deleted/private videos and
+  // wrongly disable ad removal); renamed dialogs are handled via the live
+  // "enforcement" list from the filter update.
+  const ENFORCE_DEFAULT = [
+    "ytd-enforcement-message-view-model",
+    "ytd-enforcement-message-desktop-renderer",
+  ];
+
+  let SKIP = SKIP_DEFAULT.slice();
+  let ENFORCE = ENFORCE_DEFAULT.slice();
+  let HIDE = [];
+
+  function applyConfig(yt) {
+    SKIP = SKIP_DEFAULT.concat(Array.isArray(yt?.skip) ? yt.skip : []);
+    ENFORCE = ENFORCE_DEFAULT.concat(Array.isArray(yt?.enforcement) ? yt.enforcement : []);
+    HIDE = Array.isArray(yt?.hide) ? yt.hide : [];
+  }
+
+  function matchAny(selectors) {
+    for (const sel of selectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el) return el;
+      } catch {}
+    }
+    return null;
+  }
 
   function run() {
     if (!enabled) return;
@@ -28,7 +58,6 @@
     const showing = !!player?.classList.contains("ad-showing");
 
     if (showing && video) {
-      // Remember the real playback state once, before we fast-forward the ad.
       if (!adActive) {
         adActive = true;
         prevMuted = video.muted;
@@ -42,7 +71,6 @@
         video.playbackRate = 16;
       } catch {}
     } else if (adActive && video) {
-      // Ad finished, restore the user's mute/speed on the shared element.
       adActive = false;
       try {
         video.playbackRate = prevRate || 1;
@@ -51,11 +79,28 @@
     }
 
     for (const sel of SKIP) {
-      document.querySelectorAll(sel).forEach((b) => {
+      let nodes;
+      try {
+        nodes = document.querySelectorAll(sel);
+      } catch {
+        continue;
+      }
+      nodes.forEach((b) => {
         try {
           b.click();
         } catch {}
       });
+    }
+
+    // Config-driven hiding of in-page YouTube ad surfaces.
+    for (const sel of HIDE) {
+      let nodes;
+      try {
+        nodes = document.querySelectorAll(sel);
+      } catch {
+        continue;
+      }
+      nodes.forEach((el) => el.style.setProperty("display", "none", "important"));
     }
 
     const dismiss = document.querySelector("tp-yt-paper-button#dismiss-button");
@@ -65,13 +110,10 @@
       } catch {}
     }
 
-    // Anti-adblock enforcement: YouTube detected our ad removal and refused to
-    // play the video. Reload once without ad removal so the clip actually
-    // loads (with ads, which we still auto-skip). If we're already bypassing,
-    // just clear the click-blocking backdrop and restore the page.
-    const enf = document.querySelector(
-      "ytd-enforcement-message-view-model, ytd-enforcement-message-desktop-renderer"
-    );
+    // Enforcement / black screen: reload once with ad removal disabled so the
+    // clip plays (with ads, which we still auto-skip). Reload only when we can
+    // persist the bypass, so a blocked sessionStorage can't loop.
+    const enf = matchAny(ENFORCE);
     if (enf) {
       let bypassing = bypassReloaded;
       try {
@@ -79,8 +121,6 @@
       } catch {}
 
       if (!bypassing) {
-        // Only reload if we can persist the bypass; otherwise a reload would
-        // just loop (the reloaded page would re-detect enforcement).
         let persisted = false;
         try {
           sessionStorage.setItem("tbab_yt_bypass", "1");
@@ -93,11 +133,12 @@
         }
       }
 
-      const dialog =
-        enf.closest("ytd-popup-container, tp-yt-paper-dialog") || enf;
-      try {
-        dialog.remove();
-      } catch {}
+      const dialog = enf.closest("ytd-popup-container, tp-yt-paper-dialog");
+      if (dialog) {
+        try {
+          dialog.remove();
+        } catch {}
+      }
       document.querySelectorAll("tp-yt-iron-overlay-backdrop").forEach((b) => {
         try {
           b.remove();
@@ -127,14 +168,16 @@
   const host = location.hostname.replace(/^www\./, "");
   const hostMatches = (d) => host === d || host.endsWith("." + d);
 
-  chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {
+  chrome.storage?.local.get(["enabled", "features", "allowlist", "liveConfig"], (data) => {
     enabled = data.enabled !== false;
     const ytOn = (data.features || {}).youtube !== false;
     const allowed = (data.allowlist || []).some(hostMatches);
+    applyConfig(data.liveConfig && data.liveConfig.youtube);
     if (enabled && ytOn && !allowed) start();
   });
 
   chrome.storage?.onChanged.addListener((c) => {
     if (c.enabled) enabled = c.enabled.newValue !== false;
+    if (c.liveConfig) applyConfig(c.liveConfig.newValue && c.liveConfig.newValue.youtube);
   });
 })();

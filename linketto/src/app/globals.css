@@ -1,0 +1,646 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply antialiased;
+}
+
+/* ── Вайбът на landing-а: живи, но дисциплинирани CSS анимации ────────── */
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6%, -4%, 0) scale(1.15);
+  }
+  66% {
+    transform: translate3d(-5%, 5%, 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes greet-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--tilt, 0deg));
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-aurora {
+  animation: aurora-drift 18s ease-in-out infinite;
+  will-change: transform;
+}
+.animate-aurora-slow {
+  animation: aurora-drift 26s ease-in-out infinite reverse;
+  will-change: transform;
+}
+.animate-float {
+  animation: float-soft 7s ease-in-out infinite;
+}
+.animate-greet {
+  animation: greet-float 6s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+.animate-marquee {
+  animation: marquee-scroll 30s linear infinite;
+}
+.animate-rise {
+  animation: fade-rise 0.8s ease-out both;
+}
+
+/* Зърнеста текстура — дълбочина без картинки */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Градиентен текст за акцентите */
+.text-glow {
+  background: linear-gradient(100deg, #7dd3fc 0%, #a78bfa 45%, #f0abfc 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Пълен спектакъл за ВСИЧКИ (изрично решение на собственика) — не
+   приглушаваме заради prefers-reduced-motion. Единствените нередуцируеми
+   граници са безопасностни, не естетически: НИЩО не мига/стробира
+   (епилепсия) и без хоризонтален overflow / чупене на четимостта. */
+
+
+/* ── Втора вълна ефекти: изскачащи, плуващи, зарибяващи ─────────────── */
+
+@keyframes shimmer-sweep {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes hue-drift {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(35deg);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(24px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Заглавие с преливащ светлинен блясък */
+.title-shimmer {
+  background: linear-gradient(
+    110deg,
+    #ffffff 25%,
+    #7dd3fc 42%,
+    #c4b5fd 52%,
+    #ffffff 68%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-sweep 5.5s linear infinite;
+}
+
+/* Пулсиращо сияние зад телефона */
+.phone-glow {
+  animation: glow-pulse 5s ease-in-out infinite;
+}
+
+/* 3D наклон на телефона при hover */
+.phone-wrap {
+  perspective: 1200px;
+}
+.phone-tilt {
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+.phone-wrap:hover .phone-tilt {
+  transform: rotateY(-10deg) rotateX(5deg) scale(1.04);
+}
+
+/* Бавен дъх на цвета върху aurora петната */
+.animate-hue {
+  animation: hue-drift 22s ease-in-out infinite;
+}
+
+/* Светлинен лъч по бутоните */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+}
+.btn-shine:hover::after {
+  transform: translateX(130%);
+  transition: transform 0.7s ease;
+}
+
+/* Жив градиент на CTA вълната */
+.cta-live {
+  background-size: 200% 200%;
+  animation: shimmer-sweep 9s linear infinite;
+}
+
+/* Marquee в обратна посока (втора лента) */
+.animate-marquee-reverse {
+  animation: marquee-scroll 38s linear infinite reverse;
+}
+
+/* Изскачане при скрол (Chromium: scroll-driven; иначе — винаги видимо) */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: fade-rise 1s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+  .reveal-pop {
+    animation: pop-in 0.9s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 60%;
+  }
+}
+
+
+/* Пулсиращо сияние на кръглите икони (стъпаловидни закъснения в JSX) */
+@keyframes circle-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 55px rgba(56, 189, 248, 0.95);
+  }
+}
+.icon-pulse {
+  animation: circle-glow 3.6s ease-in-out infinite;
+}
+
+
+/* Плуващи полета: картите се носят във въздуха, всяка със свой наклон,
+   ритъм и закъснение (--tilt/--delay/--dur идват от JSX) */
+@keyframes card-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(var(--tilt, 0deg));
+  }
+}
+.card-drift {
+  animation: card-drift var(--dur, 7s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+
+/* ── Трета вълна: скролът е сцена ─────────────────────────────────────── */
+
+/* Светеща лента за прогреса на скрола (Chromium; другаде просто я няма) */
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    z-index: 60;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #d946ef);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+    animation: progress-grow linear both;
+    animation-timeline: scroll();
+  }
+}
+@keyframes progress-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Звезди в нощното небе на hero-то — бавно дишане, никога стробиране */
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+}
+.star {
+  position: absolute;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  box-shadow: 0 0 6px 1px rgba(125, 211, 252, 0.8);
+  animation: star-twinkle var(--dur, 5s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Комета — рядка, плавно се появява и гасне */
+@keyframes comet-fly {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.8;
+  }
+  22% {
+    transform: translate3d(46vw, 15vh, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(46vw, 15vh, 0);
+    opacity: 0;
+  }
+}
+.comet {
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(186, 230, 253, 0),
+    rgba(186, 230, 253, 0.9)
+  );
+  rotate: 18deg;
+  opacity: 0;
+  animation: comet-fly 13s ease-in-out 3s infinite;
+}
+
+/* Броячи, които скролът навива от 0 до целта (--stat-target от JSX).
+   Без поддръжка на scroll-driven animations се показва статичната цифра. */
+@property --stat-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes stat-count {
+  from {
+    --stat-n: 0;
+  }
+  to {
+    --stat-n: var(--stat-target, 0);
+  }
+}
+.stat-live {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  .stat-live {
+    display: inline-block;
+    counter-reset: stat calc(var(--stat-n));
+    animation: stat-count 1s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 20% cover 40%;
+  }
+  .stat-live::after {
+    content: counter(stat);
+  }
+  .stat-static {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* Жива въртяща се градиентна рамка (откроеният план в цените) */
+@property --spin {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes spin-angle {
+  to {
+    --spin: 360deg;
+  }
+}
+.border-live {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    conic-gradient(from var(--spin), #0ea5e9, #8b5cf6, #ec4899, #0ea5e9)
+      border-box;
+  animation: spin-angle 5s linear infinite;
+}
+
+/* Подчертаване, което се рисува само̀ при влизане в екрана */
+.h2-draw::after {
+  content: '';
+  display: block;
+  margin: 0.7rem auto 0;
+  height: 4px;
+  width: 110px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #0ea5e9, #a855f7);
+}
+@supports (animation-timeline: view()) {
+  .h2-draw::after {
+    animation: draw-in 0.8s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+}
+@keyframes draw-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Marquee лентата спира учтиво под мишката */
+.marquee-band:hover .animate-marquee,
+.marquee-band:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+
+
+/* ── Публичният профил е жив ──────────────────────────────────────────── */
+
+/* Стъпаловиден вход на блоковете (--delay per блок от JSX) */
+@keyframes pf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pf-rise {
+  animation: pf-rise 0.7s ease-out both;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Аватарът изскача меко и носи пулсиращ пръстен в акцентния цвят */
+@keyframes pf-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.pf-pop {
+  animation: pf-pop 0.8s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+@keyframes pf-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--ring, #38bdf8) 45%, transparent),
+      0 0 18px color-mix(in srgb, var(--ring, #38bdf8) 35%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--ring, #38bdf8) 80%, transparent),
+      0 0 42px color-mix(in srgb, var(--ring, #38bdf8) 75%, transparent);
+  }
+}
+.pf-ring {
+  animation: pf-ring 4s ease-in-out 0.8s infinite;
+}
+
+/* Поздравът над името плува леко */
+.pf-greet {
+  display: inline-block;
+  animation: float-soft 5s ease-in-out infinite;
+}
+
+/* Hover сияние в официалния цвят на платформата (--brand от JSX) */
+.pf-brand {
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+}
+.pf-brand:hover {
+  box-shadow: 0 10px 34px -8px color-mix(in srgb, var(--brand) 80%, transparent);
+}
+
+/* Spotlight блок: голяма карта с дишащо сияние в акцента (--spot) */
+@keyframes pf-spot {
+  0%,
+  100% {
+    box-shadow: 0 0 18px color-mix(in srgb, var(--spot, #38bdf8) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 44px color-mix(in srgb, var(--spot, #38bdf8) 80%, transparent);
+  }
+}
+.pf-spot {
+  animation: pf-spot 3.8s ease-in-out infinite;
+}
+
+/* Жива сцена „дишащ градиент“ (--g1/--g2 от стила на профила) */
+@keyframes pf-gradient-move {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.pf-gradient {
+  background: linear-gradient(120deg, var(--g1), var(--g2), var(--g1));
+  background-size: 300% 300%;
+  animation: pf-gradient-move 14s ease-in-out infinite;
+}
+
+
+/* ── Четвърта вълна: тежката артилерия (пълен спектакъл за всички) ─────── */
+
+/* Бавно въртящ се конусен вихър — дълбочина зад hero-то и профил-картата.
+   Едно платно, само transform → композира се на GPU, никакво стробиране. */
+@keyframes conic-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.aurora-conic {
+  background: conic-gradient(
+    from 0deg,
+    rgba(14, 165, 233, 0.22),
+    rgba(139, 92, 246, 0.2),
+    rgba(217, 70, 239, 0.18),
+    rgba(56, 189, 248, 0.16),
+    rgba(14, 165, 233, 0.22)
+  );
+  filter: blur(64px);
+  animation: conic-spin 42s linear infinite;
+  will-change: transform;
+}
+
+/* Прожекторът следва курсора из целия сайт. mix-blend: screen → свети
+   само върху тъмните секции, невидим е върху белите (нула контраст-щета).
+   Плавно движение (rAF в CursorGlow.tsx), никакви резки проблясъци. */
+.cursor-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.6s ease;
+  background: radial-gradient(
+    30rem 30rem at var(--mx, 50%) var(--my, -12%),
+    rgba(125, 211, 252, 0.24),
+    rgba(168, 85, 247, 0.12) 42%,
+    transparent 72%
+  );
+}
+.cursor-glow.is-live {
+  opacity: 1;
+}
+
+/* Жив ореол зад публичната профил-карта — конусен цвят в акцента, който
+   свети през стъклото. isolation:isolate държи ореола локален (не тече
+   зад фона на main → без изтичане/overflow). */
+.pf-card-aura {
+  isolation: isolate;
+}
+.pf-card-aura::before {
+  content: '';
+  position: absolute;
+  inset: -1.4rem;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--aura, #38bdf8) 60%, transparent),
+    transparent 30%,
+    color-mix(in srgb, var(--aura, #38bdf8) 45%, transparent) 55%,
+    transparent 80%,
+    color-mix(in srgb, var(--aura, #38bdf8) 60%, transparent)
+  );
+  filter: blur(38px);
+  opacity: 0.55;
+  animation: conic-spin 34s linear infinite;
+  pointer-events: none;
+}
+
+/* Светлинен лъч, който минава по бутоните на профила при hover. Текстът
+   стои над лъча (span z-index:1) → нула щета за четимостта/контраста. */
+.pf-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.pf-sheen > span {
+  position: relative;
+  z-index: 1;
+}
+.pf-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.32) 50%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+}
+.pf-sheen:hover::after {
+  transform: translateX(130%);
+  transition: transform 0.8s ease;
+}

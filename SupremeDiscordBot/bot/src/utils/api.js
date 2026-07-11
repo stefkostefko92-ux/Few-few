@@ -104,3 +104,20 @@ export async function sendEntitlement(type, entitlement) {
   });
   return data;
 }
+
+// Startup convergence: POST the application's FULL active entitlement list so
+// the backend can grant anything missed while offline and revoke servers whose
+// entitlement expired/was refunded meanwhile. Discord never redelivers
+// entitlement gateway events, so this sweep is the source of truth on boot.
+export async function reconcileEntitlements(entitlements) {
+  const { data } = await api.post("/discord/entitlements/reconcile", {
+    entitlements: entitlements.map((e) => ({
+      id: e.id,
+      skuId: e.skuId,
+      guildId: e.guildId ?? null,
+      userId: e.userId ?? null,
+      endsAt: e.endsTimestamp ?? null,
+    })),
+  });
+  return data;
+}

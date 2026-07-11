@@ -1,0 +1,102 @@
+<section class="product-detail">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <a href="<%= langPrefix %>/"><%= req.t('nav.home') %></a>
+      <span class="sep">/</span>
+      <a href="<%= langPrefix %>/collections/<%= collection.slug %>"><%= req.localized(collection, 'name') %></a>
+      <span class="sep">/</span>
+      <span><%= req.localized(product, 'name') %></span>
+    </nav>
+
+    <div class="product-detail-grid">
+      <div class="product-gallery">
+        <% if (images && images.length > 0) { %>
+          <div class="product-gallery-main">
+            <img id="main-image" src="<%= images[0].url %>" alt="<%= req.localized(product, 'name') %>" />
+          </div>
+          <% if (images.length > 1) { %>
+            <div class="product-gallery-thumbs">
+              <% images.forEach(function(img, i) { %>
+                <button type="button" class="thumb <%= i === 0 ? 'active' : '' %>" data-image="<%= img.url %>">
+                  <img src="<%= img.thumb || img.url %>" alt="" loading="lazy" />
+                </button>
+              <% }); %>
+            </div>
+          <% } %>
+        <% } else { %>
+          <div class="placeholder-media large"></div>
+        <% } %>
+      </div>
+
+      <div class="product-content">
+        <p class="eyebrow"><%= req.localized(collection, 'name') %></p>
+        <h1 class="display-2"><%= req.localized(product, 'name') %></h1>
+        <% if (req.localized(product, 'shortDesc')) { %>
+          <p class="tagline-italic"><%= req.localized(product, 'shortDesc') %></p>
+        <% } %>
+
+        <div class="product-description">
+          <% if (req.localized(product, 'description')) { %>
+            <p><%= req.localized(product, 'description') %></p>
+          <% } %>
+        </div>
+
+        <% if (product.materials || product.dimensions) { %>
+          <dl class="product-meta">
+            <% if (product.materials) { %>
+              <div><dt><%= req.t('products.materials') %></dt><dd><%= product.materials %></dd></div>
+            <% } %>
+            <% if (product.dimensions) { %>
+              <div><dt><%= req.t('products.dimensions') %></dt><dd><%= product.dimensions %></dd></div>
+            <% } %>
+          </dl>
+        <% } %>
+
+        <div class="product-cta">
+          <a href="<%= langPrefix %>/#contact" class="btn btn-primary"><%= req.t('common.requestQuote') %></a>
+          <a href="<%= langPrefix %>/collections/<%= collection.slug %>" class="btn btn-ghost"><%= req.t('common.backToCollection') %></a>
+        </div>
+
+        <div class="product-note">
+          <p class="small"><em><%= req.t('products.handmadeNote') %></em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<% if (related && related.length > 0) { %>
+<section class="section-deep related-section">
+  <div class="container">
+    <p class="eyebrow text-center"><%= req.t('products.related') %></p>
+    <h2 class="display-3 text-center"><%= req.t('products.relatedTitle') %></h2>
+    <div class="related-grid">
+      <% related.forEach(function(p) { %>
+        <a href="<%= langPrefix %>/collections/<%= collection.slug %>/<%= p.slug %>" class="related-card" data-reveal>
+          <div class="related-card-media">
+            <% const rImages = p.images || []; %>
+            <% if (rImages.length > 0) { %>
+              <img src="<%= rImages[0].thumb || rImages[0].url %>" alt="<%= req.localized(p, 'name') %>" loading="lazy" />
+            <% } %>
+          </div>
+          <h4><%= req.localized(p, 'name') %></h4>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<script>
+  (function() {
+    const main = document.getElementById('main-image');
+    const thumbs = document.querySelectorAll('.thumb');
+    thumbs.forEach(function(t) {
+      t.addEventListener('click', function() {
+        thumbs.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        if (main) main.src = t.dataset.image;
+      });
+    });
+  })();
+</script>

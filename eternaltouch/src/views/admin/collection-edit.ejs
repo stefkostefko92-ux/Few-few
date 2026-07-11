@@ -1,0 +1,151 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <a href="/admin/collections" class="back-link">← Колекции</a>
+      <h1>Редакция на колекция</h1>
+      <p class="admin-sub">
+        <code><%= collection.slug %></code>
+        <% if (collection.isActive) { %>
+          · <a href="/collections/<%= collection.slug %>" target="_blank" rel="noopener">Виж в сайта ↗</a>
+        <% } %>
+      </p>
+    </div>
+  </header>
+
+  <% if (typeof query !== 'undefined' && query.ok) { %>
+    <div class="admin-flash admin-flash-success">
+      ✅ Записано
+      <span class="admin-flash-hint">— ако не виждаш промените, опресни с <kbd>Ctrl/Cmd + Shift + R</kbd></span>
+    </div>
+  <% } %>
+
+  <form action="/admin/collections/<%= collection.id %>" method="POST" enctype="multipart/form-data" class="admin-form" id="collectionForm">
+
+    <!-- COVER -->
+    <div class="form-card">
+      <h3>Корица</h3>
+      <% if (collection.coverImage) { %>
+        <div class="cover-preview" id="currentCover">
+          <img src="<%= collection.coverImage %>" alt="Текуща корица">
+          <span class="cover-label">Текуща</span>
+        </div>
+      <% } %>
+      <div class="cover-preview cover-preview-new" id="newCover" style="display:none">
+        <img id="newCoverImg" alt="Нова корица">
+        <span class="cover-label cover-label-new">Нова</span>
+      </div>
+      <label class="file-input">
+        <span><%= collection.coverImage ? 'Замени корицата' : 'Качи корица' %> (JPG / PNG / WebP)</span>
+        <input type="file" name="coverImage" accept="image/*" id="coverInput">
+      </label>
+    </div>
+
+    <!-- BULGARIAN FIRST -->
+    <div class="form-card">
+      <h3>🇧🇬 Български *</h3>
+      <label><span>Име</span><input type="text" name="nameBg" value="<%= collection.nameBg %>" required></label>
+      <label><span>Подзаглавие</span><input type="text" name="taglineBg" value="<%= collection.taglineBg || '' %>"></label>
+      <label><span>Описание</span><textarea name="descriptionBg" rows="6"><%= collection.descriptionBg || '' %></textarea></label>
+    </div>
+
+    <div class="form-card">
+      <h3>🇮🇹 Italiano *</h3>
+      <label><span>Nome</span><input type="text" name="nameIt" value="<%= collection.nameIt %>" required></label>
+      <label><span>Sottotitolo</span><input type="text" name="taglineIt" value="<%= collection.taglineIt || '' %>"></label>
+      <label><span>Descrizione</span><textarea name="descriptionIt" rows="6"><%= collection.descriptionIt || '' %></textarea></label>
+    </div>
+
+    <div class="form-card">
+      <h3>🇬🇧 English *</h3>
+      <label><span>Name</span><input type="text" name="nameEn" value="<%= collection.nameEn %>" required></label>
+      <label><span>Tagline</span><input type="text" name="taglineEn" value="<%= collection.taglineEn || '' %>"></label>
+      <label><span>Description</span><textarea name="descriptionEn" rows="6"><%= collection.descriptionEn || '' %></textarea></label>
+    </div>
+
+    <!-- STATUS -->
+    <div class="form-card">
+      <h3>Статус</h3>
+      <label class="checkbox">
+        <input type="checkbox" name="isActive" <%= collection.isActive ? 'checked' : '' %>>
+        <span>Видима в сайта</span>
+      </label>
+      <label><span>Подредба</span><input type="number" name="order" value="<%= collection.order %>" style="max-width:120px"></label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary-admin">
+        <span class="btn-text">Запази промените</span>
+      </button>
+      <a href="/admin/collections" class="btn-ghost-admin">Откажи</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .cover-preview {
+    position: relative;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 400px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .cover-preview img { width: 100%; display: block; }
+  .cover-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+  .cover-label-new { background: #C9A96E; }
+
+  .admin-flash {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+  }
+  .admin-flash-hint { display: block; margin-top: 0.4rem; font-size: 0.85em; opacity: 0.8; }
+  .admin-flash kbd {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 3px;
+    padding: 0.05em 0.4em;
+  }
+
+  .submitting .btn-text::after { content: ' …'; }
+  .submitting button[type="submit"] { opacity: 0.7; pointer-events: none; }
+</style>
+
+<script>
+  // Cover preview before upload
+  const coverInput = document.getElementById('coverInput');
+  const newCover = document.getElementById('newCover');
+  const newCoverImg = document.getElementById('newCoverImg');
+  if (coverInput) {
+    coverInput.addEventListener('change', () => {
+      const file = coverInput.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      newCoverImg.src = url;
+      newCoverImg.onload = () => URL.revokeObjectURL(url);
+      newCover.style.display = 'block';
+    });
+  }
+
+  // Loading state
+  document.getElementById('collectionForm')?.addEventListener('submit', () => {
+    document.getElementById('collectionForm').classList.add('submitting');
+  });
+
+  // Auto-fade flash
+  setTimeout(() => {
+    document.querySelector('.admin-flash-success')?.style.setProperty('opacity', '0.55');
+  }, 6000);
+</script>

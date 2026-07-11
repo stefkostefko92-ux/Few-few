@@ -122,8 +122,8 @@ export default function PrivacySettingsPage() {
                 <a href="https://stripe.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
               </li>
               <li className="flex justify-between border-b border-cs-border pb-2">
-                <span><strong className="text-cs-text">Anthropic PBC</strong> — AI auto-replies (USA, SCC safeguards)</span>
-                <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
+                <span><strong className="text-cs-text">Google LLC (Gemini API)</strong> — AI auto-replies (USA, SCC safeguards)</span>
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
               </li>
               <li className="flex justify-between">
                 <span><strong className="text-cs-text">Discord Inc.</strong> — Authentication + bot API (USA, SCC safeguards)</span>

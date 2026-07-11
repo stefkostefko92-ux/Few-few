@@ -28,6 +28,22 @@ export const SITE = {
     email: "zabobovdol@carbonstealth.eu",
     phone: "+359877414874",
   },
+  // Данни за фирмата-администратор (за импринт / задължителни реквизити по
+  // чл. 4 от Закона за електронната търговия и GDPR). Източник: официалните
+  // данни, публикувани от самата фирма на carbonstealth.eu.
+  company: {
+    legalName: "Карбон Стелт ЕДПК",
+    tradeName: "Carbon Stealth VCC",
+    legalForm: "Еднолично дружество с променлив капитал (ЕДПК)",
+    eik: "208725180",
+    vat: "BG208725180",
+    manager: "Стефан Костадинов",
+    address: "ул. „Самуил“ № 3, 2670 Бобов дол, обл. Кюстендил, България",
+    register:
+      "Търговски регистър и регистър на ЮЛНЦ при Агенция по вписванията",
+    email: "info@carbonstealth.eu",
+    website: "https://carbonstealth.eu",
+  },
   social: {
     facebook: "",
   },

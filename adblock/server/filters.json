@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "updated": "2026-07-10",
+  "blockDomains": [],
+  "cosmetic": [],
+  "youtube": {
+    "hide": [],
+    "skip": [],
+    "enforcement": [],
+    "adFields": [],
+    "adRenderers": [],
+    "requestFlags": [],
+    "disableRequestFlags": false
+  }
+}

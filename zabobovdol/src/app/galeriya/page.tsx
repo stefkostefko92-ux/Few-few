@@ -4,6 +4,7 @@ import { Camera, Plus } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
+import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,7 @@ export default async function GalleryPage() {
           </Link>
           .
         </p>
+        <ReportContent subject="Снимка в галерията" path="/galeriya" />
       </div>
     </>
   );

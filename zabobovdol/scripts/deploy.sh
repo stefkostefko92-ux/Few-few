@@ -73,6 +73,21 @@ if [ "$OURS_UP" = "0" ] && port_in_use "$HTTP_PORT"; then
 fi
 ok "Порт $HTTP_PORT е свободен."
 
+# --- Бекъп ПРЕДИ деплой (само ако стекът вече върви): миграциите променят
+# схемата и пресен дъмп е застраховката срещу лоша миграция. ---
+if $DC ps 2>/dev/null | grep -i "db" | grep -qiE 'up|running|healthy'; then
+  bold "0/3 Правя бекъп на базата преди деплоя…"
+  mkdir -p backups
+  PRE_DUMP="backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql.gz"
+  if $DC exec -T db sh -c 'pg_dump -U "${POSTGRES_USER:-zabobovdol}" "${POSTGRES_DB:-zabobovdol}"' | gzip > "$PRE_DUMP"; then
+    ok "Бекъп преди деплой: $PRE_DUMP"
+  else
+    rm -f "$PRE_DUMP"
+    warn "Бекъпът преди деплой не успя — спирам (не деплойвам без застраховка)."
+    exit 1
+  fi
+fi
+
 bold "1/3 Строя и вдигам стека (приложение, база, бекъп, nginx)…"
 $DC up -d --build
 
@@ -102,6 +117,9 @@ else
   bold "3/3 Базата вече е заредена ($USERS потребителя) — пропускам сийда."
   warn "За принудително презареждане: ./scripts/deploy.sh --seed"
 fi
+
+# Хигиена на диска: старите образи от предишни билдове се трупат при всеки деплой.
+docker image prune -f >/dev/null 2>&1 || true
 
 echo
 ok "Готово! Сайтът работи на порт $HTTP_PORT (http://<IP на сървъра>:$HTTP_PORT)."

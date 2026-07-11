@@ -58,7 +58,12 @@ async function loadEventModules() {
   // writes a shared hash file — running it per white-label client redeploys
   // the main bot's commands once per custom client and races the hash file.
   // clientManager registers guild commands for custom clients itself.
-  const files = readdirSync(eventsDir).filter((f) => f.endsWith(".js") && f !== "ready.js");
+  // Skip entitlement*.js: Discord monetization SKUs belong to the MAIN
+  // application only — custom bot apps never receive entitlements for our
+  // SKUs, so wiring these on white-label clients is dead (and noisy) coupling.
+  const files = readdirSync(eventsDir).filter(
+    (f) => f.endsWith(".js") && f !== "ready.js" && !f.startsWith("entitlement")
+  );
   const events = [];
   for (const file of files) {
     const mod = await import(pathToFileURL(join(eventsDir, file)).href);
@@ -80,6 +85,11 @@ async function createConfiguredClient(mainClient) {
 
   // Share command collection (it's read-only after startup)
   client.commands = mainClient.commands;
+
+  // Mark as a white-label client — a separate Discord application that does
+  // NOT own the main bot's SKUs. Utils (e.g. sendPremiumRequired) check this
+  // to avoid sending native premium buttons with a foreign sku_id.
+  client.isWhiteLabel = true;
 
   // Attach every event handler the main client has
   const events = await loadEventModules();

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="<%= req.lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Admin' %> — Eternal Touch</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/mobile.css">
+  <!-- Self-hosted fonts (no Google requests). Inter (body) falls back to the
+       system UI font stack defined in admin.css. -->
+  <link rel="stylesheet" href="/fonts/fonts.css">
+</head>
+<body class="admin-body">
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <span class="admin-brand-mark">ET</span>
+      <span class="admin-brand-name">Eternal Touch</span>
+      <span class="admin-brand-sub">Admin</span>
+    </div>
+    <nav class="admin-nav">
+      <a href="/admin" class="<%= activeAdmin === 'dashboard' ? 'active' : '' %>"><span class="ic">▦</span>Табло</a>
+      <a href="/admin/collections" class="<%= activeAdmin === 'collections' ? 'active' : '' %>"><span class="ic">❖</span>Колекции</a>
+      <a href="/admin/products" class="<%= activeAdmin === 'products' ? 'active' : '' %>"><span class="ic">◇</span>Продукти</a>
+      <a href="/admin/gallery" class="<%= activeAdmin === 'gallery' ? 'active' : '' %>"><span class="ic">▢</span>Галерия</a>
+      <a href="/admin/content" class="<%= activeAdmin === 'content' ? 'active' : '' %>"><span class="ic">¶</span>Съдържание</a>
+      <a href="/admin/messages" class="<%= activeAdmin === 'messages' ? 'active' : '' %>"><span class="ic">✉</span>Съобщения <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %><span class="badge"><%= unreadCount %></span><% } %></a>
+      <a href="/admin/settings" class="<%= activeAdmin === 'settings' ? 'active' : '' %>"><span class="ic">⚙</span>Настройки</a>
+    </nav>
+    <div class="admin-foot">
+      <a href="/" target="_blank" class="admin-link-out">↗ Виж сайта</a>
+      <a href="/admin/logout" class="admin-logout-link">Изход</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <% if (typeof flash !== 'undefined' && flash) { %>
+      <div class="flash flash-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+    <%- body %>
+  </main>
+</body>
+</html>

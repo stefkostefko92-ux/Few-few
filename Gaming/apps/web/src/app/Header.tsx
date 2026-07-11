@@ -30,10 +30,11 @@ export function Header() {
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2.5" aria-label={t("brand")}>
           <img
-            src="/logo-mark.png"
+            src={`${import.meta.env.BASE_URL}logo-mark-128.png`}
             alt=""
             width={38}
             height={38}
+            decoding="async"
             className="h-9 w-9 drop-shadow-[0_0_10px_rgba(120,150,220,0.45)]"
           />
           <span className="font-display text-2xl tracking-wide text-brass-300">{t("brand")}</span>

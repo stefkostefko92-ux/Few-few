@@ -69,6 +69,9 @@ header h1 {
   font-size: 19px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  /* Header-ът е винаги с тъмен градиент, затова заглавието остава кремаво
+     и в двете теми (иначе в light режим тъмен текст върху тъмен фон изчезва). */
+  color: #f5f5f0;
 }
 header .tagline {
   font-size: 10.5px;

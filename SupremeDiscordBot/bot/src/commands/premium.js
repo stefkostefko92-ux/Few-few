@@ -106,11 +106,15 @@ export default {
       try {
         const { data: server } = await api.get(`/bot/server/${interaction.guildId}`);
         if (!server.isPremium) {
-          // Native Discord monetization upsell — offer the in-app purchase
-          // button for the Premium SKU alongside the explanation. Falls back to
-          // a dashboard link if DISCORD_SKU_PREMIUM is not configured.
-          await interaction.editReply("❌ Data export is a Premium feature.");
-          return sendPremiumRequired(interaction, process.env.DISCORD_SKU_PREMIUM);
+          // Native Discord monetization upsell — one message: explanation +
+          // in-app purchase button for the Premium SKU. Falls back to a
+          // dashboard link if DISCORD_SKU_PREMIUM is not configured or on
+          // white-label clients (foreign SKU).
+          return sendPremiumRequired(
+            interaction,
+            process.env.DISCORD_SKU_PREMIUM,
+            "❌ Data export is a Premium feature — upgrade to unlock it:"
+          );
         }
 
         await interaction.editReply({

@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -62,6 +62,24 @@ MASTILKO_HEALTH_URL="${MASTILKO_HEALTH_URL:-http://127.0.0.1:3200/}"
 # на сървъра в SupremeDiscordBot/.env (корен, postgres), SupremeDiscordBot/backend/.env, SupremeDiscordBot/bot/.env
 # и SupremeDiscordBot/frontend/.env (build-time VITE_*); пренасят се при всеки деплой.
 SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
+
+# eternaltouch (Eternal Touch — Docker Compose модел) — app:4300 + postgres:5437
+# слушат само на 127.0.0.1, зад Nginx. Тайните живеят в eternaltouch/.env на
+# сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
+# го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
+ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# adblock (Supreme AdBlock — ЧИСТ СТАТИЧЕН сайт, без билд/Node/база). Разширението
+# тегли filters.json от адреса; index/privacy са малка витрина + политика за
+# поверителност. Обслужва се от Caddy (авто-TLS). Файловете идват от репото
+# (adblock/server/), няма тайни. TLS зависи от DNS запис към VPS-а (ръчна стъпка).
+ADBLOCK_WWW="${ADBLOCK_WWW:-/var/www/adblock}"
+ADBLOCK_DOMAIN="${ADBLOCK_DOMAIN:-adblock.carbonstealth.eu}"
+CADDY_SITES_DIR="${CADDY_SITES_DIR:-/etc/caddy/sites}"
+CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
+CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
+ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
+ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -393,6 +411,182 @@ deploy_supreme() {
 }
 
 # ── Health check ──────────────────────────────────────────────────────────────
+# ── 3g) eternaltouch — Docker Compose ─────────────────────────────────────────
+deploy_eternaltouch() {
+  local d="$SRC/eternaltouch"
+  [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
+  log "Разгръщам eternaltouch (Docker Compose)…"
+  # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
+  if [ -f "$CURRENT_LINK/eternaltouch/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/eternaltouch/.env" "$d/.env"; ok "Пренесох eternaltouch/.env"
+  fi
+  # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
+  # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP_PASS=CHANGE_ME)."
+    local dbp jwt cks sks adp
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+    jwt="$(openssl rand -base64 48 | tr -d '\n')"
+    cks="$(openssl rand -base64 48 | tr -d '\n')"
+    sks="$(openssl rand -base64 48 | tr -d '\n')"
+    adp="$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9')"
+    cat > "$d/.env" <<EOF
+DB_PASSWORD=${dbp}
+JWT_SECRET=${jwt}
+COOKIE_SECRET=${cks}
+SESSION_SECRET=${sks}
+ADMIN_EMAIL=info@eternaltouch.it
+ADMIN_PASSWORD=${adp}
+SITE_URL=https://eternaltouch.it
+NODE_ENV=production
+PORT=4300
+SMTP_HOST=authsmtp.register.it
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=info@eternaltouch.it
+SMTP_PASS=CHANGE_ME
+SMTP_FROM=Eternal Touch <info@eternaltouch.it>
+NOTIFY_TO=info@eternaltouch.it
+EOF
+    chmod 600 "$d/.env"
+    warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
+    warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+  ( cd "$d" && bash deploy.sh )   # idempotent: docker up --build, seed (upsert), nginx, certbot
+  health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
+}
+
+# ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
+# Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
+# Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
+# import в главния Caddyfile). Валидира преди reload → нула downtime. Идемпотентно:
+# повторно пускане само презаписва файловете и презарежда конфига. Няма тайни.
+deploy_adblock() {
+  local d="$SRC/adblock/server"
+  [ -d "$d" ] || { warn "Няма adblock/server/ в архива — пропускам."; return; }
+  log "Разгръщам adblock (статичен сайт зад Caddy)…"
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+
+  # 1) Обслужвани файлове → www root. Копираме избрани файлове (без README/конфиг),
+  # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
+  mkdir -p "$ADBLOCK_WWW"
+  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt og.png; do
+    [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
+  done
+  # IndexNow ключ: материализираме <key>.txt в www root от indexnow_key.txt.
+  if [ -f "$d/indexnow_key.txt" ]; then
+    INKEY=$(tr -d '[:space:]' < "$d/indexnow_key.txt")
+    [ -n "$INKEY" ] && printf '%s' "$INKEY" > "$ADBLOCK_WWW/$INKEY.txt"
+  fi
+  chmod 755 "$ADBLOCK_WWW"
+  find "$ADBLOCK_WWW" -maxdepth 1 -type f -exec chmod 644 {} +
+  # Собственик като другите статични пътища: caddy юзъра ако съществува, иначе root
+  # (файловете и без това са world-readable — уеб сървърът ги чете).
+  if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
+  ok "adblock файлове → $ADBLOCK_WWW"
+
+  # 1а) Ed25519 подпис на filters.json (разширението го проверява при ъпдейт).
+  # Ключът живее САМО на сървъра (виж adblock/server/README.md); без ключ —
+  # без подпис, разширението приема ъпдейта както досега.
+  if [ -f "$ADBLOCK_SIGNING_KEY" ]; then
+    if openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin \
+        -in "$ADBLOCK_WWW/filters.json" 2>/dev/null | base64 -w0 > "$ADBLOCK_WWW/filters.json.sig" \
+        && [ -s "$ADBLOCK_WWW/filters.json.sig" ]; then
+      chmod 644 "$ADBLOCK_WWW/filters.json.sig"
+      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json.sig"; fi
+      ok "adblock: filters.json подписан (filters.json.sig)"
+    else
+      rm -f "$ADBLOCK_WWW/filters.json.sig"
+      warn "adblock: подписването провали — премахнах .sig, ъпдейтите вървят неподписани."
+    fi
+  fi
+
+  # 2) Уеб сървър. Предпочитаме Caddy (авто-TLS); на сървъри с Nginx (моделът на
+  # останалите продукти тук) инсталираме Nginx vhost + certbot. Без нито един —
+  # файловете остават на място с предупреждение (не чупим другите проекти).
+  if ! command -v caddy >/dev/null && command -v nginx >/dev/null; then
+    local nsite="/etc/nginx/sites-available/adblock.conf"
+    [ -f "$nsite" ] && cp -a "$nsite" "${nsite}.bak-$TS"
+    install -m 644 "$d/nginx.conf" "$nsite"
+    ln -sf "$nsite" /etc/nginx/sites-enabled/adblock.conf
+    if nginx -t >/dev/null 2>&1; then
+      systemctl reload nginx 2>/dev/null || nginx -s reload
+      rm -f "${nsite}.bak-$TS"
+      ok "adblock: Nginx vhost инсталиран и презареден ($ADBLOCK_DOMAIN)."
+      # TLS през certbot. Пускаме го при ВСЕКИ деплой (идемпотентно): нашият
+      # vhost темплейт е само HTTP, а всеки деплой го презаписва — затова
+      # трябва отново да инжектираме SSL блока. При съществуващ валиден
+      # сертификат certbot само преинсталира конфига и НЕ иска нов
+      # (--keep-until-expiring), значи не удря rate limits.
+      if command -v certbot >/dev/null; then
+        if certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect --keep-until-expiring >/dev/null 2>&1; then
+          ok "adblock: TLS активен (certbot преинсталира SSL конфига)."
+          systemctl reload nginx 2>/dev/null || nginx -s reload
+        else
+          warn "adblock: certbot не успя (DNS още не сочи насам?). Пусни ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
+        fi
+      fi
+    else
+      deploy_failed=1
+      warn "adblock: nginx -t провал — връщам стария vhost, НЕ презареждам."
+      if [ -f "${nsite}.bak-$TS" ]; then mv -f "${nsite}.bak-$TS" "$nsite"; else rm -f "$nsite" /etc/nginx/sites-enabled/adblock.conf; fi
+      return
+    fi
+    if curl -fsS -o /dev/null --max-time 5 "$ADBLOCK_HEALTH_URL"; then
+      ok "adblock е жив ($ADBLOCK_HEALTH_URL)"
+    else
+      warn "adblock: публичният health още не минава ($ADBLOCK_HEALTH_URL) — провери DNS A запис към този VPS."
+    fi
+    indexnow_ping "${INKEY:-}"
+    return
+  fi
+  if ! command -v caddy >/dev/null; then
+    warn "adblock: няма нито caddy, нито nginx — файловете са в $ADBLOCK_WWW, но сайтът не е публикуван."
+    return
+  fi
+  mkdir -p "$CADDY_SITES_DIR"
+  local site="$CADDY_SITES_DIR/adblock.caddy"
+  # Бекъп на текущия сайт-блок (ако има) за rollback при невалиден конфиг.
+  [ -f "$site" ] && cp -a "$site" "${site}.bak-$TS"
+  install -m 644 "$d/Caddyfile" "$site"
+  # Увери се, че главният Caddyfile import-ва sites/ (идемпотентно). import е
+  # относителен спрямо Caddyfile-а → sites/*.caddy = $CADDY_SITES_DIR/*.caddy.
+  if [ -f "$CADDY_MAIN" ]; then
+    grep -q 'import sites/\*' "$CADDY_MAIN" \
+      || printf '\n# Сайт-блокове по подразбиране (adblock и др.)\nimport sites/*.caddy\n' >> "$CADDY_MAIN"
+  else
+    printf '# Главен Caddyfile\nimport sites/*.caddy\n' > "$CADDY_MAIN"
+  fi
+
+  # 3) Валидирай ПРЕДИ reload — невалиден конфиг не стига до живия Caddy.
+  if ! caddy validate --config "$CADDY_MAIN" --adapter caddyfile >/dev/null 2>&1; then
+    deploy_failed=1
+    warn "adblock: caddy validate провал — връщам стария сайт-блок, НЕ презареждам."
+    if [ -f "${site}.bak-$TS" ]; then mv -f "${site}.bak-$TS" "$site"; else rm -f "$site"; fi
+    return
+  fi
+  rm -f "${site}.bak-$TS"
+
+  # 4) Reload без downtime (graceful). Предпочитаме systemd, иначе caddy reload.
+  if command -v systemctl >/dev/null && systemctl list-unit-files 2>/dev/null | grep -q "^${CADDY_SERVICE}.service"; then
+    systemctl reload "$CADDY_SERVICE" || systemctl restart "$CADDY_SERVICE"
+  else
+    caddy reload --config "$CADDY_MAIN" --adapter caddyfile
+  fi
+  ok "adblock: Caddy сайт-блок инсталиран и презареден ($ADBLOCK_DOMAIN)."
+
+  # 5) Health (best-effort): публичният HTTPS минава само след като DNS A/AAAA
+  # сочи VPS-а и Caddy издаде TLS сертификат — това е РЪЧНА стъпка на собственика.
+  # Затова провалът тук е предупреждение, не блокира деплоя на другите проекти.
+  if curl -fsS -o /dev/null --max-time 5 "$ADBLOCK_HEALTH_URL"; then
+    ok "adblock е жив ($ADBLOCK_HEALTH_URL)"
+  else
+    warn "adblock: публичният health още не минава ($ADBLOCK_HEALTH_URL). Файловете и Caddy конфигът са на място — провери DNS A/AAAA към VPS-а и TLS сертификата."
+  fi
+  indexnow_ping "${INKEY:-}"
+}
+
 health() {
   local url="$1" name="$2" i
   for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -400,6 +594,19 @@ health() {
     sleep 3
   done
   warn "$name НЕ отговаря на $url"; return 1
+}
+
+# IndexNow: уведомява Bing/Yandex/Seznam/Naver с един POST (api.indexnow.org
+# ги разпраща). Ключът е публичен (hostнат като <key>.txt). Best-effort.
+indexnow_ping() {
+  local key="$1"; [ -n "$key" ] || return 0
+  local base="https://$ADBLOCK_DOMAIN"
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/privacy"'"]}'
+  if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
+    ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
+  else
+    warn "adblock: IndexNow ping не мина (сайтът трябва да е публично достъпен с $key.txt)."
+  fi
 }
 
 for p in $PROJECTS; do
@@ -410,6 +617,8 @@ for p in $PROJECTS; do
     nexus)      deploy_nexus ;;
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
+    eternaltouch)         deploy_eternaltouch ;;
+    adblock)    deploy_adblock ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

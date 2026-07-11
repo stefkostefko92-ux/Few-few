@@ -53,7 +53,7 @@ export async function submitMemory(
     action: "CREATE",
     entity: "Memory",
     entityId: created.id,
-    summary: `Нов спомен: „${d.title}" (чака одобрение)`,
+    summary: `Нов спомен: „${d.title}“ (чака одобрение)`,
   });
 
   return { ok: true };

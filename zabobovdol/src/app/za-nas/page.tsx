@@ -90,9 +90,10 @@ export default function AboutPage() {
               през 2013 г. в Италия.
             </li>
             <li>
-              <strong>Carbon Stealth VCC</strong> — основана през март 2026 г.
-              със седалище в Бобов дол. Тя стои зад разработката и поддръжката на
-              този сайт.
+              <strong>{SITE.company.legalName}</strong> (
+              {SITE.company.tradeName}) — {SITE.company.legalForm} със седалище
+              в Бобов дол (ЕИК {SITE.company.eik}). Тя стои зад разработката и
+              поддръжката на този сайт.
             </li>
           </ul>
         </div>

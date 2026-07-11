@@ -78,6 +78,18 @@ export function organizationLd(opts?: { sameAs?: string[] }) {
     },
     image: `${SITE.url}/og.png`,
     knowsLanguage: "bg",
+    // Теми, по които порталът е авторитет — силен сигнал за AI/answer-engine
+    // цитиране (entity-disambiguation). Съответства на основните рубрики.
+    knowsAbout: [
+      `електронни услуги в ${SITE.geo.city}`,
+      `важни телефони и услуги в ${SITE.geo.city}`,
+      "пенсии и социални помощи",
+      "местни данъци и такси",
+      "защита от телефонни и онлайн измами",
+      `дежурна аптека и лекар в ${SITE.geo.city}`,
+      `обществен транспорт в ${SITE.geo.city}`,
+      "преходът към еврото в България",
+    ],
     areaServed: [
       { "@type": "AdministrativeArea", name: `Община ${SITE.geo.city}` },
       { "@type": "City", name: SITE.geo.city },
@@ -155,9 +167,12 @@ export function webPageLd(opts: {
 }
 
 export function breadcrumbLd(items: { name: string; path: string }[]) {
+  // Устойчив @id (на текущата страница) — свързва трохите с останалия граф.
+  const last = items[items.length - 1];
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    "@id": `${canonical(last?.path ?? "/")}#breadcrumb`,
     itemListElement: items.map((it, i) => ({
       "@type": "ListItem",
       position: i + 1,

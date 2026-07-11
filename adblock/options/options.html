@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="../theme.js"></script>
   <link rel="stylesheet" href="options.css" />
-  <title>The Best ads block Settings</title>
+  <title>Supreme AdBlock Settings</title>
 </head>
 <body>
   <header>
     <img class="logo" src="../icons/icon48.png" alt="" width="30" height="30" />
     <div>
-      <h1>The Best Ads Block</h1>
+      <h1>Supreme AdBlock</h1>
       <span class="tagline">Carbon Stealth Edition · Settings</span>
     </div>
   </header>
@@ -91,6 +91,20 @@
         </div>
         <label class="switch"><input type="checkbox" id="featMeta" /><span class="slider"></span></label>
       </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Remove tracking parameters</div>
+          <div class="row-sub">Strip utm_*, fbclid, gclid and other click identifiers from the links you open</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featRemoveparam" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Malware protection</div>
+          <div class="row-sub">Block known malware domains (URLhaus list by abuse.ch)</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featMalware" /><span class="slider"></span></label>
+      </label>
     </section>
 
     <section class="card">
@@ -130,6 +144,19 @@
     </section>
 
     <section class="card">
+      <h2>Filter updates</h2>
+      <label class="row">
+        <div>
+          <div class="row-title">Auto-update filters</div>
+          <div class="row-sub" id="updateStatus">Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="autoUpdate" /><span class="slider"></span></label>
+      </label>
+      <button id="updateNow" class="btn">Update now</button>
+      <span id="updateHint" class="saved-hint"></span>
+    </section>
+
+    <section class="card">
       <h2>Backup</h2>
       <div class="add-row">
         <button id="exportBtn" class="btn ghost">Export settings</button>
@@ -148,12 +175,12 @@
 
     <section class="card donate">
       <h2>Support development</h2>
-      <p class="row-sub">The Best Ads Block is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
+      <p class="row-sub">Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
       <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 Donate via Revolut</a>
     </section>
   </main>
 
-  <footer>The Best Ads Block v3.7.1 · made by Carbon Stealth</footer>
+  <footer>Supreme AdBlock v4.0.1 · made by Carbon Stealth</footer>
 
   <script src="options.js"></script>
 </body>
