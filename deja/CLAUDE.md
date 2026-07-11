@@ -50,7 +50,8 @@ idle-таймера и SW умираше след 30 сек при първот�
 npm ci
 npm run build         # esbuild → dist/ (Load unpacked оттам)
 npm run format:check  # качествена порта: това + build трябва да минават
-npm run icons         # tools/generate_icons.py (иска Pillow) — иконите са комитнати
+npm run icons         # tools/generate_icons.py — САМО fallback; реалните икони са
+                      # брандова графика (remove.bg + resize), комитнати в icons/
 npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 ```
 
