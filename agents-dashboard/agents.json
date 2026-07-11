@@ -3300,9 +3300,20 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-11",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Брандовият глас на deja е топъл неформален — IT ползва tu (tuo/hai letto/Comandi tu), Н…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-11",
+          "type": "learning",
+          "summary": "Научи: „Брандовият глас на deja е топъл неформален — IT ползва tu (tuo/hai letto/Comandi tu), Н…\" · 1 в карантина"
+        },
         {
           "date": "2026-07-11",
           "type": "quarantine",
