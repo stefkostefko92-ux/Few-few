@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Déjà — вторият мозък на браузъра ти</title>
+    <meta
+      name="description"
+      content="Déjà помни не къде си бил, а какво си научил. Семантично търсене в прочетеното — 100% локално, 100% лично."
+    />
+    <link rel="icon" type="image/png" href="icon.png" />
+    <style>
+      :root {
+        --bg: #0e0e14;
+        --panel: #17171f;
+        --border: #2a2a38;
+        --text: #eaeaf2;
+        --muted: #8f8fa3;
+        --soft: #c6c6d4;
+        --accent: #8b7cf6;
+        --accent-soft: rgba(139, 124, 246, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background:
+          radial-gradient(
+            1200px 600px at 50% -100px,
+            color-mix(in oklab, var(--accent) 9%, var(--bg)),
+            var(--bg) 60%
+          ),
+          linear-gradient(var(--bg), #0a0a10);
+        color: var(--text);
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        line-height: 1.6;
+      }
+
+      .wrap {
+        margin: 0 auto;
+        max-width: 900px;
+        padding: 0 20px;
+      }
+
+      /* --- header --- */
+      header {
+        align-items: center;
+        display: flex;
+        gap: 22px;
+        padding: 20px 0;
+      }
+
+      .brand {
+        align-items: center;
+        display: flex;
+        font-size: 22px;
+        font-weight: 700;
+        gap: 10px;
+      }
+
+      .brand img {
+        height: 34px;
+        width: 34px;
+      }
+
+      .dot {
+        color: var(--accent);
+      }
+
+      nav {
+        display: flex;
+        gap: 18px;
+        margin-left: auto;
+      }
+
+      nav a {
+        color: var(--muted);
+        font-size: 15px;
+        text-decoration: none;
+      }
+
+      nav a:hover {
+        color: var(--accent);
+      }
+
+      nav a.cta-mini {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      /* --- hero --- */
+      .hero {
+        padding: 72px 0 56px;
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: clamp(30px, 5vw, 48px);
+        letter-spacing: -0.5px;
+        line-height: 1.15;
+        margin: 0 auto 18px;
+        max-width: 780px;
+      }
+
+      .hero h1 em {
+        color: var(--accent);
+        font-style: normal;
+      }
+
+      .hero .sub {
+        color: var(--soft);
+        font-size: 19px;
+        margin: 0 auto 14px;
+        max-width: 640px;
+      }
+
+      .hero .local {
+        color: var(--text);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 30px;
+      }
+
+      .btn {
+        background: var(--accent);
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 0 32px rgba(139, 124, 246, 0.35);
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 17px;
+        font-weight: 700;
+        padding: 15px 34px;
+        text-decoration: none;
+        transition: filter 0.15s;
+      }
+
+      .btn:hover {
+        filter: brightness(1.12);
+      }
+
+      .hero .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 12px;
+      }
+
+      .hero .demo {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+        margin-top: 48px;
+        max-width: 100%;
+      }
+
+      /* --- sections --- */
+      section {
+        padding: 56px 0;
+      }
+
+      h2 {
+        font-size: clamp(24px, 3.6vw, 32px);
+        line-height: 1.25;
+        margin-bottom: 14px;
+      }
+
+      .lead {
+        color: var(--soft);
+        max-width: 700px;
+      }
+
+      .cards {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        margin-top: 26px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .card h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .card p {
+        color: var(--soft);
+        font-size: 14.5px;
+      }
+
+      /* пример-диалог */
+      .example {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-top: 26px;
+        padding: 22px;
+      }
+
+      .example .you {
+        color: var(--soft);
+      }
+
+      .example .you b {
+        color: var(--text);
+      }
+
+      .example .found {
+        background: var(--accent-soft);
+        border-left: 3px solid var(--accent);
+        border-radius: 10px;
+        margin-top: 12px;
+        padding: 12px 16px;
+      }
+
+      .example .fine {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-top: 12px;
+      }
+
+      .recall {
+        display: grid;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .recall .row {
+        align-items: center;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        display: flex;
+        gap: 14px;
+        padding: 12px 16px;
+      }
+
+      .recall .bar {
+        background: var(--accent);
+        border-radius: 4px;
+        height: 8px;
+      }
+
+      .recall .row span {
+        color: var(--soft);
+        font-size: 14.5px;
+      }
+
+      /* стъпки */
+      .steps {
+        counter-reset: step;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        margin-top: 26px;
+      }
+
+      .step {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .step::before {
+        color: var(--accent);
+        content: counter(step, decimal-leading-zero);
+        counter-increment: step;
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+      }
+
+      .step h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      .step p {
+        color: var(--soft);
+        font-size: 14px;
+      }
+
+      /* privacy */
+      #privacy .card {
+        border-left-color: #6fdc8c;
+      }
+
+      /* final CTA */
+      .final {
+        padding: 80px 0 90px;
+        text-align: center;
+      }
+
+      .final p.big {
+        color: var(--soft);
+        margin: 0 auto 30px;
+        max-width: 560px;
+      }
+
+      footer {
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 13.5px;
+        padding: 26px 0 40px;
+        text-align: center;
+      }
+
+      footer a {
+        color: var(--muted);
+      }
+
+      /* изплуване при скрол */
+      .surface {
+        opacity: 0;
+        transform: translateY(16px);
+        transition:
+          opacity 0.5s ease-out,
+          transform 0.5s ease-out;
+      }
+
+      .surface.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .surface {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand"><img src="icon.png" alt="" />Déjà<span class="dot">.</span></div>
+        <nav>
+          <a href="#how-it-works">Как работи</a>
+          <a href="#privacy">Сигурност</a>
+          <a class="cta-mini" href="#cta">Инсталирай в Chrome</a>
+        </nav>
+      </header>
+
+      <!-- Hero -->
+      <section class="hero">
+        <h1>Вашият втори мозък, който помни не къде сте били, а <em>какво сте научили</em>.</h1>
+        <p class="sub">
+          Спрете да губите време в безкрайно търсене на статии отпреди месеци. Déjà разбира
+          смисъла на прочетеното и го намира по ваши думи.
+        </p>
+        <p class="local">100% локално. 100% лично.</p>
+        <!-- TODO: замени href с реалния Web Store линк след публикация -->
+        <a class="btn" href="https://chrome.google.com/webstore">Добави в Chrome — безплатно</a>
+        <p class="note">Работи изцяло на твоето устройство. Никакви данни не напускат браузъра ти.</p>
+        <img
+          class="demo surface"
+          src="demo.png"
+          alt="Déjà намира статията за домати на балкона по заявка „как се гледат чери домати в саксия“"
+          width="1280"
+          height="800"
+        />
+      </section>
+
+      <!-- The Problem -->
+      <section class="surface">
+        <h2>Историята на браузъра ви е „черна дупка“.</h2>
+        <p class="lead">
+          Повечето хора имат стотици запазени отметки и хиляди страници в историята, които никога
+          не откриват отново. Защо?
+        </p>
+        <div class="cards">
+          <div class="card">
+            <h3>Традиционното търсене е ограничено</h3>
+            <p>Трябва да помните точното заглавие или URL адрес.</p>
+          </div>
+          <div class="card">
+            <h3>Смисълът се губи</h3>
+            <p>
+              Помните, че сте чели за „нова технология за батерии“, но не помните дали беше в
+              Wired, Medium или личен блог.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Резултатът</h3>
+            <p>
+              Знаете, че информацията е някъде там, но я търсите отново в Google от нулата.
+              Валидирана болка: „Запазих 500 статии и не мога да намеря нищо.“
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Solution -->
+      <section class="surface">
+        <h2>Търсете така, както мислите.</h2>
+        <p class="lead">
+          С Déjà не е нужно да помните ключови думи. Просто напишете това, което си спомняте, на
+          човешки език.
+        </p>
+        <div class="example">
+          <p class="you">Вие пишете: <b>„статия за евтина алтернатива на литиевите акумулатори“</b></p>
+          <div class="found">
+            Déjà намира: <b>„Натриевите батерии: революцията в съхранението на енергия“</b>
+          </div>
+          <p class="fine">
+            В текста никъде не се срещат думите „евтина“ или „алтернатива“ — но Déjà разбира
+            контекста. Работи на 50+ езика: търсете на български, дори статията да е била на
+            английски.
+          </p>
+        </div>
+        <div class="recall">
+          <div class="row"><div class="bar" style="width: 120px; opacity: 1"></div><span>🌟 Ярък спомен — точно съвпадение по смисъл</span></div>
+          <div class="row"><div class="bar" style="width: 70px; opacity: 0.55"></div><span>🌫️ Мъгляв спомен — близък контекст</span></div>
+          <div class="row"><div class="bar" style="width: 34px; opacity: 0.3"></div><span>🔭 Далечен спомен — свързана тема</span></div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section id="how-it-works" class="surface">
+        <h2>Интелигентен, но дискретен.</h2>
+        <p class="lead">Докато разглеждате, разширението работи тихо в задния план:</p>
+        <div class="steps">
+          <div class="step">
+            <h3>Извличане</h3>
+            <p>Déjà извлича чистия текст от страницата.</p>
+          </div>
+          <div class="step">
+            <h3>Векторизиране</h3>
+            <p>AI модел превръща текста в „числови отпечатъци на смисъла“ (вектори).</p>
+          </div>
+          <div class="step">
+            <h3>Локално съхранение</h3>
+            <p>Тези отпечатъци се пазят само във вашия браузър.</p>
+          </div>
+          <div class="step">
+            <h3>Семантично търсене</h3>
+            <p>Заявката ви се сравнява с отпечатъците математически — печели най-близкото значение.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy -->
+      <section id="privacy" class="surface">
+        <h2>🛡️ Козът: 100% private. 0% cloud.</h2>
+        <p class="lead">В ерата на масовото следене и скандали като Honey, Déjà е вашата крепост.</p>
+        <div class="cards">
+          <div class="card">
+            <h3>Offline AI</h3>
+            <p>Моделът се тегли еднократно. След това всичко работи офлайн.</p>
+          </div>
+          <div class="card">
+            <h3>Никакви сървъри</h3>
+            <p>Нищо, което четете, не напуска устройството ви. Никога.</p>
+          </div>
+          <div class="card">
+            <h3>GDPR мечта</h3>
+            <p>Вие притежавате данните си на 100%. Няма телеметрия, няма облачно съхранение.</p>
+          </div>
+          <div class="card">
+            <h3>Интелигентни филтри</h3>
+            <p>Пароли, чатове, банкови страници и имейли никога не се индексират.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Control -->
+      <section class="surface">
+        <h2>Вие държите ключа към паметта си.</h2>
+        <div class="cards">
+          <div class="card">
+            <h3>⏸ Пауза с един клик</h3>
+            <p>Спрете индексирането моментално.</p>
+          </div>
+          <div class="card">
+            <h3>📅 Автоматично забравяне</h3>
+            <p>Настройте изтриване на данните след N месеца.</p>
+          </div>
+          <div class="card">
+            <h3>🗑 Изчисти паметта</h3>
+            <p>Пълно изтриване на локалната база с един бутон.</p>
+          </div>
+          <div class="card">
+            <h3>🚫 Собствен списък</h3>
+            <p>Адреси, които Déjà никога няма да запомни.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section id="cta" class="final surface">
+        <h2>Спрете да търсите. Започнете да намирате.</h2>
+        <p class="big">
+          Присъединете се към хората, които вече не се страхуват да затворят таб в браузъра си.
+        </p>
+        <!-- TODO: замени href с реалния Web Store линк след публикация -->
+        <a class="btn" href="https://chrome.google.com/webstore">Добави Déjà в Chrome — безплатно</a>
+        <p class="note" style="color: var(--muted); font-size: 13px; margin-top: 12px">
+          Поддържа Chrome, Brave, Edge и други Chromium-базирани браузъри.
+        </p>
+      </section>
+
+      <footer>
+        © 2026 Déjà · Личната ви информация си остава ваша. ·
+        <a href="/privacy">Политика за поверителност</a><br />
+        Създаден от <a href="https://carbonstealth.eu">Carbon Stealth VCC</a>
+      </footer>
+    </div>
+
+    <script>
+      // „изплуване“ при скрол — уважава prefers-reduced-motion (CSS-ът го изключва)
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.12 },
+      );
+      document.querySelectorAll('.surface').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

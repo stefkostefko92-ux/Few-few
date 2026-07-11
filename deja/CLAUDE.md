@@ -108,7 +108,9 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 1. Страница „моята памет“: списък на страниците, изтриване поединично,
    export/import на индекса (Хромаджията M2 — доверие + GDPR хигиена).
 2. HNSW/IVF индекс при >50k парчета (сега: brute-force cursor, ОК до ~20k).
-3. Качване в Chrome Web Store: публикувай PRIVACY (BG+EN) на
-   carbonstealth.eu/deja/privacy, попълни импресума (адрес+имейл), Data
+3. Качване в Chrome Web Store: деплойни `server/` на deja.carbonstealth.eu
+   (nginx конфигът е готов; /privacy маршрутът е CWS privacy URL-ът), попълни
+   импресума (адрес+имейл, TODO маркери в privacy.html и PRIVACY.md), Data
    Disclosure „No collection“ + трите сертификации (виж store/LISTING.md).
+   EN версия на политиката — преди международно промотиране.
 4. Firefox порт.

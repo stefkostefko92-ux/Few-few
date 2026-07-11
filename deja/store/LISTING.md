@@ -55,5 +55,6 @@ a self-hosted mirror instead (Settings → model mirror).
 ## Privacy практики (отговори за формуляра)
 
 - Collects user data: **No** (всичко остава на устройството)
-- Privacy policy URL: `PRIVACY.md` качен на https://carbonstealth.eu/deja/privacy
-  (TODO: качи преди подаване)
+- Privacy policy URL: **https://deja.carbonstealth.eu/privacy** — сервира се от
+  `server/privacy.html` (деплой по модела на adblock; TODO: деплойни преди подаване
+  и попълни импресума — адрес + имейл)
