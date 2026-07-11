@@ -1,0 +1,62 @@
+{
+  "extName": { "message": "Déjà — паметта на браузъра ти" },
+  "extDesc": {
+    "message": "Семантично търсене в страниците, които си чел. Всичко се случва локално — нищо не напуска устройството ти."
+  },
+  "cmdOpenSearch": { "message": "Отвори търсенето на Déjà" },
+
+  "searchTitle": { "message": "Déjà — търси каквото си чел" },
+  "tagline": { "message": "Виждал си го. Déjà го намира." },
+  "searchPlaceholder": {
+    "message": "Опиши каквото си спомняш… напр. „статия за батерии на натриева основа“"
+  },
+  "searchButton": { "message": "Търси" },
+  "statusSearching": {
+    "message": "Ровя из паметта… (първото търсене зарежда модела, ~10-30 сек)"
+  },
+  "statusEmpty": {
+    "message": "Нищо не изплува. Или не си го чел, или Déjà още не го е запомнил."
+  },
+  "statusResults": { "message": "$COUNT$ спомена:", "placeholders": { "count": { "content": "$1" } } },
+  "statusError": { "message": "Грешка при търсенето: $ERR$", "placeholders": { "err": { "content": "$1" } } },
+  "pagesInMemory": {
+    "message": "В паметта: $COUNT$ страници.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "similarity": { "message": "близост $SCORE$", "placeholders": { "score": { "content": "$1" } } },
+  "readOn": { "message": "четено на $DATE$", "placeholders": { "date": { "content": "$1" } } },
+
+  "popupPages": {
+    "message": "$COUNT$ страници в паметта",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popupSleeping": { "message": "паметта спи" },
+  "popupWaking": { "message": "паметта се събужда…" },
+  "popupOpenSearch": { "message": "Отвори търсенето" },
+  "popupPause": { "message": "Пауза на запомнянето" },
+  "popupClear": { "message": "Изчисти паметта" },
+  "popupClearConfirm": { "message": "Изтриване на всичко запомнено? Няма връщане." },
+  "popupOptions": { "message": "Настройки" },
+
+  "optionsTitle": { "message": "Déjà — настройки" },
+  "optRetentionLabel": { "message": "Помни страниците" },
+  "optRetentionForever": { "message": "завинаги" },
+  "optRetentionMonths": {
+    "message": "$N$ месеца",
+    "placeholders": { "n": { "content": "$1" } }
+  },
+  "optRetentionHelp": {
+    "message": "По-старите страници се изтриват автоматично веднъж дневно."
+  },
+  "optDenylistLabel": { "message": "Никога не запомняй адреси, съдържащи" },
+  "optDenylistHelp": {
+    "message": "По един шаблон на ред. Съвпадение по част от адреса, напр. „example.com“ или „/lichni“."
+  },
+  "optBuiltinLabel": { "message": "Вградена защита (винаги активна)" },
+  "optModelHostLabel": { "message": "Собствено огледало на модела (за напреднали)" },
+  "optModelHostHelp": {
+    "message": "Празно = huggingface.co. Задай собствен сървър за офлайн/фирмени среди."
+  },
+  "optSave": { "message": "Запази" },
+  "optSaved": { "message": "Запазено ✓" }
+}

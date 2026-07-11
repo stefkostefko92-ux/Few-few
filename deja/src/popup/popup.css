@@ -65,3 +65,16 @@ button {
   gap: 8px;
   margin: 14px 2px 2px;
 }
+
+.options-link {
+  color: #8f8fa3;
+  display: block;
+  font-size: 13px;
+  margin-top: 12px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.options-link:hover {
+  color: #8b7cf6;
+}

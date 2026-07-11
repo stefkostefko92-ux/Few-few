@@ -20,7 +20,18 @@ let extractorPromise = null;
 function getExtractor(modelHost) {
   if (!extractorPromise) {
     if (modelHost) env.remoteHost = modelHost;
-    extractorPromise = pipeline('feature-extraction', MODEL, { dtype: 'q8' });
+    extractorPromise = (async () => {
+      // Първо опит за WebGPU (fp16); offscreen документите често нямат GPU
+      // достъп и тогава тихо падаме към WASM (q8) — той работи навсякъде.
+      if (typeof navigator !== 'undefined' && navigator.gpu) {
+        try {
+          return await pipeline('feature-extraction', MODEL, { device: 'webgpu', dtype: 'fp16' });
+        } catch (err) {
+          console.info('[Déjà] WebGPU недостъпен, минавам на WASM:', String(err?.message || err));
+        }
+      }
+      return pipeline('feature-extraction', MODEL, { dtype: 'q8' });
+    })();
   }
   return extractorPromise;
 }

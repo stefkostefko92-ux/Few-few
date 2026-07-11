@@ -19,6 +19,7 @@ await esbuild.build({
     offscreen: 'src/offscreen/offscreen.js',
     search: 'src/search/search.js',
     popup: 'src/popup/popup.js',
+    options: 'src/options/options.js',
   },
   format: 'esm',
   outdir: dist,
@@ -39,7 +40,10 @@ copyFileSync('src/search/search.html', `${dist}/search.html`);
 copyFileSync('src/search/search.css', `${dist}/search.css`);
 copyFileSync('src/popup/popup.html', `${dist}/popup.html`);
 copyFileSync('src/popup/popup.css', `${dist}/popup.css`);
+copyFileSync('src/options/options.html', `${dist}/options.html`);
+copyFileSync('src/options/options.css', `${dist}/options.css`);
 cpSync('icons', `${dist}/icons`, { recursive: true });
+cpSync('_locales', `${dist}/_locales`, { recursive: true });
 
 // ONNX Runtime WASM — доставя се В пакета; Chrome Web Store забранява отдалечен код
 const ortDir = 'node_modules/@huggingface/transformers/dist';

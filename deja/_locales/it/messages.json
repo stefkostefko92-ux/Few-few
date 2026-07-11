@@ -1,0 +1,60 @@
+{
+  "extName": { "message": "Déjà — la memoria del tuo browser" },
+  "extDesc": {
+    "message": "Ricerca semantica nelle pagine che hai letto. Tutto avviene in locale — nulla lascia mai il tuo dispositivo."
+  },
+  "cmdOpenSearch": { "message": "Apri la ricerca di Déjà" },
+
+  "searchTitle": { "message": "Déjà — cerca ciò che hai letto" },
+  "tagline": { "message": "L'hai visto. Déjà lo ritrova." },
+  "searchPlaceholder": {
+    "message": "Descrivi ciò che ricordi… es. «articolo sulle batterie al sodio»"
+  },
+  "searchButton": { "message": "Cerca" },
+  "statusSearching": {
+    "message": "Scavo nella memoria… (la prima ricerca carica il modello, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Niente in superficie. O non l'hai mai letto, o Déjà non l'ha ancora memorizzato."
+  },
+  "statusResults": { "message": "$COUNT$ ricordi:", "placeholders": { "count": { "content": "$1" } } },
+  "statusError": { "message": "Ricerca non riuscita: $ERR$", "placeholders": { "err": { "content": "$1" } } },
+  "pagesInMemory": {
+    "message": "In memoria: $COUNT$ pagine.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "similarity": { "message": "somiglianza $SCORE$", "placeholders": { "score": { "content": "$1" } } },
+  "readOn": { "message": "letto il $DATE$", "placeholders": { "date": { "content": "$1" } } },
+
+  "popupPages": {
+    "message": "$COUNT$ pagine in memoria",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "popupSleeping": { "message": "la memoria dorme" },
+  "popupWaking": { "message": "la memoria si sta svegliando…" },
+  "popupOpenSearch": { "message": "Apri la ricerca" },
+  "popupPause": { "message": "Pausa memorizzazione" },
+  "popupClear": { "message": "Svuota la memoria" },
+  "popupClearConfirm": { "message": "Eliminare tutto ciò che è stato memorizzato? Non si può annullare." },
+  "popupOptions": { "message": "Impostazioni" },
+
+  "optionsTitle": { "message": "Déjà — impostazioni" },
+  "optRetentionLabel": { "message": "Ricorda le pagine" },
+  "optRetentionForever": { "message": "per sempre" },
+  "optRetentionMonths": {
+    "message": "$N$ mesi",
+    "placeholders": { "n": { "content": "$1" } }
+  },
+  "optRetentionHelp": { "message": "Le pagine più vecchie vengono eliminate automaticamente una volta al giorno." },
+  "optDenylistLabel": { "message": "Non memorizzare mai indirizzi contenenti" },
+  "optDenylistHelp": {
+    "message": "Un criterio per riga. Corrisponde a parte dell'indirizzo, es. «example.com» o «/privato»."
+  },
+  "optBuiltinLabel": { "message": "Protezione integrata (sempre attiva)" },
+  "optModelHostLabel": { "message": "Mirror del modello personalizzato (avanzato)" },
+  "optModelHostHelp": {
+    "message": "Vuoto = huggingface.co. Imposta un tuo server per ambienti offline/aziendali."
+  },
+  "optSave": { "message": "Salva" },
+  "optSaved": { "message": "Salvato ✓" }
+}

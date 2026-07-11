@@ -97,6 +97,40 @@ export async function countPages() {
   });
 }
 
+// Retention: трие страниците (и парчетата им), четени преди cutoff.
+export async function pruneOlderThan(cutoffTs) {
+  const db = await open();
+  const tx = db.transaction(['pages', 'chunks'], 'readwrite');
+  const pages = tx.objectStore('pages');
+  const chunks = tx.objectStore('chunks');
+  const byUrlKey = chunks.index('byUrlKey');
+  let pruned = 0;
+  await new Promise((resolve, reject) => {
+    const req = pages.openCursor();
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (!cursor) return resolve();
+      const page = cursor.value;
+      if (page.time && page.time < cutoffTs) {
+        pruned++;
+        cursor.delete();
+        const chunkReq = byUrlKey.openKeyCursor(IDBKeyRange.only(page.urlKey));
+        chunkReq.onsuccess = () => {
+          const chunkCursor = chunkReq.result;
+          if (chunkCursor) {
+            chunks.delete(chunkCursor.primaryKey);
+            chunkCursor.continue();
+          }
+        };
+      }
+      cursor.continue();
+    };
+    req.onerror = () => reject(req.error);
+  });
+  await done(tx);
+  return pruned;
+}
+
 export async function clearAll() {
   const db = await open();
   const tx = db.transaction(['pages', 'chunks'], 'readwrite');

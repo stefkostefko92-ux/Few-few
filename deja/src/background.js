@@ -84,7 +84,7 @@ function enqueue(job) {
 async function indexPage({ url, title, text, lang }) {
   const settings = await getSettings();
   if (settings.paused) return;
-  if (isDenied(url, settings.denylist)) return;
+  if (isDenied(url, settings.userDenylist)) return;
 
   const urlKey = urlKeyOf(url);
   const hash = fnv1a(text);
@@ -182,4 +182,27 @@ chrome.commands.onCommand.addListener((command) => {
   if (command === 'open-search') {
     chrome.tabs.create({ url: chrome.runtime.getURL('search.html') });
   }
+});
+
+// --- retention: дневна проверка, трие по-старото от settings.retentionMonths ---
+
+const RETENTION_ALARM = 'deja-retention';
+const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function pruneByRetention() {
+  const { retentionMonths } = await getSettings();
+  if (!retentionMonths) return; // 0 = пази завинаги
+  const pruned = await db.pruneOlderThan(Date.now() - retentionMonths * MONTH_MS);
+  if (pruned > 0) console.info(`[Déjà] retention: изтрити ${pruned} стари страници`);
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.alarms.create(RETENTION_ALARM, { periodInMinutes: 24 * 60 });
+});
+chrome.runtime.onStartup.addListener(() => {
+  chrome.alarms.create(RETENTION_ALARM, { periodInMinutes: 24 * 60 });
+  pruneByRetention();
+});
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === RETENTION_ALARM) pruneByRetention();
 });

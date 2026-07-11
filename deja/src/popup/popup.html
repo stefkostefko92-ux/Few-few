@@ -9,14 +9,16 @@
     <h1 class="logo">Déjà<span class="dot">.</span></h1>
     <p id="stats" class="stats">…</p>
 
-    <button id="open" class="primary">Отвори търсенето</button>
+    <button id="open" class="primary" data-i18n="popupOpenSearch">Отвори търсенето</button>
 
     <label class="row">
       <input type="checkbox" id="paused" />
-      <span>Пауза на запомнянето</span>
+      <span data-i18n="popupPause">Пауза на запомнянето</span>
     </label>
 
-    <button id="clear" class="danger">Изчисти паметта</button>
+    <button id="clear" class="danger" data-i18n="popupClear">Изчисти паметта</button>
+
+    <a id="options" class="options-link" href="#" data-i18n="popupOptions">Настройки</a>
 
     <script type="module" src="popup.js"></script>
   </body>

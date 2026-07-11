@@ -37,3 +37,17 @@ async function run() {
 }
 
 setTimeout(run, SETTLE_MS);
+
+// SPA навигации: history API-то живее в света на страницата и не можем да го
+// прихванем от изолирания свят, затова следим location.href на интервал.
+// Дубликатите не тежат — background-ът ги реже по хеш на съдържанието.
+if (window === window.top) {
+  let lastHref = location.href;
+  let pending = null;
+  setInterval(() => {
+    if (location.href === lastHref) return;
+    lastHref = location.href;
+    clearTimeout(pending);
+    pending = setTimeout(run, SETTLE_MS); // даваме на SPA-то време да рендерира
+  }, 2000);
+}

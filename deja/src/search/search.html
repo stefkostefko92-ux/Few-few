@@ -3,24 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Déjà — търси каквото си чел</title>
+    <title data-i18n="searchTitle">Déjà — търси каквото си чел</title>
     <link rel="stylesheet" href="search.css" />
   </head>
   <body>
     <main class="wrap">
       <header class="head">
         <h1 class="logo">Déjà<span class="dot">.</span></h1>
-        <p class="tagline">Виждал си го. Déjà го намира.</p>
+        <p class="tagline" data-i18n="tagline">Виждал си го. Déjà го намира.</p>
       </header>
 
       <form id="form" class="searchbox" autocomplete="off">
-        <input
-          id="query"
-          type="search"
-          placeholder="Опиши каквото си спомняш… напр. „статия за батерии на натриева основа“"
-          autofocus
-        />
-        <button type="submit" id="go">Търси</button>
+        <input id="query" type="search" data-i18n-placeholder="searchPlaceholder" autofocus />
+        <button type="submit" id="go" data-i18n="searchButton">Търси</button>
       </form>
 
       <p id="status" class="status"></p>
