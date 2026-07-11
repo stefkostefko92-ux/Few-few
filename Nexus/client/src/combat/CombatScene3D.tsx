@@ -282,12 +282,13 @@ function magicCircleTexture(tint: string): THREE.CanvasTexture {
  * Без него THREE.PointsMaterial рисува голите точки като ТВЪРДИ КВАДРАТИ
  * (виждаше се на всеки impact/defeat burst). С тази текстура като `map`
  * (+ AdditiveBlending: src = SrcAlpha, dst = One) alpha-каналът модулира
- * приноса → меки кръгли искри вместо квадратчета. Модул-левъл singleton,
- * споделя се от всички бустове; disposed в unmount cleanup.
+ * приноса → меки кръгли искри вместо квадратчета. Чист factory —
+ * извиква се веднъж на mount, кешира се per-mount (виж useEffect) и се
+ * disposва там. НЕ модул-левъл singleton: файлът поддържа конкурентни
+ * сцени (replay върху сцена, която още се демонтира), затова споделен
+ * реф, disposван в per-instance cleanup, би счупил другата инстанция.
  */
-let _softParticleTex: THREE.CanvasTexture | null = null;
 function softParticleTexture(): THREE.CanvasTexture {
-  if (_softParticleTex) return _softParticleTex;
   const S = 64;
   const c = document.createElement('canvas'); c.width = c.height = S;
   const ctx = c.getContext('2d')!;
@@ -303,7 +304,6 @@ function softParticleTexture(): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
-  _softParticleTex = tex;
   return tex;
 }
 
@@ -313,10 +313,9 @@ function softParticleTexture(): THREE.CanvasTexture {
  * беше плътен additive цилиндър с opacity 0.7 × DoubleSide → двойно
  * събиране + bloom го изпичаше до чисто БЯЛО и заличаваше целта. Сега
  * alpha-каналът дава форма на светлинен сноп, а не солиден стълб.
+ * Чист per-mount factory (виж softParticleTexture).
  */
-let _beamGradientTex: THREE.CanvasTexture | null = null;
 function beamGradientTexture(): THREE.CanvasTexture {
-  if (_beamGradientTex) return _beamGradientTex;
   const W = 8, H = 128;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const ctx = c.getContext('2d')!;
@@ -334,7 +333,6 @@ function beamGradientTexture(): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
-  _beamGradientTex = tex;
   return tex;
 }
 
@@ -343,11 +341,9 @@ function beamGradientTexture(): THREE.CanvasTexture {
  * сочи към земята при точката на удара, широката шапка е горе). Иска ярко
  * при ВЪРХА (v=1, при земята) и разтваряне към широката горна шапка (v=0),
  * иначе широкият additive диск горе се изпичаше до бяло. Обратна ориентация
- * спрямо beamGradientTexture заради завъртането.
+ * спрямо beamGradientTexture заради завъртането. Чист per-mount factory.
  */
-let _godRayGradientTex: THREE.CanvasTexture | null = null;
 function godRayGradientTexture(): THREE.CanvasTexture {
-  if (_godRayGradientTex) return _godRayGradientTex;
   const W = 8, H = 128;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const ctx = c.getContext('2d')!;
@@ -362,7 +358,6 @@ function godRayGradientTexture(): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
-  _godRayGradientTex = tex;
   return tex;
 }
 
@@ -1218,7 +1213,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   const foeLightRef = useRef<THREE.PointLight | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const camAnchorRef = useRef({ x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 });
-  const shakeRef = useRef({ amount: 0, t: 0 });
+  // `dur` пази началната продължителност на всеки shake, за да нормализира
+  // trauma-обвивката (quadratic falloff) спрямо собствената ѝ дължина.
+  const shakeRef = useRef({ amount: 0, t: 0, dur: 0 });
   const timeScaleRef = useRef(1);
   const hitStopRef = useRef(0);
   const introRef = useRef({ t: 0, dur: 1.4, active: true });
@@ -1497,6 +1494,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       for (const t of [albedoTex, normalTex, roughTex]) {
         t.wrapS = t.wrapT = THREE.RepeatWrapping;
         t.repeat.set(5, 3);
+        // Анизотропно филтриране — подът е отдалечаваща се grazing-angle
+        // плоскост с 5×3 tile repeat: точно случаят, в който трилинейният
+        // mipmap размазва далечната половина. Анизотропията пази микро-
+        // релефа остър към хоризонта (най-евтиният „AAA под" трик). three
+        // клампва до хардуерния максимум при upload → 8 е безопасно навсякъде.
+        t.anisotropy = 8;
       }
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(34, 22, 1, 1),
@@ -1714,6 +1717,23 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
             if (!std || !std.isMaterial) continue;
             std.envMapIntensity = 1.15;
             if (std.roughness !== undefined) std.roughness = Math.min(1, std.roughness * 0.9 + 0.05);
+            // Анизотропно филтриране на всяка rig текстура — броня/оръжие
+            // албедо+нормал+roughness четат размазано при grazing ъглите,
+            // през които бойците се въртят по време на замах. three клампва
+            // до хардуерния максимум; 8 е безопасно на всеки път (само
+            // sampler state — без нови draw calls, ок и на lite).
+            for (const tex of [std.map, std.normalMap, std.roughnessMap, std.metalnessMap, std.emissiveMap, std.aoMap]) {
+              if (tex && tex.anisotropy < 8) { tex.anisotropy = 8; tex.needsUpdate = true; }
+            }
+            // Леко задълбочаване на нормал-мапнатия релеф, за да изрязва
+            // ключовата светлина детайла по плочи/кожа/метал — мек, capнат
+            // boost (повечето Mixamo/RPM default-и са 1.0 → 1.2).
+            if (std.normalMap && std.normalScale) {
+              std.normalScale.set(
+                Math.min(2, std.normalScale.x * 1.2),
+                Math.min(2, std.normalScale.y * 1.2),
+              );
+            }
             // Fresnel rim suits the flat-shaded low-poly silhouette; on a
             // realistic PBR skin it reads as an unnatural glow, so skip it.
             if (!isRealistic) addFresnelRim(std, rimColor, 2.8, 0.42);
@@ -1865,10 +1885,16 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     for (let i = 0; i < MAX_P; i++) lives[i] = 1; // life >= maxL == dead
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    // Per-mount VFX текстури (не модул-левъл singletons) — конкурентни
+    // сцени disposват собствените си без да чупят другата инстанция.
+    // Disposват се в unmount cleanup по-долу.
+    const softParticleTex = softParticleTexture();
+    const beamGradientTex = beamGradientTexture();
+    const godRayGradientTex = godRayGradientTexture();
     const pmat = new THREE.PointsMaterial({
       size: 0.20, vertexColors: true, transparent: true,
       // Мека кръгла спрайт-текстура — иначе точките са твърди квадрати.
-      map: softParticleTexture(), alphaTest: 0.01,
+      map: softParticleTex, alphaTest: 0.01,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
     });
     const pts = new THREE.Points(geo, pmat);
@@ -1945,7 +1971,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const beam = new THREE.Mesh(
         new THREE.CylinderGeometry(0.30, 0.5, 5.5, 24, 1, true),
         new THREE.MeshBasicMaterial({
-          color, map: beamGradientTexture(), transparent: true, opacity: 0.34,
+          color, map: beamGradientTex, transparent: true, opacity: 0.34,
           blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
         }),
       );
@@ -2171,7 +2197,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     function godRay(x: number, z: number, color: number, height: number) {
       const geo = new THREE.ConeGeometry(0.8, height, 16, 1, true);
       const mat = new THREE.MeshBasicMaterial({
-        color, map: godRayGradientTexture(), transparent: true, opacity: 0.26,
+        color, map: godRayGradientTex, transparent: true, opacity: 0.26,
         blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
       });
       const cone = new THREE.Mesh(geo, mat);
@@ -2250,6 +2276,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     // the recipe so Frostvale gets falling snow, Stormpeaks gets settling
     // mist, Emberreach gets rising embers, Conclave gets rising rune
     // motes, Voidshade gets violet aberration sparks, etc.
+    // emberSpec.color е константа за целия живот на сцената → пресметни
+    // базовия HSL веднъж, вместо `new THREE.Color` + `getHSL` на всеки
+    // ambient spawn (spawnAmbient се вика всеки кадър в rAF пътя).
+    const emberBaseHsl = { h: 0, s: 0, l: 0 };
+    new THREE.Color(emberSpec.color).getHSL(emberBaseHsl);
+
     function spawnAmbient(dt: number) {
       if (Math.random() > dt * emberSpec.rate) return;
       const p = particlesRef.current!;
@@ -2266,13 +2298,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         : -(0.4 + Math.random() * 0.4);
       p.velocities[idx + 2] = (Math.random() - 0.5) * 0.1;
       // Subtle hue jitter so the trail doesn't look monochromatic.
-      const baseColor = new THREE.Color(emberSpec.color);
-      const hsl = { h: 0, s: 0, l: 0 };
-      baseColor.getHSL(hsl);
       tmpColor.setHSL(
-        (hsl.h + (Math.random() - 0.5) * 0.08 + 1) % 1,
-        Math.min(1, hsl.s * (0.85 + Math.random() * 0.3)),
-        Math.min(1, hsl.l * (0.85 + Math.random() * 0.3)),
+        (emberBaseHsl.h + (Math.random() - 0.5) * 0.08 + 1) % 1,
+        Math.min(1, emberBaseHsl.s * (0.85 + Math.random() * 0.3)),
+        Math.min(1, emberBaseHsl.l * (0.85 + Math.random() * 0.3)),
       );
       p.colors[idx] = tmpColor.r; p.colors[idx + 1] = tmpColor.g; p.colors[idx + 2] = tmpColor.b;
       p.lives[slot] = 0;
@@ -2405,7 +2434,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           renderer.toneMappingExposure = tuneables.exposure * (1 - amount * 0.20);
         }
       },
-      shake: (amount, time) => { shakeRef.current = { amount, t: time }; },
+      shake: (amount, time) => { shakeRef.current = { amount, t: time, dur: time }; },
       hitstop: (dur) => { hitStopRef.current = dur; },
       bloomKick: (delta, recover) => {
         // Stash on an animRef-like scratchpad; the post tick block below
@@ -2698,8 +2727,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const cam = cameraRef.current!;
       const s = shakeRef.current;
       s.t = Math.max(0, s.t - rawDt);
-      const shakeX = s.t > 0 ? (Math.random() - 0.5) * s.amount * 2 * (s.t / 0.35) : 0;
-      const shakeY = s.t > 0 ? (Math.random() - 0.5) * s.amount * (s.t / 0.35) : 0;
+      // Trauma-обвивка (Squirrel Eiserloh): shake ∝ trauma², където trauma
+      // спада линейно от 1 към 0 за собствената продължителност на удара.
+      // Квадратът дава ФРОНТ-НАТОВАРЕН punch — силен в момента на удара,
+      // бързо утихва вместо линейно „бръмчене". Дава тежест на попадението.
+      const trauma = s.t > 0 && s.dur > 0 ? s.t / s.dur : 0;
+      const shakeK = trauma * trauma;
+      const shakeX = shakeK > 0 ? (Math.random() - 0.5) * s.amount * 2 * shakeK : 0;
+      const shakeY = shakeK > 0 ? (Math.random() - 0.5) * s.amount * shakeK : 0;
 
       const lerpK = intro.active ? Math.min(1, rawDt * 8) : Math.min(1, rawDt * 6);
       const hh = idleHandheldRef.current;
@@ -2950,12 +2985,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       }
       sigilCache.forEach((t) => t.dispose());
       sigilCache.clear();
-      // Модул-левъл singleton текстури (мека частица + градиент за лъча):
-      // освободи GPU манипулатора и нулирай реф-а, за да се пресъздадат
-      // при следващ mount вместо да сочат към освободен ресурс.
-      _softParticleTex?.dispose(); _softParticleTex = null;
-      _beamGradientTex?.dispose(); _beamGradientTex = null;
-      _godRayGradientTex?.dispose(); _godRayGradientTex = null;
+      // Per-mount VFX текстури (мека частица + градиенти за лъча/god-ray):
+      // всяка инстанция освобождава СОБСТВЕНИТЕ си, без да пипа чужди —
+      // безопасно при конкурентни/застъпващи се сцени.
+      softParticleTex.dispose();
+      beamGradientTex.dispose();
+      godRayGradientTex.dispose();
       // Renderer canvas removal is handled inside backend.dispose() now;
       // this used to be the direct unmount call back when renderer was
       // a non-null local. Kept as a no-op safety net for any leftover
@@ -3007,7 +3042,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         crit: !!crit,
         onImpact: spectacleImpact,
       });
-      if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18 };
+      if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18, dur: 0.18 };
     },
     defeat(side) {
       // Cinematic knee-buckle with timeScale ramp + camera tilt + push-in
