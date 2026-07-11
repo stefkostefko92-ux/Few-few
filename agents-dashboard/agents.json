@@ -413,9 +413,20 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: При native Discord монетизация Discord Inc. е merchant of record за покупката (обработв…"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-11",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Chrome Web Store 'collection' = предаване на данни ИЗВЪН устройството. Локално-само обр…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-11",
+          "type": "learning",
+          "summary": "Научи: „Chrome Web Store 'collection' = предаване на данни ИЗВЪН устройството. Локално-само обр…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
