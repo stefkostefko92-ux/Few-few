@@ -74,7 +74,7 @@
     "message": "Everything happens on your device. No servers, no cloud, no data sent — anywhere, ever."
   },
   "welcomePoint2": {
-    "message": "Mail, chats, logins and banking are never memorised. Note: I can't recognise sensitive topics by address — for those, use pause or your own list in settings."
+    "message": "Mail, chats, logins and banking are never memorised. Heads up: I can't recognise sensitive topics by address — for those, use pause or your own list in settings."
   },
   "welcomePoint3": {
     "message": "You're in charge: pause with one click, \"Clear memory\" deletes everything, and optionally I forget automatically after a few months."
