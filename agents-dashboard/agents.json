@@ -1194,9 +1194,20 @@
           "date": "2026-07-10",
           "event": "v11.5 — учене",
           "detail": "Научи: MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста… (+1 още)"
+        },
+        {
+          "version": "11.6.0",
+          "date": "2026-07-11",
+          "event": "v11.6 — учене",
+          "detail": "Научи: Déjà (Chrome MV3) search в background.js групира страници само от `scored.slice(0, TOP_… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-11",
+          "type": "learning",
+          "summary": "Научи: „Déjà (Chrome MV3) search в background.js групира страници само от `scored.slice(0, TOP_…\" (+1 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
