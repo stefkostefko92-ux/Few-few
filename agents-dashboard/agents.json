@@ -1200,9 +1200,20 @@
           "date": "2026-07-11",
           "event": "v11.6 — учене",
           "detail": "Научи: Déjà (Chrome MV3) search в background.js групира страници само от `scored.slice(0, TOP_… (+1 още)"
+        },
+        {
+          "version": "11.7.0",
+          "date": "2026-07-11",
+          "event": "v11.7 — учене",
+          "detail": "Научи: Déjà background.js устойчива опашка: mutatePending прави пресен прочит, НО drainPending… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-11",
+          "type": "learning",
+          "summary": "Научи: „Déjà background.js устойчива опашка: mutatePending прави пресен прочит, НО drainPending…\" (+1 още)"
+        },
         {
           "date": "2026-07-11",
           "type": "learning",
