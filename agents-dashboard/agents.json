@@ -3282,6 +3282,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-11",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „deja (Chrome MV3) i18n живее в _locales/{bg,en,it}/messages.json (34 ключа, пълен парит…\" (+1)"
+        },
+        {
           "date": "2026-07-10",
           "type": "learning",
           "summary": "Научи: „linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…\" · 2 в карантина"
