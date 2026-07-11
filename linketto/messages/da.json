@@ -98,7 +98,8 @@
     "processingNote": "Butikssalg har også et behandlingsgebyr for betalingen på 1,9 % + 0,30 € (dækker kortudbyderen).",
     "mostPopular": "Mest populær",
     "annualOffer": "Spar {percent} % med en årsplan",
-    "referralPercentNote": "Inviter venner og tjen {percent} % af hver betaling, de foretager."
+    "referralPercentNote": "Inviter venner og tjen {percent} % af hver betaling, de foretager.",
+    "vatNote": "Priserne er endelige — inkl. moms hvor det er relevant."
   },
   "auth": {
     "loginTitle": "Log ind på Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Købsaftalen er mellem dig og skaberen; Linketto er platformen.",
     "sellerTrader": "Sælgeren er erhvervsdrivende",
     "sellerPrivate": "Sælgeren er en privatperson",
+    "shopVatIncluded": "Priserne er endelige — inkl. moms hvor det er relevant.",
     "subButton": "Abonnér",
     "subConsent": "Jeg accepterer at modtage e-mails og accepterer",
     "subCheck": "Næsten færdig — tjek din indbakke for at bekræfte dit abonnement.",

@@ -98,7 +98,8 @@
     "processingNote": "Veikala pārdošanai tiek piemērota arī maksājumu apstrādes maksa: 1,9% + €0,30 (sedz karšu apstrādātāju).",
     "mostPopular": "Vispopulārākais",
     "annualOffer": "Ietaupi {percent}% ar gada plānu",
-    "referralPercentNote": "Uzaicini draugus un nopelni {percent}% no katra viņu maksājuma."
+    "referralPercentNote": "Uzaicini draugus un nopelni {percent}% no katra viņu maksājuma.",
+    "vatNote": "Cenas ir galīgas — ar PVN, ja tas ir maksājams."
   },
   "auth": {
     "loginTitle": "Pieteikties Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Pirkuma līgums ir starp tevi un radītāju; Linketto ir platforma.",
     "sellerTrader": "Pārdevējs ir tirgotājs",
     "sellerPrivate": "Pārdevējs ir privātpersona",
+    "shopVatIncluded": "Cenas ir galīgas — ar PVN, ja tas ir maksājams.",
     "subButton": "Abonēt",
     "subConsent": "Piekrītu saņemt e-pastus un pieņemu",
     "subCheck": "Gandrīz gatavs — pārbaudiet savu iesūtni, lai apstiprinātu abonementu.",

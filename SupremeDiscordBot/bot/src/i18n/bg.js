@@ -59,5 +59,5 @@ export default {
   "ai.disclosure.title": "Автоматичен AI отговор",
   "ai.disclosure.fieldName": "⚠️ AI разкритие",
   "ai.disclosure.body": "Този отговор е генериран от AI езиков модел ({{model}}). Възможно е да съдържа грешки или неточности. Член на екипа ще се свърже с теб скоро за потвърждение.",
-  "ai.disclosure.footer": "Supreme Bot · Автоматичен AI отговор · Powered by Claude",
+  "ai.disclosure.footer": "Supreme Bot · Автоматичен AI отговор · Powered by Google Gemini",
 };

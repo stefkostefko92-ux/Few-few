@@ -98,7 +98,8 @@
     "processingNote": "Bíonn táille phróiseála íocaíochta ar dhíolacháin an tsiopa freisin: 1.9% + €0.30 (clúdaíonn sé próiseálaí an chárta).",
     "mostPopular": "Is coitianta",
     "annualOffer": "Sábháil {percent}% le plean bliantúil",
-    "referralPercentNote": "Tabhair cuireadh do chairde agus tuill {percent}% de gach íocaíocht a dhéanann siad."
+    "referralPercentNote": "Tabhair cuireadh do chairde agus tuill {percent}% de gach íocaíocht a dhéanann siad.",
+    "vatNote": "Tá na praghsanna deiridh — CBL san áireamh nuair is iníoctha é."
   },
   "auth": {
     "loginTitle": "Logáil isteach i Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Tá an conradh ceannaigh idir tú féin agus an cruthaitheoir; is é Linketto an t-ardán.",
     "sellerTrader": "Is trádálaí é an díoltóir",
     "sellerPrivate": "Is duine príobháideach é an díoltóir",
+    "shopVatIncluded": "Tá na praghsanna deiridh — CBL san áireamh nuair is iníoctha é.",
     "subButton": "Liostáil",
     "subConsent": "Aontaím ríomhphoist a fháil agus glacaim leis an",
     "subCheck": "Beagnach déanta — seiceáil do bhosca isteach chun do shíntiús a dheimhniú.",

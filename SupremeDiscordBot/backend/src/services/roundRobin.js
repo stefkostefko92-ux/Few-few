@@ -5,6 +5,7 @@
 // and assigns the ticket to them.
 
 import { prisma } from "../lib/prisma.js";
+import { getServerTier } from "../lib/premium.js";
 import axios from "axios";
 
 /**
@@ -25,13 +26,14 @@ export async function pickNextAssignee(serverId, botToken) {
         roundRobinEnabled: true,
         roundRobinRoleId: true,
         roundRobinIndex: true,
-        isPremium: true,
       },
     });
 
-    if (!server?.isPremium || !server.roundRobinEnabled || !server.roundRobinRoleId) {
-      return null;
-    }
+    if (!server?.roundRobinEnabled || !server.roundRobinRoleId) return null;
+    // Ефективен tier (собствен план + trial + agency) — суровият isPremium
+    // изпуска agency-покрити сървъри.
+    const { isPremium } = await getServerTier(serverId);
+    if (!isPremium) return null;
 
     // Fetch members with the support role from Discord
     const members = await fetchRoleMembers(serverId, server.roundRobinRoleId, botToken);

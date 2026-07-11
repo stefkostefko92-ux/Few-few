@@ -1,0 +1,322 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <a href="/admin/products" class="back-link">← Продукти</a>
+      <h1><%= product ? 'Редакция на продукт' : 'Нов продукт' %></h1>
+      <% if (product) { %>
+        <p class="admin-sub">
+          <code><%= product.slug %></code>
+          <% if (product.isActive) { %>
+            · <a href="/collections/<%= product.collection.slug %>/<%= product.slug %>" target="_blank" rel="noopener">Виж в сайта ↗</a>
+          <% } %>
+        </p>
+      <% } %>
+    </div>
+  </header>
+
+  <% if (typeof query !== 'undefined' && query.ok) { %>
+    <div class="admin-flash admin-flash-success">
+      ✅ <%
+        if (query.ok === 'main-set') { %>Главната снимка е сменена<% }
+        else if (query.ok === 'reorder') { %>Подредбата е запазена<% }
+        else if (query.ok === '1') { %>Записано<% }
+        else { %>Записано: <code><%= query.ok %></code><% }
+      %>
+      <span class="admin-flash-hint">— ако не виждаш промените на сайта, опресни с <kbd>Ctrl/Cmd + Shift + R</kbd></span>
+    </div>
+  <% } %>
+
+  <form action="<%= product ? '/admin/products/' + product.id : '/admin/products' %>" method="POST" enctype="multipart/form-data" class="admin-form" id="productForm">
+
+    <!-- COLLECTION -->
+    <div class="form-card">
+      <h3>Колекция</h3>
+      <label>
+        <select name="collectionId" required>
+          <% collections.forEach(function(c) { %>
+            <option value="<%= c.id %>" <%= product && product.collectionId === c.id ? 'selected' : '' %>><%= c.nameBg || c.nameIt %></option>
+          <% }); %>
+        </select>
+      </label>
+    </div>
+
+    <!-- EXISTING IMAGES with main-image picker -->
+    <% if (product && images && images.length > 0) { %>
+    <div class="form-card">
+      <h3>Снимки <span class="muted small">(<%= images.length %>)</span></h3>
+      <p class="hint small">Кликни ⭐ за да направиш дадена снимка главна. Главната се показва първа в каталога и в социалните мрежи.</p>
+      <div class="img-grid img-grid-managed">
+        <% images.forEach(function(img, idx) { %>
+          <div class="img-tile <%= img === product.mainImage ? 'is-main' : '' %>" data-image="<%= img %>">
+            <div class="img-tile-media">
+              <img src="<%= img.replace('/uploads/products/', '/uploads/products/thumb-').replace('/uploads/seed/', '/uploads/seed/thumb-') %>" alt="" onerror="this.src='<%= img %>'">
+              <% if (img === product.mainImage) { %>
+                <span class="main-badge" title="Главна снимка">★</span>
+              <% } %>
+            </div>
+            <div class="img-tile-actions">
+              <% if (img !== product.mainImage) { %>
+                <form action="/admin/products/<%= product.id %>/set-main" method="POST" class="inline">
+                  <input type="hidden" name="image" value="<%= img %>">
+                  <button type="submit" class="btn-img-action" title="Направи главна">★</button>
+                </form>
+              <% } %>
+              <button type="button" class="btn-img-action btn-img-del" data-delete-image="<%= img %>" title="Изтрий">✕</button>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- UPLOAD NEW -->
+    <div class="form-card">
+      <h3><%= product ? 'Добави снимки' : 'Снимки' %></h3>
+      <label class="file-input">
+        <span>Избери до 10 файла (JPG / PNG / WebP, макс. 15MB всеки)</span>
+        <input type="file" name="images" accept="image/*" multiple id="imageInput">
+      </label>
+      <div id="imagePreview" class="img-preview-grid"></div>
+      <p class="hint small">Снимките се конвертират автоматично в WebP с генерирана thumbnail.</p>
+    </div>
+
+    <!-- TRANSLATIONS — BULGARIA FIRST -->
+    <div class="form-card">
+      <h3>🇧🇬 Български *</h3>
+      <label><span>Име</span><input type="text" name="nameBg" value="<%= product ? product.nameBg : '' %>" required></label>
+      <label><span>Кратко описание</span><input type="text" name="shortDescBg" value="<%= product ? (product.shortDescBg || '') : '' %>" placeholder="Една кратка фраза"></label>
+      <label><span>Описание</span><textarea name="descriptionBg" rows="6" required><%= product ? product.descriptionBg : '' %></textarea></label>
+    </div>
+
+    <div class="form-card">
+      <h3>🇮🇹 Italiano *</h3>
+      <label><span>Nome</span><input type="text" name="nameIt" value="<%= product ? product.nameIt : '' %>" required></label>
+      <label><span>Descrizione breve</span><input type="text" name="shortDescIt" value="<%= product ? (product.shortDescIt || '') : '' %>" placeholder="Una breve frase"></label>
+      <label><span>Descrizione</span><textarea name="descriptionIt" rows="6" required><%= product ? product.descriptionIt : '' %></textarea></label>
+    </div>
+
+    <div class="form-card">
+      <h3>🇬🇧 English *</h3>
+      <label><span>Name</span><input type="text" name="nameEn" value="<%= product ? product.nameEn : '' %>" required></label>
+      <label><span>Short description</span><input type="text" name="shortDescEn" value="<%= product ? (product.shortDescEn || '') : '' %>" placeholder="A short tagline"></label>
+      <label><span>Description</span><textarea name="descriptionEn" rows="6" required><%= product ? product.descriptionEn : '' %></textarea></label>
+    </div>
+
+    <!-- TECHNICAL DETAILS -->
+    <div class="form-card">
+      <h3>Технически детайли</h3>
+      <label><span>Материали</span><input type="text" name="materials" value="<%= product ? (product.materials || '') : '' %>" placeholder="напр. Керамичен гипс, естествени пигменти"></label>
+      <label><span>Размери</span><input type="text" name="dimensions" value="<%= product ? (product.dimensions || '') : '' %>" placeholder="напр. 8 × 6 × 4 cm"></label>
+    </div>
+
+    <!-- SEO -->
+    <div class="form-card">
+      <h3>SEO <span class="muted small">(по избор)</span></h3>
+      <label><span>Meta title (IT)</span><input type="text" name="metaTitleIt" value="<%= product ? (product.metaTitleIt || '') : '' %>" placeholder="50–60 символа"></label>
+      <label><span>Meta description (IT)</span><textarea name="metaDescIt" rows="2" placeholder="150–160 символа"><%= product ? (product.metaDescIt || '') : '' %></textarea></label>
+    </div>
+
+    <!-- STATUS -->
+    <div class="form-card">
+      <h3>Статус</h3>
+      <label class="checkbox">
+        <input type="checkbox" name="isActive" <%= !product || product.isActive ? 'checked' : '' %>>
+        <span>Видим в сайта</span>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" name="isFeatured" <%= product && product.isFeatured ? 'checked' : '' %>>
+        <span>Препоръчан (показан на началната страница)</span>
+      </label>
+      <label><span>Подредба (по-малко = по-напред)</span><input type="number" name="order" value="<%= product ? product.order : 0 %>" style="max-width:120px"></label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary-admin" id="submitBtn">
+        <span class="btn-text"><%= product ? 'Запази промените' : 'Създай продукт' %></span>
+      </button>
+      <a href="/admin/products" class="btn-ghost-admin">Откажи</a>
+      <% if (product) { %>
+        <form action="/admin/products/<%= product.id %>/delete" method="POST" class="inline" data-confirm="Сигурен ли си? Това ще изтрие продукта и всички негови снимки.">
+          <button type="submit" class="btn-danger-admin">Изтрий продукта</button>
+        </form>
+      <% } %>
+    </div>
+  </form>
+</div>
+
+<style>
+  .img-grid-managed {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+  .img-grid-managed .img-tile {
+    border: 2px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fafafa;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .img-grid-managed .img-tile.is-main {
+    border-color: #C9A96E;
+    box-shadow: 0 2px 12px rgba(201, 169, 110, 0.25);
+  }
+  .img-tile-media { position: relative; aspect-ratio: 1; overflow: hidden; }
+  .img-tile-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .main-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #C9A96E;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .img-tile-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    gap: 0.4rem;
+  }
+  .btn-img-action {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    padding: 0.3em 0.7em;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+    flex: 1;
+  }
+  .btn-img-action:hover { background: #f5f0e6; border-color: #C9A96E; }
+  .btn-img-del:hover { background: #fee; border-color: #c33; color: #c33; }
+  form.inline { display: inline; flex: 1; }
+  form.inline button { width: 100%; }
+
+  .img-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .img-preview-grid .preview-tile {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px dashed rgba(0,0,0,0.15);
+    background: #fafafa;
+  }
+  .img-preview-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .admin-flash {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+  }
+  .admin-flash code {
+    background: rgba(0,0,0,0.07);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+  .admin-flash-hint { display: block; margin-top: 0.4rem; font-size: 0.85em; opacity: 0.8; }
+  .admin-flash kbd {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 3px;
+    padding: 0.05em 0.4em;
+    font-size: 0.9em;
+  }
+
+  .btn-danger-admin {
+    background: transparent;
+    color: #c33;
+    border: 1px solid rgba(204, 51, 51, 0.3);
+    padding: 0.6em 1.2em;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-danger-admin:hover { background: #fee; border-color: #c33; }
+  .submitting .btn-text::after { content: ' …'; }
+  .submitting button[type="submit"] { opacity: 0.7; pointer-events: none; }
+</style>
+
+<script>
+  // === Image preview before upload ===
+  const imgInput = document.getElementById('imageInput');
+  const preview = document.getElementById('imagePreview');
+  if (imgInput && preview) {
+    imgInput.addEventListener('change', () => {
+      preview.innerHTML = '';
+      [...imgInput.files].forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const tile = document.createElement('div');
+        tile.className = 'preview-tile';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        tile.appendChild(img);
+        preview.appendChild(tile);
+      });
+    });
+  }
+
+  // === Image delete via fetch (no full-page reload) ===
+  const productId = '<%= product ? product.id : "" %>';
+  if (productId) {
+    document.querySelectorAll('[data-delete-image]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const image = btn.dataset.deleteImage;
+        if (!confirm('Изтрий тази снимка?')) return;
+        btn.disabled = true;
+        try {
+          const res = await fetch('/admin/products/' + productId + '/image-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'image=' + encodeURIComponent(image)
+          });
+          if (res.ok) {
+            btn.closest('.img-tile').style.opacity = '0';
+            setTimeout(() => btn.closest('.img-tile').remove(), 300);
+          } else {
+            alert('Грешка при изтриване');
+            btn.disabled = false;
+          }
+        } catch (e) {
+          alert('Грешка при изтриване: ' + e.message);
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  // === Confirm dialogs ===
+  document.querySelectorAll('[data-confirm]').forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!confirm(form.dataset.confirm)) e.preventDefault();
+    });
+  });
+
+  // === Loading state on form submit ===
+  document.getElementById('productForm')?.addEventListener('submit', (e) => {
+    if (e.submitter && e.submitter.classList.contains('btn-danger-admin')) return;
+    document.getElementById('productForm').classList.add('submitting');
+  });
+
+  // === Auto-fade flash ===
+  setTimeout(() => {
+    document.querySelector('.admin-flash-success')?.style.setProperty('opacity', '0.55');
+  }, 6000);
+</script>

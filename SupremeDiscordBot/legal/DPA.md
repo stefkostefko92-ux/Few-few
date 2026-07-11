@@ -58,7 +58,7 @@
 |---|---|---|---|
 | Hetzner Online GmbH | Infrastructure hosting | Germany (EU) | Within EEA |
 | Stripe Payments Europe Ltd | Payment processing | Ireland (EU) | Within EEA |
-| Anthropic PBC | AI inference (optional, Premium feature) | USA | Standard Contractual Clauses |
+| Google LLC (Gemini API) | AI inference (optional, Premium feature) | USA | Standard Contractual Clauses |
 | Discord Inc. | Authentication + bot delivery | USA | Standard Contractual Clauses |
 
 4.3 Supreme Bot will provide 30 days' notice of any intended changes to sub-processors (via email to the Customer's admin contact) and publish an updated list at the Customer's dashboard under Privacy Settings.
@@ -106,7 +106,7 @@
 
 8.1 Personal data is primarily stored and processed in the EU (Bulgaria, Germany).
 
-8.2 Where transfers to sub-processors outside the EEA are necessary (Anthropic, Discord — both US), Supreme Bot relies on:
+8.2 Where transfers to sub-processors outside the EEA are necessary (Google, Discord — both US), Supreme Bot relies on:
 - EU Standard Contractual Clauses (Commission Implementing Decision (EU) 2021/914)
 - Supplementary technical measures (encryption in transit)
 

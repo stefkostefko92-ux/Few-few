@@ -1,0 +1,21 @@
+# Supreme AdBlock — Carbon Stealth
+User-agent: *
+Allow: /
+Disallow: /filters.json
+Disallow: /filters.json.sig
+
+# AI / answer engines welcome
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://adblock.carbonstealth.eu/sitemap.xml

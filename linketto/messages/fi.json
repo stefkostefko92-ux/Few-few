@@ -98,7 +98,8 @@
     "processingNote": "Kaupan myynneistä peritään myös maksun käsittelymaksu 1,9 % + 0,30 € (kattaa korttioperaattorin).",
     "mostPopular": "Suosituin",
     "annualOffer": "Säästä {percent} % vuosipaketilla",
-    "referralPercentNote": "Kutsu ystäviä ja ansaitse {percent} % jokaisesta heidän maksustaan."
+    "referralPercentNote": "Kutsu ystäviä ja ansaitse {percent} % jokaisesta heidän maksustaan.",
+    "vatNote": "Hinnat ovat lopullisia — sisältävät alv:n silloin, kun sitä peritään."
   },
   "auth": {
     "loginTitle": "Kirjaudu Linkettoon",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Ostosopimus on sinun ja tekijän välinen; Linketto on alusta.",
     "sellerTrader": "Myyjä on elinkeinonharjoittaja",
     "sellerPrivate": "Myyjä on yksityishenkilö",
+    "shopVatIncluded": "Hinnat ovat lopullisia — sisältävät alv:n silloin, kun sitä peritään.",
     "subButton": "Tilaa",
     "subConsent": "Hyväksyn sähköpostien vastaanottamisen ja hyväksyn",
     "subCheck": "Melkein valmista — tarkista sähköpostisi vahvistaaksesi tilauksen.",

@@ -1,0 +1,142 @@
+// Eternal Touch — Database schema
+// Carbon Stealth VCC product
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  lastLoginAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions  Session[]
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+}
+
+// Three main collections
+model Collection {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  order       Int       @default(0)
+
+  // Multilingual fields (IT, BG, EN)
+  nameIt      String
+  nameBg      String
+  nameEn      String
+  taglineIt   String?
+  taglineBg   String?
+  taglineEn   String?
+  descriptionIt String  @db.Text
+  descriptionBg String  @db.Text
+  descriptionEn String  @db.Text
+
+  coverImage  String?
+  isActive    Boolean   @default(true)
+
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id           String     @id @default(cuid())
+  slug         String     @unique
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  order        Int        @default(0)
+
+  // Multilingual
+  nameIt       String
+  nameBg       String
+  nameEn       String
+  shortDescIt  String?
+  shortDescBg  String?
+  shortDescEn  String?
+  descriptionIt String    @db.Text
+  descriptionBg String    @db.Text
+  descriptionEn String    @db.Text
+
+  // Technical details
+  materials    String?
+  dimensions   String?
+
+  // Image gallery (JSON array of image filenames)
+  images       String     @default("[]") @db.Text
+  mainImage    String?
+
+  // SEO
+  metaTitleIt  String?
+  metaTitleBg  String?
+  metaTitleEn  String?
+  metaDescIt   String?
+  metaDescBg   String?
+  metaDescEn   String?
+
+  isActive     Boolean    @default(true)
+  isFeatured   Boolean    @default(false)
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// Gallery (independent of products — for showcase grid)
+model GalleryItem {
+  id          String   @id @default(cuid())
+  image       String
+  order       Int      @default(0)
+
+  titleIt     String?
+  titleBg     String?
+  titleEn     String?
+  captionIt   String?
+  captionBg   String?
+  captionEn   String?
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Site-wide content (hero, about, etc.) — key/value with multilingual values
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique  // e.g. 'hero.title', 'about.body'
+  valueIt   String   @db.Text
+  valueBg   String   @db.Text
+  valueEn   String   @db.Text
+  group     String   @default("general")  // hero, about, contact, footer
+  type      String   @default("text")     // text, html, image
+  updatedAt DateTime @updatedAt
+}
+
+// Contact messages
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String   @db.Text
+  language  String   @default("en")
+  source    String?  // ip-based country
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

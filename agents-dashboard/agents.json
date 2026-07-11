@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-11",
+    "updated": "2026-07-10",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -404,38 +404,27 @@
         },
         {
           "version": "10.4.0",
-          "date": "2026-07-10",
+          "date": "2026-07-09",
           "event": "v10.4 — учене",
-          "detail": "Научи: Nexus Dominion (Express+better-sqlite3) funnel-ва всяко действие през logger.ts:logEven… (+2 още)"
+          "detail": "Научи: При одит на многоезичен SaaS UCPD-consistency изисква проверка на ВСЕКИ дублиран низ по… (+1 още)"
         },
         {
           "version": "10.5.0",
           "date": "2026-07-10",
           "event": "v10.5 — учене",
-          "detail": "Научи: Nexus Dominion premium валута 'gems' е строго еднопосочна — купува се със Stripe (mode:… (+2 още)"
-        },
-        {
-          "version": "10.6.0",
-          "date": "2026-07-11",
-          "event": "v10.6 — учене",
-          "detail": "Научи: Nexus Dominion няма endpoint играч→играч за поща — mail.ts излага само GET/read/DELETE,… (+2 още)"
+          "detail": "Научи: При native Discord монетизация Discord Inc. е merchant of record за покупката (обработв…"
         }
       ],
       "activity": [
         {
-          "date": "2026-07-11",
-          "type": "learning",
-          "summary": "Научи: „Nexus Dominion няма endpoint играч→играч за поща — mail.ts излага само GET/read/DELETE,…\" (+2 още)"
-        },
-        {
           "date": "2026-07-10",
           "type": "learning",
-          "summary": "Научи: „Nexus Dominion premium валута 'gems' е строго еднопосочна — купува се със Stripe (mode:…\" (+2 още)"
+          "summary": "Научи: „При native Discord монетизация Discord Inc. е merchant of record за покупката (обработв…\" · 3 в карантина"
         },
         {
-          "date": "2026-07-10",
+          "date": "2026-07-09",
           "type": "learning",
-          "summary": "Научи: „Nexus Dominion (Express+better-sqlite3) funnel-ва всяко действие през logger.ts:logEven…\" (+2 още)"
+          "summary": "Научи: „При одит на многоезичен SaaS UCPD-consistency изисква проверка на ВСЕКИ дублиран низ по…\" (+1 още)"
         },
         {
           "date": "2026-07-06",
@@ -1179,16 +1168,38 @@
         },
         {
           "version": "11.3.0",
-          "date": "2026-07-11",
+          "date": "2026-07-09",
           "event": "v11.3 — учене",
-          "detail": "Научи: В three.js Material.dispose() НЕ disposва прикачените текстури (map/normalMap/…) — те с…"
+          "detail": "Научи: discord.js 14.26.4 EntitlementManager.fetch поддържа excludeEnded/excludeDeleted/after/… (+2 още)"
+        },
+        {
+          "version": "11.4.0",
+          "date": "2026-07-10",
+          "event": "v11.4 — учене",
+          "detail": "Научи: SupremeDiscordBot getServerTier (backend/src/lib/premium.js:215) е plan-first: paidPlan… (+1 още)"
+        },
+        {
+          "version": "11.5.0",
+          "date": "2026-07-10",
+          "event": "v11.5 — учене",
+          "detail": "Научи: MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-07-11",
+          "date": "2026-07-10",
           "type": "learning",
-          "summary": "Научи: „В three.js Material.dispose() НЕ disposва прикачените текстури (map/normalMap/…) — те с…\""
+          "summary": "Научи: „MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot getServerTier (backend/src/lib/premium.js:215) е plan-first: paidPlan…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-09",
+          "type": "learning",
+          "summary": "Научи: „discord.js 14.26.4 EntitlementManager.fetch поддържа excludeEnded/excludeDeleted/after/…\" (+2 още)"
         },
         {
           "date": "2026-07-09",
@@ -2575,16 +2586,16 @@
         },
         {
           "version": "10.4.0",
-          "date": "2026-07-10",
+          "date": "2026-07-09",
           "event": "v10.4 — учене",
-          "detail": "Научи: React SPA без SSR със статичен index.html, сервиран от Express catch-all за всички руто… (+1 още)"
+          "detail": "Научи: Supreme Bot prerender landingSnapshot() (scripts/prerender.mjs:110-113 tier()) рендира … (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-07-10",
+          "date": "2026-07-09",
           "type": "learning",
-          "summary": "Научи: „React SPA без SSR със статичен index.html, сервиран от Express catch-all за всички руто…\" (+1 още)"
+          "summary": "Научи: „Supreme Bot prerender landingSnapshot() (scripts/prerender.mjs:110-113 tier()) рендира …\" (+2 още)"
         },
         {
           "date": "2026-07-06",
@@ -3266,14 +3277,14 @@
           "version": "10.5.0",
           "date": "2026-07-10",
           "event": "v10.5 — учене",
-          "detail": "Научи: Nexus Dominion i18n (Nexus/client/src/i18n/locales/{bg,en,it}.json): quests.regions.* (… (+2 още)"
+          "detail": "Научи: linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…"
         }
       ],
       "activity": [
         {
           "date": "2026-07-10",
           "type": "learning",
-          "summary": "Научи: „Nexus Dominion i18n (Nexus/client/src/i18n/locales/{bg,en,it}.json): quests.regions.* (…\" (+2 още)"
+          "summary": "Научи: „linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…\" · 2 в карантина"
         },
         {
           "date": "2026-07-06",
@@ -6644,13 +6655,24 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST… (+2 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-10",
+          "event": "v10.4 — учене",
+          "detail": "Научи: Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…"
         }
       ],
       "activity": [
         {
-          "date": "2026-07-11",
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…\" · 5 в карантина"
+        },
+        {
+          "date": "2026-07-10",
           "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Nexus Dominion (server/src/routes/payments.ts) обработва Stripe правилно по трите канон…\" (+2)"
+          "summary": "Хипотеза → карантина: „linketto данъчен слой (separate charges & transfers): payoutSeller се вика само if(!exi…\" (+3)"
         },
         {
           "date": "2026-07-06",
@@ -8423,11 +8445,6 @@
       ],
       "activity": [
         {
-          "date": "2026-07-11",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Nexus combat конвейер: worktree копие има РАЗЛИЧНА номерация от споделения checkout (ра…\" (+1)"
-        },
-        {
           "date": "2026-07-09",
           "type": "learning",
           "summary": "Научи: „iOS Safari има само PARTIAL support за background-attachment:fixed през ВСИЧКИ версии 1…\" (+3 още)"
@@ -9040,9 +9057,31 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: DNR redirect action има 4 взаимно изключващи се ключа: url, extensionPath (започва с /)… (+8 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-10",
+          "event": "v10.3 — учене",
+          "detail": "Научи: CWS screenshots трябва да са 24-bit PNG без алфа (colortype 2/RGB) или JPEG, 1280x800 и… (+1 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-10",
+          "event": "v10.4 — учене",
+          "detail": "Научи: DNR safe/unsafe rule split (5000 unsafe cap) важи САМО за dynamic/session правила, НЕ з… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „DNR safe/unsafe rule split (5000 unsafe cap) важи САМО за dynamic/session правила, НЕ з…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „CWS screenshots трябва да са 24-bit PNG без алфа (colortype 2/RGB) или JPEG, 1280x800 и…\" (+1 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",

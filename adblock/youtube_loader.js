@@ -15,15 +15,28 @@
   } catch {}
   if (bypass) return;
 
-  // Hand extra ad-field names from the live update to youtube_main as inert
-  // JSON (data, not code) via a <script type="application/json"> element.
-  function passConfig(adFields) {
-    if (!Array.isArray(adFields) || !adFields.length) return;
+  // Hand the live-update extras to youtube_main as inert JSON (data, not
+  // code) via a <script type="application/json"> element: extra ad fields,
+  // extra ad renderer names, request flags and the flags kill switch.
+  function passConfig(yt) {
+    if (!yt || typeof yt !== "object") return;
+    const cfg = {
+      adFields: Array.isArray(yt.adFields) ? yt.adFields.slice(0, 50) : [],
+      adRenderers: Array.isArray(yt.adRenderers) ? yt.adRenderers.slice(0, 100) : [],
+      requestFlags: Array.isArray(yt.requestFlags) ? yt.requestFlags.slice(0, 10) : [],
+      disableRequestFlags: yt.disableRequestFlags === true,
+    };
+    if (
+      !cfg.adFields.length && !cfg.adRenderers.length &&
+      !cfg.requestFlags.length && !cfg.disableRequestFlags
+    ) {
+      return; // нищо извън вградените дефолти на youtube_main
+    }
     try {
       const tag = document.createElement("script");
       tag.type = "application/json";
       tag.id = "tbab-yt-cfg";
-      tag.textContent = JSON.stringify({ adFields: adFields.slice(0, 50) });
+      tag.textContent = JSON.stringify(cfg);
       (document.head || document.documentElement).appendChild(tag);
     } catch {}
   }
@@ -40,7 +53,7 @@
     const ytOn = (data.features || {}).youtube !== false;
     const allowed = (data.allowlist || []).some(hostMatches);
     if (on && ytOn && !allowed) {
-      passConfig(data.liveConfig && data.liveConfig.youtube && data.liveConfig.youtube.adFields);
+      passConfig(data.liveConfig && data.liveConfig.youtube);
       inject();
     }
   });

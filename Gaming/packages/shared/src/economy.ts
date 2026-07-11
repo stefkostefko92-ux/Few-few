@@ -98,5 +98,22 @@ export const VIP_RANK: Record<VipTier, number> = {
   NONE: 0, BRONZE: 1, SILVER: 2, GOLD: 3, PLATINUM: 4,
 };
 
+/** Официален фиксиран курс на превалутиране (ЗВЕРБ): 1 EUR = 1.95583 BGN. */
+export const BGN_PER_EUR = 1.95583;
+
+/** Левова равностойност в стотинки: пълният курс, закръглен до втория знак. */
+export function bgnCents(priceCents: number): number {
+  return Math.round(priceCents * BGN_PER_EUR);
+}
+
+/**
+ * Двойно обозначаване на цена по Закона за въвеждане на еврото в Република
+ * България — двете цени с еднаква видимост, левът по фиксирания курс:
+ * "€3.99 / 7.80 лв.". Задължително за потребителски цени през преходния период.
+ */
+export function formatDualPrice(priceCents: number): string {
+  return `€${(priceCents / 100).toFixed(2)} / ${(bgnCents(priceCents) / 100).toFixed(2)} лв.`;
+}
+
 export const checkoutSchema = z.object({ sku: z.string().min(1).max(64) });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

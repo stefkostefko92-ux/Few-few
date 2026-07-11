@@ -98,7 +98,8 @@
     "processingNote": "Parduotuvės pardavimams taip pat taikomas mokėjimo apdorojimo mokestis: 1,9% + €0,30 (padengia kortelių apdorotoją).",
     "mostPopular": "Populiariausias",
     "annualOffer": "Sutaupyk {percent}% su metiniu planu",
-    "referralPercentNote": "Pakviesk draugų ir uždirbk {percent}% nuo kiekvieno jų mokėjimo."
+    "referralPercentNote": "Pakviesk draugų ir uždirbk {percent}% nuo kiekvieno jų mokėjimo.",
+    "vatNote": "Kainos yra galutinės — su PVM, kai jis taikomas."
   },
   "auth": {
     "loginTitle": "Prisijunk prie Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Pirkimo sutartis sudaroma tarp tavęs ir kūrėjo; Linketto yra platforma.",
     "sellerTrader": "Pardavėjas yra prekiautojas",
     "sellerPrivate": "Pardavėjas yra privatus asmuo",
+    "shopVatIncluded": "Kainos yra galutinės — su PVM, kai jis taikomas.",
     "subButton": "Prenumeruoti",
     "subConsent": "Sutinku gauti el. laiškus ir priimu",
     "subCheck": "Beveik baigta — patikrinkite savo pašto dėžutę, kad patvirtintumėte prenumeratą.",

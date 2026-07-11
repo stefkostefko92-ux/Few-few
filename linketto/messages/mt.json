@@ -98,7 +98,8 @@
     "processingNote": "Il-bejgħ mill-ħanut iġorr ukoll tariffa ta' pproċessar tal-ħlas ta' 1.9% + €0.30 (tkopri l-proċessur tal-karta).",
     "mostPopular": "L-aktar popolari",
     "annualOffer": "Iffranka {percent}% b'pjan annwali",
-    "referralPercentNote": "Stieden lill-ħbieb u aqla' {percent}% ta' kull ħlas li jagħmlu."
+    "referralPercentNote": "Stieden lill-ħbieb u aqla' {percent}% ta' kull ħlas li jagħmlu.",
+    "vatNote": "Il-prezzijiet huma finali — inkluża l-VAT fejn tkun dovuta."
   },
   "auth": {
     "loginTitle": "Idħol f'Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Il-kuntratt tax-xiri huwa bejnek u l-kreatur; Linketto huwa l-pjattaforma.",
     "sellerTrader": "Il-bejjiegħ huwa kummerċjant",
     "sellerPrivate": "Il-bejjiegħ huwa individwu privat",
+    "shopVatIncluded": "Il-prezzijiet huma finali — inkluża l-VAT fejn tkun dovuta.",
     "subButton": "Abbona",
     "subConsent": "Naqbel li nirċievi emails u naċċetta l-",
     "subCheck": "Kważi lestja — iċċekkja l-inbox tiegħek biex tikkonferma l-abbonament.",

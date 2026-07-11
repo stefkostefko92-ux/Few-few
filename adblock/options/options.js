@@ -37,6 +37,8 @@ function load() {
     $("featMeta").checked = res.features.meta !== false;
     $("featYoutube").checked = res.features.youtube !== false;
     $("featSmart").checked = res.features.smart !== false;
+    $("featRemoveparam").checked = res.features.removeparam !== false;
+    $("featMalware").checked = res.features.malware === true;
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString();
     $("autoUpdate").checked = res.autoUpdate !== false;
     renderUpdateStatus(res.liveVersion || 0, res.liveUpdated || 0);
@@ -161,6 +163,8 @@ function saveFeatures() {
       meta: $("featMeta").checked,
       youtube: $("featYoutube").checked,
       smart: $("featSmart").checked,
+      removeparam: $("featRemoveparam").checked,
+      malware: $("featMalware").checked,
     },
   });
 }
@@ -176,6 +180,8 @@ $("featAab").addEventListener("change", saveFeatures);
 $("featMeta").addEventListener("change", saveFeatures);
 $("featYoutube").addEventListener("change", saveFeatures);
 $("featSmart").addEventListener("change", saveFeatures);
+$("featRemoveparam").addEventListener("change", saveFeatures);
+$("featMalware").addEventListener("change", saveFeatures);
 
 $("autoUpdate").addEventListener("change", () =>
   chrome.runtime.sendMessage({ type: "setAutoUpdate", on: $("autoUpdate").checked })
@@ -231,7 +237,7 @@ $("exportBtn").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "the-best-ads-block-settings.json";
+    a.download = "supreme-adblock-settings.json";
     a.click();
     URL.revokeObjectURL(a.href);
   });

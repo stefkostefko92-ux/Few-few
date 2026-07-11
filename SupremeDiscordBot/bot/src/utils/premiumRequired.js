@@ -29,9 +29,12 @@ export async function sendPremiumRequired(interaction, skuId, content) {
   const isWhiteLabelClient = interaction.client.isWhiteLabel === true;
 
   const send = (body) => {
-    if (interaction.replied) return interaction.followUp(body);
+    // followUp = webhook.send и НЕ наследява ephemeral от defer-а — без изричен
+    // flags би излязъл ПУБЛИЧНО в канала (изтичане на upsell-а).
+    if (interaction.replied) return interaction.followUp({ ...body, flags: MessageFlags.Ephemeral });
     // Deferred but not yet replied → editReply resolves the pending "thinking…"
-    // placeholder instead of leaving it hanging next to a follow-up.
+    // placeholder instead of leaving it hanging next to a follow-up (запазва
+    // ephemeral-ността, зададена при deferReply).
     if (interaction.deferred) return interaction.editReply(body);
     return interaction.reply({ ...body, flags: MessageFlags.Ephemeral });
   };

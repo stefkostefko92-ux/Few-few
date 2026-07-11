@@ -18,8 +18,9 @@ export default function TermsPage() {
         <p>
           These Terms of Service ("Terms") constitute a legally binding agreement between{" "}
           <strong>{COMPANY}</strong> ("we", "us", "our"), a company registered in{" "}
-          {COUNTRY}, and you ("User", "you"), the individual or legal entity accessing or
-          using the Supreme Bot platform ("Service").
+          {COUNTRY} — UIC (ЕИК) 208725180, VAT BG208725180, registered address ul. Samuil 3,
+          2670 Bobov dol, Bulgaria, e-mail legal@carbonstealth.eu — and you ("User", "you"),
+          the individual or legal entity accessing or using the Supreme Bot platform ("Service").
         </p>
         <p>
           By authenticating via Discord OAuth2 or by accessing any part of the Service, you
@@ -94,7 +95,10 @@ export default function TermsPage() {
         <ul>
           <li>Authorise us and our payment processor (Stripe, Inc.) to charge your designated payment method on a recurring basis for the selected billing period; purchases made through Discord's Premium App checkout are processed by Discord Inc. as merchant of record;</li>
           <li>Acknowledge that billing will continue until you cancel;</li>
-          <li>Accept that prices may change with at least 30 days' prior notice.</li>
+          <li>Accept that prices may change with at least 30 days' prior notice. If you are a
+          consumer and do not agree with a price increase, you may cancel free of charge with
+          effect from the date the new price would apply — simply cancel via the Billing Portal
+          before that date.</li>
         </ul>
 
         <p><strong>5.3 Free Trial.</strong> New Premium and White-label subscriptions may include a 14-day free
@@ -129,6 +133,13 @@ export default function TermsPage() {
           Refunds are not available for: subsequent billing periods, trials that have converted
           to paid subscriptions where more than 7 days have elapsed, or accounts terminated for
           violations of these Terms.
+        </p>
+        <p>
+          <strong>Purchases made through Discord.</strong> For subscriptions purchased through
+          Discord's Premium App checkout, Discord Inc. is the merchant of record: refund
+          requests and the exercise of withdrawal rights for those purchases are handled under
+          Discord's own checkout and refund policies. We do not receive or process those
+          payments and cannot refund them directly.
         </p>
         <p>
           <strong>Right of withdrawal (EU/EEA consumers).</strong> If you are a consumer in the
@@ -277,6 +288,17 @@ export default function TermsPage() {
           or harmful components.
         </p>
         <p>
+          <strong>Statutory conformity guarantee (digital services).</strong> If you are a
+          consumer in the EU/EEA, you benefit from the mandatory conformity regime for digital
+          services under Directive (EU) 2019/770 (in Bulgaria: the Act on the Provision of
+          Digital Content, Digital Services and Sale of Goods — ЗПЦСЦУ). For a subscription
+          (continuous supply) we are liable for any lack of conformity that occurs or becomes
+          apparent throughout the entire supply period. Your remedies, in order: bringing the
+          service into conformity; a proportionate price reduction; termination of the contract.
+          These rights exist independently of, and are not limited by, our 7-day goodwill
+          refund policy above.
+        </p>
+        <p>
           Nothing in these Terms limits any non-excludable statutory guarantees that apply
           in your jurisdiction.
         </p>
@@ -339,14 +361,21 @@ export default function TermsPage() {
         <p>
           Any dispute arising out of or in connection with these Terms shall first be attempted
           to be resolved amicably by contacting us. If resolution cannot be reached within
-          30 days, disputes shall be subject to the exclusive jurisdiction of the courts of{" "}
-          {COUNTRY}.
+          30 days, disputes shall be subject to the jurisdiction of the courts of{" "}
+          {COUNTRY}. <strong>If you are a consumer in the EU/EEA</strong>, this does not limit
+          your right to bring proceedings — or to be sued only — in the courts of your country
+          of habitual residence (Regulation (EU) 1215/2012), and you always retain the
+          protection of the mandatory consumer law provisions of that country (Regulation (EC)
+          593/2008, Art. 6).
         </p>
         <p>
           If you are a consumer in the EU, you may also use alternative dispute resolution (ADR).
           The European Commission's Online Dispute Resolution (ODR) platform was discontinued on
           20 July 2025 and is no longer available. Consumers in Bulgaria may contact the
-          conciliation commissions of the Commission for Consumer Protection (КЗП); consumers
+          general and sectoral conciliation commissions of the Commission for Consumer
+          Protection (КЗП) — free of charge, details at{" "}
+          <a href="https://kzp.bg/" target="_blank" rel="noopener noreferrer"
+            className="text-cs-cyan hover:underline">kzp.bg</a>; consumers
           elsewhere in the EU may use the European Consumer Centres Network (ECC-Net) at{" "}
           <a href="https://www.eccnet.eu/" target="_blank" rel="noopener noreferrer"
             className="text-cs-cyan hover:underline">

@@ -41,7 +41,7 @@ In scope:
 
 Out of scope:
 
-- Third-party services we rely on (Discord, Stripe, Hetzner, Anthropic) —
+- Third-party services we rely on (Discord, Stripe, Hetzner, Google) —
   report those to the respective vendor.
 - Denial-of-service / volumetric attacks, social engineering, and physical attacks.
 

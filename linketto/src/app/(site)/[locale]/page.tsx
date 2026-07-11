@@ -430,7 +430,7 @@ export default async function HomePage({
             {tPricing('title')}
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-slate-500">
-            {tPricing('processingNote')}
+            {tPricing('processingNote')} {tPricing('vatNote')}
           </p>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {PLAN_ORDER.map((planKey, index) => {

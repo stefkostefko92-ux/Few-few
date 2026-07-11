@@ -102,7 +102,7 @@ export const getAuditLogs = (params) => api.get("/admin/audit-logs", { params })
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 // serverId е PATH параметър (минава през requireServerAdmin authz на backend-а).
 // v3.0 — body носи plan ("premium" | "whitelabel"), interval ("month" | "year")
-// и withdrawalConsent (чл. 16(м) — задължително преди checkout).
+// и withdrawalConsent (чл. 16(а) — задължително преди checkout).
 export const createCheckout = (serverId, body = {}) =>
   api.post(`/stripe/create-checkout/${serverId}`, body).then((r) => r.data);
 export const openPortal = (serverId) =>

@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { getStripe } from '@/lib/stripe';
+import { payoutSeller } from '@/lib/payout';
 import { isLocale } from '@/i18n/locales';
 import type { Plan } from '@prisma/client';
 
@@ -142,15 +143,31 @@ export async function adminRefundPurchaseAction(
     where: { id: purchaseId },
   });
   const stripe = getStripe();
-  if (!purchase?.stripePaymentIntentId || !stripe) {
+  if (!purchase?.stripePaymentIntentId || purchase.refundedAt || !stripe) {
     redirect(`/${uiLocale}/admin?error=refund`);
   }
   try {
-    await stripe.refunds.create({
-      payment_intent: purchase.stripePaymentIntentId,
-      reverse_transfer: true,
-      refund_application_fee: true,
-    });
+    if (purchase.chargedOn === 'platform') {
+      // Separate charges & transfers (TAX.md): плащането е при нас →
+      // прибираме дела на продавача, АКО е преведен (при провален превод
+      // няма какво да се връща; повторен reversal се проваля тихо),
+      // после връщаме на купувача.
+      if (purchase.stripeTransferId) {
+        await stripe.transfers
+          .createReversal(purchase.stripeTransferId)
+          .catch(() => undefined);
+      }
+      await stripe.refunds.create({
+        payment_intent: purchase.stripePaymentIntentId,
+      });
+    } else {
+      // Заварени покупки от destination-charge модела.
+      await stripe.refunds.create({
+        payment_intent: purchase.stripePaymentIntentId,
+        reverse_transfer: true,
+        refund_application_fee: true,
+      });
+    }
   } catch {
     redirect(`/${uiLocale}/admin?error=refund`);
   }
@@ -230,4 +247,16 @@ export async function adminSetPasswordAction(
     where: { userId: parsed.data.userId },
   });
   redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** Ръчен ретрай на провален превод към продавача (payoutFailedAt) —
+    payoutSeller е идемпотентен (stripeTransferId + idempotencyKey). */
+export async function adminRetryPayoutAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const purchaseId = String(formData.get('purchaseId') ?? '');
+  const ok = purchaseId ? await payoutSeller(purchaseId) : false;
+  redirect(`/${uiLocale}/admin${ok ? '?ok=1' : '?error=payout'}`);
 }

@@ -98,7 +98,8 @@
     "processingNote": "Butiksförsäljning har även en behandlingsavgift för betalningen på 1,9 % + 0,30 € (täcker kortoperatören).",
     "mostPopular": "Populärast",
     "annualOffer": "Spara {percent} % med en årsplan",
-    "referralPercentNote": "Bjud in vänner och tjäna {percent} % av varje betalning de gör."
+    "referralPercentNote": "Bjud in vänner och tjäna {percent} % av varje betalning de gör.",
+    "vatNote": "Priserna är slutliga — inklusive moms där sådan tas ut."
   },
   "auth": {
     "loginTitle": "Logga in på Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Köpeavtalet är mellan dig och skaparen; Linketto är plattformen.",
     "sellerTrader": "Säljaren är näringsidkare",
     "sellerPrivate": "Säljaren är en privatperson",
+    "shopVatIncluded": "Priserna är slutliga — inklusive moms där sådan tas ut.",
     "subButton": "Prenumerera",
     "subConsent": "Jag godkänner att ta emot e-post och accepterar",
     "subCheck": "Nästan klart — kolla din inkorg för att bekräfta prenumerationen.",

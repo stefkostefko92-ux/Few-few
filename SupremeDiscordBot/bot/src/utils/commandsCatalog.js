@@ -211,7 +211,7 @@ export const COMMAND_CATALOG = [
         description: "Replace the Supreme Bot's name and token with your own. Requires Premium.",
         dashboard: "Settings page · White-label section" },
       { feature: "AI Auto-Replies (Premium)",
-        description: "Claude-powered first-response suggestions in new tickets.",
+        description: "AI-powered first-response suggestions in new tickets.",
         dashboard: "Settings page · AI Replies" },
       { feature: "Round-robin ticket assignment (Premium)",
         description: "Automatically distribute new tickets across your support team in rotation.",

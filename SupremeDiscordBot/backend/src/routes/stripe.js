@@ -204,6 +204,9 @@ router.post(
         automatic_tax: { enabled: true },
         tax_id_collection: { enabled: true },
         customer_update: { address: "auto", name: "auto" },
+        // ЕС доказателство за местоположение (2 непротиворечиви елемента за
+        // дигитални услуги) + пълен billing адрес на фактурата (чл. 114 ЗДДС).
+        billing_address_collection: "required",
         success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
         metadata: { serverId, plan, interval },
@@ -439,6 +442,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
               ...(server.premiumSince ? {} : { premiumSince: new Date() }),
               // Sync the tier if the invoice's price maps to a known plan.
               ...(paidTier && { plan: paidTier.plan, billingInterval: paidTier.interval, planSource: "stripe" }),
+              // Немапната цена + текущ plan=free → безопасен под premium (не
+              // разчитаме на grandfather fallback-а, който дава whitelabel).
+              ...(!paidTier && server.plan === "free" && { plan: "premium", planSource: "stripe" }),
               pastDueSince: null,
             },
           });
@@ -562,6 +568,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
               isPremium: false,
               plan: "free",
               billingInterval: null,
+              // planSource също пада: иначе остатъчното "stripe" блокира
+              // по-късен Discord re-grant (mutual-exclusion guard-а).
+              planSource: null,
               stripeStatus: "canceled",
               stripeSubscriptionId: null,
               pastDueSince: null, // C3 — приключен абонамент, маркерът отпада.
@@ -667,6 +676,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
               }),
               // Keep the tier in sync whenever access is on and the price maps.
               ...(premiumOn && subTier && { plan: subTier.plan, billingInterval: subTier.interval, planSource: "stripe" }),
+              // Немапната цена + plan=free → безопасен под premium (иначе
+              // grandfather fallback-ът би дал whitelabel над-грант).
+              ...(premiumOn && !subTier && server.plan === "free" && { plan: "premium", planSource: "stripe" }),
               // Отнемане на достъп при изчерпани ретраи / изтекъл incomplete.
               ...(premiumOff && { isPremium: false, plan: "free", billingInterval: null }),
               // C3 — past_due: засичаме началото (само при първи преход).

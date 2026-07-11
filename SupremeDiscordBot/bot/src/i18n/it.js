@@ -59,5 +59,5 @@ export default {
   "ai.disclosure.title": "Risposta automatica dell'IA",
   "ai.disclosure.fieldName": "⚠️ Informativa IA",
   "ai.disclosure.body": "Questa risposta è stata generata da un modello linguistico IA ({{model}}). Potrebbe contenere errori o imprecisioni. Un membro dello staff ti contatterà a breve per conferma.",
-  "ai.disclosure.footer": "Supreme Bot · Risposta automatica IA · Powered by Claude",
+  "ai.disclosure.footer": "Supreme Bot · Risposta automatica IA · Powered by Google Gemini",
 };

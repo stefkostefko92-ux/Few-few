@@ -586,8 +586,9 @@ app.post("/internal/ai-reply", async (req, res) => {
       }
     }
     const tr = getTranslator(lang || "en");
-    // Името на модела не се локализира (собствено име); по подразбиране Claude.
-    const modelName = model || "Anthropic Claude";
+    // Името на модела не се локализира (собствено име). Идва от backend-а
+    // (AI_MODEL_NAME) — fallback за стари payload-и без поле model.
+    const modelName = model || "Google Gemini Flash";
 
     // EU AI Act Article 50 compliance — clear and prominent disclosure
     // that user is interacting with AI-generated content

@@ -86,7 +86,7 @@ export default function Login() {
                 <span className="text-cs-cyan">One dashboard.</span>
               </h1>
               <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-8 text-pretty max-w-2xl mx-auto lg:mx-0">
-                Tickets, applications, verification, giveaways, scheduled messages, webhooks and Claude-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
+                Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
               {error && (
@@ -161,7 +161,7 @@ export default function Login() {
                 HMAC-signed event delivery for tickets, applications, giveaways, verification — plug into your stack.
               </FeatureCard>
               <FeatureCard icon={Sparkles} title="AI Auto-Replies">
-                Claude drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
+                The AI drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
               </FeatureCard>
             </div>
           </div>
@@ -179,7 +179,7 @@ export default function Login() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
               <OutcomeBullet icon={Sparkles} title="Answer first, triage later.">
-                Claude-powered auto-replies draft the first response to common questions — so staff pick up conversations that are already moving.
+                AI auto-replies draft the first response to common questions — so staff pick up conversations that are already moving.
               </OutcomeBullet>
               <OutcomeBullet icon={Layers} title="Never re-explain your setup.">
                 50 panels, 50 forms, 50 questions each, plus conditional branching and regex validation.
@@ -214,7 +214,7 @@ export default function Login() {
                   <CompareRow label="Form logic"              free="—"                    premium="Branching + regex" />
                   <CompareRow label="Verification"            free="Button only"          premium="+ Math captcha + age gate" />
                   <CompareRow label="Ticket workflow"         free="Basic open/close"     premium="Claim · escalate · round-robin" />
-                  <CompareRow label="AI replies"              free="—"                    premium="Claude-powered" />
+                  <CompareRow label="AI replies"              free="—"                    premium="AI-powered (assistive)" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
                   <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
                   <CompareRow label="Price"                   free="€0, forever"          premium="€9.99/mo · €99/yr · 14-day trial" />
@@ -407,7 +407,7 @@ export default function Login() {
                   "Claim · escalate · round-robin",
                   "Sticky + scheduled + recurring messages",
                   "Giveaways, polls & analytics",
-                  "AI auto-replies (Claude-powered)",
+                  "AI auto-replies (assistive, human-in-the-loop)",
                   "Webhooks (HMAC) + public REST API",
                   "Unlimited transcript retention",
                 ]}

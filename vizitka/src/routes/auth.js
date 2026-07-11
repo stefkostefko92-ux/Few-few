@@ -30,9 +30,37 @@ const authLimiter = rateLimit({
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+const clip = (v, n) =>
+  String(v || '')
+    .trim()
+    .slice(0, n);
+
+// Prefill от Мастилко: „Направи я жива визитка" носи данните на дизайна в URL-а.
+// Само публичните текстови полета — БЕЗ имейл (privacy-by-default, чл. 25(2) ОРЗД).
+function mastilkoPrefill(src) {
+  const website = clip(src.website, 200);
+  return {
+    role: clip(src.role, 120),
+    company: clip(src.company, 120),
+    phone: clip(src.phone, 40),
+    website: website && !/^https?:\/\//i.test(website) ? `https://${website}` : website,
+  };
+}
+
 router.get('/register', (req, res) => {
   if (req.user) return res.redirect('/dashboard');
-  res.render('register', { title: 'Регистрация', error: null, values: {} });
+  const fromMastilko = req.query.from === 'mastilko';
+  res.render('register', {
+    title: 'Регистрация',
+    error: null,
+    values: {
+      name: clip(req.query.name, 100),
+      email: clip(req.query.email, 254),
+      type: req.query.type === 'company' ? 'company' : 'personal',
+    },
+    prefill: mastilkoPrefill(req.query),
+    fromMastilko,
+  });
 });
 
 router.post('/register', authLimiter, (req, res) => {
@@ -43,9 +71,13 @@ router.post('/register', authLimiter, (req, res) => {
   const password = String(req.body.password || '');
   const type = req.body.type === 'company' ? 'company' : 'personal';
   const values = { name, email, type };
+  const prefill = mastilkoPrefill(req.body);
+  const fromMastilko = req.body.from === 'mastilko';
 
   const fail = (error) =>
-    res.status(400).render('register', { title: 'Регистрация', error, values });
+    res
+      .status(400)
+      .render('register', { title: 'Регистрация', error, values, prefill, fromMastilko });
 
   if (name.length < 2 || name.length > 100) return fail('Въведи име (2–100 знака).');
   if (!EMAIL_RE.test(email) || email.length > 254) return fail('Невалиден имейл адрес.');
@@ -63,8 +95,17 @@ router.post('/register', authLimiter, (req, res) => {
     'INSERT INTO profiles (user_id, slug, type, display_name, is_public) VALUES (?, ?, ?, ?, 0)'
   ).run(info.lastInsertRowid, uniqueSlug(name), type, name);
 
+  // Prefill от Мастилко („Направи я жива визитка"): попълваме публичните полета на
+  // новата (скрита) визитка. Имейл НЕ пипаме — остава по избор от таблото.
+  if (fromMastilko && (prefill.role || prefill.company || prefill.phone || prefill.website)) {
+    db.prepare(
+      `UPDATE profiles SET headline = @role, company = @company, phone = @phone, website = @website
+       WHERE user_id = @uid`
+    ).run({ ...prefill, uid: info.lastInsertRowid });
+  }
+
   createSession(res, Number(info.lastInsertRowid));
-  res.redirect('/dashboard');
+  res.redirect(fromMastilko ? '/dashboard?welcome=mastilko' : '/dashboard');
 });
 
 router.get('/login', (req, res) => {

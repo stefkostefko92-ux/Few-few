@@ -1,0 +1,49 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Messaggi</h1>
+      <p class="admin-sub"><%= messages.length %> totali</p>
+    </div>
+  </header>
+
+  <% if (typeof selected !== 'undefined' && selected) { %>
+    <div class="msg-detail">
+      <a href="/admin/messages" class="back-link">← Tutti i messaggi</a>
+      <div class="form-card">
+        <div class="msg-detail-head">
+          <div>
+            <h2><%= selected.name %></h2>
+            <p class="muted small"><%= selected.email %><% if (selected.phone) { %> · <%= selected.phone %><% } %><% if (selected.source) { %> · <%= selected.source %><% } %><% if (selected.language) { %> · <%= selected.language.toUpperCase() %><% } %></p>
+            <time class="muted small"><%= new Date(selected.createdAt).toLocaleString('it-IT') %></time>
+          </div>
+          <form action="/admin/messages/<%= selected.id %>/delete" method="POST" onsubmit="return confirm('Eliminare?')">
+            <button type="submit" class="btn-sm btn-danger">Elimina</button>
+          </form>
+        </div>
+        <% if (selected.subject) { %><h3 class="msg-subject"><%= selected.subject %></h3><% } %>
+        <div class="msg-body"><%- selected.message.replace(/</g, '&lt;').replace(/\n/g, '<br>') %></div>
+        <div class="msg-reply">
+          <a href="mailto:<%= selected.email %>?subject=Re: <%= encodeURIComponent(selected.subject || 'Eternal Touch') %>" class="btn-primary-admin">Rispondi via email</a>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <% if (messages.length === 0) { %>
+      <p class="muted">Nessun messaggio ancora.</p>
+    <% } else { %>
+      <div class="msg-list">
+        <% messages.forEach(function(m) { %>
+          <a href="/admin/messages/<%= m.id %>" class="msg-row <%= m.isRead ? '' : 'unread' %>">
+            <div class="msg-row-main">
+              <strong><%= m.name %></strong>
+              <span class="msg-email"><%= m.email %></span>
+              <% if (m.source) { %><span class="tag-mini"><%= m.source %></span><% } %>
+            </div>
+            <div class="msg-row-snippet"><%= m.subject || (m.message || '').slice(0, 100) %></div>
+            <time><%= new Date(m.createdAt).toLocaleString('it-IT') %></time>
+          </a>
+        <% }); %>
+      </div>
+    <% } %>
+  <% } %>
+</div>

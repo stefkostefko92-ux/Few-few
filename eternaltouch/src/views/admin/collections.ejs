@@ -1,0 +1,69 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Колекции</h1>
+      <p class="admin-sub">Трите направления на ателието</p>
+    </div>
+  </header>
+
+  <div class="card-grid">
+    <% collections.forEach(function(c) { %>
+      <div class="admin-card <%= !c.isActive ? 'is-hidden' : '' %>">
+        <% if (c.coverImage) { %>
+          <div class="admin-card-media">
+            <img src="<%= c.coverImage %>" alt="" loading="lazy">
+            <% if (!c.isActive) { %><span class="status-pill status-hidden">скрита</span><% } %>
+          </div>
+        <% } else { %>
+          <div class="admin-card-media placeholder">
+            <% if (!c.isActive) { %><span class="status-pill status-hidden">скрита</span><% } %>
+          </div>
+        <% } %>
+        <div class="admin-card-body">
+          <h3><%= c.nameBg || c.nameIt %></h3>
+          <p class="muted small">
+            <code><%= c.slug %></code> · <%= c._count.products %> продукт<%= c._count.products === 1 ? '' : 'а' %>
+          </p>
+          <% if (c.taglineBg || c.taglineIt) { %>
+            <p class="small"><em><%= c.taglineBg || c.taglineIt %></em></p>
+          <% } %>
+          <div class="card-actions">
+            <a href="/admin/collections/<%= c.id %>/edit" class="btn-sm">Редактирай</a>
+            <% if (c.isActive) { %>
+              <a href="/collections/<%= c.slug %>" target="_blank" rel="noopener" class="btn-sm btn-ghost">Виж в сайта ↗</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<style>
+  .admin-card.is-hidden { opacity: 0.65; }
+  .admin-card-media { position: relative; }
+  .status-pill {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .status-hidden {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+  }
+  .card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: #555;
+  }
+  .btn-ghost:hover { background: rgba(0,0,0,0.04); }
+</style>

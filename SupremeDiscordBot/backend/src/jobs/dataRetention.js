@@ -13,6 +13,7 @@
 // ON ERROR: logs but does NOT throw. Retention run failure must not crash backend.
 
 import { prisma } from "../lib/prisma.js";
+import { effectiveFreeWhere } from "../lib/premium.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -36,8 +37,10 @@ export async function runRetentionJob() {
       where: {
         status: { in: ["CLOSED", "ARCHIVED"] },
         closedAt: { lt: thirtyDaysAgo },
-        // Only anonymize if the server is not Premium (Premium keeps transcripts)
-        server: { isPremium: false },
+        // Only anonymize if the server is not EFFECTIVELY premium — agency
+        // seats and trials don't set the raw isPremium flag, and deleting a
+        // paying agency customer's transcripts is irreversible data loss.
+        server: effectiveFreeWhere(),
         // Skip already-anonymized
         NOT: { archiveHtml: { startsWith: "<!-- anonymized" } },
       },

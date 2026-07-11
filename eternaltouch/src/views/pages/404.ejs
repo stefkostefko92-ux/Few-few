@@ -1,0 +1,23 @@
+<%
+const safeT = (key, fallback) => {
+  try { return (typeof t === 'function') ? (t(key) || fallback) : fallback; }
+  catch (e) { return fallback; }
+};
+const tEyebrow = safeT('404.eyebrow', 'Pagina mancante');
+const tTitle   = safeT('404.title',   'Questa pagina non esiste.');
+const tBody    = safeT('404.body',    'Il link che hai seguito potrebbe essere obsoleto, oppure la pagina è stata spostata.');
+const tHome    = safeT('404.home',    'Torna alla home');
+const tContact = safeT('common.contactUs', 'Contattaci');
+%>
+<section class="error-page">
+  <div class="container text-center">
+    <p class="eyebrow"><%= tEyebrow %></p>
+    <h1 class="display-1">404</h1>
+    <p class="tagline-italic"><%= tTitle %></p>
+    <p class="lead"><%= tBody %></p>
+    <div class="error-cta">
+      <a href="/" class="btn btn-primary"><%= tHome %></a>
+      <a href="/#contact" class="btn btn-ghost"><%= tContact %></a>
+    </div>
+  </div>
+</section>

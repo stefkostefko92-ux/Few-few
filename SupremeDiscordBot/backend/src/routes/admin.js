@@ -339,6 +339,10 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
   if (typeof enabled !== "boolean") {
     return res.status(400).json({ error: "enabled must be true or false" });
   }
+  // Tier за ръчния grant (default premium). getServerTier е plan-first — само
+  // isPremium=true без plan би дал whitelabel през grandfather fallback-а.
+  const MANUAL_PLANS = new Set(["premium", "whitelabel"]);
+  const plan = MANUAL_PLANS.has(req.body?.plan) ? req.body.plan : "premium";
 
   try {
     const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
@@ -349,11 +353,19 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
       data: {
         isPremium: enabled,
         ...(enabled && {
+          plan,
+          planSource: "manual",
           premiumSince: server.premiumSince || new Date(),
           stripeStatus: server.stripeStatus || "manual",
           archiveRetentionDays: null, // forever
         }),
+        // Revoke: getServerTier е plan-first — само isPremium=false НЕ отнема
+        // достъпа; plan трябва да падне на free (както при всички webhook
+        // revoker-и), иначе „revoked" сървърът запазва пълния tier.
         ...(!enabled && {
+          plan: "free",
+          planSource: null,
+          billingInterval: null,
           archiveRetentionDays: 30,
         }),
       },

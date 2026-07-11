@@ -16,7 +16,7 @@ import rateLimit from "express-rate-limit";
 // ─── Startup validation ───────────────────────────────────────────────────────
 const REQUIRED_ENV = ["DATABASE_URL", "SESSION_SECRET", "ENCRYPTION_KEY", "DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_REDIRECT_URI", "MAIN_OWNER_ID", "API_SECRET", "FRONTEND_URL"];
 // Optional — AI replies work without this but require it for the platform-level key
-if (!process.env.ANTHROPIC_API_KEY) console.warn("⚠️  ANTHROPIC_API_KEY not set — AI auto-replies will be disabled unless servers provide their own key");
+if (!process.env.GEMINI_API_KEY) console.warn("⚠️  GEMINI_API_KEY not set — AI auto-replies will be disabled unless servers provide their own key");
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(`❌ Missing required environment variables: ${missing.join(", ")}`);

@@ -1,0 +1,227 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Галерия</h1>
+      <p class="admin-sub"><%= items.length %> снимки</p>
+    </div>
+  </header>
+
+  <% if (typeof query !== 'undefined' && query.ok) { %>
+    <div class="admin-flash admin-flash-success">
+      ✅ Записано
+    </div>
+  <% } %>
+
+  <form action="/admin/gallery" method="POST" enctype="multipart/form-data" class="admin-form upload-form" id="uploadForm">
+    <div class="form-card">
+      <h3>Качи нови снимки</h3>
+      <label class="file-input">
+        <span>Избери снимки (множествен избор, макс. 15MB всяка)</span>
+        <input type="file" name="images" accept="image/*" multiple required id="galleryUpload">
+      </label>
+      <div id="uploadPreview" class="img-preview-grid"></div>
+      <button type="submit" class="btn-primary-admin"><span class="btn-text">Качи</span></button>
+    </div>
+  </form>
+
+  <% if (items.length === 0) { %>
+    <p class="muted">Няма снимки все още.</p>
+  <% } else { %>
+    <div class="gallery-admin-grid">
+      <% items.forEach(function(g) { %>
+        <div class="gallery-admin-tile <%= !g.isActive ? 'is-hidden' : '' %>">
+          <div class="gallery-tile-media">
+            <img src="<%= g.image %>" alt="" loading="lazy" onerror="this.style.opacity=0.3">
+          </div>
+
+          <form action="/admin/gallery/<%= g.id %>" method="POST" class="tile-edit">
+            <details class="captions-toggle">
+              <summary><%= g.titleBg || g.titleIt || g.titleEn || '— без заглавие —' %> <span class="captions-edit-link">редактирай</span></summary>
+
+              <div class="caption-langs">
+                <div class="caption-row">
+                  <span class="lang-flag">🇧🇬</span>
+                  <input type="text" name="titleBg" placeholder="Заглавие BG" value="<%= g.titleBg || '' %>">
+                  <input type="text" name="captionBg" placeholder="Описание BG" value="<%= g.captionBg || '' %>">
+                </div>
+                <div class="caption-row">
+                  <span class="lang-flag">🇮🇹</span>
+                  <input type="text" name="titleIt" placeholder="Titolo IT" value="<%= g.titleIt || '' %>">
+                  <input type="text" name="captionIt" placeholder="Didascalia IT" value="<%= g.captionIt || '' %>">
+                </div>
+                <div class="caption-row">
+                  <span class="lang-flag">🇬🇧</span>
+                  <input type="text" name="titleEn" placeholder="Title EN" value="<%= g.titleEn || '' %>">
+                  <input type="text" name="captionEn" placeholder="Caption EN" value="<%= g.captionEn || '' %>">
+                </div>
+              </div>
+
+              <div class="tile-meta-row">
+                <label class="meta-field">
+                  <span>Подредба</span>
+                  <input type="number" name="order" value="<%= g.order %>">
+                </label>
+                <label class="meta-field meta-checkbox">
+                  <input type="checkbox" name="isActive" <%= g.isActive ? 'checked' : '' %>>
+                  <span>Видима</span>
+                </label>
+              </div>
+            </details>
+
+            <div class="tile-actions">
+              <button type="submit" class="btn-sm">Запази</button>
+              <button type="submit" formaction="/admin/gallery/<%= g.id %>/delete" formmethod="POST"
+                      onclick="return confirm('Изтрий тази снимка?')" class="btn-sm btn-danger">Изтрий</button>
+            </div>
+          </form>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<style>
+  .gallery-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .gallery-admin-tile {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .gallery-admin-tile.is-hidden { opacity: 0.6; }
+  .gallery-tile-media {
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #fafafa;
+  }
+  .gallery-tile-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .tile-edit { padding: 0.8rem; }
+  .captions-toggle { margin-bottom: 0.6rem; }
+  .captions-toggle summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #666;
+    padding: 0.3rem 0;
+    list-style: none;
+  }
+  .captions-toggle summary::-webkit-details-marker { display: none; }
+  .captions-edit-link {
+    float: right;
+    color: #C9A96E;
+    font-size: 0.8rem;
+  }
+  .captions-toggle[open] .captions-edit-link { display: none; }
+  .caption-langs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.6rem 0;
+  }
+  .caption-row {
+    display: grid;
+    grid-template-columns: 24px 1fr 1fr;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .caption-row input {
+    padding: 0.35em 0.5em;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    width: 100%;
+  }
+  .lang-flag { font-size: 1rem; }
+  .tile-meta-row {
+    display: flex;
+    gap: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    margin-top: 0.5rem;
+  }
+  .meta-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.8rem;
+  }
+  .meta-field input[type="number"] {
+    padding: 0.3em 0.5em;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 4px;
+    width: 80px;
+  }
+  .meta-checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .tile-actions {
+    display: flex;
+    gap: 0.4rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    margin-top: 0.5rem;
+  }
+  .tile-actions button { flex: 1; }
+
+  .img-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.6rem;
+    margin: 1rem 0;
+  }
+  .img-preview-grid .preview-tile {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px dashed rgba(0,0,0,0.15);
+  }
+  .img-preview-grid img { width: 100%; height: 100%; object-fit: cover; }
+
+  .admin-flash {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+  }
+</style>
+
+<script>
+  // Upload preview
+  const uploadInput = document.getElementById('galleryUpload');
+  const uploadPreview = document.getElementById('uploadPreview');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', () => {
+      uploadPreview.innerHTML = '';
+      [...uploadInput.files].forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const tile = document.createElement('div');
+        tile.className = 'preview-tile';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        tile.appendChild(img);
+        uploadPreview.appendChild(tile);
+      });
+    });
+  }
+
+  // Auto-fade flash
+  setTimeout(() => {
+    document.querySelector('.admin-flash-success')?.style.setProperty('opacity', '0.55');
+  }, 6000);
+</script>

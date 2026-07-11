@@ -98,7 +98,8 @@
     "processingNote": "A bolti eladásokra fizetésfeldolgozási díj is felszámításra kerül: 1,9% + 0,30 € (a kártyafeldolgozót fedezi).",
     "mostPopular": "Legnépszerűbb",
     "annualOffer": "Spórolj {percent}%-ot éves csomaggal",
-    "referralPercentNote": "Hívj meg barátokat, és keress {percent}%-ot minden befizetésük után."
+    "referralPercentNote": "Hívj meg barátokat, és keress {percent}%-ot minden befizetésük után.",
+    "vatNote": "Az árak véglegesek — az áfát tartalmazzák, ahol fizetendő."
   },
   "auth": {
     "loginTitle": "Bejelentkezés a Linkettóba",
@@ -363,6 +364,7 @@
     "shopSellerNote": "A vásárlási szerződés közted és az alkotó között jön létre; a Linketto a platform.",
     "sellerTrader": "Az eladó kereskedő",
     "sellerPrivate": "Az eladó magánszemély",
+    "shopVatIncluded": "Az árak véglegesek — az áfát tartalmazzák, ahol fizetendő.",
     "subButton": "Feliratkozás",
     "subConsent": "Hozzájárulok az e-mailek fogadásához, és elfogadom a",
     "subCheck": "Majdnem kész — nézd meg a postafiókod a feliratkozás megerősítéséhez.",

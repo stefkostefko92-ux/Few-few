@@ -20,7 +20,7 @@ const PREMIUM_FEATURES = [
   "Claim · escalate · round-robin assignment",
   "Sticky + scheduled + recurring messages",
   "Giveaways, polls & advanced analytics",
-  "AI auto-replies (Claude) — human in the loop",
+  "AI auto-replies — human in the loop",
   "Webhooks (HMAC) + public REST API",
   "Unlimited transcript retention + CSV/PDF export",
 ];
@@ -329,7 +329,7 @@ export default function PremiumPage() {
 
                 {/* F7 — задължителна, неотметната по подразбиране отметка за
                     изрично съгласие незабавно изпълнение → загуба на 14-дневното
-                    право на отказ (чл. 16(м) Дир. 2011/83/ЕС). Достъпно: label е
+                    право на отказ (чл. 16(а) Дир. 2011/83/ЕС). Достъпно: label е
                     свързан с input, target ≥24px, видим focus ring. */}
                 <label
                   htmlFor="withdrawal-consent"

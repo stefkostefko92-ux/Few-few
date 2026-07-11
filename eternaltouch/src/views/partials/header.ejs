@@ -1,0 +1,33 @@
+<header class="site-header" id="siteHeader">
+  <a href="/" class="brand-mark" aria-label="Eternal Touch — Atelier">
+    <img src="/images/logo-small.png" alt="Eternal Touch" class="brand-emblem" width="120" height="86" loading="eager" decoding="async">
+  </a>
+
+  <nav class="main-nav" id="mainNav">
+    <a href="/#collections" class="<%= (typeof activePage !== 'undefined' && activePage === 'collections') ? 'active' : '' %>"><%= t('nav.collections') %></a>
+    <a href="/#about" class="<%= (typeof activePage !== 'undefined' && activePage === 'about') ? 'active' : '' %>"><%= t('nav.about') %></a>
+    <a href="/#process"><%= t('nav.process') %></a>
+    <a href="/#gallery"><%= t('nav.gallery') %></a>
+    <a href="/#faq"><%= t('nav.faq') %></a>
+    <a href="/#contact"><%= t('nav.contact') %></a>
+  </nav>
+
+  <%
+    // Real prefixed URLs (BG = root, no prefix) so /it and /en are crawlable
+    // internal links and match canonical/hreflang. `path` is the prefix-less
+    // current path exposed by languageMiddleware.
+    const _p = (typeof path !== 'undefined' && path) ? path : '/';
+    const _suffix = _p === '/' ? '' : _p;
+  %>
+  <div class="lang-switch">
+    <a href="<%= _suffix || '/' %>" class="<%= lang === 'bg' ? 'active' : '' %>" rel="alternate" hreflang="bg">BG</a>
+    <span class="sep"></span>
+    <a href="/it<%= _suffix %>" class="<%= lang === 'it' ? 'active' : '' %>" rel="alternate" hreflang="it">IT</a>
+    <span class="sep"></span>
+    <a href="/en<%= _suffix %>" class="<%= lang === 'en' ? 'active' : '' %>" rel="alternate" hreflang="en">EN</a>
+  </div>
+
+  <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-controls="mainNav" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>

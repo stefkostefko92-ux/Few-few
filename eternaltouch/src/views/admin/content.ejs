@@ -1,0 +1,180 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Съдържание на сайта</h1>
+      <p class="admin-sub">Редактирай текстовете на трите езика. Промените се виждат веднага в публичния сайт.</p>
+    </div>
+    <div class="admin-actions">
+      <a href="/" target="_blank" rel="noopener" class="btn-sm btn-ghost">Виж сайта (BG) ↗</a>
+      <a href="/it" target="_blank" rel="noopener" class="btn-sm btn-ghost">IT ↗</a>
+      <a href="/en" target="_blank" rel="noopener" class="btn-sm btn-ghost">EN ↗</a>
+    </div>
+  </header>
+
+  <% if (typeof query !== 'undefined' && query.ok) { %>
+    <div class="admin-flash admin-flash-success">
+      ✅ Записано: <code><%= query.ok %></code>
+      <span class="admin-flash-hint">— ако не виждаш промените на сайта, опресни страницата с <kbd>Ctrl/Cmd + Shift + R</kbd></span>
+    </div>
+  <% } %>
+
+  <div class="admin-content-tabs">
+    <button type="button" class="admin-content-tab active" data-tab="all">Всички</button>
+    <% Object.keys(grouped).forEach(function(group) { %>
+      <button type="button" class="admin-content-tab" data-tab="<%= group %>"><%= group.toUpperCase() %></button>
+    <% }); %>
+  </div>
+
+  <% Object.keys(grouped).forEach(function(group) { %>
+    <div class="form-card admin-content-group" data-group="<%= group %>">
+      <h3><%= group.toUpperCase() %></h3>
+      <% grouped[group].forEach(function(item) { %>
+        <form action="/admin/content/<%= item.id %>" method="POST" class="content-form">
+          <div class="content-row">
+            <div class="content-key">
+              <code><%= item.key %></code>
+              <span class="muted small"><%= item.type %></span>
+            </div>
+            <div class="content-langs">
+              <label class="content-lang-row">
+                <span class="lang-flag" title="Български">🇧🇬</span>
+                <% if (item.type === 'longtext' || item.type === 'html') { %>
+                  <textarea name="valueBg" rows="3" placeholder="Български превод…"><%= item.valueBg || '' %></textarea>
+                <% } else { %>
+                  <input type="text" name="valueBg" value="<%= item.valueBg || '' %>" placeholder="Български превод…">
+                <% } %>
+              </label>
+              <label class="content-lang-row">
+                <span class="lang-flag" title="Italiano">🇮🇹</span>
+                <% if (item.type === 'longtext' || item.type === 'html') { %>
+                  <textarea name="valueIt" rows="3" placeholder="Traduzione italiana…"><%= item.valueIt || '' %></textarea>
+                <% } else { %>
+                  <input type="text" name="valueIt" value="<%= item.valueIt || '' %>" placeholder="Traduzione italiana…">
+                <% } %>
+              </label>
+              <label class="content-lang-row">
+                <span class="lang-flag" title="English">🇬🇧</span>
+                <% if (item.type === 'longtext' || item.type === 'html') { %>
+                  <textarea name="valueEn" rows="3" placeholder="English translation…"><%= item.valueEn || '' %></textarea>
+                <% } else { %>
+                  <input type="text" name="valueEn" value="<%= item.valueEn || '' %>" placeholder="English translation…">
+                <% } %>
+              </label>
+            </div>
+            <div class="content-row-action">
+              <button type="submit" class="btn-sm btn-primary">Запази</button>
+            </div>
+          </div>
+        </form>
+      <% }); %>
+    </div>
+  <% }); %>
+</div>
+
+<style>
+  .admin-actions { display: flex; gap: 0.5rem; }
+  .admin-flash {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+  }
+  .admin-flash code {
+    background: rgba(0,0,0,0.07);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+  .admin-flash-hint { display: block; margin-top: 0.4rem; font-size: 0.85em; opacity: 0.8; }
+  .admin-flash kbd {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 3px;
+    padding: 0.05em 0.4em;
+    font-size: 0.9em;
+  }
+  .admin-content-tabs {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .admin-content-tab {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.12);
+    color: #555;
+    padding: 0.45em 0.95em;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .admin-content-tab:hover { background: rgba(0,0,0,0.04); }
+  .admin-content-tab.active {
+    background: #2a2a2a;
+    color: white;
+    border-color: #2a2a2a;
+  }
+  .content-lang-row {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 0.5rem;
+    align-items: start;
+    margin-bottom: 0.5rem;
+  }
+  .lang-flag {
+    font-size: 1.2rem;
+    padding-top: 0.4rem;
+    cursor: help;
+  }
+  .content-form {
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    padding: 1rem 0;
+  }
+  .content-form:last-child { border-bottom: none; }
+  .btn-primary {
+    background: #2a2a2a;
+    color: white;
+    border: none;
+    padding: 0.5em 1.2em;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #444; }
+</style>
+
+<script>
+  // Tab filter
+  document.querySelectorAll('.admin-content-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-content-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      document.querySelectorAll('.admin-content-group').forEach(g => {
+        g.style.display = (target === 'all' || g.dataset.group === target) ? '' : 'none';
+      });
+    });
+  });
+
+  // Auto-dismiss success flash after 6s
+  const flash = document.querySelector('.admin-flash-success');
+  if (flash) setTimeout(() => flash.style.opacity = '0.5', 6000);
+
+  // After save (?ok=key in URL), scroll to that key's form
+  const params = new URLSearchParams(location.search);
+  if (params.get('ok')) {
+    const key = params.get('ok');
+    const codeEl = [...document.querySelectorAll('.content-key code')].find(c => c.textContent.trim() === key);
+    if (codeEl) {
+      codeEl.closest('.content-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      codeEl.closest('.content-form').style.background = 'rgba(168, 137, 71, 0.08)';
+    }
+  }
+</script>

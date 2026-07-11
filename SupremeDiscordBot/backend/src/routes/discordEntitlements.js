@@ -217,6 +217,18 @@ router.post("/entitlements/reconcile", async (req, res, next) => {
       where: { planSource: "discord", discordEntitlementId: { not: null } },
       select: { id: true, discordEntitlementId: true },
     });
+
+    // Предпазител срещу масов погрешен revoke: празен активен списък при
+    // налични Discord-обезпечени сървъри е по-вероятно fetch/pagination
+    // проблем (или частичен Discord outage), отколкото „всички изтекоха
+    // едновременно". Grant-овете по-горе са безвредни; revoke пропускаме.
+    if (active.length === 0 && discordProvisioned.length > 0) {
+      console.warn(
+        `⚠️ Reconcile: active=0 но discordProvisioned=${discordProvisioned.length} — пропускам revoke (вероятен fetch проблем)`
+      );
+      return res.json({ ok: true, ...result, active: 0, skipped: "empty-active-guard" });
+    }
+
     for (const server of discordProvisioned) {
       if (activeIds.has(server.discordEntitlementId)) continue;
       const outcome = await revokeServer(server.id, server.discordEntitlementId, "reconcile-missing");

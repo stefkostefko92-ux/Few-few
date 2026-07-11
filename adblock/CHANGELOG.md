@@ -1,5 +1,62 @@
 # Changelog
 
+## 4.0.1
+
+- Filter updates are now cryptographically verified: the Ed25519 public key is
+  embedded and every filters.json download must match its signature when one
+  is served. A bad signature is rejected and the last good configuration
+  stays. (The signing key lives only on our server.)
+
+## 4.0.0
+
+Biggest release yet: full EasyList coverage, a smarter YouTube pipeline and
+uBlock-class cosmetic filtering, all still data-only and Web Store compliant.
+
+- **EasyList + EasyPrivacy built in.** Both lists are compiled at build time
+  into declarativeNetRequest rulesets (~12,600 rules; pure domain filters are
+  merged into requestDomains rules, so tens of thousands of source lines fit
+  Chrome's static rule budget). Core video/CDN domains stay protected.
+- **EasyList cosmetic rules built in.** 13,600+ generic selectors ship as a
+  native CSS file (gated so the on/off toggle and allowlist still work) and
+  16,300+ domain-specific selectors apply per site.
+- **Procedural cosmetic selectors** (uBlock-style): `:has-text()`,
+  `:matches-css()`, `:upward()`, `:xpath()`, `:min-text-length()` and the
+  `:remove()` action, usable from "My filters" and the live filter update.
+- **YouTube: ads suppressed at the source.** The player request now carries
+  `isInlinePlaybackNoAd`, so YouTube skips ad delivery entirely, which also
+  avoids the server-side "fake buffering" delay applied when ads are blocked
+  client-side. Feed, search and related-videos ads (ad renderers) are pruned
+  from the API responses. Both lists are remotely tunable, with an emergency
+  kill-switch, via the data-only filter update.
+- **YouTube: hardened against the anti-adblock "locker" script.** If page
+  globals are frozen before our hook lands, an alternative code path still
+  strips the ads; late injection is repaired retroactively.
+- **Tracking-parameter removal** (toggleable): `utm_*`, `fbclid`, `gclid`,
+  `msclkid` and 30+ other click identifiers are stripped via DNR
+  `queryTransform`, no request logging involved.
+- **Malware protection** (opt-in): blocks known malware domains from the
+  URLhaus list (abuse.ch).
+- **Signed filter updates.** `filters.json` can now be verified against an
+  embedded Ed25519 public key; a bad signature is rejected and the last good
+  configuration stays.
+- Accurate filter counts in the popup/settings, computed from the bundled
+  rulesets.
+
+## 3.9.0
+
+- Rebrand to **Supreme AdBlock** with the new shield logo (background removed):
+  fresh 16/32/48/128 icons and store icon from the real artwork, updated popup,
+  settings, promo tiles, screenshots, privacy page and all docs. Package renamed
+  to supreme-adblock-<version>.zip.
+
+## 3.8.2
+
+- Move the live filter update to a dedicated subdomain
+  (adblock.carbonstealth.eu), served as a plain static site separate from the
+  main SPA. It now hosts everything the extension needs externally:
+  filters.json, the privacy policy (/privacy) and a landing page. Ready-to-deploy
+  files + Caddy config in server/ (excluded from the extension package).
+
 ## 3.8.1
 
 - Review fixes (Хромаджията + Кодаджията):

@@ -1,0 +1,160 @@
+{
+  "404": {
+    "eyebrow": "Page not found",
+    "title": "This page doesn't exist.",
+    "body": "The link you followed may be outdated, or the page has been moved.",
+    "home": "Back to home"
+  },
+  "500": {
+    "eyebrow": "Error",
+    "title": "Something went wrong.",
+    "body": "We're working on it. Please try again shortly."
+  },
+  "meta": {
+    "siteName": "Eternal Touch",
+    "tagline": "Atelier of hand-cast gypsum decorations in Bulgaria",
+    "description": "Eternal Touch — atelier in Bobov Dol, Bulgaria. Hand-cast gypsum decorations, event favors and bespoke creations. Three women, two countries, one hand.",
+    "keywords": "gypsum decorations Bulgaria, hand-cast plaster, atelier Bulgaria, bespoke favors Bulgaria, christening favors, wedding favors, baby shower gifts, handmade decor, Bobov Dol atelier, slow craft Bulgaria",
+    "ogImage": "/images/og-image.jpg"
+  },
+  "nav": {
+    "home": "Home",
+    "collections": "Collections",
+    "about": "Atelier",
+    "process": "Process",
+    "gallery": "Gallery",
+    "contact": "Contact",
+    "decorations": "Decorations",
+    "favors": "Favors",
+    "custom": "Bespoke",
+    "faq": "FAQ"
+  },
+  "hero": {
+    "scrollDown": "Scroll",
+    "discover": "Visit the atelier",
+    "writeToUs": "Write to us"
+  },
+  "common": {
+    "discoverMore": "Discover more",
+    "discover": "Discover",
+    "viewAll": "View all",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "language": "Language",
+    "loading": "Loading",
+    "send": "Send",
+    "sending": "Sending",
+    "sent": "Thank you. We'll be in touch within 24 hours.",
+    "error": "Something went wrong. Please try again.",
+    "contactUs": "Contact us",
+    "requestQuote": "Request a quote",
+    "bespoke": "Bespoke",
+    "backToCollection": "Back to collection",
+    "skipToContent": "Skip to content"
+  },
+  "collections": {
+    "eyebrow": "Our collections",
+    "title": "Three directions, one hand.",
+    "subtitle": "Each collection is its own small world. All are made with the same care.",
+    "empty": "New pieces coming soon. In the meantime, write to us for a bespoke creation.",
+    "ctaTitle": "Have a different idea?",
+    "ctaBody": "We work with you — from first sketch to finished piece. Shapes, colours, details: every step decided together."
+  },
+  "products": {
+    "materials": "Materials",
+    "dimensions": "Dimensions",
+    "handmadeNote": "Every piece is made by hand: small variations in colour and form are part of the way we work.",
+    "related": "Keep browsing",
+    "relatedTitle": "Other pieces in the same collection"
+  },
+  "gallery": {
+    "eyebrow": "Gallery",
+    "title": "From the atelier.",
+    "subtitle": "A small selection of pieces made over the past months."
+  },
+  "contact": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "subject": "Subject",
+    "message": "Message",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "Where we can reach you",
+    "phonePlaceholder": "Optional",
+    "subjectPlaceholder": "What it's about",
+    "messagePlaceholder": "Tell us about your idea — we reply within 24 hours",
+    "submit": "Send message",
+    "phoneIt": "Italy",
+    "phoneBg": "Bulgaria",
+    "ourAddress": "Atelier · Bulgaria",
+    "addressDetail": "ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
+    "writeUs": "Write to us",
+    "callUs": "Call us",
+    "privacyConsent": "I have read and accept the ",
+    "privacyConsentLink": "Privacy Policy",
+    "privacyConsentEnd": " and that my data will be used only to receive a reply.",
+    "privacyRequired": "You must accept the privacy policy in order to write to us.",
+    "replyNote": "We reply within 24 hours — in Bulgarian, Italian or English."
+  },
+  "footer": {
+    "tagline": "Hand-cast gypsum decorations, made in Bulgaria — also shipped to Italy",
+    "navigation": "Navigation",
+    "contact": "Contact",
+    "follow": "Follow us",
+    "rights": "All rights reserved.",
+    "by": "A Carbon Stealth VCC project",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "legal": "Legal",
+    "manageCookies": "Manage cookies"
+  },
+  "cookies": {
+    "banner": {
+      "title": "Your privacy, our commitment.",
+      "body": "We use technical cookies necessary for the site to function. With your consent, we may also use analytics and marketing cookies to improve your experience.",
+      "learnMore": "Learn more",
+      "acceptAll": "Accept all",
+      "rejectAll": "Reject",
+      "customize": "Customize",
+      "savePreferences": "Save preferences",
+      "back": "Back"
+    },
+    "cat": {
+      "alwaysActive": "Always active",
+      "necessary": {
+        "title": "Necessary cookies",
+        "desc": "Essential for site functioning (session, chosen language, consent preferences). No consent required."
+      },
+      "analytics": {
+        "title": "Analytics cookies",
+        "desc": "Help us understand how users interact with the site, in anonymous and aggregated form. Currently not installed."
+      },
+      "marketing": {
+        "title": "Marketing cookies",
+        "desc": "Used to display advertising relevant to user interests. Currently not installed."
+      }
+    }
+  },
+  "legal": {
+    "lastUpdated": "Last updated",
+    "updateDate": "1 May 2026",
+    "privacy": {
+      "eyebrow": "Privacy",
+      "title": "Privacy Notice"
+    },
+    "cookies": {
+      "eyebrow": "Cookies",
+      "title": "Cookie Policy"
+    },
+    "terms": {
+      "eyebrow": "Terms",
+      "title": "Terms & Conditions"
+    },
+    "imprint": {
+      "eyebrow": "Legal",
+      "title": "Legal Notice"
+    }
+  }
+}

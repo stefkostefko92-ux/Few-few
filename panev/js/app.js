@@ -420,6 +420,10 @@ function renderFooter() {
               <span class="footer-inst-value footer-inst-mono">IT 09346970966</span>
             </div>
             <div class="footer-inst-row">
+              <span class="footer-inst-label">Registro Imprese</span>
+              <span class="footer-inst-value footer-inst-mono">Milano N. 09346970966</span>
+            </div>
+            <div class="footer-inst-row">
               <span class="footer-inst-label">Sede legale</span>
               <span class="footer-inst-value">Via Madonna del Salvatore 6<br>20010 Vittuone (MI)</span>
             </div>

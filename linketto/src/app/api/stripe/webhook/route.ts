@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
-import { PLANS, type PlanId } from '@/lib/plans';
+import { PLANS, totalFeeCents, type PlanId } from '@/lib/plans';
+import { payoutSeller } from '@/lib/payout';
 import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
 import { referralRewardCents } from '@/lib/referral';
 
@@ -166,6 +167,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'invalid signature' }, { status: 400 });
   }
 
+  // false → отговаряме 500 и Stripe ретрайва събитието (обработчиците са
+  // идемпотентни) — така транзиентно провален превод към продавача се лекува.
+  let payoutOk = true;
+
   switch (event.type) {
     // И двете събития: completed се излъчва и при delayed-notification методи
     // (SEPA/iDEAL…) с payment_status !== 'paid'; правата и записът се дават
@@ -209,6 +214,18 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
       } else if (productId && profileId) {
         // Еднократно (DIGITAL/COURSE): записваме покупката идемпотентно.
+        // ДДС слой (TAX.md): Stripe Tax е сметнал ДДС по държавата на
+        // купувача (0 без данъчния слой); комисионата се смята върху
+        // НЕТОТО — ДДС частта е задължение на платформата, не приход.
+        const amountTotal = session.amount_total ?? 0;
+        const vatCents = session.total_details?.amount_tax ?? 0;
+        const netCents = Math.max(amountTotal - vatCents, 0);
+        const metaPlan = (session.metadata?.plan ?? '') as PlanId;
+        const feePlan: PlanId = PLANS[metaPlan] ? metaPlan : 'FREE';
+        const feeCents = Math.max(
+          Math.min(totalFeeCents(netCents, feePlan), netCents - 1),
+          0,
+        );
         const existing = await prisma.purchase.findUnique({
           where: { stripeSessionId: session.id },
           select: { id: true },
@@ -224,8 +241,11 @@ export async function POST(request: Request): Promise<NextResponse> {
                 typeof session.payment_intent === 'string'
                   ? session.payment_intent
                   : null,
-              amountCents: session.amount_total ?? 0,
-              feeCents: Number(session.metadata?.feeCents ?? 0) || 0,
+              amountCents: amountTotal,
+              feeCents,
+              vatAmountCents: vatCents,
+              netAmountCents: netCents,
+              buyerCountry: session.customer_details?.address?.country ?? null,
               buyerEmail,
               locale: session.metadata?.locale ?? null,
               couponCode: session.metadata?.couponCode || null,
@@ -233,6 +253,12 @@ export async function POST(request: Request): Promise<NextResponse> {
             update: {},
           })
           .catch(() => null);
+        // Делът на продавача — при ВСЯКА доставка (не само първата):
+        // вътрешните гардове пазят от двоен превод, а извикването на всеки
+        // ретрай лекува транзиентните провали (виж payoutSeller).
+        if (purchase) {
+          payoutOk = (await payoutSeller(purchase.id)) && payoutOk;
+        }
         // Промо код: увеличаваме броя ползвания веднъж (само при първи запис),
         // атомарно и само ако е под лимита (пази брояча от преразходване).
         const couponId = session.metadata?.couponId;
@@ -257,7 +283,10 @@ export async function POST(request: Request): Promise<NextResponse> {
         typeof charge.payment_intent === 'string'
           ? charge.payment_intent
           : charge.payment_intent?.id;
-      if (pi) {
+      // Действаме само при ПЪЛЕН refund — частичен (напр. жест от
+      // Dashboard) не бива да отнема целия достъп, да маркира покупката
+      // като върната, нито да прибира дела на продавача.
+      if (pi && charge.amount_refunded === charge.amount) {
         await prisma.purchase
           .updateMany({
             where: { stripePaymentIntentId: pi },
@@ -266,6 +295,23 @@ export async function POST(request: Request): Promise<NextResponse> {
           .catch(() => undefined);
         // Върнати пари → връща се и достъпът до курса.
         await revokeOneOffEntitlements(pi).catch(() => undefined);
+        // Separate charges & transfers: връщаме и дела на продавача
+        // (пълен reversal — идемпотентен: повторният опит върху върнат
+        // превод се проваля тихо).
+        const refundedPurchases = await prisma.purchase.findMany({
+          where: { stripePaymentIntentId: pi },
+          select: { id: true, stripeTransferId: true },
+        });
+        for (const p of refundedPurchases) {
+          if (!p.stripeTransferId) continue;
+          await stripe.transfers
+            .createReversal(
+              p.stripeTransferId,
+              {},
+              { idempotencyKey: `reversal-${p.id}` },
+            )
+            .catch(() => undefined);
+        }
       }
       break;
     }
@@ -360,5 +406,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       break;
   }
 
-  return NextResponse.json({ received: true });
+  return NextResponse.json(
+    { received: true },
+    { status: payoutOk ? 200 : 500 },
+  );
 }

@@ -1,0 +1,332 @@
+<%
+  // Privacy Policy — full GDPR text, content varies per language
+  const lang = req.lang;
+%>
+<section class="legal-page">
+  <span class="eyebrow"><%= t('legal.privacy.eyebrow') %></span>
+  <h1><%= t('legal.privacy.title') %></h1>
+  <p class="legal-updated"><%= t('legal.lastUpdated') %>: <%= t('legal.updateDate') %></p>
+
+  <% if (lang === 'it') { %>
+
+  <div class="toc">
+    <strong>Indice</strong>
+    <ol>
+      <li><a href="#identita">Identità del Titolare del trattamento</a></li>
+      <li><a href="#dati">Dati personali raccolti</a></li>
+      <li><a href="#finalita">Finalità e basi giuridiche</a></li>
+      <li><a href="#destinatari">Destinatari e responsabili del trattamento</a></li>
+      <li><a href="#trasferimenti">Trasferimenti extra-UE</a></li>
+      <li><a href="#conservazione">Periodo di conservazione</a></li>
+      <li><a href="#diritti">Diritti dell'interessato</a></li>
+      <li><a href="#reclamo">Diritto di reclamo</a></li>
+      <li><a href="#minori">Minori</a></li>
+      <li><a href="#modifiche">Modifiche alla presente informativa</a></li>
+      <li><a href="#contatti">Contatti</a></li>
+    </ol>
+  </div>
+
+  <p>La presente informativa è resa ai sensi degli articoli 13 e 14 del Regolamento (UE) 2016/679 ("<strong>GDPR</strong>") e della normativa nazionale applicabile (D.Lgs. 196/2003 come modificato dal D.Lgs. 101/2018 in Italia; ЗЗЛД in Bulgaria) e descrive le modalità con cui Eternal Touch tratta i dati personali raccolti tramite il sito <a href="https://eternaltouch.it">eternaltouch.it</a>.</p>
+
+  <h2 id="identita">1. Identità del Titolare del trattamento</h2>
+  <p>Il Titolare del trattamento è:</p>
+  <div class="legal-box">
+    <p><strong>Carbon Stealth VCC</strong> — operante con il marchio "Eternal Touch"<br>
+    EIK (Codice fiscale): BG208725180<br>
+    Sede legale: Ул. Самуил 3, 2670 Бобов дол, Bulgaria<br>
+    E-mail: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a><br>
+    Sito web: <a href="https://eternaltouch.it">eternaltouch.it</a></p>
+    <p>Carbon Stealth VCC è una società di diritto bulgaro, iscritta al Registro delle Imprese di Bulgaria. Per richieste relative alla protezione dei dati personali, l'utente può contattare il Titolare ai recapiti sopra indicati. Non è stato nominato un Responsabile della Protezione dei Dati (DPO) ai sensi dell'art. 37 GDPR, in quanto non ricorrono i presupposti normativi.</p>
+  </div>
+
+  <h2 id="dati">2. Dati personali raccolti</h2>
+  <p>Trattiamo le seguenti categorie di dati personali:</p>
+
+  <h3>2.1 Dati forniti volontariamente dall'utente</h3>
+  <p>Tramite il modulo di contatto raccogliamo: <strong>nome, indirizzo e-mail, numero di telefono</strong> (facoltativo), <strong>oggetto e contenuto del messaggio</strong>. Il conferimento è facoltativo, ma il mancato invio impedisce di rispondere alla richiesta.</p>
+
+  <h3>2.2 Dati raccolti automaticamente</h3>
+  <ul>
+    <li><strong>Indirizzo IP</strong> — utilizzato esclusivamente per la geolocalizzazione approssimativa al fine di mostrare la lingua appropriata (Italia → italiano; Bulgaria → bulgaro; altri Paesi → inglese). L'IP non viene memorizzato in modo persistente collegato a un profilo.</li>
+    <li><strong>Log tecnici del server</strong> — data/ora, URL richiesto, codice di risposta, user-agent. Conservati per finalità di sicurezza e diagnostica.</li>
+    <li><strong>Cookie tecnici</strong> — vedi sezione dedicata alla <a href="/cookies">Cookie Policy</a>.</li>
+  </ul>
+
+  <h2 id="finalita">3. Finalità e basi giuridiche del trattamento</h2>
+  <table>
+    <thead>
+      <tr><th>Finalità</th><th>Base giuridica (Art. 6 GDPR)</th><th>Conservazione</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Risposta a richieste tramite modulo contatti</td><td>Art. 6(1)(b) — esecuzione di misure precontrattuali / Art. 6(1)(f) — legittimo interesse</td><td>24 mesi</td></tr>
+      <tr><td>Geolocalizzazione per visualizzazione lingua</td><td>Art. 6(1)(f) — legittimo interesse alla corretta esperienza utente</td><td>Nessuna conservazione (uso istantaneo)</td></tr>
+      <tr><td>Sicurezza del sito e prevenzione abusi</td><td>Art. 6(1)(f) — legittimo interesse</td><td>Log: 12 mesi</td></tr>
+      <tr><td>Cookie tecnici (sessione, preferenza lingua, consenso)</td><td>Art. 6(1)(f) — legittimo interesse / Esenzione ePrivacy</td><td>Sessione / fino a 12 mesi</td></tr>
+      <tr><td>Cookie analitici e di marketing (se attivi)</td><td>Art. 6(1)(a) — consenso</td><td>Secondo configurazione del singolo cookie</td></tr>
+      <tr><td>Adempimento obblighi legali (fiscali, ordinanze giudiziarie)</td><td>Art. 6(1)(c) — obbligo legale</td><td>Periodo previsto dalla legge applicabile</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="destinatari">4. Destinatari e responsabili del trattamento</h2>
+  <p>I dati personali possono essere comunicati a:</p>
+  <ul>
+    <li><strong>Personale autorizzato</strong> di Carbon Stealth VCC e dei suoi collaboratori, vincolati a obblighi di riservatezza.</li>
+    <li><strong>Fornitori di hosting e servizi infrastrutturali</strong> — il sito è ospitato su un server VPS dedicato situato nell'Unione Europea, gestito direttamente dal Titolare.</li>
+    <li><strong>Register.it S.p.A.</strong> (Italia, UE) — fornitore del servizio di posta elettronica (SMTP) utilizzato per l'invio delle risposte alle richieste di contatto, in qualità di Responsabile del trattamento ai sensi dell'art. 28 GDPR.</li>
+    <li><strong>Autorità giudiziarie e di controllo</strong>, ove obbligatorio per legge.</li>
+  </ul>
+  <p>I fornitori esterni che agiscono come Responsabili del trattamento sono nominati ai sensi dell'art. 28 GDPR.</p>
+
+  <h2 id="trasferimenti">5. Trasferimenti di dati extra-UE</h2>
+  <p>I dati personali sono trattati e conservati all'interno dello Spazio Economico Europeo (SEE). I font tipografici sono ospitati direttamente sul nostro server (self-hosting): non viene effettuata alcuna richiesta a server di terze parti né alcun trasferimento dell'indirizzo IP verso Google o altri fornitori extra-UE per la fornitura dei font. Qualora in futuro si rendesse necessario un trasferimento verso un paese terzo, esso avverrà esclusivamente in presenza di garanzie adeguate ai sensi del Capo V del GDPR (es. Clausole Contrattuali Standard).</p>
+
+  <h2 id="conservazione">6. Periodo di conservazione</h2>
+  <p>I dati sono conservati per il tempo strettamente necessario alle finalità per le quali sono stati raccolti, come specificato nella tabella della sezione 3, e successivamente cancellati o resi anonimi, fatti salvi obblighi di conservazione di legge.</p>
+
+  <h2 id="diritti">7. Diritti dell'interessato</h2>
+  <p>Ai sensi degli articoli 15–22 del GDPR, l'utente ha diritto di:</p>
+  <ul>
+    <li><strong>Accesso</strong> (Art. 15) — ottenere conferma del trattamento e copia dei dati personali.</li>
+    <li><strong>Rettifica</strong> (Art. 16) — ottenere la correzione di dati inesatti o incompleti.</li>
+    <li><strong>Cancellazione</strong> (Art. 17, "diritto all'oblio") — ottenere la cancellazione dei dati nei casi previsti.</li>
+    <li><strong>Limitazione</strong> (Art. 18) — chiedere la limitazione del trattamento.</li>
+    <li><strong>Portabilità</strong> (Art. 20) — ricevere in formato strutturato e leggibile da dispositivo automatico i dati forniti.</li>
+    <li><strong>Opposizione</strong> (Art. 21) — opporsi al trattamento basato su legittimo interesse.</li>
+    <li><strong>Revoca del consenso</strong> (Art. 7(3)) — in qualunque momento, senza pregiudicare la liceità del trattamento basata sul consenso prestato prima della revoca.</li>
+    <li><strong>Non essere sottoposto a decisioni automatizzate</strong> (Art. 22) — il Titolare non effettua processi decisionali automatizzati né profilazione.</li>
+  </ul>
+  <p>Per esercitare tali diritti è sufficiente scrivere a <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>. Risponderemo entro 30 giorni dalla ricezione della richiesta (prorogabili di ulteriori 60 giorni in casi di particolare complessità, con informativa motivata).</p>
+
+  <h2 id="reclamo">8. Diritto di reclamo all'Autorità di controllo</h2>
+  <p>Qualora l'utente ritenga che il trattamento dei propri dati avvenga in violazione del GDPR, ha diritto di proporre reclamo all'Autorità di controllo competente:</p>
+  <ul>
+    <li><strong>Bulgaria</strong> — Комисия за защита на личните данни (КЗЛД) — <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a></li>
+    <li><strong>Italia</strong> — Garante per la protezione dei dati personali — <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">www.garanteprivacy.it</a></li>
+    <li>Oppure presso l'Autorità di controllo dello Stato membro UE di residenza abituale, luogo di lavoro o luogo della presunta violazione.</li>
+  </ul>
+
+  <h2 id="minori">9. Minori</h2>
+  <p>Il sito non è destinato a minori di 16 anni. Non raccogliamo consapevolmente dati di minori. Qualora venissimo a conoscenza del trattamento di dati di un minore senza il consenso del titolare della responsabilità genitoriale, provvederemo alla tempestiva cancellazione.</p>
+
+  <h2 id="modifiche">10. Modifiche alla presente informativa</h2>
+  <p>La presente informativa può essere modificata in qualsiasi momento. La versione aggiornata sarà pubblicata su questa pagina con indicazione della data di ultimo aggiornamento. In caso di modifiche sostanziali, ne daremo evidenza tramite avviso sul sito.</p>
+
+  <h2 id="contatti">11. Contatti</h2>
+  <p>Per qualsiasi questione relativa al trattamento dei dati personali, si prega di scrivere a <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>.</p>
+
+  <% } else if (lang === 'bg') { %>
+
+  <div class="toc">
+    <strong>Съдържание</strong>
+    <ol>
+      <li><a href="#identita">Идентичност на Администратора на лични данни</a></li>
+      <li><a href="#dati">Събирани лични данни</a></li>
+      <li><a href="#finalita">Цели и правни основания</a></li>
+      <li><a href="#destinatari">Получатели и обработващи лични данни</a></li>
+      <li><a href="#trasferimenti">Прехвърляне извън ЕС</a></li>
+      <li><a href="#conservazione">Срокове на съхранение</a></li>
+      <li><a href="#diritti">Права на субекта на данни</a></li>
+      <li><a href="#reclamo">Право на жалба</a></li>
+      <li><a href="#minori">Малолетни и непълнолетни</a></li>
+      <li><a href="#modifiche">Промени в политиката</a></li>
+      <li><a href="#contatti">Контакти</a></li>
+    </ol>
+  </div>
+
+  <p>Настоящата политика за поверителност се предоставя в съответствие с членове 13 и 14 от Регламент (ЕС) 2016/679 ("<strong>ОРЗД / GDPR</strong>"), Закона за защита на личните данни (ЗЗЛД) на Република България, и приложимите национални нормативни актове, и описва как Eternal Touch обработва лични данни, събирани чрез сайта <a href="https://eternaltouch.it">eternaltouch.it</a>.</p>
+
+  <h2 id="identita">1. Идентичност на Администратора на лични данни</h2>
+  <p>Администратор на личните данни е:</p>
+  <div class="legal-box">
+    <p><strong>Carbon Stealth VCC</strong> — действащ под търговската марка "Eternal Touch"<br>
+    ЕИК: BG208725180<br>
+    Седалище и адрес на управление: Ул. Самуил 3, 2670 Бобов дол, България<br>
+    Имейл: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a><br>
+    Уебсайт: <a href="https://eternaltouch.it">eternaltouch.it</a></p>
+    <p>Carbon Stealth VCC е дружество, регистрирано по българското законодателство, вписано в Търговския регистър при Агенция по вписванията. За запитвания, свързани със защитата на личните данни, потребителят може да се свърже с Администратора на посочените по-горе данни. Не е назначено Длъжностно лице по защита на данните (ДЛЗД/DPO) по чл. 37 от ОРЗД, тъй като не са налице нормативните предпоставки.</p>
+  </div>
+
+  <h2 id="dati">2. Събирани лични данни</h2>
+  <p>Обработваме следните категории лични данни:</p>
+
+  <h3>2.1 Данни, предоставени доброволно от потребителя</h3>
+  <p>Чрез формата за контакт събираме: <strong>име, имейл адрес, телефонен номер</strong> (по избор), <strong>тема и съдържание на съобщението</strong>. Предоставянето е доброволно, но без него не е възможно да отговорим на запитването.</p>
+
+  <h3>2.2 Автоматично събирани данни</h3>
+  <ul>
+    <li><strong>IP адрес</strong> — използва се изключително за приблизителна геолокация с цел показване на подходящия език (Италия → италиански; България → български; други държави → английски). IP адресът не се запазва трайно, свързан с профил.</li>
+    <li><strong>Технически сървърни логове</strong> — дата/час, искан URL, код на отговор, user-agent. Съхраняват се за целите на сигурността и диагностиката.</li>
+    <li><strong>Технически бисквитки</strong> — вижте отделната <a href="/cookies">Политика за бисквитки</a>.</li>
+  </ul>
+
+  <h2 id="finalita">3. Цели и правни основания на обработката</h2>
+  <table>
+    <thead>
+      <tr><th>Цел</th><th>Правно основание (Чл. 6 ОРЗД)</th><th>Срок</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Отговор на запитвания през формата за контакт</td><td>Чл. 6(1)(б) — преддоговорни мерки / Чл. 6(1)(е) — легитимен интерес</td><td>24 месеца</td></tr>
+      <tr><td>Геолокация за показване на езика</td><td>Чл. 6(1)(е) — легитимен интерес за коректно потребителско изживяване</td><td>Без съхранение (моментно)</td></tr>
+      <tr><td>Сигурност на сайта и предотвратяване на злоупотреби</td><td>Чл. 6(1)(е) — легитимен интерес</td><td>Логове: 12 месеца</td></tr>
+      <tr><td>Технически бисквитки (сесия, езикова настройка, съгласие)</td><td>Чл. 6(1)(е) — легитимен интерес / Изключение по ePrivacy</td><td>Сесия / до 12 месеца</td></tr>
+      <tr><td>Аналитични и маркетингови бисквитки (ако са активни)</td><td>Чл. 6(1)(а) — съгласие</td><td>Според конфигурацията на бисквитката</td></tr>
+      <tr><td>Изпълнение на законови задължения (данъчни, съдебни)</td><td>Чл. 6(1)(в) — законово задължение</td><td>Срок съгласно приложимия закон</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="destinatari">4. Получатели и обработващи лични данни</h2>
+  <p>Личните данни могат да бъдат споделени с:</p>
+  <ul>
+    <li><strong>Оторизиран персонал</strong> на Carbon Stealth VCC и негови сътрудници, обвързани със задължение за поверителност.</li>
+    <li><strong>Доставчици на хостинг и инфраструктурни услуги</strong> — сайтът се хоства на специализиран VPS сървър, разположен в Европейския съюз, управляван директно от Администратора.</li>
+    <li><strong>Register.it S.p.A.</strong> (Италия, ЕС) — доставчик на услугата за електронна поща (SMTP), използвана за изпращане на отговори на запитванията от формата за контакт, в качеството на Обработващ лични данни съгласно чл. 28 от ОРЗД.</li>
+    <li><strong>Съдебни и контролни органи</strong>, когато това се изисква по закон.</li>
+  </ul>
+  <p>Външните доставчици, действащи като Обработващи лични данни, са назначени съгласно чл. 28 от ОРЗД.</p>
+
+  <h2 id="trasferimenti">5. Прехвърляне на данни извън ЕС</h2>
+  <p>Личните данни се обработват и съхраняват в рамките на Европейското икономическо пространство (ЕИП). Типографските шрифтове се хостват директно на нашия сървър (self-hosting): не се извършва заявка към сървъри на трети страни, нито прехвърляне на IP адрес към Google или други доставчици извън ЕС за доставката на шрифтовете. Ако в бъдеще се наложи прехвърляне към трета държава, то ще се извършва само при наличие на подходящи гаранции съгласно Глава V от ОРЗД (напр. Стандартни договорни клаузи).</p>
+
+  <h2 id="conservazione">6. Срокове на съхранение</h2>
+  <p>Данните се съхраняват за времето, строго необходимо за целите, за които са събрани, както е посочено в таблицата в раздел 3, след което се изтриват или анонимизират, освен ако не е налице законово задължение за по-дълго съхранение.</p>
+
+  <h2 id="diritti">7. Права на субекта на данни</h2>
+  <p>Съгласно членове 15–22 от ОРЗД, потребителят има следните права:</p>
+  <ul>
+    <li><strong>Достъп</strong> (Чл. 15) — да получи потвърждение за обработката и копие на личните данни.</li>
+    <li><strong>Коригиране</strong> (Чл. 16) — да изиска корекция на неточни или непълни данни.</li>
+    <li><strong>Изтриване</strong> (Чл. 17, "право да бъдеш забравен") — да изиска изтриване на данните в предвидените случаи.</li>
+    <li><strong>Ограничаване</strong> (Чл. 18) — да изиска ограничаване на обработката.</li>
+    <li><strong>Преносимост</strong> (Чл. 20) — да получи в структуриран и машинно четим формат данните, които е предоставил.</li>
+    <li><strong>Възражение</strong> (Чл. 21) — да възрази срещу обработка, основана на легитимен интерес.</li>
+    <li><strong>Оттегляне на съгласие</strong> (Чл. 7(3)) — по всяко време, без да се засяга законосъобразността на обработката, извършена въз основа на съгласието преди оттеглянето.</li>
+    <li><strong>Да не бъде обект на автоматизирани решения</strong> (Чл. 22) — Администраторът не извършва автоматизирано вземане на решения, нито профилиране.</li>
+  </ul>
+  <p>За упражняване на тези права е достатъчно да изпратите имейл на <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>. Ще отговорим в срок до 30 дни от получаване на искането (с възможно удължаване с допълнителни 60 дни в особено сложни случаи, при мотивирано уведомяване).</p>
+
+  <h2 id="reclamo">8. Право на жалба до Надзорен орган</h2>
+  <p>Ако потребителят счита, че обработката на личните му данни нарушава ОРЗД, той има право да подаде жалба до компетентния надзорен орган:</p>
+  <ul>
+    <li><strong>България</strong> — Комисия за защита на личните данни (КЗЛД), бул. „Проф. Цветан Лазаров" 2, 1592 София — <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a></li>
+    <li><strong>Италия</strong> — Garante per la protezione dei dati personali — <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">www.garanteprivacy.it</a></li>
+    <li>Или до Надзорния орган на държавата-членка на ЕС по обичайно местопребиваване, място на работа или място на твърдяното нарушение.</li>
+  </ul>
+
+  <h2 id="minori">9. Малолетни и непълнолетни</h2>
+  <p>Сайтът не е насочен към лица под 16-годишна възраст. Не събираме съзнателно данни на малолетни и непълнолетни. Ако установим, че сме обработвали данни на дете без съгласието на носителя на родителска отговорност, ще ги изтрием незабавно.</p>
+
+  <h2 id="modifiche">10. Промени в настоящата политика</h2>
+  <p>Настоящата политика може да бъде променяна по всяко време. Актуализираната версия ще бъде публикувана на тази страница с дата на последна актуализация. При съществени промени ще бъде поставено известие на сайта.</p>
+
+  <h2 id="contatti">11. Контакти</h2>
+  <p>За всякакви въпроси, свързани с обработката на лични данни, моля пишете на <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>.</p>
+
+  <% } else { %>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#identita">Identity of the Data Controller</a></li>
+      <li><a href="#dati">Personal data we collect</a></li>
+      <li><a href="#finalita">Purposes and legal bases</a></li>
+      <li><a href="#destinatari">Recipients and processors</a></li>
+      <li><a href="#trasferimenti">International transfers</a></li>
+      <li><a href="#conservazione">Retention periods</a></li>
+      <li><a href="#diritti">Data subject rights</a></li>
+      <li><a href="#reclamo">Right to lodge a complaint</a></li>
+      <li><a href="#minori">Children</a></li>
+      <li><a href="#modifiche">Changes to this notice</a></li>
+      <li><a href="#contatti">Contact</a></li>
+    </ol>
+  </div>
+
+  <p>This Privacy Notice is provided pursuant to Articles 13 and 14 of Regulation (EU) 2016/679 ("<strong>GDPR</strong>") and applicable national legislation (Bulgarian Personal Data Protection Act / ЗЗЛД; Italian Legislative Decree 196/2003 as amended by Legislative Decree 101/2018) and describes how Eternal Touch processes personal data collected through the website <a href="https://eternaltouch.it">eternaltouch.it</a>.</p>
+
+  <h2 id="identita">1. Identity of the Data Controller</h2>
+  <p>The Data Controller is:</p>
+  <div class="legal-box">
+    <p><strong>Carbon Stealth VCC</strong> — operating under the trade name "Eternal Touch"<br>
+    Company ID (EIK): BG208725180<br>
+    Registered office: Ul. Samuil 3, 2670 Bobov Dol, Bulgaria<br>
+    E-mail: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a><br>
+    Website: <a href="https://eternaltouch.it">eternaltouch.it</a></p>
+    <p>Carbon Stealth VCC is a Bulgarian company, registered with the Bulgarian Commercial Register at the Registry Agency. For any data-protection enquiries, please contact the Controller using the above details. A Data Protection Officer (DPO) has not been appointed under Art. 37 GDPR, as the statutory thresholds do not apply.</p>
+  </div>
+
+  <h2 id="dati">2. Personal data we collect</h2>
+  <p>We process the following categories of personal data:</p>
+
+  <h3>2.1 Data voluntarily provided by the user</h3>
+  <p>Through the contact form we collect: <strong>name, e-mail address, phone number</strong> (optional), <strong>subject and message content</strong>. Provision is voluntary, but without it we cannot reply.</p>
+
+  <h3>2.2 Data collected automatically</h3>
+  <ul>
+    <li><strong>IP address</strong> — used solely for approximate geolocation in order to display the appropriate language (Italy → Italian; Bulgaria → Bulgarian; other countries → English). The IP address is not persistently stored linked to a profile.</li>
+    <li><strong>Server technical logs</strong> — date/time, requested URL, response code, user-agent. Retained for security and diagnostic purposes.</li>
+    <li><strong>Technical cookies</strong> — see our separate <a href="/cookies">Cookie Policy</a>.</li>
+  </ul>
+
+  <h2 id="finalita">3. Purposes and legal bases for processing</h2>
+  <table>
+    <thead>
+      <tr><th>Purpose</th><th>Legal basis (Art. 6 GDPR)</th><th>Retention</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Reply to enquiries via contact form</td><td>Art. 6(1)(b) — pre-contractual measures / Art. 6(1)(f) — legitimate interest</td><td>24 months</td></tr>
+      <tr><td>Geolocation for language display</td><td>Art. 6(1)(f) — legitimate interest in correct UX</td><td>No retention (instant use)</td></tr>
+      <tr><td>Site security and abuse prevention</td><td>Art. 6(1)(f) — legitimate interest</td><td>Logs: 12 months</td></tr>
+      <tr><td>Technical cookies (session, language preference, consent)</td><td>Art. 6(1)(f) — legitimate interest / ePrivacy exemption</td><td>Session / up to 12 months</td></tr>
+      <tr><td>Analytics & marketing cookies (if active)</td><td>Art. 6(1)(a) — consent</td><td>Per individual cookie settings</td></tr>
+      <tr><td>Compliance with legal obligations (tax, judicial orders)</td><td>Art. 6(1)(c) — legal obligation</td><td>Period required by applicable law</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="destinatari">4. Recipients and processors</h2>
+  <p>Personal data may be disclosed to:</p>
+  <ul>
+    <li><strong>Authorised personnel</strong> of Carbon Stealth VCC and its collaborators, bound by confidentiality obligations.</li>
+    <li><strong>Hosting and infrastructure providers</strong> — the site is hosted on a dedicated VPS server located in the European Union, managed directly by the Controller.</li>
+    <li><strong>Register.it S.p.A.</strong> (Italy, EU) — provider of the email (SMTP) service used to send replies to contact enquiries, acting as a Data Processor pursuant to Art. 28 GDPR.</li>
+    <li><strong>Judicial and regulatory authorities</strong> where required by law.</li>
+  </ul>
+  <p>External providers acting as Data Processors are appointed pursuant to Art. 28 GDPR.</p>
+
+  <h2 id="trasferimenti">5. International data transfers</h2>
+  <p>Personal data is processed and stored within the European Economic Area (EEA). Typographic fonts are hosted directly on our own server (self-hosting): no request is made to any third-party server and no IP address is transferred to Google or any other non-EU provider for font delivery. Should a transfer to a third country ever become necessary, it will take place only under appropriate safeguards pursuant to Chapter V GDPR (e.g. Standard Contractual Clauses).</p>
+
+  <h2 id="conservazione">6. Retention periods</h2>
+  <p>Data is retained for the time strictly necessary for the purposes for which it was collected, as specified in section 3, and is then deleted or anonymised, except where statutory retention obligations apply.</p>
+
+  <h2 id="diritti">7. Data subject rights</h2>
+  <p>Pursuant to Articles 15–22 of the GDPR, the user has the right to:</p>
+  <ul>
+    <li><strong>Access</strong> (Art. 15) — obtain confirmation of processing and a copy of personal data.</li>
+    <li><strong>Rectification</strong> (Art. 16) — obtain correction of inaccurate or incomplete data.</li>
+    <li><strong>Erasure</strong> (Art. 17, "right to be forgotten") — obtain deletion of data in the cases provided.</li>
+    <li><strong>Restriction</strong> (Art. 18) — request restriction of processing.</li>
+    <li><strong>Portability</strong> (Art. 20) — receive in a structured, machine-readable format the data provided.</li>
+    <li><strong>Objection</strong> (Art. 21) — object to processing based on legitimate interest.</li>
+    <li><strong>Withdraw consent</strong> (Art. 7(3)) — at any time, without affecting the lawfulness of processing carried out before withdrawal.</li>
+    <li><strong>Not be subject to automated decisions</strong> (Art. 22) — the Controller does not carry out automated decision-making or profiling.</li>
+  </ul>
+  <p>To exercise these rights, simply write to <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>. We will respond within 30 days of receipt of the request (extendable by a further 60 days in particularly complex cases, with reasoned notice).</p>
+
+  <h2 id="reclamo">8. Right to lodge a complaint with a Supervisory Authority</h2>
+  <p>If the user believes that the processing of their data infringes the GDPR, they have the right to lodge a complaint with the competent Supervisory Authority:</p>
+  <ul>
+    <li><strong>Bulgaria</strong> — Commission for Personal Data Protection (КЗЛД) — <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a></li>
+    <li><strong>Italy</strong> — Garante per la protezione dei dati personali — <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">www.garanteprivacy.it</a></li>
+    <li>Or with the Supervisory Authority of the EU Member State of habitual residence, place of work, or place of the alleged infringement.</li>
+  </ul>
+
+  <h2 id="minori">9. Children</h2>
+  <p>The site is not directed to children under 16. We do not knowingly collect children's data. Should we become aware that we have processed data of a child without parental consent, we will promptly delete it.</p>
+
+  <h2 id="modifiche">10. Changes to this notice</h2>
+  <p>This notice may be amended at any time. The updated version will be published on this page with the date of last update. In the event of material changes, we will provide notice on the website.</p>
+
+  <h2 id="contatti">11. Contact</h2>
+  <p>For any matter relating to the processing of personal data, please write to <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>.</p>
+
+  <% } %>
+</section>

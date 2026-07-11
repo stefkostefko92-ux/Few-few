@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#faf7f2"/>
+  <g transform="translate(32 32)" fill="none" stroke="#c9a96e" stroke-width="2" stroke-linecap="round">
+    <!-- Spiral nautilus mark -->
+    <path d="M 0,-14 C 8,-14 14,-8 14,0 C 14,8 8,14 0,14 C -6,14 -10,10 -10,4 C -10,0 -7,-3 -3,-3 C 0,-3 2,-1 2,2"/>
+    <circle cx="0" cy="0" r="20" stroke-width="1.5" opacity="0.5"/>
+  </g>
+</svg>

@@ -1,0 +1,140 @@
+<% const lang = req.lang; %>
+<section class="legal-page">
+  <span class="eyebrow"><%= t('legal.imprint.eyebrow') %></span>
+  <h1><%= t('legal.imprint.title') %></h1>
+  <p class="legal-updated"><%= t('legal.lastUpdated') %>: <%= t('legal.updateDate') %></p>
+
+  <% if (lang === 'it') { %>
+
+  <p>Le presenti informazioni sono fornite in adempimento agli obblighi previsti dalla Direttiva 2000/31/CE sul commercio elettronico, dal D.Lgs. 70/2003 (Italia), dalla Закон за електронната търговия (Bulgaria) e dalle ulteriori normative europee applicabili.</p>
+
+  <h2>Titolare del sito</h2>
+  <div class="legal-box">
+    <p><strong>Carbon Stealth VCC</strong><br>
+    Operante con il marchio "Eternal Touch"<br><br>
+    EIK (Codice fiscale) / Partita IVA UE: <strong>BG208725180</strong><br>
+    Forma giuridica: ВЦД (Variable Capital Company) — Bulgaria<br>
+    Sede legale: Ул. Самуил 3, 2670 Бобов дол, Кюстендилска област, Bulgaria<br>
+    Iscritta al Registro Commerciale presso l'Agenzia di Registrazione di Bulgaria<br><br>
+    E-mail: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a><br>
+    Sito web: <a href="https://eternaltouch.it">eternaltouch.it</a></p>
+  </div>
+
+  <h2>Direzione editoriale</h2>
+  <p>I contenuti del Sito sono curati e pubblicati direttamente da Carbon Stealth VCC.</p>
+
+  <h2>Hosting</h2>
+  <p>Il Sito è ospitato su server VPS dedicato situato all'interno dell'Unione Europea, gestito direttamente dal Titolare.</p>
+
+  <h2>Gruppo dell'atelier</h2>
+  <p>Eternal Touch è un atelier italo-bulgaro composto da:</p>
+  <ul>
+    <li><strong>Simona</strong> — Bulgaria — +359 877 876 709</li>
+    <li><strong>Ivy</strong> — Italia — +39 393 6943854</li>
+    <li><strong>Maya</strong> — Italia — +39 392 1806719</li>
+  </ul>
+
+  <h2>Marchi</h2>
+  <p>"Eternal Touch" è un marchio di Carbon Stealth VCC. Tutti i loghi e i nomi commerciali presenti nel Sito sono di proprietà dei rispettivi titolari.</p>
+
+  <h2>Contatti</h2>
+  <p>Per comunicazioni, richieste informative, segnalazioni o reclami:<br>
+  E-mail: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a></p>
+
+  <h2>Documenti correlati</h2>
+  <ul>
+    <li><a href="/privacy">Informativa sulla Privacy (GDPR)</a></li>
+    <li><a href="/terms">Termini e Condizioni d'uso</a></li>
+    <li><a href="/cookies">Cookie Policy</a></li>
+  </ul>
+
+  <% } else if (lang === 'bg') { %>
+
+  <p>Настоящата информация се предоставя в изпълнение на задълженията, предвидени в Директива 2000/31/ЕО относно електронната търговия, Закона за електронната търговия (България), Законодателния декрет 70/2003 (Италия) и приложимите европейски нормативни актове.</p>
+
+  <h2>Собственик на сайта</h2>
+  <div class="legal-box">
+    <p><strong>Carbon Stealth VCC</strong><br>
+    Действащ под търговската марка "Eternal Touch"<br><br>
+    ЕИК / ДДС № (ЕС): <strong>BG208725180</strong><br>
+    Правна форма: ВЦД (Variable Capital Company) — България<br>
+    Седалище и адрес на управление: Ул. Самуил 3, 2670 Бобов дол, Кюстендилска област, България<br>
+    Вписано в Търговския регистър при Агенция по вписванията<br><br>
+    Имейл: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a><br>
+    Уебсайт: <a href="https://eternaltouch.it">eternaltouch.it</a></p>
+  </div>
+
+  <h2>Редакционен директор</h2>
+  <p>Съдържанието на Сайта се поддържа и публикува директно от Carbon Stealth VCC.</p>
+
+  <h2>Хостинг</h2>
+  <p>Сайтът се хоства на специализиран VPS сървър, разположен в рамките на Европейския съюз, управляван директно от Собственика.</p>
+
+  <h2>Екип на ателието</h2>
+  <p>Eternal Touch е италианско-българско ателие, съставено от:</p>
+  <ul>
+    <li><strong>Симона</strong> — България — +359 877 876 709</li>
+    <li><strong>Ivy</strong> — Италия — +39 393 6943854</li>
+    <li><strong>Maya</strong> — Италия — +39 392 1806719</li>
+  </ul>
+
+  <h2>Търговски марки</h2>
+  <p>"Eternal Touch" е търговска марка на Carbon Stealth VCC. Всички лога и търговски наименования, представени на Сайта, са собственост на съответните им притежатели.</p>
+
+  <h2>Контакти</h2>
+  <p>За съобщения, искания за информация, сигнали или жалби:<br>
+  Имейл: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a></p>
+
+  <h2>Свързани документи</h2>
+  <ul>
+    <li><a href="/privacy">Политика за поверителност (ОРЗД)</a></li>
+    <li><a href="/terms">Общи условия за ползване</a></li>
+    <li><a href="/cookies">Политика за бисквитки</a></li>
+  </ul>
+
+  <% } else { %>
+
+  <p>This information is provided in compliance with the obligations established by Directive 2000/31/EC on electronic commerce, the Bulgarian E-Commerce Act, Italian Legislative Decree 70/2003, and other applicable European regulations.</p>
+
+  <h2>Site owner</h2>
+  <div class="legal-box">
+    <p><strong>Carbon Stealth VCC</strong><br>
+    Operating under the trade name "Eternal Touch"<br><br>
+    Company ID (EIK) / EU VAT: <strong>BG208725180</strong><br>
+    Legal form: VCC (Variable Capital Company) — Bulgaria<br>
+    Registered office: Ul. Samuil 3, 2670 Bobov Dol, Kyustendil region, Bulgaria<br>
+    Registered with the Bulgarian Commercial Register at the Registry Agency<br><br>
+    E-mail: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a><br>
+    Website: <a href="https://eternaltouch.it">eternaltouch.it</a></p>
+  </div>
+
+  <h2>Editorial direction</h2>
+  <p>The content of the Site is curated and published directly by Carbon Stealth VCC.</p>
+
+  <h2>Hosting</h2>
+  <p>The Site is hosted on a dedicated VPS server located within the European Union, managed directly by the Owner.</p>
+
+  <h2>Atelier team</h2>
+  <p>Eternal Touch is an Italian-Bulgarian atelier composed of:</p>
+  <ul>
+    <li><strong>Simona</strong> — Bulgaria — +359 877 876 709</li>
+    <li><strong>Ivy</strong> — Italy — +39 393 6943854</li>
+    <li><strong>Maya</strong> — Italy — +39 392 1806719</li>
+  </ul>
+
+  <h2>Trademarks</h2>
+  <p>"Eternal Touch" is a trademark of Carbon Stealth VCC. All logos and trade names appearing on the Site are the property of their respective owners.</p>
+
+  <h2>Contact</h2>
+  <p>For communications, information requests, reports or complaints:<br>
+  E-mail: <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a></p>
+
+  <h2>Related documents</h2>
+  <ul>
+    <li><a href="/privacy">Privacy Policy (GDPR)</a></li>
+    <li><a href="/terms">Terms and Conditions of use</a></li>
+    <li><a href="/cookies">Cookie Policy</a></li>
+  </ul>
+
+  <% } %>
+</section>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="ltr" class="no-js">
+<head>
+  <script>document.documentElement.classList.remove('no-js');</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FDFAF4">
+  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Eternal Touch">
+  <meta name="format-detection" content="telephone=yes,email=yes,address=yes">
+
+  <!-- Primary Meta -->
+  <title><%- title || `Eternal Touch — ${t('meta.tagline')}` %></title>
+  <meta name="description" content="<%- description || t('meta.description') %>">
+  <meta name="keywords" content="<%- t('meta.keywords') %>">
+  <meta name="author" content="Eternal Touch · Carbon Stealth VCC">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+
+  <!-- Canonical & language alternates (hreflang — Bulgaria first, BG default) -->
+  <link rel="canonical" href="<%- canonicalUrl %>">
+  <link rel="alternate" hreflang="bg"        href="<%- (process.env.SITE_URL || 'https://eternaltouch.it') %><%- path === '/' ? '' : path %>">
+  <link rel="alternate" hreflang="it"        href="<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/it<%- path === '/' ? '' : path %>">
+  <link rel="alternate" hreflang="en"        href="<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/en<%- path === '/' ? '' : path %>">
+  <link rel="alternate" hreflang="x-default" href="<%- (process.env.SITE_URL || 'https://eternaltouch.it') %><%- path === '/' ? '' : path %>">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="<%- typeof ogType !== 'undefined' ? ogType : 'website' %>">
+  <meta property="og:locale" content="<%= lang === 'bg' ? 'bg_BG' : (lang === 'it' ? 'it_IT' : 'en_US') %>">
+  <meta property="og:locale:alternate" content="bg_BG">
+  <meta property="og:locale:alternate" content="it_IT">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:site_name" content="Eternal Touch">
+  <meta property="og:title" content="<%- title || `Eternal Touch — ${t('meta.tagline')}` %>">
+  <meta property="og:description" content="<%- description || t('meta.description') %>">
+  <meta property="og:url" content="<%- canonicalUrl %>">
+  <meta property="og:image" content="<%- (process.env.SITE_URL || 'https://eternaltouch.it') + (typeof ogImage !== 'undefined' && ogImage ? ogImage : '/images/og-image.jpg') %>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Eternal Touch — ателие за гипсови декорации в Бобов дол, България">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%- title || `Eternal Touch — ${t('meta.tagline')}` %>">
+  <meta name="twitter:description" content="<%- description || t('meta.description') %>">
+  <meta name="twitter:image" content="<%- (process.env.SITE_URL || 'https://eternaltouch.it') + (typeof ogImage !== 'undefined' && ogImage ? ogImage : '/images/og-image.jpg') %>">
+
+  <!-- Geo metadata (search engines + AI assistants) -->
+  <meta name="geo.region" content="BG-09">
+  <meta name="geo.placename" content="Бобов дол, България">
+  <meta name="geo.position" content="42.3597;23.0033">
+  <meta name="ICBM" content="42.3597, 23.0033">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+
+  <!-- Fonts: Italiana + Cormorant + Lora + Cinzel — self-hosted (no third-party
+       requests; GDPR: no visitor IP leaves to Google before consent) -->
+  <link rel="stylesheet" href="/fonts/fonts.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/legal.css">
+  <link rel="stylesheet" href="/css/mobile.css">
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SEO + AEO + GEO — Comprehensive Schema.org (Bulgaria-first)
+       Used by Google, Bing, ChatGPT, Perplexity, Claude, Gemini.
+       ════════════════════════════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/#organization",
+        "name": "Eternal Touch",
+        "alternateName": ["Eternal Touch Atelier", "Eternal Touch ателие"],
+        "url": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/images/logo-full.jpg",
+          "width": 1200,
+          "height": 1200,
+          "caption": "Eternal Touch logo"
+        },
+        "image": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/images/logo-full.jpg",
+        "email": "info@eternaltouch.it",
+        "telephone": "+359877876709",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ул. Самуил 3",
+          "addressLocality": "Бобов дол",
+          "postalCode": "2670",
+          "addressRegion": "Кюстендил",
+          "addressCountry": "BG"
+        },
+        "foundingLocation": {
+          "@type": "Place",
+          "name": "Бобов дол, България",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Бобов дол",
+            "addressCountry": "BG"
+          }
+        },
+        "founder": [
+          {"@type": "Person", "name": "Simona", "jobTitle": "Co-founder · Atelier", "telephone": "+359877876709"},
+          {"@type": "Person", "name": "Ivy",    "jobTitle": "Co-founder · Atelier", "telephone": "+393936943854"},
+          {"@type": "Person", "name": "Maya",   "jobTitle": "Co-founder · Atelier", "telephone": "+393921806719"}
+        ],
+        "knowsLanguage": ["bg", "it", "en"],
+        "areaServed": [
+          {"@type": "Country", "name": "Bulgaria"},
+          {"@type": "Country", "name": "Italy"},
+          {"@type": "Place",   "name": "European Union"}
+        ],
+        "sameAs": [
+          "https://www.instagram.com/eternal.touch__",
+          "https://www.facebook.com/people/Eternal-Touch/61589195154886/"
+        ],
+        "description": "<%- t('meta.description') %>",
+        "parentOrganization": {
+          "@type": "Organization",
+          "name": "Carbon Stealth VCC",
+          "url": "https://carbonstealth.eu",
+          "identifier": "BG208725180"
+        }
+      },
+      {
+        "@type": ["LocalBusiness", "Store"],
+        "@id": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/#localbusiness",
+        "name": "Eternal Touch — Ателие",
+        "image": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/images/logo-full.jpg",
+        "url": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>",
+        "telephone": "+359877876709",
+        "email": "info@eternaltouch.it",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ул. Самуил 3",
+          "addressLocality": "Бобов дол",
+          "postalCode": "2670",
+          "addressRegion": "Кюстендил",
+          "addressCountry": "BG"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 42.3597,
+          "longitude": 23.0033
+        },
+        "priceRange": "€€",
+        "currenciesAccepted": "BGN, EUR",
+        "paymentAccepted": "Bank transfer, Card",
+        "areaServed": [
+          {"@type": "Country", "name": "Bulgaria"},
+          {"@type": "Country", "name": "Italy"},
+          {"@type": "Place",   "name": "European Union"}
+        ],
+        "knowsLanguage": ["bg", "it", "en"],
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+          "opens": "09:00",
+          "closes": "18:00"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/#website",
+        "url": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>",
+        "name": "Eternal Touch",
+        "description": "<%- t('meta.description') %>",
+        "publisher": { "@id": "<%- (process.env.SITE_URL || 'https://eternaltouch.it') %>/#organization" },
+        "inLanguage": ["bg", "it", "en"]
+      }
+      <%- typeof extraSchemaGraph !== 'undefined' ? ',' + extraSchemaGraph : '' %>
+    ]
+  }
+  </script>
+
+  <%- typeof structuredData !== 'undefined' ? structuredData : '' %>
+
+  <%- typeof extraStyles !== 'undefined' ? extraStyles : '' %>
+</head>
+<body>
+  <a href="#main" class="skip-link"><%= t('common.skipToContent') %></a>
+
+  <%- include('../partials/header') %>
+
+  <main id="main" class="page-content">
+    <%- body %>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <%- include('../partials/cookie-banner') %>
+
+  <script src="/js/main.js" defer></script>
+  <script src="/js/cookie-consent.js" defer></script>
+  <%- typeof extraScripts !== 'undefined' ? extraScripts : '' %>
+</body>
+</html>

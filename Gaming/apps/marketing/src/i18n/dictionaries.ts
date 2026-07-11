@@ -131,7 +131,7 @@ const bg: Dict = {
     playNow: "Играй сега",
     browseGames: "Разгледай игрите",
     stats: { games: "игри", languages: "езика", tablesOpen: "маси отворени", toStart: "за да започнеш" },
-    statValues: { toStart: "0 лв." },
+    statValues: { toStart: "0 € / 0 лв." },
     features: {
       heading: "Защо АСО",
       sub: "Класиката, която обичаш — с качеството, което заслужава.",
@@ -231,7 +231,7 @@ const en: Dict = {
     playNow: "Play now",
     browseGames: "Browse the games",
     stats: { games: "games", languages: "languages", tablesOpen: "tables open", toStart: "to get started" },
-    statValues: { toStart: "€0" },
+    statValues: { toStart: "€0 / 0 BGN" },
     features: {
       heading: "Why АСО",
       sub: "The classics you love — with the quality they deserve.",
@@ -331,7 +331,7 @@ const it: Dict = {
     playNow: "Gioca ora",
     browseGames: "Esplora i giochi",
     stats: { games: "giochi", languages: "lingue", tablesOpen: "tavoli aperti", toStart: "per iniziare" },
-    statValues: { toStart: "€0" },
+    statValues: { toStart: "€0 / 0 BGN" },
     features: {
       heading: "Perché АСО",
       sub: "I classici che ami — con la qualità che meritano.",

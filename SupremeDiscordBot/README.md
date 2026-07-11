@@ -91,7 +91,7 @@ The deploy script will:
 | `STRIPE_WEBHOOK_SECRET` | ⚠️ | From Stripe Dashboard → Webhooks |
 | `STRIPE_PRICE_ID` | ⚠️ | Monthly Premium recurring price |
 | `STRIPE_TRIAL_DAYS` | ➖ | Default `14`, set `0` to disable |
-| `ANTHROPIC_API_KEY` | ➖ | Required only for the AI auto-reply feature (Claude) |
+| `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash, free tier) |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
 | `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
 | `SENTRY_DSN` | ➖ | Error monitoring |
@@ -269,7 +269,7 @@ docker compose exec bot     npm test
 ### Premium (€9.99/server/month · 14-day free trial)
 - Unlimited panels, forms, questions
 - HTML transcripts (forever) + real PDF export (pdfkit) + CSV export
-- AI auto-replies (Anthropic Claude)
+- AI auto-replies (Google Gemini Flash)
 - Round-robin ticket assignment
 - White-label bot (custom name, avatar, token — AES-256-GCM encrypted)
 
