@@ -601,6 +601,17 @@ await test('SEO: JSON-LD екранира </script> (без HTML-инжекци�
   assert.doesNotMatch(siteJsonLd('https://vizitka-bg.com'), /<\/script>/i);
 });
 
+await test('IndexNow: publicUrls съдържа статичните + публичните визитки', async () => {
+  const { publicUrls } = await import('../src/indexnow.js');
+  const urls = publicUrls('https://vizitka-bg.com');
+  assert.ok(urls.includes('https://vizitka-bg.com/'), 'началната');
+  assert.ok(urls.includes('https://vizitka-bg.com/privacy'), 'правните страници');
+  assert.ok(
+    urls.every((u) => u.startsWith('https://vizitka-bg.com/')),
+    'всички URL са с публичния домейн'
+  );
+});
+
 await test('Мастилко → Визитка: prefill попълва профила (без имейл)', async () => {
   jar.clear();
   const res = await request('/register', {
