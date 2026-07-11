@@ -50,13 +50,23 @@ export const warriorBasic: Timeline = {
       k(0.28, 0.6, 'cubicOut'),
       k(0.60, 0, 'cubicInOut'),
     ]),
-    // Step-in then strike then recoil
+    // Step-in then strike then recoil, settling with an elastic overshoot
+    // (secondary motion — the fighter regains balance instead of snapping
+    // to rest, which reads as weight).
     track('root.attacker.x', [
       k(0.00, 0),
       k(0.18, -0.35, 'cubicOut'),
       k(0.35, REACH * 0.55, 'cubicOut'),
       k(0.60, -0.30, 'cubicInOut'),
-      k(0.95, 0, 'cubicInOut'),
+      k(0.95, 0, 'elasticOut'),
+    ]),
+    // Anticipation crouch-load → push up through the strike → settle. The
+    // weight drop before the lunge is what sells the swing's mass.
+    track('root.attacker.y', [
+      k(0.00, 0),
+      k(0.14, -0.10, 'cubicOut'),   // load: dip before commit
+      k(0.35, 0.06, 'expoOut'),     // drive up into the strike
+      k(0.62, 0, 'cubicInOut'),
     ]),
     // Torso wind-up twist (rig has Armature so bone manipulation is at
     // least attempted; if discovery fails the cache stores null and the
@@ -120,12 +130,19 @@ export const rangerBasic: Timeline = {
       k(0.45, 0.6, 'cubicOut'),     // pan to target on release
       k(0.70, 0, 'cubicInOut'),
     ]),
-    // Half-step back during draw, no big lunge
+    // Half-step back during draw, recoil kick on release, elastic settle
     track('root.attacker.x', [
       k(0.00, 0),
-      k(0.30, -0.15, 'cubicOut'),
-      k(0.45, 0, 'cubicOut'),
-      k(0.95, 0, 'linear'),
+      k(0.30, -0.15, 'cubicOut'),   // draw pull-back (anticipation)
+      k(0.45, 0, 'cubicOut'),        // release
+      k(0.53, -0.10, 'cubicOut'),    // shoulder recoil kick
+      k(0.80, 0, 'elasticOut'),      // settle
+    ]),
+    // Brace: sink slightly into the draw for a planted stance.
+    track('root.attacker.y', [
+      k(0.00, 0),
+      k(0.30, -0.06, 'cubicOut'),
+      k(0.55, 0, 'cubicInOut'),
     ]),
     track('bone.attacker.torsoYaw', [
       k(0.00, 0),
@@ -193,16 +210,20 @@ export const mageBasic: Timeline = {
       k(0.55, 2.0, 'cubicOut'),     // look up at the beam
       k(1.10, CAM_BASE.ly, 'cubicInOut'),
     ]),
-    // Mage half-step forward + staff lift
+    // Mage half-step forward + staff lift, elastic settle after release
     track('root.attacker.x', [
       k(0.00, 0),
       k(0.30, -0.15, 'cubicOut'),
-      k(0.95, 0, 'cubicInOut'),
+      k(0.75, 0.05, 'cubicOut'),    // recoil forward as the beam fires
+      k(0.95, 0, 'elasticOut'),
     ]),
+    // Gather-crouch → float up on the cast → settle. The dip before the
+    // rise reads as drawing in power before releasing it.
     track('root.attacker.y', [
       k(0.00, 0),
-      k(0.30, 0.15, 'cubicOut'),
-      k(0.65, 0, 'cubicInOut'),
+      k(0.16, -0.07, 'cubicOut'),   // gather
+      k(0.35, 0.15, 'expoOut'),     // float up on the cast
+      k(0.70, 0, 'cubicInOut'),
     ]),
     // Target lifted by the beam, then dropped
     track('root.target.y', [
@@ -260,13 +281,20 @@ export const rogueBasic: Timeline = {
       k(0.25, 0.7, 'expoOut'),      // whip-pan to target
       k(0.55, 0, 'cubicInOut'),
     ]),
-    // Shadow-step: dive at start, blink to target
+    // Shadow-step: dive at start, blink to target, elastic settle back
     track('root.attacker.x', [
       k(0.00, 0),
       k(0.12, -0.45, 'cubicOut'),
       k(0.18, REACH * 0.7, 'expoOut'),   // teleport-feel
       k(0.45, -0.2, 'cubicInOut'),
-      k(0.85, 0, 'cubicInOut'),
+      k(0.85, 0, 'elasticOut'),          // snap-back overshoot
+    ]),
+    // Fast crouch-coil before the blink, light landing bob after.
+    track('root.attacker.y', [
+      k(0.00, 0),
+      k(0.10, -0.08, 'expoOut'),   // coil
+      k(0.18, 0.05, 'expoOut'),    // spring into the step
+      k(0.50, 0, 'cubicInOut'),
     ]),
     track('bone.attacker.torsoYaw', [
       k(0.00, 0),
