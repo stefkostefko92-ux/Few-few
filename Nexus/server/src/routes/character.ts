@@ -8,6 +8,7 @@ import { loadEquipped } from '../game/equipment';
 import { STAT_KEYS, parseCounts, nextUpgradeCost, batchCost, type StatKey } from '../game/upgrade';
 import type { Character, CharacterClass, InventoryEntry, Item } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
+import { checkText } from '../lib/textFilter';
 
 const router = Router();
 router.use(authRequired);
@@ -26,6 +27,14 @@ router.post('/create', (req, res) => {
     return;
   }
   const { name, class: cls, gender, portrait } = parse.data;
+  // DSA чл. 28 — филтър за нецензурни/омраза/имперсонация в публично име.
+  // Генерично съобщение (не издаваме коя дума, за да не учим заобикаляне).
+  const nameCheck = checkText(name, 'name');
+  if (!nameCheck.ok) {
+    logFromRequest(req, { category: 'moderation', action: 'name_blocked', level: 'warn', message: `blocked character name (${nameCheck.category})` });
+    res.status(400).json({ error: 'That name isn’t allowed. Please choose another.' });
+    return;
+  }
   const db = getDb();
   // Enforce one character per account.
   const owned = db.prepare('SELECT id, name FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number; name: string } | undefined;

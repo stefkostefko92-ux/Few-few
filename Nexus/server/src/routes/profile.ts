@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { AVATARS, FRAMES, findAvatar, findFrame } from '../seed/cosmetics';
 import { logFromRequest } from '../lib/logger';
+import { checkText } from '../lib/textFilter';
 import type { Character } from '../types/domain';
 
 const router = Router();
@@ -58,6 +59,12 @@ router.post('/rename', (req, res) => {
     res.status(400).json({ error: 'Invalid name' });
     return;
   }
+  const nameCheck = checkText(parse.data.name, 'name');
+  if (!nameCheck.ok) {
+    logFromRequest(req, { category: 'moderation', action: 'name_blocked', level: 'warn', message: `blocked rename (${nameCheck.category})` });
+    res.status(400).json({ error: 'That name isn’t allowed. Please choose another.' });
+    return;
+  }
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
   if (!char) {
@@ -97,6 +104,15 @@ router.post('/cosmetics', (req, res) => {
   if (!parse.success) {
     res.status(400).json({ error: parse.error.flatten() });
     return;
+  }
+  // Публично bio → филтрирай като свободен текст (вграждане).
+  if (parse.data.bio !== undefined && parse.data.bio.trim() !== '') {
+    const bioCheck = checkText(parse.data.bio, 'text');
+    if (!bioCheck.ok) {
+      logFromRequest(req, { category: 'moderation', action: 'bio_blocked', level: 'warn', message: `blocked bio (${bioCheck.category})` });
+      res.status(400).json({ error: 'Your bio contains content that isn’t allowed.' });
+      return;
+    }
   }
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;

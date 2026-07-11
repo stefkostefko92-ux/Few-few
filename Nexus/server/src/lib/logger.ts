@@ -17,7 +17,7 @@ import { getDb } from '../db';
 export type LogCategory =
   | 'auth' | 'character' | 'combat' | 'inventory' | 'market' | 'guild'
   | 'payment' | 'admin' | 'daily' | 'wheel' | 'achievement' | 'camp'
-  | 'system' | 'security' | 'dsa';
+  | 'system' | 'security' | 'dsa' | 'moderation';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
