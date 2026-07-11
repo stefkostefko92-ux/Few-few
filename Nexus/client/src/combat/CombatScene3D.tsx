@@ -277,6 +277,95 @@ function magicCircleTexture(tint: string): THREE.CanvasTexture {
   return tex;
 }
 
+/**
+ * Soft round particle sprite — a radial white→transparent falloff.
+ * Без него THREE.PointsMaterial рисува голите точки като ТВЪРДИ КВАДРАТИ
+ * (виждаше се на всеки impact/defeat burst). С тази текстура като `map`
+ * (+ AdditiveBlending: src = SrcAlpha, dst = One) alpha-каналът модулира
+ * приноса → меки кръгли искри вместо квадратчета. Модул-левъл singleton,
+ * споделя се от всички бустове; disposed в unmount cleanup.
+ */
+let _softParticleTex: THREE.CanvasTexture | null = null;
+function softParticleTexture(): THREE.CanvasTexture {
+  if (_softParticleTex) return _softParticleTex;
+  const S = 64;
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  // Плътно ядро, бърз, но мек спад към прозрачен ръб.
+  g.addColorStop(0.0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.25, 'rgba(255,255,255,0.85)');
+  g.addColorStop(0.55, 'rgba(255,255,255,0.28)');
+  g.addColorStop(1.0, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, S, S);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  _softParticleTex = tex;
+  return tex;
+}
+
+/**
+ * Вертикален градиент за лъча (beam column) при магия: ярко в основата
+ * (при магическия кръг), меко избледняващо към върха. Преди това лъчът
+ * беше плътен additive цилиндър с opacity 0.7 × DoubleSide → двойно
+ * събиране + bloom го изпичаше до чисто БЯЛО и заличаваше целта. Сега
+ * alpha-каналът дава форма на светлинен сноп, а не солиден стълб.
+ */
+let _beamGradientTex: THREE.CanvasTexture | null = null;
+function beamGradientTexture(): THREE.CanvasTexture {
+  if (_beamGradientTex) return _beamGradientTex;
+  const W = 8, H = 128;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d')!;
+  // CanvasTexture flipY=true → текстурно v=0 чете ДОЛНИЯ canvas ред.
+  // CylinderGeometry: v=0 е долната шапка (основата, при магическия кръг).
+  // За ярко в ОСНОВАТА → долният canvas ред плътен, горният прозрачен.
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0.0, 'rgba(255,255,255,0)');    // canvas връх → v=1 (връх на лъча) прозрачен
+  g.addColorStop(0.45, 'rgba(255,255,255,0.35)');
+  g.addColorStop(0.85, 'rgba(255,255,255,0.9)');
+  g.addColorStop(1.0, 'rgba(255,255,255,1)');    // canvas дъно → v=0 (основа) плътно
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  _beamGradientTex = tex;
+  return tex;
+}
+
+/**
+ * Градиент за „god-ray“ конуса при impact. Конусът е завъртян на π (върхът
+ * сочи към земята при точката на удара, широката шапка е горе). Иска ярко
+ * при ВЪРХА (v=1, при земята) и разтваряне към широката горна шапка (v=0),
+ * иначе широкият additive диск горе се изпичаше до бяло. Обратна ориентация
+ * спрямо beamGradientTexture заради завъртането.
+ */
+let _godRayGradientTex: THREE.CanvasTexture | null = null;
+function godRayGradientTexture(): THREE.CanvasTexture {
+  if (_godRayGradientTex) return _godRayGradientTex;
+  const W = 8, H = 128;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d')!;
+  // flipY: canvas връх (y=0) → v=1 (върхът на конуса, при земята) = плътно.
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0.0, 'rgba(255,255,255,0.95)'); // v=1 (при земята) — ярко
+  g.addColorStop(0.4, 'rgba(255,255,255,0.4)');
+  g.addColorStop(1.0, 'rgba(255,255,255,0)');    // v=0 (широка горна шапка) — прозрачно
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  _godRayGradientTex = tex;
+  return tex;
+}
+
 /** 0xRRGGBB int + alpha → `rgba(r,g,b,a)` string for canvas gradients. */
 function hexA(color: number, alpha: number): string {
   const r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
@@ -1777,7 +1866,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const pmat = new THREE.PointsMaterial({
-      size: 0.18, vertexColors: true, transparent: true,
+      size: 0.20, vertexColors: true, transparent: true,
+      // Мека кръгла спрайт-текстура — иначе точките са твърди квадрати.
+      map: softParticleTexture(), alphaTest: 0.01,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
     });
     const pts = new THREE.Points(geo, pmat);
@@ -1848,11 +1939,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       m.userData = { kind: 'magicCircle', life: 0, max: 1.1 };
       fxGroup.add(m);
 
-      // Vertical beam column
+      // Vertical beam column — по-тесен светлинен сноп с вертикален
+      // градиент (ярко в основата, избледнява към върха). По-рано плътен
+      // additive цилиндър изпичаше целта до бяло.
       const beam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.45, 0.7, 5.5, 24, 1, true),
+        new THREE.CylinderGeometry(0.30, 0.5, 5.5, 24, 1, true),
         new THREE.MeshBasicMaterial({
-          color, transparent: true, opacity: 0.55,
+          color, map: beamGradientTexture(), transparent: true, opacity: 0.34,
           blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
         }),
       );
@@ -2078,7 +2171,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     function godRay(x: number, z: number, color: number, height: number) {
       const geo = new THREE.ConeGeometry(0.8, height, 16, 1, true);
       const mat = new THREE.MeshBasicMaterial({
-        color, transparent: true, opacity: 0.35,
+        color, map: godRayGradientTexture(), transparent: true, opacity: 0.26,
         blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
       });
       const cone = new THREE.Mesh(geo, mat);
@@ -2469,7 +2562,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           obj.scale.set(s, s, s);
           mat.opacity = k < 0.3 ? k / 0.3 : 1 - (k - 0.3) / 0.7;
         } else if (ud.kind === 'beam') {
-          mat.opacity = k < 0.3 ? (k / 0.3) * 0.7 : (1 - (k - 0.3) / 0.7) * 0.7;
+          mat.opacity = k < 0.3 ? (k / 0.3) * 0.42 : (1 - (k - 0.3) / 0.7) * 0.42;
           obj.scale.x = 1 + Math.sin(now * 0.02) * 0.1;
           obj.scale.z = 1 + Math.cos(now * 0.02) * 0.1;
         } else if (ud.kind === 'arc' || ud.kind === 'streak') {
@@ -2506,7 +2599,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           mat.opacity = (1 - k) * 0.45;
         } else if (ud.kind === 'godRay') {
           // Flicker the opacity + slight rotation
-          mat.opacity = (1 - k) * 0.4 * (0.85 + Math.sin(now * 0.05) * 0.15);
+          mat.opacity = (1 - k) * 0.28 * (0.85 + Math.sin(now * 0.05) * 0.15);
           obj.rotation.y += dt * 1.8;
         }
         if (ud.life >= ud.max) {
@@ -2857,6 +2950,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       }
       sigilCache.forEach((t) => t.dispose());
       sigilCache.clear();
+      // Модул-левъл singleton текстури (мека частица + градиент за лъча):
+      // освободи GPU манипулатора и нулирай реф-а, за да се пресъздадат
+      // при следващ mount вместо да сочат към освободен ресурс.
+      _softParticleTex?.dispose(); _softParticleTex = null;
+      _beamGradientTex?.dispose(); _beamGradientTex = null;
+      _godRayGradientTex?.dispose(); _godRayGradientTex = null;
       // Renderer canvas removal is handled inside backend.dispose() now;
       // this used to be the direct unmount call back when renderer was
       // a non-null local. Kept as a no-op safety net for any leftover
