@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Déjà — паметта на браузъра ти",
+  "short_name": "Déjà",
+  "description": "Семантично търсене в страниците, които си чел. Всичко се случва локално — нищо не напуска устройството ти.",
+  "version": "0.1.0",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "offscreen", "unlimitedStorage"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Déjà",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "open-search": {
+      "suggested_key": { "default": "Alt+Shift+D" },
+      "description": "Отвори търсенето на Déjà"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
