@@ -18,11 +18,17 @@
     "message": "Nothing surfaced. Either you never read it, or Déjà hasn't memorised it yet."
   },
   "statusResults": { "message": "$COUNT$ memories:", "placeholders": { "count": { "content": "$1" } } },
+  "statusResultsOne": { "message": "1 memory:" },
+  "errNoResponse": { "message": "memory didn't answer — try again" },
+  "recallVivid": { "message": "vivid memory" },
+  "recallHazy": { "message": "hazy memory" },
+  "recallFaint": { "message": "distant memory" },
   "statusError": { "message": "Search failed: $ERR$", "placeholders": { "err": { "content": "$1" } } },
   "pagesInMemory": {
     "message": "In memory: $COUNT$ pages.",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "pagesInMemoryOne": { "message": "In memory: 1 page." },
   "similarity": { "message": "similarity $SCORE$", "placeholders": { "score": { "content": "$1" } } },
   "readOn": { "message": "read on $DATE$", "placeholders": { "date": { "content": "$1" } } },
 
@@ -30,12 +36,13 @@
     "message": "$COUNT$ pages in memory",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "popupPagesOne": { "message": "1 page in memory" },
   "popupSleeping": { "message": "memory is asleep" },
   "popupWaking": { "message": "memory is waking up…" },
   "popupOpenSearch": { "message": "Open search" },
   "popupPause": { "message": "Pause memorising" },
   "popupClear": { "message": "Clear memory" },
-  "popupClearConfirm": { "message": "Delete everything memorised? There is no undo." },
+  "popupClearConfirm": { "message": "Delete everything memorised? No going back." },
   "popupOptions": { "message": "Settings" },
 
   "optionsTitle": { "message": "Déjà — settings" },
@@ -56,5 +63,22 @@
     "message": "Empty = huggingface.co. Set your own server for offline/corporate environments."
   },
   "optSave": { "message": "Save" },
-  "optSaved": { "message": "Saved ✓" }
+  "optSaved": { "message": "Saved ✓" },
+  "optModelHostInvalid": { "message": "The mirror must be an https:// address" },
+
+  "welcomeHeading": { "message": "Hi. I'm your browser's memory." },
+  "welcomeIntro": {
+    "message": "From this moment I remember what you read, so you can find it later by meaning — in your own words, not the exact title."
+  },
+  "welcomePoint1": {
+    "message": "Everything happens on your device. No servers, no cloud, no data sent — anywhere, ever."
+  },
+  "welcomePoint2": {
+    "message": "Mail, chats, logins and banking are never memorised. Note: I can't recognise sensitive topics by address — for those, use pause or your own list in settings."
+  },
+  "welcomePoint3": {
+    "message": "You're in charge: pause with one click, \"Clear memory\" deletes everything, and optionally I forget automatically after a few months."
+  },
+  "welcomeCta": { "message": "Open search" },
+  "welcomeOptions": { "message": "Settings" }
 }

@@ -15,14 +15,20 @@
     "message": "Scavo nella memoria… (la prima ricerca carica il modello, ~10-30 s)"
   },
   "statusEmpty": {
-    "message": "Niente in superficie. O non l'hai mai letto, o Déjà non l'ha ancora memorizzato."
+    "message": "Non è emerso nulla. O non l'hai mai letto, o Déjà non l'ha ancora memorizzato."
   },
   "statusResults": { "message": "$COUNT$ ricordi:", "placeholders": { "count": { "content": "$1" } } },
+  "statusResultsOne": { "message": "1 ricordo:" },
+  "errNoResponse": { "message": "la memoria non ha risposto — riprova" },
+  "recallVivid": { "message": "ricordo vivido" },
+  "recallHazy": { "message": "ricordo sfocato" },
+  "recallFaint": { "message": "ricordo lontano" },
   "statusError": { "message": "Ricerca non riuscita: $ERR$", "placeholders": { "err": { "content": "$1" } } },
   "pagesInMemory": {
     "message": "In memoria: $COUNT$ pagine.",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "pagesInMemoryOne": { "message": "In memoria: 1 pagina." },
   "similarity": { "message": "somiglianza $SCORE$", "placeholders": { "score": { "content": "$1" } } },
   "readOn": { "message": "letto il $DATE$", "placeholders": { "date": { "content": "$1" } } },
 
@@ -30,12 +36,13 @@
     "message": "$COUNT$ pagine in memoria",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "popupPagesOne": { "message": "1 pagina in memoria" },
   "popupSleeping": { "message": "la memoria dorme" },
   "popupWaking": { "message": "la memoria si sta svegliando…" },
   "popupOpenSearch": { "message": "Apri la ricerca" },
   "popupPause": { "message": "Pausa memorizzazione" },
   "popupClear": { "message": "Svuota la memoria" },
-  "popupClearConfirm": { "message": "Eliminare tutto ciò che è stato memorizzato? Non si può annullare." },
+  "popupClearConfirm": { "message": "Eliminare tutto ciò che è stato memorizzato? Non si torna indietro." },
   "popupOptions": { "message": "Impostazioni" },
 
   "optionsTitle": { "message": "Déjà — impostazioni" },
@@ -56,5 +63,22 @@
     "message": "Vuoto = huggingface.co. Imposta un tuo server per ambienti offline/aziendali."
   },
   "optSave": { "message": "Salva" },
-  "optSaved": { "message": "Salvato ✓" }
+  "optSaved": { "message": "Salvato ✓" },
+  "optModelHostInvalid": { "message": "Il mirror deve essere un indirizzo https://" },
+
+  "welcomeHeading": { "message": "Ciao. Sono la memoria del tuo browser." },
+  "welcomeIntro": {
+    "message": "Da questo momento ricordo ciò che leggi, così potrai ritrovarlo per significato — con parole tue, non con il titolo esatto."
+  },
+  "welcomePoint1": {
+    "message": "Tutto avviene sul tuo dispositivo. Niente server, niente cloud, nessun dato inviato — da nessuna parte, mai."
+  },
+  "welcomePoint2": {
+    "message": "Posta, chat, accessi e servizi bancari non vengono mai memorizzati. Attenzione: non posso riconoscere gli argomenti sensibili dall'indirizzo — per quelli usa la pausa o la tua lista nelle impostazioni."
+  },
+  "welcomePoint3": {
+    "message": "Comandi tu: pausa con un clic, «Svuota la memoria» elimina tutto e, se vuoi, dimentico automaticamente dopo qualche mese."
+  },
+  "welcomeCta": { "message": "Apri la ricerca" },
+  "welcomeOptions": { "message": "Impostazioni" }
 }

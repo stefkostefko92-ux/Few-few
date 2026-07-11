@@ -20,6 +20,7 @@ await esbuild.build({
     search: 'src/search/search.js',
     popup: 'src/popup/popup.js',
     options: 'src/options/options.js',
+    welcome: 'src/welcome/welcome.js',
   },
   format: 'esm',
   outdir: dist,
@@ -42,6 +43,8 @@ copyFileSync('src/popup/popup.html', `${dist}/popup.html`);
 copyFileSync('src/popup/popup.css', `${dist}/popup.css`);
 copyFileSync('src/options/options.html', `${dist}/options.html`);
 copyFileSync('src/options/options.css', `${dist}/options.css`);
+copyFileSync('src/welcome/welcome.html', `${dist}/welcome.html`);
+copyFileSync('src/welcome/welcome.css', `${dist}/welcome.css`);
 cpSync('icons', `${dist}/icons`, { recursive: true });
 cpSync('_locales', `${dist}/_locales`, { recursive: true });
 

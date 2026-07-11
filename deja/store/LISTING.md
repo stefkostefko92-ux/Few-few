@@ -21,6 +21,9 @@ on-device. That is its single purpose; every permission serves it.
 
 **Remote code:** none. ONNX Runtime WASM ships inside the package. Model
 weights (data, not code) are fetched once from Hugging Face and cached locally.
+That one-time download necessarily reveals the user's IP address to Hugging
+Face's CDN (disclosed in the privacy policy); users can point the extension at
+a self-hosted mirror instead (Settings → model mirror).
 
 ## Кратко описание (132 знака, BG)
 

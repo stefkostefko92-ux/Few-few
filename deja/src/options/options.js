@@ -35,13 +35,20 @@ async function load() {
 }
 
 saveBtn.addEventListener('click', async () => {
+  const modelHost = modelHostEl.value.trim();
+  // само https (или localhost за разработка) — http огледало би течало заявки в чист текст
+  if (modelHost && !/^https:\/\//.test(modelHost) && !/^http:\/\/localhost[:/]/.test(modelHost)) {
+    savedEl.textContent = t('optModelHostInvalid');
+    setTimeout(() => (savedEl.textContent = ''), 3000);
+    return;
+  }
   await patchSettings({
     retentionMonths: Number(retentionEl.value) || 0,
     userDenylist: denylistEl.value
       .split('\n')
       .map((line) => line.trim())
       .filter(Boolean),
-    modelHost: modelHostEl.value.trim(),
+    modelHost,
   });
   savedEl.textContent = t('optSaved');
   setTimeout(() => (savedEl.textContent = ''), 2000);

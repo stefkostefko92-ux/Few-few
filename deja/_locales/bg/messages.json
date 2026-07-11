@@ -18,11 +18,17 @@
     "message": "Нищо не изплува. Или не си го чел, или Déjà още не го е запомнил."
   },
   "statusResults": { "message": "$COUNT$ спомена:", "placeholders": { "count": { "content": "$1" } } },
+  "statusResultsOne": { "message": "1 спомен:" },
+  "errNoResponse": { "message": "паметта не отговори — опитай пак" },
+  "recallVivid": { "message": "ярък спомен" },
+  "recallHazy": { "message": "мъгляв спомен" },
+  "recallFaint": { "message": "далечен спомен" },
   "statusError": { "message": "Грешка при търсенето: $ERR$", "placeholders": { "err": { "content": "$1" } } },
   "pagesInMemory": {
     "message": "В паметта: $COUNT$ страници.",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "pagesInMemoryOne": { "message": "В паметта: 1 страница." },
   "similarity": { "message": "близост $SCORE$", "placeholders": { "score": { "content": "$1" } } },
   "readOn": { "message": "четено на $DATE$", "placeholders": { "date": { "content": "$1" } } },
 
@@ -30,6 +36,7 @@
     "message": "$COUNT$ страници в паметта",
     "placeholders": { "count": { "content": "$1" } }
   },
+  "popupPagesOne": { "message": "1 страница в паметта" },
   "popupSleeping": { "message": "паметта спи" },
   "popupWaking": { "message": "паметта се събужда…" },
   "popupOpenSearch": { "message": "Отвори търсенето" },
@@ -58,5 +65,22 @@
     "message": "Празно = huggingface.co. Задай собствен сървър за офлайн/фирмени среди."
   },
   "optSave": { "message": "Запази" },
-  "optSaved": { "message": "Запазено ✓" }
+  "optSaved": { "message": "Запазено ✓" },
+  "optModelHostInvalid": { "message": "Огледалото трябва да е https:// адрес" },
+
+  "welcomeHeading": { "message": "Здравей. Аз съм паметта на браузъра ти." },
+  "welcomeIntro": {
+    "message": "От този момент запомням какво четеш, за да го намираш после по смисъл — със свои думи, не с точното заглавие."
+  },
+  "welcomePoint1": {
+    "message": "Всичко се случва на твоето устройство. Без сървъри, без облак, без изпращане на данни — никъде, никога."
+  },
+  "welcomePoint2": {
+    "message": "Поща, чатове, вход и банкиране никога не се запомнят. Внимавай: страници на чувствителни теми не мога да разпозная по адрес — за тях ползвай пауза или свой списък в настройките."
+  },
+  "welcomePoint3": {
+    "message": "Ти командваш: пауза с един клик, „Изчисти паметта“ трие всичко, а по избор забравям автоматично след няколко месеца."
+  },
+  "welcomeCta": { "message": "Отвори търсенето" },
+  "welcomeOptions": { "message": "Настройки" }
 }

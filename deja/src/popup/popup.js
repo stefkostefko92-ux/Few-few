@@ -14,7 +14,11 @@ const optionsLink = document.getElementById('options');
 async function refresh() {
   try {
     const res = await chrome.runtime.sendMessage({ type: 'deja:stats' });
-    stats.textContent = res?.ok ? t('popupPages', [String(res.pages)]) : t('popupSleeping');
+    stats.textContent = res?.ok
+      ? res.pages === 1
+        ? t('popupPagesOne')
+        : t('popupPages', [String(res.pages)])
+      : t('popupSleeping');
   } catch {
     stats.textContent = t('popupWaking');
   }

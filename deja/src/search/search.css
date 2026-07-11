@@ -14,7 +14,15 @@
 }
 
 body {
-  background: var(--bg);
+  /* „дълбочина“: леко виолетово около търсачката, потъмняване към дъното */
+  background:
+    radial-gradient(
+      1100px 480px at 50% 0,
+      color-mix(in oklab, var(--accent) 7%, var(--bg)),
+      var(--bg) 62%
+    ),
+    linear-gradient(var(--bg), #0a0a10);
+  background-attachment: fixed;
   color: var(--text);
   font-family:
     system-ui,
@@ -104,10 +112,26 @@ body {
   gap: 12px;
 }
 
+/* спомените изплуват от дълбокото — стъпаловидно, еднократно */
+@keyframes surface {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .result {
+  animation: surface 0.45s ease-out both;
   background: var(--panel);
   border: 1px solid var(--border);
+  /* силата на спомена (--recall 0..1) личи по лентата вляво и лекия ореол */
+  border-left: 3px solid rgba(139, 124, 246, calc(0.15 + var(--recall, 0) * 0.85));
   border-radius: 12px;
+  box-shadow: 0 0 calc(var(--recall, 0) * 22px) rgba(139, 124, 246, calc(var(--recall, 0) * 0.18));
   padding: 14px 16px;
 }
 
@@ -142,4 +166,43 @@ body {
   color: var(--muted);
   font-size: 12px;
   margin-top: 8px;
+}
+
+/* паметта „диша“, докато рови (бавно, далеч под праговете за фоточувствителност) */
+@keyframes breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(139, 124, 246, 0.22);
+  }
+}
+
+.searchbox.searching #query {
+  animation: breathe 2.4s ease-in-out infinite;
+  border-color: var(--accent);
+}
+
+/* точката на логото пулсира едва доловимо — пулс на паметта */
+@keyframes memPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.logo .dot {
+  animation: memPulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result,
+  .searchbox.searching #query,
+  .logo .dot {
+    animation: none;
+  }
 }

@@ -32,8 +32,17 @@ search.html → deja:search → embed на заявката → dot product по
 ```
 
 Съобщенията между контекстите: `deja:page`, `deja:search`, `deja:stats`,
-`deja:clear` (към background) и `{target:'deja-offscreen', type:'embed'}`
-(към offscreen). Offscreen се създава лениво през `ensureOffscreen()`.
+`deja:clear` (към background). Embed минава през **дълготраен Port**
+(`chrome.runtime.connect({name:'deja-embed'})`) — отвореният порт държи SW жив,
+докато offscreen тегли модела/смята (еднократен sendMessage НЕ ресетира
+idle-таймера и SW умираше след 30 сек при първото теглене). Offscreen се
+създава лениво (`ensureOffscreen()`) и се **затваря при бездействие** (alarm
+`deja-offscreen-gc`, 10 мин без embed) — иначе моделът държи ~120MB RAM вечно.
+
+**Устойчива опашка:** чакащите страници живеят в `chrome.storage.local`
+(`pending`), не в паметта на SW — рестарт не губи нищо; drain при всяко
+събуждане, до 3 опита на страница. Правило: състоянието НИКОГА само в паметта
+на SW.
 
 ## Команди
 
@@ -80,8 +89,25 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 - CWS материали: `store/LISTING.md` (single purpose, обосновка на права,
   описания) + `store/screenshots/` (генерирани с scratchpad Playwright скрипт).
 
+## Направено след v0.2.0 (v0.3.0 — агентски одит)
+
+- Port keepalive + устойчива опашка + offscreen GC (Хромаджията H1/H2/M3).
+- Search ranking фикс: групиране по целия сортиран списък, не топ-40 парчета;
+  минимални обекти при скориране; guard за чужда размерност (Кодаджията).
+- Сериализация на embed в offscreen (застъпени ONNX run-ове).
+- Welcome страница при инсталация (прозрачност, CWS friction ↓).
+- PRIVACY.md v1.1: честно IP разкриване за HF, ограничение на denylist по тема,
+  импресум скелет, дата/версия (Правния Разбирач B1/B3/M1/H2).
+- Plural форми (1 спомен/страница), IT „изплуване“ образ, валидация на modelHost.
+- Дизайн: „изплуващи“ резултати, --recall сила на спомена, дълбочинен фон,
+  дишащо търсене — ванилен CSS, prefers-reduced-motion уважен.
+
 ## Пътна карта (по ред)
 
-1. HNSW/IVF индекс при >50k парчета (сега: brute-force cursor, ОК до ~20k).
-2. Качване в Chrome Web Store (privacy policy URL на carbonstealth.eu — TODO).
-3. Firefox порт (webRequest няма нужда — само offscreen→background worker размяна).
+1. Страница „моята памет“: списък на страниците, изтриване поединично,
+   export/import на индекса (Хромаджията M2 — доверие + GDPR хигиена).
+2. HNSW/IVF индекс при >50k парчета (сега: brute-force cursor, ОК до ~20k).
+3. Качване в Chrome Web Store: публикувай PRIVACY (BG+EN) на
+   carbonstealth.eu/deja/privacy, попълни импресума (адрес+имейл), Data
+   Disclosure „No collection“ + трите сертификации (виж store/LISTING.md).
+4. Firefox порт.

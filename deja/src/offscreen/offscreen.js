@@ -36,17 +36,27 @@ function getExtractor(modelHost) {
   return extractorPromise;
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (!msg || msg.target !== 'deja-offscreen') return;
+// Сериализация: два застъпени run() върху една ONNX сесия нямат гаранции —
+// индексиране и търсене могат да пристигнат едновременно.
+let chain = Promise.resolve();
 
-  if (msg.type === 'embed') {
-    (async () => {
-      const extractor = await getExtractor(msg.modelHost);
-      const output = await extractor(msg.texts, { pooling: 'mean', normalize: true });
-      sendResponse({ ok: true, vectors: output.tolist() });
-    })().catch((err) => {
-      sendResponse({ ok: false, error: String(err?.message || err) });
-    });
-    return true;
-  }
+// Дълготраен Port вместо sendMessage: отвореният порт държи service worker-а
+// жив, докато тук тече дълга работа (първото теглене на модела е минути).
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'deja-embed') return;
+  port.onMessage.addListener((msg) => {
+    chain = chain
+      .then(async () => {
+        const extractor = await getExtractor(msg.modelHost);
+        const output = await extractor(msg.texts, { pooling: 'mean', normalize: true });
+        port.postMessage({ ok: true, vectors: output.tolist() });
+      })
+      .catch((err) => {
+        try {
+          port.postMessage({ ok: false, error: String(err?.message || err) });
+        } catch {
+          // портът вече е затворен — SW ще получи onDisconnect
+        }
+      });
+  });
 });
