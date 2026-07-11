@@ -587,6 +587,20 @@ await test('забравена парола: непознат имейл не и
   assert.equal(outbox.length, before, 'не трябва да се праща писмо за несъществуващ акаунт');
 });
 
+await test('SEO: JSON-LD екранира </script> (без HTML-инжекция)', async () => {
+  const { cardJsonLd, siteJsonLd } = await import('../src/seo.js');
+  const evil = {
+    display_name: '</script><meta http-equiv="refresh" content="0;url=//evil">',
+    slug: 'x',
+    headline: '',
+    is_public: 1,
+  };
+  const out = cardJsonLd(evil, 'https://vizitka-bg.com/p/x', 'https://vizitka-bg.com');
+  assert.doesNotMatch(out, /<\/script>/i, 'не бива да има суров </script> breakout');
+  assert.match(out, /\\u003c/, 'опасните знаци са екранирани като \\u003c');
+  assert.doesNotMatch(siteJsonLd('https://vizitka-bg.com'), /<\/script>/i);
+});
+
 await test('Мастилко → Визитка: prefill попълва профила (без имейл)', async () => {
   jar.clear();
   const res = await request('/register', {
