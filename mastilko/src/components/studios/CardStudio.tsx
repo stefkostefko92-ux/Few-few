@@ -652,7 +652,7 @@ export default function CardStudio() {
           <a
             href={vizitkaRegisterUrl(s)}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             className="btn-secondary inline-flex w-fit"
           >
             Направи я жива визитка →
