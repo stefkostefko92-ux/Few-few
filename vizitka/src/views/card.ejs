@@ -5,8 +5,8 @@
   <% if (isOwner && !profile.is_public) { %>
     <p class="alert alert-warn">Визитката е скрита — виждаш я само ти. Включи „публична“ от таблото.</p>
   <% } %>
-  <article class="vcard font-<%= profile.font %>">
-    <div class="vcard-top <%= profile.accent ? 'custom-accent' : 'theme-' + profile.theme %> <%= profile.cover ? 'has-cover' : '' %>">
+  <article class="vcard font-<%= profile.font %> <%= profile.accent ? 'custom-accent' : 'theme-' + profile.theme %>">
+    <div class="vcard-top <%= profile.cover ? 'has-cover' : '' %>">
       <% if (profile.cover) { %><img class="vcard-cover" src="/photo/<%= profile.cover %>" alt="" aria-hidden="true"><% } %>
       <div class="vcard-top-inner">
         <% if (profile.photo) { %>
@@ -20,77 +20,79 @@
       </div>
     </div>
 
-    <div class="vcard-actions">
-      <a class="btn btn-big" href="/p/<%= profile.slug %>/vizitka.vcf"><span aria-hidden="true">💾</span> Запази контакта</a>
-      <% if (profile.phone) { %><a class="btn" href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><span aria-hidden="true">📞</span> Обади се</a><% } %>
-    </div>
+    <div class="vcard-body">
+      <div class="vcard-actions">
+        <a class="btn btn-big" href="/p/<%= profile.slug %>/vizitka.vcf"><%- icon('download') %> Запази контакта</a>
+        <% if (profile.phone) { %><a class="btn btn-ghost" href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><%- icon('phone') %> Обади се</a><% } %>
+      </div>
 
-    <% if (links && links.length) { %>
-      <div class="vcard-links">
-        <% for (const l of links) { %>
-          <a class="link-btn-card" href="<%= l.url %>" rel="noopener nofollow" target="_blank">
-            <% if (l.icon) { %><span class="link-ico" aria-hidden="true"><%= l.icon %></span><% } %><%= l.label %>
-          </a>
+      <% if (links && links.length) { %>
+        <div class="vcard-links">
+          <% for (const l of links) { %>
+            <a class="link-btn-card" href="<%= l.url %>" rel="noopener nofollow" target="_blank">
+              <% if (l.icon) { %><span class="link-ico" aria-hidden="true"><%= l.icon %></span><% } else { %><%- icon('link', { size: 18 }) %><% } %><span><%= l.label %></span>
+            </a>
+          <% } %>
+        </div>
+      <% } %>
+
+      <ul class="vcard-list">
+        <% if (profile.phone) { %><li><%- icon('phone', { size: 18 }) %><div><span>Телефон</span><a href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><%= profile.phone %></a></div></li><% } %>
+        <% if (profile.contact_email) { %><li><%- icon('mail', { size: 18 }) %><div><span>Имейл</span><a href="mailto:<%= profile.contact_email %>"><%= profile.contact_email %></a></div></li><% } %>
+        <% if (profile.website) { %><li><%- icon('globe', { size: 18 }) %><div><span>Уеб</span><a href="<%= profile.website %>" rel="noopener nofollow" target="_blank"><%= profile.website.replace(/^https?:\/\//, '') %></a></div></li><% } %>
+        <% if (profile.address) { %><li><%- icon('pin', { size: 18 }) %><div><span>Адрес</span><span><%= profile.address %></span></div></li><% } %>
+      </ul>
+
+      <% if (profile.bio) { %><p class="bio"><%= profile.bio %></p><% } %>
+
+      <% if (profile.facebook || profile.instagram || profile.linkedin) { %>
+        <div class="socials">
+          <% if (profile.facebook) { %><a href="<%= profile.facebook %>" rel="noopener nofollow" target="_blank" aria-label="Facebook"><%- icon('facebook') %></a><% } %>
+          <% if (profile.instagram) { %><a href="<%= profile.instagram %>" rel="noopener nofollow" target="_blank" aria-label="Instagram"><%- icon('instagram') %></a><% } %>
+          <% if (profile.linkedin) { %><a href="<%= profile.linkedin %>" rel="noopener nofollow" target="_blank" aria-label="LinkedIn"><%- icon('linkedin') %></a><% } %>
+        </div>
+      <% } %>
+
+      <div class="vcard-qr">
+        <div class="qr-frame"><img src="/p/<%= profile.slug %>/qr.png" alt="QR код към тази визитка" width="150" height="150"></div>
+        <p class="muted small">Сподели визитката: дай този QR за сканиране.</p>
+        <% if (isOwner) { %>
+          <p><a class="link-btn" href="/p/<%= profile.slug %>/print"><%- icon('printer', { size: 18 }) %> Оформи и разпечатай (Мастилко)</a></p>
         <% } %>
       </div>
-    <% } %>
 
-    <ul class="vcard-list">
-      <% if (profile.phone) { %><li><span>Телефон</span><a href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><%= profile.phone %></a></li><% } %>
-      <% if (profile.contact_email) { %><li><span>Имейл</span><a href="mailto:<%= profile.contact_email %>"><%= profile.contact_email %></a></li><% } %>
-      <% if (profile.website) { %><li><span>Уеб</span><a href="<%= profile.website %>" rel="noopener nofollow" target="_blank"><%= profile.website.replace(/^https?:\/\//, '') %></a></li><% } %>
-      <% if (profile.address) { %><li><span>Адрес</span><span><%= profile.address %></span></li><% } %>
-    </ul>
-
-    <% if (profile.bio) { %><p class="bio"><%= profile.bio %></p><% } %>
-
-    <% if (profile.facebook || profile.instagram || profile.linkedin) { %>
-      <div class="socials">
-        <% if (profile.facebook) { %><a href="<%= profile.facebook %>" rel="noopener nofollow" target="_blank">Facebook</a><% } %>
-        <% if (profile.instagram) { %><a href="<%= profile.instagram %>" rel="noopener nofollow" target="_blank">Instagram</a><% } %>
-        <% if (profile.linkedin) { %><a href="<%= profile.linkedin %>" rel="noopener nofollow" target="_blank">LinkedIn</a><% } %>
-      </div>
-    <% } %>
-
-    <div class="vcard-qr">
-      <img src="/p/<%= profile.slug %>/qr.png" alt="QR код към тази визитка" width="140" height="140">
-      <p class="muted small">Сподели визитката: дай този QR за сканиране.</p>
-      <% if (isOwner) { %>
-        <p><a class="link-btn" href="/p/<%= profile.slug %>/print"><span aria-hidden="true">🖨️</span> Оформи и разпечатай (Мастилко)</a></p>
+      <% if (wallet && wallet.any) { %>
+        <div class="vcard-wallet">
+          <p class="muted small">Носи тази визитка в телефона си:</p>
+          <div class="wallet-badges">
+            <% if (wallet.apple) { %>
+              <a href="<%= wallet.apple %>" aria-label="Добави в Apple Wallet">
+                <img src="/badge-apple-wallet.svg" alt="" height="48">
+              </a>
+            <% } %>
+            <% if (wallet.google) { %>
+              <a href="<%= wallet.google %>" aria-label="Запази в Google Wallet">
+                <img src="/badge-google-wallet.svg" alt="" height="48">
+              </a>
+            <% } %>
+          </div>
+        </div>
+      <% } else if (isOwner && wallet && wallet.comingSoon) { %>
+        <div class="vcard-wallet is-soon">
+          <p class="muted small">Носи визитката в телефона си <span class="soon-chip">Скоро</span></p>
+          <div class="wallet-badges" aria-hidden="true">
+            <img src="/badge-apple-wallet.svg" alt="" height="48">
+            <img src="/badge-google-wallet.svg" alt="" height="48">
+          </div>
+          <p class="muted small">Apple Wallet и Google Wallet — работим по тях.</p>
+        </div>
       <% } %>
     </div>
-
-    <% if (wallet && wallet.any) { %>
-      <div class="vcard-wallet">
-        <p class="muted small">Носи тази визитка в телефона си:</p>
-        <div class="wallet-badges">
-          <% if (wallet.apple) { %>
-            <a href="<%= wallet.apple %>" aria-label="Добави в Apple Wallet">
-              <img src="/badge-apple-wallet.svg" alt="" height="48">
-            </a>
-          <% } %>
-          <% if (wallet.google) { %>
-            <a href="<%= wallet.google %>" aria-label="Запази в Google Wallet">
-              <img src="/badge-google-wallet.svg" alt="" height="48">
-            </a>
-          <% } %>
-        </div>
-      </div>
-    <% } else if (isOwner && wallet && wallet.comingSoon) { %>
-      <div class="vcard-wallet is-soon">
-        <p class="muted small">Носи визитката в телефона си <span class="soon-chip">Скоро</span></p>
-        <div class="wallet-badges" aria-hidden="true">
-          <img src="/badge-apple-wallet.svg" alt="" height="48">
-          <img src="/badge-google-wallet.svg" alt="" height="48">
-        </div>
-        <p class="muted small">Apple Wallet и Google Wallet — работим по тях.</p>
-      </div>
-    <% } %>
   </article>
   <p class="made-with muted small">Направено с <a href="/">Vizitka</a> — винаги актуалната визитка.</p>
   <p class="report muted small">
     Проблем с тази визитка (злоупотреба, представяне за друг)?
-    <a href="mailto:<%= company.email %>?subject=Сигнал за визитка /p/<%= profile.slug %>">Подай сигнал</a>.
+    <a href="mailto:<%= company.email %>?subject=Сигнал за визитка /p/<%= profile.slug %>"><%- icon('flag', { size: 15 }) %> Подай сигнал</a>.
   </p>
 </section>
 <%- include('partials/foot') %>

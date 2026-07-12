@@ -12,6 +12,7 @@ import { baseUrl } from './config.js';
 import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
 import { activeBanners, clickBanner } from './banners.js';
 import { indexNowKey } from './indexnow.js';
+import { icon } from './icons.js';
 import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
@@ -84,6 +85,7 @@ app.use((req, res, next) => {
   res.locals.currentPath = req.path;
   res.locals.company = COMPANY;
   res.locals.siteBase = baseUrl(req);
+  res.locals.icon = icon; // premium SVG иконки: <%- icon('phone') %>
   next();
 });
 

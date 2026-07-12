@@ -24,17 +24,36 @@ export function normalizeAccent(v) {
   return /^#[0-9a-fA-F]{6}$/.test(s) ? s.toLowerCase() : '';
 }
 
-// По-тъмен нюанс за градиента на заглавната лента (умножение по коефициент).
-function darken(hex, factor = 0.72) {
+const rgb = (hex) => {
   const n = parseInt(hex.slice(1), 16);
-  const r = Math.round(((n >> 16) & 255) * factor);
-  const g = Math.round(((n >> 8) & 255) * factor);
-  const b = Math.round((n & 255) * factor);
-  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+const hex = (r, g, b) =>
+  `#${((1 << 24) | (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b)).toString(16).slice(1)}`;
+
+// По-тъмен нюанс за градиента на заглавната лента (умножение по коефициент).
+function darken(h, factor = 0.72) {
+  const [r, g, b] = rgb(h);
+  return hex(r * factor, g * factor, b * factor);
 }
 
-// CSS за нонсирания <style> блок, когато има собствен цвят.
+// По-светъл нюанс — смесване с бяло (t=0 → цвят, t=1 → бяло).
+function tint(h, t) {
+  const [r, g, b] = rgb(h);
+  return hex(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t);
+}
+
+// CSS за нонсирания <style> блок, когато има собствен цвят —
+// собственият цвят темизира ЦЯЛАТА визитка (не само шапката) чрез --t-* променливите.
 export function accentCss(accent) {
   if (!accent) return '';
-  return `.vcard-top.custom-accent{background:linear-gradient(135deg,${accent},${darken(accent)});}`;
+  return (
+    `.vcard.custom-accent{` +
+    `--t-a:${accent};` +
+    `--t-b:${darken(accent)};` +
+    `--t-accent:${accent};` +
+    `--t-soft:${tint(accent, 0.9)};` +
+    `--t-ring:${tint(accent, 0.62)};` +
+    `}`
+  );
 }
