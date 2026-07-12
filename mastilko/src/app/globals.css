@@ -90,6 +90,9 @@ body {
   border-color: rgba(111, 195, 240, 0.16);
 }
 .vivid footer {
+  /* Footer-ът пазеше светлия bg-paper-warm, а текстът е ремапнат на светло за
+     тъмната „жива" визия → светло на светло, нечетимо. Даваме тъмен фон. */
+  background-color: #0b1d30;
   border-color: rgba(111, 195, 240, 0.12);
 }
 .vivid .card-warm {
