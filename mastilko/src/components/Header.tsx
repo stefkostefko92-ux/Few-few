@@ -50,7 +50,7 @@ export default function Header() {
                 <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
                 <nav
                   aria-label="Инструменти"
-                  className="card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2 dark:bg-[#2e2620]"
+                  className="tools-menu card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2"
                 >
                   {TOOLS.map((t) => (
                     <Link

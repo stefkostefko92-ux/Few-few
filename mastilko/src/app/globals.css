@@ -102,6 +102,26 @@ body {
 .vivid .card-warm.bg-gradient-to-br {
   background-image: linear-gradient(135deg, rgba(23, 69, 106, 0.6), rgba(12, 44, 70, 0.55)) !important;
 }
+
+/* Падащото меню „Инструменти" трябва да е ПЛЪТНО на всичките теми — card-warm
+   фонът е полупрозрачен и менюто прозираше върху съдържанието отдолу. */
+.tools-menu {
+  background-color: #ffffff;
+  border-color: rgba(31, 27, 23, 0.14);
+  box-shadow: 0 14px 34px rgba(31, 27, 23, 0.18);
+  backdrop-filter: none;
+}
+.dark .tools-menu {
+  background-color: #2e2620;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+.vivid .tools-menu {
+  background-color: #0b2036;
+  border-color: rgba(91, 180, 232, 0.32);
+  box-shadow: 0 14px 34px rgba(4, 12, 20, 0.62);
+  backdrop-filter: none;
+}
 .vivid .btn-primary {
   background-color: #3a86b9;
   background-image: linear-gradient(135deg, #3a86b9, #5bb4e8);
