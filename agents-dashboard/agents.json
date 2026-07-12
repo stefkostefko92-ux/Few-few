@@ -1199,9 +1199,20 @@
           "date": "2026-07-10",
           "event": "v11.5 — учене",
           "detail": "Научи: MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста… (+1 още)"
+        },
+        {
+          "version": "11.6.0",
+          "date": "2026-07-12",
+          "event": "v11.6 — учене",
+          "detail": "Научи: В сесия файлове може да се променят между моя Read и по-късна проверка; reklamchik/src/… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-12",
+          "type": "learning",
+          "summary": "Научи: „В сесия файлове може да се променят между моя Read и по-късна проверка; reklamchik/src/…\" (+1 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
