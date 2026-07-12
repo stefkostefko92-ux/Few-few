@@ -174,7 +174,7 @@ test('HTTP: / без сесия → redirect към /login; /login рендир�
     assert.equal(r1.headers.get('location'), '/login');
     const r2 = await fetch(`${base}/login`);
     assert.equal(r2.status, 200);
-    assert.match(await r2.text(), /Вход в Рекламчика/);
+    assert.match(await r2.text(), /Вход в Supreme AdManager/);
   } finally {
     server.close();
   }
@@ -356,7 +356,7 @@ test('HTTP: подправена сесийна бисквитка не мина
     );
     const r = await fetch(`${base}/`, {
       redirect: 'manual',
-      headers: { cookie: `reklamchik_session=${forged}.fakefakesignature` },
+      headers: { cookie: `sam_session=${forged}.fakefakesignature` },
     });
     assert.equal(r.status, 302);
     assert.equal(r.headers.get('location'), '/login');

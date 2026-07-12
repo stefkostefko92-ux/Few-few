@@ -2,7 +2,7 @@
 import crypto from 'node:crypto';
 import { config } from './config.js';
 
-const COOKIE = 'reklamchik_csrf';
+const COOKIE = 'sam_csrf';
 
 export function csrfMiddleware(req, res, next) {
   let token = req.cookies?.[COOKIE];

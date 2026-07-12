@@ -1,4 +1,4 @@
-# Рекламчика — автоматизирана платена реклама
+# Supreme AdManager — автоматизирана платена реклама
 
 Web приложение за **автоматизирано управление на платена реклама** през:
 
@@ -27,7 +27,7 @@ Web приложение за **автоматизирано управлени�
 ## Старт
 
 ```bash
-cd reklamchik
+cd SupremeAdManager
 npm install
 npm run dev          # http://localhost:3060 — dry-run, вход: admin@localhost / admin
 ```

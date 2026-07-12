@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // ads-lint.mjs — статичен детектор на рекламни анти-шарки (Google Ads + Meta Marketing API).
-// Ръцете на агента „Рекламчика". Ползване: node tools/ads/ads-lint.mjs [път] (default: reklamchik/src)
+// Ръцете на агента „Рекламчика". Ползване: node tools/ads/ads-lint.mjs [път] (default: SupremeAdManager/src)
 // Изход: находки по тежест с file:line; exit 1 при HIGH находка.
 
 import fs from 'node:fs';
 import path from 'node:path';
 
-const target = process.argv[2] || 'reklamchik/src';
+const target = process.argv[2] || 'SupremeAdManager/src';
 const findings = [];
 
 // [тежест, id, regex, съобщение, изключение-regex (ако match-не реда — не докладвай)]

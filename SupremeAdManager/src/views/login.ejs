@@ -1,6 +1,6 @@
 <%- include('_head', { hideNav: true }) %>
 <section class="card narrow">
-  <h1>Вход в Рекламчика</h1>
+  <h1>Вход в Supreme AdManager</h1>
   <% if (error) { %><p class="error"><%= error %></p><% } %>
   <form method="post" action="/login">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">

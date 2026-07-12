@@ -1,10 +1,10 @@
 {
-  "name": "reklamchik",
+  "name": "supreme-admanager",
   "version": "0.1.0",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
-  "description": "Рекламчика — автоматизирано управление на платена реклама: Google Ads, YouTube Ads и Meta Ads (Facebook, Instagram, WhatsApp, Threads)",
+  "description": "Supreme AdManager — автоматизирано управление на платена реклама: Google Ads, YouTube Ads и Meta Ads (Facebook, Instagram, WhatsApp, Threads); домейн-агент: Рекламчика",
   "author": "CarbonStealth VCC (https://carbonstealth.eu)",
   "main": "src/server.js",
   "scripts": {

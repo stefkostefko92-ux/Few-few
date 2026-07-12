@@ -8,7 +8,7 @@
 Статичен детектор на рекламни анти-шарки:
 
 ```bash
-node tools/ads/ads-lint.mjs                # проверява reklamchik/src
+node tools/ads/ads-lint.mjs                # проверява SupremeAdManager/src
 node tools/ads/ads-lint.mjs path/to/code   # или конкретен път
 ```
 
@@ -28,5 +28,5 @@ node tools/ads/ads-lint.mjs path/to/code   # или конкретен път
 
 Exit 1 при HIGH находка → става за CI гейт.
 
-Продуктът, който тези инструменти пазят: **`reklamchik/`** (виж `reklamchik/RESEARCH.md`
+Продуктът, който тези инструменти пазят: **`SupremeAdManager/`** (виж `SupremeAdManager/RESEARCH.md`
 за пълното проучване с източници).

@@ -8,13 +8,13 @@ export const config = {
   env: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 3060),
   baseUrl: process.env.BASE_URL || 'http://localhost:3060',
-  dbPath: process.env.DB_PATH || path.join(__dirname, '..', 'data', 'reklamchik.db'),
+  dbPath: process.env.DB_PATH || path.join(__dirname, '..', 'data', 'admanager.db'),
 
   // Ключ за криптиране на API токените в покой (32 байта hex). Задължителен в продукция.
   encryptionKey: process.env.ENCRYPTION_KEY || '',
 
   session: {
-    cookieName: 'reklamchik_session',
+    cookieName: 'sam_session',
     // Секрет за подписване на сесията; в продукция — от средата (fail-fast по-долу).
     secret: process.env.SESSION_SECRET || 'dev-only-insecure-secret',
     maxAgeMs: 1000 * 60 * 60 * 8, // 8 часа

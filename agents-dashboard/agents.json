@@ -1204,14 +1204,14 @@
           "version": "11.6.0",
           "date": "2026-07-12",
           "event": "v11.6 — учене",
-          "detail": "Научи: В сесия файлове може да се променят между моя Read и по-късна проверка; reklamchik/src/… (+1 още)"
+          "detail": "Научи: В сесия файлове може да се променят между моя Read и по-късна проверка; SupremeAdManager/src/… (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-07-12",
           "type": "learning",
-          "summary": "Научи: „В сесия файлове може да се променят между моя Read и по-късна проверка; reklamchik/src/…\" (+1 още)"
+          "summary": "Научи: „В сесия файлове може да се променят между моя Read и по-късна проверка; SupremeAdManager/src/…\" (+1 още)"
         },
         {
           "date": "2026-07-10",
@@ -10111,7 +10111,7 @@
         "WebFetch",
         "WebSearch"
       ],
-      "mission": "Автоматизирана платена реклама на enterprise ниво: Google Ads (Search/PMax/Demand Gen=YouTube/Display, API v24, GAQL, micros, PAUSED-first) + Meta Ads (Graph v25.0, ODAX, Facebook/Instagram/Threads/Messenger, Click-to-WhatsApp, CAPI+dedup, DSA полета). Кампанийна стратегия (learning phase математика, консолидация, +20% скалиране, creative fatigue, микробюджет→retargeting), auto-rules с прагове/cooldown, и право на ЕС (Consent Mode v2, DSA чл. 26/28, AI Act чл. 50). Собственик на продукта reklamchik/.",
+      "mission": "Автоматизирана платена реклама на enterprise ниво: Google Ads (Search/PMax/Demand Gen=YouTube/Display, API v24, GAQL, micros, PAUSED-first) + Meta Ads (Graph v25.0, ODAX, Facebook/Instagram/Threads/Messenger, Click-to-WhatsApp, CAPI+dedup, DSA полета). Кампанийна стратегия (learning phase математика, консолидация, +20% скалиране, creative fatigue, микробюджет→retargeting), auto-rules с прагове/cooldown, и право на ЕС (Consent Mode v2, DSA чл. 26/28, AI Act чл. 50). Собственик на продукта SupremeAdManager/.",
       "capabilities": [
         "Google Ads API v24: atomic Mutate, бюджет като отделен ресурс, GAQL/SearchStream отчети",
         "YouTube през Demand Gen (VIDEO кампаниите са read-only през API) + PMax asset groups",
@@ -10121,7 +10121,7 @@
         "Learning phase математика: (CPA×50)/7 мин. бюджет; консолидация; +20% скалиране",
         "Auto-rules с прагове: CPA-стоп, ROAS-скалиране, fatigue (freq>3.5), дневна спирачка",
         "Consent Mode v2 + ePrivacy (CAPI не заобикаля съгласие) + AI Act чл. 50 разкриване",
-        "Продуктът reklamchik/: guard.js предпазители, dry-run симулатор, одитна следа",
+        "Продуктът SupremeAdManager/: guard.js предпазители, dry-run симулатор, одитна следа",
         "ads-lint.mjs (tools/ads/): токени, ACTIVE-at-create, <18, DSA/CAPI пропуски"
       ],
       "knowledge": {
@@ -10150,7 +10150,7 @@
           "version": "2.0.0",
           "date": "2026-07-12",
           "event": "v2.0 — инструментиран изпълнител",
-          "detail": "Реални ръце: продуктът reklamchik/ (Express+SQLite, guard.js предпазители, dry-run симулатор, двигател на правилата, одитна следа; 13/13 теста зелени) + tools/ads/ads-lint.mjs (статичен детектор: hardcoded токени, ACTIVE-at-create, teen profiling, липсващи DSA/special_ad_categories/event_id). Проучването е кодифицирано в reklamchik/RESEARCH.md."
+          "detail": "Реални ръце: продуктът SupremeAdManager/ (Express+SQLite, guard.js предпазители, dry-run симулатор, двигател на правилата, одитна следа; 13/13 теста зелени) + tools/ads/ads-lint.mjs (статичен детектор: hardcoded токени, ACTIVE-at-create, teen profiling, липсващи DSA/special_ad_categories/event_id). Проучването е кодифицирано в SupremeAdManager/RESEARCH.md."
         },
         {
           "version": "6.0.0",
@@ -10169,7 +10169,7 @@
         {
           "date": "2026-07-12",
           "type": "build",
-          "summary": "Закален reklamchik/: 2 HIGH + 2 MED + 3 LOW поправени след троен одит; 3 нови препоръчани правила от OSS prior art; retention политика; 23/23 теста зелени."
+          "summary": "Закален SupremeAdManager/: 2 HIGH + 2 MED + 3 LOW поправени след троен одит; 3 нови препоръчани правила от OSS prior art; retention политика; 23/23 теста зелени."
         },
         {
           "date": "2026-07-12",
@@ -10184,7 +10184,7 @@
         {
           "date": "2026-07-12",
           "type": "build",
-          "summary": "Построи reklamchik/ — web приложение за автоматизирана реклама: кампании (Google+Meta), auto-rules с прагове и cooldown, твърди бюджетни/правни предпазители, dry-run режим, пълна одитна следа."
+          "summary": "Построи SupremeAdManager/ — web приложение за автоматизирана реклама: кампании (Google+Meta), auto-rules с прагове и cooldown, твърди бюджетни/правни предпазители, dry-run режим, пълна одитна следа."
         }
       ]
     }

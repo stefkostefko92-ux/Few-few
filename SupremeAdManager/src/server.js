@@ -6,7 +6,7 @@ const app = createApp();
 
 app.listen(config.port, () => {
   console.log(
-    `Рекламчика слуша на :${config.port} (${config.env})${isDryRun() ? ' · DRY-RUN режим (без реални креденшъли — нищо не се харчи)' : ''}`
+    `Supreme AdManager слуша на :${config.port} (${config.env})${isDryRun() ? ' · DRY-RUN режим (без реални креденшъли — нищо не се харчи)' : ''}`
   );
 });
 

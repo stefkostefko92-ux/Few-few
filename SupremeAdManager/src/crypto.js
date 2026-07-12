@@ -9,7 +9,7 @@ function key() {
       throw new Error('ENCRYPTION_KEY е задължителен в продукция (32 байта hex)');
     }
     // dev fallback — детерминистичен, само за локална разработка
-    return crypto.createHash('sha256').update('reklamchik-dev-key').digest();
+    return crypto.createHash('sha256').update('supreme-admanager-dev-key').digest();
   }
   const k = Buffer.from(config.encryptionKey, 'hex');
   if (k.length !== 32) throw new Error('ENCRYPTION_KEY трябва да е точно 32 байта hex (64 знака)');

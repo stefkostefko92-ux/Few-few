@@ -1,6 +1,6 @@
-# CLAUDE.md — reklamchik
+# CLAUDE.md — SupremeAdManager
 
-Насоки за AI асистенти в `reklamchik/` — **Рекламчика**: web приложение за автоматизирано
+Насоки за AI асистенти в `SupremeAdManager/` — **Supreme AdManager**: web приложение за автоматизирано
 управление на платена реклама (Google Ads + Meta Ads). Домейн-агентът е
 **„Рекламчика“** (`.claude/agents/reklamchika.md`) — пускай него за рекламна експертиза,
 кампанийна стратегия и API въпроси; той е обучен с проучването в `RESEARCH.md`.
