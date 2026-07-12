@@ -43,6 +43,14 @@ export function getToken(): string | null {
   return token;
 }
 
+// Глобален бан хендлър — при 403 { error:'banned' } сървърът е спрял
+// достъпа (акаунт/IP/устройство). Регистрира се от store-а, за да
+// покаже пълноекранен ban screen вместо генерична грешка.
+let bannedHandler: ((reason: string) => void) | null = null;
+export function setBannedHandler(fn: ((reason: string) => void) | null): void {
+  bannedHandler = fn;
+}
+
 async function request<T = any>(method: string, path: string, body?: any): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -56,6 +64,10 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
   if (!res.ok) {
+    // Бан → глобален екран (акаунт/IP/устройство спрян от сървъра).
+    if (res.status === 403 && data?.error === 'banned') {
+      bannedHandler?.(data.reason || 'Access has been suspended.');
+    }
     // Zod's `.flatten()` ships back `{ formErrors, fieldErrors }` and most
     // route handlers either wrap it as `data.error` or echo a plain string.
     // The old ternary chained `||` with `?:` at the wrong precedence, so a

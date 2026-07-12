@@ -774,6 +774,16 @@ router.post('/moderation/unban', (req, res) => {
   res.json({ ok: true, userId: parse.data.userId });
 });
 
+/** Списък DSA сигнали за модерационния панел (open най-горе). */
+router.get('/moderation/notices', (req, res) => {
+  const status = typeof req.query.status === 'string' ? req.query.status : 'open';
+  const db = getDb();
+  const rows = status === 'all'
+    ? db.prepare('SELECT * FROM dsa_notices ORDER BY (status = \'open\') DESC, created_at DESC LIMIT 200').all()
+    : db.prepare('SELECT * FROM dsa_notices WHERE status = ? ORDER BY created_at DESC LIMIT 200').all(status);
+  res.json({ notices: rows });
+});
+
 router.get('/moderation/bans', (_req, res) => {
   const db = getDb();
   res.json({

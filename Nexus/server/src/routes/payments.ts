@@ -435,6 +435,32 @@ webhookRouter.post('/', async (req, res) => {
           });
         }
       }
+    } else if (event.type === 'charge.refunded') {
+      // ДОБРОВОЛЕН refund (иницииран от нас/поддръжка) — НЕ е chargeback,
+      // затова БЕЗ бан. Маркирай поръчката refunded и отнеми кредитираните
+      // gems (стоката се връща заедно с парите), под 0 — floor 0. Атомарно.
+      const charge = event.data.object;
+      const pi = charge.payment_intent as string | undefined;
+      if (pi) {
+        const db = getDb();
+        const row = db.prepare(
+          `SELECT p.id AS purchase_id, p.character_id AS character_id, p.status AS status, p.effect_payload AS effect_payload
+             FROM purchases p WHERE p.stripe_payment_intent = ?`,
+        ).get(pi) as { purchase_id: number; character_id: number; status: string; effect_payload: string } | undefined;
+        if (row && row.status !== 'refunded') {
+          const gems = Number(JSON.parse(row.effect_payload || '{}').gems || 0) || 0;
+          const tx = db.transaction(() => {
+            db.prepare(`UPDATE purchases SET status = 'refunded' WHERE id = ?`).run(row.purchase_id);
+            if (gems > 0) db.prepare(`UPDATE characters SET gems = MAX(0, gems - ?) WHERE id = ?`).run(gems, row.character_id);
+          });
+          tx();
+          logEvent({
+            category: 'payment', action: 'refunded', level: 'warn',
+            character_id: row.character_id, target_id: row.purchase_id, target_type: 'purchase',
+            message: `Refund → ${gems} gems clawed back`, meta: { charge_id: charge.id },
+          });
+        }
+      }
     }
     res.json({ received: true });
   } catch (e: any) {
