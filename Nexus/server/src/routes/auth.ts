@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { signToken } from '../middleware/auth';
 import { logFromRequest } from '../lib/logger';
+import { clientIp, clientHwid, isBanEvasion } from '../lib/bans';
 
 const router = Router();
 
@@ -82,6 +83,13 @@ router.post('/register', async (req, res) => {
     return;
   }
   const { username, email, password, dateOfBirth, country } = parse.data;
+  // Анти-евейжън: банато IP/устройство не може да си прави НОВ акаунт.
+  const evade = isBanEvasion(clientIp(req), clientHwid(req));
+  if (evade.banned) {
+    logFromRequest(req, { category: 'moderation', action: 'register_blocked_ban', level: 'warn', message: 'register from banned ip/device' });
+    res.status(403).json({ error: 'banned', reason: evade.reason || 'Access from this device or network is banned.' });
+    return;
+  }
   // Server-side age gate — the client UI also blocks but a hand-rolled
   // POST would bypass it. We refuse the registration entirely below the
   // threshold instead of asking for parental consent (the operator does
@@ -131,8 +139,8 @@ router.post('/login', async (req, res) => {
   const { username, password } = parse.data;
   const db = getDb();
   const user = db
-    .prepare('SELECT id, username, email, password_hash, is_admin, token_version FROM users WHERE username = ? OR email = ?')
-    .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number; token_version: number } | undefined;
+    .prepare('SELECT id, username, email, password_hash, is_admin, token_version, banned, banned_reason FROM users WHERE username = ? OR email = ?')
+    .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number; token_version: number; banned: number; banned_reason: string } | undefined;
   // Audit #5: always run a bcrypt to flatten the timing difference between
   // unknown-user and bad-password branches. The cost MUST match the real
   // hashes (bcrypt.hash(..., 12)) — a cheaper cost-10 dummy ran ~4x faster
@@ -148,6 +156,16 @@ router.post('/login', async (req, res) => {
   if (!ok) {
     logFromRequest(req, { category: 'auth', action: 'login_failed', level: 'warn', user_id: user.id, message: `Bad password for ${user.username}` });
     res.status(401).json({ error: 'Invalid credentials' });
+    return;
+  }
+  // Бан: самият акаунт, или текущото IP/устройство (анти-евейжън).
+  if (user.banned === 1) {
+    res.status(403).json({ error: 'banned', reason: user.banned_reason || 'Account banned.' });
+    return;
+  }
+  const evade = isBanEvasion(clientIp(req), clientHwid(req));
+  if (evade.banned) {
+    res.status(403).json({ error: 'banned', reason: evade.reason || 'Access from this device or network is banned.' });
     return;
   }
   db.prepare('UPDATE users SET last_seen_at = ? WHERE id = ?').run(Date.now(), user.id);

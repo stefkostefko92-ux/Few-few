@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { getDb } from '../db';
+import { clientIp, clientHwid, requestBanStatus } from '../lib/bans';
 
 export interface AuthPayload {
   uid: number;
@@ -50,13 +51,14 @@ function trackIp(uid: number, req: Request): void {
   const last = lastSeenTracked.get(uid) || 0;
   if (now - last < 60_000) return;
   lastSeenTracked.set(uid, now);
-  const ip = (req.ip || '').replace('::ffff:', '') || (req.headers['x-forwarded-for'] as string) || '';
+  const ip = clientIp(req);
   const country = (req as any).detectedCountry || '';
   const ua = ((req.headers['user-agent'] as string) || '').slice(0, 200);
+  const hwid = clientHwid(req);
   try {
     getDb()
-      .prepare('UPDATE users SET last_ip = ?, last_country = ?, last_user_agent = ?, last_seen_at = ? WHERE id = ?')
-      .run(ip, country, ua, now, uid);
+      .prepare('UPDATE users SET last_ip = ?, last_country = ?, last_user_agent = ?, last_hwid = ?, last_seen_at = ? WHERE id = ?')
+      .run(ip, country, ua, hwid, now, uid);
   } catch {
     /* ignore — table may not exist mid-migration */
   }
@@ -76,8 +78,8 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
     // immediately. Audit finding #6.
     try {
       const row = getDb()
-        .prepare('SELECT token_version FROM users WHERE id = ?')
-        .get(decoded.uid) as { token_version?: number } | undefined;
+        .prepare('SELECT token_version, banned, banned_reason FROM users WHERE id = ?')
+        .get(decoded.uid) as { token_version?: number; banned?: number; banned_reason?: string } | undefined;
       // A missing row means the user was deleted (a successful query just
       // returns undefined) — reject rather than defaulting token_version to
       // 0, which let a deleted user's still-valid JWT keep authenticating
@@ -86,11 +88,25 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
         res.status(401).json({ error: 'Session expired' });
         return;
       }
+      // Банат потребител → 403, дори с иначе валиден токен.
+      if (row.banned === 1) {
+        res.status(403).json({ error: 'banned', reason: row.banned_reason || 'Account banned.' });
+        return;
+      }
       if ((decoded.tv ?? 0) !== (row.token_version ?? 0)) {
         res.status(401).json({ error: 'Session expired' });
         return;
       }
     } catch { /* column may not exist mid-migration */ }
+    // Бан по IP/устройство — хваща и ДРУГИ акаунти от банато ip/hwid
+    // (спира ban-евейжън чрез нов акаунт от същата машина/мрежа).
+    try {
+      const ban = requestBanStatus(undefined, clientIp(req), clientHwid(req));
+      if (ban.banned) {
+        res.status(403).json({ error: 'banned', reason: ban.reason || 'Access from this device or network is banned.' });
+        return;
+      }
+    } catch { /* ban tables may not exist mid-migration */ }
     req.auth = decoded;
     trackIp(decoded.uid, req);
     next();

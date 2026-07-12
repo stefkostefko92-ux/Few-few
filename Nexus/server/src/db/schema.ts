@@ -275,6 +275,30 @@ export function applySchema(db: Database.Database): void {
   // token_version drives JWT invalidation: bump on password change /
   // reset and existing JWTs immediately fail authRequired (audit #6).
   if (!userHave.has('token_version')) db.exec(`ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`);
+  // ===== Ban infrastructure (chargeback → permanent IP+HWID ban;
+  // admin moderation). `last_hwid` е клиентски device-id (браузър няма
+  // истински HWID → стабилен fingerprint от localStorage, х-device-id). =====
+  if (!userHave.has('banned')) db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0`);
+  if (!userHave.has('banned_reason')) db.exec(`ALTER TABLE users ADD COLUMN banned_reason TEXT NOT NULL DEFAULT ''`);
+  if (!userHave.has('banned_at')) db.exec(`ALTER TABLE users ADD COLUMN banned_at INTEGER NOT NULL DEFAULT 0`);
+  if (!userHave.has('last_hwid')) db.exec(`ALTER TABLE users ADD COLUMN last_hwid TEXT NOT NULL DEFAULT ''`);
+
+  // Ban списъци по IP и по устройство (device-id). Използват се и за
+  // спиране на ban-евейжън чрез нов акаунт (проверка при login/register).
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS banned_ips (
+      ip         TEXT PRIMARY KEY,
+      reason     TEXT NOT NULL DEFAULT '',
+      user_id    INTEGER,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS banned_devices (
+      hwid       TEXT PRIMARY KEY,
+      reason     TEXT NOT NULL DEFAULT '',
+      user_id    INTEGER,
+      created_at INTEGER NOT NULL
+    );
+  `);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
