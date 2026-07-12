@@ -417,6 +417,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-12",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Server-side Meta CAPI / Google server tagging НЕ заобикаля ePrivacy съгласие: обхватът …\" (+2)"
+        },
+        {
           "date": "2026-07-10",
           "type": "learning",
           "summary": "Научи: „При native Discord монетизация Discord Inc. е merchant of record за покупката (обработв…\" · 3 в карантина"
