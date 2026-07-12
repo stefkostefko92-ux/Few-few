@@ -17,6 +17,7 @@
   let customSelectors = [];
   let procSelectors = [];
   let unhideSelectors = [];
+  let genericHideHost = false; // EasyList $generichide за този хост
 
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
@@ -438,7 +439,8 @@
             unhideSelectors = Array.isArray(res.unhide) ? res.unhide : [];
             // EasyList $generichide за този хост → не прилагай генеричния CSS
             // (иначе скриваме легитимен UI, напр. Google sign-in, Ads Manager).
-            if (res.genericHide) gate(false);
+            genericHideHost = !!res.genericHide;
+            if (genericHideHost) gate(false);
             rebuildSelectors();
             hide();
           });
@@ -456,7 +458,9 @@
       // генеричната козметика на allowlist-нат сайт.
       chrome.storage.local.get("allowlist", (d) => {
         const allowed = ((d && d.allowlist) || []).some(hostMatches);
-        gate(enabled && !allowed);
+        // Гейтът зачита и $generichide хоста, за да не върне генеричния CSS
+        // при повторно включване без reload.
+        gate(enabled && !allowed && !genericHideHost);
         if (enabled && !allowed) {
           start();
           hide();
