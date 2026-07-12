@@ -133,7 +133,7 @@ else
   SRC="$REL"
 fi
 shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || die "Архивът не прилича на това репо ($SRC)."
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || die "Архивът не прилича на това репо ($SRC)."
 ok "Разопаковано в $SRC"
 
 deploy_failed=0
