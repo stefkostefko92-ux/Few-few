@@ -78,8 +78,8 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
     // immediately. Audit finding #6.
     try {
       const row = getDb()
-        .prepare('SELECT token_version, banned, banned_reason FROM users WHERE id = ?')
-        .get(decoded.uid) as { token_version?: number; banned?: number; banned_reason?: string } | undefined;
+        .prepare('SELECT token_version, banned, banned_reason, banned_until FROM users WHERE id = ?')
+        .get(decoded.uid) as { token_version?: number; banned?: number; banned_reason?: string; banned_until?: number } | undefined;
       // A missing row means the user was deleted (a successful query just
       // returns undefined) — reject rather than defaulting token_version to
       // 0, which let a deleted user's still-valid JWT keep authenticating
@@ -88,9 +88,10 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
         res.status(401).json({ error: 'Session expired' });
         return;
       }
-      // Банат потребител → 403, дори с иначе валиден токен.
-      if (row.banned === 1) {
-        res.status(403).json({ error: 'banned', reason: row.banned_reason || 'Account banned.' });
+      // Банат потребител → 403 (изтеклите временни банове НЕ важат).
+      const until = row.banned_until ?? 0;
+      if (row.banned === 1 && (until === 0 || until > Date.now())) {
+        res.status(403).json({ error: 'banned', reason: row.banned_reason || 'Account banned.', until });
         return;
       }
       if ((decoded.tv ?? 0) !== (row.token_version ?? 0)) {
@@ -103,7 +104,7 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
     try {
       const ban = requestBanStatus(undefined, clientIp(req), clientHwid(req));
       if (ban.banned) {
-        res.status(403).json({ error: 'banned', reason: ban.reason || 'Access from this device or network is banned.' });
+        res.status(403).json({ error: 'banned', reason: ban.reason || 'Access from this device or network is banned.', until: ban.until ?? 0 });
         return;
       }
     } catch { /* ban tables may not exist mid-migration */ }

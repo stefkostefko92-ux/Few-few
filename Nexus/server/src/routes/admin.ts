@@ -750,19 +750,27 @@ router.post('/moderation/takedown', (req, res) => {
   res.json({ ok: true, kind, targetId, detail, notified: notify && !!affectedChar });
 });
 
-/** Ръчен бан (chargeback банът минава през webhook-а автоматично). */
-const banSchema = z.object({ userId: z.number().int().positive(), reason: z.string().min(3).max(300) });
+/**
+ * Ръчен бан (chargeback банът минава през webhook-а автоматично).
+ * `durationMs` по избор: 0/липсва = ПОСТОЯНЕН; >0 = временен (изтича).
+ */
+const banSchema = z.object({
+  userId: z.number().int().positive(),
+  reason: z.string().min(3).max(300),
+  durationMs: z.number().int().nonnegative().max(3153600000000).optional(), // ≤ ~100г
+});
 router.post('/moderation/ban', (req, res) => {
   const parse = banSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const { userId, reason } = parse.data;
+  const { userId, reason, durationMs } = parse.data;
   const db = getDb();
   const u = db.prepare('SELECT id, last_ip, last_hwid FROM users WHERE id = ?').get(userId) as
     | { id: number; last_ip: string; last_hwid: string } | undefined;
   if (!u) { res.status(404).json({ error: 'User not found' }); return; }
-  banUser({ userId, ip: u.last_ip, hwid: u.last_hwid, reason });
-  logEvent({ category: 'moderation', action: 'manual_ban', level: 'warn', user_id: req.auth!.uid, target_id: userId, target_type: 'user', message: `Manual ban (user ${userId})`, meta: { reason } });
-  res.json({ ok: true, userId, banned_ip: u.last_ip || null, banned_hwid: u.last_hwid || null });
+  banUser({ userId, ip: u.last_ip, hwid: u.last_hwid, reason, durationMs });
+  const until = durationMs && durationMs > 0 ? Date.now() + durationMs : 0;
+  logEvent({ category: 'moderation', action: 'manual_ban', level: 'warn', user_id: req.auth!.uid, target_id: userId, target_type: 'user', message: `Manual ban (user ${userId})`, meta: { reason, until } });
+  res.json({ ok: true, userId, until, banned_ip: u.last_ip || null, banned_hwid: u.last_hwid || null });
 });
 
 const unbanSchema = z.object({ userId: z.number().int().positive() });
@@ -787,7 +795,7 @@ router.get('/moderation/notices', (req, res) => {
 router.get('/moderation/bans', (_req, res) => {
   const db = getDb();
   res.json({
-    users: db.prepare('SELECT id, username, banned_reason, banned_at FROM users WHERE banned = 1 ORDER BY banned_at DESC LIMIT 200').all(),
+    users: db.prepare('SELECT id, username, banned_reason, banned_at, banned_until FROM users WHERE banned = 1 ORDER BY banned_at DESC LIMIT 200').all(),
     ips: db.prepare('SELECT ip, reason, user_id, created_at FROM banned_ips ORDER BY created_at DESC LIMIT 200').all(),
     devices: db.prepare('SELECT hwid, reason, user_id, created_at FROM banned_devices ORDER BY created_at DESC LIMIT 200').all(),
   });

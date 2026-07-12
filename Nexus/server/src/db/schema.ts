@@ -281,24 +281,35 @@ export function applySchema(db: Database.Database): void {
   if (!userHave.has('banned')) db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0`);
   if (!userHave.has('banned_reason')) db.exec(`ALTER TABLE users ADD COLUMN banned_reason TEXT NOT NULL DEFAULT ''`);
   if (!userHave.has('banned_at')) db.exec(`ALTER TABLE users ADD COLUMN banned_at INTEGER NOT NULL DEFAULT 0`);
+  // banned_until: 0 = ПОСТОЯНЕН (докато banned=1); >0 = временен, изтича на
+  // тази епоха. Проверките третират изтекъл бан като не-банат.
+  if (!userHave.has('banned_until')) db.exec(`ALTER TABLE users ADD COLUMN banned_until INTEGER NOT NULL DEFAULT 0`);
   if (!userHave.has('last_hwid')) db.exec(`ALTER TABLE users ADD COLUMN last_hwid TEXT NOT NULL DEFAULT ''`);
 
   // Ban списъци по IP и по устройство (device-id). Използват се и за
   // спиране на ban-евейжън чрез нов акаунт (проверка при login/register).
+  // expires_at: 0 = постоянен; >0 = изтича на тази епоха.
   db.exec(`
     CREATE TABLE IF NOT EXISTS banned_ips (
       ip         TEXT PRIMARY KEY,
       reason     TEXT NOT NULL DEFAULT '',
       user_id    INTEGER,
-      created_at INTEGER NOT NULL
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL DEFAULT 0
     );
     CREATE TABLE IF NOT EXISTS banned_devices (
       hwid       TEXT PRIMARY KEY,
       reason     TEXT NOT NULL DEFAULT '',
       user_id    INTEGER,
-      created_at INTEGER NOT NULL
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL DEFAULT 0
     );
   `);
+  // Forward-миграция за вече-съществуващи ban таблици (добави expires_at).
+  const ipCols = new Set((db.prepare(`PRAGMA table_info(banned_ips)`).all() as { name: string }[]).map((c) => c.name));
+  if (!ipCols.has('expires_at')) db.exec(`ALTER TABLE banned_ips ADD COLUMN expires_at INTEGER NOT NULL DEFAULT 0`);
+  const devCols = new Set((db.prepare(`PRAGMA table_info(banned_devices)`).all() as { name: string }[]).map((c) => c.name));
+  if (!devCols.has('expires_at')) db.exec(`ALTER TABLE banned_devices ADD COLUMN expires_at INTEGER NOT NULL DEFAULT 0`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (

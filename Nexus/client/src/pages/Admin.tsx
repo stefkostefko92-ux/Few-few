@@ -1209,7 +1209,14 @@ function Moderation(): React.ReactElement {
   const [notices, setNotices] = useState<any[]>([]);
   const [bans, setBans] = useState<{ users: any[]; ips: any[]; devices: any[] }>({ users: [], ips: [], devices: [] });
   const [td, setTd] = useState({ kind: 'character_name', targetId: '', reason: '', noticeId: '' });
-  const [banForm, setBanForm] = useState({ userId: '', reason: '' });
+  const [banForm, setBanForm] = useState({ userId: '', reason: '', durationMs: 0 });
+  const DURATIONS: Array<{ label: string; ms: number }> = [
+    { label: 'Permanent', ms: 0 },
+    { label: '1 hour', ms: 3_600_000 },
+    { label: '24 hours', ms: 86_400_000 },
+    { label: '7 days', ms: 604_800_000 },
+    { label: '30 days', ms: 2_592_000_000 },
+  ];
 
   const loadNotices = async () => { try { setNotices((await api.get('/admin/moderation/notices?status=open')).notices); } catch (e: any) { toast(e.message, 'error'); } };
   const loadBans = async () => { try { setBans(await api.get('/admin/moderation/bans')); } catch (e: any) { toast(e.message, 'error'); } };
@@ -1228,6 +1235,14 @@ function Moderation(): React.ReactElement {
       loadNotices();
     } catch (e: any) { toast(e.message, 'error'); }
   };
+  // „Action…" на сигнал → префилва takedown формата: мапва вида и вади
+  // числов id от content_ref (напр. "chat:42" → 42), ако има.
+  const startAction = (n: any) => {
+    const kindMap: Record<string, string> = { chat: 'chat_message', character_name: 'character_name', guild_name: 'guild_name' };
+    const kind = kindMap[n.content_kind] || td.kind;
+    const m = String(n.content_ref || '').match(/(\d+)/);
+    setTd({ kind, targetId: m ? m[1] : '', reason: `Reported: ${n.reason}`, noticeId: String(n.id) });
+  };
   const rejectNotice = async (id: number) => {
     const decision = prompt('Reason for rejecting this notice (visible in the record):') || '';
     if (decision.length < 3) return;
@@ -1235,8 +1250,11 @@ function Moderation(): React.ReactElement {
     catch (e: any) { toast(e.message, 'error'); }
   };
   const doBan = async () => {
-    try { await api.post('/admin/moderation/ban', { userId: Number(banForm.userId), reason: banForm.reason }); toast('User banned (IP + device).', 'success'); setBanForm({ userId: '', reason: '' }); loadBans(); }
-    catch (e: any) { toast(e.message, 'error'); }
+    try {
+      await api.post('/admin/moderation/ban', { userId: Number(banForm.userId), reason: banForm.reason, durationMs: banForm.durationMs || undefined });
+      toast(banForm.durationMs ? 'User temporarily banned (IP + device).' : 'User permanently banned (IP + device).', 'success');
+      setBanForm({ userId: '', reason: '', durationMs: 0 }); loadBans();
+    } catch (e: any) { toast(e.message, 'error'); }
   };
   const unban = async (userId: number) => {
     try { await api.post('/admin/moderation/unban', { userId }); toast('User unbanned.', 'success'); loadBans(); }
@@ -1263,7 +1281,7 @@ function Moderation(): React.ReactElement {
               <td className="muted" style={{ maxWidth: 260, whiteSpace: 'normal' }}>{n.description}</td>
               <td className="muted">{new Date(n.created_at).toLocaleDateString()}</td>
               <td style={{ display: 'flex', gap: 6 }}>
-                <button className="btn btn-sm" onClick={() => setTd((t) => ({ ...t, noticeId: String(n.id) }))}>Action…</button>
+                <button className="btn btn-sm" onClick={() => startAction(n)}>Action…</button>
                 <button className="btn btn-sm btn-danger" onClick={() => rejectNotice(n.id)}>Reject</button>
               </td>
             </tr>
@@ -1296,13 +1314,16 @@ function Moderation(): React.ReactElement {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <input style={inp} placeholder="User id" value={banForm.userId} onChange={(e) => setBanForm({ ...banForm, userId: e.target.value })} />
         <input style={{ ...inp, minWidth: 220 }} placeholder="Reason" value={banForm.reason} onChange={(e) => setBanForm({ ...banForm, reason: e.target.value })} />
+        <select style={inp} value={banForm.durationMs} onChange={(e) => setBanForm({ ...banForm, durationMs: Number(e.target.value) })}>
+          {DURATIONS.map((d) => <option key={d.ms} value={d.ms}>{d.label}</option>)}
+        </select>
         <button className="btn btn-danger" disabled={!banForm.userId || banForm.reason.length < 3} onClick={doBan}>Ban</button>
       </div>
 
       {/* Active bans */}
       <h3 style={{ marginTop: 24 }}>Banned users <span className="muted">({bans.users.length})</span></h3>
       <table className="data-table">
-        <thead><tr><th>User</th><th>Username</th><th>Reason</th><th>Since</th><th></th></tr></thead>
+        <thead><tr><th>User</th><th>Username</th><th>Reason</th><th>Since</th><th>Expires</th><th></th></tr></thead>
         <tbody>
           {bans.users.map((u) => (
             <tr key={u.id}>
@@ -1310,10 +1331,11 @@ function Moderation(): React.ReactElement {
               <td>{u.username}</td>
               <td className="muted">{u.banned_reason}</td>
               <td className="muted">{u.banned_at ? new Date(u.banned_at).toLocaleDateString() : '—'}</td>
+              <td className="muted">{u.banned_until ? new Date(u.banned_until).toLocaleString() : 'Permanent'}</td>
               <td><button className="btn btn-sm" onClick={() => unban(u.id)}>Unban</button></td>
             </tr>
           ))}
-          {bans.users.length === 0 && <tr><td colSpan={5} className="muted">No banned users.</td></tr>}
+          {bans.users.length === 0 && <tr><td colSpan={6} className="muted">No banned users.</td></tr>}
         </tbody>
       </table>
       <p className="muted" style={{ fontSize: 12 }}>Banned IPs: {bans.ips.length} · Banned devices: {bans.devices.length}</p>

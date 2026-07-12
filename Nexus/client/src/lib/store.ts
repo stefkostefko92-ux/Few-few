@@ -21,8 +21,8 @@ interface State {
   unreadMail: number;
   loading: boolean;
   toasts: Toast[];
-  /** Ако е зададено, сървърът е спрял достъпа (акаунт/IP/устройство). */
-  banned: { reason: string } | null;
+  /** Ако е зададено, сървърът е спрял достъпа. `until` 0 = постоянен. */
+  banned: { reason: string; until: number } | null;
 
   init: () => Promise<void>;
   login: (username: string, password: string) => Promise<void>;
@@ -54,7 +54,7 @@ let toastId = 0;
 // store-а: всяка 403 { error:'banned' } заявка вдига `banned` състоянието,
 // което App рендира като пълноекранен ban screen. Връща началната стойност.
 function registerBanHandler(set: (partial: Partial<State>) => void): null {
-  setBannedHandler((reason: string) => set({ banned: { reason } }));
+  setBannedHandler((reason: string, until: number) => set({ banned: { reason, until } }));
   return null;
 }
 

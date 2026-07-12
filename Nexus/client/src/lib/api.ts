@@ -46,8 +46,8 @@ export function getToken(): string | null {
 // Глобален бан хендлър — при 403 { error:'banned' } сървърът е спрял
 // достъпа (акаунт/IP/устройство). Регистрира се от store-а, за да
 // покаже пълноекранен ban screen вместо генерична грешка.
-let bannedHandler: ((reason: string) => void) | null = null;
-export function setBannedHandler(fn: ((reason: string) => void) | null): void {
+let bannedHandler: ((reason: string, until: number) => void) | null = null;
+export function setBannedHandler(fn: ((reason: string, until: number) => void) | null): void {
   bannedHandler = fn;
 }
 
@@ -66,7 +66,7 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
   if (!res.ok) {
     // Бан → глобален екран (акаунт/IP/устройство спрян от сървъра).
     if (res.status === 403 && data?.error === 'banned') {
-      bannedHandler?.(data.reason || 'Access has been suspended.');
+      bannedHandler?.(data.reason || 'Access has been suspended.', Number(data.until) || 0);
     }
     // Zod's `.flatten()` ships back `{ formErrors, fieldErrors }` and most
     // route handlers either wrap it as `data.error` or echo a plain string.

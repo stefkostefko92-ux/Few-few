@@ -87,7 +87,7 @@ router.post('/register', async (req, res) => {
   const evade = isBanEvasion(clientIp(req), clientHwid(req));
   if (evade.banned) {
     logFromRequest(req, { category: 'moderation', action: 'register_blocked_ban', level: 'warn', message: 'register from banned ip/device' });
-    res.status(403).json({ error: 'banned', reason: evade.reason || 'Access from this device or network is banned.' });
+    res.status(403).json({ error: 'banned', reason: evade.reason || 'Access from this device or network is banned.', until: evade.until ?? 0 });
     return;
   }
   // Server-side age gate — the client UI also blocks but a hand-rolled
@@ -139,8 +139,8 @@ router.post('/login', async (req, res) => {
   const { username, password } = parse.data;
   const db = getDb();
   const user = db
-    .prepare('SELECT id, username, email, password_hash, is_admin, token_version, banned, banned_reason FROM users WHERE username = ? OR email = ?')
-    .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number; token_version: number; banned: number; banned_reason: string } | undefined;
+    .prepare('SELECT id, username, email, password_hash, is_admin, token_version, banned, banned_reason, banned_until FROM users WHERE username = ? OR email = ?')
+    .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number; token_version: number; banned: number; banned_reason: string; banned_until: number } | undefined;
   // Audit #5: always run a bcrypt to flatten the timing difference between
   // unknown-user and bad-password branches. The cost MUST match the real
   // hashes (bcrypt.hash(..., 12)) — a cheaper cost-10 dummy ran ~4x faster
@@ -158,14 +158,16 @@ router.post('/login', async (req, res) => {
     res.status(401).json({ error: 'Invalid credentials' });
     return;
   }
-  // Бан: самият акаунт, или текущото IP/устройство (анти-евейжън).
-  if (user.banned === 1) {
-    res.status(403).json({ error: 'banned', reason: user.banned_reason || 'Account banned.' });
+  // Бан: самият акаунт (изтеклите временни банове не важат), или текущото
+  // IP/устройство (анти-евейжън).
+  const bu = user.banned_until ?? 0;
+  if (user.banned === 1 && (bu === 0 || bu > Date.now())) {
+    res.status(403).json({ error: 'banned', reason: user.banned_reason || 'Account banned.', until: bu });
     return;
   }
   const evade = isBanEvasion(clientIp(req), clientHwid(req));
   if (evade.banned) {
-    res.status(403).json({ error: 'banned', reason: evade.reason || 'Access from this device or network is banned.' });
+    res.status(403).json({ error: 'banned', reason: evade.reason || 'Access from this device or network is banned.', until: evade.until ?? 0 });
     return;
   }
   db.prepare('UPDATE users SET last_seen_at = ? WHERE id = ?').run(Date.now(), user.id);
