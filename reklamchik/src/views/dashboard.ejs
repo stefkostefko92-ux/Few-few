@@ -1,0 +1,51 @@
+<%- include('_head') %>
+<h1>Дашборд</h1>
+
+<section class="stats">
+  <div class="stat"><span class="label">Разход (7 дни)</span><span class="value"><%= totals.spend.toFixed(2) %></span></div>
+  <div class="stat"><span class="label">Кликове</span><span class="value"><%= totals.clicks %></span></div>
+  <div class="stat"><span class="label">Конверсии</span><span class="value"><%= totals.conversions.toFixed(1) %></span></div>
+  <div class="stat"><span class="label">ROAS</span><span class="value"><%= totals.spend > 0 ? (totals.value / totals.spend).toFixed(2) : '—' %></span></div>
+</section>
+
+<section class="card">
+  <div class="row-between">
+    <h2>Кампании</h2>
+    <form method="post" action="/scheduler/tick" class="inline">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="ghost" title="Синхронизирай метрики + изпълни правилата">🔄 Синхронизирай сега</button>
+    </form>
+  </div>
+  <% if (!campaigns.length) { %>
+    <p>Няма кампании още. <a href="/campaigns/new">Създай първата</a> — тръгва като чернова, публикува се ПАУЗИРАНА, активираш я само ти.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Кампания</th><th>Платформа</th><th>Статус</th><th>Бюджет/ден</th><th>Разход 7д</th><th>CPA</th><th>ROAS</th><th>CTR</th></tr></thead>
+    <tbody>
+      <% for (const c of campaigns) { %>
+      <tr>
+        <td><a href="/campaigns/<%= c.id %>"><%= c.name %></a></td>
+        <td><%= c.platform === 'google' ? 'Google' : 'Meta' %></td>
+        <td><span class="badge s-<%= c.status %>"><%= c.status %></span></td>
+        <td><%= c.daily_budget.toFixed(2) %> <%= c.currency %></td>
+        <td><%= c.agg.spend.toFixed(2) %></td>
+        <td><%= c.agg.cpa ? c.agg.cpa.toFixed(2) : '—' %></td>
+        <td><%= c.agg.roas ? c.agg.roas.toFixed(2) : '—' %></td>
+        <td><%= c.agg.ctr ? (c.agg.ctr * 100).toFixed(2) + '%' : '—' %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Последна активност</h2>
+  <ul class="feed">
+    <% for (const a of recentAudit) { %>
+    <li><time><%= a.at %></time> <strong><%= a.actor %></strong> · <%= a.action %><%= a.dry_run ? ' 🧪' : '' %></li>
+    <% } %>
+    <% if (!recentAudit.length) { %><li>Няма записи.</li><% } %>
+  </ul>
+</section>
+<%- include('_foot') %>

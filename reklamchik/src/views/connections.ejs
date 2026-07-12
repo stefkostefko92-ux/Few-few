@@ -1,0 +1,49 @@
+<%- include('_head') %>
+<h1>Връзки с рекламни акаунти</h1>
+<% if (error) { %><p class="error"><%= error %></p><% } %>
+
+<section class="card">
+  <table>
+    <thead><tr><th>Платформа</th><th>Име</th><th>Акаунт</th><th>Валута</th><th>Статус</th><th></th></tr></thead>
+    <tbody>
+      <% for (const c of connections) { %>
+      <tr>
+        <td><%= c.platform === 'google' ? 'Google Ads' : 'Meta' %></td>
+        <td><%= c.label %></td>
+        <td><code><%= c.external_account_id %></code></td>
+        <td><%= c.currency %></td>
+        <td><span class="badge s-<%= c.status %>"><%= c.status %></span></td>
+        <td>
+          <form method="post" action="/connections/<%= c.id %>/revoke" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="ghost danger">Отмени</button>
+          </form>
+        </td>
+      </tr>
+      <% } %>
+      <% if (!connections.length) { %><tr><td colspan="6">Няма връзки — добави първата по-долу (или работи в dry-run).</td></tr><% } %>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Нова връзка</h2>
+  <form method="post" action="/connections" class="grid2">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Платформа
+      <select name="platform" required>
+        <option value="google">Google Ads (customer ID, без тирета)</option>
+        <option value="meta">Meta (act_&lt;id&gt;)</option>
+      </select>
+    </label>
+    <label>Име (за теб) <input name="label" required placeholder="напр. Linketto основен"></label>
+    <label>ID на акаунта <input name="account_id" required placeholder="1234567890 или act_123…"></label>
+    <label>Валута <input name="currency" value="EUR" maxlength="3"></label>
+    <label class="span2">Токен (Google: OAuth refresh token · Meta: System User token)
+      <input name="token" type="password" placeholder="пази се криптиран (AES-256-GCM); празно = dry-run">
+    </label>
+    <button class="primary span2">Запази връзката</button>
+  </form>
+  <p class="hint">Как се вадят креденшъли: виж <code>README.md → Свързване</code>. Токените се пазят само криптирани; ключът е в средата, не в базата.</p>
+</section>
+<%- include('_foot') %>

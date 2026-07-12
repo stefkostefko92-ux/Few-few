@@ -1,0 +1,80 @@
+<%- include('_head') %>
+<h1><%= campaign.name %></h1>
+<p>
+  <span class="badge s-<%= campaign.status %>"><%= campaign.status %></span>
+  · <%= campaign.platform === 'google' ? 'Google' : 'Meta' %> · <%= campaign.objective %>
+  · <%= campaign.daily_budget.toFixed(2) %> <%= campaign.currency %>/ден
+  <% if (campaign.external_id) { %> · външен ID: <code><%= campaign.external_id %></code><% } %>
+</p>
+<% if (campaign.last_error) { %><p class="error">Последна грешка: <%= campaign.last_error %></p><% } %>
+
+<section class="actions">
+  <% if (campaign.status === 'draft') { %>
+  <form method="post" action="/campaigns/<%= campaign.id %>/publish" class="inline">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button class="primary">📤 Публикувай (ПАУЗИРАНА)</button>
+  </form>
+  <% } %>
+  <% if (['published','paused'].includes(campaign.status)) { %>
+  <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="to" value="active">
+    <button class="primary">▶️ Активирай (започва да харчи!)</button>
+  </form>
+  <% } %>
+  <% if (campaign.status === 'active') { %>
+  <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="to" value="paused">
+    <button class="warn">⏸️ Паузирай</button>
+  </form>
+  <% } %>
+  <% if (campaign.status !== 'archived') { %>
+  <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="to" value="archived">
+    <button class="ghost danger">Архивирай</button>
+  </form>
+  <% } %>
+</section>
+
+<section class="stats">
+  <div class="stat"><span class="label">Разход (7д)</span><span class="value"><%= agg.spend.toFixed(2) %></span></div>
+  <div class="stat"><span class="label">CPA</span><span class="value"><%= agg.cpa ? agg.cpa.toFixed(2) : '—' %></span></div>
+  <div class="stat"><span class="label">ROAS</span><span class="value"><%= agg.roas ? agg.roas.toFixed(2) : '—' %></span></div>
+  <div class="stat"><span class="label">CTR</span><span class="value"><%= agg.ctr ? (agg.ctr * 100).toFixed(2) + '%' : '—' %></span></div>
+  <div class="stat"><span class="label">Честота</span><span class="value"><%= agg.frequency ? agg.frequency.toFixed(2) : '—' %></span></div>
+</section>
+
+<section class="card">
+  <h2>Метрики по дни</h2>
+  <table>
+    <thead><tr><th>Дата</th><th>Импресии</th><th>Кликове</th><th>Разход</th><th>Конверсии</th><th>Стойност</th><th>Честота</th></tr></thead>
+    <tbody>
+      <% for (const m of metrics) { %>
+      <tr><td><%= m.date %></td><td><%= m.impressions %></td><td><%= m.clicks %></td><td><%= m.spend.toFixed(2) %></td><td><%= m.conversions %></td><td><%= m.conversion_value.toFixed(2) %></td><td><%= m.frequency ?? '—' %></td></tr>
+      <% } %>
+      <% if (!metrics.length) { %><tr><td colspan="7">Няма метрики още — публикувай, активирай и синхронизирай.</td></tr><% } %>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Правила за тази кампания</h2>
+  <ul>
+    <% for (const r of rules) { %>
+    <li><strong><%= r.name %></strong>: <%= r.metric %> <%= r.operator %> <%= r.threshold %> (<%= r.lookback_days %>д, мин. разход <%= r.min_spend %>) → <%= r.action %><%= r.action_value ? ' ' + r.action_value + '%' : '' %> · cooldown <%= r.cooldown_hours %>ч <%= r.enabled ? '🟢' : '⚪' %></li>
+    <% } %>
+    <% if (!rules.length) { %><li>Няма правила — <a href="/rules">добави</a>.</li><% } %>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Одитна следа</h2>
+  <ul class="feed">
+    <% for (const a of auditRows) { %>
+    <li><time><%= a.at %></time> <strong><%= a.actor %></strong> · <%= a.action %><%= a.dry_run ? ' 🧪' : '' %></li>
+    <% } %>
+  </ul>
+</section>
+<%- include('_foot') %>

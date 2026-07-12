@@ -30,6 +30,7 @@ file holds only what is true across all products. Keep it that way.
 | `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 15 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
 | `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
+| `reklamchik/` | Рекламчика — автоматизирана платена реклама (Google Ads · YouTube · Meta: FB/IG/Threads/WhatsApp) | Express · EJS · SQLite · plain JS ESM | BG · PAUSED-first · твърди бюджетни/правни предпазители · dry-run без креденшъли · агент „Рекламчика“ |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -54,7 +55,7 @@ hooks, rules).
 
 ## Custom agents — `.claude/agents/`
 
-16 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+17 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Live dashboard: `agents-dashboard/`.
