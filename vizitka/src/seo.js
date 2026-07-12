@@ -34,11 +34,12 @@ const postalAddress = {
 };
 
 // Дата на последна промяна на статичните страници (за sitemap lastmod).
-export const SITE_UPDATED = '2026-07-08';
+export const SITE_UPDATED = '2026-07-11';
 
 export function robotsTxt(base) {
-  return [
-    'User-agent: *',
+  // Приватните/не-SEO пътища (RFC 9309: специфична група НЕ наследява правилата на `*`,
+  // затова ги повтаряме и за AI-обучаващите ботове по-долу).
+  const disallow = [
     'Disallow: /dashboard',
     'Disallow: /login',
     'Disallow: /register',
@@ -47,6 +48,10 @@ export function robotsTxt(base) {
     'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
     'Disallow: /p/*/wallet', // портфейл файлове (лични, не за индексиране)
     'Disallow: /v1/', // Apple Wallet update web service
+  ];
+  return [
+    'User-agent: *',
+    ...disallow,
     'Allow: /',
     '',
     // AI-обучаващи ботове: търсещите/извличащите са добре дошли (видимост в AI
@@ -54,6 +59,7 @@ export function robotsTxt(base) {
     ...['GPTBot', 'ClaudeBot', 'CCBot', 'Google-Extended'].flatMap((bot) => [
       `User-agent: ${bot}`,
       'Disallow: /p/',
+      ...disallow,
       '',
     ]),
     `Sitemap: ${base}/sitemap.xml`,
@@ -140,8 +146,14 @@ export const FAQ = [
 ];
 
 // Entity-схема за самия сайт (WebSite + Organization + FAQPage) — за началната.
+// JSON-LD се вгражда сурово (<%- %>) в <script>, а JSON.stringify НЕ екранира
+// `<`/`>`/`&`, затова потребителско поле със `</script>` би счупило блока (HTML-инжекция).
+// Екранираме ги като \uXXXX — остава валиден JSON, но `</script>` breakout е невъзможен.
+const jsonLdSafe = (obj) =>
+  JSON.stringify(obj).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+
 export function siteJsonLd(base) {
-  return JSON.stringify({
+  return jsonLdSafe({
     '@context': 'https://schema.org',
     '@graph': [
       {
@@ -182,7 +194,6 @@ export function siteJsonLd(base) {
           availableLanguage: ['Bulgarian'],
         },
         knowsAbout: ['дигитални визитки', 'QR кодове', 'vCard контакти', 'уеб приложения'],
-        sameAs: [COMPANY.url],
       },
       {
         // Самата услуга — безплатно уеб приложение, за да я разбират като продукт.
@@ -235,7 +246,7 @@ export function cardJsonLd(profile, publicUrl, base) {
     Boolean
   );
   if (sameAs.length) data.sameAs = sameAs;
-  return JSON.stringify({
+  return jsonLdSafe({
     '@context': 'https://schema.org',
     '@graph': [
       data,
