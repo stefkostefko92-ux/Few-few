@@ -27,7 +27,7 @@ export default function ImpresumPage() {
         (Директива 2000/31/ЕО).
       </p>
 
-      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
+      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink dark:[&_h2]:text-paper vivid:[&_h2]:text-paper">
         <div>
           <h2>Издател на Мастилко</h2>
           <div className="mt-3 space-y-2">

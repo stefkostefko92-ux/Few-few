@@ -17,7 +17,7 @@ export default function PoveritelnostPage() {
         В сила от 7 юли 2026 г. · Отговаря на Регламент (ЕС) 2016/679 (GDPR)
       </p>
 
-      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
+      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink dark:[&_h2]:text-paper vivid:[&_h2]:text-paper">
         <div>
           <h2>Кой стои зад Мастилко</h2>
           <p className="mt-2">

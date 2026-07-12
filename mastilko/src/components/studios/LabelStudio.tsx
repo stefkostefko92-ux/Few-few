@@ -133,7 +133,7 @@ export default function LabelStudio() {
           <fieldset>
             <legend className="field-label">Съдържание</legend>
             <div className="flex gap-2">
-              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "same" ? "border-tera bg-tera-pale/60" : "border-ink/10"}`}>
+              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "same" ? "border-tera bg-tera-pale/60 dark:bg-white/10 vivid:bg-white/10" : "border-ink/10"}`}>
                 <input
                   type="radio"
                   name="label-mode"
@@ -143,7 +143,7 @@ export default function LabelStudio() {
                 />
                 Еднакви
               </label>
-              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "list" ? "border-tera bg-tera-pale/60" : "border-ink/10"}`}>
+              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "list" ? "border-tera bg-tera-pale/60 dark:bg-white/10 vivid:bg-white/10" : "border-ink/10"}`}>
                 <input
                   type="radio"
                   name="label-mode"

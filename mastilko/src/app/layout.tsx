@@ -160,7 +160,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var t=localStorage.getItem('mastilko-theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='vivid')document.documentElement.classList.add('vivid')}catch(e){}",
+              "try{var t=localStorage.getItem('mastilko-theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light'){}else document.documentElement.classList.add('vivid')}catch(e){document.documentElement.classList.add('vivid')}",
           }}
         />
       </head>

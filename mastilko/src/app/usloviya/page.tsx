@@ -13,7 +13,7 @@ export default function UsloviyaPage() {
       <h1 className="font-display text-3xl font-bold">Условия за ползване</h1>
       <p className="mt-2 text-sm text-ink-faint">В сила от 7 юли 2026 г.</p>
 
-      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
+      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink dark:[&_h2]:text-paper vivid:[&_h2]:text-paper">
         <div>
           <h2>Какво е Мастилко</h2>
           <p className="mt-2">

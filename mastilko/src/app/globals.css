@@ -59,6 +59,43 @@ body {
 .dark footer {
   @apply border-white/10;
 }
+/* Footer-ът пазеше светлия bg-paper-warm, а в тъмна тема текстът е ремапнат на
+   светло (text-ink* → paper) → светло на светло, нечетимо. Даваме тъмен фон. */
+.dark footer {
+  background-color: #2a2320;
+}
+
+/* ── Контраст-поправки за тъмна/жива тема (одит 2026-07) ──────────────────── */
+/* Акцентните tera/tera-dark не бяха ремапнати за тъмна тема → тъмни линкове на
+   тъмен фон (правни страници, „Започни →" и др.). */
+.dark .text-tera {
+  color: #e08963;
+}
+.dark .text-tera-dark {
+  color: #e79471;
+}
+/* hover:text-tera-dark е отделен клас — ремапваме и него, иначе hover „изяжда"
+   линка на тъмния footer/карти/хедър. */
+.dark .hover\:text-tera-dark:hover {
+  color: #e79471;
+}
+.vivid .hover\:text-tera-dark:hover {
+  color: #8fd0f5;
+}
+/* Светлият градиент на AI картата се рисуваше ВЪРХУ тъмния background-color →
+   светъл текст на светла повърхност в тъмна тема (vivid е покрит по-долу). */
+.dark .card-warm.bg-gradient-to-br {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  ) !important;
+}
+/* Вътрешните разделители на footer-а (border-ink/10) изчезваха на тъмния фон. */
+.dark footer .border-t,
+.vivid footer .border-t {
+  border-color: rgba(255, 255, 255, 0.1);
+}
 
 /* ---------- „Жива“ (vivid) тема — обвивка на сайта ---------- */
 /* Дълбока синя основа; печатният лист (.print-area) остава недокоснат. */
@@ -399,9 +436,11 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-tera px-6 py-3
+    /* bg-tera-dark (не bg-tera): бял текст върху #C25E3F е 3.86:1 (под WCAG AA);
+       върху tera-dark е ~5.3:1. Пази брандовия теракота, но четимо. */
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-tera-dark px-6 py-3
       font-semibold text-paper shadow-soft transition
-      hover:bg-tera-dark hover:shadow-lift focus-visible:outline focus-visible:outline-2
+      hover:bg-[#8a3a23] hover:shadow-lift focus-visible:outline focus-visible:outline-2
       focus-visible:outline-offset-2 focus-visible:outline-tera-dark disabled:opacity-50;
   }
   .btn-secondary {
