@@ -100,7 +100,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Невалидна заявка." }, { status: 400 });
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  // „…-latest" alias винаги сочи актуалния безплатен Flash — фиксираните версии
+  // (gemini-2.5-flash) Google спира за нови проекти (404 NOT_FOUND).
+  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
   try {
