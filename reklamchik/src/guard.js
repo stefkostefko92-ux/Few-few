@@ -46,20 +46,33 @@ export function checkCampaign(campaign) {
       `общият дневен бюджет би станал ${(totalActive + campaign.daily_budget).toFixed(2)} > таван ${config.guards.maxTotalDailyBudget}`
     );
 
-  // 2) DSA: непълнолетни не се таргетират с профилиране; спираме всичко под 18 с detailed targeting.
+  // 2) DSA чл. 28(2): непълнолетни не се таргетират с профилиране. Advantage+/PMax/Demand Gen
+  // профилират ПО ПОДРАЗБИРАНЕ, затова блокадата е БЕЗУСЛОВНА — под 18 не се таргетира изобщо.
   const ageMin = Number(spec.age_min ?? 18);
-  if (
-    ageMin < 18 &&
-    (spec.interests?.length || spec.custom_audiences?.length || spec.lookalikes?.length)
-  )
+  if (ageMin < 18)
     v.push(
-      'DSA: таргетиране на под-18 с профилиране (интереси/аудитории) е забранено — вдигни age_min на 18 или махни таргетирането'
+      'DSA чл. 28(2): таргетиране под 18 г. е забранено — тези кампанийни типове профилират по подразбиране; вдигни age_min на 18'
     );
 
   // 3) Специални категории (Meta) — трябва да са декларирани съзнателно, не гадаем.
   const cats = JSON.parse(campaign.special_ad_categories || '[]');
   for (const c of cats)
     if (!META_SPECIAL_CATEGORIES.has(c)) v.push(`непозната специална категория: ${c}`);
+
+  // 3а) DSA чл. 26(3): забранено е таргетиране по чл. 9 GDPR данни (здраве, религия, секс.
+  // ориентация, етнос, политика). Различно от Meta special_ad_categories (анти-дискриминация)!
+  const sensitiveHit = (spec.interests || []).find((i) => SENSITIVE_INTEREST_RE.test(String(i)));
+  if (sensitiveHit)
+    v.push(
+      `DSA чл. 26(3): интересът „${sensitiveHit}“ попада в чувствителните категории по чл. 9 GDPR (здраве/религия/секс. ориентация/етнос/политика) — таргетиране по него е забранено`
+    );
+
+  // 3б) Custom Audiences/Lookalike от клиентски данни изискват записано правно основание
+  // (GDPR чл. 6/7: разкриване към трето лице; хеширане ≠ анонимизация).
+  if ((spec.custom_audiences?.length || spec.lookalikes?.length) && !spec.audience_legal_basis)
+    v.push(
+      'Custom Audiences/Lookalike изискват декларирано правно основание (spec.audience_legal_basis) — съгласие за споделяне с платформата, записано и доказуемо'
+    );
 
   // 4) AI Act чл. 50 (в сила 02.08.2026): AI-генериран фотореалистичен креатив изисква разкриване.
   if (campaign.ai_generated_creative && !spec.ai_disclosure_confirmed)
@@ -92,8 +105,35 @@ export function checkBudgetChange(campaign, newBudget) {
     v.push(
       `автоматично увеличение над +20% на стъпка е забранено (${campaign.daily_budget} → ${newBudget.toFixed(2)})`
     );
+  // Общият таван важи и за автоматизирания път — иначе N печеливши кампании го заобикалят.
+  const totalOther = db
+    .prepare(
+      `SELECT COALESCE(SUM(daily_budget),0) s FROM campaigns WHERE status IN ('active','published') AND id != ?`
+    )
+    .get(campaign.id || -1).s;
+  if (totalOther + newBudget > config.guards.maxTotalDailyBudget)
+    v.push(
+      `общият дневен бюджет би станал ${(totalOther + newBudget).toFixed(2)} > таван ${config.guards.maxTotalDailyBudget}`
+    );
   return v;
 }
+
+// Чувствителни интереси по чл. 9 GDPR (DSA чл. 26(3)) — bg/en семантика, консервативен списък.
+const SENSITIVE_INTEREST_RE = new RegExp(
+  [
+    // здраве
+    'health|disease|illness|diabet|диабет|cancer|рак|болест|здравослов|диагноз|бременност|pregnan|mental|псих|инвалид|disabilit|hiv|спин',
+    // религия
+    'religio|christian|muslim|islam|jewish|будиз|религи|христиан|мюсюлман|евре|църк|church|mosque',
+    // сексуална ориентация
+    'lgbt|гей|лесбийк|gay|lesbian|bisex|transgender|транс|секс',
+    // етнос/раса
+    'ethnic|race|етнос|раса|ром(а|ски)|african|asian',
+    // политика/синдикати
+    'politic|полити|партия|party|синдикат|trade union',
+  ].join('|'),
+  'i'
+);
 
 const EEA = new Set([
   'AT',

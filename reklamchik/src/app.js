@@ -40,6 +40,17 @@ export function createApp() {
       legacyHeaders: false,
     })
   );
+  // Входът пази акаунт, който контролира рекламни бюджети → отделен, много по-строг лимит.
+  app.use(
+    '/login',
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit: 10,
+      skipSuccessfulRequests: true,
+      standardHeaders: true,
+      legacyHeaders: false,
+    })
+  );
 
   app.use((req, res, next) => {
     res.locals.dryRun = isDryRun();

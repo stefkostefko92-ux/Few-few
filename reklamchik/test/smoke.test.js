@@ -234,3 +234,133 @@ test('HTTP: архивиране на активна кампания я пау�
     server.close();
   }
 });
+
+// --- Тестове от одита (Кодаджията + Правния Разбирач + prior art) ---
+
+test('guard: под-18 се спира БЕЗУСЛОВНО (DSA чл. 28(2)), дори без интереси', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, {
+    spec_json: JSON.stringify({ consent_confirmed: true, geo: ['BG'], age_min: 17 }),
+  });
+  const v = checkCampaign(c);
+  assert.ok(v.some((x) => x.includes('28(2)')));
+});
+
+test('guard: чувствителен интерес (чл. 9 GDPR / DSA чл. 26(3)) се спира', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, {
+    spec_json: JSON.stringify({
+      consent_confirmed: true,
+      geo: ['BG'],
+      age_min: 18,
+      interests: ['фитнес', 'диабет тип 2'],
+    }),
+  });
+  const v = checkCampaign(c);
+  assert.ok(v.some((x) => x.includes('26(3)')));
+});
+
+test('guard: Custom Audiences без правно основание се спира', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, {
+    spec_json: JSON.stringify({
+      consent_confirmed: true,
+      geo: ['BG'],
+      age_min: 18,
+      custom_audiences: ['aud_1'],
+    }),
+  });
+  const v = checkCampaign(c);
+  assert.ok(v.some((x) => x.includes('audience_legal_basis')));
+});
+
+test('guard: авто-скалирането спазва ОБЩИЯ бюджетен таван', () => {
+  // Пълним общия таван (1500 по подразбиране) с активни кампании.
+  const connId = seedConnection();
+  seedCampaign(connId, { status: 'active', daily_budget: 490, name: 'Г1' });
+  seedCampaign(connId, { status: 'active', daily_budget: 490, name: 'Г2' });
+  seedCampaign(connId, { status: 'active', daily_budget: 490, name: 'Г3' });
+  const target = seedCampaign(connId, { status: 'active', daily_budget: 25, name: 'Г4' });
+  // +20% (30) е ОК като стъпка, но 3×490 + 30 = 1500 → на ръба; 490*3+30=1500 не надвишава.
+  // Взимаме 26→31.2: 1470+31.2 > 1500 → блок.
+  const v = checkBudgetChange({ ...target, daily_budget: 26 }, 31.2);
+  assert.ok(v.some((x) => x.includes('общият дневен бюджет')));
+});
+
+test('правила: ctr_drop_pct мери спад спрямо предишния прозорец', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId);
+  // Предишен прозорец (дни -14..-8): CTR 2% · Текущ (дни -7..0): CTR 1% → спад 50%.
+  db.prepare(
+    `INSERT INTO metrics_daily (campaign_id, date, impressions, clicks) VALUES (?, date('now','-10 days'), 10000, 200)`
+  ).run(c.id);
+  db.prepare(
+    `INSERT INTO metrics_daily (campaign_id, date, impressions, clicks) VALUES (?, date('now','-2 days'), 10000, 100)`
+  ).run(c.id);
+  const agg = aggregateMetrics(c.id, 7);
+  assert.ok(Math.abs(agg.ctr_drop_pct - 50) < 0.001);
+});
+
+test('правила: action=activate НЕ съществува — правило с него не прави нищо', async () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'paused', name: 'Спряна' });
+  db.prepare(
+    `INSERT INTO metrics_daily (campaign_id, date, impressions, clicks, spend, conversions) VALUES (?, date('now'), 1000, 50, 200, 20)`
+  ).run(c.id);
+  db.prepare(
+    `INSERT INTO rules (campaign_id, name, metric, operator, threshold, lookback_days, min_spend, action, cooldown_hours)
+     VALUES (?, 'зло правило', 'conversions', '>', 1, 7, 0, 'activate', 1)`
+  ).run(c.id);
+  await runRules();
+  assert.equal(db.prepare(`SELECT status FROM campaigns WHERE id=?`).get(c.id).status, 'paused');
+});
+
+test('retention: стари одит/метрик записи се чистят', async () => {
+  const { retentionCleanup } = await import('../src/scheduler.js');
+  db.prepare(
+    `INSERT INTO audit_log (at, actor, action) VALUES (datetime('now','-30 months'), 'стар', 'старо')`
+  ).run();
+  const connId = seedConnection();
+  const c = seedCampaign(connId);
+  db.prepare(
+    `INSERT INTO metrics_daily (campaign_id, date, impressions) VALUES (?, date('now','-30 months'), 1)`
+  ).run(c.id);
+  const cleaned = retentionCleanup();
+  assert.ok(cleaned.audits >= 1);
+  assert.ok(cleaned.metrics >= 1);
+});
+
+test('HTTP: POST без CSRF токен → 403', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r = await fetch(`${base}/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ email: 'admin@localhost', password: 'admin' }),
+    });
+    assert.equal(r.status, 403);
+  } finally {
+    server.close();
+  }
+});
+
+test('HTTP: подправена сесийна бисквитка не минава', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const forged = Buffer.from(JSON.stringify({ u: 'admin', exp: Date.now() + 999999 })).toString(
+      'base64url'
+    );
+    const r = await fetch(`${base}/`, {
+      redirect: 'manual',
+      headers: { cookie: `reklamchik_session=${forged}.fakefakesignature` },
+    });
+    assert.equal(r.status, 302);
+    assert.equal(r.headers.get('location'), '/login');
+  } finally {
+    server.close();
+  }
+});

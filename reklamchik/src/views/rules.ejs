@@ -41,6 +41,7 @@
         <option value="cpa">CPA (цена на конверсия)</option>
         <option value="roas">ROAS (възвръщаемост)</option>
         <option value="ctr">CTR</option>
+        <option value="ctr_drop_pct">CTR спад % спрямо предишния прозорец (fatigue)</option>
         <option value="frequency">Честота (fatigue)</option>
         <option value="spend_today">Разход днес</option>
         <option value="conversions">Конверсии</option>
@@ -58,7 +59,7 @@
         <option value="scale_budget">📈 Увеличи бюджета (%)</option>
         <option value="shrink_budget">📉 Намали бюджета (%)</option>
         <option value="notify">🔔 Само отбележи (одит)</option>
-        <option value="activate">▶️ Активирай</option>
+        <%# 'activate' умишлено ЛИПСВА — кампания активира само човек (желязно правило) %>
       </select>
     </label>
     <label>Стойност на действието (%) <input name="action_value" type="number" step="1" max="20" placeholder="до 20"></label>

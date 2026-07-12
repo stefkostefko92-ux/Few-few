@@ -15,7 +15,7 @@ export const config = {
 
   session: {
     cookieName: 'reklamchik_session',
-    // Секрет за подписване на сесията; в продукция — от средата.
+    // Секрет за подписване на сесията; в продукция — от средата (fail-fast по-долу).
     secret: process.env.SESSION_SECRET || 'dev-only-insecure-secret',
     maxAgeMs: 1000 * 60 * 60 * 8, // 8 часа
   },
@@ -56,6 +56,15 @@ export const config = {
     maxTotalDailyBudget: Number(process.env.GUARD_MAX_TOTAL_DAILY_BUDGET || 1500),
   },
 };
+
+// Fail-fast: сесийният секрет подписва админ бисквитката (пълен контрол над бюджети) —
+// известният dev низ в продукция = фалшифицируема сесия. Симетрично на ENCRYPTION_KEY.
+if (
+  config.env === 'production' &&
+  (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)
+) {
+  throw new Error('SESSION_SECRET е задължителен в продукция (≥32 знака)');
+}
 
 export function isDryRun() {
   // Без реални креденшъли работим в dry-run: всичко се симулира локално,

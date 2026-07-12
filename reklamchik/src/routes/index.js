@@ -168,6 +168,17 @@ router.post('/campaigns', (req, res) => {
     )
     .run(campaign);
   audit('admin', 'campaign_created', { campaignId: info.lastInsertRowid });
+  // GDPR чл. 7(1) отчетност: consent декларацията се логва (кой, кога, за кой домейн).
+  // ВАЖНО: това е декларация на оператора — реалното съгласие се доказва на самия сайт (CMP/Consent Mode v2).
+  if (spec.consent_confirmed) {
+    audit('admin', 'consent_declaration', {
+      campaignId: info.lastInsertRowid,
+      detail: {
+        domain: spec.final_url || '(без URL)',
+        declared: 'CMP + Consent Mode v2 / Meta consent сигнали активни за EEA трафик',
+      },
+    });
+  }
 
   if (b.add_recommended_rules === 'on') {
     const target = campaign.bidding_target || 10;
@@ -223,6 +234,42 @@ router.post('/campaigns', (req, res) => {
       null,
       12
     );
+    stmt.run(
+      info.lastInsertRowid,
+      'Умора: CTR спад ≥25% спрямо себе си',
+      'ctr_drop_pct',
+      '>=',
+      25,
+      7,
+      50,
+      'notify',
+      null,
+      48
+    );
+    stmt.run(
+      info.lastInsertRowid,
+      '„Кървяща“ кампания (CTR < 1%, има разход)',
+      'ctr',
+      '<',
+      0.01,
+      7,
+      50,
+      'pause',
+      null,
+      48
+    );
+    stmt.run(
+      info.lastInsertRowid,
+      'Pacing аларма (+15% над дневния бюджет)',
+      'spend_today',
+      '>',
+      campaign.daily_budget * 1.15,
+      1,
+      0,
+      'notify',
+      null,
+      12
+    );
   }
 
   res.redirect(`/campaigns/${info.lastInsertRowid}`);
@@ -254,7 +301,9 @@ router.get('/campaigns/:id', (req, res) => {
 router.post('/campaigns/:id/publish', async (req, res, next) => {
   try {
     const campaign = db.prepare(`SELECT * FROM campaigns WHERE id=?`).get(req.params.id);
-    if (!campaign || campaign.status !== 'draft')
+    // Повторно публикуване е позволено и от 'error' — частичен неуспех (напр. Meta създала
+    // кампанията, но adset-ът гръмнал) иначе заклещва кампанията без изход от UI.
+    if (!campaign || !['draft', 'error'].includes(campaign.status))
       return res.redirect(`/campaigns/${req.params.id}`);
     const violations = checkCampaign(campaign);
     if (violations.length) throw new GuardError(violations);
@@ -332,8 +381,27 @@ router.get('/rules', (req, res) => {
   res.render('rules', { title: 'Правила', rules, campaigns, recommended: RECOMMENDED_RULES });
 });
 
+const ALLOWED_RULE_METRICS = new Set([
+  'cpa',
+  'roas',
+  'ctr',
+  'ctr_drop_pct',
+  'frequency',
+  'spend_today',
+  'conversions',
+]);
+// 'activate' умишлено липсва — кампания активира само човек (желязно правило).
+const ALLOWED_RULE_ACTIONS = new Set(['pause', 'scale_budget', 'shrink_budget', 'notify']);
+
 router.post('/rules', (req, res) => {
   const b = req.body;
+  if (!ALLOWED_RULE_METRICS.has(b.metric) || !ALLOWED_RULE_ACTIONS.has(b.action)) {
+    return res.status(400).render('error', {
+      title: 'Невалидно правило',
+      message:
+        'Непозната метрика или действие. Авто-активиране не съществува — кампания активира само човек.',
+    });
+  }
   db.prepare(
     `INSERT INTO rules (campaign_id, name, metric, operator, threshold, lookback_days, min_spend, action, action_value, cooldown_hours)
      VALUES (?,?,?,?,?,?,?,?,?,?)`

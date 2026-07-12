@@ -22,12 +22,25 @@ export function aggregateMetrics(campaignId, lookbackDays) {
       `SELECT COALESCE(SUM(spend),0) s FROM metrics_daily WHERE campaign_id=? AND date=date('now')`
     )
     .get(campaignId).s;
+  // Предишен прозорец със същата дължина — за относителни („спад спрямо себе си“) метрики.
+  const prev = db
+    .prepare(
+      `SELECT COALESCE(SUM(impressions),0) impressions, COALESCE(SUM(clicks),0) clicks
+       FROM metrics_daily
+       WHERE campaign_id = ? AND date >= date('now', ?) AND date < date('now', ?)`
+    )
+    .get(campaignId, `-${lookbackDays * 2} days`, `-${lookbackDays} days`);
+  const ctr = row.impressions > 0 ? row.clicks / row.impressions : null;
+  const prevCtr = prev.impressions > 0 ? prev.clicks / prev.impressions : null;
   return {
     ...row,
     spend_today: spendToday,
     cpa: row.conversions > 0 ? row.spend / row.conversions : null,
     roas: row.spend > 0 ? row.conversion_value / row.spend : null,
-    ctr: row.impressions > 0 ? row.clicks / row.impressions : null,
+    ctr,
+    // Спад на CTR спрямо собствения предишен прозорец, в проценти (25 = −25%).
+    // null без база — относителна умора се мери срещу себе си, не срещу индустрията.
+    ctr_drop_pct: ctr != null && prevCtr > 0 ? Math.max(0, (1 - ctr / prevCtr) * 100) : null,
   };
 }
 
@@ -45,6 +58,8 @@ function metricValue(agg, metric) {
       return agg.frequency;
     case 'conversions':
       return agg.conversions;
+    case 'ctr_drop_pct':
+      return agg.ctr_drop_pct;
     default:
       return null;
   }
@@ -113,16 +128,8 @@ export async function runRules() {
             },
           });
           fired.push({ rule: rule.name, campaign: campaign.name, action: 'pause' });
-        } else if (rule.action === 'activate' && campaign.status === 'paused') {
-          await connector.setStatus(
-            campaign,
-            campaign.platform === 'google' ? 'ENABLED' : 'ACTIVE'
-          );
-          db.prepare(
-            `UPDATE campaigns SET status='active', updated_at=datetime('now') WHERE id=?`
-          ).run(campaign.id);
-          audit(actor, 'auto_activate', { campaignId: campaign.id });
-          fired.push({ rule: rule.name, campaign: campaign.name, action: 'activate' });
+          // ЖЕЛЯЗНО ПРАВИЛО: 'activate' НЕ съществува като авто-действие. Кампания тръгва
+          // да харчи само със съзнателно човешко действие през UI. Не добавяй такъв клон.
         } else if (rule.action === 'scale_budget' || rule.action === 'shrink_budget') {
           const pct = Math.min(Math.abs(rule.action_value || 20), 20); // твърд таван ±20%/стъпка
           const factor = rule.action === 'scale_budget' ? 1 + pct / 100 : 1 - pct / 100;
@@ -215,6 +222,37 @@ export const RECOMMENDED_RULES = [
     lookback_days: 1,
     min_spend: 0,
     action: 'pause',
+    cooldown_hours: 12,
+  },
+  // От OSS prior art (meta-ads-kit, ads-monitor): ранните сигнали идват ПРЕДИ CPA изобщо да съществува.
+  {
+    name: 'Умора: CTR спад ≥25% спрямо себе си',
+    metric: 'ctr_drop_pct',
+    operator: '>=',
+    threshold: 25,
+    lookback_days: 7,
+    min_spend: 50,
+    action: 'notify',
+    cooldown_hours: 48,
+  },
+  {
+    name: '„Кървяща“ кампания (CTR < 1%, има разход)',
+    metric: 'ctr',
+    operator: '<',
+    threshold: 0.01,
+    lookback_days: 7,
+    min_spend: 50,
+    action: 'pause',
+    cooldown_hours: 48,
+  },
+  {
+    name: 'Pacing аларма (+15% над дневния бюджет)',
+    metric: 'spend_today',
+    operator: '>',
+    thresholdHint: '1.15× дневния бюджет',
+    lookback_days: 1,
+    min_spend: 0,
+    action: 'notify',
     cooldown_hours: 12,
   },
 ];

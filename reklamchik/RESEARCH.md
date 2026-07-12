@@ -135,3 +135,27 @@ _Пълният правен доклад с всички източници —
 | Auto-rule прагове (CPA 2×, ROAS 3д, freq 3.5, ±20%) | `rules.js RECOMMENDED_RULES`            |
 | Rate limit кодове 17/613/80004 retryable            | `metaAds.js call()`                     |
 | Дневен спирачен праг (платформите харчат до 2×)     | препоръчано правило в `routes/index.js` |
+
+---
+
+## 6. OSS prior art (GitHub, проверено 2026-07-12) — какво заимствахме
+
+Дизайнът ни (PAUSED-first, dry-run, одит, твърди тавани) съвпада 1:1 с най-добре приетите
+нови инструменти ([meta-ads-cli](https://github.com/attainmentlabs/meta-ads-cli): PAUSED
+by default, `--dry-run`, env бюджетен таван, JSONL одит; [meta-ads-kit](https://github.com/TheMattBerman/meta-ads-kit),
+273★: monitor → detect → предложение → човешко одобрение). Заимствано в `rules.js`:
+
+- **CTR-спад спрямо себе си** (fatigue): `ctr_drop_pct` ≥25% спрямо предишния прозорец → аларма (meta-ads-kit праг −20%).
+- **„Кървяща“ кампания**: CTR < 1% при наличен разход → пауза преди CPA изобщо да съществува.
+- **Pacing аларма**: разход днес > 1.15× бюджета → ранно предупреждение (ads-monitor ±15%),
+  преди твърдата 1.5× спирачка.
+
+Референции за следващи стъпки (в `_proposals/v2.0.md`):
+
+- [Opteo/google-ads-api](https://github.com/Opteo/google-ads-api) (335★, 231k сваляния/седмица): lifecycle hooks (`onMutationStart/Error/End`) + атомарни мутации с временни ID.
+- [google/ads-api-report-fetcher (gaarf)](https://github.com/google/ads-api-report-fetcher): GAQL заявки като отделни файлове с макроси.
+- [google-marketing-solutions/ads-monitor](https://github.com/google-marketing-solutions/ads-monitor) + [ads-policy-monitor](https://github.com/google-marketing-solutions/ads-policy-monitor): аномалии по „същия ден от седмицата“ + следене на disapprovals/policy статуси — най-честият тих фал.
+- Meta **native automated rules** (`adrules_library`) като backstop при паднал наш scheduler (обхват на метриките — непотвърден).
+- [stape-io/unique-event-id-variable](https://github.com/stape-io/unique-event-id-variable): каноничният pixel↔CAPI dedup pattern (едно `event_id`, генерирано веднъж).
+- [fivetran/dbt_ad_reporting](https://github.com/fivetran/dbt_ad_reporting): schema-еталон за нормализиране на метрики между платформи.
+- Официален [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) (731★) — агентът може да чете акаунти директно през MCP.

@@ -27,13 +27,14 @@ export class MetaAdsConnector {
     for (const [k, v] of Object.entries(params)) {
       body.set(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
     }
-    body.set('access_token', this.token());
+    // Токенът върви в Authorization header, НЕ в URL — URL-ите попадат в proxy/APM логове.
+    const headers = { authorization: `Bearer ${this.token()}` };
     let res;
     if (method === 'GET') {
       url.search = body.toString();
-      res = await fetch(url);
+      res = await fetch(url, { headers });
     } else {
-      res = await fetch(url, { method, body });
+      res = await fetch(url, { method, body, headers });
     }
     const data = await res.json().catch(() => ({}));
     if (!res.ok || data.error) {
@@ -157,8 +158,17 @@ export class MetaAdsConnector {
   }
 
   async setStatus(campaign, status) {
-    // status: ACTIVE | PAUSED
+    // status: ACTIVE | PAUSED. Meta доставя само когато campaign И adset И ad са ACTIVE
+    // (най-рестриктивното ниво печели) → каскадираме до цялата йерархия.
     await this.call('POST', `${campaign.external_id}`, { status });
+    const adsets = await this.call('GET', `${campaign.external_id}/adsets`, { fields: 'id' });
+    for (const adset of adsets.data || []) {
+      await this.call('POST', adset.id, { status });
+      const ads = await this.call('GET', `${adset.id}/ads`, { fields: 'id' });
+      for (const ad of ads.data || []) {
+        await this.call('POST', ad.id, { status });
+      }
+    }
     return { ok: true };
   }
 
