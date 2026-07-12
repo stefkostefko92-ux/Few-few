@@ -386,11 +386,12 @@ export default function CvStudio() {
           {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor />}
         </div>
 
+        {s.layout === "europass" && (
         <div className="card-warm space-y-4 p-5">
           <h2 className="font-display text-lg font-bold">Данни за Europass</h2>
           <p className="text-sm text-ink-soft">
-            Стандартът Europass на ЕС включва и тези полета (по желание) —
-            показват се в Europass шаблона.
+            Стандартът Europass на ЕС включва и тези допълнителни полета (по
+            желание) — попълни ги и се показват в документа по-долу.
           </p>
           {(
             [
@@ -414,6 +415,7 @@ export default function CvStudio() {
             </div>
           ))}
         </div>
+        )}
 
         <ProjectFile
           state={s}

@@ -19,7 +19,10 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
   const cats = [...new Set(FONTS.map((f) => f.cat))];
 
   return (
-    <div className="relative">
+    // Когато менюто е отворено, вдигаме контейнера в собствен stacking context
+    // (z-30), за да не се скрива падащото зад следващата карта (card-warm във
+    // „жива" тема прави backdrop-filter → нов stacking context).
+    <div className={`relative ${open ? "z-30" : ""}`}>
       {label && <span className="field-label">{label}</span>}
       <button
         type="button"
