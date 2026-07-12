@@ -364,3 +364,63 @@ test('HTTP: подправена сесийна бисквитка не мина
     server.close();
   }
 });
+
+// --- Качествен ъпгрейд: икони, retry, policy мониторинг, графики ---
+
+test('икони: зареждат се и са inline SVG (без emoji в UI)', async () => {
+  const { icon } = await import('../src/icons.js');
+  for (const name of ['megaphone', 'play', 'pause', 'flask-conical', 'shield-check']) {
+    assert.match(icon(name), /^<svg[^>]+class="icon /);
+  }
+  assert.equal(icon('няма-такава'), '');
+});
+
+test('withRetry: retry-ва retryable, отказва не-retryable', async () => {
+  const { withRetry } = await import('../src/connectors/base.js');
+  let calls = 0;
+  const result = await withRetry(
+    async () => {
+      calls++;
+      if (calls < 3) {
+        const e = new Error('rate limit');
+        e.retryable = true;
+        throw e;
+      }
+      return 'ok';
+    },
+    { retries: 3, baseDelayMs: 1 }
+  );
+  assert.equal(result, 'ok');
+  assert.equal(calls, 3);
+
+  let calls2 = 0;
+  await assert.rejects(
+    withRetry(
+      async () => {
+        calls2++;
+        throw new Error('фатална'); // без retryable
+      },
+      { retries: 3, baseDelayMs: 1 }
+    )
+  );
+  assert.equal(calls2, 1);
+});
+
+test('policy мониторинг: dry-run връща OK и се записва в policy_json', async () => {
+  const { syncMetrics } = await import('../src/insights.js');
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'active', name: 'Полиси тест' });
+  db.prepare(`UPDATE campaigns SET external_id='dry_meta_pol' WHERE id=?`).run(c.id);
+  await syncMetrics();
+  const row = db.prepare(`SELECT policy_json FROM campaigns WHERE id=?`).get(c.id);
+  const policy = JSON.parse(row.policy_json);
+  assert.equal(policy.status, 'OK');
+  assert.ok(policy.checked_at);
+});
+
+test('dailySeries: нулево-запълнена серия с точната дължина', async () => {
+  const { dailySeries } = await import('../src/insights.js');
+  const s = dailySeries(null, 14);
+  assert.equal(s.length, 14);
+  assert.ok(s.every((d) => typeof d.spend === 'number' && typeof d.conversions === 'number'));
+});

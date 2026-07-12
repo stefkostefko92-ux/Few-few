@@ -1,0 +1,35 @@
+<%# Server-rendered SVG бар-графика — нула клиентски JS (строгият CSP остава чист).
+    Очаква: series = [{ label, values: [{date, value}], cls }], height (vb единици) %>
+<%
+  const H = typeof height !== 'undefined' ? height : 46;
+  const W = 200;
+  const pad = 2;
+  const all = series.flatMap((s) => s.values.map((v) => v.value));
+  const max = Math.max(...all, 0.0001);
+  const n = Math.max(...series.map((s) => s.values.length), 1);
+  const group = (W - pad * 2) / n;
+  const barW = Math.max(1, (group - 1) / series.length);
+%>
+<svg class="chart" viewBox="0 0 <%= W %> <%= H %>" role="img" aria-label="<%= series.map((s) => s.label).join(' и ') %> по дни">
+  <line class="axis" x1="<%= pad %>" y1="<%= H - 8 %>" x2="<%= W - pad %>" y2="<%= H - 8 %>" />
+  <% series.forEach((s, si) => { %>
+    <% s.values.forEach((v, i) => {
+      const h = max > 0 ? (v.value / max) * (H - 14) : 0;
+      const x = pad + i * group + si * barW;
+      const y = H - 8 - h;
+    %>
+    <rect class="bar <%= s.cls || '' %>" x="<%= x.toFixed(2) %>" y="<%= y.toFixed(2) %>" width="<%= barW.toFixed(2) %>" height="<%= h.toFixed(2) %>">
+      <title><%= v.date %> · <%= s.label %>: <%= v.value %></title>
+    </rect>
+    <% }) %>
+  <% }) %>
+  <% const first = series[0]?.values[0]; const last = series[0]?.values[series[0].values.length - 1]; %>
+  <% if (first) { %><text x="<%= pad %>" y="<%= H - 1 %>"><%= first.date.slice(5) %></text><% } %>
+  <% if (last) { %><text x="<%= W - pad - 14 %>" y="<%= H - 1 %>"><%= last.date.slice(5) %></text><% } %>
+  <text x="<%= pad %>" y="6"><%= max.toFixed(0) %></text>
+</svg>
+<div class="chart-legend">
+  <% series.forEach((s) => { %>
+  <span><span class="swatch" style="background: var(<%= s.cls === 'alt' ? '--accent-2' : '--accent' %>)"></span><%= s.label %></span>
+  <% }) %>
+</div>

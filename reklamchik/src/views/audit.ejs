@@ -9,7 +9,7 @@
       <tr>
         <td><time><%= r.at %></time></td>
         <td><%= r.actor %></td>
-        <td><%= r.action %><%= r.dry_run ? ' 🧪' : '' %></td>
+        <td><%= r.action %><% if (r.dry_run) { %> <%- icon('flask-conical') %><% } %></td>
         <td><%= r.campaign_id || '—' %></td>
         <td><code class="small"><%= r.detail_json %></code></td>
       </tr>

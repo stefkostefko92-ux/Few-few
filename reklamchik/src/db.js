@@ -111,6 +111,16 @@ CREATE INDEX IF NOT EXISTS idx_metrics_date ON metrics_daily(date);
 CREATE INDEX IF NOT EXISTS idx_audit_at ON audit_log(at);
 `);
 
+// Леки миграции: колони, добавени след първата схема (ALTER е идемпотентен през проверка).
+const campaignCols = db
+  .prepare(`PRAGMA table_info(campaigns)`)
+  .all()
+  .map((c) => c.name);
+if (!campaignCols.includes('policy_json')) {
+  // Последен известен policy/delivery статус от платформата: {status, issues:[], checked_at}
+  db.exec(`ALTER TABLE campaigns ADD COLUMN policy_json TEXT`);
+}
+
 export function audit(actor, action, { campaignId = null, detail = {}, dryRun = false } = {}) {
   db.prepare(
     `INSERT INTO audit_log (actor, campaign_id, action, detail_json, dry_run) VALUES (?,?,?,?,?)`

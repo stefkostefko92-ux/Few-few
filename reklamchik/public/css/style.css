@@ -326,3 +326,90 @@ footer {
   padding: 1rem;
   border-top: 1px solid var(--border);
 }
+
+/* --- Икони (Lucide, ISC — public/icons/LICENSE) --- */
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  stroke-width: 2;
+}
+.brand .icon {
+  color: var(--accent);
+  width: 1.3em;
+  height: 1.3em;
+}
+.banner .icon {
+  color: var(--warn);
+}
+.topbar nav a .icon {
+  opacity: 0.65;
+  margin-right: 0.15em;
+}
+button .icon {
+  margin-right: 0.25em;
+}
+
+/* Статус точки (замяна на emoji индикаторите) */
+.dot {
+  display: inline-block;
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+  background: var(--border);
+  vertical-align: baseline;
+}
+.dot.on {
+  background: var(--ok);
+  box-shadow: 0 0 6px rgba(62, 207, 142, 0.6);
+}
+.dot.off {
+  background: var(--border);
+}
+
+/* --- SVG бар-графики (server-rendered, нула JS) --- */
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 0.4rem;
+}
+.chart .bar {
+  fill: var(--accent);
+  opacity: 0.85;
+}
+.chart .bar.alt {
+  fill: var(--accent-2);
+}
+.chart .axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.chart text {
+  fill: var(--muted);
+  font-size: 5px;
+  font-family: inherit;
+}
+.chart-legend {
+  color: var(--muted);
+  font-size: 0.8rem;
+  display: flex;
+  gap: 1rem;
+}
+.chart-legend .swatch {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 2px;
+  vertical-align: baseline;
+  margin-right: 0.3em;
+}
+
+/* Полиш */
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.badge.s-issues {
+  background: #3a2a17;
+  color: var(--warn);
+}

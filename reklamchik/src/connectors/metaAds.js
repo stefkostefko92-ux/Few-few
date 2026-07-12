@@ -5,6 +5,7 @@
 import { config } from '../config.js';
 import { decrypt } from '../crypto.js';
 import { audit } from '../db.js';
+import { withRetry } from './base.js';
 
 export class MetaAdsConnector {
   constructor(connection) {
@@ -21,7 +22,11 @@ export class MetaAdsConnector {
     return decrypt(this.conn.refresh_token_enc);
   }
 
-  async call(method, path, params = {}) {
+  call(method, path, params = {}) {
+    return withRetry(() => this.callOnce(method, path, params));
+  }
+
+  async callOnce(method, path, params = {}) {
     const url = new URL(`${this.base}/${path}`);
     const body = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
@@ -177,6 +182,19 @@ export class MetaAdsConnector {
       daily_budget: Math.round(newBudget * 100),
     });
     return { ok: true };
+  }
+
+  async fetchDeliveryIssues(campaign) {
+    // Тихият фал: неодобрена реклама. issues_info носи error_code/error_summary по обект.
+    const data = await this.call('GET', `${campaign.external_id}`, {
+      fields: 'effective_status,issues_info',
+    });
+    const issues = (data.issues_info || []).map((i) =>
+      `${i.level || ''} ${i.error_summary || i.error_message || i.error_code}`.trim()
+    );
+    if (['DISAPPROVED', 'WITH_ISSUES'].includes(data.effective_status))
+      issues.unshift(`effective_status: ${data.effective_status}`);
+    return { status: issues.length ? 'ISSUES' : 'OK', issues };
   }
 
   async fetchDailyMetrics(campaign, dateStr) {

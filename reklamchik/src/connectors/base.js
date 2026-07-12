@@ -5,6 +5,22 @@ import crypto from 'node:crypto';
 import { isDryRun } from '../config.js';
 import { audit } from '../db.js';
 
+// Retry с exponential backoff за retryable платформени грешки (Meta 4/17/613/80004,
+// Google TRANSIENT/INTERNAL). Дневните квоти НЕ се retry-ват — те не са преходни.
+export async function withRetry(fn, { retries = 3, baseDelayMs = 2000 } = {}) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (!err.retryable || attempt === retries) throw err;
+      await new Promise((r) => setTimeout(r, baseDelayMs * 2 ** attempt));
+    }
+  }
+  throw lastErr;
+}
+
 export class DryRunConnector {
   constructor(platform) {
     this.platform = platform;
@@ -32,6 +48,11 @@ export class DryRunConnector {
       dryRun: true,
     });
     return Promise.resolve({ ok: true });
+  }
+
+  // Policy/delivery статус: в dry-run всичко е одобрено (детерминистично).
+  fetchDeliveryIssues() {
+    return Promise.resolve({ status: 'OK', issues: [] });
   }
 
   // Симулирани, но правдоподобни метрики: детерминистични по (кампания, дата),

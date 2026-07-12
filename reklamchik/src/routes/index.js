@@ -6,6 +6,7 @@ import { createSession, destroySession, requireAuth, verifyLogin } from '../auth
 import { checkCampaign, GuardError } from '../guard.js';
 import { resolveConnector } from '../connectors/base.js';
 import { aggregateMetrics, RECOMMENDED_RULES } from '../rules.js';
+import { dailySeries } from '../insights.js';
 import { tick } from '../scheduler.js';
 
 export const router = express.Router();
@@ -42,7 +43,13 @@ router.get('/', (req, res) => {
     { spend: 0, conversions: 0, value: 0, clicks: 0 }
   );
   const recentAudit = db.prepare(`SELECT * FROM audit_log ORDER BY id DESC LIMIT 12`).all();
-  res.render('dashboard', { title: 'Дашборд', campaigns: enriched, totals, recentAudit });
+  res.render('dashboard', {
+    title: 'Дашборд',
+    campaigns: enriched,
+    totals,
+    recentAudit,
+    series: dailySeries(null, 14),
+  });
 });
 
 // ---------- Връзки ----------
@@ -294,6 +301,7 @@ router.get('/campaigns/:id', (req, res) => {
     metrics,
     rules,
     auditRows,
+    series: dailySeries(campaign.id, 14),
   });
 });
 

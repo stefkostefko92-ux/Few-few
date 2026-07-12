@@ -9,22 +9,22 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">📣 Рекламчика</div>
+  <div class="brand"><%- icon('megaphone') %> Рекламчика</div>
   <% if (typeof hideNav === 'undefined') { %>
   <nav>
-    <a href="/">Дашборд</a>
-    <a href="/campaigns/new">Нова кампания</a>
-    <a href="/rules">Правила</a>
-    <a href="/connections">Връзки</a>
-    <a href="/audit">Одит</a>
+    <a href="/"><%- icon('gauge') %> Дашборд</a>
+    <a href="/campaigns/new"><%- icon('plus') %> Нова кампания</a>
+    <a href="/rules"><%- icon('bell') %> Правила</a>
+    <a href="/connections"><%- icon('link-2') %> Връзки</a>
+    <a href="/audit"><%- icon('file-clock') %> Одит</a>
   </nav>
   <form method="post" action="/logout" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <button class="ghost">Изход</button>
+    <button class="ghost"><%- icon('log-out') %> Изход</button>
   </form>
   <% } %>
 </header>
 <% if (dryRun && typeof hideNav === 'undefined') { %>
-<div class="banner">🧪 DRY-RUN режим — няма конфигурирани API креденшъли. Всичко се симулира локално; нито стотинка не се харчи.</div>
+<div class="banner"><%- icon('flask-conical') %> DRY-RUN режим — няма конфигурирани API креденшъли. Всичко се симулира локално; нито стотинка не се харчи.</div>
 <% } %>
 <main>

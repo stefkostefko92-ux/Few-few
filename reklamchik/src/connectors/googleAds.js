@@ -4,6 +4,7 @@
 import { config } from '../config.js';
 import { decrypt, encrypt } from '../crypto.js';
 import { db, audit } from '../db.js';
+import { withRetry } from './base.js';
 
 const OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
@@ -58,7 +59,11 @@ export class GoogleAdsConnector {
     return h;
   }
 
-  async post(path, body) {
+  post(path, body) {
+    return withRetry(() => this.postOnce(path, body));
+  }
+
+  async postOnce(path, body) {
     const res = await fetch(`${this.base}/${path}`, {
       method: 'POST',
       headers: await this.headers(),
@@ -67,7 +72,12 @@ export class GoogleAdsConnector {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const msg = data?.error?.message || res.statusText;
-      throw new Error(`Google Ads API ${res.status}: ${msg}`);
+      const err = new Error(`Google Ads API ${res.status}: ${msg}`);
+      // 500/503/504 и timeout-и са преходни; 429 дневна квота НЕ се retry-ва тук.
+      err.retryable =
+        [500, 503, 504].includes(res.status) ||
+        /TRANSIENT|INTERNAL_ERROR|DEADLINE_EXCEEDED/.test(msg);
+      throw err;
     }
     return data;
   }
@@ -180,6 +190,20 @@ export class GoogleAdsConnector {
       ],
     });
     return { ok: true };
+  }
+
+  async fetchDeliveryIssues(campaign) {
+    // primary_status обяснява защо кампанията не доставя (policy, бюджет, одобрение…).
+    const q = await this.post(`customers/${this.customerId}/googleAds:search`, {
+      query: `SELECT campaign.primary_status, campaign.primary_status_reasons
+              FROM campaign WHERE campaign.id = ${Number(campaign.external_id)}`,
+    });
+    const c = q.results?.[0]?.campaign || {};
+    const bad = ['NOT_ELIGIBLE', 'MISCONFIGURED', 'LIMITED'].includes(c.primaryStatus);
+    const issues = bad
+      ? [`primary_status: ${c.primaryStatus}`, ...(c.primaryStatusReasons || [])]
+      : [];
+    return { status: issues.length ? 'ISSUES' : 'OK', issues };
   }
 
   async fetchDailyMetrics(campaign, dateStr) {

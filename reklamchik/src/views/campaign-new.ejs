@@ -58,7 +58,7 @@
     <label class="check"><input type="checkbox" name="placements" value="instagram"> Instagram</label>
     <label class="check"><input type="checkbox" name="placements" value="threads"> Threads (изисква Instagram)</label>
     <label class="check"><input type="checkbox" name="placements" value="messenger"> Messenger</label>
-    <label class="check"><input type="checkbox" name="whatsapp"> 💬 Click-to-WhatsApp (изисква Page със свързан WhatsApp номер)</label>
+    <label class="check"><input type="checkbox" name="whatsapp"> <%- icon('message-circle') %> Click-to-WhatsApp (изисква Page със свързан WhatsApp номер)</label>
   </fieldset>
 
   <label>Meta Page ID <input name="page_id" placeholder="за Meta кампании с креатив"></label>
@@ -80,10 +80,10 @@
 
   <fieldset class="span2">
     <legend>Съответствие (задължително за публикуване)</legend>
-    <label class="check"><input type="checkbox" name="consent_confirmed"> ✅ Сайтът има CMP + Consent Mode v2 / Meta consent сигнали за EEA трафик</label>
-    <label class="check"><input type="checkbox" name="ai_generated_creative"> 🤖 Креативът е AI-генериран</label>
-    <label class="check"><input type="checkbox" name="ai_disclosure_confirmed"> ✅ AI креативът носи разкриване + машинно-четима маркировка (AI Act чл. 50)</label>
-    <label class="check"><input type="checkbox" name="add_recommended_rules" checked> 🛡️ Добави препоръчаните авто-правила (пауза при изгорял CPA, скалиране +20%, умора на креатива, дневен спирачен праг)</label>
+    <label class="check"><input type="checkbox" name="consent_confirmed"> <%- icon('check') %> Сайтът има CMP + Consent Mode v2 / Meta consent сигнали за EEA трафик</label>
+    <label class="check"><input type="checkbox" name="ai_generated_creative"> <%- icon('bot') %> Креативът е AI-генериран</label>
+    <label class="check"><input type="checkbox" name="ai_disclosure_confirmed"> <%- icon('check') %> AI креативът носи разкриване + машинно-четима маркировка (AI Act чл. 50)</label>
+    <label class="check"><input type="checkbox" name="add_recommended_rules" checked> <%- icon('shield-check') %> Добави препоръчаните авто-правила (пауза при изгорял CPA, скалиране +20%, умора на креатива, дневен спирачен праг)</label>
   </fieldset>
 
   <button class="primary span2">Създай чернова</button>

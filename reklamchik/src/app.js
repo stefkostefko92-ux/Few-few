@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { config, isDryRun } from './config.js';
 import { csrfMiddleware } from './csrf.js';
+import { icon } from './icons.js';
 import { router } from './routes/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -55,6 +56,7 @@ export function createApp() {
   app.use((req, res, next) => {
     res.locals.dryRun = isDryRun();
     res.locals.env = config.env;
+    res.locals.icon = icon;
     next();
   });
   app.use(csrfMiddleware);

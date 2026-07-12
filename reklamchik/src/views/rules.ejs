@@ -8,7 +8,7 @@
     <tbody>
       <% for (const r of rules) { %>
       <tr>
-        <td><%= r.enabled ? '🟢' : '⚪' %> <%= r.name %></td>
+        <td><span class="dot <%= r.enabled ? 'on' : 'off' %>"></span> <%= r.name %></td>
         <td><%= r.campaign_name || 'всички кампании' %></td>
         <td><code><%= r.metric %> <%= r.operator %> <%= r.threshold %></code> (<%= r.lookback_days %>д, мин. <%= r.min_spend %>)</td>
         <td><%= r.action %><%= r.action_value ? ' ' + r.action_value + '%' : '' %></td>
@@ -55,10 +55,10 @@
     <label>Мин. разход преди действие <input name="min_spend" type="number" step="0.01" value="100"></label>
     <label>Действие
       <select name="action">
-        <option value="pause">⏸️ Паузирай</option>
-        <option value="scale_budget">📈 Увеличи бюджета (%)</option>
-        <option value="shrink_budget">📉 Намали бюджета (%)</option>
-        <option value="notify">🔔 Само отбележи (одит)</option>
+        <option value="pause">Паузирай</option>
+        <option value="scale_budget">Увеличи бюджета (%)</option>
+        <option value="shrink_budget">Намали бюджета (%)</option>
+        <option value="notify">Само отбележи (одит)</option>
         <%# 'activate' умишлено ЛИПСВА — кампания активира само човек (желязно правило) %>
       </select>
     </label>

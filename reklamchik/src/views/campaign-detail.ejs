@@ -6,34 +6,38 @@
   · <%= campaign.daily_budget.toFixed(2) %> <%= campaign.currency %>/ден
   <% if (campaign.external_id) { %> · външен ID: <code><%= campaign.external_id %></code><% } %>
 </p>
+<% const policy = campaign.policy_json ? JSON.parse(campaign.policy_json) : null; %>
+<% if (policy && policy.status === 'ISSUES') { %>
+<p class="error"><%- icon('bell') %> Проблем с доставката/одобрението: <%= policy.issues.join(' · ') %> <span class="hint">(проверено <%= policy.checked_at %>)</span></p>
+<% } %>
 <% if (campaign.last_error) { %><p class="error">Последна грешка: <%= campaign.last_error %></p><% } %>
 
 <section class="actions">
   <% if (campaign.status === 'draft') { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/publish" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <button class="primary">📤 Публикувай (ПАУЗИРАНА)</button>
+    <button class="primary"><%- icon('upload') %> Публикувай (ПАУЗИРАНА)</button>
   </form>
   <% } %>
   <% if (['published','paused'].includes(campaign.status)) { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="to" value="active">
-    <button class="primary">▶️ Активирай (започва да харчи!)</button>
+    <button class="primary"><%- icon('play') %> Активирай (започва да харчи!)</button>
   </form>
   <% } %>
   <% if (campaign.status === 'active') { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="to" value="paused">
-    <button class="warn">⏸️ Паузирай</button>
+    <button class="warn"><%- icon('pause') %> Паузирай</button>
   </form>
   <% } %>
   <% if (campaign.status !== 'archived') { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="to" value="archived">
-    <button class="ghost danger">Архивирай</button>
+    <button class="ghost danger"><%- icon('archive') %> Архивирай</button>
   </form>
   <% } %>
 </section>
@@ -44,6 +48,16 @@
   <div class="stat"><span class="label">ROAS</span><span class="value"><%= agg.roas ? agg.roas.toFixed(2) : '—' %></span></div>
   <div class="stat"><span class="label">CTR</span><span class="value"><%= agg.ctr ? (agg.ctr * 100).toFixed(2) + '%' : '—' %></span></div>
   <div class="stat"><span class="label">Честота</span><span class="value"><%= agg.frequency ? agg.frequency.toFixed(2) : '—' %></span></div>
+</section>
+
+<section class="card">
+  <h2>Последните 14 дни</h2>
+  <%- include('_chart', {
+    series: [
+      { label: 'Разход', values: series.map((d) => ({ date: d.date, value: d.spend })) },
+      { label: 'Конверсии', values: series.map((d) => ({ date: d.date, value: d.conversions })), cls: 'alt' },
+    ],
+  }) %>
 </section>
 
 <section class="card">
@@ -63,7 +77,7 @@
   <h2>Правила за тази кампания</h2>
   <ul>
     <% for (const r of rules) { %>
-    <li><strong><%= r.name %></strong>: <%= r.metric %> <%= r.operator %> <%= r.threshold %> (<%= r.lookback_days %>д, мин. разход <%= r.min_spend %>) → <%= r.action %><%= r.action_value ? ' ' + r.action_value + '%' : '' %> · cooldown <%= r.cooldown_hours %>ч <%= r.enabled ? '🟢' : '⚪' %></li>
+    <li><strong><%= r.name %></strong>: <%= r.metric %> <%= r.operator %> <%= r.threshold %> (<%= r.lookback_days %>д, мин. разход <%= r.min_spend %>) → <%= r.action %><%= r.action_value ? ' ' + r.action_value + '%' : '' %> · cooldown <%= r.cooldown_hours %>ч <span class="dot <%= r.enabled ? 'on' : 'off' %>"></span></li>
     <% } %>
     <% if (!rules.length) { %><li>Няма правила — <a href="/rules">добави</a>.</li><% } %>
   </ul>
@@ -73,7 +87,7 @@
   <h2>Одитна следа</h2>
   <ul class="feed">
     <% for (const a of auditRows) { %>
-    <li><time><%= a.at %></time> <strong><%= a.actor %></strong> · <%= a.action %><%= a.dry_run ? ' 🧪' : '' %></li>
+    <li><time><%= a.at %></time> <strong><%= a.actor %></strong> · <%= a.action %><% if (a.dry_run) { %> <%- icon('flask-conical') %><% } %></li>
     <% } %>
   </ul>
 </section>
