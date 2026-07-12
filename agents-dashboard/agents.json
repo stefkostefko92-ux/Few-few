@@ -1189,9 +1189,20 @@
           "date": "2026-07-12",
           "event": "v11.6 — учене",
           "detail": "Научи: Supreme AdBlock cosmetic_generic.css (EasyList generic) НЕ съдържа broad bare селектори… (+3 още)"
+        },
+        {
+          "version": "11.7.0",
+          "date": "2026-07-12",
+          "event": "v11.7 — учене",
+          "detail": "Научи: Chrome DNR RuleCondition: block правило БЕЗ resourceTypes И БЕЗ excludedResourceTypes м… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-12",
+          "type": "learning",
+          "summary": "Научи: „Chrome DNR RuleCondition: block правило БЕЗ resourceTypes И БЕЗ excludedResourceTypes м…\" (+1 още)"
+        },
         {
           "date": "2026-07-12",
           "type": "learning",
