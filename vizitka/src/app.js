@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import crypto from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -24,6 +25,22 @@ seedAdmins(); // маркира конфигурираните ADMIN_EMAILS ак
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === 'production';
 const app = express();
+
+// Версия на статичните файлове (хеш от съдържанието) за cache-busting: статиката се
+// кешира 7 дни, затова добавяме ?v=<hash> към styles.css/app.js — при всяка промяна
+// хешът се сменя и браузърите теглят новия файл (иначе стар CSS + нов HTML = счупен вид).
+const assetVer = (() => {
+  try {
+    const pub = join(__dirname, '..', 'public');
+    const buf = Buffer.concat([
+      readFileSync(join(pub, 'styles.css')),
+      readFileSync(join(pub, 'app.js')),
+    ]);
+    return crypto.createHash('sha1').update(buf).digest('hex').slice(0, 8);
+  } catch {
+    return String(Date.now());
+  }
+})();
 
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
@@ -86,6 +103,7 @@ app.use((req, res, next) => {
   res.locals.company = COMPANY;
   res.locals.siteBase = baseUrl(req);
   res.locals.icon = icon; // premium SVG иконки: <%- icon('phone') %>
+  res.locals.assetVer = assetVer; // cache-busting за styles.css/app.js
   next();
 });
 
