@@ -179,3 +179,58 @@ test('HTTP: / без сесия → redirect към /login; /login рендир�
     server.close();
   }
 });
+
+test('HTTP: архивиране на активна кампания я паузира и в платформата', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    // 1) Логин с dev креденшъли (CSRF: бисквитка + скрито поле).
+    const r1 = await fetch(`${base}/login`);
+    const cookies = r1.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const csrf = (await r1.text()).match(/name="_csrf" value="([^"]+)"/)[1];
+    const r2 = await fetch(`${base}/login`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { cookie: cookies, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ _csrf: csrf, email: 'admin@localhost', password: 'admin' }),
+    });
+    assert.equal(r2.status, 302);
+    const session = r2.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const jar = `${cookies}; ${session}`;
+
+    // 2) Активна публикувана кампания директно в базата.
+    const connId = seedConnection();
+    const c = seedCampaign(connId, { status: 'active' });
+    db.prepare(`UPDATE campaigns SET external_id='dry_meta_test' WHERE id=?`).run(c.id);
+
+    // 3) Архивиране през HTTP.
+    const r3 = await fetch(`${base}/campaigns/${c.id}/status`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { cookie: jar, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ _csrf: csrf, to: 'archived' }),
+    });
+    assert.equal(r3.status, 302);
+
+    // 4) Локално архивирана + платформена пауза (в dry-run: одитен запис от конектора).
+    assert.equal(
+      db.prepare(`SELECT status FROM campaigns WHERE id=?`).get(c.id).status,
+      'archived'
+    );
+    const paused = db
+      .prepare(
+        `SELECT COUNT(*) n FROM audit_log WHERE campaign_id=? AND action LIKE 'set_status(dry-run)%'`
+      )
+      .get(c.id).n;
+    assert.ok(paused >= 1, 'архивирането трябва да прати PAUSED към платформата');
+  } finally {
+    server.close();
+  }
+});

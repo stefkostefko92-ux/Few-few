@@ -294,7 +294,9 @@ router.post('/campaigns/:id/status', async (req, res, next) => {
       const violations = checkCampaign(campaign);
       if (violations.length) throw new GuardError(violations);
     }
-    if (campaign.external_id && wanted !== 'archived') {
+    // ВСЯКА промяна на статус се отразява в платформата — включително архивиране:
+    // архивирана при нас, но активна в платформата кампания би продължила да харчи.
+    if (campaign.external_id) {
       const conn = db.prepare(`SELECT * FROM connections WHERE id=?`).get(campaign.connection_id);
       const connector = await resolveConnector(campaign.platform, conn);
       const platformStatus =

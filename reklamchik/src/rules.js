@@ -100,7 +100,7 @@ export async function runRules() {
         const connector = await resolveConnector(campaign.platform, conn);
 
         if (rule.action === 'pause' && campaign.status === 'active') {
-          await connector.setStatus(campaign, campaign.platform === 'google' ? 'PAUSED' : 'PAUSED');
+          await connector.setStatus(campaign, 'PAUSED'); // PAUSED и за двете платформи
           db.prepare(
             `UPDATE campaigns SET status='paused', updated_at=datetime('now') WHERE id=?`
           ).run(campaign.id);
