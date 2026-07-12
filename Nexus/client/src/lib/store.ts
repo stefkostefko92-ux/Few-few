@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, setToken, getToken } from './api';
+import { api, setToken, getToken, setBannedHandler } from './api';
 import type { Character, Derived } from './types';
 
 interface User {
@@ -21,6 +21,8 @@ interface State {
   unreadMail: number;
   loading: boolean;
   toasts: Toast[];
+  /** Ако е зададено, сървърът е спрял достъпа. `until` 0 = постоянен. */
+  banned: { reason: string; until: number } | null;
 
   init: () => Promise<void>;
   login: (username: string, password: string) => Promise<void>;
@@ -48,6 +50,14 @@ export interface Toast {
 
 let toastId = 0;
 
+// Регистрира глобалния бан хендлър в api-слоя веднъж при създаване на
+// store-а: всяка 403 { error:'banned' } заявка вдига `banned` състоянието,
+// което App рендира като пълноекранен ban screen. Връща началната стойност.
+function registerBanHandler(set: (partial: Partial<State>) => void): null {
+  setBannedHandler((reason: string, until: number) => set({ banned: { reason, until } }));
+  return null;
+}
+
 export const useStore = create<State>((set, get) => ({
   user: null,
   token: getToken(),
@@ -58,6 +68,7 @@ export const useStore = create<State>((set, get) => ({
   loading: false,
   toasts: [],
   levelUp: null,
+  banned: registerBanHandler(set),
 
   async init() {
     if (!getToken()) return;

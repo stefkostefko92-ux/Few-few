@@ -5,6 +5,7 @@ import { authRequired } from '../middleware/auth';
 import { PRODUCTS, findProduct } from '../seed/products';
 import type { Character } from '../types/domain';
 import { logFromRequest, logEvent } from '../lib/logger';
+import { banUser } from '../lib/bans';
 
 const router = Router();
 
@@ -397,11 +398,68 @@ webhookRouter.post('/', async (req, res) => {
           const country = session.customer_details?.address?.country
             || session.customer_details?.tax_ids?.[0]?.country
             || null;
+          // Запази и payment_intent — по него после откриваме поръчката
+          // при chargeback (charge.dispute.created сочи payment_intent).
+          const pi = (typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id) || null;
           getDb().prepare(
-            `UPDATE purchases SET tax_country = ?, tax_amount_cents = ? WHERE id = ?`,
-          ).run(country, taxCents, purchaseId);
+            `UPDATE purchases SET tax_country = ?, tax_amount_cents = ?, stripe_payment_intent = COALESCE(stripe_payment_intent, ?) WHERE id = ?`,
+          ).run(country, taxCents, pi, purchaseId);
         } catch { /* tax columns added by forward migration */ }
         applyPurchase(purchaseId);
+      }
+    } else if (event.type === 'charge.dispute.created') {
+      // Chargeback → ПОСТОЯНЕН бан на потребителя + неговите IP и device-id
+      // (по изрична политика на оператора). Открий поръчката по payment
+      // intent, оттам character → user, банни с последните известни ip/hwid.
+      const dispute = event.data.object;
+      const pi = dispute.payment_intent as string | undefined;
+      if (pi) {
+        const db = getDb();
+        const row = db.prepare(
+          `SELECT p.id AS purchase_id, c.user_id AS user_id, u.last_ip AS last_ip, u.last_hwid AS last_hwid
+             FROM purchases p
+             JOIN characters c ON c.id = p.character_id
+             JOIN users u ON u.id = c.user_id
+            WHERE p.stripe_payment_intent = ?`,
+        ).get(pi) as { purchase_id: number; user_id: number; last_ip: string; last_hwid: string } | undefined;
+        if (row) {
+          banUser({ userId: row.user_id, ip: row.last_ip, hwid: row.last_hwid, reason: 'Chargeback (Stripe dispute)' });
+          db.prepare(`UPDATE purchases SET status = 'disputed' WHERE id = ?`).run(row.purchase_id);
+          logEvent({
+            category: 'moderation', action: 'chargeback_ban', level: 'warn',
+            user_id: row.user_id, target_id: row.purchase_id, target_type: 'purchase',
+            message: `Chargeback → permanent ban (user ${row.user_id})`,
+            meta: { ip: row.last_ip, hwid: row.last_hwid, dispute_id: dispute.id },
+          });
+        }
+      }
+    } else if (event.type === 'charge.refunded') {
+      // ДОБРОВОЛЕН refund (иницииран от нас/поддръжка) — НЕ е chargeback,
+      // затова БЕЗ бан. Маркирай поръчката refunded и отнеми кредитираните
+      // gems (стоката се връща заедно с парите), под 0 — floor 0. Атомарно.
+      const charge = event.data.object;
+      const pi = charge.payment_intent as string | undefined;
+      if (pi) {
+        const db = getDb();
+        const row = db.prepare(
+          `SELECT p.id AS purchase_id, p.character_id AS character_id, p.status AS status, p.effect_payload AS effect_payload
+             FROM purchases p WHERE p.stripe_payment_intent = ?`,
+        ).get(pi) as { purchase_id: number; character_id: number; status: string; effect_payload: string } | undefined;
+        if (row && row.status !== 'refunded') {
+          const gems = Number(JSON.parse(row.effect_payload || '{}').gems || 0) || 0;
+          const tx = db.transaction(() => {
+            db.prepare(`UPDATE purchases SET status = 'refunded' WHERE id = ?`).run(row.purchase_id);
+            if (gems > 0) db.prepare(`UPDATE characters SET gems = MAX(0, gems - ?) WHERE id = ?`).run(gems, row.character_id);
+          });
+          tx();
+          logEvent({
+            category: 'payment', action: 'refunded', level: 'warn',
+            character_id: row.character_id, target_id: row.purchase_id, target_type: 'purchase',
+            message: `Refund → ${gems} gems clawed back`, meta: { charge_id: charge.id },
+          });
+        }
       }
     }
     res.json({ received: true });

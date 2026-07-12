@@ -6,6 +6,7 @@ import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
 import { logFromRequest, logEvent, isSafeWebhookUrl } from '../lib/logger';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
+import { banUser, unbanUser } from '../lib/bans';
 
 const router = Router();
 router.use(authRequired, adminRequired);
@@ -650,6 +651,167 @@ router.get('/server', (_req, res) => {
     env: process.env.NODE_ENV || 'development',
     pid: process.pid,
   });
+});
+
+/* =========================================================
+   Moderation (DSA чл. 16(6)/17 — targeted takedown + бан)
+
+   Одиторът (Правния Разбирач) отбеляза, че dsa.ts приема сигнали, но
+   нямаше начин да се СВАЛИ конкретно съдържание (само триене на цял
+   акаунт). Тези endpoint-и дават таргетирано действие + доставка на
+   обосновка (statement of reasons) към ЗАСЕГНАТИЯ автор. Обжалване по
+   чл. 20 не се строи — освободено за микро-предприятия (Раздел 3, чл. 19).
+   ========================================================= */
+
+/** Доставя обосновка (чл. 17) до засегнатия герой чрез вътрешната поща. */
+function notifyAffected(characterId: number, reason: string): void {
+  try {
+    getDb().prepare(
+      `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
+    ).run(
+      characterId,
+      'Trust & Safety',
+      'Content moderation notice',
+      `Some of your content was removed or reset by our moderation team.\n\nReason: ${reason}\n\n`
+        + 'This action was taken under our Terms and the EU Digital Services Act (Art. 17). '
+        + 'If you believe this was a mistake, reply to this message to contact us.',
+      Date.now(),
+    );
+  } catch { /* mail table present in all deploys; ignore mid-migration */ }
+}
+
+const takedownSchema = z.object({
+  kind: z.enum(['character_name', 'guild_name', 'guild_tag', 'guild_motto', 'bio', 'chat_message']),
+  targetId: z.number().int().positive(),
+  reason: z.string().min(3).max(300),
+  notify: z.boolean().default(true),
+  noticeId: z.number().int().positive().optional(), // ако идва от DSA сигнал → резолвни го
+});
+
+router.post('/moderation/takedown', (req, res) => {
+  const parse = takedownSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const { kind, targetId, reason, notify, noticeId } = parse.data;
+  const db = getDb();
+  let affectedChar: number | undefined;
+  let detail = '';
+
+  const tx = db.transaction(() => {
+    switch (kind) {
+      case 'character_name': {
+        const row = db.prepare('SELECT id FROM characters WHERE id = ?').get(targetId) as { id: number } | undefined;
+        if (!row) return 'not_found';
+        db.prepare('UPDATE characters SET name = ? WHERE id = ?').run(`Reclaimed${targetId}`, targetId);
+        affectedChar = targetId; detail = `character name → Reclaimed${targetId}`;
+        return 'ok';
+      }
+      case 'bio': {
+        const row = db.prepare('SELECT id FROM characters WHERE id = ?').get(targetId) as { id: number } | undefined;
+        if (!row) return 'not_found';
+        db.prepare("UPDATE characters SET bio = '' WHERE id = ?").run(targetId);
+        affectedChar = targetId; detail = 'bio cleared';
+        return 'ok';
+      }
+      case 'guild_name':
+      case 'guild_tag':
+      case 'guild_motto': {
+        const g = db.prepare('SELECT id, leader_id FROM guilds WHERE id = ?').get(targetId) as { id: number; leader_id: number } | undefined;
+        if (!g) return 'not_found';
+        if (kind === 'guild_name') { db.prepare('UPDATE guilds SET name = ? WHERE id = ?').run(`Guild ${targetId}`, targetId); detail = 'guild name reset'; }
+        else if (kind === 'guild_tag') { db.prepare('UPDATE guilds SET tag = ? WHERE id = ?').run(('G' + targetId).slice(0, 5).toUpperCase(), targetId); detail = 'guild tag reset'; }
+        else { db.prepare("UPDATE guilds SET motto = '' WHERE id = ?").run(targetId); detail = 'guild motto cleared'; }
+        affectedChar = g.leader_id;
+        return 'ok';
+      }
+      case 'chat_message': {
+        const msg = db.prepare('SELECT character_id FROM guild_chat WHERE id = ?').get(targetId) as { character_id: number } | undefined;
+        if (!msg) return 'not_found';
+        db.prepare('DELETE FROM guild_chat WHERE id = ?').run(targetId);
+        affectedChar = msg.character_id; detail = 'chat message removed';
+        return 'ok';
+      }
+    }
+    return 'not_found';
+  });
+
+  const outcome = tx();
+  if (outcome === 'not_found') { res.status(404).json({ error: 'Target not found' }); return; }
+
+  if (notify && affectedChar) notifyAffected(affectedChar, reason);
+  if (noticeId) {
+    db.prepare(`UPDATE dsa_notices SET status = 'actioned', decision = ?, decided_at = ? WHERE id = ?`)
+      .run(reason, Date.now(), noticeId);
+  }
+  logEvent({
+    category: 'moderation', action: 'takedown', level: 'warn',
+    user_id: req.auth!.uid, target_id: targetId, target_type: kind,
+    message: `Takedown: ${detail}`, meta: { reason, notified: notify && !!affectedChar, noticeId: noticeId ?? null },
+  });
+  res.json({ ok: true, kind, targetId, detail, notified: notify && !!affectedChar });
+});
+
+/**
+ * Ръчен бан (chargeback банът минава през webhook-а автоматично).
+ * `durationMs` по избор: 0/липсва = ПОСТОЯНЕН; >0 = временен (изтича).
+ */
+const banSchema = z.object({
+  userId: z.number().int().positive(),
+  reason: z.string().min(3).max(300),
+  durationMs: z.number().int().nonnegative().max(3153600000000).optional(), // ≤ ~100г
+});
+router.post('/moderation/ban', (req, res) => {
+  const parse = banSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const { userId, reason, durationMs } = parse.data;
+  const db = getDb();
+  const u = db.prepare('SELECT id, last_ip, last_hwid FROM users WHERE id = ?').get(userId) as
+    | { id: number; last_ip: string; last_hwid: string } | undefined;
+  if (!u) { res.status(404).json({ error: 'User not found' }); return; }
+  banUser({ userId, ip: u.last_ip, hwid: u.last_hwid, reason, durationMs });
+  const until = durationMs && durationMs > 0 ? Date.now() + durationMs : 0;
+  logEvent({ category: 'moderation', action: 'manual_ban', level: 'warn', user_id: req.auth!.uid, target_id: userId, target_type: 'user', message: `Manual ban (user ${userId})`, meta: { reason, until } });
+  res.json({ ok: true, userId, until, banned_ip: u.last_ip || null, banned_hwid: u.last_hwid || null });
+});
+
+const unbanSchema = z.object({ userId: z.number().int().positive() });
+router.post('/moderation/unban', (req, res) => {
+  const parse = unbanSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  unbanUser(parse.data.userId);
+  logEvent({ category: 'moderation', action: 'unban', level: 'info', user_id: req.auth!.uid, target_id: parse.data.userId, target_type: 'user', message: `Unban (user ${parse.data.userId})` });
+  res.json({ ok: true, userId: parse.data.userId });
+});
+
+/** Списък DSA сигнали за модерационния панел (open най-горе). */
+router.get('/moderation/notices', (req, res) => {
+  const status = typeof req.query.status === 'string' ? req.query.status : 'open';
+  const db = getDb();
+  const rows = status === 'all'
+    ? db.prepare('SELECT * FROM dsa_notices ORDER BY (status = \'open\') DESC, created_at DESC LIMIT 200').all()
+    : db.prepare('SELECT * FROM dsa_notices WHERE status = ? ORDER BY created_at DESC LIMIT 200').all(status);
+  res.json({ notices: rows });
+});
+
+router.get('/moderation/bans', (_req, res) => {
+  const db = getDb();
+  res.json({
+    users: db.prepare('SELECT id, username, banned_reason, banned_at, banned_until FROM users WHERE banned = 1 ORDER BY banned_at DESC LIMIT 200').all(),
+    ips: db.prepare('SELECT ip, reason, user_id, created_at FROM banned_ips ORDER BY created_at DESC LIMIT 200').all(),
+    devices: db.prepare('SELECT hwid, reason, user_id, created_at FROM banned_devices ORDER BY created_at DESC LIMIT 200').all(),
+  });
+});
+
+/** Отхвърляне на DSA сигнал без действие (напр. неоснователен). */
+const rejectSchema = z.object({ decision: z.string().min(3).max(300) });
+router.post('/moderation/dsa/:id/reject', (req, res) => {
+  const id = Number(req.params.id);
+  const parse = rejectSchema.safeParse(req.body);
+  if (!Number.isInteger(id) || !parse.success) { res.status(400).json({ error: 'Invalid request' }); return; }
+  const info = getDb().prepare(`UPDATE dsa_notices SET status = 'rejected', decision = ?, decided_at = ? WHERE id = ? AND status = 'open'`)
+    .run(parse.data.decision, Date.now(), id);
+  if (info.changes !== 1) { res.status(404).json({ error: 'Notice not found or already decided' }); return; }
+  logEvent({ category: 'moderation', action: 'dsa_reject', level: 'info', user_id: req.auth!.uid, target_id: id, target_type: 'dsa_notice', message: `DSA notice ${id} rejected` });
+  res.json({ ok: true, id });
 });
 
 export default router;

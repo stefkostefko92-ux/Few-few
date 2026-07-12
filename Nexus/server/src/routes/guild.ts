@@ -527,6 +527,11 @@ router.post('/upgrade', upgradeSlots);
 
 const chatSchema = z.object({ message: z.string().min(1).max(280) });
 
+// Анти-флуд: минимален интервал между съобщения на един герой (спира спам
+// на чата — DSA чл. 28 хигиена + UX). In-memory (single-process деплой).
+const CHAT_MIN_INTERVAL_MS = 1500;
+const lastChatAt = new Map<number, number>();
+
 router.get('/chat', (req, res) => {
   const char = getCharacter(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
@@ -551,6 +556,13 @@ router.post('/chat', (req, res) => {
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const g = getCharGuild(char.id);
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  // Анти-флуд throttle.
+  const now = Date.now();
+  const prev = lastChatAt.get(char.id) || 0;
+  if (now - prev < CHAT_MIN_INTERVAL_MS) {
+    res.status(429).json({ error: 'You are sending messages too fast. Slow down.' });
+    return;
+  }
   // Реалновременен публичен чат → филтрирай преди публикуване (DSA чл. 28).
   const chatCheck = checkText(parse.data.message, 'text');
   if (!chatCheck.ok) {
@@ -558,8 +570,9 @@ router.post('/chat', (req, res) => {
     res.status(400).json({ error: 'Your message contains content that isn’t allowed.' });
     return;
   }
+  lastChatAt.set(char.id, now);
   const info = getDb().prepare(`INSERT INTO guild_chat (guild_id, character_id, message, created_at) VALUES (?, ?, ?, ?)`)
-    .run(g.guild.id, char.id, parse.data.message, Date.now());
+    .run(g.guild.id, char.id, parse.data.message, now);
   res.json({ ok: true, id: info.lastInsertRowid });
 });
 

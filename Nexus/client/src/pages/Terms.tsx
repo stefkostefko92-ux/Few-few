@@ -39,21 +39,36 @@ export default function Terms(): React.ReactElement {
           <code> /app/account</code> revokes every existing session.
         </p>
 
-        <h2>3. Conduct, user content, DSA notice mechanism</h2>
+        <h2>3. Conduct, user content, and moderation</h2>
         <p>
-          Cheating, exploiting bugs, harassment, hate speech, impersonation, and using third-party
-          tools to automate gameplay are grounds for immediate account suspension. Guild names,
-          character names, chat messages, auction listings, and profile bios that violate applicable
-          law will be removed.
+          Cheating, exploiting bugs, harassment, hate speech, sexual content involving minors,
+          impersonation of staff or other players, spam or scams, and using third-party tools to
+          automate gameplay are prohibited. Public free-text you create — character names, guild
+          names, tags and mottos, profile bios, and guild chat — is checked automatically before it
+          is published, and content that breaks these rules or applicable law is blocked or removed.
         </p>
         <p>
-          <strong>Reporting illegal content (DSA Art. 16).</strong> Any user can submit a notice via
-          our reporting flow inside the Game (right-click → Report) or by email to
-          <a href={`mailto:${OPERATOR.email.abuse}`}>{` ${OPERATOR.email.abuse}`}</a>. A statement of
-          reasons (DSA Art. 17) is sent to the affected user; both parties may appeal via our internal
-          complaint-handling system (DSA Art. 20) within 6 months of the decision. Transparency
-          reports are published annually (DSA Art. 24).
+          <strong>Enforcement.</strong> Depending on severity we may remove or reset the offending
+          content and/or suspend the account. Suspensions may be <em>temporary</em> (with a stated
+          end date) or <em>permanent</em>. To prevent evasion, a suspension may extend to the IP
+          address and device associated with the account.
         </p>
+        <p>
+          <strong>Reporting illegal or infringing content (DSA Art. 16).</strong> Any user can submit
+          a notice using the in-game report control (the <span aria-hidden="true">⚑</span> flag icon
+          shown on other players&rsquo; content) or by email to
+          <a href={`mailto:${OPERATOR.email.abuse}`}>{` ${OPERATOR.email.abuse}`}</a>. When we act on
+          a report, the affected user receives a statement of reasons (DSA Art. 17) through the
+          in-game mail system. If you believe a moderation decision about your own content or account
+          was mistaken, contact us at the address above and we will review it.
+        </p>
+        {/*
+          Забележка за правен преглед: операторът е микро-предприятие →
+          DSA Раздел 3 (чл. 20 вътрешна жалбена система, чл. 24 годишен
+          отчет) е ОСВОБОДЕН (чл. 19). Затова тук НЕ обещаваме формална
+          жалбена система/годишни отчети — само преглед при контакт. Пази
+          текста синхронен с реалното поведение (чл. 14 точност).
+        */}
 
         <h2>4. Premium currency, refunds, EU 14-day withdrawal</h2>
         <p>
@@ -67,7 +82,17 @@ export default function Terms(): React.ReactElement {
           tick <em>"I consent to immediate delivery and I acknowledge that this waives my 14-day
           right of withdrawal"</em> before payment. Once the gems are credited the purchase is not
           refundable except where required by mandatory consumer law or where the Game fails to
-          deliver them (faulty service).
+          deliver them (faulty service). Where we do grant a refund, the corresponding gems (and
+          anything obtained with them, to the extent still held) are removed from your account.
+        </p>
+        <p>
+          <strong>Payment disputes and chargebacks.</strong> If you have a problem with a purchase,
+          contact us first at <a href={`mailto:${OPERATOR.email.support}`}>{OPERATOR.email.support}</a>
+          {' '}and we will help. Initiating a bank chargeback or payment dispute instead — after the
+          digital content has been delivered — is treated as fraudulent and results in{' '}
+          <strong>permanent suspension</strong> of the account together with the associated IP address
+          and device, and reversal of the affected purchase. This does not affect any statutory rights
+          you may have as a consumer.
         </p>
         <p>
           <strong>VAT.</strong> Prices include VAT at the rate of your country of residence (EU
