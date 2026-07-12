@@ -445,7 +445,7 @@ async function getCosmeticBundle() {
     const res = await fetch(chrome.runtime.getURL("rules/cosmetic_specific.json"));
     cosmeticBundle = await res.json();
   } catch {
-    cosmeticBundle = { specific: {}, unhide: {} };
+    cosmeticBundle = { specific: {}, unhide: {}, genericHide: [] };
   }
   return cosmeticBundle;
 }
@@ -460,14 +460,19 @@ function domainChain(host) {
 }
 
 async function cosmeticFor(host) {
-  const { specific = {}, unhide = {} } = await getCosmeticBundle();
+  const { specific = {}, unhide = {}, genericHide = [] } = await getCosmeticBundle();
   const hide = [];
   const show = [];
-  for (const d of domainChain(host || "")) {
+  const chain = domainChain(host || "");
+  for (const d of chain) {
     if (specific[d]) hide.push(...specific[d]);
     if (unhide[d]) show.push(...unhide[d]);
   }
-  return { hide, unhide: show };
+  // $generichide за този хост (или родителски суфикс) → content.js спира
+  // прилагането на глобалния генеричен CSS тук.
+  const ghSet = genericHide.length ? new Set(genericHide) : null;
+  const genericHideHere = ghSet ? chain.some((d) => ghSet.has(d)) : false;
+  return { hide, unhide: show, genericHide: genericHideHere };
 }
 
 // blocked-request counters

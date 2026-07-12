@@ -97,11 +97,20 @@ function parseNetLine(line) {
       if (name === "match-case") { o.matchCase = true; continue; }
       if (name === "document" || name === "doc") { if (neg) return null; o.doc = true; continue; }
       if (name === "domain") {
+        let had = false, kept = 0, droppedNeg = false;
         for (const d of (val || "").toLowerCase().split("|")) {
-          const dn = d.startsWith("~") ? d.slice(1) : d;
-          if (!validDomain(dn)) continue; // wildcard TLD и др. — пропускаме записа
-          (d.startsWith("~") ? o.notInitiator : o.initiator).push(dn);
+          if (!d) continue;
+          had = true;
+          const isNeg = d.startsWith("~");
+          const dn = isNeg ? d.slice(1) : d;
+          if (!validDomain(dn)) { if (isNeg) droppedNeg = true; continue; } // wildcard TLD и др.
+          kept++;
+          (isNeg ? o.notInitiator : o.initiator).push(dn);
         }
+        // За BLOCK правило загубен запис може да РАЗШИРИ обхвата (over-block):
+        // паднало ~изключване (напр. ~edu|~gov) или всички positive паднали →
+        // пропускаме реда, за да не блокираме по-широко от източника.
+        if (!o.allow && (droppedNeg || (had && kept === 0))) return null;
         continue;
       }
       if (TYPE_MAP[name]) { (neg ? o.notTypes : o.types).push(TYPE_MAP[name]); continue; }
@@ -126,7 +135,15 @@ function conditionFor(o) {
   const c = {};
   if (o.party) c.domainType = o.party;
   if (o.types.length) c.resourceTypes = [...new Set(o.types)].sort();
-  else if (o.notTypes.length) c.excludedResourceTypes = [...new Set(o.notTypes)].sort();
+  else if (o.notTypes.length) {
+    // Chromium: правило само с excludedResourceTypes ползва клона
+    // ElementType_ANY & ~exclude — който ЗАПАЗВА main_frame (за разлика от
+    // "нито едно"-клона с default mask без main_frame). ABP `$~type` НЕ включва
+    // документа, затова за block правила изрично изключваме и main_frame, иначе
+    // блокираме навигация (напр. yandex /clck/, /ads/ страници).
+    const ex = o.allow ? o.notTypes : [...o.notTypes, "main_frame"];
+    c.excludedResourceTypes = [...new Set(ex)].sort();
+  }
   if (o.initiator.length) c.initiatorDomains = [...new Set(o.initiator)].sort();
   if (o.notInitiator.length) c.excludedInitiatorDomains = [...new Set(o.notInitiator)].sort();
   if (o.matchCase) c.isUrlFilterCaseSensitive = true;
@@ -306,6 +323,30 @@ for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
   console.log(`urlhaus: ${domains.length} malware домейна в ${rules.length} правила`);
 }
 
+// Хостове с @@…$generichide / $elemhide — EasyList изрично изключва генеричната
+// козметика там (напр. accounts.google.com, howtogeek.com). Пренасяме ги, за да
+// НЕ прилагаме cosmetic_generic.css на тези сайтове (иначе скриваме легитимен UI).
+function collectGenericHide(text) {
+  const hosts = new Set();
+  for (let line of text.split("\n")) {
+    line = line.trim();
+    if (!line.startsWith("@@")) continue;
+    if (line.includes("##") || line.includes("#@#") || line.includes("#?#") || line.includes("#$#")) continue;
+    const di = line.lastIndexOf("$");
+    if (di < 0) continue;
+    const opts = line.slice(di + 1);
+    if (!/(^|,)(generichide|ghide|elemhide|ehide)(,|$)/.test(opts)) continue;
+    const body = line.slice(2, di).toLowerCase();
+    const m = /^\|\|([a-z0-9.-]+)(?:[\^/]|$)/.exec(body);
+    if (m && validDomain(m[1])) hosts.add(m[1]);
+    const dm = /domain=([^,]+)/.exec(opts);
+    if (dm) for (const d of dm[1].toLowerCase().split("|")) {
+      if (d && !d.startsWith("~") && validDomain(d)) hosts.add(d);
+    }
+  }
+  return hosts;
+}
+
 // Козметика (EasyList; EasyPrivacy е с пренебрежима козметика, добавяме и нея).
 {
   const a = convertCosmetic(el);
@@ -331,13 +372,16 @@ for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
   for (const d of [...a.specific.keys()].sort()) specObj[d] = [...a.specific.get(d)].sort();
   const unhideObj = {};
   for (const d of [...a.unhide.keys()].sort()) unhideObj[d] = [...a.unhide.get(d)].sort();
+  const ghide = new Set([...collectGenericHide(el), ...collectGenericHide(ep)]);
+  const genericHide = [...ghide].sort();
   writeFileSync(
     join(ROOT, "rules", "cosmetic_specific.json"),
-    JSON.stringify({ specific: specObj, unhide: unhideObj })
+    JSON.stringify({ specific: specObj, unhide: unhideObj, genericHide })
   );
   counts.cosmeticGeneric = gen.length;
   counts.cosmeticSpecific = Object.values(specObj).reduce((n, v) => n + v.length, 0);
-  console.log(`козметика: ${gen.length} генерични, ${counts.cosmeticSpecific} домейн-специфични, unhide за ${Object.keys(unhideObj).length} домейна`);
+  counts.genericHide = genericHide.length;
+  console.log(`козметика: ${gen.length} генерични, ${counts.cosmeticSpecific} домейн-специфични, unhide за ${Object.keys(unhideObj).length} домейна, generichide за ${genericHide.length} домейна`);
 }
 
 // Броим и ръчно поддържаните рулсети, за да е пълна статистиката в UI.

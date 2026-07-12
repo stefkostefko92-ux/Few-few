@@ -40,10 +40,6 @@
     "[id^='google_ads_']",
     "[id^='div-gpt-ad']",
     "[id^='gpt-']",
-    "[id*='-ad-']",
-    "[id*='_ad_']",
-    "[id^='ad-']",
-    "[id$='-ad']",
     "[id*='banner-ad']",
     "[id*='adsense']",
     "[id*='dfp-']",
@@ -58,10 +54,6 @@
     "[class*='sponsored']",
     "[class*='-sponsor']",
     "[class*='adsbygoogle']",
-    "[class^='ad-']",
-    "[class$='-ad']",
-    "[class$='-ads']",
-    "[class*=' ad ']",
     "[class*='dfp-']",
     "[class*='gpt-ad']",
     "[class*='outbrain']",
@@ -284,9 +276,13 @@
     if (!enabled) return;
     document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
       const p = el.parentElement;
-      if (p && p.children.length === 1 && p.offsetHeight < 5) {
-        p.style.setProperty("display", "none", "important");
-      }
+      if (!p || p.children.length !== 1 || p.offsetHeight >= 5) return;
+      // Не колабсирай контейнер, който тепърва ще lazy-load-не съдържание.
+      if (
+        p.hasAttribute("data-lazy") || p.hasAttribute("data-src") ||
+        /\blazy\b/i.test(p.className || "") || p.querySelector("[loading='lazy']")
+      ) return;
+      p.style.setProperty("display", "none", "important");
     });
   }
 
@@ -300,8 +296,11 @@
   const nearSize = (w, h) =>
     IAB_SIZES.some(([aw, ah]) => Math.abs(w - aw) <= 2 && Math.abs(h - ah) <= 2);
 
+  // Токени за sticky ad-сигнал. "banner"/"promo" НЕ са тук — те са прекалено
+  // чести за легитимни sticky ленти (promo-bar, top-banner, hero-banner) и
+  // даваха false positives; истинските ad-ленти носят по-специфичен маркер.
   const AD_TOKENS =
-    /(^|[^a-z])(ads?|advert|sponsor|promo|banner|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
+    /(^|[^a-z])(ads?|advert|sponsor|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
 
   function isThirdParty(src) {
     try {
@@ -437,6 +436,9 @@
             if (!res) return;
             bundleCosmetic = Array.isArray(res.hide) ? res.hide : [];
             unhideSelectors = Array.isArray(res.unhide) ? res.unhide : [];
+            // EasyList $generichide за този хост → не прилагай генеричния CSS
+            // (иначе скриваме легитимен UI, напр. Google sign-in, Ads Manager).
+            if (res.genericHide) gate(false);
             rebuildSelectors();
             hide();
           });

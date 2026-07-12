@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.0.2
+
+Over-blocking / false-positive поправки след одит (Хромаджията + Кодаджията):
+- **Навигация вече не се блокира по грешка.** ABP `$~type` филтрите се
+  конвертираха към DNR excludedResourceTypes, който в Chromium ЗАПАЗВА
+  main_frame → 106 правила блокираха навигация (yandex /clck/, sourceforge
+  /tracker/, страници с /ads/ в URL се чупеха). Сега main_frame е изрично
+  изключен от block правилата — 0 правила достигат навигацията.
+- **Marketplace/обяви сайтове вече не се над-скриват.** Махнати широките
+  substring селектори ([class^='ad-'], [id^='ad-'], [id*='-ad-'], [class$='-ad']
+  и др.), които скриваха легитимни обяви (ad-title/ad-price/id=ad-12345) на
+  bazos/ss.lv/olx-подобни. Точните ad-контейнер селектори остават.
+- **EasyList $generichide се спазва.** На 183 хоста (accounts.google.com,
+  Facebook Ads Manager и др.), които EasyList изрично изключва, вече НЕ
+  прилагаме генеричната козметика (спираше легитимен UI/бутони).
+- **Sticky ленти вече не се крият по грешка.** Махнати токените banner/promo
+  от sticky ad-сигнала (скриваха promo-bar/top-banner/hero-banner ленти).
+- Guard срещу колабсиране на lazy-load контейнери; domain-scope safety при
+  паднали ~edu/~gov изключения (не разширяваме block обхвата).
+
 ## 4.0.1
 
 - Filter updates are now cryptographically verified: the Ed25519 public key is
