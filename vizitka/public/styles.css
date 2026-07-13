@@ -71,6 +71,21 @@ main {
   width: auto;
   display: block;
 }
+/* По-малки телефони: логото и връзките се свиват, за да не се препълва лентата. */
+@media (max-width: 480px) {
+  .nav {
+    padding: 0.55rem 0.8rem;
+    gap: 0.5rem;
+  }
+  .nav nav {
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .brand-logo {
+    height: 36px;
+  }
+}
 
 /* Бутони */
 .btn {
@@ -1007,6 +1022,30 @@ legend {
   border-radius: var(--radius);
   padding: 1rem;
   text-align: center;
+}
+/* Телефони: картата за визитка се подрежда вертикално (иначе текстът се чупи буква
+   по буква, защото бутоните стесняват колоната с данните). */
+@media (max-width: 560px) {
+  .admin-profile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-profile-actions {
+    justify-content: stretch;
+  }
+  .admin-profile-actions .inline-form,
+  .admin-profile-actions .btn {
+    flex: 1;
+  }
+  .admin-profile-actions .inline-form .btn {
+    width: 100%;
+  }
+  .admin-search {
+    flex-wrap: wrap;
+  }
+  .admin-search input[type='search'] {
+    flex-basis: 100%;
+  }
 }
 .admin-form {
   background: var(--card);
