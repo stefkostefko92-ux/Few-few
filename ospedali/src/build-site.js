@@ -23,6 +23,24 @@ const AGGIU_FILE = pjoin(DATA_DIR, 'aggiudicatari.json');
 const VALIDAZIONE_FILE = pjoin(DATA_DIR, 'validazione.json');
 const CONTRATTI_DIR = pjoin(DATA_DIR, 'contratti');
 
+// Валидна италианска P.IVA: 11 цифри, не всички еднакви (00000000000 минава
+// контролната сума, но е плейсхолдър), с коректна контролна цифра (Luhn-подобна).
+// Пази профилите на изпълнителите от боклучави CF-ове от източника.
+function pIvaValida(cf) {
+  if (!/^[0-9]{11}$/.test(cf)) return false;
+  if (/^(\d)\1{10}$/.test(cf)) return false;
+  let somma = 0;
+  for (let i = 0; i < 11; i++) {
+    let n = cf.charCodeAt(i) - 48;
+    if (i % 2 === 1) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    somma += n;
+  }
+  return somma % 10 === 0;
+}
+
 const REGOLE_LABEL = {
   disavanzo_grave: 'Disavanzo grave',
   disavanzo_persistente: 'Disavanzo persistente',
@@ -136,7 +154,7 @@ async function main() {
       aziendeIdx[ente.codice] = [ente.denominazione, ente.regione];
       for (const c of contratti) {
         tuttiContratti.push([c.cig, ente.codice, c.data, c.importo, catCode[c.categoria] || 'a', (c.fornitore || '').slice(0, 45), (c.oggetto || '').slice(0, 90)]);
-        if (c.fornitoreCf) {
+        if (c.fornitoreCf && pIvaValida(c.fornitoreCf)) {
           let g = fornAgg.get(c.fornitoreCf);
           if (!g) {
             g = { cf: c.fornitoreCf, den: c.fornitore, valore: 0, n: 0, senzaGara: 0, perOsp: new Map(), top: [] };
