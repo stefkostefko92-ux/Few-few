@@ -42,6 +42,7 @@ export type PrincipalKey =
   | "kultura"
   | "osv"
   | "zdrave"
+  | "meu"
   | "ms";
 
 /** Един паричен поток — входящ или изходящ. */
@@ -58,6 +59,16 @@ export type MoneyFlow = {
 export type Source = {
   label: string;
   url: string;
+};
+
+/** Дъщерно дружество на холдинг (кратък ред, без отделна страница). */
+export type Subsidiary = {
+  name: string;
+  legalForm?: LegalForm;
+  city?: string;
+  /** Дял на дружеството-майка (%). */
+  share?: number;
+  note?: string;
 };
 
 /**
@@ -104,6 +115,10 @@ export type Enterprise = {
   oversight: string[];
   /** Известни рискове за прозрачност/управление (само проверими, внимателно). */
   notes?: string[];
+  /** Структурни конфликти на интереси (in-house възлагане, свързани лица и др.). */
+  conflicts?: string[];
+  /** Дъщерни дружества/поделения (за холдинги — кратък списък без отделни страници). */
+  subsidiaries?: Subsidiary[];
   financial?: FinancialNote;
   sources: Source[];
 };

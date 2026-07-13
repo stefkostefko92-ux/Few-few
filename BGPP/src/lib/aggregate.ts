@@ -33,3 +33,13 @@ export function countByPrincipal(): {
 export function withWebsite(): number {
   return ENTERPRISES.filter((e) => e.website).length;
 }
+
+/** Предприятия с отбелязан структурен конфликт на интереси. */
+export function withConflicts() {
+  return ENTERPRISES.filter((e) => e.conflicts && e.conflicts.length > 0);
+}
+
+/** Общ брой изброени дъщерни дружества/поделения в холдингите. */
+export function totalSubsidiaries(): number {
+  return ENTERPRISES.reduce((n, e) => n + (e.subsidiaries?.length ?? 0), 0);
+}

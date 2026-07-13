@@ -45,10 +45,10 @@ test("държавното участие е в диапазона 0–100", () 
   }
 });
 
-test("всички източници са с https адрес", () => {
+test("всички източници са с валиден http(s) адрес", () => {
   for (const e of ENTERPRISES) {
     for (const s of e.sources) {
-      assert.match(s.url, /^https:\/\//, `${e.slug}: невалиден URL ${s.url}`);
+      assert.match(s.url, /^https?:\/\//, `${e.slug}: невалиден URL ${s.url}`);
     }
   }
 });

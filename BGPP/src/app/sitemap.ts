@@ -6,7 +6,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPaths = [
     "/",
     "/predpriyatiya",
+    "/kartina",
     "/parichni-potoci",
+    "/konflikti",
     "/istochnici",
     "/metodologiya",
   ];

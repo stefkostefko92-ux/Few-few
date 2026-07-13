@@ -26,11 +26,16 @@ npm run build        # next build (статичен експорт на стра
 
 ```
 src/data/
-  types.ts         # Enterprise, MoneyFlow, Source и таксономиите
-  enterprises.ts   # КАТАЛОГЪТ — по едно вписване на предприятие/група
-  sectors.ts       # 10 сектора (енергетика, транспорт, отбрана, …)
+  types.ts         # Enterprise, MoneyFlow, Subsidiary, Source и таксономиите
+  enterprises.ts   # КАТАЛОГЪТ — ~68 профила + дъщерни дружества в холдингите
+  sectors.ts       # 12 сектора (енергетика, транспорт, отбрана, финанси, …)
   principals.ts    # министри-принципали (кой упражнява правата на държавата)
+  national.ts      # агрегатни числа за целия сектор (Годишен доклад на АППК)
 ```
+
+Всеки запис може да носи `subsidiaries` (дъщерни в холдинг — ВиК, ДКК, ТЕРЕМ,
+БДЖ, ББР…) и `conflicts` (структурни конфликти на интереси — in-house възлагане,
+концесии, свързани лица). `national.ts` захранва страницата „Картината“.
 
 Моделът описва **структурата** на паричните потоци (`moneyIn` / `moneyOut`),
 която е устойчива във времето — **не** гони конкретни годишни суми (те се менят и
@@ -48,10 +53,12 @@ src/data/
 
 ```
 src/app/
-  page.tsx                     # начало (обобщение + общ модел на потоците)
+  page.tsx                     # начало (обобщение + мащаб + общ модел на потоците)
   predpriyatiya/page.tsx       # каталог с търсене/филтри (?sector=&principal=)
-  predpriyatiya/[slug]/page.tsx# профил на предприятие (SSG чрез generateStaticParams)
+  predpriyatiya/[slug]/page.tsx# профил (SSG) — потоци, конфликти, дъщерни, източници
+  kartina/page.tsx             # агрегатна национална картина (числа от АППК)
   parichni-potoci/page.tsx     # обяснение на потоците + правна рамка (ЗПП, АППК)
+  konflikti/page.tsx           # конфликт на интереси — структурни модели + примери
   istochnici/page.tsx          # официални регистри и портали
   metodologiya/page.tsx        # обхват, уговорки за точност, корекции
   robots.ts · sitemap.ts · not-found.tsx

@@ -12,6 +12,8 @@ import {
   Building,
   ShieldCheck,
   Info,
+  Scale,
+  Layers,
   Link as LinkIcon,
   External,
 } from "@/components/icons";
@@ -132,6 +134,25 @@ export default async function EnterprisePage({
           )}
         </Section>
 
+        {/* Конфликт на интереси */}
+        {e.conflicts && e.conflicts.length > 0 && (
+          <Section
+            title="Конфликт на интереси"
+            icon={<Scale className="h-6 w-6 text-rose-600" aria-hidden />}
+          >
+            <ul className="space-y-2">
+              {e.conflicts.map((c, i) => (
+                <li
+                  key={i}
+                  className="rounded-lg border-l-4 border-rose-500 bg-rose-50 p-3 text-slate-800"
+                >
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
         {/* Контрол и надзор */}
         <Section
           title="Контрол и надзор"
@@ -148,6 +169,42 @@ export default async function EnterprisePage({
             ))}
           </ul>
         </Section>
+
+        {/* Дъщерни дружества / поделения */}
+        {e.subsidiaries && e.subsidiaries.length > 0 && (
+          <Section
+            title={`Дъщерни дружества и поделения (${e.subsidiaries.length})`}
+            icon={<Layers className="h-6 w-6 text-brand-700" aria-hidden />}
+          >
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th className="px-4 py-3">Дружество</th>
+                    <th className="px-4 py-3">Град</th>
+                    <th className="px-4 py-3 text-right">Дял</th>
+                    <th className="px-4 py-3">Бележка</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {e.subsidiaries.map((s, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {s.name}
+                        {s.legalForm ? "" : ""}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">{s.city ?? "—"}</td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {s.share != null ? `${s.share}%` : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500">{s.note ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Section>
+        )}
 
         {/* Бележки за прозрачност */}
         {e.notes && e.notes.length > 0 && (

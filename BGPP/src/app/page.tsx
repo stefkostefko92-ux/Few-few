@@ -7,6 +7,7 @@ import {
   withWebsite,
 } from "@/lib/aggregate";
 import { SECTORS } from "@/data/sectors";
+import { NATIONAL } from "@/data/national";
 import { StatCard, Section, Badge } from "@/components/ui";
 import { MoneyFlowColumn } from "@/components/MoneyFlows";
 import {
@@ -14,6 +15,8 @@ import {
   Layers,
   ShieldCheck,
   Eye,
+  Scale,
+  Banknote,
   ArrowInflow,
   ArrowOutflow,
 } from "@/components/icons";
@@ -62,8 +65,11 @@ export default function HomePage() {
             <Link href="/predpriyatiya" className="btn-primary">
               Разгледай предприятията
             </Link>
-            <Link href="/parichni-potoci" className="btn-secondary">
-              Как влизат и излизат парите
+            <Link href="/kartina" className="btn-secondary">
+              Картината на сектора
+            </Link>
+            <Link href="/konflikti" className="btn-secondary">
+              Конфликт на интереси
             </Link>
           </div>
         </div>
@@ -127,6 +133,42 @@ export default function HomePage() {
           </p>
         </Section>
 
+        {/* Мащабът на сектора */}
+        <Section
+          title="Мащабът на сектора"
+          icon={<Banknote className="h-6 w-6 text-brand-700" aria-hidden />}
+        >
+          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <div className="text-3xl font-extrabold text-slate-900">{NATIONAL.totalEnterprises}</div>
+                <div className="text-sm text-slate-600">публични предприятия общо (регистър на АППК, {NATIONAL.year})</div>
+              </div>
+              <div>
+                <div className="text-3xl font-extrabold text-inflow-700">
+                  {(NATIONAL.revenueMln[NATIONAL.year] / 1000).toLocaleString("bg-BG", { maximumFractionDigits: 1 })} млрд. лв.
+                </div>
+                <div className="text-sm text-slate-600">общи приходи на сектора</div>
+              </div>
+              <div>
+                <div className="text-3xl font-extrabold text-outflow-700">
+                  {(NATIONAL.liabilitiesMln[NATIONAL.year] / 1000).toLocaleString("bg-BG", { maximumFractionDigits: 1 })} млрд. лв.
+                </div>
+                <div className="text-sm text-slate-600">общи задължения</div>
+              </div>
+              <div>
+                <div className="text-3xl font-extrabold text-slate-900">
+                  {NATIONAL.dividendToStateMln.toLocaleString("bg-BG")} млн. лв.
+                </div>
+                <div className="text-sm text-slate-600">дивидент, върнат на държавата</div>
+              </div>
+            </div>
+            <Link href="/kartina" className="btn-secondary mt-6">
+              Цялата картина на сектора
+            </Link>
+          </div>
+        </Section>
+
         {/* Сектори */}
         <Section
           title="По сектори"
@@ -155,6 +197,27 @@ export default function HomePage() {
                 );
               },
             )}
+          </div>
+        </Section>
+
+        {/* Конфликт на интереси */}
+        <Section>
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
+            <div className="flex items-center gap-2">
+              <Scale className="h-5 w-5 text-rose-600" aria-hidden />
+              <h2 className="text-lg font-bold text-slate-900">
+                Къде възниква конфликт на интереси
+              </h2>
+            </div>
+            <p className="mt-2 max-w-3xl text-slate-700">
+              Проследихме и къде <em>отиват</em> парите: вътрешно (in-house)
+              възлагане без търг, концесии към частни оператори, холдингова
+              непрозрачност и свързани лица. Описваме структурните рискове —
+              с примери и връзки към официалните регистри.
+            </p>
+            <Link href="/konflikti" className="btn-primary mt-4">
+              Виж конфликтите на интереси
+            </Link>
           </div>
         </Section>
 
