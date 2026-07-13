@@ -187,6 +187,7 @@ footer.site a:hover{color:var(--brand)}
 const NAV = [
   ['index.html', 'Home'],
   ['inchiesta.html', 'Inchiesta'],
+  ['conflitti.html', 'Conflitti'],
   ['appalti.html', 'Appalti'],
   ['fornitori.html', 'Fornitori'],
   ['cerca.html', 'Cerca'],

@@ -130,6 +130,14 @@ async function main() {
     void byCf;
   }
 
+  // индикатори „конфликт на интереси" (по избор — генерира се от `npm run coi`)
+  const coi = await readJson(pjoin(DATA_DIR, 'coi.json')).catch(() => null);
+  const coiByCf = new Map();
+  if (coi) for (const p of coi.coppie) {
+    if (!coiByCf.has(p.cf)) coiByCf.set(p.cf, []);
+    coiByCf.get(p.cf).push(p);
+  }
+
   await rm(SITE_DIR, { recursive: true, force: true });
   await mkdir(join(SITE_DIR, 'struttura'), { recursive: true });
   await mkdir(join(SITE_DIR, 'contratti'), { recursive: true });
@@ -159,6 +167,7 @@ async function main() {
 
   await writeFile(join(SITE_DIR, 'index.html'), renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }));
   await writeFile(join(SITE_DIR, 'inchiesta.html'), renderInchiesta({ forense, appalti, appMatch, href }));
+  if (coi) await writeFile(join(SITE_DIR, 'conflitti.html'), renderConflitti({ coi, href }));
   await writeFile(join(SITE_DIR, 'classifiche.html'), renderClassifiche({ forense, href }));
   if (appalti) await writeFile(join(SITE_DIR, 'appalti.html'), renderAppalti({ appalti, appByCod, appMatch, enti, href }));
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
@@ -236,7 +245,7 @@ async function main() {
       const haPagina = materiale;
       if (haPagina) {
         f.top.sort((a, b) => b.importo - a.importo);
-        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
+        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, coppie: coiByCf.get(f.cf) || [], strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
         fornituraCfs.push(f.cf);
         paginaForn++;
       }
@@ -293,6 +302,7 @@ async function main() {
     ['aggiudicatari.json', 'JSON', 'Fornitori, concentrazione, offerente unico', 'Chi incassa: fornitori per ente, concentrazione, gare a un solo partecipante (dato parziale).', 'ANAC (CC BY 4.0)'],
     ['anagrafica.json', 'JSON', 'Anagrafe delle strutture ospedaliere', 'Posti letto, personale, ricoveri per struttura (modello HSP).', 'Ministero della Salute'],
     ['contratti-indice.json', 'JSON', 'Indice dei contratti per struttura', 'Numero e valore dei contratti collegati a ciascuna azienda sanitaria.', 'ANAC (CC BY 4.0)'],
+    ['coi.json', 'JSON', 'Relazioni ricorrenti azienda–fornitore', 'Coppie con affidamenti diretti ripetuti, dipendenza o esclusiva: indicatori, non prove.', 'ANAC (CC BY 4.0)'],
     ['validazione.json', 'JSON', 'Controlli di consistenza e provenienza', 'Identità contabili verificate, copertura e impronta SHA-256 delle fonti.', 'Elaborazione propria'],
   ];
   const datasets = [];
@@ -330,6 +340,7 @@ async function main() {
       'note-legali.html',
       'privacy.html',
       ...(appalti ? ['appalti.html'] : []),
+      ...(coi ? ['conflitti.html'] : []),
       ...(validaz ? ['verifiche.html'] : []),
       ...(paginaCerca ? ['cerca.html'] : []),
       ...(paginaForn ? ['fornitori.html'] : []),
@@ -349,7 +360,7 @@ async function main() {
     console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt (${su})`);
   }
 
-  console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + (coi ? 1 : 0) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -1190,6 +1201,114 @@ ${appaltiBlk}
   });
 }
 
+// ---------- RELAZIONI RICORRENTI (индикатори „конфликт на интереси") ----------
+const COI_FLAG_LABEL = {
+  rotazione: ['Rotazione', 'Affidamenti diretti ripetuti allo stesso fornitore: il principio di rotazione (art. 49, d.lgs. 36/2023) li limita espressamente.'],
+  dipendenza: ['Dipendenza', 'Il fornitore incassa quasi tutto il suo fatturato tracciato (nel perimetro delle 113 aziende collegate) da una sola azienda, con rapporti prevalentemente senza gara.'],
+  esclusiva: ['Esclusiva', 'Relazione stabile senza concorrenza: molti contratti, quasi tutti senza gara.'],
+};
+
+function renderConflitti({ coi, href }) {
+  const MAX_RIGHE = 200;
+  const st = coi.statistiche;
+  const rows = coi.coppie
+    .slice(0, MAX_RIGHE)
+    .map((p) => {
+      const flags = p.flags.map((f) => `<span class="badge ${p.gravita === 'alta' ? 'alta' : 'media'}" title="${esc(COI_FLAG_LABEL[f][1])}">${COI_FLAG_LABEL[f][0]}</span>`).join(' ');
+      const forn = `<a href="fornitore/${esc(p.cf)}.html">${esc(p.fornitore || p.cf)}</a>`;
+      return `<tr data-t="${esc(`${p.denominazione} ${p.fornitore || ''}`.toLowerCase())}" data-f="${esc(p.flags.join(' '))}">
+      <td><a href="${href(p.codice)}">${esc(p.denominazione)}</a><div class="small muted">${esc(p.regione)}</div></td>
+      <td>${forn}</td>
+      <td>${flags}</td>
+      <td class="num">${numeroIt(p.n)}</td>
+      <td class="num">${numeroIt(p.diretti)}</td>
+      <td class="num">${euroCompact(p.valore)}</td>
+      <td class="num">${percentualeIt(p.quotaSenzaGaraN)}</td>
+      <td class="num">${percentualeIt(p.quotaFornitore)}</td>
+    </tr>`;
+    })
+    .join('');
+  const body = `
+<h1>Relazioni ricorrenti — possibili conflitti d’interesse</h1>
+<p class="lead">Quando la stessa azienda sanitaria affida ripetutamente, senza gara, allo stesso fornitore — o quando un
+fornitore vive quasi solo di una singola azienda — la relazione merita una verifica. Qui incrociamo tutti i
+${numeroIt(st.conFornitore)} contratti con fornitore identificato e segnaliamo le <strong>coppie azienda↔fornitore</strong>
+che presentano indicatori di rischio riconosciuti.</p>
+
+<div class="note"><strong>Cosa NON è questa pagina.</strong> Gli open data non possono dimostrare un conflitto di
+interessi: servirebbero gli assetti societari (Registro Imprese) e gli incarichi dei dirigenti (sezione «Amministrazione
+Trasparente» di ogni azienda). Questi sono <strong>indicatori, non prove</strong> — e spesso hanno spiegazioni legittime:
+i farmaci coperti da <strong>brevetto</strong> (es. case farmaceutiche) si acquistano per forza dal titolare, in esclusiva;
+esistono monopoli tecnici, manutenzioni vincolate al costruttore, convenzioni. La rotazione degli affidamenti diretti è
+però un <strong>obbligo di legge</strong> (art. 49, d.lgs. 36/2023): le eccezioni vanno motivate.</p></div>
+
+<div class="grid kpis">
+  ${kpi('Coppie segnalate', numeroIt(st.coppieSegnalate))}
+  ${kpi('Rotazione da verificare', numeroIt(st.perFlag.rotazione), 'neg')}
+  ${kpi('Dipendenza reciproca', numeroIt(st.perFlag.dipendenza))}
+  ${kpi('Relazioni in esclusiva', numeroIt(st.perFlag.esclusiva))}
+</div>
+
+<h2>Gli indicatori</h2>
+${Object.entries(COI_FLAG_LABEL).map(([k, [lab, spieg]]) => `<div class="seg ${k === 'rotazione' ? 'alta' : 'media'}"><div class="t"><span class="badge ${k === 'rotazione' ? 'alta' : 'media'}">${lab}</span></div><div class="d">${spieg}</div></div>`).join('')}
+<p class="small muted">Soglie: rotazione = ≥${coi.soglie.rotazioneDiretti} affidamenti diretti e ≥${euroCompact(coi.soglie.rotazioneValore)} alla stessa coppia;
+dipendenza = fornitore ≥${euroCompact(coi.soglie.dipendenzaValoreForn)} con ≥${Math.round(coi.soglie.dipendenzaQuota * 100)}% del fatturato da una sola azienda e ≥${Math.round(coi.soglie.dipendenzaSenzaGara * 100)}% senza gara;
+esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.soglie.esclusivaSenzaGara * 100)}% senza gara. Anni: ${coi.anni.join('–')}.</p>
+
+<h2>Le coppie da verificare</h2>
+<div class="controls">
+  <input type="search" id="q" placeholder="Cerca azienda o fornitore…" aria-label="Cerca">
+  <select id="fl" aria-label="Indicatore">
+    <option value="">Tutti gli indicatori</option>
+    <option value="rotazione">Rotazione</option>
+    <option value="dipendenza">Dipendenza</option>
+    <option value="esclusiva">Esclusiva</option>
+  </select>
+</div>
+<p class="small muted" id="stato"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda sanitaria</th><th scope="col">Fornitore</th><th scope="col">Indicatori</th>
+  <th class="num" scope="col">Contratti</th><th class="num" scope="col">Diretti</th><th class="num" scope="col">Valore</th>
+  <th class="num" scope="col">Senza gara</th><th class="num" scope="col" title="Quota del fatturato tracciato del fornitore (perimetro: 113 aziende collegate) proveniente da questa azienda">Del fornitore</th></tr></thead>
+  <tbody id="rows">${rows}</tbody>
+</table></div>
+<p class="small muted">Mostrate le prime ${numeroIt(Math.min(MAX_RIGHE, coi.coppie.length))} coppie su ${numeroIt(coi.coppie.length)}
+(ordinate per gravità e valore). L’elenco completo è nei <a href="dati.html">dati aperti</a> (coi.json). «Del fornitore» =
+quota del fatturato 2023–24 del fornitore <em>tracciato in questo dataset</em> (le 113 aziende collegate — non l’intero SSN)
+proveniente da questa azienda. Ogni contratto è verificabile per CIG dalla scheda dell’azienda.
+<strong>Indicatori, non prove.</strong></p>
+
+<h2>Come si verifica davvero</h2>
+<ol>
+  <li><strong>Assetti societari:</strong> visura del fornitore al <a href="https://www.registroimprese.it/" target="_blank" rel="noopener">Registro Imprese</a> (soci, amministratori).</li>
+  <li><strong>Incarichi dei dirigenti:</strong> sezione «Amministrazione Trasparente» sul sito dell’azienda sanitaria (d.lgs. 33/2013): dirigenti, consulenti, dichiarazioni di conflitto.</li>
+  <li><strong>Il singolo appalto:</strong> il CIG sulla <a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">Banca Dati ANAC</a> — determina, motivazione dell’affidamento, eventuali proroghe.</li>
+</ol>
+<script>
+(function(){
+  var q=document.getElementById('q'),fl=document.getElementById('fl'),tb=document.getElementById('rows'),st=document.getElementById('stato'),tmr;
+  var all=[].slice.call(tb.querySelectorAll('tr'));
+  function apply(){
+    var t=q.value.trim().toLowerCase(),f=fl.value,n=0;
+    all.forEach(function(r){
+      var ok=(!t||r.getAttribute('data-t').indexOf(t)>=0)&&(!f||r.getAttribute('data-f').indexOf(f)>=0);
+      r.style.display=ok?'':'none';if(ok)n++;
+    });
+    st.textContent=n+' coppie mostrate';
+  }
+  q.addEventListener('input',function(){clearTimeout(tmr);tmr=setTimeout(apply,150);});
+  fl.addEventListener('change',apply);apply();
+})();
+</script>
+`;
+  return page({
+    title: 'Relazioni ricorrenti e possibili conflitti d’interesse — Ospedali Trasparenti',
+    description: 'Coppie azienda sanitaria–fornitore con affidamenti diretti ripetuti, dipendenza reciproca o esclusiva senza gara: indicatori di rischio da verificare, non prove. Dati ANAC.',
+    active: 'conflitti.html',
+    body,
+  });
+}
+
 // ---------- DATI APERTI (hub) ----------
 function formatBytes(b) {
   if (b == null) return '—';
@@ -1521,7 +1640,7 @@ sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori perso
 }
 
 // ---------- ПРОФИЛИ НА ИЗПЪЛНИТЕЛИТЕ („segui il fornitore“) ----------
-function renderFornitore({ f, aziendeIdx, strutturaHref }) {
+function renderFornitore({ f, aziendeIdx, coppie = [], strutturaHref }) {
   const quotaSg = f.n > 0 ? f.senzaGara / f.n : 0;
   const osp = [...f.perOsp.entries()]
     .map(([cod, v]) => ({ cod, nome: (aziendeIdx[cod] || ['', ''])[0], reg: (aziendeIdx[cod] || ['', ''])[1], ...v }))
@@ -1558,6 +1677,7 @@ function renderFornitore({ f, aziendeIdx, strutturaHref }) {
 Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
 ${flagSg ? `<div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Quota elevata di affidamenti senza gara</span></div><div class="d">Il ${percentualeIt(quotaSg)} dei suoi contratti è stato affidato senza confronto competitivo. Indicatore da verificare, non prova.</div></div>` : ''}
 ${flagConc ? `<div class="seg media"><div class="t"><span class="badge media">i</span> <span>Concentrato su poche aziende</span></div><div class="d">Oltre il 60% del valore proviene da una sola azienda (${esc(osp[0].nome)}).</div></div>` : ''}
+${coppie.length ? `<div class="seg ${coppie.some((p) => p.gravita === 'alta') ? 'alta' : 'media'}"><div class="t"><span class="badge ${coppie.some((p) => p.gravita === 'alta') ? 'alta' : 'media'}">!</span> <span>Relazioni ricorrenti da verificare</span></div><div class="d">Con ${coppie.length === 1 ? `<strong>${esc((aziendeIdx[coppie[0].codice] || [coppie[0].denominazione])[0] || coppie[0].denominazione)}</strong>` : `${coppie.length} aziende`} questo fornitore presenta indicatori di relazione ricorrente (${[...new Set(coppie.flatMap((p) => p.flags))].join(', ')}): affidamenti diretti ripetuti, dipendenza o esclusiva. Spesso hanno spiegazioni legittime (brevetti, monopoli tecnici). → <a href="../conflitti.html">La pagina delle relazioni ricorrenti</a></div></div>` : ''}
 
 <h2>Aziende che lo hanno pagato</h2>
 <div class="tablewrap"><table>
