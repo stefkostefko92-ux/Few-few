@@ -48,7 +48,7 @@ export function renderSiope({ siope, nomeReg }) {
   // суфиксът „· X%" чете „декември = X% от средния месец".
   const regRows = Object.entries(siope.perRegione)
     .map(([key, g]) => ({
-      label: esc(nome(key) || key),
+      label: nome(key) || key, // hbars сам екранира → без двоен esc
       valore: g.mesi ? g.mesi[11] : 0,
       quota: g.dicSuMedia || 0,
       flag: (g.dicSuMedia || 0) >= 1.6,
