@@ -17,6 +17,7 @@ export const NAV: NavItem[] = [
   { href: "/predpriyatiya", label: "Предприятия" },
   { href: "/kartina", label: "Картината" },
   { href: "/parichni-potoci", label: "Паричните потоци" },
+  { href: "/koncentraciya", label: "Концентрация" },
   { href: "/konflikti", label: "Конфликт на интереси" },
   { href: "/istochnici", label: "Източници" },
   { href: "/metodologiya", label: "Методология" },

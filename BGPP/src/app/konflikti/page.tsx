@@ -169,6 +169,14 @@ export default function ConflictsPage() {
             </RegisterLink>
           </div>
 
+          <p className="mt-5 text-slate-600">
+            За метода и отворения инструмент за откриване на сигнали виж{" "}
+            <Link href="/svarzanost" className="font-medium text-brand-700 hover:underline">
+              Проверка на свързаност
+            </Link>
+            .
+          </p>
+
           <div className="mt-6 rounded-xl border-l-4 border-rose-500 bg-rose-50 p-4 text-sm text-slate-700">
             <strong>Защо тук няма списък с имена.</strong> Този сайт не публикува
             твърдения „лицето Х е роднина на собственика Y“, защото роднинството

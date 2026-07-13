@@ -8,12 +8,14 @@ import { PageHero, Section, Badge, ExternalLink } from "@/components/ui";
 import { MoneyFlowColumn } from "@/components/MoneyFlows";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd, canonical } from "@/lib/seo";
+import { transparency } from "@/lib/aggregate";
 import {
   Building,
   ShieldCheck,
   Info,
   Scale,
   Layers,
+  Eye,
   Link as LinkIcon,
   External,
 } from "@/components/icons";
@@ -109,6 +111,45 @@ export default async function EnterprisePage({
             <span className="font-semibold text-slate-900">Роля: </span>
             {e.role}
           </p>
+
+          {/* Индекс на прозрачност */}
+          {(() => {
+            const t = transparency(e);
+            return (
+              <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="flex items-center gap-2 font-bold text-slate-900">
+                    <Eye className="h-5 w-5 text-brand-700" aria-hidden />
+                    Индекс на прозрачност
+                  </h3>
+                  <span className="text-sm font-semibold text-slate-700">
+                    {t.score}/{t.max} · {t.label}
+                  </span>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={`h-full rounded-full ${
+                      t.score >= 4 ? "bg-inflow-500" : t.score >= 2 ? "bg-brand-400" : "bg-outflow-500"
+                    }`}
+                    style={{ width: `${(t.score / t.max) * 100}%` }}
+                  />
+                </div>
+                <ul className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
+                  {t.criteria.map((c, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className={c.ok ? "text-inflow-600" : "text-slate-300"}>
+                        {c.ok ? "✓" : "✗"}
+                      </span>
+                      <span className={c.ok ? "text-slate-700" : "text-slate-400"}>{c.label}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-slate-500">
+                  Индикатор за публична проследимост (не оценка за управление).
+                </p>
+              </div>
+            );
+          })()}
         </Section>
 
         {/* Паричните потоци */}

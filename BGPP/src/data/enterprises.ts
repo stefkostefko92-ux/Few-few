@@ -1927,6 +1927,7 @@ export const ENTERPRISES: Enterprise[] = [
       SRC_APPK_REPORT,
     ),
   },
+  ...hospitalEnterprises(),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1989,6 +1990,99 @@ function forestryEnterprises(): Enterprise[] {
     moneyOut: [...base.moneyOut],
     oversight: [...base.oversight],
     sources: src(f.website),
+  }));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Флагмански държавни/университетски болници — еднакъв модел на парични потоци
+// (НЗОК + субсидия от МЗ + платени услуги ↔ заплати, лекарства, апаратура).
+// ─────────────────────────────────────────────────────────────────────────────
+function hospitalEnterprises(): Enterprise[] {
+  const base = {
+    legalForm: "ЕАД" as const,
+    stateShare: 100,
+    sector: "zdraveopazvane" as const,
+    principal: "zdrave" as const,
+    moneyIn: [
+      { label: "Плащания от НЗОК по клинични пътеки/процедури", weight: 1 as const },
+      { label: "Субсидия от Министерството на здравеопазването", weight: 2 as const, note: "спешна помощ, скъпоструващо лечение, капиталови разходи" },
+      { label: "Платени услуги и потребителски такси", weight: 3 as const },
+    ],
+    moneyOut: [
+      { label: "Работни заплати (лекари, сестри, персонал)", weight: 1 as const },
+      { label: "Лекарства и медицински консумативи", weight: 1 as const },
+      { label: "Медицинска апаратура и издръжка на сградите", weight: 2 as const },
+    ],
+    oversight: [
+      "Принципал: министър на здравеопазването",
+      "Финансиране/контрол: НЗОК",
+      "Одит: Сметна палата и независим одит",
+    ],
+  };
+  const list: {
+    slug: string;
+    name: string;
+    shortName: string;
+    eik?: string;
+    hq: string;
+    activity: string;
+    note?: string;
+  }[] = [
+    {
+      slug: "umbal-sv-georgi-plovdiv",
+      name: "УМБАЛ „Св. Георги“ ЕАД, Пловдив",
+      shortName: "УМБАЛ Св. Георги (Пловдив)",
+      hq: "Пловдив",
+      activity:
+        "Най-голямата многопрофилна болница в България по приходи — университетска болница за активно лечение с национално значение.",
+      note: "Най-големите болнични приходи в държавния сектор (~308 млн. лв. за 2024 г.).",
+    },
+    {
+      slug: "umbalsm-pirogov",
+      name: "УМБАЛСМ „Н. И. Пирогов“ ЕАД",
+      shortName: "Пирогов",
+      eik: "130345786",
+      hq: "София",
+      activity:
+        "Национален център за спешна медицина — университетска болница за спешно активно лечение.",
+      note: "Спешната помощ се дофинансира от бюджета; висока натрупана задлъжнялост (по журналистически данни).",
+    },
+    {
+      slug: "umbal-aleksandrovska",
+      name: "УМБАЛ „Александровска“ ЕАД",
+      shortName: "Александровска",
+      eik: "831605795",
+      hq: "София",
+      activity:
+        "Една от най-старите университетски болници — клинична база на Медицинския университет – София.",
+    },
+    {
+      slug: "umbal-sv-ivan-rilski",
+      name: "УМБАЛ „Св. Иван Рилски“ ЕАД",
+      shortName: "Св. Иван Рилски",
+      eik: "000715054",
+      hq: "София",
+      activity:
+        "Университетска болница за активно лечение с национално значение (правоприемник на Държавна болница „Св. Иван Рилски“).",
+    },
+  ];
+  return list.map((h) => ({
+    ...base,
+    slug: h.slug,
+    name: h.name,
+    shortName: h.shortName,
+    ...(h.eik ? { eik: h.eik } : {}),
+    hq: h.hq,
+    activity: h.activity,
+    role: "Гръбнак на болничното лечение и медицинското обучение; съчетава публично финансиране с търговски статут.",
+    moneyIn: [...base.moneyIn],
+    moneyOut: [...base.moneyOut],
+    oversight: [...base.oversight],
+    ...(h.note ? { notes: [h.note] } : {}),
+    sources: withRegisters(
+      { label: "Национална здравноосигурителна каса", url: "https://www.nhif.bg/" },
+      { label: "Министерство на здравеопазването", url: "https://www.mh.government.bg/" },
+    ),
   }));
 }
 
