@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { dirFor, isLocale } from '@/i18n/locales';
 import { fontVariables } from '@/app/fonts';
 import { SITE_URL } from '@/lib/seo';
+import { ConsentBanner } from '@/components/ConsentBanner';
 import '../../globals.css';
 
 export async function generateMetadata({
@@ -38,6 +39,13 @@ export default async function LocaleLayout({
     <html lang={locale} dir={dirFor(locale)} className={fontVariables}>
       <body className="min-h-screen bg-slate-50 font-ui text-slate-900">
         {children}
+        {/* CMP: рекламните тагове (Google Consent Mode v2 / Meta Pixel) се зареждат само
+            със съгласие И само при зададени NEXT_PUBLIC_* ID-та. Собствената аналитика
+            на linketto е без бисквитки и не зависи от този банер. */}
+        <ConsentBanner
+          googleAdsId={process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}
+          metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID}
+        />
       </body>
     </html>
   );

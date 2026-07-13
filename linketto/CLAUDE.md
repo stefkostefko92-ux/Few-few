@@ -114,6 +114,17 @@ webhook слуша и charge.refunded/dispute.created/account.application.deauth
 refund с reverse_transfer в adminRefundPurchaseAction. LoginEvent = IP при вход/регистрация (logLoginIp в
 actions/auth.ts, 90 дни, декларирано в политиката; НЕ важи за посетители).
 
+CMP / Consent Mode v2: src/lib/consent.ts (бисквитка linketto_consent v1,
+180 дни, чисти функции + тестове) + src/components/ConsentBanner.tsx (Basic
+mode: рекламните тагове Google/Meta се зареждат САМО при изрично „Приемам“
+И зададени NEXT_PUBLIC_GOOGLE_ADS_ID/NEXT_PUBLIC_META_PIXEL_ID; default
+denied за 4-те Consent Mode сигнала ПРЕДИ тага; ManageConsentButton в
+footer-а за оттегляне). Празни ID-та (по подразбиране) = банерът не
+съществува и linketto остава без проследяващи технологии. Собствената
+аналитика (ClickEvent) не зависи от това. Низовете са в consent.* +
+footer.manageConsent (bg е източникът). Пази се за кампаниите на Supreme
+AdManager — guard-ът там изисква тази предпоставка (consent_confirmed).
+
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →
 DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
 Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).
