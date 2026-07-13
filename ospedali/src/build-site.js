@@ -118,6 +118,9 @@ async function main() {
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   let conContratti = 0;
+  const catCode = { competitiva: 'c', quadro: 'q', diretto: 'd', negoziataSenza: 'n', negoziata: 'g', altro: 'a' };
+  const tuttiContratti = []; // глобален индекс за търсачката
+  const aziendeIdx = {}; // codice → [nome, regione]
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
     // Пълен опис на договорите (ако е наличен): CSV + inline данни
@@ -129,6 +132,10 @@ async function main() {
     }
     if (contratti && contratti.length) {
       await writeFile(join(SITE_DIR, 'contratti', `${ente.codice}.csv`), contrattiCsv(ente, contratti));
+      aziendeIdx[ente.codice] = [ente.denominazione, ente.regione];
+      for (const c of contratti) {
+        tuttiContratti.push([c.cig, ente.codice, c.data, c.importo, catCode[c.categoria] || 'a', (c.fornitore || '').slice(0, 45), (c.oggetto || '').slice(0, 90)]);
+      }
       conContratti++;
     }
     await writeFile(
@@ -136,7 +143,18 @@ async function main() {
       renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe })
     );
   }
-  console.log(`Готово: ${enti.length + (appalti ? 10 : 9)} страници (${conContratti} с опис на договорите) → ${SITE_DIR}`);
+  // Глобален индекс + страница за търсене през всички договори
+  let paginaCerca = 0;
+  if (tuttiContratti.length) {
+    tuttiContratti.sort((a, b) => b[3] - a[3]); // по сума, за да е топ-N смислен
+    await writeFile(
+      join(SITE_DIR, 'contratti-tutti.json'),
+      JSON.stringify({ generatoIl: new Date().toISOString().slice(0, 10), aziende: aziendeIdx, righe: tuttiContratti })
+    );
+    await writeFile(join(SITE_DIR, 'cerca.html'), renderCerca({ n: tuttiContratti.length, aziende: Object.keys(aziendeIdx).length }));
+    paginaCerca = 1;
+  }
+  console.log(`Готово: ${enti.length + (appalti ? 10 : 9) + paginaCerca} страници (${conContratti} с опис, ${numeroIt(tuttiContratti.length)} договора в търсачката) → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -910,6 +928,84 @@ sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori perso
   <thead><tr><th scope="col">#</th><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>`;
+}
+
+// ---------- ГЛОБАЛНА ТЪРСАЧКА ПРЕЗ ВСИЧКИ ДОГОВОРИ ----------
+function renderCerca({ n, aziende }) {
+  const body = `
+<h1>Cerca in tutti gli appalti</h1>
+<p class="lead">Filtra <strong>tutti i ${numeroIt(n)} contratti</strong> delle ${numeroIt(aziende)} aziende collegate,
+in un colpo solo: per oggetto, fornitore, azienda, regione, tipo di procedura e importo minimo. Ogni riga è verificabile
+tramite il CIG su ANAC.</p>
+<div class="note">Il caricamento dell’indice (~28 MB) richiede qualche secondo alla prima apertura. Importi = valore
+messo a gara; gli operatori persone fisiche non sono nominati. <strong>Indicatori, non prove.</strong></div>
+
+<div class="controls">
+  <input type="search" id="q" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca testo" style="flex:2">
+  <select id="reg" aria-label="Regione"><option value="">Tutte le regioni</option></select>
+  <select id="proc" aria-label="Procedura">
+    <option value="">Tutte le procedure</option>
+    <option value="sg">Solo senza gara (diretto/negoziata)</option>
+    <option value="d">Affidamento diretto</option>
+    <option value="c">Procedura competitiva</option>
+    <option value="q">Accordo quadro/convenzione</option>
+  </select>
+  <select id="imp" aria-label="Importo minimo">
+    <option value="0">Qualsiasi importo</option>
+    <option value="50000">≥ 50.000 €</option>
+    <option value="100000">≥ 100.000 €</option>
+    <option value="500000">≥ 500.000 €</option>
+    <option value="1000000">≥ 1.000.000 €</option>
+  </select>
+</div>
+<p class="small muted" id="stato">Caricamento dell’indice…</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Azienda</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table></div>
+<script>
+(function(){
+  var PROC={c:'Competitiva',q:'Accordo quadro',d:'Affidamento diretto',n:'Negoziata senza bando',g:'Negoziata',a:'Altro'};
+  var SG={d:1,n:1};
+  var q=document.getElementById('q'),reg=document.getElementById('reg'),proc=document.getElementById('proc'),
+      imp=document.getElementById('imp'),stato=document.getElementById('stato'),tb=document.getElementById('rows');
+  var DATA=null,AZ=null,MAX=500,tmr;
+  function eur(v){return v>=1e6?(Math.round(v/1e5)/10).toLocaleString('it-IT')+' mln €':v>=1e3?Math.round(v/1e3).toLocaleString('it-IT')+' mila €':v+' €';}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  fetch('contratti-tutti.json').then(function(r){return r.json();}).then(function(j){
+    DATA=j.righe;AZ=j.aziende;
+    var regs={};for(var k in AZ)regs[AZ[k][1]]=1;
+    Object.keys(regs).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;reg.appendChild(o);});
+    apply();
+  }).catch(function(){stato.textContent='Errore nel caricamento dei dati.';});
+  function apply(){
+    if(!DATA)return;
+    var t=q.value.trim().toLowerCase(),r=reg.value,p=proc.value,mi=+imp.value,out=[],n=0;
+    for(var i=0;i<DATA.length;i++){var d=DATA[i];
+      if(d[3]<mi)continue;
+      if(p==='sg'){if(!SG[d[4]])continue;}else if(p&&d[4]!==p)continue;
+      if(r&&(!AZ[d[1]]||AZ[d[1]][1]!==r))continue;
+      if(t){var hay=(d[6]+' '+d[5]).toLowerCase();if(hay.indexOf(t)<0)continue;}
+      n++;if(out.length<MAX)out.push(d);
+    }
+    stato.textContent=n.toLocaleString('it-IT')+' contratti trovati'+(n>MAX?' (mostrati i primi '+MAX+' per importo)':'');
+    var html='';for(var j=0;j<out.length;j++){var c=out[j],az=AZ[c[1]]||['',''];
+      html+='<tr><td class="small">'+esc(c[2])+'</td><td class="small">'+esc(az[0])+'<div class="small muted">'+esc(az[1])+'</div></td>'+
+        '<td>'+esc(c[6])+'<div class="small muted">CIG '+esc(c[0])+'</div></td><td>'+esc(c[5]||'—')+'</td>'+
+        '<td class="small'+(SG[c[4]]?' neg':'')+'">'+esc(PROC[c[4]]||'')+'</td><td class="num">'+eur(c[3])+'</td></tr>';
+    }
+    tb.innerHTML=html;
+  }
+  function deb(){clearTimeout(tmr);tmr=setTimeout(apply,180);}
+  q.addEventListener('input',deb);[reg,proc,imp].forEach(function(e){e.addEventListener('change',apply);});
+})();
+</script>`;
+  return page({
+    title: 'Cerca in tutti gli appalti — Ospedali Trasparenti',
+    description: 'Motore di ricerca su tutti i contratti pubblici delle aziende sanitarie: filtra per oggetto, fornitore, regione, procedura e importo.',
+    active: 'cerca.html',
+    body,
+  });
 }
 
 // ---------- РЕГИСТЪР НА ДОГОВОРИТЕ (маниакален детайл) ----------
