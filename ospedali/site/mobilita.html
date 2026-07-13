@@ -3,21 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dati aperti — Ospedali Trasparenti</title>
-<meta name="description" content="Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.">
-<link rel="canonical" href="https://ospedalitrasparenti.it/dati.html">
+<title>Mobilità sanitaria: quanto spendono le regioni per curarsi altrove — Ospedali Trasparenti</title>
+<meta name="description" content="5 mld € spesi nel 2024 per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.">
+<link rel="canonical" href="https://ospedalitrasparenti.it/mobilita.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ospedali Trasparenti">
 <meta property="og:locale" content="it_IT">
-<meta property="og:title" content="Dati aperti — Ospedali Trasparenti">
-<meta property="og:description" content="Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.">
-<meta property="og:url" content="https://ospedalitrasparenti.it/dati.html">
+<meta property="og:title" content="Mobilità sanitaria: quanto spendono le regioni per curarsi altrove — Ospedali Trasparenti">
+<meta property="og:description" content="5 mld € spesi nel 2024 per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.">
+<meta property="og:url" content="https://ospedalitrasparenti.it/mobilita.html">
 <meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Dati aperti — Ospedali Trasparenti">
-<meta name="twitter:description" content="Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"Ospedali Trasparenti — conti e appalti degli ospedali pubblici italiani","description":"Bilanci (CE/SP), segnalazioni contabili automatiche, appalti ANAC aggregati, fornitori e registro completo dei contratti delle aziende sanitarie pubbliche italiane.","url":"https://ospedalitrasparenti.it/dati.html","inLanguage":"it","license":"https://creativecommons.org/licenses/by/4.0/","isAccessibleForFree":true,"creator":{"@type":"Organization","name":"Carbon Stealth VCC"},"distribution":[{"@type":"DataDownload","name":"Registro completo dei contratti","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/contratti-tutti.json"},{"@type":"DataDownload","name":"Relazioni ricorrenti azienda–fornitore","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/coi.json"},{"@type":"DataDownload","name":"Appalti ANAC aggregati","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/appalti.json"},{"@type":"DataDownload","name":"Inchiesta: deficit di sistema e anomalie di spesa","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/forensics.json"},{"@type":"DataDownload","name":"Anagrafe delle strutture ospedaliere","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/anagrafica.json"},{"@type":"DataDownload","name":"Fornitori, concentrazione, offerente unico","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/aggiudicatari.json"},{"@type":"DataDownload","name":"Segnalazioni contabili automatiche","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/segnalazioni.json"},{"@type":"DataDownload","name":"Personale del comparto sanità","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/personale.json"},{"@type":"DataDownload","name":"Mobilità sanitaria per regione","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/mobilita.json"},{"@type":"DataDownload","name":"Indice dei contratti per struttura","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/contratti-indice.json"},{"@type":"DataDownload","name":"Controlli di consistenza e provenienza","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/validazione.json"},{"@type":"DataDownload","name":"Tempi di pagamento enti SSN","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/tempi-pagamento.json"}]}</script>
+<meta name="twitter:title" content="Mobilità sanitaria: quanto spendono le regioni per curarsi altrove — Ospedali Trasparenti">
+<meta name="twitter:description" content="5 mld € spesi nel 2024 per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.">
 <style>
 :root{
   /* палитра — светла тема (институционална, сдържана) */
@@ -203,138 +202,122 @@ footer.site a:hover{color:var(--brand)}
 <a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="conflitti.html">Conflitti</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="approfondimenti.html">Approfondimenti</a><a href="dati.html" aria-current="page">Dati</a><a href="metodologia.html">Metodologia</a></nav>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="conflitti.html">Conflitti</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="approfondimenti.html" aria-current="page">Approfondimenti</a><a href="dati.html">Dati</a><a href="metodologia.html">Metodologia</a></nav>
 </div></header>
 <main id="contenuto"><div class="wrap">
 
-<h1>Dati aperti</h1>
-<p class="lead">Tutto ciò che vedi sul sito nasce da <strong>open data ufficiali</strong> ed è <strong>riutilizzabile</strong>.
-Qui trovi i dataset elaborati (formato macchina) e le fonti primarie, con le rispettive licenze. Il codice del pipeline
-è aperto e i risultati sono riproducibili con <code>npm&nbsp;run&nbsp;all</code>.</p>
-
-<h2>Dataset scaricabili</h2>
-<div class="tablewrap"><table>
-  <thead><tr><th scope="col">Dataset</th><th scope="col">Formato</th><th class="num" scope="col">Dimensione</th><th scope="col">Fonte / licenza</th></tr></thead>
-  <tbody><tr>
-      <td><a href="contratti-tutti.json" download>Registro completo dei contratti</a>
-        <div class="small muted">Tutti i 214.026 contratti collegati, in un unico file (usato dal motore di ricerca).</div></td>
-      <td>JSON</td>
-      <td class="num">27 MB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/coi.json" download>Relazioni ricorrenti azienda–fornitore</a>
-        <div class="small muted">Coppie con affidamenti diretti ripetuti, dipendenza o esclusiva: indicatori, non prove.</div></td>
-      <td>JSON</td>
-      <td class="num">1 MB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/appalti.json" download>Appalti ANAC aggregati</a>
-        <div class="small muted">Aggregati per regione e per ente: procedure, quota senza gara, frazionamento, proroghe.</div></td>
-      <td>JSON</td>
-      <td class="num">1 MB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/forensics.json" download>Inchiesta: deficit di sistema e anomalie di spesa</a>
-        <div class="small muted">Ricostruzione del disavanzo (aziende + GSA) e anomalie di costo con benchmark tra pari.</div></td>
-      <td>JSON</td>
-      <td class="num">606 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/anagrafica.json" download>Anagrafe delle strutture ospedaliere</a>
-        <div class="small muted">Posti letto, personale, ricoveri per struttura (modello HSP).</div></td>
-      <td>JSON</td>
-      <td class="num">321 KB</td>
-      <td class="small">Ministero della Salute</td>
-    </tr><tr>
-      <td><a href="dati/aggiudicatari.json" download>Fornitori, concentrazione, offerente unico</a>
-        <div class="small muted">Chi incassa: fornitori per ente, concentrazione, gare a un solo partecipante (dato parziale).</div></td>
-      <td>JSON</td>
-      <td class="num">266 KB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/segnalazioni.json" download>Segnalazioni contabili automatiche</a>
-        <div class="small muted">Anomalie sui bilanci CE/SP con regola, gravità e numeri citati.</div></td>
-      <td>JSON</td>
-      <td class="num">146 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/personale.json" download>Personale del comparto sanità</a>
-        <div class="small muted">Dipendenti, medici e lavoro flessibile per azienda (Conto Annuale).</div></td>
-      <td>JSON</td>
-      <td class="num">30 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/mobilita.json" download>Mobilità sanitaria per regione</a>
-        <div class="small muted">Spesa per cure fuori regione (canali pubblico/privato) dai bilanci CE, per anno.</div></td>
-      <td>JSON</td>
-      <td class="num">17 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/contratti-indice.json" download>Indice dei contratti per struttura</a>
-        <div class="small muted">Numero e valore dei contratti collegati a ciascuna azienda sanitaria.</div></td>
-      <td>JSON</td>
-      <td class="num">8 KB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/validazione.json" download>Controlli di consistenza e provenienza</a>
-        <div class="small muted">Identità contabili verificate, copertura e impronta SHA-256 delle fonti.</div></td>
-      <td>JSON</td>
-      <td class="num">4 KB</td>
-      <td class="small">Elaborazione propria</td>
-    </tr><tr>
-      <td><a href="dati/tempi-pagamento.json" download>Tempi di pagamento enti SSN</a>
-        <div class="small muted">Serie nazionale PCC/RGS 2019–2025 (estrazione dal PDF ufficiale).</div></td>
-      <td>JSON</td>
-      <td class="num">2 KB</td>
-      <td class="small">RGS/MEF</td>
-    </tr><tr>
-      <td><a href="contratti/">Contratti per struttura (CSV)</a>
-        <div class="small muted">Un file CSV per ciascuna delle 113 strutture collegate: contratti/&lt;codice&gt;.csv.</div></td>
-      <td>CSV</td>
-      <td class="num">—</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr></tbody>
-</table></div>
-<p class="small muted">I dataset sono un’<em>elaborazione propria</em> (aggregazione, normalizzazione, indicatori) su dati
-pubblici; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti. Riutilizzo consentito con
-citazione della fonte originale e del progetto.</p>
-
-<h2>Verifica un singolo appalto (CIG)</h2>
-<p class="muted small">Il <strong>CIG</strong> (Codice Identificativo di Gara) è la chiave di verifica: ogni contratto
-sul sito lo riporta. Incollalo qui per controllarlo direttamente sui portali ANAC.</p>
-<div class="controls">
-  <input type="search" id="cig" placeholder="Es. 9314240201" aria-label="CIG da verificare" maxlength="10" style="flex:1;text-transform:uppercase">
-  <button type="button" id="cigBtn" class="btn">Verifica</button>
+<h1>Curarsi fuori regione: chi paga la mobilità sanitaria</h1>
+<p class="lead">Quando un cittadino si cura in un’altra regione, la sua regione paga. Nel 2024 le regioni
+hanno speso <strong>5 mld €</strong> per curare i propri cittadini fuori dai confini —
+in crescita da 4 mld € nel 2022. È la
+misura più concreta della disuguaglianza sanitaria: chi può, parte; la sua regione paga due volte (il viaggio lo
+paga il paziente).</p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n neg">5 mld €</div><div class="l">Spesa fuori regione (2024)</div></div>
+  <div class="card kpi"><div class="n ">5 mld €</div><div class="l">Verso strutture pubbliche</div></div>
+  <div class="card kpi"><div class="n ">271 mln €</div><div class="l">Verso strutture private</div></div>
 </div>
-<div id="cigOut" class="note" hidden style="margin-top:12px"></div>
-<script>
-(function(){
-  var inp=document.getElementById('cig'),btn=document.getElementById('cigBtn'),out=document.getElementById('cigOut');
-  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function verifica(){
-    var v=(inp.value||'').trim().toUpperCase();
-    out.hidden=false;
-    if(!/^[0-9A-Z]{10}$/.test(v)){out.innerHTML='Il CIG dovrebbe avere 10 caratteri alfanumerici. Controlla il codice.';return;}
-    out.innerHTML='CIG <strong>'+esc(v)+'</strong> — cercalo sui portali ufficiali:<br>'+
-      '<a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> · '+
-      '<a href="https://www.serviziocontrattipubblici.it/" target="_blank" rel="noopener">Servizio Contratti Pubblici (MIT)</a>';
-  }
-  btn.addEventListener('click',verifica);
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')verifica();});
-})();
-</script>
-
-<h2>Fonti primarie</h2>
-<ul>
-  <li><a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza" target="_blank" rel="noopener">BDAP — RGS/MEF</a>:
-    modelli <strong>CE</strong> (conto economico) e <strong>SP</strong> (stato patrimoniale) del SSN, per anno. Licenza IODL 2.0.</li>
-  <li><a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">ANAC</a>:
-    Banca Dati Nazionale dei Contratti Pubblici — CIG, procedure, aggiudicatari, partecipanti. Licenza CC BY 4.0.</li>
-  <li><a href="https://www.dati.salute.gov.it/" target="_blank" rel="noopener">Ministero della Salute</a>:
-    anagrafe delle strutture di ricovero (modello HSP).</li>
-</ul>
-<p class="small muted">Aggiornato il 2026-07-13. Per i controlli di consistenza e le impronte
-SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
+<h2>Regione per regione</h2>
+<p class="muted small">Quanto spende ogni regione per prestazioni erogate fuori dal proprio territorio (canale
+pubblico e privato), e quanto incassa dalle altre (dato parziale — vedi nota).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Regione</th><th class="num" scope="col">Spesa fuori regione</th>
+  <th class="num" scope="col">di cui a pubblico</th><th class="num" scope="col">di cui a privato</th>
+  <th class="num" scope="col">Ricavi da altre regioni*</th></tr></thead>
+  <tbody><tr><td><a href="regione/120.html">Lazio</a></td>
+      <td class="num">638 mln €</td>
+      <td class="num">598 mln €</td>
+      <td class="num">40 mln €</td>
+      <td class="num">198 mln €</td></tr><tr><td><a href="regione/030.html">Lombardia</a></td>
+      <td class="num">473 mln €</td>
+      <td class="num">451 mln €</td>
+      <td class="num">22 mln €</td>
+      <td class="num">435 mln €</td></tr><tr><td><a href="regione/150.html">Campania</a></td>
+      <td class="num">466 mln €</td>
+      <td class="num">443 mln €</td>
+      <td class="num">22 mln €</td>
+      <td class="num">116 mln €</td></tr><tr><td><a href="regione/160.html">Puglia</a></td>
+      <td class="num">398 mln €</td>
+      <td class="num">382 mln €</td>
+      <td class="num">17 mln €</td>
+      <td class="num">124 mln €</td></tr><tr><td><a href="regione/180.html">Calabria</a></td>
+      <td class="num">351 mln €</td>
+      <td class="num">340 mln €</td>
+      <td class="num">11 mln €</td>
+      <td class="num">32 mln €</td></tr><tr><td><a href="regione/190.html">Sicilia</a></td>
+      <td class="num">326 mln €</td>
+      <td class="num">309 mln €</td>
+      <td class="num">16 mln €</td>
+      <td class="num">65 mln €</td></tr><tr><td><a href="regione/050.html">Veneto</a></td>
+      <td class="num">300 mln €</td>
+      <td class="num">291 mln €</td>
+      <td class="num">9 mln €</td>
+      <td class="num">243 mln €</td></tr><tr><td><a href="regione/010.html">Piemonte</a></td>
+      <td class="num">285 mln €</td>
+      <td class="num">283 mln €</td>
+      <td class="num">2 mln €</td>
+      <td class="num">168 mln €</td></tr><tr><td><a href="regione/080.html">Emilia Romagna</a></td>
+      <td class="num">264 mln €</td>
+      <td class="num">257 mln €</td>
+      <td class="num">6 mln €</td>
+      <td class="num">466 mln €</td></tr><tr><td><a href="regione/070.html">Liguria</a></td>
+      <td class="num">251 mln €</td>
+      <td class="num">234 mln €</td>
+      <td class="num">17 mln €</td>
+      <td class="num">164 mln €</td></tr><tr><td><a href="regione/130.html">Abruzzo</a></td>
+      <td class="num">240 mln €</td>
+      <td class="num">213 mln €</td>
+      <td class="num">26 mln €</td>
+      <td class="num">72 mln €</td></tr><tr><td><a href="regione/090.html">Toscana</a></td>
+      <td class="num">235 mln €</td>
+      <td class="num">227 mln €</td>
+      <td class="num">8 mln €</td>
+      <td class="num">233 mln €</td></tr><tr><td><a href="regione/110.html">Marche</a></td>
+      <td class="num">189 mln €</td>
+      <td class="num">165 mln €</td>
+      <td class="num">24 mln €</td>
+      <td class="num">90 mln €</td></tr><tr><td><a href="regione/170.html">Basilicata</a></td>
+      <td class="num">147 mln €</td>
+      <td class="num">144 mln €</td>
+      <td class="num">3 mln €</td>
+      <td class="num">62 mln €</td></tr><tr><td><a href="regione/200.html">Sardegna</a></td>
+      <td class="num">139 mln €</td>
+      <td class="num">131 mln €</td>
+      <td class="num">8 mln €</td>
+      <td class="num">38 mln €</td></tr><tr><td><a href="regione/100.html">Umbria</a></td>
+      <td class="num">126 mln €</td>
+      <td class="num">113 mln €</td>
+      <td class="num">12 mln €</td>
+      <td class="num">92 mln €</td></tr><tr><td><a href="regione/060.html">F. V. Giulia</a></td>
+      <td class="num">112 mln €</td>
+      <td class="num">106 mln €</td>
+      <td class="num">6 mln €</td>
+      <td class="num">86 mln €</td></tr><tr><td><a href="regione/140.html">Molise</a></td>
+      <td class="num">92 mln €</td>
+      <td class="num">83 mln €</td>
+      <td class="num">9 mln €</td>
+      <td class="num">11 mln €</td></tr><tr><td><a href="regione/taa.html">P. A. Trento</a></td>
+      <td class="num">78 mln €</td>
+      <td class="num">77 mln €</td>
+      <td class="num">801 mila €</td>
+      <td class="num">93 mln €</td></tr><tr><td><a href="regione/taa.html">P. A. Bolzano</a></td>
+      <td class="num">44 mln €</td>
+      <td class="num">35 mln €</td>
+      <td class="num">9 mln €</td>
+      <td class="num">52 mln €</td></tr><tr><td><a href="regione/020.html">Valle d&#39;Aosta</a></td>
+      <td class="num">31 mln €</td>
+      <td class="num">30 mln €</td>
+      <td class="num">1 mln €</td>
+      <td class="num">17 mln €</td></tr></tbody>
+</table></div>
+<div class="note"><strong>Come leggere (e i limiti).</strong> La spesa «fuori regione» è la somma delle voci di costo
+Extraregione dei bilanci CE (aziende + gestione regionale): è il dato solido. *I «ricavi da altre regioni» (AA0450)
+sono invece <strong>parziali</strong>: parte dei flussi compensativi transita dalla gestione accentrata regionale sotto
+altre voci — per questo NON pubblichiamo un «saldo» e la colonna va letta come ordine di grandezza. La fotografia
+resta chiara: le regioni del Sud spendono molto per curare i propri cittadini al Nord, e quasi non incassano nulla
+in senso opposto.</div>
+<p class="small muted">Fonte: BDAP — RGS/MEF, modelli CE (consuntivo), voci Extraregione. Elenco delle voci usate nei
+<a href="dati.html">dati aperti</a> (mobilita.json).</p>
 
 </div></main>
 <footer class="site"><div class="wrap">

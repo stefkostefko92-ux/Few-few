@@ -3,21 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dati aperti — Ospedali Trasparenti</title>
-<meta name="description" content="Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.">
-<link rel="canonical" href="https://ospedalitrasparenti.it/dati.html">
+<title>Il personale della sanità: medici, precari e «gettonisti» — Ospedali Trasparenti</title>
+<meta name="description" content="742.930 dipendenti, 115.258 medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.">
+<link rel="canonical" href="https://ospedalitrasparenti.it/personale.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ospedali Trasparenti">
 <meta property="og:locale" content="it_IT">
-<meta property="og:title" content="Dati aperti — Ospedali Trasparenti">
-<meta property="og:description" content="Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.">
-<meta property="og:url" content="https://ospedalitrasparenti.it/dati.html">
+<meta property="og:title" content="Il personale della sanità: medici, precari e «gettonisti» — Ospedali Trasparenti">
+<meta property="og:description" content="742.930 dipendenti, 115.258 medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.">
+<meta property="og:url" content="https://ospedalitrasparenti.it/personale.html">
 <meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Dati aperti — Ospedali Trasparenti">
-<meta name="twitter:description" content="Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"Ospedali Trasparenti — conti e appalti degli ospedali pubblici italiani","description":"Bilanci (CE/SP), segnalazioni contabili automatiche, appalti ANAC aggregati, fornitori e registro completo dei contratti delle aziende sanitarie pubbliche italiane.","url":"https://ospedalitrasparenti.it/dati.html","inLanguage":"it","license":"https://creativecommons.org/licenses/by/4.0/","isAccessibleForFree":true,"creator":{"@type":"Organization","name":"Carbon Stealth VCC"},"distribution":[{"@type":"DataDownload","name":"Registro completo dei contratti","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/contratti-tutti.json"},{"@type":"DataDownload","name":"Relazioni ricorrenti azienda–fornitore","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/coi.json"},{"@type":"DataDownload","name":"Appalti ANAC aggregati","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/appalti.json"},{"@type":"DataDownload","name":"Inchiesta: deficit di sistema e anomalie di spesa","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/forensics.json"},{"@type":"DataDownload","name":"Anagrafe delle strutture ospedaliere","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/anagrafica.json"},{"@type":"DataDownload","name":"Fornitori, concentrazione, offerente unico","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/aggiudicatari.json"},{"@type":"DataDownload","name":"Segnalazioni contabili automatiche","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/segnalazioni.json"},{"@type":"DataDownload","name":"Personale del comparto sanità","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/personale.json"},{"@type":"DataDownload","name":"Mobilità sanitaria per regione","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/mobilita.json"},{"@type":"DataDownload","name":"Indice dei contratti per struttura","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/contratti-indice.json"},{"@type":"DataDownload","name":"Controlli di consistenza e provenienza","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/validazione.json"},{"@type":"DataDownload","name":"Tempi di pagamento enti SSN","encodingFormat":"application/json","contentUrl":"https://ospedalitrasparenti.it/dati/tempi-pagamento.json"}]}</script>
+<meta name="twitter:title" content="Il personale della sanità: medici, precari e «gettonisti» — Ospedali Trasparenti">
+<meta name="twitter:description" content="742.930 dipendenti, 115.258 medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.">
 <style>
 :root{
   /* палитра — светла тема (институционална, сдържана) */
@@ -203,138 +202,66 @@ footer.site a:hover{color:var(--brand)}
 <a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="conflitti.html">Conflitti</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="approfondimenti.html">Approfondimenti</a><a href="dati.html" aria-current="page">Dati</a><a href="metodologia.html">Metodologia</a></nav>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="conflitti.html">Conflitti</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="approfondimenti.html" aria-current="page">Approfondimenti</a><a href="dati.html">Dati</a><a href="metodologia.html">Metodologia</a></nav>
 </div></header>
 <main id="contenuto"><div class="wrap">
 
-<h1>Dati aperti</h1>
-<p class="lead">Tutto ciò che vedi sul sito nasce da <strong>open data ufficiali</strong> ed è <strong>riutilizzabile</strong>.
-Qui trovi i dataset elaborati (formato macchina) e le fonti primarie, con le rispettive licenze. Il codice del pipeline
-è aperto e i risultati sono riproducibili con <code>npm&nbsp;run&nbsp;all</code>.</p>
-
-<h2>Dataset scaricabili</h2>
-<div class="tablewrap"><table>
-  <thead><tr><th scope="col">Dataset</th><th scope="col">Formato</th><th class="num" scope="col">Dimensione</th><th scope="col">Fonte / licenza</th></tr></thead>
-  <tbody><tr>
-      <td><a href="contratti-tutti.json" download>Registro completo dei contratti</a>
-        <div class="small muted">Tutti i 214.026 contratti collegati, in un unico file (usato dal motore di ricerca).</div></td>
-      <td>JSON</td>
-      <td class="num">27 MB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/coi.json" download>Relazioni ricorrenti azienda–fornitore</a>
-        <div class="small muted">Coppie con affidamenti diretti ripetuti, dipendenza o esclusiva: indicatori, non prove.</div></td>
-      <td>JSON</td>
-      <td class="num">1 MB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/appalti.json" download>Appalti ANAC aggregati</a>
-        <div class="small muted">Aggregati per regione e per ente: procedure, quota senza gara, frazionamento, proroghe.</div></td>
-      <td>JSON</td>
-      <td class="num">1 MB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/forensics.json" download>Inchiesta: deficit di sistema e anomalie di spesa</a>
-        <div class="small muted">Ricostruzione del disavanzo (aziende + GSA) e anomalie di costo con benchmark tra pari.</div></td>
-      <td>JSON</td>
-      <td class="num">606 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/anagrafica.json" download>Anagrafe delle strutture ospedaliere</a>
-        <div class="small muted">Posti letto, personale, ricoveri per struttura (modello HSP).</div></td>
-      <td>JSON</td>
-      <td class="num">321 KB</td>
-      <td class="small">Ministero della Salute</td>
-    </tr><tr>
-      <td><a href="dati/aggiudicatari.json" download>Fornitori, concentrazione, offerente unico</a>
-        <div class="small muted">Chi incassa: fornitori per ente, concentrazione, gare a un solo partecipante (dato parziale).</div></td>
-      <td>JSON</td>
-      <td class="num">266 KB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/segnalazioni.json" download>Segnalazioni contabili automatiche</a>
-        <div class="small muted">Anomalie sui bilanci CE/SP con regola, gravità e numeri citati.</div></td>
-      <td>JSON</td>
-      <td class="num">146 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/personale.json" download>Personale del comparto sanità</a>
-        <div class="small muted">Dipendenti, medici e lavoro flessibile per azienda (Conto Annuale).</div></td>
-      <td>JSON</td>
-      <td class="num">30 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/mobilita.json" download>Mobilità sanitaria per regione</a>
-        <div class="small muted">Spesa per cure fuori regione (canali pubblico/privato) dai bilanci CE, per anno.</div></td>
-      <td>JSON</td>
-      <td class="num">17 KB</td>
-      <td class="small">BDAP — RGS/MEF (IODL 2.0)</td>
-    </tr><tr>
-      <td><a href="dati/contratti-indice.json" download>Indice dei contratti per struttura</a>
-        <div class="small muted">Numero e valore dei contratti collegati a ciascuna azienda sanitaria.</div></td>
-      <td>JSON</td>
-      <td class="num">8 KB</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr><tr>
-      <td><a href="dati/validazione.json" download>Controlli di consistenza e provenienza</a>
-        <div class="small muted">Identità contabili verificate, copertura e impronta SHA-256 delle fonti.</div></td>
-      <td>JSON</td>
-      <td class="num">4 KB</td>
-      <td class="small">Elaborazione propria</td>
-    </tr><tr>
-      <td><a href="dati/tempi-pagamento.json" download>Tempi di pagamento enti SSN</a>
-        <div class="small muted">Serie nazionale PCC/RGS 2019–2025 (estrazione dal PDF ufficiale).</div></td>
-      <td>JSON</td>
-      <td class="num">2 KB</td>
-      <td class="small">RGS/MEF</td>
-    </tr><tr>
-      <td><a href="contratti/">Contratti per struttura (CSV)</a>
-        <div class="small muted">Un file CSV per ciascuna delle 113 strutture collegate: contratti/&lt;codice&gt;.csv.</div></td>
-      <td>CSV</td>
-      <td class="num">—</td>
-      <td class="small">ANAC (CC BY 4.0)</td>
-    </tr></tbody>
-</table></div>
-<p class="small muted">I dataset sono un’<em>elaborazione propria</em> (aggregazione, normalizzazione, indicatori) su dati
-pubblici; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti. Riutilizzo consentito con
-citazione della fonte originale e del progetto.</p>
-
-<h2>Verifica un singolo appalto (CIG)</h2>
-<p class="muted small">Il <strong>CIG</strong> (Codice Identificativo di Gara) è la chiave di verifica: ogni contratto
-sul sito lo riporta. Incollalo qui per controllarlo direttamente sui portali ANAC.</p>
-<div class="controls">
-  <input type="search" id="cig" placeholder="Es. 9314240201" aria-label="CIG da verificare" maxlength="10" style="flex:1;text-transform:uppercase">
-  <button type="button" id="cigBtn" class="btn">Verifica</button>
+<h1>Il personale della sanità pubblica</h1>
+<p class="lead">Nel 2023 le strutture del comparto sanità contavano <strong>742.930</strong>
+dipendenti, di cui <strong>115.258 medici</strong>. Il 5,6% ha un
+contratto «flessibile» (tempo determinato, interinale): dove questa quota esplode, l’azienda copre i buchi d’organico
+con personale precario — l’anticamera dei «medici a gettone».</p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">742.930</div><div class="l">Dipendenti (2023)</div></div>
+  <div class="card kpi"><div class="n ">115.258</div><div class="l">Medici</div></div>
+  <div class="card kpi"><div class="n ">41.760</div><div class="l">Contratti flessibili</div></div>
+  <div class="card kpi"><div class="n ">5,6%</div><div class="l">Quota flessibili</div></div>
 </div>
-<div id="cigOut" class="note" hidden style="margin-top:12px"></div>
-<script>
-(function(){
-  var inp=document.getElementById('cig'),btn=document.getElementById('cigBtn'),out=document.getElementById('cigOut');
-  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function verifica(){
-    var v=(inp.value||'').trim().toUpperCase();
-    out.hidden=false;
-    if(!/^[0-9A-Z]{10}$/.test(v)){out.innerHTML='Il CIG dovrebbe avere 10 caratteri alfanumerici. Controlla il codice.';return;}
-    out.innerHTML='CIG <strong>'+esc(v)+'</strong> — cercalo sui portali ufficiali:<br>'+
-      '<a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> · '+
-      '<a href="https://www.serviziocontrattipubblici.it/" target="_blank" rel="noopener">Servizio Contratti Pubblici (MIT)</a>';
-  }
-  btn.addEventListener('click',verifica);
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')verifica();});
-})();
-</script>
-
-<h2>Fonti primarie</h2>
-<ul>
-  <li><a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza" target="_blank" rel="noopener">BDAP — RGS/MEF</a>:
-    modelli <strong>CE</strong> (conto economico) e <strong>SP</strong> (stato patrimoniale) del SSN, per anno. Licenza IODL 2.0.</li>
-  <li><a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">ANAC</a>:
-    Banca Dati Nazionale dei Contratti Pubblici — CIG, procedure, aggiudicatari, partecipanti. Licenza CC BY 4.0.</li>
-  <li><a href="https://www.dati.salute.gov.it/" target="_blank" rel="noopener">Ministero della Salute</a>:
-    anagrafe delle strutture di ricovero (modello HSP).</li>
-</ul>
-<p class="small muted">Aggiornato il 2026-07-13. Per i controlli di consistenza e le impronte
-SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
+<h2>Il lavoro precario nel tempo</h2>
+<figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Dipendenti con contratto flessibile nel comparto sanità (teste, fonte: Conto Annuale)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="177.1" x2="666" y2="177.1"/><text x="50" y="180.1" text-anchor="end">10 mila</text><line class="grid-line" x1="56" y1="140.2" x2="666" y2="140.2"/><text x="50" y="143.2" text-anchor="end">20 mila</text><line class="grid-line" x1="56" y1="103.2" x2="666" y2="103.2"/><text x="50" y="106.2" text-anchor="end">30 mila</text><line class="grid-line" x1="56" y1="66.3" x2="666" y2="66.3"/><text x="50" y="69.3" text-anchor="end">40 mila</text><line class="grid-line" x1="56" y1="29.4" x2="666" y2="29.4"/><text x="50" y="32.4" text-anchor="end">50 mila</text><text x="56.0" y="232" text-anchor="middle">2010</text><text x="143.1" y="232" text-anchor="middle">2012</text><text x="230.3" y="232" text-anchor="middle">2014</text><text x="317.4" y="232" text-anchor="middle">2016</text><text x="404.6" y="232" text-anchor="middle">2018</text><text x="491.7" y="232" text-anchor="middle">2020</text><text x="578.9" y="232" text-anchor="middle">2022</text><text x="666.0" y="232" text-anchor="middle">2024</text><path d="M56.0,92.5 L99.6,105.7 L143.1,113.7 L186.7,113.1 L230.3,109.6 L273.9,100.7 L317.4,90.9 L361.0,77.3 L404.6,83.1 L448.1,93.2 L491.7,70.4 L535.3,14.0 L578.9,26.8 L622.4,88.8 L666.0,115.3" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="92.5" r="2.5" fill="var(--brand)"/><circle cx="99.6" cy="105.7" r="2.5" fill="var(--brand)"/><circle cx="143.1" cy="113.7" r="2.5" fill="var(--brand)"/><circle cx="186.7" cy="113.1" r="2.5" fill="var(--brand)"/><circle cx="230.3" cy="109.6" r="2.5" fill="var(--brand)"/><circle cx="273.9" cy="100.7" r="2.5" fill="var(--brand)"/><circle cx="317.4" cy="90.9" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="77.3" r="2.5" fill="var(--brand)"/><circle cx="404.6" cy="83.1" r="2.5" fill="var(--brand)"/><circle cx="448.1" cy="93.2" r="2.5" fill="var(--brand)"/><circle cx="491.7" cy="70.4" r="2.5" fill="var(--brand)"/><circle cx="535.3" cy="14.0" r="2.5" fill="var(--brand)"/><circle cx="578.9" cy="26.8" r="2.5" fill="var(--brand)"/><circle cx="622.4" cy="88.8" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="115.3" r="2.5" fill="var(--brand)"/><path d="M56.0,191.3 L99.6,195.6 L143.1,197.7 L186.7,198.2 L230.3,195.2 L273.9,191.3 L317.4,190.8 L361.0,190.1 L404.6,188.8 L448.1,188.8 L491.7,182.6 L535.3,183.2 L578.9,186.4 L622.4,192.9 L666.0,196.9" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="191.3" r="2.5" fill="var(--neg)"/><circle cx="99.6" cy="195.6" r="2.5" fill="var(--neg)"/><circle cx="143.1" cy="197.7" r="2.5" fill="var(--neg)"/><circle cx="186.7" cy="198.2" r="2.5" fill="var(--neg)"/><circle cx="230.3" cy="195.2" r="2.5" fill="var(--neg)"/><circle cx="273.9" cy="191.3" r="2.5" fill="var(--neg)"/><circle cx="317.4" cy="190.8" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="190.1" r="2.5" fill="var(--neg)"/><circle cx="404.6" cy="188.8" r="2.5" fill="var(--neg)"/><circle cx="448.1" cy="188.8" r="2.5" fill="var(--neg)"/><circle cx="491.7" cy="182.6" r="2.5" fill="var(--neg)"/><circle cx="535.3" cy="183.2" r="2.5" fill="var(--neg)"/><circle cx="578.9" cy="186.4" r="2.5" fill="var(--neg)"/><circle cx="622.4" cy="192.9" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="196.9" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Tempo determinato</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Interinale (agenzia)</text></g></g></svg><figcaption>Dipendenti con contratto flessibile nel comparto sanità (teste, fonte: Conto Annuale)</figcaption></figure>
+<h2>Dove il lavoro flessibile pesa di più</h2>
+<p class="muted small">Aziende con almeno 1.000 dipendenti, ordinate per quota di contratti flessibili.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Dipendenti</th><th class="num" scope="col">Medici</th>
+  <th class="num" scope="col">Flessibili</th><th class="num" scope="col">Quota</th></tr></thead>
+  <tbody><tr><td><a href="struttura/120902-azienda-ospedaliera-complesso-ospedaliero-san-giovanni-addol.html">AZIENDA OSPEDALIERA COMPLESSO OSPEDALIERO SAN GIOVANNI ADDOLORATA</a></td>
+      <td class="num">3648</td><td class="num">648</td>
+      <td class="num">1615</td><td class="num neg">44,3%</td></tr><tr><td><a href="struttura/190201-azienda-sanitaria-provinciale-di-agrigento.html">AZIENDA SANITARIA PROVINCIALE DI AGRIGENTO</a></td>
+      <td class="num">2658</td><td class="num">639</td>
+      <td class="num">752</td><td class="num neg">28,3%</td></tr><tr><td><a href="struttura/190927-azienda-ospedaliera-di-rilievo-nazionale-e-di-alta-specializ.html">AZIENDA OSPEDALIERA DI RILIEVO NAZIONALE E DI ALTA SPECIALIZZAZIONE CIVICO - DI CRISTINA - BENFRATELLI</a></td>
+      <td class="num">2898</td><td class="num">710</td>
+      <td class="num">607</td><td class="num neg">21%</td></tr><tr><td><a href="struttura/190928-azienda-ospedaliera-universitaria-policlinico-paolo-giaccone.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO PAOLO GIACCONE DI PALERMO</a></td>
+      <td class="num">1584</td><td class="num">368</td>
+      <td class="num">303</td><td class="num neg">19,1%</td></tr><tr><td><a href="struttura/190206-azienda-sanitaria-provinciale-di-palermo.html">AZIENDA SANITARIA PROVINCIALE DI PALERMO</a></td>
+      <td class="num">4784</td><td class="num">825</td>
+      <td class="num">905</td><td class="num neg">18,9%</td></tr><tr><td><a href="struttura/130201-azienda-sanitaria-locale-1-di-avezzano-sulmona-l-aquila.html">AZIENDA SANITARIA LOCALE 1 DI AVEZZANO-SULMONA-L&#39;AQUILA</a></td>
+      <td class="num">4538</td><td class="num">704</td>
+      <td class="num">817</td><td class="num neg">18%</td></tr><tr><td><a href="struttura/190202-azienda-sanitaria-provinciale-di-caltanissetta.html">AZIENDA SANITARIA PROVINCIALE DI CALTANISSETTA</a></td>
+      <td class="num">3008</td><td class="num">943</td>
+      <td class="num">537</td><td class="num neg">17,8%</td></tr><tr><td><a href="struttura/120110-azienda-sanitaria-locale-di-rieti.html">AZIENDA SANITARIA LOCALE DI RIETI</a></td>
+      <td class="num">2185</td><td class="num">313</td>
+      <td class="num">380</td><td class="num neg">17,4%</td></tr><tr><td><a href="struttura/190207-azienda-sanitaria-provinciale-di-ragusa.html">AZIENDA SANITARIA PROVINCIALE DI RAGUSA</a></td>
+      <td class="num">3924</td><td class="num">585</td>
+      <td class="num">600</td><td class="num neg">15,3%</td></tr><tr><td><a href="struttura/190924-azienda-ospedaliera-ospedali-riuniti-papardo-piemonte-di-mes.html">AZIENDA OSPEDALIERA OSPEDALI RIUNITI PAPARDO PIEMONTE DI MESSINA</a></td>
+      <td class="num">1363</td><td class="num">296</td>
+      <td class="num">201</td><td class="num ">14,7%</td></tr><tr><td><a href="struttura/200904-arnas-g-brotzu.html">ARNAS G. BROTZU</a></td>
+      <td class="num">3330</td><td class="num">655</td>
+      <td class="num">474</td><td class="num ">14,2%</td></tr><tr><td><a href="struttura/120205-azienda-sanitaria-locale-roma-5.html">AZIENDA SANITARIA LOCALE ROMA 5</a></td>
+      <td class="num">3486</td><td class="num">600</td>
+      <td class="num">482</td><td class="num ">13,8%</td></tr><tr><td><a href="struttura/190203-azienda-sanitaria-provinciale-di-catania.html">AZIENDA SANITARIA PROVINCIALE DI CATANIA</a></td>
+      <td class="num">4471</td><td class="num">851</td>
+      <td class="num">600</td><td class="num ">13,4%</td></tr><tr><td><a href="struttura/190926-azienda-ospedaliera-ospedali-riuniti-villa-sofia-cervello-di.html">AZIENDA OSPEDALIERA OSPEDALI RIUNITI VILLA SOFIA CERVELLO DI PALERMO</a></td>
+      <td class="num">2869</td><td class="num">544</td>
+      <td class="num">369</td><td class="num ">12,8%</td></tr><tr><td><a href="struttura/110905-azienda-ospedaliero-universitaria-delle-marche.html">AZIENDA OSPEDALIERO UNIVERSITARIA DELLE MARCHE</a></td>
+      <td class="num">3862</td><td class="num">692</td>
+      <td class="num">492</td><td class="num ">12,7%</td></tr></tbody>
+</table></div>
+<div class="note"><strong>Il limite del dato.</strong> Il Conto Annuale conta i <em>dipendenti</em> — anche precari —
+ma NON i «medici a gettone» forniti da cooperative e agenzie esterne: quelli passano per i contratti di
+servizi (li trovi negli <a href="appalti.html">appalti</a>, categoria somministrazione/servizi sanitari
+esternalizzati). Una quota flessibile alta è un indicatore di fragilità dell’organico, non un’irregolarità.</div>
+<p class="small muted">Fonte: Conto Annuale (RGS/MEF) via BDAP open data — 2023, ultima rilevazione completa
+(la raccolta 2024 è ancora parziale alla fonte). 212 aziende collegate alle schede del sito.</p>
 
 </div></main>
 <footer class="site"><div class="wrap">

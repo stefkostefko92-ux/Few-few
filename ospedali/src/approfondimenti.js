@@ -533,12 +533,17 @@ versione di tutte le pagine. Qui teniamo il registro di cosa è cambiato.</p>
   <li>Indicatori automatici: segnalazioni contabili, anomalie di spesa, relazioni ricorrenti.</li>
   <li>Carta delle regioni, profili dei fornitori, ricerca su tutti i contratti, dati aperti.</li>
 </ul>
-<h2>Prossimi contenuti in preparazione</h2>
+<h2>Luglio 2026 — secondo aggiornamento</h2>
 <ul>
-  <li><strong>Tempi di pagamento</strong> delle aziende sanitarie ai fornitori (fonte: PCC/MEF).</li>
-  <li><strong>Personale e «medici a gettone»</strong> — costi del lavoro esternalizzato (fonte: Conto Annuale RGS).</li>
-  <li><strong>Liste d’attesa</strong> per regione (fonte: AGENAS/Ministero della Salute).</li>
-  <li><strong>Mobilità sanitaria</strong> — i pazienti che si curano fuori regione e i flussi economici relativi.</li>
+  <li><strong><a href="mobilita.html">Mobilità sanitaria</a></strong> — la spesa di ogni regione per curare i propri cittadini altrove (dai bilanci CE).</li>
+  <li><strong><a href="personale.html">Personale</a></strong> — dipendenti, medici e lavoro flessibile per azienda (Conto Annuale RGS 2023).</li>
+  <li><strong><a href="pagamenti.html">Tempi di pagamento</a></strong> — la serie nazionale PCC/MEF 2019–2025 per gli enti del SSN.</li>
+</ul>
+<h2>In preparazione</h2>
+<ul>
+  <li><strong>Liste d’attesa</strong>: la Piattaforma Nazionale (PNLA) di AGENAS pubblica per ora solo un
+  <a href="https://www.portaletrasparenzaservizisanitari.it/" target="_blank" rel="noopener">cruscotto consultabile</a>,
+  non ancora dati aperti scaricabili; li integreremo appena disponibili in formato riutilizzabile.</li>
 </ul>
 <p class="small muted">Le date di generazione dei dataset correnti sono nella pagina <a href="verifiche.html">Dati e
 verifiche</a> (con impronta SHA-256 delle fonti). Segnalazioni e correzioni: <a href="note-legali.html#rettifiche">rettifiche</a>.</p>
@@ -577,6 +582,175 @@ ${card('aggiornamenti.html', 'Aggiornamenti', 'Cosa è stato caricato, cosa è c
     title: 'Approfondimenti — analisi, storie e guide — Ospedali Trasparenti',
     description: 'Tendenze della spesa sanitaria 2012–2024, i 100 contratti più grandi, le categorie di spesa, il PNRR, le storie nei dati e le guide per verificare.',
     active: 'approfondimenti.html',
+    body,
+  });
+}
+
+// ---------- 8. Tempi di pagamento (RGS/PCC — национална серия) ----------
+export function renderPagamenti({ tp }) {
+  const anni = tp.perAnno;
+  const ultimo = anni.at(-1);
+  const primo = anni[0];
+  const rows = anni
+    .map(
+      (a) => `<tr><td>${a.anno}</td><td class="num">${numeroIt(a.fattureMgl)} mila</td>
+      <td class="num">${euroCompact(a.importoFatture * 1e6)}</td>
+      <td class="num">${a.tempoMedioPagamento} gg</td>
+      <td class="num ${a.tempoMedioRitardo < 0 ? 'pos' : 'neg'}">${a.tempoMedioRitardo} gg</td>
+      <td class="num">${percentualeIt(a.importoNeiTermini / 100)}</td></tr>`
+    )
+    .join('');
+  const body = `
+<h1>Quanto in fretta pagano gli ospedali</h1>
+<p class="lead">Le aziende del SSN devono pagare i fornitori entro <strong>60 giorni</strong>. Per anni non è stato
+così — i ritardi della sanità erano cronici. La serie ufficiale PCC/MEF mostra la svolta: nel ${ultimo.anno} il tempo
+medio di pagamento è sceso a <strong>${ultimo.tempoMedioPagamento} giorni</strong> (${primo.anno}: ${primo.tempoMedioPagamento}),
+con un anticipo medio di ${Math.abs(ultimo.tempoMedioRitardo)} giorni sul termine.</p>
+${lineChart(
+    [
+      { label: 'Tempo medio di pagamento (giorni)', color: 'var(--brand)', points: anni.map((a) => [a.anno, a.tempoMedioPagamento]) },
+    ],
+    { caption: 'Tempo medio di pagamento delle fatture — enti del SSN (fonte: PCC/RGS-MEF)' }
+  )}
+<div class="grid kpis">
+  ${kpi(`Fatture ricevute (${ultimo.anno})`, `${numeroIt(ultimo.fattureMgl)} mila`)}
+  ${kpi('Valore fatture', euroCompact(ultimo.importoFatture * 1e6))}
+  ${kpi('Tempo medio di pagamento', `${ultimo.tempoMedioPagamento} giorni`, 'pos')}
+  ${kpi('Importo pagato nei termini', percentualeIt(ultimo.importoNeiTermini / 100), 'pos')}
+</div>
+<h2>La serie completa</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Anno</th><th class="num" scope="col">Fatture</th><th class="num" scope="col">Valore</th>
+  <th class="num" scope="col">Tempo medio</th><th class="num" scope="col">Ritardo medio</th><th class="num" scope="col">Nei termini (valore)</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<div class="note"><strong>Perché conta.</strong> I ritardi di pagamento sono un costo occulto: i fornitori li
+scontano nei prezzi, le piccole imprese ne soffrono la liquidità, e l’Italia è stata condannata dalla Corte di
+giustizia UE (2020) proprio per i ritardi della PA. Il miglioramento è reale ed è uno dei pochi indicatori della
+sanità in netto progresso. Il dato è nazionale: i tempi delle singole aziende sono pubblicati da ciascuna
+(indicatore di tempestività, in Amministrazione Trasparente) ma non esistono ancora come open data centralizzato.</div>
+<p class="small muted">Fonte: <a href="${esc(tp.url)}" target="_blank" rel="noopener">RGS/MEF — monitoraggio tempi di
+pagamento</a> (dati PCC), tabella «Enti del SSN». Estrazione manuale dal PDF ufficiale, verificabile 1:1.
+Termine legale: ${esc(tp.termineLegale)}.</p>
+`;
+  return page({
+    title: 'Tempi di pagamento della sanità: quanto in fretta pagano gli ospedali — Ospedali Trasparenti',
+    description: `Il tempo medio di pagamento delle aziende sanitarie è sceso a ${ultimo.tempoMedioPagamento} giorni. La serie ufficiale PCC/MEF ${primo.anno}–${ultimo.anno}, spiegata.`,
+    active: 'approfondimenti.html',
+    canonical: 'pagamenti.html',
+    body,
+  });
+}
+
+// ---------- 9. Personale (Conto Annuale) ----------
+export function renderPersonale({ pers, aziendeNomi, href }) {
+  const n = pers.nazionale;
+  const st = pers.flessibileStorico;
+  const topFless = Object.entries(pers.perEnte)
+    .filter(([, v]) => v.totale >= 1000)
+    .sort((a, b) => b[1].quotaFlessibili - a[1].quotaFlessibili)
+    .slice(0, 15);
+  const rows = topFless
+    .map(([cod, v]) => {
+      const nome = aziendeNomi.get(cod) || cod;
+      return `<tr><td><a href="${href(cod)}">${esc(nome)}</a></td>
+      <td class="num">${numeroIt(v.totale)}</td><td class="num">${numeroIt(v.medici)}</td>
+      <td class="num">${numeroIt(v.flessibili)}</td><td class="num ${v.quotaFlessibili > 0.15 ? 'neg' : ''}">${percentualeIt(v.quotaFlessibili)}</td></tr>`;
+    })
+    .join('');
+  const body = `
+<h1>Il personale della sanità pubblica</h1>
+<p class="lead">Nel ${pers.anno} le strutture del comparto sanità contavano <strong>${numeroIt(n.totale)}</strong>
+dipendenti, di cui <strong>${numeroIt(n.medici)} medici</strong>. Il ${percentualeIt(n.flessibili / n.totale)} ha un
+contratto «flessibile» (tempo determinato, interinale): dove questa quota esplode, l’azienda copre i buchi d’organico
+con personale precario — l’anticamera dei «medici a gettone».</p>
+<div class="grid kpis">
+  ${kpi(`Dipendenti (${pers.anno})`, numeroIt(n.totale))}
+  ${kpi('Medici', numeroIt(n.medici))}
+  ${kpi('Contratti flessibili', numeroIt(n.flessibili))}
+  ${kpi('Quota flessibili', percentualeIt(n.flessibili / n.totale))}
+</div>
+<h2>Il lavoro precario nel tempo</h2>
+${lineChart(
+    [
+      { label: 'Tempo determinato', color: 'var(--brand)', points: st.map((r) => [r.anno, r.determinato]) },
+      { label: 'Interinale (agenzia)', color: 'var(--neg)', points: st.map((r) => [r.anno, r.interinale]) },
+    ],
+    { caption: 'Dipendenti con contratto flessibile nel comparto sanità (teste, fonte: Conto Annuale)' }
+  )}
+<h2>Dove il lavoro flessibile pesa di più</h2>
+<p class="muted small">Aziende con almeno 1.000 dipendenti, ordinate per quota di contratti flessibili.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Dipendenti</th><th class="num" scope="col">Medici</th>
+  <th class="num" scope="col">Flessibili</th><th class="num" scope="col">Quota</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<div class="note"><strong>Il limite del dato.</strong> Il Conto Annuale conta i <em>dipendenti</em> — anche precari —
+ma NON i «medici a gettone» forniti da cooperative e agenzie esterne: quelli passano per i contratti di
+servizi (li trovi negli <a href="appalti.html">appalti</a>, categoria somministrazione/servizi sanitari
+esternalizzati). Una quota flessibile alta è un indicatore di fragilità dell’organico, non un’irregolarità.</div>
+<p class="small muted">Fonte: Conto Annuale (RGS/MEF) via BDAP open data — ${pers.anno}, ultima rilevazione completa
+(la raccolta ${pers.anno + 1} è ancora parziale alla fonte). ${numeroIt(n.collegati)} aziende collegate alle schede del sito.</p>
+`;
+  return page({
+    title: 'Il personale della sanità: medici, precari e «gettonisti» — Ospedali Trasparenti',
+    description: `${numeroIt(n.totale)} dipendenti, ${numeroIt(n.medici)} medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.`,
+    active: 'approfondimenti.html',
+    canonical: 'personale.html',
+    body,
+  });
+}
+
+// ---------- 12. Mobilità sanitaria ----------
+export function renderMobilita({ mob, regKeyByNome }) {
+  const u = mob.perAnno[mob.ultimoAnno];
+  const anni = Object.keys(mob.perAnno).map(Number).sort();
+  const rows = u.regioni
+    .map((r) => {
+      const key = regKeyByNome(r.regione);
+      const nome = key ? `<a href="regione/${key}.html">${esc(r.regione)}</a>` : esc(r.regione);
+      return `<tr><td>${nome}</td>
+      <td class="num">${euroCompact(r.passivaTot)}</td>
+      <td class="num">${euroCompact(r.passivaPubblico)}</td>
+      <td class="num">${euroCompact(r.passivaPrivato)}</td>
+      <td class="num">${euroCompact(r.attivaParziale)}</td></tr>`;
+    })
+    .join('');
+  const body = `
+<h1>Curarsi fuori regione: chi paga la mobilità sanitaria</h1>
+<p class="lead">Quando un cittadino si cura in un’altra regione, la sua regione paga. Nel ${mob.ultimoAnno} le regioni
+hanno speso <strong>${euroCompact(u.totPassiva)}</strong> per curare i propri cittadini fuori dai confini —
+${anni.length > 1 ? `in crescita da ${euroCompact(mob.perAnno[anni[0]].totPassiva)} nel ${anni[0]}` : ''}. È la
+misura più concreta della disuguaglianza sanitaria: chi può, parte; la sua regione paga due volte (il viaggio lo
+paga il paziente).</p>
+<div class="grid kpis">
+  ${kpi(`Spesa fuori regione (${mob.ultimoAnno})`, euroCompact(u.totPassiva), 'neg')}
+  ${kpi('Verso strutture pubbliche', euroCompact(u.regioni.reduce((s, r) => s + r.passivaPubblico, 0)))}
+  ${kpi('Verso strutture private', euroCompact(u.regioni.reduce((s, r) => s + r.passivaPrivato, 0)))}
+</div>
+<h2>Regione per regione</h2>
+<p class="muted small">Quanto spende ogni regione per prestazioni erogate fuori dal proprio territorio (canale
+pubblico e privato), e quanto incassa dalle altre (dato parziale — vedi nota).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Regione</th><th class="num" scope="col">Spesa fuori regione</th>
+  <th class="num" scope="col">di cui a pubblico</th><th class="num" scope="col">di cui a privato</th>
+  <th class="num" scope="col">Ricavi da altre regioni*</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<div class="note"><strong>Come leggere (e i limiti).</strong> La spesa «fuori regione» è la somma delle voci di costo
+Extraregione dei bilanci CE (aziende + gestione regionale): è il dato solido. *I «ricavi da altre regioni» (AA0450)
+sono invece <strong>parziali</strong>: parte dei flussi compensativi transita dalla gestione accentrata regionale sotto
+altre voci — per questo NON pubblichiamo un «saldo» e la colonna va letta come ordine di grandezza. La fotografia
+resta chiara: le regioni del Sud spendono molto per curare i propri cittadini al Nord, e quasi non incassano nulla
+in senso opposto.</div>
+<p class="small muted">Fonte: BDAP — RGS/MEF, modelli CE (consuntivo), voci Extraregione. Elenco delle voci usate nei
+<a href="dati.html">dati aperti</a> (mobilita.json).</p>
+`;
+  return page({
+    title: 'Mobilità sanitaria: quanto spendono le regioni per curarsi altrove — Ospedali Trasparenti',
+    description: `${euroCompact(u.totPassiva)} spesi nel ${mob.ultimoAnno} per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.`,
+    active: 'approfondimenti.html',
+    canonical: 'mobilita.html',
     body,
   });
 }

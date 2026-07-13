@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Ospedali Trasparenti — автоматично извличане на официални open data за финансите на публичните болници в Италия (BDAP/MEF, dati.salute.gov.it) и генериране на подробен отчет за всяка структура.",
   "license": "UNLICENSED",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "fetch:catalogo": "node src/fetch-catalogo.js",
     "fetch:anagrafica": "node src/fetch-anagrafica.js",
@@ -20,9 +22,11 @@
     "coi": "node src/coi.js",
     "validate": "node src/validate.js",
     "site": "node --max-old-space-size=4096 src/build-site.js",
-    "build": "npm run report && npm run analyze && npm run forensics && npm run coi && npm run validate && npm run site",
+    "build": "npm run report && npm run analyze && npm run forensics && npm run coi && npm run mobilita && npm run personale && npm run validate && npm run site",
     "all": "npm run fetch:all && npm run build",
     "test": "node --test test/*.test.js",
-    "lint": "sh -c 'for f in src/*.js src/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'"
+    "lint": "sh -c 'for f in src/*.js src/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'",
+    "mobilita": "node --max-old-space-size=4096 src/mobilita.js",
+    "personale": "node --max-old-space-size=4096 src/personale.js"
   }
 }

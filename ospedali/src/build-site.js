@@ -22,6 +22,7 @@ import {
   classificaCpv, CPV_LABELS, renderTendenze, renderTopContratti, renderCategorie, renderDove,
   renderGlossario, renderGuida, renderPnrr, renderStorie, renderStoria, STORIE,
   renderAggiornamenti, renderApprofondimenti,
+  renderPagamenti, renderPersonale, renderMobilita,
 } from './approfondimenti.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
@@ -464,9 +465,24 @@ async function main() {
   for (const s of STORIE) await writeFile(join(SITE_DIR, 'storia', `${s.slug}.html`), renderStoria(s));
   await writeFile(join(SITE_DIR, 'storie.html'), renderStorie());
   await writeFile(join(SITE_DIR, 'aggiornamenti.html'), renderAggiornamenti({ date: {} }));
+  // 8/9/12) Новите източници: плащания (RGS/PCC), персонал (Conto Annuale),
+  // mobilità (от CE) — всичките по избор (страницата се пропуска без данните)
+  const tp = await readJson(pjoin(DATA_DIR, 'tempi-pagamento.json')).catch(() => null);
+  if (tp) await writeFile(join(SITE_DIR, 'pagamenti.html'), renderPagamenti({ tp }));
+  const pers = await readJson(pjoin(DATA_DIR, 'personale.json')).catch(() => null);
+  if (pers) {
+    const aziendeNomi = new Map(enti.map((e) => [e.codice, e.denominazione]));
+    await writeFile(join(SITE_DIR, 'personale.html'), renderPersonale({ pers, aziendeNomi, href }));
+  }
+  const mob = await readJson(pjoin(DATA_DIR, 'mobilita.json')).catch(() => null);
+  if (mob) {
+    const nome2key = new Map(enti.map((e) => [e.regione, REG_KEY[e.codice.slice(0, 3)]]));
+    await writeFile(join(SITE_DIR, 'mobilita.html'), renderMobilita({ mob, regKeyByNome: (n) => nome2key.get(n) || null }));
+  }
+
   await writeFile(
     join(SITE_DIR, 'approfondimenti.html'),
-    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length })
+    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length, conNuovi: { pagamenti: !!tp, personale: !!pers, mobilita: !!mob } })
   );
 
   // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
@@ -480,6 +496,9 @@ async function main() {
     ['anagrafica.json', 'JSON', 'Anagrafe delle strutture ospedaliere', 'Posti letto, personale, ricoveri per struttura (modello HSP).', 'Ministero della Salute'],
     ['contratti-indice.json', 'JSON', 'Indice dei contratti per struttura', 'Numero e valore dei contratti collegati a ciascuna azienda sanitaria.', 'ANAC (CC BY 4.0)'],
     ['coi.json', 'JSON', 'Relazioni ricorrenti azienda–fornitore', 'Coppie con affidamenti diretti ripetuti, dipendenza o esclusiva: indicatori, non prove.', 'ANAC (CC BY 4.0)'],
+    ['mobilita.json', 'JSON', 'Mobilità sanitaria per regione', 'Spesa per cure fuori regione (canali pubblico/privato) dai bilanci CE, per anno.', 'BDAP — RGS/MEF (IODL 2.0)'],
+    ['personale.json', 'JSON', 'Personale del comparto sanità', 'Dipendenti, medici e lavoro flessibile per azienda (Conto Annuale).', 'BDAP — RGS/MEF (IODL 2.0)'],
+    ['tempi-pagamento.json', 'JSON', 'Tempi di pagamento enti SSN', 'Serie nazionale PCC/RGS 2019–2025 (estrazione dal PDF ufficiale).', 'RGS/MEF'],
     ['validazione.json', 'JSON', 'Controlli di consistenza e provenienza', 'Identità contabili verificate, copertura e impronta SHA-256 delle fonti.', 'Elaborazione propria'],
   ];
   const datasets = [];
@@ -531,6 +550,9 @@ async function main() {
       ...(appalti ? ['pnrr.html'] : []),
       'storie.html',
       'aggiornamenti.html',
+      'pagamenti.html',
+      'personale.html',
+      'mobilita.html',
       ...STORIE.map((s) => `storia/${s.slug}.html`),
       ...regioniData.map((r) => `regione/${r.key}.html`),
       ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
