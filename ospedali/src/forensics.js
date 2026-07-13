@@ -33,6 +33,20 @@ import {
 const BDAP_DIR = join(RAW_DIR, 'bdap');
 const FORENSICS_FILE = join(DATA_DIR, 'forensics.json');
 
+// Клас на структурата за справедливо сравнение „връстник с връстник“.
+function classeTipo(ente) {
+  const n = Number(ente.codEnte);
+  if (ente.anag || (n >= 901 && n <= 989)) return 'ospedaliera'; // AO/AOU/IRCCS
+  if (n === 900 || n >= 990) return 'altro'; // Azienda Zero/ESTAR/centrali
+  return 'territoriale'; // ASL с президии
+}
+function bucketDimensione(costi) {
+  if (costi < 100e6) return '<100M';
+  if (costi < 500e6) return '100-500M';
+  if (costi < 1e9) return '500M-1G';
+  return '>1G';
+}
+
 function median(a) {
   if (!a.length) return null;
   const s = [...a].sort((x, y) => x - y);
@@ -105,11 +119,14 @@ async function main() {
     if (!costi || costi <= 0) continue;
     const letti = postiLettoEnte(ente, anagrafica);
     const ricoveri = ricoveriEnte(ente, anagrafica);
+    const classe = classeTipo(ente);
     const m = {
       codice: ente.codice,
       denominazione: ente.denominazione,
       regione: ente.regione,
       tipo: tipoEnte(ente.codEnte, ente.anag),
+      classe,
+      peer: `${classe}|${bucketDimensione(costi)}`,
       anno,
       costiProduzione: costi,
       costoPersonale: y.costoPersonale ?? null,
@@ -133,38 +150,55 @@ async function main() {
     metriche.push(m);
   }
 
-  // ---- Национални връстнически разпределения по категория ----
-  const bench = {};
-  for (const c of CE_FORENSICS) {
-    const quote = metriche.map((m) => m.cat[c.key]?.quotaCosti).filter((v) => v != null);
-    const perLetto = metriche.map((m) => m.cat[c.key]?.perLetto).filter((v) => v != null);
-    const medQ = median(quote);
-    const madQ = median(quote.map((v) => Math.abs(v - medQ)));
-    const medL = median(perLetto);
-    const madL = median(perLetto.map((v) => Math.abs(v - medL)));
-    bench[c.key] = {
-      label: c.label,
-      quotaMediana: medQ,
-      quotaP90: percentile(quote, 90),
-      quotaMad: madQ,
-      perLettoMediana: medL,
-      perLettoP90: percentile(perLetto, 90),
-      perLettoMad: madL,
-    };
+  // ---- Разпределения по категория: национално + по група-връстници ----
+  const buildBench = (subset) => {
+    const b = { _n: subset.length };
+    for (const c of CE_FORENSICS) {
+      const quote = subset.map((m) => m.cat[c.key]?.quotaCosti).filter((v) => v != null);
+      const perLetto = subset.map((m) => m.cat[c.key]?.perLetto).filter((v) => v != null);
+      const medQ = median(quote);
+      b[c.key] = {
+        label: c.label,
+        quotaMediana: medQ,
+        quotaP90: percentile(quote, 90),
+        quotaMad: median(quote.map((v) => Math.abs(v - medQ))),
+        perLettoMediana: median(perLetto),
+        perLettoP90: percentile(perLetto, 90),
+      };
+    }
+    const cq = subset.map((m) => m.cat.consulenzeInterinale?.quotaPersonale).filter((v) => v != null);
+    b._consPersMediana = median(cq);
+    b._consPersP90 = percentile(cq, 90);
+    return b;
+  };
+  const bench = buildBench(metriche); // национален (fallback)
+  const gruppi = new Map();
+  for (const m of metriche) {
+    if (!gruppi.has(m.peer)) gruppi.set(m.peer, []);
+    gruppi.get(m.peer).push(m);
   }
-  const consQuote = metriche.map((m) => m.cat.consulenzeInterinale?.quotaPersonale).filter((v) => v != null);
-  const consMedianaPers = median(consQuote);
-  const consP90Pers = percentile(consQuote, 90);
+  const benchGruppo = {};
+  for (const [g, arr] of gruppi) benchGruppo[g] = buildBench(arr);
+  const MIN_PEER = 8; // под този размер групата е нестабилна → национален бенчмарк
+  const benchFor = (m) => {
+    const g = benchGruppo[m.peer];
+    return g && g._n >= MIN_PEER ? { b: g, scope: 'gruppo' } : { b: bench, scope: 'nazionale' };
+  };
+  const consMedianaPers = bench._consPersMediana;
+  const consP90Pers = bench._consPersP90;
 
   // ---- Флагове за всяко предприятие ----
   const SOGLIA_MATERIALITA = 1_000_000; // под този абсолют не вдигаме шум
   const perEnte = [];
+  const scopeLabel = (s) => (s === 'gruppo' ? 'di aziende simili' : 'nazionale');
   for (const m of metriche) {
     const flags = [];
+    const { b: pbench, scope } = benchFor(m); // peer или национален
+    const sl = scopeLabel(scope);
     for (const c of CE_FORENSICS) {
       const cell = m.cat[c.key];
       if (!cell || cell.valore < SOGLIA_MATERIALITA) continue;
-      const b = bench[c.key];
+      const b = pbench[c.key];
       const zQuota = robustZ(cell.quotaCosti, b.quotaMediana, b.quotaMad);
       const overP90 = b.quotaP90 != null && cell.quotaCosti > b.quotaP90;
       if (overP90 && zQuota != null && zQuota > 2) {
@@ -174,15 +208,17 @@ async function main() {
           label: c.label,
           valore: Math.round(cell.valore),
           testo:
-            `${c.label}: ${fmtEur(cell.valore)} = ${pct(cell.quotaCosti)} dei costi, contro una mediana nazionale del ` +
-            `${pct(b.quotaMediana)} (oltre il 90° percentile).`,
+            `${c.label}: ${fmtEur(cell.valore)} = ${pct(cell.quotaCosti)} dei costi, contro una mediana ${sl} del ` +
+            `${pct(b.quotaMediana)} (oltre il 90° percentile del gruppo di confronto).`,
           z: round1(zQuota),
         });
       }
     }
     // висок дял консултации/наемен труд спрямо персонала
     const ci = m.cat.consulenzeInterinale;
-    if (ci && ci.quotaPersonale != null && ci.valore >= SOGLIA_MATERIALITA && ci.quotaPersonale > Math.max(0.2, consP90Pers)) {
+    const consP90 = pbench._consPersP90 ?? consP90Pers;
+    const consMed = pbench._consPersMediana ?? consMedianaPers;
+    if (ci && ci.quotaPersonale != null && ci.valore >= SOGLIA_MATERIALITA && ci.quotaPersonale > Math.max(0.2, consP90)) {
       flags.push({
         categoria: 'consulenzeInterinale',
         tipo: 'consulenze_su_personale',
@@ -190,14 +226,14 @@ async function main() {
         valore: Math.round(ci.valore),
         testo:
           `Consulenze, collaborazioni e interinale pari al ${pct(ci.quotaPersonale)} del costo del personale ` +
-          `(${fmtEur(ci.valore)}); mediana nazionale ${pct(consMedianaPers)}. Possibile aggiramento delle assunzioni.`,
+          `(${fmtEur(ci.valore)}); mediana ${sl} ${pct(consMed)}. Possibile aggiramento delle assunzioni.`,
         z: null,
       });
     }
     // висока зависимост от частни доставчици
     const pv = m.cat.prestazioniDaPrivato;
     if (pv && pv.valore >= SOGLIA_MATERIALITA) {
-      const b = bench.prestazioniDaPrivato;
+      const b = pbench.prestazioniDaPrivato;
       if (b.quotaP90 != null && pv.quotaCosti > b.quotaP90) {
         flags.push({
           categoria: 'prestazioniDaPrivato',
@@ -274,10 +310,13 @@ async function main() {
     classifiche,
     entiConFlag: conFlag.length,
     totaleFlag: perEnte.reduce((s, m) => s + m.flags.length, 0),
+    peerGruppi: Object.fromEntries([...gruppi.entries()].map(([g, arr]) => [g, arr.length])),
     enti: perEnte.map((m) => ({
       codice: m.codice,
       denominazione: m.denominazione,
       regione: m.regione,
+      classe: m.classe,
+      peer: m.peer,
       anno: m.anno,
       costiProduzione: Math.round(m.costiProduzione),
       postiLetto: m.postiLetto,

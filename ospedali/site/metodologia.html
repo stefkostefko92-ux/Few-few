@@ -129,7 +129,10 @@ servizi non sanitari (pulizia, mensa, riscaldamento, rifiuti), manutenzioni este
 (affitti/noleggi) e acquisto di prestazioni sanitarie da privati.</p>
 <ul class="small">
   <li>Ogni voce è <strong>normalizzata</strong> come quota dei costi della produzione e, dove disponibile, per posto letto (anagrafe del Ministero della Salute).</li>
-  <li>Ogni struttura è confrontata con la <strong>distribuzione nazionale</strong> (mediana, 90° percentile, z-score robusto su mediana e MAD).</li>
+  <li>Ogni struttura è confrontata anzitutto con il proprio <strong>gruppo di aziende simili</strong> (per tipo —
+  ospedaliera / territoriale / altro — e dimensione di spesa), e con la distribuzione nazionale quando il gruppo è
+  troppo piccolo: così un piccolo IRCCS non è misurato con il metro di una grande ASL. Statistiche robuste (mediana,
+  90° percentile, z-score su mediana e MAD).</li>
   <li>Scatta un segnale se la voce supera il 90° percentile con z&gt;2 <em>e</em> l’importo è materiale (≥ 1 mln €), o se raddoppia da un anno all’altro (+60% e &gt; 2 mln €).</li>
   <li>Il «rosso» di sistema è ricostruito sommando il risultato delle aziende e quello della Gestione Sanitaria Accentrata regionale (GSA, codice 000), che copre gran parte dei disavanzi.</li>
 </ul>
