@@ -452,5 +452,12 @@
     "payoutsTitle": "Iarratais íocaíochta amach — ar feitheamh ({count})",
     "payoutsEmpty": "Gan iarratais ar feitheamh.",
     "payoutMarkPaid": "Marcáil mar íoctha"
+  },
+  "consent": {
+    "title": "Fianáin fógraíochta.",
+    "body": "Oibríonn Linketto gan fianáin rianaithe. Ní lódálfaimid clibeanna fógraíochta Google agus Meta, a chabhraíonn linn ár bhfógraíocht a thomhas, ach le do thoil. Ní athraíonn diúltú aon rud sa tseirbhís.",
+    "accept": "Glac leis",
+    "decline": "Diúltaigh",
+    "moreInfo": "Tuilleadh eolais"
   }
 }

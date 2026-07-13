@@ -452,5 +452,12 @@
     "payoutsTitle": "Išmokų prašymai — laukiantys ({count})",
     "payoutsEmpty": "Nėra laukiančių prašymų.",
     "payoutMarkPaid": "Pažymėti kaip apmokėtą"
+  },
+  "consent": {
+    "title": "Reklaminiai slapukai.",
+    "body": "Linketto veikia be stebėjimo slapukų. Tik tau sutikus įkelsime Google ir Meta reklamos žymas, kurios padeda mums įvertinti savo reklamą. Atsisakymas nieko nekeičia paslaugoje.",
+    "accept": "Sutinku",
+    "decline": "Atsisakau",
+    "moreInfo": "Sužinoti daugiau"
   }
 }

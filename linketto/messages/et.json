@@ -452,5 +452,12 @@
     "payoutsTitle": "Väljamaksetaotlused — ootel ({count})",
     "payoutsEmpty": "Ootel taotlusi pole.",
     "payoutMarkPaid": "Märgi makstuks"
+  },
+  "consent": {
+    "title": "Reklaamiküpsised.",
+    "body": "Linketto töötab ilma jälgimisküpsisteta. Ainult sinu nõusolekul laadime Google’i ja Meta reklaamisildid, mis aitavad meil oma reklaami mõõta. Keeldumine ei muuda teenuses midagi.",
+    "accept": "Nõustun",
+    "decline": "Keeldun",
+    "moreInfo": "Loe lähemalt"
   }
 }

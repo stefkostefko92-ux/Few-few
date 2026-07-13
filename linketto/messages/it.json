@@ -460,5 +460,12 @@
     "payoutsTitle": "Richieste di pagamento — in sospeso ({count})",
     "payoutsEmpty": "Nessuna richiesta in sospeso.",
     "payoutMarkPaid": "Segna come pagato"
+  },
+  "consent": {
+    "title": "Cookie pubblicitari.",
+    "body": "Linketto funziona senza cookie di tracciamento. Solo con il tuo consenso caricheremo i tag pubblicitari di Google e Meta che ci aiutano a misurare la nostra pubblicità. Il rifiuto non cambia nulla nel servizio.",
+    "accept": "Accetto",
+    "decline": "Rifiuto",
+    "moreInfo": "Scopri di più"
   }
 }

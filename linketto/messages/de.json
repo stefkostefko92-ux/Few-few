@@ -460,5 +460,12 @@
     "payoutsTitle": "Auszahlungsanfragen — offen ({count})",
     "payoutsEmpty": "Keine offenen Anfragen.",
     "payoutMarkPaid": "Als bezahlt markieren"
+  },
+  "consent": {
+    "title": "Werbe-Cookies.",
+    "body": "Linketto funktioniert ohne Tracking-Cookies. Nur wenn du zustimmst, laden wir Werbe-Tags von Google und Meta, die uns helfen, unsere Werbung zu messen. Eine Ablehnung ändert nichts am Dienst.",
+    "accept": "Akzeptieren",
+    "decline": "Ablehnen",
+    "moreInfo": "Mehr erfahren"
   }
 }

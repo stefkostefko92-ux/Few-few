@@ -452,5 +452,12 @@
     "payoutsTitle": "Zahtjevi za isplatu — na čekanju ({count})",
     "payoutsEmpty": "Nema zahtjeva na čekanju.",
     "payoutMarkPaid": "Označi kao plaćeno"
+  },
+  "consent": {
+    "title": "Kolačići za oglašavanje.",
+    "body": "Linketto radi bez kolačića za praćenje. Samo uz tvoj pristanak učitat ćemo oglasne oznake Googlea i Mete koje nam pomažu mjeriti naše oglašavanje. Odbijanje ne mijenja ništa u usluzi.",
+    "accept": "Prihvaćam",
+    "decline": "Odbijam",
+    "moreInfo": "Saznaj više"
   }
 }

@@ -452,5 +452,12 @@
     "payoutsTitle": "Maksupyynnöt — odottavat ({count})",
     "payoutsEmpty": "Ei odottavia pyyntöjä.",
     "payoutMarkPaid": "Merkitse maksetuksi"
+  },
+  "consent": {
+    "title": "Mainosevästeet.",
+    "body": "Linketto toimii ilman seurantaevästeitä. Lataamme Googlen ja Metan mainostagit, jotka auttavat meitä mittaamaan mainontaamme, vain suostumuksellasi. Kieltäytyminen ei muuta palvelussa mitään.",
+    "accept": "Hyväksy",
+    "decline": "Hylkää",
+    "moreInfo": "Lue lisää"
   }
 }

@@ -460,5 +460,12 @@
     "payoutsTitle": "Demandes de versement — en attente ({count})",
     "payoutsEmpty": "Aucune demande en attente.",
     "payoutMarkPaid": "Marquer comme payé"
+  },
+  "consent": {
+    "title": "Cookies publicitaires.",
+    "body": "Linketto fonctionne sans cookies de suivi. Ce n’est qu’avec votre accord que nous chargerons les balises publicitaires de Google et Meta qui nous aident à mesurer notre publicité. Un refus ne change rien au service.",
+    "accept": "J’accepte",
+    "decline": "Je refuse",
+    "moreInfo": "En savoir plus"
   }
 }

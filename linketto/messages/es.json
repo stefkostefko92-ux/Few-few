@@ -460,5 +460,12 @@
     "payoutsTitle": "Solicitudes de pago — pendientes ({count})",
     "payoutsEmpty": "No hay solicitudes pendientes.",
     "payoutMarkPaid": "Marcar como pagado"
+  },
+  "consent": {
+    "title": "Cookies de publicidad.",
+    "body": "Linketto funciona sin cookies de seguimiento. Solo si aceptas, cargaremos etiquetas publicitarias de Google y Meta que nos ayudan a medir nuestra publicidad. Rechazarlas no cambia nada en el servicio.",
+    "accept": "Acepto",
+    "decline": "Rechazo",
+    "moreInfo": "Más información"
   }
 }
