@@ -419,9 +419,20 @@
           "date": "2026-07-13",
           "event": "v10.6 — учене",
           "detail": "Научи: ANAC dati.anticorruzione.it open data са под CC BY 4.0; BDAP/RGS-MEF под IODL 2.0. И дв… (+2 още)"
+        },
+        {
+          "version": "10.7.0",
+          "date": "2026-07-13",
+          "event": "v10.7 — учене",
+          "detail": "Научи: При civic-transparency сайтове, преизползващи ANAC/appalti open data, филтърът /^[0-9]{… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-13",
+          "type": "learning",
+          "summary": "Научи: „При civic-transparency сайтове, преизползващи ANAC/appalti open data, филтърът /^[0-9]{…\" (+2 още)"
+        },
         {
           "date": "2026-07-13",
           "type": "learning",
