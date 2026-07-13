@@ -9,6 +9,7 @@ import { MoneyFlowColumn } from "@/components/MoneyFlows";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd, canonical } from "@/lib/seo";
 import { transparency } from "@/lib/aggregate";
+import { contractorsForEik } from "@/data/procurement";
 import {
   Building,
   ShieldCheck,
@@ -191,6 +192,42 @@ export default async function EnterprisePage({
                 </li>
               ))}
             </ul>
+          </Section>
+        )}
+
+        {/* Кой печели поръчките */}
+        {e.eik && contractorsForEik(e.eik).length > 0 && (
+          <Section
+            title="Кой печели поръчките му"
+            icon={<Building className="h-6 w-6 text-brand-700" aria-hidden />}
+          >
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th className="px-4 py-3">Изпълнител</th>
+                    <th className="px-4 py-3 text-right">Спечелено</th>
+                    <th className="px-4 py-3">Собственик (Търговски регистър)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {contractorsForEik(e.eik).map((c, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3 font-medium text-slate-900">{c.name}</td>
+                      <td className="px-4 py-3 text-right text-slate-700">{c.amount}</td>
+                      <td className="px-4 py-3 text-slate-600">{c.owner ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-sm text-slate-500">
+              Публични данни от СИГМА и Търговския регистър. Виж пълната{" "}
+              <Link href="/koncentraciya" className="font-medium text-brand-700 hover:underline">
+                концентрация на поръчките
+              </Link>
+              .
+            </p>
           </Section>
         )}
 

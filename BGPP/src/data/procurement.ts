@@ -201,6 +201,18 @@ export const BIG_CONTRACTORS: BigContractor[] = [
   },
 ];
 
+/** Изпълнители, спечелили поръчки от даден възложител (по ЕИК). */
+export function contractorsForEik(
+  eik: string,
+): { name: string; owner?: string; amount: string }[] {
+  const out: { name: string; owner?: string; amount: string }[] = [];
+  for (const c of BIG_CONTRACTORS) {
+    const win = c.wins.find((w) => w.clientEik === eik);
+    if (win) out.push({ name: c.name, owner: c.owner, amount: win.amount });
+  }
+  return out.sort((a, b) => b.amount.length - a.amount.length);
+}
+
 export const PROCUREMENT_SOURCES: Source[] = [
   { label: "СИГМА — обществени поръчки по възложител", url: "https://sigma.midt.bg/" },
   { label: "Търговски регистър — собственост на изпълнителите", url: "https://portal.registryagency.bg/" },
