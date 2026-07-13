@@ -126,6 +126,13 @@ export default function ConcentrationPage() {
               <strong>Отбранителните</strong> поръчки (ВМЗ, Кинтекс) изобщо не се публикуват —
               там концентрацията не може да се провери.
             </li>
+            <li>
+              За вече документирани нередности около тези възложители виж{" "}
+              <Link href="/sluchai" className="font-medium text-brand-700 hover:underline">
+                известните случаи
+              </Link>{" "}
+              (разследване не е присъда).
+            </li>
           </ul>
           <ul className="mt-6 grid gap-3 sm:grid-cols-3">
             {PROCUREMENT_SOURCES.map((s) => (

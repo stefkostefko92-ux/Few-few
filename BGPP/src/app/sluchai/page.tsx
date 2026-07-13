@@ -4,7 +4,7 @@ import { PageHero, Section } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd } from "@/lib/seo";
 import { ShieldCheck, External, Info } from "@/components/icons";
-import { CASES, STATUS, STATUS_ORDER, type CaseItem } from "@/data/cases";
+import { CASES, STATUS, STATUS_ORDER, redFlagsByEnterprise, type CaseItem } from "@/data/cases";
 
 export const metadata: Metadata = buildMetadata({
   title: "Известни случаи и червени флагове",
@@ -115,7 +115,40 @@ export default function CasesPage() {
           })}
         </div>
 
-        <Section>
+        {/* Класация по брой червени флагове */}
+        <Section title="Най-много червени флагове">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {redFlagsByEnterprise()
+              .filter((r) => r.count > 1)
+              .map((r) => (
+                <div
+                  key={r.enterprise}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5"
+                >
+                  {r.slug ? (
+                    <Link href={`/predpriyatiya/${r.slug}`} className="font-medium text-slate-900 hover:text-brand-700">
+                      {r.enterprise}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-slate-900">{r.enterprise}</span>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-800">
+                    {r.count} случая
+                  </span>
+                </div>
+              ))}
+          </div>
+          <p className="mt-2 text-sm text-slate-500">
+            Броят случаи отразява публичното внимание и наличните източници, не непременно
+            установена вина. Кой печели поръчките на тези възложители — виж{" "}
+            <Link href="/koncentraciya" className="font-medium text-brand-700 hover:underline">
+              концентрацията
+            </Link>
+            .
+          </p>
+        </Section>
+
+        <Section title="Всички случаи">
           <div className="grid gap-4 md:grid-cols-2">
             {sorted.map((c, i) => (
               <CaseCard key={i} c={c} />

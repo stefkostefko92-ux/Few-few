@@ -318,3 +318,19 @@ export const CASES: CaseItem[] = [
 export function casesForSlug(slug: string): CaseItem[] {
   return CASES.filter((c) => c.slug === slug);
 }
+
+/** Предприятия, подредени по брой документирани случаи („червени флагове“). */
+export function redFlagsByEnterprise(): {
+  enterprise: string;
+  slug?: string;
+  count: number;
+}[] {
+  const map = new Map<string, { enterprise: string; slug?: string; count: number }>();
+  for (const c of CASES) {
+    const key = c.slug ?? c.enterprise;
+    const cur = map.get(key);
+    if (cur) cur.count += 1;
+    else map.set(key, { enterprise: c.enterprise, slug: c.slug, count: 1 });
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count);
+}
