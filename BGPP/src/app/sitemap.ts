@@ -15,6 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/svarzanost",
     "/istochnici",
     "/metodologiya",
+    "/data",
+    "/signal",
+    "/rakovodstvo",
+    "/impressum",
+    "/poveritelnost",
+    "/biskvitki",
+    "/dostupnost",
   ];
   const now = new Date();
   const pages: MetadataRoute.Sitemap = staticPaths.map((p) => ({
