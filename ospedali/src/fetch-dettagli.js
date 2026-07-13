@@ -68,6 +68,7 @@ async function main() {
             categoria: catProc(r.tipo_scelta_contraente),
             cpv: fixMojibake(r.descrizione_cpv || '').slice(0, 120),
             fornitore: null,
+            fornitoreCf: null,
             fornitoreAzienda: false,
           });
         }
@@ -87,6 +88,7 @@ async function main() {
     if (!cf) return;
     rec.fornitore = isAzienda(cf) ? fixMojibake(unq(c[3])) : 'Operatore individuale (persona fisica)';
     rec.fornitoreAzienda = isAzienda(cf);
+    rec.fornitoreCf = isAzienda(cf) ? cf : null; // само юридически лица се профилират
   });
 
   // 4) Групиране по болница и запис

@@ -93,6 +93,7 @@ const NAV = [
   ['index.html', 'Home'],
   ['inchiesta.html', 'Inchiesta'],
   ['appalti.html', 'Appalti'],
+  ['fornitori.html', 'Fornitori'],
   ['cerca.html', 'Cerca'],
   ['classifiche.html', 'Classifiche'],
   ['strutture.html', 'Strutture'],

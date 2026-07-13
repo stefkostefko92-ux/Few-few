@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BURKE &amp; BURKE S.P.A. — fornitore del SSN — Ospedali Trasparenti</title>
+<meta name="description" content="Contratti pubblici di BURKE &amp; BURKE S.P.A. con le aziende sanitarie italiane: valore, aziende, procedure.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html" aria-current="page">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
+<h1>BURKE &amp; BURKE S.P.A.</h1>
+<p><span class="chip">P.IVA/CF 02737030151</span></p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">17 mln €</div><div class="l">Valore aggiudicato</div></div>
+  <div class="card kpi"><div class="n ">158</div><div class="l">Contratti</div></div>
+  <div class="card kpi"><div class="n ">52</div><div class="l">Aziende servite</div></div>
+  <div class="card kpi"><div class="n ">66,5%</div><div class="l">Quota senza gara</div></div>
+</div>
+<div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
+<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2024); non implicano alcuna irregolarità.
+Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
+
+
+
+<h2>Aziende che lo hanno pagato</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td><a href="../struttura/030710-azienda-socio-sanitaria-territoriale-dei-sette-laghi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">4</td><td class="num">3 mln €</td></tr><tr><td><a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">12</td><td class="num">3 mln €</td></tr><tr><td><a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">6</td><td class="num">2 mln €</td></tr><tr><td><a href="../struttura/090902-azienda-ospedaliero-universitaria-senese.html">AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE</a><div class="small muted">Toscana</div></td>
+      <td class="num">6</td><td class="num">746 mila €</td></tr><tr><td><a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">6</td><td class="num">739 mila €</td></tr><tr><td><a href="../struttura/030925-fondazione-irccs-ca-granda-ospedale-maggiore-policlinico.html">FONDAZIONE IRCCS CA&#39; GRANDA - OSPEDALE MAGGIORE POLICLINICO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">9</td><td class="num">668 mila €</td></tr><tr><td><a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a><div class="small muted">Piemonte</div></td>
+      <td class="num">1</td><td class="num">455 mila €</td></tr><tr><td><a href="../struttura/030702-azienda-socio-sanitaria-territoriale-santi-paolo-e-carlo.html">AZIENDA SOCIO SANITARIA TERRITORIALE SANTI PAOLO E CARLO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">433 mila €</td></tr><tr><td><a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">6</td><td class="num">425 mila €</td></tr><tr><td><a href="../struttura/090201-azienda-unita-sanitaria-locale-toscana-centro.html">AZIENDA UNITA&#39; SANITARIA LOCALE TOSCANA CENTRO</a><div class="small muted">Toscana</div></td>
+      <td class="num">11</td><td class="num">409 mila €</td></tr><tr><td><a href="../struttura/010908-azienda-ospedaliera-ordine-mauriziano-di-torino.html">AZIENDA OSPEDALIERA ORDINE MAURIZIANO DI TORINO</a><div class="small muted">Piemonte</div></td>
+      <td class="num">5</td><td class="num">382 mila €</td></tr><tr><td><a href="../struttura/090904-azienda-ospedaliero-universitaria-meyer.html">AZIENDA OSPEDALIERO UNIVERSITARIA MEYER</a><div class="small muted">Toscana</div></td>
+      <td class="num">5</td><td class="num">363 mila €</td></tr><tr><td><a href="../struttura/030713-azienda-socio-sanitaria-territoriale-della-valtellina-e-dell.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALTELLINA E DELL&#39;ALTO LARIO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3</td><td class="num">290 mila €</td></tr><tr><td><a href="../struttura/190201-azienda-sanitaria-provinciale-di-agrigento.html">AZIENDA SANITARIA PROVINCIALE DI AGRIGENTO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">5</td><td class="num">278 mila €</td></tr><tr><td><a href="../struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3</td><td class="num">265 mila €</td></tr><tr><td><a href="../struttura/080960-istituto-ortopedico-rizzoli.html">ISTITUTO ORTOPEDICO RIZZOLI</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">1</td><td class="num">208 mila €</td></tr><tr><td><a href="../struttura/030703-azienda-socio-sanitaria-territoriale-fatebenefratelli-sacco.html">AZIENDA SOCIO SANITARIA TERRITORIALE FATEBENEFRATELLI SACCO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3</td><td class="num">206 mila €</td></tr><tr><td><a href="../struttura/080106-azienda-usl-di-imola.html">AZIENDA USL DI IMOLA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">2</td><td class="num">200 mila €</td></tr><tr><td><a href="../struttura/090901-azienda-ospedaliero-universitaria-pisana.html">AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA</a><div class="small muted">Toscana</div></td>
+      <td class="num">7</td><td class="num">200 mila €</td></tr><tr><td><a href="../struttura/190208-azienda-sanitaria-provinciale-di-siracusa.html">AZIENDA SANITARIA PROVINCIALE DI SIRACUSA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">2</td><td class="num">199 mila €</td></tr><tr><td><a href="../struttura/190205-azienda-sanitaria-provinciale-di-messina.html">AZIENDA SANITARIA PROVINCIALE DI MESSINA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">7</td><td class="num">198 mila €</td></tr><tr><td><a href="../struttura/190206-azienda-sanitaria-provinciale-di-palermo.html">AZIENDA SANITARIA PROVINCIALE DI PALERMO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">5</td><td class="num">188 mila €</td></tr><tr><td><a href="../struttura/150902-azienda-ospedaliera-santobono-pausilipon.html">AZIENDA OSPEDALIERA SANTOBONO - PAUSILIPON</a><div class="small muted">Campania</div></td>
+      <td class="num">2</td><td class="num">185 mila €</td></tr><tr><td><a href="../struttura/120902-azienda-ospedaliera-complesso-ospedaliero-san-giovanni-addol.html">AZIENDA OSPEDALIERA COMPLESSO OSPEDALIERO SAN GIOVANNI ADDOLORATA</a><div class="small muted">Lazio</div></td>
+      <td class="num">2</td><td class="num">180 mila €</td></tr><tr><td><a href="../struttura/030711-azienda-socio-sanitaria-territoriale-della-valle-olona.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALLE OLONA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3</td><td class="num">173 mila €</td></tr><tr><td><a href="../struttura/080104-azienda-unita-sanitaria-locale-di-modena.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI MODENA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">1</td><td class="num">140 mila €</td></tr><tr><td><a href="../struttura/050106-azienda-ulss-n-8-berica.html">AZIENDA ULSS N.8 BERICA</a><div class="small muted">Veneto</div></td>
+      <td class="num">5</td><td class="num">138 mila €</td></tr><tr><td><a href="../struttura/030706-azienda-socio-sanitaria-territoriale-rhodense.html">AZIENDA SOCIO SANITARIA TERRITORIALE RHODENSE</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">134 mila €</td></tr><tr><td><a href="../struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">132 mila €</td></tr><tr><td><a href="../struttura/120111-azienda-sanitaria-locale-latina.html">AZIENDA SANITARIA LOCALE LATINA</a><div class="small muted">Lazio</div></td>
+      <td class="num">2</td><td class="num">128 mila €</td></tr><tr><td><a href="../struttura/200904-arnas-g-brotzu.html">ARNAS G. BROTZU</a><div class="small muted">Sardegna</div></td>
+      <td class="num">1</td><td class="num">120 mila €</td></tr><tr><td><a href="../struttura/120921-azienda-regionale-emergenza-sanitaria-ares-118.html">AZIENDA REGIONALE EMERGENZA SANITARIA - ARES 118</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">112 mila €</td></tr><tr><td><a href="../struttura/030723-azienda-socio-sanitaria-territoriale-del-garda.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEL GARDA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">104 mila €</td></tr><tr><td><a href="../struttura/130201-azienda-sanitaria-locale-1-di-avezzano-sulmona-l-aquila.html">AZIENDA SANITARIA LOCALE 1 DI AVEZZANO-SULMONA-L&#39;AQUILA</a><div class="small muted">Abruzzo</div></td>
+      <td class="num">1</td><td class="num">100 mila €</td></tr><tr><td><a href="../struttura/030726-azienda-socio-sanitaria-territoriale-di-crema.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">98 mila €</td></tr><tr><td><a href="../struttura/190207-azienda-sanitaria-provinciale-di-ragusa.html">AZIENDA SANITARIA PROVINCIALE DI RAGUSA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">2</td><td class="num">82 mila €</td></tr><tr><td><a href="../struttura/050103-azienda-ulss-n-7-pedemontana.html">AZIENDA ULSS N. 7 PEDEMONTANA</a><div class="small muted">Veneto</div></td>
+      <td class="num">1</td><td class="num">79 mila €</td></tr><tr><td><a href="../struttura/050101-azienda-ulss-n-1-dolomiti.html">AZIENDA ULSS N.1 DOLOMITI</a><div class="small muted">Veneto</div></td>
+      <td class="num">1</td><td class="num">72 mila €</td></tr><tr><td><a href="../struttura/090903-azienda-ospedaliero-universitaria-careggi.html">AZIENDA OSPEDALIERO-UNIVERSITARIA CAREGGI</a><div class="small muted">Toscana</div></td>
+      <td class="num">5</td><td class="num">61 mila €</td></tr><tr><td><a href="../struttura/120901-azienda-ospedaliera-san-camillo-forlanini.html">AZIENDA OSPEDALIERA SAN CAMILLO - FORLANINI</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">51 mila €</td></tr><tr><td><a href="../struttura/020101-azienda-usl-della-valle-d-aosta.html">AZIENDA USL DELLA VALLE D&#39;AOSTA</a><div class="small muted">Valle d&#39;Aosta</div></td>
+      <td class="num">1</td><td class="num">47 mila €</td></tr><tr><td><a href="../struttura/050116-azienda-ulss-n-6-euganea.html">AZIENDA ULSS N.6 EUGANEA</a><div class="small muted">Veneto</div></td>
+      <td class="num">1</td><td class="num">39 mila €</td></tr><tr><td><a href="../struttura/160112-azienda-sanitaria-locale-di-taranto.html">AZIENDA SANITARIA LOCALE DI TARANTO</a><div class="small muted">Puglia</div></td>
+      <td class="num">1</td><td class="num">33 mila €</td></tr><tr><td><a href="../struttura/100102-azienda-sanitaria-usl-n-2-dell-umbria.html">AZIENDA SANITARIA USL N.2 DELL UMBRIA</a><div class="small muted">Umbria</div></td>
+      <td class="num">2</td><td class="num">32 mila €</td></tr><tr><td><a href="../struttura/160116-azienda-sanitaria-locale-lecce.html">AZIENDA SANITARIA LOCALE LECCE</a><div class="small muted">Puglia</div></td>
+      <td class="num">2</td><td class="num">29 mila €</td></tr><tr><td><a href="../struttura/030306-asl-di-lodi.html">ASL DI LODI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">25 mila €</td></tr><tr><td><a href="../struttura/150204-azienda-sanitaria-locale-napoli-1-centro.html">AZIENDA SANITARIA LOCALE NAPOLI 1 CENTRO</a><div class="small muted">Campania</div></td>
+      <td class="num">1</td><td class="num">25 mila €</td></tr><tr><td><a href="../struttura/080103-azienda-unita-sanitaria-locale-irccs-di-reggio-emilia.html">AZIENDA UNITA&#39; SANITARIA LOCALE - IRCCS DI REGGIO EMILIA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">1</td><td class="num">20 mila €</td></tr><tr><td><a href="../struttura/190926-azienda-ospedaliera-ospedali-riuniti-villa-sofia-cervello-di.html">AZIENDA OSPEDALIERA OSPEDALI RIUNITI VILLA SOFIA CERVELLO DI PALERMO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">1</td><td class="num">15 mila €</td></tr><tr><td><a href="../struttura/030708-azienda-socio-sanitaria-territoriale-melegnano-e-della-marte.html">AZIENDA SOCIO SANITARIA TERRITORIALE MELEGNANO E DELLA MARTESANA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">5 mila €</td></tr><tr><td><a href="../struttura/030725-azienda-socio-sanitaria-territoriale-di-mantova.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI MANTOVA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">2 mila €</td></tr><tr><td><a href="../struttura/090105-azienda-usl-5-di-pisa.html">AZIENDA USL 5 DI PISA</a><div class="small muted">Toscana</div></td>
+      <td class="num">2</td><td class="num">956 €</td></tr></tbody>
+</table></div>
+
+<h2>Contratti principali</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto · Azienda</th><th scope="col">Gara</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody><tr><td class="small">2023-12-28</td>
+        <td>SERVIZIO DI MANUTENZIONE &#39;FULL RISK&#39; PER APPARECCHIATURE DI PRODUZIONE ATOM E HAMILTON<div class="small muted">CIG A04277F0C2 · <a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a></div></td>
+        <td class="small"></td>
+        <td class="num">2 mln €</td></tr><tr><td class="small">2024-05-24</td>
+        <td>GENERATORI ALTI FLUSSI + MATERIALE DI CONSUMO<div class="small muted">CIG B1D110EF18 · <a href="../struttura/030710-azienda-socio-sanitaria-territoriale-dei-sette-laghi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI</a></div></td>
+        <td class="small"></td>
+        <td class="num">2 mln €</td></tr><tr><td class="small">2024-12-17</td>
+        <td>SERVIZIO DI ASSISTENZA TECNICA SU APPARECCHIATURE BIO MED DEVICES INC, ATOM MEDICAL CORP, VAPOTHERM, HAMILTON MEDICAL AG, GUANGDONG BIOLIGHT MEDITECH CO LTD, MAXTEC INC, TEC COM GMBH, AEROGEN LTD, DEAS SRL, WESTMED INC., SLE LTD (L&#39;IMPORTO È COMPRENSIVO DI € 229.885,22 OFE DI OPZIONI DA ATTIVARE AL <div class="small muted">CIG B4DFA23863 · <a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">1 mln €</td></tr><tr><td class="small">2024-10-16</td>
+        <td>FORNITURA DI VENTILATORI POLMONARI DA TRASPORTO<div class="small muted">CIG B3722F37EF · <a href="../struttura/030710-azienda-socio-sanitaria-territoriale-dei-sette-laghi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI</a></div></td>
+        <td class="small"></td>
+        <td class="num">882 mila €</td></tr><tr><td class="small">2023-10-23</td>
+        <td>RIINNOVO MATERIALE DI CONSUMO DEDICATO PER ATTREZZATURE BURKE &amp; BURKE DI PROPRIETA&#39;<div class="small muted">CIG A021200F7C · <a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">555 mila €</td></tr><tr><td class="small">2024-01-29</td>
+        <td>FORNITURA N. 9 VENTILATORI POLMONARI<div class="small muted">CIG B01F3D9E64 · <a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">479 mila €</td></tr><tr><td class="small">2024-10-03</td>
+        <td>FORNITURA MATERIALE DI CONSUMO PER DEFIBRILLATORI COMEN MOD.S8 OCCORRENTI ALL&#39;AZIENDA OSPEDALIERO-UNIVERSITARIA CITTÀ DELLA SALUTE E DELLA SCIENZA DI TORINO PERIODO 36 MESI<div class="small muted">CIG B34D952138 · <a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a></div></td>
+        <td class="small"></td>
+        <td class="num">455 mila €</td></tr><tr><td class="small">2023-05-26</td>
+        <td>FORNITURA PER DIPOSITIVI MEDICI VARI OCCORRENTI A ASST SANTI PAOLO E CARLO<div class="small muted">CIG 9816269171 · <a href="../struttura/030702-azienda-socio-sanitaria-territoriale-santi-paolo-e-carlo.html">AZIENDA SOCIO SANITARIA TERRITORIALE SANTI PAOLO E CARLO</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">433 mila €</td></tr><tr><td class="small">2023-04-26</td>
+        <td>ADESIONE ALLA CONVENZIONE ESTAR DETERMINA N^1683 DEL 15/ 12/ 2022 &#39;SERVIZIO DI ASSISTENZA E MANUTENZIONE DELLE APPARECCHIATURE ELETTROMEDICALI NON INCLUSE NEL SERVIZIO DI GLOBAL SERVICE IN USO PRESSO LE AZIENDE SANITARIE DELLA REGIONE TOSCANA&#39;. RIF. DET. 1683 DEL 15/12/2022 - LOTTO 10 (EB)<div class="small muted">CIG 9651093DE1 · <a href="../struttura/090902-azienda-ospedaliero-universitaria-senese.html">AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE</a></div></td>
+        <td class="small"></td>
+        <td class="num">365 mila €</td></tr><tr><td class="small">2024-05-21</td>
+        <td>ADESIONE ACCORDO QUADRO PER LA FORNITURA DI APPARECCHI PER ANESTESIA E VNTILATORI POLONARI<div class="small muted">CIG A05C36ADA9 · <a href="../struttura/090902-azienda-ospedaliero-universitaria-senese.html">AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE</a></div></td>
+        <td class="small"></td>
+        <td class="num">216 mila €</td></tr><tr><td class="small">2023-03-15</td>
+        <td>FORNITURA IN ESCLUSIVA DI MATERIALE DI CONSUMO PER VENTILATORI HAMILTON PER IL PERIODO DI 24 MESI DITTA BURKE<div class="small muted">CIG 97018002A2 · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">213 mila €</td></tr><tr><td class="small">2024-11-22</td>
+        <td>ADESIONE ALLA DELLA PROCEDURA APERTA PI 27573/24 PER LA FORNITURA DI N. 9 VENTILATORI POLMONARI AD ALTE PRESTAZIONI E RELATIVO MATERIALE DI CONSUMO OCCORRENTI ALLA TERAPIA INTENSIVA IOR<div class="small muted">CIG B4689C0BAD · <a href="../struttura/080960-istituto-ortopedico-rizzoli.html">ISTITUTO ORTOPEDICO RIZZOLI</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">208 mila €</td></tr><tr><td class="small">2023-10-11</td>
+        <td>UN SISTEMA DI MONITORAGGIO OCCORRENTE ALLA STRUTTURA COMPLESSA DI TERAPIA INTENSIVA NEONATALE<div class="small muted">CIG A0188DE51C · <a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a></div></td>
+        <td class="small"></td>
+        <td class="num">205 mila €</td></tr><tr><td class="small">2023-01-25</td>
+        <td>BURKE &amp; BURKE SPA - SERVIZIO ASS. E MANUT.APPARECCHI DI MONITORAGGIO E VENTILAZIONE - RIF. DET. 1683/2022 - LOTTO 10 - 01/01/2023-31/12/2026 - (RIF. AMM.VO CECILIA CAVALLINI)<div class="small muted">CIG 9620452822 · <a href="../struttura/090901-azienda-ospedaliero-universitaria-pisana.html">AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA</a></div></td>
+        <td class="small"></td>
+        <td class="num">196 mila €</td></tr><tr><td class="small">2024-09-18</td>
+        <td>FORNITURA A NOLEGGIO DI UMIDIFICATORI PER RESPIRATORI E ACQUISTO DEI RELATIVI CIRCUITI MONOUSO PER LA RIANIMAZIONE DELLA ASST LARIANA<div class="small muted">CIG B31606F8E2 · <a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">188 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

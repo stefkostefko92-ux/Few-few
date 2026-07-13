@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOMBARDA H S.R.L. — fornitore del SSN — Ospedali Trasparenti</title>
+<meta name="description" content="Contratti pubblici di LOMBARDA H S.R.L. con le aziende sanitarie italiane: valore, aziende, procedure.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html" aria-current="page">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
+<h1>LOMBARDA H S.R.L.</h1>
+<p><span class="chip">P.IVA/CF 09734150155</span></p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">21 mln €</div><div class="l">Valore aggiudicato</div></div>
+  <div class="card kpi"><div class="n ">78</div><div class="l">Contratti</div></div>
+  <div class="card kpi"><div class="n ">31</div><div class="l">Aziende servite</div></div>
+  <div class="card kpi"><div class="n ">48,7%</div><div class="l">Quota senza gara</div></div>
+</div>
+<div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
+<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2024); non implicano alcuna irregolarità.
+Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
+
+
+
+<h2>Aziende che lo hanno pagato</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td><a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">12</td><td class="num">10 mln €</td></tr><tr><td><a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">2</td><td class="num">7 mln €</td></tr><tr><td><a href="../struttura/190925-azienda-ospedaliera-universitaria-policlinico-gaetano-martin.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO GAETANO MARTINO DI MESSINA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">2</td><td class="num">1 mln €</td></tr><tr><td><a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">4</td><td class="num">292 mila €</td></tr><tr><td><a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">2</td><td class="num">287 mila €</td></tr><tr><td><a href="../struttura/030710-azienda-socio-sanitaria-territoriale-dei-sette-laghi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">6</td><td class="num">226 mila €</td></tr><tr><td><a href="../struttura/100102-azienda-sanitaria-usl-n-2-dell-umbria.html">AZIENDA SANITARIA USL N.2 DELL UMBRIA</a><div class="small muted">Umbria</div></td>
+      <td class="num">3</td><td class="num">193 mila €</td></tr><tr><td><a href="../struttura/190201-azienda-sanitaria-provinciale-di-agrigento.html">AZIENDA SANITARIA PROVINCIALE DI AGRIGENTO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">2</td><td class="num">185 mila €</td></tr><tr><td><a href="../struttura/080103-azienda-unita-sanitaria-locale-irccs-di-reggio-emilia.html">AZIENDA UNITA&#39; SANITARIA LOCALE - IRCCS DI REGGIO EMILIA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">3</td><td class="num">131 mila €</td></tr><tr><td><a href="../struttura/120901-azienda-ospedaliera-san-camillo-forlanini.html">AZIENDA OSPEDALIERA SAN CAMILLO - FORLANINI</a><div class="small muted">Lazio</div></td>
+      <td class="num">4</td><td class="num">93 mila €</td></tr><tr><td><a href="../struttura/030703-azienda-socio-sanitaria-territoriale-fatebenefratelli-sacco.html">AZIENDA SOCIO SANITARIA TERRITORIALE FATEBENEFRATELLI SACCO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">85 mila €</td></tr><tr><td><a href="../struttura/030725-azienda-socio-sanitaria-territoriale-di-mantova.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI MANTOVA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">68 mila €</td></tr><tr><td><a href="../struttura/030714-azienda-socio-sanitaria-territoriale-della-valcamonica.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALCAMONICA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">4</td><td class="num">64 mila €</td></tr><tr><td><a href="../struttura/080106-azienda-usl-di-imola.html">AZIENDA USL DI IMOLA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">1</td><td class="num">53 mila €</td></tr><tr><td><a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">51 mila €</td></tr><tr><td><a href="../struttura/030705-azienda-socio-sanitaria-territoriale-ovest-milanese.html">AZIENDA SOCIO SANITARIA TERRITORIALE OVEST MILANESE</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3</td><td class="num">50 mila €</td></tr><tr><td><a href="../struttura/200905-azienda-ospedaliero-universitaria-di-sassari.html">AZIENDA OSPEDALIERO UNIVERSITARIA DI SASSARI</a><div class="small muted">Sardegna</div></td>
+      <td class="num">3</td><td class="num">38 mila €</td></tr><tr><td><a href="../struttura/010905-azienda-ospedaliero-universitaria-maggiore-della-carita-di-n.html">AZIENDA OSPEDALIERO-UNIVERSITARIA MAGGIORE DELLA CARITA&#39; DI NOVARA</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">19 mila €</td></tr><tr><td><a href="../struttura/080960-istituto-ortopedico-rizzoli.html">ISTITUTO ORTOPEDICO RIZZOLI</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">1</td><td class="num">18 mila €</td></tr><tr><td><a href="../struttura/190921-azienda-ospedaliera-per-l-emergenza-cannizzaro-di-catania.html">AZIENDA OSPEDALIERA PER L&#39;EMERGENZA CANNIZZARO DI CATANIA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">2</td><td class="num">16 mila €</td></tr><tr><td><a href="../struttura/120906-azienda-ospedaliero-universitaria-policlinico-umberto-i.html">AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO UMBERTO I</a><div class="small muted">Lazio</div></td>
+      <td class="num">2</td><td class="num">14 mila €</td></tr><tr><td><a href="../struttura/010203-azienda-sanitaria-locale-to3.html">AZIENDA SANITARIA LOCALE TO3</a><div class="small muted">Piemonte</div></td>
+      <td class="num">3</td><td class="num">11 mila €</td></tr><tr><td><a href="../struttura/030711-azienda-socio-sanitaria-territoriale-della-valle-olona.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALLE OLONA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">11 mila €</td></tr><tr><td><a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">10 mila €</td></tr><tr><td><a href="../struttura/050118-azienda-ulss-n-5-polesana.html">AZIENDA ULSS N. 5 POLESANA</a><div class="small muted">Veneto</div></td>
+      <td class="num">1</td><td class="num">10 mila €</td></tr><tr><td><a href="../struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a><div class="small muted">Piemonte</div></td>
+      <td class="num">1</td><td class="num">9 mila €</td></tr><tr><td><a href="../struttura/200108-azienda-sanitaria-locale-di-cagliari.html">AZIENDA SANITARIA LOCALE DI CAGLIARI</a><div class="small muted">Sardegna</div></td>
+      <td class="num">2</td><td class="num">6 mila €</td></tr><tr><td><a href="../struttura/030713-azienda-socio-sanitaria-territoriale-della-valtellina-e-dell.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALTELLINA E DELL&#39;ALTO LARIO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3</td><td class="num">4 mila €</td></tr><tr><td><a href="../struttura/030704-azienda-socio-sanitaria-territoriale-centro-specialistico-or.html">AZIENDA SOCIO SANITARIA TERRITORIALE CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI/CTO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">4 mila €</td></tr><tr><td><a href="../struttura/020101-azienda-usl-della-valle-d-aosta.html">AZIENDA USL DELLA VALLE D&#39;AOSTA</a><div class="small muted">Valle d&#39;Aosta</div></td>
+      <td class="num">1</td><td class="num">1 mila €</td></tr><tr><td><a href="../struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">66 €</td></tr></tbody>
+</table></div>
+
+<h2>Contratti principali</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto · Azienda</th><th scope="col">Gara</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody><tr><td class="small">2024-10-30</td>
+        <td>MEDICAZIONI IN SCHIUMA DI POLIURETANO CON ARGENTO<div class="small muted">CIG B4070BEC78 · <a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a></div></td>
+        <td class="small"></td>
+        <td class="num">6 mln €</td></tr><tr><td class="small">2024-03-20</td>
+        <td>SOLUZIONE ANTISETTICA PRONTA ALL&#39;USO COSTITUITA DA CLOREXIDINA GLUCONATO 2% IN SOLUZIONE IDROALCOLICA (ALCOOL ALMENO 70%). FLACONE IN PLASTICA OPACA CON SIGILLO ANTI MANOMISSIONE E SOTTOTAPPO RIDUTTORE FLUSSO.<div class="small muted">CIG B0DFF54FF2 · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">3 mln €</td></tr><tr><td class="small">2024-03-20</td>
+        <td>SPAZZOLINO CHIRURGICO FLESSIBILE MONOUSO PREIMBEVUTO CON PVP IODIO (CONTENUTO IODIO LIBERO 10%) AL 7,5-10% IN SOLUZIONE SAPONOSA PER LAVAGGIO CHIRURGICO MANI. BLISTER SINGOLO CON APERTURA PEEL-OPEN CONTENENTE UNO SPAZZOLINO-SPUGNA IMBIBITO DI ALMENO 20 ML DI SOLUZIONE DI PVP + LANCIA PULISCI-UNGHIE.<div class="small muted">CIG B0DFF5B5BC · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">3 mln €</td></tr><tr><td class="small">2024-03-20</td>
+        <td>SOLUZIONE IDROALCOLICA CON COLORANTE (ALCOOL ALMENO 70%) CONTENENTE CLOREXIDINA GLUCONATO AL 2% . FLACONE CON TAPPO CON SIGILLO ANTIMANOMISSIONE E SOTTOTAPO EROGATORE.<div class="small muted">CIG B0DFF6F63D · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">3 mln €</td></tr><tr><td class="small">2024-10-30</td>
+        <td>MEDICAZIONI IN SCHIUMA DI POLIURETANO NON ADESIVE<div class="small muted">CIG B4070B9859 · <a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a></div></td>
+        <td class="small"></td>
+        <td class="num">1 mln €</td></tr><tr><td class="small">2023-11-10</td>
+        <td>LOTTO 190 - SPAZZOLINI CON SPUGNA CONTENETE UNA SOLUZIONE ACQUOSA DETERGENTE DI CLOREXIDINA AL 4% E DISPOSITIVO NETTA-UNGHIE. GLI SPAZZOLINI DEVONO ESSERE IN MATERIALE MORBIDO A PUNTE ARROTONDATE PER EVITARE MICROABRASIONI ALLE MANI DEGLI OPERATORI.CONFEZIONATI SINGOLARMENTE IN BLISTER TERMOSALDATO <div class="small muted">CIG A01DC9F2C9 · <a href="../struttura/190925-azienda-ospedaliera-universitaria-policlinico-gaetano-martin.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO GAETANO MARTINO DI MESSINA</a></div></td>
+        <td class="small"></td>
+        <td class="num">954 mila €</td></tr><tr><td class="small">2023-11-10</td>
+        <td>LOTTO 221 - SOLUZIONE IDROALCOLICA AL 70% CIRCA, PRONTA ALL&#39;USO, CONTENENTE LO 0,2-0,3% DI SALI DI AMMONIO QUATERNARI . FLACONE DA 1000 ML, IN MATERIALE PLASTICO CON SOTTOTAPPO DOSATORE E/O EROGATORE (DISINFETTANTE PER CUTE INTEGRA)<div class="small muted">CIG A02699CBA9 · <a href="../struttura/190925-azienda-ospedaliera-universitaria-policlinico-gaetano-martin.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO GAETANO MARTINO DI MESSINA</a></div></td>
+        <td class="small"></td>
+        <td class="num">439 mila €</td></tr><tr><td class="small">2023-05-17</td>
+        <td>ARIA_2021_006 LOTTO 27 - CLOREXIDINA GLUCONATO - 2 % - SOLUZIONE - FLACONE - 120 ML<div class="small muted">CIG 9820507ABD · <a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a></div></td>
+        <td class="small"></td>
+        <td class="num">236 mila €</td></tr><tr><td class="small">2023-06-26</td>
+        <td>SECONDA ADESIONE A CONVENZIONE INTERCENT-ER ANTISETTICI E DISINFETTANTI PER IL LOTTO 37 PRESSO LA DITTA LOMBARDA H SRL<div class="small muted">CIG 9901939A8D · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">163 mila €</td></tr><tr><td class="small">2023-06-30</td>
+        <td>CLOROSSIDANTE ELETTROLITICO/SODIO IPOCLORITO IN SOLUZIONE ACQUOSA CONCENTRATA - LOTTO 6 VOCE A), B) E C).<div class="small muted">CIG 992335646D · <a href="../struttura/190201-azienda-sanitaria-provinciale-di-agrigento.html">AZIENDA SANITARIA PROVINCIALE DI AGRIGENTO</a></div></td>
+        <td class="small"></td>
+        <td class="num">153 mila €</td></tr><tr><td class="small">2024-06-06</td>
+        <td>SAPONE ANTISETTICO IODOPOVIDONE AL 7,5% PER LAVAGGIO CHIRURGICO MANI E DISTRIBUTORE A LEVA LUNGA PER EROGAZIONE DEL SAPONE ANTISETTICO<div class="small muted">CIG B1FEA02C31 · <a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">130 mila €</td></tr><tr><td class="small">2024-03-20</td>
+        <td>SOLUZIONE (NON GEL) IDROALCOLICA CON CONTENUTO DI ALCOOL ETILICO MAGGIORE DI 70 G SU 100 G DI PRODOTTO , CON ECCIPIENTI/EMOLLIENTI PROTETTIVI NEI CONFRONTI DELLA DISIDRATAZIONE, PER LA PREPARAZIONE CHIRURGICA DELLE MANI DELL&#39;EQUIPE OPERATORIA, CONFORME ALLA NORMATIVA STANDARD EN 12791.<div class="small muted">CIG B0DFF64D27 · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">111 mila €</td></tr><tr><td class="small">2023-02-16</td>
+        <td>FORNITURA GEL IDROALCOLICO CON GRADAZIONE NON INFERIORE AL 70% P/P. FLACONE 500 ML MESI 24+24 DITTA LOMBARDA -LOTTO 19<div class="small muted">CIG 967560737C · <a href="../struttura/100102-azienda-sanitaria-usl-n-2-dell-umbria.html">AZIENDA SANITARIA USL N.2 DELL UMBRIA</a></div></td>
+        <td class="small"></td>
+        <td class="num">110 mila €</td></tr><tr><td class="small">2024-03-20</td>
+        <td>SODIO IPOCLORITO IN SOLUZIONE ACQUOSA 0,10% M/M PARI A CIRCA 1100 PPM (0,11%) DI CLORO ATTIVO O DISPONIBILE.<div class="small muted">CIG B0DFF5D762 · <a href="../struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DELLA ROMAGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">108 mila €</td></tr><tr><td class="small">2023-03-02</td>
+        <td>ANTISETTICI E DISINFETTANTI ADESIONE CONVENZIONE INTERCENTER AUSL BO LOTTO 37 DITTA LOMBARDA H S.R.L.<div class="small muted">CIG 9673119E4F · <a href="../struttura/080105-azienda-unita-sanitaria-locale-di-bologna.html">AZIENDA UNITA&#39; SANITARIA LOCALE DI BOLOGNA</a></div></td>
+        <td class="small"></td>
+        <td class="num">103 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

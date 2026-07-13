@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EB  NEURO SPA — fornitore del SSN — Ospedali Trasparenti</title>
+<meta name="description" content="Contratti pubblici di EB  NEURO SPA con le aziende sanitarie italiane: valore, aziende, procedure.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html" aria-current="page">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
+<h1>EB  NEURO SPA</h1>
+<p><span class="chip">P.IVA/CF 01772220065</span></p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">1 mln €</div><div class="l">Valore aggiudicato</div></div>
+  <div class="card kpi"><div class="n ">21</div><div class="l">Contratti</div></div>
+  <div class="card kpi"><div class="n ">17</div><div class="l">Aziende servite</div></div>
+  <div class="card kpi"><div class="n neg">85,7%</div><div class="l">Quota senza gara</div></div>
+</div>
+<div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
+<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2024); non implicano alcuna irregolarità.
+Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
+<div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Quota elevata di affidamenti senza gara</span></div><div class="d">Il 85,7% dei suoi contratti è stato affidato senza confronto competitivo. Indicatore da verificare, non prova.</div></div>
+
+
+<h2>Aziende che lo hanno pagato</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td><a href="../struttura/150902-azienda-ospedaliera-santobono-pausilipon.html">AZIENDA OSPEDALIERA SANTOBONO - PAUSILIPON</a><div class="small muted">Campania</div></td>
+      <td class="num">1</td><td class="num">470 mila €</td></tr><tr><td><a href="../struttura/030925-fondazione-irccs-ca-granda-ospedale-maggiore-policlinico.html">FONDAZIONE IRCCS CA&#39; GRANDA - OSPEDALE MAGGIORE POLICLINICO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">190 mila €</td></tr><tr><td><a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">183 mila €</td></tr><tr><td><a href="../struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">2</td><td class="num">124 mila €</td></tr><tr><td><a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">111 mila €</td></tr><tr><td><a href="../struttura/150904-azienda-ospedaliero-universitaria-san-giovanni-di-dio-e-rugg.html">AZIENDA OSPEDALIERO UNIVERSITARIA SAN GIOVANNI DI DIO E RUGGI D&#39;ARAGONA - SCUOLA MEDICA SALERNITANA</a><div class="small muted">Campania</div></td>
+      <td class="num">1</td><td class="num">55 mila €</td></tr><tr><td><a href="../struttura/050116-azienda-ulss-n-6-euganea.html">AZIENDA ULSS N.6 EUGANEA</a><div class="small muted">Veneto</div></td>
+      <td class="num">1</td><td class="num">55 mila €</td></tr><tr><td><a href="../struttura/030306-asl-di-lodi.html">ASL DI LODI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">1</td><td class="num">51 mila €</td></tr><tr><td><a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a><div class="small muted">Piemonte</div></td>
+      <td class="num">1</td><td class="num">37 mila €</td></tr><tr><td><a href="../struttura/010908-azienda-ospedaliera-ordine-mauriziano-di-torino.html">AZIENDA OSPEDALIERA ORDINE MAURIZIANO DI TORINO</a><div class="small muted">Piemonte</div></td>
+      <td class="num">1</td><td class="num">36 mila €</td></tr><tr><td><a href="../struttura/050106-azienda-ulss-n-8-berica.html">AZIENDA ULSS N.8 BERICA</a><div class="small muted">Veneto</div></td>
+      <td class="num">3</td><td class="num">30 mila €</td></tr><tr><td><a href="../struttura/090201-azienda-unita-sanitaria-locale-toscana-centro.html">AZIENDA UNITA&#39; SANITARIA LOCALE TOSCANA CENTRO</a><div class="small muted">Toscana</div></td>
+      <td class="num">2</td><td class="num">29 mila €</td></tr><tr><td><a href="../struttura/010907-azienda-ospedaliero-universitaria-ss-antonio-e-biagio-e-c-ar.html">AZIENDA OSPEDALIERO-UNIVERSITARIA &quot;SS.ANTONIO E BIAGIO E C.ARRIGO&quot; ALESSANDRIA</a><div class="small muted">Piemonte</div></td>
+      <td class="num">1</td><td class="num">20 mila €</td></tr><tr><td><a href="../struttura/090901-azienda-ospedaliero-universitaria-pisana.html">AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA</a><div class="small muted">Toscana</div></td>
+      <td class="num">1</td><td class="num">16 mila €</td></tr><tr><td><a href="../struttura/120110-azienda-sanitaria-locale-di-rieti.html">AZIENDA SANITARIA LOCALE DI RIETI</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">10 mila €</td></tr><tr><td><a href="../struttura/050101-azienda-ulss-n-1-dolomiti.html">AZIENDA ULSS N.1 DOLOMITI</a><div class="small muted">Veneto</div></td>
+      <td class="num">1</td><td class="num">6 mila €</td></tr><tr><td><a href="../struttura/180204-azienda-sanitaria-provinciale-di-vibo-valentia.html">AZIENDA SANITARIA PROVINCIALE DI VIBO VALENTIA</a><div class="small muted">Calabria</div></td>
+      <td class="num">1</td><td class="num">5 mila €</td></tr></tbody>
+</table></div>
+
+<h2>Contratti principali</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto · Azienda</th><th scope="col">Gara</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody><tr><td class="small">2024-07-26</td>
+        <td>FORNITURA CON POSA IN OPERA DI N. 1 SISTEMA INTEGRATO DI APPARECCHIATURE PER L&#39;ESECUZIONE DI ESAMI DI EEG/EMG/PE/MEP COMPRENSIVO DI PIATTAFORMA DI REFERTAZIONE COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B2996849FE · <a href="../struttura/150902-azienda-ospedaliera-santobono-pausilipon.html">AZIENDA OSPEDALIERA SANTOBONO - PAUSILIPON</a></div></td>
+        <td class="small"></td>
+        <td class="num">470 mila €</td></tr><tr><td class="small">2024-11-15</td>
+        <td>PROCEDURA NEGOZIATA, SENZA PREVIA PUBBLICAZIONE DI UN BANDO DI GARA, AI SENSI DELL&#39;ART. 50 COMMA 1 LETTERA E) II. DEL D.LGS. 36/2023, PER LA FORNITURA DI UNO STIMOLATORE MAGNETICO TRANSCRANICO (TMS) COMPRENSIVO DI MODULO DI NEURONAVIGAZIONE PER L&#39;INTERFACCIAMENTO CON TMS E MODULO EEG POLIGRAFICO TMS<div class="small muted">CIG B448DDAA21 · <a href="../struttura/030925-fondazione-irccs-ca-granda-ospedale-maggiore-policlinico.html">FONDAZIONE IRCCS CA&#39; GRANDA - OSPEDALE MAGGIORE POLICLINICO</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">190 mila €</td></tr><tr><td class="small">2024-11-19</td>
+        <td>APPARECCHIATURE PER STIMOLAZIONE MUSCOLARE MEDICALE PER IL RAFFORZAMENTO MUSCOLARE COMPRENSIVE DI ACCESSORI PER USO OSPEDALIERO<div class="small muted">CIG B45578888E · <a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">183 mila €</td></tr><tr><td class="small">2023-07-03</td>
+        <td>AGGIUDICAZIONE A SEGUITO DI AFFIDAMENTO DIRETTO DELLA FORNITURA DI N. 1 SISTEMA SISTEMA DI MONITORAGGIO INTRAOPERATORIO PER LA S.C. NEUROCHIRURGIA. IMPORTO ? 112.000,00 + IVA. H41B23000020002<div class="small muted">CIG 997073814B · <a href="../struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">112 mila €</td></tr><tr><td class="small">2023-06-28</td>
+        <td>MATERIALE VARIO ECG<div class="small muted">CIG 9922682838 · <a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">111 mila €</td></tr><tr><td class="small">2023-06-29</td>
+        <td>FORNITURA IN NOLEGGIO DI UN SISTEMA STIMUL 1340 - STIMOLATORE LASER YAP PER LEP<div class="small muted">CIG 9960495C7D · <a href="../struttura/150904-azienda-ospedaliero-universitaria-san-giovanni-di-dio-e-rugg.html">AZIENDA OSPEDALIERO UNIVERSITARIA SAN GIOVANNI DI DIO E RUGGI D&#39;ARAGONA - SCUOLA MEDICA SALERNITANA</a></div></td>
+        <td class="small"></td>
+        <td class="num">55 mila €</td></tr><tr><td class="small">2024-09-10</td>
+        <td>FORNITURA DI MATERIALE DI CONSUMO DEDICATO AL SISTEMA DI URODINAMICA NEXAM PRO WPU<div class="small muted">CIG B2F84651E3 · <a href="../struttura/050116-azienda-ulss-n-6-euganea.html">AZIENDA ULSS N.6 EUGANEA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">55 mila €</td></tr><tr><td class="small">2023-07-28</td>
+        <td>ACQUISTO DI UN ELETTROMIOGRAFO OCCORRENTE ALL&#39;AMBULATORIO DI NEUROLOGIA PRESSO LA CASA DI COMUNITÀ DI CODOGNO<div class="small muted">CIG 9995028E05 · <a href="../struttura/030306-asl-di-lodi.html">ASL DI LODI</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">51 mila €</td></tr><tr><td class="small">2024-12-11</td>
+        <td>SISTEMA NEURONAVIGAZIONE PER SERD - ANNO 2024<div class="small muted">CIG B4A9C6AAAE · <a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">37 mila €</td></tr><tr><td class="small">2024-11-08</td>
+        <td>FORNITURA DI UNO STIMOLATORE MAGNETICO TRANSCRANICO OCCORRENTE ALLA SC NEUROLOGIA<div class="small muted">CIG B42F299980 · <a href="../struttura/010908-azienda-ospedaliera-ordine-mauriziano-di-torino.html">AZIENDA OSPEDALIERA ORDINE MAURIZIANO DI TORINO</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">36 mila €</td></tr><tr><td class="small">2024-02-05</td>
+        <td>CONNESSIONE IN RETE DELLE STRUMENTAZIONI PER EEG E EMG<div class="small muted">CIG B03CD0CD75 · <a href="../struttura/010907-azienda-ospedaliero-universitaria-ss-antonio-e-biagio-e-c-ar.html">AZIENDA OSPEDALIERO-UNIVERSITARIA &quot;SS.ANTONIO E BIAGIO E C.ARRIGO&quot; ALESSANDRIA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">20 mila €</td></tr><tr><td class="small">2024-07-23</td>
+        <td>ADESIONE ALL&#39;ACCORDO QUADRO ESTAR DET. N. 788 DEL 13/06/2023, LOTTO N. 3, PER LA FORNITURA IN ACQUISTO DI N. 1 SISTEMA DI EEG CON ACCESSORI DEDICATI, DA DESTINARE ALLA NEUROLOGIA DEL P.O. SAN GIUSEPPE DI EMPOLI, RIF. NULLA OSTA DI ESTAR PROT. 0037405 DEL 22/07/2024, DITTA EB NEURO SPA (PRIMO AGGIUDI<div class="small muted">CIG B2902070AF · <a href="../struttura/090201-azienda-unita-sanitaria-locale-toscana-centro.html">AZIENDA UNITA&#39; SANITARIA LOCALE TOSCANA CENTRO</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">18 mila €</td></tr><tr><td class="small">2023-12-29</td>
+        <td>AS - ACQUISTO N. 1 SISTEMA VIDEO EEG EP- LOTTO 3 - DET. ESTAR 788 DEL 13/06/2023 - PROT AOUP N. 61630 DEL 29/12/2023 - DITTA EB NEURO SPA<div class="small muted">CIG A051E3EFCC · <a href="../struttura/090901-azienda-ospedaliero-universitaria-pisana.html">AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA</a></div></td>
+        <td class="small"></td>
+        <td class="num">16 mila €</td></tr><tr><td class="small">2024-12-30</td>
+        <td>MANUTENZIONE APPARECCHIATURE EB NEURO<div class="small muted">CIG B5051739E0 · <a href="../struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">12 mila €</td></tr><tr><td class="small">2024-07-23</td>
+        <td>ADESIONE ALL&#39;ACCORDO QUADRO ESTAR DET. N. 788 DEL 13/06/2023, LOTTO N. 4, PER LA FORNITURA IN ACQUISTO DI N. 1 SISTEMA DI EEG CON ACCESSORI DEDICATI, DA DESTINARE ALLA NEUROLOGIA DEL P.O. SAN GIUSEPPE DI EMPOLI, RIF. NULLA OSTA DI ESTAR PROT. 0037405 DEL 22/07/2024, DITTA EB NEURO SPA, RIF. INDIVIDU<div class="small muted">CIG B2902B9392 · <a href="../struttura/090201-azienda-unita-sanitaria-locale-toscana-centro.html">AZIENDA UNITA&#39; SANITARIA LOCALE TOSCANA CENTRO</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">11 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

@@ -18,7 +18,7 @@
     "analyze": "node src/analyze.js",
     "forensics": "node src/forensics.js",
     "validate": "node src/validate.js",
-    "site": "node src/build-site.js",
+    "site": "node --max-old-space-size=4096 src/build-site.js",
     "build": "npm run report && npm run analyze && npm run forensics && npm run validate && npm run site",
     "all": "npm run fetch:all && npm run build",
     "test": "node --test test/*.test.js",

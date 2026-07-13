@@ -121,6 +121,7 @@ async function main() {
   const catCode = { competitiva: 'c', quadro: 'q', diretto: 'd', negoziataSenza: 'n', negoziata: 'g', altro: 'a' };
   const tuttiContratti = []; // глобален индекс за търсачката
   const aziendeIdx = {}; // codice → [nome, regione]
+  const fornAgg = new Map(); // cf → профил на изпълнителя (през всички болници)
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
     // Пълен опис на договорите (ако е наличен): CSV + inline данни
@@ -135,6 +136,21 @@ async function main() {
       aziendeIdx[ente.codice] = [ente.denominazione, ente.regione];
       for (const c of contratti) {
         tuttiContratti.push([c.cig, ente.codice, c.data, c.importo, catCode[c.categoria] || 'a', (c.fornitore || '').slice(0, 45), (c.oggetto || '').slice(0, 90)]);
+        if (c.fornitoreCf) {
+          let g = fornAgg.get(c.fornitoreCf);
+          if (!g) {
+            g = { cf: c.fornitoreCf, den: c.fornitore, valore: 0, n: 0, senzaGara: 0, perOsp: new Map(), top: [] };
+            fornAgg.set(c.fornitoreCf, g);
+          }
+          g.valore += c.importo;
+          g.n++;
+          if (c.categoria === 'diretto' || c.categoria === 'negoziataSenza') g.senzaGara++;
+          const o = g.perOsp.get(ente.codice) || { valore: 0, n: 0 };
+          o.valore += c.importo;
+          o.n++;
+          g.perOsp.set(ente.codice, o);
+          g.top.push({ cig: c.cig, codice: ente.codice, data: c.data, oggetto: c.oggetto, importo: c.importo, categoria: c.categoria });
+        }
       }
       conContratti++;
     }
@@ -154,7 +170,29 @@ async function main() {
     await writeFile(join(SITE_DIR, 'cerca.html'), renderCerca({ n: tuttiContratti.length, aziende: Object.keys(aziendeIdx).length }));
     paginaCerca = 1;
   }
-  console.log(`Готово: ${enti.length + (appalti ? 10 : 9) + paginaCerca} страници (${conContratti} с опис, ${numeroIt(tuttiContratti.length)} договора в търсачката) → ${SITE_DIR}`);
+
+  // Профили на изпълнителите („segui il fornitore“)
+  let paginaForn = 0;
+  if (fornAgg.size) {
+    await mkdir(join(SITE_DIR, 'fornitore'), { recursive: true });
+    const fornList = [...fornAgg.values()].sort((a, b) => b.valore - a.valore);
+    // индекс (всички фирми) + профил-страници за материалните
+    const idxRows = [];
+    for (const f of fornList) {
+      const materiale = f.valore >= 500_000 || f.n >= 3;
+      const haPagina = materiale;
+      if (haPagina) {
+        f.top.sort((a, b) => b.importo - a.importo);
+        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
+        paginaForn++;
+      }
+      idxRows.push([f.cf, f.den, f.valore, f.n, f.perOsp.size, haPagina ? 1 : 0]);
+    }
+    await writeFile(join(SITE_DIR, 'fornitori.html'), renderFornitoriIndex({ righe: idxRows, totali: fornList.length }));
+    paginaForn++;
+  }
+
+  console.log(`Готово: ${enti.length + (appalti ? 10 : 9) + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -928,6 +966,102 @@ sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori perso
   <thead><tr><th scope="col">#</th><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>`;
+}
+
+// ---------- ПРОФИЛИ НА ИЗПЪЛНИТЕЛИТЕ („segui il fornitore“) ----------
+function renderFornitore({ f, aziendeIdx, strutturaHref }) {
+  const quotaSg = f.n > 0 ? f.senzaGara / f.n : 0;
+  const osp = [...f.perOsp.entries()]
+    .map(([cod, v]) => ({ cod, nome: (aziendeIdx[cod] || ['', ''])[0], reg: (aziendeIdx[cod] || ['', ''])[1], ...v }))
+    .sort((a, b) => b.valore - a.valore);
+  const ospRows = osp
+    .map((o) => `<tr><td><a href="${strutturaHref(o.cod)}">${esc(o.nome)}</a><div class="small muted">${esc(o.reg)}</div></td>
+      <td class="num">${numeroIt(o.n)}</td><td class="num">${euroCompact(o.valore)}</td></tr>`)
+    .join('');
+  const topRows = f.top
+    .slice(0, 15)
+    .map((c) => {
+      const az = aziendeIdx[c.codice] || ['', ''];
+      const sg = c.categoria === 'diretto' || c.categoria === 'negoziataSenza';
+      return `<tr><td class="small">${esc(c.data)}</td>
+        <td>${esc(c.oggetto || '—')}<div class="small muted">CIG ${esc(c.cig)} · <a href="${strutturaHref(c.codice)}">${esc(az[0])}</a></div></td>
+        <td class="small${sg ? ' neg' : ''}">${sg ? 'senza gara' : ''}</td>
+        <td class="num">${euroCompact(c.importo)}</td></tr>`;
+    })
+    .join('');
+  const flagConc = osp.length >= 3 && osp[0].valore / f.valore > 0.6;
+  const flagSg = f.n >= 5 && quotaSg > 0.7;
+  const body = `
+<a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
+<h1>${esc(f.den)}</h1>
+<p><span class="chip">P.IVA/CF ${esc(f.cf)}</span></p>
+<div class="grid kpis">
+  ${kpi('Valore aggiudicato', euroCompact(f.valore))}
+  ${kpi('Contratti', numeroIt(f.n))}
+  ${kpi('Aziende servite', numeroIt(f.perOsp.size))}
+  ${kpi('Quota senza gara', percentualeIt(quotaSg), flagSg ? 'neg' : '')}
+</div>
+<div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
+<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2024); non implicano alcuna irregolarità.
+Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
+${flagSg ? `<div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Quota elevata di affidamenti senza gara</span></div><div class="d">Il ${percentualeIt(quotaSg)} dei suoi contratti è stato affidato senza confronto competitivo. Indicatore da verificare, non prova.</div></div>` : ''}
+${flagConc ? `<div class="seg media"><div class="t"><span class="badge media">i</span> <span>Concentrato su poche aziende</span></div><div class="d">Oltre il 60% del valore proviene da una sola azienda (${esc(osp[0].nome)}).</div></div>` : ''}
+
+<h2>Aziende che lo hanno pagato</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody>${ospRows}</tbody>
+</table></div>
+
+<h2>Contratti principali</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto · Azienda</th><th scope="col">Gara</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody>${topRows}</tbody>
+</table></div>
+<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.</p>
+`;
+  return page({
+    title: `${f.den} — fornitore del SSN — Ospedali Trasparenti`,
+    description: `Contratti pubblici di ${f.den} con le aziende sanitarie italiane: valore, aziende, procedure.`,
+    active: 'fornitori.html',
+    rel: '../',
+    body,
+  });
+}
+
+function renderFornitoriIndex({ righe, totali }) {
+  // righe: [cf, den, valore, n, nOsp, haPagina]
+  const rows = righe
+    .slice(0, 4000)
+    .map((r) => {
+      const nome = r[5] ? `<a href="fornitore/${esc(r[0])}.html">${esc(r[1])}</a>` : esc(r[1]);
+      return `<tr data-t="${esc(String(r[1]).toLowerCase())}"><td>${nome}</td>
+        <td class="num">${euroCompact(r[2])}</td><td class="num">${numeroIt(r[3])}</td><td class="num">${numeroIt(r[4])}</td></tr>`;
+    })
+    .join('');
+  const body = `
+<h1>I fornitori del SSN</h1>
+<p class="lead">Chi riceve i soldi delle aziende sanitarie: <strong>${numeroIt(totali)} imprese</strong> con contratti
+2023–2024. Cerca un’azienda per vedere quanto ha incassato, da quali strutture e con quali procedure. Gli operatori
+persone fisiche non sono elencati.</p>
+<div class="controls"><input type="search" id="q" placeholder="Cerca fornitore…" aria-label="Cerca fornitore" style="flex:1"></div>
+<p class="small muted" id="count"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Aziende</th></tr></thead>
+  <tbody id="rows">${rows}</tbody>
+</table></div>
+<p class="small muted">Mostrati i primi 4.000 per valore. I nomi collegati hanno una scheda dedicata (imprese con ≥ 3 contratti o ≥ 500.000 €).</p>
+<script>
+(function(){var q=document.getElementById('q'),rows=[].slice.call(document.querySelectorAll('#rows tr')),c=document.getElementById('count');
+function a(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});c.textContent=n+' fornitori';}
+q.addEventListener('input',a);a();})();
+</script>`;
+  return page({
+    title: 'I fornitori del SSN — Ospedali Trasparenti',
+    description: 'Elenco delle imprese fornitrici delle aziende sanitarie italiane con valore aggiudicato, numero di contratti e aziende servite.',
+    active: 'fornitori.html',
+    body,
+  });
 }
 
 // ---------- ГЛОБАЛНА ТЪРСАЧКА ПРЕЗ ВСИЧКИ ДОГОВОРИ ----------

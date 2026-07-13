@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ICR - SOCIETA&#39; PER AZIONI — fornitore del SSN — Ospedali Trasparenti</title>
+<meta name="description" content="Contratti pubblici di ICR - SOCIETA&#39; PER AZIONI con le aziende sanitarie italiane: valore, aziende, procedure.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html" aria-current="page">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
+<h1>ICR - SOCIETA&#39; PER AZIONI</h1>
+<p><span class="chip">P.IVA/CF 05466391009</span></p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">2 mln €</div><div class="l">Valore aggiudicato</div></div>
+  <div class="card kpi"><div class="n ">17</div><div class="l">Contratti</div></div>
+  <div class="card kpi"><div class="n ">12</div><div class="l">Aziende servite</div></div>
+  <div class="card kpi"><div class="n ">23,5%</div><div class="l">Quota senza gara</div></div>
+</div>
+<div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
+<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2024); non implicano alcuna irregolarità.
+Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
+
+
+
+<h2>Aziende che lo hanno pagato</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td><a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">410 mila €</td></tr><tr><td><a href="../struttura/190207-azienda-sanitaria-provinciale-di-ragusa.html">AZIENDA SANITARIA PROVINCIALE DI RAGUSA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">2</td><td class="num">396 mila €</td></tr><tr><td><a href="../struttura/010301-azienda-sanitaria-locale-citta-di-torino.html">AZIENDA SANITARIA LOCALE CITTA&#39; DI TORINO</a><div class="small muted">Piemonte</div></td>
+      <td class="num">1</td><td class="num">186 mila €</td></tr><tr><td><a href="../struttura/120906-azienda-ospedaliero-universitaria-policlinico-umberto-i.html">AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO UMBERTO I</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">147 mila €</td></tr><tr><td><a href="../struttura/120109-azienda-asl-di-viterbo.html">AZIENDA ASL DI VITERBO</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">142 mila €</td></tr><tr><td><a href="../struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">117 mila €</td></tr><tr><td><a href="../struttura/120110-azienda-sanitaria-locale-di-rieti.html">AZIENDA SANITARIA LOCALE DI RIETI</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">115 mila €</td></tr><tr><td><a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">106 mila €</td></tr><tr><td><a href="../struttura/120902-azienda-ospedaliera-complesso-ospedaliero-san-giovanni-addol.html">AZIENDA OSPEDALIERA COMPLESSO OSPEDALIERO SAN GIOVANNI ADDOLORATA</a><div class="small muted">Lazio</div></td>
+      <td class="num">1</td><td class="num">85 mila €</td></tr><tr><td><a href="../struttura/010203-azienda-sanitaria-locale-to3.html">AZIENDA SANITARIA LOCALE TO3</a><div class="small muted">Piemonte</div></td>
+      <td class="num">2</td><td class="num">84 mila €</td></tr><tr><td><a href="../struttura/130201-azienda-sanitaria-locale-1-di-avezzano-sulmona-l-aquila.html">AZIENDA SANITARIA LOCALE 1 DI AVEZZANO-SULMONA-L&#39;AQUILA</a><div class="small muted">Abruzzo</div></td>
+      <td class="num">1</td><td class="num">15 mila €</td></tr><tr><td><a href="../struttura/190926-azienda-ospedaliera-ospedali-riuniti-villa-sofia-cervello-di.html">AZIENDA OSPEDALIERA OSPEDALI RIUNITI VILLA SOFIA CERVELLO DI PALERMO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">1</td><td class="num">6 mila €</td></tr></tbody>
+</table></div>
+
+<h2>Contratti principali</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto · Azienda</th><th scope="col">Gara</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody><tr><td class="small">2023-10-23</td>
+        <td>LOTTO N. 3 - FORNITURA DI CARTA PER FOTOCOPIE<div class="small muted">CIG A01CD662E1 · <a href="../struttura/190207-azienda-sanitaria-provinciale-di-ragusa.html">AZIENDA SANITARIA PROVINCIALE DI RAGUSA</a></div></td>
+        <td class="small"></td>
+        <td class="num">327 mila €</td></tr><tr><td class="small">2023-01-01</td>
+        <td>ADESIONE A CONVENZIONE FORNITURA DI PRODOTTI DI CANCELLERIA TRADIZIONALE E A RIDOTTO IMPATTO AMBIENTALE<div class="small muted">CIG 96116898AD · <a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a></div></td>
+        <td class="small"></td>
+        <td class="num">205 mila €</td></tr><tr><td class="small">2024-12-17</td>
+        <td>ADESIONE AL RINNOVO S.C.R FORNITURA DI CANCELLERIA TRADIZIONALE E A RIDOTTO IMPATTO AZIENDALE<div class="small muted">CIG B4E2FCAEDC · <a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">205 mila €</td></tr><tr><td class="small">2023-01-24</td>
+        <td>ADESIONE SCR CANCELLERIA TRADIZIONALE E RIDOTTO IMPATTO AMBIENTALE GARA 47/2022 ICR SPA<div class="small muted">CIG 9604886AA9 · <a href="../struttura/010301-azienda-sanitaria-locale-citta-di-torino.html">AZIENDA SANITARIA LOCALE CITTA&#39; DI TORINO</a></div></td>
+        <td class="small"></td>
+        <td class="num">186 mila €</td></tr><tr><td class="small">2023-03-02</td>
+        <td>ADESIONE LOTTO1 &#39;GARA A PROCEDURA APERTA PER LA FORNITURA CARTA PER FOTOCOPIE IN RISME PER GLI ENTI DELLA REGIONE LAZIO&#39;<div class="small muted">CIG 98041131FE · <a href="../struttura/120906-azienda-ospedaliero-universitaria-policlinico-umberto-i.html">AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO UMBERTO I</a></div></td>
+        <td class="small"></td>
+        <td class="num">147 mila €</td></tr><tr><td class="small">2023-04-29</td>
+        <td>ADESIONE A GARA REGIONALE PER FORNITURA DI CARTA IN RISME IN FIBRA VERGINE NATURALE LOTTO 2<div class="small muted">CIG 9784899219 · <a href="../struttura/120109-azienda-asl-di-viterbo.html">AZIENDA ASL DI VITERBO</a></div></td>
+        <td class="small"></td>
+        <td class="num">142 mila €</td></tr><tr><td class="small">2023-03-27</td>
+        <td>PRESA D&#39;ATTO DELLA DETERMINAZIONE N. G00758 DEL 24/01/2023 DELLA REGIONE LAZIO CON CUI È STATA DISPOSTA L&#39;AGGIUDICAZIONE DELLA &#39;FORNITURA DI CARTA IN RISME PER GLI ENTI DELLA REGIONE LAZIO&#39;. ADESIONE AL LOTTO N. 2<div class="small muted">CIG 9723642B36 · <a href="../struttura/120110-azienda-sanitaria-locale-di-rieti.html">AZIENDA SANITARIA LOCALE DI RIETI</a></div></td>
+        <td class="small"></td>
+        <td class="num">115 mila €</td></tr><tr><td class="small">2023-05-03</td>
+        <td>FORNITURA CARTA IN RISME<div class="small muted">CIG 9803855D12 · <a href="../struttura/120902-azienda-ospedaliera-complesso-ospedaliero-san-giovanni-addol.html">AZIENDA OSPEDALIERA COMPLESSO OSPEDALIERO SAN GIOVANNI ADDOLORATA</a></div></td>
+        <td class="small"></td>
+        <td class="num">85 mila €</td></tr><tr><td class="small">2023-10-23</td>
+        <td>LOTTO N. 4 - FORNITURA DI CANCELLERIA<div class="small muted">CIG A01CD829FA · <a href="../struttura/190207-azienda-sanitaria-provinciale-di-ragusa.html">AZIENDA SANITARIA PROVINCIALE DI RAGUSA</a></div></td>
+        <td class="small"></td>
+        <td class="num">69 mila €</td></tr><tr><td class="small">2023-02-15</td>
+        <td>ADESIONE ALLA CONVENZIONE STIPULATA DA S.C.R. PIEMONTE S.P.A PER LA FORNITURA DI PRODOTTI DI CANCELLERIA TRADIZIONALE A RIDOTTO IMPATTO AMBIENTALE PER I SOGGETTI DI CUI ALL&#39;ART. 3 L.R. 19/2007 E S.M.I. E PER L&#39;AZIENDA USL VALLE D&#39;AOSTA (GARA 47-2022), PER IL PERIODO 28.01.2023 -13.12.2024, IMPORTO C<div class="small muted">CIG 96303922E3 · <a href="../struttura/010203-azienda-sanitaria-locale-to3.html">AZIENDA SANITARIA LOCALE TO3</a></div></td>
+        <td class="small"></td>
+        <td class="num">66 mila €</td></tr><tr><td class="small">2023-01-03</td>
+        <td>ACCORDO QUADRO SCR PIEMONTE - FORNITURA DI PRODOTTI DI CANCELLERIA TRADIZIONALE E A RIDOTTO IMPATTO AMBIENTALE<div class="small muted">CIG 95675163F8 · <a href="../struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a></div></td>
+        <td class="small"></td>
+        <td class="num">60 mila €</td></tr><tr><td class="small">2023-01-25</td>
+        <td>FORNITURA CANCELLERIA TRADIZIONALE E A RIDOTTO IMPATTO AMBIENTALE - ADESIONE SCR<div class="small muted">CIG 96137193E4 · <a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a></div></td>
+        <td class="small"></td>
+        <td class="num">60 mila €</td></tr><tr><td class="small">2024-12-09</td>
+        <td>ADESIONE GARA SCR 47-2022 MATERIALE DI CANCELLERIA TRADIZIONALE E A RIDOTTO IMPATTO AMBIENTALE<div class="small muted">CIG B4B54FCA9D · <a href="../struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">57 mila €</td></tr><tr><td class="small">2024-11-29</td>
+        <td>ADESIONE RINNOVO CONVENZIONE FORNITURA DI PRODOTTI CANCELLERIA GARA 47-2022<div class="small muted">CIG B488208114 · <a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a></div></td>
+        <td class="small neg">senza gara</td>
+        <td class="num">46 mila €</td></tr><tr><td class="small">2024-06-28</td>
+        <td>ADESIONE ALLA CONVENZIONE DI SCR PIMEONTE PER LA FORNITURA DI PRODOTTI PER CANCELLERIA TRADIZIONALE A RIDOTTO IMPATTO AMBIENTALE - INTEGRAZIONE FABBISOGNI<div class="small muted">CIG A05E223812 · <a href="../struttura/010203-azienda-sanitaria-locale-to3.html">AZIENDA SANITARIA LOCALE TO3</a></div></td>
+        <td class="small"></td>
+        <td class="num">18 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>
