@@ -7,6 +7,7 @@ import { principal as getPrincipal } from "@/data/principals";
 import { PageHero, Section, Badge, ExternalLink } from "@/components/ui";
 import { MoneyFlowColumn } from "@/components/MoneyFlows";
 import { FinancialsChart } from "@/components/FinancialsChart";
+import { FINANCIALS } from "@/data/financials";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd, canonical } from "@/lib/seo";
 import { transparency } from "@/lib/aggregate";
@@ -191,21 +192,19 @@ export default async function EnterprisePage({
         </Section>
 
         {/* Многогодишни финанси */}
-        {e.financialsSeries && e.financialsSeries.length > 0 && (
-          <Section title="Финанси по години">
-            <FinancialsChart series={e.financialsSeries} />
-            {e.financialsNote && (
-              <p className="mt-3 text-sm text-slate-500">{e.financialsNote}</p>
-            )}
-            {e.financialsSource && (
+        {(() => {
+          const fin = FINANCIALS[e.slug];
+          if (!fin || fin.series.length === 0) return null;
+          return (
+            <Section title="Финанси по години">
+              <FinancialsChart series={fin.series} />
+              {fin.note && <p className="mt-3 text-sm text-slate-500">{fin.note}</p>}
               <p className="mt-1 text-sm">
-                <ExternalLink href={e.financialsSource.url}>
-                  {e.financialsSource.label}
-                </ExternalLink>
+                <ExternalLink href={fin.source.url}>{fin.source.label}</ExternalLink>
               </p>
-            )}
-          </Section>
-        )}
+            </Section>
+          );
+        })()}
 
         {/* Известни случаи */}
         {casesForSlug(e.slug).length > 0 && (

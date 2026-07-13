@@ -5,6 +5,7 @@ import { SECTORS } from "../../data/sectors";
 import { PRINCIPALS } from "../../data/principals";
 import { OBLAST_PATHS } from "../../data/oblasti-geo";
 import { enterprisesByOblast, oblastForHq } from "../../data/geo";
+import { FINANCIALS } from "../../data/financials";
 
 const sectorKeys = new Set(SECTORS.map((s) => s.key));
 const principalKeys = new Set(PRINCIPALS.map((p) => p.key));
@@ -75,4 +76,24 @@ test("geo: агрегацията покрива всички предприят
   const { ranked, national } = enterprisesByOblast();
   const mapped = ranked.reduce((s, o) => s + o.count, 0);
   assert.equal(mapped + national.length, ENTERPRISES.length, "сборът трябва да е точен");
+});
+
+test("финанси: всеки запис сочи към съществуващо предприятие и има валидни редове", () => {
+  const slugs = new Set(ENTERPRISES.map((e) => e.slug));
+  const yearRe = /^\d{4}$/;
+  for (const [slug, fin] of Object.entries(FINANCIALS)) {
+    assert.ok(slugs.has(slug), `финанси за непознат slug: ${slug}`);
+    assert.ok(fin.series.length > 0, `${slug}: празна финансова серия`);
+    assert.match(fin.source.url, /^https?:\/\//, `${slug}: невалиден URL на източник`);
+    const years = new Set<string>();
+    for (const row of fin.series) {
+      assert.match(row.year, yearRe, `${slug}: невалидна година ${row.year}`);
+      assert.ok(!years.has(row.year), `${slug}: дублирана година ${row.year}`);
+      years.add(row.year);
+      assert.ok(
+        row.revenueMln != null || row.resultMln != null,
+        `${slug} (${row.year}): редът няма нито приход, нито резултат`,
+      );
+    }
+  }
 });

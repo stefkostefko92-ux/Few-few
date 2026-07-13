@@ -131,10 +131,5 @@ export type Enterprise = {
   /** Дъщерни дружества/поделения (за холдинги — кратък списък без отделни страници). */
   subsidiaries?: Subsidiary[];
   financial?: FinancialNote;
-  /** Многогодишна финансова серия (по година). */
-  financialsSeries?: FinancialYear[];
-  /** Забележка към серията (индивидуално/консолидирано и източник). */
-  financialsNote?: string;
-  financialsSource?: Source;
   sources: Source[];
 };
