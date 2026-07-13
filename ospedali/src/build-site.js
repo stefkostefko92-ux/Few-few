@@ -23,7 +23,7 @@ import {
   renderGlossario, renderGuida, renderPnrr, renderStorie, renderStoria, STORIE,
   renderAggiornamenti, renderApprofondimenti,
   renderPagamenti, renderPersonale, renderMobilita,
-  renderFineAnno, renderConfronta, renderApi, renderAccessibilita,
+  renderFineAnno, renderConfronta, renderApi, renderAccessibilita, renderStorico,
 } from './approfondimenti.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
@@ -536,6 +536,10 @@ async function main() {
     .filter(Boolean);
   await writeFile(join(SITE_DIR, 'confronta.html'), renderConfronta({ datiJson: JSON.stringify(confrontaDati) }));
 
+  // COVID ретроспекция (по избор — изисква data/storico.json от npm run storico)
+  const sto = await readJson(pjoin(DATA_DIR, 'storico.json')).catch(() => null);
+  if (sto) await writeFile(join(SITE_DIR, 'storico.html'), renderStorico({ st: sto }));
+
   // API документация + декларация за достъпност
   await writeFile(join(SITE_DIR, 'api.html'), renderApi({ su: siteUrl() }));
   await writeFile(join(SITE_DIR, 'accessibilita.html'), renderAccessibilita());
@@ -564,7 +568,7 @@ async function main() {
 
   await writeFile(
     join(SITE_DIR, 'approfondimenti.html'),
-    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length, conNuovi: { pagamenti: !!tp, personale: !!pers, mobilita: !!mob, fineAnno: true, confronta: true, api: true } })
+    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length, conNuovi: { pagamenti: !!tp, personale: !!pers, mobilita: !!mob, fineAnno: true, confronta: true, api: true, storico: !!sto } })
   );
 
   // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
@@ -636,6 +640,7 @@ async function main() {
       'personale.html',
       'mobilita.html',
       'fine-anno.html',
+      ...(sto ? ['storico.html'] : []),
       'confronta.html',
       'api.html',
       'accessibilita.html',

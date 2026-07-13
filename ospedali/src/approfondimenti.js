@@ -620,6 +620,7 @@ ${conNuovi.mobilita ? card('mobilita.html', 'Curarsi fuori regione', 'La mobilit
 ${conNuovi.personale ? card('personale.html', 'Il personale della sanità', 'Dipendenti, medici e lavoro precario per azienda — la strada verso i «medici a gettone».') : ''}
 ${conNuovi.pagamenti ? card('pagamenti.html', 'Tempi di pagamento', 'Quanto in fretta gli ospedali pagano i fornitori: la serie ufficiale PCC/MEF.') : ''}
 ${conNuovi.fineAnno ? card('fine-anno.html', 'La febbre di dicembre', 'La corsa agli affidamenti diretti prima della scadenza del bilancio, mese per mese.') : ''}
+${conNuovi.storico ? card('storico.html', 'Prima, durante e dopo il COVID', 'Sei anni di appalti sanitari: urgenze, deroghe e se il mercato è tornato normale.') : ''}
 <h2>Storie</h2>
 ${card('storie.html', 'Le storie nei dati', 'Casi concreti emersi dagli indicatori, raccontati con i numeri ufficiali e le spiegazioni possibili.')}
 <h2>Strumenti per il cittadino</h2>
@@ -994,6 +995,54 @@ Contatto nelle <a href="note-legali.html">note legali</a>.</p>
     description: 'La dichiarazione di accessibilità del sito: conformità WCAG 2.1 AA, limiti noti e come segnalare barriere.',
     active: '',
     canonical: 'accessibilita.html',
+    body,
+  });
+}
+
+// ---------- COVID ретроспекция (2019–2024) ----------
+export function renderStorico({ st }) {
+  const anni = Object.keys(st.perAnno).map(Number).sort();
+  const serie = (k) => anni.map((a) => [a, st.perAnno[a][k]]).filter(([, v]) => v != null);
+  const a2019 = st.perAnno[2019];
+  const a2020 = st.perAnno[2020];
+  const ultimo = st.perAnno[anni.at(-1)];
+  const body = `
+<h1>Prima, durante e dopo il COVID: sei anni di appalti</h1>
+<p class="lead">La pandemia ha sospeso le regole ordinarie degli acquisti pubblici: affidamenti d’urgenza, deroghe,
+scorte da costruire in giorni. Questa pagina misura cosa è successo davvero — e soprattutto <strong>se il mercato
+è tornato normale</strong> quando l’emergenza è finita.</p>
+<div class="grid kpis">
+  ${kpi('Contratti 2019 → ' + anni.at(-1), `${numeroIt(a2019 ? a2019.n : 0)} → ${numeroIt(ultimo.n)}`)}
+  ${kpi('Urgenza nel 2020', a2020 && a2020.quotaUrgenza != null ? percentualeIt(a2020.quotaUrgenza) : '—', 'neg')}
+  ${kpi(`Urgenza nel ${anni.at(-1)}`, ultimo.quotaUrgenza != null ? percentualeIt(ultimo.quotaUrgenza) : '—')}
+  ${kpi(`Senza gara (${anni.at(-1)})`, ultimo.quotaSenzaGara != null ? percentualeIt(ultimo.quotaSenzaGara) : '—')}
+</div>
+<h2>La quota «senza gara», anno per anno</h2>
+${lineChart(
+    [
+      { label: 'Quota senza gara (per numero)', color: 'var(--neg)', points: serie('quotaSenzaGara').map(([x, y]) => [x, y * 100]) },
+      { label: 'Quota con flag urgenza', color: 'var(--amber)', points: serie('quotaUrgenza').map(([x, y]) => [x, y * 100]) },
+    ],
+    { caption: 'Percentuale dei contratti sanitari (fonte: ANAC, gare > 40.000 €)' }
+  )}
+<h2>I volumi</h2>
+${lineChart([{ label: 'Contratti per anno', color: 'var(--brand)', points: serie('n') }], {
+    caption: 'Numero di contratti dei committenti sanitari per anno di pubblicazione del CIG',
+  })}
+<div class="note"><strong>Come leggere.</strong> Il 2020–2021 è il periodo delle deroghe emergenziali: la quota di
+urgenze e affidamenti senza confronto è attesa e in gran parte giustificata. La domanda da trasparenza è un’altra:
+<em>le abitudini prese nell’emergenza sono rientrate?</em> Se la quota «senza gara» resta sopra i livelli
+pre-pandemia anche anni dopo, l’eccezione è diventata prassi. I numeri qui sopra danno la risposta, regione per
+regione la trovi negli <a href="appalti.html">appalti</a>.</div>
+<p class="small muted">Fonte: ANAC — BDNCP (CC BY 4.0), stessi criteri del resto del sito (committenti sanitari,
+dedup per CIG, importi validi). Le adesioni a convenzioni non sono escluse da questa serie storica: la definizione è
+volutamente identica in tutti gli anni per rendere il confronto omogeneo.</p>
+`;
+  return page({
+    title: 'Prima, durante e dopo il COVID: sei anni di appalti sanitari — Ospedali Trasparenti',
+    description: 'Come la pandemia ha cambiato gli acquisti della sanità: urgenze, affidamenti senza gara e volumi 2019–2024 — e se il mercato è tornato normale.',
+    active: 'approfondimenti.html',
+    canonical: 'storico.html',
     body,
   });
 }
