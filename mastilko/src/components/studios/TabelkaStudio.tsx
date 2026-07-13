@@ -51,7 +51,7 @@ export default function TabelkaStudio() {
   const set = (patch: Partial<TabelkaState>) => setS({ ...s, ...patch });
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-3 p-5">
           <span className="field-label">Готови табелки</span>

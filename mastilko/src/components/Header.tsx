@@ -22,8 +22,8 @@ export default function Header() {
 
   return (
     <header className="no-print sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur dark:bg-[#241d19]/85">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5 text-xl font-bold tracking-tight">
           <Logo className="h-9 w-9" decorative />
           <span>
             <span className="wordmark">Мастилко</span>
@@ -40,7 +40,7 @@ export default function Header() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-haspopup="true"
-              className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:text-base dark:hover:bg-white/10"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:px-4 sm:text-base dark:hover:bg-white/10 vivid:hover:bg-white/10"
             >
               Инструменти
               <span aria-hidden className={`transition ${open ? "rotate-180" : ""}`}>▾</span>

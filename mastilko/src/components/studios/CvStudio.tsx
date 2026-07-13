@@ -159,7 +159,7 @@ export default function CvStudio() {
   const contact = [s.phone, s.email, s.city, s.website].filter(Boolean);
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">

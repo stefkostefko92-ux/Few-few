@@ -81,7 +81,7 @@ export default function PismoStudio() {
   const contact = [s.phone, s.email].filter(Boolean).join(" · ");
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
