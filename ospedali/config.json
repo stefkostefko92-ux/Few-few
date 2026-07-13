@@ -17,8 +17,7 @@
     "telefono": "+39 379 296 9699"
   },
   "hosting": {
-    "provider": "",
-    "trasferimento": "",
-    "notaBg": "ПОПЪЛНИ преди пускане: напр. provider='Netlify, Inc. (USA)' + trasferimento='EU-US Data Privacy Framework' (провери на dataprivacyframework.gov), или ЕС-хостинг (Hetzner) без трансфер — GDPR чл. 13(1)(e)/(f) (правен одит H3)"
+    "provider": "Hetzner Online GmbH (Norimberga, Germania — UE)",
+    "trasferimento": ""
   }
 }

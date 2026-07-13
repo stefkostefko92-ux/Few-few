@@ -84,8 +84,10 @@ src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui
 **Carbon Stealth VCC** · ЕИК/VAT **BG208725180** · седалище **ul. Samuil 3,
 2670 Bobov Dol, Bulgaria** · **info@carbonstealth.eu** · тел. +39 379 296 9699
 (IT) / +359 877 414 874 (BG). Попълнени в `config.json → titolare` (импресум,
-privacy, rettifiche). **Не питай собственика повторно за тях.** Остава празен
-само `config.hosting` — попълва се при избор на хостинг.
+privacy, rettifiche). **Не питай собственика повторно за тях.**
+Хостинг: **Hetzner Online GmbH, Нюрнберг (ЕС)** — `config.hosting`; без
+трансфер извън ЕС → privacy не изисква DPF/SCC клауза. VPS-аджията ползва
+същия модел деплой като другите продукти (виж deploy/README.md).
 
 ## Капани
 
