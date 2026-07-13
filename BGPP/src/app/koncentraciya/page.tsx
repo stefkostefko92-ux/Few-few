@@ -33,10 +33,10 @@ export default function ConcentrationPage() {
         <Section>
           <div className="rounded-xl border-l-4 border-brand-400 bg-brand-50 p-4 text-sm text-slate-700">
             Сумите са сборни от СИГМА (обществени поръчки, ~2020–2026), ориентировъчни и
-            закръглени. Данните са на ниво <strong>фирми и групи</strong>; действителните
-            собственици (физически лица) се проверяват в Търговския регистър. Наличието на
-            фирма тук <strong>не означава нарушение</strong> — показва мащаба на държавния ѝ
-            бизнес.
+            закръглени; подредбата е по общ държавен „отпечатък“. Посочените{" "}
+            <strong>собственици са вписаните в Търговския регистър/ЗМИП</strong> — публичен
+            факт, а не обвинение. Наличието на фирма тук <strong>не означава нарушение</strong>
+            {" "}— показва мащаба на държавния ѝ бизнес и кой стои зад него.
           </div>
         </Section>
 
@@ -45,14 +45,28 @@ export default function ConcentrationPage() {
           icon={<Building className="h-6 w-6 text-brand-700" aria-hidden />}
         >
           <div className="space-y-4">
-            {BIG_CONTRACTORS.map((c, i) => (
+            {[...BIG_CONTRACTORS]
+              .sort((a, b) => b.totalMln - a.totalMln)
+              .map((c, i) => (
               <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-lg font-bold text-slate-900">{c.name}</h3>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    <span className="mr-2 text-slate-400">{i + 1}.</span>
+                    {c.name}
+                  </h3>
                   <span className="text-sm text-slate-500">{c.field}</span>
                 </div>
-                {c.group && (
-                  <p className="mt-1 text-xs text-slate-500">Група: {c.group}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <span className="font-semibold text-brand-700">
+                    ≈ {c.totalMln} млн. € държавни поръчки
+                  </span>
+                  {c.group && <span>Група: {c.group}</span>}
+                </div>
+                {c.owner && (
+                  <p className="mt-2 text-sm text-slate-700">
+                    <span className="font-semibold">Собственик: </span>
+                    {c.owner}
+                  </p>
                 )}
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full text-left text-sm">

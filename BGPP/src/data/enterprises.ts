@@ -1928,6 +1928,7 @@ export const ENTERPRISES: Enterprise[] = [
     ),
   },
   ...hospitalEnterprises(),
+  ...vikEnterprises(),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2082,6 +2083,58 @@ function hospitalEnterprises(): Enterprise[] {
     sources: withRegisters(
       { label: "Национална здравноосигурителна каса", url: "https://www.nhif.bg/" },
       { label: "Министерство на здравеопазването", url: "https://www.mh.government.bg/" },
+    ),
+  }));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Регионални ВиК оператори (дъщерни на „Български ВиК холдинг“) — еднакъв модел:
+// цени за вода/канал/пречистване (регулирани от КЕВР) ↔ поддръжка на мрежата,
+// ток за помпите, заплати, инвестиции по европроекти.
+// ─────────────────────────────────────────────────────────────────────────────
+function vikEnterprises(): Enterprise[] {
+  const base = {
+    legalForm: "ЕООД" as const,
+    stateShare: 100,
+    sector: "vodi-ekologiya" as const,
+    principal: "rrb" as const,
+    parent: "„Български ВиК холдинг“ ЕАД",
+    role: "Регионален монопол във водоснабдяването и канализацията; цените се регулират от КЕВР, инвестициите — предимно по европейски програми.",
+    moneyIn: [
+      { label: "Цени за водоснабдяване, канализация и пречистване", weight: 1 as const, note: "регулирани от КЕВР" },
+      { label: "Присъединителни такси", weight: 3 as const },
+      { label: "Европейско финансиране за ВиК инфраструктура", weight: 2 as const },
+    ],
+    moneyOut: [
+      { label: "Електроенергия за помпени станции", weight: 1 as const },
+      { label: "Поддръжка и ремонт на водопроводната мрежа (загуби на вода)", weight: 1 as const },
+      { label: "Работни заплати и инвестиции", weight: 2 as const },
+    ],
+    oversight: [
+      "Собственик: „Български ВиК холдинг“ ЕАД (държавен)",
+      "Ценово регулиране: КЕВР; отраслова политика: МРРБ",
+      "Одит: Сметна палата и независим одит",
+    ],
+  };
+  const list: { slug: string; name: string; short: string; hq: string }[] = [
+    { slug: "vik-plovdiv", name: "„Водоснабдяване и канализация“ ЕООД, Пловдив", short: "ВиК Пловдив", hq: "Пловдив" },
+    { slug: "vik-burgas", name: "„Водоснабдяване и канализация“ ЕАД, Бургас", short: "ВиК Бургас", hq: "Бургас" },
+    { slug: "vik-stara-zagora", name: "„Водоснабдяване и канализация“ ЕООД, Стара Загора", short: "ВиК Стара Загора", hq: "Стара Загора" },
+    { slug: "vik-pleven", name: "„Водоснабдяване и канализация“ ЕООД, Плевен", short: "ВиК Плевен", hq: "Плевен" },
+  ];
+  return list.map((v) => ({
+    ...base,
+    slug: v.slug,
+    name: v.name,
+    shortName: v.short,
+    hq: v.hq,
+    activity: `Регионален водоснабдителен и канализационен оператор за област ${v.hq}. Част от държавния „Български ВиК холдинг“.`,
+    moneyIn: [...base.moneyIn],
+    moneyOut: [...base.moneyOut],
+    oversight: [...base.oversight],
+    sources: withRegisters(
+      { label: "Български ВиК холдинг", url: "https://www.vikholding.bg/" },
+      SRC_KEVR,
     ),
   }));
 }

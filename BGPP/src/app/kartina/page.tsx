@@ -156,6 +156,14 @@ export default function NationalPage() {
           <Link href="/predpriyatiya" className="font-medium text-brand-700 hover:underline">
             каталога
           </Link>
+          , виж кой печели поръчките в{" "}
+          <Link href="/koncentraciya" className="font-medium text-brand-700 hover:underline">
+            концентрацията
+          </Link>
+          , или класацията по{" "}
+          <Link href="/prozrachnost-indeks" className="font-medium text-brand-700 hover:underline">
+            индекс на прозрачност
+          </Link>
           .
         </p>
       </div>

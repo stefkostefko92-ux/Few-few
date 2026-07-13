@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/",
     "/predpriyatiya",
     "/kartina",
+    "/prozrachnost-indeks",
     "/parichni-potoci",
     "/koncentraciya",
     "/konflikti",
