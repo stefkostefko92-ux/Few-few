@@ -28,8 +28,9 @@ src/lib/dataset.js       ЕДИНСТВЕН източник за модела: 
 src/build-report.js      dataset → reports/ (index.md, <регион>/<код>-<име>.md, dati-chiave.csv)
 src/analyze.js           dataset → счетоводни правила → data/segnalazioni.json (тестваем: analizzaEnte)
 src/forensics.js         dataset + сурови CE → системен дефицит (GSA) + разходни аномалии → data/forensics.json
-src/build-site.js        dataset + segnalazioni + forensics → site/ (италиански сайт, SVG + hbars)
-src/lib/                 http (retry/кеш/curl), csv (парсер+ит. числа), dataset, format, site-ui, paths
+src/fetch-appalti.js     ANAC CIG месечно (кеш data/raw/anac/) → агрегати по регион+CF → data/appalti.json
+src/build-site.js        dataset + segnalazioni + forensics + appalti → site/ (италиански сайт, SVG + hbars)
+src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui, match (болница↔ANAC), paths
 ```
 
 - `dataset.js` е единственият парсер — **не дублирай** зареждането в новите скриптове.
@@ -42,6 +43,13 @@ src/lib/                 http (retry/кеш/curl), csv (парсер+ит. чи�
   (многокодови категории се **сумират**). Изнася median/percentile/robustZ за тест.
 - Форензик флаг = дял над 90-и персентил И robust z>2 И материален (≥1 mln €), или
   +60% годишна експлозия (>2 mln €). Формулировките казват „pista, non prova".
+- ANAC (`fetch-appalti.js`): CIG данните са месечни ZIP (WAF иска браузърски UA → curl);
+  теглим в кеш, разархивираме, парсваме (quote-aware!), трием CSV за диск. Категории на
+  процедурите в `catProc`; „senza gara" = diretto + negoziataSenza (БЕЗ рамковите quadro).
+- Свързване болница↔ANAC (`lib/match.js`) е по ИМЕ (няма CF crosswalk) → строг матч:
+  ядро на името (без типовата фраза) + регион + уникалност. Точност > покритие —
+  по-добре несвързана, отколкото грешно приписана поръчка. Регионалният изглед не иска матч.
+- `data/appalti.json` е по избор за `build-site.js` (ако липсва — разделите Appalti се крият).
 - Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
   добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
 - Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.

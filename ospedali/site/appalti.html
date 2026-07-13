@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appalti pubblici della sanità — Ospedali Trasparenti</title>
+<meta name="description" content="Gli appalti delle aziende sanitarie italiane dai dati ANAC: quota di spesa senza gara, affidamenti diretti, confronto tra regioni.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html" aria-current="page">Appalti</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main><div class="wrap">
+
+<h1>Appalti pubblici della sanità</h1>
+<p class="lead">Chi compra, come e con quanta concorrenza. Dai dati ANAC (Banca Dati Nazionale dei Contratti
+Pubblici, gare sopra 40.000 € pubblicate negli anni 2023–2024), isoliamo gli appalti delle aziende sanitarie e
+misuriamo la <strong>quota di spesa affidata senza gara</strong> — affidamenti diretti e negoziate senza bando —
+il primo indicatore di opacità che guardano ANAC e Corte dei conti.</p>
+
+<div class="grid kpis">
+  <div class="card kpi"><div class="n neg">52,7%</div><div class="l">Contratti senza gara (2023–2024)</div></div>
+  <div class="card kpi"><div class="n ">37,2%</div><div class="l">Senza gara sul valore</div></div>
+  <div class="card kpi"><div class="n ">148 mld €</div><div class="l">Valore appalti sanità</div></div>
+  <div class="card kpi"><div class="n ">427.584</div><div class="l">Contratti (lotti)</div></div>
+</div>
+
+<div class="note" style="margin-top:18px"><strong>Cosa significa «senza gara».</strong> L’affidamento diretto e la
+procedura negoziata senza pubblicazione assegnano il contratto <em>senza confronto competitivo</em>. Sotto certe soglie
+è legittimo e più rapido, ma un ricorso sistematico è la spia classica di inefficienza o favoritismi. Gli acquisti in
+adesione ad accordi quadro/convenzioni (es. Consip/centrali regionali) sono invece già stati messi a gara e non contano
+come «senza gara».</p></div>
+
+<h2>Le regioni a confronto</h2>
+<p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
+«sul valore» sugli importi.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Regione</th><th class="num">Valore appalti</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Contratti</th></tr></thead>
+  <tbody><tr>
+      <td>VALLE D&#39;AOSTA</td>
+      <td class="num">235 mln €</td>
+      <td class="num neg">80,9%</td>
+      <td class="num ">46,4%</td>
+      <td class="num">2566</td></tr><tr>
+      <td>PROVINCIA AUTONOMA DI TRENTO</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">76,3%</td>
+      <td class="num ">49,1%</td>
+      <td class="num">2729</td></tr><tr>
+      <td>FRIULI VENEZIA GIULIA</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">68,5%</td>
+      <td class="num ">27,9%</td>
+      <td class="num">2356</td></tr><tr>
+      <td>UMBRIA</td>
+      <td class="num">3 mld €</td>
+      <td class="num neg">68,1%</td>
+      <td class="num ">41,8%</td>
+      <td class="num">12.011</td></tr><tr>
+      <td>CALABRIA</td>
+      <td class="num">8 mld €</td>
+      <td class="num neg">66,4%</td>
+      <td class="num neg">78,2%</td>
+      <td class="num">20.854</td></tr><tr>
+      <td>MARCHE</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">60,7%</td>
+      <td class="num ">44,8%</td>
+      <td class="num">2252</td></tr><tr>
+      <td>LIGURIA</td>
+      <td class="num">2 mld €</td>
+      <td class="num neg">60,6%</td>
+      <td class="num ">46,9%</td>
+      <td class="num">15.026</td></tr><tr>
+      <td>PROVINCIA AUTONOMA DI BOLZANO</td>
+      <td class="num">2 mld €</td>
+      <td class="num neg">59%</td>
+      <td class="num ">26,5%</td>
+      <td class="num">3584</td></tr><tr>
+      <td>PUGLIA</td>
+      <td class="num">7 mld €</td>
+      <td class="num neg">58%</td>
+      <td class="num ">43,4%</td>
+      <td class="num">21.971</td></tr><tr>
+      <td>LOMBARDIA</td>
+      <td class="num">21 mld €</td>
+      <td class="num neg">55,5%</td>
+      <td class="num ">29,8%</td>
+      <td class="num">70.781</td></tr><tr>
+      <td>EMILIA ROMAGNA</td>
+      <td class="num">11 mld €</td>
+      <td class="num neg">53,9%</td>
+      <td class="num ">30,3%</td>
+      <td class="num">25.499</td></tr><tr>
+      <td>PIEMONTE</td>
+      <td class="num">11 mld €</td>
+      <td class="num neg">52,6%</td>
+      <td class="num ">39,8%</td>
+      <td class="num">50.713</td></tr><tr>
+      <td>VENETO</td>
+      <td class="num">14 mld €</td>
+      <td class="num neg">51,7%</td>
+      <td class="num ">36%</td>
+      <td class="num">21.351</td></tr><tr>
+      <td>LAZIO</td>
+      <td class="num">10 mld €</td>
+      <td class="num neg">50,4%</td>
+      <td class="num ">41%</td>
+      <td class="num">38.006</td></tr><tr>
+      <td>SARDEGNA</td>
+      <td class="num">2 mld €</td>
+      <td class="num ">41,1%</td>
+      <td class="num neg">58,7%</td>
+      <td class="num">9476</td></tr><tr>
+      <td>SICILIA</td>
+      <td class="num">11 mld €</td>
+      <td class="num ">40,6%</td>
+      <td class="num ">34,3%</td>
+      <td class="num">30.436</td></tr><tr>
+      <td>CAMPANIA</td>
+      <td class="num">10 mld €</td>
+      <td class="num ">39,8%</td>
+      <td class="num ">35,7%</td>
+      <td class="num">32.560</td></tr><tr>
+      <td>TOSCANA</td>
+      <td class="num">10 mld €</td>
+      <td class="num ">39%</td>
+      <td class="num ">12,4%</td>
+      <td class="num">13.625</td></tr><tr>
+      <td>ABRUZZO</td>
+      <td class="num">3 mld €</td>
+      <td class="num ">35%</td>
+      <td class="num ">31,8%</td>
+      <td class="num">10.917</td></tr><tr>
+      <td>BASILICATA</td>
+      <td class="num">890 mln €</td>
+      <td class="num ">33,7%</td>
+      <td class="num ">23,1%</td>
+      <td class="num">3471</td></tr><tr>
+      <td>MOLISE</td>
+      <td class="num">753 mln €</td>
+      <td class="num ">25,2%</td>
+      <td class="num ">18,9%</td>
+      <td class="num">3825</td></tr></tbody>
+</table></div>
+
+<h2>Le aziende con più appalti senza gara</h2>
+<p class="muted small">Solo enti con almeno 20 mln € e 100 contratti nel periodo, per quota sul numero di contratti.
+I nomi collegati hanno una scheda.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Azienda</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Valore appalti</th></tr></thead>
+  <tbody><tr><td>ISTITUTO NAZIONALE DI ASTROFISICA<div class="small muted">CENTRALE</div></td>
+        <td class="num neg">90,2%</td>
+        <td class="num">24,5%</td>
+        <td class="num">177 mln €</td></tr><tr><td>AZIENDA SANITARIA PROVINCIALE DI COSENZA<div class="small muted">CALABRIA</div></td>
+        <td class="num neg">89,9%</td>
+        <td class="num">82,6%</td>
+        <td class="num">3 mld €</td></tr><tr><td><a href="struttura/180202-azienda-sanitaria-provinciale-crotone.html">AZIENDA SANITARIA PROVINCIALE DI CROTONE</a><div class="small muted">CALABRIA</div></td>
+        <td class="num neg">89,9%</td>
+        <td class="num">82,8%</td>
+        <td class="num">197 mln €</td></tr><tr><td>ISTITUTO NAZIONALE DI FISICA NUCLEARE (I.N.F.N.)<div class="small muted">CENTRALE</div></td>
+        <td class="num neg">89,9%</td>
+        <td class="num">77,9%</td>
+        <td class="num">811 mln €</td></tr><tr><td><a href="struttura/180204-azienda-sanitaria-provinciale-di-vibo-valentia.html">AZIENDA SANITARIA PROVINCIALE DI VIBO VALENTIA</a><div class="small muted">CALABRIA</div></td>
+        <td class="num neg">89,8%</td>
+        <td class="num">64%</td>
+        <td class="num">143 mln €</td></tr><tr><td><a href="struttura/180205-azienda-sanitaria-provinciale-di-reggio-calabria.html">AZIENDA SANITARIA PROVINCIALE DI REGGIO CALABRIA</a><div class="small muted">CALABRIA</div></td>
+        <td class="num neg">87,4%</td>
+        <td class="num">72,6%</td>
+        <td class="num">390 mln €</td></tr><tr><td>AZIENDA SOCIO SANITARIA LOCALE N. 3 DI NUORO<div class="small muted">NON CLASSIFICATO</div></td>
+        <td class="num neg">86,5%</td>
+        <td class="num">55,1%</td>
+        <td class="num">98 mln €</td></tr><tr><td>AZIENDA SOCIO SANITARIA LOCALE N. 6 DEL MEDIO CAMPIDANO<div class="small muted">NON CLASSIFICATO</div></td>
+        <td class="num neg">85,2%</td>
+        <td class="num">64,9%</td>
+        <td class="num">35 mln €</td></tr><tr><td>AZIENDA SANITARIA TERRITORIALE DI FERMO<div class="small muted">NON CLASSIFICATO</div></td>
+        <td class="num neg">83,9%</td>
+        <td class="num">45,8%</td>
+        <td class="num">267 mln €</td></tr><tr><td>ISTITUTO NAZIONALE DI GEOFISICA E VULCANOLOGIA<div class="small muted">CENTRALE</div></td>
+        <td class="num neg">83,6%</td>
+        <td class="num">38,5%</td>
+        <td class="num">61 mln €</td></tr><tr><td><a href="struttura/180203-azienda-sanitaria-provinciale-di-catanzaro.html">AZIENDA SANITARIA PROVINCIALE DI CATANZARO</a><div class="small muted">CALABRIA</div></td>
+        <td class="num neg">82%</td>
+        <td class="num">84,2%</td>
+        <td class="num">2 mld €</td></tr><tr><td>IRCCS OSPEDALE POLICLINICO SAN MARTINO<div class="small muted">LIGURIA</div></td>
+        <td class="num neg">81,5%</td>
+        <td class="num">71%</td>
+        <td class="num">492 mln €</td></tr><tr><td><a href="struttura/020101-azienda-usl-della-valle-d-aosta.html">UNITA SANITARIA LOCALE REGIONE VALLE D AOSTA</a><div class="small muted">VALLE D&#39;AOSTA</div></td>
+        <td class="num neg">80,9%</td>
+        <td class="num">46,4%</td>
+        <td class="num">235 mln €</td></tr><tr><td><a href="struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a><div class="small muted">PIEMONTE</div></td>
+        <td class="num neg">79,8%</td>
+        <td class="num">53,1%</td>
+        <td class="num">421 mln €</td></tr><tr><td>AZIENDA USL DI PARMA<div class="small muted">EMILIA ROMAGNA</div></td>
+        <td class="num neg">79,1%</td>
+        <td class="num">33,2%</td>
+        <td class="num">140 mln €</td></tr><tr><td>AZIENDA SANITARIA UNIVERSITARIA FRIULI CENTRALE<div class="small muted">NON CLASSIFICATO</div></td>
+        <td class="num neg">79%</td>
+        <td class="num">38,5%</td>
+        <td class="num">983 mln €</td></tr><tr><td>ENTE OSPEDALIERO OSPEDALI GALLIERA<div class="small muted">LIGURIA</div></td>
+        <td class="num neg">78,7%</td>
+        <td class="num">53,1%</td>
+        <td class="num">79 mln €</td></tr><tr><td>AZIENDA SOCIO SANITARIA LOCALE N. 4 DELL&#39;OGLIASTRA<div class="small muted">NON CLASSIFICATO</div></td>
+        <td class="num neg">78,7%</td>
+        <td class="num">56%</td>
+        <td class="num">29 mln €</td></tr><tr><td>AZIENDA OSPEDALIERO-UNIVERSITARIA DI PARMA<div class="small muted">EMILIA ROMAGNA</div></td>
+        <td class="num neg">78,6%</td>
+        <td class="num">38%</td>
+        <td class="num">381 mln €</td></tr><tr><td>AZIENDA SOCIO SANITARIA LOCALE N. 2 DELLA GALLURA<div class="small muted">NON CLASSIFICATO</div></td>
+        <td class="num neg">78,5%</td>
+        <td class="num">38,3%</td>
+        <td class="num">96 mln €</td></tr></tbody>
+</table></div>
+
+<p class="small muted" style="margin-top:18px">Collegate ai bilanci 113 aziende su 342
+tramite corrispondenza esatta di denominazione e regione; per le altre i dati ANAC restano nel confronto regionale.
+Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a>.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>:
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
+  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
+  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
+  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+</div></footer>
+</body>
+</html>

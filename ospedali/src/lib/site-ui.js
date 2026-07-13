@@ -90,6 +90,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 const NAV = [
   ['index.html', 'Home'],
   ['inchiesta.html', 'Inchiesta'],
+  ['appalti.html', 'Appalti'],
   ['classifiche.html', 'Classifiche'],
   ['strutture.html', 'Strutture'],
   ['segnalazioni.html', 'Segnalazioni'],

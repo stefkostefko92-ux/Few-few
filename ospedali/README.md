@@ -20,6 +20,7 @@ Ospedaliere, AOU, IRCCS), **сигнализира подозрителни сч
 |---|---|---|
 | [BDAP Open Data](https://bdap-opendata.rgs.mef.gov.it) (RGS/MEF) | Модели **CE** (отчет за приходите и разходите) и **SP** (баланс) на всички структури от SSN, по години (2012–днес) | CKAN API + CSV dump |
 | [dati.salute.gov.it](https://www.dati.salute.gov.it) (Мин. на здравеопазването) | Анаграфика на болничните структури: легла, персонал, лекари, приеми, леглодни (модел HSP) | CSV |
+| [ANAC](https://dati.anticorruzione.it/opendata) (Antикорупция) | Обществени поръчки (CIG > 40k€): възложител, предмет, сума, **вид процедура** (affidamento diretto…), CPV | месечни CSV в ZIP |
 | [OpenBDAP](https://openbdap.rgs.mef.gov.it/it/SSN/Analizza) | Референтен визуален портал за същите данни | — |
 
 ## Употреба
@@ -28,7 +29,8 @@ Ospedaliere, AOU, IRCCS), **сигнализира подозрителни сч
 npm run fetch:catalogo    # каталог на CE/SP/LA датасетите от CKAN (кешира се инкрементално)
 npm run fetch:anagrafica  # анаграфика на болниците от dati.salute.gov.it
 npm run fetch:finanze     # годишните CE/SP CSV файлове за годините от config.json
-npm run fetch:all         # трите горни
+npm run fetch:appalti     # ANAC обществени поръчки за anacAnni (месечни ZIP, кешират се)
+npm run fetch:all         # четирите горни
 
 npm run report            # reports/ — Markdown отчет за всяка структура + index + CSV
 npm run analyze           # data/segnalazioni.json — счетоводни сигнали
@@ -82,6 +84,22 @@ npm run all               # fetch:all + build (всичко наведнъж)
    robust z-score) и вдига флагове за отклонения и годишни експлозии. Плюс класации.
 
 Отклонение ≠ незаконност — това насочва проверката (Corte dei conti / ANAC).
+
+## Обществени поръчки „Appalti" (ANAC)
+
+`data/appalti.json` (от `fetch:appalti`) агрегира поръчките на здравните възложители:
+
+- **По регион** — 100% надеждно (ключ: sezione_regionale), за сравнение между регионите.
+- **По възложител (CF)** — свързва се с болниците само при **точно и еднозначно**
+  съвпадение на име+регион (`src/lib/match.js`), за да няма грешно приписване.
+
+Ключов сигнал: **делът на поръчките без реална конкуренция** — „affidamento diretto"
++ „procedura negoziata senza pubblicazione", извън рамковите споразумения (които са
+предварително състезани). Води се **делът по брой договори** (устойчив), а стойността
+е допълнителна. Всеки CIG се брои веднъж (дедупликация); записи с абсурдна стойност
+(>1 млрд €, грешки в източника) се изхвърлят. Класация на регионите и възложителите;
+per-болница разбивка по вид процедура и топ договори. Следваща стъпка: свързване с
+изпълнителите (aggiudicatari) за повтарящи се победители и търгове с един кандидат.
 
 ## Бележки по данните
 

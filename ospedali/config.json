@@ -1,4 +1,5 @@
 {
   "anni": { "da": 2012, "a": 2024 },
-  "includiTrimestrali": false
+  "includiTrimestrali": false,
+  "anacAnni": [2023, 2024]
 }

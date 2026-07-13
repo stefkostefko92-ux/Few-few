@@ -13,10 +13,12 @@ import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS, CE_FORE
 import { readJson } from './lib/http.js';
 import { SEGNALAZIONI_FILE, DATA_DIR } from './lib/paths.js';
 import { join as pjoin } from 'node:path';
+import { matchAutoritaEnti } from './lib/match.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, slugify, esc } from './lib/format.js';
 import { page, kpi, badge, lineChart, barChart, hbars } from './lib/site-ui.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
+const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
 
 const REGOLE_LABEL = {
   disavanzo_grave: 'Disavanzo grave',
@@ -49,6 +51,24 @@ async function main() {
   });
   const forByCod = new Map(forense.enti.map((e) => [e.codice, e]));
 
+  // ANAC поръчки (по избор — ако липсват, разделите просто не се показват)
+  const appalti = await readJson(APPALTI_FILE).catch(() => null);
+  let appByCod = new Map();
+  let appMatch = null;
+  if (appalti) {
+    const { byCf, byCodice } = matchAutoritaEnti(
+      enti.map((e) => ({ codice: e.codice, denominazione: e.denominazione, regione: e.regione })),
+      appalti.autorita.map((a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
+    );
+    const autByCf = new Map(appalti.autorita.map((a) => [a.cf, a]));
+    for (const [codice, cf] of byCodice) appByCod.set(codice, autByCf.get(cf));
+    appMatch = { abbinate: byCodice.size, totali: enti.length };
+    // национална медиана на дела „senza gara“ по БРОЙ сред свързаните болници (за флаг)
+    const quote = [...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null).sort((a, b) => a - b);
+    appMatch.medianaSenzaGaraNum = quote.length ? quote[Math.floor(quote.length / 2)] : null;
+    void byCf;
+  }
+
   await rm(SITE_DIR, { recursive: true, force: true });
   await mkdir(join(SITE_DIR, 'struttura'), { recursive: true });
 
@@ -76,20 +96,21 @@ async function main() {
   }
 
   await writeFile(join(SITE_DIR, 'index.html'), renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }));
-  await writeFile(join(SITE_DIR, 'inchiesta.html'), renderInchiesta({ forense, href }));
+  await writeFile(join(SITE_DIR, 'inchiesta.html'), renderInchiesta({ forense, appalti, appMatch, href }));
   await writeFile(join(SITE_DIR, 'classifiche.html'), renderClassifiche({ forense, href }));
+  if (appalti) await writeFile(join(SITE_DIR, 'appalti.html'), renderAppalti({ appalti, appByCod, appMatch, enti, href }));
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
   await writeFile(join(SITE_DIR, 'segnalazioni.html'), renderSegnalazioni({ segn, href }));
-  await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, ultimoAnnoCe }));
+  await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
 
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
     await writeFile(
       join(SITE_DIR, 'struttura', `${fileCod}.html`),
-      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), ultimoAnnoCe })
+      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), appMatch, ultimoAnnoCe })
     );
   }
-  console.log(`Готово: ${enti.length + 6} страници → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + (appalti ? 7 : 6)} страници → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -298,7 +319,7 @@ può avere spiegazioni legittime (fusioni, finanziamenti straordinari, cambi di 
 }
 
 // ---------- METODOLOGIA ----------
-function renderMetodologia({ segn, forense, ultimoAnnoCe }) {
+function renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }) {
   const regole = [
     ['disavanzo_grave', 'Disavanzo grave', 'Alta', `Risultato d’esercizio inferiore al −${percentualeIt(segn.soglie.disavanzoGrave)} del valore della produzione nell’ultimo anno.`],
     ['patrimonio_netto_negativo', 'Patrimonio netto negativo', 'Alta', 'Patrimonio netto negativo nell’ultimo stato patrimoniale: potenziale squilibrio patrimoniale.'],
@@ -350,8 +371,21 @@ servizi non sanitari (pulizia, mensa, riscaldamento, rifiuti), manutenzioni este
   <li>Scatta un segnale se la voce supera il 90° percentile con z&gt;2 <em>e</em> l’importo è materiale (≥ 1 mln €), o se raddoppia da un anno all’altro (+60% e &gt; 2 mln €).</li>
   <li>Il «rosso» di sistema è ricostruito sommando il risultato delle aziende e quello della Gestione Sanitaria Accentrata regionale (GSA, codice 000), che copre gran parte dei disavanzi.</li>
 </ul>
-<p class="small muted">Prossimo passo possibile: incrocio con gli appalti pubblici (ANAC) per risalire ai singoli
-contratti, ai fornitori e alle gare a offerta unica.</p>
+${appalti ? `<h3>Gli appalti (ANAC)</h3>
+<p>Incrociamo i bilanci con la <strong>Banca Dati Nazionale dei Contratti Pubblici</strong> (ANAC), gare sopra
+40.000 € pubblicate negli anni ${appalti.anni.join('–')}. Isoliamo gli enti sanitari e calcoliamo la
+<strong>quota di valore affidata senza gara</strong> (affidamento diretto + negoziata senza pubblicazione),
+escludendo gli acquisti in adesione ad accordi quadro/convenzioni, già messi a gara a monte.</p>
+<ul class="small">
+  <li>Confronto tra regioni sempre disponibile (chiave: sezione regionale ANAC).</li>
+  <li>Collegamento al singolo bilancio solo con corrispondenza <strong>esatta e non ambigua</strong> di
+  denominazione e regione: ${appMatch ? `${appMatch.abbinate} aziende su ${appMatch.totali}` : 'una parte'} abbinate,
+  per evitare attribuzioni errate. Per le altre restano i dati regionali.</li>
+  <li>Un’alta quota senza gara non prova un illecito: sotto soglia è legittima. Segnala dove guardare.</li>
+</ul>
+<p class="small muted">Prossimo passo: incrocio con gli aggiudicatari (fornitori) per individuare vincitori
+ricorrenti e gare a offerta unica.</p>` : `<p class="small muted">Prossimo passo possibile: incrocio con gli appalti
+pubblici (ANAC) per risalire ai singoli contratti, ai fornitori e alle gare a offerta unica.</p>`}
 
 <h2>Limiti</h2>
 <ul class="small">
@@ -371,7 +405,7 @@ contratti, ai fornitori e alle gare a offerta unica.</p>
 }
 
 // ---------- DETTAGLIO STRUTTURA ----------
-function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, ultimoAnnoCe }) {
+function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, appMatch, ultimoAnnoCe }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
   const val = (k) => anni.map((a) => [a, ente.serie.get(a)[k]]).filter(([, v]) => v != null);
@@ -513,6 +547,7 @@ ${segBlock}
 </div>
 
 ${soldiBlock}
+${appaltiBlock(app, appMatch)}
 ${opTable}
 ${finTable}
 ${ceBlock}
@@ -532,8 +567,143 @@ ${spBlock}
 
 const FOR_LABEL = Object.fromEntries(CE_FORENSICS.map((c) => [c.key, c.label]));
 
+const PROC_LABEL = {
+  competitiva: 'Procedura competitiva (gara aperta/ristretta)',
+  quadro: 'Accordo quadro / convenzione (pre-competuto)',
+  diretto: 'Affidamento diretto (senza gara)',
+  negoziataSenza: 'Negoziata senza pubblicazione',
+  negoziata: 'Negoziata con bando',
+  altro: 'Altro / non determinato',
+};
+const PROC_ORDER = ['diretto', 'negoziataSenza', 'quadro', 'competitiva', 'negoziata', 'altro'];
+
+// ---------- APPALTI (ANAC) ----------
+function renderAppalti({ appalti, appByCod, appMatch, enti, href }) {
+  const nz = appalti.nazionale;
+  const codByCf = new Map();
+  for (const e of enti) {
+    const a = appByCod.get(e.codice);
+    if (a) codByCf.set(a.cf, e.codice);
+  }
+  const anniTxt = appalti.anni.join('–');
+
+  // Регионална таблица, подредена по дял „senza gara“
+  // праг: изключваме региони/секции с малко данни, за да не подвеждат класацията
+  const SKIP_REG = new Set(['ND', 'CENTRALE', 'NON CLASSIFICATO']);
+  const reg = appalti.regionale
+    .filter((r) => r.n >= 500 && !SKIP_REG.has(r.reg))
+    .sort((a, b) => (b.quotaSenzaGaraNum || 0) - (a.quotaSenzaGaraNum || 0));
+  const regRows = reg
+    .map(
+      (r) => `<tr>
+      <td>${esc(r.reg)}</td>
+      <td class="num">${euroCompact(r.importo)}</td>
+      <td class="num ${(r.quotaSenzaGaraNum || 0) > 0.5 ? 'neg' : ''}">${percentualeIt(r.quotaSenzaGaraNum)}</td>
+      <td class="num ${(r.quotaSenzaGara || 0) > 0.5 ? 'neg' : ''}">${percentualeIt(r.quotaSenzaGara)}</td>
+      <td class="num">${numeroIt(r.n)}</td></tr>`
+    )
+    .join('');
+
+  // Топ възложители по дял „senza gara“ (материални)
+  const topAut = appalti.autorita
+    .filter((a) => a.importo >= 20_000_000 && a.n >= 100 && a.quotaSenzaGaraNum != null)
+    .sort((a, b) => b.quotaSenzaGaraNum - a.quotaSenzaGaraNum)
+    .slice(0, 20);
+  const autRows = topAut
+    .map((a) => {
+      const cod = codByCf.get(a.cf);
+      const nome = cod ? `<a href="${href(cod)}">${esc(a.den)}</a>` : esc(a.den);
+      return `<tr><td>${nome}<div class="small muted">${esc(a.reg)}</div></td>
+        <td class="num neg">${percentualeIt(a.quotaSenzaGaraNum)}</td>
+        <td class="num">${percentualeIt(a.quotaSenzaGara)}</td>
+        <td class="num">${euroCompact(a.importo)}</td></tr>`;
+    })
+    .join('');
+
+  const body = `
+<h1>Appalti pubblici della sanità</h1>
+<p class="lead">Chi compra, come e con quanta concorrenza. Dai dati ANAC (Banca Dati Nazionale dei Contratti
+Pubblici, gare sopra 40.000 € pubblicate negli anni ${anniTxt}), isoliamo gli appalti delle aziende sanitarie e
+misuriamo la <strong>quota di spesa affidata senza gara</strong> — affidamenti diretti e negoziate senza bando —
+il primo indicatore di opacità che guardano ANAC e Corte dei conti.</p>
+
+<div class="grid kpis">
+  ${kpi(`Contratti senza gara (${anniTxt})`, percentualeIt(nz.quotaSenzaGaraNum), (nz.quotaSenzaGaraNum || 0) > 0.4 ? 'neg' : '')}
+  ${kpi('Senza gara sul valore', percentualeIt(nz.quotaSenzaGara), (nz.quotaSenzaGara || 0) > 0.4 ? 'neg' : '')}
+  ${kpi('Valore appalti sanità', euroCompact(nz.importo))}
+  ${kpi('Contratti (lotti)', numeroIt(nz.n))}
+</div>
+
+<div class="note" style="margin-top:18px"><strong>Cosa significa «senza gara».</strong> L’affidamento diretto e la
+procedura negoziata senza pubblicazione assegnano il contratto <em>senza confronto competitivo</em>. Sotto certe soglie
+è legittimo e più rapido, ma un ricorso sistematico è la spia classica di inefficienza o favoritismi. Gli acquisti in
+adesione ad accordi quadro/convenzioni (es. Consip/centrali regionali) sono invece già stati messi a gara e non contano
+come «senza gara».</p></div>
+
+<h2>Le regioni a confronto</h2>
+<p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
+«sul valore» sugli importi.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Regione</th><th class="num">Valore appalti</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Contratti</th></tr></thead>
+  <tbody>${regRows}</tbody>
+</table></div>
+
+<h2>Le aziende con più appalti senza gara</h2>
+<p class="muted small">Solo enti con almeno 20 mln € e 100 contratti nel periodo, per quota sul numero di contratti.
+I nomi collegati hanno una scheda.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Azienda</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Valore appalti</th></tr></thead>
+  <tbody>${autRows}</tbody>
+</table></div>
+
+<p class="small muted" style="margin-top:18px">Collegate ai bilanci ${appMatch ? `${appMatch.abbinate} aziende su ${appMatch.totali}` : ''}
+tramite corrispondenza esatta di denominazione e regione; per le altre i dati ANAC restano nel confronto regionale.
+Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a>.</p>
+`;
+  return page({
+    title: 'Appalti pubblici della sanità — Ospedali Trasparenti',
+    description: 'Gli appalti delle aziende sanitarie italiane dai dati ANAC: quota di spesa senza gara, affidamenti diretti, confronto tra regioni.',
+    active: 'appalti.html',
+    body,
+  });
+}
+
+/** Блок за поръчките в детайлната страница (при свързан възложител). */
+function appaltiBlock(app, appMatch) {
+  if (!app) return '';
+  const items = PROC_ORDER.map((k) => app.cat[k] && app.cat[k].importo > 0 && ({
+    label: PROC_LABEL[k],
+    valore: app.cat[k].importo,
+    quota: app.importo > 0 ? app.cat[k].importo / app.importo : 0,
+    flag: k === 'diretto' || k === 'negoziataSenza',
+  })).filter(Boolean);
+  const sgNum = app.quotaSenzaGaraNum;
+  const sgVal = app.quotaSenzaGara;
+  const med = appMatch?.medianaSenzaGaraNum;
+  const flagSg = sgNum != null && med != null && sgNum > Math.max(0.65, med * 1.4);
+  const top = (app.top || [])
+    .filter((c) => c.importo > 0)
+    .slice(0, 8)
+    .map(
+      (c) => `<tr><td>${esc(c.oggetto || '—')}<div class="small muted">${esc(c.cpv || '')}</div></td>
+      <td>${esc(c.procedura)}</td><td class="num">${euroCompact(c.importo)}</td></tr>`
+    )
+    .join('');
+  return `<h2>Appalti pubblici <span class="small muted">(ANAC, ${app.reg})</span></h2>
+    <div class="grid kpis">
+      ${kpi('Contratti senza gara', percentualeIt(sgNum), flagSg ? 'neg' : '')}
+      ${kpi('Senza gara sul valore', percentualeIt(sgVal), (sgVal || 0) > 0.5 ? 'neg' : '')}
+      ${kpi('Valore appalti', euroCompact(app.importo))}
+      ${kpi('Contratti (lotti)', numeroIt(app.n))}
+    </div>
+    ${flagSg ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Ricorso elevato agli affidamenti senza gara</span></div><div class="d">Il ${percentualeIt(sgNum)} dei contratti (${percentualeIt(sgVal)} del valore) è affidato senza confronto competitivo; mediana tra le aziende ${percentualeIt(med)}.</div></div>` : ''}
+    <div class="card" style="margin-top:12px">${hbars(items, { fmt: euroCompact, maxLabel: 'Appalti per tipo di procedura' })}</div>
+    ${top ? `<h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th>Oggetto</th><th>Procedura</th><th class="num">Importo</th></tr></thead><tbody>${top}</tbody></table></div>` : ''}
+    <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a>, gare > 40.000 € pubblicate negli anni considerati.</p>`;
+}
+
 // ---------- INCHIESTA ----------
-function renderInchiesta({ forense, href }) {
+function renderInchiesta({ forense, appalti, appMatch, href }) {
   const anni = Object.keys(forense.sistema.perAnno).map(Number).sort((a, b) => a - b);
   const S = (k) => anni.map((a) => [a, forense.sistema.perAnno[a][k]]);
   const chart = lineChart(
@@ -602,6 +772,13 @@ si discostano nettamente dalle altre.</p>
 <p class="muted small">Ordinate per numero di segnali «follow the money». Ogni segnale confronta una voce con la mediana
 nazionale. <a href="classifiche.html">Vedi le classifiche per categoria →</a></p>
 ${flagCards}
+
+${appalti ? `<h2>Segui gli appalti</h2>
+<p class="muted small">Abbiamo incrociato i bilanci con la banca dati ANAC degli appalti pubblici (${appalti.anni.join('–')}).
+A livello nazionale <strong>${percentualeIt(appalti.nazionale.quotaSenzaGaraNum)} dei contratti</strong> sanitari
+(il ${percentualeIt(appalti.nazionale.quotaSenzaGara)} del valore) è affidato <strong>senza gara</strong>
+— affidamento diretto o negoziata senza bando.
+→ <a href="appalti.html">Il confronto tra regioni e le aziende con più appalti senza gara</a></p>` : ''}
 
 <div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
 Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.
