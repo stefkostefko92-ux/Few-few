@@ -66,6 +66,9 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
   border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
 .controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+.controls button:hover{filter:brightness(1.08)}
 .muted{color:var(--muted)}
 .small{font-size:13.5px}
 .note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
@@ -98,6 +101,7 @@ const NAV = [
   ['classifiche.html', 'Classifiche'],
   ['strutture.html', 'Strutture'],
   ['segnalazioni.html', 'Segnalazioni'],
+  ['dati.html', 'Dati'],
   ['metodologia.html', 'Metodologia'],
 ];
 

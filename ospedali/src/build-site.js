@@ -7,7 +7,7 @@
 // Нула зависимости, нула външни ресурси.
 
 import { join } from 'node:path';
-import { mkdir, writeFile, rm, readFile } from 'node:fs/promises';
+import { mkdir, writeFile, rm, readFile, stat, copyFile } from 'node:fs/promises';
 import { SITE_DIR } from './lib/paths.js';
 import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from './lib/dataset.js';
 import { readJson } from './lib/http.js';
@@ -210,7 +210,38 @@ async function main() {
     paginaForn++;
   }
 
-  console.log(`Готово: ${enti.length + (appalti ? 10 : 9) + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
+  // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
+  // размерите им, за да ги публикува за повторно ползване (open data).
+  await mkdir(join(SITE_DIR, 'dati'), { recursive: true });
+  const DATASET_DEFS = [
+    ['segnalazioni.json', 'JSON', 'Segnalazioni contabili automatiche', 'Anomalie sui bilanci CE/SP con regola, gravità e numeri citati.', 'BDAP — RGS/MEF (IODL 2.0)'],
+    ['forensics.json', 'JSON', 'Inchiesta: deficit di sistema e anomalie di spesa', 'Ricostruzione del disavanzo (aziende + GSA) e anomalie di costo con benchmark tra pari.', 'BDAP — RGS/MEF (IODL 2.0)'],
+    ['appalti.json', 'JSON', 'Appalti ANAC aggregati', 'Aggregati per regione e per ente: procedure, quota senza gara, frazionamento, proroghe.', 'ANAC (CC BY 4.0)'],
+    ['aggiudicatari.json', 'JSON', 'Fornitori, concentrazione, offerente unico', 'Chi incassa: fornitori per ente, concentrazione, gare a un solo partecipante (dato parziale).', 'ANAC (CC BY 4.0)'],
+    ['anagrafica.json', 'JSON', 'Anagrafe delle strutture ospedaliere', 'Posti letto, personale, ricoveri per struttura (modello HSP).', 'Ministero della Salute'],
+    ['contratti-indice.json', 'JSON', 'Indice dei contratti per struttura', 'Numero e valore dei contratti collegati a ciascuna azienda sanitaria.', 'ANAC (CC BY 4.0)'],
+    ['validazione.json', 'JSON', 'Controlli di consistenza e provenienza', 'Identità contabili verificate, copertura e impronta SHA-256 delle fonti.', 'Elaborazione propria'],
+  ];
+  const datasets = [];
+  for (const [file, fmt, titolo, descr, licenza] of DATASET_DEFS) {
+    const src = pjoin(DATA_DIR, file);
+    if (!(await stat(src).catch(() => null))) continue;
+    await copyFile(src, join(SITE_DIR, 'dati', file));
+    const { size } = await stat(join(SITE_DIR, 'dati', file));
+    datasets.push({ href: `dati/${file}`, fmt, titolo, descr, licenza, bytes: size });
+  }
+  // Вече обслужвани от сайта големи изгледи (не се копират наново)
+  if (paginaCerca) {
+    const { size } = await stat(join(SITE_DIR, 'contratti-tutti.json'));
+    datasets.push({ href: 'contratti-tutti.json', fmt: 'JSON', titolo: 'Registro completo dei contratti', descr: `Tutti i ${numeroIt(tuttiContratti.length)} contratti collegati, in un unico file (usato dal motore di ricerca).`, licenza: 'ANAC (CC BY 4.0)', bytes: size });
+  }
+  if (conContratti) {
+    datasets.push({ href: 'contratti/', fmt: 'CSV', titolo: 'Contratti per struttura (CSV)', descr: `Un file CSV per ciascuna delle ${numeroIt(conContratti)} strutture collegate: contratti/&lt;codice&gt;.csv.`, licenza: 'ANAC (CC BY 4.0)', bytes: null });
+  }
+  datasets.sort((a, b) => (b.bytes || 0) - (a.bytes || 0));
+  await writeFile(join(SITE_DIR, 'dati.html'), renderDati({ datasets, validaz, generatoIl: (validaz && validaz.generatoIl) || new Date().toISOString() }));
+
+  console.log(`Готово: ${enti.length + (appalti ? 12 : 11) + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -754,6 +785,85 @@ rieseguibile con <code>npm run all</code>.</p>
     title: 'Dati e verifiche — Ospedali Trasparenti',
     description: 'Controlli di consistenza contabile, copertura dei dati e impronta delle fonti: numeri verificabili e riproducibili.',
     active: 'verifiche.html',
+    body,
+  });
+}
+
+// ---------- DATI APERTI (hub) ----------
+function formatBytes(b) {
+  if (b == null) return '—';
+  if (b >= 1024 * 1024) return `${numeroIt(Math.round((b / (1024 * 1024)) * 10) / 10)} MB`;
+  if (b >= 1024) return `${numeroIt(Math.round(b / 1024))} KB`;
+  return `${numeroIt(b)} B`;
+}
+function renderDati({ datasets, generatoIl }) {
+  const rows = datasets
+    .map(
+      (d) => `<tr>
+      <td><a href="${esc(d.href)}"${d.href.endsWith('/') ? '' : ' download'}>${d.titolo}</a>
+        <div class="small muted">${d.descr}</div></td>
+      <td>${esc(d.fmt)}</td>
+      <td class="num">${formatBytes(d.bytes)}</td>
+      <td class="small">${esc(d.licenza)}</td>
+    </tr>`
+    )
+    .join('');
+  const body = `
+<h1>Dati aperti</h1>
+<p class="lead">Tutto ciò che vedi sul sito nasce da <strong>open data ufficiali</strong> ed è <strong>riutilizzabile</strong>.
+Qui trovi i dataset elaborati (formato macchina) e le fonti primarie, con le rispettive licenze. Il codice del pipeline
+è aperto e i risultati sono riproducibili con <code>npm&nbsp;run&nbsp;all</code>.</p>
+
+<h2>Dataset scaricabili</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Dataset</th><th scope="col">Formato</th><th class="num" scope="col">Dimensione</th><th scope="col">Fonte / licenza</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<p class="small muted">I dataset sono un’<em>elaborazione propria</em> (aggregazione, normalizzazione, indicatori) su dati
+pubblici; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti. Riutilizzo consentito con
+citazione della fonte originale e del progetto.</p>
+
+<h2>Verifica un singolo appalto (CIG)</h2>
+<p class="muted small">Il <strong>CIG</strong> (Codice Identificativo di Gara) è la chiave di verifica: ogni contratto
+sul sito lo riporta. Incollalo qui per controllarlo direttamente sui portali ANAC.</p>
+<div class="controls">
+  <input type="search" id="cig" placeholder="Es. 9314240201" aria-label="CIG da verificare" maxlength="10" style="flex:1;text-transform:uppercase">
+  <button type="button" id="cigBtn" class="btn">Verifica</button>
+</div>
+<div id="cigOut" class="note" hidden style="margin-top:12px"></div>
+<script>
+(function(){
+  var inp=document.getElementById('cig'),btn=document.getElementById('cigBtn'),out=document.getElementById('cigOut');
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function verifica(){
+    var v=(inp.value||'').trim().toUpperCase();
+    out.hidden=false;
+    if(!/^[0-9A-Z]{10}$/.test(v)){out.innerHTML='Il CIG dovrebbe avere 10 caratteri alfanumerici. Controlla il codice.';return;}
+    out.innerHTML='CIG <strong>'+esc(v)+'</strong> — cercalo sui portali ufficiali:<br>'+
+      '<a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> · '+
+      '<a href="https://www.serviziocontrattipubblici.it/" target="_blank" rel="noopener">Servizio Contratti Pubblici (MIT)</a>';
+  }
+  btn.addEventListener('click',verifica);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')verifica();});
+})();
+</script>
+
+<h2>Fonti primarie</h2>
+<ul>
+  <li><a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza" target="_blank" rel="noopener">BDAP — RGS/MEF</a>:
+    modelli <strong>CE</strong> (conto economico) e <strong>SP</strong> (stato patrimoniale) del SSN, per anno. Licenza IODL 2.0.</li>
+  <li><a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">ANAC</a>:
+    Banca Dati Nazionale dei Contratti Pubblici — CIG, procedure, aggiudicatari, partecipanti. Licenza CC BY 4.0.</li>
+  <li><a href="https://www.dati.salute.gov.it/" target="_blank" rel="noopener">Ministero della Salute</a>:
+    anagrafe delle strutture di ricovero (modello HSP).</li>
+</ul>
+<p class="small muted">Aggiornato il ${esc(String(generatoIl).slice(0, 10))}. Per i controlli di consistenza e le impronte
+SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
+`;
+  return page({
+    title: 'Dati aperti — Ospedali Trasparenti',
+    description: 'Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.',
+    active: 'dati.html',
     body,
   });
 }
