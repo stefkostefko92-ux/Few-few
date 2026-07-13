@@ -68,9 +68,11 @@ nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decora
 nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
 @media(max-width:900px){
   header.site{position:static;border-top-width:3px}
-  header.site .wrap{flex-direction:column;align-items:stretch;gap:0;padding-top:10px}
+  /* nowrap е ключово: при многолинеен column flex редът се разпъва до
+     най-широкото дете (934px) и nav-скролът не се задейства → хор. scroll */
+  header.site .wrap{flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;padding-top:10px}
   .brand{padding-bottom:8px}
-  nav.main{margin-left:0;flex-wrap:nowrap;overflow-x:auto;gap:2px;
+  nav.main{margin-left:0;flex-wrap:nowrap;overflow-x:auto;gap:2px;max-width:100%;min-width:0;
     border-top:1px solid var(--line);padding:7px 0;
     scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
   nav.main::-webkit-scrollbar{display:none}
