@@ -64,6 +64,21 @@ function patronymicToFatherGiven(patronymic) {
   return p.replace(/ъ/g, "");
 }
 
+// Много чести фамилни/собствени корени — съвпадение по тях е почти безсмислено.
+const COMMON_SURNAME = new Set([
+  "георгиев", "иванов", "димитров", "петров", "николов", "тодоров", "христов",
+  "стоянов", "попов", "василев", "ангелов", "маринов", "колев", "стефанов",
+  "костов", "атанасов", "александров", "йорданов", "павлов", "петков",
+]);
+const COMMON_GIVEN = new Set([
+  "георги", "иван", "димитър", "петър", "никола", "николай", "тодор", "христо",
+  "стоян", "александър", "васил", "ангел", "стефан", "мартин", "кирил", "антон",
+]);
+
+function isCommon(family, given) {
+  return COMMON_SURNAME.has(rootSurname(family)) && COMMON_GIVEN.has(givenRoot(given));
+}
+
 function parseName(full) {
   const parts = norm(full).split(" ").filter(Boolean);
   if (parts.length >= 3) {
@@ -90,19 +105,36 @@ function compare(officer, owner) {
     });
   }
 
-  // 2) Бащино ↔ собствено (възможна връзка родител–дете).
-  if (a.patronymic && givenRoot(b.given) && patronymicToFatherGiven(a.patronymic) === givenRoot(b.given)) {
+  // 2) Бащино ↔ собствено + ОБЩА ФАМИЛИЯ (по-надежден сигнал родител–дете).
+  // Детето обикновено носи фамилията на бащата, затова искаме и двете условия:
+  // бащиното на детето да сочи собственото на родителя И фамилиите да съвпадат.
+  // Само бащино→собствено без обща фамилия е ненадеждно (общи имена като „Кирил“).
+  const sameFamily = rootSurname(a.family) && rootSurname(a.family) === rootSurname(b.family);
+  // При много чести имена (Георги Георгиев, Иван Иванов…) дори „родител→дете“ по
+  // име е вероятно съвпадение — понижаваме силата и предупреждаваме изрично.
+  const commonHit = isCommon(a.family, b.given) || isCommon(b.family, a.given);
+  const pcStrength = commonHit ? 1 : 3;
+  const pcWarn = commonHit ? " ВНИМАНИЕ: имената са много чести — по-вероятно съвпадение, отколкото връзка." : "";
+  if (sameFamily && a.patronymic && givenRoot(b.given) && patronymicToFatherGiven(a.patronymic) === givenRoot(b.given)) {
     signals.push({
-      type: "БАЩИНО→СОБСТВЕНО",
-      strength: 3,
-      why: `Бащиното на „${officer.ime}“ съответства на собственото на „${owner.ime}“ — възможно е собственикът да е родител на длъжностното лице.`,
+      type: "РОДИТЕЛ→ДЕТЕ",
+      strength: pcStrength,
+      why: `Бащиното на „${officer.ime}“ сочи собственото на „${owner.ime}“ и фамилиите съвпадат — възможен родител.${pcWarn}`,
     });
   }
-  if (b.patronymic && givenRoot(a.given) && patronymicToFatherGiven(b.patronymic) === givenRoot(a.given)) {
+  if (sameFamily && b.patronymic && givenRoot(a.given) && patronymicToFatherGiven(b.patronymic) === givenRoot(a.given)) {
     signals.push({
-      type: "БАЩИНО→СОБСТВЕНО",
-      strength: 3,
-      why: `Бащиното на „${owner.ime}“ съответства на собственото на „${officer.ime}“ — възможно е длъжностното лице да е родител на собственика.`,
+      type: "РОДИТЕЛ→ДЕТЕ",
+      strength: pcStrength,
+      why: `Бащиното на „${owner.ime}“ сочи собственото на „${officer.ime}“ и фамилиите съвпадат — възможен родител.${pcWarn}`,
+    });
+  }
+  // Слаб сигнал: бащино→собствено БЕЗ обща фамилия (често съвпадение на често име).
+  if (!sameFamily && a.patronymic && givenRoot(b.given) && patronymicToFatherGiven(a.patronymic) === givenRoot(b.given)) {
+    signals.push({
+      type: "БАЩИНО-СЪВПАДЕНИЕ",
+      strength: 1,
+      why: `Бащиното на „${officer.ime}“ съвпада със собственото на „${owner.ime}“, но фамилиите са различни — най-вероятно съвпадение на често име, не връзка.`,
     });
   }
 
