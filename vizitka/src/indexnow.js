@@ -8,7 +8,7 @@ const prod = process.env.NODE_ENV === 'production';
 export const indexNowKey = () => KEY;
 
 if (!KEY && prod) {
-  console.warn('⚠ INDEXNOW_KEY липсва — автоматичното подаване към Bing е изключено.');
+  console.warn('[Vizitka] INDEXNOW_KEY липсва — автоматичното подаване към Bing е изключено.');
 }
 
 // Подава списък URL-и към IndexNow. Fire-and-forget — не блокира отговора и не

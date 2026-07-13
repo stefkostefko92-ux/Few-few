@@ -21,7 +21,9 @@ const SECRET =
     ? (() => {
         throw new Error('PRINT_API_SECRET е задължителна в продукция (печатен handoff).');
       })()
-    : (console.warn('⚠ PRINT_API_SECRET липсва — ползвам временна тайна (само за разработка).'),
+    : (console.warn(
+        '[Vizitka] PRINT_API_SECRET липсва — ползвам временна тайна (само за разработка).'
+      ),
       crypto.randomBytes(32).toString('hex')));
 
 const TTL_SECONDS = 30 * 60; // токенът важи 30 минути
