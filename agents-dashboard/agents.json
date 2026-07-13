@@ -1205,9 +1205,20 @@
           "date": "2026-07-12",
           "event": "v11.6 — учене",
           "detail": "Научи: В сесия файлове може да се променят между моя Read и по-късна проверка; SupremeAdManager/src/… (+1 още)"
+        },
+        {
+          "version": "11.7.0",
+          "date": "2026-07-13",
+          "event": "v11.7 — учене",
+          "detail": "Научи: FALLBACK обектът в agents-dashboard/index.html:140 е JSON-валиден (brace-match + JSON.p… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-13",
+          "type": "learning",
+          "summary": "Научи: „FALLBACK обектът в agents-dashboard/index.html:140 е JSON-валиден (brace-match + JSON.p…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-12",
           "type": "learning",
