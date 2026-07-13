@@ -452,5 +452,12 @@
     "payoutsTitle": "Utbetalningsbegäranden — väntande ({count})",
     "payoutsEmpty": "Inga väntande begäranden.",
     "payoutMarkPaid": "Markera som betald"
+  },
+  "consent": {
+    "title": "Annonscookies.",
+    "body": "Linketto fungerar utan spårningscookies. Endast med ditt samtycke laddar vi annonstaggar från Google och Meta som hjälper oss att mäta vår annonsering. Ett avböjande ändrar ingenting i tjänsten.",
+    "accept": "Acceptera",
+    "decline": "Avböj",
+    "moreInfo": "Läs mer"
   }
 }

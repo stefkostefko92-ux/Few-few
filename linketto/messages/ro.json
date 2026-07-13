@@ -452,5 +452,12 @@
     "payoutsTitle": "Cereri de plată — în așteptare ({count})",
     "payoutsEmpty": "Nicio cerere în așteptare.",
     "payoutMarkPaid": "Marchează ca plătit"
+  },
+  "consent": {
+    "title": "Cookie-uri pentru publicitate.",
+    "body": "Linketto funcționează fără cookie-uri de urmărire. Doar cu acordul tău vom încărca etichetele publicitare Google și Meta care ne ajută să ne măsurăm reclamele. Refuzul nu schimbă nimic în serviciu.",
+    "accept": "Accept",
+    "decline": "Refuz",
+    "moreInfo": "Află mai multe"
   }
 }

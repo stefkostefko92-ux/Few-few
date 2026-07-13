@@ -452,5 +452,12 @@
     "payoutsTitle": "Wnioski o wypłatę — oczekujące ({count})",
     "payoutsEmpty": "Brak oczekujących wniosków.",
     "payoutMarkPaid": "Oznacz jako opłacone"
+  },
+  "consent": {
+    "title": "Pliki cookie do reklam.",
+    "body": "Linketto działa bez śledzących plików cookie. Tagi reklamowe Google i Meta, które pomagają nam mierzyć skuteczność reklam, wczytamy tylko za Twoją zgodą. Odmowa niczego nie zmienia w usłudze.",
+    "accept": "Akceptuję",
+    "decline": "Odrzucam",
+    "moreInfo": "Dowiedz się więcej"
   }
 }
