@@ -168,6 +168,34 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>ALTRA PROCEDURA A PIU&#39; FASI</td><td class="num">38 mila €</td></tr><tr><td>COPROGETTAZIONE ALLOGGI TEMPORANEI PER EMERGENZA ABITATIVA<div class="small muted">Cpv prevalente non disponibile</div></td>
       <td>ALTRA PROCEDURA A FASE UNICA</td><td class="num">17 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(2 contratti ANAC, 55 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/090110.csv" download>⬇ Scarica l’elenco completo (CSV, 2 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="trasporti soggetti in condizione di fragilita&#39; socio economica ">
+      <td class="small">2024-04-15</td>
+      <td>TRASPORTI SOGGETTI IN CONDIZIONE DI FRAGILITA&#39; SOCIO ECONOMICA<div class="small muted">CIG B13F18EE4F · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A PIU&#39; FASI</td>
+      <td class="num">38 mila €</td></tr><tr data-t="coprogettazione alloggi temporanei per emergenza abitativa ">
+      <td class="small">2024-03-27</td>
+      <td>COPROGETTAZIONE ALLOGGI TEMPORANEI PER EMERGENZA ABITATIVA<div class="small muted">CIG B101AA3D24 · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">17 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

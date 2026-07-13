@@ -198,6 +198,1524 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>PROCEDURA APERTA</td><td class="num">5 mln €</td></tr><tr><td>FORNITURA ANNUALE ZOLGENSMA<div class="small muted"></div></td>
       <td>PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE</td><td class="num">5 mln €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(896 contratti ANAC, 149 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/150902.csv" download>⬇ Scarica l’elenco completo (CSV, 896 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="adesione convenzione decennale psn sogei s.p.a.">
+      <td class="small">2023-07-17</td>
+      <td>ADESIONE CONVENZIONE DECENNALE PSN<div class="small muted">CIG 9934559170 · SERVIZI DI PROVIDER</div></td>
+      <td>SOGEI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">13 mln €</td></tr><tr data-t="fornitura della specialita&#39; medicinale infungibile zolgensma - ditta novartis farma impresa inesistente">
+      <td class="small">2023-05-12</td>
+      <td>FORNITURA DELLA SPECIALITA&#39; MEDICINALE INFUNGIBILE ZOLGENSMA - DITTA NOVARTIS FARMA<div class="small muted">CIG 9822507D30 · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">13 mln €</td></tr><tr data-t="adesione lotto accessorio consip lotto n. 14 - affidamento di durata quadriennale del servizio di pulizie e servizi accessori comprensivo degli importi a consumo extra canone coopservice societa&#39; cooperativa per azioni abbreviabile in coopservice s.coop.p.a.">
+      <td class="small">2023-03-17</td>
+      <td>ADESIONE LOTTO ACCESSORIO CONSIP LOTTO N. 14 - AFFIDAMENTO DI DURATA QUADRIENNALE DEL SERVIZIO DI PULIZIE E SERVIZI ACCESSORI COMPRENSIVO DEGLI IMPORTI A CONSUMO EXTRA CANONE<div class="small muted">CIG 9703028801 · SERVIZI DI PULIZIA</div></td>
+      <td>COOPSERVICE SOCIETA&#39; COOPERATIVA PER AZIONI ABBREVIABILE IN COOPSERVICE S.COOP.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">12 mln €</td></tr><tr data-t="accordo quadro, con un unico operatore economico, per la manutenzione ordinaria e straordinaria del patrimonio immobiliare ed impiantistico impre.fi.ti. societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-10-15</td>
+      <td>ACCORDO QUADRO, CON UN UNICO OPERATORE ECONOMICO, PER LA MANUTENZIONE ORDINARIA E STRAORDINARIA DEL PATRIMONIO IMMOBILIARE ED IMPIANTISTICO<div class="small muted">CIG B36E65D8AD · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>IMPRE.FI.TI. SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">9 mln €</td></tr><tr data-t="servizi integrati, gestionali e operativi di manutenzione da eseguirsi presso gli immobili di proprietà o in uso dell&#39;aorn santobono pausilipon siram  s.p.a.">
+      <td class="small">2024-10-17</td>
+      <td>SERVIZI INTEGRATI, GESTIONALI E OPERATIVI DI MANUTENZIONE DA ESEGUIRSI PRESSO GLI IMMOBILI DI PROPRIETÀ O IN USO DELL&#39;AORN SANTOBONO PAUSILIPON<div class="small muted">CIG B374D75C0A · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ELETTRICI E MECCANICI DI EDIFICI</div></td>
+      <td>SIRAM  S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">8 mln €</td></tr><tr data-t="servizi di supporto all&#39;evoluzione strategica e digitale dell&#39;aorn santobono pausilipon kpmg advisory s.p.a.">
+      <td class="small">2024-12-04</td>
+      <td>SERVIZI DI SUPPORTO ALL&#39;EVOLUZIONE STRATEGICA E DIGITALE DELL&#39;AORN SANTOBONO PAUSILIPON<div class="small muted">CIG B4A08F28BF · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>KPMG ADVISORY S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mln €</td></tr><tr data-t="appalto integrato per l&#39;affidamento dei servizi di ingegneria e architettura per la redazione del progetto definitivo, progetto esecutivo e csp e l&#39;esecuzione dei &#39;lavori di adeguamento sismico del padiglione santobono presso il p.o. santobono dell&#39;a.o.r.n. santobono-pausilipon&#39; afferente al pnc - n engco  s.r.l.">
+      <td class="small">2023-03-24</td>
+      <td>APPALTO INTEGRATO PER L&#39;AFFIDAMENTO DEI SERVIZI DI INGEGNERIA E ARCHITETTURA PER LA REDAZIONE DEL PROGETTO DEFINITIVO, PROGETTO ESECUTIVO E CSP E L&#39;ESECUZIONE DEI &#39;LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIONE SANTOBONO PRESSO IL P.O. SANTOBONO DELL&#39;A.O.R.N. SANTOBONO-PAUSILIPON&#39; AFFERENTE AL PNC - N<div class="small muted">CIG 971248000D · LAVORI GENERALI DI COSTRUZIONE DI EDIFICI</div></td>
+      <td>ENGCO  S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="fornitura annuale zolgensma novartis farma spa">
+      <td class="small">2024-08-09</td>
+      <td>FORNITURA ANNUALE ZOLGENSMA<div class="small muted">CIG B2C1CA5DD0</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">5 mln €</td></tr><tr data-t="fornitura e posa in opera di tre sale operatorie prefabbricate compreso locali annessi - componente a) finanziamento por - fers 2014-2020 - componente b) apparecchiature con fondi dell&#39;aorn manufacturing engineering &amp; development s.r.l.">
+      <td class="small">2023-02-03</td>
+      <td>FORNITURA E POSA IN OPERA DI TRE SALE OPERATORIE PREFABBRICATE COMPRESO LOCALI ANNESSI - COMPONENTE A) FINANZIAMENTO POR - FERS 2014-2020 - COMPONENTE B) APPARECCHIATURE CON FONDI DELL&#39;AORN<div class="small muted">CIG 961953101C · ASSEMBLAGGIO ED INSTALLAZIONE DI STRUTTURE PREFABBRICATE</div></td>
+      <td>MANUFACTURING ENGINEERING &amp; DEVELOPMENT S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="fornitura di prodotti harware e licenze software e relativi servizi di installazione per il potenziamento dell&#39;infrastruttura di cybersecurity dell&#39;aorn santobono pausilipon tim s.p.a.">
+      <td class="small">2023-10-02</td>
+      <td>FORNITURA DI PRODOTTI HARWARE E LICENZE SOFTWARE E RELATIVI SERVIZI DI INSTALLAZIONE PER IL POTENZIAMENTO DELL&#39;INFRASTRUTTURA DI CYBERSECURITY DELL&#39;AORN SANTOBONO PAUSILIPON<div class="small muted">CIG A014EACEE1 · PACCHETTI SOFTWARE PER RETI</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="convenzione consip &#39;energia elettrica 20 e servizi connessi&#39; - lotto 13 campania hera comm s.p.a.">
+      <td class="small">2023-02-07</td>
+      <td>CONVENZIONE CONSIP &#39;ENERGIA ELETTRICA 20 E SERVIZI CONNESSI&#39; - LOTTO 13 CAMPANIA<div class="small muted">CIG 9641147E2E · ELETTRICITÀ</div></td>
+      <td>HERA COMM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione convenzione energia elettrica ed.21 lotto 13 campania pp.oo. acantho spa">
+      <td class="small">2024-01-31</td>
+      <td>ADESIONE CONVENZIONE ENERGIA ELETTRICA ED.21 LOTTO 13 CAMPANIA PP.OO.<div class="small muted">CIG B02F925F6A · Cpv prevalente non disponibile</div></td>
+      <td>ACANTHO SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione ad accordo quadro consip buoni pasto ed 10 day ristoservice s.p.a. societa&#39; benefit">
+      <td class="small">2023-12-05</td>
+      <td>ADESIONE AD ACCORDO QUADRO CONSIP BUONI PASTO ED 10<div class="small muted">CIG A034EC8A07 · BUONI PASTO</div></td>
+      <td>DAY RISTOSERVICE S.P.A. SOCIETA&#39; BENEFIT</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="appalto integrato per l&#39;affidamento dei servizi di ingegneria e architettura per la redazione del progetto definitivo, progetto esecutivo e csp e l&#39;esecuzione dei &#39;lavori di adeguamento sismico del padiglione torre, del ponte di collegamento e di locali tecnici vari presso il p.o. santobono dell&#39;a.o geoatlas societa&#39; a responsabiita&#39; limitata">
+      <td class="small">2023-03-27</td>
+      <td>APPALTO INTEGRATO PER L&#39;AFFIDAMENTO DEI SERVIZI DI INGEGNERIA E ARCHITETTURA PER LA REDAZIONE DEL PROGETTO DEFINITIVO, PROGETTO ESECUTIVO E CSP E L&#39;ESECUZIONE DEI &#39;LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIONE TORRE, DEL PONTE DI COLLEGAMENTO E DI LOCALI TECNICI VARI PRESSO IL P.O. SANTOBONO DELL&#39;A.O<div class="small muted">CIG 9712572BF5 · LAVORI GENERALI DI COSTRUZIONE DI EDIFICI</div></td>
+      <td>GEOATLAS SOCIETA&#39; A RESPONSABIITA&#39; LIMITATA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 1 - fornitura saturimetri da banco standard medtronic italia s.p.a.">
+      <td class="small">2024-02-13</td>
+      <td>Lotto 1 - Fornitura saturimetri da banco standard<div class="small muted">CIG B05579849B · Dispositivi e prodotti medici vari</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizi applicativi in ambito «sanita&#39; digitale - sistemi informativi gestionali» per le pubbliche amministrazioni del ssn enterprise services italia s.r.l.">
+      <td class="small">2024-07-01</td>
+      <td>SERVIZI APPLICATIVI IN AMBITO «SANITA&#39; DIGITALE - SISTEMI INFORMATIVI GESTIONALI» PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN<div class="small muted">CIG B24C79C35A · SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO</div></td>
+      <td>ENTERPRISE SERVICES ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di raccolta, trasporto e conferimento ad impianto di smaltimento dei rifiuti speciali pericolosi e non pericolosi, derivanti da attività sanitarie delle aa.ss. della regione campania ecoster s.r.l.">
+      <td class="small">2023-07-14</td>
+      <td>SERVIZIO DI RACCOLTA, TRASPORTO E CONFERIMENTO AD IMPIANTO DI SMALTIMENTO DEI RIFIUTI SPECIALI PERICOLOSI E NON PERICOLOSI, DERIVANTI DA ATTIVITÀ SANITARIE DELLE AA.SS. DELLA REGIONE CAMPANIA<div class="small muted">CIG 99533303C1 · RACCOLTA, TRASPORTO E SMALTIMENTO DI RIFIUTI OSPEDALIERI</div></td>
+      <td>ECOSTER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizi integrati, gestionali e operativi di manutenzione - multiservizio tecnologico - da eseguirsi presso i pp.oo. e la sede amministrativa dell&#39;aorn. siram  s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>SERVIZI INTEGRATI, GESTIONALI E OPERATIVI DI MANUTENZIONE - MULTISERVIZIO TECNOLOGICO - DA ESEGUIRSI PRESSO I PP.OO. E LA SEDE AMMINISTRATIVA DELL&#39;AORN.<div class="small muted">CIG 9618556B80 · SERVIZI DI BENI IMMOBILI NON RESIDENZIALI</div></td>
+      <td>SIRAM  S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura quinquennale di prorogabile di ulteriori tre, di reattivi per emogasanalisi in somministrazione con posa in opera, comprensiva di garanzia ed assistenza tecnica full-risk di 16 sistemi analitici per le esigenze assistenziali dell&#39;a.o.r.n. santobono-pausilipon ">
+      <td class="small">2023-06-30</td>
+      <td>FORNITURA QUINQUENNALE DI PROROGABILE DI ULTERIORI TRE, DI REATTIVI PER EMOGASANALISI IN SOMMINISTRAZIONE CON POSA IN OPERA, COMPRENSIVA DI GARANZIA ED ASSISTENZA TECNICA FULL-RISK DI 16 SISTEMI ANALITICI PER LE ESIGENZE ASSISTENZIALI DELL&#39;A.O.R.N. SANTOBONO-PAUSILIPON<div class="small muted">CIG 98930177E3 · APPARECCHI PER L&#39;ANALISI DEL SANGUE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione denominata polo strategico nazionale (&#39;psn&#39;) per la realizzazione del progetto accoglienza sogei s.p.a.">
+      <td class="small">2023-08-24</td>
+      <td>ADESIONE ALLA CONVENZIONE DENOMINATA POLO STRATEGICO NAZIONALE (&#39;PSN&#39;) PER LA REALIZZAZIONE DEL PROGETTO ACCOGLIENZA<div class="small muted">CIG A004EE4B14 · SERVIZI DI PROVIDER</div></td>
+      <td>SOGEI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="delibera di adesione del direttore generale aorn santobono pausilipon n. 391/2024 novartis farma spa">
+      <td class="small">2024-06-20</td>
+      <td>DELIBERA DI ADESIONE DEL DIRETTORE GENERALE AORN SANTOBONO PAUSILIPON N. 391/2024<div class="small muted">CIG B22DCA6BF9 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="delibera del direttore generale n. 391 del 4.6.2024 novartis farma spa">
+      <td class="small">2024-06-20</td>
+      <td>DELIBERA DEL DIRETTORE GENERALE N. 391 DEL 4.6.2024<div class="small muted">CIG B22EF4BEC6 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="concessione distributori automatci espresso mat s.r.l.">
+      <td class="small">2024-09-27</td>
+      <td>CONCESSIONE DISTRIBUTORI AUTOMATCI<div class="small muted">CIG B334F5B509 · DISTRIBUTORI AUTOMATICI</div></td>
+      <td>ESPRESSO MAT S.R.L.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="licenze software tim s.p.a.">
+      <td class="small">2024-06-20</td>
+      <td>LICENZE SOFTWARE<div class="small muted">CIG B22D8F829F · PACCHETTI SOFTWARE PER LA GESTIONE DI LICENZE</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">945 mila €</td></tr><tr data-t="deliberazione del direttore generale a.o.r.n. santobono-pausilipon n. 311 del 22.4.2024 medtronic italia s.p.a.">
+      <td class="small">2024-05-14</td>
+      <td>DELIBERAZIONE DEL DIRETTORE GENERALE A.O.R.N. SANTOBONO-PAUSILIPON N. 311 DEL 22.4.2024<div class="small muted">CIG B1AB79A963 · Cpv prevalente non disponibile</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">909 mila €</td></tr><tr data-t="realizzazione in cloud della smart control room comprensiva della relativa infrastruttura hw e sw - fase 1 core progettuale - primi 12 mesi polo strategico nazionale s.p.a.">
+      <td class="small">2024-03-19</td>
+      <td>REALIZZAZIONE IN CLOUD DELLA SMART CONTROL ROOM COMPRENSIVA DELLA RELATIVA INFRASTRUTTURA HW E SW - FASE 1 CORE PROGETTUALE - PRIMI 12 MESI<div class="small muted">CIG B0E2470F98 · Cpv prevalente non disponibile</div></td>
+      <td>POLO STRATEGICO NAZIONALE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">848 mila €</td></tr><tr data-t="fornitura di n. 2 sistemi per la registrazione multimediale intraoperatoria di segnali neurofisiologici ">
+      <td class="small">2024-07-01</td>
+      <td>FORNITURA DI N. 2 SISTEMI PER LA REGISTRAZIONE MULTIMEDIALE INTRAOPERATORIA DI SEGNALI NEUROFISIOLOGICI<div class="small muted">CIG B248BCA5D6 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">792 mila €</td></tr><tr data-t="fornitura di n. 2 sistemi per la registrazione multimediale intraoperatoria di segnali neurofisiologici ">
+      <td class="small">2024-12-13</td>
+      <td>FORNITURA DI N. 2 SISTEMI PER LA REGISTRAZIONE MULTIMEDIALE INTRAOPERATORIA DI SEGNALI NEUROFISIOLOGICI<div class="small muted">CIG B4C0E67D9E · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">792 mila €</td></tr><tr data-t="adesione convenzione psn per il servizio fascicolo del personale per la sorveglianza sanitaria sogei s.p.a.">
+      <td class="small">2023-10-23</td>
+      <td>ADESIONE CONVENZIONE PSN PER IL SERVIZIO FASCICOLO DEL PERSONALE PER LA SORVEGLIANZA SANITARIA<div class="small muted">CIG A01AB4480C · SERVIZI DI PROVIDER</div></td>
+      <td>SOGEI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">788 mila €</td></tr><tr data-t="fornitura quinquennale di materiale di consumo, per le esigenze della uoc di otorinolaringoiatria dell&#39;aorn santobono-pausilipon medtronic italia s.p.a.">
+      <td class="small">2024-10-29</td>
+      <td>FORNITURA QUINQUENNALE DI MATERIALE DI CONSUMO, PER LE ESIGENZE DELLA UOC DI OTORINOLARINGOIATRIA DELL&#39;AORN SANTOBONO-PAUSILIPON<div class="small muted">CIG B403E11AD0 · STRUMENTI CHIRURGICI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">740 mila €</td></tr><tr data-t="lotto 7 - erwinia l-asparaginase operatore individuale (persona fisica)">
+      <td class="small">2023-04-26</td>
+      <td>LOTTO 7 - ERWINIA L-ASPARAGINASE<div class="small muted">CIG 96981427F3 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">737 mila €</td></tr><tr data-t="m6c2i1.1.2 – grandi apparecchiature pnrr fornitura con posa in opera di n. 1 rm 1,5 t philips s.p.a.">
+      <td class="small">2024-11-13</td>
+      <td>M6C2I1.1.2 – GRANDI APPARECCHIATURE PNRR FORNITURA CON POSA IN OPERA DI N. 1 RM 1,5 T<div class="small muted">CIG B4404C0659 · APPARECCHIATURE PER IMMAGINOGRAFIA A RISONANZA MAGNETICA</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">730 mila €</td></tr><tr data-t="gara aperta sottosoglia, ai sensi dell&#39;art.71 del d.lgs. n. 36/2023, in modalità telematica da aggiudicarsi con il criterio dell&#39;offerta economicamente più vantaggiosa sulla base del miglior rapporto qualità/prezzo relativamente ai lavori di realizzazione di una nuova clean room (classe d) per la ma phamm engineering s.r.l.">
+      <td class="small">2024-07-18</td>
+      <td>GARA APERTA SOTTOSOGLIA, AI SENSI DELL&#39;ART.71 DEL D.LGS. N. 36/2023, IN MODALITÀ TELEMATICA DA AGGIUDICARSI CON IL CRITERIO DELL&#39;OFFERTA ECONOMICAMENTE PIÙ VANTAGGIOSA SULLA BASE DEL MIGLIOR RAPPORTO QUALITÀ/PREZZO RELATIVAMENTE AI LAVORI DI REALIZZAZIONE DI UNA NUOVA CLEAN ROOM (CLASSE D) PER LA MA<div class="small muted">CIG B2804A8A08</div></td>
+      <td>PHAMM ENGINEERING S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">664 mila €</td></tr><tr data-t="delibera di adesione del direttore generale aon santobono pausilipon n. 391/2024 gilead sciences s.r.l.">
+      <td class="small">2024-06-20</td>
+      <td>DELIBERA DI ADESIONE DEL DIRETTORE GENERALE AON SANTOBONO PAUSILIPON N. 391/2024<div class="small muted">CIG B22E44DC97 · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">653 mila €</td></tr><tr data-t="delibera del direttore generale n. 391 del 4.6.2024 gilead sciences s.r.l.">
+      <td class="small">2024-06-20</td>
+      <td>DELIBERA DEL DIRETTORE GENERALE N. 391 DEL 4.6.2024<div class="small muted">CIG B22F45FF91 · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">653 mila €</td></tr><tr data-t="acquisto di un separatore cellulare sepax 2 con relativa fornitura quinquennale di materiale di consumo ng med s.r.l.">
+      <td class="small">2023-06-14</td>
+      <td>ACQUISTO DI UN SEPARATORE CELLULARE SEPAX 2 CON RELATIVA FORNITURA QUINQUENNALE DI MATERIALE DI CONSUMO<div class="small muted">CIG 9855028261 · REATTIVI PER LABORATORIO</div></td>
+      <td>NG MED S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">619 mila €</td></tr><tr data-t="servizi complementari non compresi in convenzione consip adesione lotto accessorio n. 14 coopservice societa&#39; cooperativa per azioni abbreviabile in coopservice s.coop.p.a.">
+      <td class="small">2023-08-08</td>
+      <td>SERVIZI COMPLEMENTARI NON COMPRESI IN CONVENZIONE CONSIP ADESIONE LOTTO ACCESSORIO N. 14<div class="small muted">CIG A001C9AB1E · SERVIZI DI PULIZIA</div></td>
+      <td>COOPSERVICE SOCIETA&#39; COOPERATIVA PER AZIONI ABBREVIABILE IN COOPSERVICE S.COOP.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">581 mila €</td></tr><tr data-t="fornitura in noleggio quinquennale di n. 1 sistema 2d/3d per la sala operatoria di neurochirurgia medtronic italia s.p.a.">
+      <td class="small">2023-06-28</td>
+      <td>FORNITURA IN NOLEGGIO QUINQUENNALE DI N. 1 SISTEMA 2D/3D PER LA SALA OPERATORIA DI NEUROCHIRURGIA<div class="small muted">CIG 99332980D4 · SISTEMI DIAGNOSTICI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">570 mila €</td></tr><tr data-t="delibera di adesione del direttore generale aorn santobono pausilipon n. 391/2024 gilead sciences s.r.l.">
+      <td class="small">2024-06-20</td>
+      <td>DELIBERA DI ADESIONE DEL DIRETTORE GENERALE AORN SANTOBONO PAUSILIPON N. 391/2024<div class="small muted">CIG B22E23D8E0 · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">567 mila €</td></tr><tr data-t="delibera del direttore generale n. 391 del 4.6.2024 gilead sciences s.r.l.">
+      <td class="small">2024-06-20</td>
+      <td>DELIBERA DEL DIRETTORE GENERALE N. 391 DEL 4.6.2024<div class="small muted">CIG B22F398B5A · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">567 mila €</td></tr><tr data-t="lotto 27 - glucarpidase ">
+      <td class="small">2023-04-26</td>
+      <td>LOTTO 27 - GLUCARPIDASE<div class="small muted">CIG 969854762B · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">550 mila €</td></tr><tr data-t="adesione all&#39;accordo quadro consip &#39;cybersecurity 2&#39; per la &#39;fornitura di apparati hardware e relativi servizi di installazione per il potenziamento dell&#39;infrastruttura di cybersecurity dell&#39;aorn santobono pausilipon&#39; in accordo al progetto &#39;cyber + - sicurezza informatica aorn santobono pausilipon&#39; maticmind s.p.a.">
+      <td class="small">2023-09-28</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO CONSIP &#39;CYBERSECURITY 2&#39; PER LA &#39;FORNITURA DI APPARATI HARDWARE E RELATIVI SERVIZI DI INSTALLAZIONE PER IL POTENZIAMENTO DELL&#39;INFRASTRUTTURA DI CYBERSECURITY DELL&#39;AORN SANTOBONO PAUSILIPON&#39; IN ACCORDO AL PROGETTO &#39;CYBER + - SICUREZZA INFORMATICA AORN SANTOBONO PAUSILIPON&#39;<div class="small muted">CIG A0199C3636 · PACCHETTI SOFTWARE DI SICUREZZA</div></td>
+      <td>MATICMIND S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">534 mila €</td></tr><tr data-t="fornitura, con posa in opera, di n. 1 sistema robotizzato per chirurgia o.r.l. robotol con assistenza e manutenzione full risk per n.5 anni vedise hospital spa">
+      <td class="small">2023-06-20</td>
+      <td>FORNITURA, CON POSA IN OPERA, DI N. 1 SISTEMA ROBOTIZZATO PER CHIRURGIA O.R.L. ROBOTOL CON ASSISTENZA E MANUTENZIONE FULL RISK PER N.5 ANNI<div class="small muted">CIG 9899112DA2 · APPARECCHI PER SALA OPERATORIA</div></td>
+      <td>VEDISE HOSPITAL SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">525 mila €</td></tr><tr data-t="convenzione consip &#39;gas naturale ed. 14 e servizi connessi&#39; - lotto 9 campania estra energie s.r.l.">
+      <td class="small">2023-01-10</td>
+      <td>CONVENZIONE CONSIP &#39;GAS NATURALE ED. 14 E SERVIZI CONNESSI&#39; - LOTTO 9 CAMPANIA<div class="small muted">CIG 9591889534 · GAS NATURALE</div></td>
+      <td>ESTRA ENERGIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">500 mila €</td></tr><tr data-t="fornitura kit di umidificazione neonatali, pediatrici adulti comprensivo della fornitura in comodato d&#39;uso gratuito (assistenza full risk) di n.40 umidificatori attivi svas biosana s.p.a.">
+      <td class="small">2023-04-05</td>
+      <td>FORNITURA KIT DI UMIDIFICAZIONE NEONATALI, PEDIATRICI ADULTI COMPRENSIVO DELLA FORNITURA IN COMODATO D&#39;USO GRATUITO (ASSISTENZA FULL RISK) DI N.40 UMIDIFICATORI ATTIVI<div class="small muted">CIG 9705161836 · UMIDIFICATORI PER OSSIGENOTERAPIA</div></td>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">500 mila €</td></tr><tr data-t="adesione a convenzione consip gas naturale e servizi connessi - ed.15bis - id sigef 2609 - lotto 7 campania - fornitore estra energie estra energie s.r.l.">
+      <td class="small">2023-12-21</td>
+      <td>ADESIONE A CONVENZIONE CONSIP GAS NATURALE E SERVIZI CONNESSI - ED.15BIS - ID SIGEF 2609 - LOTTO 7 CAMPANIA - FORNITORE ESTRA ENERGIE<div class="small muted">CIG A0420589C2 · GAS NATURALE</div></td>
+      <td>ESTRA ENERGIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">500 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 sistema integrato di apparecchiature per l&#39;esecuzione di esami di eeg/emg/pe/mep comprensivo di piattaforma di refertazione comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti eb  neuro spa">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 SISTEMA INTEGRATO DI APPARECCHIATURE PER L&#39;ESECUZIONE DI ESAMI DI EEG/EMG/PE/MEP COMPRENSIVO DI PIATTAFORMA DI REFERTAZIONE COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B2996849FE · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>EB  NEURO SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">470 mila €</td></tr><tr data-t="adesione convenzione psn per il servizio di automazione della farmacia ">
+      <td class="small">2023-10-31</td>
+      <td>ADESIONE CONVENZIONE PSN PER IL SERVIZIO DI AUTOMAZIONE DELLA FARMACIA<div class="small muted">CIG A023654A18 · SERVIZI DI PROVIDER</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">467 mila €</td></tr><tr data-t="fornitura quinquennale kit per mezzi di contrasto con comodato d&#39;uso gratuito ed assistenza tecnica full risk di n. 2 iniettori per r.m. formedix societa&#39; a responsabilita&#39; limitata ed in breve: formedix s.r.l.">
+      <td class="small">2023-02-02</td>
+      <td>FORNITURA QUINQUENNALE KIT PER MEZZI DI CONTRASTO CON COMODATO D&#39;USO GRATUITO ED ASSISTENZA TECNICA FULL RISK DI N. 2 INIETTORI PER R.M.<div class="small muted">CIG 9616572642 · APPARECCHI E STRUMENTI PER INFUSIONE</div></td>
+      <td>FORMEDIX SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA ED IN BREVE: FORMEDIX S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">440 mila €</td></tr><tr data-t="camici monouso non sterili (dlgs 425/2016). ">
+      <td class="small">2024-12-10</td>
+      <td>CAMICI MONOUSO NON STERILI (DLGS 425/2016).<div class="small muted">CIG B4B22E980B · ATTREZZATURE PER LA SICUREZZA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">427 mila €</td></tr><tr data-t="&#39;servizio di assistenza tecnica - full risk - verifiche di sicurezza e funzionalità, manutenzione preventiva e correttiva (con sostituzione di parti e componenti) per le apparecchiature, i dispositivi, gli impianti il sistema di automazione e gestione e la relativa linea di adduzione azoto liquido p medigas italia s.r.l.">
+      <td class="small">2023-06-05</td>
+      <td>&#39;SERVIZIO DI ASSISTENZA TECNICA - FULL RISK - VERIFICHE DI SICUREZZA E FUNZIONALITÀ, MANUTENZIONE PREVENTIVA E CORRETTIVA (CON SOSTITUZIONE DI PARTI E COMPONENTI) PER LE APPARECCHIATURE, I DISPOSITIVI, GLI IMPIANTI IL SISTEMA DI AUTOMAZIONE E GESTIONE E LA RELATIVA LINEA DI ADDUZIONE AZOTO LIQUIDO P<div class="small muted">CIG 97920753EB · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>MEDIGAS ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">423 mila €</td></tr><tr data-t="fornitura, installazione e manutenzione full risk per almeno 12 mesi di nr. 2 magazzini automatizzati per le esigenze della uoc farmacia del p.o. santobono ">
+      <td class="small">2023-07-01</td>
+      <td>FORNITURA, INSTALLAZIONE E MANUTENZIONE FULL RISK PER ALMENO 12 MESI DI NR. 2 MAGAZZINI AUTOMATIZZATI PER LE ESIGENZE DELLA UOC FARMACIA DEL P.O. SANTOBONO<div class="small muted">CIG 9913119496 · SISTEMI DI GESTIONE MAGAZZINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">420 mila €</td></tr><tr data-t="fornitura con posa in oper adi n. 1 sistema di visualizzazione intra operatoria integrato con microscopio operatorio con motore robotizzato, esoscopio ed endoscopio comprensivo di materiale di consumo per n. 3 anni e di assistenza e manutenzione full risk per n. 24 mesi carl zeiss spa">
+      <td class="small">2023-11-13</td>
+      <td>FORNITURA CON POSA IN OPER ADI N. 1 SISTEMA DI VISUALIZZAZIONE INTRA OPERATORIA INTEGRATO CON MICROSCOPIO OPERATORIO CON MOTORE ROBOTIZZATO, ESOSCOPIO ED ENDOSCOPIO COMPRENSIVO DI MATERIALE DI CONSUMO PER N. 3 ANNI E DI ASSISTENZA E MANUTENZIONE FULL RISK PER N. 24 MESI<div class="small muted">CIG A02A537BC9 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>CARL ZEISS SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">418 mila €</td></tr><tr data-t="procedura negoziata, ai sensi dell&#39;art. 63, comma 2, lettera b), d.lgs. 50/2016 per la fornitura con posa in opera di piattaforma per single cell analytics becton, dickinson italia s.p.a.">
+      <td class="small">2023-06-16</td>
+      <td>PROCEDURA NEGOZIATA, AI SENSI DELL&#39;ART. 63, COMMA 2, LETTERA B), D.LGS. 50/2016 PER LA FORNITURA CON POSA IN OPERA DI PIATTAFORMA PER SINGLE CELL ANALYTICS<div class="small muted">CIG 9869851AB2 · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>BECTON, DICKINSON ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">417 mila €</td></tr><tr data-t="por fesr 2014-2020 - fornitura con posa in opera di n. 2 sistemi di manometria comprensiva di accessori ed assistenza e manutenzione full risk eb neuro">
+      <td class="small">2023-09-18</td>
+      <td>POR FESR 2014-2020 - FORNITURA CON POSA IN OPERA DI N. 2 SISTEMI DI MANOMETRIA COMPRENSIVA DI ACCESSORI ED ASSISTENZA E MANUTENZIONE FULL RISK<div class="small muted">CIG A010FF9131 · APPARECCHI PER SALA OPERATORIA</div></td>
+      <td>EB NEURO</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">415 mila €</td></tr><tr data-t="fornitura triennale di mezzi di contrasto alle aa.ss. della regione campania - adesione so.re.sa. - ditta bayer ">
+      <td class="small">2023-08-04</td>
+      <td>FORNITURA TRIENNALE DI MEZZI DI CONTRASTO ALLE AA.SS. DELLA REGIONE CAMPANIA - ADESIONE SO.RE.SA. - DITTA BAYER<div class="small muted">CIG A00137B439 · PRODOTTI DI CONTRASTO RADIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">405 mila €</td></tr><tr data-t="trapani e frese comprensiva di n.2 consolle ipc e relativi accessori e manipoli medtronic italia s.p.a.">
+      <td class="small">2024-09-05</td>
+      <td>TRAPANI E FRESE COMPRENSIVA DI N.2 CONSOLLE IPC E RELATIVI ACCESSORI E MANIPOLI<div class="small muted">CIG B2EB06B42A · APPARECCHIATURA MEDICA INFORMATICA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">400 mila €</td></tr><tr data-t="adesione accorod quadro consip - pnrr - ammodernamento parco tecnologico e digitale ospedaliero - fornitura tc ed accessori po pausilipon ge medical systems italia s.p.a">
+      <td class="small">2023-09-15</td>
+      <td>ADESIONE ACCOROD QUADRO CONSIP - PNRR - AMMODERNAMENTO PARCO TECNOLOGICO E DIGITALE OSPEDALIERO - FORNITURA TC ED ACCESSORI PO PAUSILIPON<div class="small muted">CIG 9979293519 · APPARECCHI PER TOMOGRAFIA</div></td>
+      <td>GE MEDICAL SYSTEMS ITALIA S.P.A</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">376 mila €</td></tr><tr data-t="fornitura triennale del separatore cellulare sepax 2, con noleggio e fornitura di materiale di consumo, dichiarato infungibile dagli organi tecnici ">
+      <td class="small">2023-02-06</td>
+      <td>FORNITURA TRIENNALE DEL SEPARATORE CELLULARE SEPAX 2, CON NOLEGGIO E FORNITURA DI MATERIALE DI CONSUMO, DICHIARATO INFUNGIBILE DAGLI ORGANI TECNICI<div class="small muted">CIG 961478860E · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">373 mila €</td></tr><tr data-t="lotto 85 - pacco pronto contenente fiala di indicatore biologico con lettura del risultato finale massimo ad 1 ora dall&#39;incubazione ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 85 - PACCO PRONTO CONTENENTE FIALA DI INDICATORE BIOLOGICO CON LETTURA DEL RISULTATO FINALE MASSIMO AD 1 ORA DALL&#39;INCUBAZIONE<div class="small muted">CIG 9919557564 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">360 mila €</td></tr><tr data-t="procedura negoziata, ai sensi dell&#39;art. 63, comma 2, lettera b), d.lgs. 50/2016 per la fornitura triennale in somministrazione di kit di fotoferesi comprensivo di servizio di noleggio full-risk del separatore irradiatore therakos cellex per procedure di fotoferesi per pazienti del tmo operatore individuale (persona fisica)">
+      <td class="small">2023-05-19</td>
+      <td>PROCEDURA NEGOZIATA, AI SENSI DELL&#39;ART. 63, COMMA 2, LETTERA B), D.LGS. 50/2016 PER LA FORNITURA TRIENNALE IN SOMMINISTRAZIONE DI KIT DI FOTOFERESI COMPRENSIVO DI SERVIZIO DI NOLEGGIO FULL-RISK DEL SEPARATORE IRRADIATORE THERAKOS CELLEX PER PROCEDURE DI FOTOFERESI PER PAZIENTI DEL TMO<div class="small muted">CIG 9808796A84 · APPARECCHIATURA MEDICA INFORMATICA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">353 mila €</td></tr><tr data-t="fornitura triennale, in somministrazione, di manipoli per chirurgia laparotomica e laparoscopica comprensiva del service full risk di piattaforme per elettrochirurgia medtronic italia s.p.a.">
+      <td class="small">2024-02-06</td>
+      <td>FORNITURA TRIENNALE, IN SOMMINISTRAZIONE, DI MANIPOLI PER CHIRURGIA LAPAROTOMICA E LAPAROSCOPICA COMPRENSIVA DEL SERVICE FULL RISK DI PIATTAFORME PER ELETTROCHIRURGIA<div class="small muted">CIG B03DEBE7BD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">352 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 sistema di monitoraggio multiparametrico avanzato comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti ">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 SISTEMA DI MONITORAGGIO MULTIPARAMETRICO AVANZATO COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B299686BA4 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">330 mila €</td></tr><tr data-t="fornitura triennale di dispositvi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss. della regione campania - ditta coloplast coloplast - s.p.a.">
+      <td class="small">2024-01-22</td>
+      <td>FORNITURA TRIENNALE DI DISPOSITVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA - DITTA COLOPLAST<div class="small muted">CIG A0478D6071 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">325 mila €</td></tr><tr data-t="adesione annuale alla convenzione consip buoni pasto edizione 9 - lotto accessorio e.p. - societa&#39; per azioni">
+      <td class="small">2023-07-07</td>
+      <td>ADESIONE ANNUALE ALLA CONVENZIONE CONSIP BUONI PASTO EDIZIONE 9 - LOTTO ACCESSORIO<div class="small muted">CIG 992886241F · BUONI PASTO</div></td>
+      <td>E.P. - SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">314 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 12 incubatrici ibride con assistenza e manutenzione full risk draeger italia s.p.a.">
+      <td class="small">2023-06-13</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 12 INCUBATRICI IBRIDE CON ASSISTENZA E MANUTENZIONE FULL RISK<div class="small muted">CIG 9870980E5F · INCUBATRICI</div></td>
+      <td>DRAEGER ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">300 mila €</td></tr><tr data-t="fornitura supplementare del servizio di custodia e conservazione dell&#39;archivio documentale dell&#39;aorn ">
+      <td class="small">2024-07-22</td>
+      <td>FORNITURA SUPPLEMENTARE DEL SERVIZIO DI CUSTODIA E CONSERVAZIONE DELL&#39;ARCHIVIO DOCUMENTALE DELL&#39;AORN<div class="small muted">CIG B28B4EADE1</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">300 mila €</td></tr><tr data-t="servizio di conservazione e custodia archivio documentale aorn ">
+      <td class="small">2024-07-23</td>
+      <td>SERVIZIO DI CONSERVAZIONE E CUSTODIA ARCHIVIO DOCUMENTALE AORN<div class="small muted">CIG B290022073</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">300 mila €</td></tr><tr data-t="adesione convenzione psn per progetto digisan ">
+      <td class="small">2023-10-23</td>
+      <td>ADESIONE CONVENZIONE PSN PER PROGETTO DIGISAN<div class="small muted">CIG A0299E75F0 · SERVIZI DI PROVIDER</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">295 mila €</td></tr><tr data-t="fornitura annuale, in somministrazione, della specialitaì medicinale glucarpidase ">
+      <td class="small">2023-12-01</td>
+      <td>FORNITURA ANNUALE, IN SOMMINISTRAZIONE, DELLA SPECIALITAÌ MEDICINALE GLUCARPIDASE<div class="small muted">CIG A014784713 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">275 mila €</td></tr><tr data-t="lavori di somma urgenza per la formazione di una lesione da contenere con una paratia di rinforzo al muro di confine del po santobono con condominio di via sagrera, 23 - ditta impre.fi.ti. srl - importo ? 270.086,45 oltre iva al 22%. impre.fi.ti. societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2023-03-31</td>
+      <td>LAVORI DI SOMMA URGENZA PER LA FORMAZIONE DI UNA LESIONE DA CONTENERE CON UNA PARATIA DI RINFORZO AL MURO DI CONFINE DEL PO SANTOBONO CON CONDOMINIO DI VIA SAGRERA, 23 - DITTA IMPRE.FI.TI. SRL - IMPORTO ? 270.086,45 OLTRE IVA AL 22%.<div class="small muted">CIG 9752695284 · LAVORI EDILI</div></td>
+      <td>IMPRE.FI.TI. SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">PROCEDURA NEGOZIATA SENZA PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">270 mila €</td></tr><tr data-t="materiale plastico di laboratorio laboindustria s.p.a.">
+      <td class="small">2024-06-05</td>
+      <td>MATERIALE PLASTICO DI LABORATORIO<div class="small muted">CIG B1F80C3223 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">268 mila €</td></tr><tr data-t="lotto 17 - pegasparaginasi 3750 u.i. ">
+      <td class="small">2023-04-26</td>
+      <td>LOTTO 17 - PEGASPARAGINASI 3750 U.I.<div class="small muted">CIG 9698397A61 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">253 mila €</td></tr><tr data-t="fornitura di n. 1 ambulanza ( unità mobile terapia intensiva ) per servizio sten comprensiva di accessori e dispositivi medici olmedo special vehicles  s.p.a.">
+      <td class="small">2024-10-10</td>
+      <td>FORNITURA DI N. 1 AMBULANZA ( UNITÀ MOBILE TERAPIA INTENSIVA ) PER SERVIZIO STEN COMPRENSIVA DI ACCESSORI E DISPOSITIVI MEDICI<div class="small muted">CIG B35DCB812F · AMBULANZE</div></td>
+      <td>OLMEDO SPECIAL VEHICLES  S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">252 mila €</td></tr><tr data-t="adesione a convenzione consip gas naturale e servizi connessi - ed. 14 - id 2393 - lotto 9 campania - fornitore estra energie estra energie s.r.l.">
+      <td class="small">2023-03-17</td>
+      <td>ADESIONE A CONVENZIONE CONSIP GAS NATURALE E SERVIZI CONNESSI - ED. 14 - ID 2393 - LOTTO 9 CAMPANIA - FORNITORE ESTRA ENERGIE<div class="small muted">CIG 9689105662 · GAS NATURALE</div></td>
+      <td>ESTRA ENERGIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">250 mila €</td></tr><tr data-t="fornitura di un citofluorimetro aquios prodotto da beckman coulter dichiarata infungibile dagli organi tecnici. beckman coulter s.r.l.">
+      <td class="small">2023-06-20</td>
+      <td>FORNITURA DI UN CITOFLUORIMETRO AQUIOS PRODOTTO DA BECKMAN COULTER DICHIARATA INFUNGIBILE DAGLI ORGANI TECNICI.<div class="small muted">CIG 987806551C · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>BECKMAN COULTER S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">246 mila €</td></tr><tr data-t="fornitura quinquennale di test per dosaggio plasmatico della fenilalanina comprensivo di service, posa in opera con garanzia ed assistenza full risk di un sistema analitico semiautomatico, dei reagenti, dei controlli e del relativo materiale di consumo ">
+      <td class="small">2023-12-31</td>
+      <td>FORNITURA QUINQUENNALE DI TEST PER DOSAGGIO PLASMATICO DELLA FENILALANINA COMPRENSIVO DI SERVICE, POSA IN OPERA CON GARANZIA ED ASSISTENZA FULL RISK DI UN SISTEMA ANALITICO SEMIAUTOMATICO, DEI REAGENTI, DEI CONTROLLI E DEL RELATIVO MATERIALE DI CONSUMO<div class="small muted">CIG A032025DA6 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">245 mila €</td></tr><tr data-t="fornitura quinquennale di test per dosaggio plasmatico della fenilalanina comprensivo di service, posa in opera con garanzia ed assistenza full risk di un sistema analitico semiautomatico, dei reagenti, dei controlli e del relativo materiale di consumo ">
+      <td class="small">2024-03-20</td>
+      <td>fornitura quinquennale di test per dosaggio plasmatico della Fenilalanina comprensivo di service, posa in opera con garanzia ed assistenza full risk di un sistema analitico semiautomatico, dei reagenti, dei controlli e del relativo materiale di consumo<div class="small muted">CIG B0DF431F3A · Apparecchi per l&#39;analisi del sangue</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">245 mila €</td></tr><tr data-t="lotto 3 - saturimetri da banco/palmari specialistici ovvero con misurazioni aggiuntive di indice di variabilità pletismografica, misurazione continua e non invasiva dell&#39;emoglobina totale (sphb) e carbossiemoglobina (spco) ">
+      <td class="small">2024-02-13</td>
+      <td>Lotto 3 - Saturimetri da banco/palmari specialistici ovvero con misurazioni aggiuntive di Indice di variabilità pletismografica, Misurazione continua e non invasiva dell&#39;emoglobina totale (SpHb) e carbossiemoglobina (SpCO)<div class="small muted">CIG B05579A641 · Dispositivi e prodotti medici vari</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">235 mila €</td></tr><tr data-t="adesivo topico cutaneo a base di cianoacrilato sterile monouso ">
+      <td class="small">2024-10-10</td>
+      <td>ADESIVO TOPICO CUTANEO A BASE DI CIANOACRILATO STERILE MONOUSO<div class="small muted">CIG B35DDA2249 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">220 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 laser ibrido al tullio comprensivo di materiale di consumo triennale -rdo mepa f.a.d. s.r.l.">
+      <td class="small">2023-02-03</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 LASER IBRIDO AL TULLIO COMPRENSIVO DI MATERIALE DI CONSUMO TRIENNALE -RDO MEPA<div class="small muted">CIG 963813047C · LASER CHIRURGICO</div></td>
+      <td>F.A.D. S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">214 mila €</td></tr><tr data-t="fornitura di durata biennale di materiale economale (carta igienica, sapone/detergente per le mani e tovagliette di carta) comprensiva del comodato d&#39;uso e della posa in opera dei dispenser pefim s.r.l.">
+      <td class="small">2023-04-13</td>
+      <td>FORNITURA DI DURATA BIENNALE DI MATERIALE ECONOMALE (CARTA IGIENICA, SAPONE/DETERGENTE PER LE MANI E TOVAGLIETTE DI CARTA) COMPRENSIVA DEL COMODATO D&#39;USO E DELLA POSA IN OPERA DEI DISPENSER<div class="small muted">CIG 97730575C4 · CARTA IGIENICA</div></td>
+      <td>PEFIM S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">214 mila €</td></tr><tr data-t="fornitura biennale, in lotto unico, di ausili per incontinenza con sistema di assorbenza per le esigenze assistenziali dell&#39;a.o.r.n. santobono ">
+      <td class="small">2023-05-18</td>
+      <td>FORNITURA BIENNALE, IN LOTTO UNICO, DI AUSILI PER INCONTINENZA CON SISTEMA DI ASSORBENZA PER LE ESIGENZE ASSISTENZIALI DELL&#39;A.O.R.N. SANTOBONO<div class="small muted">CIG 9801990A07 · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">214 mila €</td></tr><tr data-t="procedura di gara sottosoglia comunitaria, da espletarsi a mezzo piattaforma di e-procurement me.pa mediante rdo aperta a tutti gli operatori economici del settore, ai sensi dell&#39;art. 36 co. 6 d.lgs 50/2016, per la fornitura, installazione e assistenza tecnica di nr. 65 tablet per la cartella clinic ">
+      <td class="small">2023-06-20</td>
+      <td>PROCEDURA DI GARA SOTTOSOGLIA COMUNITARIA, DA ESPLETARSI A MEZZO PIATTAFORMA DI E-PROCUREMENT ME.PA MEDIANTE RDO APERTA A TUTTI GLI OPERATORI ECONOMICI DEL SETTORE, AI SENSI DELL&#39;ART. 36 CO. 6 D.LGS 50/2016, PER LA FORNITURA, INSTALLAZIONE E ASSISTENZA TECNICA DI NR. 65 TABLET PER LA CARTELLA CLINIC<div class="small muted">CIG 9882051E73 · COMPUTER MODELLO TABLET</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">214 mila €</td></tr><tr data-t="lavori somma urgenza, ai sensi dell&#39;art. 163 del d.lgs. 50/2016 per la messa in sicurezza dei cantonali delle scale e dei prospetti principali della sede amministrativa dell&#39;a.o.r.n. santobono-pausilipon impre.fi.ti. societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2023-05-11</td>
+      <td>LAVORI SOMMA URGENZA, AI SENSI DELL&#39;ART. 163 DEL D.LGS. 50/2016 PER LA MESSA IN SICUREZZA DEI CANTONALI DELLE SCALE E DEI PROSPETTI PRINCIPALI DELLA SEDE AMMINISTRATIVA DELL&#39;A.O.R.N. SANTOBONO-PAUSILIPON<div class="small muted">CIG A01850476F · LAVORI EDILI E DI MURATURA</div></td>
+      <td>IMPRE.FI.TI. SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">PROCEDURA NEGOZIATA SENZA PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">208 mila €</td></tr><tr data-t="207900 icmed s.r.l.">
+      <td class="small">2024-08-27</td>
+      <td>207900<div class="small muted">CIG B2D91D6573 · SERVIZI DI CERTIFICAZIONE</div></td>
+      <td>ICMED S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">208 mila €</td></tr><tr data-t="fornitura di elettroencefalografi eeg emg comprensivi di accessori e materiale di consumo ">
+      <td class="small">2023-03-03</td>
+      <td>FORNITURA DI ELETTROENCEFALOGRAFI EEG EMG COMPRENSIVI DI ACCESSORI E MATERIALE DI CONSUMO<div class="small muted">CIG 9691261991 · ELETTROENCEFALOGRAFI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">205 mila €</td></tr><tr data-t="servizio di ingegneria di direzione dei lavori e coordinamento della sicurezza in fase di esecuzione afferente al pnc, per la linea di intervento m6.c2 1.2 - verso un nuovo ospedale sicuro e sostenibile, finalizzato all&#39;attuazione dei &#39;lavori di adeguamento sismico del padiglione santobono presso il ing.stefano senes">
+      <td class="small">2023-10-06</td>
+      <td>SERVIZIO DI INGEGNERIA DI DIREZIONE DEI LAVORI E COORDINAMENTO DELLA SICUREZZA IN FASE DI ESECUZIONE AFFERENTE AL PNC, PER LA LINEA DI INTERVENTO M6.C2 1.2 - VERSO UN NUOVO OSPEDALE SICURO E SOSTENIBILE, FINALIZZATO ALL&#39;ATTUAZIONE DEI &#39;LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIONE SANTOBONO PRESSO IL<div class="small muted">CIG A0152521A8 · SERVIZI DI CONSULENZA IN INGEGNERIA STRUTTURALE</div></td>
+      <td>ING.STEFANO SENES</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">200 mila €</td></tr><tr data-t="strumentario per laboratorio bio-optica milano s.p.a.">
+      <td class="small">2024-06-05</td>
+      <td>STRUMENTARIO PER LABORATORIO<div class="small muted">CIG B1F80C42F6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BIO-OPTICA MILANO S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">196 mila €</td></tr><tr data-t="fornitura di n. 1 ambulanza ( unità mobile terapia intensiva ) comprensiva di accessori e dispositivi medici olmedo special vehicles  s.p.a.">
+      <td class="small">2024-10-10</td>
+      <td>FORNITURA DI N. 1 AMBULANZA ( UNITÀ MOBILE TERAPIA INTENSIVA ) COMPRENSIVA DI ACCESSORI E DISPOSITIVI MEDICI<div class="small muted">CIG B35DCB9202 · AMBULANZE</div></td>
+      <td>OLMEDO SPECIAL VEHICLES  S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">192 mila €</td></tr><tr data-t="fornitura di n. 1 ambulanza ( unità mobile terapia intensiva ) per servizio sten comprensiva di accessori e dispositivi medici ">
+      <td class="small">2024-05-30</td>
+      <td>FORNITURA DI N. 1 AMBULANZA ( UNITÀ MOBILE TERAPIA INTENSIVA ) PER SERVIZIO STEN COMPRENSIVA DI ACCESSORI E DISPOSITIVI MEDICI<div class="small muted">CIG B1E5ACDC8F · AMBULANZE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">190 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 5 ventilatori polmonari neonatali pediatrici con assistenza e manutenzione full risk getinge italia s.r.l.">
+      <td class="small">2023-06-13</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 5 VENTILATORI POLMONARI NEONATALI PEDIATRICI CON ASSISTENZA E MANUTENZIONE FULL RISK<div class="small muted">CIG 98709505A0 · APPARECCHI PER ANESTESIA E RIANIMAZIONE</div></td>
+      <td>GETINGE ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">185 mila €</td></tr><tr data-t="servizio di &#39;esperto qualificato responsabile della sicurezza in rm, addetto alla sicurezza laser, esperto in radioprotezione e di specialista in fisica medica safe s.r.l.">
+      <td class="small">2023-02-03</td>
+      <td>SERVIZIO DI &#39;ESPERTO QUALIFICATO RESPONSABILE DELLA SICUREZZA IN RM, ADDETTO ALLA SICUREZZA LASER, ESPERTO IN RADIOPROTEZIONE E DI SPECIALISTA IN FISICA MEDICA<div class="small muted">CIG 96282581DB · SERVIZI SANITARI E DI SICUREZZA</div></td>
+      <td>SAFE S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">180 mila €</td></tr><tr data-t="fornitura annuale di dispositivi per neuronavigatore stealthstation in dotazione dell&#39;aorn tramite rdo mepa medtronic italia s.p.a.">
+      <td class="small">2023-12-18</td>
+      <td>FORNITURA ANNUALE DI DISPOSITIVI PER NEURONAVIGATORE STEALTHSTATION IN DOTAZIONE DELL&#39;AORN TRAMITE RDO MEPA<div class="small muted">CIG A03F9B1427 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">180 mila €</td></tr><tr data-t="adesivo topico cutaneo a base di cianoacrilato sterile monouso ">
+      <td class="small">2024-10-10</td>
+      <td>ADESIVO TOPICO CUTANEO A BASE DI CIANOACRILATO STERILE MONOUSO<div class="small muted">CIG B35DDA1176 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">180 mila €</td></tr><tr data-t="fornitura quadriennale di manipoli bipolari e monopolari comprensiva del comodato di 2 generatori a radiofrequenza medtronic italia s.p.a.">
+      <td class="small">2024-07-15</td>
+      <td>FORNITURA QUADRIENNALE DI MANIPOLI BIPOLARI E MONOPOLARI COMPRENSIVA DEL COMODATO DI 2 GENERATORI A RADIOFREQUENZA<div class="small muted">CIG B27617B1DF · STRUMENTI CHIRURGICI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">174 mila €</td></tr><tr data-t="fornitura disinfettanti e antisettici soresa - lotto 10 - b braun ">
+      <td class="small">2023-10-23</td>
+      <td>FORNITURA DISINFETTANTI E ANTISETTICI SORESA - LOTTO 10 - B BRAUN<div class="small muted">CIG A01E4B1BB1 · ANTISETTICI E DISINFETTANTI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">171 mila €</td></tr><tr data-t="servizio di ingegneria di direzione dei lavori e coordinamento della sicurezza in fase di esecuzione afferente lavori per la &#39;fornitura e posa in opera di n.3 sale operatorie prefabbricate corredate di tutti i locali, impianti e le attrezzature necessarie&#39; nell&#39;ambito del finanziamento por campania  operatore individuale (persona fisica)">
+      <td class="small">2023-10-06</td>
+      <td>SERVIZIO DI INGEGNERIA DI DIREZIONE DEI LAVORI E COORDINAMENTO DELLA SICUREZZA IN FASE DI ESECUZIONE AFFERENTE LAVORI PER LA &#39;FORNITURA E POSA IN OPERA DI N.3 SALE OPERATORIE PREFABBRICATE CORREDATE DI TUTTI I LOCALI, IMPIANTI E LE ATTREZZATURE NECESSARIE&#39; NELL&#39;AMBITO DEL FINANZIAMENTO POR CAMPANIA <div class="small muted">CIG A015335CF8 · SERVIZI DI CONSULENZA IN INGEGNERIA STRUTTURALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">169 mila €</td></tr><tr data-t="fornitura triennale di mezzi di contrasto alle aa.ss. della regione campania - adesione so.re.sa. - ditta bracco imaging italia ">
+      <td class="small">2023-08-04</td>
+      <td>FORNITURA TRIENNALE DI MEZZI DI CONTRASTO ALLE AA.SS. DELLA REGIONE CAMPANIA - ADESIONE SO.RE.SA. - DITTA BRACCO IMAGING ITALIA<div class="small muted">CIG A0012F33FE · PRODOTTI DI CONTRASTO RADIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">166 mila €</td></tr><tr data-t="n.200 access point tim s.p.a.">
+      <td class="small">2024-04-24</td>
+      <td>N.200 ACCESS POINT<div class="small muted">CIG B162E8D842 · MACCHINE PER L&#39;ELABORAZIONE DI DATI (HARDWARE)</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">166 mila €</td></tr><tr data-t="lotto 1 - toner e cartucce originali carto copy service societa a responsabilita limitata">
+      <td class="small">2023-06-06</td>
+      <td>LOTTO 1 - TONER E CARTUCCE ORIGINALI<div class="small muted">CIG 9716315CC7 · TONER PER STAMPANTI LASER/APPARECCHI FAX</div></td>
+      <td>CARTO COPY SERVICE SOCIETA A RESPONSABILITA LIMITATA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">164 mila €</td></tr><tr data-t="delibera di adesione del direttore generale aorn santobono pausilipon n. 263/2024 bracco imaging s.p.a.">
+      <td class="small">2024-04-11</td>
+      <td>DELIBERA DI ADESIONE DEL DIRETTORE GENERALE AORN SANTOBONO PAUSILIPON N. 263/2024<div class="small muted">CIG B13661DC37 · Cpv prevalente non disponibile</div></td>
+      <td>BRACCO IMAGING S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">164 mila €</td></tr><tr data-t="adesione al lotto 2 della convenzione soresa per la fornitura di tavoli operatori destinati alle aa.ss della regione campania ">
+      <td class="small">2024-03-11</td>
+      <td>ADESIONE AL LOTTO 2 DELLA CONVENZIONE SORESA PER LA FORNITURA DI TAVOLI OPERATORI DESTINATI ALLE AA.SS DELLA REGIONE CAMPANIA<div class="small muted">CIG A0446E6ABD · LETTI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">160 mila €</td></tr><tr data-t="proroga in adesione contratto quadro consip &#39;servizio pubblico di connettivita&#39; - spc2&#39; fastweb spa">
+      <td class="small">2023-12-31</td>
+      <td>PROROGA IN ADESIONE CONTRATTO QUADRO CONSIP &#39;SERVIZIO PUBBLICO DI CONNETTIVITA&#39; - SPC2&#39;<div class="small muted">CIG A04F5DAAF7 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">160 mila €</td></tr><tr data-t="fornitura strumentario chirurgico in titanio per trapianto renale e procedure chirurgiche di ricostruzione delle vie urinarie tau medica s.r.l.">
+      <td class="small">2023-01-27</td>
+      <td>FORNITURA STRUMENTARIO CHIRURGICO IN TITANIO PER TRAPIANTO RENALE E PROCEDURE CHIRURGICHE DI RICOSTRUZIONE DELLE VIE URINARIE<div class="small muted">CIG 9511454C22 · STRUMENTI CHIRURGICI</div></td>
+      <td>TAU MEDICA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">155 mila €</td></tr><tr data-t="lotto 6 - nimotuzumab ">
+      <td class="small">2023-04-26</td>
+      <td>LOTTO 6 - NIMOTUZUMAB<div class="small muted">CIG 9698126ABE · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">154 mila €</td></tr><tr data-t="rdo mepa - fornitura con posa in opera di n. 1 favovitrectomo con materiale di consumo per n. 5 anni ">
+      <td class="small">2023-03-23</td>
+      <td>RDO MEPA - FORNITURA CON POSA IN OPERA DI N. 1 FAVOVITRECTOMO CON MATERIALE DI CONSUMO PER N. 5 ANNI<div class="small muted">CIG 9730689297 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">150 mila €</td></tr><tr data-t="rdo mepa fornitura con posa in opera di n. 1 facovitrctomo comprensivo di materiale di consumo per n. 3 anni tec med srl">
+      <td class="small">2023-04-24</td>
+      <td>RDO MEPA FORNITURA CON POSA IN OPERA DI N. 1 FACOVITRCTOMO COMPRENSIVO DI MATERIALE DI CONSUMO PER N. 3 ANNI<div class="small muted">CIG 9789677905 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>TEC MED SRL</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">150 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 ecocardiografo top di gamma con assistenza e manutenzione full risk medisol s.r.l.">
+      <td class="small">2023-06-13</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 ECOCARDIOGRAFO TOP DI GAMMA CON ASSISTENZA E MANUTENZIONE FULL RISK<div class="small muted">CIG 98709895CF · ECOCARDIOGRAFI</div></td>
+      <td>MEDISOL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">150 mila €</td></tr><tr data-t="lotto 2 - fornitura ossimetri regionali/cerebrali ">
+      <td class="small">2024-02-13</td>
+      <td>Lotto 2 - Fornitura ossimetri regionali/cerebrali<div class="small muted">CIG B05579956E · Dispositivi e prodotti medici vari</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">150 mila €</td></tr><tr data-t="adesione a convenzione consip gas naturale e servizi connessi - ed. 15bis - lotto 7 campania - fornitore estra energie estra energie s.r.l.">
+      <td class="small">2024-02-29</td>
+      <td>ADESIONE A CONVENZIONE CONSIP GAS NATURALE E SERVIZI CONNESSI - ED. 15BIS - LOTTO 7 CAMPANIA - FORNITORE ESTRA ENERGIE<div class="small muted">CIG A0519A762B · GAS NATURALE</div></td>
+      <td>ESTRA ENERGIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">150 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 microscopio operatorio oculistico comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti carl zeiss spa">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 MICROSCOPIO OPERATORIO OCULISTICO COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B299688D4A · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>CARL ZEISS SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">150 mila €</td></tr><tr data-t="fornituta della componente hardware e software necessaria all&#39;attivazione del progetto accoglienza ">
+      <td class="small">2023-07-20</td>
+      <td>FORNITUTA DELLA COMPONENTE HARDWARE E SOFTWARE NECESSARIA ALL&#39;ATTIVAZIONE DEL PROGETTO ACCOGLIENZA<div class="small muted">CIG A0422AE73F · SERVIZI DI AUTOMAZIONE DI UFFICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">144 mila €</td></tr><tr data-t="fornitura di n. 1 ambulanza ( unità mobile terapia intensiva ) comprensiva di accessori e dispositivi medici ">
+      <td class="small">2024-05-30</td>
+      <td>FORNITURA DI N. 1 AMBULANZA ( UNITÀ MOBILE TERAPIA INTENSIVA ) COMPRENSIVA DI ACCESSORI E DISPOSITIVI MEDICI<div class="small muted">CIG B1E5ACED62 · AMBULANZE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">140 mila €</td></tr><tr data-t="fornitura in comodato con assistenza tecnica full risk comprensiva del materiale di consumo di n. 1 bisturi a risonanza quantica per la u.o.c. otorinolaringoiatria schearing s.r.l.">
+      <td class="small">2023-05-04</td>
+      <td>FORNITURA IN COMODATO CON ASSISTENZA TECNICA FULL RISK COMPRENSIVA DEL MATERIALE DI CONSUMO DI N. 1 BISTURI A RISONANZA QUANTICA PER LA U.O.C. OTORINOLARINGOIATRIA<div class="small muted">CIG 9803589193 · APPARECCHIATURE PER IMMAGINOGRAFIA A RISONANZA MAGNETICA</div></td>
+      <td>SCHEARING S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">140 mila €</td></tr><tr data-t="fornitura strumentario orl ">
+      <td class="small">2024-09-23</td>
+      <td>FORNITURA STRUMENTARIO ORL<div class="small muted">CIG B32470B6EF · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">139 mila €</td></tr><tr data-t="lotto 11 - fibra laser ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 11 - FIBRA LASER<div class="small muted">CIG 9886662B92 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">138 mila €</td></tr><tr data-t="fornitura con posa in opera di portatili per scopia ad arco a c digitali diretti comprensiva di assistenza e manutenzione full risk - rdo mepa eurocolumbus s.r.l.">
+      <td class="small">2023-05-31</td>
+      <td>FORNITURA CON POSA IN OPERA DI PORTATILI PER SCOPIA AD ARCO A C DIGITALI DIRETTI COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK - RDO MEPA<div class="small muted">CIG 982436172A · APPARECCHI RADIOLOGICI</div></td>
+      <td>EUROCOLUMBUS S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">138 mila €</td></tr><tr data-t="lotto 81 - buste per sterilizzazione piane in carta e polipropilene ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 81 - BUSTE PER STERILIZZAZIONE PIANE IN CARTA E POLIPROPILENE<div class="small muted">CIG 991954075C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">135 mila €</td></tr><tr data-t="lotto 66 - abbassalingua in legno, sterile, monouso a bordi lisci in confezioni singole ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 66 - ABBASSALINGUA IN LEGNO, STERILE, MONOUSO A BORDI LISCI IN CONFEZIONI SINGOLE<div class="small muted">CIG 9919333C88 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">132 mila €</td></tr><tr data-t="servizi di cloud enabling&#39; per la gestione di tutte le procedure e dati che insistono sul private e public cloud aziendale, ai sensi art. 63 comma 2 lett. c del d.lgs. 50/2016 tim s.p.a.">
+      <td class="small">2023-03-31</td>
+      <td>SERVIZI DI CLOUD ENABLING&#39; PER LA GESTIONE DI TUTTE LE PROCEDURE E DATI CHE INSISTONO SUL PRIVATE E PUBLIC CLOUD AZIENDALE, AI SENSI ART. 63 COMMA 2 LETT. C DEL D.LGS. 50/2016<div class="small muted">CIG 97424224F7 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">130 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 retinografo e fluorangiografo neonatale pediatrico con assistenza e manutenzioen full risk per almeno 48 mesi sacco ottica oftalmologia s.a.s. di paolo carelli &amp; c.">
+      <td class="small">2023-12-14</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 RETINOGRAFO E FLUORANGIOGRAFO NEONATALE PEDIATRICO CON ASSISTENZA E MANUTENZIOEN FULL RISK PER ALMENO 48 MESI<div class="small muted">CIG A03D3648CE · ATTREZZATURE PER OFTALMOLOGIA</div></td>
+      <td>SACCO OTTICA OFTALMOLOGIA S.A.S. DI PAOLO CARELLI &amp; C.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">130 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 colonna per video-broncoscopia comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti ">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 COLONNA PER VIDEO-BRONCOSCOPIA COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B299685AD1 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="fornitura triennale di medicazioni generali - lotto 47.1 determinazione soresa - ditta bemar ">
+      <td class="small">2023-03-29</td>
+      <td>FORNITURA TRIENNALE DI MEDICAZIONI GENERALI - LOTTO 47.1 DETERMINAZIONE SORESA - DITTA BEMAR<div class="small muted">CIG 9864486F5A · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">129 mila €</td></tr><tr data-t="fornitura triennale in somministrazione di dispositivi per la nebulizzazione sc medical service s.r.l.">
+      <td class="small">2024-10-02</td>
+      <td>FORNITURA TRIENNALE IN SOMMINISTRAZIONE DI DISPOSITIVI PER LA NEBULIZZAZIONE<div class="small muted">CIG B347808821 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SC MEDICAL SERVICE S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">128 mila €</td></tr><tr data-t="lotto 41.1 - adesione soresa medicazioni generali i appalto specifico 210/2022 - ditta bemar italia s.r.l. ">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 41.1 - ADESIONE SORESA MEDICAZIONI GENERALI I APPALTO SPECIFICO 210/2022 - DITTA BEMAR ITALIA S.R.L.<div class="small muted">CIG 9719751045 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">128 mila €</td></tr><tr data-t="lotto 6 - specialità medicinale nimotuzumab fl ev 50 mg-20ml ">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 6 - SPECIALITÀ MEDICINALE NIMOTUZUMAB FL EV 50 MG-20ML<div class="small muted">CIG A018DEE29B · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">126 mila €</td></tr><tr data-t="fornitura biennale di carta termica e non, occorrente all&#39;aorn santobono pausilipon, ceracarta - s.p.a.">
+      <td class="small">2024-07-02</td>
+      <td>FORNITURA BIENNALE DI CARTA TERMICA E NON, OCCORRENTE ALL&#39;AORN SANTOBONO PAUSILIPON,<div class="small muted">CIG B250342C8B · CARTA TERMOGRAFICA</div></td>
+      <td>CERACARTA - S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">124 mila €</td></tr><tr data-t="lotto 36 - dispenser per aerosol pressurizzati predosati con maschera ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 36 - DISPENSER PER AEROSOL PRESSURIZZATI PREDOSATI CON MASCHERA<div class="small muted">CIG 9919141E16 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">123 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 2 autoclavi e n. 2 lava-strumenti con manutenzione ed assistenza full risk servizi ospedalieri s.r.l.">
+      <td class="small">2023-06-13</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 2 AUTOCLAVI E N. 2 LAVA-STRUMENTI CON MANUTENZIONE ED ASSISTENZA FULL RISK<div class="small muted">CIG 98710074AA · AUTOCLAVI</div></td>
+      <td>SERVIZI OSPEDALIERI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">120 mila €</td></tr><tr data-t="lotto 83 - kit di rintracciabilità elettronico composto da: integratore a scorrimento, striscia trasparente riposizionabile ed etichette di processo ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 83 - KIT DI RINTRACCIABILITÀ ELETTRONICO COMPOSTO DA: INTEGRATORE A SCORRIMENTO, STRISCIA TRASPARENTE RIPOSIZIONABILE ED ETICHETTE DI PROCESSO<div class="small muted">CIG 9919551072 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">120 mila €</td></tr><tr data-t="convenzionamento per la durata biennale con farmacia al pubblico operatore individuale (persona fisica)">
+      <td class="small">2024-11-18</td>
+      <td>CONVENZIONAMENTO PER LA DURATA BIENNALE CON FARMACIA AL PUBBLICO<div class="small muted">CIG B4526E2332 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">120 mila €</td></tr><tr data-t="fornitura farmaco oxlumo alnylam italy s.r.l">
+      <td class="small">2024-10-09</td>
+      <td>FORNITURA FARMACO OXLUMO<div class="small muted">CIG B35F1170BD · MEDICINALI VARI</div></td>
+      <td>ALNYLAM ITALY S.R.L</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">114 mila €</td></tr><tr data-t="- lotto 6 - sacche per nutrizione parenterale graduata in eva con doppia chiusura morsetto e tappo a vite, complete di set di riempimento predisposto al distacco dopo l&#39;uso, monouso sterili, capacità 500 ml, prive di lattice e ftalati ">
+      <td class="small">2023-07-13</td>
+      <td>- LOTTO 6 - SACCHE PER NUTRIZIONE PARENTERALE GRADUATA IN EVA CON DOPPIA CHIUSURA MORSETTO E TAPPO A VITE, COMPLETE DI SET DI RIEMPIMENTO PREDISPOSTO AL DISTACCO DOPO L&#39;USO, MONOUSO STERILI, CAPACITÀ 500 ML, PRIVE DI LATTICE E FTALATI<div class="small muted">CIG 9895235E3B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">114 mila €</td></tr><tr data-t="fornitura biennale di tettarelle e poppatoi non sterili ">
+      <td class="small">2023-11-22</td>
+      <td>FORNITURA BIENNALE DI TETTARELLE E POPPATOI NON STERILI<div class="small muted">CIG A0300E2161 · TETTARELLE, PARACAPEZZOLI E ARTICOLI SIMILI PER BAMBINI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">110 mila €</td></tr><tr data-t="fornitura ecotomografi portatili cardiologici medisol s.r.l.">
+      <td class="small">2024-06-18</td>
+      <td>FORNITURA ECOTOMOGRAFI PORTATILI CARDIOLOGICI<div class="small muted">CIG B22595B34F · ECOCARDIOGRAFI</div></td>
+      <td>MEDISOL S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">110 mila €</td></tr><tr data-t="n° 2 sistemi piezoelettrici per chirurgia ossea comprensivo di consumabili per un fabbisogno triennale di n. 285 inserti jsolutions s.r.l.">
+      <td class="small">2024-09-05</td>
+      <td>N° 2 SISTEMI PIEZOELETTRICI PER CHIRURGIA OSSEA COMPRENSIVO DI CONSUMABILI PER UN FABBISOGNO TRIENNALE DI N. 285 INSERTI<div class="small muted">CIG B2EB06A357 · APPARECCHIATURA MEDICA INFORMATICA</div></td>
+      <td>JSOLUTIONS S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">108 mila €</td></tr><tr data-t="attivazione e manutenzione del servizio di conservazione psn large oltre 10 tb telecom italia trust technologies s.r.l.">
+      <td class="small">2023-07-07</td>
+      <td>ATTIVAZIONE E MANUTENZIONE DEL SERVIZIO DI CONSERVAZIONE PSN LARGE OLTRE 10 TB<div class="small muted">CIG A001BF8570 · SERVIZI DI PROVIDER</div></td>
+      <td>TELECOM ITALIA TRUST TECHNOLOGIES S.R.L.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">108 mila €</td></tr><tr data-t="materiale di consumo per il sistema di risonanza magnetica leon mri scognamiglio srl">
+      <td class="small">2024-07-29</td>
+      <td>MATERIALE DI CONSUMO PER IL SISTEMA DI RISONANZA MAGNETICA LEON MRI<div class="small muted">CIG B29C78BF66 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SCOGNAMIGLIO SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">106 mila €</td></tr><tr data-t="fornitura n. 2 macchine anestesia amagnetiche burke &amp; burke s.p.a.">
+      <td class="small">2024-03-11</td>
+      <td>FORNITURA N. 2 MACCHINE ANESTESIA AMAGNETICHE<div class="small muted">CIG B0C0BBC8D6 · APPARECCHI PER ANESTESIA E RIANIMAZIONE</div></td>
+      <td>BURKE &amp; BURKE S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">105 mila €</td></tr><tr data-t="sacchetto monouso per reperti diam 10-12 mm con stelo lungo e filo di repere vol 800 ml circa con introduttore ">
+      <td class="small">2024-10-10</td>
+      <td>SACCHETTO MONOUSO PER REPERTI DIAM 10-12 MM CON STELO LUNGO E FILO DI REPERE VOL 800 ML CIRCA CON INTRODUTTORE<div class="small muted">CIG B35DDB4124 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">104 mila €</td></tr><tr data-t="strumenti monouso diam 5 ">
+      <td class="small">2024-10-10</td>
+      <td>STRUMENTI MONOUSO DIAM 5<div class="small muted">CIG B35DDBA616 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">104 mila €</td></tr><tr data-t="trocar monouso lung 70-75 mm con punta becco di flauto e blocco intraddominale ad ombrellino diam 5 mm ">
+      <td class="small">2024-10-10</td>
+      <td>TROCAR MONOUSO LUNG 70-75 MM CON PUNTA BECCO DI FLAUTO E BLOCCO INTRADDOMINALE AD OMBRELLINO DIAM 5 MM<div class="small muted">CIG B35DDC6FFA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">104 mila €</td></tr><tr data-t="dispositivo per lubrificazione, pulizia e riscaldamento dell&#39;ottica laparoscopica ">
+      <td class="small">2024-10-10</td>
+      <td>DISPOSITIVO PER LUBRIFICAZIONE, PULIZIA E RISCALDAMENTO DELL&#39;OTTICA LAPAROSCOPICA<div class="small muted">CIG B35DDA873B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">104 mila €</td></tr><tr data-t="trocar monouso lung 60-65 mm a punta smussa con rubinetto e stelo a vite ">
+      <td class="small">2024-10-10</td>
+      <td>TROCAR MONOUSO LUNG 60-65 MM A PUNTA SMUSSA CON RUBINETTO E STELO A VITE<div class="small muted">CIG B35DDC0B08 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">104 mila €</td></tr><tr data-t="loop in sintetico non assorbibile diam 5 mm cal 2/0 ">
+      <td class="small">2024-10-10</td>
+      <td>LOOP IN SINTETICO NON ASSORBIBILE DIAM 5 MM CAL 2/0<div class="small muted">CIG B35DDAEC2D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">104 mila €</td></tr><tr data-t="lotto 5 - alimenti prick test ">
+      <td class="small">2023-05-30</td>
+      <td>LOTTO 5 - ALIMENTI PRICK TEST<div class="small muted">CIG 9759806EAF · ALTRI MEDICINALI TERAPEUTICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">102 mila €</td></tr><tr data-t="servizio di ingegneria di direzione dei lavori e coordinamento della sicurezza in fase di esecuzione afferente al pnrr per la linea di intervento m6.c2 1.2 - verso un nuovo ospedale sicuro e sostenibile, finalizzato all&#39;attuazione dei &#39;lavori di adeguamento sismico del padiglione torre, del ponte di operatore individuale (persona fisica)">
+      <td class="small">2023-10-06</td>
+      <td>SERVIZIO DI INGEGNERIA DI DIREZIONE DEI LAVORI E COORDINAMENTO DELLA SICUREZZA IN FASE DI ESECUZIONE AFFERENTE AL PNRR PER LA LINEA DI INTERVENTO M6.C2 1.2 - VERSO UN NUOVO OSPEDALE SICURO E SOSTENIBILE, FINALIZZATO ALL&#39;ATTUAZIONE DEI &#39;LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIONE TORRE, DEL PONTE DI<div class="small muted">CIG A0152CF8CD · SERVIZI DI CONSULENZA IN INGEGNERIA STRUTTURALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">102 mila €</td></tr><tr data-t="fornitura di n.34 barelle ospedaliere di vario tipo ">
+      <td class="small">2023-10-23</td>
+      <td>FORNITURA DI N.34 BARELLE OSPEDALIERE DI VARIO TIPO<div class="small muted">CIG A021EBC1BD · BARELLE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">101 mila €</td></tr><tr data-t="agente emostatico ricongelabile ">
+      <td class="small">2024-10-08</td>
+      <td>AGENTE EMOSTATICO RICONGELABILE<div class="small muted">CIG B357B68326 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">101 mila €</td></tr><tr data-t="convenzionamento con farmacia al pubblico per la fornitura biennale di prodotti non inseriti nel prontuario ospedaliero aziendale ">
+      <td class="small">2023-03-29</td>
+      <td>CONVENZIONAMENTO CON FARMACIA AL PUBBLICO PER LA FORNITURA BIENNALE DI PRODOTTI NON INSERITI NEL PRONTUARIO OSPEDALIERO AZIENDALE<div class="small muted">CIG 9679186CF5 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">100 mila €</td></tr><tr data-t="rdo mepa -fornitura con posa in opera di n. 1 laser dye comprensivo di manutenzione ed assistenza full risk per il centro ustioni deka m.e.l.a. - s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>RDO MEPA -FORNITURA CON POSA IN OPERA DI N. 1 LASER DYE COMPRENSIVO DI MANUTENZIONE ED ASSISTENZA FULL RISK PER IL CENTRO USTIONI<div class="small muted">CIG 9935579B28 · LASER CHIRURGICO</div></td>
+      <td>DEKA M.E.L.A. - S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">100 mila €</td></tr><tr data-t="lotto 2 - fornitura con posa in opera di n. 1 microscopio ottico da laboratorio ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 2 - FORNITURA CON POSA IN OPERA DI N. 1 MICROSCOPIO OTTICO DA LABORATORIO<div class="small muted">CIG 9941230285 · MICROSCOPI ELETTRONICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">96 mila €</td></tr><tr data-t="lotto 2 - buste sterili per la raccolta delle urine delle 24 ore uso pediatrico con valvola per esami biochimici, citologici e batteriologici, per pazienti con peso maggiore di 2500 gr. circa, con adesivo anallergico, non irritante tipo maschio latex free. confezionato singolarmente ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 2 - BUSTE STERILI PER LA RACCOLTA DELLE URINE DELLE 24 ORE USO PEDIATRICO CON VALVOLA PER ESAMI BIOCHIMICI, CITOLOGICI E BATTERIOLOGICI, PER PAZIENTI CON PESO MAGGIORE DI 2500 GR. CIRCA, CON ADESIVO ANALLERGICO, NON IRRITANTE TIPO MASCHIO LATEX FREE. CONFEZIONATO SINGOLARMENTE<div class="small muted">CIG 9895211A6E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">96 mila €</td></tr><tr data-t="lotto 3 - buste sterili per la raccolta delle urine delle 24 ore uso pediatrico con valvola per esami biochimici, citologici e batteriologici, per pazienti con peso maggiore di 2.500 gr. circa, con adesivo anallergico, non irritante tipo femmina latex free. confezionato singolarmente ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 3 - BUSTE STERILI PER LA RACCOLTA DELLE URINE DELLE 24 ORE USO PEDIATRICO CON VALVOLA PER ESAMI BIOCHIMICI, CITOLOGICI E BATTERIOLOGICI, PER PAZIENTI CON PESO MAGGIORE DI 2.500 GR. CIRCA, CON ADESIVO ANALLERGICO, NON IRRITANTE TIPO FEMMINA LATEX FREE. CONFEZIONATO SINGOLARMENTE<div class="small muted">CIG 9895216E8D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">96 mila €</td></tr><tr data-t="gel emostatico 5 ml baxter s.p.a.">
+      <td class="small">2024-10-08</td>
+      <td>GEL EMOSTATICO 5 ML<div class="small muted">CIG B357B66180 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">95 mila €</td></tr><tr data-t="fornitura di 21 letti elettrici e bilancia operatore individuale (persona fisica)">
+      <td class="small">2024-08-06</td>
+      <td>FORNITURA DI 21 LETTI ELETTRICI E BILANCIA<div class="small muted">CIG B2B556C677 · LETTI MOTORIZZATI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">94 mila €</td></tr><tr data-t="fornitura maschere nasali per ventilazione non invasiva air liquide medical systems s.r.l.">
+      <td class="small">2024-11-22</td>
+      <td>FORNITURA MASCHERE NASALI PER VENTILAZIONE NON INVASIVA<div class="small muted">CIG B46A370E5C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>AIR LIQUIDE MEDICAL SYSTEMS S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">92 mila €</td></tr><tr data-t="fornitura quinquennale kit per mezzi di contrasto con comodato d&#39;uso gratuito ed assistenza tecnica full risk iniettore per tc ">
+      <td class="small">2023-02-02</td>
+      <td>FORNITURA QUINQUENNALE KIT PER MEZZI DI CONTRASTO CON COMODATO D&#39;USO GRATUITO ED ASSISTENZA TECNICA FULL RISK INIETTORE PER TC<div class="small muted">CIG 96165915F0 · APPARECCHI E STRUMENTI PER INFUSIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">92 mila €</td></tr><tr data-t="lotto 23 - alimento nutrizionalmente completo per os a base di peptidi, grassi carboidrati, privo di lattosio con osmolarità &lt; 300 mosm/l per sindromi da malassorbimento per lattanti (0 - 1 anno) ad alta densità calorica. ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 23 - ALIMENTO NUTRIZIONALMENTE COMPLETO PER OS A BASE DI PEPTIDI, GRASSI CARBOIDRATI, PRIVO DI LATTOSIO CON OSMOLARITÀ &lt; 300 MOSM/L PER SINDROMI DA MALASSORBIMENTO PER LATTANTI (0 - 1 ANNO) AD ALTA DENSITÀ CALORICA.<div class="small muted">CIG 96007895B7 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">90 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 facovitrectomo oculistico comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti medinova s.r.l.">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 FACOVITRECTOMO OCULISTICO COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B299689E1D · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDINOVA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">90 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 colonna chirurgica per orl comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti m.end.el. s.r.l.">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 COLONNA CHIRURGICA PER ORL COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B299687C77 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>M.END.EL. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">90 mila €</td></tr><tr data-t="lotto 3 - latte liquido per l&#39;alimentazione del neonato a termine fino all&#39; età di 5-6 mesi. ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 3 - LATTE LIQUIDO PER L&#39;ALIMENTAZIONE DEL NEONATO A TERMINE FINO ALL&#39; ETÀ DI 5-6 MESI.<div class="small muted">CIG 959168902A · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">88 mila €</td></tr><tr data-t="lotto 18.2 - adesione soresa medicazioni generali i appalto specifico 210/2022 - ditta farmac zabban ">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 18.2 - ADESIONE SORESA MEDICAZIONI GENERALI I APPALTO SPECIFICO 210/2022 - DITTA FARMAC ZABBAN<div class="small muted">CIG 971970062D · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">86 mila €</td></tr><tr data-t="lotto 7 - sacche per nutrizione parenterale graduata in eva con doppia chiusura morsetto e tappo a vite, complete di set di riempimento predisposto al distacco dopo l&#39;uso, monouso sterili, capacità 1000 ml, prive di lattice e ftalati ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 7 - SACCHE PER NUTRIZIONE PARENTERALE GRADUATA IN EVA CON DOPPIA CHIUSURA MORSETTO E TAPPO A VITE, COMPLETE DI SET DI RIEMPIMENTO PREDISPOSTO AL DISTACCO DOPO L&#39;USO, MONOUSO STERILI, CAPACITÀ 1000 ML, PRIVE DI LATTICE E FTALATI<div class="small muted">CIG 9895236F0E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">86 mila €</td></tr><tr data-t="affidamento sottosoglia del servizio di ingegneria e di architettura per la verifica del progettazione afferente al pnc, next generation eu, per la linea di intervento m6.c2 1.2 - verso un nuovo ospedale sicuro e sostenibile, finalizzato all&#39;attuazione dei &#39;lavori di adeguamento sismico del padiglio operatore individuale (persona fisica)">
+      <td class="small">2023-01-10</td>
+      <td>AFFIDAMENTO SOTTOSOGLIA DEL SERVIZIO DI INGEGNERIA E DI ARCHITETTURA PER LA VERIFICA DEL PROGETTAZIONE AFFERENTE AL PNC, NEXT GENERATION EU, PER LA LINEA DI INTERVENTO M6.C2 1.2 - VERSO UN NUOVO OSPEDALE SICURO E SOSTENIBILE, FINALIZZATO ALL&#39;ATTUAZIONE DEI &#39;LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIO<div class="small muted">CIG 9499472C46 · SERVIZI DI CONSULENZA IN INGEGNERIA STRUTTURALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">85 mila €</td></tr><tr data-t="servizio di progettazione di fattibilità tecnico-economica, progettazione esecutiva e coordinamento della sicurezza in fase di progettazione di elevata specialità per la progettazione di soluzioni tecnologicamente avanzate per la realizzazione di una nuova clean room (classe d) e la trasformazione d operatore individuale (persona fisica)">
+      <td class="small">2023-07-18</td>
+      <td>SERVIZIO DI PROGETTAZIONE DI FATTIBILITÀ TECNICO-ECONOMICA, PROGETTAZIONE ESECUTIVA E COORDINAMENTO DELLA SICUREZZA IN FASE DI PROGETTAZIONE DI ELEVATA SPECIALITÀ PER LA PROGETTAZIONE DI SOLUZIONI TECNOLOGICAMENTE AVANZATE PER LA REALIZZAZIONE DI UNA NUOVA CLEAN ROOM (CLASSE D) E LA TRASFORMAZIONE D<div class="small muted">CIG 9966895DEF · SERVIZI DI PROGETTAZIONE DI EDIFICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">81 mila €</td></tr><tr data-t="fornitura di n. 1 microscopio operatorio per otorinolaringoiatria con assistenza e manutenzione full risk per almeno 24 mesi leica microsystems s.r.l.">
+      <td class="small">2023-12-14</td>
+      <td>FORNITURA DI N. 1 MICROSCOPIO OPERATORIO PER OTORINOLARINGOIATRIA CON ASSISTENZA E MANUTENZIONE FULL RISK PER ALMENO 24 MESI<div class="small muted">CIG A03D36E111 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>LEICA MICROSYSTEMS S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">80 mila €</td></tr><tr data-t="fornitura di n. 11 cardiomonitor defibrillatori burke &amp; burke s.p.a.">
+      <td class="small">2024-03-11</td>
+      <td>FORNITURA DI N. 11 CARDIOMONITOR DEFIBRILLATORI<div class="small muted">CIG B0C0BBEA7C · DEFIBRILLATORE CARDIACO</div></td>
+      <td>BURKE &amp; BURKE S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">80 mila €</td></tr><tr data-t="filtri anti legionella e anti pseudomonas ">
+      <td class="small">2024-08-02</td>
+      <td>FILTRI ANTI LEGIONELLA E ANTI PSEUDOMONAS<div class="small muted">CIG B2B26BD032 · APPARECCHI DI FILTRAGGIO DELL&#39;ACQUA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">80 mila €</td></tr><tr data-t="fornitura antilegionella e antipseudomonas ">
+      <td class="small">2024-08-05</td>
+      <td>FORNITURA ANTILEGIONELLA E ANTIPSEUDOMONAS<div class="small muted">CIG B2B369C914 · MACCHINARI E APPARECCHI DI FILTRAGGIO O PURIFICAZIONE DI LIQUIDI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">80 mila €</td></tr><tr data-t="filtri anti-legionella e anti-pseudomonas ">
+      <td class="small">2024-08-02</td>
+      <td>FILTRI ANTI-LEGIONELLA E ANTI-PSEUDOMONAS<div class="small muted">CIG B2B285A502 · APPARECCHI DI FILTRAGGIO DELL&#39;ACQUA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">80 mila €</td></tr><tr data-t="filtri anti legionella e anti pseudomonas sterimed s.r.l.">
+      <td class="small">2024-09-24</td>
+      <td>FILTRI ANTI LEGIONELLA E ANTI PSEUDOMONAS<div class="small muted">CIG B3280D9AA0 · MACCHINARI E APPARECCHI DI FILTRAGGIO O DEPURAZIONE DELL&#39;ACQUA</div></td>
+      <td>STERIMED S.R.L.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">80 mila €</td></tr><tr data-t="n.6 licenze hyperflex tim s.p.a.">
+      <td class="small">2024-04-24</td>
+      <td>N.6 LICENZE HYPERFLEX<div class="small muted">CIG B162E8E915 · MACCHINE PER L&#39;ELABORAZIONE DI DATI (HARDWARE)</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">79 mila €</td></tr><tr data-t="fornitura 2 ecotomografi da trasporto compresniva di assistenza e manutenzione full risk tramite mepa siemens healthcare srl">
+      <td class="small">2023-10-13</td>
+      <td>FORNITURA 2 ECOTOMOGRAFI DA TRASPORTO COMPRESNIVA DI ASSISTENZA E MANUTENZIONE FULL RISK TRAMITE MEPA<div class="small muted">CIG A01D8A1766 · ECOGRAFI, ULTRASONOGRAFI E APPARECCHI DOPPLER</div></td>
+      <td>Siemens Healthcare Srl</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">78 mila €</td></tr><tr data-t="fornitura triennale, in somministrazione, di dispositivi medici infungibili, cateteri edi (varie misure) e di cavi modulo edi con spinotto di test edi getinge italia s.r.l.">
+      <td class="small">2024-11-12</td>
+      <td>FORNITURA TRIENNALE, IN SOMMINISTRAZIONE, DI DISPOSITIVI MEDICI INFUNGIBILI, CATETERI EDI (VARIE MISURE) E DI CAVI MODULO EDI CON SPINOTTO DI TEST EDI<div class="small muted">CIG B358DEB9E3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>GETINGE ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">78 mila €</td></tr><tr data-t="fornitura quinquennale di copertine termiche movi spa">
+      <td class="small">2024-08-23</td>
+      <td>FORNITURA QUINQUENNALE DI COPERTINE TERMICHE<div class="small muted">CIG B2D4B5896A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MOVI SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">77 mila €</td></tr><tr data-t="adesione ad accordo quadro so.re.sa. per la fornitura quadriennale di suture per chirurgia - ditta medtronic italia ">
+      <td class="small">2023-05-11</td>
+      <td>ADESIONE AD ACCORDO QUADRO SO.RE.SA. PER LA FORNITURA QUADRIENNALE DI SUTURE PER CHIRURGIA - DITTA MEDTRONIC ITALIA<div class="small muted">CIG 9772763327 · SUTURE CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">75 mila €</td></tr><tr data-t="fornitura strumentario microchirurgico per trapianto renale e procedure chirurgiche di ricostruzione delle vie urinarie ">
+      <td class="small">2023-01-27</td>
+      <td>FORNITURA STRUMENTARIO MICROCHIRURGICO PER TRAPIANTO RENALE E PROCEDURE CHIRURGICHE DI RICOSTRUZIONE DELLE VIE URINARIE<div class="small muted">CIG 9512348DE2 · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">75 mila €</td></tr><tr data-t="fornitura di manipoli ed accessori per u.o. ortopedia e traumatologia ">
+      <td class="small">2023-02-16</td>
+      <td>FORNITURA DI MANIPOLI ED ACCESSORI PER U.O. ORTOPEDIA E TRAUMATOLOGIA<div class="small muted">CIG 9661486E74 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">75 mila €</td></tr><tr data-t="procedura negoziata ai sensi dell&#39;art. 63, comma 2, lettera b), d.lgs. 50/2016 da espletarsi a mezzo piattaforma di e-procurement mepa di consip s.p.a., per la fornitura con posa in opera di laser supino comprensivo di assistenza tecnica full-risk quinquennale per le esigenze assistenziali dell&#39;u.o. ">
+      <td class="small">2023-05-09</td>
+      <td>PROCEDURA NEGOZIATA AI SENSI DELL&#39;ART. 63, COMMA 2, LETTERA B), D.LGS. 50/2016 DA ESPLETARSI A MEZZO PIATTAFORMA DI E-PROCUREMENT MEPA DI CONSIP S.P.A., PER LA FORNITURA CON POSA IN OPERA DI LASER SUPINO COMPRENSIVO DI ASSISTENZA TECNICA FULL-RISK QUINQUENNALE PER LE ESIGENZE ASSISTENZIALI DELL&#39;U.O.<div class="small muted">CIG 9814998892 · LASER CHIRURGICO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">75 mila €</td></tr><tr data-t="lotto 30 - protesi di membrana timpanica in materiale acellulare di sottomucosa d&#39;intestino porcino cm2x3 circa ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 30 - PROTESI DI MEMBRANA TIMPANICA IN MATERIALE ACELLULARE DI SOTTOMUCOSA D&#39;INTESTINO PORCINO CM2X3 CIRCA<div class="small muted">CIG 9918596C57 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">75 mila €</td></tr><tr data-t="lotto 3 - elettrodi monouso neonatali, supporto in tnt, pregelato, con cavo da 50 cm, mm24x33, con connettore femmina da 4 mm ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 3 - ELETTRODI MONOUSO NEONATALI, SUPPORTO IN TNT, PREGELATO, CON CAVO DA 50 CM, MM24X33, CON CONNETTORE FEMMINA DA 4 MM<div class="small muted">CIG 99181192B8 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">75 mila €</td></tr><tr data-t="lotto 4 - elettrodi pediatrici per ecg ad alta adesività diam. 24 mm circa, privi di lattice con cavetto attacco maschio, alta conduttività ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 4 - ELETTRODI PEDIATRICI PER ECG AD ALTA ADESIVITÀ DIAM. 24 MM CIRCA, PRIVI DI LATTICE CON CAVETTO ATTACCO MASCHIO, ALTA CONDUTTIVITÀ<div class="small muted">CIG 9918128A23 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">75 mila €</td></tr><tr data-t="collaudo statico in corso d&#39;opera e tecnico amministrativo dei lavori di adeguamento sismico del padiglione santobono presso il p.o. santobono, afferenti al pnc. studio botton s.r.l.">
+      <td class="small">2023-10-25</td>
+      <td>COLLAUDO STATICO IN CORSO D&#39;OPERA E TECNICO AMMINISTRATIVO DEI LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIONE SANTOBONO PRESSO IL P.O. SANTOBONO, AFFERENTI AL PNC.<div class="small muted">CIG A02210DB16 · SERVIZI DI CONSULENZA IN INGEGNERIA STRUTTURALE</div></td>
+      <td>STUDIO BOTTON S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">75 mila €</td></tr><tr data-t="lotto 3 - fornitura con posa in opera di n. 2 sistemi + reagenti di ultima generazione per pcr quantitativa in fluorescenza con blocco di reazione a 96 e 384 posti comprensivo del materiale di consumo per 4 anni, garanzia ed assistenza tecnica full risk ">
+      <td class="small">2023-06-14</td>
+      <td>LOTTO 3 - FORNITURA CON POSA IN OPERA DI N. 2 SISTEMI + REAGENTI DI ULTIMA GENERAZIONE PER PCR QUANTITATIVA IN FLUORESCENZA CON BLOCCO DI REAZIONE A 96 E 384 POSTI COMPRENSIVO DEL MATERIALE DI CONSUMO PER 4 ANNI, GARANZIA ED ASSISTENZA TECNICA FULL RISK<div class="small muted">CIG 9876924786 · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">74 mila €</td></tr><tr data-t="lotto 4 - fornitura con posa in opera di n^ 6 centrifughe refrigerate comprensiva di garanzia ed assistenza tecnica full risk ">
+      <td class="small">2023-06-14</td>
+      <td>LOTTO 4 - FORNITURA CON POSA IN OPERA DI N^ 6 CENTRIFUGHE REFRIGERATE COMPRENSIVA DI GARANZIA ED ASSISTENZA TECNICA FULL RISK<div class="small muted">CIG 98769469AD · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">74 mila €</td></tr><tr data-t="lotto 44 - camici monouso sterili standard, assorbenti in tnt con polsino misura large allacciatura posteriore morbida e regolabile ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 44 - CAMICI MONOUSO STERILI STANDARD, ASSORBENTI IN TNT CON POLSINO MISURA LARGE ALLACCIATURA POSTERIORE MORBIDA E REGOLABILE<div class="small muted">CIG 9919184196 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">74 mila €</td></tr><tr data-t="fornitura di durata biennale di wafer elementi saldanti monouso per connettori sterili tscd ii della ditta terumo ">
+      <td class="small">2023-04-12</td>
+      <td>FORNITURA DI DURATA BIENNALE DI WAFER ELEMENTI SALDANTI MONOUSO PER CONNETTORI STERILI TSCD II DELLA DITTA TERUMO<div class="small muted">CIG 97707348C3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">70 mila €</td></tr><tr data-t="fornitura triennale, in somministrazione, di interfaccia nasali per la ventilazione non invasiva neonatale ">
+      <td class="small">2023-06-29</td>
+      <td>FORNITURA TRIENNALE, IN SOMMINISTRAZIONE, DI INTERFACCIA NASALI PER LA VENTILAZIONE NON INVASIVA NEONATALE<div class="small muted">CIG 99288412CB · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">70 mila €</td></tr><tr data-t="fornitura con posa in opera di manipoli motorizzati per micro e macro chirurgia ortopedica comprensiva di assistenza e manutenzione full risk per 12 mesi ed eventuali materiali di consumo se previsti stryker italia s.r.l.">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA CON POSA IN OPERA DI MANIPOLI MOTORIZZATI PER MICRO E MACRO CHIRURGIA ORTOPEDICA COMPRENSIVA DI ASSISTENZA E MANUTENZIONE FULL RISK PER 12 MESI ED EVENTUALI MATERIALI DI CONSUMO SE PREVISTI<div class="small muted">CIG B29968AEF0 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>STRYKER ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">70 mila €</td></tr><tr data-t="n°3 monitor cerebrale (cfm/aeeg) di ultima generazione con relativo materiale di consumo a.t.m. service s.r.l.">
+      <td class="small">2024-09-05</td>
+      <td>N°3 MONITOR CEREBRALE (CFM/AEEG) DI ULTIMA GENERAZIONE CON RELATIVO MATERIALE DI CONSUMO<div class="small muted">CIG B2EB06C4FD · APPARECCHIATURA MEDICA INFORMATICA</div></td>
+      <td>A.T.M. SERVICE S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">70 mila €</td></tr><tr data-t="trocar di primo accesso 5 x 75mm e 5 x 55 mm con palloncino ">
+      <td class="small">2024-10-10</td>
+      <td>TROCAR DI PRIMO ACCESSO 5 X 75MM E 5 X 55 MM CON PALLONCINO<div class="small muted">CIG B35DDCA34B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">70 mila €</td></tr><tr data-t="adesione accordo quadro consip per la fornitura di carburante per autotrazione dietro presentazione di fuel card fuel card 3 – lotto 1 – per un periodo di trentacinque mesi dal 01.12.2024 al 31.10.2027 kuwait petoleum">
+      <td class="small">2024-11-11</td>
+      <td>ADESIONE ACCORDO QUADRO CONSIP PER LA FORNITURA DI CARBURANTE PER AUTOTRAZIONE DIETRO PRESENTAZIONE DI FUEL CARD FUEL CARD 3 – LOTTO 1 – PER UN PERIODO DI TRENTACINQUE MESI DAL 01.12.2024 AL 31.10.2027<div class="small muted">CIG B436E641C0 · COMBUSTIBILE DIESEL (EN 590)</div></td>
+      <td>KUWAIT PETOLEUM</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">69 mila €</td></tr><tr data-t="fornitura biennale di tettarelle e poppatoi sterili adria med srl">
+      <td class="small">2023-11-22</td>
+      <td>FORNITURA BIENNALE DI TETTARELLE E POPPATOI STERILI<div class="small muted">CIG A0300DAAC4 · TETTARELLE, PARACAPEZZOLI E ARTICOLI SIMILI PER BAMBINI</div></td>
+      <td>ADRIA MED SRL</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">68 mila €</td></tr><tr data-t="set per colangiografia intraoperatoria composto da : catetere a due vie con palloncino, introduttore a becco di flauto ed ago. ">
+      <td class="small">2024-10-10</td>
+      <td>SET PER COLANGIOGRAFIA INTRAOPERATORIA COMPOSTO DA : CATETERE A DUE VIE CON PALLONCINO, INTRODUTTORE A BECCO DI FLAUTO ED AGO.<div class="small muted">CIG B35DDB8470 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="trocar monouso diam 5 mm con punta dilatante filettata lung 55 e 70 mm ">
+      <td class="small">2024-10-10</td>
+      <td>TROCAR MONOUSO DIAM 5 MM CON PUNTA DILATANTE FILETTATA LUNG 55 E 70 MM<div class="small muted">CIG B35DDC4E54 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="cannula monouso lavaggio-aspirazione diam 5 mm completa di tubi ed attacchi per sacche ">
+      <td class="small">2024-10-10</td>
+      <td>CANNULA MONOUSO LAVAGGIO-ASPIRAZIONE DIAM 5 MM COMPLETA DI TUBI ED ATTACCHI PER SACCHE<div class="small muted">CIG B35DDA6595 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="trocar monouso a lama protetta tagliente sui due lati retrattile con rubinetto insufflazione ,riduttore automatiuco incorporato a 5 mm diam 5/10/11/12 lung 100 mm e 70 mm ">
+      <td class="small">2024-10-10</td>
+      <td>TROCAR MONOUSO A LAMA PROTETTA TAGLIENTE SUI DUE LATI RETRATTILE CON RUBINETTO INSUFFLAZIONE ,RIDUTTORE AUTOMATIUCO INCORPORATO A 5 MM DIAM 5/10/11/12 LUNG 100 MM E 70 MM<div class="small muted">CIG B35DDBE962 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="sacchetto monouso per reperti diam 10 e/o 12 mm con stelo lungo e filo di repere vol 1500 ml circa con introduttore ">
+      <td class="small">2024-10-10</td>
+      <td>SACCHETTO MONOUSO PER REPERTI DIAM 10 E/O 12 MM CON STELO LUNGO E FILO DI REPERE VOL 1500 ML CIRCA CON INTRODUTTORE<div class="small muted">CIG B35DDB2F79 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="forbice laparoscopica curva tipo matzembaum diam. 5 mm con stelo roteante 360° isolata elettricamente con attacco monopolare, monouso ">
+      <td class="small">2024-10-10</td>
+      <td>FORBICE LAPAROSCOPICA CURVA TIPO MATZEMBAUM DIAM. 5 MM CON STELO ROTEANTE 360° ISOLATA ELETTRICAMENTE CON ATTACCO MONOPOLARE, MONOUSO<div class="small muted">CIG B35DDACA87 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="lotto 2 - latte liquido/polvere per l&#39;alimentazione dei nati prematuri ed immaturi (latti formula 0) con peso compreso tra i 1500 ed i 2500 gr. ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 2 - LATTE LIQUIDO/POLVERE PER L&#39;ALIMENTAZIONE DEI NATI PREMATURI ED IMMATURI (LATTI FORMULA 0) CON PESO COMPRESO TRA I 1500 ED I 2500 GR.<div class="small muted">CIG 95916797E7 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="adesione all&#39;aggiudicazione so.re.sa. della fornitura quadriennale di reti per ernia protesi per pareti addominali - ditta medtronic italia spa ">
+      <td class="small">2023-08-11</td>
+      <td>ADESIONE ALL&#39;AGGIUDICAZIONE SO.RE.SA. DELLA FORNITURA QUADRIENNALE DI RETI PER ERNIA PROTESI PER PARETI ADDOMINALI - DITTA MEDTRONIC ITALIA SPA<div class="small muted">CIG A002550B5F · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">67 mila €</td></tr><tr data-t="integratore alim. di sali minerali e glucosio reidratante orale gusto gradevole ">
+      <td class="small">2024-08-23</td>
+      <td>INTEGRATORE ALIM. DI SALI MINERALI E GLUCOSIO REIDRATANTE ORALE GUSTO GRADEVOLE<div class="small muted">CIG B2D1B6BCB6 · SOLUZIONI GALENICHE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">66 mila €</td></tr><tr data-t="fornitura di dispositivi protesici infungibili, per n. 12 interventi - sistema pectus up high - tech screw s.r.l.">
+      <td class="small">2024-11-12</td>
+      <td>FORNITURA DI DISPOSITIVI PROTESICI INFUNGIBILI, PER N. 12 INTERVENTI - SISTEMA PECTUS UP<div class="small muted">CIG B358EBE803 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>HIGH - TECH SCREW S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">66 mila €</td></tr><tr data-t="fornitura triennale di mezzi di contrasto alle aa.ss. della regione campania - adesione so.re.sa. - ditta ge healthcare ">
+      <td class="small">2023-08-04</td>
+      <td>FORNITURA TRIENNALE DI MEZZI DI CONTRASTO ALLE AA.SS. DELLA REGIONE CAMPANIA - ADESIONE SO.RE.SA. - DITTA GE HEALTHCARE<div class="small muted">CIG A0012A53A0 · PRODOTTI DI CONTRASTO RADIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">66 mila €</td></tr><tr data-t="fornitura triennale di medicazioni ii - adesione so.re.sa. - ditta svas biosana ">
+      <td class="small">2023-09-12</td>
+      <td>FORNITURA TRIENNALE DI MEDICAZIONI II - ADESIONE SO.RE.SA. - DITTA SVAS BIOSANA<div class="small muted">CIG A006E39639 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">65 mila €</td></tr><tr data-t="fornitura urgente con posa in opera di n. 2 elettrobisturi erbe italia s.r.l.">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA URGENTE CON POSA IN OPERA DI N. 2 ELETTROBISTURI<div class="small muted">CIG B29DBB1FEA · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>ERBE ITALIA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">65 mila €</td></tr><tr data-t="lotto 5 - sacche per nutrizione parenterale in eva con doppia chiusura morsetto e tappo a vite, complete di set di riempimento predisposto al distacco dopo l&#39;uso, monouso sterili, capacità 250 ml , prive di lattice e ftalati ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 5 - SACCHE PER NUTRIZIONE PARENTERALE IN EVA CON DOPPIA CHIUSURA MORSETTO E TAPPO A VITE, COMPLETE DI SET DI RIEMPIMENTO PREDISPOSTO AL DISTACCO DOPO L&#39;USO, MONOUSO STERILI, CAPACITÀ 250 ML , PRIVE DI LATTICE E FTALATI<div class="small muted">CIG 9895234D68 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">64 mila €</td></tr><tr data-t="microcatetere coassiale armato, monoblocco con punta preformabile, da 2.4 fr a 2.8 fr, con diametri interni 0.021 e 0.027 , di materiale compatibile con chemioterapici, d ">
+      <td class="small">2024-03-15</td>
+      <td>MICROCATETERE COASSIALE ARMATO, MONOBLOCCO CON PUNTA PREFORMABILE, DA 2.4 FR A 2.8 FR, CON DIAMETRI INTERNI 0.021 E 0.027 , DI MATERIALE COMPATIBILE CON CHEMIOTERAPICI, D<div class="small muted">CIG B0D0E921FA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">63 mila €</td></tr><tr data-t="fornitura biennale, in somministrazione di materiale monouso e pluriuso per incubatrici caleo ">
+      <td class="small">2023-08-08</td>
+      <td>FORNITURA BIENNALE, IN SOMMINISTRAZIONE DI MATERIALE MONOUSO E PLURIUSO PER INCUBATRICI CALEO<div class="small muted">CIG A002FC8EF9 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">62 mila €</td></tr><tr data-t="lotto 6 - latte nutrizionalmente completo per l&#39;alimentazione dei lattanti da 6 a 12 mesi arricchito con oligosaccaridi, con proteine predigerite e dha/ara in rapporto 1:1 ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 6 - LATTE NUTRIZIONALMENTE COMPLETO PER L&#39;ALIMENTAZIONE DEI LATTANTI DA 6 A 12 MESI ARRICCHITO CON OLIGOSACCARIDI, CON PROTEINE PREDIGERITE E DHA/ARA IN RAPPORTO 1:1<div class="small muted">CIG 95922986B8 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">60 mila €</td></tr><tr data-t="lotto 72 - contenitore sterile in polipropilene con sonda di campionamento sottovuoto integrata da 120 ml ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 72 - CONTENITORE STERILE IN POLIPROPILENE CON SONDA DI CAMPIONAMENTO SOTTOVUOTO INTEGRATA DA 120 ML<div class="small muted">CIG 99193781AE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">60 mila €</td></tr><tr data-t="lotto 5 - elettrodi monouso pregellati per ecg con gel solido e connessione din di sicurezza 1,5 mm- diam 20,0 mm per uso neonatale ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 5 - ELETTRODI MONOUSO PREGELLATI PER ECG CON GEL SOLIDO E CONNESSIONE DIN DI SICUREZZA 1,5 MM- DIAM 20,0 MM PER USO NEONATALE<div class="small muted">CIG 9918153EC3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">60 mila €</td></tr><tr data-t="fornitura urgente con posa in opera di una centrale di monitoraggio + 5 monitor multiparametrici, comprensivo di garanzia ed assistenza tecnica full risk, per le esigenze della uoc chirurgia plastica e delle ustioni del p.o. santobono tecnosystem s.a.s. di cigliano enrico">
+      <td class="small">2024-05-07</td>
+      <td>FORNITURA URGENTE CON POSA IN OPERA DI UNA CENTRALE DI MONITORAGGIO + 5 MONITOR MULTIPARAMETRICI, COMPRENSIVO DI GARANZIA ED ASSISTENZA TECNICA FULL RISK, PER LE ESIGENZE DELLA UOC CHIRURGIA PLASTICA E DELLE USTIONI DEL P.O. SANTOBONO<div class="small muted">CIG B1878354C3 · Cpv prevalente non disponibile</div></td>
+      <td>TECNOSYSTEM S.A.S. DI CIGLIANO ENRICO</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">60 mila €</td></tr><tr data-t="lotto 61 - termometri clinici ovali con astuccio per adulti senza mercurio con all&#39;interno del capillare una lega di gallio, indio, stagno, galiston ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 61 - TERMOMETRI CLINICI OVALI CON ASTUCCIO PER ADULTI SENZA MERCURIO CON ALL&#39;INTERNO DEL CAPILLARE UNA LEGA DI GALLIO, INDIO, STAGNO, GALISTON<div class="small muted">CIG 991930556F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">59 mila €</td></tr><tr data-t="fornitura di n. 10 switch di distribuzione ai fini dell&#39;integrazione del cablaggio strutturato interno e fornitura di n.70 telefoni voip corredati di garanzia per 36 mesi - tim s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>FORNITURA DI N. 10 SWITCH DI DISTRIBUZIONE AI FINI DELL&#39;INTEGRAZIONE DEL CABLAGGIO STRUTTURATO INTERNO E FORNITURA DI N.70 TELEFONI VOIP CORREDATI DI GARANZIA PER 36 MESI -<div class="small muted">CIG 9922570BCA · APPARECCHIATURE INFORMATICHE</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">59 mila €</td></tr><tr data-t="direzione lavori e coordinamento della sicurezza in fase di esecuzione ing. alfredo maselli">
+      <td class="small">2024-04-08</td>
+      <td>DIREZIONE LAVORI E COORDINAMENTO DELLA SICUREZZA IN FASE DI ESECUZIONE<div class="small muted">CIG B11FECC7CC · Cpv prevalente non disponibile</div></td>
+      <td>ING. ALFREDO MASELLI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">58 mila €</td></tr><tr data-t="lotto 28 - prodotto liquido per la nutrizione enterale, completo, normocalorico, polimerico, arricchito di taurina, carnitina ed antiossidanti con osmolarità &lt; 250 mosm/ l adatto per composizione alle esigenze nutrizionali di bambini da 6 a 12 anni, con epa e dha ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 28 - PRODOTTO LIQUIDO PER LA NUTRIZIONE ENTERALE, COMPLETO, NORMOCALORICO, POLIMERICO, ARRICCHITO DI TAURINA, CARNITINA ED ANTIOSSIDANTI CON OSMOLARITÀ &lt; 250 MOSM/ L ADATTO PER COMPOSIZIONE ALLE ESIGENZE NUTRIZIONALI DI BAMBINI DA 6 A 12 ANNI, CON EPA E DHA<div class="small muted">CIG 9601305F85 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">58 mila €</td></tr><tr data-t="lotto 9 - aspiratori chirurgici monuso per neurochirurgia in acciaio inox malleabile, dotati di punta atraumatica, di manipolo ergonomico con aletta guida con depressione regolabile, del possibile diametro di 3-5-7-9-11-12-14-15 fr e lunghezza cannula di 50-70-90-110-140-180-200-220, completi di man ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 9 - ASPIRATORI CHIRURGICI MONUSO PER NEUROCHIRURGIA IN ACCIAIO INOX MALLEABILE, DOTATI DI PUNTA ATRAUMATICA, DI MANIPOLO ERGONOMICO CON ALETTA GUIDA CON DEPRESSIONE REGOLABILE, DEL POSSIBILE DIAMETRO DI 3-5-7-9-11-12-14-15 FR E LUNGHEZZA CANNULA DI 50-70-90-110-140-180-200-220, COMPLETI DI MAN<div class="small muted">CIG 98866219BD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">57 mila €</td></tr><tr data-t="procedura negoziata, ai sensi dell&#39;art. 63, comma 2, lettera b), d.lgs. 50/2016 per la fornitura dello strumento simple plex ella con garanzia platinum full risk e consumabili e reagenti per 2 anni ">
+      <td class="small">2023-06-21</td>
+      <td>PROCEDURA NEGOZIATA, AI SENSI DELL&#39;ART. 63, COMMA 2, LETTERA B), D.LGS. 50/2016 PER LA FORNITURA DELLO STRUMENTO SIMPLE PLEX ELLA CON GARANZIA PLATINUM FULL RISK E CONSUMABILI E REAGENTI PER 2 ANNI<div class="small muted">CIG 9888950BB0 · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">57 mila €</td></tr><tr data-t="adesione ad accordo quadro so.re.sa per la fornitura quadriennale di suture per chirurugia - ditta johnson &amp; johnson medical ">
+      <td class="small">2023-05-11</td>
+      <td>ADESIONE AD ACCORDO QUADRO SO.RE.SA PER LA FORNITURA QUADRIENNALE DI SUTURE PER CHIRURUGIA - DITTA JOHNSON &amp; JOHNSON MEDICAL<div class="small muted">CIG 977279800A · SUTURE CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">57 mila €</td></tr><tr data-t="fornitura con posa in opera, in noleggio di n. 6 osmosi portatili impresa inesistente">
+      <td class="small">2024-10-31</td>
+      <td>FORNITURA CON POSA IN OPERA, IN NOLEGGIO DI N. 6 OSMOSI PORTATILI<div class="small muted">CIG B40FFFAFDB · APPARECCHIATURE MEDICHE, PRODOTTI FARMACEUTICI E PER LA CURA PERSONALE</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">57 mila €</td></tr><tr data-t="lavori di somma urgenza per la formazione di una lesione da contenere con una paratia di rinforzo al muro di confine del po santobono con condominio di via sagrera, 23 - progettazione, direzione dei lavori e coordinamento per la sicurezza in fase di progettazione ed esecuzione lavori - ing. stefano  ">
+      <td class="small">2023-03-31</td>
+      <td>LAVORI DI SOMMA URGENZA PER LA FORMAZIONE DI UNA LESIONE DA CONTENERE CON UNA PARATIA DI RINFORZO AL MURO DI CONFINE DEL PO SANTOBONO CON CONDOMINIO DI VIA SAGRERA, 23 - PROGETTAZIONE, DIREZIONE DEI LAVORI E COORDINAMENTO PER LA SICUREZZA IN FASE DI PROGETTAZIONE ED ESECUZIONE LAVORI - ING. STEFANO <div class="small muted">CIG 9752508831 · VARI SERVIZI DI INGEGNERIA</div></td>
+      <td>—</td>
+      <td class="small neg">PROCEDURA NEGOZIATA SENZA PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">56 mila €</td></tr><tr data-t="urochinasi ">
+      <td class="small">2023-04-26</td>
+      <td>UROCHINASI<div class="small muted">CIG 969771251B · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">56 mila €</td></tr><tr data-t="lotto 6.1. - adesione soresa medicazioni generali i appalto specifico 210/2022 - ditta rays ">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 6.1. - ADESIONE SORESA MEDICAZIONI GENERALI I APPALTO SPECIFICO 210/2022 - DITTA RAYS<div class="small muted">CIG 9715950F91 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">55 mila €</td></tr><tr data-t="lotto 1 - glucarpidase ">
+      <td class="small">2023-03-21</td>
+      <td>LOTTO 1 - GLUCARPIDASE<div class="small muted">CIG 97257040D7 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">55 mila €</td></tr><tr data-t="lotto 41 - telini sterili in tnt 75x45 cm circa ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 41 - TELINI STERILI IN TNT 75X45 CM CIRCA<div class="small muted">CIG 99191727AD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">55 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 11 cardio monitor defibrillatori ">
+      <td class="small">2023-10-23</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 11 CARDIO MONITOR DEFIBRILLATORI<div class="small muted">CIG A021ED88D6 · DEFIBRILLATORE CARDIACO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">55 mila €</td></tr><tr data-t="uncini monouso protetti compatibili con i manipoli monouso comando taglio-coagulo ( in dotazione) ">
+      <td class="small">2024-10-10</td>
+      <td>UNCINI MONOUSO PROTETTI COMPATIBILI CON I MANIPOLI MONOUSO COMANDO TAGLIO-COAGULO ( IN DOTAZIONE)<div class="small muted">CIG B35DDC9278 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">55 mila €</td></tr><tr data-t="fornitura biennale in somministrazione, di test per la diagnostica oncologica comprensiva di strumento benchmark in comodato d&#39;uso per le esigenze della s.c. anatomia patologica roche diagnostics s.p.a.">
+      <td class="small">2024-12-12</td>
+      <td>FORNITURA BIENNALE IN SOMMINISTRAZIONE, DI TEST PER LA DIAGNOSTICA ONCOLOGICA COMPRENSIVA DI STRUMENTO BENCHMARK IN COMODATO D&#39;USO PER LE ESIGENZE DELLA S.C. ANATOMIA PATOLOGICA<div class="small muted">CIG B4C872F99D · REATTIVI PER LABORATORIO</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">55 mila €</td></tr><tr data-t="fornitura triennale di un sistema ad ultrasuoni per debrider chirurgico in comodato d&#39;uso gratuito biomedica italia srl">
+      <td class="small">2024-10-03</td>
+      <td>FORNITURA TRIENNALE DI UN SISTEMA AD ULTRASUONI PER DEBRIDER CHIRURGICO IN COMODATO D&#39;USO GRATUITO<div class="small muted">CIG B34D0F8CDF · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BIOMEDICA ITALIA SRL</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">55 mila €</td></tr><tr data-t="lotto 30 - dieta semi-elementare nutrizionalmente completa, normocalorica, per sonda, a base di piccoli peptidi, per pazienti con malassorbimento; priva di fibre; priva di glutine; ridotto contenuto di lattosio ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 30 - DIETA SEMI-ELEMENTARE NUTRIZIONALMENTE COMPLETA, NORMOCALORICA, PER SONDA, A BASE DI PICCOLI PEPTIDI, PER PAZIENTI CON MALASSORBIMENTO; PRIVA DI FIBRE; PRIVA DI GLUTINE; RIDOTTO CONTENUTO DI LATTOSIO<div class="small muted">CIG 96016360B0 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">55 mila €</td></tr><tr data-t="lotto 4 - inalanti prick test acaro siro e altri ">
+      <td class="small">2023-05-30</td>
+      <td>LOTTO 4 - INALANTI PRICK TEST ACARO SIRO E ALTRI<div class="small muted">CIG 9759798817 · ALTRI MEDICINALI TERAPEUTICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">54 mila €</td></tr><tr data-t="affidamento diretto per servizio di progettazione dl,cse,csp redazione cep e monitoraggio studio tecnico di ingegneria">
+      <td class="small">2024-10-14</td>
+      <td>AFFIDAMENTO DIRETTO PER SERVIZIO DI PROGETTAZIONE DL,CSE,CSP REDAZIONE CEP E MONITORAGGIO<div class="small muted">CIG B36910D1BF · SERVIZI ARCHITETTONICI E SERVIZI AFFINI</div></td>
+      <td>STUDIO TECNICO DI INGEGNERIA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">54 mila €</td></tr><tr data-t="ansa metallica con sacca in poliuretano per recupero corpi estranei,monouso, in versione traforata per il recupero di corpi estranei taglienti ed appuntiti ">
+      <td class="small">2024-06-03</td>
+      <td>ANSA METALLICA CON SACCA IN POLIURETANO PER RECUPERO CORPI ESTRANEI,MONOUSO, IN VERSIONE TRAFORATA PER IL RECUPERO DI CORPI ESTRANEI TAGLIENTI ED APPUNTITI<div class="small muted">CIG B1E6530ED5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">54 mila €</td></tr><tr data-t="lotto 3 ">
+      <td class="small">2024-11-03</td>
+      <td>LOTTO 3<div class="small muted">CIG B41806F16F · ANTISETTICI E DISINFETTANTI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">54 mila €</td></tr><tr data-t="lotto 2 - elettrodi misure varie ">
+      <td class="small">2023-09-14</td>
+      <td>LOTTO 2 - ELETTRODI MISURE VARIE<div class="small muted">CIG A007A78150 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">54 mila €</td></tr><tr data-t="adesione ad accordo quadro consip - &#39;ecotomografi 2&#39;fornitura di n. 2 ecotomografi cardiologici ed accessori ge medical systems italia s.p.a">
+      <td class="small">2023-01-20</td>
+      <td>ADESIONE AD ACCORDO QUADRO CONSIP - &#39;ECOTOMOGRAFI 2&#39;FORNITURA DI N. 2 ECOTOMOGRAFI CARDIOLOGICI ED ACCESSORI<div class="small muted">CIG 9584858B08 · ECOCARDIOGRAFI</div></td>
+      <td>GE MEDICAL SYSTEMS ITALIA S.P.A</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">54 mila €</td></tr><tr data-t="lotto 36 - alimento nutrizionalmente completo, ipercalorico,per bambini critici post-chirurgici ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 36 - ALIMENTO NUTRIZIONALMENTE COMPLETO, IPERCALORICO,PER BAMBINI CRITICI POST-CHIRURGICI<div class="small muted">CIG 96071528A0 · PRODOTTI NUTRITIVI SPECIALI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">53 mila €</td></tr><tr data-t="manutenzione full risk per 24 mesi, rinnovabile di 1 anno, della strumentazione clinimacs prodigy matricola 275 ubicata presso la b.a.s.c.o. del po pausilipon mylteni biotec">
+      <td class="small">2023-10-18</td>
+      <td>MANUTENZIONE FULL RISK PER 24 MESI, RINNOVABILE DI 1 ANNO, DELLA STRUMENTAZIONE CLINIMACS PRODIGY MATRICOLA 275 UBICATA PRESSO LA B.A.S.C.O. DEL PO PAUSILIPON<div class="small muted">CIG A047623634 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE CHIRURGICHE</div></td>
+      <td>MYLTENI BIOTEC</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">53 mila €</td></tr><tr data-t="fornitura biennale di un sistema di telemonitoraggio di pazienti cronici complessi in ventilazione invasiva domiciliare nell&#39;ambito del progetto &#39;angelo custode&#39; ">
+      <td class="small">2023-12-20</td>
+      <td>FORNITURA BIENNALE DI UN SISTEMA DI TELEMONITORAGGIO DI PAZIENTI CRONICI COMPLESSI IN VENTILAZIONE INVASIVA DOMICILIARE NELL&#39;AMBITO DEL PROGETTO &#39;ANGELO CUSTODE&#39;<div class="small muted">CIG A04E1E4212 · SERVIZI DI PROGRAMMAZIONE DI PRODOTTI SOFTWARE IN PACCHETTI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">51 mila €</td></tr><tr data-t="lotto 44 - alimento per lattanti a basso contenuto proteico e di elettroliti adatto alla nutrizione orale e/o enterale nelle insufficienze renali croniche ( quota proteica compresa tra 0,8 -1gr/100ml) ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 44 - ALIMENTO PER LATTANTI A BASSO CONTENUTO PROTEICO E DI ELETTROLITI ADATTO ALLA NUTRIZIONE ORALE E/O ENTERALE NELLE INSUFFICIENZE RENALI CRONICHE ( QUOTA PROTEICA COMPRESA TRA 0,8 -1GR/100ML)<div class="small muted">CIG 9607458526 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">51 mila €</td></tr><tr data-t="lotto 27 - prodotto liquido per nutrizione enterale, completo, ipercalorico (1,5 kcal/ml) adatto per composizione alle esigenze nutrizionali di bambini da 1 a 6 anni con osmolarità &lt; a 320 mosm/l ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 27 - PRODOTTO LIQUIDO PER NUTRIZIONE ENTERALE, COMPLETO, IPERCALORICO (1,5 KCAL/ML) ADATTO PER COMPOSIZIONE ALLE ESIGENZE NUTRIZIONALI DI BAMBINI DA 1 A 6 ANNI CON OSMOLARITÀ &lt; A 320 MOSM/L<div class="small muted">CIG 9601236697 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">51 mila €</td></tr><tr data-t="lotto 51 - lancette pungidito sterili in confezione singola ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 51 - LANCETTE PUNGIDITO STERILI IN CONFEZIONE SINGOLA<div class="small muted">CIG 991922536B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">51 mila €</td></tr><tr data-t="arginina ev 100ml 30% ">
+      <td class="small">2024-08-23</td>
+      <td>ARGININA EV 100ML 30%<div class="small muted">CIG B2D1B52816 · SOLUZIONI GALENICHE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">51 mila €</td></tr><tr data-t="deliberazione del direttore generale a.o.r.n. santobono-pausilipon n. 520 del 5.08.2024 convatec italia s.r.l.">
+      <td class="small">2024-08-16</td>
+      <td>DELIBERAZIONE DEL DIRETTORE GENERALE A.O.R.N. SANTOBONO-PAUSILIPON N. 520 DEL 5.08.2024<div class="small muted">CIG B2CA609EAA</div></td>
+      <td>CONVATEC ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">51 mila €</td></tr><tr data-t="lotto 29 - prodotto liquido per nutrizione enterale, completo, normocalorico, polimerico, arricchito di taurina, carnitina ed antiossidanti integrato con fibre solubili ed insolubili con osmolarità &lt; a 250 mosm/ l adatto per composizione alle esigenze nutrizionali di bambini da 6 a 12 anni, con epa  ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 29 - PRODOTTO LIQUIDO PER NUTRIZIONE ENTERALE, COMPLETO, NORMOCALORICO, POLIMERICO, ARRICCHITO DI TAURINA, CARNITINA ED ANTIOSSIDANTI INTEGRATO CON FIBRE SOLUBILI ED INSOLUBILI CON OSMOLARITÀ &lt; A 250 MOSM/ L ADATTO PER COMPOSIZIONE ALLE ESIGENZE NUTRIZIONALI DI BAMBINI DA 6 A 12 ANNI, CON EPA <div class="small muted">CIG 960162037B · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">50 mila €</td></tr><tr data-t="lotto 59 - termometri da 28 a 41^ per immaturi digitali senza mercurio con astuccio ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 59 - TERMOMETRI DA 28 A 41^ PER IMMATURI DIGITALI SENZA MERCURIO CON ASTUCCIO<div class="small muted">CIG 9919296DFF · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">50 mila €</td></tr><tr data-t="adesione a convenzione consip energia elettrica e servizi connessi - ed. 20 - id 2513 - lotto 13 campania - fornitore hera comm hera comm s.p.a.">
+      <td class="small">2024-01-01</td>
+      <td>ADESIONE A CONVENZIONE CONSIP ENERGIA ELETTRICA E SERVIZI CONNESSI - ED. 20 - ID 2513 - LOTTO 13 CAMPANIA - FORNITORE HERA COMM<div class="small muted">CIG A01E80E239 · ELETTRICITÀ</div></td>
+      <td>HERA COMM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">50 mila €</td></tr><tr data-t="direzione lavori e coordinamento della sicurezza in fase di esecuzione ">
+      <td class="small">2024-07-05</td>
+      <td>DIREZIONE LAVORI E COORDINAMENTO DELLA SICUREZZA IN FASE DI ESECUZIONE<div class="small muted">CIG B25D793212 · SERVIZI DI CONSULENZA IN INGEGNERIA CIVILE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">50 mila €</td></tr><tr data-t="fornitura annuale in somministrazione di stampati per documentazione sanitaria (cartelle cliniche, opuscoli e registri) e servizi accessori. arti grafiche cardamone s.r.l.">
+      <td class="small">2023-04-03</td>
+      <td>FORNITURA ANNUALE IN SOMMINISTRAZIONE DI STAMPATI PER DOCUMENTAZIONE SANITARIA (CARTELLE CLINICHE, OPUSCOLI E REGISTRI) E SERVIZI ACCESSORI.<div class="small muted">CIG 992748649C · SERVIZI DI STAMPA E DI CONSEGNA</div></td>
+      <td>ARTI GRAFICHE CARDAMONE S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">50 mila €</td></tr><tr data-t="palloncino da dilatazione in nylon ad alta pressione a tre diametri crescenti, per dilatazione stenosi esofago, piloro, colon ">
+      <td class="small">2024-06-03</td>
+      <td>PALLONCINO DA DILATAZIONE IN NYLON AD ALTA PRESSIONE A TRE DIAMETRI CRESCENTI, PER DILATAZIONE STENOSI ESOFAGO, PILORO, COLON<div class="small muted">CIG B1E651F0D2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">50 mila €</td></tr><tr data-t="delibera del direttore generale n. 636 del 9.10.2024 bericah s.p.a.">
+      <td class="small">2024-11-07</td>
+      <td>DELIBERA DEL DIRETTORE GENERALE N. 636 DEL 9.10.2024<div class="small muted">CIG B42D39A556</div></td>
+      <td>BERICAH S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">49 mila €</td></tr><tr data-t="lotto 2 -fornitura con posa in opera di n.3 ultracongelatori verticali da laboratorio -80^c comprensiva di garanzia ed assistenza tecnica full risk ">
+      <td class="small">2023-06-14</td>
+      <td>LOTTO 2 -FORNITURA CON POSA IN OPERA DI N.3 ULTRACONGELATORI VERTICALI DA LABORATORIO -80^C COMPRENSIVA DI GARANZIA ED ASSISTENZA TECNICA FULL RISK<div class="small muted">CIG 98769057D8 · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">49 mila €</td></tr><tr data-t="lotto 1 -fissativi ">
+      <td class="small">2023-02-13</td>
+      <td>LOTTO 1 -FISSATIVI<div class="small muted">CIG 9627092FA0 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">49 mila €</td></tr><tr data-t="fornitura in noleggio di sistemi portatili per osmosi complete di accessori con manutenzione ed assistenza full risk ">
+      <td class="small">2024-07-15</td>
+      <td>FORNITURA IN NOLEGGIO DI SISTEMI PORTATILI PER OSMOSI COMPLETE DI ACCESSORI CON MANUTENZIONE ED ASSISTENZA FULL RISK<div class="small muted">CIG B2759FA09D · APPARECCHIATURE MEDICHE, PRODOTTI FARMACEUTICI E PER LA CURA PERSONALE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">49 mila €</td></tr><tr data-t="fornitura servizio di assistenza e manutenzione software eliot 3.0 ">
+      <td class="small">2023-06-22</td>
+      <td>FORNITURA SERVIZIO DI ASSISTENZA E MANUTENZIONE SOFTWARE ELIOT 3.0<div class="small muted">CIG 9914180028 · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">49 mila €</td></tr><tr data-t="lotto 8 fornitura aggiuntiva ausili per incontinenza ">
+      <td class="small">2024-02-26</td>
+      <td>LOTTO 8 FORNITURA AGGIUNTIVA AUSILI PER INCONTINENZA<div class="small muted">CIG A05147087D · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">48 mila €</td></tr><tr data-t="lavori somma urgenza, ai sensi dell&#39;art. 163 del d.lgs. 50/2016 per la messa in sicurezza dei cantonali delle scale e dei prospetti principali della sede amministrativa dell&#39;a.o.r.n. santobono-pausilipon - progettazione direzione dei lavori e coordinamento per la sicurezza in fase di progettazione e operatore individuale (persona fisica)">
+      <td class="small">2023-05-02</td>
+      <td>LAVORI SOMMA URGENZA, AI SENSI DELL&#39;ART. 163 DEL D.LGS. 50/2016 PER LA MESSA IN SICUREZZA DEI CANTONALI DELLE SCALE E DEI PROSPETTI PRINCIPALI DELLA SEDE AMMINISTRATIVA DELL&#39;A.O.R.N. SANTOBONO-PAUSILIPON - PROGETTAZIONE DIREZIONE DEI LAVORI E COORDINAMENTO PER LA SICUREZZA IN FASE DI PROGETTAZIONE E<div class="small muted">CIG A01855BF38 · VARI SERVIZI DI INGEGNERIA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">PROCEDURA NEGOZIATA SENZA PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">48 mila €</td></tr><tr data-t="fornitura semestrale urgente di n. 60 procedure iom operatore individuale (persona fisica)">
+      <td class="small">2024-02-07</td>
+      <td>FORNITURA SEMESTRALE URGENTE DI N. 60 PROCEDURE IOM<div class="small muted">CIG B04A9750DB · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">48 mila €</td></tr><tr data-t="fornitura sacche per nutrizione ">
+      <td class="small">2024-10-04</td>
+      <td>FORNITURA SACCHE PER NUTRIZIONE<div class="small muted">CIG B3502AE2B6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">48 mila €</td></tr><tr data-t="lotto 2 - fornitura biennale toner e cartucce rigenerati ">
+      <td class="small">2023-06-06</td>
+      <td>LOTTO 2 - FORNITURA BIENNALE TONER E CARTUCCE RIGENERATI<div class="small muted">CIG 9817135C13 · TONER PER STAMPANTI LASER/APPARECCHI FAX</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">47 mila €</td></tr><tr data-t=": affidamento diretto sottosoglia, ai sensi dell’art.50 comma 1 lettera b), per servizi di manutenzione full risk per 12 mesi, rinnovabile di 1 anno, dei sistemi di neurtonavigazione ubicati presso il bo di neurochirurgia del po santobono. medtronic italia s.p.a.">
+      <td class="small">2024-02-19</td>
+      <td>: AFFIDAMENTO DIRETTO SOTTOSOGLIA, AI SENSI DELL’ART.50 COMMA 1 LETTERA B), PER SERVIZI DI MANUTENZIONE FULL RISK PER 12 MESI, RINNOVABILE DI 1 ANNO, DEI SISTEMI DI NEURTONAVIGAZIONE UBICATI PRESSO IL BO DI NEUROCHIRURGIA DEL PO SANTOBONO.<div class="small muted">CIG B06F3253F4 · Cpv prevalente non disponibile</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">47 mila €</td></tr><tr data-t="lotto 82 - rotoli per sterilizzazione piane in carta e polipropilene ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 82 - ROTOLI PER STERILIZZAZIONE PIANE IN CARTA E POLIPROPILENE<div class="small muted">CIG 99195439D5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">47 mila €</td></tr><tr data-t="deliberazione del direttore generale aorn santobono pausilipon n. 707 del 13 novembre 2024 sandoz s.p.a.">
+      <td class="small">2024-11-13</td>
+      <td>DELIBERAZIONE DEL DIRETTORE GENERALE AORN SANTOBONO PAUSILIPON N. 707 DEL 13 NOVEMBRE 2024<div class="small muted">CIG B443E8D937</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">47 mila €</td></tr><tr data-t="lotto 4 - fibroscopio monouso o multiuso per endoscopia alta risoluzione diversi calibri canale di lavoro e lunghezza- attacco luce e telecamera remoti - compatibilità con sistema telecamera in dotazione ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 4 - FIBROSCOPIO MONOUSO O MULTIUSO PER ENDOSCOPIA ALTA RISOLUZIONE DIVERSI CALIBRI CANALE DI LAVORO E LUNGHEZZA- ATTACCO LUCE E TELECAMERA REMOTI - COMPATIBILITÀ CON SISTEMA TELECAMERA IN DOTAZIONE<div class="small muted">CIG 988654288C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">46 mila €</td></tr><tr data-t="lotto 29 - atgam ">
+      <td class="small">2023-04-26</td>
+      <td>LOTTO 29 - ATGAM<div class="small muted">CIG 969856877F · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">45 mila €</td></tr><tr data-t="lotto 6 - didecildimetilammonio cloruro, poliesametilenbiguanide cloroidrato, schiuma attiva su tutti i multiresistenti, dispositivi medici non invasivi ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 6 - DIDECILDIMETILAMMONIO CLORURO, POLIESAMETILENBIGUANIDE CLOROIDRATO, SCHIUMA ATTIVA SU TUTTI I MULTIRESISTENTI, DISPOSITIVI MEDICI NON INVASIVI<div class="small muted">CIG 9904906AFF · ANTISETTICI E DISINFETTANTI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">45 mila €</td></tr><tr data-t="fornitura strumentario oculistica ellegi medical optics s.r.l.">
+      <td class="small">2024-09-23</td>
+      <td>FORNITURA STRUMENTARIO OCULISTICA<div class="small muted">CIG B32470C7C2 · STRUMENTI CHIRURGICI</div></td>
+      <td>ELLEGI MEDICAL OPTICS S.R.L.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">45 mila €</td></tr><tr data-t="affidamento sottosoglia del servizio di ingegneria e di architettura per la verifica del progetto afferente al pnrr, next generation eu, per la linea di intervento m6.c2 1.2 - verso un nuovo ospedale sicuro e sostenibile, finalizzato all&#39;attuazione dei &#39;lavori di adeguamento sismico del padiglione t operatore individuale (persona fisica)">
+      <td class="small">2023-01-10</td>
+      <td>AFFIDAMENTO SOTTOSOGLIA DEL SERVIZIO DI INGEGNERIA E DI ARCHITETTURA PER LA VERIFICA DEL PROGETTO AFFERENTE AL PNRR, NEXT GENERATION EU, PER LA LINEA DI INTERVENTO M6.C2 1.2 - VERSO UN NUOVO OSPEDALE SICURO E SOSTENIBILE, FINALIZZATO ALL&#39;ATTUAZIONE DEI &#39;LAVORI DI ADEGUAMENTO SISMICO DEL PADIGLIONE T<div class="small muted">CIG 9590814E13 · SERVIZI DI CONSULENZA IN INGEGNERIA STRUTTURALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">44 mila €</td></tr><tr data-t="materiale vario di laboratorio laboindustria s.p.a.">
+      <td class="small">2024-06-05</td>
+      <td>MATERIALE VARIO DI LABORATORIO<div class="small muted">CIG B1F80C2150 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">44 mila €</td></tr><tr data-t="deliberazione del direttore generale aorn santobono pausilipon n. 707 del 13 novembre 2024 sandoz s.p.a.">
+      <td class="small">2024-11-13</td>
+      <td>DELIBERAZIONE DEL DIRETTORE GENERALE AORN SANTOBONO PAUSILIPON N. 707 DEL 13 NOVEMBRE 2024<div class="small muted">CIG B4431F1165</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">42 mila €</td></tr><tr data-t="lotto 3 - clorexidina digluconato 0,5 g, acqua depurata , disinfezione mani e cute integra priva di alcool ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 3 - CLOREXIDINA DIGLUCONATO 0,5 G, ACQUA DEPURATA , DISINFEZIONE MANI E CUTE INTEGRA PRIVA DI ALCOOL<div class="small muted">CIG 9904828AA1 · ANTISETTICI E DISINFETTANTI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">42 mila €</td></tr><tr data-t="lotto 1 -fornitura con posa in opera di n^ 1 lettore multimodale (assorbanza-luminometria-fluorimetria) comprensiva di garanzia ed assistenza tecnica full risk ">
+      <td class="small">2023-06-14</td>
+      <td>LOTTO 1 -FORNITURA CON POSA IN OPERA DI N^ 1 LETTORE MULTIMODALE (ASSORBANZA-LUMINOMETRIA-FLUORIMETRIA) COMPRENSIVA DI GARANZIA ED ASSISTENZA TECNICA FULL RISK<div class="small muted">CIG 98768190E2 · RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">41 mila €</td></tr><tr data-t="lotto 2 - rifampicina ">
+      <td class="small">2023-04-26</td>
+      <td>LOTTO 2 - RIFAMPICINA<div class="small muted">CIG 96977303F6 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">41 mila €</td></tr><tr data-t="lotto 15 - dieta elementare in polvere con aminoacidi liberi completi di tuttti i nutrienti calorici e non calorici indicata per bambini da 1 anno in poi con gravi allergie multiple arricchita di gassi omega 3 ed omega 6 ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 15 - DIETA ELEMENTARE IN POLVERE CON AMINOACIDI LIBERI COMPLETI DI TUTTTI I NUTRIENTI CALORICI E NON CALORICI INDICATA PER BAMBINI DA 1 ANNO IN POI CON GRAVI ALLERGIE MULTIPLE ARRICCHITA DI GASSI OMEGA 3 ED OMEGA 6<div class="small muted">CIG 9593954D49 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">40 mila €</td></tr><tr data-t="lotto 4 - sistemi per il monitoraggio della funzione cerebrale (profondita&#39; di anestesia) medtronic italia s.p.a.">
+      <td class="small">2024-02-13</td>
+      <td>Lotto 4 - Sistemi per il monitoraggio della funzione cerebrale (profondita&#39; di anestesia)<div class="small muted">CIG B05579B714 · Dispositivi e prodotti medici vari</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">40 mila €</td></tr><tr data-t="collante a base di cianoacrilato sterile monouso per endoscopia e chirurgia laparascopica. la ditta aggiudicataria dovrà fornire a seguito di specifica richiesta applicatori ">
+      <td class="small">2024-10-10</td>
+      <td>COLLANTE A BASE DI CIANOACRILATO STERILE MONOUSO PER ENDOSCOPIA E CHIRURGIA LAPARASCOPICA. LA DITTA AGGIUDICATARIA DOVRÀ FORNIRE A SEGUITO DI SPECIFICA RICHIESTA APPLICATORI<div class="small muted">CIG B35DDA331C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">40 mila €</td></tr><tr data-t="fornitura con posa in opera di arredi sanitari per le esigenze della uoc nefrologia e dialisi del p.o. santobono cfv s.r.l.">
+      <td class="small">2024-09-24</td>
+      <td>FORNITURA CON POSA IN OPERA DI ARREDI SANITARI PER LE ESIGENZE DELLA UOC NEFROLOGIA E DIALISI DEL P.O. SANTOBONO<div class="small muted">CIG B3253C35DF · MOBILI PER USO MEDICO</div></td>
+      <td>CFV S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">40 mila €</td></tr><tr data-t="fornitura con posa in opera di laser fotocoagulatore lion per le esigenze della uoc oculistica del p.o. santobono medinova s.r.l.">
+      <td class="small">2024-12-02</td>
+      <td>FORNITURA CON POSA IN OPERA DI LASER FOTOCOAGULATORE LION PER LE ESIGENZE DELLA UOC OCULISTICA DEL P.O. SANTOBONO<div class="small muted">CIG B490DB43DC · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDINOVA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">40 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 2 monitor multiparametrici philips intellivue per le esigenze della uoc neonatologia e tin del p.o. santobono futura hospital s.a.s. di carandente ciro">
+      <td class="small">2024-11-28</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 2 MONITOR MULTIPARAMETRICI PHILIPS INTELLIVUE PER LE ESIGENZE DELLA UOC NEONATOLOGIA E TIN DEL P.O. SANTOBONO<div class="small muted">CIG B483B013FD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>FUTURA HOSPITAL S.A.S. DI CARANDENTE CIRO</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">40 mila €</td></tr><tr data-t="fornitura con posa in opera di arredi da laboratorio medigroup s.r.l.">
+      <td class="small">2024-11-07</td>
+      <td>FORNITURA CON POSA IN OPERA DI ARREDI DA LABORATORIO<div class="small muted">CIG B4264D3ABE · MOBILI PER USO MEDICO</div></td>
+      <td>MEDIGROUP S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">40 mila €</td></tr><tr data-t="lotto 3 getinge italia s.r.l.">
+      <td class="small">2024-12-04</td>
+      <td>LOTTO 3<div class="small muted">CIG B49E6DC7D3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>GETINGE ITALIA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">40 mila €</td></tr><tr data-t="lotto 11 - alimento in polvere a base di idrolisato di caseina, non arricchito in mct, senza lattosio né saccarosio, indicato per il trattamento delle allergie alle proteine del latte vaccino (per bb dal 6^ mese in poi) ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 11 - ALIMENTO IN POLVERE A BASE DI IDROLISATO DI CASEINA, NON ARRICCHITO IN MCT, SENZA LATTOSIO NÉ SACCAROSIO, INDICATO PER IL TRATTAMENTO DELLE ALLERGIE ALLE PROTEINE DEL LATTE VACCINO (PER BB DAL 6^ MESE IN POI)<div class="small muted">CIG 9593873A72 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">39 mila €</td></tr><tr data-t="lotto 12 - alimento in polvere a base di idrolisato di caseina, non arricchito in mct, senza lattosio né saccarosio, indicato per il trattamento delle allergie alle proteine del latte vaccino (per bb fino a 6 mesi) ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 12 - ALIMENTO IN POLVERE A BASE DI IDROLISATO DI CASEINA, NON ARRICCHITO IN MCT, SENZA LATTOSIO NÉ SACCAROSIO, INDICATO PER IL TRATTAMENTO DELLE ALLERGIE ALLE PROTEINE DEL LATTE VACCINO (PER BB FINO A 6 MESI)<div class="small muted">CIG 95938821E2 · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">39 mila €</td></tr><tr data-t="gestionale per configurazione ed avviamento del laboratorio di immunogenetica gpi s.p.a.">
+      <td class="small">2024-01-25</td>
+      <td>GESTIONALE PER CONFIGURAZIONE ED AVVIAMENTO DEL LABORATORIO DI IMMUNOGENETICA<div class="small muted">CIG B01D3742CE · Cpv prevalente non disponibile</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">39 mila €</td></tr><tr data-t="fornitura annuale materiale di consumo per la ricerca. progetto hub life science-terapia avanzata pnc-e3-2022-23683269 - pnc-hls-ta, finanziato dal ministero della salute nell&#39;ambito del piano nazionale per gli investimenti complementari al pnrr (pnc) ecosistema in1novativo della salute - codice uni life technologies europe b.v.">
+      <td class="small">2024-10-02</td>
+      <td>FORNITURA ANNUALE MATERIALE DI CONSUMO PER LA RICERCA. PROGETTO HUB LIFE SCIENCE-TERAPIA AVANZATA PNC-E3-2022-23683269 - PNC-HLS-TA, FINANZIATO DAL MINISTERO DELLA SALUTE NELL&#39;AMBITO DEL PIANO NAZIONALE PER GLI INVESTIMENTI COMPLEMENTARI AL PNRR (PNC) ECOSISTEMA IN1NOVATIVO DELLA SALUTE - CODICE UNI<div class="small muted">CIG B342C1D1DE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>LIFE TECHNOLOGIES EUROPE B.V.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">38 mila €</td></tr><tr data-t="deliberazione del direttore generale a.o.r.n. santobono-pausilipon n. 623 del 3.10.2024 pfizer s.r.l.">
+      <td class="small">2024-10-08</td>
+      <td>DELIBERAZIONE DEL DIRETTORE GENERALE A.O.R.N. SANTOBONO-PAUSILIPON N. 623 DEL 3.10.2024<div class="small muted">CIG B3563CF9F3</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">37 mila €</td></tr><tr data-t="fornitura triennale di dispositvi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss. della regione campania - ditta clini lab ">
+      <td class="small">2024-01-22</td>
+      <td>FORNITURA TRIENNALE DI DISPOSITVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA - DITTA CLINI LAB<div class="small muted">CIG A047A1ABCD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">37 mila €</td></tr><tr data-t="fornitura annuale di materiale di consumo per le attività di ricerca della u.o.c. ricerca clinica e traslazionale occorrenti dell&#39;aorn santobono pausilipon lotto 2 becton, dickinson italia s.p.a.">
+      <td class="small">2024-12-04</td>
+      <td>FORNITURA ANNUALE DI MATERIALE DI CONSUMO PER LE ATTIVITÀ DI RICERCA DELLA U.O.C. RICERCA CLINICA E TRASLAZIONALE OCCORRENTI DELL&#39;AORN SANTOBONO PAUSILIPON LOTTO 2<div class="small muted">CIG B496A01F1D · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>BECTON, DICKINSON ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">36 mila €</td></tr><tr data-t="lotto 24 - prodotto liquido per la nutrizione enterale, completo, polimerico, normocalorico, arricchito di taurina, carnitina, antiossidanti con osmolarità uguale o inferiore a 250 mosm/l., con epa e dha adatto per composizione alle esigenze nutrizionali di bambini da 1 a 6 anni ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 24 - PRODOTTO LIQUIDO PER LA NUTRIZIONE ENTERALE, COMPLETO, POLIMERICO, NORMOCALORICO, ARRICCHITO DI TAURINA, CARNITINA, ANTIOSSIDANTI CON OSMOLARITÀ UGUALE O INFERIORE A 250 MOSM/L., CON EPA E DHA ADATTO PER COMPOSIZIONE ALLE ESIGENZE NUTRIZIONALI DI BAMBINI DA 1 A 6 ANNI<div class="small muted">CIG 9600815B2A · ALIMENTI PER NEONATI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">36 mila €</td></tr><tr data-t="lotto 14 - protesi craniche custom made in titanio per cranioplastica per la ricostruzione di difetti cranici, con indicazione di utilizzo nei pazienti pediatrici, sopra i 2 anni di età. caratteristiche: biocompatibilità e rm compatibili. la realizzazione delle protesi deve essere effettuata su misu ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 14 - PROTESI CRANICHE CUSTOM MADE IN TITANIO PER CRANIOPLASTICA PER LA RICOSTRUZIONE DI DIFETTI CRANICI, CON INDICAZIONE DI UTILIZZO NEI PAZIENTI PEDIATRICI, SOPRA I 2 ANNI DI ETÀ. CARATTERISTICHE: BIOCOMPATIBILITÀ E RM COMPATIBILI. LA REALIZZAZIONE DELLE PROTESI DEVE ESSERE EFFETTUATA SU MISU<div class="small muted">CIG 98867471BA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">36 mila €</td></tr><tr data-t="baby-saccarosio 24% per neonati, lattanti, sterili, per uso orale ">
+      <td class="small">2024-08-23</td>
+      <td>BABY-SACCAROSIO 24% PER NEONATI, LATTANTI, STERILI, PER USO ORALE<div class="small muted">CIG B2D1B55A8F · SOLUZIONI GALENICHE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">36 mila €</td></tr><tr data-t="progetto biobank for craniosynostosis and faciocraniosynostosis a rare pediatric congenital craniofacial disorder finanziato dall&#39;unione europea nextgenerationeu nell&#39;ambito del programma pnrr missione 6 componente 2 investimento 2.1 rafforzamento e potenziamento d1ella ricerca biomedica del ssn upsurgeon s.r.l.">
+      <td class="small">2024-10-23</td>
+      <td>PROGETTO BIOBANK FOR CRANIOSYNOSTOSIS AND FACIOCRANIOSYNOSTOSIS A RARE PEDIATRIC CONGENITAL CRANIOFACIAL DISORDER FINANZIATO DALL&#39;UNIONE EUROPEA NEXTGENERATIONEU NELL&#39;AMBITO DEL PROGRAMMA PNRR MISSIONE 6 COMPONENTE 2 INVESTIMENTO 2.1 RAFFORZAMENTO E POTENZIAMENTO D1ELLA RICERCA BIOMEDICA DEL SSN<div class="small muted">CIG B3EEC6B7EC · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>UPSURGEON S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">36 mila €</td></tr><tr data-t="lotto 10 - kit per il monitoraggio elettrofisiologico intraoperatorio ">
+      <td class="small">2023-07-13</td>
+      <td>LOTTO 10 - KIT PER IL MONITORAGGIO ELETTROFISIOLOGICO INTRAOPERATORIO<div class="small muted">CIG 98866322D3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">36 mila €</td></tr><tr data-t="servizio di manutenzione ordinaria e straordinaria degli impianti e delle reti di distribuzione dei gas medicinali. i.g.m. (impianti gas medicali) s.r.l.">
+      <td class="small">2023-03-01</td>
+      <td>SERVIZIO DI MANUTENZIONE ORDINARIA E STRAORDINARIA DEGLI IMPIANTI E DELLE RETI DI DISTRIBUZIONE DEI GAS MEDICINALI.<div class="small muted">CIG 9618735F36 · GAS MEDICI</div></td>
+      <td>I.G.M. (IMPIANTI GAS MEDICALI) S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">35 mila €</td></tr><tr data-t="fornitura di n. 1 ventilatore polmonare da trasporto compatibile anche per sala rm ">
+      <td class="small">2024-03-11</td>
+      <td>FORNITURA DI N. 1 VENTILATORE POLMONARE DA TRASPORTO COMPATIBILE ANCHE PER SALA RM<div class="small muted">CIG B0C0BBD9A9 · APPARECCHIATURE MEDICHE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">35 mila €</td></tr><tr data-t="servizio di trasporto di campioni biologici ed emocomponenti coopservice societa&#39; cooperativa per azioni abbreviabile in coopservice s.coop.p.a.">
+      <td class="small">2024-04-24</td>
+      <td>SERVIZIO DI TRASPORTO DI CAMPIONI BIOLOGICI ED EMOCOMPONENTI<div class="small muted">CIG B15EB1394D · Cpv prevalente non disponibile</div></td>
+      <td>COOPSERVICE SOCIETA&#39; COOPERATIVA PER AZIONI ABBREVIABILE IN COOPSERVICE S.COOP.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">35 mila €</td></tr><tr data-t="fornitura con posa in opera di n. 1 ortopantomografo 2d da destinare alla uosd odontoiatria del presidio villa bianca sira s.r.l.">
+      <td class="small">2024-10-07</td>
+      <td>FORNITURA CON POSA IN OPERA DI N. 1 ORTOPANTOMOGRAFO 2D DA DESTINARE ALLA UOSD ODONTOIATRIA DEL PRESIDIO VILLA BIANCA<div class="small muted">CIG B350B3F46E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SIRA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">35 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 896. L’elenco completo è nel <a href="../contratti/150902.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

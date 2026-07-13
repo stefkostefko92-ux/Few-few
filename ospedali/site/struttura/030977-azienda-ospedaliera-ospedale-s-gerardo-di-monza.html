@@ -166,6 +166,44 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">32 mila €</td></tr><tr><td>ARIA_2021_025.3 - LOTTO 119 - ACIDO URSODESOSSICOLICO CPR/CPR RIV/CPS/CPS RIG 150 MG<div class="small muted">MEDICINALI VARI</div></td>
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">1 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(4 contratti ANAC, 602 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030977.csv" download>⬇ Scarica l’elenco completo (CSV, 4 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="aria_2021_025.3-lotto 1792 - emtricitabina/rilpivirina cloridrato/tenofovir alafenamide fumarato cpr/cpr riv/cps/cps rig 200 mg + 25 mg + 25 mg ">
+      <td class="small">2024-12-10</td>
+      <td>ARIA_2021_025.3-LOTTO 1792 - EMTRICITABINA/RILPIVIRINA CLORIDRATO/TENOFOVIR ALAFENAMIDE FUMARATO CPR/CPR RIV/CPS/CPS RIG 200 MG + 25 MG + 25 MG<div class="small muted">CIG A065A58AC0 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">502 mila €</td></tr><tr data-t="aria_2021_025.3 - lotto 2036 - obinutuzumab soluzione per infusione conc 1 g/40 ml ">
+      <td class="small">2024-02-13</td>
+      <td>ARIA_2021_025.3 - LOTTO 2036 - OBINUTUZUMAB SOLUZIONE PER INFUSIONE CONC 1 G/40 ML<div class="small muted">CIG A04EEADF05 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">66 mila €</td></tr><tr data-t="aria_2021_025.3 - lotto 792 - riociguat cpr/cpr riv/cps/cps rig 2 mg ">
+      <td class="small">2024-08-26</td>
+      <td>ARIA_2021_025.3 - LOTTO 792 - RIOCIGUAT CPR/CPR RIV/CPS/CPS RIG 2 MG<div class="small muted">CIG A0611B48D9 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">32 mila €</td></tr><tr data-t="aria_2021_025.3 - lotto 119 - acido ursodesossicolico cpr/cpr riv/cps/cps rig 150 mg ">
+      <td class="small">2024-03-18</td>
+      <td>ARIA_2021_025.3 - LOTTO 119 - ACIDO URSODESOSSICOLICO CPR/CPR RIV/CPS/CPS RIG 150 MG<div class="small muted">CIG A051CFA470 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

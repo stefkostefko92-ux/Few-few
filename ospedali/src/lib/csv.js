@@ -59,6 +59,23 @@ export function parseRows(text, separator = ';') {
 }
 
 /**
+ * Поправя двойно кодиран UTF-8 (mojibake), какъвто има в ЧАСТ от записите на
+ * ANAC (напр. „UNITÃ “ вместо „UNITÀ“). Прилага се само при разпознат шаблон,
+ * за да не се чупят коректните низове. До 2 прохода за двойно-двойно кодиране.
+ */
+export function fixMojibake(s) {
+  if (!s) return s;
+  let out = s;
+  for (let i = 0; i < 2; i++) {
+    if (!/[\u00c2\u00c3][\u0080-\u00bf\u00a0]/.test(out)) break;
+    const r = Buffer.from(out, 'latin1').toString('utf8');
+    if (r.includes('\ufffd')) break; // не се получи валиден UTF-8 -> спираме
+    out = r;
+  }
+  return out;
+}
+
+/**
  * Парсва число от италиански формат.
  * „7.035“ → 7035 (точка = разделител на хиляди), „1.234,56“ → 1234.56,
  * „7858272000.00“ → 7858272000 (машинен формат с десетична точка).

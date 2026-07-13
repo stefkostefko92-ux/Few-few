@@ -175,6 +175,34 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO</td><td class="num">478 €</td></tr><tr><td>BURKE&amp;BURKE_GUASTO ACCIDENTALE QUOTATO NEI LISTINI DI GARA_INCUBATRICE NEONATALE C/O NUOVO OSPEDALE LUCCA_PR 2024052398.<div class="small muted">SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">478 €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(2 contratti ANAC, 956 € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/090105.csv" download>⬇ Scarica l’elenco completo (CSV, 2 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="intervento incubatrice neonatale - 2024052398 burke &amp; burke s.p.a.">
+      <td class="small">2024-11-14</td>
+      <td>INTERVENTO INCUBATRICE NEONATALE - 2024052398<div class="small muted">CIG B4478E921A · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>BURKE &amp; BURKE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">478 €</td></tr><tr data-t="burke&amp;burke_guasto accidentale quotato nei listini di gara_incubatrice neonatale c/o nuovo ospedale lucca_pr 2024052398. burke &amp; burke s.p.a.">
+      <td class="small">2024-11-18</td>
+      <td>BURKE&amp;BURKE_GUASTO ACCIDENTALE QUOTATO NEI LISTINI DI GARA_INCUBATRICE NEONATALE C/O NUOVO OSPEDALE LUCCA_PR 2024052398.<div class="small muted">CIG B44F2C2F5D · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>BURKE &amp; BURKE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">478 €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

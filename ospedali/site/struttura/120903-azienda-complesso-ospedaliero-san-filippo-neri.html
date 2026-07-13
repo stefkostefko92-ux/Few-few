@@ -173,6 +173,29 @@ footer.site a{color:var(--muted);text-decoration:underline}
     <h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th scope="col">Oggetto</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>SEFNS24017_SERVIZI DI PFTE E CSP RELATIVI ALL&#39;AMPLIAMENTO DEL PRONTO SOCCORSO DELL&#39;OSPEDALE S. FILIPPO NERI - ASL ROMA 1<div class="small muted">SERVIZI DI INGEGNERIA INTEGRATI</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">132 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(1 contratti ANAC, 132 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/120903.csv" download>⬇ Scarica l’elenco completo (CSV, 1 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="sefns24017_servizi di pfte e csp relativi all&#39;ampliamento del pronto soccorso dell&#39;ospedale s. filippo neri - asl roma 1 3p progetti srl">
+      <td class="small">2024-02-02</td>
+      <td>SEFNS24017_SERVIZI DI PFTE E CSP RELATIVI ALL&#39;AMPLIAMENTO DEL PRONTO SOCCORSO DELL&#39;OSPEDALE S. FILIPPO NERI - ASL ROMA 1<div class="small muted">CIG B03B578866 · SERVIZI DI INGEGNERIA INTEGRATI</div></td>
+      <td>3P PROGETTI SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">132 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

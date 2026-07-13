@@ -171,6 +171,49 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>ALTRA PROCEDURA A FASE UNICA</td><td class="num">8 mila €</td></tr><tr><td>Affidamento incarico professionale per servizio notarile di stipula di due appendici a contratti di locazione<div class="small muted">Cpv prevalente non disponibile</div></td>
       <td>ALTRA PROCEDURA A FASE UNICA</td><td class="num">1 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(5 contratti ANAC, 208 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/090111.csv" download>⬇ Scarica l’elenco completo (CSV, 5 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="contratto di locazione transitoria tra venerabile confraternita di misericordia di impruneta ed azienda usl toscana centro per l&#39;immobile ad uso diverso dall&#39;abitativo sito in via della fonte n. 3/b, impruneta ">
+      <td class="small">2024-03-14</td>
+      <td>CONTRATTO DI LOCAZIONE TRANSITORIA TRA VENERABILE CONFRATERNITA DI MISERICORDIA DI IMPRUNETA ED AZIENDA USL TOSCANA CENTRO PER L&#39;IMMOBILE AD USO DIVERSO DALL&#39;ABITATIVO SITO IN VIA DELLA FONTE N. 3/B, IMPRUNETA<div class="small muted">CIG B0D008F1E4 · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A PIU&#39; FASI</td>
+      <td class="num">110 mila €</td></tr><tr data-t="acquisto di immobile ubicato nel comune di palazzuolo sul senio (fi), via duca d’aosta nn. 5-9 da destinare a nuovo presidio socio-sanitario ">
+      <td class="small">2024-02-22</td>
+      <td>Acquisto di immobile ubicato nel Comune di Palazzuolo sul Senio (FI), via Duca d’Aosta nn. 5-9 da destinare a nuovo presidio socio-sanitario<div class="small muted">CIG B08090A75C · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">62 mila €</td></tr><tr data-t="contratto di locazione transitoria per immobile ad uso diverso dell&#39;abitativo sito in via de&#39; bruni 63/65 campi bisenzio ">
+      <td class="small">2024-04-15</td>
+      <td>CONTRATTO DI LOCAZIONE TRANSITORIA PER IMMOBILE AD USO DIVERSO DELL&#39;ABITATIVO SITO IN VIA DE&#39; BRUNI 63/65 CAMPI BISENZIO<div class="small muted">CIG B142AFC2CC · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">27 mila €</td></tr><tr data-t="affidamento incarico professionale allo studio notarile bbc - notai per redazione atto di compravendita immobile sito a palazzuolo sul senio (fi) oltre a tutte le formalità previste per legge relative all’atto avanti citato. ">
+      <td class="small">2024-02-16</td>
+      <td>Affidamento incarico professionale allo Studio Notarile BBC - Notai per redazione atto di compravendita immobile sito a Palazzuolo sul Senio (FI) oltre a tutte le formalità previste per legge relative all’atto avanti citato.<div class="small muted">CIG B06B7E4E16 · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">8 mila €</td></tr><tr data-t="affidamento incarico professionale per servizio notarile di stipula di due appendici a contratti di locazione ">
+      <td class="small">2024-02-12</td>
+      <td>Affidamento incarico professionale per servizio notarile di stipula di due appendici a contratti di locazione<div class="small muted">CIG B056FFC551 · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">1 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

@@ -173,6 +173,39 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO</td><td class="num">2 mila €</td></tr><tr><td>FORNITURA ARMADIO IN METALLO PER CDL IN INFERMIERISTICA MEDIANTE ADESIONE A ARIA_2020_012<div class="small muted">ARREDI ED ATTREZZATURE VARIE</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">256 €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(3 contratti ANAC, 4 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030965.csv" download>⬇ Scarica l’elenco completo (CSV, 3 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="fornitura arredi ufficio mediante adesione a convenzione aria_2020_012 aran world s.r.l.">
+      <td class="small">2024-09-24</td>
+      <td>FORNITURA ARREDI UFFICIO MEDIANTE ADESIONE A CONVENZIONE ARIA_2020_012<div class="small muted">CIG B328D0DCA1 · ARREDI ED ATTREZZATURE VARIE</div></td>
+      <td>ARAN WORLD S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mila €</td></tr><tr data-t="fornitura sedute medinate adesione a convenzione aria_2023_002 l.t. form 2 s.r.l.">
+      <td class="small">2024-09-24</td>
+      <td>FORNITURA SEDUTE MEDINATE ADESIONE A CONVENZIONE ARIA_2023_002<div class="small muted">CIG B328E8D985 · ARREDI ED ATTREZZATURE VARIE</div></td>
+      <td>L.T. FORM 2 S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mila €</td></tr><tr data-t="fornitura armadio in metallo per cdl in infermieristica mediante adesione a aria_2020_012 so.c.a.m. - societa&#39; cooperativa">
+      <td class="small">2024-09-02</td>
+      <td>FORNITURA ARMADIO IN METALLO PER CDL IN INFERMIERISTICA MEDIANTE ADESIONE A ARIA_2020_012<div class="small muted">CIG B2E6BEAC2A · ARREDI ED ATTREZZATURE VARIE</div></td>
+      <td>SO.C.A.M. - SOCIETA&#39; COOPERATIVA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">256 €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

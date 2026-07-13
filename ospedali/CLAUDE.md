@@ -32,6 +32,9 @@ src/fetch-appalti.js     ANAC CIG месечно (кеш data/raw/anac/) → а�
                          (+ frazionamento/proroga + карта health-cig-cf.tsv за следващата стъпка)
 src/fetch-aggiudicatari.js  поточно (unzip -p, 0.8+1GB) свързва CIG→изпълнители/участници →
                          доставчици, концентрация, търг с 1 оферент → data/aggiudicatari.json
+src/fetch-dettagli.js    per болница ВСЕКИ договор (CIG/дата/предмет/сума/процедура/CPV/изпълнител)
+                         → data/contratti/<codice>.json (gitignore); build-site → site/contratti/<codice>.csv
+src/validate.js          CE консистентност + покритие + провенанс (SHA-256) → data/validazione.json
 src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudicatari → site/
 src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui, match (болница↔ANAC), paths
 ```

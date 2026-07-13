@@ -178,6 +178,394 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO</td><td class="num">263 mila €</td></tr><tr><td>FARMACO BLENREP<div class="small muted">ARTICOLI DI FARMACIA</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">219 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(74 contratti ANAC, 13 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/180913.csv" download>⬇ Scarica l’elenco completo (CSV, 74 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="affidamento del servizio di raccolta, trasporto e conferimento ad impianti dei rifiuti sanitari dell&#39;azienda ospedaliera pugliese ciaccio ">
+      <td class="small">2023-02-27</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI RACCOLTA, TRASPORTO E CONFERIMENTO AD IMPIANTI DEI RIFIUTI SANITARI DELL&#39;AZIENDA OSPEDALIERA PUGLIESE CIACCIO<div class="small muted">CIG 9609889B44 · RACCOLTA, TRASPORTO E SMALTIMENTO DI RIFIUTI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="gara europea a procedura aperta per la fornitura triennale in service di un sistema analitico (strumenti/reagenti) per l&#39;esecuzione di esami con metodica in biologia molecolare per patologie ematologiche ">
+      <td class="small">2023-01-23</td>
+      <td>GARA EUROPEA A PROCEDURA APERTA PER LA FORNITURA TRIENNALE IN SERVICE DI UN SISTEMA ANALITICO (STRUMENTI/REAGENTI) PER L&#39;ESECUZIONE DI ESAMI CON METODICA IN BIOLOGIA MOLECOLARE PER PATOLOGIE EMATOLOGICHE<div class="small muted">CIG 9471620416 · SERVIZI DI ANALISI DEL SANGUE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="farmaco phesgo ">
+      <td class="small">2023-01-12</td>
+      <td>FARMACO PHESGO<div class="small muted">CIG 9607044F7E · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">692 mila €</td></tr><tr data-t="sistemi per anestesia ">
+      <td class="small">2023-02-07</td>
+      <td>SISTEMI PER ANESTESIA<div class="small muted">CIG 964492296A · APPARECCHI PER ANESTESIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">450 mila €</td></tr><tr data-t="l&#39;affidamento della concessione del servizio di gestione bar-caffetteria presso l&#39;ospedale pugliese ">
+      <td class="small">2023-01-09</td>
+      <td>L&#39;AFFIDAMENTO DELLA CONCESSIONE DEL SERVIZIO DI GESTIONE BAR-CAFFETTERIA PRESSO L&#39;OSPEDALE PUGLIESE<div class="small muted">CIG 95733767CA · SERVIZI DI GESTIONE BAR</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">338 mila €</td></tr><tr data-t="farmaco sarclisa ">
+      <td class="small">2023-01-25</td>
+      <td>FARMACO SARCLISA<div class="small muted">CIG 96362347DA · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">277 mila €</td></tr><tr data-t="farmaco minjuvi ">
+      <td class="small">2023-03-06</td>
+      <td>FARMACO MINJUVI<div class="small muted">CIG 9717868E5A · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">263 mila €</td></tr><tr data-t="farmaco blenrep ">
+      <td class="small">2023-02-22</td>
+      <td>FARMACO BLENREP<div class="small muted">CIG 968251367E · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">219 mila €</td></tr><tr data-t="acquisto di armadi informatizzati per la gestione di dispositivi medici e farmaci per il dipartimento emergenza accettazione dell&#39;a.o. pugliese ciaccio di catanzaro. ">
+      <td class="small">2023-03-21</td>
+      <td>ACQUISTO DI ARMADI INFORMATIZZATI PER LA GESTIONE DI DISPOSITIVI MEDICI E FARMACI PER IL DIPARTIMENTO EMERGENZA ACCETTAZIONE DELL&#39;A.O. PUGLIESE CIACCIO DI CATANZARO.<div class="small muted">CIG 97260763D2 · MOBILI PER USO MEDICO, ESCLUSI LETTI E TAVOLI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">210 mila €</td></tr><tr data-t="procedura negoziata per la fornitura in service di un sistema per discectomia percutanea laser con relativo materiale di consumo ">
+      <td class="small">2023-02-08</td>
+      <td>PROCEDURA NEGOZIATA PER LA FORNITURA IN SERVICE DI UN SISTEMA PER DISCECTOMIA PERCUTANEA LASER CON RELATIVO MATERIALE DI CONSUMO<div class="small muted">CIG 9646728BC5 · LASER CHIRURGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">200 mila €</td></tr><tr data-t="farmaco fibryga ">
+      <td class="small">2023-01-23</td>
+      <td>FARMACO FIBRYGA<div class="small muted">CIG 96541844AA · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">190 mila €</td></tr><tr data-t="colonna videolaparoscopica 4k per chirurgia ">
+      <td class="small">2023-02-14</td>
+      <td>COLONNA VIDEOLAPAROSCOPICA 4K PER CHIRURGIA<div class="small muted">CIG 9657315C70 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">190 mila €</td></tr><tr data-t="farmaco vaborem ">
+      <td class="small">2023-02-03</td>
+      <td>FARMACO VABOREM<div class="small muted">CIG 96463725FF · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">181 mila €</td></tr><tr data-t="acquisto kit emostatico gelatina e trombina ">
+      <td class="small">2023-01-25</td>
+      <td>ACQUISTO KIT EMOSTATICO GELATINA E TROMBINA<div class="small muted">CIG 9621023F54 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">172 mila €</td></tr><tr data-t="farmaco fectroja ">
+      <td class="small">2023-03-22</td>
+      <td>FARMACO FECTROJA<div class="small muted">CIG 97407132A8 · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">167 mila €</td></tr><tr data-t="fornitura triennale in service di un apparecchiatura per immunoistochimica per l&#39;esecuzione di circa 100 test ish e 3.000 test ihc, comprensiva di strumentazione e relativa assistenza tecnica full risk, per la uoc di anatomia patologica dell&#39;a.o. pugliese-ciaccio ">
+      <td class="small">2023-01-27</td>
+      <td>FORNITURA TRIENNALE IN SERVICE DI UN APPARECCHIATURA PER IMMUNOISTOCHIMICA PER L&#39;ESECUZIONE DI CIRCA 100 TEST ISH E 3.000 TEST IHC, COMPRENSIVA DI STRUMENTAZIONE E RELATIVA ASSISTENZA TECNICA FULL RISK, PER LA UOC DI ANATOMIA PATOLOGICA DELL&#39;A.O. PUGLIESE-CIACCIO<div class="small muted">CIG 9618616D03 · APPARECCHI PER IMMUNOANALISI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">165 mila €</td></tr><tr data-t="farmaco rybrevant ">
+      <td class="small">2023-04-04</td>
+      <td>FARMACO RYBREVANT<div class="small muted">CIG 9762611973 · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">158 mila €</td></tr><tr data-t="lavori di manutenzione straordinaria reparto di chirurgia vascolare e ortopedi - presidio pugliese. ">
+      <td class="small">2023-02-21</td>
+      <td>LAVORI DI MANUTENZIONE STRAORDINARIA REPARTO DI CHIRURGIA VASCOLARE E ORTOPEDI - PRESIDIO PUGLIESE.<div class="small muted">CIG 9669967535 · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">148 mila €</td></tr><tr data-t="acquisto di medicazione con sistema di fissaggio integrato &#39;al in one&#39; per accessi vascolari dell&#39;a.o. pugliese-ciaccio ">
+      <td class="small">2023-03-31</td>
+      <td>ACQUISTO DI MEDICAZIONE CON SISTEMA DI FISSAGGIO INTEGRATO &#39;AL IN ONE&#39; PER ACCESSI VASCOLARI DELL&#39;A.O. PUGLIESE-CIACCIO<div class="small muted">CIG 9793400956 · PRESIDI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">134 mila €</td></tr><tr data-t="videoureteroscopio flessibile digitale monouso pezzi 100 ">
+      <td class="small">2023-01-26</td>
+      <td>VIDEOURETEROSCOPIO FLESSIBILE DIGITALE MONOUSO PEZZI 100<div class="small muted">CIG 9622092183 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">110 mila €</td></tr><tr data-t="videoureteroscopio flessibile digitale monouso con cmos e illuminazione a doppio ledpezzi 100 ">
+      <td class="small">2023-01-26</td>
+      <td>VIDEOURETEROSCOPIO FLESSIBILE DIGITALE MONOUSO CON CMOS E ILLUMINAZIONE A DOPPIO LEDPEZZI 100<div class="small muted">CIG 96220964CF · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">95 mila €</td></tr><tr data-t="farmaco erwinase ">
+      <td class="small">2023-03-23</td>
+      <td>FARMACO ERWINASE<div class="small muted">CIG 9747185F81 · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">92 mila €</td></tr><tr data-t="incarichi professionali per servizi tecnici finanziamento decreto ministero della salute del 14.04.2011 - cup j68i23000090001 ">
+      <td class="small">2023-03-27</td>
+      <td>INCARICHI PROFESSIONALI PER SERVIZI TECNICI FINANZIAMENTO DECRETO MINISTERO DELLA SALUTE DEL 14.04.2011 - CUP J68I23000090001<div class="small muted">CIG 97949421D8 · SERVIZI DI PROGETTAZIONE DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">88 mila €</td></tr><tr data-t="contenitori preriempiti di formalina da 5 ml ">
+      <td class="small">2023-02-27</td>
+      <td>CONTENITORI PRERIEMPITI DI FORMALINA DA 5 ML<div class="small muted">CIG 96812525E2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">86 mila €</td></tr><tr data-t="farmaci dovprela e traleusin ">
+      <td class="small">2023-03-17</td>
+      <td>FARMACI DOVPRELA E TRALEUSIN<div class="small muted">CIG 972646332F · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">83 mila €</td></tr><tr data-t="lavori per il riposizionamento delle cabine di decompressione (tsd) del p.o. pugliese ">
+      <td class="small">2023-08-31</td>
+      <td>LAVORI PER IL RIPOSIZIONAMENTO DELLE CABINE DI DECOMPRESSIONE (TSD) DEL P.O. PUGLIESE<div class="small muted">CIG 9995940EA0 · LAVORI DI INSTALLAZIONE DI RACCORDERIA GAS</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">77 mila €</td></tr><tr data-t="fornitura di sistemi identificativo madre - neonato per la soc di terapia intensiva neonatale e patologia neonatale per l&#39;a.o.pugliese ciaccio ">
+      <td class="small">2023-04-26</td>
+      <td>FORNITURA DI SISTEMI IDENTIFICATIVO MADRE - NEONATO PER LA SOC DI TERAPIA INTENSIVA NEONATALE E PATOLOGIA NEONATALE PER L&#39;A.O.PUGLIESE CIACCIO<div class="small muted">CIG 9793314260 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">72 mila €</td></tr><tr data-t="acquisto di sistemi holter ecg e holtel pressorio per varie s.o.c. dell&#39;a.o. pugliese ciaccio di catanzaro ">
+      <td class="small">2023-03-21</td>
+      <td>ACQUISTO DI SISTEMI HOLTER ECG E HOLTEL PRESSORIO PER VARIE S.O.C. DELL&#39;A.O. PUGLIESE CIACCIO DI CATANZARO<div class="small muted">CIG 9725176D1B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">70 mila €</td></tr><tr data-t="fornitura triennale in service di sistemi di etichettatura per tracciabilita&#39; ed identificazione farmaci per il dipartimento emergenza accettazione dell.a.o.p.c. ">
+      <td class="small">2023-01-16</td>
+      <td>FORNITURA TRIENNALE IN SERVICE DI SISTEMI DI ETICHETTATURA PER TRACCIABILITA&#39; ED IDENTIFICAZIONE FARMACI PER IL DIPARTIMENTO EMERGENZA ACCETTAZIONE DELL.A.O.P.C.<div class="small muted">CIG 960429749C · MACCHINE ETICHETTATRICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="acquisto dispositivi per ossigeno terapia e nebulizzazione meccanica ">
+      <td class="small">2023-04-11</td>
+      <td>ACQUISTO DISPOSITIVI PER OSSIGENO TERAPIA E NEBULIZZAZIONE MECCANICA<div class="small muted">CIG 970577206F · KIT RESPIRATORI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">67 mila €</td></tr><tr data-t="catetere venoso centale picc in poliuretano ">
+      <td class="small">2023-01-30</td>
+      <td>CATETERE VENOSO CENTALE PICC IN POLIURETANO<div class="small muted">CIG 96291566E7 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">67 mila €</td></tr><tr data-t="acquisto kit di gestione per assemblato ">
+      <td class="small">2023-03-28</td>
+      <td>ACQUISTO KIT DI GESTIONE PER ASSEMBLATO<div class="small muted">CIG 9742243141 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">66 mila €</td></tr><tr data-t="drenaggio intracranico bilume con unita&#39; di controllo ">
+      <td class="small">2023-03-27</td>
+      <td>DRENAGGIO INTRACRANICO BILUME CON UNITA&#39; DI CONTROLLO<div class="small muted">CIG 9737172886 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">65 mila €</td></tr><tr data-t="elettrodi monouso per ecg (ecg a riposo) con supporto ad alta adesivita&#39;, gel liquido ad alta conduttivia&#39;, sensore ">
+      <td class="small">2023-03-21</td>
+      <td>ELETTRODI MONOUSO PER ECG (ECG A RIPOSO) CON SUPPORTO AD ALTA ADESIVITA&#39;, GEL LIQUIDO AD ALTA CONDUTTIVIA&#39;, SENSORE<div class="small muted">CIG 9727696CAD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">60 mila €</td></tr><tr data-t="deflussori per somministrazione farmaci oncologici ">
+      <td class="small">2023-02-23</td>
+      <td>DEFLUSSORI PER SOMMINISTRAZIONE FARMACI ONCOLOGICI<div class="small muted">CIG 9730220F8B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">60 mila €</td></tr><tr data-t="acquisto sigillante in polietilenglicole ">
+      <td class="small">2023-01-31</td>
+      <td>ACQUISTO SIGILLANTE IN POLIETILENGLICOLE<div class="small muted">CIG 96318863C6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">57 mila €</td></tr><tr data-t="materiale per soluzioni cristalloidi ">
+      <td class="small">2023-01-25</td>
+      <td>MATERIALE PER SOLUZIONI CRISTALLOIDI<div class="small muted">CIG 97294124C6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">57 mila €</td></tr><tr data-t="pezze laparatomiche ">
+      <td class="small">2023-01-25</td>
+      <td>PEZZE LAPARATOMICHE<div class="small muted">CIG 96431177E2 · GARZA PER MEDICAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">56 mila €</td></tr><tr data-t="farmaco wilfactin ">
+      <td class="small">2023-03-02</td>
+      <td>FARMACO WILFACTIN<div class="small muted">CIG 9698427325 · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">54 mila €</td></tr><tr data-t="lavori d&#39; installazione di numero 9 ups presidio pugliese e de lellis ">
+      <td class="small">2023-04-07</td>
+      <td>LAVORI D&#39; INSTALLAZIONE DI NUMERO 9 UPS PRESIDIO PUGLIESE E DE LELLIS<div class="small muted">CIG 96949562C9 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ELETTRICI DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA RISTRETTA</td>
+      <td class="num">51 mila €</td></tr><tr data-t="procedura ai sensi dell&#39;art. dell&#39;art. 1 comma 2 lett. b) legge 11 settembre 2020, n. 120 e art. 95, comma 4 d.lgs. n. 50/2016 - rdo aperta per la fornitura di sistemi per il mantenimento della temperatura corporea per il pronto soccorso e recovery room dell&#39;a.o. pugliese-ciaccio. ">
+      <td class="small">2023-03-28</td>
+      <td>PROCEDURA AI SENSI DELL&#39;ART. DELL&#39;ART. 1 COMMA 2 LETT. B) LEGGE 11 SETTEMBRE 2020, N. 120 E ART. 95, COMMA 4 D.LGS. N. 50/2016 - RDO APERTA PER LA FORNITURA DI SISTEMI PER IL MANTENIMENTO DELLA TEMPERATURA CORPOREA PER IL PRONTO SOCCORSO E RECOVERY ROOM DELL&#39;A.O. PUGLIESE-CIACCIO.<div class="small muted">CIG 9741303988 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">50 mila €</td></tr><tr data-t="affidamento mediante procedura mepa per la fornitura di materiale di consumo per l&#39;imbustamento dei pezzi istologici per 24 mesi per l&#39;azienda ospedaliera pugliese-ciaccio di catanzaro. ">
+      <td class="small">2023-03-21</td>
+      <td>AFFIDAMENTO MEDIANTE PROCEDURA MEPA PER LA FORNITURA DI MATERIALE DI CONSUMO PER L&#39;IMBUSTAMENTO DEI PEZZI ISTOLOGICI PER 24 MESI PER L&#39;AZIENDA OSPEDALIERA PUGLIESE-CIACCIO DI CATANZARO.<div class="small muted">CIG 9767986D09 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">45 mila €</td></tr><tr data-t="poligrafo per angiografo philips cardiologia ">
+      <td class="small">2023-01-09</td>
+      <td>POLIGRAFO PER ANGIOGRAFO PHILIPS CARDIOLOGIA<div class="small muted">CIG 9591081A6A · SISTEMI DI REGISTRAZIONE E DISPOSITIVI DI ESPLORAZIONE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA RISTRETTA</td>
+      <td class="num">44 mila €</td></tr><tr data-t="forntitura di materiale dedicato per ventilatori da rianimazione modello v600 marca draeger per la soc di rianimazione dell&#39;azienda ospedaliera pugliese ciaccio ">
+      <td class="small">2023-04-19</td>
+      <td>FORNTITURA DI MATERIALE DEDICATO PER VENTILATORI DA RIANIMAZIONE MODELLO V600 MARCA DRAEGER PER LA SOC DI RIANIMAZIONE DELL&#39;AZIENDA OSPEDALIERA PUGLIESE CIACCIO<div class="small muted">CIG 9783101656 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">43 mila €</td></tr><tr data-t="farmaco ampicillina/sulbactam ">
+      <td class="small">2023-03-03</td>
+      <td>FARMACO AMPICILLINA/SULBACTAM<div class="small muted">CIG 97121553D9 · ARTICOLI DI FARMACIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">42 mila €</td></tr><tr data-t="n.2 apparecchiature per prevenzione alopecia da chemioterapia per la soc di oncologia ">
+      <td class="small">2023-12-12</td>
+      <td>N.2 APPARECCHIATURE PER PREVENZIONE ALOPECIA DA CHEMIOTERAPIA PER LA SOC DI ONCOLOGIA<div class="small muted">CIG A03BA48043 · APPARECCHIATURA MEDICA INFORMATICA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">41 mila €</td></tr><tr data-t="materiale per ventilazzione invasiva ">
+      <td class="small">2023-01-25</td>
+      <td>MATERIALE PER VENTILAZZIONE INVASIVA<div class="small muted">CIG 9729404E29 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">41 mila €</td></tr><tr data-t="servizio di manutenzione e riparazione arredi e piccole forniture ">
+      <td class="small">2023-02-07</td>
+      <td>SERVIZIO DI MANUTENZIONE E RIPARAZIONE ARREDI E PICCOLE FORNITURE<div class="small muted">CIG 9617618572 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI MOBILI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">40 mila €</td></tr><tr data-t="procedura ai sensi dell&#39;art. dell&#39;art. 1 comma 2 lett. b) legge 11 settembre 2020, n. 120 e art. 95, comma 4 d.lgs. n. 50/2016 - rdo aperta per la fornitura di l&#39;acquisto di n. 6.000 set per pompe hospira, set primary ">
+      <td class="small">2023-04-13</td>
+      <td>PROCEDURA AI SENSI DELL&#39;ART. DELL&#39;ART. 1 COMMA 2 LETT. B) LEGGE 11 SETTEMBRE 2020, N. 120 E ART. 95, COMMA 4 D.LGS. N. 50/2016 - RDO APERTA PER LA FORNITURA DI L&#39;ACQUISTO DI N. 6.000 SET PER POMPE HOSPIRA, SET PRIMARY<div class="small muted">CIG 9772485DBA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">36 mila €</td></tr><tr data-t="catetere venoso periferico midline ad inserimento periferico ">
+      <td class="small">2023-01-30</td>
+      <td>CATETERE VENOSO PERIFERICO MIDLINE AD INSERIMENTO PERIFERICO<div class="small muted">CIG 9629182C5A · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">30 mila €</td></tr><tr data-t="materiale per igiene paziente ">
+      <td class="small">2023-01-25</td>
+      <td>MATERIALE PER IGIENE PAZIENTE<div class="small muted">CIG 9729422D04 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">30 mila €</td></tr><tr data-t="catetere venoso centrale ad inserimento periferico compatibile con l&#39;infusione di mezzi di contrasto ">
+      <td class="small">2023-01-30</td>
+      <td>CATETERE VENOSO CENTRALE AD INSERIMENTO PERIFERICO COMPATIBILE CON L&#39;INFUSIONE DI MEZZI DI CONTRASTO<div class="small muted">CIG 962917241C · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">26 mila €</td></tr><tr data-t="catetere a palloncino per procedure endoscopiche cerebrali ">
+      <td class="small">2023-03-27</td>
+      <td>CATETERE A PALLONCINO PER PROCEDURE ENDOSCOPICHE CEREBRALI<div class="small muted">CIG 9737080C99 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">24 mila €</td></tr><tr data-t="catetere venoso centrale picc in poliuretano a punta aperta ">
+      <td class="small">2023-01-30</td>
+      <td>CATETERE VENOSO CENTRALE PICC IN POLIURETANO A PUNTA APERTA<div class="small muted">CIG 9629147F77 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">23 mila €</td></tr><tr data-t="materiale per soluzione lipidiche ">
+      <td class="small">2023-01-25</td>
+      <td>MATERIALE PER SOLUZIONE LIPIDICHE<div class="small muted">CIG 9729419A8B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">21 mila €</td></tr><tr data-t="elettrodi monouso monitoraggio cardiaco pediatrico ">
+      <td class="small">2023-03-21</td>
+      <td>ELETTRODI MONOUSO MONITORAGGIO CARDIACO PEDIATRICO<div class="small muted">CIG 9727697D80 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">18 mila €</td></tr><tr data-t="clip di raney con applicatore ">
+      <td class="small">2023-03-27</td>
+      <td>CLIP DI RANEY CON APPLICATORE<div class="small muted">CIG 9737121E6E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">18 mila €</td></tr><tr data-t="clip di raney ">
+      <td class="small">2023-03-27</td>
+      <td>CLIP DI RANEY<div class="small muted">CIG 9737103F93 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mila €</td></tr><tr data-t="cotonini chirurgici ">
+      <td class="small">2023-03-27</td>
+      <td>COTONINI CHIRURGICI<div class="small muted">CIG 9737161F70 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mila €</td></tr><tr data-t="acquisto liquido adesivo ad uso esterno ">
+      <td class="small">2023-03-28</td>
+      <td>ACQUISTO LIQUIDO ADESIVO AD USO ESTERNO<div class="small muted">CIG 97421325A6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">14 mila €</td></tr><tr data-t="acquisto liquido asportatore uso esterno ">
+      <td class="small">2023-03-28</td>
+      <td>ACQUISTO LIQUIDO ASPORTATORE USO ESTERNO<div class="small muted">CIG 9742218C9C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">14 mila €</td></tr><tr data-t="catetere venoso centrale picc in silicoe radiopaco ">
+      <td class="small">2023-01-30</td>
+      <td>CATETERE VENOSO CENTRALE PICC IN SILICOE RADIOPACO<div class="small muted">CIG 9629137739 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">12 mila €</td></tr><tr data-t="fornitura di sistemi per la movimentazione del paziente e la prevenzione delle lesioni da decubito, per la uoc di anestesia e rianimazione e il dipartimento di medicina generale specialità mediche dell&#39;a.o. pugliese-ciaccio ">
+      <td class="small">2023-03-16</td>
+      <td>FORNITURA DI SISTEMI PER LA MOVIMENTAZIONE DEL PAZIENTE E LA PREVENZIONE DELLE LESIONI DA DECUBITO, PER LA UOC DI ANESTESIA E RIANIMAZIONE E IL DIPARTIMENTO DI MEDICINA GENERALE SPECIALITÀ MEDICHE DELL&#39;A.O. PUGLIESE-CIACCIO<div class="small muted">CIG 9716433E27 · AUSILI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">11 mila €</td></tr><tr data-t="aghi per biopsia stereotassica cerebrale ">
+      <td class="small">2023-03-27</td>
+      <td>AGHI PER BIOPSIA STEREOTASSICA CEREBRALE<div class="small muted">CIG 97370969CE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">11 mila €</td></tr><tr data-t="fazzoletti monouso imbevuti di soluzione disinfettante ">
+      <td class="small">2023-01-25</td>
+      <td>FAZZOLETTI MONOUSO IMBEVUTI DI SOLUZIONE DISINFETTANTE<div class="small muted">CIG 9729432547 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">6 mila €</td></tr><tr data-t="sacca di acqua sterile da 1.000 ml ">
+      <td class="small">2023-01-25</td>
+      <td>SACCA DI ACQUA STERILE DA 1.000 ML<div class="small muted">CIG 9729398937 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">6 mila €</td></tr><tr data-t="isola sala operatoria ">
+      <td class="small">2023-01-25</td>
+      <td>ISOLA SALA OPERATORIA<div class="small muted">CIG 972929001A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mila €</td></tr><tr data-t="salvietta per idratazione della pelle del neonato ">
+      <td class="small">2023-01-25</td>
+      <td>SALVIETTA PER IDRATAZIONE DELLA PELLE DEL NEONATO<div class="small muted">CIG 9729393518 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mila €</td></tr><tr data-t="sistema assorbi liquidi ">
+      <td class="small">2023-01-25</td>
+      <td>SISTEMA ASSORBI LIQUIDI<div class="small muted">CIG 9729384DA8 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mila €</td></tr><tr data-t="maschera laringea auto pressurizzante ">
+      <td class="small">2023-01-25</td>
+      <td>MASCHERA LARINGEA AUTO PRESSURIZZANTE<div class="small muted">CIG 9729317660 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mila €</td></tr><tr data-t="perforatore di flacone ">
+      <td class="small">2023-01-25</td>
+      <td>PERFORATORE DI FLACONE<div class="small muted">CIG 9729309FC3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mila €</td></tr><tr data-t="dispenser calore ">
+      <td class="small">2023-01-25</td>
+      <td>DISPENSER CALORE<div class="small muted">CIG 97292818AA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mila €</td></tr><tr data-t="maschera laringea monouso ">
+      <td class="small">2023-01-25</td>
+      <td>MASCHERA LARINGEA MONOUSO<div class="small muted">CIG 97293219AC · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">823 €</td></tr><tr data-t="maschera facciale ">
+      <td class="small">2023-01-25</td>
+      <td>MASCHERA FACCIALE<div class="small muted">CIG 9729299785 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">84 €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

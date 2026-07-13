@@ -175,6 +175,34 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">573 mila €</td></tr><tr><td>RICHIESTA: INTEGRAZIONE CIG 8942030C95_DET_3102_21 ADESIONE CONV. IC. SOLUZIONI NUTRIZIONE PARENTERALE 3^ EDIZIONE DITTA BAXTER LOTTO 22<div class="small muted">PRODOTTI PER ALIMENTAZIONE PARENTERALE</div></td>
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">45 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(2 contratti ANAC, 618 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/080110.csv" download>⬇ Scarica l’elenco completo (CSV, 2 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="adesione fornitura medicinali 2024-2025 fino al 31/12/2025 - abbvie s.r.l. ">
+      <td class="small">2024-01-15</td>
+      <td>ADESIONE FORNITURA MEDICINALI 2024-2025 FINO AL 31/12/2025 - ABBVIE S.R.L.<div class="small muted">CIG A039EF3227 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">573 mila €</td></tr><tr data-t="richiesta: integrazione cig 8942030c95_det_3102_21 adesione conv. ic. soluzioni nutrizione parenterale 3^ edizione ditta baxter lotto 22 baxter s.p.a.">
+      <td class="small">2023-09-19</td>
+      <td>RICHIESTA: INTEGRAZIONE CIG 8942030C95_DET_3102_21 ADESIONE CONV. IC. SOLUZIONI NUTRIZIONE PARENTERALE 3^ EDIZIONE DITTA BAXTER LOTTO 22<div class="small muted">CIG A00EE256BA · PRODOTTI PER ALIMENTAZIONE PARENTERALE</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">45 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

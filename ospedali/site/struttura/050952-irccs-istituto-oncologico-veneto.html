@@ -202,6 +202,1524 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO</td><td class="num">7 mln €</td></tr><tr><td>XI APPALTO - LOTTO 168<div class="small muted">MEDICINALI VARI</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">5 mln €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(1150 contratti ANAC, 1 mld € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/050952.csv" download>⬇ Scarica l’elenco completo (CSV, 1150 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="centri autorizzati 20 ed - lotto 13 euromed pharma s.r.l.">
+      <td class="small">2024-02-15</td>
+      <td>CENTRI AUTORIZZATI 20 ED - LOTTO 13<div class="small muted">CIG A04B8F0665 · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">900 mln €</td></tr><tr data-t="adesione alla convenzione consip per la fornitura di energia elettrica e dei servizi connessi per le pubbliche amministrazioni, ai sensi dell&#39;articolo 26, legge 23 dicembre 1999 n. 488 e s.m.i. e dell&#39;articolo 58, legge 23 dicembre 2000 n. 388 – edizione 21 - id 2638 – lotto 5 - per la durata di 12  edison energia s.p.a.">
+      <td class="small">2024-06-12</td>
+      <td>ADESIONE ALLA CONVENZIONE CONSIP PER LA FORNITURA DI ENERGIA ELETTRICA E DEI SERVIZI CONNESSI PER LE PUBBLICHE AMMINISTRAZIONI, AI SENSI DELL&#39;ARTICOLO 26, LEGGE 23 DICEMBRE 1999 N. 488 E S.M.I. E DELL&#39;ARTICOLO 58, LEGGE 23 DICEMBRE 2000 N. 388 – EDIZIONE 21 - ID 2638 – LOTTO 5 - PER LA DURATA DI 12 <div class="small muted">CIG B212F1F6F1 · EROGAZIONE DI ENERGIA ELETTRICA E SERVIZI CONNESSI</div></td>
+      <td>EDISON ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">242 mln €</td></tr><tr data-t="centri autorizzati 17 ed - lotto 15 daiichi-sankyo-itali">
+      <td class="small">2023-11-15</td>
+      <td>CENTRI AUTORIZZATI 17 ED - LOTTO 15<div class="small muted">CIG A01A8CF0FD · MEDICINALI VARI</div></td>
+      <td>DAIICHI-SANKYO-ITALI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">13 mln €</td></tr><tr data-t="iov1220 - progettazione esecutiva e dell&#39;esecuzione dei lavori per la realizzazione della nuova radioterapia dell&#39;istituto oncologico veneto irccs di padova presso l&#39;ospedale san giacomo di castelfranco veneto (tv) radar - s.r.l.">
+      <td class="small">2023-02-22</td>
+      <td>IOV1220 - PROGETTAZIONE ESECUTIVA E DELL&#39;ESECUZIONE DEI LAVORI PER LA REALIZZAZIONE DELLA NUOVA RADIOTERAPIA DELL&#39;ISTITUTO ONCOLOGICO VENETO IRCCS DI PADOVA PRESSO L&#39;OSPEDALE SAN GIACOMO DI CASTELFRANCO VENETO (TV)<div class="small muted">CIG 95617963AD · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>RADAR - S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">12 mln €</td></tr><tr data-t="acceleratore lineare integrato con risonanza magnetica ad alto campo (1.5t) per la sede di castelfranco veneto elekta s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>ACCELERATORE LINEARE INTEGRATO CON RISONANZA MAGNETICA AD ALTO CAMPO (1.5T) PER LA SEDE DI CASTELFRANCO VENETO<div class="small muted">CIG 962259509A · DISPOSITIVI PER RADIOTERAPIA, MECCANOTERAPIA, ELETTROTERAPIA E TERAPIA FISICA</div></td>
+      <td>ELEKTA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">10 mln €</td></tr><tr data-t="fornitura farmaco enhertu daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2023-08-07</td>
+      <td>FORNITURA FARMACO ENHERTU<div class="small muted">CIG A002419ABA · MEDICINALI VARI</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">7 mln €</td></tr><tr data-t="farmaci esclusivi centri aut. 31 ed_lotto 12 astellas pharma s.p.a.">
+      <td class="small">2024-12-27</td>
+      <td>FARMACI ESCLUSIVI CENTRI AUT. 31 ED_LOTTO 12<div class="small muted">CIG B50642EED4 · MEDICINALI VARI</div></td>
+      <td>ASTELLAS PHARMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mln €</td></tr><tr data-t="xi appalto - lotto 168 astrazeneca s.p.a.">
+      <td class="small">2024-12-03</td>
+      <td>XI APPALTO - LOTTO 168<div class="small muted">CIG B4939CD7D5 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mln €</td></tr><tr data-t="servizi di gestione e manutenzione di sistemi ip e postazioni di lavoro per le pubbliche amministrazioni fastweb spa">
+      <td class="small">2023-05-31</td>
+      <td>SERVIZI DI GESTIONE E MANUTENZIONE DI SISTEMI IP E POSTAZIONI DI LAVORO PER LE PUBBLICHE AMMINISTRAZIONI<div class="small muted">CIG 9846452D3A · MANUTENZIONE E RIPARAZIONE DI ATTREZZATURA INFORMATICA</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="tagrisso 40mg e 80mg astrazeneca s.p.a.">
+      <td class="small">2023-11-22</td>
+      <td>TAGRISSO 40MG E 80MG<div class="small muted">CIG A02B146F41 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="richiesta di progetto switch cisco vodafone spa">
+      <td class="small">2024-08-13</td>
+      <td>RICHIESTA DI PROGETTO SWITCH CISCO<div class="small muted">CIG B2C7893AB0 · APPARECCHIATURE DI RETE</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="centri autorizzati 15 ed - lotto 3 euromed pharma s.r.l.">
+      <td class="small">2023-09-14</td>
+      <td>CENTRI AUTORIZZATI 15 ED - LOTTO 3<div class="small muted">CIG A00D69FD35 · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="contratto ponte, nelle more dell&#39;attivazione della gara regionale getis, ai sensi dell&#39;art. 63 c. 2 lett. c) del d.lgs. n. 50/2016, per il servizio energia e manutenzione impianti per gli stabili aziendali dell&#39;istituto oncologico veneto irccs di padova (pd) (commessa a290) engie servizi s.p.a.">
+      <td class="small">2023-03-31</td>
+      <td>CONTRATTO PONTE, NELLE MORE DELL&#39;ATTIVAZIONE DELLA GARA REGIONALE GETIS, AI SENSI DELL&#39;ART. 63 C. 2 LETT. C) DEL D.LGS. N. 50/2016, PER IL SERVIZIO ENERGIA E MANUTENZIONE IMPIANTI PER GLI STABILI AZIENDALI DELL&#39;ISTITUTO ONCOLOGICO VENETO IRCCS DI PADOVA (PD) (COMMESSA A290)<div class="small muted">CIG 9769285D01 · MESSA IN OPERA DI IMPIANTI DI RISCALDAMENTO</div></td>
+      <td>ENGIE SERVIZI S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">3 mln €</td></tr><tr data-t="nubeqa_lotto 17 bayer s.p.a.">
+      <td class="small">2024-07-10</td>
+      <td>NUBEQA_LOTTO 17<div class="small muted">CIG B26B124CAD · MEDICINALI VARI</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="centri autorizzati 19 ed - lotto 2 astellas pharma s.p.a.">
+      <td class="small">2023-12-06</td>
+      <td>CENTRI AUTORIZZATI 19 ED - LOTTO 2<div class="small muted">CIG A02EE3BCE9 · MEDICINALI VARI</div></td>
+      <td>ASTELLAS PHARMA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="servizio di pulizie miorelli service s.p.a. a socio unico">
+      <td class="small">2023-12-21</td>
+      <td>SERVIZIO DI PULIZIE<div class="small muted">CIG A043B67E18 · SERVIZI DI PULIZIA</div></td>
+      <td>MIORELLI SERVICE S.P.A. A SOCIO UNICO</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="fornitura farmaco revlimid pa lenalidomide vii app lotto 876 celgene s.r.l.">
+      <td class="small">2024-05-30</td>
+      <td>FORNITURA FARMACO REVLIMID PA LENALIDOMIDE VII APP LOTTO 876<div class="small muted">CIG A05A1B197D · MEDICINALI VARI</div></td>
+      <td>CELGENE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione convenzione consip servizi di pulizia per gli enti del ssn dussmann service s.r.l.">
+      <td class="small">2024-04-24</td>
+      <td>ADESIONE CONVENZIONE CONSIP SERVIZI DI PULIZIA PER GLI ENTI DEL SSN<div class="small muted">CIG A0579D875C · SERVIZI DI PULIZIA</div></td>
+      <td>DUSSMANN SERVICE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione gara regionale kit tnt sterili - lotto c medline international italy s.r.l.">
+      <td class="small">2023-03-30</td>
+      <td>ADESIONE GARA REGIONALE KIT TNT STERILI - LOTTO C<div class="small muted">CIG 9729229DBF · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDLINE INTERNATIONAL ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di front-office e back-office per sede iov di castelfranco veneto cooperativa sociale asso societa&#39; cooperativa">
+      <td class="small">2023-01-23</td>
+      <td>SERVIZIO DI FRONT-OFFICE E BACK-OFFICE PER SEDE IOV DI CASTELFRANCO VENETO<div class="small muted">CIG 9582281C6C · SERVIZI AMMINISTRATIVI IN CAMPO SANITARIO</div></td>
+      <td>COOPERATIVA SOCIALE ASSO SOCIETA&#39; COOPERATIVA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="reagenti per test genetici - ngs illumina italy s.r.l.">
+      <td class="small">2023-06-08</td>
+      <td>REAGENTI PER TEST GENETICI - NGS<div class="small muted">CIG 98114275B1 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ILLUMINA ITALY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura f-18 colina compresa consegna durata 24 mesi ">
+      <td class="small">2024-03-29</td>
+      <td>Fornitura F-18 Colina compresa consegna durata 24 mesi<div class="small muted">CIG B105469A3D · Radioisotopi</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="iov1081-09 lavori ristrutturazione radiologia piano rialzato ala est ospedale busonera iov engie servizi s.p.a.">
+      <td class="small">2024-10-10</td>
+      <td>IOV1081-09 LAVORI RISTRUTTURAZIONE RADIOLOGIA PIANO RIALZATO ALA EST OSPEDALE BUSONERA IOV<div class="small muted">CIG A063039857 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>ENGIE SERVIZI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="calquence 100 mg cpr operatore individuale (persona fisica)">
+      <td class="small">2024-06-06</td>
+      <td>CALQUENCE 100 MG CPR<div class="small muted">CIG B203928CEC · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro acceleratori lineari e servizio di modelizzazione del tps ray station pnrr varian medical systems italia s.p.a.">
+      <td class="small">2023-02-03</td>
+      <td>ACCORDO QUADRO ACCELERATORI LINEARI E SERVIZIO DI MODELIZZAZIONE DEL TPS RAY STATION PNRR<div class="small muted">CIG 9601420E6C · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>VARIAN MEDICAL SYSTEMS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="gas medicinali lotto 12 a sol s.p.a.">
+      <td class="small">2023-06-01</td>
+      <td>GAS MEDICINALI LOTTO 12 A<div class="small muted">CIG 9843370DE1 · MEDICINALI VARI</div></td>
+      <td>SOL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="acquisto acceleratore lineare varian medical systems italia s.p.a.">
+      <td class="small">2024-06-18</td>
+      <td>ACQUISTO ACCELERATORE LINEARE<div class="small muted">CIG B227128768 · DISPOSITIVI PER RADIOTERAPIA, MECCANOTERAPIA, ELETTROTERAPIA E TERAPIA FISICA</div></td>
+      <td>VARIAN MEDICAL SYSTEMS ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="p.a. cisplatino 100 ml sandoz s.p.a.">
+      <td class="small">2024-05-29</td>
+      <td>P.A. CISPLATINO 100 ML<div class="small muted">CIG B17D510332 · Cpv prevalente non disponibile</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura bavencio lotto 3_centri autorizzati 10 ed merck serono s.p.a.">
+      <td class="small">2023-02-02</td>
+      <td>FORNITURA BAVENCIO LOTTO 3_CENTRI AUTORIZZATI 10 ED<div class="small muted">CIG 96212380C5 · MEDICINALI VARI</div></td>
+      <td>MERCK SERONO S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="farmaco zynlota swedish orphan biovitrum s.r.l.">
+      <td class="small">2024-07-19</td>
+      <td>FARMACO ZYNLOTA<div class="small muted">CIG B2880D9673 · MEDICINALI VARI</div></td>
+      <td>SWEDISH ORPHAN BIOVITRUM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema di tomoterapia presso radioterapia sede schiavonia (pd) : aggiornamento tecnologico e servizio di manutenzione ed assistenza tecnologie avanzate *t.a. - s.r.l.">
+      <td class="small">2024-06-19</td>
+      <td>SISTEMA DI TOMOTERAPIA PRESSO RADIOTERAPIA SEDE SCHIAVONIA (PD) : AGGIORNAMENTO TECNOLOGICO E SERVIZIO DI MANUTENZIONE ED ASSISTENZA<div class="small muted">CIG B22AD2F0AA · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>TECNOLOGIE AVANZATE *T.A. - S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizio trasporti materiale vario ">
+      <td class="small">2024-04-18</td>
+      <td>SERVIZIO TRASPORTI MATERIALE VARIO<div class="small muted">CIG B14347217F · SERVIZI DI AGENZIE DI TRASPORTO MERCI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura farmaco erleada _lotto 799 vii app - aumenti fabbisogni janssen cilag s.p.a.">
+      <td class="small">2023-12-21</td>
+      <td>FORNITURA FARMACO ERLEADA _LOTTO 799 VII APP - AUMENTI FABBISOGNI<div class="small muted">CIG A03C0920E0 · MEDICINALI VARI</div></td>
+      <td>JANSSEN CILAG S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="ogivri_lotto 5 depo-pack s.r.l.">
+      <td class="small">2024-07-12</td>
+      <td>OGIVRI_LOTTO 5<div class="small muted">CIG B27233916B · MEDICINALI VARI</div></td>
+      <td>DEPO-PACK S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="kimmtrak gara 12 mesi euromed pharma s.r.l.">
+      <td class="small">2023-05-18</td>
+      <td>KIMMTRAK GARA 12 MESI<div class="small muted">CIG 98328260B6 · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura in locazione inclusive service di un sistema integrato per biopsia mammaria vuoto assistita ">
+      <td class="small">2023-06-01</td>
+      <td>FORNITURA IN LOCAZIONE INCLUSIVE SERVICE DI UN SISTEMA INTEGRATO PER BIOPSIA MAMMARIA VUOTO ASSISTITA<div class="small muted">CIG 9849661563 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lutathera lotto 1310 7 appalto advanced accelerator applications (italy) - s.r.l.">
+      <td class="small">2024-02-01</td>
+      <td>LUTATHERA LOTTO 1310 7 APPALTO<div class="small muted">CIG A04C43A74C · MEDICINALI VARI</div></td>
+      <td>ADVANCED ACCELERATOR APPLICATIONS (ITALY) - S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="rmn 1,5 t pnrr philips s.p.a.">
+      <td class="small">2023-06-12</td>
+      <td>RMN 1,5 T PNRR<div class="small muted">CIG 9877851483 · APPARECCHIATURE PER IMMAGINOGRAFIA A RISONANZA MAGNETICA</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">950 mila €</td></tr><tr data-t="test oncotype dx breast recurrence score® (test oncotype dx®) genomic health, inc.">
+      <td class="small">2024-04-10</td>
+      <td>TEST ONCOTYPE DX BREAST RECURRENCE SCORE® (TEST ONCOTYPE DX®)<div class="small muted">CIG B130D7FB23 · Cpv prevalente non disponibile</div></td>
+      <td>GENOMIC HEALTH, INC.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">934 mila €</td></tr><tr data-t="opdualag ">
+      <td class="small">2024-11-26</td>
+      <td>OPDUALAG<div class="small muted">CIG B475C59619 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">933 mila €</td></tr><tr data-t="centri autorizzati viii ed - lotto 11 gilead sciences s.r.l.">
+      <td class="small">2023-01-18</td>
+      <td>CENTRI AUTORIZZATI VIII ED - LOTTO 11<div class="small muted">CIG 9596791277 · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">913 mila €</td></tr><tr data-t="adesione gara regionale protesi ed espansori mammari, espansori tissutali e matrici dedicate - 3 edizione. lotto 3 johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE PROTESI ED ESPANSORI MAMMARI, ESPANSORI TISSUTALI E MATRICI DEDICATE - 3 EDIZIONE. LOTTO 3<div class="small muted">CIG 99019102A1 · SOSTEGNO FUNZIONALE</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">900 mila €</td></tr><tr data-t="fornitura padcev 1 fl 20 mg + 30mg astellas pharma">
+      <td class="small">2023-08-07</td>
+      <td>FORNITURA PADCEV 1 FL 20 MG + 30MG<div class="small muted">CIG A0027280E4 · MEDICINALI VARI</div></td>
+      <td>ASTELLAS PHARMA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">855 mila €</td></tr><tr data-t="adesione gara regionale protesi ed espansori mammari, espansori tissutali e matrici dedicate - 3 edizione. lotto 11 deco med s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE PROTESI ED ESPANSORI MAMMARI, ESPANSORI TISSUTALI E MATRICI DEDICATE - 3 EDIZIONE. LOTTO 11<div class="small muted">CIG 9902347B3E · SOSTEGNO FUNZIONALE</div></td>
+      <td>DECO MED S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">790 mila €</td></tr><tr data-t="centri autorizzati 12 ed - lotto 1 operatore individuale (persona fisica)">
+      <td class="small">2023-04-13</td>
+      <td>CENTRI AUTORIZZATI 12 ED - LOTTO 1<div class="small muted">CIG 9776325E98 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">752 mila €</td></tr><tr data-t="centri autorizzati 20 ed - lotto 3 eisai s.r.l.">
+      <td class="small">2024-02-15</td>
+      <td>CENTRI AUTORIZZATI 20 ED - LOTTO 3<div class="small muted">CIG A04B8E8FC8 · MEDICINALI VARI</div></td>
+      <td>EISAI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">750 mila €</td></tr><tr data-t="22 ed centri autorizzati_lotto 6 alloga italia srl">
+      <td class="small">2024-03-22</td>
+      <td>22 ED CENTRI AUTORIZZATI_LOTTO 6<div class="small muted">CIG B0F0E051A8 · Cpv prevalente non disponibile</div></td>
+      <td>ALLOGA ITALIA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">734 mila €</td></tr><tr data-t="sistema di tomoterapia presso radioterapia sede schiavonia (pd) : aggiornamento tecnologico e servizio di manutenzione ed assistenza per la durata di 12 mesi , più opzione di rinnovo per ulteriori 12 mesi ">
+      <td class="small">2024-07-26</td>
+      <td>SISTEMA DI TOMOTERAPIA PRESSO RADIOTERAPIA SEDE SCHIAVONIA (PD) : AGGIORNAMENTO TECNOLOGICO E SERVIZIO DI MANUTENZIONE ED ASSISTENZA PER LA DURATA DI 12 MESI , PIÙ OPZIONE DI RINNOVO PER ULTERIORI 12 MESI<div class="small muted">CIG B29D726032 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">725 mila €</td></tr><tr data-t="citofluorimetro separatore ">
+      <td class="small">2023-03-20</td>
+      <td>CITOFLUORIMETRO SEPARATORE<div class="small muted">CIG 9718051561 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">710 mila €</td></tr><tr data-t="adcetris lotto 710 vii appalto_aumento fabb takeda italia s.p.a.">
+      <td class="small">2024-02-15</td>
+      <td>ADCETRIS LOTTO 710 VII APPALTO_AUMENTO FABB<div class="small muted">CIG A04D7145D7 · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">700 mila €</td></tr><tr data-t="farmaci esclusivi centri aut. 31 ed_lotto 11 astellas pharma s.p.a.">
+      <td class="small">2024-12-27</td>
+      <td>FARMACI ESCLUSIVI CENTRI AUT. 31 ED_LOTTO 11<div class="small muted">CIG B5063275CE · MEDICINALI VARI</div></td>
+      <td>ASTELLAS PHARMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">700 mila €</td></tr><tr data-t="iov1220 - dl affidamento dei servizi di archittettura e ingegneria per la direzione lavori, il coordinamento della sicurezza in fase di esecuzione per costruzione nuova radioterapia cfv - tv prisma engineering s.r.l.">
+      <td class="small">2023-06-28</td>
+      <td>IOV1220 - DL AFFIDAMENTO DEI SERVIZI DI ARCHITTETTURA E INGEGNERIA PER LA DIREZIONE LAVORI, IL COORDINAMENTO DELLA SICUREZZA IN FASE DI ESECUZIONE PER COSTRUZIONE NUOVA RADIOTERAPIA CFV - TV<div class="small muted">CIG 986230036C · SERVIZI TECNICI</div></td>
+      <td>PRISMA ENGINEERING S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">698 mila €</td></tr><tr data-t="fornitura farmaco kisplyx 30 cps 10 + 4 mg eisai s.r.l.">
+      <td class="small">2023-08-07</td>
+      <td>FORNITURA FARMACO KISPLYX 30 CPS 10 + 4 MG<div class="small muted">CIG A00277A48E · MEDICINALI VARI</div></td>
+      <td>EISAI S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">682 mila €</td></tr><tr data-t="servizio di gestione rifiuti sede iov di padova eco eridania societa&#39; per azioni">
+      <td class="small">2023-05-18</td>
+      <td>SERVIZIO DI GESTIONE RIFIUTI SEDE IOV DI PADOVA<div class="small muted">CIG 9827549DFA · RACCOLTA, TRASPORTO E SMALTIMENTO DI RIFIUTI OSPEDALIERI</div></td>
+      <td>ECO ERIDANIA SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">680 mila €</td></tr><tr data-t="adesione gara regionale suturatrici meccaniche, clips e sistemi di fissaggio per chirurgia aperta e laparoscopica - i tranche. lotto 15. ditta medtronic italia spa medtronic italia s.p.a.">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE GARA REGIONALE SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER CHIRURGIA APERTA E LAPAROSCOPICA - I TRANCHE. LOTTO 15. DITTA MEDTRONIC ITALIA SPA<div class="small muted">CIG A04FF3A783 · MATERIALE PER SUTURE CHIRURGICHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">670 mila €</td></tr><tr data-t="adesione gara regionale suturatrici meccaniche, clips e sistemi di fissaggio per chirurgia aperta e laparoscopica - i tranche. lotto 12. ditta lotto 12. ditta medtronic italia spa medtronic italia s.p.a.">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE GARA REGIONALE SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER CHIRURGIA APERTA E LAPAROSCOPICA - I TRANCHE. LOTTO 12. DITTA LOTTO 12. DITTA MEDTRONIC ITALIA SPA<div class="small muted">CIG A04FEF3CEA · MATERIALE PER SUTURE CHIRURGICHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">670 mila €</td></tr><tr data-t="lotto 64 - daunorubicina/citarabina jazz healthcare italy s.r.l.">
+      <td class="small">2024-11-18</td>
+      <td>LOTTO 64 - DAUNORUBICINA/CITARABINA<div class="small muted">CIG B45201132D · MEDICINALI VARI</div></td>
+      <td>JAZZ HEALTHCARE ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">660 mila €</td></tr><tr data-t="centri autorizzati 15 ed - lotto 6 incyte biosciences italy s.r.l.">
+      <td class="small">2023-09-14</td>
+      <td>CENTRI AUTORIZZATI 15 ED - LOTTO 6<div class="small muted">CIG A00D74CBF9 · MEDICINALI VARI</div></td>
+      <td>INCYTE BIOSCIENCES ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">638 mila €</td></tr><tr data-t="fornitura di gas medicinali, tecnici e di laboratorio e dei servizi di manutenzione e di controllo quality per gli enti del servizio sanitario della regione del veneto - lotto 12b d.s. medica tecnologie s.r.l.">
+      <td class="small">2023-07-06</td>
+      <td>FORNITURA DI GAS MEDICINALI, TECNICI E DI LABORATORIO E DEI SERVIZI DI MANUTENZIONE E DI CONTROLLO QUALITY PER GLI ENTI DEL SERVIZIO SANITARIO DELLA REGIONE DEL VENETO - LOTTO 12B<div class="small muted">CIG A00C8D8EA2 · SERVIZI DI MANUTENZIONE DI APPARECCHIATURE A GAS</div></td>
+      <td>D.S. MEDICA TECNOLOGIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">609 mila €</td></tr><tr data-t="lavori di manutenzione ordinaria e straordinaria opere edili e adeguamento normativo immobili iov veneta cantieri s.r.l.">
+      <td class="small">2023-01-13</td>
+      <td>LAVORI DI MANUTENZIONE ORDINARIA E STRAORDINARIA OPERE EDILI E ADEGUAMENTO NORMATIVO IMMOBILI IOV<div class="small muted">CIG 9593877DBE · LAVORI EDILI E DI MURATURA</div></td>
+      <td>VENETA CANTIERI S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">600 mila €</td></tr><tr data-t="centri autorizzati 17 ed - lotto 13 incyte biosciences italy s.r.l.">
+      <td class="small">2023-11-15</td>
+      <td>CENTRI AUTORIZZATI 17 ED - LOTTO 13<div class="small muted">CIG A01A8AF693 · MEDICINALI VARI</div></td>
+      <td>INCYTE BIOSCIENCES ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">588 mila €</td></tr><tr data-t="iov3048 - lavori propedeutici all&#39;installazione di nuovo acceleratore lineare engie servizi s.p.a.">
+      <td class="small">2023-11-29</td>
+      <td>IOV3048 - LAVORI PROPEDEUTICI ALL&#39;INSTALLAZIONE DI NUOVO ACCELERATORE LINEARE<div class="small muted">CIG A03524F337 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>ENGIE SERVIZI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">565 mila €</td></tr><tr data-t="fornitura generatori radionuclidi_lotto 5 curium italy s.r.l.">
+      <td class="small">2023-06-27</td>
+      <td>FORNITURA GENERATORI RADIONUCLIDI_LOTTO 5<div class="small muted">CIG 9879837B67 · MEDICINALI VARI</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">546 mila €</td></tr><tr data-t="xi appalto - lotto 63 pfizer s.r.l.">
+      <td class="small">2024-11-25</td>
+      <td>XI APPALTO - LOTTO 63<div class="small muted">CIG B4700AAD35 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">530 mila €</td></tr><tr data-t="fornitura sodio cloruro 0,9%_ lotto 5 sol infusionali + elettr baxter s.p.a.">
+      <td class="small">2023-02-23</td>
+      <td>FORNITURA SODIO CLORURO 0,9%_ LOTTO 5 SOL INFUSIONALI + ELETTR<div class="small muted">CIG 96538511DE · MEDICINALI VARI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">518 mila €</td></tr><tr data-t="fornitura farmaco besremi _lotto 1 viii centri autorizzati euromed pharma s.r.l.">
+      <td class="small">2023-01-18</td>
+      <td>FORNITURA FARMACO BESREMI _LOTTO 1 VIII CENTRI AUTORIZZATI<div class="small muted">CIG 95956157FE · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">510 mila €</td></tr><tr data-t="servizio gestione informatizzata del personale gpi s.p.a.">
+      <td class="small">2024-02-01</td>
+      <td>SERVIZIO GESTIONE INFORMATIZZATA DEL PERSONALE<div class="small muted">CIG A045A305B6 · SERVIZI DI TRATTAMENTO DATI</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">510 mila €</td></tr><tr data-t="contratto biennale per i lavori di manutenzione straordinaria edile delle sedi dell&#39;istituto oncologico veneto i.r.c.c.s. ">
+      <td class="small">2024-07-17</td>
+      <td>CONTRATTO BIENNALE PER I LAVORI DI MANUTENZIONE STRAORDINARIA EDILE DELLE SEDI DELL&#39;ISTITUTO ONCOLOGICO VENETO I.R.C.C.S.<div class="small muted">CIG B27B49668D · LAVORI EDILI E DI MURATURA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">510 mila €</td></tr><tr data-t="xi appalto - lotto 102 pfizer s.r.l.">
+      <td class="small">2024-11-25</td>
+      <td>XI APPALTO - LOTTO 102<div class="small muted">CIG B4701EE896 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="fornitura farmaco onivyde servier italia s.p.a.">
+      <td class="small">2024-06-04</td>
+      <td>FORNITURA FARMACO ONIVYDE<div class="small muted">CIG B1F8256EB0 · Cpv prevalente non disponibile</div></td>
+      <td>SERVIER ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">486 mila €</td></tr><tr data-t="lumikras amgen s.r.l.">
+      <td class="small">2024-08-23</td>
+      <td>LUMIKRAS<div class="small muted">CIG B2D352EF13 · MEDICINALI VARI</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">479 mila €</td></tr><tr data-t="adesione gara regionale protesi ed espansori mammari, espansori tissutali e matrici dedicate - 3 edizione. lotto 10 deco med s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE PROTESI ED ESPANSORI MAMMARI, ESPANSORI TISSUTALI E MATRICI DEDICATE - 3 EDIZIONE. LOTTO 10<div class="small muted">CIG 9902251C05 · SOSTEGNO FUNZIONALE</div></td>
+      <td>DECO MED S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">475 mila €</td></tr><tr data-t="paclitaxel albumina bristol myers squibb">
+      <td class="small">2023-06-20</td>
+      <td>PACLITAXEL ALBUMINA<div class="small muted">CIG 9840434706 · MEDICINALI VARI</div></td>
+      <td>BRISTOL MYERS SQUIBB</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">450 mila €</td></tr><tr data-t="adesione gara regionale dispositivi di endoscopia digestiva, respiratoria e bilio-pancreatica - 2 edizione - prima tranche. lotto 30 boston scientific spa">
+      <td class="small">2024-11-21</td>
+      <td>ADESIONE GARA REGIONALE DISPOSITIVI DI ENDOSCOPIA DIGESTIVA, RESPIRATORIA E BILIO-PANCREATICA - 2 EDIZIONE - PRIMA TRANCHE. LOTTO 30<div class="small muted">CIG A0650B3546 · APPARECCHI PER ENDOSCOPIA E ENDOCHIRURGIA</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">450 mila €</td></tr><tr data-t="lotto 1_centri aut 25 imjudo operatore individuale (persona fisica)">
+      <td class="small">2024-07-09</td>
+      <td>LOTTO 1_CENTRI AUT 25 IMJUDO<div class="small muted">CIG B2670F6638 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">435 mila €</td></tr><tr data-t="farmaco lentiva 30 cps 10 mg + 4 mg lotto 752 vii appalto - aumento dei fabbisogni eisai s.r.l.">
+      <td class="small">2024-03-05</td>
+      <td>FARMACO LENTIVA 30 CPS 10 MG + 4 MG LOTTO 752 VII APPALTO - AUMENTO DEI FABBISOGNI<div class="small muted">CIG A05240EBBD · MEDICINALI VARI</div></td>
+      <td>EISAI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">420 mila €</td></tr><tr data-t="centri autorizzati 15 ed - lotto 4 operatore individuale (persona fisica)">
+      <td class="small">2023-09-14</td>
+      <td>CENTRI AUTORIZZATI 15 ED - LOTTO 4<div class="small muted">CIG A00D6B1C10 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">419 mila €</td></tr><tr data-t="centri autorizzati 15 ed - lotto 19 impresa inesistente">
+      <td class="small">2023-09-14</td>
+      <td>CENTRI AUTORIZZATI 15 ED - LOTTO 19<div class="small muted">CIG A00D7709AF · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">406 mila €</td></tr><tr data-t="tukysa 50 mg e 150 mgfascia h operatore individuale (persona fisica)">
+      <td class="small">2023-02-10</td>
+      <td>TUKYSA 50 MG E 150 MGFASCIA H<div class="small muted">CIG 96363041A0 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">400 mila €</td></tr><tr data-t="adesione gara regionale dispositivi medici e strumenti endoscopici monouso per urologia endoscopica interventistica e specialistica., 1^ edizione. lotti nn. 1, 13 e 40 - lotto 40 ambu s.r.l.">
+      <td class="small">2023-05-26</td>
+      <td>ADESIONE GARA REGIONALE DISPOSITIVI MEDICI E STRUMENTI ENDOSCOPICI MONOUSO PER UROLOGIA ENDOSCOPICA INTERVENTISTICA E SPECIALISTICA., 1^ EDIZIONE. LOTTI NN. 1, 13 E 40 - LOTTO 40<div class="small muted">CIG 9835051CD3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>AMBU S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">400 mila €</td></tr><tr data-t="glivec 100 mg capsule rigide novartis farma spa">
+      <td class="small">2024-02-16</td>
+      <td>GLIVEC 100 MG CAPSULE RIGIDE<div class="small muted">CIG A04FFB08E3 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">400 mila €</td></tr><tr data-t="centri autorizzati 15 ed - lotto 2 janssencilag">
+      <td class="small">2023-09-14</td>
+      <td>CENTRI AUTORIZZATI 15 ED - LOTTO 2<div class="small muted">CIG A00D6911AB · MEDICINALI VARI</div></td>
+      <td>JANSSENCILAG</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">392 mila €</td></tr><tr data-t="imbruvica janssencilag">
+      <td class="small">2024-06-06</td>
+      <td>IMBRUVICA<div class="small muted">CIG B203963D9C · Cpv prevalente non disponibile</div></td>
+      <td>JANSSENCILAG</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">389 mila €</td></tr><tr data-t="fornitura farmaci emoderivati_lotto 1_csl behring csl behring spa">
+      <td class="small">2024-04-18</td>
+      <td>FORNITURA FARMACI EMODERIVATI_LOTTO 1_CSL BEHRING<div class="small muted">CIG A05831FF43 · MEDICINALI VARI</div></td>
+      <td>CSL BEHRING SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">381 mila €</td></tr><tr data-t="centri autorizzati 15 ed - lotto 1 merck serono spa">
+      <td class="small">2023-09-14</td>
+      <td>CENTRI AUTORIZZATI 15 ED - LOTTO 1<div class="small muted">CIG A00D62ACA8 · MEDICINALI VARI</div></td>
+      <td>MERCK SERONO SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">376 mila €</td></tr><tr data-t="adesione gara regionale per il servizio di manutenzione e assistenza tecnica full risk dei mammografi hologic italia s.r.l. (societa&#39; unipersonale)">
+      <td class="small">2024-04-18</td>
+      <td>ADESIONE GARA REGIONALE PER IL SERVIZIO DI MANUTENZIONE E ASSISTENZA TECNICA FULL RISK DEI MAMMOGRAFI<div class="small muted">CIG A05653D64B · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>HOLOGIC ITALIA S.R.L. (SOCIETA&#39; UNIPERSONALE)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">375 mila €</td></tr><tr data-t="adesione gara regionale protesi ed espansori mammari, espansori tissutali e matrici dedicate - 3 edizione. lotto 12 sunmedical s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE PROTESI ED ESPANSORI MAMMARI, ESPANSORI TISSUTALI E MATRICI DEDICATE - 3 EDIZIONE. LOTTO 12<div class="small muted">CIG 99024131B8 · SOSTEGNO FUNZIONALE</div></td>
+      <td>SUNMEDICAL S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">365 mila €</td></tr><tr data-t="fornitura farmaco imfinzi_lotto 723 vii appalto - aumento fabbisogni astrazeneca s.p.a.">
+      <td class="small">2024-02-01</td>
+      <td>FORNITURA FARMACO IMFINZI_LOTTO 723 VII APPALTO - AUMENTO FABBISOGNI<div class="small muted">CIG A04A2899B8 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">365 mila €</td></tr><tr data-t="adesione lotto 2 - archi a c siemens healthcare srl">
+      <td class="small">2024-04-12</td>
+      <td>ADESIONE LOTTO 2 - ARCHI A C<div class="small muted">CIG A056E6FCDE · APPARECCHI RADIOLOGICI</div></td>
+      <td>Siemens Healthcare Srl</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">360 mila €</td></tr><tr data-t="fornitura p.a. trabectedina_lotto 8 farmaci in concorrenza i ed teva italia s.r.l.">
+      <td class="small">2023-01-26</td>
+      <td>FORNITURA P.A. TRABECTEDINA_LOTTO 8 FARMACI IN CONCORRENZA I ED<div class="small muted">CIG 9596824DAF · MEDICINALI VARI</div></td>
+      <td>TEVA ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">350 mila €</td></tr><tr data-t="enoxaparina sodica techdow pharma italy s.r.l.">
+      <td class="small">2023-06-20</td>
+      <td>ENOXAPARINA SODICA<div class="small muted">CIG 98404357D9 · MEDICINALI VARI</div></td>
+      <td>TECHDOW PHARMA ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">332 mila €</td></tr><tr data-t="xi appalto - lotto 38 pfizer s.r.l.">
+      <td class="small">2024-11-25</td>
+      <td>XI APPALTO - LOTTO 38<div class="small muted">CIG B470323795 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">330 mila €</td></tr><tr data-t="centri autorizzati 17 ed - lotto 1 novartis farma spa">
+      <td class="small">2023-11-15</td>
+      <td>CENTRI AUTORIZZATI 17 ED - LOTTO 1<div class="small muted">CIG A01A89B612 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">326 mila €</td></tr><tr data-t="cefepime dicloridrato monoidrato innova  pharma spa">
+      <td class="small">2023-10-26</td>
+      <td>CEFEPIME DICLORIDRATO MONOIDRATO<div class="small muted">CIG A021393C0E · MEDICINALI VARI</div></td>
+      <td>INNOVA  PHARMA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">311 mila €</td></tr><tr data-t="servizio gestione rifiuti sanitari sede iov di castelfranco v. eco eridania societa&#39; per azioni">
+      <td class="small">2023-05-18</td>
+      <td>SERVIZIO GESTIONE RIFIUTI SANITARI SEDE IOV DI CASTELFRANCO V.<div class="small muted">CIG 9827444756 · RACCOLTA, TRASPORTO E SMALTIMENTO DI RIFIUTI OSPEDALIERI</div></td>
+      <td>ECO ERIDANIA SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">300 mila €</td></tr><tr data-t="adesione gara regionale chirurgia mininvasiva - 2 edizione. lotto 2 johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE CHIRURGIA MININVASIVA - 2 EDIZIONE. LOTTO 2<div class="small muted">CIG 9885498B02 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">290 mila €</td></tr><tr data-t="farmaco oyavas_lotto 1_viii appalto-aumento fabbisogni eg s.p.a.">
+      <td class="small">2024-02-15</td>
+      <td>FARMACO OYAVAS_LOTTO 1_VIII APPALTO-AUMENTO FABBISOGNI<div class="small muted">CIG A04DEF1306 · MEDICINALI VARI</div></td>
+      <td>EG S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">282 mila €</td></tr><tr data-t="fornitura farmaco teradina 100 mg +15 mg_lotto 1_6 ed farmaci in concorrenza accord  healthcare italia srl">
+      <td class="small">2023-07-11</td>
+      <td>FORNITURA FARMACO TERADINA 100 MG +15 MG_LOTTO 1_6 ED FARMACI IN CONCORRENZA<div class="small muted">CIG 9929434C24 · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">270 mila €</td></tr><tr data-t="centri autorizzati 6 ed - lotto 9 astrazeneca s.p.a.">
+      <td class="small">2024-02-29</td>
+      <td>CENTRI AUTORIZZATI 6 ED - LOTTO 9<div class="small muted">CIG A0504F5220 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">265 mila €</td></tr><tr data-t="mezzi di contrasto_lotto 26 (rinnovo annuale) bayer s.p.a.">
+      <td class="small">2023-04-29</td>
+      <td>MEZZI DI CONTRASTO_LOTTO 26 (RINNOVO ANNUALE)<div class="small muted">CIG 97853240D2 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">250 mila €</td></tr><tr data-t="contratto ponte colina e dopa operatore individuale (persona fisica)">
+      <td class="small">2023-07-31</td>
+      <td>CONTRATTO PONTE COLINA E DOPA<div class="small muted">CIG A00B49ED9D · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">250 mila €</td></tr><tr data-t="azacitidina sintesy pharma s.r.l.">
+      <td class="small">2023-10-26</td>
+      <td>AZACITIDINA<div class="small muted">CIG A02137D9E7 · MEDICINALI VARI</div></td>
+      <td>SINTESY PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">250 mila €</td></tr><tr data-t="fornitura farmaci lotto 1_xi ed centri autorizzati glaxosmithkline s.p.a.">
+      <td class="small">2023-03-09</td>
+      <td>FORNITURA FARMACI LOTTO 1_XI ED CENTRI AUTORIZZATI<div class="small muted">CIG 9689391267 · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">240 mila €</td></tr><tr data-t="3 sistemi completi di real time pcr e relativi reagenti diatech pharmacogenetics societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2023-06-26</td>
+      <td>3 SISTEMI COMPLETI DI REAL TIME PCR E RELATIVI REAGENTI<div class="small muted">CIG 9924119A11 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>DIATECH PHARMACOGENETICS SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">240 mila €</td></tr><tr data-t="materiale per attività diagnostica immunologia life technologies europe b.v.">
+      <td class="small">2023-06-28</td>
+      <td>MATERIALE PER ATTIVITÀ DIAGNOSTICA IMMUNOLOGIA<div class="small muted">CIG 99296530E1 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>LIFE TECHNOLOGIES EUROPE B.V.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">240 mila €</td></tr><tr data-t="kit brca1 e brca2 devyser italia s.r.l.">
+      <td class="small">2023-07-21</td>
+      <td>KIT BRCA1 E BRCA2<div class="small muted">CIG 9979052E35 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>DEVYSER ITALIA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">240 mila €</td></tr><tr data-t="consumabili geomx diatech lab line societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2023-09-18</td>
+      <td>CONSUMABILI GEOMX<div class="small muted">CIG A0101E316D · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>DIATECH LAB LINE SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">240 mila €</td></tr><tr data-t="fornitura il noleggio di 12 settimane di un tomografo a risonanza magnetica da 1,5t su mezzo mobile fora s.p.a.">
+      <td class="small">2023-10-27</td>
+      <td>FORNITURA IL NOLEGGIO DI 12 SETTIMANE DI UN TOMOGRAFO A RISONANZA MAGNETICA DA 1,5T SU MEZZO MOBILE<div class="small muted">CIG A0240EE9C2 · DISPOSITIVI PER RADIOTERAPIA, MECCANOTERAPIA, ELETTROTERAPIA E TERAPIA FISICA</div></td>
+      <td>FORA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">240 mila €</td></tr><tr data-t="fornitura fluorodopa compresa consegna durata 24 mesi ">
+      <td class="small">2024-03-29</td>
+      <td>Fornitura Fluorodopa compresa consegna durata 24 mesi<div class="small muted">CIG B10546AB10 · Radioisotopi</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">239 mila €</td></tr><tr data-t="fornitura genaratore germanio/gallio radius s.r.l.">
+      <td class="small">2023-04-07</td>
+      <td>FORNITURA GENARATORE GERMANIO/GALLIO<div class="small muted">CIG 9763430D4E · MEDICINALI VARI</div></td>
+      <td>RADIUS S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">236 mila €</td></tr><tr data-t="kit per la preparazione di radiofarmaci pet per sintesi 68gadota e 68ga-psma gamma servizi">
+      <td class="small">2023-06-08</td>
+      <td>KIT PER LA PREPARAZIONE DI RADIOFARMACI PET PER SINTESI 68GADOTA E 68GA-PSMA<div class="small muted">CIG 9873509561 · MEDICINALI VARI</div></td>
+      <td>GAMMA SERVIZI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">235 mila €</td></tr><tr data-t="ponte immunoistochimica roche diagnostics s.p.a.">
+      <td class="small">2023-11-02</td>
+      <td>PONTE IMMUNOISTOCHIMICA<div class="small muted">CIG A0246618F3 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">230 mila €</td></tr><tr data-t="centri autorizzati viii ed - lotto 3 bristol myers squibb">
+      <td class="small">2023-01-18</td>
+      <td>CENTRI AUTORIZZATI VIII ED - LOTTO 3<div class="small muted">CIG 9596768F78 · MEDICINALI VARI</div></td>
+      <td>BRISTOL MYERS SQUIBB</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">228 mila €</td></tr><tr data-t="farmaco odomzo_vii appalto lotto 779 ex-sun s.r.l. in liquidazione">
+      <td class="small">2024-05-22</td>
+      <td>FARMACO ODOMZO_VII APPALTO LOTTO 779<div class="small muted">CIG A05A78ACD9 · MEDICINALI VARI</div></td>
+      <td>EX-SUN S.R.L. IN LIQUIDAZIONE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">225 mila €</td></tr><tr data-t="coloranti per citologia e reattivi vari histo-line laboratories srl">
+      <td class="small">2024-06-10</td>
+      <td>COLORANTI PER CITOLOGIA E REATTIVI VARI<div class="small muted">CIG B2093A37A4 · Cpv prevalente non disponibile</div></td>
+      <td>HISTO-LINE LABORATORIES SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">225 mila €</td></tr><tr data-t="pompe e deflussori per sommonistrazione farmaci codan s.r.l.">
+      <td class="small">2024-10-30</td>
+      <td>POMPE E DEFLUSSORI PER SOMMONISTRAZIONE FARMACI<div class="small muted">CIG B411E2229E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CODAN S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">225 mila €</td></tr><tr data-t="carboplatino hikma italia">
+      <td class="small">2023-10-26</td>
+      <td>CARBOPLATINO<div class="small muted">CIG A02138722A · MEDICINALI VARI</div></td>
+      <td>HIKMA ITALIA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">220 mila €</td></tr><tr data-t="centri autorizzati viii ed - lotto 10 kyowa kirin s.r.l.">
+      <td class="small">2023-01-18</td>
+      <td>CENTRI AUTORIZZATI VIII ED - LOTTO 10<div class="small muted">CIG 9596781A34 · MEDICINALI VARI</div></td>
+      <td>KYOWA KIRIN S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">216 mila €</td></tr><tr data-t="arredi uffici nuova sede centrufficio loreto spa">
+      <td class="small">2023-03-06</td>
+      <td>ARREDI UFFICI NUOVA SEDE<div class="small muted">CIG 96968161B5 · ARREDI INTERNI PER EDIFICI</div></td>
+      <td>CENTRUFFICIO LORETO SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">216 mila €</td></tr><tr data-t="oxaliplatino 200 mg 40 ml teva italia s.r.l.">
+      <td class="small">2023-11-24</td>
+      <td>OXALIPLATINO 200 MG 40 ML<div class="small muted">CIG A02F85856E · MEDICINALI VARI</div></td>
+      <td>TEVA ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">215 mila €</td></tr><tr data-t="servizio di tesoreria banca monte dei paschi di siena spa">
+      <td class="small">2023-05-17</td>
+      <td>SERVIZIO DI TESORERIA<div class="small muted">CIG 9818113328 · SERVIZI DI TESORERIA</div></td>
+      <td>BANCA MONTE DEI PASCHI DI SIENA SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">214 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica del sistema per brachiterapia elekta ">
+      <td class="small">2023-08-04</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DEL SISTEMA PER BRACHITERAPIA ELEKTA<div class="small muted">CIG A001D9496D · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">214 mila €</td></tr><tr data-t="servizio di manutenzione e assistenza tecnica delle apparecchiature siemens siemens healthcare s.r.l.">
+      <td class="small">2023-08-04</td>
+      <td>SERVIZIO DI MANUTENZIONE E ASSISTENZA TECNICA DELLE APPARECCHIATURE SIEMENS<div class="small muted">CIG A001D1831B · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>SIEMENS HEALTHCARE S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">214 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica dell&#39;attrezzatura medica sistema per tomoterapia tecnologie avanzate *t.a. - s.r.l.">
+      <td class="small">2023-04-28</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DELL&#39;ATTREZZATURA MEDICA SISTEMA PER TOMOTERAPIA<div class="small muted">CIG 9907587F6C · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>TECNOLOGIE AVANZATE *T.A. - S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">213 mila €</td></tr><tr data-t="fornitura di materiale informatico firewall e switch longwave spa">
+      <td class="small">2023-01-26</td>
+      <td>FORNITURA DI MATERIALE INFORMATICO FIREWALL E SWITCH<div class="small muted">CIG 9621657A87 · RETE LOCALE</div></td>
+      <td>LONGWAVE SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">212 mila €</td></tr><tr data-t="paclitaxel accord  healthcare italia srl">
+      <td class="small">2023-10-26</td>
+      <td>PACLITAXEL<div class="small muted">CIG A021381D33 · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">212 mila €</td></tr><tr data-t="kit per il sequenziamento ngs di pannelli genici biotech s.r.l.">
+      <td class="small">2023-07-21</td>
+      <td>KIT PER IL SEQUENZIAMENTO NGS DI PANNELLI GENICI<div class="small muted">CIG 9977962AB7 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>BIOTECH S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">210 mila €</td></tr><tr data-t="adesione rinnovo dispositivi ad ultrasuoni e radiofrequenza - lotto 2 medtronic italia spa medtronic italia s.p.a.">
+      <td class="small">2024-01-25</td>
+      <td>ADESIONE RINNOVO DISPOSITIVI AD ULTRASUONI E RADIOFREQUENZA - LOTTO 2 MEDTRONIC ITALIA SPA<div class="small muted">CIG A04A0CA8D8 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">210 mila €</td></tr><tr data-t="radiofarmaci a base di iodio 131 ">
+      <td class="small">2023-04-05</td>
+      <td>RADIOFARMACI A BASE DI IODIO 131<div class="small muted">CIG 975642589A · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">200 mila €</td></tr><tr data-t="enhertu inf 1fl 100 mg operatore individuale (persona fisica)">
+      <td class="small">2023-04-06</td>
+      <td>ENHERTU INF 1FL 100 MG<div class="small muted">CIG 97496219C3 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">200 mila €</td></tr><tr data-t="tabrecta 150 mg e 200 mg impresa inesistente">
+      <td class="small">2023-05-26</td>
+      <td>TABRECTA 150 MG E 200 MG<div class="small muted">CIG 98467188BE · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">200 mila €</td></tr><tr data-t="tepmetko 225 mg merck serono s.p.a.">
+      <td class="small">2023-05-30</td>
+      <td>TEPMETKO 225 MG<div class="small muted">CIG 984753287A · MEDICINALI VARI</div></td>
+      <td>MERCK SERONO S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">200 mila €</td></tr><tr data-t="pemazyre 9 edizione centri autorizzati incyte biosciences italy s.r.l.">
+      <td class="small">2023-05-04</td>
+      <td>PEMAZYRE 9 EDIZIONE CENTRI AUTORIZZATI<div class="small muted">CIG 977028021E · MEDICINALI VARI</div></td>
+      <td>INCYTE BIOSCIENCES ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="kimmtrak 100 mcg 0,5 ml euromed pharma s.r.l.">
+      <td class="small">2023-05-03</td>
+      <td>KIMMTRAK 100 MCG 0,5 ML<div class="small muted">CIG 979948787D · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">200 mila €</td></tr><tr data-t="lotto 1 13 edizione centri autorizzati minjuvi incyte biosciences italy s.r.l.">
+      <td class="small">2023-05-25</td>
+      <td>LOTTO 1 13 EDIZIONE CENTRI AUTORIZZATI MINJUVI<div class="small muted">CIG 98309379D9 · MEDICINALI VARI</div></td>
+      <td>INCYTE BIOSCIENCES ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="lotto 3 13 edizione centri autorizzati gavreto roche societa&#39; per azioni">
+      <td class="small">2023-05-25</td>
+      <td>LOTTO 3 13 EDIZIONE CENTRI AUTORIZZATI GAVRETO<div class="small muted">CIG 9830982EFA · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="sequenziatore ce - ivd life technologies europe b.v.">
+      <td class="small">2023-06-01</td>
+      <td>SEQUENZIATORE CE - IVD<div class="small muted">CIG 983332085D · SISTEMI DIAGNOSTICI</div></td>
+      <td>LIFE TECHNOLOGIES EUROPE B.V.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">200 mila €</td></tr><tr data-t="servizio cup libera professione pmc plus s.r.l.">
+      <td class="small">2024-04-30</td>
+      <td>SERVIZIO CUP LIBERA PROFESSIONE<div class="small muted">CIG B16D875E49 · SERVIZI AMMINISTRATIVI IN CAMPO SANITARIO</div></td>
+      <td>PMC PLUS S.R.L.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">200 mila €</td></tr><tr data-t="aggiornamento e ampliamento sistema di accoglienza ">
+      <td class="small">2024-10-08</td>
+      <td>AGGIORNAMENTO E AMPLIAMENTO SISTEMA DI ACCOGLIENZA<div class="small muted">CIG B352DA575E · ATTREZZATURE MULTIMEDIALI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">200 mila €</td></tr><tr data-t="servizio di analisi bioinformatica secondaria e terziaria di dati di sequenziamento sophia genetics s.r.l.">
+      <td class="small">2023-11-28</td>
+      <td>SERVIZIO DI ANALISI BIOINFORMATICA SECONDARIA E TERZIARIA DI DATI DI SEQUENZIAMENTO<div class="small muted">CIG A03327AE6F · SERVIZI DI TRATTAMENTO DATI</div></td>
+      <td>SOPHIA GENETICS S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">199 mila €</td></tr><tr data-t="rybrevant 350 mg 7 ml janssencilag">
+      <td class="small">2023-04-14</td>
+      <td>RYBREVANT 350 MG 7 ML<div class="small muted">CIG 9774499BBC · MEDICINALI VARI</div></td>
+      <td>JANSSENCILAG</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">199 mila €</td></tr><tr data-t="dota e psma ">
+      <td class="small">2024-08-08</td>
+      <td>DOTA E PSMA<div class="small muted">CIG B2BF1FB8B3 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">199 mila €</td></tr><tr data-t="dota e psma ">
+      <td class="small">2024-08-08</td>
+      <td>DOTA E PSMA<div class="small muted">CIG B2BED58529 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">199 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica dei software athena, armonia e oncosys dedalus italia s.p.a.">
+      <td class="small">2023-12-01</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DEI SOFTWARE ATHENA, ARMONIA E ONCOSYS<div class="small muted">CIG A036D139A8 · SERVIZI DI CONSULENZA DI SOFTWARE</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">199 mila €</td></tr><tr data-t="servizio trasporto radiofarmaci ">
+      <td class="small">2024-05-02</td>
+      <td>SERVIZIO TRASPORTO RADIOFARMACI<div class="small muted">CIG B16C5906AD · SERVIZI DI TRASPORTO COLLI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">199 mila €</td></tr><tr data-t="servizio controlli ambientali lifeanalytics s.r.l.">
+      <td class="small">2024-03-11</td>
+      <td>SERVIZIO CONTROLLI AMBIENTALI<div class="small muted">CIG B0C0468CB5 · SERVIZI DI LABORATORIO</div></td>
+      <td>LIFEANALYTICS S.R.L.</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">198 mila €</td></tr><tr data-t="generatore di germanio/gallio per sintesi di radiofarmaci pet radius s.r.l.">
+      <td class="small">2024-10-29</td>
+      <td>GENERATORE DI GERMANIO/GALLIO PER SINTESI DI RADIOFARMACI PET<div class="small muted">CIG B40884352A · MEDICINALI VARI</div></td>
+      <td>RADIUS S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">198 mila €</td></tr><tr data-t="i242_2022 kit per estrazione acidi nucleici promega italia s.r.l.">
+      <td class="small">2023-01-26</td>
+      <td>I242_2022 KIT PER ESTRAZIONE ACIDI NUCLEICI<div class="small muted">CIG 962366211E · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>PROMEGA ITALIA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">198 mila €</td></tr><tr data-t="servizio di manutenzione data warehouse onit s.p.a.">
+      <td class="small">2024-07-03</td>
+      <td>SERVIZIO DI MANUTENZIONE DATA WAREHOUSE<div class="small muted">CIG B2537BEC48 · SERVIZI DI CONSULENZA E ASSISTENZA INFORMATICA</div></td>
+      <td>ONIT S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">196 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica del sistema per tomoterapia tecnologie avanzate *t.a. - s.r.l.">
+      <td class="small">2023-10-05</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DEL SISTEMA PER TOMOTERAPIA<div class="small muted">CIG A020007AA0 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>TECNOLOGIE AVANZATE *T.A. - S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">195 mila €</td></tr><tr data-t="consumabili iniettori angiografici medrad bayer s.p.a.">
+      <td class="small">2023-04-14</td>
+      <td>CONSUMABILI INIETTORI ANGIOGRAFICI MEDRAD<div class="small muted">CIG 9774226A73 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">195 mila €</td></tr><tr data-t="lotto 165 -octreotide istituto gentili s.r.l.">
+      <td class="small">2024-11-11</td>
+      <td>LOTTO 165 -OCTREOTIDE<div class="small muted">CIG B437203EB8 · MEDICINALI VARI</div></td>
+      <td>ISTITUTO GENTILI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">193 mila €</td></tr><tr data-t="fornitura p.a. azacitina 100 mg (f61_2023) ">
+      <td class="small">2023-06-29</td>
+      <td>FORNITURA P.A. AZACITINA 100 MG (F61_2023)<div class="small muted">CIG 9922607A53 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">192 mila €</td></tr><tr data-t="servizio di manutenzione piattaforma informatica gpi s.p.a.">
+      <td class="small">2024-09-30</td>
+      <td>SERVIZIO DI MANUTENZIONE PIATTAFORMA INFORMATICA<div class="small muted">CIG B33DFC734C · SERVIZI DI CONSULENZA E ASSISTENZA INFORMATICA</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">191 mila €</td></tr><tr data-t="iov3048 - lavori propedeutici all&#39;installazione di nuova risonanza magnetica ospedale busonera engie servizi s.p.a.">
+      <td class="small">2023-12-28</td>
+      <td>IOV3048 - LAVORI PROPEDEUTICI ALL&#39;INSTALLAZIONE DI NUOVA RISONANZA MAGNETICA OSPEDALE BUSONERA<div class="small muted">CIG A048B75E47 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>ENGIE SERVIZI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">190 mila €</td></tr><tr data-t="acceleratore pnrr sistemi per il controllo del posizionamento del paziente tema sinergie spa">
+      <td class="small">2023-02-06</td>
+      <td>ACCELERATORE PNRR SISTEMI PER IL CONTROLLO DEL POSIZIONAMENTO DEL PAZIENTE<div class="small muted">CIG 9601540177 · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>TEMA SINERGIE SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">190 mila €</td></tr><tr data-t="adesione a convenzione consip &#39;microsoft agreement 8&#39; lotto 1 tim s.p.a.">
+      <td class="small">2023-12-29</td>
+      <td>ADESIONE A CONVENZIONE CONSIP &#39;MICROSOFT AGREEMENT 8&#39; LOTTO 1<div class="small muted">CIG A03943659A · PACCHETTI SOFTWARE IT</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">190 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica full risk delle diagnostiche ge medical systems ge medical systems italia s.p.a">
+      <td class="small">2024-08-09</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA FULL RISK DELLE DIAGNOSTICHE GE MEDICAL SYSTEMS<div class="small muted">CIG B2C30AA31C · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>GE MEDICAL SYSTEMS ITALIA S.P.A</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">188 mila €</td></tr><tr data-t="capsule iodio 131 ge healthcare s.r.l.">
+      <td class="small">2023-04-18</td>
+      <td>CAPSULE IODIO 131<div class="small muted">CIG 9777448D53 · MEDICINALI VARI</div></td>
+      <td>GE HEALTHCARE S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">187 mila €</td></tr><tr data-t="fluorouracile accord  healthcare italia srl">
+      <td class="small">2023-10-26</td>
+      <td>FLUOROURACILE<div class="small muted">CIG A02137969B · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">187 mila €</td></tr><tr data-t="besremi ">
+      <td class="small">2024-09-05</td>
+      <td>BESREMI<div class="small muted">CIG B2F05621A9 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">185 mila €</td></tr><tr data-t="generatori 99mo/99mtc tecnezio curium italy s.r.l.">
+      <td class="small">2023-03-02</td>
+      <td>GENERATORI 99MO/99MTC TECNEZIO<div class="small muted">CIG 969121539D · MEDICINALI VARI</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">182 mila €</td></tr><tr data-t="iov3065 - manutenzione ordinaria e straordinaria impianti tecnologici radiofarmacia castelfranco veneto limes srl">
+      <td class="small">2023-03-31</td>
+      <td>IOV3065 - MANUTENZIONE ORDINARIA E STRAORDINARIA IMPIANTI TECNOLOGICI RADIOFARMACIA CASTELFRANCO VENETO<div class="small muted">CIG 9740396D0C · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ELETTRICI DI EDIFICI</div></td>
+      <td>LIMES SRL</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">180 mila €</td></tr><tr data-t="kit procedure bioptiche d12_23 becton, dickinson italia s.p.a.">
+      <td class="small">2023-04-14</td>
+      <td>KIT PROCEDURE BIOPTICHE D12_23<div class="small muted">CIG 9754239CA7 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BECTON, DICKINSON ITALIA S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">180 mila €</td></tr><tr data-t="kit avenio roche diagnostics s.p.a.">
+      <td class="small">2023-05-18</td>
+      <td>KIT AVENIO<div class="small muted">CIG 9833127918 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">180 mila €</td></tr><tr data-t="fornitura di colonne video per laparoscopia (lotto 2) stryker italia srl">
+      <td class="small">2023-07-06</td>
+      <td>FORNITURA DI COLONNE VIDEO PER LAPAROSCOPIA (LOTTO 2)<div class="small muted">CIG 9908202AF1 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>STRYKER ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">180 mila €</td></tr><tr data-t="fornitura di materiale di consumo dedicato all&#39;utilizzo del laser ad olmio promed s.r.l.">
+      <td class="small">2023-11-17</td>
+      <td>FORNITURA DI MATERIALE DI CONSUMO DEDICATO ALL&#39;UTILIZZO DEL LASER AD OLMIO<div class="small muted">CIG A02D435344 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>PROMED S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">180 mila €</td></tr><tr data-t="gemcitabina cloridrato aurobindo pharma (italia) s.r.l. in forma abbreviata aurobindo s.r.l.">
+      <td class="small">2023-10-26</td>
+      <td>GEMCITABINA CLORIDRATO<div class="small muted">CIG A02137A76E · MEDICINALI VARI</div></td>
+      <td>AUROBINDO PHARMA (ITALIA) S.R.L. IN FORMA ABBREVIATA AUROBINDO S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">179 mila €</td></tr><tr data-t="temozolomide sun pharma italia srl">
+      <td class="small">2023-10-26</td>
+      <td>TEMOZOLOMIDE<div class="small muted">CIG A021371003 · MEDICINALI VARI</div></td>
+      <td>SUN PHARMA ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">177 mila €</td></tr><tr data-t="xi appalto lotto 41a vifor pharma italia societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-11-26</td>
+      <td>XI APPALTO LOTTO 41A<div class="small muted">CIG B478E9AE9F · MEDICINALI VARI</div></td>
+      <td>VIFOR PHARMA ITALIA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">177 mila €</td></tr><tr data-t="fornitura farmaco nexpovio 20 mg ">
+      <td class="small">2024-11-11</td>
+      <td>FORNITURA FARMACO NEXPOVIO 20 MG<div class="small muted">CIG B4389D13A9 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">175 mila €</td></tr><tr data-t="adesione rinnovo dispositivi ad ultrasuoni e radiofrequenza - lotto 4 johnson &amp; johnson johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-01-25</td>
+      <td>ADESIONE RINNOVO DISPOSITIVI AD ULTRASUONI E RADIOFREQUENZA - LOTTO 4 JOHNSON &amp; JOHNSON<div class="small muted">CIG A04A21D09B · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">174 mila €</td></tr><tr data-t="dacarbazina citrato medac pharma s.r.l.">
+      <td class="small">2023-10-26</td>
+      <td>DACARBAZINA CITRATO<div class="small muted">CIG A0213720D6 · MEDICINALI VARI</div></td>
+      <td>MEDAC PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">173 mila €</td></tr><tr data-t="lotto 5 gr emostatici baxter s.p.a.">
+      <td class="small">2024-12-12</td>
+      <td>LOTTO 5 GR EMOSTATICI<div class="small muted">CIG A065520C3F · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">170 mila €</td></tr><tr data-t="provette streck cell-free dna bct astra formedic s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>PROVETTE STRECK CELL-FREE DNA BCT<div class="small muted">CIG A023BF4E6A · PROVETTE PER TEST</div></td>
+      <td>ASTRA FORMEDIC S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">167 mila €</td></tr><tr data-t="lotto 16_gara regionale radiofarmaci pet/spect curium italy s.r.l.">
+      <td class="small">2024-07-24</td>
+      <td>LOTTO 16_GARA REGIONALE RADIOFARMACI PET/SPECT<div class="small muted">CIG A05E3F47CD · MEDICINALI VARI</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">166 mila €</td></tr><tr data-t="mitomicina medac pharma s.r.l.">
+      <td class="small">2023-10-26</td>
+      <td>MITOMICINA<div class="small muted">CIG A021385084 · MEDICINALI VARI</div></td>
+      <td>MEDAC PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">165 mila €</td></tr><tr data-t="gara regionale fili da sutura - lotto n. 14 ditta b.braun milano s.p.a. b. braun milano spa">
+      <td class="small">2024-07-11</td>
+      <td>GARA REGIONALE FILI DA SUTURA - LOTTO N. 14 DITTA B.BRAUN MILANO S.P.A.<div class="small muted">CIG A05E7D8DB8 · SUTURE CHIRURGICHE</div></td>
+      <td>B. BRAUN MILANO SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">165 mila €</td></tr><tr data-t="kit pipac versan &amp; dafne m.d. s.r.l. - potra&#39; operare anche con la sigla versan s.r.l.">
+      <td class="small">2024-08-05</td>
+      <td>KIT PIPAC<div class="small muted">CIG B2B4E5F4EF · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>VERSAN &amp; DAFNE M.D. S.R.L. - POTRA&#39; OPERARE ANCHE CON LA SIGLA VERSAN S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">165 mila €</td></tr><tr data-t="servizio conservazione a norma di documenti e immagini ">
+      <td class="small">2024-09-27</td>
+      <td>SERVIZIO CONSERVAZIONE A NORMA DI DOCUMENTI E IMMAGINI<div class="small muted">CIG B336E01FBF · SERVIZI DI ARCHIVIAZIONE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">165 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica full risk apparecchiature radiofarmacia p.o. castelfranco veneto ">
+      <td class="small">2024-06-19</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA FULL RISK APPARECCHIATURE RADIOFARMACIA P.O. CASTELFRANCO VENETO<div class="small muted">CIG B22A8C29AC · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">163 mila €</td></tr><tr data-t="fornitura p.a. bevacizumab_lotto 1 aq pfizer s.r.l.">
+      <td class="small">2024-02-28</td>
+      <td>FORNITURA P.A. BEVACIZUMAB_LOTTO 1 AQ<div class="small muted">CIG A0516D4189 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">162 mila €</td></tr><tr data-t="modulo di estensione sistema di storage netapp intersistemi italia spa">
+      <td class="small">2023-06-30</td>
+      <td>MODULO DI ESTENSIONE SISTEMA DI STORAGE NETAPP<div class="small muted">CIG 9886391BEF · APPARECCHIATURE INFORMATICHE</div></td>
+      <td>INTERSISTEMI ITALIA SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">162 mila €</td></tr><tr data-t="modulo di estensione sistema di backup rubrik intersistemi italia spa">
+      <td class="small">2023-06-30</td>
+      <td>MODULO DI ESTENSIONE SISTEMA DI BACKUP RUBRIK<div class="small muted">CIG 9886033483 · APPARECCHIATURE INFORMATICHE</div></td>
+      <td>INTERSISTEMI ITALIA SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">162 mila €</td></tr><tr data-t="centri autorizzati 10 ed - lotto 6 pfizer s.r.l.">
+      <td class="small">2023-02-02</td>
+      <td>CENTRI AUTORIZZATI 10 ED - LOTTO 6<div class="small muted">CIG 9621293E24 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">161 mila €</td></tr><tr data-t="materiale di consumo r 183 2023 mylteni biotec">
+      <td class="small">2023-11-13</td>
+      <td>MATERIALE DI CONSUMO R 183 2023<div class="small muted">CIG A026881222 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>MYLTENI BIOTEC</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">161 mila €</td></tr><tr data-t="centri autorizzati 6 ed - lotto 9 calquence aumento fabbisogni astrazeneca s.p.a.">
+      <td class="small">2023-02-14</td>
+      <td>CENTRI AUTORIZZATI 6 ED - LOTTO 9 CALQUENCE AUMENTO FABBISOGNI<div class="small muted">CIG A036A94A56 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">160 mila €</td></tr><tr data-t="prevymis 240 mg msd italia s.r.l.">
+      <td class="small">2023-08-09</td>
+      <td>PREVYMIS 240 MG<div class="small muted">CIG A00400DC0B · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">160 mila €</td></tr><tr data-t="f270 pluvicto ">
+      <td class="small">2024-11-20</td>
+      <td>F270 PLUVICTO<div class="small muted">CIG B45E8B9962 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">160 mila €</td></tr><tr data-t="lotto 14 gr emostatici aq 60% johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-12-12</td>
+      <td>LOTTO 14 GR EMOSTATICI AQ 60%<div class="small muted">CIG A06556445F · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">160 mila €</td></tr><tr data-t="materiale di consumo bio techne bio-techne s.r.l.">
+      <td class="small">2023-11-08</td>
+      <td>MATERIALE DI CONSUMO BIO TECHNE<div class="small muted">CIG A0266ADFE9 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>BIO-TECHNE S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">157 mila €</td></tr><tr data-t="lotto 17_gara regionale radiofarmaci pet/spect curium italy s.r.l.">
+      <td class="small">2024-07-24</td>
+      <td>LOTTO 17_GARA REGIONALE RADIOFARMACI PET/SPECT<div class="small muted">CIG A05E3F8B19 · MEDICINALI VARI</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">156 mila €</td></tr><tr data-t="gara regionale pet/spect _lotto 4 curium italy s.r.l.">
+      <td class="small">2024-10-07</td>
+      <td>GARA REGIONALE PET/SPECT _LOTTO 4<div class="small muted">CIG A062D6C8A7 · MEDICINALI VARI</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">155 mila €</td></tr><tr data-t="iov3048 - lavori ristrutturazione nuova tac engie servizi s.p.a.">
+      <td class="small">2023-05-11</td>
+      <td>IOV3048 - LAVORI RISTRUTTURAZIONE NUOVA TAC<div class="small muted">CIG 969498390F · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>ENGIE SERVIZI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">153 mila €</td></tr><tr data-t="servizio di manutenzione e assistenza tecnica dell&#39;acceleratore lineare per radioterapia intraoperatoria modello intrabeam carl zeiss spa">
+      <td class="small">2023-05-18</td>
+      <td>SERVIZIO DI MANUTENZIONE E ASSISTENZA TECNICA DELL&#39;ACCELERATORE LINEARE PER RADIOTERAPIA INTRAOPERATORIA MODELLO INTRABEAM<div class="small muted">CIG 98197287E4 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE CHIRURGICHE</div></td>
+      <td>CARL ZEISS SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">150 mila €</td></tr><tr data-t="i243 ponte ricerca kit ngs illumina italy s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>I243 PONTE RICERCA KIT NGS<div class="small muted">CIG 9599428296 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ILLUMINA ITALY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">150 mila €</td></tr><tr data-t="strumentazione magnis e consumabili per attività di ricerca ventura global srl">
+      <td class="small">2023-01-04</td>
+      <td>STRUMENTAZIONE MAGNIS E CONSUMABILI PER ATTIVITÀ DI RICERCA<div class="small muted">CIG 958491493F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>VENTURA GLOBAL SRL</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">150 mila €</td></tr><tr data-t="i244_2022 gara ponte kit ngs diagnostica illumina italy s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>I244_2022 GARA PONTE KIT NGS DIAGNOSTICA<div class="small muted">CIG 9599327F39 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ILLUMINA ITALY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">150 mila €</td></tr><tr data-t="tendaggi uffici nuovi iov errebian s.p.a.">
+      <td class="small">2023-03-09</td>
+      <td>TENDAGGI UFFICI NUOVI IOV<div class="small muted">CIG 9702327586 · RILOGHE E TENDE</div></td>
+      <td>ERREBIAN S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">150 mila €</td></tr><tr data-t="fornitura farmaco tolvaptan_lotto 1 vii ed farmaci in concorrenza accord  healthcare italia srl">
+      <td class="small">2023-07-11</td>
+      <td>FORNITURA FARMACO TOLVAPTAN_LOTTO 1 VII ED FARMACI IN CONCORRENZA<div class="small muted">CIG 993012458E · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">150 mila €</td></tr><tr data-t="kit avenio ">
+      <td class="small">2023-08-28</td>
+      <td>KIT AVENIO<div class="small muted">CIG A005C314FB · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">150 mila €</td></tr><tr data-t="kit avenio su plasma roche diagnostics s.p.a.">
+      <td class="small">2023-08-28</td>
+      <td>KIT AVENIO SU PLASMA<div class="small muted">CIG A00716A86E · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">150 mila €</td></tr><tr data-t="fornitura farmaco calcio levofolinato 175 mg lotto 1948_i apppalto impresa inesistente">
+      <td class="small">2024-07-23</td>
+      <td>FORNITURA FARMACO CALCIO LEVOFOLINATO 175 MG LOTTO 1948_I APPPALTO<div class="small muted">CIG A05FA4E9BE · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">150 mila €</td></tr><tr data-t="servizio di trasporto di terapie, farmaci, protesi e relativa documentazione plurima s.p.a.">
+      <td class="small">2023-04-29</td>
+      <td>SERVIZIO DI TRASPORTO DI TERAPIE, FARMACI, PROTESI E RELATIVA DOCUMENTAZIONE<div class="small muted">CIG 975298844E · SERVIZI DI TRASPORTO COLLI</div></td>
+      <td>PLURIMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">149 mila €</td></tr><tr data-t="lavori di analisi pulizia e ripristino manto superficaile esterno muro di confine sovrastante il pubblico marciapiede edificio busonera iov padova f.lli collesei s.r.l.">
+      <td class="small">2024-12-13</td>
+      <td>LAVORI DI ANALISI PULIZIA E RIPRISTINO MANTO SUPERFICAILE ESTERNO MURO DI CONFINE SOVRASTANTE IL PUBBLICO MARCIAPIEDE EDIFICIO BUSONERA IOV PADOVA<div class="small muted">CIG B4043903EA · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>F.LLI COLLESEI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">148 mila €</td></tr><tr data-t="rinnovo servizio di manutenzione ed assistenza tecnica del sistema philips tac-pet ingenuity tf64 philips s.p.a.">
+      <td class="small">2024-12-23</td>
+      <td>RINNOVO SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DEL SISTEMA PHILIPS TAC-PET INGENUITY TF64<div class="small muted">CIG B4FB25B014 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE CHIRURGICHE</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">147 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica di apparecchiature varie di radioprotezione tema sinergie spa">
+      <td class="small">2023-04-14</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DI APPARECCHIATURE VARIE DI RADIOPROTEZIONE<div class="small muted">CIG 9767059011 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE CHIRURGICHE</div></td>
+      <td>TEMA SINERGIE SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">145 mila €</td></tr><tr data-t="sequenziatore ngs illumina italy s.r.l.">
+      <td class="small">2023-06-15</td>
+      <td>SEQUENZIATORE NGS<div class="small muted">CIG 9833192EBA · SISTEMI DIAGNOSTICI</div></td>
+      <td>ILLUMINA ITALY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">143 mila €</td></tr><tr data-t="bendamustina 100 mg medac pharma s.r.l.">
+      <td class="small">2023-10-12</td>
+      <td>BENDAMUSTINA 100 MG<div class="small muted">CIG A01C2B9389 · MEDICINALI VARI</div></td>
+      <td>MEDAC PHARMA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">140 mila €</td></tr><tr data-t="a89-sistemi scaldafluidi medica valeggia spa">
+      <td class="small">2023-11-24</td>
+      <td>A89-SISTEMI SCALDAFLUIDI<div class="small muted">CIG A03150C531 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDICA VALEGGIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">140 mila €</td></tr><tr data-t="acqua arricchita radius s.r.l.">
+      <td class="small">2024-04-05</td>
+      <td>ACQUA ARRICCHITA<div class="small muted">CIG B11B691C89 · Cpv prevalente non disponibile</div></td>
+      <td>RADIUS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">140 mila €</td></tr><tr data-t="servizio di trasporto sanitario ordinario in ambulanza pia opera croce verde padova">
+      <td class="small">2023-01-20</td>
+      <td>SERVIZIO DI TRASPORTO SANITARIO ORDINARIO IN AMBULANZA<div class="small muted">CIG 9649347D09 · SERVIZI DI AMBULANZA</div></td>
+      <td>PIA OPERA CROCE VERDE PADOVA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">139 mila €</td></tr><tr data-t="servizio di gestione e archiviazione della documentazione amministrativa e sanitaria omniadoc s.p.a.">
+      <td class="small">2023-01-20</td>
+      <td>SERVIZIO DI GESTIONE E ARCHIVIAZIONE DELLA DOCUMENTAZIONE AMMINISTRATIVA E SANITARIA<div class="small muted">CIG 96616326F2 · SERVIZI DI ARCHIVIAZIONE</div></td>
+      <td>OMNIADOC S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">139 mila €</td></tr><tr data-t="servizio web a mezzo di piattaforma per l&#39;espletamento delle procedure selettive del personale recrytera  s.r.l.">
+      <td class="small">2023-05-17</td>
+      <td>SERVIZIO WEB A MEZZO DI PIATTAFORMA PER L&#39;ESPLETAMENTO DELLE PROCEDURE SELETTIVE DEL PERSONALE<div class="small muted">CIG 9825413B4C · SERVIZI DI SVILUPPO DI SOFTWARE PERSONALIZZATI</div></td>
+      <td>RECRYTERA  S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">139 mila €</td></tr><tr data-t="servizi di fornitura, assistenza e manutenzione di sistema software per formazione nbs s.r.l.">
+      <td class="small">2023-12-06</td>
+      <td>SERVIZI DI FORNITURA, ASSISTENZA E MANUTENZIONE DI SISTEMA SOFTWARE PER FORMAZIONE<div class="small muted">CIG A039087B68 · SERVIZI DI FORNITURA DI SOFTWARE</div></td>
+      <td>NBS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">139 mila €</td></tr><tr data-t="fornitura kit monitoraggio e relative cannule per prelievo ">
+      <td class="small">2023-12-05</td>
+      <td>FORNITURA KIT MONITORAGGIO E RELATIVE CANNULE PER PRELIEVO<div class="small muted">CIG A03788AFB0 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">139 mila €</td></tr><tr data-t="iov a20-2024 fornitura fantoccio ad acqua tema sinergie spa">
+      <td class="small">2024-03-05</td>
+      <td>IOV A20-2024 FORNITURA FANTOCCIO AD ACQUA<div class="small muted">CIG B0A8E1A9E5 · Cpv prevalente non disponibile</div></td>
+      <td>TEMA SINERGIE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">139 mila €</td></tr><tr data-t="p.a. doxorubicina liposomiale 2 set infus polv 50 mg ">
+      <td class="small">2024-08-30</td>
+      <td>P.A. DOXORUBICINA LIPOSOMIALE 2 SET INFUS POLV 50 MG<div class="small muted">CIG B2E2B58330 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA DI GARA</td>
+      <td class="num">139 mila €</td></tr><tr data-t="streptozocina keocyt*1 flacone ev 1.000 mg esteve pharmaceuticals s.r.l.">
+      <td class="small">2024-09-27</td>
+      <td>STREPTOZOCINA KEOCYT*1 FLACONE EV 1.000 MG<div class="small muted">CIG B331A650A0 · MEDICINALI VARI</div></td>
+      <td>ESTEVE PHARMACEUTICALS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">138 mila €</td></tr><tr data-t="iov_a_14_24 fornitura pannello genico e reagenti qiagen s.r.l.">
+      <td class="small">2024-02-06</td>
+      <td>IOV_A_14_24 FORNITURA PANNELLO GENICO E REAGENTI<div class="small muted">CIG B0445FFCEF · Cpv prevalente non disponibile</div></td>
+      <td>QIAGEN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">138 mila €</td></tr><tr data-t="servizi cloud server cpu/gpu per supporto alle attivita&#39; di ricerca scientifica ">
+      <td class="small">2024-11-18</td>
+      <td>SERVIZI CLOUD SERVER CPU/GPU PER SUPPORTO ALLE ATTIVITA&#39; DI RICERCA SCIENTIFICA<div class="small muted">CIG B4509E465D · SERVIZI DI INTERNET</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">138 mila €</td></tr><tr data-t="reagenti roche diagnostics s.p.a.">
+      <td class="small">2024-12-31</td>
+      <td>REAGENTI<div class="small muted">CIG B50C3DE594 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">137 mila €</td></tr><tr data-t="lavori dimanutenzione straordinaria degli impianti termoidraulici e termomeccanici di proprietà e in uso dell&#39;istitutooncologico veneto i.r.c.c.s. per la durata di 24 mesi t.s.b. s.r.l.">
+      <td class="small">2024-04-05</td>
+      <td>LAVORI DIMANUTENZIONE STRAORDINARIA DEGLI IMPIANTI TERMOIDRAULICI E TERMOMECCANICI DI PROPRIETÀ E IN USO DELL&#39;ISTITUTOONCOLOGICO VENETO I.R.C.C.S. PER LA DURATA DI 24 MESI<div class="small muted">CIG B0A32AE84E · Cpv prevalente non disponibile</div></td>
+      <td>T.S.B. S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">137 mila €</td></tr><tr data-t="i22_2023 fornitura di reagenti per il progetto di ricerca airc tempo euroclone s.p.a.">
+      <td class="small">2023-02-24</td>
+      <td>I22_2023 FORNITURA DI REAGENTI PER IL PROGETTO DI RICERCA AIRC TEMPO<div class="small muted">CIG 966549177E · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>EUROCLONE S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">137 mila €</td></tr><tr data-t="sedie da ufficio l.t. form 2 s.r.l.">
+      <td class="small">2024-11-07</td>
+      <td>SEDIE DA UFFICIO<div class="small muted">CIG B34CEEFEED · MOBILI PER UFFICI</div></td>
+      <td>L.T. FORM 2 S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">135 mila €</td></tr><tr data-t="fornitura farmaco poteligeo_lotto 10 centri autorizzati 8 ed - aumento fabb dr. falk pharma s.r.l.">
+      <td class="small">2024-02-15</td>
+      <td>FORNITURA FARMACO POTELIGEO_LOTTO 10 CENTRI AUTORIZZATI 8 ED - AUMENTO FABB<div class="small muted">CIG A04E0110B1 · MEDICINALI VARI</div></td>
+      <td>DR. FALK PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">133 mila €</td></tr><tr data-t="servizio di manutenzione e assistenza tecnica di n. 2 mammografi hologic e n. 1 tavolo per biopsia hologic italia s.r.l. (societa&#39; unipersonale)">
+      <td class="small">2023-10-13</td>
+      <td>SERVIZIO DI MANUTENZIONE E ASSISTENZA TECNICA DI N. 2 MAMMOGRAFI HOLOGIC E N. 1 TAVOLO PER BIOPSIA<div class="small muted">CIG A01BC62830 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>HOLOGIC ITALIA S.R.L. (SOCIETA&#39; UNIPERSONALE)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">130 mila €</td></tr><tr data-t="fornitura di cateteri per ablazione medtronic italia s.p.a.">
+      <td class="small">2023-11-02</td>
+      <td>FORNITURA DI CATETERI PER ABLAZIONE<div class="small muted">CIG A0252B22E5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">130 mila €</td></tr><tr data-t="fornitura protesi mammarie politech s.r.l.">
+      <td class="small">2023-12-11</td>
+      <td>FORNITURA PROTESI MAMMARIE<div class="small muted">CIG A04CEF308D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>POLITECH S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">130 mila €</td></tr><tr data-t="adesione gara regionale suturatrici meccaniche, clips e sistemi di fissaggio per chirurgia aperta e laparoscopica - ii tranche. lotto 2. ditta medtronic italia spa china costruzioni s.r.l.">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE GARA REGIONALE SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER CHIRURGIA APERTA E LAPAROSCOPICA - II TRANCHE. LOTTO 2. DITTA MEDTRONIC ITALIA SPA<div class="small muted">CIG A05011F7BF · MATERIALE PER SUTURE CHIRURGICHE</div></td>
+      <td>CHINA COSTRUZIONI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">130 mila €</td></tr><tr data-t="vii appalto_lotto 1337 takeda italia s.p.a.">
+      <td class="small">2024-06-28</td>
+      <td>VII APPALTO_LOTTO 1337<div class="small muted">CIG A05E0AD371 · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">130 mila €</td></tr><tr data-t="servizio di manutenzione e assistenza tecnica delle apparecchiature siemens siemens healthcare srl">
+      <td class="small">2024-07-31</td>
+      <td>SERVIZIO DI MANUTENZIONE E ASSISTENZA TECNICA DELLE APPARECCHIATURE SIEMENS<div class="small muted">CIG B2A9CFD36B · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>Siemens Healthcare Srl</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">130 mila €</td></tr><tr data-t="sonde fish metasystems s.r.l.">
+      <td class="small">2024-10-30</td>
+      <td>SONDE FISH<div class="small muted">CIG B40A58D0B7 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>METASYSTEMS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">129 mila €</td></tr><tr data-t="lavori di manutenzione straordinaria degli impianti elettrici delle sedi dell’istituto oncologico veneto i.r.c.c.s. di padova della durata di 24 mesi operatore individuale (persona fisica)">
+      <td class="small">2024-02-21</td>
+      <td>LAVORI DI MANUTENZIONE STRAORDINARIA DEGLI IMPIANTI ELETTRICI DELLE SEDI DELL’ISTITUTO ONCOLOGICO VENETO I.R.C.C.S. DI PADOVA DELLA DURATA DI 24 MESI<div class="small muted">CIG B07D01BBAF · RIPARAZIONE E MANUTENZIONE DI IMPIANTI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">129 mila €</td></tr><tr data-t="fornitura farmaci lotto 5_xi ed centri autorizzati alloga italia srl">
+      <td class="small">2023-03-09</td>
+      <td>FORNITURA FARMACI LOTTO 5_XI ED CENTRI AUTORIZZATI<div class="small muted">CIG 96894757B7 · MEDICINALI VARI</div></td>
+      <td>ALLOGA ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">127 mila €</td></tr><tr data-t="iov_d115_2024 maschere termoplastiche e cuscini tema sinergie spa">
+      <td class="small">2024-06-10</td>
+      <td>IOV_D115_2024 MASCHERE TERMOPLASTICHE E CUSCINI<div class="small muted">CIG B1BF751FA9 · Cpv prevalente non disponibile</div></td>
+      <td>TEMA SINERGIE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">127 mila €</td></tr><tr data-t="reagenti leica leica microsystems s.r.l.">
+      <td class="small">2023-10-19</td>
+      <td>REAGENTI LEICA<div class="small muted">CIG A01F2E4366 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>LEICA MICROSYSTEMS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">126 mila €</td></tr><tr data-t="fornitura halaven lotto 772_vii appalto aumento fabb eisai s.r.l.">
+      <td class="small">2024-02-15</td>
+      <td>FORNITURA HALAVEN LOTTO 772_VII APPALTO AUMENTO FABB<div class="small muted">CIG A04D706A48 · MEDICINALI VARI</div></td>
+      <td>EISAI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">125 mila €</td></tr><tr data-t="adesione gara regionale suturatrici meccaniche, clips e sistemi di fissaggio per chirurgia aperta e laparoscopica - i tranche. lotto 7. ditta johnson &amp; johnson medical spa johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE GARA REGIONALE SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER CHIRURGIA APERTA E LAPAROSCOPICA - I TRANCHE. LOTTO 7. DITTA JOHNSON &amp; JOHNSON MEDICAL SPA<div class="small muted">CIG A04FE9C521 · MATERIALE PER SUTURE CHIRURGICHE</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">125 mila €</td></tr><tr data-t="fornitura farmaci vii appalti_lotto 779 ex-sun s.r.l. in liquidazione">
+      <td class="small">2024-03-08</td>
+      <td>FORNITURA FARMACI VII APPALTI_LOTTO 779<div class="small muted">CIG A05117C89E · MEDICINALI VARI</div></td>
+      <td>EX-SUN S.R.L. IN LIQUIDAZIONE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">125 mila €</td></tr><tr data-t="adesione rinnovo dispositivi ad ultrasuoni e radiofrequenza - lotto 3 olympus italia s.r.l.">
+      <td class="small">2024-01-25</td>
+      <td>ADESIONE RINNOVO DISPOSITIVI AD ULTRASUONI E RADIOFREQUENZA - LOTTO 3<div class="small muted">CIG A04A1C14AE · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>OLYMPUS ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">124 mila €</td></tr><tr data-t="acquisizione giornate onsite per supporto specialistico gpi s.p.a.">
+      <td class="small">2023-04-03</td>
+      <td>ACQUISIZIONE GIORNATE ONSITE PER SUPPORTO SPECIALISTICO<div class="small muted">CIG 9716800D03 · SERVIZI SOFTWARE DI GESTIONE DI RETE</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">123 mila €</td></tr><tr data-t="adesione lotto 5 - pompe inf. e deflussori baxter s.p.a.">
+      <td class="small">2024-05-03</td>
+      <td>ADESIONE LOTTO 5 - POMPE INF. E DEFLUSSORI<div class="small muted">CIG A060C7EBFE · POMPE PER INFUSIONE</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">123 mila €</td></tr><tr data-t="adesione gr accessi vascolari -fornitura pompe elastomeriche a flusso fisso- lotto 5 baxter s.p.a.">
+      <td class="small">2024-05-03</td>
+      <td>ADESIONE GR ACCESSI VASCOLARI -FORNITURA POMPE ELASTOMERICHE A FLUSSO FISSO- LOTTO 5<div class="small muted">CIG A0579A6E17 · POMPE PER INFUSIONE</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">122 mila €</td></tr><tr data-t="ausili per incontinenti - adesione lotto 10 serenity s.p.a.">
+      <td class="small">2023-03-15</td>
+      <td>AUSILI PER INCONTINENTI - ADESIONE LOTTO 10<div class="small muted">CIG 96998655D1 · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>SERENITY S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">120 mila €</td></tr><tr data-t="fornitura p.a. temozolomide dosaggi 20 mg +100 mg +250 mg ">
+      <td class="small">2023-04-12</td>
+      <td>FORNITURA P.A. TEMOZOLOMIDE DOSAGGI 20 MG +100 MG +250 MG<div class="small muted">CIG 9765907965 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">120 mila €</td></tr><tr data-t="fornitura p.a. paclitaxel 300 mg accord  healthcare italia srl">
+      <td class="small">2023-05-02</td>
+      <td>FORNITURA P.A. PACLITAXEL 300 MG<div class="small muted">CIG 979227374F · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">120 mila €</td></tr><tr data-t="sistema di digital pcr bio-rad laboratories s.r.l.">
+      <td class="small">2023-07-28</td>
+      <td>SISTEMA DI DIGITAL PCR<div class="small muted">CIG 9993441067 · SISTEMI DIAGNOSTICI</div></td>
+      <td>BIO-RAD LABORATORIES S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">120 mila €</td></tr><tr data-t="adesione gara regionale suturatrici meccaniche, clips e sistemi di fissaggio per chirurgia aperta e laparoscopica - i tranche. lotto 16. ditta johnson &amp; johnson medical spa johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE GARA REGIONALE SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER CHIRURGIA APERTA E LAPAROSCOPICA - I TRANCHE. LOTTO 16. DITTA JOHNSON &amp; JOHNSON MEDICAL SPA<div class="small muted">CIG A04FF4A4B8 · MATERIALE PER SUTURE CHIRURGICHE</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">120 mila €</td></tr><tr data-t="adesione gara regionale dispositivi per infusione accessi vascolari. scorrimento 2 in graduatoria. ditta plan 1 health srl - lotto 19 mehos s.r.l.">
+      <td class="small">2024-05-23</td>
+      <td>ADESIONE GARA REGIONALE DISPOSITIVI PER INFUSIONE ACCESSI VASCOLARI. SCORRIMENTO 2 IN GRADUATORIA. DITTA PLAN 1 HEALTH SRL - LOTTO 19<div class="small muted">CIG A05983DC70 · MATERIALI MEDICI</div></td>
+      <td>MEHOS S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">120 mila €</td></tr><tr data-t="innohep vari dosaggi - lotto 10 leo pharma s.p.a.">
+      <td class="small">2024-11-14</td>
+      <td>INNOHEP VARI DOSAGGI - LOTTO 10<div class="small muted">CIG B447CDD53A · MEDICINALI VARI</div></td>
+      <td>LEO PHARMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">117 mila €</td></tr><tr data-t="tremelimumab ast*ev 1fl 15ml astrazeneca s.p.a.">
+      <td class="small">2024-05-29</td>
+      <td>TREMELIMUMAB AST*EV 1FL 15ML<div class="small muted">CIG B159843284 · Cpv prevalente non disponibile</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">116 mila €</td></tr><tr data-t="servizio di fornitura di corsi in materia di antincendio b.a.a.p. bergamaschi antincendi, antinfortunistica padova s.r.l.">
+      <td class="small">2024-11-07</td>
+      <td>SERVIZIO DI FORNITURA DI CORSI IN MATERIA DI ANTINCENDIO<div class="small muted">CIG B36E23AEC1 · SERVIZI DI FORMAZIONE IN MATERIA DI SICUREZZA</div></td>
+      <td>B.A.A.P. BERGAMASCHI ANTINCENDI, ANTINFORTUNISTICA PADOVA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">116 mila €</td></tr><tr data-t="iov_d74_2024 dispositivi monouso per utilizzo performer ht rand societa&#39; per azioni in forma abbreviata rand s.p.a.">
+      <td class="small">2024-05-29</td>
+      <td>IOV_D74_2024 DISPOSITIVI MONOUSO PER UTILIZZO PERFORMER HT<div class="small muted">CIG B140B52184 · Cpv prevalente non disponibile</div></td>
+      <td>RAND SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA RAND S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">116 mila €</td></tr><tr data-t="r80_kit di reagenti diatech lab line societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2023-05-10</td>
+      <td>R80_KIT DI REAGENTI<div class="small muted">CIG 9814109AF1 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>DIATECH LAB LINE SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">115 mila €</td></tr><tr data-t="lavori manutenzione ordinaria straordinaria e adeguamento normativo immobili iov veneta cantieri s.r.l.">
+      <td class="small">2024-02-05</td>
+      <td>LAVORI MANUTENZIONE ORDINARIA STRAORDINARIA E ADEGUAMENTO NORMATIVO IMMOBILI IOV<div class="small muted">CIG B040FDAE79 · Cpv prevalente non disponibile</div></td>
+      <td>VENETA CANTIERI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">114 mila €</td></tr><tr data-t="xi appalto - lotto 183 depo-pack s.r.l.">
+      <td class="small">2024-11-26</td>
+      <td>XI APPALTO - LOTTO 183<div class="small muted">CIG B47814B317 · MEDICINALI VARI</div></td>
+      <td>DEPO-PACK S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">114 mila €</td></tr><tr data-t="servizio recupero dati transazionali e configurazione sistema cupwbs engineering">
+      <td class="small">2023-04-21</td>
+      <td>SERVIZIO RECUPERO DATI TRANSAZIONALI E CONFIGURAZIONE SISTEMA CUPWBS<div class="small muted">CIG 977705375E · SERVIZI DI ASSISTENZA TECNICA INFORMATICA</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">113 mila €</td></tr><tr data-t="fornitura radiofarmaco nanoalbumon_lotto 2 ii tranche radiofarmaci in concorrenza gamma-servizi s.r.l.">
+      <td class="small">2023-04-13</td>
+      <td>FORNITURA RADIOFARMACO NANOALBUMON_LOTTO 2 II TRANCHE RADIOFARMACI IN CONCORRENZA<div class="small muted">CIG 9755253172 · MEDICINALI VARI</div></td>
+      <td>GAMMA-SERVIZI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">112 mila €</td></tr><tr data-t="iov i 27 2024 diatech lab line societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-03-20</td>
+      <td>IOV I 27 2024<div class="small muted">CIG B0E6E4C2FC · Cpv prevalente non disponibile</div></td>
+      <td>DIATECH LAB LINE SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">112 mila €</td></tr><tr data-t="gemcitabina cloridrato 2 g hikma italia s.p.a.">
+      <td class="small">2024-04-11</td>
+      <td>GEMCITABINA CLORIDRATO 2 G<div class="small muted">CIG B132EDF5E0 · Cpv prevalente non disponibile</div></td>
+      <td>HIKMA ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">111 mila €</td></tr><tr data-t="adesione gara regionale suturatrici meccaniche, clips e sistemi di fissaggio per chirurgia aperta e laparoscopica - ii tranche. lotto 20. ditta teleflex medical srl teleflex medical s.r.l.">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE GARA REGIONALE SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER CHIRURGIA APERTA E LAPAROSCOPICA - II TRANCHE. LOTTO 20. DITTA TELEFLEX MEDICAL SRL<div class="small muted">CIG A0501E8D9C · MATERIALE PER SUTURE CHIRURGICHE</div></td>
+      <td>TELEFLEX MEDICAL S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">110 mila €</td></tr><tr data-t="paracetamolo flaconi b. braun milano spa">
+      <td class="small">2024-08-12</td>
+      <td>PARACETAMOLO FLACONI<div class="small muted">CIG B2C32596C7 · MEDICINALI VARI</div></td>
+      <td>B. BRAUN MILANO SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">110 mila €</td></tr><tr data-t="servizio di ideazione grafica e impaginazione del materiale promozionale e di comunicazione perazza srl">
+      <td class="small">2023-11-09</td>
+      <td>SERVIZIO DI IDEAZIONE GRAFICA E IMPAGINAZIONE DEL MATERIALE PROMOZIONALE E DI COMUNICAZIONE<div class="small muted">CIG A022D08E0D · SERVIZI DI PROGETTAZIONE GRAFICA</div></td>
+      <td>PERAZZA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">109 mila €</td></tr><tr data-t="iov r67 2024 gamma servizi srl">
+      <td class="small">2024-03-15</td>
+      <td>IOV R67 2024<div class="small muted">CIG B0D579C80C · Cpv prevalente non disponibile</div></td>
+      <td>GAMMA SERVIZI SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">109 mila €</td></tr><tr data-t="fornitura p.a. fondaparinux sodico diversi dosaggi ">
+      <td class="small">2023-05-02</td>
+      <td>FORNITURA P.A. FONDAPARINUX SODICO DIVERSI DOSAGGI<div class="small muted">CIG 97968719B2 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">108 mila €</td></tr><tr data-t="fornitura p.a. abiraterone_lotto 3 farmaci in concorrenza i ed accord  healthcare italia srl">
+      <td class="small">2023-01-26</td>
+      <td>FORNITURA P.A. ABIRATERONE_LOTTO 3 FARMACI IN CONCORRENZA I ED<div class="small muted">CIG 9596879B13 · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">107 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica della piattaforma tps raystation della uo fisica sanitaria tecnologie avanzate *t.a. - s.r.l.">
+      <td class="small">2023-10-23</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA DELLA PIATTAFORMA TPS RAYSTATION DELLA UO FISICA SANITARIA<div class="small muted">CIG A020A037E8 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>TECNOLOGIE AVANZATE *T.A. - S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">106 mila €</td></tr><tr data-t="manutenzione ed assitenza software iam healthcare ">
+      <td class="small">2024-11-19</td>
+      <td>MANUTENZIONE ED ASSITENZA SOFTWARE IAM HEALTHCARE<div class="small muted">CIG B45A2CB431 · MANUTENZIONE DI SOFTWARE DI TECNOLOGIA DELL&#39;INFORMAZIONE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">105 mila €</td></tr><tr data-t="lotto 6 gr emostatici baxter s.p.a.">
+      <td class="small">2024-12-12</td>
+      <td>LOTTO 6 GR EMOSTATICI<div class="small muted">CIG A065524F8B · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">105 mila €</td></tr><tr data-t="trasporto radiofarmaci protex italia s.r.l.">
+      <td class="small">2024-09-13</td>
+      <td>TRASPORTO RADIOFARMACI<div class="small muted">CIG B3056B935C · SERVIZI DI TRASPORTO COLLI</div></td>
+      <td>PROTEX ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">105 mila €</td></tr><tr data-t="irinotecan cloridrato triidrato accord  healthcare italia srl">
+      <td class="small">2023-10-26</td>
+      <td>IRINOTECAN CLORIDRATO TRIIDRATO<div class="small muted">CIG A0213882FD · MEDICINALI VARI</div></td>
+      <td>ACCORD  HEALTHCARE ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">101 mila €</td></tr><tr data-t="iov_d97_2023 fornitura spyglass e relativi consumabili promed s.r.l.">
+      <td class="small">2024-05-29</td>
+      <td>IOV_D97_2023 FORNITURA SPYGLASS E RELATIVI CONSUMABILI<div class="small muted">CIG B0F14EA22E · Cpv prevalente non disponibile</div></td>
+      <td>PROMED S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">101 mila €</td></tr><tr data-t="noleggio piattaforma software tecnologie avanzate *t.a. - s.r.l.">
+      <td class="small">2023-03-01</td>
+      <td>NOLEGGIO PIATTAFORMA SOFTWARE<div class="small muted">CIG 968465809C · SISTEMI DI BASE DATI</div></td>
+      <td>TECNOLOGIE AVANZATE *T.A. - S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">100 mila €</td></tr><tr data-t="servizio di manutenzione ed assistenza tecnica full risk di apparecchiature di cromatografia in uso presso la p.o. di radiofarmacia di castelfranco veneto perkinelmer scientifica italia s.r.l.">
+      <td class="small">2023-05-22</td>
+      <td>SERVIZIO DI MANUTENZIONE ED ASSISTENZA TECNICA FULL RISK DI APPARECCHIATURE DI CROMATOGRAFIA IN USO PRESSO LA P.O. DI RADIOFARMACIA DI CASTELFRANCO VENETO<div class="small muted">CIG 9836622D41 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>PERKINELMER SCIENTIFICA ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">100 mila €</td></tr><tr data-t="fornitura venclyxto_lotto 781 vii appalto abbvie s.r.l.">
+      <td class="small">2024-02-23</td>
+      <td>FORNITURA VENCLYXTO_LOTTO 781 VII APPALTO<div class="small muted">CIG A0505B1D41 · MEDICINALI VARI</div></td>
+      <td>ABBVIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">100 mila €</td></tr><tr data-t="prodotti chimici life technologies europe b.v.">
+      <td class="small">2024-03-06</td>
+      <td>PRODOTTI CHIMICI<div class="small muted">CIG B0B28803CA · Cpv prevalente non disponibile</div></td>
+      <td>LIFE TECHNOLOGIES EUROPE B.V.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">100 mila €</td></tr><tr data-t="prodotti chimici merck life science s.r.l.">
+      <td class="small">2024-03-06</td>
+      <td>PRODOTTI CHIMICI<div class="small muted">CIG B0B2826983 · Cpv prevalente non disponibile</div></td>
+      <td>MERCK LIFE SCIENCE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">100 mila €</td></tr><tr data-t="prodotti chimici life technologies europe b.v.">
+      <td class="small">2024-03-15</td>
+      <td>PRODOTTI CHIMICI<div class="small muted">CIG B0D6935DAF · Cpv prevalente non disponibile</div></td>
+      <td>LIFE TECHNOLOGIES EUROPE B.V.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">100 mila €</td></tr><tr data-t="adesione gara regionale anestesia, rianimazione e apparato respiratorio - 2 edizione - prima tranche. lotto 14 intersurgical s.p.a.">
+      <td class="small">2024-10-18</td>
+      <td>ADESIONE GARA REGIONALE ANESTESIA, RIANIMAZIONE E APPARATO RESPIRATORIO - 2 EDIZIONE - PRIMA TRANCHE. LOTTO 14<div class="small muted">CIG A06370FC7B · STRUMENTI PER ANESTESIA E RIANIMAZIONE</div></td>
+      <td>INTERSURGICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">100 mila €</td></tr><tr data-t="lavori di adeguamento degli impianti elettrici e meccanici, in materia di prevenzione incendi per la presentazione dell&#39;istanza di s.c.i.a. ai fini antincendio del 6° anno della palazzina di radioterapia di padova di proprietà dell&#39;istituto oncologico veneto i.r.c.c.s. di padova sisma s.r.l.">
+      <td class="small">2024-07-17</td>
+      <td>LAVORI DI ADEGUAMENTO DEGLI IMPIANTI ELETTRICI E MECCANICI, IN MATERIA DI PREVENZIONE INCENDI PER LA PRESENTAZIONE DELL&#39;ISTANZA DI S.C.I.A. AI FINI ANTINCENDIO DEL 6° ANNO DELLA PALAZZINA DI RADIOTERAPIA DI PADOVA DI PROPRIETÀ DELL&#39;ISTITUTO ONCOLOGICO VENETO I.R.C.C.S. DI PADOVA<div class="small muted">CIG B27B730C25 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ANTINCENDIO</div></td>
+      <td>SISMA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">99 mila €</td></tr><tr data-t="sistemi per la chirurgia radioguidata devicor medical italy srl">
+      <td class="small">2023-06-09</td>
+      <td>SISTEMI PER LA CHIRURGIA RADIOGUIDATA<div class="small muted">CIG 9814783726 · SISTEMI DI REGISTRAZIONE E DISPOSITIVI DI ESPLORAZIONE</div></td>
+      <td>DEVICOR MEDICAL ITALY SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">99 mila €</td></tr><tr data-t="fornitura farmaco aclasta xi app lotto 83 sandoz spa">
+      <td class="small">2023-05-18</td>
+      <td>FORNITURA FARMACO ACLASTA XI APP LOTTO 83<div class="small muted">CIG 980086272D · MEDICINALI VARI</div></td>
+      <td>SANDOZ SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">99 mila €</td></tr><tr data-t="iov1220vpe - incarico professionale per la verifica progetto esecutivo nuova radioterapia cfv sagi consulting srl">
+      <td class="small">2023-10-26</td>
+      <td>IOV1220VPE - INCARICO PROFESSIONALE PER LA VERIFICA PROGETTO ESECUTIVO NUOVA RADIOTERAPIA CFV<div class="small muted">CIG A02249CADE · SERVIZI DI VERIFICA DELLA PROGETTAZIONE DI STRUTTURE PORTANTI</div></td>
+      <td>SAGI CONSULTING SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">98 mila €</td></tr><tr data-t="gestione archivio documentale omniadoc s.p.a.">
+      <td class="small">2024-03-25</td>
+      <td>GESTIONE ARCHIVIO DOCUMENTALE<div class="small muted">CIG B0F199F493 · Cpv prevalente non disponibile</div></td>
+      <td>OMNIADOC S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">97 mila €</td></tr><tr data-t="trecondi medac pharma s.r.l.">
+      <td class="small">2024-05-29</td>
+      <td>TRECONDI<div class="small muted">CIG B1437C1C73 · Cpv prevalente non disponibile</div></td>
+      <td>MEDAC PHARMA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">97 mila €</td></tr><tr data-t="lanreotide advanz pharma italia s.r.l.">
+      <td class="small">2023-06-20</td>
+      <td>LANREOTIDE<div class="small muted">CIG 98404536B4 · MEDICINALI VARI</div></td>
+      <td>ADVANZ PHARMA ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">96 mila €</td></tr><tr data-t="fornitura radiofarmaco ioflupano 123 2,5 ml curium italy s.r.l.">
+      <td class="small">2023-08-21</td>
+      <td>FORNITURA RADIOFARMACO IOFLUPANO 123 2,5 ML<div class="small muted">CIG A005AAA252 · MEDICINALI VARI</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">96 mila €</td></tr><tr data-t="adesione aghi e siringhe 2^ ed. lotto 25 promed s.r.l.">
+      <td class="small">2023-07-11</td>
+      <td>ADESIONE AGHI E SIRINGHE 2^ ED. LOTTO 25<div class="small muted">CIG 99491412E2 · MATERIALI MEDICI</div></td>
+      <td>PROMED S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">95 mila €</td></tr><tr data-t="adesione gara regionale monitoraggio pressorio e la rilevazione della temperatura coroporea. lotti deserti. lotto 2 edwards lifesciences italia s.r.l.">
+      <td class="small">2024-12-31</td>
+      <td>ADESIONE GARA REGIONALE MONITORAGGIO PRESSORIO E LA RILEVAZIONE DELLA TEMPERATURA COROPOREA. LOTTI DESERTI. LOTTO 2<div class="small muted">CIG A06679CD37 · TRASDUTTORI</div></td>
+      <td>EDWARDS LIFESCIENCES ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">95 mila €</td></tr><tr data-t="meropenem o meropenem triidrato tillomed italia s.r.l.">
+      <td class="small">2023-10-26</td>
+      <td>MEROPENEM O MEROPENEM TRIIDRATO<div class="small muted">CIG A02139E524 · MEDICINALI VARI</div></td>
+      <td>TILLOMED ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">94 mila €</td></tr><tr data-t="lotto 16 gr emostatici medical instruments s.p.a.">
+      <td class="small">2024-12-12</td>
+      <td>LOTTO 16 GR EMOSTATICI<div class="small muted">CIG A06558606F · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>MEDICAL INSTRUMENTS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">93 mila €</td></tr><tr data-t="pantoprazolo sodico o pantoprazolo sodico sesquidrat zentiva italia s.r.l.">
+      <td class="small">2023-10-26</td>
+      <td>PANTOPRAZOLO SODICO O PANTOPRAZOLO SODICO SESQUIDRAT<div class="small muted">CIG A02139C37E · MEDICINALI VARI</div></td>
+      <td>ZENTIVA ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">93 mila €</td></tr><tr data-t="servizio sostitutivo di mensa tramite buoni pasto elettronici 360 welfare s.r.l.">
+      <td class="small">2024-10-24</td>
+      <td>SERVIZIO SOSTITUTIVO DI MENSA TRAMITE BUONI PASTO ELETTRONICI<div class="small muted">CIG B3F2992ED4 · BUONI PASTO</div></td>
+      <td>360 WELFARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">92 mila €</td></tr><tr data-t="calcio levofolinato 100 e 175 mg teva italia s.r.l.">
+      <td class="small">2023-01-12</td>
+      <td>CALCIO LEVOFOLINATO 100 E 175 MG<div class="small muted">CIG 9592808B94 · MEDICINALI VARI</div></td>
+      <td>TEVA ITALIA S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">92 mila €</td></tr><tr data-t="fornitura scemblix 20 + 40 mg impresa inesistente">
+      <td class="small">2023-08-07</td>
+      <td>FORNITURA SCEMBLIX 20 + 40 MG<div class="small muted">CIG A0026C5F2D · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">91 mila €</td></tr><tr data-t="adesione gara regionale protesi ed espansori mammari, espansori tissutali e matrici dedicate - 3 edizione. lotto 13 sunmedical s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE PROTESI ED ESPANSORI MAMMARI, ESPANSORI TISSUTALI E MATRICI DEDICATE - 3 EDIZIONE. LOTTO 13<div class="small muted">CIG 99024700C2 · SOSTEGNO FUNZIONALE</div></td>
+      <td>SUNMEDICAL S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">90 mila €</td></tr><tr data-t="clorfenamina in carenza farmaceutica internazionale italiana s.r.l.">
+      <td class="small">2023-06-27</td>
+      <td>CLORFENAMINA IN CARENZA<div class="small muted">CIG 9942741170 · MEDICINALI VARI</div></td>
+      <td>FARMACEUTICA INTERNAZIONALE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">90 mila €</td></tr><tr data-t="adesione gara regionale protesi ed espansori mammari, espansori tissutali e matrici dedicate - 3 edizione. lotto 9 polytech health &amp; aesthetics italia srl">
+      <td class="small">2023-06-29</td>
+      <td>ADESIONE GARA REGIONALE PROTESI ED ESPANSORI MAMMARI, ESPANSORI TISSUTALI E MATRICI DEDICATE - 3 EDIZIONE. LOTTO 9<div class="small muted">CIG 990206635D · SOSTEGNO FUNZIONALE</div></td>
+      <td>POLYTECH HEALTH &amp; AESTHETICS ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">90 mila €</td></tr><tr data-t="noleggio sistema di separazione cellulare parsortix operatore individuale (persona fisica)">
+      <td class="small">2023-08-08</td>
+      <td>NOLEGGIO SISTEMA DI SEPARAZIONE CELLULARE PARSORTIX<div class="small muted">CIG A002891AC9 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">90 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 1150. L’elenco completo è nel <a href="../contratti/050952.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

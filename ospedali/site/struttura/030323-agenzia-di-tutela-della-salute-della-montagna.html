@@ -204,6 +204,569 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>PROCEDURA APERTA</td><td class="num">213 mila €</td></tr><tr><td>SERVIZI DI PROGETTAZIONE ACCORDO QUADRO ARAI_2020_143.2-2021.1_AQ<div class="small muted">SERVIZI DI PROGETTAZIONE ARCHITETTONICA</div></td>
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">210 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(109 contratti ANAC, 7 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030323.csv" download>⬇ Scarica l’elenco completo (CSV, 109 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="efficientamento energetico e abbattimento barriere architettoniche sede ats della montagna di via n. sauro 36/38 - sondrio gerdan s.r.l.">
+      <td class="small">2023-08-24</td>
+      <td>EFFICIENTAMENTO ENERGETICO E ABBATTIMENTO BARRIERE ARCHITETTONICHE SEDE ATS DELLA MONTAGNA DI VIA N. SAURO 36/38 - SONDRIO<div class="small muted">CIG 9890893F19 · INSTALLAZIONE DI FINESTRE</div></td>
+      <td>GERDAN S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rcto berkshire hathaway international insurance limited">
+      <td class="small">2024-01-01</td>
+      <td>POLIZZA RCTO<div class="small muted">CIG A0439B57F4 · SERVIZI ASSICURATIVI</div></td>
+      <td>BERKSHIRE HATHAWAY INTERNATIONAL INSURANCE LIMITED</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">750 mila €</td></tr><tr data-t="servizio di pulizia immobili - convenzione consip dussmann service s.r.l.">
+      <td class="small">2024-01-01</td>
+      <td>SERVIZIO DI PULIZIA IMMOBILI - CONVENZIONE CONSIP<div class="small muted">CIG A037832714 · SERVIZI DI PULIZIA</div></td>
+      <td>DUSSMANN SERVICE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">486 mila €</td></tr><tr data-t="noleggio 28 vetture operative - accordo quadro consip leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2023-01-03</td>
+      <td>NOLEGGIO 28 VETTURE OPERATIVE - ACCORDO QUADRO CONSIP<div class="small muted">CIG 95723053FA · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">379 mila €</td></tr><tr data-t="licenze microsoft office - adesione convenzione consip tim s.p.a.">
+      <td class="small">2023-05-01</td>
+      <td>LICENZE MICROSOFT OFFICE - ADESIONE CONVENZIONE CONSIP<div class="small muted">CIG 9711237E47 · PACCHETTI SOFTWARE IT</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">231 mila €</td></tr><tr data-t="licenze software e servizi connessi - dedalus lotto 116 nfs dedalus italia s.p.a.">
+      <td class="small">2023-01-03</td>
+      <td>LICENZE SOFTWARE E SERVIZI CONNESSI - DEDALUS LOTTO 116 NFS<div class="small muted">CIG 9578856209 · PACCHETTI SOFTWARE IT</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">221 mila €</td></tr><tr data-t="polizza kasko ats di bergamo hdi assicurazioni s.p.a.">
+      <td class="small">2024-03-08</td>
+      <td>POLIZZA KASKO ATS DI BERGAMO<div class="small muted">CIG B0B2CC6A94 · SERVIZI DI ASSICURAZIONE DI AUTOVEICOLI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">213 mila €</td></tr><tr data-t="servizi di progettazione accordo quadro arai_2020_143.2-2021.1_aq operatore individuale (persona fisica)">
+      <td class="small">2023-03-29</td>
+      <td>SERVIZI DI PROGETTAZIONE ACCORDO QUADRO ARAI_2020_143.2-2021.1_AQ<div class="small muted">CIG 96267136E0 · SERVIZI DI PROGETTAZIONE ARCHITETTONICA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">210 mila €</td></tr><tr data-t="fornitura di fuel card per carburante kuwait petroleum italia s.p.a.">
+      <td class="small">2024-11-28</td>
+      <td>FORNITURA DI FUEL CARD PER CARBURANTE<div class="small muted">CIG B482AE58C0 · BENZINA SENZA PIOMBO</div></td>
+      <td>KUWAIT PETROLEUM ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">168 mila €</td></tr><tr data-t="licenze software e servizi connessi - dedalus lotto 57 screening dedalus italia s.p.a.">
+      <td class="small">2023-01-03</td>
+      <td>LICENZE SOFTWARE E SERVIZI CONNESSI - DEDALUS LOTTO 57 SCREENING<div class="small muted">CIG 95789954BD · PACCHETTI SOFTWARE IT</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">156 mila €</td></tr><tr data-t="servizio di recapito della corrispondenza massiva - lotto 1 poste italiane">
+      <td class="small">2024-07-05</td>
+      <td>SERVIZIO DI RECAPITO DELLA CORRISPONDENZA MASSIVA - LOTTO 1<div class="small muted">CIG B25CBB9A53 · SERVIZI POSTALI</div></td>
+      <td>POSTE ITALIANE</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">112 mila €</td></tr><tr data-t="polizza kasko ats della val padana balcia insurance se">
+      <td class="small">2024-03-08</td>
+      <td>POLIZZA KASKO ATS DELLA VAL PADANA<div class="small muted">CIG B0B2CC7B67 · SERVIZI DI ASSICURAZIONE DI AUTOVEICOLI</div></td>
+      <td>BALCIA INSURANCE SE</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">107 mila €</td></tr><tr data-t="servizio di accalappiamento cani ats della montagna area valcamonica operatore individuale (persona fisica)">
+      <td class="small">2023-03-01</td>
+      <td>SERVIZIO DI ACCALAPPIAMENTO CANI ATS DELLA MONTAGNA AREA VALCAMONICA<div class="small muted">CIG 9635957345 · SERVIZI VETERINARI A DOMICILIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">105 mila €</td></tr><tr data-t="servizio assicurativo polizza rc patrimoniale ats della valpadana lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-06-29</td>
+      <td>SERVIZIO ASSICURATIVO POLIZZA RC PATRIMONIALE ATS DELLA VALPADANA<div class="small muted">CIG 9894708B57 · SERVIZI DI ASSICURAZIONE DI RESPONSABILITÀ CIVILE</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">100 mila €</td></tr><tr data-t="primo soccorso veterinario operatore individuale (persona fisica)">
+      <td class="small">2024-11-28</td>
+      <td>PRIMO SOCCORSO VETERINARIO<div class="small muted">CIG B4818CB8A7 · SERVIZI VETERINARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">100 mila €</td></tr><tr data-t="procedura negoziatain forma aggregata per l&#39;affidamento della fornituradi passaporti per animali da compagnia:cani, gatti e furetti, occorrenti alle ats lombarde ciscra s.p.a.">
+      <td class="small">2024-11-19</td>
+      <td>PROCEDURA NEGOZIATAIN FORMA AGGREGATA PER L&#39;AFFIDAMENTO DELLA FORNITURADI PASSAPORTI PER ANIMALI DA COMPAGNIA:CANI, GATTI E FURETTI, OCCORRENTI ALLE ATS LOMBARDE<div class="small muted">CIG B453353789 · PASSAPORTI</div></td>
+      <td>CISCRA S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">99 mila €</td></tr><tr data-t="servizi professionali in ambito ict - giornate a consumo dedalus italia s.p.a.">
+      <td class="small">2023-09-14</td>
+      <td>SERVIZI PROFESSIONALI IN AMBITO ICT - GIORNATE A CONSUMO<div class="small muted">CIG A00C872A77 · SERVIZI DI ASSISTENZA TECNICA INFORMATICA</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">93 mila €</td></tr><tr data-t="fornitura di fuel card per carburante italiana petroli spa">
+      <td class="small">2024-11-28</td>
+      <td>FORNITURA DI FUEL CARD PER CARBURANTE<div class="small muted">CIG B482FD9F21 · BENZINA SENZA PIOMBO</div></td>
+      <td>ITALIANA PETROLI SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">92 mila €</td></tr><tr data-t="servizio assicurativo polizza rc patrimoniale ats della montagna lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-06-29</td>
+      <td>SERVIZIO ASSICURATIVO POLIZZA RC PATRIMONIALE ATS DELLA MONTAGNA<div class="small muted">CIG 9882877818 · SERVIZI DI ASSICURAZIONE DI RESPONSABILITÀ CIVILE</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">88 mila €</td></tr><tr data-t="cyber sicurity 2 - servizi connessi tim s.p.a.">
+      <td class="small">2024-10-23</td>
+      <td>CYBER SICURITY 2 - SERVIZI CONNESSI<div class="small muted">CIG B3F75DC382 · PACCHETTI SOFTWARE E SISTEMI INFORMATICI VARI</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">85 mila €</td></tr><tr data-t="manutenzione licenze software e servizi connessi - invisible fam lotto 93 invisiblefarm srl">
+      <td class="small">2023-01-24</td>
+      <td>MANUTENZIONE LICENZE SOFTWARE E SERVIZI CONNESSI - INVISIBLE FAM LOTTO 93<div class="small muted">CIG 9628036AA5 · PACCHETTI SOFTWARE IT</div></td>
+      <td>INVISIBLEFARM SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">84 mila €</td></tr><tr data-t="servizio assicurativo polizza rc patrimoniale ats della montagna lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-09-30</td>
+      <td>SERVIZIO ASSICURATIVO POLIZZA RC PATRIMONIALE ATS DELLA MONTAGNA<div class="small muted">CIG 9996800455 · SERVIZI DI ASSICURAZIONE DI RESPONSABILITÀ CIVILE</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">79 mila €</td></tr><tr data-t="polizza kasko ats della montagna hdi assicurazioni s.p.a.">
+      <td class="small">2024-03-08</td>
+      <td>POLIZZA KASKO ATS DELLA MONTAGNA<div class="small muted">CIG B0B2CC59C1 · SERVIZI DI ASSICURAZIONE DI AUTOVEICOLI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">78 mila €</td></tr><tr data-t="servizio di recapito della corrispondenza non massiva poste italiane">
+      <td class="small">2024-07-05</td>
+      <td>SERVIZIO DI RECAPITO DELLA CORRISPONDENZA NON MASSIVA<div class="small muted">CIG B25CD60766 · SERVIZI POSTALI</div></td>
+      <td>POSTE ITALIANE</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">70 mila €</td></tr><tr data-t="servizio di assistenza e manutenzione suite health portal tekne s.r.l.">
+      <td class="small">2023-05-24</td>
+      <td>SERVIZIO DI ASSISTENZA E MANUTENZIONE SUITE HEALTH PORTAL<div class="small muted">CIG 98446015BE · PACCHETTI SOFTWARE IT</div></td>
+      <td>TEKNE S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">68 mila €</td></tr><tr data-t="servizio di assistenza e manutenzione del software dsp flux, del servizio di assistenza e manutenzione del modulo dsp flux modulo contratti, delle giornate per implementazioni del software e delle giornate per interventi evolutivi data solution provider s.r.l.  siglabile dsp s.r.l.">
+      <td class="small">2024-11-12</td>
+      <td>SERVIZIO DI ASSISTENZA E MANUTENZIONE DEL SOFTWARE DSP FLUX, DEL SERVIZIO DI ASSISTENZA E MANUTENZIONE DEL MODULO DSP FLUX MODULO CONTRATTI, DELLE GIORNATE PER IMPLEMENTAZIONI DEL SOFTWARE E DELLE GIORNATE PER INTERVENTI EVOLUTIVI<div class="small muted">CIG B36F1D0B69 · PACCHETTI SOFTWARE E SISTEMI INFORMATICI VARI</div></td>
+      <td>DATA SOLUTION PROVIDER S.R.L.  SIGLABILE DSP S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">67 mila €</td></tr><tr data-t="noleggio automezzi - adesione aq consip veicoli noleggio 2 ald automotive italia s.r.l.">
+      <td class="small">2023-11-10</td>
+      <td>NOLEGGIO AUTOMEZZI - ADESIONE AQ CONSIP VEICOLI NOLEGGIO 2<div class="small muted">CIG A0260229AA · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>ALD AUTOMOTIVE ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">64 mila €</td></tr><tr data-t="servizio di trasporto materiali - servizi analoghi gianolini servizi e trasporti s.r.l. detta in forma abbreviata gianolini s.r.l.">
+      <td class="small">2023-11-30</td>
+      <td>SERVIZIO DI TRASPORTO MATERIALI - SERVIZI ANALOGHI<div class="small muted">CIG A033570FF4 · SERVIZI DI TRASPORTO COLLI</div></td>
+      <td>GIANOLINI SERVIZI E TRASPORTI S.R.L. DETTA IN FORMA ABBREVIATA GIANOLINI S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">64 mila €</td></tr><tr data-t="adesione aq consip veicoli in noleggio 2 - lotto 5 per noleggio n.2 renegade per servizio psal leaseplan italia spa">
+      <td class="small">2024-02-19</td>
+      <td>ADESIONE AQ CONSIP VEICOLI IN NOLEGGIO 2 - LOTTO 5 PER NOLEGGIO N.2 RENEGADE PER SERVIZIO PSAL<div class="small muted">CIG B0700C4185 · Cpv prevalente non disponibile</div></td>
+      <td>LEASEPLAN ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">59 mila €</td></tr><tr data-t="noleggio 2 vetture medie - accordo quadro consip ald automotive italia s.r.l.">
+      <td class="small">2023-01-03</td>
+      <td>NOLEGGIO 2 VETTURE MEDIE - ACCORDO QUADRO CONSIP<div class="small muted">CIG 9572392BC3 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>ALD AUTOMOTIVE ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">51 mila €</td></tr><tr data-t="servizi di verifica progettazione accordo quadro aria_2020_266 qsc s.r.l.">
+      <td class="small">2023-04-26</td>
+      <td>SERVIZI DI VERIFICA PROGETTAZIONE ACCORDO QUADRO ARIA_2020_266<div class="small muted">CIG 9746526FAE · SERVIZI DI PROGETTAZIONE ARCHITETTONICA</div></td>
+      <td>QSC S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">51 mila €</td></tr><tr data-t="fornitura di vestiario o.pi.vi. s.r.l.">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI VESTIARIO<div class="small muted">CIG B18A1E4ABE · Cpv prevalente non disponibile</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">42 mila €</td></tr><tr data-t="pc portatili docking e borse plug - in s.r.l.">
+      <td class="small">2024-01-31</td>
+      <td>PC PORTATILI DOCKING E BORSE<div class="small muted">CIG B02E1666E0 · COMPUTER PORTATILI</div></td>
+      <td>PLUG - IN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">42 mila €</td></tr><tr data-t="servizio di brokeraggio assicurativo marsh s.p.a.">
+      <td class="small">2024-05-29</td>
+      <td>SERVIZIO DI BROKERAGGIO ASSICURATIVO<div class="small muted">CIG B1E332313A · Cpv prevalente non disponibile</div></td>
+      <td>MARSH S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">40 mila €</td></tr><tr data-t="fornitura di tosatrici e materiale vario o.pi.vi. s.r.l.">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI TOSATRICI E MATERIALE VARIO<div class="small muted">CIG B18A2EC49C · Cpv prevalente non disponibile</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">39 mila €</td></tr><tr data-t="acquisto software e licenze d&#39;uso di arcgis ">
+      <td class="small">2023-06-16</td>
+      <td>ACQUISTO SOFTWARE E LICENZE D&#39;USO DI ARCGIS<div class="small muted">CIG 9883363927 · PACCHETTI SOFTWARE DI CARTOGRAFIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">36 mila €</td></tr><tr data-t="acquisto n. 3 pc portatili dell 9440 2-in-1, n. 3 docking station usb-c hdmi cod. hd22q e n. 3 zaino dell premier cod. 460-bcqk dps informatica s.n.c. di presello gianni &amp;amp">
+      <td class="small">2024-01-30</td>
+      <td>ACQUISTO N. 3 PC PORTATILI DELL 9440 2-IN-1, N. 3 DOCKING STATION USB-C HDMI COD. HD22Q E N. 3 ZAINO DELL PREMIER COD. 460-BCQK<div class="small muted">CIG B0297FC195 · COMPUTER PORTATILI</div></td>
+      <td>DPS INFORMATICA S.N.C. DI PRESELLO GIANNI &amp;AMP</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="servizio di stampa, editoria, tipografia di prodotti di cartotecnica, stampati, modulistica e servizi connessi infolio societa&#39; consortile a responsabilita&#39; limitata">
+      <td class="small">2024-03-19</td>
+      <td>SERVIZIO DI STAMPA, EDITORIA, TIPOGRAFIA DI PRODOTTI DI CARTOTECNICA, STAMPATI, MODULISTICA E SERVIZI CONNESSI<div class="small muted">CIG B0E3D7552E · Cpv prevalente non disponibile</div></td>
+      <td>INFOLIO SOCIETA&#39; CONSORTILE A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="telefonia mobile 9 vodafone spa">
+      <td class="small">2024-04-29</td>
+      <td>TELEFONIA MOBILE 9<div class="small muted">CIG B171C45439 · Cpv prevalente non disponibile</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">22 mila €</td></tr><tr data-t="adesione convenzione telefonia mobile 9 vodafone spa">
+      <td class="small">2024-04-30</td>
+      <td>ADESIONE CONVENZIONE TELEFONIA MOBILE 9<div class="small muted">CIG B176C11DEE · Cpv prevalente non disponibile</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">22 mila €</td></tr><tr data-t="adesione convenzione telefonia mobile 9 vodafone spa">
+      <td class="small">2024-05-06</td>
+      <td>ADESIONE CONVENZIONE TELEFONIA MOBILE 9<div class="small muted">CIG B188DF9AEA · Cpv prevalente non disponibile</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">22 mila €</td></tr><tr data-t="adesione convenzione telefonia mobile 9 vodafone spa">
+      <td class="small">2024-05-08</td>
+      <td>ADESIONE CONVENZIONE TELEFONIA MOBILE 9<div class="small muted">CIG B1937768A7 · Cpv prevalente non disponibile</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">22 mila €</td></tr><tr data-t="fornitura di aghi provette e tamponi operatore individuale (persona fisica)">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI AGHI PROVETTE E TAMPONI<div class="small muted">CIG B18A091300 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">21 mila €</td></tr><tr data-t="servizio di gestione e custodia dell&#39;archivio cartaceo - rinnovo plurima s.p.a.">
+      <td class="small">2024-09-01</td>
+      <td>SERVIZIO DI GESTIONE E CUSTODIA DELL&#39;ARCHIVIO CARTACEO - RINNOVO<div class="small muted">CIG A06188F121 · SERVIZI DI ARCHIVIAZIONE</div></td>
+      <td>PLURIMA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">21 mila €</td></tr><tr data-t="adesione convenzione apparecchiature multifunzione in noleggio 3 lotto 3 olivetti s.p.a. societa&#39; benefit">
+      <td class="small">2024-09-27</td>
+      <td>ADESIONE CONVENZIONE APPARECCHIATURE MULTIFUNZIONE IN NOLEGGIO 3 LOTTO 3<div class="small muted">CIG B336F5F098 · FOTOCOPIATRICI</div></td>
+      <td>OLIVETTI S.P.A. SOCIETA&#39; BENEFIT</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">18 mila €</td></tr><tr data-t="piastre pronte: microbiologia acque liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>PIASTRE PRONTE: MICROBIOLOGIA ACQUE<div class="small muted">CIG B30E551F66 · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">18 mila €</td></tr><tr data-t="acquisto licenze antispam dal 01-05-2024 al 30/04/2025 edist engineering s.r.l.">
+      <td class="small">2024-04-15</td>
+      <td>ACQUISTO LICENZE ANTISPAM DAL 01-05-2024 AL 30/04/2025<div class="small muted">CIG B13BBDF13E · PACCHETTI SOFTWARE PER LA POSTA ELETTRONICA</div></td>
+      <td>EDIST ENGINEERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">17 mila €</td></tr><tr data-t="acquisto n. 17 tablet psal kora sistemi informatici s.r.l.">
+      <td class="small">2024-12-05</td>
+      <td>ACQUISTO N. 17 TABLET PSAL<div class="small muted">CIG B4A7F2A764 · COMPUTER PORTATILI</div></td>
+      <td>KORA SISTEMI INFORMATICI S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">16 mila €</td></tr><tr data-t="manutenzione automezzi area territoriale valtellina - rinnovo ">
+      <td class="small">2024-09-15</td>
+      <td>MANUTENZIONE AUTOMEZZI AREA TERRITORIALE VALTELLINA - RINNOVO<div class="small muted">CIG A061DE0442 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">15 mila €</td></tr><tr data-t="fornitura di sedie per ufficio a ridotto impatto ambientale l.t. form 2 s.r.l.">
+      <td class="small">2024-04-19</td>
+      <td>FORNITURA DI SEDIE PER UFFICIO A RIDOTTO IMPATTO AMBIENTALE<div class="small muted">CIG B1595A48C8 · Cpv prevalente non disponibile</div></td>
+      <td>L.T. FORM 2 S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="adesione convenzione telefonia mobile 9 vodafone spa">
+      <td class="small">2024-04-15</td>
+      <td>ADESIONE CONVENZIONE TELEFONIA MOBILE 9<div class="small muted">CIG B143483F82 · Cpv prevalente non disponibile</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="fornitura di bottiglie con visore operatore individuale (persona fisica)">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI BOTTIGLIE CON VISORE<div class="small muted">CIG B18A128F98 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">14 mila €</td></tr><tr data-t="misuratore campi elettromagnetici ">
+      <td class="small">2023-03-27</td>
+      <td>MISURATORE CAMPI ELETTROMAGNETICI<div class="small muted">CIG 97356321AF · APPARECCHI PER LA MISURA DI RADIAZIONI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">12 mila €</td></tr><tr data-t="terreno arricchimento pronti : vari liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>TERRENO ARRICCHIMENTO PRONTI : VARI<div class="small muted">CIG B30ED157F5 · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">12 mila €</td></tr><tr data-t="campionatore per agenti biologici aerodispersi / monitoraggio microbiologico dell&#39;aria ">
+      <td class="small">2023-03-27</td>
+      <td>CAMPIONATORE PER AGENTI BIOLOGICI AERODISPERSI / MONITORAGGIO MICROBIOLOGICO DELL&#39;ARIA<div class="small muted">CIG 973567010B · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">11 mila €</td></tr><tr data-t="fonometro in classe 1 - conforme al d.lgs.81/2008 ">
+      <td class="small">2023-03-27</td>
+      <td>FONOMETRO IN CLASSE 1 - CONFORME AL D.LGS.81/2008<div class="small muted">CIG 9735646D39 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">11 mila €</td></tr><tr data-t="campionatore personale - bassi flussi (uni en 1232:1999) ">
+      <td class="small">2023-03-27</td>
+      <td>CAMPIONATORE PERSONALE - BASSI FLUSSI (UNI EN 1232:1999)<div class="small muted">CIG 973569018C · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 mila €</td></tr><tr data-t="strumentazione portatile per il monitoraggio del microclima termico e di grandezze correlate nei luoghi di lavoro e ambienti civili ">
+      <td class="small">2023-03-27</td>
+      <td>STRUMENTAZIONE PORTATILE PER IL MONITORAGGIO DEL MICROCLIMA TERMICO E DI GRANDEZZE CORRELATE NEI LUOGHI DI LAVORO E AMBIENTI CIVILI<div class="small muted">CIG 973569667E · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 mila €</td></tr><tr data-t="strumento per monitoraggio del microclima ">
+      <td class="small">2023-06-16</td>
+      <td>STRUMENTO PER MONITORAGGIO DEL MICROCLIMA<div class="small muted">CIG 99335901CB · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 mila €</td></tr><tr data-t="campionatore personale bassi flussi ">
+      <td class="small">2023-06-14</td>
+      <td>CAMPIONATORE PERSONALE BASSI FLUSSI<div class="small muted">CIG 98846363AC · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 mila €</td></tr><tr data-t="servizio di informatizzazione delle risorse umane in saas gpi s.p.a.">
+      <td class="small">2024-10-02</td>
+      <td>SERVIZIO DI INFORMATIZZAZIONE DELLE RISORSE UMANE IN SAAS<div class="small muted">CIG B348854AF8 · SERVIZI DI MANUTENZIONE E RIPARAZIONE DI SOFTWARE</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mila €</td></tr><tr data-t="fornitura di scatole portaprovette effegi di fantoni giambattista srl">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI SCATOLE PORTAPROVETTE<div class="small muted">CIG B18A50E72E · Cpv prevalente non disponibile</div></td>
+      <td>EFFEGI DI FANTONI GIAMBATTISTA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mila €</td></tr><tr data-t="radon monitor ad alta sensibilita&#39; ">
+      <td class="small">2023-03-27</td>
+      <td>RADON MONITOR AD ALTA SENSIBILITA&#39;<div class="small muted">CIG 97356207C6 · APPARECCHI PER LA MISURA DI RADIAZIONI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mila €</td></tr><tr data-t="radon monitor ad alta sensibilita&#39; ">
+      <td class="small">2023-06-13</td>
+      <td>RADON MONITOR AD ALTA SENSIBILITA&#39;<div class="small muted">CIG 9938024CD5 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mila €</td></tr><tr data-t="materiale monouso, per sistema completo per analisi microbiologica per filtrazione tramite membrana, per il controllo della qualità microbiologica dei campioni liquidi sartorius italy s.r.l.">
+      <td class="small">2024-10-03</td>
+      <td>MATERIALE MONOUSO, PER SISTEMA COMPLETO PER ANALISI MICROBIOLOGICA PER FILTRAZIONE TRAMITE MEMBRANA, PER IL CONTROLLO DELLA QUALITÀ MICROBIOLOGICA DEI CAMPIONI LIQUIDI<div class="small muted">CIG B34D26CFDA · REATTIVI PER LABORATORIO</div></td>
+      <td>SARTORIUS ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">8 mila €</td></tr><tr data-t="microscopio ottico da laboratorio ">
+      <td class="small">2023-03-27</td>
+      <td>MICROSCOPIO OTTICO DA LABORATORIO<div class="small muted">CIG 973565764F · MICROSCOPI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mila €</td></tr><tr data-t="adesione convenzione consip microsodt enterprise agreement 7 - per la fornitura di n.10 licenze tim s.p.a.">
+      <td class="small">2024-06-13</td>
+      <td>ADESIONE CONVENZIONE CONSIP MICROSODT ENTERPRISE AGREEMENT 7 - PER LA FORNITURA DI N.10 LICENZE<div class="small muted">CIG B2183F6A06 · PACCHETTI SOFTWARE PER LA GESTIONE DI LICENZE</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mila €</td></tr><tr data-t="servizio di rassegna stampa telpress italia s.r.l.">
+      <td class="small">2024-02-14</td>
+      <td>SERVIZIO DI RASSEGNA STAMPA<div class="small muted">CIG B0602700B3 · Cpv prevalente non disponibile</div></td>
+      <td>TELPRESS ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="adesione convenzione consip apparecchiature multifunzione in noleggio 2 lotto 3 olivetti s.p.a. societa&#39; benefit">
+      <td class="small">2024-03-18</td>
+      <td>ADESIONE CONVENZIONE CONSIP APPARECCHIATURE MULTIFUNZIONE IN NOLEGGIO 2 LOTTO 3<div class="small muted">CIG B0DA1E33BA · Cpv prevalente non disponibile</div></td>
+      <td>OLIVETTI S.P.A. SOCIETA&#39; BENEFIT</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="servizio di supporto ufficio concorsi selexi s.r.l.">
+      <td class="small">2024-11-12</td>
+      <td>SERVIZIO DI SUPPORTO UFFICIO CONCORSI<div class="small muted">CIG B4223F3166 · SERVIZI DI CONSULENZA DI GESTIONE DELLE RISORSE UMANE</div></td>
+      <td>SELEXI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="fornitura di sacchi e sacchetti kaltek s.r.l.">
+      <td class="small">2024-05-07</td>
+      <td>FORNITURA DI SACCHI E SACCHETTI<div class="small muted">CIG B18F3B2CA0 · Cpv prevalente non disponibile</div></td>
+      <td>KALTEK S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="analizzatori di vibrazioni conforme al d.lgs. 81/2008 ">
+      <td class="small">2023-03-27</td>
+      <td>ANALIZZATORI DI VIBRAZIONI CONFORME AL D.LGS. 81/2008<div class="small muted">CIG 9735680949 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="analizzatore di vibrazioni conforme al d.lgs. 81/2008 ">
+      <td class="small">2023-06-23</td>
+      <td>ANALIZZATORE DI VIBRAZIONI CONFORME AL D.LGS. 81/2008<div class="small muted">CIG 9918881789 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="piastre pronte: microbiologia alimenti/acque microbiol s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>PIASTRE PRONTE: MICROBIOLOGIA ALIMENTI/ACQUE<div class="small muted">CIG B31E48F157 · PRODOTTI CHIMICI VARI</div></td>
+      <td>MICROBIOL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="agar in flaconi 1 biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>AGAR IN FLACONI 1<div class="small muted">CIG B31FDD6D5D · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="fornitura di materiale chirurgico o.pi.vi. s.r.l.">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI MATERIALE CHIRURGICO<div class="small muted">CIG B18A3D4410 · Cpv prevalente non disponibile</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mila €</td></tr><tr data-t="fornitura di sacchetti antimanomissione laboindustria s.p.a.">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI SACCHETTI ANTIMANOMISSIONE<div class="small muted">CIG B189BD9E1D · Cpv prevalente non disponibile</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="acquisto n. 17 stampanti phomemo m08f termiche rd sistemi srl">
+      <td class="small">2024-12-05</td>
+      <td>ACQUISTO N. 17 STAMPANTI PHOMEMO M08F TERMICHE<div class="small muted">CIG B4A7D98BA5 · STAMPANTI E TRACCIATORI</div></td>
+      <td>RD SISTEMI SRL</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">3 mila €</td></tr><tr data-t="fornitura di contenitori aptaca s.p.a.">
+      <td class="small">2024-05-06</td>
+      <td>FORNITURA DI CONTENITORI<div class="small muted">CIG B1897E3957 · Cpv prevalente non disponibile</div></td>
+      <td>APTACA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="adesione convenzione consip apparecchiature multifunzione in noleggio 2 lotto 5 kyocera document solutions italia">
+      <td class="small">2024-03-18</td>
+      <td>ADESIONE CONVENZIONE CONSIP APPARECCHIATURE MULTIFUNZIONE IN NOLEGGIO 2 LOTTO 5<div class="small muted">CIG B0DACF673D · Cpv prevalente non disponibile</div></td>
+      <td>KYOCERA DOCUMENT SOLUTIONS ITALIA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mila €</td></tr><tr data-t="arredi vari in legno per uffici a ridotti impatto ambientale aran world s.r.l.">
+      <td class="small">2024-04-15</td>
+      <td>ARREDI VARI IN LEGNO PER UFFICI A RIDOTTI IMPATTO AMBIENTALE<div class="small muted">CIG B14282F31C · Cpv prevalente non disponibile</div></td>
+      <td>ARAN WORLD S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mila €</td></tr><tr data-t="acquisto borse per il trasporto, cavi hdmi e licenze microsoft ">
+      <td class="small">2024-12-05</td>
+      <td>ACQUISTO BORSE PER IL TRASPORTO, CAVI HDMI E LICENZE MICROSOFT<div class="small muted">CIG B4A7CD3914 · PACCHETTI SOFTWARE IT</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">1 mila €</td></tr><tr data-t="baird parker + rpf liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>BAIRD PARKER + RPF<div class="small muted">CIG B30E7F9092 · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mila €</td></tr><tr data-t="piastre pronte varie, indoor liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>PIASTRE PRONTE VARIE, INDOOR<div class="small muted">CIG B30E5D29DC · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mila €</td></tr><tr data-t="selenite cistina broth biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>SELENITE CISTINA BROTH<div class="small muted">CIG B3202ABA2C · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mila €</td></tr><tr data-t="agar sangue di montone al 5% liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>AGAR SANGUE DI MONTONE AL 5%<div class="small muted">CIG B30E6CD8FE · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">876 €</td></tr><tr data-t="agar in flaconi 2 biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>AGAR IN FLACONI 2<div class="small muted">CIG B31FE7A4B6 · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">763 €</td></tr><tr data-t="agar in provette biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>AGAR IN PROVETTE<div class="small muted">CIG B31FAD52C7 · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">742 €</td></tr><tr data-t="mucap test biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>MUCAP TEST<div class="small muted">CIG B320370CBD · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">684 €</td></tr><tr data-t="agar in provette liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>AGAR IN PROVETTE<div class="small muted">CIG B30EBF5A4A · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">600 €</td></tr><tr data-t="bismuto solfito agar liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>BISMUTO SOLFITO AGAR<div class="small muted">CIG B30E77861C · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">594 €</td></tr><tr data-t="conforme pseudomonas 1 liofilchem s.r.l.">
+      <td class="small">2024-09-16</td>
+      <td>CONFORME PSEUDOMONAS 1<div class="small muted">CIG B30EC7C9B2 · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">573 €</td></tr><tr data-t="agar flaconi : baird paker+ rpf biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>AGAR FLACONI : BAIRD PAKER+ RPF<div class="small muted">CIG B3203EE4BA · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">525 €</td></tr><tr data-t="cicloserina operatore individuale (persona fisica)">
+      <td class="small">2024-09-20</td>
+      <td>CICLOSERINA<div class="small muted">CIG B31F311A38 · PRODOTTI CHIMICI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">522 €</td></tr><tr data-t="piastre ponte basso consumo microbiol s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>PIASTRE PONTE BASSO CONSUMO<div class="small muted">CIG B31E6012AC · PRODOTTI CHIMICI VARI</div></td>
+      <td>MICROBIOL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">375 €</td></tr><tr data-t="lactose sulfite medium liofilchem s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>LACTOSE SULFITE MEDIUM<div class="small muted">CIG B31E3C38FC · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">302 €</td></tr><tr data-t="thioglicolato medium liofilchem s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>THIOGLICOLATO MEDIUM<div class="small muted">CIG B31E1A9D02 · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">269 €</td></tr><tr data-t="agara cromogeno per salmonella microbiol s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>AGARA CROMOGENO PER SALMONELLA<div class="small muted">CIG B31E688214 · PRODOTTI CHIMICI VARI</div></td>
+      <td>MICROBIOL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">255 €</td></tr><tr data-t="soluzione acida per legionella microbiol s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>SOLUZIONE ACIDA PER LEGIONELLA<div class="small muted">CIG B31ED8780D · PRODOTTI CHIMICI VARI</div></td>
+      <td>MICROBIOL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">221 €</td></tr><tr data-t="brilliant green bile broth liofilchem s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>BRILLIANT GREEN BILE BROTH<div class="small muted">CIG B31E24F601 · PRODOTTI CHIMICI VARI</div></td>
+      <td>LIOFILCHEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">198 €</td></tr><tr data-t="fornitura di fili di sutura elemed s.r.l.">
+      <td class="small">2024-05-07</td>
+      <td>FORNITURA DI FILI DI SUTURA<div class="small muted">CIG B18F48F303 · Cpv prevalente non disponibile</div></td>
+      <td>ELEMED S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">178 €</td></tr><tr data-t="phosphate buffer saline compresse operatore individuale (persona fisica)">
+      <td class="small">2024-09-20</td>
+      <td>PHOSPHATE BUFFER SALINE COMPRESSE<div class="small muted">CIG B31F1F0BBA · PRODOTTI CHIMICI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">171 €</td></tr><tr data-t="agar in flaconi vrbl biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>AGAR IN FLACONI VRBL<div class="small muted">CIG B31FFE82BF · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">165 €</td></tr><tr data-t="acqua peptonata salina biomerieux italia spa">
+      <td class="small">2024-09-16</td>
+      <td>ACQUA PEPTONATA SALINA<div class="small muted">CIG B30E469FF2 · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOMERIEUX ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">150 €</td></tr><tr data-t="nutrient agaar con nacl operatore individuale (persona fisica)">
+      <td class="small">2024-09-20</td>
+      <td>NUTRIENT AGAAR CON NACL<div class="small muted">CIG B31F29A805 · PRODOTTI CHIMICI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">129 €</td></tr><tr data-t="soluzione di ringer operatore individuale (persona fisica)">
+      <td class="small">2024-09-20</td>
+      <td>SOLUZIONE DI RINGER<div class="small muted">CIG B31F3859F2 · PRODOTTI CHIMICI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">96 €</td></tr><tr data-t="reattivo kovacs microbiol s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>REATTIVO KOVACS<div class="small muted">CIG B31E78C8A1 · PRODOTTI CHIMICI VARI</div></td>
+      <td>MICROBIOL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">87 €</td></tr><tr data-t="lobotor alcyon italia s.p.a">
+      <td class="small">2024-11-08</td>
+      <td>LOBOTOR<div class="small muted">CIG B430255584 · VACCINI VETERINARI</div></td>
+      <td>ALCYON ITALIA S.P.A</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">60 €</td></tr><tr data-t="tween- 80 biolife italiana s.r.l.">
+      <td class="small">2024-09-20</td>
+      <td>TWEEN- 80<div class="small muted">CIG B3202F13F2 · PRODOTTI CHIMICI VARI</div></td>
+      <td>BIOLIFE ITALIANA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">39 €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

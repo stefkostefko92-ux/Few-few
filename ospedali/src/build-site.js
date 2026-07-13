@@ -7,7 +7,7 @@
 // Нула зависимости, нула външни ресурси.
 
 import { join } from 'node:path';
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, rm, readFile } from 'node:fs/promises';
 import { SITE_DIR } from './lib/paths.js';
 import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from './lib/dataset.js';
 import { readJson } from './lib/http.js';
@@ -21,6 +21,7 @@ const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
 const AGGIU_FILE = pjoin(DATA_DIR, 'aggiudicatari.json');
 const VALIDAZIONE_FILE = pjoin(DATA_DIR, 'validazione.json');
+const CONTRATTI_DIR = pjoin(DATA_DIR, 'contratti');
 
 const REGOLE_LABEL = {
   disavanzo_grave: 'Disavanzo grave',
@@ -79,6 +80,7 @@ async function main() {
 
   await rm(SITE_DIR, { recursive: true, force: true });
   await mkdir(join(SITE_DIR, 'struttura'), { recursive: true });
+  await mkdir(join(SITE_DIR, 'contratti'), { recursive: true });
 
   // Общ индекс за клиентско филтриране + връзки
   const slugByCod = new Map(enti.map((e) => [e.codice, slugify(e.denominazione)]));
@@ -115,14 +117,26 @@ async function main() {
   const validaz = await readJson(VALIDAZIONE_FILE).catch(() => null);
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
+  let conContratti = 0;
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
+    // Пълен опис на договорите (ако е наличен): CSV + inline данни
+    let contratti = null;
+    try {
+      contratti = JSON.parse(await readFile(join(CONTRATTI_DIR, `${ente.codice}.json`), 'utf8'));
+    } catch {
+      /* няма договори за тази структура */
+    }
+    if (contratti && contratti.length) {
+      await writeFile(join(SITE_DIR, 'contratti', `${ente.codice}.csv`), contrattiCsv(ente, contratti));
+      conContratti++;
+    }
     await writeFile(
       join(SITE_DIR, 'struttura', `${fileCod}.html`),
-      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), appMatch, ultimoAnnoCe })
+      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe })
     );
   }
-  console.log(`Готово: ${enti.length + (appalti ? 10 : 9)} страници → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + (appalti ? 10 : 9)} страници (${conContratti} с опис на договорите) → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -430,7 +444,7 @@ pubblici (ANAC) per risalire ai singoli contratti, ai fornitori e alle gare a of
 }
 
 // ---------- DETTAGLIO STRUTTURA ----------
-function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, appMatch, ultimoAnnoCe }) {
+function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
   const val = (k) => anni.map((a) => [a, ente.serie.get(a)[k]]).filter(([, v]) => v != null);
@@ -576,6 +590,7 @@ ${segBlock}
 
 ${soldiBlock}
 ${appaltiBlock(app, appMatch)}
+${contrattiBlock(ente, contratti)}
 ${opTable}
 ${finTable}
 ${ceBlock}
@@ -895,6 +910,59 @@ sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori perso
   <thead><tr><th scope="col">#</th><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>`;
+}
+
+// ---------- РЕГИСТЪР НА ДОГОВОРИТЕ (маниакален детайл) ----------
+function csvCell(v) {
+  const s = String(v ?? '');
+  return /[";\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
+}
+/** Пълен CSV с всеки договор — сваляемият, проверим до последния евро запис. */
+function contrattiCsv(ente, list) {
+  const head = 'cig;data;oggetto;importo_euro;procedura;cpv;fornitore';
+  const lines = list.map((c) =>
+    [c.cig, c.data, c.oggetto, c.importo, c.procedura, c.cpv, c.fornitore || ''].map(csvCell).join(';')
+  );
+  return `# Ospedali Trasparenti — contratti pubblici di ${ente.denominazione} (ANAC)\n` + `# ${list.length} contratti. Importi = valore messo a gara. Fonte: dati.anticorruzione.it\n` + head + '\n' + lines.join('\n') + '\n';
+}
+
+const PROC_ABBR = (p) => (p || '').replace(/AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO\/CONVENZIONE/i, 'Affid. diretto (accordo quadro)').replace(/AFFIDAMENTO DIRETTO/i, 'Affidamento diretto').replace(/PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE/i, 'Negoziata senza bando').replace(/PROCEDURA APERTA/i, 'Procedura aperta');
+
+/** Регистър на договорите в детайлната страница (топ N inline + пълен CSV). */
+function contrattiBlock(ente, list) {
+  if (!list || !list.length) return '';
+  const MAX_INLINE = 300;
+  const totale = list.reduce((s, c) => s + c.importo, 0);
+  const shown = list.slice(0, MAX_INLINE);
+  const rows = shown
+    .map((c) => {
+      const flag = c.categoria === 'diretto' || c.categoria === 'negoziataSenza';
+      return `<tr data-t="${esc(((c.oggetto || '') + ' ' + (c.fornitore || '')).toLowerCase())}">
+      <td class="small">${esc(c.data)}</td>
+      <td>${esc(c.oggetto || '—')}<div class="small muted">CIG ${esc(c.cig)}${c.cpv ? ' · ' + esc(c.cpv) : ''}</div></td>
+      <td>${esc(c.fornitore || '—')}</td>
+      <td class="small${flag ? ' neg' : ''}">${esc(PROC_ABBR(c.procedura))}</td>
+      <td class="num">${euroCompact(c.importo)}</td></tr>`;
+    })
+    .join('');
+  return `<h2>Registro dei contratti <span class="small muted">(${numeroIt(list.length)} contratti ANAC, ${euroCompact(totale)} messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/${ente.codice}.csv" download>⬇ Scarica l’elenco completo (CSV, ${numeroIt(list.length)} contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows">${rows}</tbody>
+</table></div>
+${list.length > MAX_INLINE ? `<p class="small muted">Mostrati i ${MAX_INLINE} contratti di importo maggiore su ${numeroIt(list.length)}. L’elenco completo è nel <a href="../contratti/${ente.codice}.csv" download>CSV</a>.</p>` : ''}
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>`;
 }
 
 /** Блок за поръчките в детайлната страница (при свързан възложител). */

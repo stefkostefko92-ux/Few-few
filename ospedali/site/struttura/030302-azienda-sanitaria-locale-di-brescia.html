@@ -198,6 +198,1279 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">3 mln €</td></tr><tr><td>POLIZZA RCT/O ATS BRIANZA<div class="small muted">SERVIZI ASSICURATIVI</div></td>
       <td>PROCEDURA APERTA</td><td class="num">3 mln €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(251 contratti ANAC, 101 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030302.csv" download>⬇ Scarica l’elenco completo (CSV, 251 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="energia elettrica a2a energia s.p.a.">
+      <td class="small">2024-06-21</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B2338E0791 · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">30 mln €</td></tr><tr data-t="contratto sublocazione temporanea ">
+      <td class="small">2024-03-13</td>
+      <td>CONTRATTO SUBLOCAZIONE TEMPORANEA<div class="small muted">CIG B0CA7EDD7F · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">11 mln €</td></tr><tr data-t="polizza rct/o ats città metropolitana di milano amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A027500208 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">6 mln €</td></tr><tr data-t="polizza rct/o ats brescia sham">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS BRESCIA<div class="small muted">CIG A0274E6C90 · SERVIZI ASSICURATIVI</div></td>
+      <td>SHAM</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="polizza rct/o ats insubria sham">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS INSUBRIA<div class="small muted">CIG A0275120E3 · SERVIZI ASSICURATIVI</div></td>
+      <td>SHAM</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="polizza rct/o ats val padana amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS VAL PADANA<div class="small muted">CIG A02750AA46 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="servizio di mensa diffusa: rinnovo del contratto stipulato con la ditta blube srl per il periodo 01/07/2023 - 30/06/2026 360 welfare s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>SERVIZIO DI MENSA DIFFUSA: RINNOVO DEL CONTRATTO STIPULATO CON LA DITTA BLUBE SRL PER IL PERIODO 01/07/2023 - 30/06/2026<div class="small muted">CIG 9950135727 · SERVIZI DI GESTIONE MENSA</div></td>
+      <td>360 WELFARE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="polizza rct/o ats brianza amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS BRIANZA<div class="small muted">CIG A0274EF400 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lavori di ristrutturazione edificio 10 presso la sede legale di viale duca degli abruzzi 15, brescia aflutec s.r.l.">
+      <td class="small">2023-03-31</td>
+      <td>LAVORI DI RISTRUTTURAZIONE EDIFICIO 10 PRESSO LA SEDE LEGALE DI VIALE DUCA DEGLI ABRUZZI 15, BRESCIA<div class="small muted">CIG 973870271F · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>AFLUTEC S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats brescia 31.12.2023 - 31.12.2026 sham">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA RCT/O ATS BRESCIA 31.12.2023 - 31.12.2026<div class="small muted">CIG A04464343C · SERVIZI ASSICURATIVI</div></td>
+      <td>SHAM</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats bergamo amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS BERGAMO<div class="small muted">CIG A02750ED92 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats pavia amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS PAVIA<div class="small muted">CIG A02751A77B · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats montagna berkshire hathaway international insurance limited">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS MONTAGNA<div class="small muted">CIG A0274F2679 · SERVIZI ASSICURATIVI</div></td>
+      <td>BERKSHIRE HATHAWAY INTERNATIONAL INSURANCE LIMITED</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di abbattimento di circa 17.604 suini e carico carcasse per conto dell&#39;ats di pavia operatore individuale (persona fisica)">
+      <td class="small">2023-09-11</td>
+      <td>SERVIZIO DI ABBATTIMENTO DI CIRCA 17.604 SUINI E CARICO CARCASSE PER CONTO DELL&#39;ATS DI PAVIA<div class="small muted">CIG A01DFB8131 · SERVIZI ZOOLOGICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="convenzione aria_2023_052 lotto 1 recapito posta massiva poste italiane spa">
+      <td class="small">2024-02-22</td>
+      <td>CONVENZIONE ARIA_2023_052 LOTTO 1 RECAPITO POSTA MASSIVA<div class="small muted">CIG B0828F1AFA · Cpv prevalente non disponibile</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">924 mila €</td></tr><tr data-t="lotto 10 polizza libro matricola rcauto ats della città metropolitana di milano aspevi milano s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 10 POLIZZA LIBRO MATRICOLA RCAUTO ATS DELLA CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A02160A4C8 · SERVIZI ASSICURATIVI</div></td>
+      <td>ASPEVI MILANO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">780 mila €</td></tr><tr data-t="lotto 5 - vestiario o.pi.vi. s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 5 - VESTIARIO<div class="small muted">CIG 9866712C4F · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">726 mila €</td></tr><tr data-t="servizio di abbattimento di suini e carico carcasse a contenimento della psa per conto dell&#39;ats di pavia operatore individuale (persona fisica)">
+      <td class="small">2023-09-01</td>
+      <td>SERVIZIO DI ABBATTIMENTO DI SUINI E CARICO CARCASSE A CONTENIMENTO DELLA PSA PER CONTO DELL&#39;ATS DI PAVIA<div class="small muted">CIG A00B4E4763 · SERVIZI ZOOLOGICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">645 mila €</td></tr><tr data-t="adesione all&#39;accordo quadro consip &#39;sanità digitale - sistemi informativi gestionali&#39; lotto 1, id sigef 2366- 2024-2027 ">
+      <td class="small">2024-01-11</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO CONSIP &#39;SANITÀ DIGITALE - SISTEMI INFORMATIVI GESTIONALI&#39; LOTTO 1, ID SIGEF 2366- 2024-2027<div class="small muted">CIG A0493331E4 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">619 mila €</td></tr><tr data-t="global service manutenzioni laboratorio di prevenzione ats brescia - dal 01.06.24 al 31.05.27 h.c. hospital consulting societa&#39; per azioni chiamata anche h.c. spa oppure hospital consulting spa">
+      <td class="small">2024-06-01</td>
+      <td>GLOBAL SERVICE MANUTENZIONI LABORATORIO DI PREVENZIONE ATS BRESCIA - DAL 01.06.24 AL 31.05.27<div class="small muted">CIG A05C589DC2 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI APPARECCHIATURE DI MISURAZIONE, COLLAUDO E PROVA</div></td>
+      <td>H.C. HOSPITAL CONSULTING SOCIETA&#39; PER AZIONI CHIAMATA ANCHE H.C. SPA OPPURE HOSPITAL CONSULTING SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">538 mila €</td></tr><tr data-t="fornitura di carburante per autotrazione kuwait petoleum">
+      <td class="small">2024-11-08</td>
+      <td>FORNITURA DI CARBURANTE PER AUTOTRAZIONE<div class="small muted">CIG B431085ABB · BENZINA</div></td>
+      <td>KUWAIT PETOLEUM</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia diusa rendering s.r.l.">
+      <td class="small">2023-09-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A029453B82 · SERVIZI ZOOLOGICI</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">478 mila €</td></tr><tr data-t="adesione accordo quadro sanità digitale 3 engineering">
+      <td class="small">2024-03-11</td>
+      <td>ADESIONE ACCORDO QUADRO SANITÀ DIGITALE 3<div class="small muted">CIG B0C118A321 · Cpv prevalente non disponibile</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">469 mila €</td></tr><tr data-t="adesione accordo quadro sd3 - gestione documentale engineering">
+      <td class="small">2024-04-02</td>
+      <td>ADESIONE ACCORDO QUADRO SD3 - GESTIONE DOCUMENTALE<div class="small muted">CIG B10F87499C · Cpv prevalente non disponibile</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">469 mila €</td></tr><tr data-t="lotto 13 - tosatrici e materiale vario o.pi.vi. s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 13 - TOSATRICI E MATERIALE VARIO<div class="small muted">CIG 9872218C01 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">467 mila €</td></tr><tr data-t="adesione a accordo quadro -servizi applicativi sanità digitale - lotto 3 diotta gpi (rti) gpi s.p.a.">
+      <td class="small">2023-11-01</td>
+      <td>ADESIONE A ACCORDO QUADRO -SERVIZI APPLICATIVI SANITÀ DIGITALE - LOTTO 3 DIOTTA GPI (RTI)<div class="small muted">CIG A026EE25B9 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">428 mila €</td></tr><tr data-t="adesione a gara aria_2019_149r lotto 81 gpi 2023-2026 gpi s.p.a.">
+      <td class="small">2023-03-27</td>
+      <td>ADESIONE A GARA ARIA_2019_149R LOTTO 81 GPI 2023-2026<div class="small muted">CIG 9736921964 · PACCHETTI SOFTWARE IT</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">426 mila €</td></tr><tr data-t="lotto 11 - fili di sutura elemed s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 11 - FILI DI SUTURA<div class="small muted">CIG 9871295255 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>ELEMED S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">393 mila €</td></tr><tr data-t="noleggio veicoli in adesione a accordo quadro noleggio veicoli 2 lotto 3 ald automotive italia s.r.l.">
+      <td class="small">2023-01-25</td>
+      <td>NOLEGGIO VEICOLI IN ADESIONE A ACCORDO QUADRO NOLEGGIO VEICOLI 2 LOTTO 3<div class="small muted">CIG 9620689BB5 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>ALD AUTOMOTIVE ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">351 mila €</td></tr><tr data-t="adesione postuma alla procedura aperta sopra soglia comunitaria, per l&#39;acquisizione di un applicativo web per la gestione informatizzata delle attività di controllo delle prestazioni sanitarie e annessi servizi, in unione di acquisto con l&#39;ats della città metropolitana di milano capofila e l&#39;ats di  ">
+      <td class="small">2024-01-01</td>
+      <td>ADESIONE POSTUMA ALLA PROCEDURA APERTA SOPRA SOGLIA COMUNITARIA, PER L&#39;ACQUISIZIONE DI UN APPLICATIVO WEB PER LA GESTIONE INFORMATIZZATA DELLE ATTIVITÀ DI CONTROLLO DELLE PRESTAZIONI SANITARIE E ANNESSI SERVIZI, IN UNIONE DI ACQUISTO CON L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO CAPOFILA E L&#39;ATS DI <div class="small muted">CIG A0412BDF7D · PACCHETTI SOFTWARE DI SVILUPPO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">350 mila €</td></tr><tr data-t="convenzione aria_2023_052 lotto 2 recapito posta non massiva postel spa">
+      <td class="small">2024-02-22</td>
+      <td>CONVENZIONE ARIA_2023_052 LOTTO 2 RECAPITO POSTA NON MASSIVA<div class="small muted">CIG B08232FA98 · Cpv prevalente non disponibile</div></td>
+      <td>POSTEL SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">343 mila €</td></tr><tr data-t="lotto 7 - sacchetti antimanomissione laboindustria s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 7 - SACCHETTI ANTIMANOMISSIONE<div class="small muted">CIG 9866826A63 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">342 mila €</td></tr><tr data-t="lotto 8 - aghi, provette e tamponi laboindustria s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 8 - AGHI, PROVETTE E TAMPONI<div class="small muted">CIG 98668638EC · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">331 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia diusa rendering s.r.l.">
+      <td class="small">2023-11-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A02849C3A2 · SERVIZI ZOOLOGICI</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">326 mila €</td></tr><tr data-t="proroga polizza di responsabilità civile sanitaria al 31.12.2023 amtrust assicurazioni s.p.a.">
+      <td class="small">2023-06-19</td>
+      <td>PROROGA POLIZZA DI RESPONSABILITÀ CIVILE SANITARIA AL 31.12.2023<div class="small muted">CIG 9950386649 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">312 mila €</td></tr><tr data-t="energia elettrica a2a energia s.p.a.">
+      <td class="small">2024-07-03</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B25206BCDB · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">300 mila €</td></tr><tr data-t="polizza infortuni ats val padana axa assicurazioni spa">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS VAL PADANA<div class="small muted">CIG 97975688E1 · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">293 mila €</td></tr><tr data-t="polizza infortuni ats brescia axa assicurazioni spa">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS BRESCIA<div class="small muted">CIG 9797419DEA · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">293 mila €</td></tr><tr data-t="noleggio n. 9 jeep renegade - 60 mesi 75.000 km accordo quadro consip veicoli a noleggio 2 ">
+      <td class="small">2024-02-27</td>
+      <td>NOLEGGIO N. 9 JEEP RENEGADE - 60 MESI 75.000 KM ACCORDO QUADRO CONSIP VEICOLI A NOLEGGIO 2<div class="small muted">CIG A051172060 · AUTOVEICOLI DELLA POLIZIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">265 mila €</td></tr><tr data-t="polizza libro matricola rcauto ats brianza hdi assicurazioni s.p.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA LIBRO MATRICOLA RCAUTO ATS BRIANZA<div class="small muted">CIG 979752121A · SERVIZI ASSICURATIVI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">228 mila €</td></tr><tr data-t="abbattimento taccchini aviaria cooperativa agricola del bidente - soc.coop.">
+      <td class="small">2024-12-13</td>
+      <td>ABBATTIMENTO TACCCHINI AVIARIA<div class="small muted">CIG B4D2D95A98 · SERVIZI ZOOLOGICI</div></td>
+      <td>COOPERATIVA AGRICOLA DEL BIDENTE - SOC.COOP.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">225 mila €</td></tr><tr data-t="lotto 3 polizza libro matricola rcauto ats brescia vittoria assicurazioni spa">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 3 POLIZZA LIBRO MATRICOLA RCAUTO ATS BRESCIA<div class="small muted">CIG A0215867D9 · SERVIZI ASSICURATIVI</div></td>
+      <td>VITTORIA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">221 mila €</td></tr><tr data-t="fornitura di un laser diretto ad infrarossi agilent technologies italia  s.p.a.">
+      <td class="small">2023-03-14</td>
+      <td>FORNITURA DI UN LASER DIRETTO AD INFRAROSSI<div class="small muted">CIG 9680413186 · LASER</div></td>
+      <td>AGILENT TECHNOLOGIES ITALIA  S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">213 mila €</td></tr><tr data-t="aria_2023_038 servizio lavanolo impresa inesistente">
+      <td class="small">2024-12-04</td>
+      <td>ARIA_2023_038 SERVIZIO LAVANOLO<div class="small muted">CIG B49AC7A9FE · SERVIZI DI LAVANDERIA E DI LAVAGGIO A SECCO</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">212 mila €</td></tr><tr data-t="affidamento servizio tesoreria e servizi bancari intesa sanpaolo spa">
+      <td class="small">2023-03-09</td>
+      <td>AFFIDAMENTO SERVIZIO TESORERIA E SERVIZI BANCARI<div class="small muted">CIG 96783624FB · SERVIZI DI TESORERIA</div></td>
+      <td>INTESA SANPAOLO SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">210 mila €</td></tr><tr data-t="servizio di fleet mangement per autovetture di proprietà ats brescia - 2023-2025 parts &amp; services">
+      <td class="small">2023-11-28</td>
+      <td>SERVIZIO DI FLEET MANGEMENT PER AUTOVETTURE DI PROPRIETÀ ATS BRESCIA - 2023-2025<div class="small muted">CIG A01FEF0465 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>PARTS &amp; SERVICES</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="polizza kasko ats brescia aig europe s.a. rappresentanza generale per lu2019italia">
+      <td class="small">2023-11-13</td>
+      <td>POLIZZA KASKO ATS BRESCIA<div class="small muted">CIG A0215759D1 · SERVIZI ASSICURATIVI</div></td>
+      <td>AIG Europe S.A. Rappresentanza Generale per lu2019Italia</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">195 mila €</td></tr><tr data-t="polizza rc patrimoniale ats brescia lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-11-13</td>
+      <td>POLIZZA RC PATRIMONIALE ATS BRESCIA<div class="small muted">CIG A021563AF6 · SERVIZI ASSICURATIVI</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">195 mila €</td></tr><tr data-t="servizi di direzione lavori e cse relativi alla ristrutturazione dell&#39;edificio 10 presso la sede legale dell&#39;ats di brescia via duca degli abruzzi 15 mate societa&#39; cooperativa">
+      <td class="small">2023-07-21</td>
+      <td>SERVIZI DI DIREZIONE LAVORI E CSE RELATIVI ALLA RISTRUTTURAZIONE DELL&#39;EDIFICIO 10 PRESSO LA SEDE LEGALE DELL&#39;ATS DI BRESCIA VIA DUCA DEGLI ABRUZZI 15<div class="small muted">CIG 9977833046 · SERVIZI ARCHITETTONICI, DI INGEGNERIA E PIANIFICAZIONE</div></td>
+      <td>MATE SOCIETA&#39; COOPERATIVA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">194 mila €</td></tr><tr data-t="lotto 3 - sacchi e sacchetti kaltek s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 3 - SACCHI E SACCHETTI<div class="small muted">CIG 9866538CB8 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>KALTEK S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">190 mila €</td></tr><tr data-t="acquisto applicativo web per la gestione informatizzata delle attività di controllo sul personale operante delle farmacie e pafarmacie. gara aggregata ats brescia e insubria data solution provider s.r.l.  siglabile dsp s.r.l.">
+      <td class="small">2023-03-13</td>
+      <td>ACQUISTO APPLICATIVO WEB PER LA GESTIONE INFORMATIZZATA DELLE ATTIVITÀ DI CONTROLLO SUL PERSONALE OPERANTE DELLE FARMACIE E PAFARMACIE. GARA AGGREGATA ATS BRESCIA E INSUBRIA<div class="small muted">CIG 96234924D3 · SISTEMI DI BASE DATI</div></td>
+      <td>DATA SOLUTION PROVIDER S.R.L.  SIGLABILE DSP S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">187 mila €</td></tr><tr data-t="rinnovo servizio di notifica degli atti giudiziari in aggregazione con ats milano ( ente capofila) poste italiane spa">
+      <td class="small">2023-08-11</td>
+      <td>RINNOVO SERVIZIO DI NOTIFICA DEGLI ATTI GIUDIZIARI IN AGGREGAZIONE CON ATS MILANO ( ENTE CAPOFILA)<div class="small muted">CIG A0036281C2 · SERVIZI DI CONSEGNA POSTALE</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">184 mila €</td></tr><tr data-t="servizio di posta elettronica o365 tim s.p.a.">
+      <td class="small">2024-05-27</td>
+      <td>SERVIZIO DI POSTA ELETTRONICA O365<div class="small muted">CIG B1D916AC07 · Cpv prevalente non disponibile</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">179 mila €</td></tr><tr data-t="portale web e intranet engineering">
+      <td class="small">2024-05-22</td>
+      <td>PORTALE WEB E INTRANET<div class="small muted">CIG B1C8C1A7B5 · Cpv prevalente non disponibile</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">175 mila €</td></tr><tr data-t="fornitura di gascromatografo massa con pirolisi sra instruments s.p.a.">
+      <td class="small">2023-03-23</td>
+      <td>FORNITURA DI GASCROMATOGRAFO MASSA CON PIROLISI<div class="small muted">CIG 9709978F51 · MACCHINE E APPARECCHI DI PROVA E MISURAZIONE</div></td>
+      <td>SRA INSTRUMENTS S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">172 mila €</td></tr><tr data-t="affidamento del servizio di noleggio full risk di icp - ms spettrometro di massa a quadruplo con sorgente di ioni al plasma thermo fisher scientific s.p.a.">
+      <td class="small">2023-01-01</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI NOLEGGIO FULL RISK DI ICP - MS SPETTROMETRO DI MASSA A QUADRUPLO CON SORGENTE DI IONI AL PLASMA<div class="small muted">CIG 93717450A2 · SPETTROMETRI DI MASSA</div></td>
+      <td>THERMO FISHER SCIENTIFIC S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">169 mila €</td></tr><tr data-t="lotto 6 - scatole portaprovette effegi di fantoni giambattista srl">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 6 - SCATOLE PORTAPROVETTE<div class="small muted">CIG 98667782C9 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>EFFEGI DI FANTONI GIAMBATTISTA SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">167 mila €</td></tr><tr data-t="lotto 14 - materiale chirurgico o.pi.vi. s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 14 - MATERIALE CHIRURGICO<div class="small muted">CIG 987222629E · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">165 mila €</td></tr><tr data-t="polizza rc patrimoniale ats brescia ">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA RC PATRIMONIALE ATS BRESCIA<div class="small muted">CIG 9797455BA0 · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">163 mila €</td></tr><tr data-t="lotto 9 polizza kasko ats della città metropolitana di milano balcia insurance se">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 9 POLIZZA KASKO ATS DELLA CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A0215F96C0 · SERVIZI ASSICURATIVI</div></td>
+      <td>BALCIA INSURANCE SE</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">163 mila €</td></tr><tr data-t="dedalus- acquisto manutenzione software anni 2023-202e - adesione gara aria _2019_149r dedalus italia s.p.a.">
+      <td class="small">2023-01-30</td>
+      <td>DEDALUS- ACQUISTO MANUTENZIONE SOFTWARE ANNI 2023-202E - ADESIONE GARA ARIA _2019_149R<div class="small muted">CIG 9630402B21 · PACCHETTI SOFTWARE IT</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">158 mila €</td></tr><tr data-t="affidamento del servizio di assistenza e manutenzione evolutiva/straordinaria - ditta tesi elettronica e sistemi informativi s.p.a. tesi - elettronica e sistemi informativi - s.p.a. - societa&#39; bene fit, abbreviabile in tesi s.p.a. s.b.">
+      <td class="small">2023-07-12</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI ASSISTENZA E MANUTENZIONE EVOLUTIVA/STRAORDINARIA - DITTA TESI ELETTRONICA E SISTEMI INFORMATIVI S.P.A.<div class="small muted">CIG 9947920348 · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>TESI - ELETTRONICA E SISTEMI INFORMATIVI - S.P.A. - SOCIETA&#39; BENE FIT, ABBREVIABILE IN TESI S.P.A. S.B.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">153 mila €</td></tr><tr data-t="trasporto e smaltimento carcasse animali diusa rendering s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>TRASPORTO E SMALTIMENTO CARCASSE ANIMALI<div class="small muted">CIG B418ED3191 · CARNE DI MONTONE</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">153 mila €</td></tr><tr data-t="adesione a convenzione aria licenze e software invisible farm invisiblefarm srl">
+      <td class="small">2023-01-31</td>
+      <td>ADESIONE A CONVENZIONE ARIA LICENZE E SOFTWARE INVISIBLE FARM<div class="small muted">CIG 96329734CB · PACCHETTI SOFTWARE IT</div></td>
+      <td>INVISIBLEFARM SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">141 mila €</td></tr><tr data-t="fornitura di un gascromatografo con sistema gc/ms con purge &amp; trap finanziata con fondi pnc agilent technologies italia  s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>FORNITURA DI UN GASCROMATOGRAFO CON SISTEMA GC/MS CON PURGE &amp; TRAP FINANZIATA CON FONDI PNC<div class="small muted">CIG A0176E3E95 · SPETTROMETRI DI MASSA</div></td>
+      <td>AGILENT TECHNOLOGIES ITALIA  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">136 mila €</td></tr><tr data-t="servizio posta ibrida: postalizzazione e recapito screening hcv poste italiane spa">
+      <td class="small">2023-08-28</td>
+      <td>SERVIZIO POSTA IBRIDA: POSTALIZZAZIONE E RECAPITO SCREENING HCV<div class="small muted">CIG A0082CD185 · SERVIZI POSTALI PER LA CORRISPONDENZA</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">133 mila €</td></tr><tr data-t="polizza rc patrimoniale ats brianza lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA RC PATRIMONIALE ATS BRIANZA<div class="small muted">CIG 9797496D75 · SERVIZI ASSICURATIVI</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="lotto 7 polizza rc patrimoniale ats bergamo ">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 7 POLIZZA RC PATRIMONIALE ATS BERGAMO<div class="small muted">CIG A0215DCECF · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="lotto 11 polizza infortuni ats pavia amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 11 POLIZZA INFORTUNI ATS PAVIA<div class="small muted">CIG A021616EAC · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="gascromatografo fondi pnc ">
+      <td class="small">2024-11-21</td>
+      <td>GASCROMATOGRAFO FONDI PNC<div class="small muted">CIG B465368324 · MACCHINE E APPARECCHI DI PROVA E MISURAZIONE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">126 mila €</td></tr><tr data-t="lotto 6 polizza libro matricola rcauto ats montagna aspevi milano s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 6 POLIZZA LIBRO MATRICOLA RCAUTO ATS MONTAGNA<div class="small muted">CIG A0215C295C · SERVIZI ASSICURATIVI</div></td>
+      <td>ASPEVI MILANO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">124 mila €</td></tr><tr data-t="noleggio veicoli in adesione a accordo quadro noleggio veicoli 2 lotto 1 leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>NOLEGGIO VEICOLI IN ADESIONE A ACCORDO QUADRO NOLEGGIO VEICOLI 2 LOTTO 1<div class="small muted">CIG 9621001D2D · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">123 mila €</td></tr><tr data-t="fornitura in opera di pensiline dotate di pannelli fotovoltaici complete di batterie di accumulo aventi potenza almeno pari a 25 kwh tedoldi ermanno s.r.l.">
+      <td class="small">2023-03-13</td>
+      <td>FORNITURA IN OPERA DI PENSILINE DOTATE DI PANNELLI FOTOVOLTAICI COMPLETE DI BATTERIE DI ACCUMULO AVENTI POTENZA ALMENO PARI A 25 KWH<div class="small muted">CIG 9680913E1F · PARTI DI APPARECCHIATURE PER LA DISTRIBUZIONE E IL CONTROLLO DELL&#39;ENERGIA ELETTRICA</div></td>
+      <td>TEDOLDI ERMANNO S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">123 mila €</td></tr><tr data-t="lotto 1 - siringhe tubercolina ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 1 - SIRINGHE TUBERCOLINA<div class="small muted">CIG 986641680C · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">122 mila €</td></tr><tr data-t="lotto 2 ditta liofilchem procedura aperta soprasoglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats della città metropolitana di milano, le ast di brescia, valpadana, bergamo, brianza e montagna,per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 2 DITTA LIOFILCHEM PROCEDURA APERTA SOPRASOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO, LE AST DI BRESCIA, VALPADANA, BERGAMO, BRIANZA E MONTAGNA,PER 36 MESI<div class="small muted">CIG A05EF53A08 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">121 mila €</td></tr><tr data-t="fornitura in opera di scaffalature compatibili per l&#39;archiviazione cartacea, presso la sede legale dell&#39;ats di brescia la tecnica di preti giorgio e fratelli s.n.c.">
+      <td class="small">2023-10-10</td>
+      <td>FORNITURA IN OPERA DI SCAFFALATURE COMPATIBILI PER L&#39;ARCHIVIAZIONE CARTACEA, PRESSO LA SEDE LEGALE DELL&#39;ATS DI BRESCIA<div class="small muted">CIG A01B7DEE38 · SISTEMI DI ARCHIVIAZIONE</div></td>
+      <td>LA TECNICA DI PRETI GIORGIO E FRATELLI S.N.C.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">120 mila €</td></tr><tr data-t="lotto 8 polizza infortuni ats della città metropolitana di milano s.a.g. soluzioni assicurative globali s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 8 POLIZZA INFORTUNI ATS DELLA CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A0215E998B · SERVIZI ASSICURATIVI</div></td>
+      <td>S.A.G. SOLUZIONI ASSICURATIVE GLOBALI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">117 mila €</td></tr><tr data-t="proroga contratto quadro opa spc2 al 31.12.2024 vodafone spa">
+      <td class="small">2024-01-01</td>
+      <td>PROROGA CONTRATTO QUADRO OPA SPC2 AL 31.12.2024<div class="small muted">CIG A02AB4AF02 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">116 mila €</td></tr><tr data-t="lotto 2 congelatori, frigoriferi, incubatori tecno - lab  s.r.l.">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 2 CONGELATORI, FRIGORIFERI, INCUBATORI<div class="small muted">CIG 9722485070 · STRUMENTI E APPARECCHI DI REGOLAZIONE E CONTROLLO</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">111 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia in.pro.ma. - industria produzione mangimi s.r.l. siglabile in.pro.ma s.r.l.">
+      <td class="small">2023-09-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A0294DCC90 · SERVIZI ZOOLOGICI</div></td>
+      <td>IN.PRO.MA. - INDUSTRIA PRODUZIONE MANGIMI S.R.L. SIGLABILE IN.PRO.MA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">111 mila €</td></tr><tr data-t="polizza infortuni ats brescia axa assicurazioni spa">
+      <td class="small">2023-06-29</td>
+      <td>POLIZZA INFORTUNI ATS BRESCIA<div class="small muted">CIG 9923809A3F · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">111 mila €</td></tr><tr data-t="polizza rc patrimoniale ats insubria lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA RC PATRIMONIALE ATS INSUBRIA<div class="small muted">CIG 9797543441 · SERVIZI ASSICURATIVI</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">111 mila €</td></tr><tr data-t="servizio di digitalizzazione dei procdimenti amministrativi e contabili alla società enterprise service italia s.r.l. ">
+      <td class="small">2023-10-06</td>
+      <td>SERVIZIO DI DIGITALIZZAZIONE DEI PROCDIMENTI AMMINISTRATIVI E CONTABILI ALLA SOCIETÀ ENTERPRISE SERVICE ITALIA S.R.L.<div class="small muted">CIG A01A84E687 · SISTEMI OPERATIVI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">110 mila €</td></tr><tr data-t="nuova adesione convenzione arca_2019_120 lotto n. 3 per n. 3 assistenti tecnici gi group s.p.a.">
+      <td class="small">2023-08-22</td>
+      <td>NUOVA ADESIONE CONVENZIONE ARCA_2019_120 LOTTO N. 3 PER N. 3 ASSISTENTI TECNICI<div class="small muted">CIG A002BAA931 · SERVIZI DI FORNITURA DI PERSONALE, COMPRESO PERSONALE TEMPORANEO</div></td>
+      <td>GI GROUP S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">110 mila €</td></tr><tr data-t="adesione alla proroga convenzione disposta da consip s.p.a. con fastweb s.p.a. per servizi di telefonia fissa dal 03.10.23 al 31.12.2024 fastweb spa">
+      <td class="small">2023-10-03</td>
+      <td>ADESIONE ALLA PROROGA CONVENZIONE DISPOSTA DA CONSIP S.P.A. CON FASTWEB S.P.A. PER SERVIZI DI TELEFONIA FISSA DAL 03.10.23 AL 31.12.2024<div class="small muted">CIG A00F8BE591 · RETE DI TELECOMUNICAZIONI</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">105 mila €</td></tr><tr data-t="affidamento del servizio di assistenza e manutenzione evolutiva/straordinaria - ditta tekne - 2023-2026 tekne s.r.l.">
+      <td class="small">2023-03-14</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI ASSISTENZA E MANUTENZIONE EVOLUTIVA/STRAORDINARIA - DITTA TEKNE - 2023-2026<div class="small muted">CIG 9710758302 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>TEKNE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">104 mila €</td></tr><tr data-t="adesione a accordo quadro &#39;servizi di gestione e manutenzione di sistemi ip e postazioni di lavoro per le pubblica amministrazioni - lotto 2&#39; maticmind s.p.a.">
+      <td class="small">2023-08-11</td>
+      <td>ADESIONE A ACCORDO QUADRO &#39;SERVIZI DI GESTIONE E MANUTENZIONE DI SISTEMI IP E POSTAZIONI DI LAVORO PER LE PUBBLICA AMMINISTRAZIONI - LOTTO 2&#39;<div class="small muted">CIG A0037A7DCE · MANUTENZIONE E RIPARAZIONE DI ATTREZZATURA INFORMATICA</div></td>
+      <td>MATICMIND S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">102 mila €</td></tr><tr data-t="conservazione digitale aruba posta elettronica certificata s.p.a. in sigla  aruba pec s.p.a.">
+      <td class="small">2024-09-17</td>
+      <td>CONSERVAZIONE DIGITALE<div class="small muted">CIG B31200F928 · SERVIZI DI GESTIONE DOCUMENTI</div></td>
+      <td>ARUBA POSTA ELETTRONICA CERTIFICATA S.P.A. IN SIGLA  ARUBA PEC S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">98 mila €</td></tr><tr data-t="polizza kasko ats insubria lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA KASKO ATS INSUBRIA<div class="small muted">CIG 9797554D52 · SERVIZI ASSICURATIVI</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">98 mila €</td></tr><tr data-t="polizza infortuni ats brianza ">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS BRIANZA<div class="small muted">CIG 9797480045 · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">98 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia in.pro.ma. - industria produzione mangimi s.r.l. siglabile in.pro.ma s.r.l.">
+      <td class="small">2023-09-01</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A0293DDA22 · SERVIZI ZOOLOGICI</div></td>
+      <td>IN.PRO.MA. - INDUSTRIA PRODUZIONE MANGIMI S.R.L. SIGLABILE IN.PRO.MA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">95 mila €</td></tr><tr data-t="membrane microporose sartorius italy s.r.l.">
+      <td class="small">2024-05-21</td>
+      <td>MEMBRANE MICROPOROSE<div class="small muted">CIG B1C513D461 · Cpv prevalente non disponibile</div></td>
+      <td>SARTORIUS ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">91 mila €</td></tr><tr data-t="servizio idrico anno 2023 a2a a2a ciclo idrico spa">
+      <td class="small">2023-02-03</td>
+      <td>SERVIZIO IDRICO ANNO 2023 A2A<div class="small muted">CIG 96383688E2 · EROGAZIONE DI ACQUA</div></td>
+      <td>A2A CICLO IDRICO SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">90 mila €</td></tr><tr data-t="giornate manutenzione software ditta invisible 2023-2025 invisiblefarm srl">
+      <td class="small">2023-02-03</td>
+      <td>GIORNATE MANUTENZIONE SOFTWARE DITTA INVISIBLE 2023-2025<div class="small muted">CIG 964026130B · SERVIZI DI ASSISTENZA INFORMATICA PER COMPUTER</div></td>
+      <td>INVISIBLEFARM SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">90 mila €</td></tr><tr data-t="polizza kasko ats brianza balcia insurance se">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA KASKO ATS BRIANZA<div class="small muted">CIG 9797510904 · SERVIZI ASSICURATIVI</div></td>
+      <td>BALCIA INSURANCE SE</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">85 mila €</td></tr><tr data-t="acquisto di quattro autovetture elettriche con fondi pnc fratelli lombatti societa&#39; per azioni (brevemente f.lli lombatti s.p.a.)">
+      <td class="small">2023-03-14</td>
+      <td>ACQUISTO DI QUATTRO AUTOVETTURE ELETTRICHE CON FONDI PNC<div class="small muted">CIG 96871010A3 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>FRATELLI LOMBATTI SOCIETA&#39; PER AZIONI (BREVEMENTE F.LLI LOMBATTI S.P.A.)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">82 mila €</td></tr><tr data-t="polizza rc patrimoniale 31.12.2023 - 31.12.2026 lloyd&#39;s insurance company s.a.">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA RC PATRIMONIALE 31.12.2023 - 31.12.2026<div class="small muted">CIG A040FF2178 · SERVIZI ASSICURATIVI</div></td>
+      <td>LLOYD&#39;S INSURANCE COMPANY S.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">82 mila €</td></tr><tr data-t="acquisizione di un applicativo web per la gestione informatizzata delle attività di controllo sul personale operante delle farmacie e parafarmacie ats brescia data solution provider s.r.l.  siglabile dsp s.r.l.">
+      <td class="small">2023-09-01</td>
+      <td>ACQUISIZIONE DI UN APPLICATIVO WEB PER LA GESTIONE INFORMATIZZATA DELLE ATTIVITÀ DI CONTROLLO SUL PERSONALE OPERANTE DELLE FARMACIE E PARAFARMACIE ATS BRESCIA<div class="small muted">CIG 989270131F · SISTEMI DI BASE DATI</div></td>
+      <td>DATA SOLUTION PROVIDER S.R.L.  SIGLABILE DSP S.R.L.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">81 mila €</td></tr><tr data-t="lotto 4 polizza infortuni ats brianza leonardo assicurazioni s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 4 POLIZZA INFORTUNI ATS BRIANZA<div class="small muted">CIG A0215A1E1F · SERVIZI ASSICURATIVI</div></td>
+      <td>LEONARDO ASSICURAZIONI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">78 mila €</td></tr><tr data-t="lotto 12 polizza libro matricola rcauto ats pavia aspevi milano s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 12 POLIZZA LIBRO MATRICOLA RCAUTO ATS PAVIA<div class="small muted">CIG A02162E27E · SERVIZI ASSICURATIVI</div></td>
+      <td>ASPEVI MILANO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">78 mila €</td></tr><tr data-t="telefonia fissa fastweb spa">
+      <td class="small">2024-12-11</td>
+      <td>TELEFONIA FISSA<div class="small muted">CIG B4C1829B09 · RETE DI TELECOMUNICAZIONI</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">78 mila €</td></tr><tr data-t="lotto 9 - bottiglie sterili con visore laboindustria s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 9 - BOTTIGLIE STERILI CON VISORE<div class="small muted">CIG 98668985CF · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">76 mila €</td></tr><tr data-t="noleggio veicoli in adesione a accordo quadro noleggio veicoli 2 lotto 4 leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>NOLEGGIO VEICOLI IN ADESIONE A ACCORDO QUADRO NOLEGGIO VEICOLI 2 LOTTO 4<div class="small muted">CIG 9621425B13 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">76 mila €</td></tr><tr data-t="adesione al contratto quadro opa -spc2, stipulato tra consip spa e rti vodafone omnitel nv - ericsson spa relativo ai servizi di connettività e sicurezza nell&#39;ambito del sistema pubblico di connettività, per il periodo 25.05.2017 - 24.05.2023. proroga al 31.12.2023 ericsson telecomunicazioni spa">
+      <td class="small">2023-04-28</td>
+      <td>ADESIONE AL CONTRATTO QUADRO OPA -SPC2, STIPULATO TRA CONSIP SPA E RTI VODAFONE OMNITEL NV - ERICSSON SPA RELATIVO AI SERVIZI DI CONNETTIVITÀ E SICUREZZA NELL&#39;AMBITO DEL SISTEMA PUBBLICO DI CONNETTIVITÀ, PER IL PERIODO 25.05.2017 - 24.05.2023. PROROGA AL 31.12.2023<div class="small muted">CIG 97979460D3 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>ERICSSON TELECOMUNICAZIONI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">75 mila €</td></tr><tr data-t="servizi di connettività vodafone italia s.p.a.">
+      <td class="small">2024-11-27</td>
+      <td>SERVIZI DI CONNETTIVITÀ<div class="small muted">CIG B47A2ABDCF · SERVIZI DI TELECOMUNICAZIONE</div></td>
+      <td>VODAFONE ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">75 mila €</td></tr><tr data-t="adesione a rinnovo convenzione aria_159r ditta pgmd p.g.m.d. consulting s.r.l.">
+      <td class="small">2023-04-05</td>
+      <td>ADESIONE A RINNOVO CONVENZIONE ARIA_159R DITTA PGMD<div class="small muted">CIG 976208468F · PACCHETTI SOFTWARE IT</div></td>
+      <td>P.G.M.D. CONSULTING S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">75 mila €</td></tr><tr data-t="giornate di manutenzione evolutiva ditta gpi anni 2023-2024-2025 gpi s.p.a.">
+      <td class="small">2023-05-11</td>
+      <td>GIORNATE DI MANUTENZIONE EVOLUTIVA DITTA GPI ANNI 2023-2024-2025<div class="small muted">CIG 97958807E6 · SERVIZI DI ASSISTENZA INFORMATICA PER COMPUTER</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">74 mila €</td></tr><tr data-t="nuovo cluster di firewall tim s.p.a.">
+      <td class="small">2024-09-27</td>
+      <td>NUOVO CLUSTER DI FIREWALL<div class="small muted">CIG B336657CA8 · APPARECCHIATURE DI RETE</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">71 mila €</td></tr><tr data-t="polizza rcauto 31.12.2023 - 31.12.2026 vittoria assicurazioni spa">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA RCAUTO 31.12.2023 - 31.12.2026<div class="small muted">CIG A04100839F · SERVIZI ASSICURATIVI</div></td>
+      <td>VITTORIA ASSICURAZIONI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">71 mila €</td></tr><tr data-t="noleggeggio n. 8 veicoli fiat panda- accordo quadro veicoli a noleggio 2 leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2024-01-01</td>
+      <td>NOLEGGEGGIO N. 8 VEICOLI FIAT PANDA- ACCORDO QUADRO VEICOLI A NOLEGGIO 2<div class="small muted">CIG A011CADCD0 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">71 mila €</td></tr><tr data-t="arca_2019_120, lot. 3, proroga due interinali per 10 mesi randstad italia spa">
+      <td class="small">2024-10-03</td>
+      <td>ARCA_2019_120, LOT. 3, PROROGA DUE INTERINALI PER 10 MESI<div class="small muted">CIG B34D44CBF7 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">68 mila €</td></tr><tr data-t="polizza kasko 31.12.2023 - 31.12.2026 aig europe s.a. rappresentanza generale per lu2019italia">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA KASKO 31.12.2023 - 31.12.2026<div class="small muted">CIG A041000D02 · SERVIZI ASSICURATIVI</div></td>
+      <td>AIG Europe S.A. Rappresentanza Generale per lu2019Italia</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">67 mila €</td></tr><tr data-t="adesione a convenzione aria_2020_147 servizi postali selecta industrial operations s.p.a.">
+      <td class="small">2023-12-15</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2020_147 SERVIZI POSTALI<div class="small muted">CIG A02DDEC799 · SERVIZI CONNESSI ALLA STAMPA</div></td>
+      <td>SELECTA INDUSTRIAL OPERATIONS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">67 mila €</td></tr><tr data-t="polizza libro matricola rcauto ats insubria hdi assicurazioni s.p.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA LIBRO MATRICOLA RCAUTO ATS INSUBRIA<div class="small muted">CIG 9797560249 · SERVIZI ASSICURATIVI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">65 mila €</td></tr><tr data-t="affidamento diretto servizi postali poste italiane">
+      <td class="small">2023-01-26</td>
+      <td>AFFIDAMENTO DIRETTO SERVIZI POSTALI<div class="small muted">CIG 9622473BE9 · SERVIZI POSTALI</div></td>
+      <td>POSTE ITALIANE</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">62 mila €</td></tr><tr data-t="vestiario - lotto 5 o.pi.vi. s.r.l.">
+      <td class="small">2024-02-12</td>
+      <td>VESTIARIO - LOTTO 5<div class="small muted">CIG A05180B22E · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">61 mila €</td></tr><tr data-t="servizi di stampa, editoria, tipografia di prodotti di cartotecnica, stampati e modulistica satip s.r.l.">
+      <td class="small">2023-02-16</td>
+      <td>SERVIZI DI STAMPA, EDITORIA, TIPOGRAFIA DI PRODOTTI DI CARTOTECNICA, STAMPATI E MODULISTICA<div class="small muted">CIG 965199456B · SERVIZI DI STAMPA</div></td>
+      <td>SATIP S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">60 mila €</td></tr><tr data-t="realizzazione corsi formazione psal dgr 438/23 aifos service - societa&#39; cooperativa">
+      <td class="small">2024-10-03</td>
+      <td>REALIZZAZIONE CORSI FORMAZIONE PSAL DGR 438/23<div class="small muted">CIG B34AF03730 · SERVIZI DI FORNITURA DI LAVORATORI PER IL COMMERCIO O L&#39;INDUSTRIA</div></td>
+      <td>AIFOS SERVICE - SOCIETA&#39; COOPERATIVA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">60 mila €</td></tr><tr data-t="lotto 4 - contenitori aptaca s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 4 - CONTENITORI<div class="small muted">CIG 98666812BD · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>APTACA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">59 mila €</td></tr><tr data-t="programma educazione tra pari fondazione poliambulanza">
+      <td class="small">2024-10-21</td>
+      <td>PROGRAMMA EDUCAZIONE TRA PARI<div class="small muted">CIG B3EB45E6C1 · SERVIZI SANITARI E DI ASSISTENZA SOCIALE</div></td>
+      <td>FONDAZIONE POLIAMBULANZA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">58 mila €</td></tr><tr data-t="trasporto e smaltimento carcasse gastoldi e ferri diusa rendering s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>TRASPORTO E SMALTIMENTO CARCASSE GASTOLDI E FERRI<div class="small muted">CIG B419D08AE7 · CARNE DI MONTONE</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">55 mila €</td></tr><tr data-t="adesione a convenzione aria licenze e software studiosoft studiosoft informatica s.r.l.">
+      <td class="small">2023-01-31</td>
+      <td>ADESIONE A CONVENZIONE ARIA LICENZE E SOFTWARE STUDIOSOFT<div class="small muted">CIG 9633136B4C · PACCHETTI SOFTWARE IT</div></td>
+      <td>STUDIOSOFT INFORMATICA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">54 mila €</td></tr><tr data-t="fornitura in opera di n. 2 colonnine di ricarica ">
+      <td class="small">2023-03-13</td>
+      <td>FORNITURA IN OPERA DI N. 2 COLONNINE DI RICARICA<div class="small muted">CIG 9677907D7E · PARTI DI APPARECCHIATURE PER LA DISTRIBUZIONE E IL CONTROLLO DELL&#39;ENERGIA ELETTRICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">53 mila €</td></tr><tr data-t="fornitura, installazione e realizzazione colonnine finanziata con pnc sagredo engineering s.r.l.">
+      <td class="small">2023-05-25</td>
+      <td>FORNITURA, INSTALLAZIONE E REALIZZAZIONE COLONNINE FINANZIATA CON PNC<div class="small muted">CIG 9825538276 · APPARECCHI ED ACCESSORI ELETTRICI</div></td>
+      <td>SAGREDO ENGINEERING S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">53 mila €</td></tr><tr data-t="fornitura di gas tecnici ">
+      <td class="small">2024-09-05</td>
+      <td>FORNITURA DI GAS TECNICI<div class="small muted">CIG B2F2A975EF · GAS MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">50 mila €</td></tr><tr data-t="autoclave per laboratorio pnc steel &amp; power s.r.l.">
+      <td class="small">2024-11-05</td>
+      <td>AUTOCLAVE PER LABORATORIO PNC<div class="small muted">CIG B420EE6241 · MACCHINE E APPARECCHI DI PROVA E MISURAZIONE</div></td>
+      <td>STEEL &amp; POWER S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">49 mila €</td></tr><tr data-t="lotto 5 polizza infortuni ats montagna s.a.g. soluzioni assicurative globali s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 5 POLIZZA INFORTUNI ATS MONTAGNA<div class="small muted">CIG A0215B3CFA · SERVIZI ASSICURATIVI</div></td>
+      <td>S.A.G. SOLUZIONI ASSICURATIVE GLOBALI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">49 mila €</td></tr><tr data-t="sanità sigitale - sistemi informativi - oslo 01/04/23- 31/10/23 oslo s.r.l.">
+      <td class="small">2023-11-01</td>
+      <td>SANITÀ SIGITALE - SISTEMI INFORMATIVI - OSLO 01/04/23- 31/10/23<div class="small muted">CIG A03291E534 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>OSLO S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">44 mila €</td></tr><tr data-t="adesione a convenzione aria_2021_012 lotto 1 - carta in risme valsecchi cancelleria s.r.l.">
+      <td class="small">2023-11-24</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2021_012 LOTTO 1 - CARTA IN RISME<div class="small muted">CIG A02D706640 · CARTA PER FOTOCOPIE</div></td>
+      <td>VALSECCHI CANCELLERIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">44 mila €</td></tr><tr data-t="adesione a convenzione aria_2021_012 lotto 3 - cancelleria tradizionale ed ecologica errebian s.p.a.">
+      <td class="small">2023-11-24</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2021_012 LOTTO 3 - CANCELLERIA TRADIZIONALE ED ECOLOGICA<div class="small muted">CIG A02D7141CF · ARTICOLI DI CANCELLERIA ED ALTRI ARTICOLI DI CARTA</div></td>
+      <td>ERREBIAN S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">40 mila €</td></tr><tr data-t="fornitura di uno spettrofotometro uv e di un mineralizzatore a microonde ">
+      <td class="small">2023-03-23</td>
+      <td>FORNITURA DI UNO SPETTROFOTOMETRO UV E DI UN MINERALIZZATORE A MICROONDE<div class="small muted">CIG 9705957917 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">37 mila €</td></tr><tr data-t="fornitura di uno spettrofotometro uv e di un mineralizzatore a microonde fkv s.r.l.">
+      <td class="small">2023-05-23</td>
+      <td>FORNITURA DI UNO SPETTROFOTOMETRO UV E DI UN MINERALIZZATORE A MICROONDE<div class="small muted">CIG 9825569C08 · STRUMENTI DI MISURA</div></td>
+      <td>FKV S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">37 mila €</td></tr><tr data-t="servizio dpo per 36 mesi lta s.r.l.">
+      <td class="small">2024-06-12</td>
+      <td>SERVIZIO DPO PER 36 MESI<div class="small muted">CIG B2114D3386 · SERVIZI DI CONSULENZA PER LO SVILUPPO COMMERCIALE</div></td>
+      <td>LTA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">36 mila €</td></tr><tr data-t="fornitura di una piattaforma gis comprendente tre postazioni software e una licenza server finanziata con fondi pnc one team  s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>FORNITURA DI UNA PIATTAFORMA GIS COMPRENDENTE TRE POSTAZIONI SOFTWARE E UNA LICENZA SERVER FINANZIATA CON FONDI PNC<div class="small muted">CIG 9908318AAB · PACCHETTI SOFTWARE DI CARTOGRAFIA</div></td>
+      <td>ONE TEAM  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">36 mila €</td></tr><tr data-t="servizio di brokeraggio assicurativo aon spa">
+      <td class="small">2024-06-19</td>
+      <td>SERVIZIO DI BROKERAGGIO ASSICURATIVO<div class="small muted">CIG B2296781F9 · SERVIZI DI INTERMEDIAZIONE ASSICURATIVA</div></td>
+      <td>AON SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">36 mila €</td></tr><tr data-t="adesione aria_2023_056 coadiutore amm.vo senior randstad italia spa">
+      <td class="small">2024-10-28</td>
+      <td>ADESIONE ARIA_2023_056 COADIUTORE AMM.VO SENIOR<div class="small muted">CIG B406EEBB17 · SERVIZI GOVERNATIVI</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">34 mila €</td></tr><tr data-t="adesione gara aggregata ats milano bottiglie campionam. lab. lotto 2 2025-26 operatore individuale (persona fisica)">
+      <td class="small">2024-11-18</td>
+      <td>ADESIONE GARA AGGREGATA ATS MILANO BOTTIGLIE CAMPIONAM. LAB. LOTTO 2 2025-26<div class="small muted">CIG B45395A0DE · ARTICOLI DI VETRO PER USO FARMACEUTICO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">33 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_014 per la realizzazione di un video afferente alle attività della sc psal ab comunicazioni s.r.l.">
+      <td class="small">2024-08-02</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_014 PER LA REALIZZAZIONE DI UN VIDEO AFFERENTE ALLE ATTIVITÀ DELLA SC PSAL<div class="small muted">CIG B2AFA91C86 · SERVIZI DI ORGANIZZAZIONE DI EVENTI</div></td>
+      <td>AB COMUNICAZIONI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">32 mila €</td></tr><tr data-t="lotto disabili sensoriali ats brescia ">
+      <td class="small">2023-11-30</td>
+      <td>LOTTO DISABILI SENSORIALI ATS BRESCIA<div class="small muted">CIG A035808C29 · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">30 mila €</td></tr><tr data-t="lotto disabili sensoriali ats montagna ">
+      <td class="small">2023-11-30</td>
+      <td>LOTTO DISABILI SENSORIALI ATS MONTAGNA<div class="small muted">CIG A03581788B · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">30 mila €</td></tr><tr data-t="rinnovo adesione arca_2016_109 sevizio gestione informatizzata risorse umane ">
+      <td class="small">2023-06-13</td>
+      <td>RINNOVO ADESIONE ARCA_2016_109 SEVIZIO GESTIONE INFORMATIZZATA RISORSE UMANE<div class="small muted">CIG 9833532750 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE APPLICATIVI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="programma regionale life skills training ">
+      <td class="small">2024-10-21</td>
+      <td>PROGRAMMA REGIONALE LIFE SKILLS TRAINING<div class="small muted">CIG B3EB45D5EE · SERVIZI SANITARI E DI ASSISTENZA SOCIALE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">28 mila €</td></tr><tr data-t="tosatrici e materiale vario - lotto 13 ">
+      <td class="small">2024-02-12</td>
+      <td>TOSATRICI E MATERIALE VARIO - LOTTO 13<div class="small muted">CIG A0518748D2 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">27 mila €</td></tr><tr data-t="igienizzazione bagni ats brescia tabby&#39;s s.r.l.">
+      <td class="small">2024-07-11</td>
+      <td>IGIENIZZAZIONE BAGNI ATS BRESCIA<div class="small muted">CIG B0BFC38B09 · Cpv prevalente non disponibile</div></td>
+      <td>TABBY&#39;S S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">26 mila €</td></tr><tr data-t="sacchi e sacchetti - lotto 3 ">
+      <td class="small">2024-02-12</td>
+      <td>SACCHI E SACCHETTI - LOTTO 3<div class="small muted">CIG A051364B53 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">25 mila €</td></tr><tr data-t="polizza infortuni ats insubria axa assicurazioni spa">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS INSUBRIA<div class="small muted">CIG 9797535DA4 · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">25 mila €</td></tr><tr data-t="lotto 10 - materiale vario veterinario ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 10 - MATERIALE VARIO VETERINARIO<div class="small muted">CIG 9866947E3C · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">25 mila €</td></tr><tr data-t="attività informazione gap anziani la nuvola nel sacco - societa&#39; cooperativa sociale">
+      <td class="small">2024-10-21</td>
+      <td>ATTIVITÀ INFORMAZIONE GAP ANZIANI<div class="small muted">CIG B3EB45C51B · SERVIZI SANITARI E DI ASSISTENZA SOCIALE</div></td>
+      <td>LA NUVOLA NEL SACCO - SOCIETA&#39; COOPERATIVA SOCIALE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">22 mila €</td></tr><tr data-t="mat consumo icp ms 24 antec">
+      <td class="small">2024-05-29</td>
+      <td>MAT CONSUMO ICP MS 24<div class="small muted">CIG B1E08DF048 · APPARECCHI PER ANALISI</div></td>
+      <td>ANTEC</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">21 mila €</td></tr><tr data-t="aghi, provette e tamponi - lotto 8 ">
+      <td class="small">2024-02-12</td>
+      <td>AGHI, PROVETTE E TAMPONI - LOTTO 8<div class="small muted">CIG A05184E976 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">20 mila €</td></tr><tr data-t="adesione convenz.aria_2023_051 lot 1) servizio di stampa infolio societa&#39; consortile a responsabilita&#39; limitata">
+      <td class="small">2024-12-05</td>
+      <td>ADESIONE CONVENZ.ARIA_2023_051 LOT 1) SERVIZIO DI STAMPA<div class="small muted">CIG B4A54F0EB0 · SERVIZI DI COMPOSIZIONE TIPOGRAFICA</div></td>
+      <td>INFOLIO SOCIETA&#39; CONSORTILE A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="fornitura di nuovi switch per centro stella vodafone spa">
+      <td class="small">2024-08-13</td>
+      <td>FORNITURA DI NUOVI SWITCH PER CENTRO STELLA<div class="small muted">CIG B2C819ADC8 · RETE DI TELECOMUNICAZIONI</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="scatole portaprovette - lotto 6 ">
+      <td class="small">2024-02-12</td>
+      <td>SCATOLE PORTAPROVETTE - LOTTO 6<div class="small muted">CIG A05183225D · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">20 mila €</td></tr><tr data-t="consolidamento e centralizzazione piani terapeutici on line p.g.m.d. consulting s.r.l.">
+      <td class="small">2024-06-27</td>
+      <td>CONSOLIDAMENTO E CENTRALIZZAZIONE PIANI TERAPEUTICI ON LINE<div class="small muted">CIG B175B9B86F · Cpv prevalente non disponibile</div></td>
+      <td>P.G.M.D. CONSULTING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="trasporto e smaltimento carcasse eco rendering eco rendering s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>TRASPORTO E SMALTIMENTO CARCASSE ECO RENDERING<div class="small muted">CIG B419A4A799 · CARNE DI MONTONE</div></td>
+      <td>ECO RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="arca_2019_120, lot. 3 proroga interinale 03.10.24-02.04.25 randstad italia spa">
+      <td class="small">2024-09-04</td>
+      <td>ARCA_2019_120, LOT. 3 PROROGA INTERINALE 03.10.24-02.04.25<div class="small muted">CIG B2EE7E6CD7 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="radiologico ">
+      <td class="small">2024-12-12</td>
+      <td>RADIOLOGICO<div class="small muted">CIG B4C57EC934 · IMMAGINOGRAFIA AD USO MEDICO, DENTISTICO E VETERINARIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">18 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia solar srl">
+      <td class="small">2023-09-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A0295A5272 · SERVIZI ZOOLOGICI</div></td>
+      <td>SOLAR SRL</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">16 mila €</td></tr><tr data-t="convenzione arca_2019_120, lot. 3 proroga interinale 11.09.24-31.01.25 randstad italia spa">
+      <td class="small">2024-08-19</td>
+      <td>CONVENZIONE ARCA_2019_120, LOT. 3 PROROGA INTERINALE 11.09.24-31.01.25<div class="small muted">CIG B2CADA3491 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">16 mila €</td></tr><tr data-t="lotto 12 - spugnette campionamento ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 12 - SPUGNETTE CAMPIONAMENTO<div class="small muted">CIG 9872194834 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mila €</td></tr><tr data-t="servizi legali avv. francesco luppi_ottobre 2024 operatore individuale (persona fisica)">
+      <td class="small">2024-11-04</td>
+      <td>SERVIZI LEGALI AVV. FRANCESCO LUPPI_OTTOBRE 2024<div class="small muted">CIG B413D4EBE9 · SERVIZI DI RAPPRESENTANZA LEGALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="affidamento incarico collaudatore tecnico-amministrativo in corso d&#39;opera ed.10 operatore individuale (persona fisica)">
+      <td class="small">2024-12-31</td>
+      <td>AFFIDAMENTO INCARICO COLLAUDATORE TECNICO-AMMINISTRATIVO IN CORSO D&#39;OPERA ED.10<div class="small muted">CIG B48199A37B · SERVIZI DI COLLAUDO TECNICO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="servizio lavanolo dal 01.04.2024 al 31.12.2024 operatore individuale (persona fisica)">
+      <td class="small">2024-04-09</td>
+      <td>SERVIZIO LAVANOLO DAL 01.04.2024 AL 31.12.2024<div class="small muted">CIG B11F1D7686 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">14 mila €</td></tr><tr data-t="fili di sutura - lotto 11 ">
+      <td class="small">2024-02-12</td>
+      <td>FILI DI SUTURA - LOTTO 11<div class="small muted">CIG A05186A094 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">14 mila €</td></tr><tr data-t="lotto 1 lavavetrerie per laboratorio smeg spa">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 1 LAVAVETRERIE PER LABORATORIO<div class="small muted">CIG 9722468268 · APPARECCHI PER ANALISI E RIVELAZIONE</div></td>
+      <td>SMEG SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">12 mila €</td></tr><tr data-t="prodotti lal test operatore individuale (persona fisica)">
+      <td class="small">2024-06-07</td>
+      <td>PRODOTTI LAL TEST<div class="small muted">CIG B200E183A4 · REATTIVI PER LABORATORIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">12 mila €</td></tr><tr data-t="sacchetti antimanomissione - lotto 7 ">
+      <td class="small">2024-02-12</td>
+      <td>SACCHETTI ANTIMANOMISSIONE - LOTTO 7<div class="small muted">CIG A05183767C · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">12 mila €</td></tr><tr data-t="adesione gara ats milano bottiglie lab. lot.3 25-26 laboindustria s.p.a.">
+      <td class="small">2024-11-18</td>
+      <td>ADESIONE GARA ATS MILANO BOTTIGLIE LAB. LOT.3 25-26<div class="small muted">CIG B453C25EE3 · ARTICOLI DI VETRO PER USO FARMACEUTICO</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">12 mila €</td></tr><tr data-t="materiale chirurgico- lotto 14 ">
+      <td class="small">2024-02-12</td>
+      <td>MATERIALE CHIRURGICO- LOTTO 14<div class="small muted">CIG A0518B80F2 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">11 mila €</td></tr><tr data-t="lotto 72 ditta microbiol srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 72 DITTA MICROBIOL SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F0AA517 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">11 mila €</td></tr><tr data-t="campionatore personale - basi flussi (uni en 1232:1999) + accessori (caricabatterie, tubo, portacampionatore) con selettori e calibratore tecno - lab  s.r.l.">
+      <td class="small">2023-03-16</td>
+      <td>CAMPIONATORE PERSONALE - BASI FLUSSI (UNI EN 1232:1999) + ACCESSORI (CARICABATTERIE, TUBO, PORTACAMPIONATORE) CON SELETTORI E CALIBRATORE<div class="small muted">CIG 97074644B6 · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">11 mila €</td></tr><tr data-t="misuratore short term radon portatili/tascabili per analisi in contemporanea anche su più ambienti ">
+      <td class="small">2023-03-16</td>
+      <td>MISURATORE SHORT TERM RADON PORTATILI/TASCABILI PER ANALISI IN CONTEMPORANEA ANCHE SU PIÙ AMBIENTI<div class="small muted">CIG 9707458FBF · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">11 mila €</td></tr><tr data-t="misuratore short term radon portatili/tascabili per analisi in contemporanea anche su più ambienti ap sistemi di maci paolo e carbone alessandro s.n.c.">
+      <td class="small">2023-06-09</td>
+      <td>MISURATORE SHORT TERM RADON PORTATILI/TASCABILI PER ANALISI IN CONTEMPORANEA ANCHE SU PIÙ AMBIENTI<div class="small muted">CIG 9847755083 · STRUMENTI DI MISURA</div></td>
+      <td>AP SISTEMI DI MACI PAOLO E CARBONE ALESSANDRO S.N.C.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">11 mila €</td></tr><tr data-t="procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per un periodo di 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER UN PERIODO DI 36 MESI<div class="small muted">CIG A05EF210C8 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">10 mila €</td></tr><tr data-t="servizio di lavori vari su alberature termoidraulica carlone di lorenzo carlone">
+      <td class="small">2024-03-11</td>
+      <td>SERVIZIO DI LAVORI VARI SU ALBERATURE<div class="small muted">CIG B0BFF03913 · Cpv prevalente non disponibile</div></td>
+      <td>TERMOIDRAULICA CARLONE DI LORENZO CARLONE</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 mila €</td></tr><tr data-t="fornitura di metano per autotrazione future fuels srl">
+      <td class="small">2024-12-20</td>
+      <td>FORNITURA DI METANO PER AUTOTRAZIONE<div class="small muted">CIG B4480FDCA8 · PETROLIO E DISTILLATI</div></td>
+      <td>FUTURE FUELS SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 mila €</td></tr><tr data-t="generatore di idrogeno analytical technology s.r.l.">
+      <td class="small">2024-12-20</td>
+      <td>GENERATORE DI IDROGENO<div class="small muted">CIG B44D4EF2C7 · CONTATORI BETA</div></td>
+      <td>ANALYTICAL TECHNOLOGY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mila €</td></tr><tr data-t="fornitura e montaggio di veneziane e zanzariere per uffici ats di brescia micheletti francesco di micheletti giovanni &amp; c. s.a.s.">
+      <td class="small">2024-05-17</td>
+      <td>FORNITURA E MONTAGGIO DI VENEZIANE E ZANZARIERE PER UFFICI ATS DI BRESCIA<div class="small muted">CIG B1B3D36B6B · VENEZIANE</div></td>
+      <td>MICHELETTI FRANCESCO DI MICHELETTI GIOVANNI &amp; C. S.A.S.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mila €</td></tr><tr data-t="misuratore short term livelli radon di alta precisione ">
+      <td class="small">2023-03-16</td>
+      <td>MISURATORE SHORT TERM LIVELLI RADON DI ALTA PRECISIONE<div class="small muted">CIG 9707455D46 · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">9 mila €</td></tr><tr data-t="misuratore short term livelli radon di alta precisione bertin italia s.r.l.">
+      <td class="small">2023-06-09</td>
+      <td>MISURATORE SHORT TERM LIVELLI RADON DI ALTA PRECISIONE<div class="small muted">CIG 9847745840 · STRUMENTI DI MISURA</div></td>
+      <td>BERTIN ITALIA S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">9 mila €</td></tr><tr data-t="prodotti lal test operatore individuale (persona fisica)">
+      <td class="small">2024-04-15</td>
+      <td>PRODOTTI LAL TEST<div class="small muted">CIG B13D25BF3A · REATTIVI PER LABORATORIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">9 mila €</td></tr><tr data-t="bottiglie sterili con visore - lotto 9 ">
+      <td class="small">2024-02-12</td>
+      <td>BOTTIGLIE STERILI CON VISORE - LOTTO 9<div class="small muted">CIG A051863ACA · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">8 mila €</td></tr><tr data-t="lotto 23 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 23 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F008F64 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">8 mila €</td></tr><tr data-t="gas medicinali tecnici e criogenici e servizi manutenzione connessi. prosevcuzione extra convenzione societa&#39; italiana acetilene e derivati s.i.a.d. s.p.a. in breve s.i.a.d. s.p.a.">
+      <td class="small">2024-06-18</td>
+      <td>GAS MEDICINALI TECNICI E CRIOGENICI E SERVIZI MANUTENZIONE CONNESSI. PROSEVCUZIONE EXTRA CONVENZIONE<div class="small muted">CIG B220356700 · GAS MEDICI</div></td>
+      <td>SOCIETA&#39; ITALIANA ACETILENE E DERIVATI S.I.A.D. S.P.A. IN BREVE S.I.A.D. S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">8 mila €</td></tr><tr data-t="magliette per cammino day territoriali centro copie leonardo">
+      <td class="small">2024-09-10</td>
+      <td>MAGLIETTE PER CAMMINO DAY TERRITORIALI<div class="small muted">CIG B2F89CD7FE · MAGLIETTE</div></td>
+      <td>CENTRO COPIE LEONARDO</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mila €</td></tr><tr data-t="pubblicazioni esiti bandi di gara guida monaci spa">
+      <td class="small">2024-01-30</td>
+      <td>PUBBLICAZIONI ESITI BANDI DI GARA<div class="small muted">CIG B02A30E445 · Cpv prevalente non disponibile</div></td>
+      <td>GUIDA MONACI SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mila €</td></tr><tr data-t="pubblicazioni esiti bandi di gara guida monaci spa">
+      <td class="small">2024-01-19</td>
+      <td>PUBBLICAZIONI ESITI BANDI DI GARA<div class="small muted">CIG B00A477A22 · Cpv prevalente non disponibile</div></td>
+      <td>GUIDA MONACI SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mila €</td></tr><tr data-t="fornitura di poltrone - borse - zaini effegi di fantoni giambattista srl">
+      <td class="small">2024-06-11</td>
+      <td>FORNITURA DI POLTRONE - BORSE - ZAINI<div class="small muted">CIG B20B94FE1D · Cpv prevalente non disponibile</div></td>
+      <td>EFFEGI DI FANTONI GIAMBATTISTA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="riparazione pompa ics-1100 thermo fisher scientific s.p.a.">
+      <td class="small">2024-06-28</td>
+      <td>RIPARAZIONE POMPA ICS-1100<div class="small muted">CIG B2459CD56B · SERVIZI DI RIPARAZIONE E MANUTENZIONE</div></td>
+      <td>THERMO FISHER SCIENTIFIC S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="corso tavolo permanente rete adolescenti 3 edizioni 2024 metodi - asscom&amp;aleph s.r.l.(identificata anche con la denominazi one abbreviata metodi s.r.l.)">
+      <td class="small">2024-08-28</td>
+      <td>CORSO TAVOLO PERMANENTE RETE ADOLESCENTI 3 EDIZIONI 2024<div class="small muted">CIG B2D9154A2A · SERVIZI DI FORMAZIONE CONTINUA DEL PERSONALE</div></td>
+      <td>METODI - ASSCOM&amp;ALEPH S.R.L.(IDENTIFICATA ANCHE CON LA DENOMINAZI ONE ABBREVIATA METODI S.R.L.)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="screening hcv selecta industrial operations s.p.a.">
+      <td class="small">2024-09-13</td>
+      <td>SCREENING HCV<div class="small muted">CIG B2C2EA6949 · SERVIZI DI STAMPA DIGITALE</div></td>
+      <td>SELECTA INDUSTRIAL OPERATIONS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="lotto 3 stufa e camera di stoccaggio tecno - lab  s.r.l.">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 3 STUFA E CAMERA DI STOCCAGGIO<div class="small muted">CIG 97225050F1 · STRUMENTI E APPARECCHI DI REGOLAZIONE E CONTROLLO</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">6 mila €</td></tr><tr data-t="lotto 4 bilancia montepaone s.r.l.">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 4 BILANCIA<div class="small muted">CIG 9722522EF4 · STRUMENTI E APPARECCHI DI REGOLAZIONE E CONTROLLO</div></td>
+      <td>MONTEPAONE S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">6 mila €</td></tr><tr data-t="abbonamento server portale profili di salute europsys s.r.l.">
+      <td class="small">2024-12-19</td>
+      <td>ABBONAMENTO SERVER PORTALE PROFILI DI SALUTE<div class="small muted">CIG B4ED7CF652 · SISTEMI E SERVER DI INFORMAZIONE</div></td>
+      <td>EUROPSYS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="convenzione arca_2019_120, lot. 3 integrazione oraria randstad italia spa">
+      <td class="small">2024-06-05</td>
+      <td>CONVENZIONE ARCA_2019_120, LOT. 3 INTEGRAZIONE ORARIA<div class="small muted">CIG B1FEF78DDB · Cpv prevalente non disponibile</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="ripristino cassette di pronto soccorso brill service group di buzzago barbara &amp; c. s.a.s.">
+      <td class="small">2024-07-10</td>
+      <td>RIPRISTINO CASSETTE DI PRONTO SOCCORSO<div class="small muted">CIG B26514A34A · SERVIZI DI PULIZIA</div></td>
+      <td>BRILL SERVICE GROUP DI BUZZAGO BARBARA &amp; C. S.A.S.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="contenitori - lotto 4 ">
+      <td class="small">2024-02-12</td>
+      <td>CONTENITORI - LOTTO 4<div class="small muted">CIG A0517F5007 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">6 mila €</td></tr><tr data-t="campionatore per agenti biologici aerodispersi / monitoraggio microbiologico dell&#39;aria ">
+      <td class="small">2023-03-16</td>
+      <td>CAMPIONATORE PER AGENTI BIOLOGICI AERODISPERSI / MONITORAGGIO MICROBIOLOGICO DELL&#39;ARIA<div class="small muted">CIG 9707453BA0 · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">6 mila €</td></tr><tr data-t="campionatore per agenti biologici aerodispersi / monitoraggio microbiologico dell&#39;aria lanzoni - societa a responsabilita limitata">
+      <td class="small">2023-06-22</td>
+      <td>CAMPIONATORE PER AGENTI BIOLOGICI AERODISPERSI / MONITORAGGIO MICROBIOLOGICO DELL&#39;ARIA<div class="small muted">CIG 99142509E9 · STRUMENTI DI MISURA</div></td>
+      <td>LANZONI - SOCIETA A RESPONSABILITA LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mila €</td></tr><tr data-t="campionatore per agenti biologici aerodispersi / monitoraggio microbiologico dell&#39;aria ">
+      <td class="small">2023-06-09</td>
+      <td>CAMPIONATORE PER AGENTI BIOLOGICI AERODISPERSI / MONITORAGGIO MICROBIOLOGICO DELL&#39;ARIA<div class="small muted">CIG 9847734F2A · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">6 mila €</td></tr><tr data-t="corso la valutazione del rischio da movimentazione di carichi 2024 operatore individuale (persona fisica)">
+      <td class="small">2024-08-30</td>
+      <td>CORSO LA VALUTAZIONE DEL RISCHIO DA MOVIMENTAZIONE DI CARICHI 2024<div class="small muted">CIG B2E0C156E6 · SERVIZI DI FORMAZIONE CONTINUA DEL PERSONALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="corso formazione metodi - asscom&amp;aleph s.r.l.(identificata anche con la denominazi one abbreviata metodi s.r.l.)">
+      <td class="small">2024-08-07</td>
+      <td>CORSO FORMAZIONE<div class="small muted">CIG B2B6A271F2 · SERVIZI DI FORMAZIONE</div></td>
+      <td>METODI - ASSCOM&amp;ALEPH S.R.L.(IDENTIFICATA ANCHE CON LA DENOMINAZI ONE ABBREVIATA METODI S.R.L.)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="disinfestazione ambienmtale da guano piccioni edificio 10 finanziata con pnc ">
+      <td class="small">2023-09-25</td>
+      <td>DISINFESTAZIONE AMBIENMTALE DA GUANO PICCIONI EDIFICIO 10 FINANZIATA CON PNC<div class="small muted">CIG A00DE91BB8 · SERVIZI DI DISINFEZIONE E DISINFESTAZIONE</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="fornitura di bottiglie - lotto 1 biosigma s.p.a.">
+      <td class="small">2024-11-21</td>
+      <td>FORNITURA DI BOTTIGLIE - LOTTO 1<div class="small muted">CIG B4627A0202 · ARTICOLI DI VETRO PER LABORATORIO</div></td>
+      <td>BIOSIGMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="strumentazione portatile per il monitoraggio del microclima termico e di grandezze correlate nei luoghi di lavoro e ambienti civili - wbgt (iso7243:2017) xearpro srl">
+      <td class="small">2023-03-16</td>
+      <td>STRUMENTAZIONE PORTATILE PER IL MONITORAGGIO DEL MICROCLIMA TERMICO E DI GRANDEZZE CORRELATE NEI LUOGHI DI LAVORO E AMBIENTI CIVILI - WBGT (ISO7243:2017)<div class="small muted">CIG 97074465DB · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>XEARPRO SRL</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">5 mila €</td></tr><tr data-t="frigorifero per auto per trasporto/mantenimento campioni 29 l tecno - lab  s.r.l.">
+      <td class="small">2023-03-16</td>
+      <td>FRIGORIFERO PER AUTO PER TRASPORTO/MANTENIMENTO CAMPIONI 29 L<div class="small muted">CIG 9707439016 · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">3 mila €</td></tr><tr data-t="lotto 5 ditta liofilchem procedura aperta soprasoglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats della città metropolitana di milano, le ats di brescia, valpadana, bergamo, brianza e montagna per un periodo di 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 5 DITTA LIOFILCHEM PROCEDURA APERTA SOPRASOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO, LE ATS DI BRESCIA, VALPADANA, BERGAMO, BRIANZA E MONTAGNA PER UN PERIODO DI 36 MESI<div class="small muted">CIG A05EF95082 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mila €</td></tr><tr data-t="lotto 5 vials in vetro analytical technology s.r.l.">
+      <td class="small">2024-11-21</td>
+      <td>LOTTO 5 VIALS IN VETRO<div class="small muted">CIG B4636CE8D4 · ARTICOLI DI VETRO PER LABORATORIO</div></td>
+      <td>ANALYTICAL TECHNOLOGY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="potatura tigli presso la sede dell&#39;ats di brescia finanziata con fondi pnc ">
+      <td class="small">2023-09-18</td>
+      <td>POTATURA TIGLI PRESSO LA SEDE DELL&#39;ATS DI BRESCIA FINANZIATA CON FONDI PNC<div class="small muted">CIG A00DE9F747 · POTATURA DI ALBERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="lotto 21 ditta liofilchem srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 21 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F005CEB · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mila €</td></tr><tr data-t="direttore operativo - restauratore - a supporto della dl nella fase di esecuzione dei lavori operatore individuale (persona fisica)">
+      <td class="small">2023-11-16</td>
+      <td>DIRETTORE OPERATIVO - RESTAURATORE - A SUPPORTO DELLA DL NELLA FASE DI ESECUZIONE DEI LAVORI<div class="small muted">CIG A02C8032E9 · SERVIZI DI CYBERCAFÈ</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="fornitura di frigoriferi e congelatori per veterinaria di salò, lonato e vestone cepez s.r.l.">
+      <td class="small">2024-08-28</td>
+      <td>FORNITURA DI FRIGORIFERI E CONGELATORI PER VETERINARIA DI SALÒ, LONATO E VESTONE<div class="small muted">CIG B2D8C11298 · FRIGORIFERI</div></td>
+      <td>CEPEZ S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="fornitura di un compressore a pistoni silenziato fac aria compressa s.r.l.">
+      <td class="small">2023-03-30</td>
+      <td>FORNITURA DI UN COMPRESSORE A PISTONI SILENZIATO<div class="small muted">CIG 9786420942 · APPARECCHIATURA ELETTROMECCANICA</div></td>
+      <td>FAC ARIA COMPRESSA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="lotto 7 bottiglie sterili in pet operatore individuale (persona fisica)">
+      <td class="small">2024-11-21</td>
+      <td>LOTTO 7 BOTTIGLIE STERILI IN PET<div class="small muted">CIG B463E07EAA · ARTICOLI DI VETRO PER LABORATORIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mila €</td></tr><tr data-t="fotometro per misurazione ph e cloro tecno - lab  s.r.l.">
+      <td class="small">2023-03-16</td>
+      <td>FOTOMETRO PER MISURAZIONE PH E CLORO<div class="small muted">CIG 9707433B1F · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mila €</td></tr><tr data-t="misuratore campi elettromagnetici ">
+      <td class="small">2023-03-16</td>
+      <td>MISURATORE CAMPI ELETTROMAGNETICI<div class="small muted">CIG 9707428700 · STRUMENTI PER LA MISURAZIONE DI GRANDEZZE</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mila €</td></tr><tr data-t="misuratore campi elettromagnetici ">
+      <td class="small">2023-06-09</td>
+      <td>MISURATORE CAMPI ELETTROMAGNETICI<div class="small muted">CIG 9847721473 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mila €</td></tr><tr data-t="misuratore campi elettromagnetici geass srl">
+      <td class="small">2023-06-22</td>
+      <td>MISURATORE CAMPI ELETTROMAGNETICI<div class="small muted">CIG 9914230968 · STRUMENTI DI MISURA</div></td>
+      <td>GEASS SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mila €</td></tr><tr data-t="lotto 19 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 19 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05EFFF7F9 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mila €</td></tr><tr data-t="lotto 8 ditta microbiol procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 8 DITTA MICROBIOL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05EFAF5F5 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mila €</td></tr><tr data-t="lotto 3 ditta microbiol procedura aperta soprasoglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats della città metropolitana di milano, le ast di brescia, valpadana, bergamo, ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 3 DITTA MICROBIOL PROCEDURA APERTA SOPRASOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO, LE AST DI BRESCIA, VALPADANA, BERGAMO,<div class="small muted">CIG A05EF7AA37 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mila €</td></tr><tr data-t="lotto 4 ditta liofilchem srl procedura aperta soprasoglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats della città metropolitana di milano, le ats di brescia, valpadana, bergamo, brianza e montagna per un periodo di 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 4 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRASOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO, LE ATS DI BRESCIA, VALPADANA, BERGAMO, BRIANZA E MONTAGNA PER UN PERIODO DI 36 MESI<div class="small muted">CIG A05EF874F3 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">1 mila €</td></tr><tr data-t="lotto 2 - siringhe ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 2 - SIRINGHE<div class="small muted">CIG 9866519D0A · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mila €</td></tr><tr data-t="lotto 28 ditta liofilchem srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 28 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F01E190 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mila €</td></tr><tr data-t="lotto 6 bottiglie in vetro laboindustria s.p.a.">
+      <td class="small">2024-11-21</td>
+      <td>LOTTO 6 BOTTIGLIE IN VETRO<div class="small muted">CIG B463AC5E6D · ARTICOLI DI VETRO PER LABORATORIO</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mila €</td></tr><tr data-t="lotto 88 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 88 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F0C073E · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mila €</td></tr><tr data-t="termometro ad infrarossi per alimenti + sonda tecno - lab  s.r.l.">
+      <td class="small">2023-03-16</td>
+      <td>TERMOMETRO AD INFRAROSSI PER ALIMENTI + SONDA<div class="small muted">CIG 9707419F90 · STRUMENTI DI MISURA</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">1 mila €</td></tr><tr data-t="lotto 6 ditta liofilchem procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 6 DITTA LIOFILCHEM PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05EFA0993 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">876 €</td></tr><tr data-t="lotto 33 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 33 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F02BC47 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">524 €</td></tr><tr data-t="lotto 7 ditta thermo fisher scientific procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 7 DITTA THERMO FISHER SCIENTIFIC PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05EFA8030 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">516 €</td></tr><tr data-t="lotto 26 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 26 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F015A20 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">495 €</td></tr><tr data-t="igrometro tecno - lab  s.r.l.">
+      <td class="small">2023-03-16</td>
+      <td>IGROMETRO<div class="small muted">CIG 97074129CB · STRUMENTI DI MISURA</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">440 €</td></tr><tr data-t="lotto 14 ditta liofilchem procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 14 DITTA LIOFILCHEM PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05EFFD653 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">432 €</td></tr><tr data-t="lotto 39 ditta biolife italiana procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 39 DITTA BIOLIFE ITALIANA PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F05C4B9 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">357 €</td></tr><tr data-t="lotto 68 ditta thermo fisher diagnostics spa procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 68 DITTA THERMO FISHER DIAGNOSTICS SPA PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F0A1DA7 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">348 €</td></tr><tr data-t="lotto 41 ditta biomerieux italia spa procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 41 DITTA BIOMERIEUX ITALIA SPA PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F063A7E · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">300 €</td></tr><tr data-t="lotto 45 ditta liofilchem srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 45 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F069F70 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">286 €</td></tr><tr data-t="lotto 25 ditta biolife italiana procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 25 DITTA BIOLIFE ITALIANA PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F00E45B · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">218 €</td></tr><tr data-t="lotto40 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO40 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F05F732 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">217 €</td></tr><tr data-t="lotto 36 ditta liofilchem srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 36 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F043019 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">134 €</td></tr><tr data-t="lotto 12 ditta biolife italiana procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 12 DITTA BIOLIFE ITALIANA PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05EFF8234 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">134 €</td></tr><tr data-t="lotto 34 ditta microbiol procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 34 DITTA MICROBIOL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F0343B7 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">105 €</td></tr><tr data-t="lotto 4 tubo da centrifuga biosigma s.p.a.">
+      <td class="small">2024-11-21</td>
+      <td>LOTTO 4 TUBO DA CENTRIFUGA<div class="small muted">CIG B462F8A9E8 · ARTICOLI DI VETRO PER LABORATORIO</div></td>
+      <td>BIOSIGMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">94 €</td></tr><tr data-t="lotto 24 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 24 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F00C2B5 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">93 €</td></tr><tr data-t="lotto38 ditta liofilchem srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO38 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F05A313 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">76 €</td></tr><tr data-t="lotto 37 ditta liofilchem srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-08-01</td>
+      <td>LOTTO 37 DITTA LIOFILCHEM SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F04C784 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">66 €</td></tr><tr data-t="lotto 64 ditta thermo fisher diagnostics procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 64 DITTA THERMO FISHER DIAGNOSTICS PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F06C1EE · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">57 €</td></tr><tr data-t="migrazione da tm8 a tm9 vodafone spa">
+      <td class="small">2024-05-08</td>
+      <td>MIGRAZIONE DA TM8 A TM9<div class="small muted">CIG B191E1AB48 · Cpv prevalente non disponibile</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">39 €</td></tr><tr data-t="lotto 65 ditta biolife italiana srl procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 65 DITTA BIOLIFE ITALIANA SRL PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F0A0CD4 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">39 €</td></tr><tr data-t="lotto 71 ditta thermo fisher diagnostics spa procedura aperta sopra soglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats città metropolitana di milano (capofila) e le ats di brescia, val padana, bergamo, brianza e montagna per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 71 DITTA THERMO FISHER DIAGNOSTICS SPA PROCEDURA APERTA SOPRA SOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS CITTÀ METROPOLITANA DI MILANO (CAPOFILA) E LE ATS DI BRESCIA, VAL PADANA, BERGAMO, BRIANZA E MONTAGNA PER 36 MESI<div class="small muted">CIG A05F0A50F8 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">32 €</td></tr><tr data-t="trasferimento dell&#39;archivio documentale dell&#39;edificio r dell&#39;ats di brescia scabelli group s.r.l.">
+      <td class="small">2024-08-23</td>
+      <td>TRASFERIMENTO DELL&#39;ARCHIVIO DOCUMENTALE DELL&#39;EDIFICIO R DELL&#39;ATS DI BRESCIA<div class="small muted">CIG B2D2B942AF · SERVIZI DI TRASLOCO</div></td>
+      <td>SCABELLI GROUP S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">10 €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

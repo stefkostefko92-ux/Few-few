@@ -199,6 +199,1524 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>PROCEDURA APERTA</td><td class="num">7 mln €</td></tr><tr><td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.16 - LOTTO 21<div class="small muted">MEDICINALI VARI</div></td>
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">6 mln €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(2698 contratti ANAC, 506 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030724.csv" download>⬇ Scarica l’elenco completo (CSV, 2698 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="sistemi per la raccolta di emocomponenti in aferesi con separatore cellulare che consenta la donazione automatizzata di plasma occorrente alla asst di cremona mantova e crema fresenius kabi italia s.r.l. in breve fki s.r.l.">
+      <td class="small">2024-09-23</td>
+      <td>SISTEMI PER LA RACCOLTA DI EMOCOMPONENTI IN AFERESI CON SEPARATORE CELLULARE CHE CONSENTA LA DONAZIONE AUTOMATIZZATA DI PLASMA OCCORRENTE ALLA ASST DI CREMONA MANTOVA E CREMA<div class="small muted">CIG B31DA8CE45 · APPARECCHI PER TRASFUSIONE SANGUIGNA</div></td>
+      <td>FRESENIUS KABI ITALIA S.R.L. IN BREVE FKI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">22 mln €</td></tr><tr data-t="servizio di gestione dei centri dialisi occorrenti all&#39;asst della franciacorta presso i presidi ospedalieri di iseo, palazzolo, orzinuovi nephrocare s.p.a.">
+      <td class="small">2024-08-06</td>
+      <td>SERVIZIO DI GESTIONE DEI CENTRI DIALISI OCCORRENTI ALL&#39;ASST DELLA FRANCIACORTA PRESSO I PRESIDI OSPEDALIERI DI ISEO, PALAZZOLO, ORZINUOVI<div class="small muted">CIG B2B27EB967 · SERVIZI DI DIALISI OSPEDALIERA</div></td>
+      <td>NEPHROCARE S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">16 mln €</td></tr><tr data-t="procedura aperta in forma aggregata ai sensi degli artt. 59 e 60 del decreto legislativo 18 aprile 2016, n. 50, per l&#39;affidamento di sistemi diagnostici per test di coagulazione e gestione terapia anticoagulante orale (tao) occorrenti alle asst di cremona (capofila), bergamo est, bergamo ovest e val stago italia - s.r.l. unipersonale">
+      <td class="small">2023-06-27</td>
+      <td>PROCEDURA APERTA IN FORMA AGGREGATA AI SENSI DEGLI ARTT. 59 E 60 DEL DECRETO LEGISLATIVO 18 APRILE 2016, N. 50, PER L&#39;AFFIDAMENTO DI SISTEMI DIAGNOSTICI PER TEST DI COAGULAZIONE E GESTIONE TERAPIA ANTICOAGULANTE ORALE (TAO) OCCORRENTI ALLE ASST DI CREMONA (CAPOFILA), BERGAMO EST, BERGAMO OVEST E VAL<div class="small muted">CIG 9896245FB5 · SISTEMI DIAGNOSTICI</div></td>
+      <td>STAGO ITALIA - S.R.L. UNIPERSONALE</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">12 mln €</td></tr><tr data-t="servizio di gestione del centro dialisi occorrente all&#39;asst di cremona presso il presidio ospedaliero oglio po nephrocare s.p.a.">
+      <td class="small">2024-08-06</td>
+      <td>SERVIZIO DI GESTIONE DEL CENTRO DIALISI OCCORRENTE ALL&#39;ASST DI CREMONA PRESSO IL PRESIDIO OSPEDALIERO OGLIO PO<div class="small muted">CIG B2B27EA894 · SERVIZI DI DIALISI OSPEDALIERA</div></td>
+      <td>NEPHROCARE S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">10 mln €</td></tr><tr data-t="lotto 28 pembrolizumab merck sharp &amp; dohme italia s.p.a.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 28 PEMBROLIZUMAB<div class="small muted">CIG 9604751B41 · MEDICINALI VARI</div></td>
+      <td>MERCK SHARP &amp; DOHME ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">10 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.16 - lotto 23 msd italia s.r.l.">
+      <td class="small">2024-02-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.16 - LOTTO 23<div class="small muted">CIG A050100E28 · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">8 mln €</td></tr><tr data-t="procedura aperta telematica, monolotto, finalizzata alla conclusione di un accordo quadro per l&#39;affidamento del servizio di prestazioni sanitarie mediche di cardiologia da espletarsi presso la asst di cremona e da aggiudicarsi ai sensi degli artt. 14, 59 e 71 del decreto legislativo 31 marzo 2023, n gap med societa&#39; tra professionisti s.p.a.">
+      <td class="small">2023-10-03</td>
+      <td>PROCEDURA APERTA TELEMATICA, MONOLOTTO, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO PER L&#39;AFFIDAMENTO DEL SERVIZIO DI PRESTAZIONI SANITARIE MEDICHE DI CARDIOLOGIA DA ESPLETARSI PRESSO LA ASST DI CREMONA E DA AGGIUDICARSI AI SENSI DEGLI ARTT. 14, 59 E 71 DEL DECRETO LEGISLATIVO 31 MARZO 2023, N<div class="small muted">CIG A01721CD55 · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>GAP MED SOCIETA&#39; TRA PROFESSIONISTI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">7 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.16 - lotto 21 janssen cilag s.p.a.">
+      <td class="small">2024-02-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.16 - LOTTO 21<div class="small muted">CIG A0500CF5BB · MEDICINALI VARI</div></td>
+      <td>JANSSEN CILAG S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">6 mln €</td></tr><tr data-t="procedura negoziata espletata ai sensi dell&#39;art. 76, comma 2, lett. c) del d.lgs 36/2023, per l&#39;affidamento del servizio di ristorazione, per il periodo di 6 mesi, fino al 31/01/2025, con opzione di proroga di mesi 6, nelle more dell&#39;attivazione della convenzione aria_2023_048 cooperativa italiana di ristorazione s.c.">
+      <td class="small">2024-06-12</td>
+      <td>PROCEDURA NEGOZIATA ESPLETATA AI SENSI DELL&#39;ART. 76, COMMA 2, LETT. C) DEL D.LGS 36/2023, PER L&#39;AFFIDAMENTO DEL SERVIZIO DI RISTORAZIONE, PER IL PERIODO DI 6 MESI, FINO AL 31/01/2025, CON OPZIONE DI PROROGA DI MESI 6, NELLE MORE DELL&#39;ATTIVAZIONE DELLA CONVENZIONE ARIA_2023_048<div class="small muted">CIG B211249B1E · SERVIZI DI RISTORAZIONE E DI DISTRIBUZIONE PASTI</div></td>
+      <td>COOPERATIVA ITALIANA DI RISTORAZIONE S.C.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">6 mln €</td></tr><tr data-t="dolutegravir + lamivudina viiv healthcare s.r.l.">
+      <td class="small">2024-11-15</td>
+      <td>DOLUTEGRAVIR + LAMIVUDINA<div class="small muted">CIG B44A07CA75 · MEDICINALI VARI</div></td>
+      <td>VIIV HEALTHCARE S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">5 mln €</td></tr><tr data-t="presa d&#39;atto esito procedura aperta in forma aggregata esperita dall&#39;asst bergamo ovest per l&#39;affidamento del servizio per la gestione della sicurezza antincendio e primo intervento in caso di altre emergenze cosmopol s.p.a.">
+      <td class="small">2023-08-04</td>
+      <td>PRESA D&#39;ATTO ESITO PROCEDURA APERTA IN FORMA AGGREGATA ESPERITA DALL&#39;ASST BERGAMO OVEST PER L&#39;AFFIDAMENTO DEL SERVIZIO PER LA GESTIONE DELLA SICUREZZA ANTINCENDIO E PRIMO INTERVENTO IN CASO DI ALTRE EMERGENZE<div class="small muted">CIG A004268DA7 · SERVIZI DI PREVENZIONE DEGLI INCENDI</div></td>
+      <td>COSMOPOL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">5 mln €</td></tr><tr data-t="adeguamento strutturale ed impiantistico del reparto di pronto soccorso del presidio ospedaliero di cremona ">
+      <td class="small">2023-11-21</td>
+      <td>ADEGUAMENTO STRUTTURALE ED IMPIANTISTICO DEL REPARTO DI PRONTO SOCCORSO DEL PRESIDIO OSPEDALIERO DI CREMONA<div class="small muted">CIG A033657E95 · LAVORI DI DEMOLIZIONE DI EDIFICI E LAVORI DI MOVIMENTO TERRA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">5 mln €</td></tr><tr data-t="fornitura in service di sistemi professionali poct in rete per la gestione della terapia anticoagulante orale (coagulometri professionali portatili e reagenti) destinati alla asst di cremona e alla asst papa giovanni xxiii e alle periferie territoriali ad esse collegate roche diagnostics s.p.a.">
+      <td class="small">2024-10-16</td>
+      <td>FORNITURA IN SERVICE DI SISTEMI PROFESSIONALI POCT IN RETE PER LA GESTIONE DELLA TERAPIA ANTICOAGULANTE ORALE (COAGULOMETRI PROFESSIONALI PORTATILI E REAGENTI) DESTINATI ALLA ASST DI CREMONA E ALLA ASST PAPA GIOVANNI XXIII E ALLE PERIFERIE TERRITORIALI AD ESSE COLLEGATE<div class="small muted">CIG B372086778 · SISTEMI DIAGNOSTICI</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="ivacaftor + tezacaftor + elexacaftor 75 mg/50 mg/100 mg vertex pharmaceuticals (italy) s.r.l.">
+      <td class="small">2024-09-04</td>
+      <td>IVACAFTOR + TEZACAFTOR + ELEXACAFTOR 75 MG/50 MG/100 MG<div class="small muted">CIG B2EC5BFDE3 · MEDICINALI VARI</div></td>
+      <td>VERTEX PHARMACEUTICALS (ITALY) S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lotto 33 pertuzumab e trastuzumab roche societa&#39; per azioni">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 33 PERTUZUMAB E TRASTUZUMAB<div class="small muted">CIG 9604792D16 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">4 mln €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2022_027.2r - lotto 538r msd italia s.r.l.">
+      <td class="small">2023-10-10</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2022_027.2R - LOTTO 538R<div class="small muted">CIG A01B76BF51 · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="adesione alla convenzione farmaci innovativi - aria_2023_011.5 - lotto 19 nivolumab soluzione 10 mg/ml 24 ml bristol myers squibb">
+      <td class="small">2023-09-07</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI INNOVATIVI - ARIA_2023_011.5 - LOTTO 19 NIVOLUMAB SOLUZIONE 10 MG/ML 24 ML<div class="small muted">CIG A00C522EAB · MEDICINALI VARI</div></td>
+      <td>BRISTOL MYERS SQUIBB</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lotto 17 nivolumab 240 mg/24 ml bristol-myers squibb s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 17 NIVOLUMAB 240 MG/24 ML<div class="small muted">CIG 9603768012 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">4 mln €</td></tr><tr data-t="acquisizione di un progetto con livello di approfondimento pari a quello di un progetto di fattibilita&#39; tecnica ed economica per la realizzazione del nuovo ospedale di cremona mario cucinella architects s.r.l.">
+      <td class="small">2023-03-13</td>
+      <td>ACQUISIZIONE DI UN PROGETTO CON LIVELLO DI APPROFONDIMENTO PARI A QUELLO DI UN PROGETTO DI FATTIBILITA&#39; TECNICA ED ECONOMICA PER LA REALIZZAZIONE DEL NUOVO OSPEDALE DI CREMONA<div class="small muted">CIG 9651909F43 · VARI SERVIZI DI INGEGNERIA</div></td>
+      <td>MARIO CUCINELLA ARCHITECTS S.R.L.</td>
+      <td class="small">PROCEDURA RISTRETTA</td>
+      <td class="num">4 mln €</td></tr><tr data-t="fornitura di dispositivi medici occorrenti all&#39;esecuzione di esami diagnostici e procedure interventistiche con relativa gestione di magazzino per il servizio di neuroradiologia interventistica med italia biomedica societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-12-17</td>
+      <td>FORNITURA DI DISPOSITIVI MEDICI OCCORRENTI ALL&#39;ESECUZIONE DI ESAMI DIAGNOSTICI E PROCEDURE INTERVENTISTICHE CON RELATIVA GESTIONE DI MAGAZZINO PER IL SERVIZIO DI NEURORADIOLOGIA INTERVENTISTICA<div class="small muted">CIG B4DF42CC43 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MED ITALIA BIOMEDICA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="drenaggio a circuito chiuso con serbatoio 400 ml ">
+      <td class="small">2023-06-27</td>
+      <td>DRENAGGIO A CIRCUITO CHIUSO CON SERBATOIO 400 ML<div class="small muted">CIG 9904349F57 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione convenzione energia elettrica 21 a2a energia s.p.a.">
+      <td class="small">2024-10-14</td>
+      <td>ADESIONE CONVENZIONE ENERGIA ELETTRICA 21<div class="small muted">CIG B36FD9844D · PRODOTTI DERIVATI DAL PETROLIO, COMBUSTIBILI, ELETTRICITÀ E ALTRE FONTI DI ENERGIA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="aflibercept 40 mg/ml bayer s.p.a.">
+      <td class="small">2024-08-01</td>
+      <td>AFLIBERCEPT 40 MG/ML<div class="small muted">CIG B2ACE0E116 · MEDICINALI VARI</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto n. 35 alectinib 150 mg roche societa&#39; per azioni">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 35 ALECTINIB 150 MG<div class="small muted">CIG A041360603 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">3 mln €</td></tr><tr data-t="endopredict qs - prolaris e relativa strumentazione. ">
+      <td class="small">2024-09-19</td>
+      <td>ENDOPREDICT QS - PROLARIS E RELATIVA STRUMENTAZIONE.<div class="small muted">CIG B31551177A · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A PIU&#39; FASI</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 24 sacituzumab govitecan gilead sciences s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 24 SACITUZUMAB GOVITECAN<div class="small muted">CIG 9603881D4E · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">3 mln €</td></tr><tr data-t="presa atto della procedura aperta esperita dalla asst di mantova per l&#39;affidamento della fornitura di sistemi analitici completi per l&#39;esecuzione di esami di diagnostica ematologica occorrenti ai laboratori analisi dell&#39;asst dasit spa">
+      <td class="small">2024-06-01</td>
+      <td>PRESA ATTO DELLA PROCEDURA APERTA ESPERITA DALLA ASST DI MANTOVA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI ANALITICI COMPLETI PER L&#39;ESECUZIONE DI ESAMI DI DIAGNOSTICA EMATOLOGICA OCCORRENTI AI LABORATORI ANALISI DELL&#39;ASST<div class="small muted">CIG A0594C1C56 · SISTEMI DIAGNOSTICI</div></td>
+      <td>DASIT SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione aria appalto integrato ospedale di comunità soresina robbiani 3ti progetti italia - ingegneria integrata s.p.a. in breve 3ti italia s.p.a.">
+      <td class="small">2023-04-21</td>
+      <td>ADESIONE ARIA APPALTO INTEGRATO OSPEDALE DI COMUNITÀ SORESINA ROBBIANI<div class="small muted">CIG 993157856F · LAVORI GENERALI DI COSTRUZIONE DI EDIFICI</div></td>
+      <td>3TI PROGETTI ITALIA - INGEGNERIA INTEGRATA S.P.A. IN BREVE 3TI ITALIA S.P.A.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione aria appalto integrato casa di comunita soresina via robbiani 6 consorzio integra societa&#39; cooperativa">
+      <td class="small">2023-03-21</td>
+      <td>ADESIONE ARIA APPALTO INTEGRATO CASA DI COMUNITA SORESINA VIA ROBBIANI 6<div class="small muted">CIG 9737181FF1 · LAVORI GENERALI DI COSTRUZIONE DI EDIFICI</div></td>
+      <td>CONSORZIO INTEGRA SOCIETA&#39; COOPERATIVA</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">3 mln €</td></tr><tr data-t="bracciali monouso per la misurazione della pressione arteriosa medical lume s.r.l.">
+      <td class="small">2023-06-27</td>
+      <td>BRACCIALI MONOUSO PER LA MISURAZIONE DELLA PRESSIONE ARTERIOSA<div class="small muted">CIG 9895389D51 · MATERIALI MEDICI</div></td>
+      <td>MEDICAL LUME S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione alla procedura ristretta, esperita dall&#39;asst spedali civili di brescia, finalizzata alla conclusione di accordo quadro per l&#39;affidamento della fornitura di sistemi per elettrochirurgia, laserterapia ed endoscopia.scadenza 30/06/2031 - lotto 26 guidant italia srl">
+      <td class="small">2023-11-29</td>
+      <td>ADESIONE ALLA PROCEDURA RISTRETTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA, FINALIZZATA ALLA CONCLUSIONE DI ACCORDO QUADRO PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI PER ELETTROCHIRURGIA, LASERTERAPIA ED ENDOSCOPIA.SCADENZA 30/06/2031 - LOTTO 26<div class="small muted">CIG A036B548C8 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>GUIDANT ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione energia elettrica 20 ">
+      <td class="small">2023-10-30</td>
+      <td>ADESIONE ENERGIA ELETTRICA 20<div class="small muted">CIG A023055760 · ELETTRICITÀ</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="fornitura in service di sistemi automatici per colorazioni istochimiche occorrenti alla sc di anatomia patologica ">
+      <td class="small">2024-07-29</td>
+      <td>FORNITURA IN SERVICE DI SISTEMI AUTOMATICI PER COLORAZIONI ISTOCHIMICHE OCCORRENTI ALLA SC DI ANATOMIA PATOLOGICA<div class="small muted">CIG B29C3F168D · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 2) puntali in pp senza filtro biosigma s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 2) PUNTALI IN PP SENZA FILTRO<div class="small muted">CIG 963074997C · MATERIALI MEDICI</div></td>
+      <td>BIOSIGMA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione a covenzione ossigenoterapia domiciliare - nippon gases pharma - aria_2021_057 - lotto 6 nippon gases pharma s.r.l.">
+      <td class="small">2024-11-19</td>
+      <td>ADESIONE A COVENZIONE OSSIGENOTERAPIA DOMICILIARE - NIPPON GASES PHARMA - ARIA_2021_057 - LOTTO 6<div class="small muted">CIG A0643DAB19 · SERVIZI DI OSSIGENOTERAPIA</div></td>
+      <td>NIPPON GASES PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura aperta in forma aggregata ai sensi degli artt. 59 e 60 del decreto legislativo 18 aprile 2016, n. 50, per l&#39;affidamento di sistemi diagnostici per test di coagulazione e gestione terapia anticoagulante orale (tao) occorrenti alle asst di cremona (capofila stago italia - s.r.l. unipersonale">
+      <td class="small">2023-11-17</td>
+      <td>PROCEDURA APERTA IN FORMA AGGREGATA AI SENSI DEGLI ARTT. 59 E 60 DEL DECRETO LEGISLATIVO 18 APRILE 2016, N. 50, PER L&#39;AFFIDAMENTO DI SISTEMI DIAGNOSTICI PER TEST DI COAGULAZIONE E GESTIONE TERAPIA ANTICOAGULANTE ORALE (TAO) OCCORRENTI ALLE ASST DI CREMONA (CAPOFILA<div class="small muted">CIG A02AEAFC22 · SISTEMI DIAGNOSTICI</div></td>
+      <td>STAGO ITALIA - S.R.L. UNIPERSONALE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2022_027.11 - lotto 5 - sacituzumab + govitecan polvere per soluzione 200 mg gilead sciences s.r.l.">
+      <td class="small">2023-02-17</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2022_027.11 - LOTTO 5 - SACITUZUMAB + GOVITECAN POLVERE PER SOLUZIONE 200 MG<div class="small muted">CIG 966518287F · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 24) puntali con filtro biosigma s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 24) PUNTALI CON FILTRO<div class="small muted">CIG 963088166B · MATERIALI MEDICI</div></td>
+      <td>BIOSIGMA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura negoziata svolta in modalità telematica per l&#39;affidamento delle opere necessarie per l&#39;adeguamento alla normativa di prevenzione incendi del p.o. di cremona: incremento del livello di sicurezza antincendio ai sensi dell&#39;art. 50, comma 1, lett. d), d.lgs. 36/2023 elettromeccanica veneta s.r.l.">
+      <td class="small">2023-09-26</td>
+      <td>PROCEDURA NEGOZIATA SVOLTA IN MODALITÀ TELEMATICA PER L&#39;AFFIDAMENTO DELLE OPERE NECESSARIE PER L&#39;ADEGUAMENTO ALLA NORMATIVA DI PREVENZIONE INCENDI DEL P.O. DI CREMONA: INCREMENTO DEL LIVELLO DI SICUREZZA ANTINCENDIO AI SENSI DELL&#39;ART. 50, COMMA 1, LETT. D), D.LGS. 36/2023<div class="small muted">CIG A0138CC1A1 · LAVORI DI INSTALLAZIONE DI DISPOSITIVI ANTINCENDIO</div></td>
+      <td>ELETTROMECCANICA VENETA S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.10 - lotto 27 vertex pharmaceuticals (italy) s.r.l.">
+      <td class="small">2023-06-23</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.10 - LOTTO 27<div class="small muted">CIG 9916914053 · MEDICINALI VARI</div></td>
+      <td>VERTEX PHARMACEUTICALS (ITALY) S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura aperta aggregata in aq per la fornitura di dispositivi per oculistica - lotto 22) viscoelastico combinato per intervento di cataratta diemme dispositivi medici s.r.l.">
+      <td class="small">2023-06-26</td>
+      <td>PROCEDURA APERTA AGGREGATA IN AQ PER LA FORNITURA DI DISPOSITIVI PER OCULISTICA - LOTTO 22) VISCOELASTICO COMBINATO PER INTERVENTO DI CATARATTA<div class="small muted">CIG 9875626861 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>DIEMME DISPOSITIVI MEDICI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura aperta, in forma telematica, per l&#39;affidamento in concessione del servizio di gestione dell&#39;asilo nido aziendale sito presso il presidio ospedaliero di cremona esperia s.r.l.">
+      <td class="small">2023-06-28</td>
+      <td>PROCEDURA APERTA, IN FORMA TELEMATICA, PER L&#39;AFFIDAMENTO IN CONCESSIONE DEL SERVIZIO DI GESTIONE DELL&#39;ASILO NIDO AZIENDALE SITO PRESSO IL PRESIDIO OSPEDALIERO DI CREMONA<div class="small muted">CIG 9910791376 · SERVIZI DI ISTRUZIONE PRESCOLASTICA</div></td>
+      <td>ESPERIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="cemiplimab 350 mg concentrato per soluzione per infusione sanofi s.r.l.">
+      <td class="small">2024-11-15</td>
+      <td>CEMIPLIMAB 350 MG CONCENTRATO PER SOLUZIONE PER INFUSIONE<div class="small muted">CIG B44A0797FC · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="cabozantinib 20 mg ipsen societa&#39; per azioni">
+      <td class="small">2024-09-04</td>
+      <td>CABOZANTINIB 20 MG<div class="small muted">CIG B2EC5BBA97 · MEDICINALI VARI</div></td>
+      <td>IPSEN SOCIETA&#39; PER AZIONI</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="presa atto procedura ristretta, aggregata, finalizzata alla conclusione di accordo quadro, per la fornitura di sistemi per elettrochirurgia, laserterapia ed endoscopia - lotto 1 sistema costituito da materiale di consumo e da aspiratore ad ultrasuoni a noleggio, comprensivo di assistenza tecnica e m carlo bianchi s.r.l.">
+      <td class="small">2023-09-26</td>
+      <td>PRESA ATTO PROCEDURA RISTRETTA, AGGREGATA, FINALIZZATA ALLA CONCLUSIONE DI ACCORDO QUADRO, PER LA FORNITURA DI SISTEMI PER ELETTROCHIRURGIA, LASERTERAPIA ED ENDOSCOPIA - LOTTO 1 SISTEMA COSTITUITO DA MATERIALE DI CONSUMO E DA ASPIRATORE AD ULTRASUONI A NOLEGGIO, COMPRENSIVO DI ASSISTENZA TECNICA E M<div class="small muted">CIG A01EF661A6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CARLO BIANCHI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione al lotto 3 dell&#39;accordo quadro &#39;sanità digitale 2&#39; (id sigef 2365) per la fornitura di servizi applicativi e di servizi di supporto in ambito &#39;sanità digitale - sistemi informativi sanitari e servizi al cittadino&#39; per le pubbliche amministrazioni del ssn - progetto finanziato dall&#39;unione eu consis societa&#39; consortile a responsabilita&#39; limitata">
+      <td class="small">2024-02-01</td>
+      <td>ADESIONE AL LOTTO 3 DELL&#39;ACCORDO QUADRO &#39;SANITÀ DIGITALE 2&#39; (ID SIGEF 2365) PER LA FORNITURA DI SERVIZI APPLICATIVI E DI SERVIZI DI SUPPORTO IN AMBITO &#39;SANITÀ DIGITALE - SISTEMI INFORMATIVI SANITARI E SERVIZI AL CITTADINO&#39; PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN - PROGETTO FINANZIATO DALL&#39;UNIONE EU<div class="small muted">CIG A0474FD397 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>CONSIS SOCIETA&#39; CONSORTILE A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 17 remdesivir 100 mg 100mg gilead sciences s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 17 REMDESIVIR 100 MG 100MG<div class="small muted">CIG A022796FAF · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura in service di un sistema diagnostico completo automatizzato per l&#39;analisi del liquido seminale con capacitazione occorrente all&#39;asst di cremona ">
+      <td class="small">2024-06-26</td>
+      <td>FORNITURA IN SERVICE DI UN SISTEMA DIAGNOSTICO COMPLETO AUTOMATIZZATO PER L&#39;ANALISI DEL LIQUIDO SEMINALE CON CAPACITAZIONE OCCORRENTE ALL&#39;ASST DI CREMONA<div class="small muted">CIG B23745F098 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione all&#39;accordo quadro di consip spa ad oggetto servizi applicativi in ambito «sanità digitale - sistemi informativi clinico-assistenziali 2» per le pubbliche amministrazioni del ssn (id 2601) per l&#39;acquisizione dei servizi di assistenza, manutenzione ed aggiornamento del sistema pacs intellisp engineering - ingegneria informatica - s.p.a.">
+      <td class="small">2024-12-23</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO DI CONSIP SPA AD OGGETTO SERVIZI APPLICATIVI IN AMBITO «SANITÀ DIGITALE - SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI 2» PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN (ID 2601) PER L&#39;ACQUISIZIONE DEI SERVIZI DI ASSISTENZA, MANUTENZIONE ED AGGIORNAMENTO DEL SISTEMA PACS INTELLISP<div class="small muted">CIG B4FADB7BB2 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>ENGINEERING - INGEGNERIA INFORMATICA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione all&#39;accordo quadro di consip spa ad oggetto servizi applicativi in ambito «sanità digitale - sistemi informativi clinico-assistenziali 2» per le pubbliche amministrazioni del ssn (id 2601) per l&#39;acquisizione dei servizi di assistenza, manutenzione ed aggiornamento del sistema pacs intellisp engineering">
+      <td class="small">2024-12-31</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO DI CONSIP SPA AD OGGETTO SERVIZI APPLICATIVI IN AMBITO «SANITÀ DIGITALE - SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI 2» PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN (ID 2601) PER L&#39;ACQUISIZIONE DEI SERVIZI DI ASSISTENZA, MANUTENZIONE ED AGGIORNAMENTO DEL SISTEMA PACS INTELLISP<div class="small muted">CIG B51085CB16 · SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.8 - lotto 14 daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2023-08-18</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.8 - LOTTO 14<div class="small muted">CIG A005A9B5F0 · MEDICINALI VARI</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="presa atto della procedura aperta esperita dalla asst garda per l&#39;affidamento della fornitura di sistemi diagnostici per analisi delle urine e sedimento urinario siemens healthcare srl">
+      <td class="small">2023-12-18</td>
+      <td>PRESA ATTO DELLA PROCEDURA APERTA ESPERITA DALLA ASST GARDA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI DIAGNOSTICI PER ANALISI DELLE URINE E SEDIMENTO URINARIO<div class="small muted">CIG A03C3BABA5 · PRESIDI DIAGNOSTICI</div></td>
+      <td>Siemens Healthcare Srl</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura negoziata svolta in modalità telematica per l&#39;affidamento delle opere necessarie all&#39;incremento del livello di sicurezza antincendio dei collegamenti verticali del presidio ospedaliero di cremona ai sensi dell&#39;art.50, comma 1, lett. d), d.lgs. 36/2023 lodiproget s.r.l. servizi e costruzioni">
+      <td class="small">2023-09-26</td>
+      <td>PROCEDURA NEGOZIATA SVOLTA IN MODALITÀ TELEMATICA PER L&#39;AFFIDAMENTO DELLE OPERE NECESSARIE ALL&#39;INCREMENTO DEL LIVELLO DI SICUREZZA ANTINCENDIO DEI COLLEGAMENTI VERTICALI DEL PRESIDIO OSPEDALIERO DI CREMONA AI SENSI DELL&#39;ART.50, COMMA 1, LETT. D), D.LGS. 36/2023<div class="small muted">CIG A0137D8844 · LAVORI DI INSTALLAZIONE DI DISPOSITIVI ANTINCENDIO</div></td>
+      <td>LODIPROGET S.R.L. SERVIZI E COSTRUZIONI</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistemi per aferesi terapeutica con separatore cellulare che consenta di effettuare procedure di staminoaferesi plasma exchange eritro exchange leucoaferesi piastrinoaferesi deeritrocizzazione del sangue midollare occorrente alla asst di cremona terumo bct italia - societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-09-23</td>
+      <td>SISTEMI PER AFERESI TERAPEUTICA CON SEPARATORE CELLULARE CHE CONSENTA DI EFFETTUARE PROCEDURE DI STAMINOAFERESI PLASMA EXCHANGE ERITRO EXCHANGE LEUCOAFERESI PIASTRINOAFERESI DEERITROCIZZAZIONE DEL SANGUE MIDOLLARE OCCORRENTE ALLA ASST DI CREMONA<div class="small muted">CIG B31DA8BD72 · APPARECCHI PER TRASFUSIONE SANGUIGNA</div></td>
+      <td>TERUMO BCT ITALIA - SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.4 - lotto 22 roche societa&#39; per azioni">
+      <td class="small">2024-10-03</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.4 - LOTTO 22<div class="small muted">CIG A062ABC0E8 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione manutenzione edile aria_2023_405 l09 c.n. costruzioni generali s.p.a.">
+      <td class="small">2024-12-17</td>
+      <td>ADESIONE MANUTENZIONE EDILE ARIA_2023_405 L09<div class="small muted">CIG B4E1A1FD55 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ELETTRICI E MECCANICI DI EDIFICI</div></td>
+      <td>C.N. COSTRUZIONI GENERALI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura di crediti oracle cloud in modalità universal credit monthly commitment (ucmc) e di subscription di tipo financial, purchasing, inventory management e self service procurement gway s.r.l.">
+      <td class="small">2024-06-26</td>
+      <td>FORNITURA DI CREDITI ORACLE CLOUD IN MODALITÀ UNIVERSAL CREDIT MONTHLY COMMITMENT (UCMC) E DI SUBSCRIPTION DI TIPO FINANCIAL, PURCHASING, INVENTORY MANAGEMENT E SELF SERVICE PROCUREMENT<div class="small muted">CIG B23892EC8F · PACCHETTI SOFTWARE PER LA GESTIONE DI LICENZE</div></td>
+      <td>GWAY S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civilidi brescia per l&#39;affidamento della fornitura di dispositivi peranestesia e aerosolterapia, protesi e dispositivi per apparatorespiratorio (protesi tracheobronchiali, esofagee), digestivo(protesi biliari, pancreatiche), genitale e per i euromedical s.r.l. in liquidazione">
+      <td class="small">2023-10-31</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILIDI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PERANESTESIA E AEROSOLTERAPIA, PROTESI E DISPOSITIVI PER APPARATORESPIRATORIO (PROTESI TRACHEOBRONCHIALI, ESOFAGEE), DIGESTIVO(PROTESI BILIARI, PANCREATICHE), GENITALE E PER I<div class="small muted">CIG A02CE5CFE3 · PROTESI CHIRURGICHE</div></td>
+      <td>EUROMEDICAL S.R.L. IN LIQUIDAZIONE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="vaccino papillomavirus umano (tipi umani 6, 11, 16, 18, 31, 33, 45, 52, 58) 0,5 ml msd italia s.r.l.">
+      <td class="small">2024-08-01</td>
+      <td>VACCINO PAPILLOMAVIRUS UMANO (TIPI UMANI 6, 11, 16, 18, 31, 33, 45, 52, 58) 0,5 ML<div class="small muted">CIG B2ACE1AAFA · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2022_027.1 - lotto 16 alexion pharma italy srl  - soc. unipersonale -">
+      <td class="small">2024-03-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2022_027.1 - LOTTO 16<div class="small muted">CIG A053AC8CE7 · MEDICINALI VARI</div></td>
+      <td>ALEXION PHARMA ITALY SRL  - SOC. UNIPERSONALE -</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 9) sistema radiografico portatile sunmedical s.r.l.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 9) SISTEMA RADIOGRAFICO PORTATILE<div class="small muted">CIG 9630794E9D · MATERIALI MEDICI</div></td>
+      <td>SUNMEDICAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione aq acceleratori lineari (ed.1) - lotto 1 varian medical systems italia s.p.a.">
+      <td class="small">2023-01-27</td>
+      <td>ADESIONE AQ ACCELERATORI LINEARI (ED.1) - LOTTO 1<div class="small muted">CIG 95948218C3 · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>VARIAN MEDICAL SYSTEMS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="presa d&#39;atto esito procedura aperta, in forma aggregata, esperita dall&#39;asst spedali civili di brescia, finalizzata alla conclusione di un accordo quadro, per la fornitura di sistemi per iniezione di mezzi di contrasto. scadenza 31/12/29 lotto 3 sistema per iniezione di mezzi di contrasto in procedur bayer s.p.a.">
+      <td class="small">2023-12-27</td>
+      <td>PRESA D&#39;ATTO ESITO PROCEDURA APERTA, IN FORMA AGGREGATA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO, PER LA FORNITURA DI SISTEMI PER INIEZIONE DI MEZZI DI CONTRASTO. SCADENZA 31/12/29 LOTTO 3 SISTEMA PER INIEZIONE DI MEZZI DI CONTRASTO IN PROCEDUR<div class="small muted">CIG A043E6EDA5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione a convenzione arca service neuroradiologia interventistica n.g.c. medical s.r.l.">
+      <td class="small">2023-04-14</td>
+      <td>ADESIONE A CONVENZIONE ARCA SERVICE NEURORADIOLOGIA INTERVENTISTICA<div class="small muted">CIG 9731131F53 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>N.G.C. MEDICAL S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura aperta telematica, monolotto, finalizzata alla conclusione di un accordo quadro per l&#39;affidamento del servizio di prestazioni sanitarie mediche di cardiologia da espletarsi presso la asst di cremona e da aggiudicarsi ai sensi degli artt. 14, 59 e 71 del decreto legislativo 31 marzo 2023, n gap med societa&#39; tra professionisti s.p.a.">
+      <td class="small">2023-11-28</td>
+      <td>PROCEDURA APERTA TELEMATICA, MONOLOTTO, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO PER L&#39;AFFIDAMENTO DEL SERVIZIO DI PRESTAZIONI SANITARIE MEDICHE DI CARDIOLOGIA DA ESPLETARSI PRESSO LA ASST DI CREMONA E DA AGGIUDICARSI AI SENSI DEGLI ARTT. 14, 59 E 71 DEL DECRETO LEGISLATIVO 31 MARZO 2023, N<div class="small muted">CIG A0404351AA · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>GAP MED SOCIETA&#39; TRA PROFESSIONISTI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="affidamento lavori per casa di comunità cremona - san sebastiano 14 i.tec srl costruzioni generali">
+      <td class="small">2023-04-21</td>
+      <td>AFFIDAMENTO LAVORI PER CASA DI COMUNITÀ CREMONA - SAN SEBASTIANO 14<div class="small muted">CIG 9900300204 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>I.TEC SRL COSTRUZIONI GENERALI</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di dispositivi per sutura meccanica, chirurgia video-assistita, feltri, pledget, reti chirurgiche, colle e cera per ossa. scad. 31/12/2028 - lotto 7 euroclone s.p.a.">
+      <td class="small">2023-08-02</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PER SUTURA MECCANICA, CHIRURGIA VIDEO-ASSISTITA, FELTRI, PLEDGET, RETI CHIRURGICHE, COLLE E CERA PER OSSA. SCAD. 31/12/2028 - LOTTO 7<div class="small muted">CIG A005890658 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>EUROCLONE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto n. 18 ripretinib 50 mg euromed pharma s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 18 RIPRETINIB 50 MG<div class="small muted">CIG A04118C3CF · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura in service di sistemi analitici completi per multiplex pcr, integrati ed automatizzati per la diagnostica rapida, mediante tecnologia film array, di microorganismi patogeni a dna e/o rna biomerieux italia spa">
+      <td class="small">2024-06-27</td>
+      <td>FORNITURA IN SERVICE DI SISTEMI ANALITICI COMPLETI PER MULTIPLEX PCR, INTEGRATI ED AUTOMATIZZATI PER LA DIAGNOSTICA RAPIDA, MEDIANTE TECNOLOGIA FILM ARRAY, DI MICROORGANISMI PATOGENI A DNA E/O RNA<div class="small muted">CIG B24251542B · SISTEMI DIAGNOSTICI</div></td>
+      <td>BIOMERIEUX ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 4) microprovette provette e tappi kaltek s.r.l.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 4) MICROPROVETTE PROVETTE E TAPPI<div class="small muted">CIG 9630757019 · MATERIALI MEDICI</div></td>
+      <td>KALTEK S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto n. 34 ocrelizumab 300 mg roche societa&#39; per azioni">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 34 OCRELIZUMAB 300 MG<div class="small muted">CIG A041349309 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2189 - fingolimod cloridrato capsule rigide 0,5 mg impresa inesistente">
+      <td class="small">2023-02-02</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2189 - FINGOLIMOD CLORIDRATO CAPSULE RIGIDE 0,5 MG<div class="small muted">CIG 9635773B6B · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3r - lotto 2080 - olaparib cpr/cpr riv/cps/cps rig 150 mg astrazeneca s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3R - LOTTO 2080 - OLAPARIB CPR/CPR RIV/CPS/CPS RIG 150 MG<div class="small muted">CIG 96179707EC · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="presa atto della procedura aperta esperita dalla asst grande ospedale metropolitano niguarda per l&#39;affidamento della fornitura di sistemi analitici per l&#39;esecuzione di esami di autoimmunità con metodiche di immunometria e immunofluorescenza - lotto 1 euroimmun italia diagnostica medica - s.r.l. con sigla euroimmun italia s.r.l.">
+      <td class="small">2023-03-10</td>
+      <td>PRESA ATTO DELLA PROCEDURA APERTA ESPERITA DALLA ASST GRANDE OSPEDALE METROPOLITANO NIGUARDA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI ANALITICI PER L&#39;ESECUZIONE DI ESAMI DI AUTOIMMUNITÀ CON METODICHE DI IMMUNOMETRIA E IMMUNOFLUORESCENZA - LOTTO 1<div class="small muted">CIG 968594135F · REATTIVI PER LABORATORIO</div></td>
+      <td>EUROIMMUN ITALIA DIAGNOSTICA MEDICA - S.R.L. CON SIGLA EUROIMMUN ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla procedura esperita dalla asst bergamo est per la fornitura in service di strumentazione automatica per la semina di campioni biologici, preparazione vetrini per esame microscopico, arricchimento di brodi liquidi occorrente al lavoratorio analisi del presidio ospedaliero di cremona - se a.d.a. societa&#39; a responsabilita&#39; limitata (in forma abbreviata a.d.a. s.r.l.)">
+      <td class="small">2024-05-29</td>
+      <td>ADESIONE ALLA PROCEDURA ESPERITA DALLA ASST BERGAMO EST PER LA FORNITURA IN SERVICE DI STRUMENTAZIONE AUTOMATICA PER LA SEMINA DI CAMPIONI BIOLOGICI, PREPARAZIONE VETRINI PER ESAME MICROSCOPICO, ARRICCHIMENTO DI BRODI LIQUIDI OCCORRENTE AL LAVORATORIO ANALISI DEL PRESIDIO OSPEDALIERO DI CREMONA - SE<div class="small muted">CIG A05B9B7CA0 · APPARECCHI DIAGNOSTICI</div></td>
+      <td>A.D.A. SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA (IN FORMA ABBREVIATA A.D.A. S.R.L.)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 31 tucatinib 150 mg ">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 31 TUCATINIB 150 MG<div class="small muted">CIG A0231E0D55 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="cabozantinib 20 mg ipsen societa&#39; per azioni">
+      <td class="small">2024-08-01</td>
+      <td>CABOZANTINIB 20 MG<div class="small muted">CIG B2ACE167AE · MEDICINALI VARI</div></td>
+      <td>IPSEN SOCIETA&#39; PER AZIONI</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.2 - lotto140 - elosulfase alfa-soluzione per infusione conc-1 ml -mg-f/fl operatore individuale (persona fisica)">
+      <td class="small">2023-04-04</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.2 - LOTTO140 - ELOSULFASE ALFA-SOLUZIONE PER INFUSIONE CONC-1 ML -MG-F/FL<div class="small muted">CIG 975748642C · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="presa atto della procedura ristretta in accordo quadro esperita dalla asst di brescia - lotto 1 &#39;immonocoloratori&#39; roche diagnostics s.p.a.">
+      <td class="small">2023-03-10</td>
+      <td>PRESA ATTO DELLA PROCEDURA RISTRETTA IN ACCORDO QUADRO ESPERITA DALLA ASST DI BRESCIA - LOTTO 1 &#39;IMMONOCOLORATORI&#39;<div class="small muted">CIG 9670290FBE · PRESIDI DIAGNOSTICI</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="eliglustat 84 mg capsule rigide sanofi s.r.l.">
+      <td class="small">2024-07-26</td>
+      <td>ELIGLUSTAT 84 MG CAPSULE RIGIDE<div class="small muted">CIG B29B023EA5 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta telematica in forma aggregata per l&#39;affidamento del servizio per l&#39;erogazione di formazione tramite piattaforma e-learning occorrente all&#39;asst di cremona (capofila) e all&#39;asst di mantova (mandante) invisiblefarm srl">
+      <td class="small">2023-04-04</td>
+      <td>PROCEDURA APERTA TELEMATICA IN FORMA AGGREGATA PER L&#39;AFFIDAMENTO DEL SERVIZIO PER L&#39;EROGAZIONE DI FORMAZIONE TRAMITE PIATTAFORMA E-LEARNING OCCORRENTE ALL&#39;ASST DI CREMONA (CAPOFILA) E ALL&#39;ASST DI MANTOVA (MANDANTE)<div class="small muted">CIG 9749635552 · SERVIZI DI E-LEARNING</div></td>
+      <td>INVISIBLEFARM SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 29 midostaurina impresa inesistente">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 29 MIDOSTAURINA<div class="small muted">CIG 9604761384 · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 3338 vertex pharmaceuticals (italy) s.r.l.">
+      <td class="small">2023-06-26</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 3338<div class="small muted">CIG 98454767D0 · MEDICINALI VARI</div></td>
+      <td>VERTEX PHARMACEUTICALS (ITALY) S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.10 - lotto 7 - ibrutinib_compressa rivestita con film_420 mg_cps/cpr janssen cilag s.p.a.">
+      <td class="small">2023-05-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.10 - LOTTO 7 - IBRUTINIB_COMPRESSA RIVESTITA CON FILM_420 MG_CPS/CPR<div class="small muted">CIG 98541616E7 · MEDICINALI VARI</div></td>
+      <td>JANSSEN CILAG S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione aq prodotti per dialisi - spindial - aria_2021_061 - lotto 5 spindial spa">
+      <td class="small">2023-06-27</td>
+      <td>ADESIONE ALLA CONVENZIONE AQ PRODOTTI PER DIALISI - SPINDIAL - ARIA_2021_061 - LOTTO 5<div class="small muted">CIG 98934762AC · APPARECCHI PER EMODIALISI</div></td>
+      <td>SPINDIAL SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sotorasib 120 mg amgen s.r.l.">
+      <td class="small">2024-08-01</td>
+      <td>SOTORASIB 120 MG<div class="small muted">CIG B2ACE0CF6B · MEDICINALI VARI</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="presa d&#39;atto dell&#39;esito della procedura aperta in forma aggregata esperita dall&#39;asst pini cto per l&#39;affidamento in concessione del servizio di somministrazione di alimenti e bevande mediante distributori automatici ivs italia s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>PRESA D&#39;ATTO DELL&#39;ESITO DELLA PROCEDURA APERTA IN FORMA AGGREGATA ESPERITA DALL&#39;ASST PINI CTO PER L&#39;AFFIDAMENTO IN CONCESSIONE DEL SERVIZIO DI SOMMINISTRAZIONE DI ALIMENTI E BEVANDE MEDIANTE DISTRIBUTORI AUTOMATICI<div class="small muted">CIG 99259110E2 · DISTRIBUTORI AUTOMATICI DI PRODOTTI</div></td>
+      <td>IVS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizio di vigilanza armata 3 - vedetta 2 mondialpol - arca_2019_068.1 - lotto 3 vedetta 2 mondialpol spa">
+      <td class="small">2024-04-24</td>
+      <td>SERVIZIO DI VIGILANZA ARMATA 3 - VEDETTA 2 MONDIALPOL - ARCA_2019_068.1 - LOTTO 3<div class="small muted">CIG B16BBE4B69 · Cpv prevalente non disponibile</div></td>
+      <td>VEDETTA 2 MONDIALPOL SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizi di verifica progettazione nuovo ospedale no gap controls srl">
+      <td class="small">2024-03-15</td>
+      <td>SERVIZI DI VERIFICA PROGETTAZIONE NUOVO OSPEDALE<div class="small muted">CIG B0D698E723 · Cpv prevalente non disponibile</div></td>
+      <td>NO GAP CONTROLS SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="affidamenot lavori per uonpia di cremona- san sebastiano 14 i.tec srl costruzioni generali">
+      <td class="small">2023-06-27</td>
+      <td>AFFIDAMENOT LAVORI PER UONPIA DI CREMONA- SAN SEBASTIANO 14<div class="small muted">CIG 9899010977 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>I.TEC SRL COSTRUZIONI GENERALI</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura negoziata espletata ai sensi dell&#39;art. 76, comma 2, lett. c) del d.lgs 36/2023, per l&#39;affidamento del servizio di lavanolo, per il periodo di 6 mesi, fino al 31/01/2025, con opzione di proroga di mesi 6, nelle more dell&#39;attivazione della convenzione aria_2023_038 operatore individuale (persona fisica)">
+      <td class="small">2024-06-12</td>
+      <td>PROCEDURA NEGOZIATA ESPLETATA AI SENSI DELL&#39;ART. 76, COMMA 2, LETT. C) DEL D.LGS 36/2023, PER L&#39;AFFIDAMENTO DEL SERVIZIO DI LAVANOLO, PER IL PERIODO DI 6 MESI, FINO AL 31/01/2025, CON OPZIONE DI PROROGA DI MESI 6, NELLE MORE DELL&#39;ATTIVAZIONE DELLA CONVENZIONE ARIA_2023_038<div class="small muted">CIG B2113A7BF2 · SERVIZI DI LAVANDERIA E DI LAVAGGIO A SECCO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione aq servizi applicativi in ottica cloud e pmo - lotto 4 (id sigef 2212) - manutenzione erp reply public sector">
+      <td class="small">2023-08-24</td>
+      <td>ADESIONE AQ SERVIZI APPLICATIVI IN OTTICA CLOUD E PMO - LOTTO 4 (ID SIGEF 2212) - MANUTENZIONE ERP<div class="small muted">CIG 992999289F · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>REPLY PUBLIC SECTOR</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 5) portavetrini, vetrini biosigma s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 5) PORTAVETRINI, VETRINI<div class="small muted">CIG 9630771BA3 · MATERIALI MEDICI</div></td>
+      <td>BIOSIGMA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="presa atto della procedura ristretta esperita dalla asst di mantova per l&#39;affidamento della fornitura di un sistema analitico completo per l&#39;esecuzione delle indagini elettroforetiche occorrente al laboratorio analisi del presidio ospedaliero di oglio po ">
+      <td class="small">2024-06-26</td>
+      <td>PRESA ATTO DELLA PROCEDURA RISTRETTA ESPERITA DALLA ASST DI MANTOVA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI UN SISTEMA ANALITICO COMPLETO PER L&#39;ESECUZIONE DELLE INDAGINI ELETTROFORETICHE OCCORRENTE AL LABORATORIO ANALISI DEL PRESIDIO OSPEDALIERO DI OGLIO PO<div class="small muted">CIG A05F95D2DF · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di dispositivi per sutura meccanica, chirurgia video-assistita, feltri, pledget, reti chirurgiche, colle e cera per ossa - lotto 1 nexmed s.r.l.">
+      <td class="small">2024-02-13</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PER SUTURA MECCANICA, CHIRURGIA VIDEO-ASSISTITA, FELTRI, PLEDGET, RETI CHIRURGICHE, COLLE E CERA PER OSSA - LOTTO 1<div class="small muted">CIG A050B5EC4F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>NEXMED S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla procedura negoziata, finalizzata alla conclusione di un accordo quadro, esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di sistemi per elettrochirurgia, laserterapia ed endoscopia - lotti deserti ter - lotto 9 - sistemi per umidificazione a riscaldamento  dimar s.p.a.">
+      <td class="small">2024-04-30</td>
+      <td>ADESIONE ALLA PROCEDURA NEGOZIATA, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI PER ELETTROCHIRURGIA, LASERTERAPIA ED ENDOSCOPIA - LOTTI DESERTI TER - LOTTO 9 - SISTEMI PER UMIDIFICAZIONE A RISCALDAMENTO <div class="small muted">CIG A05855E9C6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>DIMAR S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="cotonini per neurochirurgia in cotone 100%, spessore 1 mm circa ">
+      <td class="small">2023-06-27</td>
+      <td>COTONINI PER NEUROCHIRURGIA IN COTONE 100%, SPESSORE 1 MM CIRCA<div class="small muted">CIG 9904446F63 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="presa d&#39;atto esito procedura aperta, in forma aggregata, finalizzata alla conclusione di un accordo quadro, per la fornitura di sistemi per iniezione di mezzi di contrasto. scadenza 31/12/29 lotto 4 - sistema per iniezione di mezzi di contrasto in procedure rmn bayer s.p.a.">
+      <td class="small">2023-12-27</td>
+      <td>PRESA D&#39;ATTO ESITO PROCEDURA APERTA, IN FORMA AGGREGATA, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO, PER LA FORNITURA DI SISTEMI PER INIEZIONE DI MEZZI DI CONTRASTO. SCADENZA 31/12/29 LOTTO 4 - SISTEMA PER INIEZIONE DI MEZZI DI CONTRASTO IN PROCEDURE RMN<div class="small muted">CIG A043E7C934 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="kit di attacco - stacco per assistenza alla medicazione pre e post-dialitica peritoneale o extracorporea dei pazienti in dialisi betatex s.p.a.">
+      <td class="small">2023-06-27</td>
+      <td>KIT DI ATTACCO - STACCO PER ASSISTENZA ALLA MEDICAZIONE PRE E POST-DIALITICA PERITONEALE O EXTRACORPOREA DEI PAZIENTI IN DIALISI<div class="small muted">CIG 98982126F0 · MATERIALI MEDICI</div></td>
+      <td>BETATEX S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3 - lotto 1797r viiv healthcare s.r.l.">
+      <td class="small">2023-11-07</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3 - LOTTO 1797R<div class="small muted">CIG A0279CD83A · MEDICINALI VARI</div></td>
+      <td>VIIV HEALTHCARE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="progetto di fattibilita tecnico ed economica adeguamento facciate e coperture con riqualificazione edilizia ed efficientamento energetico delle aree sanitarie e adeguamento sismico delle strutture mythos consorzio stabile - societa&#39; consortile a responsabilita&#39; limitata in forma abbreviata mythos consorzio stabile s.c. a r.l. o anche solo mythos s.c. a r.l.">
+      <td class="small">2024-02-15</td>
+      <td>PROGETTO DI FATTIBILITA TECNICO ED ECONOMICA ADEGUAMENTO FACCIATE E COPERTURE CON RIQUALIFICAZIONE EDILIZIA ED EFFICIENTAMENTO ENERGETICO DELLE AREE SANITARIE E ADEGUAMENTO SISMICO DELLE STRUTTURE<div class="small muted">CIG B068ACFA28 · Cpv prevalente non disponibile</div></td>
+      <td>MYTHOS CONSORZIO STABILE - SOCIETA&#39; CONSORTILE A RESPONSABILITA&#39; LIMITATA IN FORMA ABBREVIATA MYTHOS CONSORZIO STABILE S.C. A R.L. O ANCHE SOLO MYTHOS S.C. A R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="progetto di fattibilità tecnico ed economica adeguamento facciate e coperture con riqualificazione edilizia ed efficientamento energetico delle aree sanitarie e adeguamento sismico delle strutture ">
+      <td class="small">2024-02-15</td>
+      <td>PROGETTO DI FATTIBILITÀ TECNICO ED ECONOMICA ADEGUAMENTO FACCIATE E COPERTURE CON RIQUALIFICAZIONE EDILIZIA ED EFFICIENTAMENTO ENERGETICO DELLE AREE SANITARIE E ADEGUAMENTO SISMICO DELLE STRUTTURE<div class="small muted">CIG A04FB388D4 · SERVIZI DI PROGETTAZIONE DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura negoziata svolta in modalità telematica per l&#39;affidamento dei lavori di incremento del livello di sicurezza antincendio del presidio ospedaliero di oglio po: adeguamento impianti irai ed evac ai sensi dell&#39;art. 50, comma 1, lett. c), d.lgs. 36/2023 impresa inesistente">
+      <td class="small">2023-08-02</td>
+      <td>PROCEDURA NEGOZIATA SVOLTA IN MODALITÀ TELEMATICA PER L&#39;AFFIDAMENTO DEI LAVORI DI INCREMENTO DEL LIVELLO DI SICUREZZA ANTINCENDIO DEL PRESIDIO OSPEDALIERO DI OGLIO PO: ADEGUAMENTO IMPIANTI IRAI ED EVAC AI SENSI DELL&#39;ART. 50, COMMA 1, LETT. C), D.LGS. 36/2023<div class="small muted">CIG 9991962BE1 · LAVORI DI INSTALLAZIONE DI DISPOSITIVI ANTINCENDIO</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">995 mila €</td></tr><tr data-t="presa atto della procedura ristretta esperita dalla asst spedali civili di brescia per l&#39;affidamento della fornitura di sistemi per analisi di immunochimica (droghe d&#39;abuso per medicina legale), processazione rapida per tessuti istologici, selezione cellulare immunomagnetica - lotto 2 &#39;fornitura sis kaltek s.r.l.">
+      <td class="small">2024-06-25</td>
+      <td>PRESA ATTO DELLA PROCEDURA RISTRETTA ESPERITA DALLA ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI PER ANALISI DI IMMUNOCHIMICA (DROGHE D&#39;ABUSO PER MEDICINA LEGALE), PROCESSAZIONE RAPIDA PER TESSUTI ISTOLOGICI, SELEZIONE CELLULARE IMMUNOMAGNETICA - LOTTO 2 &#39;FORNITURA SIS<div class="small muted">CIG A05D15F235 · SISTEMI DIAGNOSTICI</div></td>
+      <td>KALTEK S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">995 mila €</td></tr><tr data-t="procedura aperta aggregata in aq per la fornitura di dispositivi per oculistica - lotto 18) viscoelastico i fase intervento di cataratta al 3% amo italy srl">
+      <td class="small">2023-06-26</td>
+      <td>PROCEDURA APERTA AGGREGATA IN AQ PER LA FORNITURA DI DISPOSITIVI PER OCULISTICA - LOTTO 18) VISCOELASTICO I FASE INTERVENTO DI CATARATTA AL 3%<div class="small muted">CIG 9875602494 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>AMO ITALY SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">971 mila €</td></tr><tr data-t="bacinella reniforme in cartone pressato, monouso, non sterile promos spa">
+      <td class="small">2023-06-27</td>
+      <td>BACINELLA RENIFORME IN CARTONE PRESSATO, MONOUSO, NON STERILE<div class="small muted">CIG 9895387BAB · MATERIALI MEDICI</div></td>
+      <td>PROMOS SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">961 mila €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di dispositivi per sutura meccanica, chirurgia video-assistita, feltri, pledget, reti chirurgiche, colle e cera per ossa. scad. 31/12/2028 - lotto 10 medtronic italia s.p.a.">
+      <td class="small">2023-08-02</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PER SUTURA MECCANICA, CHIRURGIA VIDEO-ASSISTITA, FELTRI, PLEDGET, RETI CHIRURGICHE, COLLE E CERA PER OSSA. SCAD. 31/12/2028 - LOTTO 10<div class="small muted">CIG A005895A77 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">961 mila €</td></tr><tr data-t="adesione alla convenzione aria_2023_041 lotto 2 servizio di nutrizione artificiale domiciliare enterale per gli assistiti residenti nel territorio di riferimento delle ats val padana, pavia e insubria vivisol srl">
+      <td class="small">2024-07-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2023_041 LOTTO 2 SERVIZIO DI NUTRIZIONE ARTIFICIALE DOMICILIARE ENTERALE PER GLI ASSISTITI RESIDENTI NEL TERRITORIO DI RIFERIMENTO DELLE ATS VAL PADANA, PAVIA E INSUBRIA<div class="small muted">CIG A0602CFE41 · SERVIZI DI CURE MEDICHE A DOMICILIO</div></td>
+      <td>VIVISOL SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">959 mila €</td></tr><tr data-t="lotto 23 trastuzumab roche societa&#39; per azioni">
+      <td class="small">2023-06-26</td>
+      <td>LOTTO 23 TRASTUZUMAB<div class="small muted">CIG 9921434258 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">956 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.8 - lotto 4 bristol myers squibb">
+      <td class="small">2023-10-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.8 - LOTTO 4<div class="small muted">CIG A01FE17153 · MEDICINALI VARI</div></td>
+      <td>BRISTOL MYERS SQUIBB</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">937 mila €</td></tr><tr data-t="adesione alla procedura ristretta esperita dalla asst di brescia lotto 2 &#39;anticorpi&#39; agilent technologies italia  s.p.a.">
+      <td class="small">2023-03-10</td>
+      <td>ADESIONE ALLA PROCEDURA RISTRETTA ESPERITA DALLA ASST DI BRESCIA LOTTO 2 &#39;ANTICORPI&#39;<div class="small muted">CIG 96703121EA · PRESIDI DIAGNOSTICI</div></td>
+      <td>AGILENT TECHNOLOGIES ITALIA  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">932 mila €</td></tr><tr data-t="lotto n. 21 ustekinumab 90 mg janssencilag">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 21 USTEKINUMAB 90 MG<div class="small muted">CIG A0411A6942 · MEDICINALI VARI</div></td>
+      <td>JANSSENCILAG</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">906 mila €</td></tr><tr data-t="lotto 16 nivolumab bristol-myers squibb s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 16 NIVOLUMAB<div class="small muted">CIG 96037419C7 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">879 mila €</td></tr><tr data-t="servizio di prelievo, trasporto, smaltimento e/o recupero dei rifiuti speciali pericolosi a rischio infettivo (cod. cer 180103*) eco eridania societa&#39; per azioni">
+      <td class="small">2023-12-19</td>
+      <td>SERVIZIO DI PRELIEVO, TRASPORTO, SMALTIMENTO E/O RECUPERO DEI RIFIUTI SPECIALI PERICOLOSI A RISCHIO INFETTIVO (COD. CER 180103*)<div class="small muted">CIG A0403CA95B · TRATTAMENTO E SMALTIMENTO DEI RIFIUTI</div></td>
+      <td>ECO ERIDANIA SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">879 mila €</td></tr><tr data-t="lotto 30 vosoritide 0,56 mg operatore individuale (persona fisica)">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 30 VOSORITIDE 0,56 MG<div class="small muted">CIG A0231DCA09 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">875 mila €</td></tr><tr data-t="rettoscopio monouso diam19.6 mm lunghezza 130 e 250 mm ">
+      <td class="small">2023-06-27</td>
+      <td>RETTOSCOPIO MONOUSO DIAM19.6 MM LUNGHEZZA 130 E 250 MM<div class="small muted">CIG 9900394F92 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">866 mila €</td></tr><tr data-t="lotto 6 - artroprotesi primaria non cementata monoblocco,stelo retto, stabilità metafisaria, cotile tridimensionale limacorporate s.p.a.">
+      <td class="small">2024-05-29</td>
+      <td>LOTTO 6 - ARTROPROTESI PRIMARIA NON CEMENTATA MONOBLOCCO,STELO RETTO, STABILITÀ METAFISARIA, COTILE TRIDIMENSIONALE<div class="small muted">CIG B1E61EFF6B · Cpv prevalente non disponibile</div></td>
+      <td>LIMACORPORATE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">862 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.10 - lotto 8 - ibrutinib_compressa rivestita con film_560 mg_cps/cpr janssen cilag s.p.a.">
+      <td class="small">2023-05-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.10 - LOTTO 8 - IBRUTINIB_COMPRESSA RIVESTITA CON FILM_560 MG_CPS/CPR<div class="small muted">CIG 9854172FF8 · MEDICINALI VARI</div></td>
+      <td>JANSSEN CILAG S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">851 mila €</td></tr><tr data-t="procedura aperta telematica multilotto aggregata fornitura di dispositivi emostatici (cnd m0405) per asst di cremona (capofila) e asst crema, mantova, papa giovanni xxiii di bergamo, rhodense e fondazione i.r.c.c.s. policlinico san matteo di pavia - lotto 9) dispositivi a base di gelatina di origine baxter s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>PROCEDURA APERTA TELEMATICA MULTILOTTO AGGREGATA FORNITURA DI DISPOSITIVI EMOSTATICI (CND M0405) PER ASST DI CREMONA (CAPOFILA) E ASST CREMA, MANTOVA, PAPA GIOVANNI XXIII DI BERGAMO, RHODENSE E FONDAZIONE I.R.C.C.S. POLICLINICO SAN MATTEO DI PAVIA - LOTTO 9) DISPOSITIVI A BASE DI GELATINA DI ORIGINE<div class="small muted">CIG 9951380A8E · EMOSTATICI RIASSORBIBILI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">835 mila €</td></tr><tr data-t="adesione alla convenzione farmaci innovativi - aria_2023_011.5 - lotto 17 nivolumab soluzione 10 mg/ml 12 ml bristol myers squibb">
+      <td class="small">2023-09-07</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI INNOVATIVI - ARIA_2023_011.5 - LOTTO 17 NIVOLUMAB SOLUZIONE 10 MG/ML 12 ML<div class="small muted">CIG A00C506792 · MEDICINALI VARI</div></td>
+      <td>BRISTOL MYERS SQUIBB</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">833 mila €</td></tr><tr data-t="lotto 25 - vaccino anti herpes zoster utilizzabile dai 18 anni operatore individuale (persona fisica)">
+      <td class="small">2024-09-05</td>
+      <td>LOTTO 25 - VACCINO ANTI HERPES ZOSTER UTILIZZABILE DAI 18 ANNI<div class="small muted">CIG B2F2F279CB · VACCINI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">831 mila €</td></tr><tr data-t="adesione alla convenzione arca_2019_029 dispositivi per dialisi - lotto 4 - ditta spindial nipro medical europe">
+      <td class="small">2023-06-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARCA_2019_029 DISPOSITIVI PER DIALISI - LOTTO 4 - DITTA SPINDIAL<div class="small muted">CIG 9916138FEE · MATERIALI MEDICI</div></td>
+      <td>NIPRO MEDICAL EUROPE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">830 mila €</td></tr><tr data-t="lotto n. 14 ozanimod 0,92 mg bristol-myers squibb s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 14 OZANIMOD 0,92 MG<div class="small muted">CIG A04115EDD6 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">830 mila €</td></tr><tr data-t="lotto 4 acalabrutinib astrazeneca s.p.a.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 4 ACALABRUTINIB<div class="small muted">CIG 96034108A1 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">820 mila €</td></tr><tr data-t="adesione alla convenzione aria_2023_011.16 lotto 9 - olaparib - compressa rivestita con film - 150 mg - cpr/ cps astrazeneca s.p.a.">
+      <td class="small">2024-08-02</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2023_011.16 LOTTO 9 - OLAPARIB - COMPRESSA RIVESTITA CON FILM - 150 MG - CPR/ CPS<div class="small muted">CIG A06071DBA8 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">814 mila €</td></tr><tr data-t="selinexor 20 mg 20 compresse cnn menarini stemline italia s.r.l.">
+      <td class="small">2024-09-04</td>
+      <td>SELINEXOR 20 MG 20 COMPRESSE CNN<div class="small muted">CIG B2EC5BCB6A · MEDICINALI VARI</div></td>
+      <td>MENARINI STEMLINE ITALIA S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">794 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 677 takeda italia s.p.a.">
+      <td class="small">2023-09-05</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 677<div class="small muted">CIG A00B032777 · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">779 mila €</td></tr><tr data-t="presa atto gara asst garda sitemi vari osteosintesi - lotto n^ 11 - sistema di placche e viti per osteosintesi per fratture di omero, radio/ulna, perone, clavicola, calcagno stryker italia srl">
+      <td class="small">2023-03-23</td>
+      <td>PRESA ATTO GARA ASST GARDA SITEMI VARI OSTEOSINTESI - LOTTO N^ 11 - SISTEMA DI PLACCHE E VITI PER OSTEOSINTESI PER FRATTURE DI OMERO, RADIO/ULNA, PERONE, CLAVICOLA, CALCAGNO<div class="small muted">CIG 9725159F13 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>STRYKER ITALIA SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">776 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.9 - lotto 12 astellas pharma s.p.a.">
+      <td class="small">2023-12-01</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.9 - LOTTO 12<div class="small muted">CIG A0315988B8 · MEDICINALI VARI</div></td>
+      <td>ASTELLAS PHARMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">773 mila €</td></tr><tr data-t="fornitura di sistemi diagnostici completi per l&#39;esecuzione di indagini molecolari &#39;cgh array&#39; occorrenti all&#39;asst di cremona agilent technologies italia  s.p.a.">
+      <td class="small">2023-06-01</td>
+      <td>FORNITURA DI SISTEMI DIAGNOSTICI COMPLETI PER L&#39;ESECUZIONE DI INDAGINI MOLECOLARI &#39;CGH ARRAY&#39; OCCORRENTI ALL&#39;ASST DI CREMONA<div class="small muted">CIG 98228139B6 · SISTEMI DIAGNOSTICI</div></td>
+      <td>AGILENT TECHNOLOGIES ITALIA  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">771 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2022_027.10r - lotto 25r alloga (italia) s.r.l.">
+      <td class="small">2024-07-17</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2022_027.10R - LOTTO 25R<div class="small muted">CIG A05F5737FD · MEDICINALI VARI</div></td>
+      <td>ALLOGA (ITALIA) S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">766 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2062 roche societa&#39; per azioni">
+      <td class="small">2024-01-16</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2062<div class="small muted">CIG A04A10ADA7 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">755 mila €</td></tr><tr data-t="fornitura di rm 1,5 tesla per asst di lodi philips s.p.a.">
+      <td class="small">2024-12-02</td>
+      <td>FORNITURA DI RM 1,5 TESLA PER ASST DI LODI<div class="small muted">CIG B48D5BF67E · APPARECCHIATURE PER IMMAGINOGRAFIA A RISONANZA MAGNETICA</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">731 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.10 - lotto1_belantamab mafodotin_polvere per concentrato per soluzione per infusione_100 mg_f/fl glaxosmithkline s.p.a.">
+      <td class="small">2023-05-16</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.10 - LOTTO1_BELANTAMAB MAFODOTIN_POLVERE PER CONCENTRATO PER SOLUZIONE PER INFUSIONE_100 MG_F/FL<div class="small muted">CIG 98265082EE · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">729 mila €</td></tr><tr data-t="servizio di copertura assicurativa dei rischi all risks property generali italia s.p.a.">
+      <td class="small">2024-12-17</td>
+      <td>SERVIZIO DI COPERTURA ASSICURATIVA DEI RISCHI ALL RISKS PROPERTY<div class="small muted">CIG B4DE738BD0 · SERVIZI DI ASSICURAZIONE DI RESPONSABILITÀ CIVILE</div></td>
+      <td>GENERALI ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">728 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2022_027.7 - lotto 26 pfizer s.r.l.">
+      <td class="small">2023-07-28</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2022_027.7 - LOTTO 26<div class="small muted">CIG 999444199E · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">728 mila €</td></tr><tr data-t="lotto 26 tucatinib ">
+      <td class="small">2023-06-26</td>
+      <td>LOTTO 26 TUCATINIB<div class="small muted">CIG 9921497654 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">726 mila €</td></tr><tr data-t="appalto integrato per il servizio di progettazione esecutiva ed esecuzione opere edili e impiantistiche per installazione n 4 apparecchiature operatore individuale (persona fisica)">
+      <td class="small">2024-04-19</td>
+      <td>APPALTO INTEGRATO PER IL SERVIZIO DI PROGETTAZIONE ESECUTIVA ED ESECUZIONE OPERE EDILI E IMPIANTISTICHE PER INSTALLAZIONE N 4 APPARECCHIATURE<div class="small muted">CIG B157B62D9B · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">716 mila €</td></tr><tr data-t="adesione alla convenzione aria_2023_011.3 - lotto 1 gilead sciences s.r.l.">
+      <td class="small">2023-11-02</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2023_011.3 - LOTTO 1<div class="small muted">CIG A025A2261F · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">709 mila €</td></tr><tr data-t="lotto n. 23 alpelisib 150 mg impresa inesistente">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 23 ALPELISIB 150 MG<div class="small muted">CIG A0411B774A · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">701 mila €</td></tr><tr data-t="adesione a procedura esperita dall&#39;asst spedali civili di brescia per la fornitura di protesi per esclusione endovascolare dell&#39;aorta addominale con fissaggio sottorenale - corpo principale, estensioni e altri dispositivi - lotto 2 w.l. gore &amp; associati s.r.l.  con sigla gore s.r.l.">
+      <td class="small">2023-07-26</td>
+      <td>ADESIONE A PROCEDURA ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER LA FORNITURA DI PROTESI PER ESCLUSIONE ENDOVASCOLARE DELL&#39;AORTA ADDOMINALE CON FISSAGGIO SOTTORENALE - CORPO PRINCIPALE, ESTENSIONI E ALTRI DISPOSITIVI - LOTTO 2<div class="small muted">CIG 9948648C09 · PROTESI VASCOLARI</div></td>
+      <td>W.L. GORE &amp; ASSOCIATI S.R.L.  CON SIGLA GORE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">695 mila €</td></tr><tr data-t="divaricatore/retrattore/protettore per incisioni cavità addominale ">
+      <td class="small">2023-06-27</td>
+      <td>DIVARICATORE/RETRATTORE/PROTETTORE PER INCISIONI CAVITÀ ADDOMINALE<div class="small muted">CIG 99029057B9 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">690 mila €</td></tr><tr data-t="affidamento dei lavori di adeguamento edilizio e impiantistico dei locali dell&#39;asst di cremona edilsuolo srl">
+      <td class="small">2023-07-12</td>
+      <td>AFFIDAMENTO DEI LAVORI DI ADEGUAMENTO EDILIZIO E IMPIANTISTICO DEI LOCALI DELL&#39;ASST DI CREMONA<div class="small muted">CIG 9935287A31 · LAVORI EDILI E DI MURATURA</div></td>
+      <td>EDILSUOLO SRL</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">688 mila €</td></tr><tr data-t="lotto 25 risdiplam 0,75 mg/ml roche societa&#39; per azioni">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 25 RISDIPLAM 0,75 MG/ML<div class="small muted">CIG A023090810 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">677 mila €</td></tr><tr data-t="adesione alla convenzione aria_2023_011.4 - lotto 41 operatore individuale (persona fisica)">
+      <td class="small">2023-10-12</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2023_011.4 - LOTTO 41<div class="small muted">CIG A01CB04B7B · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">674 mila €</td></tr><tr data-t="circuito monopaziente per ventiloterapia con doppio filtro ">
+      <td class="small">2023-06-27</td>
+      <td>CIRCUITO MONOPAZIENTE PER VENTILOTERAPIA CON DOPPIO FILTRO<div class="small muted">CIG 99018988B8 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">670 mila €</td></tr><tr data-t="indicatori tempo/temperatura per sacche di sangue. ">
+      <td class="small">2024-08-05</td>
+      <td>INDICATORI TEMPO/TEMPERATURA PER SACCHE DI SANGUE.<div class="small muted">CIG B2B01AFC16 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">664 mila €</td></tr><tr data-t="dispositivo per anopessia ">
+      <td class="small">2023-06-27</td>
+      <td>DISPOSITIVO PER ANOPESSIA<div class="small muted">CIG 9900369AF2 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">661 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2022_027.2r - lotto 915r sanofi s.r.l.">
+      <td class="small">2023-09-14</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2022_027.2R - LOTTO 915R<div class="small muted">CIG A00F607808 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">655 mila €</td></tr><tr data-t="adesione alla convenzione aria_2023_011.12 - lotto 1 - remdesivir 100 mg novartis farma spa">
+      <td class="small">2024-01-15</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2023_011.12 - LOTTO 1 - REMDESIVIR 100 MG<div class="small muted">CIG A049C16746 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">623 mila €</td></tr><tr data-t="fornitura di guanti esplorazione non sterili in nitrile senza polvere al gomito marcatura dpi clini-lab s.r.l.">
+      <td class="small">2024-10-01</td>
+      <td>FORNITURA DI GUANTI ESPLORAZIONE NON STERILI IN NITRILE SENZA POLVERE AL GOMITO MARCATURA DPI<div class="small muted">CIG B34072933A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CLINI-LAB S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">620 mila €</td></tr><tr data-t="adesione alla procedura ristretta esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di elettrodi per ecg e piastre per defibrillatore. - lotto n. 2 ceracarta - s.p.a.">
+      <td class="small">2023-05-24</td>
+      <td>ADESIONE ALLA PROCEDURA RISTRETTA ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI ELETTRODI PER ECG E PIASTRE PER DEFIBRILLATORE. - LOTTO N. 2<div class="small muted">CIG 98640843A0 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CERACARTA - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">612 mila €</td></tr><tr data-t="lotto n. 36 vismodegib 150 mg roche societa&#39; per azioni">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 36 VISMODEGIB 150 MG<div class="small muted">CIG A0413724DE · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">609 mila €</td></tr><tr data-t="adesione alla procedura ristretta, aggregata, finalizzata alla conclusione di accordo quadro, per la fornitura di sistemi per elettrochirurgia, laserterapia ed endoscopia. scadenza 30/06/2031. lotto 47 - sistema piezo elettrico per l&#39;esecuzione di osteotomie costitutito dal materiale di consumo e ap megatec srl">
+      <td class="small">2023-11-29</td>
+      <td>ADESIONE ALLA PROCEDURA RISTRETTA, AGGREGATA, FINALIZZATA ALLA CONCLUSIONE DI ACCORDO QUADRO, PER LA FORNITURA DI SISTEMI PER ELETTROCHIRURGIA, LASERTERAPIA ED ENDOSCOPIA. SCADENZA 30/06/2031. LOTTO 47 - SISTEMA PIEZO ELETTRICO PER L&#39;ESECUZIONE DI OSTEOTOMIE COSTITUTITO DAL MATERIALE DI CONSUMO E AP<div class="small muted">CIG A03AEACBAD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEGATEC SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">609 mila €</td></tr><tr data-t="lotto 32 tafamidis pfizer s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 32 TAFAMIDIS<div class="small muted">CIG 96047878F7 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">604 mila €</td></tr><tr data-t="lotto 25 lanadelumab takeda italia s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>LOTTO 25 LANADELUMAB<div class="small muted">CIG 9927769E23 · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">595 mila €</td></tr><tr data-t="coperta autoriscaldante per il trattamento dello shock e dell&#39;ipotermia medical lume s.r.l.">
+      <td class="small">2023-06-27</td>
+      <td>COPERTA AUTORISCALDANTE PER IL TRATTAMENTO DELLO SHOCK E DELL&#39;IPOTERMIA<div class="small muted">CIG 98982652AE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDICAL LUME S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">593 mila €</td></tr><tr data-t="lotto 6) tamponi, capsule petri e piastra eutettica ">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 6) TAMPONI, CAPSULE PETRI E PIASTRA EUTETTICA<div class="small muted">CIG 9630772C76 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">590 mila €</td></tr><tr data-t="lotto 2 - fornitura di sistemi per la sintesi vasale/tissutale a radiofrequenza avanzata comprensivi della messa a disposizione a titolo di noleggio full risk di apparecchiature medtronic italia s.p.a.">
+      <td class="small">2023-01-31</td>
+      <td>LOTTO 2 - FORNITURA DI SISTEMI PER LA SINTESI VASALE/TISSUTALE A RADIOFREQUENZA AVANZATA COMPRENSIVI DELLA MESSA A DISPOSIZIONE A TITOLO DI NOLEGGIO FULL RISK DI APPARECCHIATURE<div class="small muted">CIG 9674223D5C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">590 mila €</td></tr><tr data-t="presa atto gara asst garda sitemi vari osteosintesi -lotto n^ 6 - sistema di stabilizzazione vertebrale diemme dispositivi medici s.r.l.">
+      <td class="small">2023-03-23</td>
+      <td>PRESA ATTO GARA ASST GARDA SITEMI VARI OSTEOSINTESI -LOTTO N^ 6 - SISTEMA DI STABILIZZAZIONE VERTEBRALE<div class="small muted">CIG 9725026156 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>DIEMME DISPOSITIVI MEDICI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">578 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2022_027.11 - lotto 3 - pemigatinib compresse incyte biosciences italy s.r.l.">
+      <td class="small">2023-03-10</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2022_027.11 - LOTTO 3 - PEMIGATINIB COMPRESSE<div class="small muted">CIG 9705690CC0 · MEDICINALI VARI</div></td>
+      <td>INCYTE BIOSCIENCES ITALY S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">577 mila €</td></tr><tr data-t="adesione a convenzione aria_2023_037 - guanti chirurgici e non - lotto 13 clini-lab s.r.l.">
+      <td class="small">2024-04-08</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2023_037 - GUANTI CHIRURGICI E NON - LOTTO 13<div class="small muted">CIG A055DA62E2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CLINI-LAB S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">576 mila €</td></tr><tr data-t="vaccino meningococcico gruppo a, c, w-135 e y coniugato al tossoide tetanico 0,5 ml ">
+      <td class="small">2024-08-01</td>
+      <td>VACCINO MENINGOCOCCICO GRUPPO A, C, W-135 E Y CONIUGATO AL TOSSOIDE TETANICO 0,5 ML<div class="small muted">CIG B2ACE1FF19 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">573 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 1090 sanofi s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 1090<div class="small muted">CIG A01F2B3AF4 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">564 mila €</td></tr><tr data-t="lotto 1) pipette pasteur laboindustria s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 1) PIPETTE PASTEUR<div class="small muted">CIG 9630408018 · MATERIALI MEDICI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">558 mila €</td></tr><tr data-t="lotto n. 16 lenvatinib 10 mg eisai s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 16 LENVATINIB 10 MG<div class="small muted">CIG A04117727B · MEDICINALI VARI</div></td>
+      <td>EISAI S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">552 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.10 - lotto 31 sanofi s.r.l.">
+      <td class="small">2023-05-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.10 - LOTTO 31<div class="small muted">CIG 9854053DC5 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">551 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2016 astellas pharma s.p.a.">
+      <td class="small">2023-11-06</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2016<div class="small muted">CIG A026C95FA7 · MEDICINALI VARI</div></td>
+      <td>ASTELLAS PHARMA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">550 mila €</td></tr><tr data-t="adesione alla procedura aperta esperita dall&#39;asst gaetano pini - cto per la fornitura di materiale di consumo e noleggio di colonne per artroscopia - lotto n. 1 - mida tecnologia medica s.p.a. mida tecnologia medica s.p.a.">
+      <td class="small">2023-04-21</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA ESPERITA DALL&#39;ASST GAETANO PINI - CTO PER LA FORNITURA DI MATERIALE DI CONSUMO E NOLEGGIO DI COLONNE PER ARTROSCOPIA - LOTTO N. 1 - MIDA TECNOLOGIA MEDICA S.P.A.<div class="small muted">CIG 978286104A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MIDA TECNOLOGIA MEDICA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">547 mila €</td></tr><tr data-t="adesione alla convenzione 2023_011.10 - lotto 5 - herceptin - trastuzumab 600 mg/5 ml - soluzione iniettabile 1 pz ">
+      <td class="small">2024-01-16</td>
+      <td>ADESIONE ALLA CONVENZIONE 2023_011.10 - LOTTO 5 - HERCEPTIN - TRASTUZUMAB 600 MG/5 ML - SOLUZIONE INIETTABILE 1 PZ<div class="small muted">CIG A04A011030 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">546 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 1793 gilead sciences s.r.l.">
+      <td class="small">2024-03-25</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 1793<div class="small muted">CIG A0544B2B54 · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">544 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_057- servizio di brokeraggio assicurativo ed. 4 - lotto n. 2 morganti insurance brokers s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_057- SERVIZIO DI BROKERAGGIO ASSICURATIVO ED. 4 - LOTTO N. 2<div class="small muted">CIG A0464EF3E9 · SERVIZI DI INTERMEDIAZIONE ASSICURATIVA</div></td>
+      <td>MORGANTI INSURANCE BROKERS S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">543 mila €</td></tr><tr data-t="servizio di assistenza, manutenzione ed aggiornamento del sistema pacs della ditta philips s.p.a. installato presso l&#39;asst di cremona philips s.p.a.">
+      <td class="small">2024-07-26</td>
+      <td>SERVIZIO DI ASSISTENZA, MANUTENZIONE ED AGGIORNAMENTO DEL SISTEMA PACS DELLA DITTA PHILIPS S.P.A. INSTALLATO PRESSO L&#39;ASST DI CREMONA<div class="small muted">CIG B29920DAC2 · APPARECCHIATURE MEDICHE</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">541 mila €</td></tr><tr data-t="adesione all&#39;accordo quadro di consip spa ad oggetto servizi applicativi e di supporto in ambito sanità digitale - sistemi informativi gestionali per le pubbliche amministrazioni del ssn (id 2366) per l&#39;acquisizione di servizi di assistenza, manutenzione ed implementazione delle piattaforme legate a engineering">
+      <td class="small">2024-10-10</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO DI CONSIP SPA AD OGGETTO SERVIZI APPLICATIVI E DI SUPPORTO IN AMBITO SANITÀ DIGITALE - SISTEMI INFORMATIVI GESTIONALI PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN (ID 2366) PER L&#39;ACQUISIZIONE DI SERVIZI DI ASSISTENZA, MANUTENZIONE ED IMPLEMENTAZIONE DELLE PIATTAFORME LEGATE A<div class="small muted">CIG B362352451 · SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">528 mila €</td></tr><tr data-t="lotto 19 talazoparib pfizer s.r.l.">
+      <td class="small">2023-06-26</td>
+      <td>LOTTO 19 TALAZOPARIB<div class="small muted">CIG 9921336179 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">524 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3 - lotto 474 - treprostinil sodico soluzione per infusione 5 mg/ml euromed pharma s.r.l.">
+      <td class="small">2023-01-24</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3 - LOTTO 474 - TREPROSTINIL SODICO SOLUZIONE PER INFUSIONE 5 MG/ML<div class="small muted">CIG 9618391359 · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">523 mila €</td></tr><tr data-t="stent ureterali per patologia tumorale a punta aperta ">
+      <td class="small">2023-06-27</td>
+      <td>STENT URETERALI PER PATOLOGIA TUMORALE A PUNTA APERTA<div class="small muted">CIG 9902491216 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">522 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.16 - lotto 20 pfizer s.r.l.">
+      <td class="small">2024-03-06</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.16 - LOTTO 20<div class="small muted">CIG A052303F66 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">520 mila €</td></tr><tr data-t="materiale di consumo per apparecchio otoemissioni acustiche accuscreen ">
+      <td class="small">2023-06-27</td>
+      <td>MATERIALE DI CONSUMO PER APPARECCHIO OTOEMISSIONI ACUSTICHE ACCUSCREEN<div class="small muted">CIG 9897050806 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">519 mila €</td></tr><tr data-t="procedura aperta, aggregata, in accordo quadro, per la fornitura di immunoterapie specifiche iposensibilizzanti (non aic) - lotto 1 stallergenes italia s.r.l.">
+      <td class="small">2024-02-28</td>
+      <td>PROCEDURA APERTA, AGGREGATA, IN ACCORDO QUADRO, PER LA FORNITURA DI IMMUNOTERAPIE SPECIFICHE IPOSENSIBILIZZANTI (NON AIC) - LOTTO 1<div class="small muted">CIG A05170F239 · VACCINI</div></td>
+      <td>STALLERGENES ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">518 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2022_027.7r - lotto 8 viiv healthcare s.r.l.">
+      <td class="small">2024-07-18</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2022_027.7R - LOTTO 8<div class="small muted">CIG A05F699A9A · MEDICINALI VARI</div></td>
+      <td>VIIV HEALTHCARE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">517 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.10 - lotto 23 _ inclisiran sodico soluzione iniettabile 284 mg (189 mg/ml ) 1,5 ml siringa novartis farma spa">
+      <td class="small">2023-05-16</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.10 - LOTTO 23 _ INCLISIRAN SODICO SOLUZIONE INIETTABILE 284 MG (189 MG/ML ) 1,5 ML SIRINGA<div class="small muted">CIG 982644923E · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">514 mila €</td></tr><tr data-t="adesione aq di consip sd1 (id sigef 2202) - sistemi informativi clinico-assistenziali - lotto 5 kpmg advisory s.p.a.">
+      <td class="small">2023-07-11</td>
+      <td>ADESIONE AQ DI CONSIP SD1 (ID SIGEF 2202) - SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI - LOTTO 5<div class="small muted">CIG 9773483550 · SERVIZI DI CONSULENZA PER LA GESTIONE DI PROGETTI</div></td>
+      <td>KPMG ADVISORY S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">509 mila €</td></tr><tr data-t="adesione successiva p.a. per la fornitura di materie prime fu, galenici preconfezionati, chemioterapici in sacca multidose e prodotti parafarmaceutici vari. - lotto 12 farmalabor s.r.l.">
+      <td class="small">2024-02-28</td>
+      <td>ADESIONE SUCCESSIVA P.A. PER LA FORNITURA DI MATERIE PRIME FU, GALENICI PRECONFEZIONATI, CHEMIOTERAPICI IN SACCA MULTIDOSE E PRODOTTI PARAFARMACEUTICI VARI. - LOTTO 12<div class="small muted">CIG A0516045E2 · SOLUZIONI GALENICHE</div></td>
+      <td>FARMALABOR S.R.L.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">508 mila €</td></tr><tr data-t="procedura aperta telematica multilotto aggregata fornitura di dispositivi emostatici (cnd m0405) per asst di cremona (capofila) e asst crema, mantova, papa giovanni xxiii di bergamo, rhodense e fondazione i.r.c.c.s. policlinico san matteo di pavia - lotto 2) medicazione in cellulosa ossidata rigener assut europe s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>PROCEDURA APERTA TELEMATICA MULTILOTTO AGGREGATA FORNITURA DI DISPOSITIVI EMOSTATICI (CND M0405) PER ASST DI CREMONA (CAPOFILA) E ASST CREMA, MANTOVA, PAPA GIOVANNI XXIII DI BERGAMO, RHODENSE E FONDAZIONE I.R.C.C.S. POLICLINICO SAN MATTEO DI PAVIA - LOTTO 2) MEDICAZIONE IN CELLULOSA OSSIDATA RIGENER<div class="small muted">CIG 9951174092 · EMOSTATICI RIASSORBIBILI</div></td>
+      <td>ASSUT EUROPE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">507 mila €</td></tr><tr data-t="lotto 15 dasatinib ">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 15 DASATINIB<div class="small muted">CIG 96037197A0 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">507 mila €</td></tr><tr data-t="procedura aperta, in forma telematica, per l&#39;affidamento in concessione del servizio di gestione bar-ministore e rivendita giornali presso il presidio ospedaliero oglio po di vicomoscano di casalmaggiore volpi pietro s.r.l.">
+      <td class="small">2023-06-27</td>
+      <td>PROCEDURA APERTA, IN FORMA TELEMATICA, PER L&#39;AFFIDAMENTO IN CONCESSIONE DEL SERVIZIO DI GESTIONE BAR-MINISTORE E RIVENDITA GIORNALI PRESSO IL PRESIDIO OSPEDALIERO OGLIO PO DI VICOMOSCANO DI CASALMAGGIORE<div class="small muted">CIG 9910548AEC · SERVIZI DI GESTIONE BAR</div></td>
+      <td>VOLPI PIETRO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">507 mila €</td></tr><tr data-t="adesione ad aq consip sd3 - lotto 1 per l&#39;integrazione e sviluppo dei sistemi gestionali a supporto della digitalizzazione dei processi amministrativi e contabili della asst di cremona engineering">
+      <td class="small">2024-11-22</td>
+      <td>ADESIONE AD AQ CONSIP SD3 - LOTTO 1 PER L&#39;INTEGRAZIONE E SVILUPPO DEI SISTEMI GESTIONALI A SUPPORTO DELLA DIGITALIZZAZIONE DEI PROCESSI AMMINISTRATIVI E CONTABILI DELLA ASST DI CREMONA<div class="small muted">CIG B46782760A · SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO</div></td>
+      <td>ENGINEERING</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="sistema di aspirazione/irrigazione per laparoscopia ">
+      <td class="small">2023-06-27</td>
+      <td>SISTEMA DI ASPIRAZIONE/IRRIGAZIONE PER LAPAROSCOPIA<div class="small muted">CIG 9901763950 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">500 mila €</td></tr><tr data-t="vaccini aria - glaxosmithkline - aria_2023_028 - lotti 4 glaxosmithkline s.p.a.">
+      <td class="small">2023-05-26</td>
+      <td>VACCINI ARIA - GLAXOSMITHKLINE - ARIA_2023_028 - LOTTI 4<div class="small muted">CIG 9836271B9A · VACCINI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">498 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 411 sanofi s.r.l.">
+      <td class="small">2023-05-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 411<div class="small muted">CIG 9832859BEE · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">495 mila €</td></tr><tr data-t="lotto 25) provetta per colture cellulari biosigma s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 25) PROVETTA PER COLTURE CELLULARI<div class="small muted">CIG 9630887B5D · MATERIALI MEDICI</div></td>
+      <td>BIOSIGMA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">491 mila €</td></tr><tr data-t="presa atto gara asst garda sitemi vari osteosintesi - lotto n^ 12 - sistema di placche e viti per osteosintesi per polso hofer medical italia s.r.l.">
+      <td class="small">2023-03-23</td>
+      <td>PRESA ATTO GARA ASST GARDA SITEMI VARI OSTEOSINTESI - LOTTO N^ 12 - SISTEMA DI PLACCHE E VITI PER OSTEOSINTESI PER POLSO<div class="small muted">CIG 972518006C · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>HOFER MEDICAL ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">490 mila €</td></tr><tr data-t="microcatetere con palloncino da occlusione distale ">
+      <td class="small">2023-06-27</td>
+      <td>MICROCATETERE CON PALLONCINO DA OCCLUSIONE DISTALE<div class="small muted">CIG 98988315C1 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">479 mila €</td></tr><tr data-t="lotto 3 zanubrutinib alloga (italia) s.r.l.">
+      <td class="small">2023-06-26</td>
+      <td>LOTTO 3 ZANUBRUTINIB<div class="small muted">CIG 9920884C75 · MEDICINALI VARI</div></td>
+      <td>ALLOGA (ITALIA) S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">477 mila €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civilidi brescia per l&#39;affidamento della fornitura di dispositivi peranestesia e aerosolterapia, protesi e dispositivi per apparatorespiratorio (protesi tracheobronchiali, esofagee), digestivo(protesi biliari, pancreatiche), genitale e per i m.g. lorenzatto - s.r.l.">
+      <td class="small">2023-10-31</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILIDI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PERANESTESIA E AEROSOLTERAPIA, PROTESI E DISPOSITIVI PER APPARATORESPIRATORIO (PROTESI TRACHEOBRONCHIALI, ESOFAGEE), DIGESTIVO(PROTESI BILIARI, PANCREATICHE), GENITALE E PER I<div class="small muted">CIG A02CE43B43 · PROTESI CHIRURGICHE</div></td>
+      <td>M.G. LORENZATTO - S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">476 mila €</td></tr><tr data-t="lotto 25 vosoritide ">
+      <td class="small">2023-06-26</td>
+      <td>LOTTO 25 VOSORITIDE<div class="small muted">CIG 9921469F36 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">471 mila €</td></tr><tr data-t="lotto n. 30 nonacog beta pegol 2000 ui novo nordisk farmaceutici spa">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 30 NONACOG BETA PEGOL 2000 UI<div class="small muted">CIG A04121CAA2 · MEDICINALI VARI</div></td>
+      <td>NOVO NORDISK FARMACEUTICI SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">471 mila €</td></tr><tr data-t="adesione alla procedura ristretta, aggregata, esperita dall&#39;asst spedali civili di brescia, finalizzata alla conclusione di accordo quadro per l&#39;affidamento della fornitura di sistemi per elettrochirurgia, laserterapia ed endoscopia. scadenza 30 giugno 2031 - lotto 44 movi spa">
+      <td class="small">2023-12-18</td>
+      <td>ADESIONE ALLA PROCEDURA RISTRETTA, AGGREGATA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA, FINALIZZATA ALLA CONCLUSIONE DI ACCORDO QUADRO PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI PER ELETTROCHIRURGIA, LASERTERAPIA ED ENDOSCOPIA. SCADENZA 30 GIUGNO 2031 - LOTTO 44<div class="small muted">CIG A043E121BD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MOVI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">462 mila €</td></tr><tr data-t="set di tubi per drenaggio toracico ">
+      <td class="small">2023-06-27</td>
+      <td>SET DI TUBI PER DRENAGGIO TORACICO<div class="small muted">CIG 9904234075 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">456 mila €</td></tr><tr data-t="oncotype dx ">
+      <td class="small">2024-09-19</td>
+      <td>ONCOTYPE DX<div class="small muted">CIG B3155106A7 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A PIU&#39; FASI</td>
+      <td class="num">456 mila €</td></tr><tr data-t="adesione alla procedura aperta in forma aggregata esperita dall&#39;asst spedali civili di brescia, finalizzata alla conclusione di un accordo quadro, per l&#39;affidamento della fornitura di protesi vascolari, endovascolari e stent vascolari periferici - lotto n. 3 ">
+      <td class="small">2023-12-22</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA IN FORMA AGGREGATA ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI PROTESI VASCOLARI, ENDOVASCOLARI E STENT VASCOLARI PERIFERICI - LOTTO N. 3<div class="small muted">CIG A04021F8FC · PROTESI VASCOLARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">454 mila €</td></tr><tr data-t="adesione aq angiografi fissi ed. 2 (id sigef 2542) - lotto 1 - angiografi vascolari philips s.p.a.">
+      <td class="small">2023-12-12</td>
+      <td>ADESIONE AQ ANGIOGRAFI FISSI ED. 2 (ID SIGEF 2542) - LOTTO 1 - ANGIOGRAFI VASCOLARI<div class="small muted">CIG A03BAAD39B · APPARECCHI PER ANGIOGRAFIA</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">446 mila €</td></tr><tr data-t="procedura aperta aggregata in aq per la fornitura di dispositivi per oculistica - lotto 19) viscoelastico i fase intervento di cataratta al 1% diemme dispositivi medici s.r.l.">
+      <td class="small">2023-06-26</td>
+      <td>PROCEDURA APERTA AGGREGATA IN AQ PER LA FORNITURA DI DISPOSITIVI PER OCULISTICA - LOTTO 19) VISCOELASTICO I FASE INTERVENTO DI CATARATTA AL 1%<div class="small muted">CIG 98756078B3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>DIEMME DISPOSITIVI MEDICI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">445 mila €</td></tr><tr data-t="lotto 2 romiplostim amgen s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>LOTTO 2 ROMIPLOSTIM<div class="small muted">CIG 99270561C4 · MEDICINALI VARI</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">445 mila €</td></tr><tr data-t="presa atto gara asst garda sitemi vari osteosintesi - lotto n^ 10 - sistemi di placche e viti per osteosintesi di fratture del femore 3d system s.r.l.">
+      <td class="small">2023-03-23</td>
+      <td>PRESA ATTO GARA ASST GARDA SITEMI VARI OSTEOSINTESI - LOTTO N^ 10 - SISTEMI DI PLACCHE E VITI PER OSTEOSINTESI DI FRATTURE DEL FEMORE<div class="small muted">CIG 9725136C19 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>3D SYSTEM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">443 mila €</td></tr><tr data-t="sistemi analitici per l&#39;esecuzione di proteine specifiche the binding site  s.r.l.">
+      <td class="small">2024-10-22</td>
+      <td>SISTEMI ANALITICI PER L&#39;ESECUZIONE DI PROTEINE SPECIFICHE<div class="small muted">CIG B3ED14C661 · SISTEMI DIAGNOSTICI</div></td>
+      <td>THE BINDING SITE  S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">441 mila €</td></tr><tr data-t="procedura aperta, aggregata, in accordo quadro, per la fornitura di immunoterapie specifiche iposensibilizzanti (non aic) - lotto 2 stallergenes italia s.r.l.">
+      <td class="small">2024-02-28</td>
+      <td>PROCEDURA APERTA, AGGREGATA, IN ACCORDO QUADRO, PER LA FORNITURA DI IMMUNOTERAPIE SPECIFICHE IPOSENSIBILIZZANTI (NON AIC) - LOTTO 2<div class="small muted">CIG A0517167FE · VACCINI</div></td>
+      <td>STALLERGENES ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">438 mila €</td></tr><tr data-t="lotto 17 daunorubicina + citarabina liposomiale jazz healthcare italy s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>LOTTO 17 DAUNORUBICINA + CITARABINA LIPOSOMIALE<div class="small muted">CIG 9927553BE4 · MEDICINALI VARI</div></td>
+      <td>JAZZ HEALTHCARE ITALY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">437 mila €</td></tr><tr data-t="lotto 1 - rinnovo contratto servizio di prelievo, trasporto, smaltimento e/o recupero dei rifiuti speciali pericolosi a rischio infettivo e di altre tipologie di rifiuti speciali affidato con procedura negoziata ex art. 76, co. 2, lett.. c), d.lgs. n. 36/2023 eco eridania societa&#39; per azioni">
+      <td class="small">2024-12-13</td>
+      <td>LOTTO 1 - RINNOVO CONTRATTO SERVIZIO DI PRELIEVO, TRASPORTO, SMALTIMENTO E/O RECUPERO DEI RIFIUTI SPECIALI PERICOLOSI A RISCHIO INFETTIVO E DI ALTRE TIPOLOGIE DI RIFIUTI SPECIALI AFFIDATO CON PROCEDURA NEGOZIATA EX ART. 76, CO. 2, LETT.. C), D.LGS. N. 36/2023<div class="small muted">CIG B4D2D30740 · SERVIZI PER RIFIUTI RADIOATTIVI, TOSSICI, MEDICALI E PERICOLOSI</div></td>
+      <td>ECO ERIDANIA SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">435 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2120 - apalutamide cpr/cpr riv/cps/cps rig 60 mg janssen cilag s.p.a.">
+      <td class="small">2023-03-02</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2120 - APALUTAMIDE CPR/CPR RIV/CPS/CPS RIG 60 MG<div class="small muted">CIG 9688383293 · MEDICINALI VARI</div></td>
+      <td>JANSSEN CILAG S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">432 mila €</td></tr><tr data-t="adesione alla procedura aperta in forma aggregata tra l&#39;asst del garda (capofila) e le asst di cremona, papa giovanni xxiii di bergamo, bergamo est, bergamo ovest, spedali civili di brescia, crema e mantova (mandanti) finalizzata alla conclusione di un accordo quadro per la fornitura di sistemi vari ">
+      <td class="small">2024-04-23</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA IN FORMA AGGREGATA TRA L&#39;ASST DEL GARDA (CAPOFILA) E LE ASST DI CREMONA, PAPA GIOVANNI XXIII DI BERGAMO, BERGAMO EST, BERGAMO OVEST, SPEDALI CIVILI DI BRESCIA, CREMA E MANTOVA (MANDANTI) FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO PER LA FORNITURA DI SISTEMI VARI<div class="small muted">CIG A057810F0C · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">432 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci osped e servizi aria_2022_027.7 - lotto 11 - entrectinib capsule rigide 200 mg roche societa&#39; per azioni">
+      <td class="small">2023-01-30</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI OSPED E SERVIZI ARIA_2022_027.7 - LOTTO 11 - ENTRECTINIB CAPSULE RIGIDE 200 MG<div class="small muted">CIG 96277606E3 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">428 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3r - lotto 2031 - ipilimumab soluzione per infusione conc bristol-myers squibb s.r.l.">
+      <td class="small">2023-03-13</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3R - LOTTO 2031 - IPILIMUMAB SOLUZIONE PER INFUSIONE CONC<div class="small muted">CIG 9708114D19 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">427 mila €</td></tr><tr data-t="adesione alla procedura ristretta, esperita dall&#39;asst spedali civili di brescia, finalizzata alla conclusione di accordo quadro per l&#39;affidamento della fornitura di sistemi per elettrochirurgia, laserterapia ed endoscopia. scadenza 30/06/2031. lotto n. 51 olympus italia s.r.l.">
+      <td class="small">2023-11-29</td>
+      <td>ADESIONE ALLA PROCEDURA RISTRETTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA, FINALIZZATA ALLA CONCLUSIONE DI ACCORDO QUADRO PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI PER ELETTROCHIRURGIA, LASERTERAPIA ED ENDOSCOPIA. SCADENZA 30/06/2031. LOTTO N. 51<div class="small muted">CIG A038DF191C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>OLYMPUS ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">427 mila €</td></tr><tr data-t="adesione a procedura esperita dall&#39;asst spedali civili di brescia per la fornitura di protesi per esclusione endovascolare periferica o viscerale eparinata - diametro 5-8 mm - corpo principale, estensioni e altri dispositivi - lotto 8 w.l. gore &amp; associati s.r.l.  con sigla gore s.r.l.">
+      <td class="small">2023-07-26</td>
+      <td>ADESIONE A PROCEDURA ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER LA FORNITURA DI PROTESI PER ESCLUSIONE ENDOVASCOLARE PERIFERICA O VISCERALE EPARINATA - DIAMETRO 5-8 MM - CORPO PRINCIPALE, ESTENSIONI E ALTRI DISPOSITIVI - LOTTO 8<div class="small muted">CIG 9948807F3E · PROTESI VASCOLARI</div></td>
+      <td>W.L. GORE &amp; ASSOCIATI S.R.L.  CON SIGLA GORE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">426 mila €</td></tr><tr data-t="elettrodi per ecg compatibili con defibrillatore defbitech fiab s.p.a.">
+      <td class="small">2023-06-27</td>
+      <td>ELETTRODI PER ECG COMPATIBILI CON DEFIBRILLATORE DEFBITECH<div class="small muted">CIG 9898859CDA · MATERIALI MEDICI</div></td>
+      <td>FIAB S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">424 mila €</td></tr><tr data-t="adesione alla convenzione 2023_011.4 - lotto 43 - fedratinib - cpr/cps - 100 mg bristol-myers squibb s.r.l.">
+      <td class="small">2024-01-16</td>
+      <td>ADESIONE ALLA CONVENZIONE 2023_011.4 - LOTTO 43 - FEDRATINIB - CPR/CPS - 100 MG<div class="small muted">CIG A04A37F4BB · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">424 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 1962 pierre fabre pharma s.r.l.">
+      <td class="small">2024-01-16</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 1962<div class="small muted">CIG A04A0AF292 · MEDICINALI VARI</div></td>
+      <td>PIERRE FABRE PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">422 mila €</td></tr><tr data-t="lotto 12 elotuzumab 400 mg bristol-myers squibb s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 12 ELOTUZUMAB 400 MG<div class="small muted">CIG A02244B807 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">421 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.4 - lotto 21 roche societa&#39; per azioni">
+      <td class="small">2024-09-10</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.4 - LOTTO 21<div class="small muted">CIG A061A92A1C · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">414 mila €</td></tr><tr data-t="procedura negoziata ai sensi dell&#39;art. 63 comma 2 lett. b) del decreto legislativo 18 aprile 2016 n. 50 e ss.mm.ii per la fornitura di servizi di manutenzione e gestione di applicativi software della ditta dedalus dedalus italia s.p.a.">
+      <td class="small">2023-06-20</td>
+      <td>PROCEDURA NEGOZIATA AI SENSI DELL&#39;ART. 63 COMMA 2 LETT. B) DEL DECRETO LEGISLATIVO 18 APRILE 2016 N. 50 E SS.MM.II PER LA FORNITURA DI SERVIZI DI MANUTENZIONE E GESTIONE DI APPLICATIVI SOFTWARE DELLA DITTA DEDALUS<div class="small muted">CIG 9902134B78 · SERVIZI DI ASSISTENZA SOFTWARE</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">410 mila €</td></tr><tr data-t="axitinib 3 mg ">
+      <td class="small">2024-08-01</td>
+      <td>AXITINIB 3 MG<div class="small muted">CIG B2ACE1EE46 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">409 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.14 - lotto 9 gilead sciences s.r.l.">
+      <td class="small">2024-02-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.14 - LOTTO 9<div class="small muted">CIG A05019484C · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">409 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.5 - lotto 5 - immunoglobulina umana normale soluzione iniettabile - uso sottocutaneo 200 mg/ml 50 ml csl behring spa">
+      <td class="small">2023-01-27</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.5 - LOTTO 5 - IMMUNOGLOBULINA UMANA NORMALE SOLUZIONE INIETTABILE - USO SOTTOCUTANEO 200 MG/ML 50 ML<div class="small muted">CIG 96257983CC · MEDICINALI VARI</div></td>
+      <td>CSL BEHRING SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">408 mila €</td></tr><tr data-t="lotto 9 fedratinib bristol-myers squibb s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>LOTTO 9 FEDRATINIB<div class="small muted">CIG 9927261AED · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">406 mila €</td></tr><tr data-t="realizzazione del nuovo sistema regionale unificato di gestione del laboratorio analisi (lis) enterprise services italia s.r.l.">
+      <td class="small">2024-05-31</td>
+      <td>REALIZZAZIONE DEL NUOVO SISTEMA REGIONALE UNIFICATO DI GESTIONE DEL LABORATORIO ANALISI (LIS)<div class="small muted">CIG B1F04F683D · Cpv prevalente non disponibile</div></td>
+      <td>ENTERPRISE SERVICES ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">405 mila €</td></tr><tr data-t="lotto 13 secukinumab novartis farma spa">
+      <td class="small">2023-06-26</td>
+      <td>LOTTO 13 SECUKINUMAB<div class="small muted">CIG 9921233C76 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">404 mila €</td></tr><tr data-t="adesione a convenzione regionale aria-2021_061 lotto 4 impresa inesistente">
+      <td class="small">2024-02-13</td>
+      <td>ADESIONE A CONVENZIONE REGIONALE ARIA-2021_061 LOTTO 4<div class="small muted">CIG A04F60E5E2 · APPARECCHI PER EMODIALISI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">404 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3r - lotto 2065r eli lilly italia - s.p.a.">
+      <td class="small">2024-08-14</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3R - LOTTO 2065R<div class="small muted">CIG A060CEB5F3 · MEDICINALI VARI</div></td>
+      <td>ELI LILLY ITALIA - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">404 mila €</td></tr><tr data-t="adesione aq angiografi fissi (ed. 2) - lotto 2 angiografi cardiologici philips s.p.a.">
+      <td class="small">2023-06-19</td>
+      <td>ADESIONE AQ ANGIOGRAFI FISSI (ED. 2) - LOTTO 2 ANGIOGRAFI CARDIOLOGICI<div class="small muted">CIG 989169334B · APPARECCHI PER ANGIOGRAFIA</div></td>
+      <td>PHILIPS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">404 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2032 takeda italia s.p.a.">
+      <td class="small">2024-07-04</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2032<div class="small muted">CIG A05E7F98F5 · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">400 mila €</td></tr><tr data-t="adesione alla convenzione farmaci ospedalieri aria_2022_027.5 - lotto 10 - luspatercept soluzione iniettabile polv 75 mg f/fl bristol-myers squibb s.r.l.">
+      <td class="small">2023-03-09</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI OSPEDALIERI ARIA_2022_027.5 - LOTTO 10 - LUSPATERCEPT SOLUZIONE INIETTABILE POLV 75 MG F/FL<div class="small muted">CIG 9703109AD8 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">396 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2196 takeda italia s.p.a.">
+      <td class="small">2023-11-07</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2196<div class="small muted">CIG A02767FE14 · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">396 mila €</td></tr><tr data-t="adesione alla procedura aperta, in forma aggregata, finalizzata alla conclusione di accordo quadro, esperita dall&#39;asst spedali civili di brescia per la fornitura di materiale di consumo e ricambio per accessori per apparecchiature per interevento terapeutico, valutazione funzionale e da laboratorio  newpharm s.r.l.">
+      <td class="small">2024-04-24</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, IN FORMA AGGREGATA, FINALIZZATA ALLA CONCLUSIONE DI ACCORDO QUADRO, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER LA FORNITURA DI MATERIALE DI CONSUMO E RICAMBIO PER ACCESSORI PER APPARECCHIATURE PER INTEREVENTO TERAPEUTICO, VALUTAZIONE FUNZIONALE E DA LABORATORIO <div class="small muted">CIG A057E993AA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>NEWPHARM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">395 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.2 - lotto 537 boehringer ingelheim italia - s.p.a.">
+      <td class="small">2023-07-07</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.2 - LOTTO 537<div class="small muted">CIG 9951336640 · MEDICINALI VARI</div></td>
+      <td>BOEHRINGER INGELHEIM ITALIA - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">394 mila €</td></tr><tr data-t="ago per ebus tbna ">
+      <td class="small">2023-06-27</td>
+      <td>AGO PER EBUS TBNA<div class="small muted">CIG 9898295B6D · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">392 mila €</td></tr><tr data-t="verde indocianina 25 mg a.p.m. s.r.l. - azienda prodotti medicali (in breve a.p.m. s.r.l.)">
+      <td class="small">2024-08-01</td>
+      <td>VERDE INDOCIANINA 25 MG<div class="small muted">CIG B2ACE0ADC5 · MEDICINALI VARI</div></td>
+      <td>A.P.M. S.R.L. - AZIENDA PRODOTTI MEDICALI (IN BREVE A.P.M. S.R.L.)</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">391 mila €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di dispositivi per sutura meccanica, chirurgia video-assistita, feltri, pledget, reti chirurgiche, colle e cera per ossa. scad. 31/12/2028 - lotto 13 johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-08-02</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PER SUTURA MECCANICA, CHIRURGIA VIDEO-ASSISTITA, FELTRI, PLEDGET, RETI CHIRURGICHE, COLLE E CERA PER OSSA. SCAD. 31/12/2028 - LOTTO 13<div class="small muted">CIG A0058A038D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">388 mila €</td></tr><tr data-t="servizio di stampa, editoria, tipografia di prodotti di cartotecnica, stampati, modulistica e servizi connessi ">
+      <td class="small">2024-03-14</td>
+      <td>SERVIZIO DI STAMPA, EDITORIA, TIPOGRAFIA DI PRODOTTI DI CARTOTECNICA, STAMPATI, MODULISTICA E SERVIZI CONNESSI<div class="small muted">CIG A0534DDAB0 · SERVIZI DI STAMPA E DI CONSEGNA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">387 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.5 - lotto 16 - paclitaxel albumina sospensione per infusione polv 5 mg/ml - 100 ml f/fl bristol-myers squibb s.r.l.">
+      <td class="small">2023-04-19</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.5 - LOTTO 16 - PACLITAXEL ALBUMINA SOSPENSIONE PER INFUSIONE POLV 5 MG/ML - 100 ML F/FL<div class="small muted">CIG 9782398235 · MEDICINALI VARI</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">384 mila €</td></tr><tr data-t="lotto n. 17 lenvatinib 4 mg eisai s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 17 LENVATINIB 4 MG<div class="small muted">CIG A04117D76D · MEDICINALI VARI</div></td>
+      <td>EISAI S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">382 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2022_027.2 - lotto175 - albutrepenonacog alfa-soluzione iniett polv solv-1.000 ui-f/fl csl behring spa">
+      <td class="small">2023-03-27</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2022_027.2 - LOTTO175 - ALBUTREPENONACOG ALFA-SOLUZIONE INIETT POLV SOLV-1.000 UI-F/FL<div class="small muted">CIG 9737433FE6 · MEDICINALI VARI</div></td>
+      <td>CSL BEHRING SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">376 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2203 merck serono s.p.a.">
+      <td class="small">2023-12-04</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2203<div class="small muted">CIG A0309F3CB7 · MEDICINALI VARI</div></td>
+      <td>MERCK SERONO S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">376 mila €</td></tr><tr data-t="lotto n. 33 bosutinib 500 mg impresa inesistente">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 33 BOSUTINIB 500 MG<div class="small muted">CIG A04133635B · MEDICINALI VARI</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">374 mila €</td></tr><tr data-t="adesione a convenzione regionale aria_2021_061 prodotti per dialisi lotto 3 medtronic italia s.p.a.">
+      <td class="small">2024-02-13</td>
+      <td>ADESIONE A CONVENZIONE REGIONALE ARIA_2021_061 PRODOTTI PER DIALISI LOTTO 3<div class="small muted">CIG A04F5B7E14 · APPARECCHI PER EMODIALISI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">368 mila €</td></tr><tr data-t="lotto n. 2 upadacitinib 15 mg ">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 2 UPADACITINIB 15 MG<div class="small muted">CIG A0410A11E2 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">366 mila €</td></tr><tr data-t="lotto n. 10 nintedanib 100 mg boehringer ingelheim italia - s.p.a.">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 10 NINTEDANIB 100 MG<div class="small muted">CIG A041134B2E · MEDICINALI VARI</div></td>
+      <td>BOEHRINGER INGELHEIM ITALIA - S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">362 mila €</td></tr><tr data-t="lotto 39) prodotti chimici per anatomia patologica. bio-optica milano s.p.a.">
+      <td class="small">2023-06-27</td>
+      <td>LOTTO 39) PRODOTTI CHIMICI PER ANATOMIA PATOLOGICA.<div class="small muted">CIG 98988662A4 · REATTIVI PER LABORATORIO</div></td>
+      <td>BIO-OPTICA MILANO S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">360 mila €</td></tr><tr data-t="affidamento delle opere propedeutiche all&#39;installazione di un sistema di risonanza magnetica da 1,5 tesla presidio il presso il poop impresa inesistente">
+      <td class="small">2023-06-22</td>
+      <td>AFFIDAMENTO DELLE OPERE PROPEDEUTICHE ALL&#39;INSTALLAZIONE DI UN SISTEMA DI RISONANZA MAGNETICA DA 1,5 TESLA PRESIDIO IL PRESSO IL POOP<div class="small muted">CIG 989344376F · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>IMPRESA INESISTENTE</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">358 mila €</td></tr><tr data-t="procedura negoziata ai sensi dell&#39;art. 76, comma 2, lett. b) del decreto legislativo 31 marzo 2023 n. 36 e s.m.i. per la fornitura di servizi di assistenza e manutenzione dell&#39;applicativo aziendale cup &#39;camelia&#39; della ditta xenia-reply xenia reply s.r.l.">
+      <td class="small">2023-12-19</td>
+      <td>PROCEDURA NEGOZIATA AI SENSI DELL&#39;ART. 76, COMMA 2, LETT. B) DEL DECRETO LEGISLATIVO 31 MARZO 2023 N. 36 E S.M.I. PER LA FORNITURA DI SERVIZI DI ASSISTENZA E MANUTENZIONE DELL&#39;APPLICATIVO AZIENDALE CUP &#39;CAMELIA&#39; DELLA DITTA XENIA-REPLY<div class="small muted">CIG A0400D8B22 · SERVIZI DI ASSISTENZA SOFTWARE</div></td>
+      <td>XENIA REPLY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">351 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.11 - lotto 2 glaxosmithkline s.p.a.">
+      <td class="small">2023-10-18</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.11 - LOTTO 2<div class="small muted">CIG A01F3C08F1 · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">342 mila €</td></tr><tr data-t="pompa per infusione volumetrica a una via di somministrazione e relativi set dedicati fresenius kabi italia s.r.l. in breve fki s.r.l.">
+      <td class="small">2024-09-26</td>
+      <td>POMPA PER INFUSIONE VOLUMETRICA A UNA VIA DI SOMMINISTRAZIONE E RELATIVI SET DEDICATI<div class="small muted">CIG B334C6752A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>FRESENIUS KABI ITALIA S.R.L. IN BREVE FKI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">341 mila €</td></tr><tr data-t="lotto 7) lame in acciaio diapath s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 7) LAME IN ACCIAIO<div class="small muted">CIG 96307813E6 · MATERIALI MEDICI</div></td>
+      <td>DIAPATH S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">338 mila €</td></tr><tr data-t="adesione alla procedura aperta esperita dall&#39;asst degli spedali civili di brescia per l&#39;affidamento della fornitura di neurostimolatori impiantabili e pompe impiantabili per infusione farmaci - lotto n. 64 theras lifetech s.r.l.">
+      <td class="small">2023-09-07</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA ESPERITA DALL&#39;ASST DEGLI SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI NEUROSTIMOLATORI IMPIANTABILI E POMPE IMPIANTABILI PER INFUSIONE FARMACI - LOTTO N. 64<div class="small muted">CIG A009EBAD0C · STIMOLATORI</div></td>
+      <td>THERAS LIFETECH S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">337 mila €</td></tr><tr data-t="lotto 16) carta e pellicole kaltek s.r.l.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 16) CARTA E PELLICOLE<div class="small muted">CIG 96308393C3 · MATERIALI MEDICI</div></td>
+      <td>KALTEK S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">337 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3r - lotto 2064r eli lilly italia - s.p.a.">
+      <td class="small">2024-02-20</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3R - LOTTO 2064R<div class="small muted">CIG A0503EE915 · MEDICINALI VARI</div></td>
+      <td>ELI LILLY ITALIA - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">336 mila €</td></tr><tr data-t="adesione linac e sistemi per radioterapia - ati varian medical systems italia-costigliola antonio - arca_2018_025 - lotto 3 varian medical systems italia s.p.a.">
+      <td class="small">2023-02-07</td>
+      <td>ADESIONE LINAC E SISTEMI PER RADIOTERAPIA - ATI VARIAN MEDICAL SYSTEMS ITALIA-COSTIGLIOLA ANTONIO - ARCA_2018_025 - LOTTO 3<div class="small muted">CIG 9643434D79 · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>VARIAN MEDICAL SYSTEMS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">335 mila €</td></tr><tr data-t="adesione alla procedura aperta, esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di dispositivi per sutura meccanica, chirurgia video-assistita, feltri, pledget, reti chirurgiche, colle e cera per ossa - lotto 41 carlo bianchi s.r.l.">
+      <td class="small">2024-02-13</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA, ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI DISPOSITIVI PER SUTURA MECCANICA, CHIRURGIA VIDEO-ASSISTITA, FELTRI, PLEDGET, RETI CHIRURGICHE, COLLE E CERA PER OSSA - LOTTO 41<div class="small muted">CIG A050B9E123 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CARLO BIANCHI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">334 mila €</td></tr><tr data-t="vaccini aria - glaxosmithkline - aria_2023_028 - lotti 1 glaxosmithkline s.p.a.">
+      <td class="small">2023-05-26</td>
+      <td>VACCINI ARIA - GLAXOSMITHKLINE - ARIA_2023_028 - LOTTI 1<div class="small muted">CIG 98362488A0 · VACCINI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">333 mila €</td></tr><tr data-t="lotto 07 - vaccino meningococco b vaccino multicomponente calendario vaccinale e co-pagamento fino a 9 anni operatore individuale (persona fisica)">
+      <td class="small">2024-09-05</td>
+      <td>LOTTO 07 - VACCINO MENINGOCOCCO B VACCINO MULTICOMPONENTE CALENDARIO VACCINALE E CO-PAGAMENTO FINO A 9 ANNI<div class="small muted">CIG B2F2F214D9 · VACCINI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">333 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.14 - lotto 38 roche societa&#39; per azioni">
+      <td class="small">2024-02-22</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.14 - LOTTO 38<div class="small muted">CIG A050A77DAE · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">333 mila €</td></tr><tr data-t="adesione alla convenzione vaccini aria_2023_028 - lotto 4 glaxosmithkline s.p.a.">
+      <td class="small">2024-02-01</td>
+      <td>ADESIONE ALLA CONVENZIONE VACCINI ARIA_2023_028 - LOTTO 4<div class="small muted">CIG A04C7F7D08 · VACCINI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">332 mila €</td></tr><tr data-t="adesione a convenzione aria_2022_072 - medicazioni generali garze - lotto 3 rays  s.p.a.">
+      <td class="small">2023-09-08</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2022_072 - MEDICAZIONI GENERALI GARZE - LOTTO 3<div class="small muted">CIG A00D298A67 · GARZA PER MEDICAZIONE</div></td>
+      <td>RAYS  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">331 mila €</td></tr><tr data-t="fornitura di generatore impiantabile di impulsi ed elettrodi per la stimolazione epidurale spinale, ricaricabile boston scientific spa">
+      <td class="small">2024-12-18</td>
+      <td>FORNITURA DI GENERATORE IMPIANTABILE DI IMPULSI ED ELETTRODI PER LA STIMOLAZIONE EPIDURALE SPINALE, RICARICABILE<div class="small muted">CIG B4E5E11F50 · STIMOLATORI</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">330 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.7 - lotto 11 euromed pharma s.r.l.">
+      <td class="small">2024-03-13</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.7 - LOTTO 11<div class="small muted">CIG A0531D27D7 · MEDICINALI VARI</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">330 mila €</td></tr><tr data-t="pompa per infusione volumetrica a una via di somministrazione e relativi set dedicati fresenius kabi italia s.r.l. in breve fki s.r.l.">
+      <td class="small">2024-07-05</td>
+      <td>POMPA PER INFUSIONE VOLUMETRICA A UNA VIA DI SOMMINISTRAZIONE E RELATIVI SET DEDICATI<div class="small muted">CIG B25C3EA8B3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>FRESENIUS KABI ITALIA S.R.L. IN BREVE FKI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">328 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.11 - lotto 33 roche societa&#39; per azioni">
+      <td class="small">2024-01-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.11 - LOTTO 33<div class="small muted">CIG A04B07EE3F · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">327 mila €</td></tr><tr data-t="lotto 19) sacchetti laboindustria s.p.a.">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 19) SACCHETTI<div class="small muted">CIG 9630851DA7 · MATERIALI MEDICI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">325 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 3331 vertex pharmaceuticals (italy) s.r.l.">
+      <td class="small">2024-06-28</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 3331<div class="small muted">CIG A05E1DDE4C · MEDICINALI VARI</div></td>
+      <td>VERTEX PHARMACEUTICALS (ITALY) S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">324 mila €</td></tr><tr data-t="affidamento lavori per continuita&#39; assistenziale cremona - san sebastiano 14 i.tec srl costruzioni generali">
+      <td class="small">2023-06-27</td>
+      <td>AFFIDAMENTO LAVORI PER CONTINUITA&#39; ASSISTENZIALE CREMONA - SAN SEBASTIANO 14<div class="small muted">CIG 9899091C4E · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>I.TEC SRL COSTRUZIONI GENERALI</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">324 mila €</td></tr><tr data-t="procedura aperta aggregata in aq per la fornitura di dispositivi per oculistica - lotto 20) viscoelastico ii fase intervento di cataratta al 1,8% diemme dispositivi medici s.r.l.">
+      <td class="small">2023-06-26</td>
+      <td>PROCEDURA APERTA AGGREGATA IN AQ PER LA FORNITURA DI DISPOSITIVI PER OCULISTICA - LOTTO 20) VISCOELASTICO II FASE INTERVENTO DI CATARATTA AL 1,8%<div class="small muted">CIG 9875613DA5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>DIEMME DISPOSITIVI MEDICI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">321 mila €</td></tr><tr data-t="adesione all&#39;accordo quadro di consip spa cybersecurity 2 - prodotti e servizi connessi (id 2367) – lotto 2 per l&#39;acquisizione di licenze software trendmicro e relativi servizi di supporto per la revisione ed aggiornamento dell&#39; architettura informatica di active directory aziendale tim s.p.a.">
+      <td class="small">2024-09-26</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO DI CONSIP SPA CYBERSECURITY 2 - PRODOTTI E SERVIZI CONNESSI (ID 2367) – LOTTO 2 PER L&#39;ACQUISIZIONE DI LICENZE SOFTWARE TRENDMICRO E RELATIVI SERVIZI DI SUPPORTO PER LA REVISIONE ED AGGIORNAMENTO DELL&#39; ARCHITETTURA INFORMATICA DI ACTIVE DIRECTORY AZIENDALE<div class="small muted">CIG B33494B449 · SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">320 mila €</td></tr><tr data-t="lotto 25 ponatinib incyte biosciences italy s.r.l.">
+      <td class="small">2023-01-16</td>
+      <td>LOTTO 25 PONATINIB<div class="small muted">CIG 9604701201 · MEDICINALI VARI</div></td>
+      <td>INCYTE BIOSCIENCES ITALY S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">318 mila €</td></tr><tr data-t="micro cannula per aspirazione chirurgica ">
+      <td class="small">2023-06-27</td>
+      <td>MICRO CANNULA PER ASPIRAZIONE CHIRURGICA<div class="small muted">CIG 9898643A9B · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">318 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2023_011.8 - lotto 3 bristol myers squibb">
+      <td class="small">2023-10-19</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2023_011.8 - LOTTO 3<div class="small muted">CIG A01FDF6616 · MEDICINALI VARI</div></td>
+      <td>BRISTOL MYERS SQUIBB</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">316 mila €</td></tr><tr data-t="adesione alla procedura aperta esperita dall&#39;asst spedali civili di brescia per l&#39;affidamento della fornitura di reagenti per tipizzazione hla e ricerca anticopi anti-hla per la diagnosi sierologica della malattia celiaca - lotto 2 spa societa&#39; prodotti antibiotici soc. per az.">
+      <td class="small">2023-07-12</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI REAGENTI PER TIPIZZAZIONE HLA E RICERCA ANTICOPI ANTI-HLA PER LA DIAGNOSI SIEROLOGICA DELLA MALATTIA CELIACA - LOTTO 2<div class="small muted">CIG 9955895874 · PRESIDI DIAGNOSTICI</div></td>
+      <td>SPA SOCIETA&#39; PRODOTTI ANTIBIOTICI SOC. PER AZ.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">316 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.2 - lotto 7 merck sharp &amp; dohme italia s.p.a.">
+      <td class="small">2023-05-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.2 - LOTTO 7<div class="small muted">CIG 9842441F3E · VACCINI</div></td>
+      <td>MERCK SHARP &amp; DOHME ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">315 mila €</td></tr><tr data-t="vaccini aria_2024_011 - lotto 5 - vaccino anti papilloma virus 9 valente - dose msd italia s.r.l.">
+      <td class="small">2024-10-10</td>
+      <td>VACCINI ARIA_2024_011 - LOTTO 5 - VACCINO ANTI PAPILLOMA VIRUS 9 VALENTE - DOSE<div class="small muted">CIG B36194482E · VACCINI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">315 mila €</td></tr><tr data-t="acido ialuronico in siringa preriempita per iniezione intra-articolare ">
+      <td class="small">2023-06-27</td>
+      <td>ACIDO IALURONICO IN SIRINGA PRERIEMPITA PER INIEZIONE INTRA-ARTICOLARE<div class="small muted">CIG 9904326C5D · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">315 mila €</td></tr><tr data-t="fornitura di neurostimolatore impiantabile per la stimolazione spinale, non ricaricabile boston scientific spa">
+      <td class="small">2024-12-18</td>
+      <td>FORNITURA DI NEUROSTIMOLATORE IMPIANTABILE PER LA STIMOLAZIONE SPINALE, NON RICARICABILE<div class="small muted">CIG B4E5E10E7D · STIMOLATORI</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">314 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2022_027.10 - lotto 56 takeda italia s.p.a.">
+      <td class="small">2024-04-08</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2022_027.10 - LOTTO 56<div class="small muted">CIG A055C3E9CB · MEDICINALI VARI</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">311 mila €</td></tr><tr data-t="affidamento di sistemi di preservazione di campioni biologici occorrenti all&#39;asst di cremona diapath s.p.a.">
+      <td class="small">2023-06-07</td>
+      <td>AFFIDAMENTO DI SISTEMI DI PRESERVAZIONE DI CAMPIONI BIOLOGICI OCCORRENTI ALL&#39;ASST DI CREMONA<div class="small muted">CIG 983265211F · SISTEMI DIAGNOSTICI</div></td>
+      <td>DIAPATH S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">311 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2011 boehringer ingelheim italia - s.p.a.">
+      <td class="small">2024-01-26</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2011<div class="small muted">CIG A049B7526B · MEDICINALI VARI</div></td>
+      <td>BOEHRINGER INGELHEIM ITALIA - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">311 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 1089 amgen s.r.l.">
+      <td class="small">2023-07-11</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 1089<div class="small muted">CIG 9954854D63 · MEDICINALI VARI</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">310 mila €</td></tr><tr data-t="lotto n. 39 pretomanid 200 mg viatris italia s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>LOTTO N. 39 PRETOMANID 200 MG<div class="small muted">CIG A04139E92C · MEDICINALI VARI</div></td>
+      <td>VIATRIS ITALIA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">308 mila €</td></tr><tr data-t="tezepelumab 100 mg/ml astrazeneca s.p.a.">
+      <td class="small">2024-09-04</td>
+      <td>TEZEPELUMAB 100 MG/ML<div class="small muted">CIG B2EC5B881E · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">307 mila €</td></tr><tr data-t="adesione alla convenzione aria_2023_056 - lotto 1 - servizio di somministrazione lavoro a tempo determinato per gli enti con sede nelle province di cremona e mantova randstad italia s.p.a.">
+      <td class="small">2024-07-30</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2023_056 - LOTTO 1 - SERVIZIO DI SOMMINISTRAZIONE LAVORO A TEMPO DETERMINATO PER GLI ENTI CON SEDE NELLE PROVINCE DI CREMONA E MANTOVA<div class="small muted">CIG A0601E7ECD · SERVIZI DI FORNITURA DI PERSONALE, COMPRESO PERSONALE TEMPORANEO</div></td>
+      <td>RANDSTAD ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">307 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2098 abbvie s.r.l.">
+      <td class="small">2024-02-26</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2098<div class="small muted">CIG A050F1F55C · MEDICINALI VARI</div></td>
+      <td>ABBVIE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">305 mila €</td></tr><tr data-t="brolucizumab 120 mg/ml novartis farma spa">
+      <td class="small">2024-08-01</td>
+      <td>BROLUCIZUMAB 120 MG/ML<div class="small muted">CIG B2ACE1DD73 · MEDICINALI VARI</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">305 mila €</td></tr><tr data-t="adesione alla convenzione rinnovo farmaci aria_2021_025.3r - lotto 577r - emicizumab soluzione iniettabile 150 mg/ml - 0,7 ml roche societa&#39; per azioni">
+      <td class="small">2023-03-16</td>
+      <td>ADESIONE ALLA CONVENZIONE RINNOVO FARMACI ARIA_2021_025.3R - LOTTO 577R - EMICIZUMAB SOLUZIONE INIETTABILE 150 MG/ML - 0,7 ML<div class="small muted">CIG 97171383F3 · MEDICINALI VARI</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">304 mila €</td></tr><tr data-t="vaccino pneumococcico polisaccaridico 0,5 ml msd italia s.r.l.">
+      <td class="small">2024-08-01</td>
+      <td>VACCINO PNEUMOCOCCICO POLISACCARIDICO 0,5 ML<div class="small muted">CIG B2ACE19A27 · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">ALTRA PROCEDURA A FASE UNICA</td>
+      <td class="num">304 mila €</td></tr><tr data-t="fornitura di sistema per la determinazione della gittata cardiaca edwards lifesciences italia s.r.l.">
+      <td class="small">2024-07-10</td>
+      <td>FORNITURA DI SISTEMA PER LA DETERMINAZIONE DELLA GITTATA CARDIACA<div class="small muted">CIG B269924E7C · TRASDUTTORI</div></td>
+      <td>EDWARDS LIFESCIENCES ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">301 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_027.5 - lotto 2 bayer s.p.a.">
+      <td class="small">2023-10-19</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_027.5 - LOTTO 2<div class="small muted">CIG A01FD93464 · MEDICINALI VARI</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">300 mila €</td></tr><tr data-t="lotto 17) cassette ">
+      <td class="small">2023-02-22</td>
+      <td>LOTTO 17) CASSETTE<div class="small muted">CIG 963084370F · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">300 mila €</td></tr><tr data-t="sistemi diagnostici per la coltura di micobatteri in terreno liquido becton, dickinson italia s.p.a.">
+      <td class="small">2024-11-21</td>
+      <td>SISTEMI DIAGNOSTICI PER LA COLTURA DI MICOBATTERI IN TERRENO LIQUIDO<div class="small muted">CIG B465947B72 · SISTEMI DIAGNOSTICI</div></td>
+      <td>BECTON, DICKINSON ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">298 mila €</td></tr><tr data-t="adesione aq consip per la fornitura di dispositivi impiantabili per funzionalita&#39; cardiaca 2 - lotto 3 biotronik italia s.p.a.">
+      <td class="small">2023-11-16</td>
+      <td>ADESIONE AQ CONSIP PER LA FORNITURA DI DISPOSITIVI IMPIANTABILI PER FUNZIONALITA&#39; CARDIACA 2 - LOTTO 3<div class="small muted">CIG A022AEC072 · STIMOLATORI CARDIACI</div></td>
+      <td>BIOTRONIK ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">298 mila €</td></tr><tr data-t="lotto 9 etanercept 50mg biogen italia s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>LOTTO 9 ETANERCEPT 50MG<div class="small muted">CIG A02242E01B · MEDICINALI VARI</div></td>
+      <td>BIOGEN ITALIA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">297 mila €</td></tr><tr data-t="adesione alla convenzione farmaci aria_2021_025.3 - lotto 2046 - mogamulizumab soluzione iniettabile 4 mg/ml - 5 ml kyowa kirin s.r.l.">
+      <td class="small">2023-03-09</td>
+      <td>ADESIONE ALLA CONVENZIONE FARMACI ARIA_2021_025.3 - LOTTO 2046 - MOGAMULIZUMAB SOLUZIONE INIETTABILE 4 MG/ML - 5 ML<div class="small muted">CIG 970330194A · MEDICINALI VARI</div></td>
+      <td>KYOWA KIRIN S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">296 mila €</td></tr><tr data-t="adesione alla procedura aperta in forma aggregata esperita dall&#39;asst spedali civili di brescia, finalizzata alla conclusione di un accordo quadro, per l&#39;affidamento della fornitura di protesi vascolari, endovascolari e stent vascolari periferici - lotto n. 4 ">
+      <td class="small">2023-12-22</td>
+      <td>ADESIONE ALLA PROCEDURA APERTA IN FORMA AGGREGATA ESPERITA DALL&#39;ASST SPEDALI CIVILI DI BRESCIA, FINALIZZATA ALLA CONCLUSIONE DI UN ACCORDO QUADRO, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI PROTESI VASCOLARI, ENDOVASCOLARI E STENT VASCOLARI PERIFERICI - LOTTO N. 4<div class="small muted">CIG A04033C42E · PROTESI VASCOLARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">294 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 2698. L’elenco completo è nel <a href="../contratti/030724.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

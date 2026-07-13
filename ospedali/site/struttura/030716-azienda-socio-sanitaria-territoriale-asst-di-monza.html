@@ -173,6 +173,44 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">176 mila €</td></tr><tr><td>AFFIDAMENTO DELLA FORNITURA DI SOFTWARE DI FUSIONE DEFORMABILE<div class="small muted">PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">55 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(4 contratti ANAC, 2 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030716.csv" download>⬇ Scarica l’elenco completo (CSV, 4 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="acquisizione di n. 1 acceleratore lineare tramite adesione ad accordo quadro consip id-2488 (pnrr) ">
+      <td class="small">2023-03-23</td>
+      <td>ACQUISIZIONE DI N. 1 ACCELERATORE LINEARE TRAMITE ADESIONE AD ACCORDO QUADRO CONSIP ID-2488 (PNRR)<div class="small muted">CIG 95998395C0 · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="affidamento della fornitura di sistema di treatment planning (tps) ">
+      <td class="small">2023-02-23</td>
+      <td>AFFIDAMENTO DELLA FORNITURA DI SISTEMA DI TREATMENT PLANNING (TPS)<div class="small muted">CIG 96940051FF · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">180 mila €</td></tr><tr data-t="adesione ex post alla gara esperita dalla fondazione irccs policlinico san matteo di pavia per la fornitura di sistemi di iniezione di mezzo di contrasto, materiale di consumo incluso (lotto 1) occorrenti alla fondazione irccs san gerardo dei tintori di monza per un periodo di 48 mesi + 12 mesi come ">
+      <td class="small">2024-12-05</td>
+      <td>ADESIONE EX POST ALLA GARA ESPERITA DALLA FONDAZIONE IRCCS POLICLINICO SAN MATTEO DI PAVIA PER LA FORNITURA DI SISTEMI DI INIEZIONE DI MEZZO DI CONTRASTO, MATERIALE DI CONSUMO INCLUSO (LOTTO 1) OCCORRENTI ALLA FONDAZIONE IRCCS SAN GERARDO DEI TINTORI DI MONZA PER UN PERIODO DI 48 MESI + 12 MESI COME<div class="small muted">CIG A065B23248 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">176 mila €</td></tr><tr data-t="affidamento della fornitura di software di fusione deformabile tema sinergie spa">
+      <td class="small">2023-02-23</td>
+      <td>AFFIDAMENTO DELLA FORNITURA DI SOFTWARE DI FUSIONE DEFORMABILE<div class="small muted">CIG 9694035ABE · PRESIDI ED APPARECCHI PER RADIOTERAPIA</div></td>
+      <td>TEMA SINERGIE SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">55 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

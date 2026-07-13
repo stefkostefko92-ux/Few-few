@@ -203,6 +203,1524 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td><td class="num">16 mln €</td></tr><tr><td>MODULISTICA AZIENDALE<div class="small muted">Cpv prevalente non disponibile</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">14 mln €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(3265 contratti ANAC, 971 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/150205.csv" download>⬇ Scarica l’elenco completo (CSV, 3265 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="isole e comuni costieri ">
+      <td class="small">2024-06-12</td>
+      <td>ISOLE E COMUNI COSTIERI<div class="small muted">CIG B20C9B673F · SERVIZI DI PULIZIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">54 mln €</td></tr><tr data-t="comuni area nord-est ">
+      <td class="small">2024-06-12</td>
+      <td>COMUNI AREA NORD-EST<div class="small muted">CIG B20C9B88E5 · SERVIZI DI PULIZIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">43 mln €</td></tr><tr data-t="accordo quadro fornitura in service di dispositivi medici per ventiloterapia vitalaire italia spa">
+      <td class="small">2023-10-13</td>
+      <td>ACCORDO QUADRO FORNITURA IN SERVICE DI DISPOSITIVI MEDICI PER VENTILOTERAPIA<div class="small muted">CIG A023E24C8B · APPARECCHI PER OSSIGENOTERAPIA E APPARECCHI RESPIRATORI</div></td>
+      <td>VITALAIRE ITALIA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">33 mln €</td></tr><tr data-t="servizio di bonifica igienico-sanitaria con attuazione di interventi di disinfezione, disinfestazione, deblattizzazione e derattizzazione sul territorio dei comuni, nelle scuole pubbliche, nei presidi ospedalieri e nelle strutture sanitarie di competenza dell&#39;asl napoli 2 nord ">
+      <td class="small">2024-11-28</td>
+      <td>SERVIZIO DI BONIFICA IGIENICO-SANITARIA CON ATTUAZIONE DI INTERVENTI DI DISINFEZIONE, DISINFESTAZIONE, DEBLATTIZZAZIONE E DERATTIZZAZIONE SUL TERRITORIO DEI COMUNI, NELLE SCUOLE PUBBLICHE, NEI PRESIDI OSPEDALIERI E NELLE STRUTTURE SANITARIE DI COMPETENZA DELL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG B47A63E0E8 · SERVIZI DI DISINFEZIONE E DISINFESTAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">22 mln €</td></tr><tr data-t="comuni area distretti sanitari nord-ovest ">
+      <td class="small">2024-06-12</td>
+      <td>COMUNI AREA DISTRETTI SANITARI NORD-OVEST<div class="small muted">CIG B20C9B7812 · SERVIZI DI PULIZIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">18 mln €</td></tr><tr data-t="servizio cure domiciliari di base di i e ii livello nel territorio dell&#39;asl napoli 2 nord ">
+      <td class="small">2024-09-30</td>
+      <td>SERVIZIO CURE DOMICILIARI DI BASE DI I E II LIVELLO NEL TERRITORIO DELL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG B334B5530E · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">16 mln €</td></tr><tr data-t="multiservizio tecnologico da eseguirsi presso gli immobili di prorieta&#39; o in uso della asl napoli 2 nord - ii edizione - id 8715876 - lotto 2 ">
+      <td class="small">2024-03-28</td>
+      <td>MULTISERVIZIO TECNOLOGICO DA ESEGUIRSI PRESSO GLI IMMOBILI DI PRORIETA&#39; O IN USO DELLA ASL NAPOLI 2 NORD - II EDIZIONE - ID 8715876 - LOTTO 2<div class="small muted">CIG A0681CDA5C · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI MECCANICI DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">16 mln €</td></tr><tr data-t="modulistica aziendale operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>MODULISTICA AZIENDALE<div class="small muted">CIG B0EF61A4CB · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">14 mln €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n. 80 del giorno 23.05.2024, affidamento per mezzo di procedura aperta, della fornitura di ossigeno terapeutico al domicilio degli assistenti aventi diritto residenti della regione campania - a.s.l. napoli 2 nord lotto 2 - adesione nippon gases pharma s.r.l.">
+      <td class="small">2024-07-05</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N. 80 DEL GIORNO 23.05.2024, AFFIDAMENTO PER MEZZO DI PROCEDURA APERTA, DELLA FORNITURA DI OSSIGENO TERAPEUTICO AL DOMICILIO DEGLI ASSISTENTI AVENTI DIRITTO RESIDENTI DELLA REGIONE CAMPANIA - A.S.L. NAPOLI 2 NORD LOTTO 2 - ADESIONE<div class="small muted">CIG B25C7101D7 · SERVIZI DI OSSIGENOTERAPIA</div></td>
+      <td>NIPPON GASES PHARMA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">13 mln €</td></tr><tr data-t="lotto a - postazioni giugliano/varcaturo ">
+      <td class="small">2023-09-27</td>
+      <td>LOTTO A - POSTAZIONI GIUGLIANO/VARCATURO<div class="small muted">CIG A00E5D49D1 · SERVIZI DI AMBULANZA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">13 mln €</td></tr><tr data-t="lotto e - postazioni acerra/s.antimo ">
+      <td class="small">2023-09-27</td>
+      <td>LOTTO E - POSTAZIONI ACERRA/S.ANTIMO<div class="small muted">CIG A00E60B735 · SERVIZI DI AMBULANZA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">12 mln €</td></tr><tr data-t="lotto c - postazioni ischia ">
+      <td class="small">2023-09-27</td>
+      <td>LOTTO C - POSTAZIONI ISCHIA<div class="small muted">CIG A00E5F2295 · SERVIZI DI AMBULANZA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">11 mln €</td></tr><tr data-t="servizi integrati, gestionali e operativi di manutenzione da eseguirsi presso gli immobili di proprieta&#39; o in uso della asl napoli 2 nord alfredo cecchini societa a responsabilita limitata">
+      <td class="small">2024-07-26</td>
+      <td>SERVIZI INTEGRATI, GESTIONALI E OPERATIVI DI MANUTENZIONE DA ESEGUIRSI PRESSO GLI IMMOBILI DI PROPRIETA&#39; O IN USO DELLA ASL NAPOLI 2 NORD<div class="small muted">CIG B296B71E38 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI MECCANICI DI EDIFICI</div></td>
+      <td>ALFREDO CECCHINI SOCIETA A RESPONSABILITA LIMITATA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">10 mln €</td></tr><tr data-t="lotto b - postazioni afragola/casoria ">
+      <td class="small">2023-09-27</td>
+      <td>LOTTO B - POSTAZIONI AFRAGOLA/CASORIA<div class="small muted">CIG A00E5E57D9 · SERVIZI DI AMBULANZA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">10 mln €</td></tr><tr data-t="appalto integrato per l&#39;adeguamento sismico del p.o. s.maria delle grazie di pozzuoli - pnrr m6c2 consorzio stabile energos">
+      <td class="small">2023-05-02</td>
+      <td>APPALTO INTEGRATO PER L&#39;ADEGUAMENTO SISMICO DEL P.O. S.MARIA DELLE GRAZIE DI POZZUOLI - PNRR M6C2<div class="small muted">CIG 9647446C48 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>CONSORZIO STABILE ENERGOS</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">9 mln €</td></tr><tr data-t="servizio di digitalizzazione del magazzino centralizzato economale, logistica e relativi servizi complementari ">
+      <td class="small">2024-03-11</td>
+      <td>SERVIZIO DI DIGITALIZZAZIONE DEL MAGAZZINO CENTRALIZZATO ECONOMALE, LOGISTICA E RELATIVI SERVIZI COMPLEMENTARI<div class="small muted">CIG B0BAD5A5BA · SERVIZI DI MAGAZZINAGGIO E DEPOSITO MERCI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">9 mln €</td></tr><tr data-t="servizio di supplementazione orale vivisol napoli s.r.l.">
+      <td class="small">2024-01-31</td>
+      <td>SERVIZIO DI SUPPLEMENTAZIONE ORALE<div class="small muted">CIG B026F33963 · VARI SERVIZI SANITARI</div></td>
+      <td>VIVISOL NAPOLI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">8 mln €</td></tr><tr data-t="adesione accordo quadro consip s.p.a. - buoni pasto 10 lotto 9 campania quota 1 - per la fornitura di &#39;buoni pasto elettronici per il personale dipendente dell&#39;a.s.l. napoli 2 nord per il periodo dicembre 2023 a novembre 2025&#39; ">
+      <td class="small">2023-11-30</td>
+      <td>ADESIONE ACCORDO QUADRO CONSIP S.P.A. - BUONI PASTO 10 LOTTO 9 CAMPANIA QUOTA 1 - PER LA FORNITURA DI &#39;BUONI PASTO ELETTRONICI PER IL PERSONALE DIPENDENTE DELL&#39;A.S.L. NAPOLI 2 NORD PER IL PERIODO DICEMBRE 2023 A NOVEMBRE 2025&#39;<div class="small muted">CIG A033615820 · BUONI PASTO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">8 mln €</td></tr><tr data-t="lotto 4,5,6,13,15,16,17,18,19,21,22,31,34,35,36,37,38,39,7,9,10,23determinazione so.re.sa. s.p.a. n. 199 del giorno 10.10.2022. adesione agli accordi quadro per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39; coloplast - s.p.a.">
+      <td class="small">2023-05-24</td>
+      <td>LOTTO 4,5,6,13,15,16,17,18,19,21,22,31,34,35,36,37,38,39,7,9,10,23DETERMINAZIONE SO.RE.SA. S.P.A. N. 199 DEL GIORNO 10.10.2022. ADESIONE AGLI ACCORDI QUADRO PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG 9871775E6D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">7 mln €</td></tr><tr data-t="cannula per la stimolazione sottocutanea-kit ago elettrodo certificato per sistema neurostimulator pens therapy per la stimolazione dei nervi periferici e delle terminazioni nervose periferiche e certificato per la stimolazione del singolo target nervoso-vedasi descrizione lotto 11 del fabbisogno medinat s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>CANNULA PER LA STIMOLAZIONE SOTTOCUTANEA-KIT AGO ELETTRODO CERTIFICATO PER SISTEMA NEUROSTIMULATOR PENS THERAPY PER LA STIMOLAZIONE DEI NERVI PERIFERICI E DELLE TERMINAZIONI NERVOSE PERIFERICHE E CERTIFICATO PER LA STIMOLAZIONE DEL SINGOLO TARGET NERVOSO-VEDASI DESCRIZIONE LOTTO 11 DEL FABBISOGNO<div class="small muted">CIG B0E2A52A64 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDINAT S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">7 mln €</td></tr><tr data-t="pnrr – missione 6 – componente 1 – investimento 1.1 - accordo quadro procedura aperta ai sensi degli artt. 54 e 60 del d.lgs. 50/2016 e s.m.i., per i lavori di: intervento 1: realizzazione cdc d.s. 40 di mugnano di napoli (na) in loc. san giovanni a campo - cup: g51b22000860001 - intervento 2: reali fimtec s.r.l.">
+      <td class="small">2024-09-18</td>
+      <td>PNRR – MISSIONE 6 – COMPONENTE 1 – INVESTIMENTO 1.1 - ACCORDO QUADRO PROCEDURA APERTA AI SENSI DEGLI ARTT. 54 E 60 DEL D.LGS. 50/2016 E S.M.I., PER I LAVORI DI: INTERVENTO 1: REALIZZAZIONE CDC D.S. 40 DI MUGNANO DI NAPOLI (NA) IN LOC. SAN GIOVANNI A CAMPO - CUP: G51B22000860001 - INTERVENTO 2: REALI<div class="small muted">CIG B30F74D6C0 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>FIMTEC S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">7 mln €</td></tr><tr data-t="lotto 24 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. glaxosmithkline s.p.a.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 24 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0107824EC · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">7 mln €</td></tr><tr data-t="lotto 32- determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 32- DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E6FC01D · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">7 mln €</td></tr><tr data-t="servizio di raccolta, trasporto e conferimento a impianto di smaltimento rifiuti pericolosi e non pericolosi, derivanti da attività sanitarie delle aa.ss. della regione campania. ">
+      <td class="small">2023-03-20</td>
+      <td>SERVIZIO DI RACCOLTA, TRASPORTO E CONFERIMENTO A IMPIANTO DI SMALTIMENTO RIFIUTI PERICOLOSI E NON PERICOLOSI, DERIVANTI DA ATTIVITÀ SANITARIE DELLE AA.SS. DELLA REGIONE CAMPANIA.<div class="small muted">CIG A014EDB5AD · RACCOLTA, TRASPORTO E SMALTIMENTO DI RIFIUTI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">7 mln €</td></tr><tr data-t="lavori antincendio ed efficientamento energetico p.o. pozzuoli ">
+      <td class="small">2024-01-24</td>
+      <td>LAVORI ANTINCENDIO ED EFFICIENTAMENTO ENERGETICO P.O. POZZUOLI<div class="small muted">CIG B0113E2C0E · IMPIANTI MECCANICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">6 mln €</td></tr><tr data-t="avviso multimisura 1.1 e 1.2 infrastrutture digitali e abilitazione al cloud - asl/ao (marzo 2023). migrazione dei dati e dei servizi in psn. approvazione progetto fabbisogni e relativi allegati migrazione psn – pnrr polo strategico nazionale s.p.a.">
+      <td class="small">2024-05-28</td>
+      <td>AVVISO MULTIMISURA 1.1 E 1.2 INFRASTRUTTURE DIGITALI E ABILITAZIONE AL CLOUD - ASL/AO (MARZO 2023). MIGRAZIONE DEI DATI E DEI SERVIZI IN PSN. APPROVAZIONE PROGETTO FABBISOGNI E RELATIVI ALLEGATI MIGRAZIONE PSN – PNRR<div class="small muted">CIG B1E0642832 · Cpv prevalente non disponibile</div></td>
+      <td>POLO STRATEGICO NAZIONALE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mln €</td></tr><tr data-t="accordo multifornitore con più operatori per la fornitura in service di dispositivi medici per la ventiloterapia respiraire srl">
+      <td class="small">2023-02-28</td>
+      <td>ACCORDO MULTIFORNITORE CON PIÙ OPERATORI PER LA FORNITURA IN SERVICE DI DISPOSITIVI MEDICI PER LA VENTILOTERAPIA<div class="small muted">CIG 9749669162 · APPARECCHI PER OSSIGENOTERAPIA E APPARECCHI RESPIRATORI</div></td>
+      <td>RESPIRAIRE SRL</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">6 mln €</td></tr><tr data-t="lotto 29 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 29 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E7753F6 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">5 mln €</td></tr><tr data-t="lotto 2 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. ">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 2 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0106DAA47 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">5 mln €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n. 195 del 01.08.2024. adesione al v appalto specifico per la fornituradi vaccini destinati alle aa.ss. della regione campania pfizer s.r.l.">
+      <td class="small">2024-09-04</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N. 195 DEL 01.08.2024. ADESIONE AL V APPALTO SPECIFICO PER LA FORNITURADI VACCINI DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA<div class="small muted">CIG B2EE349E3F</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mln €</td></tr><tr data-t="lotto 26 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. msd italia s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 26 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0107AA5EE · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">5 mln €</td></tr><tr data-t="l&#39;affidamento dei servizi presso la residenza sanitaria assistita (rsa) dell&#39;asl napoli 2 nord, sita nel comune di pozzuoli nel rione toiano (na) ">
+      <td class="small">2023-10-11</td>
+      <td>L&#39;AFFIDAMENTO DEI SERVIZI PRESSO LA RESIDENZA SANITARIA ASSISTITA (RSA) DELL&#39;ASL NAPOLI 2 NORD, SITA NEL COMUNE DI POZZUOLI NEL RIONE TOIANO (NA)<div class="small muted">CIG A018432A22 · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="servizio di nutrizione enterale domiciliare vivisol napoli s.r.l.">
+      <td class="small">2024-01-31</td>
+      <td>SERVIZIO DI NUTRIZIONE ENTERALE DOMICILIARE<div class="small muted">CIG B026F32890 · VARI SERVIZI SANITARI</div></td>
+      <td>VIVISOL NAPOLI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="lotto d - postazioni procida ">
+      <td class="small">2023-09-27</td>
+      <td>LOTTO D - POSTAZIONI PROCIDA<div class="small muted">CIG A00E601EF2 · SERVIZI DI AMBULANZA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="servizio di nutrizione parenterale domiciliare - standard vivisol napoli s.r.l.">
+      <td class="small">2024-01-31</td>
+      <td>SERVIZIO DI NUTRIZIONE PARENTERALE DOMICILIARE - STANDARD<div class="small muted">CIG B026F306EA · VARI SERVIZI SANITARI</div></td>
+      <td>VIVISOL NAPOLI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lavori di realizzazione di una struttura polivalente di screening e ambulatori a supporto del p.o. san giovanni di dio in frattamaggiore da finanziarsi con i fondi dell&#39;art. 20, l. 67/88, iii fase, ii stralcio ">
+      <td class="small">2024-03-06</td>
+      <td>LAVORI DI REALIZZAZIONE DI UNA STRUTTURA POLIVALENTE DI SCREENING E AMBULATORI A SUPPORTO DEL P.O. SAN GIOVANNI DI DIO IN FRATTAMAGGIORE DA FINANZIARSI CON I FONDI DELL&#39;ART. 20, L. 67/88, III FASE, II STRALCIO<div class="small muted">CIG B0B18BAF83 · LAVORI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento dei lavori di ammodernamento reparto e realizzazione di una seconda sala operatoria, con formula &#39;chiavi in mano&#39;, comprensivo di arredi e attrezzature/sistemi elettromedicali, del reparto di neurochirurgia del p.o. di pozzuoli consorzio stabile costruendo s.r.l.">
+      <td class="small">2023-01-23</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEI LAVORI DI AMMODERNAMENTO REPARTO E REALIZZAZIONE DI UNA SECONDA SALA OPERATORIA, CON FORMULA &#39;CHIAVI IN MANO&#39;, COMPRENSIVO DI ARREDI E ATTREZZATURE/SISTEMI ELETTROMEDICALI, DEL REPARTO DI NEUROCHIRURGIA DEL P.O. DI POZZUOLI<div class="small muted">CIG 9606515AF4 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>CONSORZIO STABILE COSTRUENDO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="realizzazione nuova struttura sps nel comune di quarto art. 20 iii^ fase ii^ stralcio ">
+      <td class="small">2023-06-26</td>
+      <td>REALIZZAZIONE NUOVA STRUTTURA SPS NEL COMUNE DI QUARTO ART. 20 III^ FASE II^ STRALCIO<div class="small muted">CIG 9896818892 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="sistema di trasferimento chiuso + adattatore per siringa + set di preparazione per prelievo/ricostituzione di farmaci antiblastici + dispositivo di connessione per sacca ad infusione - descrizione completa al fabbisogno allegato a medinat s.r.l.">
+      <td class="small">2024-11-05</td>
+      <td>SISTEMA DI TRASFERIMENTO CHIUSO + ADATTATORE PER SIRINGA + SET DI PREPARAZIONE PER PRELIEVO/RICOSTITUZIONE DI FARMACI ANTIBLASTICI + DISPOSITIVO DI CONNESSIONE PER SACCA AD INFUSIONE - DESCRIZIONE COMPLETA AL FABBISOGNO ALLEGATO A<div class="small muted">CIG B419DE3F9F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDINAT S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="appalto integrato - lavori di adeguamento sismico p.o. anna rizzoli di lacco ameno ischia zeta s.r.l.">
+      <td class="small">2023-05-02</td>
+      <td>APPALTO INTEGRATO - LAVORI DI ADEGUAMENTO SISMICO P.O. ANNA RIZZOLI DI LACCO AMENO ISCHIA<div class="small muted">CIG 9647700DE3 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>ZETA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lavori per l&#39;adeguamento funzionale con ammodernamento dei reparti di chirurgia ed ortopedia dell&#39;ospedale santa maria delle grazie - pozzuoli (na ">
+      <td class="small">2024-02-23</td>
+      <td>LAVORI PER L&#39;ADEGUAMENTO FUNZIONALE CON AMMODERNAMENTO DEI REPARTI DI CHIRURGIA ED ORTOPEDIA DELL&#39;OSPEDALE SANTA MARIA DELLE GRAZIE - POZZUOLI (NA<div class="small muted">CIG B087F4152E · LAVORI DI INSTALLAZIONE DI CABLAGGI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lavori per l&#39;adeguamento funzionale con ammodernamento dei reparti di chirurgia ed ortopedia dell&#39;ospedale santa maria delle grazie - pozzuoli (na ">
+      <td class="small">2024-02-23</td>
+      <td>LAVORI PER L&#39;ADEGUAMENTO FUNZIONALE CON AMMODERNAMENTO DEI REPARTI DI CHIRURGIA ED ORTOPEDIA DELL&#39;OSPEDALE SANTA MARIA DELLE GRAZIE - POZZUOLI (NA<div class="small muted">CIG B08733FC6D · MOBILI PER USO MEDICO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lavori per la realizzazione di un ospedale della comunità (odc) presso il distretto sanitario n.37 di giugliano in campania (na) in via circumvallazione esterna, snc - pnrr - missione 6 - componente 1 - investimento 1.3 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UN OSPEDALE DELLA COMUNITÀ (ODC) PRESSO IL DISTRETTO SANITARIO N.37 DI GIUGLIANO IN CAMPANIA (NA) IN VIA CIRCUMVALLAZIONE ESTERNA, SNC - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.3 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06DCF3232 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="procedura negoziata finalizzata all&#39;acquisizione in noleggio quinquennale di un sistema di chirurgia robotica multidisciplinare comprensivo di accessori per il corretto e completo funzionamento per le esigenze dell&#39;asl napoli 2 nord ">
+      <td class="small">2024-06-14</td>
+      <td>PROCEDURA NEGOZIATA FINALIZZATA ALL&#39;ACQUISIZIONE IN NOLEGGIO QUINQUENNALE DI UN SISTEMA DI CHIRURGIA ROBOTICA MULTIDISCIPLINARE COMPRENSIVO DI ACCESSORI PER IL CORRETTO E COMPLETO FUNZIONAMENTO PER LE ESIGENZE DELL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG B21D9EB920</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">4 mln €</td></tr><tr data-t="fornitura di aghi, siringhe, aghi cannula ed aghi per anestesia delibere soresa 36 e 42/2023 - becton dickinson l51 ">
+      <td class="small">2023-05-30</td>
+      <td>FORNITURA DI AGHI, SIRINGHE, AGHI CANNULA ED AGHI PER ANESTESIA DELIBERE SORESA 36 E 42/2023 - BECTON DICKINSON L51<div class="small muted">CIG 982926995F · AGHI PER USO MEDICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lotto 18 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. msd italia s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 18 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A01079CA5F · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lavori per la realizzazione di una ospedale di comunità (odc) presso il distretto sanitario n. 39 di villaricca (na) in località frattole - pnrr - missione 6 - componente 1 - investimento 1.3 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA OSPEDALE DI COMUNITÀ (ODC) PRESSO IL DISTRETTO SANITARIO N. 39 DI VILLARICCA (NA) IN LOCALITÀ FRATTOLE - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.3 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06CB59BB7 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="adesione convenzione consip reti locali 8 – lotto 2 per la fornitura di prodotti e servizi per la realizzazione, manutenzione e gestione di reti locali in favore del rti vodafone italia spa (mandataria) – fondi pnrr - dea m6-c2-1.1.1 vodafone italia s.p.a.">
+      <td class="small">2024-09-27</td>
+      <td>ADESIONE CONVENZIONE CONSIP RETI LOCALI 8 – LOTTO 2 PER LA FORNITURA DI PRODOTTI E SERVIZI PER LA REALIZZAZIONE, MANUTENZIONE E GESTIONE DI RETI LOCALI IN FAVORE DEL RTI VODAFONE ITALIA SPA (MANDATARIA) – FONDI PNRR - DEA M6-C2-1.1.1<div class="small muted">CIG B335E8F0D2 · RETE LOCALE</div></td>
+      <td>VODAFONE ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mln €</td></tr><tr data-t="lotto 6 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. pfizer s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 6 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0107943C7 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lavori per la realizzazione di un ospedale della comunità (odc) presso il distretto sanitario n.37 di giugliano in campania (na) in località casacelle, snc - pnrr - missione 6 - componente 1 - investimento 1.3 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UN OSPEDALE DELLA COMUNITÀ (ODC) PRESSO IL DISTRETTO SANITARIO N.37 DI GIUGLIANO IN CAMPANIA (NA) IN LOCALITÀ CASACELLE, SNC - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.3 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06B671B1B · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="sistemi per la diagnostica coagulativa ed emostasi - lotto 22 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMI PER LA DIAGNOSTICA COAGULATIVA ED EMOSTASI - LOTTO 22 SEZ. A<div class="small muted">CIG A01EB6DA62 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="fondi pnrr - adesione accordo quadro &#39;sanita&#39; digitale&#39; - sistemi informativi clinico-assistenziali» servizi di supporto per le pubbliche amministrazioni del ssn - lotto n. 2 cartella clinica elettronica ed enterprise imaging - centro sud - p.o. santa maria delle grazie -pozzuoli - cup: g84e22000390 b.c.s. - biomedical computering systems s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>FONDI PNRR - ADESIONE ACCORDO QUADRO &#39;SANITA&#39; DIGITALE&#39; - SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI» SERVIZI DI SUPPORTO PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN - LOTTO N. 2 CARTELLA CLINICA ELETTRONICA ED ENTERPRISE IMAGING - CENTRO SUD - P.O. SANTA MARIA DELLE GRAZIE -POZZUOLI - CUP: G84E22000390<div class="small muted">CIG A017AEF587 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>B.C.S. - BIOMEDICAL COMPUTERING SYSTEMS S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="sistema di placche anatomiche per fratture su protesi del femore prossimale, distale e/o della diafisi femorale, con aggancio trocanterico con piastra di fissaggio bloccatile fino ad 8 viti , completo di viti peri-protesiche e standard - vedi fabbisogno di gara ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI PLACCHE ANATOMICHE PER FRATTURE SU PROTESI DEL FEMORE PROSSIMALE, DISTALE E/O DELLA DIAFISI FEMORALE, CON AGGANCIO TROCANTERICO CON PIASTRA DI FISSAGGIO BLOCCATILE FINO AD 8 VITI , COMPLETO DI VITI PERI-PROTESICHE E STANDARD - VEDI FABBISOGNO DI GARA<div class="small muted">CIG B4A6D26972 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="iv appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici per la fornitura di farmacibiologici e biosimilari destinati alle aa.ss./aa.00 della regione campania – determina direttoregenerale so.re.sa n. 243/2024 - sandoz lotto 12 sandoz s.p.a.">
+      <td class="small">2024-11-19</td>
+      <td>IV APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI PER LA FORNITURA DI FARMACIBIOLOGICI E BIOSIMILARI DESTINATI ALLE AA.SS./AA.00 DELLA REGIONE CAMPANIA – DETERMINA DIRETTOREGENERALE SO.RE.SA N. 243/2024 - SANDOZ LOTTO 12<div class="small muted">CIG B455CFA6EC</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="servizi di ingegneria ed architettura per la progettazione definitiva, esecutiva e coordinamento della sicurezza in fase di progettazione per i lavori di realizzazione del nuovo ospedale di giugliano (na) ">
+      <td class="small">2023-02-20</td>
+      <td>SERVIZI DI INGEGNERIA ED ARCHITETTURA PER LA PROGETTAZIONE DEFINITIVA, ESECUTIVA E COORDINAMENTO DELLA SICUREZZA IN FASE DI PROGETTAZIONE PER I LAVORI DI REALIZZAZIONE DEL NUOVO OSPEDALE DI GIUGLIANO (NA)<div class="small muted">CIG 96373733CA · SERVIZI DI PROGETTAZIONE DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lavori per la realizzazione di un ospedale di comunità nel comune di caivano (na), via circumvallazione ovest - fondi pnrr conpat scarl">
+      <td class="small">2024-05-31</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UN OSPEDALE DI COMUNITÀ NEL COMUNE DI CAIVANO (NA), VIA CIRCUMVALLAZIONE OVEST - FONDI PNRR<div class="small muted">CIG B1EF5827A5 · Cpv prevalente non disponibile</div></td>
+      <td>CONPAT SCARL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="sistema per la diagnostica torch e di immunometria speciale - lotto 9 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER LA DIAGNOSTICA TORCH E DI IMMUNOMETRIA SPECIALE - LOTTO 9 SEZ. A<div class="small muted">CIG A01E21DB0B · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="convenzione consip microsoft enterprise agreement 7 tim s.p.a.">
+      <td class="small">2023-09-27</td>
+      <td>CONVENZIONE CONSIP MICROSOFT ENTERPRISE AGREEMENT 7<div class="small muted">CIG 99686240C4 · PACCHETTI SOFTWARE IT</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 4,5,6,13,15,16,18,19,21,26,29,35,7,9,10 - determinazione so.re.sa. s.p.a. n. 199 del giorno 10.10.2022. adesione agli accordi quadro per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39; hollister s.p.a.">
+      <td class="small">2023-05-24</td>
+      <td>LOTTO 4,5,6,13,15,16,18,19,21,26,29,35,7,9,10 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 199 DEL GIORNO 10.10.2022. ADESIONE AGLI ACCORDI QUADRO PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG 9871796FC1 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>HOLLISTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto unico - adesione alla convenzione biennale avente ad oggetto la &#39;fornitura di sistemi di monitoraggio flash del glucosio (fgm) per le aa.ss. della regione campania e della regione molise&#39;. alpha pharma service s.r.l.">
+      <td class="small">2023-02-10</td>
+      <td>LOTTO UNICO - ADESIONE ALLA CONVENZIONE BIENNALE AVENTE AD OGGETTO LA &#39;FORNITURA DI SISTEMI DI MONITORAGGIO FLASH DEL GLUCOSIO (FGM) PER LE AA.SS. DELLA REGIONE CAMPANIA E DELLA REGIONE MOLISE&#39;.<div class="small muted">CIG 9660978B3E · PRESIDI DIAGNOSTICI</div></td>
+      <td>ALPHA PHARMA SERVICE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 1 - sistemi volumetrici multicanale ">
+      <td class="small">2024-04-10</td>
+      <td>LOTTO 1 - SISTEMI VOLUMETRICI MULTICANALE<div class="small muted">CIG B12A8EBB37 · POMPE PER INFUSIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="realizzazione di un ospedale di comunita in arzano via e.fermi - pnrr missione 6 salute componente 1 - investimenti 1.1 cdc, 1.2.2 cot e 1.3 odc romano costruzioni &amp; c. s.r.l.">
+      <td class="small">2023-12-29</td>
+      <td>REALIZZAZIONE DI UN OSPEDALE DI COMUNITA IN ARZANO VIA E.FERMI - PNRR MISSIONE 6 SALUTE COMPONENTE 1 - INVESTIMENTI 1.1 CDC, 1.2.2 COT E 1.3 ODC<div class="small muted">CIG A058D4E6A3 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>ROMANO COSTRUZIONI &amp; C. S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. medtronic lotto 19 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. MEDTRONIC LOTTO 19<div class="small muted">CIG 9857479900 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 42 di arzano (na) in via enrico fermi, snc - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-12</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 42 DI ARZANO (NA) IN VIA ENRICO FERMI, SNC - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06B5F54C9 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 3 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. pfizer s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 3 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A01078EED0 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="area 6 dd.ss. 41-42-43-44-45-46-47 ">
+      <td class="small">2024-10-17</td>
+      <td>AREA 6 DD.SS. 41-42-43-44-45-46-47<div class="small muted">CIG B375E294B7 · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="area 1 p.o. pozzuoli ">
+      <td class="small">2024-10-17</td>
+      <td>AREA 1 P.O. POZZUOLI<div class="small muted">CIG B375E24098 · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="area 5 dd.ss. 35-37-38-39-40 ">
+      <td class="small">2024-10-17</td>
+      <td>AREA 5 DD.SS. 35-37-38-39-40<div class="small muted">CIG B375E283E4 · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="area 4 pp.oo. ischia e procida e d.s. 36 ">
+      <td class="small">2024-10-17</td>
+      <td>AREA 4 PP.OO. ISCHIA E PROCIDA E D.S. 36<div class="small muted">CIG B375E27311 · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di supporto logistico e facchinaggio, relativo ai beni di consumo, presso le farmacie distrettuali e i presidi ospedalieri (ovverosia farmacie, laboratori e radiologia) ">
+      <td class="small">2024-10-09</td>
+      <td>SERVIZIO DI SUPPORTO LOGISTICO E FACCHINAGGIO, RELATIVO AI BENI DI CONSUMO, PRESSO LE FARMACIE DISTRETTUALI E I PRESIDI OSPEDALIERI (OVVEROSIA FARMACIE, LABORATORI E RADIOLOGIA)<div class="small muted">CIG B3593A96F9 · SERVIZI DI MOVIMENTAZIONE E MAGAZZINAGGIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="chiodo endomidollare femorale in titanio con n. 1 filo guida in acciaio, n. 1 (una) vite cefalica con alette integrate antirotazionali, con sistema alette di blocco distale integrato all&#39;interno del chiodo, ed eventuali altri accessori di utilizzo saltuario, misure e lunghezze varie ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE FEMORALE IN TITANIO CON N. 1 FILO GUIDA IN ACCIAIO, N. 1 (UNA) VITE CEFALICA CON ALETTE INTEGRATE ANTIROTAZIONALI, CON SISTEMA ALETTE DI BLOCCO DISTALE INTEGRATO ALL&#39;INTERNO DEL CHIODO, ED EVENTUALI ALTRI ACCESSORI DI UTILIZZO SALTUARIO, MISURE E LUNGHEZZE VARIE<div class="small muted">CIG B4A6CEEB3B · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di installazione e gestione di distributori automatici di bevande e alimenti presso i pp.oo., i distretti sanitari di base e le strutture territoriali dell&#39;asl napoli 2 nord ">
+      <td class="small">2024-07-01</td>
+      <td>SERVIZIO DI INSTALLAZIONE E GESTIONE DI DISTRIBUTORI AUTOMATICI DI BEVANDE E ALIMENTI PRESSO I PP.OO., I DISTRETTI SANITARI DI BASE E LE STRUTTURE TERRITORIALI DELL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG B24333C1F7 · SERVIZI DI VENDITA AL DETTAGLIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 4,5,6,14,15,16,19,21,7,9,10 - determinazione so.re.sa. s.p.a. n. 199 del giorno 10.10.2022. adesione agli accordi quadro per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39; convatec italia s.r.l.">
+      <td class="small">2023-05-24</td>
+      <td>LOTTO 4,5,6,14,15,16,19,21,7,9,10 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 199 DEL GIORNO 10.10.2022. ADESIONE AGLI ACCORDI QUADRO PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG 9871820393 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CONVATEC ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="chiodo endomidollare femorale in titanio, sia in versione std che in versione long, con filo guida in acciaio, n. 1 (uno) vite lag per il collo e n. 1 o 2 viti distali , sistema di guida esterno per il posizionamento delle viti , eventuali altri accessori di utilizzo saltuario, angolazioni misure e  ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE FEMORALE IN TITANIO, SIA IN VERSIONE STD CHE IN VERSIONE LONG, CON FILO GUIDA IN ACCIAIO, N. 1 (UNO) VITE LAG PER IL COLLO E N. 1 O 2 VITI DISTALI , SISTEMA DI GUIDA ESTERNO PER IL POSIZIONAMENTO DELLE VITI , EVENTUALI ALTRI ACCESSORI DI UTILIZZO SALTUARIO, ANGOLAZIONI MISURE E <div class="small muted">CIG B4A6CEDA68 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 4,5,6,16,19,21,22,24,25,26,29,31,34,35,36,7,9,10 - determinazione so.re.sa. s.p.a. n. 199 del giorno 10.10.2022. adesione agli accordi quadro per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39; teleflex medical s.r.l.">
+      <td class="small">2023-05-24</td>
+      <td>LOTTO 4,5,6,16,19,21,22,24,25,26,29,31,34,35,36,7,9,10 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 199 DEL GIORNO 10.10.2022. ADESIONE AGLI ACCORDI QUADRO PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG 98718479D9 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>TELEFLEX MEDICAL S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="progetto dei fabbisogni e dello schema di contratto per la fornitura di servizi di connettivita&#39; nell&#39;ambito spc ">
+      <td class="small">2023-02-02</td>
+      <td>PROGETTO DEI FABBISOGNI E DELLO SCHEMA DI CONTRATTO PER LA FORNITURA DI SERVIZI DI CONNETTIVITA&#39; NELL&#39;AMBITO SPC<div class="small muted">CIG 96290775B6 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di nutrizione parenterale domiciliare - personalizzato baxter s.p.a.">
+      <td class="small">2024-01-31</td>
+      <td>SERVIZIO DI NUTRIZIONE PARENTERALE DOMICILIARE - PERSONALIZZATO<div class="small muted">CIG B026F317BD · VARI SERVIZI SANITARI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="kit medicazione picc - vedasi descrizione nel fabbisogno ">
+      <td class="small">2024-05-17</td>
+      <td>KIT MEDICAZIONE PICC - VEDASI DESCRIZIONE NEL FABBISOGNO<div class="small muted">CIG B1B28C9053 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 47 di casalnuovo (na) in via napoli - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-12</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 47 DI CASALNUOVO (NA) IN VIA NAPOLI - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06A0D12AA · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 28 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 28 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E76BBB3 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="diagnostica molecolare infettivologica - lotto 14 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>DIAGNOSTICA MOLECOLARE INFETTIVOLOGICA - LOTTO 14 SEZ. A<div class="small muted">CIG A01E23E648 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso ildistretto sanitario n. 43 di casoria (na) in via benedetto croce pnrr missione 6 componente 1 investimento 1.1 consorzio stabile policost societa&#39; consortile a r.l.">
+      <td class="small">2024-08-07</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO ILDISTRETTO SANITARIO N. 43 DI CASORIA (NA) IN VIA BENEDETTO CROCE PNRR MISSIONE 6 COMPONENTE 1 INVESTIMENTO 1.1<div class="small muted">CIG B2B9993430 · LAVORI DI INSTALLAZIONE DI IMPIANTI DI RISCALDAMENTO, VENTILAZIONE E CLIMATIZZAZIONE</div></td>
+      <td>CONSORZIO STABILE POLICOST SOCIETA&#39; CONSORTILE A R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="area 2 p.o. frattamaggiore ">
+      <td class="small">2024-10-17</td>
+      <td>AREA 2 P.O. FRATTAMAGGIORE<div class="small muted">CIG B375E2516B · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="area 3 p.o. giugliano ">
+      <td class="small">2024-10-17</td>
+      <td>AREA 3 P.O. GIUGLIANO<div class="small muted">CIG B375E2623E · LAVORI DI RIPARAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="kit per trattamento fibrillazione atriale mediante utilizzo di energia a forma d&#39;onda pulsata ( l&#39;apparecchiatiua andrà fornita in noleggio ) ">
+      <td class="small">2024-05-21</td>
+      <td>KIT PER TRATTAMENTO FIBRILLAZIONE ATRIALE MEDIANTE UTILIZZO DI ENERGIA A FORMA D&#39;ONDA PULSATA ( L&#39;APPARECCHIATIUA ANDRÀ FORNITA IN NOLEGGIO )<div class="small muted">CIG B1B9714494 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di un casa della comunità (cdc) presso il distretto sanitario n.37 di giugliano in campania (na) in via circumvallazione esterna, snc - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UN CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N.37 DI GIUGLIANO IN CAMPANIA (NA) IN VIA CIRCUMVALLAZIONE ESTERNA, SNC - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06DCF53D8 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità nel comune di caivano (na), via circumvallazione ovest - fondi pnrr conpat scarl">
+      <td class="small">2024-06-03</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ NEL COMUNE DI CAIVANO (NA), VIA CIRCUMVALLAZIONE OVEST - FONDI PNRR<div class="small muted">CIG B1F4FA59BC · Cpv prevalente non disponibile</div></td>
+      <td>CONPAT SCARL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 29 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. sanofi s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 29 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0107E8917 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 35 di bacoli (na) in via lungolago n^8 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 35 DI BACOLI (NA) IN VIA LUNGOLAGO N^8 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06D26F4AF · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità nel comune di caivano (na) , via circumvallazione ovest- fondi pnrr operatore individuale (persona fisica)">
+      <td class="small">2024-05-31</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ NEL COMUNE DI CAIVANO (NA) , VIA CIRCUMVALLAZIONE OVEST- FONDI PNRR<div class="small muted">CIG B1EF39F90F · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 6 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. ">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 6 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A01310EE04 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fondi pnrr - adesione accordo quadro &#39;sanita&#39; digitale&#39; - sistemi informativi clinico-assistenziali» servizi di supporto per le pubbliche amministrazioni del ssn - lotto n. 2 cartella clinica elettronica ed enterprise imaging - centro sud - p.o. san giuliano - giugliano in campania - cup: g94e220002 b.c.s. - biomedical computering systems s.r.l.">
+      <td class="small">2023-10-27</td>
+      <td>FONDI PNRR - ADESIONE ACCORDO QUADRO &#39;SANITA&#39; DIGITALE&#39; - SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI» SERVIZI DI SUPPORTO PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN - LOTTO N. 2 CARTELLA CLINICA ELETTRONICA ED ENTERPRISE IMAGING - CENTRO SUD - P.O. SAN GIULIANO - GIUGLIANO IN CAMPANIA - CUP: G94E220002<div class="small muted">CIG A017BB159F · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>B.C.S. - BIOMEDICAL COMPUTERING SYSTEMS S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema di osteosintesi costituito da placche in titanio anatomiche e rette , a stabilità - vedi fabbisogno di gara ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI OSTEOSINTESI COSTITUITO DA PLACCHE IN TITANIO ANATOMICHE E RETTE , A STABILITÀ - VEDI FABBISOGNO DI GARA<div class="small muted">CIG B4A6CF5105 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura negoziata senza previa pubblicazione del bando di gara per la fornitura di ausili per incontinenza con sistema ad assorbenza e servizi connessi da destinarsi ai pazienti dell&#39;asl napoli 2 nord ">
+      <td class="small">2023-04-27</td>
+      <td>PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE DEL BANDO DI GARA PER LA FORNITURA DI AUSILI PER INCONTINENZA CON SISTEMA AD ASSORBENZA E SERVIZI CONNESSI DA DESTINARSI AI PAZIENTI DELL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG 9791992F69 · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n. 195 del 01.08.2024. adesione al v appalto specifico per la fornitura di vaccini destinati alle aa.ss. della regione campania seqirus s.r.l.">
+      <td class="small">2024-09-04</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N. 195 DEL 01.08.2024. ADESIONE AL V APPALTO SPECIFICO PER LA FORNITURA DI VACCINI DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA<div class="small muted">CIG B2EC990425</div></td>
+      <td>SEQIRUS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 43 di casoria (na) in via a. de gasperi, 43 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 43 DI CASORIA (NA) IN VIA A. DE GASPERI, 43 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A067288090 · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fondi pnrr – adesione accordo quadro sanita&#39; digitale – sistemi informativi clinico-assistenziali» servizi di supporto per le pubbliche amministrazioni del ssn - lotto 2 cartella clinica elettronica ed enterprise imaging – centro-sud– p.o. santa maria delle grazie –digital pathology gpi s.p.a.">
+      <td class="small">2024-03-13</td>
+      <td>FONDI PNRR – ADESIONE ACCORDO QUADRO SANITA&#39; DIGITALE – SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI» SERVIZI DI SUPPORTO PER LE PUBBLICHE AMMINISTRAZIONI DEL SSN - LOTTO 2 CARTELLA CLINICA ELETTRONICA ED ENTERPRISE IMAGING – CENTRO-SUD– P.O. SANTA MARIA DELLE GRAZIE –DIGITAL PATHOLOGY<div class="small muted">CIG B0CD028084 · Cpv prevalente non disponibile</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura annuale di pacemaker leadless di nuova generazione vr- aair ">
+      <td class="small">2024-12-09</td>
+      <td>FORNITURA ANNUALE DI PACEMAKER LEADLESS DI NUOVA GENERAZIONE VR- AAIR<div class="small muted">CIG B4B06E8BFE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura in opera di apparecchiature elettromedicali ed arredi occorrenti ai nuovi locali della uoc di anestesia e rianimazione p.o. pozzuoli ">
+      <td class="small">2024-04-16</td>
+      <td>FORNITURA IN OPERA DI APPARECCHIATURE ELETTROMEDICALI ED ARREDI OCCORRENTI AI NUOVI LOCALI DELLA UOC DI ANESTESIA E RIANIMAZIONE P.O. POZZUOLI<div class="small muted">CIG B13D60554D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="placche anatomiche a stabilità in titanio con viti poliassiali a stabilità angolare e std (a compressione), per la ricostruzione delle fratture del pilone tibiale e del perone rispettivamente e della diastasi tibio-peroneale, composto da placche antero laterali e mediali di tibia nella versione senz ">
+      <td class="small">2024-12-09</td>
+      <td>PLACCHE ANATOMICHE A STABILITÀ IN TITANIO CON VITI POLIASSIALI A STABILITÀ ANGOLARE E STD (A COMPRESSIONE), PER LA RICOSTRUZIONE DELLE FRATTURE DEL PILONE TIBIALE E DEL PERONE RISPETTIVAMENTE E DELLA DIASTASI TIBIO-PERONEALE, COMPOSTO DA PLACCHE ANTERO LATERALI E MEDIALI DI TIBIA NELLA VERSIONE SENZ<div class="small muted">CIG B4A6CF9451 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema di fissazione esterna monoassiale, ibrido e articolato da caviglia per arto inferiore pronta all&#39;uso in kit sterile completo di strumentario e viti ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FISSAZIONE ESTERNA MONOASSIALE, IBRIDO E ARTICOLATO DA CAVIGLIA PER ARTO INFERIORE PRONTA ALL&#39;USO IN KIT STERILE COMPLETO DI STRUMENTARIO E VITI<div class="small muted">CIG B4A6CFE870 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 8 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. abbott medical italia s.r.l.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 8 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A013016160 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ABBOTT MEDICAL ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="realizzazione di un ospedale della comunità (odc) presso il distretto sanitario n. 35 di pozzuoli (na) in via luigi capuana, snc, di cui al lotto 9 - piano nazionale di ripresa e resilienza (pnrr) missione 6 componente 1 investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgene ">
+      <td class="small">2023-12-12</td>
+      <td>REALIZZAZIONE DI UN OSPEDALE DELLA COMUNITÀ (ODC) PRESSO IL DISTRETTO SANITARIO N. 35 DI POZZUOLI (NA) IN VIA LUIGI CAPUANA, SNC, DI CUI AL LOTTO 9 - PIANO NAZIONALE DI RIPRESA E RESILIENZA (PNRR) MISSIONE 6 COMPONENTE 1 INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENE<div class="small muted">CIG A06A4A1814 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 37 di giugliano (na) in località casacelle, snc - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 37 DI GIUGLIANO (NA) IN LOCALITÀ CASACELLE, SNC - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06B66C6FC · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema per farmacotossicologia - lotto 2 sez a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER FARMACOTOSSICOLOGIA - LOTTO 2 SEZ A<div class="small muted">CIG A01E1AAC24 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 39 di villaricca (na) in località frattole - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 39 DI VILLARICCA (NA) IN LOCALITÀ FRATTOLE - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06CB5586B · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 6 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. hollister s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 6 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 996023993C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>HOLLISTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema di fissazione esterna circolare con stura da trauma con possibilità di conversione in esapodalico, possibilità di correzione mediante software ed elaborazione diretta dei raggi x tipo di montaggio esapodalico con correzioni micrometriche e senza vincolo di montaggio, semplicità di montaggio  ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FISSAZIONE ESTERNA CIRCOLARE CON STURA DA TRAUMA CON POSSIBILITÀ DI CONVERSIONE IN ESAPODALICO, POSSIBILITÀ DI CORREZIONE MEDIANTE SOFTWARE ED ELABORAZIONE DIRETTA DEI RAGGI X TIPO DI MONTAGGIO ESAPODALICO CON CORREZIONI MICROMETRICHE E SENZA VINCOLO DI MONTAGGIO, SEMPLICITÀ DI MONTAGGIO <div class="small muted">CIG B4A6CFD79D · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 46 di acerra (na) in via flavio gioia, 1 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-12</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 46 DI ACERRA (NA) IN VIA FLAVIO GIOIA, 1 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06721C76E · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 25 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 25 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E752713 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema di osteosintesi completo (placche e viti, chiodi, fili, cambre, etc… per vari distretti scheletrici) o frazionato, in materiale nichel-free a basso profilo ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI OSTEOSINTESI COMPLETO (PLACCHE E VITI, CHIODI, FILI, CAMBRE, ETC… PER VARI DISTRETTI SCHELETRICI) O FRAZIONATO, IN MATERIALE NICHEL-FREE A BASSO PROFILO<div class="small muted">CIG B4A6D366A7 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="marcatori epatiti ed hiv - lotto 25 sez a ">
+      <td class="small">2023-10-31</td>
+      <td>MARCATORI EPATITI ED HIV - LOTTO 25 SEZ A<div class="small muted">CIG A01EBDA457 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto pma e fecondazione assistita - lotto 70 sez. f ">
+      <td class="small">2023-10-31</td>
+      <td>LOTTO PMA E FECONDAZIONE ASSISTITA - LOTTO 70 SEZ. F<div class="small muted">CIG A01F7B3B3E · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 3 - determinazione so.re.sa. s.p.a. n. 117 del giorno 19.05.2023. adesione annuale al &#39;ii appalto specifico nell&#39;ambito dello sda per la fornitura di prodotti farmaceutici istituito con determinazione n. 245/2022, per l&#39;affidamento della fornitura di vaccini antinfluenzali&#39;. ">
+      <td class="small">2023-07-19</td>
+      <td>LOTTO 3 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 117 DEL GIORNO 19.05.2023. ADESIONE ANNUALE AL &#39;II APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA PER LA FORNITURA DI PRODOTTI FARMACEUTICI ISTITUITO CON DETERMINAZIONE N. 245/2022, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI VACCINI ANTINFLUENZALI&#39;.<div class="small muted">CIG 9975135DCC · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura di attrezzature/sistemi elettromedicali per la terza sala endoscopica da dedicare al reparto di gastroenterologia del p.o. di pozzuoli ">
+      <td class="small">2024-02-27</td>
+      <td>FORNITURA DI ATTREZZATURE/SISTEMI ELETTROMEDICALI PER LA TERZA SALA ENDOSCOPICA DA DEDICARE AL REPARTO DI GASTROENTEROLOGIA DEL P.O. DI POZZUOLI<div class="small muted">CIG B088640B27 · Dispositivi e prodotti medici vari</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="iv appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici per la fornitura di farmacibiologici e biosimilari destinati alle aa.ss./aa.00 della regione campania – determina direttoregenerale so.re.sa n. 243/2024 - sandoz 19.2 sandoz s.p.a.">
+      <td class="small">2024-11-19</td>
+      <td>IV APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI PER LA FORNITURA DI FARMACIBIOLOGICI E BIOSIMILARI DESTINATI ALLE AA.SS./AA.00 DELLA REGIONE CAMPANIA – DETERMINA DIRETTOREGENERALE SO.RE.SA N. 243/2024 - SANDOZ 19.2<div class="small muted">CIG B456255250</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 42 di arzano (na) in via a. cardarelli 1, di cui al lotto 9 - piano nazionale di ripresa e resilienza (pnrr) missione 6 componente 1 investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-12</td>
+      <td>REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 42 DI ARZANO (NA) IN VIA A. CARDARELLI 1, DI CUI AL LOTTO 9 - PIANO NAZIONALE DI RIPRESA E RESILIENZA (PNRR) MISSIONE 6 COMPONENTE 1 INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A06731CAAF · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 35 di pozzuoli (na) in via virgilio snc pnrr missione 6 componente 1 investimento 1.1 ">
+      <td class="small">2024-08-12</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 35 DI POZZUOLI (NA) IN VIA VIRGILIO SNC PNRR MISSIONE 6 COMPONENTE 1 INVESTIMENTO 1.1<div class="small muted">CIG B2C3005AF0 · LAVORI DI INSTALLAZIONE DI IMPIANTI DI RISCALDAMENTO, VENTILAZIONE E CLIMATIZZAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizi di system management per le pubbliche amministrazioni fastweb spa">
+      <td class="small">2023-08-02</td>
+      <td>SERVIZI DI SYSTEM MANAGEMENT PER LE PUBBLICHE AMMINISTRAZIONI<div class="small muted">CIG 993126317E · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 3 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. coloplast - s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 3 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 99593267CE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema di osteosintesi costituito da placche anatomiche a stabilità in titanio, viti poliassiali a stabilità angolare e std (a compressione), per l&#39;osteosintesi di fratture di entrambi i piatti tibiali, di epifisi tibia prossimale, di diafisi tibiale, di epifisi distale di tibia, di perone prossima ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI OSTEOSINTESI COSTITUITO DA PLACCHE ANATOMICHE A STABILITÀ IN TITANIO, VITI POLIASSIALI A STABILITÀ ANGOLARE E STD (A COMPRESSIONE), PER L&#39;OSTEOSINTESI DI FRATTURE DI ENTRAMBI I PIATTI TIBIALI, DI EPIFISI TIBIA PROSSIMALE, DI DIAFISI TIBIALE, DI EPIFISI DISTALE DI TIBIA, DI PERONE PROSSIMA<div class="small muted">CIG B4A6CF837E · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 9 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. coloplast - s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 9 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 99593847AB · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 44 di afragola (na) in via ugo la malfa, 15 - pnrr - missione 6 - componente 1 - investimento 1.1 ">
+      <td class="small">2023-12-21</td>
+      <td>REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 44 DI AFRAGOLA (NA) IN VIA UGO LA MALFA, 15 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1<div class="small muted">CIG A060965D96 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento del servizio di accalappiamento/trasporto/primo soccorso animali vaganti feriti/ammalati/pericolosi sul territorio della asl na2 nord isole comprese fido e felix s.r.l.">
+      <td class="small">2023-10-31</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEL SERVIZIO DI ACCALAPPIAMENTO/TRASPORTO/PRIMO SOCCORSO ANIMALI VAGANTI FERITI/AMMALATI/PERICOLOSI SUL TERRITORIO DELLA ASL NA2 NORD ISOLE COMPRESE<div class="small muted">CIG A01E280CBD · SERVIZI VETERINARI A DOMICILIO</div></td>
+      <td>FIDO E FELIX S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="patch per neuromodulazione percutanea ad alta frequenza - sistema di neuromodulazioine ad alta frequenza percutanea per la gestione del doloe cronico e acuto - vedasi descrizione lotto 5 del fabbisogno gla medica s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>PATCH PER NEUROMODULAZIONE PERCUTANEA AD ALTA FREQUENZA - SISTEMA DI NEUROMODULAZIOINE AD ALTA FREQUENZA PERCUTANEA PER LA GESTIONE DEL DOLOE CRONICO E ACUTO - VEDASI DESCRIZIONE LOTTO 5 DEL FABBISOGNO<div class="small muted">CIG B0E2A4C572 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>GLA MEDICA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="liquido riassorbibile a base di calcio fosfato per la ricostruzione della superficie articolare di gravi fratture del/dei piatti tibiali e per la ricostruzione del fondo del cotile nei gravi traumi da sfondamento dell&#39;acetabolo - vedi fabbisogno di gara ">
+      <td class="small">2024-12-09</td>
+      <td>LIQUIDO RIASSORBIBILE A BASE DI CALCIO FOSFATO PER LA RICOSTRUZIONE DELLA SUPERFICIE ARTICOLARE DI GRAVI FRATTURE DEL/DEI PIATTI TIBIALI E PER LA RICOSTRUZIONE DEL FONDO DEL COTILE NEI GRAVI TRAUMI DA SFONDAMENTO DELL&#39;ACETABOLO - VEDI FABBISOGNO DI GARA<div class="small muted">CIG B4A6D39920 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione polo strategico nazionale tim s.p.a.">
+      <td class="small">2023-04-03</td>
+      <td>ADESIONE POLO STRATEGICO NAZIONALE<div class="small muted">CIG 9931161D4E · SERVIZI DI PROVIDER</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema integrato per la diagnostica microbiologica - lotto 5 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA INTEGRATO PER LA DIAGNOSTICA MICROBIOLOGICA - LOTTO 5 SEZ. A<div class="small muted">CIG A01E1EC29E · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 22 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. glaxosmithkline s.p.a.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 22 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A01077E1A0 · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 40 di mugnano di napoli (na) in via aldo moro snc pnrr missione 6 componente 1 investimento 1.1 unyon consorzio stabile scarl">
+      <td class="small">2024-08-12</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 40 DI MUGNANO DI NAPOLI (NA) IN VIA ALDO MORO SNC PNRR MISSIONE 6 COMPONENTE 1 INVESTIMENTO 1.1<div class="small muted">CIG B2C3B4FBD7 · LAVORI EDILI</div></td>
+      <td>UNYON CONSORZIO STABILE SCARL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 39 di villaricca (na) in corso italia, 143 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 39 DI VILLARICCA (NA) IN CORSO ITALIA, 143 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A066EF1A2B · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione accordo quadro consip id 2367 – cybersecurity 2 (lotto 3) - per la fornitura di apparecchiature e servizi a valere sulla deliberazione n. 605/2024 tim s.p.a.">
+      <td class="small">2024-04-17</td>
+      <td>ADESIONE ACCORDO QUADRO CONSIP ID 2367 – CYBERSECURITY 2 (LOTTO 3) - PER LA FORNITURA DI APPARECCHIATURE E SERVIZI A VALERE SULLA DELIBERAZIONE N. 605/2024<div class="small muted">CIG B14B7BC956 · Cpv prevalente non disponibile</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="strumentazioni di immunoistochimica e ibridazione in situ, scanner di vetrini con software di telepatologia e algoritmi per la lettura di test offerti - lotto 68 sez. e ">
+      <td class="small">2023-10-31</td>
+      <td>STRUMENTAZIONI DI IMMUNOISTOCHIMICA E IBRIDAZIONE IN SITU, SCANNER DI VETRINI CON SOFTWARE DI TELEPATOLOGIA E ALGORITMI PER LA LETTURA DI TEST OFFERTI - LOTTO 68 SEZ. E<div class="small muted">CIG A01F78A969 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura in noleggio per anni tre, a titolo oneroso, di sistema per l&#39;isolamento e l&#39;inviluppamento dei materiali maleodoranti a rischio infettivo e fornitura del relativo materiale di consumo bemar italia s.r.l.">
+      <td class="small">2024-09-19</td>
+      <td>FORNITURA IN NOLEGGIO PER ANNI TRE, A TITOLO ONEROSO, DI SISTEMA PER L&#39;ISOLAMENTO E L&#39;INVILUPPAMENTO DEI MATERIALI MALEODORANTI A RISCHIO INFETTIVO E FORNITURA DEL RELATIVO MATERIALE DI CONSUMO<div class="small muted">CIG B315EE1074 · ISOLANTI E ACCESSORI PER ISOLAMENTO</div></td>
+      <td>BEMAR ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="d.g.r. 354/2023 por campania fesr 2014-2020 - asse ii - obiettivo specifico 2.2 - azione 2.2.1. - intervento &#39;cyber security sd-wan&#39; - cup g74e23000140002 tim s.p.a.">
+      <td class="small">2023-10-03</td>
+      <td>D.G.R. 354/2023 POR CAMPANIA FESR 2014-2020 - ASSE II - OBIETTIVO SPECIFICO 2.2 - AZIONE 2.2.1. - INTERVENTO &#39;CYBER SECURITY SD-WAN&#39; - CUP G74E23000140002<div class="small muted">CIG A017C7BC4F · PACCHETTI SOFTWARE DI SICUREZZA</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 43 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; w.l. gore &amp; associati s.r.l.  con sigla gore s.r.l.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 43 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E7C12AE · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>W.L. GORE &amp; ASSOCIATI S.R.L.  CON SIGLA GORE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 38 - adesione alla convenzione triennale nell&#39;ambito del &#39;1^ appalto specifico per la fornitura di medicazioni generali occorrenti alle aa.ss. della regione campania&#39;. svas biosana s.p.a.">
+      <td class="small">2023-02-27</td>
+      <td>LOTTO 38 - ADESIONE ALLA CONVENZIONE TRIENNALE NELL&#39;AMBITO DEL &#39;1^ APPALTO SPECIFICO PER LA FORNITURA DI MEDICAZIONI GENERALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 963863011A · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 41 di sant&#39;antimo (na) in via francesco solimene, 1 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 41 DI SANT&#39;ANTIMO (NA) IN VIA FRANCESCO SOLIMENE, 1 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A066FE103C · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. w.l. gore lotto 32 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. W.L. GORE LOTTO 32<div class="small muted">CIG 98586363CB · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori di manutenzione di tipo edile degli immobili ricadenti nel territorio della asl napoli 2 nord - area 2 - pp.oo. di s. giuliano in giugliano in campania e san givann di dio in frattamaggiore napoli 75 societa&#39; cooperativa di produzione e lavoro">
+      <td class="small">2023-09-13</td>
+      <td>LAVORI DI MANUTENZIONE DI TIPO EDILE DEGLI IMMOBILI RICADENTI NEL TERRITORIO DELLA ASL NAPOLI 2 NORD - AREA 2 - PP.OO. DI S. GIULIANO IN GIUGLIANO IN CAMPANIA E SAN GIVANN DI DIO IN FRATTAMAGGIORE<div class="small muted">CIG A00C3A75EB · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>NAPOLI 75 SOCIETA&#39; COOPERATIVA DI PRODUZIONE E LAVORO</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 37 di giugliano (na) in viale san francesco d&#39;assisi, 26 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 37 DI GIUGLIANO (NA) IN VIALE SAN FRANCESCO D&#39;ASSISI, 26 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A066ED74B8 · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema tipo arco a c con morsetto pelvico, per la stabilizzazione in emergenza-urgenza di fratture e lesioni instabili del cingolo pelvico ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA TIPO ARCO A C CON MORSETTO PELVICO, PER LA STABILIZZAZIONE IN EMERGENZA-URGENZA DI FRATTURE E LESIONI INSTABILI DEL CINGOLO PELVICO<div class="small muted">CIG B4A6D4B7FB · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema per cito diagnostica isto-patologica - lotto 69 sez. e ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER CITO DIAGNOSTICA ISTO-PATOLOGICA - LOTTO 69 SEZ. E<div class="small muted">CIG A01F79A69E · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione alla convenzione quadriennale per la fornitura di guanti sterili e non sterili dm e dpi per le aziende del s.s.r. della regione campania. lotto 26 nacatur ">
+      <td class="small">2023-05-30</td>
+      <td>ADESIONE ALLA CONVENZIONE QUADRIENNALE PER LA FORNITURA DI GUANTI STERILI E NON STERILI DM E DPI PER LE AZIENDE DEL S.S.R. DELLA REGIONE CAMPANIA. LOTTO 26 NACATUR<div class="small muted">CIG 98672654AB · GUANTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 5 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. medtronic italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 5 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A010FA6CAF · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="acquisto sensori per la misurazione della glicemia con sistema fgm per 4 tipologie di pazienti abbott s.r.l.">
+      <td class="small">2023-05-31</td>
+      <td>ACQUISTO SENSORI PER LA MISURAZIONE DELLA GLICEMIA CON SISTEMA FGM PER 4 TIPOLOGIE DI PAZIENTI<div class="small muted">CIG 9858941F79 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ABBOTT S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="stimolazione gangliare - generatore di impulsi totalmente impiantabile per la stimolazione selettiva del ganglio della radice dorsale ad almeno 16 contatti, con la possibiltà di gestire almeno quattro elettrocateteri. - vedasi descrizione lotto 9 del fabbisogno medinat s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>STIMOLAZIONE GANGLIARE - GENERATORE DI IMPULSI TOTALMENTE IMPIANTABILE PER LA STIMOLAZIONE SELETTIVA DEL GANGLIO DELLA RADICE DORSALE AD ALMENO 16 CONTATTI, CON LA POSSIBILTÀ DI GESTIRE ALMENO QUATTRO ELETTROCATETERI. - VEDASI DESCRIZIONE LOTTO 9 DEL FABBISOGNO<div class="small muted">CIG B0E2A508BE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDINAT S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione all&#39;accordo quadro consip s.p.a. di durata biennale denominato trocar per le pp.aa. - edizione 2 - lotti 1,2,3,4,5 e 6 ai sensi del codice dei contratti pubblici - accordo quadro id 2653 medtronic italia s.p.a.">
+      <td class="small">2024-12-12</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO CONSIP S.P.A. DI DURATA BIENNALE DENOMINATO TROCAR PER LE PP.AA. - EDIZIONE 2 - LOTTI 1,2,3,4,5 E 6 AI SENSI DEL CODICE DEI CONTRATTI PUBBLICI - ACCORDO QUADRO ID 2653<div class="small muted">CIG B4CB892AF2 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="affidamento del servzio triennale di manutenzione ordinaria e straordinaria delle aree a verde delle strutture asl napoli 2 nord arco flora s.r.l.">
+      <td class="small">2023-10-25</td>
+      <td>AFFIDAMENTO DEL SERVZIO TRIENNALE DI MANUTENZIONE ORDINARIA E STRAORDINARIA DELLE AREE A VERDE DELLE STRUTTURE ASL NAPOLI 2 NORD<div class="small muted">CIG A01EB99EB0 · SERVIZI DI MANUTENZIONE DI GIARDINI ORNAMENTALI O RICREATIVI</div></td>
+      <td>ARCO FLORA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="mutazioni o polimorfismi di acidi nucleici: pcr real time - lotto 48 sez. c ">
+      <td class="small">2023-10-31</td>
+      <td>MUTAZIONI O POLIMORFISMI DI ACIDI NUCLEICI: PCR REAL TIME - LOTTO 48 SEZ. C<div class="small muted">CIG A01F5A485A · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistemi automatici per l&#39;effettuazione di antibiogramma rapido fenotipico da emocoltura positiva operatore individuale (persona fisica)">
+      <td class="small">2024-10-14</td>
+      <td>SISTEMI AUTOMATICI PER L&#39;EFFETTUAZIONE DI ANTIBIOGRAMMA RAPIDO FENOTIPICO DA EMOCOLTURA POSITIVA<div class="small muted">CIG B36545024E · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="chiodo endomidollare femorale in titanio con filo guida in acciaio, completo di viti prossimali e distali, sistema di guida esterno per il posizionamento delle viti con centralmente magnetico o navigato, ed altri accessori di utilizzo saltuario ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE FEMORALE IN TITANIO CON FILO GUIDA IN ACCIAIO, COMPLETO DI VITI PROSSIMALI E DISTALI, SISTEMA DI GUIDA ESTERNO PER IL POSIZIONAMENTO DELLE VITI CON CENTRALMENTE MAGNETICO O NAVIGATO, ED ALTRI ACCESSORI DI UTILIZZO SALTUARIO<div class="small muted">CIG B4A6CEFC0E · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema artroscopico con raccordo shaker e filtro contenente siero per la raccolta dei frammenti cellulari e tessutali del corpo di hoffa durante l&#39;abrasione artroscopia che riduce l&#39;antiffiammazione e promuove la riparazione dei tessuti ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA ARTROSCOPICO CON RACCORDO SHAKER E FILTRO CONTENENTE SIERO PER LA RACCOLTA DEI FRAMMENTI CELLULARI E TESSUTALI DEL CORPO DI HOFFA DURANTE L&#39;ABRASIONE ARTROSCOPIA CHE RIDUCE L&#39;ANTIFFIAMMAZIONE E PROMUOVE LA RIPARAZIONE DEI TESSUTI<div class="small muted">CIG B4A6D4A728 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="acquisto farmaco revcovi operatore individuale (persona fisica)">
+      <td class="small">2023-04-03</td>
+      <td>ACQUISTO FARMACO REVCOVI<div class="small muted">CIG 9755304B85 · MEDICINALI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 38 di marano (na) in via luigi musella, 1 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 38 DI MARANO (NA) IN VIA LUIGI MUSELLA, 1 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A066FE5388 · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 21 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. msd italia s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 21 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0107A40FC · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema di fissazione esterna per grandi e piccoli segmenti per tutti i distretti dell&#39;arto superiore (macro, micro e mini), di vario tipo e composizione ( a geometria variabile, semicircolari, ibridi, articolati e non, etc..,)- vedi fabbisogno di gara ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FISSAZIONE ESTERNA PER GRANDI E PICCOLI SEGMENTI PER TUTTI I DISTRETTI DELL&#39;ARTO SUPERIORE (MACRO, MICRO E MINI), DI VARIO TIPO E COMPOSIZIONE ( A GEOMETRIA VARIABILE, SEMICIRCOLARI, IBRIDI, ARTICOLATI E NON, ETC..,)- VEDI FABBISOGNO DI GARA<div class="small muted">CIG B4A6D139C4 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 20 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 20 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E842D1F · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 36 di ischia (na) in via alfredo de luca, 20 - pnrr - missione 6 - componente 1 - investimento 1.1 - ">
+      <td class="small">2023-12-22</td>
+      <td>REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 36 DI ISCHIA (NA) IN VIA ALFREDO DE LUCA, 20 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 -<div class="small muted">CIG A060966E69 · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="appalto integrato - lavori di adeguamento sismico p.o. gaetanina scotto di perrotolo di procida ediltur s.r.l.">
+      <td class="small">2023-05-02</td>
+      <td>APPALTO INTEGRATO - LAVORI DI ADEGUAMENTO SISMICO P.O. GAETANINA SCOTTO DI PERROTOLO DI PROCIDA<div class="small muted">CIG 96477929D0 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>EDILTUR S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 45 di caivano (na) in via santa chiara, snc - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 45 DI CAIVANO (NA) IN VIA SANTA CHIARA, SNC - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A066EF6E4A · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="pnrr - m6c1 - progettazione esecutiva per la realizzazione di una cdc spoke nel comune di caivano (na) in via s. chiara, snc- asl na2nord - ds 41 ">
+      <td class="small">2023-12-28</td>
+      <td>PNRR - M6C1 - PROGETTAZIONE ESECUTIVA PER LA REALIZZAZIONE DI UNA CDC SPOKE NEL COMUNE DI CAIVANO (NA) IN VIA S. CHIARA, SNC- ASL NA2NORD - DS 41<div class="small muted">CIG A047D1B668 · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema per la diagnostica virologica ed immunometrica urgente e di back-up biomerieux italia spa">
+      <td class="small">2024-10-14</td>
+      <td>SISTEMA PER LA DIAGNOSTICA VIROLOGICA ED IMMUNOMETRICA URGENTE E DI BACK-UP<div class="small muted">CIG B3654534C7 · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>BIOMERIEUX ITALIA SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura tomografi a risonanza magnetica (rm) e tomografi computerizzati (tc), servizi connessi, dispositivi e servizi opzionali per le pa (edizione 3) siemens healthcare s.r.l.">
+      <td class="small">2023-07-20</td>
+      <td>FORNITURA TOMOGRAFI A RISONANZA MAGNETICA (RM) E TOMOGRAFI COMPUTERIZZATI (TC), SERVIZI CONNESSI, DISPOSITIVI E SERVIZI OPZIONALI PER LE PA (EDIZIONE 3)<div class="small muted">CIG 99744139FD · APPARECCHI PER TOMOGRAFIA</div></td>
+      <td>SIEMENS HEALTHCARE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 32 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 32 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A006762142 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="d.g.r. 354/2023 - por campania fesr 2014-2020 - asse ii - obiettivo specifico 2.2 - azione 2.2.1. - intervento &#39;gestione informatizzata dei consensi&#39; - cup g74e23000150002 tim s.p.a.">
+      <td class="small">2023-10-03</td>
+      <td>D.G.R. 354/2023 - POR CAMPANIA FESR 2014-2020 - ASSE II - OBIETTIVO SPECIFICO 2.2 - AZIONE 2.2.1. - INTERVENTO &#39;GESTIONE INFORMATIZZATA DEI CONSENSI&#39; - CUP G74E23000150002<div class="small muted">CIG A0190F1ED7 · SERVIZI DI PROVIDER</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema di fili/chiodi endomidollari per l&#39;osteosintesi percutanea delle fratture prossimali di omero completo di morsetti esterni che permettono l&#39;alloggio di fili e viti ed accessori ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FILI/CHIODI ENDOMIDOLLARI PER L&#39;OSTEOSINTESI PERCUTANEA DELLE FRATTURE PROSSIMALI DI OMERO COMPLETO DI MORSETTI ESTERNI CHE PERMETTONO L&#39;ALLOGGIO DI FILI E VITI ED ACCESSORI<div class="small muted">CIG B4A6D128F1 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema per ricerca antigene sars-cov2 ag - lotto 27 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER RICERCA ANTIGENE SARS-COV2 AG - LOTTO 27 SEZ. A<div class="small muted">CIG A01EC70021 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta per la fornitura di un &#39;sistema robotico di chirurgia vertebrale da destinare alla uoc neurochirurgia del po santa maria delle grazie - pozzuoli&#39; - dgrc n. 240 del 08/05/2023 - por campania fesr 2014 -2020 - asse 1 - obiettivo specifico 1.6 - azione 1.6.1. - intervento &#39;progetto pot medtronic italia s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>PROCEDURA APERTA PER LA FORNITURA DI UN &#39;SISTEMA ROBOTICO DI CHIRURGIA VERTEBRALE DA DESTINARE ALLA UOC NEUROCHIRURGIA DEL PO SANTA MARIA DELLE GRAZIE - POZZUOLI&#39; - DGRC N. 240 DEL 08/05/2023 - POR CAMPANIA FESR 2014 -2020 - ASSE 1 - OBIETTIVO SPECIFICO 1.6 - AZIONE 1.6.1. - INTERVENTO &#39;PROGETTO POT<div class="small muted">CIG 9906279809 · APPARECCHI E STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori di manutenzione di tipo edile degli immobili ricadenti nel territorio della asl napoli 2 nord - area 3 - pp.oo. anna rizzoli di ischia e gaetanina scotto di perrottolo in procida e ds 36 acam costruzioni s.r.l.">
+      <td class="small">2023-09-13</td>
+      <td>LAVORI DI MANUTENZIONE DI TIPO EDILE DEGLI IMMOBILI RICADENTI NEL TERRITORIO DELLA ASL NAPOLI 2 NORD - AREA 3 - PP.OO. ANNA RIZZOLI DI ISCHIA E GAETANINA SCOTTO DI PERROTTOLO IN PROCIDA E DS 36<div class="small muted">CIG A00C456655 · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>ACAM COSTRUZIONI S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori di manutenzione di tipo edile degli immobili ricadenti nel territorio della asl napoli 2 nord - area 1 - p.o. s.maria delle grazie di pozzuoli g.v.c. costruzioni generali s.r.l.">
+      <td class="small">2023-09-13</td>
+      <td>LAVORI DI MANUTENZIONE DI TIPO EDILE DEGLI IMMOBILI RICADENTI NEL TERRITORIO DELLA ASL NAPOLI 2 NORD - AREA 1 - P.O. S.MARIA DELLE GRAZIE DI POZZUOLI<div class="small muted">CIG A00C33ABF6 · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>G.V.C. COSTRUZIONI GENERALI S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="acquisto telecomandati per esami di reparti general medical merate - s.p.a.">
+      <td class="small">2023-02-09</td>
+      <td>ACQUISTO TELECOMANDATI PER ESAMI DI REPARTI<div class="small muted">CIG 9597268C16 · APPARECCHI RADIOLOGICI</div></td>
+      <td>GENERAL MEDICAL MERATE - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">997 mila €</td></tr><tr data-t="equistasi ">
+      <td class="small">2024-12-09</td>
+      <td>EQUISTASI<div class="small muted">CIG B4B06D7DF6</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">994 mila €</td></tr><tr data-t="lotto 4,5,22,26,35,9 - determinazione so.re.sa. s.p.a. n. 199 del giorno 10.10.2022. adesione agli accordi quadro per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39; svas biosana spa">
+      <td class="small">2023-05-24</td>
+      <td>LOTTO 4,5,22,26,35,9 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 199 DEL GIORNO 10.10.2022. ADESIONE AGLI ACCORDI QUADRO PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG 9871736E3E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SVAS BIOSANA SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">986 mila €</td></tr><tr data-t="lotto 7 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 7 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E6BBA76 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">982 mila €</td></tr><tr data-t="lotto 32 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. b. braun milano spa">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 32 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A010F96F7A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>B. BRAUN MILANO SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">962 mila €</td></tr><tr data-t="lotto 11 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. coloplast - s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 11 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 99594183BB · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">953 mila €</td></tr><tr data-t="lotto 37 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 37 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E77EB61 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">946 mila €</td></tr><tr data-t="determinazione del direttore generale so.re.sa. s.p.a. n° 63 del 28.03.2023 - procedura apertatelematica per la fornitura di strumentazione e materiali per la diagnosi molecolare diretta di sars -cov2 da tampone e test rapidi per la ricerca qualitativa di antigene sars - cov2 occorrenti alleaa.ss.ll nurex s.r.l.">
+      <td class="small">2024-04-30</td>
+      <td>DETERMINAZIONE DEL DIRETTORE GENERALE SO.RE.SA. S.P.A. N° 63 DEL 28.03.2023 - PROCEDURA APERTATELEMATICA PER LA FORNITURA DI STRUMENTAZIONE E MATERIALI PER LA DIAGNOSI MOLECOLARE DIRETTA DI SARS -COV2 DA TAMPONE E TEST RAPIDI PER LA RICERCA QUALITATIVA DI ANTIGENE SARS - COV2 OCCORRENTI ALLEAA.SS.LL<div class="small muted">CIG B178912D3C · Cpv prevalente non disponibile</div></td>
+      <td>NUREX S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">945 mila €</td></tr><tr data-t="chiodo endomidollare di tibia in titanio , completo di viti prossimali e distali, sistema di guida esterno per il posizionamento delle viti con centramento magnetico o navigato, ed altri accessori di utilizzo saltuario ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE DI TIBIA IN TITANIO , COMPLETO DI VITI PROSSIMALI E DISTALI, SISTEMA DI GUIDA ESTERNO PER IL POSIZIONAMENTO DELLE VITI CON CENTRAMENTO MAGNETICO O NAVIGATO, ED ALTRI ACCESSORI DI UTILIZZO SALTUARIO<div class="small muted">CIG B4A6D18DE3 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">940 mila €</td></tr><tr data-t="lotto 1 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. convatec italia s.r.l.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 1 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 9959965720 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CONVATEC ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">928 mila €</td></tr><tr data-t="fornitura di device per cdc, cot e odc della asl na2 nord ">
+      <td class="small">2024-10-25</td>
+      <td>FORNITURA DI DEVICE PER CDC, COT E ODC DELLA ASL NA2 NORD<div class="small muted">CIG B3F8A59BCF · APPARECCHIATURA MEDICA INFORMATICA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">927 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. w.l. gore lotto 30 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. W.L. GORE LOTTO 30<div class="small muted">CIG 985861634A · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">927 mila €</td></tr><tr data-t="adesione accordo quadro di consip dialisi 4 per l&#39;azienda sanitaria locale napoli 2 nord medtronic italia s.p.a.">
+      <td class="small">2024-02-23</td>
+      <td>ADESIONE ACCORDO QUADRO DI CONSIP DIALISI 4 PER L&#39;AZIENDA SANITARIA LOCALE NAPOLI 2 NORD<div class="small muted">CIG B08451C9AF · Cpv prevalente non disponibile</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">927 mila €</td></tr><tr data-t="procedura aperta per l&#39;affidamento della manutenzione quinquennale di n. 16 sistemi anti-legionella (mod. oxygen), comprensiva di fornitura di consumabili per 5 anni, per il trattamento e sanificazione delle reti idriche di acqua sanitaria dei pp.oo. di pozzuoli, ischia, frattamaggiore, procisa giug ">
+      <td class="small">2023-05-31</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA MANUTENZIONE QUINQUENNALE DI N. 16 SISTEMI ANTI-LEGIONELLA (MOD. OXYGEN), COMPRENSIVA DI FORNITURA DI CONSUMABILI PER 5 ANNI, PER IL TRATTAMENTO E SANIFICAZIONE DELLE RETI IDRICHE DI ACQUA SANITARIA DEI PP.OO. DI POZZUOLI, ISCHIA, FRATTAMAGGIORE, PROCISA GIUG<div class="small muted">CIG 9805580C96 · SERVIZI DI DISINFESTAZIONE DI IMPIANTI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">919 mila €</td></tr><tr data-t="sistema placche in titanio da gomito completo composto da : placche dorsolaterale-mediale-laterale- a y - olecrano-capitello- coronoide ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA PLACCHE IN TITANIO DA GOMITO COMPLETO COMPOSTO DA : PLACCHE DORSOLATERALE-MEDIALE-LATERALE- A Y - OLECRANO-CAPITELLO- CORONOIDE<div class="small muted">CIG B4A6D07FDB · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">914 mila €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 44 di afragola (na) in via alcide de gasperi, 1 - pnrr - missione 6 - componente 1 - investimento 1.1 - intervento finanziato dall&#39;unione europea con fondi nextgenerationeu ">
+      <td class="small">2023-12-21</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 44 DI AFRAGOLA (NA) IN VIA ALCIDE DE GASPERI, 1 - PNRR - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 - INTERVENTO FINANZIATO DALL&#39;UNIONE EUROPEA CON FONDI NEXTGENERATIONEU<div class="small muted">CIG A066EE82C0 · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">909 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. w.l. gore lotto 25 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. W.L. GORE LOTTO 25<div class="small muted">CIG 98585447DE · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">900 mila €</td></tr><tr data-t="lotto 29 - determinazioni so.re.sa. s.p.a. n. 22 del giorno 09.02.2023 e n. 27 del giorno 14.02.2023 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione cam boston scientific spa">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 29 - DETERMINAZIONI SO.RE.SA. S.P.A. N. 22 DEL GIORNO 09.02.2023 E N. 27 DEL GIORNO 14.02.2023 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAM<div class="small muted">CIG A006C891BB · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">900 mila €</td></tr><tr data-t="fornitura annuale di enoxaparina 4.000 ui occorrente all&#39;asl napoli 2 nord ">
+      <td class="small">2023-12-07</td>
+      <td>FORNITURA ANNUALE DI ENOXAPARINA 4.000 UI OCCORRENTE ALL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG A034782975 · MEDICINALI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">900 mila €</td></tr><tr data-t="sistema per la prevenzione delle aderenze batteriche in chirurgia open in forma di polvere sterile a base di acido ialuronico e acido polittico con membrana di rivestimento al collagene a rilascio di gentamicina ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA PER LA PREVENZIONE DELLE ADERENZE BATTERICHE IN CHIRURGIA OPEN IN FORMA DI POLVERE STERILE A BASE DI ACIDO IALURONICO E ACIDO POLITTICO CON MEMBRANA DI RIVESTIMENTO AL COLLAGENE A RILASCIO DI GENTAMICINA<div class="small muted">CIG B4A6D355D4 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">887 mila €</td></tr><tr data-t="fornitura in opera di n. 25 sistemi di granulazione sacche di rifiuti dei pazienti ricoverati nei presidi ospedalieri dell&#39;asl napoli 2 nord, completa di manutenzione full risk e materiale di consumo, per anni due ">
+      <td class="small">2023-02-19</td>
+      <td>FORNITURA IN OPERA DI N. 25 SISTEMI DI GRANULAZIONE SACCHE DI RIFIUTI DEI PAZIENTI RICOVERATI NEI PRESIDI OSPEDALIERI DELL&#39;ASL NAPOLI 2 NORD, COMPLETA DI MANUTENZIONE FULL RISK E MATERIALE DI CONSUMO, PER ANNI DUE<div class="small muted">CIG 9604233FC8 · APPARECCHI PER LA STERILIZZAZIONE, LA DISINFEZIONE E L&#39;IGIENE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">883 mila €</td></tr><tr data-t="idrogel per gonartrosi severa dispositivo di classe iib, composto da idrogel trasparente non assorbibile, bio-compatibile, iniettabile per iniezione intra-articolare, costituito per 2,5% da poliacrilammide reticolata e acqua con pirogena al 97,5%. - vedasi descrizione lotto 6 del fabbisogno gla medica s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>IDROGEL PER GONARTROSI SEVERA DISPOSITIVO DI CLASSE IIB, COMPOSTO DA IDROGEL TRASPARENTE NON ASSORBIBILE, BIO-COMPATIBILE, INIETTABILE PER INIEZIONE INTRA-ARTICOLARE, COSTITUITO PER 2,5% DA POLIACRILAMMIDE RETICOLATA E ACQUA CON PIROGENA AL 97,5%. - VEDASI DESCRIZIONE LOTTO 6 DEL FABBISOGNO<div class="small muted">CIG B0E2A4D645 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>GLA MEDICA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">864 mila €</td></tr><tr data-t="chiodo endomidollare per tibia femore e omero con rivestimento esterno antibiotato ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE PER TIBIA FEMORE E OMERO CON RIVESTIMENTO ESTERNO ANTIBIOTATO<div class="small muted">CIG B4A6D4C8CE · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">856 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. w.l. gore lotto 26 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. W.L. GORE LOTTO 26<div class="small muted">CIG 98585951F6 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">852 mila €</td></tr><tr data-t="lotto 1 - pompa volumetrica multicanale + materiale dedicato ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 1 - POMPA VOLUMETRICA MULTICANALE + MATERIALE DEDICATO<div class="small muted">CIG 9728511D3C · POMPE PER INFUSIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">851 mila €</td></tr><tr data-t="siringa doppia camera per l&#39;applicazione in artroscopia di matrice primaria di collagene liquido con camera preriempita soluzione di neutralizzazione e collagene nativo puro tipo i da 1 e 1,5 ml per articolazioni ginocchio e spalla ">
+      <td class="small">2024-12-09</td>
+      <td>SIRINGA DOPPIA CAMERA PER L&#39;APPLICAZIONE IN ARTROSCOPIA DI MATRICE PRIMARIA DI COLLAGENE LIQUIDO CON CAMERA PRERIEMPITA SOLUZIONE DI NEUTRALIZZAZIONE E COLLAGENE NATIVO PURO TIPO I DA 1 E 1,5 ML PER ARTICOLAZIONI GINOCCHIO E SPALLA<div class="small muted">CIG B4A6D3777A · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">850 mila €</td></tr><tr data-t="biologia molecolare - lotto 13 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>BIOLOGIA MOLECOLARE - LOTTO 13 SEZ. A<div class="small muted">CIG A01E239229 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">850 mila €</td></tr><tr data-t="lotto 1 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. coloplast - s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 1 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 9955581556 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">844 mila €</td></tr><tr data-t="lotto 10- determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. edwards lifesciences italia s.r.l.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 10- DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A013121DB2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>EDWARDS LIFESCIENCES ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">836 mila €</td></tr><tr data-t="sistema di osteosintesi costituito da placche anatomiche a stabilità con sistema mipo a scivolamento, viti poliassiali con testa emisferica a stabilità angolare e viti std (a compressione), titanio, varie lunghezze e misure, per osteosintesi delle fratture di omero prossimale-medio-distale, completo ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI OSTEOSINTESI COSTITUITO DA PLACCHE ANATOMICHE A STABILITÀ CON SISTEMA MIPO A SCIVOLAMENTO, VITI POLIASSIALI CON TESTA EMISFERICA A STABILITÀ ANGOLARE E VITI STD (A COMPRESSIONE), TITANIO, VARIE LUNGHEZZE E MISURE, PER OSTEOSINTESI DELLE FRATTURE DI OMERO PROSSIMALE-MEDIO-DISTALE, COMPLETO<div class="small muted">CIG B4A6D03C8F · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">835 mila €</td></tr><tr data-t="lotto 25 - determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; ">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 25 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E6CB7AB · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">828 mila €</td></tr><tr data-t="kit per riduzione percutanea delle fratture metafiso-epifisarie con annesso sistema iniettivo/riempitivo iniettabile radiopaco con e senza gentamicina o vancomicina completamente riassorbibile ">
+      <td class="small">2024-12-09</td>
+      <td>KIT PER RIDUZIONE PERCUTANEA DELLE FRATTURE METAFISO-EPIFISARIE CON ANNESSO SISTEMA INIETTIVO/RIEMPITIVO INIETTABILE RADIOPACO CON E SENZA GENTAMICINA O VANCOMICINA COMPLETAMENTE RIASSORBIBILE<div class="small muted">CIG B4A6D1E2DA · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">827 mila €</td></tr><tr data-t="kit costituito da patch + catetere diagnostico a basket per il mappaggio ad elevata densità. ">
+      <td class="small">2024-05-21</td>
+      <td>KIT COSTITUITO DA PATCH + CATETERE DIAGNOSTICO A BASKET PER IL MAPPAGGIO AD ELEVATA DENSITÀ.<div class="small muted">CIG B1B9706905 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">820 mila €</td></tr><tr data-t="determinazione del direttore generale so.re.sa. s.p.a. n° 63 del 28.03.2023 - procedura apertatelematica per la fornitura di strumentazione e materiali per la diagnosi molecolare diretta di sars -cov2 da tampone e test rapidi per la ricerca qualitativa di antigene sars - cov2 occorrenti alleaa.ss.ll medical systems - societa&#39; per azioni">
+      <td class="small">2024-04-30</td>
+      <td>DETERMINAZIONE DEL DIRETTORE GENERALE SO.RE.SA. S.P.A. N° 63 DEL 28.03.2023 - PROCEDURA APERTATELEMATICA PER LA FORNITURA DI STRUMENTAZIONE E MATERIALI PER LA DIAGNOSI MOLECOLARE DIRETTA DI SARS -COV2 DA TAMPONE E TEST RAPIDI PER LA RICERCA QUALITATIVA DI ANTIGENE SARS - COV2 OCCORRENTI ALLEAA.SS.LL<div class="small muted">CIG B178C5A270 · Cpv prevalente non disponibile</div></td>
+      <td>MEDICAL SYSTEMS - SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">816 mila €</td></tr><tr data-t="sistema per la diagnostica ematologica della routine - lotto 20 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER LA DIAGNOSTICA EMATOLOGICA DELLA ROUTINE - LOTTO 20 SEZ. A<div class="small muted">CIG A01EB318DF · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">800 mila €</td></tr><tr data-t="lavori di manutenzione di tipo edile degli immobili ricadenti nel territorio della asl napoli 2 nord - area 4 - dd.ss. 35-37-38 giulia 78 societa&#39; cooperativa">
+      <td class="small">2023-09-13</td>
+      <td>LAVORI DI MANUTENZIONE DI TIPO EDILE DEGLI IMMOBILI RICADENTI NEL TERRITORIO DELLA ASL NAPOLI 2 NORD - AREA 4 - DD.SS. 35-37-38<div class="small muted">CIG A00C768EF3 · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>GIULIA 78 SOCIETA&#39; COOPERATIVA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">800 mila €</td></tr><tr data-t="lotto 7 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. medtronic italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 7 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A010FC23CD · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">793 mila €</td></tr><tr data-t="lavori per la realizzazione di una casa della comunità (cdc) presso il distretto sanitario n. 38 di quarto (na) in via marmolito, 136 - piano nazionale di ripresa e resilienza (pnrr) - missione 6 - componente 1 - investimento 1.1 (ex lotto 11 accordo quadro pnrr regione campania) - intervento finanz ">
+      <td class="small">2023-12-22</td>
+      <td>LAVORI PER LA REALIZZAZIONE DI UNA CASA DELLA COMUNITÀ (CDC) PRESSO IL DISTRETTO SANITARIO N. 38 DI QUARTO (NA) IN VIA MARMOLITO, 136 - PIANO NAZIONALE DI RIPRESA E RESILIENZA (PNRR) - MISSIONE 6 - COMPONENTE 1 - INVESTIMENTO 1.1 (EX LOTTO 11 ACCORDO QUADRO PNRR REGIONE CAMPANIA) - INTERVENTO FINANZ<div class="small muted">CIG A0671CC56A · LAVORI DI COSTRUZIONE DI STRUTTURE OSPEDALIERE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">792 mila €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n° 51 del giorno 06.03.2024 - procedura aperta per l&#39;affidamento della fornitura di metadone comprensivo di sistemi di distribuzione/dosaggio e dei flaconi vuoti destinati alle aa.ss. della regione campania - adesione l. molteni &amp; c. dei fratelli alitti - societa&#39; di esercizio - s.p.a.">
+      <td class="small">2024-04-30</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N° 51 DEL GIORNO 06.03.2024 - PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI METADONE COMPRENSIVO DI SISTEMI DI DISTRIBUZIONE/DOSAGGIO E DEI FLACONI VUOTI DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA - ADESIONE<div class="small muted">CIG B1783A5302 · Cpv prevalente non disponibile</div></td>
+      <td>L. MOLTENI &amp; C. DEI FRATELLI ALITTI - SOCIETA&#39; DI ESERCIZIO - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">778 mila €</td></tr><tr data-t="lotto 15 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. boston scientific spa">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 15 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A01134E11C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">773 mila €</td></tr><tr data-t="lotto 33 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione campania&#39;. medtronic italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 33 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A0067928DC · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">767 mila €</td></tr><tr data-t="noleggio della strumentazione e fornitura di materiale di consumo dedicato bidcare s.r.l.">
+      <td class="small">2024-09-30</td>
+      <td>NOLEGGIO DELLA STRUMENTAZIONE E FORNITURA DI MATERIALE DI CONSUMO DEDICATO<div class="small muted">CIG B3347CD90B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BIDCARE S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">763 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. medtronic lotto 30 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. MEDTRONIC LOTTO 30<div class="small muted">CIG 9857712947 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">762 mila €</td></tr><tr data-t="sistema di placche rette aderenti e non (incluse semitubulari,1/3 tubulare, etc), viti std, acciaio amagnetico, lunghezze e misure varie, completo di viti per l&#39;arto inferiore ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI PLACCHE RETTE ADERENTI E NON (INCLUSE SEMITUBULARI,1/3 TUBULARE, ETC), VITI STD, ACCIAIO AMAGNETICO, LUNGHEZZE E MISURE VARIE, COMPLETO DI VITI PER L&#39;ARTO INFERIORE<div class="small muted">CIG B4A6CFC6CA · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">761 mila €</td></tr><tr data-t="lotto 25 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. getinge italia s.r.l.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 25 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A014F05855 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>GETINGE ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">760 mila €</td></tr><tr data-t="contratto di asssitenza tecnica e manutenzione full risk sistema robotico da vinci ab medica s.p.a.">
+      <td class="small">2023-06-21</td>
+      <td>CONTRATTO DI ASSSITENZA TECNICA E MANUTENZIONE FULL RISK SISTEMA ROBOTICO DA VINCI<div class="small muted">CIG 99231770B7 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>AB MEDICA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">760 mila €</td></tr><tr data-t="soluzione antibatterica sterile pronta all&#39;uso per il lavaggio di mezzi di sintesi e del sito chirurgico senza bisogno di diluzione efficace su batteri funghi e come agente disgregante del biofilm non contenente farmaci antibiotici non citotossica in flaconi da 1 l e 350 ml attacco lue lock utilizza ">
+      <td class="small">2024-12-09</td>
+      <td>SOLUZIONE ANTIBATTERICA STERILE PRONTA ALL&#39;USO PER IL LAVAGGIO DI MEZZI DI SINTESI E DEL SITO CHIRURGICO SENZA BISOGNO DI DILUZIONE EFFICACE SU BATTERI FUNGHI E COME AGENTE DISGREGANTE DEL BIOFILM NON CONTENENTE FARMACI ANTIBIOTICI NON CITOTOSSICA IN FLACONI DA 1 L E 350 ML ATTACCO LUE LOCK UTILIZZA<div class="small muted">CIG B4A6D2589F · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">758 mila €</td></tr><tr data-t="autoimmunita&#39; - lotto 16 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>AUTOIMMUNITA&#39; - LOTTO 16 SEZ. A<div class="small muted">CIG A01EACA3E1 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">750 mila €</td></tr><tr data-t="sistema per la diagnostica ematologica per le urgenze - lotto 21 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER LA DIAGNOSTICA EMATOLOGICA PER LE URGENZE - LOTTO 21 SEZ. A<div class="small muted">CIG A01EB3D2C8 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">750 mila €</td></tr><tr data-t="sistema per la diagnostica virologica ed immunometrica urgente e di back-up - lotto 8 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER LA DIAGNOSTICA VIROLOGICA ED IMMUNOMETRICA URGENTE E DI BACK-UP - LOTTO 8 SEZ. A<div class="small muted">CIG A01E20CD03 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">750 mila €</td></tr><tr data-t="servizio di tesoreria e cassa per l&#39;asl napoli 2 nord ">
+      <td class="small">2023-09-29</td>
+      <td>SERVIZIO DI TESORERIA E CASSA PER L&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG A00FC7672E · SERVIZI DI TESORERIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">734 mila €</td></tr><tr data-t="sistema diagnostica allergologica su siero - lotto 15 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA DIAGNOSTICA ALLERGOLOGICA SU SIERO - LOTTO 15 SEZ. A<div class="small muted">CIG A01E258BBB · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">730 mila €</td></tr><tr data-t="adesione accordo quadro di consip dialisi 4 per l&#39;azienda sanitaria napoli 2 nord - lotto 1 - fresenius medical care italia s.p.a. fresenius medical care italia s.p.a.">
+      <td class="small">2024-02-23</td>
+      <td>ADESIONE ACCORDO QUADRO DI CONSIP DIALISI 4 PER L&#39;AZIENDA SANITARIA NAPOLI 2 NORD - LOTTO 1 - FRESENIUS MEDICAL CARE ITALIA S.P.A.<div class="small muted">CIG B0847E995F · Cpv prevalente non disponibile</div></td>
+      <td>FRESENIUS MEDICAL CARE ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">730 mila €</td></tr><tr data-t="lotto 18 - adesione alla convenzione triennale nell&#39;ambito del &#39;1^ appalto specifico per la fornitura di medicazioni generali occorrenti alle aa.ss. della regione campania&#39;. farmaceutici - medicazione - articoli chirurgici  -*farmac - zabban s.p.a.">
+      <td class="small">2023-02-27</td>
+      <td>LOTTO 18 - ADESIONE ALLA CONVENZIONE TRIENNALE NELL&#39;AMBITO DEL &#39;1^ APPALTO SPECIFICO PER LA FORNITURA DI MEDICAZIONI GENERALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 963843937B · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>FARMACEUTICI - MEDICAZIONE - ARTICOLI CHIRURGICI  -*FARMAC - ZABBAN S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">719 mila €</td></tr><tr data-t="lotto 12 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. coloplast - s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 12 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 9959431E72 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">715 mila €</td></tr><tr data-t="kit procedurale assemblato per il posizionamento di picc port nella vena branchiale, composta da...(vedasi fabbisogno all.b) ">
+      <td class="small">2024-09-06</td>
+      <td>KIT PROCEDURALE ASSEMBLATO PER IL POSIZIONAMENTO DI PICC PORT NELLA VENA BRANCHIALE, COMPOSTA DA...(VEDASI FABBISOGNO ALL.B)<div class="small muted">CIG B2F1C88BF0 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">713 mila €</td></tr><tr data-t="lotto 2 - determinazione so.re.sa. s.p.a. n. 246 del giorno 07.11.2023. adesione alla procedura aperta per l&#39;affidamento della fornitura radiofarmaci e mezzi di contrasto bis destinati alle aa.ss. della regione campania bracco imaging s.p.a.">
+      <td class="small">2024-02-22</td>
+      <td>LOTTO 2 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 246 DEL GIORNO 07.11.2023. ADESIONE ALLA PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA RADIOFARMACI E MEZZI DI CONTRASTO BIS DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA<div class="small muted">CIG B0809CE91A · Cpv prevalente non disponibile</div></td>
+      <td>BRACCO IMAGING S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">702 mila €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n. 246 del giorno 07.11.2023. adesione alla procedura aperta per l&#39;affidamento della fornitura radiofarmaci e mezzi di contrasto bis destinati alle aa.ss. della regione campania bracco imaging s.p.a.">
+      <td class="small">2024-03-11</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N. 246 DEL GIORNO 07.11.2023. ADESIONE ALLA PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA RADIOFARMACI E MEZZI DI CONTRASTO BIS DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA<div class="small muted">CIG B0C267AA55 · Cpv prevalente non disponibile</div></td>
+      <td>BRACCO IMAGING S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">702 mila €</td></tr><tr data-t="chiodo endomidollare in titanio per la stabilizzazione delle fratture 1/3 prossimale omero e diafisiario, completo di filo guida in acciaio, viti prossimali e distali con sistema centramento magnetico o navigato ed altri eventuali componenti di utilizzo saltuario, varie lunghezze e misure ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE IN TITANIO PER LA STABILIZZAZIONE DELLE FRATTURE 1/3 PROSSIMALE OMERO E DIAFISIARIO, COMPLETO DI FILO GUIDA IN ACCIAIO, VITI PROSSIMALI E DISTALI CON SISTEMA CENTRAMENTO MAGNETICO O NAVIGATO ED ALTRI EVENTUALI COMPONENTI DI UTILIZZO SALTUARIO, VARIE LUNGHEZZE E MISURE<div class="small muted">CIG B4A6D0E5A5 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">696 mila €</td></tr><tr data-t="sistema per pma/liquido seminale - lotto 71 sez. f ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER PMA/LIQUIDO SEMINALE - LOTTO 71 SEZ. F<div class="small muted">CIG A01F7C6AEC · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">690 mila €</td></tr><tr data-t="sistema di fissazione esterna per fratture pelviche completo di tutti gli accessori (fiches rivestite di ha e non, sia in acciaio che in titanio, di varia lunghezza e diametro, con morsetti, fili e snodi di ogni tipo e misura, eventuale corpo e compressori anteriori per la chiusura della sinfisi pub ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FISSAZIONE ESTERNA PER FRATTURE PELVICHE COMPLETO DI TUTTI GLI ACCESSORI (FICHES RIVESTITE DI HA E NON, SIA IN ACCIAIO CHE IN TITANIO, DI VARIA LUNGHEZZA E DIAMETRO, CON MORSETTI, FILI E SNODI DI OGNI TIPO E MISURA, EVENTUALE CORPO E COMPRESSORI ANTERIORI PER LA CHIUSURA DELLA SINFISI PUB<div class="small muted">CIG B4A6D17D10 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">689 mila €</td></tr><tr data-t="lotto 27 - determinazioni so.re.sa. s.p.a. n. 22 del giorno 09.02.2023 e n. 27 del giorno 14.02.2023 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione cam boston scientific spa">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 27 - DETERMINAZIONI SO.RE.SA. S.P.A. N. 22 DEL GIORNO 09.02.2023 E N. 27 DEL GIORNO 14.02.2023 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAM<div class="small muted">CIG A006C82BF1 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">684 mila €</td></tr><tr data-t="sistema di fasce pneumatiche per la profilassi della tvp e riduzione edemi pre e post trauma con sistema pemf integrato, fasce per polpaccio piede mano e pazienti con gesso ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FASCE PNEUMATICHE PER LA PROFILASSI DELLA TVP E RIDUZIONE EDEMI PRE E POST TRAUMA CON SISTEMA PEMF INTEGRATO, FASCE PER POLPACCIO PIEDE MANO E PAZIENTI CON GESSO<div class="small muted">CIG B4A6D48582 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">679 mila €</td></tr><tr data-t="sistema per la diagnostica molecolare rapida in real time relab s.r.l.">
+      <td class="small">2024-10-14</td>
+      <td>SISTEMA PER LA DIAGNOSTICA MOLECOLARE RAPIDA IN REAL TIME<div class="small muted">CIG B36545459A · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>RELAB S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">676 mila €</td></tr><tr data-t="kit monouso sterile per fissazione esterna, tutti i distretti scheletrici, preferibilmente radiotrasparenti ">
+      <td class="small">2024-12-09</td>
+      <td>KIT MONOUSO STERILE PER FISSAZIONE ESTERNA, TUTTI I DISTRETTI SCHELETRICI, PREFERIBILMENTE RADIOTRASPARENTI<div class="small muted">CIG B4A6D34501 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">674 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. becton lotto 33 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. BECTON LOTTO 33<div class="small muted">CIG 9852126791 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">673 mila €</td></tr><tr data-t="lotto 7 - adesione all&#39;accordo quadro per la fornitura di &#39;suture per chirurgia destinate alle aa. ss. ospedaliere, ospedaliere universitarie e i.r.c.c.s. della regione campania&#39;. ">
+      <td class="small">2023-02-02</td>
+      <td>LOTTO 7 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA DI &#39;SUTURE PER CHIRURGIA DESTINATE ALLE AA. SS. OSPEDALIERE, OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 9673124273 · SUTURE CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">671 mila €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n. 90 del giorno 27.04.2023. adesione alla &#39;procedura aperta per l&#39;affidamento della fornitura di suturatrici meccaniche, clips e sistemi di fissaggio per la chirurgia aperta e laparoscopica occorrenti alle aziende del ssr della regione campania&#39; johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-10-13</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N. 90 DEL GIORNO 27.04.2023. ADESIONE ALLA &#39;PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SUTURATRICI MECCANICHE, CLIPS E SISTEMI DI FISSAGGIO PER LA CHIRURGIA APERTA E LAPAROSCOPICA OCCORRENTI ALLE AZIENDE DEL SSR DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A01E6D7194 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">668 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. integra lifesciences lotto 37 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. INTEGRA LIFESCIENCES LOTTO 37<div class="small muted">CIG 9858660798 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">666 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. medtronic lotto 7 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. MEDTRONIC LOTTO 7<div class="small muted">CIG 985571487A · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">666 mila €</td></tr><tr data-t="lotto 14 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. medtronic italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 14 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A010FDEAE6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">665 mila €</td></tr><tr data-t="tessuto osseo eterologo di origine sintetica in blocchi, chips, chips cunei, cilindri, ">
+      <td class="small">2024-12-09</td>
+      <td>TESSUTO OSSEO ETEROLOGO DI ORIGINE SINTETICA IN BLOCCHI, CHIPS, CHIPS CUNEI, CILINDRI,<div class="small muted">CIG B4A6D3ED3F · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">661 mila €</td></tr><tr data-t="lotto 2 - matrice dermica in collagene bovino e condroitina sei solfato in doppio strato con figlio di silicone porosità 20-125 μm presenza di elementi stabilizzanti la matrice - condroitina sei solfato misure varie integra lifesciences italy s.r.l.">
+      <td class="small">2023-11-14</td>
+      <td>LOTTO 2 - MATRICE DERMICA IN COLLAGENE BOVINO E CONDROITINA SEI SOLFATO IN DOPPIO STRATO CON FIGLIO DI SILICONE POROSITÀ 20-125 ΜM PRESENZA DI ELEMENTI STABILIZZANTI LA MATRICE - CONDROITINA SEI SOLFATO MISURE VARIE<div class="small muted">CIG A022B675F1 · PROTESI CHIRURGICHE</div></td>
+      <td>INTEGRA LIFESCIENCES ITALY S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">655 mila €</td></tr><tr data-t="sistema per esame colturale rapido delle urine e dei liquidi biologici - lotto 7 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER ESAME COLTURALE RAPIDO DELLE URINE E DEI LIQUIDI BIOLOGICI - LOTTO 7 SEZ. A<div class="small muted">CIG A01E2024C5 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">650 mila €</td></tr><tr data-t="lotto 27 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. sanofi s.r.l.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 27 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0107E45CB · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">646 mila €</td></tr><tr data-t="kit patch + ablatore: ablatore 4mm con sensore magnetico, sensore di forza, tool dedicato di valutazione dell&#39;impedenza locale ">
+      <td class="small">2024-05-21</td>
+      <td>KIT PATCH + ABLATORE: ABLATORE 4MM CON SENSORE MAGNETICO, SENSORE DI FORZA, TOOL DEDICATO DI VALUTAZIONE DELL&#39;IMPEDENZA LOCALE<div class="small muted">CIG B1B9708AAB · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">640 mila €</td></tr><tr data-t="fornitura di n^ 7.000 kit per &#39;l&#39;attività di prelievo di campioni biologici per la raccolta e la conservazione del dna su salme da sottoporre a processo di cremazione occorrenti all&#39;a.s.l. napoli 2 nord&#39; ">
+      <td class="small">2023-12-19</td>
+      <td>FORNITURA DI N^ 7.000 KIT PER &#39;L&#39;ATTIVITÀ DI PRELIEVO DI CAMPIONI BIOLOGICI PER LA RACCOLTA E LA CONSERVAZIONE DEL DNA SU SALME DA SOTTOPORRE A PROCESSO DI CREMAZIONE OCCORRENTI ALL&#39;A.S.L. NAPOLI 2 NORD&#39;<div class="small muted">CIG A039819AB2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">630 mila €</td></tr><tr data-t="kit sterile monouso per il trattamento delle ernie intra-extra foraminali in via endoscopia con accesso monolaterale.- vedasi descrizione lotto 8 del fabbisogno smart med s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>KIT STERILE MONOUSO PER IL TRATTAMENTO DELLE ERNIE INTRA-EXTRA FORAMINALI IN VIA ENDOSCOPIA CON ACCESSO MONOLATERALE.- VEDASI DESCRIZIONE LOTTO 8 DEL FABBISOGNO<div class="small muted">CIG B0E2A4F7EB · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SMART MED S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">630 mila €</td></tr><tr data-t="kit blocco ganglio sfenopalatino - integrato per eseguire il blocco del ganglio sfeno-palatino per via transnasale comprensivo di applicatore nasale orientabile destra/sinistra e siringa graduata con blocco dell&#39;iniezione a 0,3 ml e telino in tnt di preparazione medifor s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>KIT BLOCCO GANGLIO SFENOPALATINO - INTEGRATO PER ESEGUIRE IL BLOCCO DEL GANGLIO SFENO-PALATINO PER VIA TRANSNASALE COMPRENSIVO DI APPLICATORE NASALE ORIENTABILE DESTRA/SINISTRA E SIRINGA GRADUATA CON BLOCCO DELL&#39;INIEZIONE A 0,3 ML E TELINO IN TNT DI PREPARAZIONE<div class="small muted">CIG B0E2A4B49F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDIFOR S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">630 mila €</td></tr><tr data-t="lotto 17 - determinazioni so.re.sa. s.p.a. n. 22 del giorno 09.02.2023 e n. 27 del giorno 14.02.2023 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione cam biotronik italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 17 - DETERMINAZIONI SO.RE.SA. S.P.A. N. 22 DEL GIORNO 09.02.2023 E N. 27 DEL GIORNO 14.02.2023 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAM<div class="small muted">CIG A006E7BCAE · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BIOTRONIK ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">630 mila €</td></tr><tr data-t="lotto 28 - determinazioni so.re.sa. s.p.a. n. 22 del giorno 09.02.2023 e n. 27 del giorno 14.02.2023 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione cam biotronik italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 28 - DETERMINAZIONI SO.RE.SA. S.P.A. N. 22 DEL GIORNO 09.02.2023 E N. 27 DEL GIORNO 14.02.2023 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAM<div class="small muted">CIG A006EA3DB0 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BIOTRONIK ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">630 mila €</td></tr><tr data-t="n. 78 elettrocardiografi medisol s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>N. 78 ELETTROCARDIOGRAFI<div class="small muted">CIG 988733896D · ELETTROCARDIOGRAFI</div></td>
+      <td>MEDISOL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">625 mila €</td></tr><tr data-t="lotto 128 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione all&#39;accordo quadro dei lotti 104 - 126 - 128 presenti nell&#39;aggiudicazione del &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosim viatris italia s.r.l.">
+      <td class="small">2023-10-25</td>
+      <td>LOTTO 128 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE ALL&#39;ACCORDO QUADRO DEI LOTTI 104 - 126 - 128 PRESENTI NELL&#39;AGGIUDICAZIONE DEL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIM<div class="small muted">CIG A025FE89CD · MEDICINALI VARI</div></td>
+      <td>VIATRIS ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">624 mila €</td></tr><tr data-t="fissatore da polso corpo unico snodo integrato kit sterile ">
+      <td class="small">2024-12-09</td>
+      <td>FISSATORE DA POLSO CORPO UNICO SNODO INTEGRATO KIT STERILE<div class="small muted">CIG B4A6D080B3 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">622 mila €</td></tr><tr data-t="lotto 19 - adesione alla convenzione triennale nell&#39;ambito del &#39;1^ appalto specifico per la fornitura di medicazioni generali occorrenti alle aa.ss. della regione campania&#39;. farmaceutici - medicazione - articoli chirurgici  -*farmac - zabban s.p.a.">
+      <td class="small">2023-02-27</td>
+      <td>LOTTO 19 - ADESIONE ALLA CONVENZIONE TRIENNALE NELL&#39;AMBITO DEL &#39;1^ APPALTO SPECIFICO PER LA FORNITURA DI MEDICAZIONI GENERALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 9638456183 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>FARMACEUTICI - MEDICAZIONE - ARTICOLI CHIRURGICI  -*FARMAC - ZABBAN S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">615 mila €</td></tr><tr data-t="filler iniettabile in collagene nativo tipo i in siringa doppia camera pronta all&#39;uso per trattamento delle rizoartrosi formato da 1 ml ">
+      <td class="small">2024-12-09</td>
+      <td>FILLER INIETTABILE IN COLLAGENE NATIVO TIPO I IN SIRINGA DOPPIA CAMERA PRONTA ALL&#39;USO PER TRATTAMENTO DELLE RIZOARTROSI FORMATO DA 1 ML<div class="small muted">CIG B4A6D247CC · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">609 mila €</td></tr><tr data-t="determinazione so.re.sa. s.p.a. n. 195 del 01.08.2024. adesione al v appalto specifico per la fornituradi vaccini destinati alle aa.ss. della regione campania sanofi s.r.l.">
+      <td class="small">2024-09-05</td>
+      <td>DETERMINAZIONE SO.RE.SA. S.P.A. N. 195 DEL 01.08.2024. ADESIONE AL V APPALTO SPECIFICO PER LA FORNITURADI VACCINI DESTINATI ALLE AA.SS. DELLA REGIONE CAMPANIA<div class="small muted">CIG B2EF60EB76</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">608 mila €</td></tr><tr data-t="lotto 10 - soluzione lock ">
+      <td class="small">2024-06-10</td>
+      <td>LOTTO 10 - SOLUZIONE LOCK<div class="small muted">CIG B208BC7B48 · MATERIALE DI CONSUMO PER DIALISI RENALE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">602 mila €</td></tr><tr data-t="endoprotesi aortiche branched e fenestrate per il trattamento delle patologie dell&#39;aorta juxtarenale cook italia s.r.l.">
+      <td class="small">2024-05-17</td>
+      <td>ENDOPROTESI AORTICHE BRANCHED E FENESTRATE PER IL TRATTAMENTO DELLE PATOLOGIE DELL&#39;AORTA JUXTARENALE<div class="small muted">CIG B1B5515E5F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COOK ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">600 mila €</td></tr><tr data-t="controlli di qualita&#39; - lotto 12 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>CONTROLLI DI QUALITA&#39; - LOTTO 12 SEZ. A<div class="small muted">CIG A01E235ED8 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">600 mila €</td></tr><tr data-t="lavori di manutenzione di tipo edile degli immobili ricadenti nel territorio della asl napoli 2 nord - area 6 dd.ss. 43-44-45-46-47 a.d. costruzioni  s.r.l.">
+      <td class="small">2023-09-13</td>
+      <td>LAVORI DI MANUTENZIONE DI TIPO EDILE DEGLI IMMOBILI RICADENTI NEL TERRITORIO DELLA ASL NAPOLI 2 NORD - AREA 6 DD.SS. 43-44-45-46-47<div class="small muted">CIG A00C693F2D · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>A.D. COSTRUZIONI  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">600 mila €</td></tr><tr data-t="lavori di manutenzione di tipo edile degli immobili ricadenti nel territorio della asl napoli 2 nord - area 5 - dd.ss. 39-40-41-42 zaira societa&#39; cooperativa di produzione e lavoro a responsabilit a&#39; limitata">
+      <td class="small">2023-09-13</td>
+      <td>LAVORI DI MANUTENZIONE DI TIPO EDILE DEGLI IMMOBILI RICADENTI NEL TERRITORIO DELLA ASL NAPOLI 2 NORD - AREA 5 - DD.SS. 39-40-41-42<div class="small muted">CIG A00C6C25F9 · LAVORI DI RIPARAZIONE E RIPRISTINO</div></td>
+      <td>ZAIRA SOCIETA&#39; COOPERATIVA DI PRODUZIONE E LAVORO A RESPONSABILIT A&#39; LIMITATA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">600 mila €</td></tr><tr data-t="lotto 5 - adesione alla convenzione triennale nell&#39;ambito del &#39;1^ appalto specifico per la fornitura di medicazioni generali occorrenti alle aa.ss. della regione campania&#39;. dealfa s.r.l.">
+      <td class="small">2023-02-27</td>
+      <td>LOTTO 5 - ADESIONE ALLA CONVENZIONE TRIENNALE NELL&#39;AMBITO DEL &#39;1^ APPALTO SPECIFICO PER LA FORNITURA DI MEDICAZIONI GENERALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 96387292CC · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>DEALFA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">593 mila €</td></tr><tr data-t="acquisto del sistema di monitoraggio flash del glucosio fgm ">
+      <td class="small">2023-01-25</td>
+      <td>ACQUISTO DEL SISTEMA DI MONITORAGGIO FLASH DEL GLUCOSIO FGM<div class="small muted">CIG 96202701F3 · PRESIDI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">593 mila €</td></tr><tr data-t="sistema di monitoraggio flash del glucosio fgm- abbott srl ">
+      <td class="small">2023-03-13</td>
+      <td>SISTEMA DI MONITORAGGIO FLASH DEL GLUCOSIO FGM- ABBOTT SRL<div class="small muted">CIG 970877703D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">593 mila €</td></tr><tr data-t="chiodo endomidollare femoro-tibiale in titanio varie misure, con sistema alette di blocco distale integrato all&#39;interno del chiodo completo di accessori ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE FEMORO-TIBIALE IN TITANIO VARIE MISURE, CON SISTEMA ALETTE DI BLOCCO DISTALE INTEGRATO ALL&#39;INTERNO DEL CHIODO COMPLETO DI ACCESSORI<div class="small muted">CIG B4A6CF2E87 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">592 mila €</td></tr><tr data-t="chiodo endomidollare omerale con viti prossimali e sistema di bloccaggio integrato con alette ed altri eventuali componenti di utilizzo saltuario, varie lunghezze e misure ">
+      <td class="small">2024-12-09</td>
+      <td>CHIODO ENDOMIDOLLARE OMERALE CON VITI PROSSIMALI E SISTEMA DI BLOCCAGGIO INTEGRATO CON ALETTE ED ALTRI EVENTUALI COMPONENTI DI UTILIZZO SALTUARIO, VARIE LUNGHEZZE E MISURE<div class="small muted">CIG B4A6D0D4D2 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">592 mila €</td></tr><tr data-t="lotto 4 determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. glaxosmithkline s.p.a.">
+      <td class="small">2023-09-15</td>
+      <td>LOTTO 4 DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A0106E96A9 · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">588 mila €</td></tr><tr data-t="strumento monouso sterile per chirurgia open...-vedasi descrizione nel fabbisogno olympus italia s.r.l.">
+      <td class="small">2024-04-15</td>
+      <td>STRUMENTO MONOUSO STERILE PER CHIRURGIA OPEN...-VEDASI DESCRIZIONE NEL FABBISOGNO<div class="small muted">CIG B13B5AB2C8 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>OLYMPUS ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">587 mila €</td></tr><tr data-t="sistema per la diagnostica delle sepsi - lotto 6 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER LA DIAGNOSTICA DELLE SEPSI - LOTTO 6 SEZ. A<div class="small muted">CIG A01E1F8C82 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">575 mila €</td></tr><tr data-t="lotto 10 - determinazione so.re.sa. s.p.a. n. 233 del giorno 15.11.2022 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;stent e dispositivi per emodinamica occorrenti alle aa.ss. della regione campania&#39;. abbott medical italia s.r.l.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 10 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 233 DEL GIORNO 15.11.2022 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;STENT E DISPOSITIVI PER EMODINAMICA OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG A01302A1E1 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ABBOTT MEDICAL ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">575 mila €</td></tr><tr data-t="sistema di placche anatomiche per radio distale con o senza loop a stabilità, viti poliassiali a stabilità angolare e viti std (a compressione), in titanio , lunghezze e misure varie, completo di viti ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI PLACCHE ANATOMICHE PER RADIO DISTALE CON O SENZA LOOP A STABILITÀ, VITI POLIASSIALI A STABILITÀ ANGOLARE E VITI STD (A COMPRESSIONE), IN TITANIO , LUNGHEZZE E MISURE VARIE, COMPLETO DI VITI<div class="small muted">CIG B4A6D05E35 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">574 mila €</td></tr><tr data-t="kit ago rf sistema stp per il trattamento dell&#39;osteoma osteoide e provetta autolog ">
+      <td class="small">2024-12-09</td>
+      <td>KIT AGO RF SISTEMA STP PER IL TRATTAMENTO DELL&#39;OSTEOMA OSTEOIDE E PROVETTA AUTOLOG<div class="small muted">CIG B4A6D2ACBE · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">574 mila €</td></tr><tr data-t="supporto biomimetico ed osteoconduttivo in falda riassorbibile di collagene porcino e particelle di btcp denaturato modellabile per riempimento delle cavità ossee vari formati da 2.5 cc a 10 cc ">
+      <td class="small">2024-12-09</td>
+      <td>SUPPORTO BIOMIMETICO ED OSTEOCONDUTTIVO IN FALDA RIASSORBIBILE DI COLLAGENE PORCINO E PARTICELLE DI BTCP DENATURATO MODELLABILE PER RIEMPIMENTO DELLE CAVITÀ OSSEE VARI FORMATI DA 2.5 CC A 10 CC<div class="small muted">CIG B4A6D3DC6C · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">574 mila €</td></tr><tr data-t="trasporto con ambulanza pazienti intersecurity odv">
+      <td class="small">2024-10-17</td>
+      <td>TRASPORTO CON AMBULANZA PAZIENTI<div class="small muted">CIG B385A7044B · VEICOLI PER TRASPORTO PAZIENTI</div></td>
+      <td>INTERSECURITY ODV</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">572 mila €</td></tr><tr data-t="lotto 3 - adesione all&#39;accordo quadro per la fornitura di &#39;suture per chirurgia destinate alle aa. ss. ospedaliere, ospedaliere universitarie e i.r.c.c.s. della regione campania&#39;. ">
+      <td class="small">2023-02-02</td>
+      <td>LOTTO 3 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA DI &#39;SUTURE PER CHIRURGIA DESTINATE ALLE AA. SS. OSPEDALIERE, OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 96728765CA · SUTURE CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">568 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. sunmedical lotto 14 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. SUNMEDICAL LOTTO 14<div class="small muted">CIG 9857774C70 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">567 mila €</td></tr><tr data-t="sistema di fissazione monoassiale, per tutti i distretti dell&#39;arto superiore con morsetti multiplanari orientabili a 360° ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI FISSAZIONE MONOASSIALE, PER TUTTI I DISTRETTI DELL&#39;ARTO SUPERIORE CON MORSETTI MULTIPLANARI ORIENTABILI A 360°<div class="small muted">CIG B4A6D14A97 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">563 mila €</td></tr><tr data-t="medicazioni emostatiche per uso chirurgico a base di gel.anim. e tromb. umana baxter s.p.a.">
+      <td class="small">2024-04-09</td>
+      <td>MEDICAZIONI EMOSTATICHE PER USO CHIRURGICO A BASE DI GEL.ANIM. E TROMB. UMANA<div class="small muted">CIG B125605247 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">563 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. johnson e johnson med lotto 7 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. JOHNSON E JOHNSON MED LOTTO 7<div class="small muted">CIG 9858571E24 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">560 mila €</td></tr><tr data-t="adesione di durata quadriennale accordo quadro per la fornitura di reti per ernia e protesi per pareti addominali occorrenti alle aa.ss. della regione campania. dipro lotto 13 ">
+      <td class="small">2023-05-25</td>
+      <td>ADESIONE DI DURATA QUADRIENNALE ACCORDO QUADRO PER LA FORNITURA DI RETI PER ERNIA E PROTESI PER PARETI ADDOMINALI OCCORRENTI ALLE AA.SS. DELLA REGIONE CAMPANIA. DIPRO LOTTO 13<div class="small muted">CIG 98543979A7 · PROTESI CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">558 mila €</td></tr><tr data-t="kit di fili/chiodi endomidollari in titanio e/o acciaio per sintesi percutanea di fratture di tutti i distretti dell&#39;arto inferiore , completo di morsetti esterni ed accessori, misure varie ">
+      <td class="small">2024-12-09</td>
+      <td>KIT DI FILI/CHIODI ENDOMIDOLLARI IN TITANIO E/O ACCIAIO PER SINTESI PERCUTANEA DI FRATTURE DI TUTTI I DISTRETTI DELL&#39;ARTO INFERIORE , COMPLETO DI MORSETTI ESTERNI ED ACCESSORI, MISURE VARIE<div class="small muted">CIG B4A6CF4032 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">557 mila €</td></tr><tr data-t="kit per crioablazione composto da ablatore , elettrocatetere mappante ed introduttore per anatomie complesse ">
+      <td class="small">2024-05-21</td>
+      <td>KIT PER CRIOABLAZIONE COMPOSTO DA ABLATORE , ELETTROCATETERE MAPPANTE ED INTRODUTTORE PER ANATOMIE COMPLESSE<div class="small muted">CIG B1B97122EE · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">554 mila €</td></tr><tr data-t="kit per crioablazione composto da ablatore , elettrocatetere mappante ed introduttore ">
+      <td class="small">2024-05-21</td>
+      <td>KIT PER CRIOABLAZIONE COMPOSTO DA ABLATORE , ELETTROCATETERE MAPPANTE ED INTRODUTTORE<div class="small muted">CIG B1B971121B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">554 mila €</td></tr><tr data-t="sistema per la diagnostica citofluorimetrica - lotto 1 sez. a ">
+      <td class="small">2023-10-31</td>
+      <td>SISTEMA PER LA DIAGNOSTICA CITOFLUORIMETRICA - LOTTO 1 SEZ. A<div class="small muted">CIG A01E18B292 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">550 mila €</td></tr><tr data-t="lotto 17 - determinazione so.re.sa. s.p.a. n. 193 del giorno 04.08.2023. adesione al &#39;iii^ appalto specifico nell&#39;ambito dello sda di prodotti farmaceutici, per l&#39;affidamento della fornitura di farmaci, vaccini vari e biosimilari&#39;. ">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 17 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 193 DEL GIORNO 04.08.2023. ADESIONE AL &#39;III^ APPALTO SPECIFICO NELL&#39;AMBITO DELLO SDA DI PRODOTTI FARMACEUTICI, PER L&#39;AFFIDAMENTO DELLA FORNITURA DI FARMACI, VACCINI VARI E BIOSIMILARI&#39;.<div class="small muted">CIG A012C28332 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">550 mila €</td></tr><tr data-t="adesione accordo quadro di consip dialisi 4 per l&#39;azienda sanitaria locale napoli 2 nord - sub 3.1. estor s.p.a. estor spa">
+      <td class="small">2024-02-23</td>
+      <td>ADESIONE ACCORDO QUADRO DI CONSIP DIALISI 4 PER L&#39;AZIENDA SANITARIA LOCALE NAPOLI 2 NORD - SUB 3.1. ESTOR S.P.A.<div class="small muted">CIG B084EF9D60 · Cpv prevalente non disponibile</div></td>
+      <td>ESTOR SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">548 mila €</td></tr><tr data-t="sistema di osteosintesi costituito da placche anatomiche a stabilità, viti poliassiali con testa emisferica a stabilità angolare fino a 50° e viti std (a compressione), per l&#39;osteosintesi delle fratture di epifisi prossimale ed epifisi distale di radio e ulna rispettivamente, in titanio, lunghezze e ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI OSTEOSINTESI COSTITUITO DA PLACCHE ANATOMICHE A STABILITÀ, VITI POLIASSIALI CON TESTA EMISFERICA A STABILITÀ ANGOLARE FINO A 50° E VITI STD (A COMPRESSIONE), PER L&#39;OSTEOSINTESI DELLE FRATTURE DI EPIFISI PROSSIMALE ED EPIFISI DISTALE DI RADIO E ULNA RISPETTIVAMENTE, IN TITANIO, LUNGHEZZE E<div class="small muted">CIG B4A6D04D62 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">548 mila €</td></tr><tr data-t="llotto 5 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. coloplast - s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LLOTTO 5 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 995935930B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">539 mila €</td></tr><tr data-t="lotto 8 - determinazione so.re.sa. s.p.a. n. 35 del giorno 21.02.2023 adesione alla procedura aperta telematica per la &#39;fornitura di dispositivi per stomie ed ausili per incontinenza urinaria a raccolta destinati alle aa.ss.ll. della regione campania&#39;. wellspect s.r.l.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 8 - DETERMINAZIONE SO.RE.SA. S.P.A. N. 35 DEL GIORNO 21.02.2023 ADESIONE ALLA PROCEDURA APERTA TELEMATICA PER LA &#39;FORNITURA DI DISPOSITIVI PER STOMIE ED AUSILI PER INCONTINENZA URINARIA A RACCOLTA DESTINATI ALLE AA.SS.LL. DELLA REGIONE CAMPANIA&#39;.<div class="small muted">CIG 995944385B · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>WELLSPECT S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">539 mila €</td></tr><tr data-t="sistema di cerchiaggio a fascetta in polietilene con strumentario dinamometrico e sistema di bloccaggio in titanio riposizionabile anche dopo il tensionamento ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI CERCHIAGGIO A FASCETTA IN POLIETILENE CON STRUMENTARIO DINAMOMETRICO E SISTEMA DI BLOCCAGGIO IN TITANIO RIPOSIZIONABILE ANCHE DOPO IL TENSIONAMENTO<div class="small muted">CIG B4A6D29BEB · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">538 mila €</td></tr><tr data-t="terapia a pressione negativa con pompa volumetrica per instillazione automatizzata dei fluidi. tegea s.r.l.">
+      <td class="small">2024-09-13</td>
+      <td>TERAPIA A PRESSIONE NEGATIVA CON POMPA VOLUMETRICA PER INSTILLAZIONE AUTOMATIZZATA DEI FLUIDI.<div class="small muted">CIG B3047A8476 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>TEGEA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">535 mila €</td></tr><tr data-t="lotto 22 - determinazioni so.re.sa. s.p.a. n. 22 del giorno 09.02.2023 e n. 27 del giorno 14.02.2023 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione cam boston scientific spa">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 22 - DETERMINAZIONI SO.RE.SA. S.P.A. N. 22 DEL GIORNO 09.02.2023 E N. 27 DEL GIORNO 14.02.2023 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAM<div class="small muted">CIG A006C65405 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">534 mila €</td></tr><tr data-t="gel anti aderenziale a base di acido ialuronico cross-linkato privo di polimeri sintetici ad alta viscosità, certificato per canale epidurale/colonna vertebrale ">
+      <td class="small">2024-12-09</td>
+      <td>GEL ANTI ADERENZIALE A BASE DI ACIDO IALURONICO CROSS-LINKATO PRIVO DI POLIMERI SINTETICI AD ALTA VISCOSITÀ, CERTIFICATO PER CANALE EPIDURALE/COLONNA VERTEBRALE<div class="small muted">CIG B4A6D0C3FF · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">523 mila €</td></tr><tr data-t="lotto 2 - pompa a siringa - tci - tiva ">
+      <td class="small">2023-04-03</td>
+      <td>LOTTO 2 - POMPA A SIRINGA - TCI - TIVA<div class="small muted">CIG 9728558408 · POMPE PER INFUSIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">523 mila €</td></tr><tr data-t="lotto 3 - sostituto dermico rigenerativo cute artificiale meshata in derma fetale bovino matrice dermica a doppio strato usata come struttura per la rigenerazione cutanea around medical s.r.l.">
+      <td class="small">2023-11-14</td>
+      <td>LOTTO 3 - SOSTITUTO DERMICO RIGENERATIVO CUTE ARTIFICIALE MESHATA IN DERMA FETALE BOVINO MATRICE DERMICA A DOPPIO STRATO USATA COME STRUTTURA PER LA RIGENERAZIONE CUTANEA<div class="small muted">CIG A022B73FD5 · PROTESI CHIRURGICHE</div></td>
+      <td>AROUND MEDICAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">522 mila €</td></tr><tr data-t="servizio di cassa e tesoreria occorrente all&#39;asl napoli 2 nord intesa sanpaolo spa">
+      <td class="small">2024-06-12</td>
+      <td>SERVIZIO DI CASSA E TESORERIA OCCORRENTE ALL&#39;ASL NAPOLI 2 NORD<div class="small muted">CIG B20C15A145 · SERVIZI DI TESORERIA</div></td>
+      <td>INTESA SANPAOLO SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">520 mila €</td></tr><tr data-t="lotto 20 - adesione all&#39;accordo quadro per la fornitura triennale di &#39;pacemaker, defibrillatori impiantabili e accessori per le aa.ss., aa.oo., aziende ospedaliere universitarie e i.r.c.c.s. della regione campania&#39; medtronic italia s.p.a.">
+      <td class="small">2023-07-18</td>
+      <td>LOTTO 20 - ADESIONE ALL&#39;ACCORDO QUADRO PER LA FORNITURA TRIENNALE DI &#39;PACEMAKER, DEFIBRILLATORI IMPIANTABILI E ACCESSORI PER LE AA.SS., AA.OO., AZIENDE OSPEDALIERE UNIVERSITARIE E I.R.C.C.S. DELLA REGIONE CAMPANIA&#39;<div class="small muted">CIG A0065A0DE4 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">519 mila €</td></tr><tr data-t="sistema di placche anatomiche per fratture su protesi del femore distale e/o della diafisi femorale - vedi fabbisogno di gara ">
+      <td class="small">2024-12-09</td>
+      <td>SISTEMA DI PLACCHE ANATOMICHE PER FRATTURE SU PROTESI DEL FEMORE DISTALE E/O DELLA DIAFISI FEMORALE - VEDI FABBISOGNO DI GARA<div class="small muted">CIG B4A6D27A45 · APPARECCHI PER OSTEOSINTESI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">517 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 3265. L’elenco completo è nel <a href="../contratti/150205.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>

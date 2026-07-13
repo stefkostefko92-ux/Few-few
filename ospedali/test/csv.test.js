@@ -1,6 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCsv, parseItalianNumber, parseRows } from '../src/lib/csv.js';
+import { parseCsv, parseItalianNumber, parseRows, fixMojibake } from '../src/lib/csv.js';
+
+test('fixMojibake — поправя двойно кодиран UTF-8, пази чистия текст', () => {
+  // „perÃ²“ (Ã=U+00C3, ²=U+00B2) → „però“
+  assert.equal(fixMojibake('perÃ²'), 'però');
+  // чист италиански текст с акценти НЕ се променя
+  assert.equal(fixMojibake('QUALITÀ e società'), 'QUALITÀ e società');
+  assert.equal(fixMojibake('normale'), 'normale');
+  assert.equal(fixMojibake(''), '');
+});
 
 test('parseCsv — заглавия, кавички и висящ разделител', () => {
   const text = '"A";"B";\n"1";"x;y";\n"2";"със ""кавички""";\n';

@@ -181,6 +181,44 @@ footer.site a{color:var(--muted);text-decoration:underline}
       <td>AFFIDAMENTO DIRETTO</td><td class="num">5 mila €</td></tr><tr><td>2024/1622 F PRIV LOT 158<div class="small muted">PRODOTTI FARMACEUTICI</div></td>
       <td>AFFIDAMENTO DIRETTO</td><td class="num">2 mila €</td></tr></tbody></table></div>
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(4 contratti ANAC, 77 mila € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/110901.csv" download>⬇ Scarica l’elenco completo (CSV, 4 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="2024/prov/1686 farmaci ediz vi advanz pharma italia s.r.l.">
+      <td class="small">2024-10-15</td>
+      <td>2024/PROV/1686 FARMACI EDIZ VI<div class="small muted">CIG B374A8F7BA · PRODOTTI FARMACEUTICI</div></td>
+      <td>ADVANZ PHARMA ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">39 mila €</td></tr><tr data-t="cig derivato - gara asur lentine intraoculari (lotto 7) (durata 4 anni) (+ opzioni 40%) (+ opzioni 12 mesi proroga) (160.10.10/2022/prov/1133) ">
+      <td class="small">2023-01-15</td>
+      <td>CIG DERIVATO - GARA ASUR LENTINE INTRAOCULARI (LOTTO 7) (DURATA 4 ANNI) (+ OPZIONI 40%) (+ OPZIONI 12 MESI PROROGA) (160.10.10/2022/PROV/1133)<div class="small muted">CIG 94669939C2 · LENTI INTRAOCULARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">31 mila €</td></tr><tr data-t="riparazione apparecchiature elettromedicali in bd ditta enogas srl enogas s.r.l.">
+      <td class="small">2024-10-15</td>
+      <td>RIPARAZIONE APPARECCHIATURE ELETTROMEDICALI IN BD DITTA ENOGAS SRL<div class="small muted">CIG B37350F9AE · SERVIZI DI MANUTENZIONE DI APPARECCHIATURE A GAS</div></td>
+      <td>ENOGAS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">5 mila €</td></tr><tr data-t="2024/1622 f priv lot 158 eli lilly italia - s.p.a.">
+      <td class="small">2024-09-19</td>
+      <td>2024/1622 F PRIV LOT 158<div class="small muted">CIG B31A26EF12 · PRODOTTI FARMACEUTICI</div></td>
+      <td>ELI LILLY ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mila €</td></tr></tbody>
+</table></div>
+
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>
