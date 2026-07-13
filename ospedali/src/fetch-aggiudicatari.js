@@ -23,13 +23,30 @@ const GARA_CATS = new Set(['competitiva', 'negoziata', 'negoziataSenza']);
 // Тези датасети ограждат всяко поле в кавички — махаме ги.
 const unq = (s) => (s ? s.replace(/^"/, '').replace(/"$/, '').trim() : '');
 
-/** Поточно чете zip със system unzip -p и подава редовете (split по ';'). */
+// GDPR: юридическо лице има 11-цифрен CF/P.IVA; личен codice fiscale е 16 буквено-
+// цифрен → физическо лице. Имената на физически лица НЕ се назовават публично.
+const isAzienda = (cf) => /^[0-9]{11}$/.test(cf);
+const OPERATORE_ANONIMO = 'Operatore individuale (persona fisica)';
+function nomePubblico(cf, den) {
+  return isAzienda(cf) ? den : OPERATORE_ANONIMO;
+}
+
+/** Поточно чете zip със system unzip -p и подава редовете (split по ';').
+ *  Reject-ва при ненулев изход на unzip (повреден/орязан/липсващ архив) — иначе
+ *  тихо празни/частични данни биха дали подвеждащи числа. */
 function streamZip(zipPath, onRow) {
   return new Promise((resolve, reject) => {
     const child = spawn('unzip', ['-p', zipPath]);
     child.on('error', reject);
     const rl = createInterface({ input: child.stdout, crlfDelay: Infinity });
     let first = true;
+    let closed = false;
+    let code = null;
+    const done = () => {
+      if (closed && code !== null) {
+        code === 0 ? resolve() : reject(new Error(`unzip ${zipPath} излезе с код ${code}`));
+      }
+    };
     rl.on('line', (line) => {
       if (first) {
         first = false;
@@ -37,7 +54,14 @@ function streamZip(zipPath, onRow) {
       } // заглавен ред
       onRow(line.split(';'));
     });
-    rl.on('close', resolve);
+    child.on('close', (c) => {
+      code = c;
+      done();
+    });
+    rl.on('close', () => {
+      closed = true;
+      done();
+    });
     child.stderr.resume();
   });
 }
@@ -68,7 +92,7 @@ async function main() {
     if (seenWinnerCig.has(cig)) return; // стойността на CIG се брои веднъж
     seenWinnerCig.add(cig);
     const cfForn = unq(c[2]);
-    const den = unq(c[3]);
+    const den = nomePubblico(cfForn, unq(c[3])); // физическите лица не се назовават
     if (!cfForn) return;
     aggRighe++;
     let a = perAuth.get(info.cf);
@@ -78,7 +102,7 @@ async function main() {
     }
     let f = a.forn.get(cfForn);
     if (!f) {
-      f = { den, valore: 0, n: 0 };
+      f = { den, valore: 0, n: 0, azienda: isAzienda(cfForn) };
       a.forn.set(cfForn, f);
     }
     f.valore += info.importo;
@@ -86,7 +110,7 @@ async function main() {
     a.valore += info.importo;
     let g = fornNaz.get(cfForn);
     if (!g) {
-      g = { den, valore: 0, n: 0 };
+      g = { den, valore: 0, n: 0, azienda: isAzienda(cfForn) };
       fornNaz.set(cfForn, g);
     }
     g.valore += info.importo;

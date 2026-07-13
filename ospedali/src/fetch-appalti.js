@@ -114,7 +114,10 @@ async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
         if (seenCig.has(cig)) continue;
         seenCig.add(cig);
       }
-      const importo = Number(r.importo_lotto || r.importo_complessivo_gara);
+      // При многолотова гара importo_complessivo_gara е стойността на ЦЯЛАТА гара —
+      // не бива да пада на нея per лот (би броила N пъти). Fallback само при 1 лот.
+      const unLotto = (r.n_lotti_componenti || '').trim() === '1';
+      const importo = Number(r.importo_lotto || (unLotto ? r.importo_complessivo_gara : 0));
       if (!Number.isFinite(importo) || importo <= 0 || importo > IMPORTO_MAX_VALIDO) continue;
       const categoria = catProc(r.tipo_scelta_contraente);
       const urgenza = (r.FLAG_URGENZA || '').trim() === '1';
@@ -185,8 +188,10 @@ async function main() {
     .map((a) => ({ cf: a.cf, den: a.den, reg: a.reg, ...summary(a), top: a.top }))
     .sort((x, y) => y.importo - x.importo);
 
+  // Националното се сумира от РЕГИОНАЛНОТО (пълно, вкл. редове без CF), за да се
+  // равнява с регионалния изглед; per-възложител остава подмножество (само с CF).
   const nazionale = emptyAgg();
-  for (const a of Object.values(autorita)) {
+  for (const a of Object.values(regionale)) {
     nazionale.n += a.n;
     nazionale.importo += a.importo;
     nazionale.urgenzaN += a.urgenzaN;

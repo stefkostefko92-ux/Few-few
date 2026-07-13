@@ -8,7 +8,7 @@ export const CSS = `
   --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
   --brand:#0b5cad; --brand-ink:#08447f;
   --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
-  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
   --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
   --maxw:1080px;
 }
@@ -72,6 +72,8 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
   border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
   border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
 .hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
 .hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
@@ -115,20 +117,25 @@ export function page({ title, active, rel = '', body, description = '' }) {
 <style>${CSS}</style>
 </head>
 <body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="${rel}index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main">${nav}</nav>
+  <nav class="main" aria-label="Principale">${nav}</nav>
 </div></header>
-<main><div class="wrap">
+<main id="contenuto"><div class="wrap">
 ${body}
 </div></main>
 <footer class="site"><div class="wrap">
-  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
-  elaborati automaticamente da fonti ufficiali <em>open data</em>:
-  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
-  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
-  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
-  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="${rel}note-legali.html">Note legali</a> · <a href="${rel}privacy.html">Privacy</a></p>
 </div></footer>
 </body>
 </html>`;

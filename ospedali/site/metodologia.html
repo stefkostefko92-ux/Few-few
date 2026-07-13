@@ -10,7 +10,7 @@
   --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
   --brand:#0b5cad; --brand-ink:#08447f;
   --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
-  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
   --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
   --maxw:1080px;
 }
@@ -74,6 +74,8 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
   border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
   border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
 .hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
 .hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
@@ -90,11 +92,12 @@ footer.site a{color:var(--muted);text-decoration:underline}
 </style>
 </head>
 <body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html">Appalti</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html" aria-current="page">Metodologia</a></nav>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html">Appalti</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html" aria-current="page">Metodologia</a></nav>
 </div></header>
-<main><div class="wrap">
+<main id="contenuto"><div class="wrap">
 
 <h1>Metodologia e fonti</h1>
 <div class="note">Le segnalazioni sono <strong>indicatori automatici, non accuse</strong>. Segnalano situazioni contabili
@@ -115,7 +118,7 @@ sanitaria accentrata regionale) e 999 (consolidato regionale) sono esclusi perch
 
 <h2>Le regole di segnalazione</h2>
 <div class="tablewrap"><table>
-  <thead><tr><th>Regola</th><th>Gravità</th><th>Quando scatta</th></tr></thead>
+  <thead><tr><th scope="col">Regola</th><th scope="col">Gravità</th><th scope="col">Quando scatta</th></tr></thead>
   <tbody><tr><td>Disavanzo grave</td><td><span class="badge alta">Alta</span></td><td class="small">Risultato d’esercizio inferiore al −5% del valore della produzione nell’ultimo anno.</td></tr><tr><td>Patrimonio netto negativo</td><td><span class="badge alta">Alta</span></td><td class="small">Patrimonio netto negativo nell’ultimo stato patrimoniale: potenziale squilibrio patrimoniale.</td></tr><tr><td>Debiti oltre l’attivo</td><td><span class="badge alta">Alta</span></td><td class="small">I debiti superano il totale dell’attivo.</td></tr><tr><td>Disavanzo persistente</td><td><span class="badge media">Media</span></td><td class="small">Risultato negativo in quasi tutti gli ultimi 5 esercizi.</td></tr><tr><td>Squilibrio costi/ricavi</td><td><span class="badge media">Media</span></td><td class="small">Costi della produzione superiori ai ricavi per almeno 3 esercizi recenti.</td></tr><tr><td>Variazione anomala dei costi</td><td><span class="badge media">Media</span></td><td class="small">Variazione dei costi superiore al 25% da un anno all’altro.</td></tr><tr><td>Variazione anomala dei ricavi</td><td><span class="badge bassa">Bassa</span></td><td class="small">Variazione dei ricavi superiore al 30% da un anno all’altro.</td></tr><tr><td>Incidenza del personale elevata</td><td><span class="badge bassa">Bassa</span></td><td class="small">Costo del personale sul valore della produzione oltre il 90° percentile nazionale.</td></tr><tr><td>Crescita dell’indebitamento</td><td><span class="badge bassa">Bassa</span></td><td class="small">Debiti in crescita di oltre il 40% sul periodo.</td></tr><tr><td>Buco nella rendicontazione</td><td><span class="badge bassa">Bassa</span></td><td class="small">Anni mancanti nel mezzo della serie CE.</td></tr><tr><td>Risultato “troppo tondo”</td><td><span class="badge bassa">Bassa</span></td><td class="small">Risultato d’esercizio esattamente multiplo di 100.000 €: possibile scrittura di pareggio.</td></tr></tbody>
 </table></div>
 
@@ -142,8 +145,18 @@ escludendo gli acquisti in adesione ad accordi quadro/convenzioni, già messi a 
   per evitare attribuzioni errate. Per le altre restano i dati regionali.</li>
   <li>Un’alta quota senza gara non prova un illecito: sotto soglia è legittima. Segnala dove guardare.</li>
 </ul>
-<p class="small muted">Prossimo passo: incrocio con gli aggiudicatari (fornitori) per individuare vincitori
-ricorrenti e gare a offerta unica.</p>
+<h3>Fornitori e offerente unico</h3>
+<ul class="small">
+  <li>Incrociamo i CIG sanitari con gli <strong>aggiudicatari</strong> (chi vince) e i <strong>partecipanti</strong> ANAC.</li>
+  <li>La banca dati dei partecipanti è <strong>parziale</strong> (copre circa metà delle gare e talvolta registra solo
+  l’aggiudicatario): la quota di «offerente unico registrato» è <strong>indicativa e un limite superiore</strong>.
+  I raggruppamenti di imprese (RTI) sono conteggiati come più offerte.</li>
+  <li>Nelle classifiche dei fornitori nominiamo solo le <strong>imprese</strong> (partita IVA a 11 cifre): gli operatori
+  <strong>persone fisiche non sono nominati</strong> (tutela dei dati personali).</li>
+  <li>Essere un grande fornitore, o vincere in un mercato ristretto, <strong>è legittimo</strong> e non è di per sé anomalia.</li>
+</ul>
+<p class="small muted">Prossimo passo: individuare vincitori ricorrenti sullo stesso ente e possibili
+frazionamenti sistematici.</p>
 
 <h2>Limiti</h2>
 <ul class="small">
@@ -156,12 +169,16 @@ ricorrenti e gare a offerta unica.</p>
 
 </div></main>
 <footer class="site"><div class="wrap">
-  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
-  elaborati automaticamente da fonti ufficiali <em>open data</em>:
-  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
-  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
-  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
-  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a></p>
 </div></footer>
 </body>
 </html>

@@ -10,7 +10,7 @@
   --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
   --brand:#0b5cad; --brand-ink:#08447f;
   --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
-  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
   --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
   --maxw:1080px;
 }
@@ -74,6 +74,8 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
   border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
   border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
 .hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
 .hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
@@ -90,11 +92,12 @@ footer.site a{color:var(--muted);text-decoration:underline}
 </style>
 </head>
 <body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html">Appalti</a><a href="classifiche.html" aria-current="page">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html">Appalti</a><a href="classifiche.html" aria-current="page">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
 </div></header>
-<main><div class="wrap">
+<main id="contenuto"><div class="wrap">
 
 <h1>Classifiche «follow the money»</h1>
 <p class="lead">Le voci di spesa più esposte a inefficienza e opacità, normalizzate e messe in fila.
@@ -104,7 +107,7 @@ Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibi
 <h2>Consulenze e lavoro interinale sul costo del personale</h2>
 <p class="muted small">Quanto pesano consulenze, collaborazioni e interinale rispetto al personale interno. Mediana nazionale ~5%.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Struttura</th><th class="num">% del personale</th><th class="num">Importo</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Struttura</th><th class="num" scope="col">% del personale</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody><tr><td class="num">1</td>
       <td><a href="struttura/150908-azienda-ospedaliera-universitaria-universita-degli-studi-del.html">AZIENDA OSPEDALIERA UNIVERSITARIA - UNIVERSITA&#39; DEGLI STUDI DELLA CAMPANIA LUIGI VANVITELLI</a><div class="small muted">Campania</div></td>
       <td class="num">75,1%</td><td class="num">33 mln €</td></tr><tr><td class="num">2</td>
@@ -151,7 +154,7 @@ Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibi
 <h2>Dipendenza dagli erogatori privati</h2>
 <p class="muted small">Acquisto di prestazioni sanitarie da soggetti privati come quota dei costi.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Struttura</th><th class="num">% dei costi</th><th class="num">Importo</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Struttura</th><th class="num" scope="col">% dei costi</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody><tr><td class="num">1</td>
       <td><a href="struttura/050122-azienda-ulss-n-22-bussolengo.html">AZIENDA ULSS N. 22 BUSSOLENGO</a><div class="small muted">Veneto</div></td>
       <td class="num">40,6%</td><td class="num">257 mln €</td></tr><tr><td class="num">2</td>
@@ -198,7 +201,7 @@ Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibi
 <h2>Godimento di beni di terzi (affitti e noleggi)</h2>
 <p class="muted small">Affitti e noleggi come quota dei costi: valori alti possono nascondere operazioni immobiliari onerose.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Struttura</th><th class="num">% dei costi</th><th class="num">Importo</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Struttura</th><th class="num" scope="col">% dei costi</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody><tr><td class="num">1</td>
       <td><a href="struttura/050108-azienda-ulss-n-8-asolo.html">AZIENDA ULSS N.8 ASOLO</a><div class="small muted">Veneto</div></td>
       <td class="num">11,5%</td><td class="num">51 mln €</td></tr><tr><td class="num">2</td>
@@ -245,7 +248,7 @@ Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibi
 <h2>Acquisti di beni per posto letto</h2>
 <p class="muted small">Spesa per beni (farmaci, dispositivi) rapportata ai posti letto: outlier = possibili sovrapprezzi.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Struttura</th><th class="num">per posto letto</th><th class="num">Importo</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Struttura</th><th class="num" scope="col">per posto letto</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody><tr><td class="num">1</td>
       <td><a href="struttura/120206-asl-roma-6.html">ASL ROMA 6</a><div class="small muted">Lazio</div></td>
       <td class="num">1.105.358 €/letto</td><td class="num">138 mln €</td></tr><tr><td class="num">2</td>
@@ -292,7 +295,7 @@ Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibi
 <h2>Servizi non sanitari per posto letto</h2>
 <p class="muted small">Pulizia, mensa, riscaldamento, rifiuti… per posto letto. I grandi appalti esternalizzati.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Struttura</th><th class="num">per posto letto</th><th class="num">Importo</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Struttura</th><th class="num" scope="col">per posto letto</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody><tr><td class="num">1</td>
       <td><a href="struttura/120206-asl-roma-6.html">ASL ROMA 6</a><div class="small muted">Lazio</div></td>
       <td class="num">503.162 €/letto</td><td class="num">63 mln €</td></tr><tr><td class="num">2</td>
@@ -339,12 +342,16 @@ Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibi
 
 </div></main>
 <footer class="site"><div class="wrap">
-  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
-  elaborati automaticamente da fonti ufficiali <em>open data</em>:
-  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
-  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
-  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
-  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a></p>
 </div></footer>
 </body>
 </html>

@@ -10,7 +10,7 @@
   --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
   --brand:#0b5cad; --brand-ink:#08447f;
   --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
-  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
   --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
   --maxw:1080px;
 }
@@ -74,6 +74,8 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
   border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
   border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
 .hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
 .hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
@@ -90,11 +92,12 @@ footer.site a{color:var(--muted);text-decoration:underline}
 </style>
 </head>
 <body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html" aria-current="page">Appalti</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html" aria-current="page">Appalti</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
 </div></header>
-<main><div class="wrap">
+<main id="contenuto"><div class="wrap">
 
 <h1>Appalti pubblici della sanità</h1>
 <p class="lead">Chi compra, come e con quanta concorrenza. Dai dati ANAC (Banca Dati Nazionale dei Contratti
@@ -119,7 +122,7 @@ come «senza gara».</p></div>
 <p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
 «sul valore» sugli importi.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>Regione</th><th class="num">Valore appalti</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Contratti</th></tr></thead>
+  <thead><tr><th scope="col">Regione</th><th class="num" scope="col">Valore appalti</th><th class="num" scope="col">Senza gara %</th><th class="num" scope="col">sul valore</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody><tr>
       <td>VALLE D&#39;AOSTA</td>
       <td class="num">235 mln €</td>
@@ -232,7 +235,7 @@ come «senza gara».</p></div>
 <p class="muted small">Solo enti con almeno 20 mln € e 100 contratti nel periodo, per quota sul numero di contratti.
 I nomi collegati hanno una scheda.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>Azienda</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Valore appalti</th></tr></thead>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Senza gara %</th><th class="num" scope="col">sul valore</th><th class="num" scope="col">Valore appalti</th></tr></thead>
   <tbody><tr><td>ISTITUTO NAZIONALE DI ASTROFISICA<div class="small muted">CENTRALE</div></td>
         <td class="num neg">90,2%</td>
         <td class="num">24,5%</td>
@@ -296,11 +299,16 @@ I nomi collegati hanno una scheda.</p>
         <td class="num">96 mln €</td></tr></tbody>
 </table></div>
 
-<h2>Gare con un solo offerente</h2>
-<p class="muted small">Quota delle gare (con dati sui partecipanti) in cui si è presentata <strong>una sola impresa</strong>.
-Solo enti con almeno 50 gare. Concorrenza solo formale è una spia classica di gare “su misura”.</p>
+<h2>Gare con un solo offerente registrato</h2>
+<p class="muted small">Quota delle gare in cui, <strong>sui dati disponibili</strong> dei partecipanti, risulta
+una sola impresa. Solo enti con almeno 50 gare.</p>
+<div class="note">La banca dati dei partecipanti ANAC è <strong>parziale</strong> (copre circa metà delle gare e talvolta
+registra solo l’aggiudicatario): queste quote sono <strong>indicative e da intendersi come limite superiore</strong>.
+Un solo offerente può derivare da mercati ristretti, esclusive, brevetti, infungibilità tecnica o urgenze —
+è un <strong>indicatore da verificare, non una prova di irregolarità</strong>; nessun addebito è mosso ai soggetti citati.
+I raggruppamenti di imprese (RTI) sono conteggiati come più offerte.</div>
 <div class="tablewrap"><table>
-  <thead><tr><th>Azienda</th><th class="num">Offerente unico</th><th class="num">Gare</th></tr></thead>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Offerente unico</th><th class="num" scope="col">Gare</th></tr></thead>
   <tbody><tr><td><a href="struttura/190926-azienda-ospedaliera-ospedali-riuniti-villa-sofia-cervello-di.html">AZIENDA OSPEDALIERA OSPEDALI RIUNITI VILLA SOFIA-CERVELLO</a><div class="small muted">SICILIA</div></td>
         <td class="num neg">97,7%</td>
         <td class="num">474/485</td></tr><tr><td><a href="struttura/080103-azienda-unita-sanitaria-locale-irccs-di-reggio-emilia.html">AZIENDA UNITA SANITARIA LOCALE DI REGGIO EMILIA</a><div class="small muted">EMILIA ROMAGNA</div></td>
@@ -333,11 +341,14 @@ Solo enti con almeno 50 gare. Concorrenza solo formale è una spia classica di g
         <td class="num neg">93,3%</td>
         <td class="num">194/208</td></tr></tbody>
 </table></div>
-<h2>Chi prende i soldi: i maggiori fornitori</h2>
+<h2>I maggiori fornitori del SSN per valore aggiudicato</h2>
 <p class="muted small">Operatori economici con più valore aggiudicato dalle aziende sanitarie (2023–2024).
 Valore attribuito una volta per contratto all’aggiudicatario principale.</p>
+<div class="note">Figurare tra i maggiori fornitori è pienamente legittimo e riflette il volume di forniture aggiudicate
+con regolare procedura: <strong>non costituisce di per sé indice di anomalia</strong>. Le denominazioni delle imprese
+sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori persone fisiche non sono nominati.</div>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Fornitore</th><th class="num">Valore aggiudicato</th><th class="num">Contratti</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody><tr><td class="num">1</td><td>NOVARTIS FARMA SPA</td>
       <td class="num">2 mld €</td><td class="num">2258</td></tr><tr><td class="num">2</td><td>SANOFI S.R.L.</td>
       <td class="num">2 mld €</td><td class="num">3878</td></tr><tr><td class="num">3</td><td>MEDTRONIC ITALIA</td>
@@ -362,12 +373,16 @@ Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a
 
 </div></main>
 <footer class="site"><div class="wrap">
-  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
-  elaborati automaticamente da fonti ufficiali <em>open data</em>:
-  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
-  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
-  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
-  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a></p>
 </div></footer>
 </body>
 </html>

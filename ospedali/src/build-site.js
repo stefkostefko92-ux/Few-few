@@ -109,6 +109,8 @@ async function main() {
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
   await writeFile(join(SITE_DIR, 'segnalazioni.html'), renderSegnalazioni({ segn, href }));
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
+  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali());
+  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy());
 
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
@@ -117,7 +119,7 @@ async function main() {
       renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), appMatch, ultimoAnnoCe })
     );
   }
-  console.log(`Готово: ${enti.length + (appalti ? 7 : 6)} страници → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + (appalti ? 9 : 8)} страници → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -159,7 +161,7 @@ finiscono i soldi. → <a href="inchiesta.html">Leggi l’inchiesta</a> · <a hr
 <p class="muted small">Ordinate per numero e gravità delle segnalazioni automatiche. Non sono giudizi:
 sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segnalazioni →</a></p>
 <div class="tablewrap"><table>
-  <thead><tr><th>Struttura</th><th>Gravità</th><th class="num">Segn.</th><th>Prima segnalazione</th></tr></thead>
+  <thead><tr><th scope="col">Struttura</th><th scope="col">Gravità</th><th class="num" scope="col">Segn.</th><th scope="col">Prima segnalazione</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>
 
@@ -217,7 +219,7 @@ Cerca per nome, filtra per regione o per gravità delle segnalazioni. Valori del
 </div>
 <p class="small muted" id="count"></p>
 <div class="tablewrap"><table>
-  <thead><tr><th>Struttura</th><th class="num">Valore produzione</th><th class="num">Risultato</th><th>Segnalazioni</th></tr></thead>
+  <thead><tr><th scope="col">Struttura</th><th class="num" scope="col">Valore produzione</th><th class="num" scope="col">Risultato</th><th scope="col">Segnalazioni</th></tr></thead>
   <tbody id="rows">${rows}</tbody>
 </table></div>
 <script>
@@ -363,7 +365,7 @@ sanitaria accentrata regionale) e 999 (consolidato regionale) sono esclusi perch
 
 <h2>Le regole di segnalazione</h2>
 <div class="tablewrap"><table>
-  <thead><tr><th>Regola</th><th>Gravità</th><th>Quando scatta</th></tr></thead>
+  <thead><tr><th scope="col">Regola</th><th scope="col">Gravità</th><th scope="col">Quando scatta</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>
 
@@ -390,8 +392,18 @@ escludendo gli acquisti in adesione ad accordi quadro/convenzioni, già messi a 
   per evitare attribuzioni errate. Per le altre restano i dati regionali.</li>
   <li>Un’alta quota senza gara non prova un illecito: sotto soglia è legittima. Segnala dove guardare.</li>
 </ul>
-<p class="small muted">Prossimo passo: incrocio con gli aggiudicatari (fornitori) per individuare vincitori
-ricorrenti e gare a offerta unica.</p>` : `<p class="small muted">Prossimo passo possibile: incrocio con gli appalti
+<h3>Fornitori e offerente unico</h3>
+<ul class="small">
+  <li>Incrociamo i CIG sanitari con gli <strong>aggiudicatari</strong> (chi vince) e i <strong>partecipanti</strong> ANAC.</li>
+  <li>La banca dati dei partecipanti è <strong>parziale</strong> (copre circa metà delle gare e talvolta registra solo
+  l’aggiudicatario): la quota di «offerente unico registrato» è <strong>indicativa e un limite superiore</strong>.
+  I raggruppamenti di imprese (RTI) sono conteggiati come più offerte.</li>
+  <li>Nelle classifiche dei fornitori nominiamo solo le <strong>imprese</strong> (partita IVA a 11 cifre): gli operatori
+  <strong>persone fisiche non sono nominati</strong> (tutela dei dati personali).</li>
+  <li>Essere un grande fornitore, o vincere in un mercato ristretto, <strong>è legittimo</strong> e non è di per sé anomalia.</li>
+</ul>
+<p class="small muted">Prossimo passo: individuare vincitori ricorrenti sullo stesso ente e possibili
+frazionamenti sistematici.</p>` : `<p class="small muted">Prossimo passo possibile: incrocio con gli appalti
 pubblici (ANAC) per risalire ai singoli contratti, ai fornitori e alle gare a offerta unica.</p>`}
 
 <h2>Limiti</h2>
@@ -445,7 +457,7 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, ap
   const opTable = opRows.length
     ? `<h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, ${opRows[0].anno})</span></h2>
        <div class="tablewrap"><table>
-       <thead><tr><th>Ospedale</th><th class="num">Posti letto</th><th class="num">Personale</th><th class="num">di cui medici</th><th class="num">Ricoveri</th><th class="num">Giornate</th></tr></thead>
+       <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>
        <tbody>${opRows
          .map(
            (s) => `<tr><td>${esc(s.denominazione)}<div class="small muted">${esc(s.comune)} (${esc(s.provincia)})</div></td>
@@ -459,7 +471,7 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, ap
   const indicators = [...CE_INDICATORS, ...SP_INDICATORS];
   const finTable = `<h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>
-    <thead><tr><th>Anno</th>${indicators.map((i) => `<th class="num">${esc(i.label)}</th>`).join('')}</tr></thead>
+    <thead><tr><th scope="col">Anno</th>${indicators.map((i) => `<th class="num" scope="col">${esc(i.label)}</th>`).join('')}</tr></thead>
     <tbody>${anni
       .map((a) => {
         const y = ente.serie.get(a);
@@ -516,7 +528,7 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, ap
     .join('');
   const ceBlock = ceRows
     ? `<h2>Conto economico dettagliato <span class="small muted">(${ente.ceUltimoAnno})</span></h2>
-       <div class="tablewrap"><table><thead><tr><th>Voce</th><th class="num">Importo</th></tr></thead><tbody>${ceRows}</tbody></table></div>`
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody>${ceRows}</tbody></table></div>`
     : '';
 
   const spRows = ente.spUltimo
@@ -525,7 +537,7 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, ap
     .join('');
   const spBlock = spRows
     ? `<h2>Stato patrimoniale <span class="small muted">(${ente.spUltimoAnno})</span></h2>
-       <div class="tablewrap"><table><thead><tr><th>Voce</th><th class="num">Importo</th></tr></thead><tbody>${spRows}</tbody></table></div>`
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody>${spRows}</tbody></table></div>`
     : '';
 
   const meta = [
@@ -573,6 +585,70 @@ ${spBlock}
 }
 
 const FOR_LABEL = Object.fromEntries(CE_FORENSICS.map((c) => [c.key, c.label]));
+
+// ---------- NOTE LEGALI / PRIVACY ----------
+function renderNoteLegali() {
+  const body = `
+<h1>Note legali</h1>
+<h2>Titolare</h2>
+<p>Questo sito è pubblicato da <strong>Carbon Stealth VCC</strong> (<a href="https://carbonstealth.eu">carbonstealth.eu</a>).
+Progetto di <strong>trasparenza civica senza scopo di lucro</strong>. Non è una testata giornalistica registrata ai sensi
+dell’art. 5 della L. 47/1948 e non costituisce prodotto editoriale periodico.</p>
+
+<h2>Natura dei contenuti</h2>
+<p>Il sito rielabora <strong>dati ufficiali in formato aperto</strong> e ne deriva indicatori automatici. Le
+«segnalazioni», gli indicatori di spesa e gli indicatori sugli appalti (quota senza gara, offerente unico registrato,
+concentrazione, frazionamento) sono <strong>elaborazioni statistiche automatiche</strong> e vanno intesi come
+<strong>piste da verificare, non come prove di irregolarità o illecito</strong>. Nessun addebito è mosso alle strutture,
+alle aziende o agli operatori economici citati. Un’alta quota senza gara, un solo offerente o un’elevata concentrazione
+possono avere spiegazioni pienamente legittime (mercati ristretti, esclusive, brevetti, infungibilità tecnica, urgenze,
+fusioni, ripiani regionali).</p>
+
+<h2>Fonti e licenze</h2>
+<ul>
+  <li><strong>ANAC</strong> — Banca Dati Nazionale dei Contratti Pubblici (<a href="https://dati.anticorruzione.it/opendata">dati.anticorruzione.it</a>), licenza <strong>CC BY 4.0</strong>.</li>
+  <li><strong>BDAP — RGS/MEF</strong>, modelli CE/SP del SSN (<a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">openbdap.rgs.mef.gov.it</a>), licenza <strong>IODL 2.0</strong>.</li>
+  <li><strong>Ministero della Salute</strong> — <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a>.</li>
+</ul>
+<p class="small">I dati sono stati <strong>aggregati, normalizzati ed elaborati</strong>; eventuali errori di elaborazione
+non sono imputabili ai titolari delle fonti.</p>
+
+<h2>Rettifiche</h2>
+<p>Chi ritenga un dato inesatto o voglia fornire contesto può richiederne la <strong>rettifica</strong> scrivendo a
+<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>. Le richieste motivate saranno valutate tempestivamente.</p>
+
+<h2>Limitazione di responsabilità</h2>
+<p>I contenuti sono forniti «così come sono», a fini informativi e di trasparenza. Non sostituiscono le fonti ufficiali
+né i controlli della Corte dei conti o dell’ANAC.</p>
+`;
+  return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, natura dei contenuti, fonti, licenze e rettifiche.', active: '', body });
+}
+
+function renderPrivacy() {
+  const body = `
+<h1>Informativa sulla privacy</h1>
+<p class="lead">Questo sito è statico e <strong>non usa cookie né strumenti di tracciamento</strong>; non raccoglie
+dati di navigazione tramite script propri.</p>
+
+<h2>Dati di terzi (operatori economici)</h2>
+<p>Il sito elabora dati economici ufficiali in formato aperto che possono includere <strong>denominazioni di operatori
+economici</strong>. Le imprese sono identificate dalla partita IVA; gli <strong>operatori persone fisiche non sono
+nominati</strong> (le denominazioni con codice fiscale personale sono sostituite da un’etichetta generica). Ove un dato
+riferito a una persona fisica risultasse comunque presente, il trattamento avviene per finalità di
+<strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs 196/2003 come
+modificato dal D.Lgs 101/2018).</p>
+
+<h2>Diritti</h2>
+<p>È possibile esercitare i diritti di accesso, rettifica, opposizione e cancellazione scrivendo a
+<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>.</p>
+
+<h2>Log di hosting</h2>
+<p>Il fornitore di hosting può registrare log tecnici (incluso l’indirizzo IP) per la sicurezza e il funzionamento del
+servizio (base giuridica art. 6.1.f GDPR). Per l’elenco dei responsabili e l’ubicazione dei server fare riferimento al
+titolare.</p>
+`;
+  return page({ title: 'Privacy — Ospedali Trasparenti', description: 'Nessun cookie o tracciamento. Trattamento dei dati di terzi e diritti.', active: '', body });
+}
 
 const PROC_LABEL = {
   competitiva: 'Procedura competitiva (gara aperta/ristretta)',
@@ -651,7 +727,7 @@ come «senza gara».</p></div>
 <p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
 «sul valore» sugli importi.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>Regione</th><th class="num">Valore appalti</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Contratti</th></tr></thead>
+  <thead><tr><th scope="col">Regione</th><th class="num" scope="col">Valore appalti</th><th class="num" scope="col">Senza gara %</th><th class="num" scope="col">sul valore</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody>${regRows}</tbody>
 </table></div>
 
@@ -659,7 +735,7 @@ come «senza gara».</p></div>
 <p class="muted small">Solo enti con almeno 20 mln € e 100 contratti nel periodo, per quota sul numero di contratti.
 I nomi collegati hanno una scheda.</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>Azienda</th><th class="num">Senza gara %</th><th class="num">sul valore</th><th class="num">Valore appalti</th></tr></thead>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Senza gara %</th><th class="num" scope="col">sul valore</th><th class="num" scope="col">Valore appalti</th></tr></thead>
   <tbody>${autRows}</tbody>
 </table></div>
 
@@ -698,11 +774,16 @@ function renderOfferenteUnico(appMatch, codByCf, href) {
         <td class="num">${numeroIt(x.gareUnicoOfferente)}/${numeroIt(x.gareConPartecipanti)}</td></tr>`;
     })
     .join('');
-  return `<h2>Gare con un solo offerente</h2>
-<p class="muted small">Quota delle gare (con dati sui partecipanti) in cui si è presentata <strong>una sola impresa</strong>.
-Solo enti con almeno 50 gare. Concorrenza solo formale è una spia classica di gare “su misura”.</p>
+  return `<h2>Gare con un solo offerente registrato</h2>
+<p class="muted small">Quota delle gare in cui, <strong>sui dati disponibili</strong> dei partecipanti, risulta
+una sola impresa. Solo enti con almeno 50 gare.</p>
+<div class="note">La banca dati dei partecipanti ANAC è <strong>parziale</strong> (copre circa metà delle gare e talvolta
+registra solo l’aggiudicatario): queste quote sono <strong>indicative e da intendersi come limite superiore</strong>.
+Un solo offerente può derivare da mercati ristretti, esclusive, brevetti, infungibilità tecnica o urgenze —
+è un <strong>indicatore da verificare, non una prova di irregolarità</strong>; nessun addebito è mosso ai soggetti citati.
+I raggruppamenti di imprese (RTI) sono conteggiati come più offerte.</div>
 <div class="tablewrap"><table>
-  <thead><tr><th>Azienda</th><th class="num">Offerente unico</th><th class="num">Gare</th></tr></thead>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Offerente unico</th><th class="num" scope="col">Gare</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>`;
 }
@@ -717,11 +798,14 @@ function renderFornitori(appMatch) {
       <td class="num">${euroCompact(f.valore)}</td><td class="num">${numeroIt(f.n)}</td></tr>`
     )
     .join('');
-  return `<h2>Chi prende i soldi: i maggiori fornitori</h2>
+  return `<h2>I maggiori fornitori del SSN per valore aggiudicato</h2>
 <p class="muted small">Operatori economici con più valore aggiudicato dalle aziende sanitarie (2023–2024).
 Valore attribuito una volta per contratto all’aggiudicatario principale.</p>
+<div class="note">Figurare tra i maggiori fornitori è pienamente legittimo e riflette il volume di forniture aggiudicate
+con regolare procedura: <strong>non costituisce di per sé indice di anomalia</strong>. Le denominazioni delle imprese
+sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori persone fisiche non sono nominati.</div>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Fornitore</th><th class="num">Valore aggiudicato</th><th class="num">Contratti</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>`;
 }
@@ -738,7 +822,8 @@ function appaltiBlock(app, appMatch) {
   const sgNum = app.quotaSenzaGaraNum;
   const sgVal = app.quotaSenzaGara;
   const med = appMatch?.medianaSenzaGaraNum;
-  const flagSg = sgNum != null && med != null && sgNum > Math.max(0.65, med * 1.4);
+  // минимален брой договори — иначе малка извадка дава подвеждащ флаг
+  const flagSg = sgNum != null && med != null && app.n >= 50 && sgNum > Math.max(0.65, med * 1.4);
   const top = (app.top || [])
     .filter((c) => c.importo > 0)
     .slice(0, 8)
@@ -764,9 +849,9 @@ function appaltiBlock(app, appMatch) {
         ${kpi('Concentrazione (1° fornitore)', percentualeIt(concQ), flagConc ? 'neg' : '')}
         ${kpi('Fornitori distinti', numeroIt(ag.nFornitori))}
       </div>
-      ${flagSb ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Gare con un solo offerente</span></div><div class="d">Il ${percentualeIt(sbQ)} delle gare con partecipanti (${numeroIt(ag.gareUnicoOfferente)}/${numeroIt(ag.gareConPartecipanti)}) ha ricevuto una sola offerta: possibile concorrenza solo formale.</div></div>` : ''}
-      ${flagConc ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Forte concentrazione su un fornitore</span></div><div class="d">Il ${percentualeIt(concQ)} del valore aggiudicato va a un solo operatore (${esc(ag.topFornitori[0].den)}).</div></div>` : ''}
-      ${fornRows ? `<h3>Principali fornitori</h3><div class="tablewrap"><table><thead><tr><th>Fornitore</th><th class="num">Valore aggiudicato</th><th class="num">Contratti</th></tr></thead><tbody>${fornRows}</tbody></table></div>` : ''}`
+      ${flagSb ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Gare con un solo offerente registrato</span></div><div class="d">Sui dati (parziali) dei partecipanti, il ${percentualeIt(sbQ)} delle gare (${numeroIt(ag.gareUnicoOfferente)}/${numeroIt(ag.gareConPartecipanti)}) risulta con una sola offerta. Indicatore da verificare — può derivare da mercati ristretti, esclusive o urgenze; non è prova di irregolarità.</div></div>` : ''}
+      ${flagConc ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Elevata concentrazione su un fornitore</span></div><div class="d">Il ${percentualeIt(concQ)} del valore aggiudicato va a un solo operatore${ag.topFornitori[0].azienda ? ` (${esc(ag.topFornitori[0].den)})` : ''}. Può essere legittimo (mercato ristretto, esclusiva); è un indicatore, non una prova.</div></div>` : ''}
+      ${fornRows ? `<h3>Principali fornitori</h3><div class="tablewrap"><table><thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead><tbody>${fornRows}</tbody></table></div><p class="small muted">Essere fornitore rilevante è legittimo; le persone fisiche non sono nominate.</p>` : ''}`
     : '';
 
   // Frazionamento (преки възлагания под праговете) + proroghe
@@ -789,7 +874,7 @@ function appaltiBlock(app, appMatch) {
     <div class="card" style="margin-top:12px">${hbars(items, { fmt: euroCompact, maxLabel: 'Appalti per tipo di procedura' })}</div>
     ${aggBlock}
     ${frazBlock}
-    ${top ? `<h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th>Oggetto</th><th>Procedura</th><th class="num">Importo</th></tr></thead><tbody>${top}</tbody></table></div>` : ''}
+    ${top ? `<h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th scope="col">Oggetto</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead><tbody>${top}</tbody></table></div>` : ''}
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>`;
 }
 
@@ -852,7 +937,7 @@ semplice rosso aziendale. <strong>Nel ${ultimo}, ${s.aziendeInUtile} aziende su 
   ${kpi('Disavanzo di sistema', euroCompact(s.risultatoSistema), s.risultatoSistema < 0 ? 'neg' : 'pos')}
 </div>
 <div class="tablewrap" style="margin-top:14px"><table>
-  <thead><tr><th>Anno</th><th class="num">In perdita</th><th class="num">Rosso aziende</th><th class="num">Copertura GSA</th><th class="num">Sistema</th></tr></thead>
+  <thead><tr><th scope="col">Anno</th><th class="num" scope="col">In perdita</th><th class="num" scope="col">Rosso aziende</th><th class="num" scope="col">Copertura GSA</th><th class="num" scope="col">Sistema</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>
 <p class="small muted">Il ${ultimo} è l’anno peggiore della serie: il disavanzo di sistema tocca ${euroCompact(s.risultatoSistema)}.
@@ -891,7 +976,7 @@ function renderClassifiche({ forense, href }) {
 <h2>${esc(titolo)}</h2>
 <p class="muted small">${esc(descr)}</p>
 <div class="tablewrap"><table>
-  <thead><tr><th>#</th><th>Struttura</th><th class="num">${esc(extraHead)}</th><th class="num">Importo</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Struttura</th><th class="num" scope="col">${esc(extraHead)}</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody>${list
     .map(
       (x, i) => `<tr><td class="num">${i + 1}</td>

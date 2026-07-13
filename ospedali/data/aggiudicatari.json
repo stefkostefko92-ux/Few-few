@@ -1,5 +1,5 @@
 {
-  "generatoIl": "2026-07-13T07:39:03.616Z",
+  "generatoIl": "2026-07-13T07:59:41.567Z",
   "fonte": "ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), incrociati con i CIG sanitari",
   "note": "Unico offerente, concentrazione dei fornitori e vincitori ricorrenti sono indicatori, non prove.",
   "autoritaConDati": 278,
@@ -1013,19 +1013,19 @@
       "topFornitori": [
         {
           "cf": "7195130153",
-          "den": "NOVARTIS FARMA SPA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 7725666,
           "n": 23
         },
         {
           "cf": "747170157",
-          "den": "ROCHE S.P.A.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 6849066,
           "n": 14
         },
         {
           "cf": "962280590",
-          "den": "JANSSEN-CILAG SPA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 6378384,
           "n": 11
         },
@@ -1099,7 +1099,7 @@
         },
         {
           "cf": "NL821441358B02",
-          "den": "SCIENSUS INTERNATIONAL B.V.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 34646144,
           "n": 6
         },
@@ -2019,7 +2019,7 @@
         },
         {
           "cf": "IT01053600761",
-          "den": "AUXILIUM2 SOC. COOP. SOCIALE",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 36640981,
           "n": 1
         },
@@ -2477,7 +2477,7 @@
         },
         {
           "cf": "202623",
-          "den": "TCC-GROUP BV",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 2229100,
           "n": 2
         }
@@ -2739,7 +2739,7 @@
         },
         {
           "cf": "00488410010,",
-          "den": "TELECOM ITALIA S.P.A.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 49146545,
           "n": 1
         },
@@ -3517,7 +3517,7 @@
         },
         {
           "cf": "1699700330",
-          "den": "DEENOVA S.R.L.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 22032006,
           "n": 1
         }
@@ -5065,7 +5065,7 @@
         },
         {
           "cf": "B97686158",
-          "den": "MEDITERRANEO SEÑALES MARITIMAS S.L",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 2351240,
           "n": 1
         },
@@ -5157,7 +5157,7 @@
         },
         {
           "cf": "FR79779860881",
-          "den": "RELYENS MUTUAL INSURANCE",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 14999990,
           "n": 1
         }
@@ -5505,7 +5505,7 @@
         },
         {
           "cf": "#N/A",
-          "den": "NOVARTIS FARMA SPA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 8859439,
           "n": 46
         },
@@ -6277,7 +6277,7 @@
         },
         {
           "cf": "0229270922",
-          "den": "ECO TRAVEL SRL",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 4801400,
           "n": 1
         }
@@ -7637,7 +7637,7 @@
         },
         {
           "cf": "CCCMNL45D66E054M",
-          "den": "RUSSART SNC DI E. CICCARELLI",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 13900000,
           "n": 1
         }
@@ -8065,7 +8065,7 @@
         },
         {
           "cf": ": 04472901000",
-          "den": "CONVERGE S.R.L.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 47646224,
           "n": 1
         },
@@ -8311,7 +8311,7 @@
         },
         {
           "cf": "DNCLBN70B18F839E",
-          "den": "DE NUCCIO EBANO",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 44000,
           "n": 1
         },
@@ -8785,7 +8785,7 @@
         },
         {
           "cf": "9699320017",
-          "den": "BIOTRONIK ITALIA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 619920,
           "n": 1
         },
@@ -8945,7 +8945,7 @@
         },
         {
           "cf": "0366350096",
-          "den": "GE MEDICAL SYSTEM ITALIA S.P.A",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 41900,
           "n": 1
         },
@@ -8997,7 +8997,7 @@
         },
         {
           "cf": "0780814011",
-          "den": "IDM CONSULTING",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 12600,
           "n": 2
         }
@@ -9059,7 +9059,7 @@
         },
         {
           "cf": "L20132215503",
-          "den": "OPEN ASSESSMENT TECHNOLOGIES S.A.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 23167826,
           "n": 1
         },
@@ -9327,7 +9327,7 @@
         },
         {
           "cf": "1917540518",
-          "den": "AMTRUST ASSICURAZIONI S.P.A.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 108500,
           "n": 1
         },
@@ -9401,7 +9401,7 @@
         },
         {
           "cf": "CHE-272.159.215",
-          "den": "NEXT-AT SA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 850000,
           "n": 1
         },
@@ -9527,7 +9527,7 @@
         },
         {
           "cf": "02147390690),",
-          "den": "DROMEDIAN SRL",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 189600,
           "n": 1
         },
@@ -9635,7 +9635,7 @@
         },
         {
           "cf": "MSSGPP70L18C351X",
-          "den": "AM ENGINEERING SRL",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 139900,
           "n": 1
         },
@@ -9687,7 +9687,7 @@
         },
         {
           "cf": "RSSNCH76S43L736Z",
-          "den": "ROSSIELLO",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 2320,
           "n": 2
         }
@@ -9755,7 +9755,7 @@
         },
         {
           "cf": "88-3416989",
-          "den": "DIGICOURSE LLC",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 105000,
           "n": 1
         },
@@ -9955,7 +9955,7 @@
         },
         {
           "cf": "NCOSLV80D24B774R",
-          "den": "NOCE                     SILVIO",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 26000,
           "n": 1
         },
@@ -10035,7 +10035,7 @@
         },
         {
           "cf": "VLRLSE72M62H223V",
-          "den": "STUDIO LEGALE VALERIANI &AMP",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 39600,
           "n": 1
         },
@@ -10121,13 +10121,13 @@
         },
         {
           "cf": "LNFGPR73M07Z133Q",
-          "den": "GIAN PIERO LANFRANCA - GEOM.",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 13671,
           "n": 1
         },
         {
           "cf": "CLMPTR78P10F061S",
-          "den": "CALAMIA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 2933,
           "n": 1
         }
@@ -10189,13 +10189,13 @@
         },
         {
           "cf": "80005050507/IT00420000507",
-          "den": "SCUOLA NORMALE SUPERIORE",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 25952,
           "n": 1
         },
         {
           "cf": "00317740371/00502591209",
-          "den": "CONSORZIO INTERUNIVERSITARIO CINECA",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 22043,
           "n": 1
         }
@@ -10949,7 +10949,7 @@
       "topFornitori": [
         {
           "cf": "PSNMRC79S13I452G",
-          "den": "PISANU MARCO",
+          "den": "Operatore individuale (persona fisica)",
           "valore": 19790,
           "n": 1
         }
