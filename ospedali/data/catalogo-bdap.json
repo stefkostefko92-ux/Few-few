@@ -1,0 +1,670 @@
+{
+  "generatoIl": "2026-07-13T05:32:54.929Z",
+  "datasets": [
+    {
+      "kind": "CE",
+      "anno": 2012,
+      "trimestre": "I",
+      "title": "2012/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/89141909-1300-414a-aa92-8b9f06d57f2a.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2012,
+      "trimestre": "II",
+      "title": "2012/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/1fb0ae6e-c369-4cf8-a716-fbd0a037ad67.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2012,
+      "trimestre": "III",
+      "title": "2012/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/88ae55f8-fd0d-46ba-834e-f6fe6a9802a9.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2012,
+      "trimestre": "IV",
+      "title": "2012/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/c10e2349-85af-4648-9d7b-6ab9b07208b5.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2012,
+      "trimestre": null,
+      "title": "2012 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/5248fe9c-4b99-4220-9e9e-0a6c00ba30b0.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2013,
+      "trimestre": "I",
+      "title": "2013/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/2aadeae3-abc7-4223-8bde-94fb5784500d.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2013,
+      "trimestre": "II",
+      "title": "2013/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/b6281cd0-b038-4085-a9eb-c3b1abd746a3.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2013,
+      "trimestre": "III",
+      "title": "2013/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/45812b4b-fffc-4cdd-a038-9a5237125e90.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2013,
+      "trimestre": "IV",
+      "title": "2013/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/42e1bad4-25db-407c-adb8-cd97887b3102.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2013,
+      "trimestre": null,
+      "title": "2013 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/5d9dfd84-04b4-47a3-bb73-a067a790d728.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2014,
+      "trimestre": "I",
+      "title": "2014/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/2375ae6c-75d7-403e-b6ca-089095961a83.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2014,
+      "trimestre": "II",
+      "title": "2014/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d127b5af-d71c-4ffd-bd64-02f5704bb51f.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2014,
+      "trimestre": "III",
+      "title": "2014/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/aa152ab0-ee4b-4115-bb1e-b0669ada0319.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2014,
+      "trimestre": "IV",
+      "title": "2014/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/6ff662e8-2e60-48dc-8547-9c2f41e63eb4.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2014,
+      "trimestre": null,
+      "title": "2014 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/465e851b-b52e-40fe-9c70-d6a558debe2a.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2015,
+      "trimestre": "I",
+      "title": "2015/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/ff1af3d8-bea5-472b-89f0-2152176dbe29.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2015,
+      "trimestre": "II",
+      "title": "2015/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/e32247c0-a206-4d8d-bbd1-34b277417e84.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2015,
+      "trimestre": "III",
+      "title": "2015/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/2f6de35b-39bd-417e-9e3b-d5708a4b0bed.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2015,
+      "trimestre": "IV",
+      "title": "2015/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/c466bc58-818e-4be9-8aeb-11d28b29eed8.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2015,
+      "trimestre": null,
+      "title": "2015 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/0aa5fab4-d4fe-40ec-a679-0c88309b0042.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2016,
+      "trimestre": "I",
+      "title": "2016/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/9e2e27c7-325f-4482-87c6-628731bd2ee6.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2016,
+      "trimestre": "II",
+      "title": "2016/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/c50f6330-6907-4445-b7ec-7fd352a04c6d.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2016,
+      "trimestre": "III",
+      "title": "2016/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/f2fda73b-58a3-40cc-bb72-fca51136d30f.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2016,
+      "trimestre": "IV",
+      "title": "2016/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/6d07a62c-69c1-42f7-8665-5648fcbe7f91.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2016,
+      "trimestre": null,
+      "title": "2016 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/1911b316-cb99-4561-a065-6033f0345c26.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2017,
+      "trimestre": "I",
+      "title": "2017/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/6049f041-aa5a-4b2f-aaa8-228b11cbddc0.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2017,
+      "trimestre": "II",
+      "title": "2017/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/536ae58c-caee-4f82-97cb-18c1b3a9eeb5.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2017,
+      "trimestre": "III",
+      "title": "2017/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/71d05f92-68f7-408d-8d0c-dff25f0f1902.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2017,
+      "trimestre": "IV",
+      "title": "2017/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/93439c85-2cb3-4f33-b0b4-08e736604b35.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2017,
+      "trimestre": null,
+      "title": "2017 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/e8e7721f-4871-49b7-afc6-1e5b97049891.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2018,
+      "trimestre": "I",
+      "title": "2018/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/98c482c1-fa31-46c0-bf15-65939ee86a05.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2018,
+      "trimestre": "II",
+      "title": "2018/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a15c1eb6-0e7c-4be6-9e70-5bf5c6776739.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2018,
+      "trimestre": "III",
+      "title": "2018/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/5f74791a-7988-47a4-b9b6-3ca7a81d2f51.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2018,
+      "trimestre": "IV",
+      "title": "2018/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/6b960490-5027-4bcb-811f-8a5b75597d5d.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2018,
+      "trimestre": null,
+      "title": "2018 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/df1a970c-e570-403d-8f9a-1b736ee7e88f.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2019,
+      "trimestre": "I",
+      "title": "2019/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/b5bac885-d95b-4a74-87c6-af7d5b629c31.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2019,
+      "trimestre": "II",
+      "title": "2019/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/6f6d5ff7-38c5-462c-9205-4ad1b3ffeabc.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2019,
+      "trimestre": "III",
+      "title": "2019/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d693ca10-1b16-4fc5-a74f-f2d91c6d34a4.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2019,
+      "trimestre": "IV",
+      "title": "2019/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/7c95dd0b-9c46-42d9-a988-2ee497606e60.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2019,
+      "trimestre": null,
+      "title": "2019 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/481179f0-2574-4e33-8479-8f1f5729090c.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2020,
+      "trimestre": "I",
+      "title": "2020/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/9bff79f9-ee28-42d7-9936-e9ca25b1c85d.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2020,
+      "trimestre": "II",
+      "title": "2020/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/9042b658-3f7c-490c-9ad3-a858f194895a.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2020,
+      "trimestre": "III",
+      "title": "2020/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d52c2bc1-d0fa-49a4-bf2b-8e3a059d25a0.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2020,
+      "trimestre": "IV",
+      "title": "2020/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/2ad7953c-532e-4470-90b6-0c4ba87bbda3.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2020,
+      "trimestre": null,
+      "title": "2020 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/41838a8d-33a1-4f4c-a4e8-1cba74b81e03.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2021,
+      "trimestre": "I",
+      "title": "2021/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/e662ff42-4f64-4891-b022-41931aef3cd3.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2021,
+      "trimestre": "II",
+      "title": "2021/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a74fce09-2439-4ef1-8c59-08b071f8231f.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2021,
+      "trimestre": "III",
+      "title": "2021/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a1c159d7-14c6-40f8-aab1-36e42fdaaafc.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2021,
+      "trimestre": "IV",
+      "title": "2021/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/96be036e-c6aa-4d78-97de-413ce2040261.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2021,
+      "trimestre": null,
+      "title": "2021 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/7ed66089-fc41-4643-a110-d82dd2622f5b.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2022,
+      "trimestre": "I",
+      "title": "2022/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/4b1f8cf5-15fc-4395-a366-134f8815cd18.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2022,
+      "trimestre": "II",
+      "title": "2022/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/aa043d5b-d6e1-4b04-9c05-5a4601df8a62.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2022,
+      "trimestre": "III",
+      "title": "2022/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/ac74d209-7204-46d5-bd08-6f5a9f700477.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2022,
+      "trimestre": "IV",
+      "title": "2022/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/9f1c3366-08f5-4841-baa9-8376fccd01d9.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2022,
+      "trimestre": null,
+      "title": "2022 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/5afc4cf8-a13e-4fb6-a81b-61896de5f9ea.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2023,
+      "trimestre": "I",
+      "title": "2023/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/8c7b61ce-c9ae-4a0b-911e-9a58cf3cb7ef.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2023,
+      "trimestre": "II",
+      "title": "2023/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/c716f66c-9ce0-4f5f-9804-62fa33e3f6ed.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2023,
+      "trimestre": "III",
+      "title": "2023/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/ec32c392-03c0-4e80-824e-51778a8d2c1b.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2023,
+      "trimestre": "IV",
+      "title": "2023/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d6911158-0249-48de-aaee-c4f5927e20ab.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2023,
+      "trimestre": null,
+      "title": "2023 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/57bb2cce-4fdd-4de1-88b5-8e7551408481.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2024,
+      "trimestre": "I",
+      "title": "2024/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/45ad0b7a-a23d-49c3-a0b7-f0086118a1f8.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2024,
+      "trimestre": "II",
+      "title": "2024/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/96a38481-ccdf-4210-b046-d749004c336f.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2024,
+      "trimestre": "III",
+      "title": "2024/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/5fe023e5-504f-4747-8a97-b8455c99c6e2.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2024,
+      "trimestre": "IV",
+      "title": "2024/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/abab81e3-06fb-4751-8440-b164bca8d350.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2024,
+      "trimestre": null,
+      "title": "2024 - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/94083af2-a542-482d-8ad6-5877d04cd1ca.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2025,
+      "trimestre": "I",
+      "title": "2025/I Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/15ff2785-65c2-49a8-8deb-7e72f95c9356.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2025,
+      "trimestre": "II",
+      "title": "2025/II Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/2baac70c-7195-477f-99dd-cd811bd57a1e.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2025,
+      "trimestre": "III",
+      "title": "2025/III Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/4a4181c3-f237-43fc-9021-0744ac5b8c19.csv"
+    },
+    {
+      "kind": "CE",
+      "anno": 2025,
+      "trimestre": "IV",
+      "title": "2025/IV Trim. - Modello di rilevazione del Conto Economico degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/27575c1c-655f-4c54-b9f7-54ea438143c6.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2012,
+      "trimestre": null,
+      "title": "2012 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/8f5ddfee-ddc6-4501-9976-0349c1144b4f.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2013,
+      "trimestre": null,
+      "title": "2013 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/4d698f29-c0ad-49f7-96d5-ae32ece1240f.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2014,
+      "trimestre": null,
+      "title": "2014 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d5f56bc3-d865-45ce-b628-8b189f73c243.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2015,
+      "trimestre": null,
+      "title": "2015 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/51b46f0f-a6a7-4d50-9516-bd4ad116cee5.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2016,
+      "trimestre": null,
+      "title": "2016 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d4a11625-dd0e-474b-af39-7604f36be6ca.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2017,
+      "trimestre": null,
+      "title": "2017 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a1e612a6-5358-4173-bb80-9aa553125989.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2018,
+      "trimestre": null,
+      "title": "2018 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/493005a0-ae88-47a9-97cd-66548ebe190d.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2019,
+      "trimestre": null,
+      "title": "2019 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a0904cd1-4cd5-40cd-9cdb-9fc404bde499.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2020,
+      "trimestre": null,
+      "title": "2020 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d4816c3b-3c63-412e-aa82-ec65acaf64e7.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2021,
+      "trimestre": null,
+      "title": "2021 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/f1cb1b41-d0bb-4d37-b2cb-b077a5720454.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2022,
+      "trimestre": null,
+      "title": "2022 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/7572d620-36fd-4614-90d1-8412d48f5feb.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2023,
+      "trimestre": null,
+      "title": "2023 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/ac535673-49fb-4449-960e-fac8e3d14fa7.csv"
+    },
+    {
+      "kind": "LA",
+      "anno": 2024,
+      "trimestre": null,
+      "title": "2024 - Modello di rilevazione dei Livelli di Assistenza degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/d598ebd9-949d-4214-bb33-cd9c1be08f15.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2012,
+      "trimestre": null,
+      "title": "2012 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a1734baf-85bf-4db1-81c1-5834c0b35024.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2013,
+      "trimestre": null,
+      "title": "2013 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/396fc12b-fa01-4a0a-9a95-ea8191cd4f4a.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2014,
+      "trimestre": null,
+      "title": "2014 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/782cbf03-9e63-46bf-bab3-39713fe45059.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2015,
+      "trimestre": null,
+      "title": "2015 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/206ac05d-18d9-4490-9480-aaec71ea28ba.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2016,
+      "trimestre": null,
+      "title": "2016 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/6629c31a-ae13-4e7a-b5a8-c743cc12a2cc.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2017,
+      "trimestre": null,
+      "title": "2017 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/249ab41a-9588-406d-b636-31a17c1637be.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2018,
+      "trimestre": null,
+      "title": "2018 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/23eda2bc-3bfc-4f58-861a-1b8d82d93b71.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2019,
+      "trimestre": null,
+      "title": "2019 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/8ffa3400-1f8f-417c-9804-f0504a81a073.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2020,
+      "trimestre": null,
+      "title": "2020 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/bb39f1d2-eece-454e-b737-2c86935697f0.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2021,
+      "trimestre": null,
+      "title": "2021 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/91e77a6e-8ca7-44a6-9fce-570b382651fc.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2022,
+      "trimestre": null,
+      "title": "2022 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a353a04d-da3d-4eb5-beea-66737956d537.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2023,
+      "trimestre": null,
+      "title": "2023 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/1b4b82fa-aa71-4e84-bb43-c42c8ec6691d.csv"
+    },
+    {
+      "kind": "SP",
+      "anno": 2024,
+      "trimestre": null,
+      "title": "2024 - Modello di rilevazione dello Stato Patrimoniale degli enti del SSN",
+      "csvUrl": "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/02e25766-a300-43f9-8f9f-a07dcee27a28.csv"
+    }
+  ]
+}

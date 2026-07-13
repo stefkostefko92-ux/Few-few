@@ -1,0 +1,19 @@
+{
+  "name": "ospedali",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ospedali Trasparenti — автоматично извличане на официални open data за финансите на публичните болници в Италия (BDAP/MEF, dati.salute.gov.it) и генериране на подробен отчет за всяка структура.",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "fetch:catalogo": "node src/fetch-catalogo.js",
+    "fetch:anagrafica": "node src/fetch-anagrafica.js",
+    "fetch:finanze": "node src/fetch-finanze.js",
+    "fetch:all": "npm run fetch:catalogo && npm run fetch:anagrafica && npm run fetch:finanze",
+    "report": "node src/build-report.js",
+    "all": "npm run fetch:all && npm run report",
+    "test": "node --test test/*.test.js",
+    "lint": "sh -c 'for f in src/*.js src/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'"
+  }
+}
