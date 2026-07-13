@@ -10,6 +10,8 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: "/koncentraciya", label: "Концентрация" },
       { href: "/sluchai", label: "Известни случаи" },
       { href: "/prozrachnost-indeks", label: "Индекс на прозрачност" },
+      { href: "/klasacii", label: "Класации" },
+      { href: "/sravnenie", label: "Сравнение" },
     ],
   },
   {

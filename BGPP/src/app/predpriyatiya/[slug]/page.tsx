@@ -105,6 +105,18 @@ export default async function EnterprisePage({
             <Badge tone="brand">{sec.short}</Badge>
             <Badge>{e.legalForm}</Badge>
             {e.stateShare === 100 && <Badge>100% държавно</Badge>}
+            {(() => {
+              const pays = e.moneyOut.some((f) => /дивидент/i.test(f.label));
+              const gets = e.moneyIn.some((f) =>
+                /субсиди|компенсац|капиталови вноски от държав|държавния бюджет|целеви средства/i.test(
+                  f.label + " " + (f.note ?? ""),
+                ),
+              );
+              if (pays && !gets) return <Badge tone="inflow">Носи дивидент на държавата</Badge>;
+              if (gets && !pays) return <Badge tone="outflow">Разчита на публична подкрепа</Badge>;
+              if (gets && pays) return <Badge tone="outflow">Смесено финансиране</Badge>;
+              return <Badge>Самоиздръжка</Badge>;
+            })()}
             {e.website && (
               <ExternalLink href={e.website}>Официален сайт</ExternalLink>
             )}

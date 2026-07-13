@@ -40,6 +40,31 @@ export default function ConcentrationPage() {
           </div>
         </Section>
 
+        <Section>
+          {(() => {
+            const sorted = [...BIG_CONTRACTORS].sort((a, b) => b.totalMln - a.totalMln);
+            const total = sorted.reduce((s, c) => s + c.totalMln, 0);
+            const top5 = sorted.slice(0, 5).reduce((s, c) => s + c.totalMln, 0);
+            const share = Math.round((top5 / total) * 100);
+            return (
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="text-3xl font-extrabold text-slate-900">{sorted.length}</div>
+                  <div className="text-sm text-slate-600">проследени едри изпълнителя</div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="text-3xl font-extrabold text-slate-900">≈{total.toLocaleString("bg-BG")} млн. €</div>
+                  <div className="text-sm text-slate-600">общ проследен обем поръчки</div>
+                </div>
+                <div className="rounded-xl border border-outflow-200 bg-outflow-50 p-5">
+                  <div className="text-3xl font-extrabold text-outflow-700">{share}%</div>
+                  <div className="text-sm text-slate-600">взети от само топ-5 групи</div>
+                </div>
+              </div>
+            );
+          })()}
+        </Section>
+
         <Section
           title="Най-големите изпълнители на държавни поръчки"
           icon={<Building className="h-6 w-6 text-brand-700" aria-hidden />}

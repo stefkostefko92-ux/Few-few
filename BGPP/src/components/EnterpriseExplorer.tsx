@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Enterprise } from "@/data/types";
 import { SECTORS } from "@/data/sectors";
 import { PRINCIPALS } from "@/data/principals";
+import { casesForSlug } from "@/data/cases";
 import { Badge } from "./ui";
 import { Search, ArrowInflow, ArrowOutflow } from "./icons";
 
@@ -20,6 +21,11 @@ function Card({ e }: { e: Enterprise }) {
         <Badge tone="brand">{sectorName}</Badge>
         <Badge>{e.legalForm}</Badge>
         {e.stateShare === 100 && <Badge>100% държавно</Badge>}
+        {casesForSlug(e.slug).length > 0 && (
+          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800">
+            ⚑ {casesForSlug(e.slug).length} случая
+          </span>
+        )}
       </div>
       <h3 className="mt-3 text-lg font-bold text-slate-900 group-hover:text-brand-700">
         {e.shortName ?? e.name}
@@ -51,12 +57,14 @@ export function EnterpriseExplorer({
   const [q, setQ] = useState("");
   const [sector, setSector] = useState<string>(initialSector);
   const [principal, setPrincipal] = useState<string>(initialPrincipal);
+  const [onlyCases, setOnlyCases] = useState(false);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return enterprises.filter((e) => {
       if (sector && e.sector !== sector) return false;
       if (principal && e.principal !== principal) return false;
+      if (onlyCases && casesForSlug(e.slug).length === 0) return false;
       if (!needle) return true;
       return (
         e.name.toLowerCase().includes(needle) ||
@@ -64,7 +72,7 @@ export function EnterpriseExplorer({
         e.activity.toLowerCase().includes(needle)
       );
     });
-  }, [enterprises, q, sector, principal]);
+  }, [enterprises, q, sector, principal, onlyCases]);
 
   const usedSectors = SECTORS.filter((s) =>
     enterprises.some((e) => e.sector === s.key),
@@ -122,9 +130,20 @@ export function EnterpriseExplorer({
         </label>
       </div>
 
-      <p className="mt-4 text-sm text-slate-500" aria-live="polite">
-        Показани {filtered.length} от {enterprises.length} предприятия
-      </p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500" aria-live="polite">
+          Показани {filtered.length} от {enterprises.length} предприятия
+        </p>
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={onlyCases}
+            onChange={(e) => setOnlyCases(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+          />
+          само с известни случаи
+        </label>
+      </div>
 
       {filtered.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-500">

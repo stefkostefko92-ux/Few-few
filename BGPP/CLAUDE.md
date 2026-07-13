@@ -59,9 +59,18 @@ src/app/
   kartina/page.tsx             # агрегатна национална картина (числа от АППК)
   parichni-potoci/page.tsx     # обяснение на потоците + правна рамка (ЗПП, АППК)
   konflikti/page.tsx           # конфликт на интереси — структурни модели + примери
+  svarzanost/page.tsx          # метод + инструмент за свързаност
+  koncentraciya/page.tsx       # кой печели поръчките + собственици + HHI
+  sluchai/page.tsx             # известни случаи (cases.ts) с правен статус
+  prozrachnost-indeks/ · klasacii/ · sravnenie/   # класации и сравнение
+  signal/ · rakovodstvo/       # гражданско действие + ръководство
+  data/page.tsx + data.json/ + data.csv/ + llms.txt/   # отворени данни
+  impressum/ · poveritelnost/ · biskvitki/ · dostupnost/  # правни
   istochnici/page.tsx          # официални регистри и портали
   metodologiya/page.tsx        # обхват, уговорки за точност, корекции
   robots.ts · sitemap.ts · not-found.tsx
+src/data/cases.ts · procurement.ts · national.ts   # случаи, концентрация, агрегати
+src/lib/dataset.ts             # сериализатор за отворени данни (server-only)
 src/components/                # SiteHeader/Footer, ui.tsx, MoneyFlows, EnterpriseExplorer (client), icons, JsonLd
 src/lib/                       # site.ts, seo.ts, aggregate.ts, __tests__/
 ```
