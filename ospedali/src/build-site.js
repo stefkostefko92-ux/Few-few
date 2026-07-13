@@ -1007,11 +1007,13 @@ function cartogramma(regioniData) {
       const pct = pctv != null ? `${Math.round(pctv * 100)}%` : 'n.d.';
       const label = `${meta.nome}: senza gara ${pct}${r ? `, ${r.nEnti} strutture` : ''}`;
       const box = boxDiPath(d);
-      const grande = box.w > 40 && box.h > 30;
-      const testo = t != null && t > 0.55 ? '#fff' : '#1c2530';
+      const grande = box.w > 52 && box.h > 40;
+      const testo = t != null && t > 0.55 ? '#fff' : '#12202e';
+      const alone = t != null && t > 0.55 ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.85)';
+      // контурен ореол (paint-order:stroke) → четимо върху всеки цвят на региона
       const etichetta = grande && pctv != null
-        ? `<text x="${box.cx.toFixed(0)}" y="${(box.cy - 3).toFixed(0)}" text-anchor="middle" font-size="15" font-weight="700" fill="${testo}" pointer-events="none">${esc(meta.abbr)}</text>
-        <text x="${box.cx.toFixed(0)}" y="${(box.cy + 13).toFixed(0)}" text-anchor="middle" font-size="13" fill="${testo}" pointer-events="none">${pct}</text>`
+        ? `<text x="${box.cx.toFixed(0)}" y="${(box.cy - 6).toFixed(0)}" text-anchor="middle" font-size="30" font-weight="700" fill="${testo}" stroke="${alone}" stroke-width="4" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(meta.abbr)}</text>
+        <text x="${box.cx.toFixed(0)}" y="${(box.cy + 22).toFixed(0)}" text-anchor="middle" font-size="25" font-weight="600" fill="${testo}" stroke="${alone}" stroke-width="4" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${pct}</text>`
         : '';
       return `<a href="regione/${key}.html" role="listitem"><title>${esc(label)}</title>
       <path d="${d}" fill="${fill}" stroke="#fff" stroke-width="1.1" stroke-linejoin="round"></path>${etichetta}</a>`;
