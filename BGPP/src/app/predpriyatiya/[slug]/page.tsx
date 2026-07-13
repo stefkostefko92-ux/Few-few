@@ -10,6 +10,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd, canonical } from "@/lib/seo";
 import { transparency } from "@/lib/aggregate";
 import { contractorsForEik } from "@/data/procurement";
+import { casesForSlug, STATUS } from "@/data/cases";
 import {
   Building,
   ShieldCheck,
@@ -175,6 +176,44 @@ export default async function EnterprisePage({
             </div>
           )}
         </Section>
+
+        {/* Известни случаи */}
+        {casesForSlug(e.slug).length > 0 && (
+          <Section
+            title="Известни случаи"
+            icon={<Info className="h-6 w-6 text-rose-600" aria-hidden />}
+          >
+            <ul className="space-y-3">
+              {casesForSlug(e.slug).map((c, i) => {
+                const st = STATUS[c.statusKey];
+                const tone =
+                  st.tone === "red"
+                    ? "border-rose-500 bg-rose-50"
+                    : st.tone === "amber"
+                      ? "border-amber-500 bg-amber-50"
+                      : "border-slate-400 bg-slate-50";
+                return (
+                  <li key={i} className={`rounded-lg border-l-4 ${tone} p-3`}>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-semibold text-slate-900">{c.title}</span>
+                      <span className="text-xs font-semibold text-slate-600">
+                        {st.label} · {c.year}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">{c.desc}</p>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="mt-2 text-sm text-slate-500">
+              Разследване не е присъда. Виж всички{" "}
+              <Link href="/sluchai" className="font-medium text-brand-700 hover:underline">
+                известни случаи
+              </Link>
+              .
+            </p>
+          </Section>
+        )}
 
         {/* Конфликт на интереси */}
         {e.conflicts && e.conflicts.length > 0 && (

@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/prozrachnost-indeks",
     "/parichni-potoci",
     "/koncentraciya",
+    "/sluchai",
     "/konflikti",
     "/svarzanost",
     "/istochnici",
