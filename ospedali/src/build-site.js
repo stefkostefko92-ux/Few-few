@@ -16,6 +16,7 @@ import { join as pjoin } from 'node:path';
 import { matchAutoritaEnti } from './lib/match.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, slugify, esc } from './lib/format.js';
 import { page, kpi, badge, lineChart, barChart, hbars, setSiteUrl, siteUrl } from './lib/site-ui.js';
+import { VIEWBOX, REGIONI_GEO } from './lib/italia-geo.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
@@ -55,32 +56,36 @@ const REGOLE_LABEL = {
   risultato_arrotondato: 'Risultato “troppo tondo”',
 };
 
-// Регионите на SSN: codice_regione → съкращение, име, име в ANAC (за join) и
-// позиция (col,row) в схематична решетъчна карта (tile-grid cartogram) на Италия.
-// Картата е схематична, не географски точна — всеки регион е равностоен плочка.
+// Регионите на SSN (20 административни региона). Ключ = страница/файл; `istat` =
+// код за географската карта (ISTAT граници); `prefissi` = кодовете codice_regione
+// от финансите (Трентино-Алто Адидже обединява двете авт. провинции 041+042);
+// `anac` = имената в ANAC регионалния изглед (за join). Карта = истинска
+// географска (inline SVG от ISTAT граници, CC BY 4.0), не схематична.
 const REGIONI = {
-  '010': { abbr: 'PIE', nome: 'Piemonte', anac: 'PIEMONTE', col: 1, row: 1 },
-  '020': { abbr: 'VDA', nome: "Valle d'Aosta", anac: "VALLE D'AOSTA", col: 0, row: 1 },
-  '030': { abbr: 'LOM', nome: 'Lombardia', anac: 'LOMBARDIA', col: 2, row: 0 },
-  '041': { abbr: 'BZ', nome: 'P.A. Bolzano', anac: 'PROVINCIA AUTONOMA DI BOLZANO', col: 3, row: 0 },
-  '042': { abbr: 'TN', nome: 'P.A. Trento', anac: 'PROVINCIA AUTONOMA DI TRENTO', col: 3, row: 1 },
-  '050': { abbr: 'VEN', nome: 'Veneto', anac: 'VENETO', col: 4, row: 1 },
-  '060': { abbr: 'FVG', nome: 'Friuli-Venezia Giulia', anac: 'FRIULI VENEZIA GIULIA', col: 5, row: 1 },
-  '070': { abbr: 'LIG', nome: 'Liguria', anac: 'LIGURIA', col: 1, row: 2 },
-  '080': { abbr: 'EMR', nome: 'Emilia-Romagna', anac: 'EMILIA ROMAGNA', col: 3, row: 2 },
-  '090': { abbr: 'TOS', nome: 'Toscana', anac: 'TOSCANA', col: 2, row: 3 },
-  '100': { abbr: 'UMB', nome: 'Umbria', anac: 'UMBRIA', col: 3, row: 3 },
-  '110': { abbr: 'MAR', nome: 'Marche', anac: 'MARCHE', col: 4, row: 3 },
-  '120': { abbr: 'LAZ', nome: 'Lazio', anac: 'LAZIO', col: 3, row: 4 },
-  '130': { abbr: 'ABR', nome: 'Abruzzo', anac: 'ABRUZZO', col: 4, row: 4 },
-  '140': { abbr: 'MOL', nome: 'Molise', anac: 'MOLISE', col: 4, row: 5 },
-  '150': { abbr: 'CAM', nome: 'Campania', anac: 'CAMPANIA', col: 3, row: 5 },
-  '160': { abbr: 'PUG', nome: 'Puglia', anac: 'PUGLIA', col: 5, row: 5 },
-  '170': { abbr: 'BAS', nome: 'Basilicata', anac: 'BASILICATA', col: 4, row: 6 },
-  '180': { abbr: 'CAL', nome: 'Calabria', anac: 'CALABRIA', col: 4, row: 7 },
-  '190': { abbr: 'SIC', nome: 'Sicilia', anac: 'SICILIA', col: 3, row: 8 },
-  '200': { abbr: 'SAR', nome: 'Sardegna', anac: 'SARDEGNA', col: 1, row: 6 },
+  '010': { abbr: 'PIE', nome: 'Piemonte', istat: '01', prefissi: ['010'], anac: ['PIEMONTE'] },
+  '020': { abbr: 'VDA', nome: "Valle d'Aosta", istat: '02', prefissi: ['020'], anac: ["VALLE D'AOSTA"] },
+  '030': { abbr: 'LOM', nome: 'Lombardia', istat: '03', prefissi: ['030'], anac: ['LOMBARDIA'] },
+  taa: { abbr: 'TAA', nome: 'Trentino-Alto Adige / Südtirol', istat: '04', prefissi: ['041', '042'], anac: ['PROVINCIA AUTONOMA DI BOLZANO', 'PROVINCIA AUTONOMA DI TRENTO'] },
+  '050': { abbr: 'VEN', nome: 'Veneto', istat: '05', prefissi: ['050'], anac: ['VENETO'] },
+  '060': { abbr: 'FVG', nome: 'Friuli-Venezia Giulia', istat: '06', prefissi: ['060'], anac: ['FRIULI VENEZIA GIULIA'] },
+  '070': { abbr: 'LIG', nome: 'Liguria', istat: '07', prefissi: ['070'], anac: ['LIGURIA'] },
+  '080': { abbr: 'EMR', nome: 'Emilia-Romagna', istat: '08', prefissi: ['080'], anac: ['EMILIA ROMAGNA'] },
+  '090': { abbr: 'TOS', nome: 'Toscana', istat: '09', prefissi: ['090'], anac: ['TOSCANA'] },
+  '100': { abbr: 'UMB', nome: 'Umbria', istat: '10', prefissi: ['100'], anac: ['UMBRIA'] },
+  '110': { abbr: 'MAR', nome: 'Marche', istat: '11', prefissi: ['110'], anac: ['MARCHE'] },
+  '120': { abbr: 'LAZ', nome: 'Lazio', istat: '12', prefissi: ['120'], anac: ['LAZIO'] },
+  '130': { abbr: 'ABR', nome: 'Abruzzo', istat: '13', prefissi: ['130'], anac: ['ABRUZZO'] },
+  '140': { abbr: 'MOL', nome: 'Molise', istat: '14', prefissi: ['140'], anac: ['MOLISE'] },
+  '150': { abbr: 'CAM', nome: 'Campania', istat: '15', prefissi: ['150'], anac: ['CAMPANIA'] },
+  '160': { abbr: 'PUG', nome: 'Puglia', istat: '16', prefissi: ['160'], anac: ['PUGLIA'] },
+  '170': { abbr: 'BAS', nome: 'Basilicata', istat: '17', prefissi: ['170'], anac: ['BASILICATA'] },
+  '180': { abbr: 'CAL', nome: 'Calabria', istat: '18', prefissi: ['180'], anac: ['CALABRIA'] },
+  '190': { abbr: 'SIC', nome: 'Sicilia', istat: '19', prefissi: ['190'], anac: ['SICILIA'] },
+  '200': { abbr: 'SAR', nome: 'Sardegna', istat: '20', prefissi: ['200'], anac: ['SARDEGNA'] },
 };
+// codice_regione (3 цифри) → ключ на региона (Трентино: 041/042 → 'taa')
+const REG_KEY = {};
+for (const [key, m] of Object.entries(REGIONI)) for (const p of m.prefissi) REG_KEY[p] = key;
 
 function ultimoCe(ente) {
   const anni = anniConCe(ente);
@@ -241,16 +246,16 @@ async function main() {
     paginaForn++;
   }
 
-  // Регионални страници + схематична карта (tile-grid cartogram)
+  // Регионални страници + географска карта на Италия (истински choropleth)
   const appRegByName = new Map((appalti ? appalti.regionale : []).map((r) => [r.reg, r]));
-  const regAgg = new Map(); // codReg → агрегат
+  const regAgg = new Map(); // regKey → агрегат
   for (const ente of enti) {
-    const codReg = ente.codice.slice(0, 3);
-    if (!REGIONI[codReg]) continue;
-    let g = regAgg.get(codReg);
+    const key = REG_KEY[ente.codice.slice(0, 3)];
+    if (!key) continue;
+    let g = regAgg.get(key);
     if (!g) {
-      g = { codReg, valore: 0, risultato: 0, nInPerdita: 0, conCe: 0, enti: [] };
-      regAgg.set(codReg, g);
+      g = { key, valore: 0, risultato: 0, nInPerdita: 0, conCe: 0, enti: [] };
+      regAgg.set(key, g);
     }
     const { y } = ultimoCe(ente);
     if (y.valoreProduzione != null) {
@@ -265,16 +270,16 @@ async function main() {
   }
   await mkdir(join(SITE_DIR, 'regione'), { recursive: true });
   const regioniData = [];
-  for (const [codReg, meta] of Object.entries(REGIONI)) {
-    const g = regAgg.get(codReg);
+  for (const [key, meta] of Object.entries(REGIONI)) {
+    const g = regAgg.get(key);
     if (!g) continue;
-    const appReg = appRegByName.get(meta.anac) || null;
+    const appReg = mergeAppRows(meta.anac.map((n) => appRegByName.get(n)).filter(Boolean));
     const senzaGaraPct = appReg && appReg.n ? (appReg.cat.diretto.n + appReg.cat.negoziataSenza.n) / appReg.n : null;
     await writeFile(
-      join(SITE_DIR, 'regione', `${codReg}.html`),
-      renderRegione({ codReg, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod })
+      join(SITE_DIR, 'regione', `${key}.html`),
+      renderRegione({ key, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod })
     );
-    regioniData.push({ codReg, abbr: meta.abbr, nome: meta.nome, col: meta.col, row: meta.row, senzaGaraPct, nEnti: g.enti.length, valore: g.valore, risultato: g.risultato, appN: appReg ? appReg.n : 0 });
+    regioniData.push({ key, istat: meta.istat, abbr: meta.abbr, nome: meta.nome, senzaGaraPct, nEnti: g.enti.length, valore: g.valore, risultato: g.risultato, appN: appReg ? appReg.n : 0 });
   }
   await writeFile(join(SITE_DIR, 'regioni.html'), renderRegioniIndex({ regioniData }));
 
@@ -328,7 +333,7 @@ async function main() {
       ...(validaz ? ['verifiche.html'] : []),
       ...(paginaCerca ? ['cerca.html'] : []),
       ...(paginaForn ? ['fornitori.html'] : []),
-      ...regioniData.map((r) => `regione/${r.codReg}.html`),
+      ...regioniData.map((r) => `regione/${r.key}.html`),
       ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
       ...fornituraCfs.map((cf) => `fornitore/${cf}.html`),
     ];
@@ -946,48 +951,86 @@ function scalaRossi(t) {
   return 'rgb(153,0,13)';
 }
 
+// Обединява няколко ANAC регионални реда (за Трентино: Болцано + Тренто).
+function mergeAppRows(rows) {
+  if (!rows.length) return null;
+  if (rows.length === 1) return rows[0];
+  const out = { reg: rows[0].reg, n: 0, importo: 0, cat: {}, band40: 0, band140: 0, prorogaN: 0, urgenzaN: 0, pnrrImporto: 0 };
+  for (const r of rows) {
+    out.n += r.n || 0;
+    out.importo += r.importo || 0;
+    out.band40 += r.band40 || 0;
+    out.band140 += r.band140 || 0;
+    out.prorogaN += r.prorogaN || 0;
+    out.urgenzaN += r.urgenzaN || 0;
+    out.pnrrImporto += r.pnrrImporto || 0;
+    for (const [k, v] of Object.entries(r.cat || {})) {
+      if (!out.cat[k]) out.cat[k] = { n: 0, importo: 0 };
+      out.cat[k].n += v.n || 0;
+      out.cat[k].importo += v.importo || 0;
+    }
+  }
+  return out;
+}
+
+// Център и габарит на SVG път (за поставяне на етикет върху голям регион).
+function boxDiPath(d) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity, sx = 0, sy = 0, n = 0;
+  const re = /(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)/g;
+  let m;
+  while ((m = re.exec(d))) {
+    const x = +m[1], y = +m[2];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    sx += x;
+    sy += y;
+    n++;
+  }
+  return { cx: n ? sx / n : 0, cy: n ? sy / n : 0, w: maxX - minX, h: maxY - minY };
+}
+
 function cartogramma(regioniData) {
-  const withPct = regioniData.filter((r) => r.senzaGaraPct != null);
-  const vals = withPct.map((r) => r.senzaGaraPct);
+  const byKey = new Map(regioniData.map((r) => [r.key, r]));
+  const vals = regioniData.filter((r) => r.senzaGaraPct != null).map((r) => r.senzaGaraPct);
   const min = Math.min(...vals);
   const max = Math.max(...vals);
-  const CELL = 62;
-  const GAP = 4;
-  const step = CELL + GAP;
-  const cols = Math.max(...regioniData.map((r) => r.col)) + 1;
-  const rows = Math.max(...regioniData.map((r) => r.row)) + 1;
-  const W = cols * step - GAP;
-  const H = rows * step - GAP;
-  const tiles = regioniData
-    .map((r) => {
-      const x = r.col * step;
-      const y = r.row * step;
-      const t = r.senzaGaraPct != null && max > min ? (r.senzaGaraPct - min) / (max - min) : null;
+  const shapes = Object.entries(REGIONI)
+    .map(([key, meta]) => {
+      const d = REGIONI_GEO[meta.istat];
+      if (!d) return '';
+      const r = byKey.get(key);
+      const pctv = r ? r.senzaGaraPct : null;
+      const t = pctv != null && max > min ? (pctv - min) / (max - min) : null;
       const fill = t != null ? scalaRossi(t) : '#c9d2db';
-      const testo = t != null && t > 0.55 ? '#fff' : '#222';
-      const pct = r.senzaGaraPct != null ? `${Math.round(r.senzaGaraPct * 100)}%` : '—';
-      const label = `${r.nome}: senza gara ${pct}, ${r.nEnti} strutture`;
-      return `<a href="regione/${r.codReg}.html" role="listitem"><title>${esc(label)}</title>
-      <rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="7" fill="${fill}" stroke="rgba(0,0,0,.18)"></rect>
-      <text x="${x + CELL / 2}" y="${y + CELL / 2 - 4}" text-anchor="middle" font-size="14" font-weight="700" fill="${testo}">${esc(r.abbr)}</text>
-      <text x="${x + CELL / 2}" y="${y + CELL / 2 + 14}" text-anchor="middle" font-size="12" fill="${testo}">${pct}</text></a>`;
+      const pct = pctv != null ? `${Math.round(pctv * 100)}%` : 'n.d.';
+      const label = `${meta.nome}: senza gara ${pct}${r ? `, ${r.nEnti} strutture` : ''}`;
+      const box = boxDiPath(d);
+      const grande = box.w > 40 && box.h > 30;
+      const testo = t != null && t > 0.55 ? '#fff' : '#1c2530';
+      const etichetta = grande && pctv != null
+        ? `<text x="${box.cx.toFixed(0)}" y="${(box.cy - 3).toFixed(0)}" text-anchor="middle" font-size="15" font-weight="700" fill="${testo}" pointer-events="none">${esc(meta.abbr)}</text>
+        <text x="${box.cx.toFixed(0)}" y="${(box.cy + 13).toFixed(0)}" text-anchor="middle" font-size="13" fill="${testo}" pointer-events="none">${pct}</text>`
+        : '';
+      return `<a href="regione/${key}.html" role="listitem"><title>${esc(label)}</title>
+      <path d="${d}" fill="${fill}" stroke="#fff" stroke-width="1.1" stroke-linejoin="round"></path>${etichetta}</a>`;
     })
     .join('\n');
-  // легенда
   const legW = 220;
   const legStops = [0, 0.25, 0.5, 0.75, 1].map((s) => `<stop offset="${s * 100}%" stop-color="${scalaRossi(s)}"></stop>`).join('');
   return `<figure class="mapfig">
-<svg viewBox="0 0 ${W} ${H}" role="list" aria-label="Carta schematica dell’Italia: quota di appalti senza gara per regione" style="max-width:${W}px;width:100%;height:auto">
-${tiles}
+<svg viewBox="${VIEWBOX}" role="list" aria-label="Carta dell’Italia: quota di appalti senza gara per regione" class="italia">
+${shapes}
 </svg>
 <div class="maplegend">
   <span class="small muted">Quota senza gara:</span>
   <svg width="${legW}" height="14" aria-hidden="true"><defs><linearGradient id="lg">${legStops}</linearGradient></defs><rect width="${legW}" height="14" rx="3" fill="url(#lg)"></rect></svg>
   <span class="small muted">${Math.round(min * 100)}% → ${Math.round(max * 100)}%</span>
 </div>
-<figcaption class="small muted">Carta <strong>schematica</strong> (non geografica): ogni regione è una cella di pari dimensione,
-colorata per quota di appalti aggiudicati senza gara (affidamento diretto + negoziata senza pubblicazione, sul numero di
-contratti). Clicca una regione per la scheda. Fonte: ANAC.</figcaption>
+<figcaption class="small muted">Ogni regione è colorata per <strong>quota di appalti aggiudicati senza gara</strong>
+(affidamento diretto + negoziata senza pubblicazione, sul numero di contratti). Passa il mouse per i dettagli, clicca per
+la scheda. Confini: © <a href="https://www.istat.it/">ISTAT</a> (CC BY 4.0); dati appalti: ANAC.</figcaption>
 </figure>`;
 }
 
@@ -996,7 +1039,7 @@ function renderRegioniIndex({ regioniData }) {
   const rows = ordinate
     .map(
       (r) => `<tr>
-      <td><a href="regione/${r.codReg}.html">${esc(r.nome)}</a></td>
+      <td><a href="regione/${r.key}.html">${esc(r.nome)}</a></td>
       <td class="num">${percentualeIt(r.senzaGaraPct)}</td>
       <td class="num">${numeroIt(r.nEnti)}</td>
       <td class="num">${euroCompact(r.valore)}</td>
@@ -1030,7 +1073,7 @@ aziende (senza la Gestione Sanitaria Accentrata regionale), quindi non è il dis
   });
 }
 
-function renderRegione({ codReg, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod }) {
+function renderRegione({ key, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod }) {
   const hrefStrut = (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html`;
   // структури, подредени по брой/тежест на сигналите
   const gravOrd = { alta: 3, media: 2, bassa: 1 };
@@ -1109,7 +1152,7 @@ ${appaltiBlk}
     description: `Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in ${esc(meta.nome)}: valore della produzione, risultato, quota di appalti senza gara.`,
     active: 'regioni.html',
     rel: '../',
-    canonical: `regione/${codReg}.html`,
+    canonical: `regione/${key}.html`,
     body,
   });
 }

@@ -70,8 +70,11 @@ src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui
   (struttura/regione/fornitore) подават свой `canonical`. `setSiteUrl()` в `site-ui.js`.
 - Профили на изпълнителите: `pIvaValida` (11 цифри, не всички еднакви, контролна
   цифра) пази от боклучави CF; физически лица (16 знака) НЕ се профилират (GDPR).
-- Регионите: `REGIONI` в `build-site.js` (codice_regione → съкр./име/ANAC име/col,row
-  за схематичната карта). Картата е **схематична, не географска** (tile-grid).
+- Регионите: `REGIONI` в `build-site.js` (ключ=файл; `istat`=код за картата;
+  `prefissi`=codice_regione от финансите; `anac`=имена за join). Трентино обединява
+  041+042 → ключ `taa`. Картата е **истинска географска** (choropleth) — граници от
+  `src/lib/italia-geo.js` (**генериран асет** от `scripts/gen-geo.mjs`: проектира и
+  опростява ISTAT geojson, CC BY 4.0). Пресметни наново само при смяна на границите.
 - Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.
 
 ## Капани
