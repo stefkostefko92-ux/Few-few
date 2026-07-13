@@ -206,9 +206,16 @@ Hub `approfondimenti.html` (в NAV) + 11 страници, всичките от
 - **pnrr.html** — appalti с PNRR/PNC флаг по региони (~8.6 млрд);
 - **storie.html + storia/<slug>.html** — разкази от данните (STORIE в модула;
   всеки с легитимните обяснения + rettifiche линк — правната рамка е задължителна);
-- **aggiornamenti.html** — дневник + „in preparazione" (tempi di pagamento,
-  Conto Annuale/medici a gettone, liste d'attesa, mobilità sanitaria — чакат
-  собствени ETL сесии);
+- **mobilita.html** — mobilità sanitaria: разходите на всеки регион за лечение
+  на гражданите му ИЗВЪН региона (CE редовете Extraregione; src/mobilita.js,
+  тестван; канали pubblico/privato; активата е частична, затова БЕЗ „салдо");
+- **personale.html** — персоналът per болница (Conto Annuale през BDAP CKAN;
+  src/personale.js; join по Codice Ente BDAP; 2023 = последната ПЪЛНА година;
+  742 930 души; тренд на гъвкавия труд 2010–2024);
+- **pagamenti.html** — tempi di pagamento (национална серия PCC/RGS 2019–2025;
+  data/tempi-pagamento.json — ръчно извлечена от официалния PDF, с провенанс);
+- **aggiornamenti.html** — дневник; liste d'attesa е „in preparazione"
+  (AGENAS PNLA публикува само дашборд, не отворени данни);
 - benchmark **€/легло и €/приемане** срещу националната медиана на всяка
   детайлна страница (pre-pass в build-site).
 
