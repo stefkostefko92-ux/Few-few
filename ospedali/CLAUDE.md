@@ -37,6 +37,17 @@ src/fetch-dettagli.js    per болница ВСЕКИ договор (CIG/да�
 src/coi.js               двойки болница↔доставчик → флагове rotazione/dipendenza/esclusiva → data/coi.json
                          (analizzaCoppie е чист/тестваем; само fornitoreCf ≠ null → GDPR по конструкция)
 src/validate.js          CE консистентност + покритие + провенанс (SHA-256) → data/validazione.json
+── нови източници (вълна all-11; всеки по избор — build-site крие раздела без данни) ──
+src/fetch-popolazione.js ISTAT SDMX (Accept хедър!) → data/popolazione.json (ключ=codice_regione) — pro-capite
+src/fetch-apparecchiature.js dati.salute (динамичен дневен линк) → data/apparecchiature.json (dotazione, БЕЗ година)
+src/fetch-sdo.js         dati.salute SDO 2022 → data/sdo.json (обеми/изписвания per структура+регион)
+src/fetch-aggiudicazioni.js ANAC aggiudicazioni+fine+SAL (поточно, 0.9GB, филтър по health-cig-cf.tsv) →
+                         data/aggiudicazioni.json (брой оференти, ribasso конкурентни, закъснения)
+src/fetch-ted.js         TED API (JSON, POST, eForms 2023+) → data/ted.json (offerente unico UE)
+src/fetch-perlapa.js     PerlaPA bulk CSV (~50MB/год) → data/consulenze.json (АГРЕГАТ, без имена на лица!)
+src/fetch-pnrr-salute.js OpenPNRR (117MB, филтър M6) → data/pnrr-salute.json (Missione 6 per регион)
+src/fetch-siope.js       BDAP CKAN SIOPE (per регион) → data/siope.json (каса, месечни потоци, dic/media)
+src/fetch-pne.js         AGENAS PNE API (бавно, backoff; лиценз непотвърден → само регионални агрегати) → data/pne.json
 src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudicatari → site/
 src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui, match (болница↔ANAC), paths
 ```
@@ -90,6 +101,11 @@ privacy, rettifiche). **Не питай собственика повторно 
 същия модел деплой като другите продукти (виж deploy/README.md).
 
 ## Капани
+
+- **HEALTH/NOT_HEALTH regex (SSN възложители) е копиран в 3 файла** —
+  `fetch-appalti.js` (източник), `storico.js`, `fetch-perlapa.js`. Промяна на един →
+  промени и трите. NOT_HEALTH вече изключва ИНПС/ИНАИЛ/previdenza (иначе „ISTITUTO
+  NAZIONALE“ ги улавя като здравни). НЕ изключвай INMP (мигрантско здраве — легитимно).
 
 - `package_search` на BDAP CKAN връща 0 — каталогът се сканира целият и се
   кешира; **не трий** `data/raw/bdap-pkgs/` без нужда (30 мин повторно теглене).
