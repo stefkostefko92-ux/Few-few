@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dati e verifiche — Ospedali Trasparenti</title>
+<meta name="description" content="Controlli di consistenza contabile, copertura dei dati e impronta delle fonti: numeri verificabili e riproducibili.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html">Appalti</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<h1>Dati e verifiche</h1>
+<p class="lead">Per essere credibili, i numeri devono essere <strong>verificabili e riproducibili</strong>. Qui
+pubblichiamo i controlli automatici di consistenza, la copertura dei dati e la «carta d’identità» (impronta) di ogni
+file di origine.</p>
+
+<div class="grid kpis">
+  <div class="card kpi"><div class="n pos">100%</div><div class="l">Identità contabili CE superate</div></div>
+  <div class="card kpi"><div class="n ">342 / 342</div><div class="l">Aziende con bilancio (CE)</div></div>
+  <div class="card kpi"><div class="n ">113 / 342</div><div class="l">Abbinate agli appalti ANAC</div></div>
+  <div class="card kpi"><div class="n ">107 / 342</div><div class="l">Con dati sui fornitori</div></div>
+</div>
+
+<h2>Consistenza contabile</h2>
+<p class="muted small">Su ogni bilancio verifichiamo le identità del modello CE: <em>risultato prima delle imposte
+= valore − costi ± proventi/oneri finanziari ± rettifiche ± straordinari</em>; <em>risultato d’esercizio = risultato
+prima delle imposte − imposte</em> (tolleranza 0,1%).</p>
+<p><strong>2888 su 2889</strong> bilanci-anno superano entrambe le
+identità (100%). Gli scarti residui derivano da riclassificazioni nella fonte, non
+dall’estrazione. Casi non quadrati: 180202/2018.</p>
+
+<h2>Controlli di plausibilità</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Controllo</th><th class="num" scope="col">Violazioni</th></tr></thead>
+  <tbody>
+    <tr><td>Valore della produzione negativo</td><td class="num">0</td></tr>
+    <tr><td>Costi della produzione negativi</td><td class="num">0</td></tr>
+    <tr><td>Debiti negativi</td><td class="num">0</td></tr>
+    <tr><td>Disavanzo superiore ai ricavi</td><td class="num">5</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Copertura per fonte</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Dato</th><th class="num" scope="col">Aziende</th></tr></thead>
+  <tbody>
+    <tr><td>Conto economico (CE)</td><td class="num">342 / 342</td></tr>
+    <tr><td>Stato patrimoniale (SP)</td><td class="num">340 / 342</td></tr>
+    <tr><td>Anagrafe ospedaliera</td><td class="num">146 / 342</td></tr>
+    <tr><td>Appalti ANAC (abbinamento esatto)</td><td class="num">113 / 342</td></tr>
+    <tr><td>Fornitori (aggiudicatari)</td><td class="num">107 / 342</td></tr>
+  </tbody>
+</table></div>
+<p class="small muted">L’abbinamento agli appalti è volutamente conservativo (solo corrispondenze esatte e non ambigue):
+meglio una scheda senza appalti che un’attribuzione errata. Il confronto tra regioni copre invece il 100% degli enti.</p>
+
+<h2>Provenienza dei dati (impronta)</h2>
+<p class="muted small">Dimensione, numero di righe e impronta SHA-256 (prime 16 cifre) di ogni file di origine, per
+consentire la verifica e la riproduzione dei risultati.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">File</th><th class="num" scope="col">Righe</th><th class="num" scope="col">Dimensione</th><th scope="col">SHA-256</th></tr></thead>
+  <tbody><tr><td>bdap/ce-2012.csv</td><td class="num">74.868</td>
+      <td class="num">14.379 KB</td><td class="small" style="font-family:monospace">70c572b81a7f3c2b</td></tr><tr><td>bdap/ce-2013.csv</td><td class="num">75.489</td>
+      <td class="num">14.540 KB</td><td class="small" style="font-family:monospace">ccbb70801a40a88e</td></tr><tr><td>bdap/ce-2014.csv</td><td class="num">74.984</td>
+      <td class="num">14.459 KB</td><td class="small" style="font-family:monospace">3a89e9e5ddcd8a38</td></tr><tr><td>bdap/ce-2015.csv</td><td class="num">74.709</td>
+      <td class="num">14.427 KB</td><td class="small" style="font-family:monospace">4c8fd31a72550e0a</td></tr><tr><td>bdap/ce-2016.csv</td><td class="num">69.848</td>
+      <td class="num">13.613 KB</td><td class="small" style="font-family:monospace">2929a96ad935ca22</td></tr><tr><td>bdap/ce-2017.csv</td><td class="num">64.153</td>
+      <td class="num">12.710 KB</td><td class="small" style="font-family:monospace">f7b28ae71dff4f4a</td></tr><tr><td>bdap/ce-2018.csv</td><td class="num">64.360</td>
+      <td class="num">12.710 KB</td><td class="small" style="font-family:monospace">54699b2586caee7f</td></tr><tr><td>bdap/ce-2019.csv</td><td class="num">71.163</td>
+      <td class="num">14.037 KB</td><td class="small" style="font-family:monospace">a1d6d78a7c4e32a6</td></tr><tr><td>bdap/ce-2020.csv</td><td class="num">71.782</td>
+      <td class="num">14.290 KB</td><td class="small" style="font-family:monospace">6d305e021bbc907d</td></tr><tr><td>bdap/ce-2021.csv</td><td class="num">71.712</td>
+      <td class="num">14.307 KB</td><td class="small" style="font-family:monospace">71b80431fe5454bd</td></tr><tr><td>bdap/ce-2022.csv</td><td class="num">74.547</td>
+      <td class="num">14.896 KB</td><td class="small" style="font-family:monospace">7be51bc349e1b1fa</td></tr><tr><td>bdap/ce-2023.csv</td><td class="num">75.944</td>
+      <td class="num">15.156 KB</td><td class="small" style="font-family:monospace">6497df4a229544f1</td></tr><tr><td>bdap/ce-2024.csv</td><td class="num">76.125</td>
+      <td class="num">15.270 KB</td><td class="small" style="font-family:monospace">2326030f7459234c</td></tr><tr><td>bdap/sp-2012.csv</td><td class="num">36.466</td>
+      <td class="num">5979 KB</td><td class="small" style="font-family:monospace">26bd4c586028f320</td></tr><tr><td>bdap/sp-2013.csv</td><td class="num">37.046</td>
+      <td class="num">6089 KB</td><td class="small" style="font-family:monospace">c175111ef99f0b0e</td></tr><tr><td>bdap/sp-2014.csv</td><td class="num">36.744</td>
+      <td class="num">6044 KB</td><td class="small" style="font-family:monospace">b56518c2d4109122</td></tr><tr><td>bdap/sp-2015.csv</td><td class="num">36.459</td>
+      <td class="num">6005 KB</td><td class="small" style="font-family:monospace">67af75a37093785e</td></tr><tr><td>bdap/sp-2016.csv</td><td class="num">34.117</td>
+      <td class="num">5685 KB</td><td class="small" style="font-family:monospace">d928a55827ecd39d</td></tr><tr><td>bdap/sp-2017.csv</td><td class="num">31.531</td>
+      <td class="num">5282 KB</td><td class="small" style="font-family:monospace">332c7dbbb36f7d85</td></tr><tr><td>bdap/sp-2018.csv</td><td class="num">31.293</td>
+      <td class="num">5284 KB</td><td class="small" style="font-family:monospace">30f68c5b987c4b3d</td></tr><tr><td>bdap/sp-2019.csv</td><td class="num">33.424</td>
+      <td class="num">5679 KB</td><td class="small" style="font-family:monospace">d5316f0aa15f7cf8</td></tr><tr><td>bdap/sp-2020.csv</td><td class="num">33.754</td>
+      <td class="num">5800 KB</td><td class="small" style="font-family:monospace">c342e2a219326416</td></tr><tr><td>bdap/sp-2021.csv</td><td class="num">33.981</td>
+      <td class="num">5845 KB</td><td class="small" style="font-family:monospace">ea827b47dd3e8479</td></tr><tr><td>bdap/sp-2022.csv</td><td class="num">35.119</td>
+      <td class="num">6063 KB</td><td class="small" style="font-family:monospace">e5b70a362769d7c0</td></tr><tr><td>bdap/sp-2023.csv</td><td class="num">35.837</td>
+      <td class="num">6215 KB</td><td class="small" style="font-family:monospace">8298ceda925716e1</td></tr><tr><td>bdap/sp-2024.csv</td><td class="num">36.098</td>
+      <td class="num">6271 KB</td><td class="small" style="font-family:monospace">ac47d9da7b80208c</td></tr><tr><td>salute/aziende.csv</td><td class="num">1369</td>
+      <td class="num">259 KB</td><td class="small" style="font-family:monospace">acfdd9ef88820daa</td></tr><tr><td>salute/strutture.csv</td><td class="num">510</td>
+      <td class="num">141 KB</td><td class="small" style="font-family:monospace">3c030e9de9f8e444</td></tr><tr><td>anac/aggiudicatari.zip</td><td class="num">—</td>
+      <td class="num">147.678 KB</td><td class="small" style="font-family:monospace">(zip)</td></tr><tr><td>anac/partecipanti.zip</td><td class="num">—</td>
+      <td class="num">171.140 KB</td><td class="small" style="font-family:monospace">(zip)</td></tr></tbody>
+</table></div>
+<p class="small muted">Generato il 2026-07-13. L’intero pipeline è open source e
+rieseguibile con <code>npm run all</code>.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="verifiche.html">Dati e verifiche</a> · <a href="metodologia.html">Metodologia</a> ·
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

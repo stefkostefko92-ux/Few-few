@@ -20,6 +20,7 @@ import { page, kpi, badge, lineChart, barChart, hbars } from './lib/site-ui.js';
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
 const AGGIU_FILE = pjoin(DATA_DIR, 'aggiudicatari.json');
+const VALIDAZIONE_FILE = pjoin(DATA_DIR, 'validazione.json');
 
 const REGOLE_LABEL = {
   disavanzo_grave: 'Disavanzo grave',
@@ -111,6 +112,8 @@ async function main() {
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
   await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali());
   await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy());
+  const validaz = await readJson(VALIDAZIONE_FILE).catch(() => null);
+  if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
@@ -119,7 +122,7 @@ async function main() {
       renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), appMatch, ultimoAnnoCe })
     );
   }
-  console.log(`Готово: ${enti.length + (appalti ? 9 : 8)} страници → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + (appalti ? 10 : 9)} страници → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -585,6 +588,80 @@ ${spBlock}
 }
 
 const FOR_LABEL = Object.fromEntries(CE_FORENSICS.map((c) => [c.key, c.label]));
+
+// ---------- DATI E VERIFICHE ----------
+function renderVerifiche({ validaz, appMatch }) {
+  const c = validaz.consistenzaCE;
+  const cov = validaz.copertura;
+  const provRows = validaz.provenance
+    .map(
+      (p) => `<tr><td>${esc(p.file)}</td><td class="num">${p.righe != null ? numeroIt(p.righe) : '—'}</td>
+      <td class="num">${numeroIt(Math.round(p.bytes / 1024))} KB</td><td class="small" style="font-family:monospace">${esc(p.sha256)}</td></tr>`
+    )
+    .join('');
+  const body = `
+<h1>Dati e verifiche</h1>
+<p class="lead">Per essere credibili, i numeri devono essere <strong>verificabili e riproducibili</strong>. Qui
+pubblichiamo i controlli automatici di consistenza, la copertura dei dati e la «carta d’identità» (impronta) di ogni
+file di origine.</p>
+
+<div class="grid kpis">
+  ${kpi('Identità contabili CE superate', percentualeIt(c.quotaSuperata), (c.quotaSuperata || 0) > 0.99 ? 'pos' : '')}
+  ${kpi('Aziende con bilancio (CE)', `${numeroIt(cov.conCE)} / ${numeroIt(cov.entiTotali)}`)}
+  ${kpi('Abbinate agli appalti ANAC', `${numeroIt(cov.conAppaltiANAC)} / ${numeroIt(cov.entiTotali)}`)}
+  ${kpi('Con dati sui fornitori', `${numeroIt(cov.conAggiudicatari ?? 0)} / ${numeroIt(cov.entiTotali)}`)}
+</div>
+
+<h2>Consistenza contabile</h2>
+<p class="muted small">Su ogni bilancio verifichiamo le identità del modello CE: <em>risultato prima delle imposte
+= valore − costi ± proventi/oneri finanziari ± rettifiche ± straordinari</em>; <em>risultato d’esercizio = risultato
+prima delle imposte − imposte</em> (tolleranza 0,1%).</p>
+<p><strong>${numeroIt(c.superate)} su ${numeroIt(c.identitaVerificate)}</strong> bilanci-anno superano entrambe le
+identità (${percentualeIt(c.quotaSuperata)}). Gli scarti residui derivano da riclassificazioni nella fonte, non
+dall’estrazione. ${c.fallite.length ? `Casi non quadrati: ${c.fallite.map((f) => `${esc(f.codice)}/${f.anno}`).join(', ')}.` : ''}</p>
+
+<h2>Controlli di plausibilità</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Controllo</th><th class="num" scope="col">Violazioni</th></tr></thead>
+  <tbody>
+    <tr><td>Valore della produzione negativo</td><td class="num">${numeroIt(validaz.sanita.valoreNegativo)}</td></tr>
+    <tr><td>Costi della produzione negativi</td><td class="num">${numeroIt(validaz.sanita.costiNegativi)}</td></tr>
+    <tr><td>Debiti negativi</td><td class="num">${numeroIt(validaz.sanita.debitiNegativi)}</td></tr>
+    <tr><td>Disavanzo superiore ai ricavi</td><td class="num">${numeroIt(validaz.sanita.deficitOltreRicavi)}</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Copertura per fonte</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Dato</th><th class="num" scope="col">Aziende</th></tr></thead>
+  <tbody>
+    <tr><td>Conto economico (CE)</td><td class="num">${numeroIt(cov.conCE)} / ${numeroIt(cov.entiTotali)}</td></tr>
+    <tr><td>Stato patrimoniale (SP)</td><td class="num">${numeroIt(cov.conSP)} / ${numeroIt(cov.entiTotali)}</td></tr>
+    <tr><td>Anagrafe ospedaliera</td><td class="num">${numeroIt(cov.conAnagrafe)} / ${numeroIt(cov.entiTotali)}</td></tr>
+    <tr><td>Appalti ANAC (abbinamento esatto)</td><td class="num">${numeroIt(cov.conAppaltiANAC)} / ${numeroIt(cov.entiTotali)}</td></tr>
+    <tr><td>Fornitori (aggiudicatari)</td><td class="num">${numeroIt(cov.conAggiudicatari ?? 0)} / ${numeroIt(cov.entiTotali)}</td></tr>
+  </tbody>
+</table></div>
+<p class="small muted">L’abbinamento agli appalti è volutamente conservativo (solo corrispondenze esatte e non ambigue):
+meglio una scheda senza appalti che un’attribuzione errata. Il confronto tra regioni copre invece il 100% degli enti.</p>
+
+<h2>Provenienza dei dati (impronta)</h2>
+<p class="muted small">Dimensione, numero di righe e impronta SHA-256 (prime 16 cifre) di ogni file di origine, per
+consentire la verifica e la riproduzione dei risultati.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">File</th><th class="num" scope="col">Righe</th><th class="num" scope="col">Dimensione</th><th scope="col">SHA-256</th></tr></thead>
+  <tbody>${provRows}</tbody>
+</table></div>
+<p class="small muted">Generato il ${esc(validaz.generatoIl.slice(0, 10))}. L’intero pipeline è open source e
+rieseguibile con <code>npm run all</code>.</p>
+`;
+  return page({
+    title: 'Dati e verifiche — Ospedali Trasparenti',
+    description: 'Controlli di consistenza contabile, copertura dei dati e impronta delle fonti: numeri verificabili e riproducibili.',
+    active: 'verifiche.html',
+    body,
+  });
+}
 
 // ---------- NOTE LEGALI / PRIVACY ----------
 function renderNoteLegali() {

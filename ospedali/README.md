@@ -35,8 +35,9 @@ npm run fetch:all         # четирите горни
 npm run report            # reports/ — Markdown отчет за всяка структура + index + CSV
 npm run analyze           # data/segnalazioni.json — счетоводни сигнали
 npm run forensics         # data/forensics.json — системен дефицит + разходни аномалии
-npm run site              # site/ — статичен сайт на италиански (изисква analyze+forensics)
-npm run build             # report + analyze + forensics + site
+npm run validate          # data/validazione.json — консистентност, покритие, провенанс (SHA-256)
+npm run site              # site/ — статичен сайт на италиански (изисква горните)
+npm run build             # report + analyze + forensics + validate + site
 
 npm run all               # fetch:all + build (всичко наведнъж)
 ```

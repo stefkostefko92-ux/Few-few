@@ -43,6 +43,18 @@ export const CE_FORENSICS = [
     codes: ['BA0850', 'BA0860', 'BA0870', 'BA0880', 'BA0590', 'BA0600', 'BA0610', 'BA0620', 'BA0591', 'BA0601', 'BA0611', 'BA0621'],
   },
 ];
+// Редове за проверка на счетоводната консистентност на CE (не се показват в
+// отчетите): позволяват да проверим тъждеството на модела за резултата.
+export const CE_RECON = [
+  { key: '_provOneriFin', codes: ['CZ9999'] }, // C) proventi e oneri finanziari
+  { key: '_rettifiche', codes: ['DZ9999'] }, // D) rettifiche di valore att. fin.
+  { key: '_straordinari', codes: ['EZ9999'] }, // E) proventi e oneri straordinari
+  { key: '_risPrimaImposte', codes: ['XA0000'] }, // risultato prima delle imposte
+  { key: '_imposte', codes: ['YZ9999'] }, // Y) totale imposte
+];
+const RECON_CODE_TO_KEY = new Map();
+for (const c of CE_RECON) for (const code of c.codes) RECON_CODE_TO_KEY.set(code, c.key);
+
 const FORENSIC_CODE_TO_KEY = new Map();
 for (const c of CE_FORENSICS) for (const code of c.codes) FORENSIC_CODE_TO_KEY.set(code, c.key);
 
@@ -135,10 +147,12 @@ export async function loadDataset() {
       const key = matchIndicator(indicators, codeVoce, desc);
       if (key) y[key] = importo;
 
-      // Форензик категории (само CE): събиране по код, със сумиране.
+      // Форензик + рекон категории (само CE): по код.
       if (kind === 'CE') {
         const fk = FORENSIC_CODE_TO_KEY.get(codeVoce);
         if (fk) y[fk] = (y[fk] || 0) + importo;
+        const rk = RECON_CODE_TO_KEY.get(codeVoce);
+        if (rk) y[rk] = importo;
       }
 
       if (kind === 'CE') {

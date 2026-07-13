@@ -35,7 +35,7 @@ const HEALTH =
 const NOT_HEALTH = /ACQUE|SPORT E SALUTE|ISTITUTO SUPERIORE DI SANIT|\bMINISTERO\b|CARABINIER|\bCOMUNE\b|\bUNIONE\b|BONIFICA|AZIENDA CASA|\bA\.?C\.?E\.?R\b|\bSTART\b|INFORMATICA|VIGILI DEL FUOCO|SOCIETA DELLE FONTI/;
 
 /** Категория на процедурата: конкурентна / рамково / пряко / договаряне без обявление. */
-function catProc(t) {
+export function catProc(t) {
   const u = (t || '').toUpperCase();
   if (u.includes('ADESIONE AD ACCORDO QUADRO') || u.includes('CONVENZIONE')) return 'quadro';
   if (u.startsWith('AFFIDAMENTO DIRETTO')) return 'diretto';

@@ -16,8 +16,9 @@
     "report": "node src/build-report.js",
     "analyze": "node src/analyze.js",
     "forensics": "node src/forensics.js",
+    "validate": "node src/validate.js",
     "site": "node src/build-site.js",
-    "build": "npm run report && npm run analyze && npm run forensics && npm run site",
+    "build": "npm run report && npm run analyze && npm run forensics && npm run validate && npm run site",
     "all": "npm run fetch:all && npm run build",
     "test": "node --test test/*.test.js",
     "lint": "sh -c 'for f in src/*.js src/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'"

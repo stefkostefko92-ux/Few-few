@@ -135,6 +135,7 @@ ${body}
   elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
   <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
   Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="${rel}verifiche.html">Dati e verifiche</a> · <a href="${rel}metodologia.html">Metodologia</a> ·
   <a href="${rel}note-legali.html">Note legali</a> · <a href="${rel}privacy.html">Privacy</a></p>
 </div></footer>
 </body>
