@@ -973,22 +973,43 @@ function mergeAppRows(rows) {
   return out;
 }
 
-// Център и габарит на SVG път (за поставяне на етикет върху голям регион).
-function boxDiPath(d) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity, sx = 0, sy = 0, n = 0;
-  const re = /(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)/g;
-  let m;
-  while ((m = re.exec(d))) {
-    const x = +m[1], y = +m[2];
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-    sx += x;
-    sy += y;
-    n++;
-  }
-  return { cx: n ? sx / n : 0, cy: n ? sy / n : 0, w: maxX - minX, h: maxY - minY };
+// Ръчно нагласени котви на етикетите (viewBox 0 0 1000 1298). Изходна точка:
+// ПЛОЩНИЯТ центроид на най-големия ринг (не средно на върховете — крайбрежната
+// детайлност го дърпа), после визуални корекции. Малките/тънките региони
+// (VdA, Liguria, Molise) са с ИЗНЕСЕН етикет + водеща линия, като в
+// професионалната картография.
+const MAP_LABELS = {
+  '01': { x: 105, y: 230 }, // Piemonte
+  '02': { fuori: { tx: 68, ty: 94, lx1: 66, ly1: 104, lx2: 64, ly2: 138 } }, // Valle d'Aosta
+  '03': { x: 264, y: 168 }, // Lombardia
+  '04': { x: 391, y: 82 }, // Trentino-Alto Adige
+  '05': { x: 447, y: 168 }, // Veneto
+  '06': { x: 545, y: 102 }, // Friuli-VG
+  '07': { fuori: { tx: 148, ty: 415, lx1: 152, ly1: 400, lx2: 170, ly2: 348 } }, // Liguria
+  '08': { x: 371, y: 290 }, // Emilia-Romagna
+  '09': { x: 375, y: 412 }, // Toscana
+  '10': { x: 486, y: 470 }, // Umbria
+  '11': { x: 562, y: 406 }, // Marche
+  '12': { x: 508, y: 577 }, // Lazio
+  '13': { x: 614, y: 540 }, // Abruzzo
+  '14': { fuori: { tx: 748, ty: 528, lx1: 728, ly1: 536, lx2: 688, ly2: 574 } }, // Molise
+  '15': { x: 686, y: 702 }, // Campania
+  '16': { x: 866, y: 692 }, // Puglia
+  '17': { x: 798, y: 744 }, // Basilicata
+  '18': { x: 834, y: 874 }, // Calabria
+  '19': { x: 630, y: 1066 }, // Sicilia
+  '20': { x: 202, y: 786 }, // Sardegna
+};
+
+// WCAG relative luminance на "rgb(r,g,b)" — за избора бял/тъмен текст на етикета.
+function luminanza(rgb) {
+  const m = rgb.match(/rgb\((\d+),(\d+),(\d+)\)/);
+  if (!m) return 0.5;
+  const lin = (v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(+m[1]) + 0.7152 * lin(+m[2]) + 0.0722 * lin(+m[3]);
 }
 
 function cartogramma(regioniData) {
@@ -1006,17 +1027,27 @@ function cartogramma(regioniData) {
       const fill = t != null ? scalaRossi(t) : '#c9d2db';
       const pct = pctv != null ? `${Math.round(pctv * 100)}%` : 'n.d.';
       const label = `${meta.nome}: senza gara ${pct}${r ? `, ${r.nEnti} strutture` : ''}`;
-      const box = boxDiPath(d);
-      const grande = box.w > 52 && box.h > 40;
-      const testo = t != null && t > 0.55 ? '#fff' : '#12202e';
-      const alone = t != null && t > 0.55 ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.85)';
-      // контурен ореол (paint-order:stroke) → четимо върху всеки цвят на региона
-      const etichetta = grande && pctv != null
-        ? `<text x="${box.cx.toFixed(0)}" y="${(box.cy - 6).toFixed(0)}" text-anchor="middle" font-size="30" font-weight="700" fill="${testo}" stroke="${alone}" stroke-width="4" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(meta.abbr)}</text>
-        <text x="${box.cx.toFixed(0)}" y="${(box.cy + 22).toFixed(0)}" text-anchor="middle" font-size="25" font-weight="600" fill="${testo}" stroke="${alone}" stroke-width="4" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${pct}</text>`
-        : '';
+      const pos = MAP_LABELS[meta.istat] || null;
+      let etichetta = '';
+      if (pos && pctv != null) {
+        if (pos.fuori) {
+          // изнесен етикет: една линия „ABBR · %“ в цвета на темата + водеща линия
+          const f = pos.fuori;
+          etichetta = `<line x1="${f.lx1}" y1="${f.ly1}" x2="${f.lx2}" y2="${f.ly2}" stroke="var(--muted)" stroke-width="1.4" pointer-events="none"></line>
+        <text x="${f.tx}" y="${f.ty}" text-anchor="middle" font-size="26" font-weight="650" fill="var(--ink)" stroke="var(--bg)" stroke-width="5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(meta.abbr)} ${pct}</text>`;
+        } else {
+          // вътрешен етикет: контурен ореол (paint-order:stroke) → четимо върху всеки цвят.
+          // Бял или тъмен текст се избира по РЕАЛНАТА светимост (WCAG relative
+          // luminance) на запълването — прагът по t греши на средните тонове.
+          const chiaro = luminanza(fill) < 0.25;
+          const testo = chiaro ? '#fff' : '#26313c';
+          const alone = chiaro ? 'rgba(60,10,5,.55)' : 'rgba(255,255,255,.9)';
+          etichetta = `<text x="${pos.x}" y="${pos.y - 5}" text-anchor="middle" font-size="30" font-weight="700" letter-spacing=".5" fill="${testo}" stroke="${alone}" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(meta.abbr)}</text>
+        <text x="${pos.x}" y="${pos.y + 21}" text-anchor="middle" font-size="24" font-weight="600" fill="${testo}" stroke="${alone}" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${pct}</text>`;
+        }
+      }
       return `<a href="regione/${key}.html" role="listitem"><title>${esc(label)}</title>
-      <path d="${d}" fill="${fill}" stroke="#fff" stroke-width="1.1" stroke-linejoin="round"></path>${etichetta}</a>`;
+      <path d="${d}" fill="${fill}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"></path>${etichetta}</a>`;
     })
     .join('\n');
   const legW = 220;

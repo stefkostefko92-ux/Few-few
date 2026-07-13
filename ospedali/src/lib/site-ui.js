@@ -131,7 +131,7 @@ tbody tr:hover{background:var(--brand-tint)}
 
 /* ---------- Карта на Италия ---------- */
 .mapfig{margin:var(--s6) 0}
-.mapfig svg.italia{display:block;width:100%;max-width:560px;height:auto;margin:0 auto}
+.mapfig svg.italia{display:block;width:100%;max-width:660px;height:auto;margin:0 auto}
 .mapfig svg a{cursor:pointer}
 .mapfig svg a path{transition:stroke-width .12s}
 .mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
@@ -162,7 +162,9 @@ figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:8px;line-he
 .hbar-fill{height:100%;border-radius:6px}
 .hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
-svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+/* САМО за графиките (.chart) — глобален selector би презаписал атрибутите
+   на етикетите върху картата на Италия (CSS бие SVG presentation атрибути) */
+.chart svg .grid-line{stroke:var(--line)} .chart svg text{fill:var(--muted);font-size:11px}
 
 /* ---------- Footer ---------- */
 footer.site{border-top:1px solid var(--line);background:var(--surface-2);
