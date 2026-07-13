@@ -110,14 +110,43 @@ const NAV = [
   ['metodologia.html', 'Metodologia'],
 ];
 
+// Абсолютният адрес на сайта (за canonical/OG/sitemap). Задава се веднъж от
+// build-site през setSiteUrl(); празен = релативни адреси (без absolute meta).
+let SITE_URL = '';
+export function setSiteUrl(url) {
+  SITE_URL = (url || '').replace(/\/$/, '');
+}
+export function siteUrl() {
+  return SITE_URL;
+}
+
 /**
  * Обвивка на страница. `rel` е префиксът за връзки (напр. '../' за детайлните).
+ * `canonical` е релативният път на страницата спрямо корена (по подр. = `active`,
+ * което е вярно за страниците от менюто). `jsonld` инжектира JSON-LD блок.
  */
-export function page({ title, active, rel = '', body, description = '' }) {
+export function page({ title, active, rel = '', body, description = '', canonical = null, jsonld = null, ogType = 'website' }) {
   const nav = NAV.map(
     ([href, label]) =>
       `<a href="${rel}${href}"${active === href ? ' aria-current="page"' : ''}>${label}</a>`
   ).join('');
+  const path = canonical != null ? canonical : active;
+  const abs = SITE_URL && path ? `${SITE_URL}/${path}` : null;
+  const meta = [
+    abs ? `<link rel="canonical" href="${esc(abs)}">` : '',
+    `<meta property="og:type" content="${esc(ogType)}">`,
+    `<meta property="og:site_name" content="Ospedali Trasparenti">`,
+    `<meta property="og:locale" content="it_IT">`,
+    `<meta property="og:title" content="${esc(title)}">`,
+    description ? `<meta property="og:description" content="${esc(description)}">` : '',
+    abs ? `<meta property="og:url" content="${esc(abs)}">` : '',
+    `<meta name="twitter:card" content="summary">`,
+    `<meta name="twitter:title" content="${esc(title)}">`,
+    description ? `<meta name="twitter:description" content="${esc(description)}">` : '',
+    jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
   return `<!doctype html>
 <html lang="it">
 <head>
@@ -125,6 +154,7 @@ export function page({ title, active, rel = '', body, description = '' }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
+${meta}
 <style>${CSS}</style>
 </head>
 <body>

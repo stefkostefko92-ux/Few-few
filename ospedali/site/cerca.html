@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cerca in tutti gli appalti — Ospedali Trasparenti</title>
 <meta name="description" content="Motore di ricerca su tutti i contratti pubblici delle aziende sanitarie: filtra per oggetto, fornitore, regione, procedura e importo.">
+<link rel="canonical" href="https://ospedalitrasparenti.it/cerca.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ospedali Trasparenti">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Cerca in tutti gli appalti — Ospedali Trasparenti">
+<meta property="og:description" content="Motore di ricerca su tutti i contratti pubblici delle aziende sanitarie: filtra per oggetto, fornitore, regione, procedura e importo.">
+<meta property="og:url" content="https://ospedalitrasparenti.it/cerca.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cerca in tutti gli appalti — Ospedali Trasparenti">
+<meta name="twitter:description" content="Motore di ricerca su tutti i contratti pubblici delle aziende sanitarie: filtra per oggetto, fornitore, regione, procedura e importo.">
 <style>
 :root{
   --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
@@ -145,13 +155,29 @@ messo a gara; gli operatori persone fisiche non sono nominati. <strong>Indicator
   var DATA=null,AZ=null,MAX=500,tmr;
   function eur(v){return v>=1e6?(Math.round(v/1e5)/10).toLocaleString('it-IT')+' mln €':v>=1e3?Math.round(v/1e3).toLocaleString('it-IT')+' mila €':v+' €';}
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  // Споделяеми адреси: чете ?q=&reg=&proc=&imp= и ги пише обратно при промяна.
+  var P=new URLSearchParams(location.search);
+  if(P.get('q'))q.value=P.get('q');
+  if(P.get('proc'))proc.value=P.get('proc');
+  if(P.get('imp'))imp.value=P.get('imp');
+  function writeParams(){
+    var u=new URLSearchParams();
+    if(q.value.trim())u.set('q',q.value.trim());
+    if(reg.value)u.set('reg',reg.value);
+    if(proc.value)u.set('proc',proc.value);
+    if(imp.value&&imp.value!=='0')u.set('imp',imp.value);
+    var qs=u.toString();
+    history.replaceState(null,'',qs?'?'+qs:location.pathname);
+  }
   fetch('contratti-tutti.json').then(function(r){return r.json();}).then(function(j){
     DATA=j.righe;AZ=j.aziende;
     var regs={};for(var k in AZ)regs[AZ[k][1]]=1;
     Object.keys(regs).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;reg.appendChild(o);});
+    if(P.get('reg'))reg.value=P.get('reg');
     apply();
   }).catch(function(){stato.textContent='Errore nel caricamento dei dati.';});
   function apply(){
+    writeParams();
     if(!DATA)return;
     var t=q.value.trim().toLowerCase(),r=reg.value,p=proc.value,mi=+imp.value,out=[],n=0;
     for(var i=0;i<DATA.length;i++){var d=DATA[i];

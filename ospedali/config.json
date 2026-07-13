@@ -1,5 +1,6 @@
 {
   "anni": { "da": 2012, "a": 2024 },
   "includiTrimestrali": false,
-  "anacAnni": [2023, 2024]
+  "anacAnni": [2023, 2024],
+  "siteUrl": "https://ospedalitrasparenti.it"
 }

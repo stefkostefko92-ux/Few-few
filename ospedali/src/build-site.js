@@ -8,14 +8,14 @@
 
 import { join } from 'node:path';
 import { mkdir, writeFile, rm, readFile, stat, copyFile } from 'node:fs/promises';
-import { SITE_DIR } from './lib/paths.js';
+import { SITE_DIR, ROOT } from './lib/paths.js';
 import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from './lib/dataset.js';
 import { readJson } from './lib/http.js';
 import { SEGNALAZIONI_FILE, DATA_DIR } from './lib/paths.js';
 import { join as pjoin } from 'node:path';
 import { matchAutoritaEnti } from './lib/match.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, slugify, esc } from './lib/format.js';
-import { page, kpi, badge, lineChart, barChart, hbars } from './lib/site-ui.js';
+import { page, kpi, badge, lineChart, barChart, hbars, setSiteUrl, siteUrl } from './lib/site-ui.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
@@ -88,6 +88,8 @@ function ultimoCe(ente) {
 }
 
 async function main() {
+  const config = await readJson(join(ROOT, 'config.json')).catch(() => ({}));
+  setSiteUrl(config.siteUrl || '');
   const { enti, anagrafica, ultimoAnnoCe } = await loadDataset();
   const struttureByCod = new Map(anagrafica.strutture.map((s) => [s.codice, s]));
   const segn = await readJson(SEGNALAZIONI_FILE).catch(() => {
@@ -218,6 +220,7 @@ async function main() {
 
   // Профили на изпълнителите („segui il fornitore“)
   let paginaForn = 0;
+  const fornituraCfs = [];
   if (fornAgg.size) {
     await mkdir(join(SITE_DIR, 'fornitore'), { recursive: true });
     const fornList = [...fornAgg.values()].sort((a, b) => b.valore - a.valore);
@@ -229,6 +232,7 @@ async function main() {
       if (haPagina) {
         f.top.sort((a, b) => b.importo - a.importo);
         await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
+        fornituraCfs.push(f.cf);
         paginaForn++;
       }
       idxRows.push([f.cf, f.den, f.valore, f.n, f.perOsp.size, haPagina ? 1 : 0]);
@@ -305,6 +309,41 @@ async function main() {
   datasets.sort((a, b) => (b.bytes || 0) - (a.bytes || 0));
   await writeFile(join(SITE_DIR, 'dati.html'), renderDati({ datasets, validaz, generatoIl: (validaz && validaz.generatoIl) || new Date().toISOString() }));
 
+  // Откриваемост: sitemap.xml + robots.txt (само при зададен siteUrl)
+  const su = siteUrl();
+  if (su) {
+    const oggi = new Date().toISOString().slice(0, 10);
+    const paths = [
+      'index.html',
+      'inchiesta.html',
+      'classifiche.html',
+      'regioni.html',
+      'strutture.html',
+      'segnalazioni.html',
+      'dati.html',
+      'metodologia.html',
+      'note-legali.html',
+      'privacy.html',
+      ...(appalti ? ['appalti.html'] : []),
+      ...(validaz ? ['verifiche.html'] : []),
+      ...(paginaCerca ? ['cerca.html'] : []),
+      ...(paginaForn ? ['fornitori.html'] : []),
+      ...regioniData.map((r) => `regione/${r.codReg}.html`),
+      ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
+      ...fornituraCfs.map((cf) => `fornitore/${cf}.html`),
+    ];
+    const prio = (p) => (p === 'index.html' ? '1.0' : p.includes('/') ? '0.6' : '0.8');
+    const urls = paths
+      .map((p) => `<url><loc>${esc(`${su}/${p}`)}</loc><lastmod>${oggi}</lastmod><priority>${prio(p)}</priority></url>`)
+      .join('\n');
+    await writeFile(
+      join(SITE_DIR, 'sitemap.xml'),
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+    );
+    await writeFile(join(SITE_DIR, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${su}/sitemap.xml\n`);
+    console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt (${su})`);
+  }
+
   console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
 
@@ -361,10 +400,40 @@ sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segn
 <p style="margin-top:24px"><a class="chip" href="strutture.html">Esplora tutte le ${numeroIt(enti.length)} strutture →</a>
 <a class="chip" href="metodologia.html">Come funziona →</a></p>
 `;
+  const su = siteUrl();
+  const jsonld = su
+    ? {
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'Organization',
+            '@id': `${su}/#org`,
+            name: 'Ospedali Trasparenti',
+            url: `${su}/`,
+            description: 'Progetto di trasparenza civica sui conti e gli appalti degli ospedali pubblici italiani.',
+            parentOrganization: { '@type': 'Organization', name: 'Carbon Stealth VCC' },
+          },
+          {
+            '@type': 'WebSite',
+            '@id': `${su}/#website`,
+            url: `${su}/`,
+            name: 'Ospedali Trasparenti',
+            inLanguage: 'it',
+            publisher: { '@id': `${su}/#org` },
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: { '@type': 'EntryPoint', urlTemplate: `${su}/cerca.html?q={search_term_string}` },
+              'query-input': 'required name=search_term_string',
+            },
+          },
+        ],
+      }
+    : null;
   return page({
     title: 'Ospedali Trasparenti — i conti degli ospedali pubblici italiani',
     description: 'Entrate e spese delle strutture sanitarie pubbliche italiane, con segnalazione automatica delle anomalie contabili. Dati open data RGS/MEF e Ministero della Salute.',
     active: 'index.html',
+    jsonld,
     body,
   });
 }
@@ -773,6 +842,7 @@ ${spBlock}
     description: `Bilancio, entrate, spese e segnalazioni contabili di ${ente.denominazione} (${ente.regione}).`,
     active: 'strutture.html',
     rel: '../',
+    canonical: `struttura/${ente.codice}-${slugify(ente.denominazione)}.html`,
     body,
   });
 }
@@ -1039,6 +1109,7 @@ ${appaltiBlk}
     description: `Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in ${esc(meta.nome)}: valore della produzione, risultato, quota di appalti senza gara.`,
     active: 'regioni.html',
     rel: '../',
+    canonical: `regione/${codReg}.html`,
     body,
   });
 }
@@ -1114,10 +1185,33 @@ sul sito lo riporta. Incollalo qui per controllarlo direttamente sui portali ANA
 <p class="small muted">Aggiornato il ${esc(String(generatoIl).slice(0, 10))}. Per i controlli di consistenza e le impronte
 SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
 `;
+  const su = siteUrl();
+  const jsonld = su
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Dataset',
+        name: 'Ospedali Trasparenti — conti e appalti degli ospedali pubblici italiani',
+        description: 'Bilanci (CE/SP), segnalazioni contabili automatiche, appalti ANAC aggregati, fornitori e registro completo dei contratti delle aziende sanitarie pubbliche italiane.',
+        url: `${su}/dati.html`,
+        inLanguage: 'it',
+        license: 'https://creativecommons.org/licenses/by/4.0/',
+        isAccessibleForFree: true,
+        creator: { '@type': 'Organization', name: 'Carbon Stealth VCC' },
+        distribution: datasets
+          .filter((d) => !d.href.endsWith('/'))
+          .map((d) => ({
+            '@type': 'DataDownload',
+            name: d.titolo,
+            encodingFormat: d.fmt === 'JSON' ? 'application/json' : 'text/csv',
+            contentUrl: `${su}/${d.href}`,
+          })),
+      }
+    : null;
   return page({
     title: 'Dati aperti — Ospedali Trasparenti',
     description: 'Scarica i dataset elaborati (JSON/CSV) e verifica i singoli appalti tramite il CIG sui portali ANAC. Open data, licenze e fonti primarie.',
     active: 'dati.html',
+    jsonld,
     body,
   });
 }
@@ -1407,6 +1501,7 @@ ${flagConc ? `<div class="seg media"><div class="t"><span class="badge media">i<
     description: `Contratti pubblici di ${f.den} con le aziende sanitarie italiane: valore, aziende, procedure.`,
     active: 'fornitori.html',
     rel: '../',
+    canonical: `fornitore/${f.cf}.html`,
     body,
   });
 }
@@ -1488,13 +1583,29 @@ messo a gara; gli operatori persone fisiche non sono nominati. <strong>Indicator
   var DATA=null,AZ=null,MAX=500,tmr;
   function eur(v){return v>=1e6?(Math.round(v/1e5)/10).toLocaleString('it-IT')+' mln €':v>=1e3?Math.round(v/1e3).toLocaleString('it-IT')+' mila €':v+' €';}
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  // Споделяеми адреси: чете ?q=&reg=&proc=&imp= и ги пише обратно при промяна.
+  var P=new URLSearchParams(location.search);
+  if(P.get('q'))q.value=P.get('q');
+  if(P.get('proc'))proc.value=P.get('proc');
+  if(P.get('imp'))imp.value=P.get('imp');
+  function writeParams(){
+    var u=new URLSearchParams();
+    if(q.value.trim())u.set('q',q.value.trim());
+    if(reg.value)u.set('reg',reg.value);
+    if(proc.value)u.set('proc',proc.value);
+    if(imp.value&&imp.value!=='0')u.set('imp',imp.value);
+    var qs=u.toString();
+    history.replaceState(null,'',qs?'?'+qs:location.pathname);
+  }
   fetch('contratti-tutti.json').then(function(r){return r.json();}).then(function(j){
     DATA=j.righe;AZ=j.aziende;
     var regs={};for(var k in AZ)regs[AZ[k][1]]=1;
     Object.keys(regs).sort().forEach(function(r){var o=document.createElement('option');o.value=r;o.textContent=r;reg.appendChild(o);});
+    if(P.get('reg'))reg.value=P.get('reg');
     apply();
   }).catch(function(){stato.textContent='Errore nel caricamento dei dati.';});
   function apply(){
+    writeParams();
     if(!DATA)return;
     var t=q.value.trim().toLowerCase(),r=reg.value,p=proc.value,mi=+imp.value,out=[],n=0;
     for(var i=0;i<DATA.length;i++){var d=DATA[i];
