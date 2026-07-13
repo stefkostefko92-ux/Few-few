@@ -14,6 +14,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import {
   CONSENT_COOKIE,
   CONSENT_MAX_AGE_S,
+  adCookieNames,
   adTagsConfigured,
   consentFromCookieHeader,
   serializeConsent,
@@ -58,9 +59,11 @@ function ensureGtagStub() {
 
 function loadGoogleTag(googleAdsId: string) {
   ensureGtagStub();
+  // analytics_storage остава DENIED: съгласието покрива само рекламно измерване
+  // (банерът обещава точно това; собствената ни аналитика е без бисквитки).
   window.gtag!('consent', 'update', {
     ad_storage: 'granted',
-    analytics_storage: 'granted',
+    analytics_storage: 'denied',
     ad_user_data: 'granted',
     ad_personalization: 'granted',
   });
@@ -93,7 +96,8 @@ function loadMetaPixel(metaPixelId: string) {
 }
 
 function revokeTags() {
-  // При оттегляне: сигнализираме denied/revoke; нови тагове не се зареждат.
+  // При отказ/оттегляне: (1) сигнализираме denied/revoke, (2) ЗАЛИЧАВАМЕ вече
+  // записаните рекламни бисквитки (чл. 7(3) GDPR — сигналът сам по себе си не стига).
   if (window.gtag) {
     window.gtag('consent', 'update', {
       ad_storage: 'denied',
@@ -104,6 +108,14 @@ function revokeTags() {
   }
   if (window.fbq) {
     window.fbq('consent', 'revoke');
+  }
+  const host = window.location.hostname;
+  const parentDomain = host.split('.').slice(-2).join('.');
+  for (const name of adCookieNames(document.cookie)) {
+    // И за текущия хост, и за родителския домейн (.example.eu) — таговете пишат и там.
+    document.cookie = `${name}=; Max-Age=0; Path=/`;
+    document.cookie = `${name}=; Max-Age=0; Path=/; Domain=${host}`;
+    document.cookie = `${name}=; Max-Age=0; Path=/; Domain=.${parentDomain}`;
   }
 }
 
@@ -170,18 +182,19 @@ export function ConsentBanner({
             {t('moreInfo')}
           </a>
         </p>
+        {/* Равностойни бутони (EDPB 03/2022): еднакъв стил, еднаква тежест — без побутване. */}
         <div className="flex shrink-0 gap-2">
           <button
             type="button"
             onClick={() => decide('denied')}
-            className="rounded-lg border border-slate-600 px-4 py-2 font-medium hover:bg-slate-800"
+            className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-white hover:bg-slate-800"
           >
             {t('decline')}
           </button>
           <button
             type="button"
             onClick={() => decide('granted')}
-            className="rounded-lg bg-white px-4 py-2 font-semibold text-slate-900 hover:bg-slate-200"
+            className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-white hover:bg-slate-800"
           >
             {t('accept')}
           </button>

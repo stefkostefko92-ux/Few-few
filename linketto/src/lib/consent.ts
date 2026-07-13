@@ -13,20 +13,46 @@ export const CONSENT_MAX_AGE_S = 180 * 24 * 60 * 60;
 
 export type ConsentChoice = 'granted' | 'denied';
 
-/** Сериализира избора за бисквитката: "v1:granted" / "v1:denied". */
-export function serializeConsent(choice: ConsentChoice): string {
-  return `${CONSENT_VERSION}:${choice}`;
+/**
+ * Сериализира избора: "v1:granted:1720000000" (unix секунди на решението).
+ * Timestamp-ът е част от отчетността по чл. 7(1) GDPR — КОГА е дадено съгласието.
+ */
+export function serializeConsent(choice: ConsentChoice, decidedAtMs = Date.now()): string {
+  return `${CONSENT_VERSION}:${choice}:${Math.floor(decidedAtMs / 1000)}`;
 }
 
 /**
  * Разчита стойност от бисквитката. Непозната/стара версия → null (питаме пак).
- * Никога не хвърля — повреден вход просто значи „няма валиден избор“.
+ * Толерантен към липсващ timestamp (стар формат). Никога не хвърля.
  */
 export function parseConsent(raw: string | undefined | null): ConsentChoice | null {
   if (!raw) return null;
   const [version, choice] = raw.split(':');
   if (version !== CONSENT_VERSION) return null;
   return choice === 'granted' || choice === 'denied' ? choice : null;
+}
+
+/** Unix секунди на решението (null при стар/повреден формат). */
+export function consentDecidedAt(raw: string | undefined | null): number | null {
+  if (!raw) return null;
+  const [version, , ts] = raw.split(':');
+  if (version !== CONSENT_VERSION) return null;
+  const n = Number(ts);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Префикси на рекламните бисквитки, които заличаваме при отказ/оттегляне
+ * (чл. 7(3) GDPR: оттеглянето спира обработката — сигналът denied не стига).
+ */
+export const AD_COOKIE_PREFIXES = ['_fbp', '_fbc', '_gcl_', '_ga'] as const;
+
+/** Имената на бисквитките от cookie header-а, които са рекламни. */
+export function adCookieNames(cookieHeader: string): string[] {
+  return cookieHeader
+    .split(';')
+    .map((part) => part.trim().split('=')[0])
+    .filter((name) => AD_COOKIE_PREFIXES.some((prefix) => name.startsWith(prefix)));
 }
 
 /** Чете избора от document.cookie низ (за клиентския банер). */
