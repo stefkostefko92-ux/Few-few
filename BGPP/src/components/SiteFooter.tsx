@@ -7,6 +7,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
     links: [
       { href: "/predpriyatiya", label: "Предприятия" },
       { href: "/kartina", label: "Картината на сектора" },
+      { href: "/regioni", label: "По области" },
       { href: "/koncentraciya", label: "Концентрация" },
       { href: "/sluchai", label: "Известни случаи" },
       { href: "/prozrachnost-indeks", label: "Индекс на прозрачност" },

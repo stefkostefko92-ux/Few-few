@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { ENTERPRISES } from "../../data/enterprises";
 import { SECTORS } from "../../data/sectors";
 import { PRINCIPALS } from "../../data/principals";
+import { OBLAST_PATHS } from "../../data/oblasti-geo";
+import { enterprisesByOblast, oblastForHq } from "../../data/geo";
 
 const sectorKeys = new Set(SECTORS.map((s) => s.key));
 const principalKeys = new Set(PRINCIPALS.map((p) => p.key));
@@ -51,4 +53,26 @@ test("всички източници са с валиден http(s) адрес"
       assert.match(s.url, /^https?:\/\//, `${e.slug}: невалиден URL ${s.url}`);
     }
   }
+});
+
+test("geo: 28 области с уникални ISO кодове", () => {
+  assert.equal(OBLAST_PATHS.length, 28, "очакват се точно 28 области");
+  const codes = new Set(OBLAST_PATHS.map((o) => o.code));
+  assert.equal(codes.size, 28, "ISO кодовете трябва да са уникални");
+});
+
+test("geo: седалището на всяко предприятие се съпоставя към област или национален обхват", () => {
+  const oblastNames = new Set(OBLAST_PATHS.map((o) => o.name));
+  for (const e of ENTERPRISES) {
+    const name = oblastForHq(e.hq);
+    if (name !== null) {
+      assert.ok(oblastNames.has(name), `${e.slug}: „${name}“ не е валидна област`);
+    }
+  }
+});
+
+test("geo: агрегацията покрива всички предприятия без загуба", () => {
+  const { ranked, national } = enterprisesByOblast();
+  const mapped = ranked.reduce((s, o) => s + o.count, 0);
+  assert.equal(mapped + national.length, ENTERPRISES.length, "сборът трябва да е точен");
 });

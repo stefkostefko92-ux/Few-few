@@ -57,6 +57,7 @@ src/app/
   predpriyatiya/page.tsx       # каталог с търсене/филтри (?sector=&principal=)
   predpriyatiya/[slug]/page.tsx# профил (SSG) — потоци, конфликти, дъщерни, източници
   kartina/page.tsx             # агрегатна национална картина (числа от АППК)
+  regioni/page.tsx             # хороплетна карта по 28 области (Natural Earth, PD)
   parichni-potoci/page.tsx     # обяснение на потоците + правна рамка (ЗПП, АППК)
   konflikti/page.tsx           # конфликт на интереси — структурни модели + примери
   svarzanost/page.tsx          # метод + инструмент за свързаност

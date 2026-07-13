@@ -16,6 +16,7 @@ export type NavItem = { href: string; label: string };
 export const NAV: NavItem[] = [
   { href: "/predpriyatiya", label: "Предприятия" },
   { href: "/kartina", label: "Картината" },
+  { href: "/regioni", label: "По области" },
   { href: "/parichni-potoci", label: "Паричните потоци" },
   { href: "/koncentraciya", label: "Концентрация" },
   { href: "/sluchai", label: "Случаи" },
