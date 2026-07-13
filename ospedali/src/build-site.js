@@ -9,7 +9,7 @@
 import { join } from 'node:path';
 import { mkdir, writeFile, rm, readFile, stat, copyFile } from 'node:fs/promises';
 import { SITE_DIR, ROOT } from './lib/paths.js';
-import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from './lib/dataset.js';
+import { loadDataset, tipoEnte, anniConCe, postiLettoEnte, ricoveriEnte, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from './lib/dataset.js';
 import { readJson } from './lib/http.js';
 import { SEGNALAZIONI_FILE, DATA_DIR } from './lib/paths.js';
 import { join as pjoin } from 'node:path';
@@ -18,6 +18,11 @@ import { euroIt, euroCompact, numeroIt, percentualeIt, slugify, esc } from './li
 import { page, kpi, badge, lineChart, barChart, hbars, setSiteUrl, siteUrl } from './lib/site-ui.js';
 import { VIEWBOX, REGIONI_GEO } from './lib/italia-geo.js';
 import { eSocietaDiCapitali } from './coi.js';
+import {
+  classificaCpv, CPV_LABELS, renderTendenze, renderTopContratti, renderCategorie, renderDove,
+  renderGlossario, renderGuida, renderPnrr, renderStorie, renderStoria, STORIE,
+  renderAggiornamenti, renderApprofondimenti,
+} from './approfondimenti.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
@@ -228,6 +233,22 @@ async function main() {
   let conContratti = 0;
   const catCode = { competitiva: 'c', quadro: 'q', diretto: 'd', negoziataSenza: 'n', negoziata: 'g', altro: 'a' };
   const tuttiContratti = []; // глобален индекс за търсачката
+  const catAgg = new Map(); // CPV макрокатегория → агрегат (за „Dove vanno i soldi")
+  const topCand = []; // кандидати за „i 100 contratti più grandi" (пълни полета)
+
+  // Benchmark €/легло и €/приемане: национални медиани (пре-пас преди рендера)
+  const cplTutti = [];
+  const cprTutti = [];
+  for (const e of enti) {
+    const y = ultimoCe(e).y;
+    if (!y.costiProduzione) continue;
+    const letti = postiLettoEnte(e, anagrafica);
+    const ric = ricoveriEnte(e, anagrafica);
+    if (letti > 0) cplTutti.push(y.costiProduzione / letti);
+    if (ric > 0) cprTutti.push(y.costiProduzione / ric);
+  }
+  const mediana = (a) => (a.length ? a.sort((x, y) => x - y)[Math.floor(a.length / 2)] : null);
+  const bench = { cplMed: mediana(cplTutti), cprMed: mediana(cprTutti) };
   const aziendeIdx = {}; // codice → [nome, regione]
   const fornAgg = new Map(); // cf → профил на изпълнителя (през всички болници)
   for (const ente of enti) {
@@ -244,6 +265,23 @@ async function main() {
       aziendeIdx[ente.codice] = [ente.denominazione, ente.regione];
       for (const c of contratti) {
         tuttiContratti.push([c.cig, ente.codice, c.data, c.importo, catCode[c.categoria] || 'a', (c.fornitore || '').slice(0, 45), (c.oggetto || '').slice(0, 90)]);
+        // CPV макрокатегории („Dove vanno i soldi")
+        const catCpv = classificaCpv(c.cpv);
+        let ca = catAgg.get(catCpv);
+        if (!ca) {
+          ca = { n: 0, importo: 0, senzaGara: 0, forn: new Map() };
+          catAgg.set(catCpv, ca);
+        }
+        ca.n++;
+        ca.importo += c.importo;
+        if (c.categoria === 'diretto' || c.categoria === 'negoziataSenza') ca.senzaGara++;
+        if (c.fornitore && c.fornitoreCf && eSocietaDiCapitali(c.fornitore)) {
+          const cf = ca.forn.get(c.fornitoreCf) || { cf: c.fornitoreCf, den: c.fornitore, importo: 0 };
+          cf.importo += c.importo;
+          ca.forn.set(c.fornitoreCf, cf);
+        }
+        // кандидати за топ 100 (пълни полета, само материалните)
+        if (c.importo >= 5_000_000) topCand.push({ cig: c.cig, codice: ente.codice, data: c.data, importo: c.importo, oggetto: c.oggetto, fornitore: c.fornitoreAzienda ? c.fornitore : null, categoria: c.categoria });
         if (c.fornitoreCf && pIvaValida(c.fornitoreCf)) {
           let g = fornAgg.get(c.fornitoreCf);
           if (!g) {
@@ -264,7 +302,7 @@ async function main() {
     }
     await writeFile(
       join(SITE_DIR, 'struttura', `${fileCod}.html`),
-      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe })
+      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe, bench })
     );
   }
   // Глобален индекс + страница за търсене през всички договори
@@ -342,6 +380,95 @@ async function main() {
   }
   await writeFile(join(SITE_DIR, 'regioni.html'), renderRegioniIndex({ regioniData }));
 
+  // ---------- Approfondimenti: тенденции, топ 100, категории, dove, PNRR, storie… ----------
+  // 1) Тенденции: национални суми по година + растеж на разходите по регион
+  const perAnno = {};
+  for (const ente of enti) {
+    for (const [anno, y] of ente.serie) {
+      if (y.valoreProduzione == null) continue;
+      const t = perAnno[anno] || (perAnno[anno] = { valore: 0, costi: 0, personale: 0, risultato: 0 });
+      t.valore += y.valoreProduzione;
+      t.costi += y.costiProduzione || 0;
+      t.personale += y.costoPersonale || 0;
+      t.risultato += y.risultatoEsercizio || 0;
+    }
+  }
+  const anniTutti = Object.keys(perAnno).map(Number).sort((a, b) => a - b);
+  const regCosti = new Map(); // key → {prima, dopo}
+  for (const ente of enti) {
+    const key = REG_KEY[ente.codice.slice(0, 3)];
+    if (!key) continue;
+    const g = regCosti.get(key) || { prima: 0, dopo: 0 };
+    const yPrima = ente.serie.get(anniTutti[0]);
+    const yDopo = ente.serie.get(ultimoAnnoCe);
+    if (yPrima && yPrima.costiProduzione) g.prima += yPrima.costiProduzione;
+    if (yDopo && yDopo.costiProduzione) g.dopo += yDopo.costiProduzione;
+    regCosti.set(key, g);
+  }
+  const regioniCrescita = [...regCosti.entries()]
+    .filter(([, g]) => g.prima > 0 && g.dopo > 0)
+    .map(([key, g]) => ({ key, nome: REGIONI[key].nome, prima: g.prima, dopo: g.dopo, crescita: g.dopo / g.prima - 1 }))
+    .sort((a, b) => b.crescita - a.crescita);
+  await writeFile(join(SITE_DIR, 'tendenze.html'), renderTendenze({ perAnno, regioniCrescita, ultimoAnnoCe }));
+
+  // 2) Топ 100 договора (пълни полета)
+  topCand.sort((a, b) => b.importo - a.importo);
+  const top100 = topCand.slice(0, 100);
+  await writeFile(join(SITE_DIR, 'top-contratti.html'), renderTopContratti({ top: top100, aziendeIdx, href }));
+
+  // 3) Разходни категории (CPV)
+  const totCategorie = [...catAgg.values()].reduce((s, c) => s + c.importo, 0);
+  await writeFile(join(SITE_DIR, 'categorie.html'), renderCategorie({ cats: Object.fromEntries(catAgg), totImporto: totCategorie }));
+
+  // 5) Trova la tua struttura: комуна → структура → болница (последната година per структура)
+  const perStruttura = new Map();
+  for (const s of anagrafica.strutture) {
+    const prev = perStruttura.get(s.codice);
+    if (!prev || s.anno > prev.anno) perStruttura.set(s.codice, s);
+  }
+  const byCodEnte = new Map(enti.map((e) => [e.codice, e]));
+  const doveRighe = [...perStruttura.values()]
+    .filter((s) => s.comune)
+    .map((s) => {
+      const ente = byCodEnte.get(s.codice) || byCodEnte.get(`${s.codiceRegione}${s.codiceAsl}`);
+      return {
+        comune: s.comune,
+        provincia: s.provincia || '',
+        nome: s.denominazione,
+        tipo: s.tipo || '',
+        ente: ente ? ente.denominazione : s.asl || '—',
+        href: ente ? href(ente.codice) : null,
+        letti: s.postiLetto || 0,
+      };
+    })
+    .sort((a, b) => a.comune.localeCompare(b.comune, 'it'));
+  await writeFile(join(SITE_DIR, 'dove.html'), renderDove({ righe: doveRighe }));
+
+  // 6+7) Глосар/FAQ + гражданско ръководство
+  await writeFile(join(SITE_DIR, 'glossario.html'), renderGlossario());
+  await writeFile(join(SITE_DIR, 'guida-verifica.html'), renderGuida());
+
+  // 11) PNRR по региони (от ANAC флага, ако има appalti)
+  if (appalti) {
+    const pnrrRighe = Object.entries(REGIONI)
+      .map(([key, meta]) => {
+        const appReg = mergeAppRows(meta.anac.map((n) => appRegByName.get(n)).filter(Boolean));
+        return appReg ? { key, nome: meta.nome, importo: appReg.importo, pnrrImporto: appReg.pnrrImporto || 0 } : null;
+      })
+      .filter(Boolean);
+    await writeFile(join(SITE_DIR, 'pnrr.html'), renderPnrr({ regionale: pnrrRighe, href }));
+  }
+
+  // 13) Storie + 14) Aggiornamenti + hub
+  await mkdir(join(SITE_DIR, 'storia'), { recursive: true });
+  for (const s of STORIE) await writeFile(join(SITE_DIR, 'storia', `${s.slug}.html`), renderStoria(s));
+  await writeFile(join(SITE_DIR, 'storie.html'), renderStorie());
+  await writeFile(join(SITE_DIR, 'aggiornamenti.html'), renderAggiornamenti({ date: {} }));
+  await writeFile(
+    join(SITE_DIR, 'approfondimenti.html'),
+    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length })
+  );
+
   // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
   // размерите им, за да ги публикува за повторно ползване (open data).
   await mkdir(join(SITE_DIR, 'dati'), { recursive: true });
@@ -394,6 +521,17 @@ async function main() {
       ...(validaz ? ['verifiche.html'] : []),
       ...(paginaCerca ? ['cerca.html'] : []),
       ...(paginaForn ? ['fornitori.html'] : []),
+      'approfondimenti.html',
+      'tendenze.html',
+      'top-contratti.html',
+      'categorie.html',
+      'dove.html',
+      'glossario.html',
+      'guida-verifica.html',
+      ...(appalti ? ['pnrr.html'] : []),
+      'storie.html',
+      'aggiornamenti.html',
+      ...STORIE.map((s) => `storia/${s.slug}.html`),
       ...regioniData.map((r) => `regione/${r.key}.html`),
       ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
       ...fornituraCfs.map((cf) => `fornitore/${cf}.html`),
@@ -419,7 +557,7 @@ async function main() {
     // llms.txt — карта за AI асистентите (Claude/Perplexity я четат)
     await writeFile(
       join(SITE_DIR, 'llms.txt'),
-      `# Ospedali Trasparenti\n\n> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali\n> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.\n\n## Pagine principali\n\n- [Inchiesta: dove vanno i soldi](${su}/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa\n- [Relazioni ricorrenti e possibili conflitti d'interesse](${su}/conflitti.html): coppie azienda–fornitore da verificare\n- [Appalti della sanità](${su}/appalti.html): quota senza gara per regione e per azienda\n- [Fornitori del SSN](${su}/fornitori.html): chi incassa i soldi della sanità\n- [Regioni a confronto](${su}/regioni.html): carta d'Italia della quota senza gara\n- [Metodologia e fonti](${su}/metodologia.html): come calcoliamo ogni indicatore\n- [Dati aperti](${su}/dati.html): dataset scaricabili (JSON/CSV) con licenze\n\n## Nota\n\nGli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:\npiste da verificare, non prove né accuse.\n`
+      `# Ospedali Trasparenti\n\n> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali\n> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.\n\n## Pagine principali\n\n- [Inchiesta: dove vanno i soldi](${su}/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa\n- [Relazioni ricorrenti e possibili conflitti d'interesse](${su}/conflitti.html): coppie azienda–fornitore da verificare\n- [Appalti della sanità](${su}/appalti.html): quota senza gara per regione e per azienda\n- [Fornitori del SSN](${su}/fornitori.html): chi incassa i soldi della sanità\n- [Regioni a confronto](${su}/regioni.html): carta d'Italia della quota senza gara\n- [Metodologia e fonti](${su}/metodologia.html): come calcoliamo ogni indicatore\n- [Dati aperti](${su}/dati.html): dataset scaricabili (JSON/CSV) con licenze\n- [Il decennio della sanità 2012-2024](${su}/tendenze.html): tendenze di ricavi, costi e personale\n- [Dove vanno i soldi: categorie di spesa](${su}/categorie.html): farmaci, pulizie, energia con i primi fornitori\n- [I 100 contratti più grandi](${su}/top-contratti.html)\n- [Glossario e FAQ](${su}/glossario.html): affidamento diretto, CIG, GSA, accordi quadro\n- [Come verificare un appalto](${su}/guida-verifica.html): guida pratica con accesso civico FOIA\n- [Il PNRR nella sanità](${su}/pnrr.html)\n- [Le storie nei dati](${su}/storie.html)\n\n## Nota\n\nGli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:\npiste da verificare, non prove né accuse.\n`
     );
     console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt + llms.txt (${su})`);
   }
@@ -813,7 +951,7 @@ competenti (Corte dei conti, ANAC).</p>
 }
 
 // ---------- DETTAGLIO STRUTTURA ----------
-function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe }) {
+function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe, bench = {} }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
   const val = (k) => anni.map((a) => [a, ente.serie.get(a)[k]]).filter(([, v]) => v != null);
@@ -836,6 +974,24 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, co
     ${kpi('Risultato d’esercizio', euroIt(ris), ris < 0 ? 'neg' : ris > 0 ? 'pos' : '')}
     ${kpi('Costo del personale', euroIt(yUlt.costoPersonale))}
   </div>`;
+
+  // Benchmark €/легло и €/приемане срещу националната медиана (ако има анаграфика)
+  const lettiB = postiLettoEnte(ente, anagrafica);
+  const ricB = ricoveriEnte(ente, anagrafica);
+  let benchBlk = '';
+  if (yUlt.costiProduzione && (lettiB > 0 || ricB > 0) && (bench.cplMed || bench.cprMed)) {
+    const cpl = lettiB > 0 ? yUlt.costiProduzione / lettiB : null;
+    const cpr = ricB > 0 ? yUlt.costiProduzione / ricB : null;
+    const cella = (v, med, lab) =>
+      v && med
+        ? kpi(lab, `${euroCompact(v)} <span class="small muted">(mediana ${euroCompact(med)})</span>`, v > med * 1.5 ? 'neg' : '')
+        : '';
+    benchBlk = `<h2>Quanto costa, in proporzione</h2>
+  <div class="grid kpis">${cella(cpl, bench.cplMed, 'Costi per posto letto')}${cella(cpr, bench.cprMed, 'Costi per ricovero')}</div>
+  <p class="small muted">Costi della produzione (${annoUlt}) rapportati a posti letto e ricoveri dell'anagrafe ospedaliera,
+  confrontati con la mediana nazionale. Le ASL territoriali spendono anche fuori dagli ospedali (territorio, farmaceutica
+  convenzionata): il confronto è indicativo, più solido tra aziende dello stesso tipo.</p>`;
+  }
 
   // Оперативен профил
   const own = struttureByCod.get(ente.codice);
@@ -949,6 +1105,7 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, co
 ${anag && anag.indirizzo ? `<p class="muted small">${esc(anag.indirizzo)}${anag.comune ? ', ' + esc(anag.comune) : ''}</p>` : ''}
 
 ${kpis}
+${benchBlk}
 ${segBlock}
 
 <h2>Andamento economico</h2>

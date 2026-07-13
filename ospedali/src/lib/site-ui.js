@@ -195,6 +195,7 @@ const NAV = [
   ['regioni.html', 'Regioni'],
   ['strutture.html', 'Strutture'],
   ['segnalazioni.html', 'Segnalazioni'],
+  ['approfondimenti.html', 'Approfondimenti'],
   ['dati.html', 'Dati'],
   ['metodologia.html', 'Metodologia'],
 ];

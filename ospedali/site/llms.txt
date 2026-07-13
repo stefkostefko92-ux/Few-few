@@ -12,6 +12,13 @@
 - [Regioni a confronto](https://ospedalitrasparenti.it/regioni.html): carta d'Italia della quota senza gara
 - [Metodologia e fonti](https://ospedalitrasparenti.it/metodologia.html): come calcoliamo ogni indicatore
 - [Dati aperti](https://ospedalitrasparenti.it/dati.html): dataset scaricabili (JSON/CSV) con licenze
+- [Il decennio della sanità 2012-2024](https://ospedalitrasparenti.it/tendenze.html): tendenze di ricavi, costi e personale
+- [Dove vanno i soldi: categorie di spesa](https://ospedalitrasparenti.it/categorie.html): farmaci, pulizie, energia con i primi fornitori
+- [I 100 contratti più grandi](https://ospedalitrasparenti.it/top-contratti.html)
+- [Glossario e FAQ](https://ospedalitrasparenti.it/glossario.html): affidamento diretto, CIG, GSA, accordi quadro
+- [Come verificare un appalto](https://ospedalitrasparenti.it/guida-verifica.html): guida pratica con accesso civico FOIA
+- [Il PNRR nella sanità](https://ospedalitrasparenti.it/pnrr.html)
+- [Le storie nei dati](https://ospedalitrasparenti.it/storie.html)
 
 ## Nota
 

@@ -192,6 +192,26 @@ CIG е проверимият ключ към ANAC. Физически лица 
 страница, JSON-LD (`Organization`+`WebSite` със `SearchAction` на начало,
 `Dataset` на „Dati"), `site/sitemap.xml` (всички ~4400 адреса) и `site/robots.txt`.
 
+## Approfondimenti — съдържателният слой (`src/approfondimenti.js`)
+
+Hub `approfondimenti.html` (в NAV) + 11 страници, всичките от наличните данни:
+- **tendenze.html** — „Il decennio della sanità" 2012–2024: национални криви
+  (ricavi/costi/personale/risultato) + растеж на разходите по региони;
+- **categorie.html** — „Dove vanno i soldi": CPV макрокатегории (`classificaCpv`,
+  тестван класификатор по ключови думи) с топ доставчици per категория;
+- **top-contratti.html** — 100-те най-големи договора;
+- **dove.html** — „Trova la tua struttura": търсене по комуна (HSP анаграфика);
+- **glossario.html** — 10 дефиниционни блока + FAQPage JSON-LD (AEO);
+- **guida-verifica.html** — гражданско ръководство: CIG → determina → FOIA;
+- **pnrr.html** — appalti с PNRR/PNC флаг по региони (~8.6 млрд);
+- **storie.html + storia/<slug>.html** — разкази от данните (STORIE в модула;
+  всеки с легитимните обяснения + rettifiche линк — правната рамка е задължителна);
+- **aggiornamenti.html** — дневник + „in preparazione" (tempi di pagamento,
+  Conto Annuale/medici a gettone, liste d'attesa, mobilità sanitaria — чакат
+  собствени ETL сесии);
+- benchmark **€/легло и €/приемане** срещу националната медиана на всяка
+  детайлна страница (pre-pass в build-site).
+
 ## Бележки по данните
 
 - Финансовите данни са на ниво **ente SSN** (юридическото лице): самостоятелните
