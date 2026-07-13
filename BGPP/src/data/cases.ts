@@ -211,6 +211,19 @@ export const CASES: CaseItem[] = [
     ],
   },
   {
+    title: "ВЕЦ „Цанков камък“ — драстично оскъпяване",
+    enterprise: "НЕК ЕАД",
+    slug: "nek",
+    statusKey: "signal",
+    desc: "Хидровъзелът на р. Въча е емблема на оскъпяване в държавната енергетика — обявявана стойност ~476 млн. €, технически провали (пропукване, авария) и скандален консултантски хонорар. ВАЖНО: няма влязла в сила осъдителна присъда по проекта; проверката по хонорара приключи без установено нарушение. (Да не се смесва с „Емил Цанков“ — кмет на Белоградчик, различно дело.)",
+    amount: "~476 млн. € обща стойност",
+    year: "2010–2013",
+    sources: [
+      { label: "webcafe.bg", url: "https://webcafe.bg/newscafe/554666716-da-ni-e-chestit-tsankov-kamak-za-polovin-miliard-evro.html" },
+      { label: "epicenter.bg", url: "https://epicenter.bg/article/Kak-zapochna-proektat--Tsankov-kamak--i-zashto-otnovo-se-stigna-do-prokuraturata/134126/2/48" },
+    ],
+  },
+  {
     title: "„Хемусгейт“ — аванси за АМ „Хемус“ през подизпълнители",
     enterprise: "„Автомагистрали“ ЕАД",
     slug: "avtomagistrali",
