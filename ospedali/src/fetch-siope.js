@@ -100,6 +100,7 @@ export function aggrega(rowsPerRegione) {
   const perRegione = {};
   const nazMesi = new Array(12).fill(0);
   const nazMacro = macroZero();
+  const incompleti = []; // региони с отрязана/непълна година (изключени от тотала)
   let spesaNaz = 0;
   let anno = null;
 
@@ -148,6 +149,14 @@ export function aggrega(rowsPerRegione) {
       macro[macroDi(code)] += tot;
     }
 
+    // Пълнота: отрязано от timeout сваляне дава серия с нули след първите месеци.
+    // Пълна година = ≥10 месеца с ненулев поток. Непълните → mancanti (не в тотала),
+    // за да не показваме подценени числа и нулев декември.
+    const mesiConFlusso = mesi.filter((v) => v > 0).length;
+    if (mesiConFlusso < 10 || mesi[11] <= 0) {
+      incompleti.push(key);
+      continue;
+    }
     const media = spesa / 12;
     perRegione[key] = {
       spesaTotale: spesa,
@@ -170,6 +179,7 @@ export function aggrega(rowsPerRegione) {
       dicSuMedia: mediaNaz ? nazMesi[11] / mediaNaz : 0,
     },
     perRegione,
+    incompleti,
   };
 }
 
@@ -274,7 +284,7 @@ async function main() {
   for (const p of pkgs) {
     const file = join(RAW_DIR, 'siope', `${p.key}-${ANNO}.csv`);
     try {
-      const fresh = await curlDownloadToFile(p.url, file, { timeoutSec: 300 });
+      const fresh = await curlDownloadToFile(p.url, file, { timeoutSec: 900 });
       const rows = await leggiRigheSanita(file);
       await rm(file, { force: true }); // трием суровия CSV (~110 MB) за диск
       rowsPerRegione[p.key] = rows;
@@ -291,6 +301,9 @@ async function main() {
   }
 
   const agg = aggrega(rowsPerRegione);
+  // региони с непълна година (отрязано сваляне) се третират като липсващи
+  const tuttiMancanti = [...new Set([...mancanti, ...(agg.incompleti || [])])];
+  delete agg.incompleti;
 
   await writeJson(join(DATA_DIR, 'siope.json'), {
     generatoIl: new Date().toISOString(),
@@ -300,8 +313,8 @@ async function main() {
     perimetro:
       'Aziende sanitarie operative (ASL, aziende ospedaliere, IRCCS pubblici, IZS). ' +
       'Esclusi la gestione sanitaria accentrata (GSA) e i pagamenti centrali SSN per evitare doppi conteggi.',
-    regioniMancanti: mancanti,
     ...agg,
+    regioniMancanti: tuttiMancanti,
   });
 
   const n = agg.nazionale;

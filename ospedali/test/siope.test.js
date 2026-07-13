@@ -89,10 +89,26 @@ test('SIOPE — филтър health (само операционните адж�
 });
 
 test('SIOPE — дубликат за същия месец не се сумира (пази по-голямата кумулативна)', () => {
+  // пълна 12-месечна серия (кумулативно 100..1200) + дубликат за декември със
+  // ПО-МАЛКА стойност (500) → max пази 1200, не 1200+500.
   const rows = [
-    riga('OSP', 'U2101', 12, 500),
-    riga('OSP', 'U2101', 12, 500), // дубликат → НЕ става 1000
+    ...personale('OSP'),
+    riga('OSP', 'U1103000000', 12, 500), // дубликат за дек → игнорира се (по-малък)
   ];
   const agg = aggrega({ '120': rows });
-  assert.equal(agg.perRegione['120'].spesaTotale, 500);
+  assert.equal(agg.perRegione['120'].spesaTotale, 1200);
+});
+
+test('SIOPE — непълна година (отрязано сваляне) → регионът е incompleto, не в тотала', () => {
+  // само първите 3 месеца имат данни → <10 месеца с поток → изключен
+  const rows = [
+    riga('OSP', 'U1103000000', 1, 100),
+    riga('OSP', 'U1103000000', 2, 200),
+    riga('OSP', 'U1103000000', 3, 300),
+  ];
+  const agg = aggrega({ '030': rows, '120': personale('OSP2') });
+  assert.ok(agg.perRegione['030'] === undefined); // отрязаният е изключен
+  assert.ok(agg.perRegione['120'] !== undefined); // пълният остава
+  assert.ok(agg.incompleti.includes('030'));
+  assert.equal(agg.nazionale.spesaTotale, 1200); // само пълната регион в тотала
 });
