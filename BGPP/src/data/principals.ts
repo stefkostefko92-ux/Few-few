@@ -23,6 +23,12 @@ export const PRINCIPALS: Principal[] = [
     short: "Икономика",
   },
   {
+    key: "inovacii",
+    name: "Министър на иновациите и растежа",
+    short: "Иновации",
+  },
+  { key: "otbrana", name: "Министър на отбраната", short: "Отбрана" },
+  {
     key: "zemedelie",
     name: "Министър на земеделието и храните",
     short: "Земеделие",
@@ -34,6 +40,7 @@ export const PRINCIPALS: Principal[] = [
   },
   { key: "finansi", name: "Министър на финансите", short: "Финанси" },
   { key: "sport", name: "Министър на младежта и спорта", short: "Спорт" },
+  { key: "kultura", name: "Министър на културата", short: "Култура" },
   {
     key: "osv",
     name: "Министър на околната среда и водите",

@@ -20,9 +20,11 @@ export type SectorKey =
   | "saobshteniya"
   | "otbrana"
   | "industriya"
+  | "finansi-uslugi"
   | "gori-zemedelie"
   | "vodi-ekologiya"
   | "zdraveopazvane"
+  | "kultura-media"
   | "hazart"
   | "regionalno";
 
@@ -31,10 +33,13 @@ export type PrincipalKey =
   | "energetika"
   | "transport"
   | "ikonomika"
+  | "inovacii"
+  | "otbrana"
   | "zemedelie"
   | "rrb"
   | "finansi"
   | "sport"
+  | "kultura"
   | "osv"
   | "zdrave"
   | "ms";
