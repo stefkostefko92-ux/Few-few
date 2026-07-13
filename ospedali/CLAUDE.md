@@ -29,7 +29,10 @@ src/build-report.js      dataset → reports/ (index.md, <регион>/<код>
 src/analyze.js           dataset → счетоводни правила → data/segnalazioni.json (тестваем: analizzaEnte)
 src/forensics.js         dataset + сурови CE → системен дефицит (GSA) + разходни аномалии → data/forensics.json
 src/fetch-appalti.js     ANAC CIG месечно (кеш data/raw/anac/) → агрегати по регион+CF → data/appalti.json
-src/build-site.js        dataset + segnalazioni + forensics + appalti → site/ (италиански сайт, SVG + hbars)
+                         (+ frazionamento/proroga + карта health-cig-cf.tsv за следващата стъпка)
+src/fetch-aggiudicatari.js  поточно (unzip -p, 0.8+1GB) свързва CIG→изпълнители/участници →
+                         доставчици, концентрация, търг с 1 оферент → data/aggiudicatari.json
+src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudicatari → site/
 src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui, match (болница↔ANAC), paths
 ```
 
@@ -49,7 +52,13 @@ src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui
 - Свързване болница↔ANAC (`lib/match.js`) е по ИМЕ (няма CF crosswalk) → строг матч:
   ядро на името (без типовата фраза) + регион + уникалност. Точност > покритие —
   по-добре несвързана, отколкото грешно приписана поръчка. Регионалният изглед не иска матч.
-- `data/appalti.json` е по избор за `build-site.js` (ако липсва — разделите Appalti се крият).
+- `data/appalti.json` и `data/aggiudicatari.json` са по избор за `build-site.js`
+  (ако липсват — съответните раздели се крият).
+- `fetch-aggiudicatari.js`: **внимание с CIG кавичките** — aggiudicatari/partecipanti
+  ограждат всяко поле в `"…"`, а cig датасетът не → задължителен `unq()` при join.
+  Обработва се поточно (readline над `unzip -p`); филтрирането по health-CIG прави
+  разбитите от вградени нови редове фрагменти безобидни (не съвпадат). Иска
+  `--max-old-space-size=4096` (виж npm script).
 - Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
   добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
 - Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.

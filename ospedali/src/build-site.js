@@ -19,6 +19,7 @@ import { page, kpi, badge, lineChart, barChart, hbars } from './lib/site-ui.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
+const AGGIU_FILE = pjoin(DATA_DIR, 'aggiudicatari.json');
 
 const REGOLE_LABEL = {
   disavanzo_grave: 'Disavanzo grave',
@@ -61,8 +62,14 @@ async function main() {
       appalti.autorita.map((a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
     );
     const autByCf = new Map(appalti.autorita.map((a) => [a.cf, a]));
-    for (const [codice, cf] of byCodice) appByCod.set(codice, autByCf.get(cf));
-    appMatch = { abbinate: byCodice.size, totali: enti.length };
+    // изпълнители/участници (по избор)
+    const aggiu = await readJson(AGGIU_FILE).catch(() => null);
+    const aggPerCf = aggiu ? aggiu.perCf : {};
+    for (const [codice, cf] of byCodice) {
+      const a = autByCf.get(cf);
+      if (a) appByCod.set(codice, { ...a, aggiu: aggPerCf[cf] || null });
+    }
+    appMatch = { abbinate: byCodice.size, totali: enti.length, aggiu, autByCf };
     // национална медиана на дела „senza gara“ по БРОЙ сред свързаните болници (за флаг)
     const quote = [...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null).sort((a, b) => a - b);
     appMatch.medianaSenzaGaraNum = quote.length ? quote[Math.floor(quote.length / 2)] : null;
@@ -656,9 +663,12 @@ I nomi collegati hanno una scheda.</p>
   <tbody>${autRows}</tbody>
 </table></div>
 
+${renderOfferenteUnico(appMatch, codByCf, href)}
+${renderFornitori(appMatch)}
+
 <p class="small muted" style="margin-top:18px">Collegate ai bilanci ${appMatch ? `${appMatch.abbinate} aziende su ${appMatch.totali}` : ''}
 tramite corrispondenza esatta di denominazione e regione; per le altre i dati ANAC restano nel confronto regionale.
-Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a>.</p>
+Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a> (CIG, aggiudicatari, partecipanti).</p>
 `;
   return page({
     title: 'Appalti pubblici della sanità — Ospedali Trasparenti',
@@ -666,6 +676,54 @@ Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a
     active: 'appalti.html',
     body,
   });
+}
+
+/** Класация: възложители с най-много търгове с един кандидат. */
+function renderOfferenteUnico(appMatch, codByCf, href) {
+  if (!appMatch?.aggiu) return '';
+  const { aggiu, autByCf } = appMatch;
+  const list = Object.entries(aggiu.perCf)
+    .filter(([, v]) => v.gareConPartecipanti >= 50 && v.quotaUnicoOfferente != null)
+    .map(([cf, v]) => ({ cf, ...v, aut: autByCf.get(cf) }))
+    .filter((x) => x.aut)
+    .sort((a, b) => b.quotaUnicoOfferente - a.quotaUnicoOfferente)
+    .slice(0, 15);
+  if (!list.length) return '';
+  const rows = list
+    .map((x) => {
+      const cod = codByCf.get(x.cf);
+      const nome = cod ? `<a href="${href(cod)}">${esc(x.aut.den)}</a>` : esc(x.aut.den);
+      return `<tr><td>${nome}<div class="small muted">${esc(x.aut.reg)}</div></td>
+        <td class="num neg">${percentualeIt(x.quotaUnicoOfferente)}</td>
+        <td class="num">${numeroIt(x.gareUnicoOfferente)}/${numeroIt(x.gareConPartecipanti)}</td></tr>`;
+    })
+    .join('');
+  return `<h2>Gare con un solo offerente</h2>
+<p class="muted small">Quota delle gare (con dati sui partecipanti) in cui si è presentata <strong>una sola impresa</strong>.
+Solo enti con almeno 50 gare. Concorrenza solo formale è una spia classica di gare “su misura”.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Azienda</th><th class="num">Offerente unico</th><th class="num">Gare</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>`;
+}
+
+/** Национална класация на изпълнителите (кой прибира парите). */
+function renderFornitori(appMatch) {
+  if (!appMatch?.aggiu?.fornitoriNazionali?.length) return '';
+  const rows = appMatch.aggiu.fornitoriNazionali
+    .slice(0, 15)
+    .map(
+      (f, i) => `<tr><td class="num">${i + 1}</td><td>${esc(f.den)}</td>
+      <td class="num">${euroCompact(f.valore)}</td><td class="num">${numeroIt(f.n)}</td></tr>`
+    )
+    .join('');
+  return `<h2>Chi prende i soldi: i maggiori fornitori</h2>
+<p class="muted small">Operatori economici con più valore aggiudicato dalle aziende sanitarie (2023–2024).
+Valore attribuito una volta per contratto all’aggiudicatario principale.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Fornitore</th><th class="num">Valore aggiudicato</th><th class="num">Contratti</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>`;
 }
 
 /** Блок за поръчките в детайлната страница (при свързан възложител). */
@@ -689,6 +747,37 @@ function appaltiBlock(app, appMatch) {
       <td>${esc(c.procedura)}</td><td class="num">${euroCompact(c.importo)}</td></tr>`
     )
     .join('');
+
+  // Изпълнители + търгове с един кандидат + концентрация
+  const ag = app.aggiu;
+  const sbQ = ag?.quotaUnicoOfferente;
+  const flagSb = sbQ != null && ag.gareConPartecipanti >= 20 && sbQ > 0.6;
+  const concQ = ag?.top1Quota;
+  const flagConc = concQ != null && ag.valoreAggiudicato >= 10_000_000 && concQ > 0.5;
+  const fornRows = (ag?.topFornitori || [])
+    .slice(0, 5)
+    .map((f) => `<tr><td>${esc(f.den)}</td><td class="num">${euroCompact(f.valore)}</td><td class="num">${numeroIt(f.n)}</td></tr>`)
+    .join('');
+  const aggBlock = ag
+    ? `<div class="grid kpis" style="margin-top:12px">
+        ${kpi('Gare a offerente unico', percentualeIt(sbQ), flagSb ? 'neg' : '')}
+        ${kpi('Concentrazione (1° fornitore)', percentualeIt(concQ), flagConc ? 'neg' : '')}
+        ${kpi('Fornitori distinti', numeroIt(ag.nFornitori))}
+      </div>
+      ${flagSb ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Gare con un solo offerente</span></div><div class="d">Il ${percentualeIt(sbQ)} delle gare con partecipanti (${numeroIt(ag.gareUnicoOfferente)}/${numeroIt(ag.gareConPartecipanti)}) ha ricevuto una sola offerta: possibile concorrenza solo formale.</div></div>` : ''}
+      ${flagConc ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Forte concentrazione su un fornitore</span></div><div class="d">Il ${percentualeIt(concQ)} del valore aggiudicato va a un solo operatore (${esc(ag.topFornitori[0].den)}).</div></div>` : ''}
+      ${fornRows ? `<h3>Principali fornitori</h3><div class="tablewrap"><table><thead><tr><th>Fornitore</th><th class="num">Valore aggiudicato</th><th class="num">Contratti</th></tr></thead><tbody>${fornRows}</tbody></table></div>` : ''}`
+    : '';
+
+  // Frazionamento (преки възлагания под праговете) + proroghe
+  const fraz = (app.band40 || 0) + (app.band140 || 0);
+  const frazBlock =
+    fraz > 20 || (app.prorogaN || 0) > 30
+      ? `<p class="small muted" style="margin-top:10px"><strong>Altri segnali:</strong>
+         ${fraz} affidamenti diretti appena sotto le soglie di legge (35–40 mila € e 130–140 mila €, possibile
+         frazionamento); ${numeroIt(app.prorogaN || 0)} contratti con oggetto di proroga/rinnovo.</p>`
+      : '';
+
   return `<h2>Appalti pubblici <span class="small muted">(ANAC, ${app.reg})</span></h2>
     <div class="grid kpis">
       ${kpi('Contratti senza gara', percentualeIt(sgNum), flagSg ? 'neg' : '')}
@@ -698,8 +787,10 @@ function appaltiBlock(app, appMatch) {
     </div>
     ${flagSg ? `<div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Ricorso elevato agli affidamenti senza gara</span></div><div class="d">Il ${percentualeIt(sgNum)} dei contratti (${percentualeIt(sgVal)} del valore) è affidato senza confronto competitivo; mediana tra le aziende ${percentualeIt(med)}.</div></div>` : ''}
     <div class="card" style="margin-top:12px">${hbars(items, { fmt: euroCompact, maxLabel: 'Appalti per tipo di procedura' })}</div>
+    ${aggBlock}
+    ${frazBlock}
     ${top ? `<h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th>Oggetto</th><th>Procedura</th><th class="num">Importo</th></tr></thead><tbody>${top}</tbody></table></div>` : ''}
-    <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a>, gare > 40.000 € pubblicate negli anni considerati.</p>`;
+    <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>`;
 }
 
 // ---------- INCHIESTA ----------

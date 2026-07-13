@@ -13,7 +13,7 @@
 // Изход: data/appalti.json.
 
 import { join } from 'node:path';
-import { readFile, mkdir, rm, readdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm, readdir } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { parseCsv } from './lib/csv.js';
@@ -53,15 +53,23 @@ const CATS = ['competitiva', 'quadro', 'diretto', 'negoziataSenza', 'negoziata',
 function emptyAgg() {
   const cat = {};
   for (const c of CATS) cat[c] = { n: 0, importo: 0 };
-  return { n: 0, importo: 0, cat, urgenzaN: 0, pnrrImporto: 0 };
+  // band40/band140 = преки възлагания точно под праговете (frazionamento);
+  // prorogaN = удължавания/подновявания без нов търг
+  return { n: 0, importo: 0, cat, urgenzaN: 0, pnrrImporto: 0, band40: 0, band140: 0, prorogaN: 0 };
 }
-function addTo(agg, categoria, importo, urgenza, pnrr) {
+const PROROGA = /\bPROROG|\bRINNOV|\bPROSECUZION|\bESTENSION/i;
+function addTo(agg, categoria, importo, urgenza, pnrr, oggetto) {
   agg.n++;
   agg.importo += importo;
   agg.cat[categoria].n++;
   agg.cat[categoria].importo += importo;
   if (urgenza) agg.urgenzaN++;
   if (pnrr) agg.pnrrImporto += importo;
+  if (categoria === 'diretto') {
+    if (importo >= 35_000 && importo < 40_000) agg.band40++;
+    if (importo >= 130_000 && importo < 140_000) agg.band140++;
+  }
+  if (oggetto && PROROGA.test(oggetto)) agg.prorogaN++;
 }
 /** Дял на СТОЙНОСТТА без реална конкуренция (пряко + договаряне без обявление). */
 function quotaSenzaGara(agg) {
@@ -78,7 +86,7 @@ function quotaSenzaGaraNum(agg) {
 // източника и се изхвърлят, за да не изкривяват стойностните агрегати.
 const IMPORTO_MAX_VALIDO = 1_000_000_000;
 
-async function processMonth(anno, mese, regionale, autorita, seenCig) {
+async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
   const mm = String(mese).padStart(2, '0');
   const zipName = `cig_csv_${anno}_${mm}.zip`;
   const zipPath = join(ANAC_DIR, zipName);
@@ -111,22 +119,25 @@ async function processMonth(anno, mese, regionale, autorita, seenCig) {
       const categoria = catProc(r.tipo_scelta_contraente);
       const urgenza = (r.FLAG_URGENZA || '').trim() === '1';
       const pnrr = (r.FLAG_PNRR_PNC || '').trim() === '1';
+      const oggetto0 = r.oggetto_lotto || r.oggetto_gara || '';
       const regK = (r.sezione_regionale || '').replace('SEZIONE REGIONALE ', '').trim() || 'ND';
       if (!regionale[regK]) regionale[regK] = emptyAgg();
-      addTo(regionale[regK], categoria, importo, urgenza, pnrr);
+      addTo(regionale[regK], categoria, importo, urgenza, pnrr, oggetto0);
 
       const cf = (r.cf_amministrazione_appaltante || '').trim();
       if (!cf) continue;
+      // за свързване с изпълнителите/участниците: cig → cf, категория, сума
+      if (cig) cigCf.set(cig, `${cf}\t${categoria}\t${Math.round(importo)}`);
       let a = autorita[cf];
       if (!a) {
         a = { cf, den, reg: regK, ...emptyAgg(), top: [] };
         autorita[cf] = a;
       }
-      addTo(a, categoria, importo, urgenza, pnrr);
+      addTo(a, categoria, importo, urgenza, pnrr, oggetto0);
       // топ договори по стойност (пазим до 10)
       if (a.top.length < 10 || importo > a.top[a.top.length - 1].importo) {
         a.top.push({
-          oggetto: (r.oggetto_lotto || r.oggetto_gara || '').slice(0, 180),
+          oggetto: oggetto0.slice(0, 180),
           importo,
           procedura: r.tipo_scelta_contraente || '',
           categoria,
@@ -153,11 +164,17 @@ async function main() {
   const regionale = {};
   const autorita = {};
   const seenCig = new Set();
+  const cigCf = new Map(); // cig → cf на здравния възложител (за aggiudicatari/partecipanti)
   let totale = 0;
   for (const anno of anni) {
     console.log(`Anno ${anno}…`);
-    for (let m = 1; m <= 12; m++) totale += await processMonth(anno, m, regionale, autorita, seenCig);
+    for (let m = 1; m <= 12; m++) totale += await processMonth(anno, m, regionale, autorita, seenCig, cigCf);
   }
+
+  // Записваме картата CIG→CF/категория/сума за следващата стъпка (изпълнители/участници)
+  const cigCfLines = [];
+  for (const [cig, rest] of cigCf) cigCfLines.push(`${cig}\t${rest}`);
+  await writeFile(join(ANAC_DIR, 'health-cig-cf.tsv'), cigCfLines.join('\n') + '\n');
 
   // Финализиране: изчисляваме дяловете и подреждаме
   const regList = Object.entries(regionale)
@@ -174,6 +191,9 @@ async function main() {
     nazionale.importo += a.importo;
     nazionale.urgenzaN += a.urgenzaN;
     nazionale.pnrrImporto += a.pnrrImporto;
+    nazionale.band40 += a.band40;
+    nazionale.band140 += a.band140;
+    nazionale.prorogaN += a.prorogaN;
     for (const c of CATS) {
       nazionale.cat[c].n += a.cat[c].n;
       nazionale.cat[c].importo += a.cat[c].importo;
@@ -206,6 +226,11 @@ function summary(a) {
     cat,
     urgenzaN: a.urgenzaN,
     pnrrImporto: Math.round(a.pnrrImporto),
+    band40: a.band40,
+    band140: a.band140,
+    prorogaN: a.prorogaN,
+    // дял на преките възлагания точно под праговете (индикатор за frazionamento)
+    bunchingQuota: a.cat.diretto.n > 0 ? (a.band40 + a.band140) / a.cat.diretto.n : null,
     quotaSenzaGara: quotaSenzaGara(a),
     quotaSenzaGaraNum: quotaSenzaGaraNum(a),
   };
