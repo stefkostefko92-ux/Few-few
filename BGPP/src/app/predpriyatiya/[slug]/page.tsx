@@ -6,6 +6,7 @@ import { sector as getSector } from "@/data/sectors";
 import { principal as getPrincipal } from "@/data/principals";
 import { PageHero, Section, Badge, ExternalLink } from "@/components/ui";
 import { MoneyFlowColumn } from "@/components/MoneyFlows";
+import { FinancialsChart } from "@/components/FinancialsChart";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd, canonical } from "@/lib/seo";
 import { transparency } from "@/lib/aggregate";
@@ -188,6 +189,23 @@ export default async function EnterprisePage({
             </div>
           )}
         </Section>
+
+        {/* Многогодишни финанси */}
+        {e.financialsSeries && e.financialsSeries.length > 0 && (
+          <Section title="Финанси по години">
+            <FinancialsChart series={e.financialsSeries} />
+            {e.financialsNote && (
+              <p className="mt-3 text-sm text-slate-500">{e.financialsNote}</p>
+            )}
+            {e.financialsSource && (
+              <p className="mt-1 text-sm">
+                <ExternalLink href={e.financialsSource.url}>
+                  {e.financialsSource.label}
+                </ExternalLink>
+              </p>
+            )}
+          </Section>
+        )}
 
         {/* Известни случаи */}
         {casesForSlug(e.slug).length > 0 && (

@@ -83,6 +83,17 @@ export type FinancialNote = {
   source?: Source;
 };
 
+/** Едногодишен ред от многогодишна финансова серия (числа в млн. лв.). */
+export type FinancialYear = {
+  year: string;
+  /** Приходи, млн. лв. */
+  revenueMln?: number;
+  /** Финансов резултат, млн. лв. (+ печалба / − загуба). */
+  resultMln?: number;
+  /** Среден брой заети. */
+  employees?: number;
+};
+
 export type Enterprise = {
   /** URL идентификатор (кирилица → латиница). */
   slug: string;
@@ -120,5 +131,10 @@ export type Enterprise = {
   /** Дъщерни дружества/поделения (за холдинги — кратък списък без отделни страници). */
   subsidiaries?: Subsidiary[];
   financial?: FinancialNote;
+  /** Многогодишна финансова серия (по година). */
+  financialsSeries?: FinancialYear[];
+  /** Забележка към серията (индивидуално/консолидирано и източник). */
+  financialsNote?: string;
+  financialsSource?: Source;
   sources: Source[];
 };
