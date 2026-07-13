@@ -74,6 +74,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -82,6 +89,8 @@ footer.site a{color:var(--muted);text-decoration:underline}
 
 const NAV = [
   ['index.html', 'Home'],
+  ['inchiesta.html', 'Inchiesta'],
+  ['classifiche.html', 'Classifiche'],
   ['strutture.html', 'Strutture'],
   ['segnalazioni.html', 'Segnalazioni'],
   ['metodologia.html', 'Metodologia'],
@@ -240,6 +249,24 @@ export function barChart(points, { width = 680, height = 200, caption = '' } = {
     (caption ? `<figcaption>${esc(caption)}</figcaption>` : '') +
     `</figure>`
   );
+}
+
+/** Хоризонтални ленти за разбивка (категория → дял). items:[{label,valore,quota,flag}]. */
+export function hbars(items, { fmt = (v) => v, maxLabel = '' } = {}) {
+  if (!items.length) return '';
+  const max = Math.max(...items.map((i) => i.quota || 0), 0.0001);
+  const rows = items
+    .map((i) => {
+      const w = Math.max(1, ((i.quota || 0) / max) * 100);
+      const col = i.flag ? 'var(--neg)' : 'var(--brand)';
+      return `<div class="hbar-row${i.flag ? ' flag' : ''}">
+        <div class="hbar-l">${esc(i.label)}${i.flag ? ' <span class="badge alta" style="padding:0 6px">!</span>' : ''}</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:${w.toFixed(1)}%;background:${col}"></div></div>
+        <div class="hbar-v">${esc(fmt(i.valore))}<span class="muted small"> · ${(i.quota * 100).toLocaleString('it-IT', { maximumFractionDigits: 1 })}%</span></div>
+      </div>`;
+    })
+    .join('');
+  return `<div class="hbars" role="img" aria-label="${esc(maxLabel)}">${rows}</div>`;
 }
 
 function niceTicks(min, max, n) {

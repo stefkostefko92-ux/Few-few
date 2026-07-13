@@ -76,6 +76,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -85,7 +92,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 <body>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="../index.html">Home</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main><div class="wrap">
 
@@ -109,6 +116,34 @@ footer.site a{color:var(--muted);text-decoration:underline}
   <div class="card"></div>
 </div>
 
+<h2>Dove vanno i soldi <span class="small muted">(2015, quota dei costi della produzione)</span></h2>
+      <div class="card"><div class="hbars" role="img" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">37 mln €<span class="muted small"> · 19,7%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di beni</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:70.1%;background:var(--brand)"></div></div>
+        <div class="hbar-v">26 mln €<span class="muted small"> · 13,8%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:49.5%;background:var(--brand)"></div></div>
+        <div class="hbar-v">18 mln €<span class="muted small"> · 9,8%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:20.7%;background:var(--neg)"></div></div>
+        <div class="hbar-v">8 mln €<span class="muted small"> · 4,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:19.7%;background:var(--brand)"></div></div>
+        <div class="hbar-v">7 mln €<span class="muted small"> · 3,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:8.1%;background:var(--brand)"></div></div>
+        <div class="hbar-v">3 mln €<span class="muted small"> · 1,6%</span></div>
+      </div></div></div>
+      <h3>Segnali «follow the money» <span class="small muted">(1)</span></h3><div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Consulenze, collaborazioni e lavoro interinale</span></div>
+            <div class="d">Consulenze, collaborazioni e lavoro interinale: 7.629.000 € = 4,1% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).</div></div>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

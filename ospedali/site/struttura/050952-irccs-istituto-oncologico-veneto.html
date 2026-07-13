@@ -76,6 +76,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -85,7 +92,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 <body>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="../index.html">Home</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main><div class="wrap">
 
@@ -110,6 +117,34 @@ footer.site a{color:var(--muted);text-decoration:underline}
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="174.0" x2="666" y2="174.0"/><text x="50" y="177.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="137.4" x2="666" y2="137.4"/><text x="50" y="140.4" text-anchor="end">500 mila</text><line class="grid-line" x1="56" y1="100.8" x2="666" y2="100.8"/><text x="50" y="103.8" text-anchor="end">1 mln</text><line class="grid-line" x1="56" y1="64.2" x2="666" y2="64.2"/><text x="50" y="67.2" text-anchor="end">2 mln</text><line class="grid-line" x1="56" y1="27.6" x2="666" y2="27.6"/><text x="50" y="30.6" text-anchor="end">2 mln</text><rect x="63.0" y="14.0" width="32.8" height="160.0" fill="var(--pos)" rx="2"/><text x="79.5" y="192" text-anchor="middle">2012</text><rect x="110.0" y="80.0" width="32.8" height="94.0" fill="var(--pos)" rx="2"/><text x="126.4" y="192" text-anchor="middle">2013</text><rect x="156.9" y="67.5" width="32.8" height="106.5" fill="var(--pos)" rx="2"/><text x="173.3" y="192" text-anchor="middle">2014</text><rect x="203.8" y="167.3" width="32.8" height="6.7" fill="var(--pos)" rx="2"/><text x="220.2" y="192" text-anchor="middle">2015</text><rect x="250.7" y="165.4" width="32.8" height="8.6" fill="var(--pos)" rx="2"/><text x="267.2" y="192" text-anchor="middle">2016</text><rect x="297.7" y="123.9" width="32.8" height="50.1" fill="var(--pos)" rx="2"/><text x="314.1" y="192" text-anchor="middle">2017</text><rect x="344.6" y="111.3" width="32.8" height="62.7" fill="var(--pos)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2018</text><rect x="391.5" y="76.3" width="32.8" height="97.7" fill="var(--pos)" rx="2"/><text x="407.9" y="192" text-anchor="middle">2019</text><rect x="438.4" y="97.6" width="32.8" height="76.4" fill="var(--pos)" rx="2"/><text x="454.8" y="192" text-anchor="middle">2020</text><rect x="485.3" y="102.3" width="32.8" height="71.7" fill="var(--pos)" rx="2"/><text x="501.8" y="192" text-anchor="middle">2021</text><rect x="532.3" y="142.1" width="32.8" height="31.9" fill="var(--pos)" rx="2"/><text x="548.7" y="192" text-anchor="middle">2022</text><rect x="579.2" y="157.8" width="32.8" height="16.2" fill="var(--pos)" rx="2"/><text x="595.6" y="192" text-anchor="middle">2023</text><rect x="626.1" y="77.1" width="32.8" height="96.9" fill="var(--pos)" rx="2"/><text x="642.5" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
 </div>
 
+<h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione)</span></h2>
+      <div class="card"><div class="hbars" role="img" aria-label="Composizione della spesa per categoria"><div class="hbar-row flag">
+        <div class="hbar-l">Acquisti di beni <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--neg)"></div></div>
+        <div class="hbar-v">122 mln €<span class="muted small"> · 46,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:22.3%;background:var(--brand)"></div></div>
+        <div class="hbar-v">27 mln €<span class="muted small"> · 10,5%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:8.3%;background:var(--brand)"></div></div>
+        <div class="hbar-v">10 mln €<span class="muted small"> · 3,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:5.5%;background:var(--brand)"></div></div>
+        <div class="hbar-v">7 mln €<span class="muted small"> · 2,6%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:4.2%;background:var(--brand)"></div></div>
+        <div class="hbar-v">5 mln €<span class="muted small"> · 2%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">1 mln €<span class="muted small"> · 0,4%</span></div>
+      </div></div></div>
+      <h3>Segnali «follow the money» <span class="small muted">(1)</span></h3><div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Acquisti di beni</span></div>
+            <div class="d">Acquisti di beni: 121.558.309 € = 46,9% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).</div></div>
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th>Ospedale</th><th class="num">Posti letto</th><th class="num">Personale</th><th class="num">di cui medici</th><th class="num">Ricoveri</th><th class="num">Giornate</th></tr></thead>

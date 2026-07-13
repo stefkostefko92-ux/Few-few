@@ -76,6 +76,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -85,7 +92,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 <body>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="../index.html">Home</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main><div class="wrap">
 
@@ -108,6 +115,33 @@ footer.site a{color:var(--muted);text-decoration:underline}
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="174.0" x2="666" y2="174.0"/><text x="50" y="177.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="142.1" x2="666" y2="142.1"/><text x="50" y="145.1" text-anchor="end">500 mila</text><line class="grid-line" x1="56" y1="110.2" x2="666" y2="110.2"/><text x="50" y="113.2" text-anchor="end">1 mln</text><line class="grid-line" x1="56" y1="78.3" x2="666" y2="78.3"/><text x="50" y="81.3" text-anchor="end">2 mln</text><line class="grid-line" x1="56" y1="46.4" x2="666" y2="46.4"/><text x="50" y="49.4" text-anchor="end">2 mln</text><line class="grid-line" x1="56" y1="14.4" x2="666" y2="14.4"/><text x="50" y="17.4" text-anchor="end">3 mln</text><rect x="76.6" y="14.0" width="46.0" height="160.0" fill="var(--pos)" rx="2"/><text x="99.6" y="192" text-anchor="middle">2017</text><rect x="163.7" y="172.8" width="46.0" height="1.2" fill="var(--pos)" rx="2"/><text x="186.7" y="192" text-anchor="middle">2019</text><rect x="250.9" y="172.8" width="46.0" height="1.2" fill="var(--pos)" rx="2"/><text x="273.9" y="192" text-anchor="middle">2020</text><rect x="338.0" y="173.8" width="46.0" height="1.0" fill="var(--pos)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2021</text><rect x="425.1" y="173.6" width="46.0" height="1.0" fill="var(--pos)" rx="2"/><text x="448.1" y="192" text-anchor="middle">2022</text><rect x="512.3" y="173.7" width="46.0" height="1.0" fill="var(--pos)" rx="2"/><text x="535.3" y="192" text-anchor="middle">2023</text><rect x="599.4" y="173.8" width="46.0" height="1.0" fill="var(--pos)" rx="2"/><text x="622.4" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
 </div>
 
+<h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione)</span></h2>
+      <div class="card"><div class="hbars" role="img" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
+        <div class="hbar-l">Acquisti di beni</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">120 mln €<span class="muted small"> · 27,4%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:59.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">71 mln €<span class="muted small"> · 16,2%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:39.6%;background:var(--brand)"></div></div>
+        <div class="hbar-v">48 mln €<span class="muted small"> · 10,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:11.9%;background:var(--brand)"></div></div>
+        <div class="hbar-v">14 mln €<span class="muted small"> · 3,3%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:7.7%;background:var(--brand)"></div></div>
+        <div class="hbar-v">9 mln €<span class="muted small"> · 2,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:6.2%;background:var(--brand)"></div></div>
+        <div class="hbar-v">7 mln €<span class="muted small"> · 1,7%</span></div>
+      </div></div></div>
+      
 <h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
        <div class="tablewrap"><table>
        <thead><tr><th>Ospedale</th><th class="num">Posti letto</th><th class="num">Personale</th><th class="num">di cui medici</th><th class="num">Ricoveri</th><th class="num">Giornate</th></tr></thead>

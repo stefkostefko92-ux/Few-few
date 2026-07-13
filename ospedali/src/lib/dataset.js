@@ -27,6 +27,25 @@ export const SP_INDICATORS = [
   { key: 'debiti', label: 'Debiti', labelBg: 'Задължения', codes: ['PDZ999'], re: /^d\) debiti/i },
 ];
 
+// Разходни категории за форензик анализ („следвай парите“) — векторите, където
+// в италианското здравеопазване се концентрират разхищение и корупция.
+// Някои категории събират няколко кода (сумират се, не се презаписват).
+export const CE_FORENSICS = [
+  { key: 'beni', label: 'Acquisti di beni', codes: ['BA0010'] },
+  { key: 'serviziTot', label: 'Acquisti di servizi (totale)', codes: ['BA0390'] },
+  { key: 'consulenzeInterinale', label: 'Consulenze, collaborazioni e lavoro interinale', codes: ['BA1350', 'BA1750'] },
+  { key: 'serviziNonSanitari', label: 'Servizi non sanitari (pulizia, mensa, riscaldamento…)', codes: ['BA1560'] },
+  { key: 'manutenzioni', label: 'Manutenzione e riparazione esternalizzata', codes: ['BA1910'] },
+  { key: 'godimentoTerzi', label: 'Godimento di beni di terzi (affitti, noleggi)', codes: ['BA1990'] },
+  {
+    key: 'prestazioniDaPrivato',
+    label: 'Acquisto di prestazioni sanitarie da privati',
+    codes: ['BA0850', 'BA0860', 'BA0870', 'BA0880', 'BA0590', 'BA0600', 'BA0610', 'BA0620', 'BA0591', 'BA0601', 'BA0611', 'BA0621'],
+  },
+];
+const FORENSIC_CODE_TO_KEY = new Map();
+for (const c of CE_FORENSICS) for (const code of c.codes) FORENSIC_CODE_TO_KEY.set(code, c.key);
+
 // Компоненти на актива — много структури не подават реда „D) TOTALE ATTIVO“
 // и тогава той се изчислява като A + B + C (без задбалансовите conti d'ordine).
 const SP_ATTIVO_COMPONENTS = [
@@ -116,6 +135,12 @@ export async function loadDataset() {
       const key = matchIndicator(indicators, codeVoce, desc);
       if (key) y[key] = importo;
 
+      // Форензик категории (само CE): събиране по код, със сумиране.
+      if (kind === 'CE') {
+        const fk = FORENSIC_CODE_TO_KEY.get(codeVoce);
+        if (fk) y[fk] = (y[fk] || 0) + importo;
+      }
+
       if (kind === 'CE') {
         if (anno > ente.ceUltimoAnno) {
           ente.ceUltimoAnno = anno;
@@ -166,4 +191,25 @@ export function anniConCe(ente) {
     .filter(([, y]) => y.valoreProduzione != null)
     .map(([a]) => a)
     .sort((a, b) => a - b);
+}
+
+/** Болничните структури (HSP), които съответстват на този ente (за нормализация). */
+export function struttureDiEnte(ente, anagrafica) {
+  const own = anagrafica.strutture.filter((s) => s.codice === ente.codice);
+  if (own.length) return own;
+  return anagrafica.strutture.filter(
+    (s) => s.codiceRegione === ente.codReg && s.codiceAsl === ente.codEnte
+  );
+}
+
+/** Сума на леглата за ente (0 → null, за да не делим на нула). */
+export function postiLettoEnte(ente, anagrafica) {
+  const s = struttureDiEnte(ente, anagrafica).reduce((n, x) => n + (x.postiLetto || 0), 0);
+  return s > 0 ? s : null;
+}
+
+/** Сума на приемите за ente. */
+export function ricoveriEnte(ente, anagrafica) {
+  const s = struttureDiEnte(ente, anagrafica).reduce((n, x) => n + (x.ricoveri || 0), 0);
+  return s > 0 ? s : null;
 }

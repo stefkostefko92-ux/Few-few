@@ -76,6 +76,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -85,7 +92,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 <body>
 <header class="site"><div class="wrap">
   <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="index.html">Home</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html" aria-current="page">Metodologia</a></nav>
+  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html" aria-current="page">Metodologia</a></nav>
 </div></header>
 <main><div class="wrap">
 
@@ -112,10 +119,25 @@ sanitaria accentrata regionale) e 999 (consolidato regionale) sono esclusi perch
   <tbody><tr><td>Disavanzo grave</td><td><span class="badge alta">Alta</span></td><td class="small">Risultato d’esercizio inferiore al −5% del valore della produzione nell’ultimo anno.</td></tr><tr><td>Patrimonio netto negativo</td><td><span class="badge alta">Alta</span></td><td class="small">Patrimonio netto negativo nell’ultimo stato patrimoniale: potenziale squilibrio patrimoniale.</td></tr><tr><td>Debiti oltre l’attivo</td><td><span class="badge alta">Alta</span></td><td class="small">I debiti superano il totale dell’attivo.</td></tr><tr><td>Disavanzo persistente</td><td><span class="badge media">Media</span></td><td class="small">Risultato negativo in quasi tutti gli ultimi 5 esercizi.</td></tr><tr><td>Squilibrio costi/ricavi</td><td><span class="badge media">Media</span></td><td class="small">Costi della produzione superiori ai ricavi per almeno 3 esercizi recenti.</td></tr><tr><td>Variazione anomala dei costi</td><td><span class="badge media">Media</span></td><td class="small">Variazione dei costi superiore al 25% da un anno all’altro.</td></tr><tr><td>Variazione anomala dei ricavi</td><td><span class="badge bassa">Bassa</span></td><td class="small">Variazione dei ricavi superiore al 30% da un anno all’altro.</td></tr><tr><td>Incidenza del personale elevata</td><td><span class="badge bassa">Bassa</span></td><td class="small">Costo del personale sul valore della produzione oltre il 90° percentile nazionale.</td></tr><tr><td>Crescita dell’indebitamento</td><td><span class="badge bassa">Bassa</span></td><td class="small">Debiti in crescita di oltre il 40% sul periodo.</td></tr><tr><td>Buco nella rendicontazione</td><td><span class="badge bassa">Bassa</span></td><td class="small">Anni mancanti nel mezzo della serie CE.</td></tr><tr><td>Risultato “troppo tondo”</td><td><span class="badge bassa">Bassa</span></td><td class="small">Risultato d’esercizio esattamente multiplo di 100.000 €: possibile scrittura di pareggio.</td></tr></tbody>
 </table></div>
 
+<h2>L’inchiesta «follow the money»</h2>
+<p>Oltre alle segnalazioni contabili, analizziamo il <strong>dettaglio dei costi</strong> (modello CE, sezione B) per
+le voci più esposte a inefficienza e opacità: acquisti di beni, acquisti di servizi, consulenze e lavoro interinale,
+servizi non sanitari (pulizia, mensa, riscaldamento, rifiuti), manutenzioni esternalizzate, godimento di beni di terzi
+(affitti/noleggi) e acquisto di prestazioni sanitarie da privati.</p>
+<ul class="small">
+  <li>Ogni voce è <strong>normalizzata</strong> come quota dei costi della produzione e, dove disponibile, per posto letto (anagrafe del Ministero della Salute).</li>
+  <li>Ogni struttura è confrontata con la <strong>distribuzione nazionale</strong> (mediana, 90° percentile, z-score robusto su mediana e MAD).</li>
+  <li>Scatta un segnale se la voce supera il 90° percentile con z&gt;2 <em>e</em> l’importo è materiale (≥ 1 mln €), o se raddoppia da un anno all’altro (+60% e &gt; 2 mln €).</li>
+  <li>Il «rosso» di sistema è ricostruito sommando il risultato delle aziende e quello della Gestione Sanitaria Accentrata regionale (GSA, codice 000), che copre gran parte dei disavanzi.</li>
+</ul>
+<p class="small muted">Prossimo passo possibile: incrocio con gli appalti pubblici (ANAC) per risalire ai singoli
+contratti, ai fornitori e alle gare a offerta unica.</p>
+
 <h2>Limiti</h2>
 <ul class="small">
   <li>I dati sono di cassa/competenza da consuntivo: variazioni di perimetro possono generare falsi positivi.</li>
   <li>Le soglie sono volutamente prudenti per ridurre il rumore; alcune anomalie reali possono non emergere.</li>
+  <li>Un’anomalia di spesa <strong>non è prova di illecito</strong>: indica dove conviene approfondire.</li>
   <li>Il progetto è a scopo di trasparenza civica e non sostituisce le fonti ufficiali né la Corte dei conti.</li>
 </ul>
 <p class="small muted">Elaborazione automatica open source di Carbon Stealth VCC.</p>

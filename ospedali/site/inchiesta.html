@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inchiesta: dove vanno i soldi — Ospedali Trasparenti</title>
+<meta name="description" content="La verità sul disavanzo degli ospedali pubblici italiani e le anomalie di spesa: consulenze, prestazioni da privati, affitti. Analisi sui dati ufficiali.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html" aria-current="page">Inchiesta</a><a href="classifiche.html">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main><div class="wrap">
+
+<h1>Inchiesta: dove vanno davvero i soldi</h1>
+<p class="lead">«Non è possibile che ogni ospedale sia in perdita.» È l’obiezione giusta — e i dati danno una risposta netta.
+Il disavanzo delle aziende è in larga parte <strong>coperto a livello regionale</strong>; e non tutte le aziende sono in rosso.
+Ma quando si scende nelle voci di spesa, emergono anomalie che meritano un occhio.</p>
+
+<div class="note"><strong>La verità sul “rosso”.</strong> Le aziende sanitarie ricevono il Fondo Sanitario Regionale in parte
+tramite la <em>Gestione Sanitaria Accentrata</em> (GSA) della Regione. Il disavanzo delle singole aziende viene così
+in gran parte compensato dalla GSA: il risultato “di sistema” (aziende + GSA) è molto più vicino al pareggio del
+semplice rosso aziendale. <strong>Nel 2024, 56 aziende su 149 chiudono in utile o pareggio.</strong></div>
+
+<h2>Il conto vero del sistema</h2>
+<div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio aggregato per anno (€): il rosso delle aziende è in gran parte coperto dalla GSA regionale"><line class="grid-line" x1="56" y1="189.5" x2="666" y2="189.5"/><text x="50" y="192.5" text-anchor="end">-2 mld</text><line class="grid-line" x1="56" y1="147.7" x2="666" y2="147.7"/><text x="50" y="150.7" text-anchor="end">-1 mld</text><line class="grid-line" x1="56" y1="105.9" x2="666" y2="105.9"/><text x="50" y="108.9" text-anchor="end">0</text><line class="grid-line" x1="56" y1="64.1" x2="666" y2="64.1"/><text x="50" y="67.1" text-anchor="end">1 mld</text><line class="grid-line" x1="56" y1="22.4" x2="666" y2="22.4"/><text x="50" y="25.4" text-anchor="end">2 mld</text><line class="grid-line" x1="56" y1="105.9" x2="666" y2="105.9" stroke-width="1.5"/><text x="56.0" y="232" text-anchor="middle">2012</text><text x="157.7" y="232" text-anchor="middle">2014</text><text x="259.3" y="232" text-anchor="middle">2016</text><text x="361.0" y="232" text-anchor="middle">2018</text><text x="462.7" y="232" text-anchor="middle">2020</text><text x="564.3" y="232" text-anchor="middle">2022</text><text x="666.0" y="232" text-anchor="middle">2024</text><path d="M56.0,159.3 L106.8,151.6 L157.7,160.5 L208.5,169.9 L259.3,167.8 L310.2,143.0 L361.0,149.0 L411.8,153.1 L462.7,173.0 L513.5,168.3 L564.3,193.7 L615.2,169.8 L666.0,214.0" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="159.3" r="2.5" fill="var(--neg)"/><circle cx="106.8" cy="151.6" r="2.5" fill="var(--neg)"/><circle cx="157.7" cy="160.5" r="2.5" fill="var(--neg)"/><circle cx="208.5" cy="169.9" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="167.8" r="2.5" fill="var(--neg)"/><circle cx="310.2" cy="143.0" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="149.0" r="2.5" fill="var(--neg)"/><circle cx="411.8" cy="153.1" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="173.0" r="2.5" fill="var(--neg)"/><circle cx="513.5" cy="168.3" r="2.5" fill="var(--neg)"/><circle cx="564.3" cy="193.7" r="2.5" fill="var(--neg)"/><circle cx="615.2" cy="169.8" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="214.0" r="2.5" fill="var(--neg)"/><path d="M56.0,14.0 L106.8,46.5 L157.7,42.5 L208.5,51.0 L259.3,55.6 L310.2,68.1 L361.0,67.0 L411.8,63.6 L462.7,35.2 L513.5,43.6 L564.3,30.7 L615.2,44.8 L666.0,33.2" fill="none" stroke="var(--pos)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="14.0" r="2.5" fill="var(--pos)"/><circle cx="106.8" cy="46.5" r="2.5" fill="var(--pos)"/><circle cx="157.7" cy="42.5" r="2.5" fill="var(--pos)"/><circle cx="208.5" cy="51.0" r="2.5" fill="var(--pos)"/><circle cx="259.3" cy="55.6" r="2.5" fill="var(--pos)"/><circle cx="310.2" cy="68.1" r="2.5" fill="var(--pos)"/><circle cx="361.0" cy="67.0" r="2.5" fill="var(--pos)"/><circle cx="411.8" cy="63.6" r="2.5" fill="var(--pos)"/><circle cx="462.7" cy="35.2" r="2.5" fill="var(--pos)"/><circle cx="513.5" cy="43.6" r="2.5" fill="var(--pos)"/><circle cx="564.3" cy="30.7" r="2.5" fill="var(--pos)"/><circle cx="615.2" cy="44.8" r="2.5" fill="var(--pos)"/><circle cx="666.0" cy="33.2" r="2.5" fill="var(--pos)"/><path d="M56.0,67.4 L106.8,92.2 L157.7,97.0 L208.5,114.9 L259.3,117.5 L310.2,105.2 L361.0,110.1 L411.8,110.8 L462.7,102.2 L513.5,105.9 L564.3,118.5 L615.2,108.7 L666.0,141.3" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="67.4" r="2.5" fill="var(--brand)"/><circle cx="106.8" cy="92.2" r="2.5" fill="var(--brand)"/><circle cx="157.7" cy="97.0" r="2.5" fill="var(--brand)"/><circle cx="208.5" cy="114.9" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="117.5" r="2.5" fill="var(--brand)"/><circle cx="310.2" cy="105.2" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="110.1" r="2.5" fill="var(--brand)"/><circle cx="411.8" cy="110.8" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="102.2" r="2.5" fill="var(--brand)"/><circle cx="513.5" cy="105.9" r="2.5" fill="var(--brand)"/><circle cx="564.3" cy="118.5" r="2.5" fill="var(--brand)"/><circle cx="615.2" cy="108.7" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="141.3" r="2.5" fill="var(--brand)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Aziende (AO/ASL)</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--pos)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Copertura regionale (GSA)</text></g><g transform="translate(436,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Sistema (aziende + GSA)</text></g></g></svg><figcaption>Risultato d’esercizio aggregato per anno (€): il rosso delle aziende è in gran parte coperto dalla GSA regionale</figcaption></figure></div>
+<div class="grid kpis" style="margin-top:16px">
+  <div class="card kpi"><div class="n pos">56 / 149</div><div class="l">Aziende in utile (2024)</div></div>
+  <div class="card kpi"><div class="n neg">−3 mld €</div><div class="l">Rosso delle aziende</div></div>
+  <div class="card kpi"><div class="n pos">2 mld €</div><div class="l">Copertura GSA regionale</div></div>
+  <div class="card kpi"><div class="n neg">−847 mln €</div><div class="l">Disavanzo di sistema</div></div>
+</div>
+<div class="tablewrap" style="margin-top:14px"><table>
+  <thead><tr><th>Anno</th><th class="num">In perdita</th><th class="num">Rosso aziende</th><th class="num">Copertura GSA</th><th class="num">Sistema</th></tr></thead>
+  <tbody><tr><td>2012</td>
+        <td class="num">91 / 198</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num pos">922 mln €</td></tr><tr><td>2013</td>
+        <td class="num">77 / 195</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num pos">330 mln €</td></tr><tr><td>2014</td>
+        <td class="num">82 / 191</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num pos">214 mln €</td></tr><tr><td>2015</td>
+        <td class="num">82 / 192</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num neg">−215 mln €</td></tr><tr><td>2016</td>
+        <td class="num">67 / 178</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num neg">−278 mln €</td></tr><tr><td>2017</td>
+        <td class="num">41 / 148</td>
+        <td class="num neg">−888 mln €</td>
+        <td class="num pos">905 mln €</td>
+        <td class="num pos">17 mln €</td></tr><tr><td>2018</td>
+        <td class="num">46 / 146</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">932 mln €</td>
+        <td class="num neg">−100 mln €</td></tr><tr><td>2019</td>
+        <td class="num">50 / 147</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num neg">−116 mln €</td></tr><tr><td>2020</td>
+        <td class="num">62 / 143</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num pos">89 mln €</td></tr><tr><td>2021</td>
+        <td class="num">58 / 145</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−104 mila €</td></tr><tr><td>2022</td>
+        <td class="num">79 / 150</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−300 mln €</td></tr><tr><td>2023</td>
+        <td class="num">74 / 160</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−67 mln €</td></tr><tr><td>2024</td>
+        <td class="num">93 / 149</td>
+        <td class="num neg">−3 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−847 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted">Il 2024 è l’anno peggiore della serie: il disavanzo di sistema tocca −847 mln €.
+Il problema quindi non è «ogni ospedale ruba», ma <em>dove</em> si concentra la spesa e <em>perché</em> alcune strutture
+si discostano nettamente dalle altre.</p>
+
+<h2>Le strutture con più anomalie di spesa</h2>
+<p class="muted small">Ordinate per numero di segnali «follow the money». Ogni segnale confronta una voce con la mediana
+nazionale. <a href="classifiche.html">Vedi le classifiche per categoria →</a></p>
+<div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/150909-azienda-ospedaliera-universitaria-federico-ii.html">AZIENDA OSPEDALIERA UNIVERSITARIA FEDERICO II</a> <span class="small muted">Campania · 2024</span></div>
+      <div class="d">Acquisti di beni: 145.664.254 € = 32,9% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Consulenze, collaborazioni e lavoro interinale: 36.131.175 € = 8,2% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Servizi non sanitari (pulizia, mensa, riscaldamento…): 73.011.113 € = 16,5% dei costi, contro una mediana nazionale del 6,8% (oltre il 90° percentile).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/120105-asl-di-rm-e.html">ASL DI RM/E</a> <span class="small muted">Lazio · 2015</span></div>
+      <div class="d">Acquisto di prestazioni sanitarie da privati: 620.602.000 € = 35,5% dei costi, contro una mediana nazionale del 4,6% (oltre il 90° percentile).<br>Acquisto di prestazioni sanitarie da privati per 620.602.000 € = 35,5% dei costi (oltre il 90° percentile nazionale).<br>Acquisti di beni +69,6% in un anno: da 58.689.000 € (2014) a 99.530.000 € (2015).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/150908-azienda-ospedaliera-universitaria-universita-degli-studi-del.html">AZIENDA OSPEDALIERA UNIVERSITARIA - UNIVERSITA&#39; DEGLI STUDI DELLA CAMPANIA LUIGI VANVITELLI</a> <span class="small muted">Campania · 2024</span></div>
+      <div class="d">Consulenze, collaborazioni e lavoro interinale: 32.991.859 € = 15% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Servizi non sanitari (pulizia, mensa, riscaldamento…): 36.729.283 € = 16,7% dei costi, contro una mediana nazionale del 6,8% (oltre il 90° percentile).<br>Consulenze, collaborazioni e interinale pari al 75,1% del costo del personale (32.991.859 €); mediana nazionale 4,2%. Possibile aggiramento delle assunzioni.</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/090903-azienda-ospedaliero-universitaria-careggi.html">AZIENDA OSPEDALIERO-UNIVERSITARIA CAREGGI</a> <span class="small muted">Toscana · 2024</span></div>
+      <div class="d">Consulenze, collaborazioni e lavoro interinale: 31.412.569 € = 4,1% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Manutenzione e riparazione esternalizzata: 34.167.879 € = 4,5% dei costi, contro una mediana nazionale del 1,7% (oltre il 90° percentile).<br>Godimento di beni di terzi (affitti, noleggi): 16.655.886 € = 2,2% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/190928-azienda-ospedaliera-universitaria-policlinico-paolo-giaccone.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO PAOLO GIACCONE DI PALERMO</a> <span class="small muted">Sicilia · 2024</span></div>
+      <div class="d">Acquisti di beni: 135.321.772 € = 39,4% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Consulenze, collaborazioni e lavoro interinale: 31.390.651 € = 9,1% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Consulenze, collaborazioni e interinale pari al 29,2% del costo del personale (31.390.651 €); mediana nazionale 4,2%. Possibile aggiramento delle assunzioni.</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030716-azienda-socio-sanitaria-territoriale-asst-di-monza.html">AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) DI MONZA</a> <span class="small muted">Lombardia · 2022</span></div>
+      <div class="d">Acquisti di beni: 149.035.105 € = 33,1% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Consulenze, collaborazioni e lavoro interinale: 15.534.673 € = 3,5% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Godimento di beni di terzi (affitti, noleggi): 9.859.788 € = 2,2% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030708-azienda-socio-sanitaria-territoriale-melegnano-e-della-marte.html">AZIENDA SOCIO SANITARIA TERRITORIALE MELEGNANO E DELLA MARTESANA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Consulenze, collaborazioni e lavoro interinale: 15.474.590 € = 3,9% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Godimento di beni di terzi (affitti, noleggi): 12.037.015 € = 3% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).<br>Acquisti di servizi (totale) +94,2% in un anno: da 70.582.367 € (2023) a 137.104.762 € (2024).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030717-azienda-socio-sanitaria-territoriale-della-brianza.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA BRIANZA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Godimento di beni di terzi (affitti, noleggi): 23.078.536 € = 3,9% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).<br>Acquisti di servizi (totale) +94,4% in un anno: da 98.435.778 € (2023) a 191.368.260 € (2024).<br>Godimento di beni di terzi (affitti, noleggi) +77,2% in un anno: da 13.025.485 € (2023) a 23.078.536 € (2024).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/010900-azienda-sanitaria-zero-della-regione-piemonte.html">AZIENDA SANITARIA ZERO DELLA REGIONE PIEMONTE</a> <span class="small muted">Piemonte · 2024</span></div>
+      <div class="d">Godimento di beni di terzi (affitti, noleggi): 4.744.419 € = 2,6% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).<br>Consulenze, collaborazioni e interinale pari al 65,9% del costo del personale (1.960.984 €); mediana nazionale 4,2%. Possibile aggiramento delle assunzioni.<br>Godimento di beni di terzi (affitti, noleggi) +339% in un anno: da 1.080.746 € (2023) a 4.744.419 € (2024).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/160902-ente-ospedaliero-specializzato-in-gastroenterologia-istituto.html">ENTE OSPEDALIERO SPECIALIZZATO IN GASTROENTEROLOGIA ISTITUTO NAZIONALE DI RICOVERO E CURA A CARATTERE SCIENTIFICO S. DE BELLIS</a> <span class="small muted">Puglia · 2024</span></div>
+      <div class="d">Servizi non sanitari (pulizia, mensa, riscaldamento…): 12.941.477 € = 17,6% dei costi, contro una mediana nazionale del 6,8% (oltre il 90° percentile).<br>Manutenzione e riparazione esternalizzata: 3.469.443 € = 4,7% dei costi, contro una mediana nazionale del 1,7% (oltre il 90° percentile).<br>Godimento di beni di terzi (affitti, noleggi): 2.095.632 € = 2,8% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">2</span> <a href="struttura/120906-azienda-ospedaliero-universitaria-policlinico-umberto-i.html">AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO UMBERTO I</a> <span class="small muted">Lazio · 2024</span></div>
+      <div class="d">Acquisti di beni: 199.188.305 € = 32,5% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Consulenze, collaborazioni e lavoro interinale: 36.001.391 € = 5,9% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">2</span> <a href="struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Acquisti di beni: 365.849.073 € = 33,6% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Godimento di beni di terzi (affitti, noleggi): 31.441.682 € = 2,9% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">2</span> <a href="struttura/080908-azienda-ospedaliero-universitaria-di-bologna-policlinico-di-.html">AZIENDA OSPEDALIERO-UNIVERSITARIA DI BOLOGNA POLICLINICO DI SANT&#39;ORSOLA</a> <span class="small muted">Emilia Romagna · 2024</span></div>
+      <div class="d">Acquisti di beni: 300.353.724 € = 35% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Manutenzione e riparazione esternalizzata: 36.824.618 € = 4,3% dei costi, contro una mediana nazionale del 1,7% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">2</span> <a href="struttura/090902-azienda-ospedaliero-universitaria-senese.html">AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE</a> <span class="small muted">Toscana · 2024</span></div>
+      <div class="d">Consulenze, collaborazioni e lavoro interinale: 18.166.006 € = 5,2% dei costi, contro una mediana nazionale del 1,1% (oltre il 90° percentile).<br>Servizi non sanitari (pulizia, mensa, riscaldamento…): 50.370.587 € = 14,4% dei costi, contro una mediana nazionale del 6,8% (oltre il 90° percentile).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">2</span> <a href="struttura/050912-azienda-ospedaliera-universitaria-integrata-di-verona.html">AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA DI VERONA</a> <span class="small muted">Veneto · 2024</span></div>
+      <div class="d">Acquisti di beni: 265.783.301 € = 34,4% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).<br>Godimento di beni di terzi (affitti, noleggi): 16.023.761 € = 2,1% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile).</div>
+    </div>
+
+<div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
+Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.
+Sono <em>piste</em>, quelle che la Corte dei conti e l’ANAC seguono per prime — non verdetti.</div>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>:
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
+  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
+  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
+  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+</div></footer>
+</body>
+</html>

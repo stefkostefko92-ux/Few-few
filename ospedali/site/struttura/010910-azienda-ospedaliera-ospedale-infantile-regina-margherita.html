@@ -76,6 +76,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -85,7 +92,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 <body>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="../index.html">Home</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main><div class="wrap">
 
@@ -109,6 +116,21 @@ footer.site a{color:var(--muted);text-decoration:underline}
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="174.0" x2="666" y2="174.0"/><text x="50" y="177.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="137.5" x2="666" y2="137.5"/><text x="50" y="140.5" text-anchor="end">5 mila</text><line class="grid-line" x1="56" y1="101.1" x2="666" y2="101.1"/><text x="50" y="104.1" text-anchor="end">10 mila</text><line class="grid-line" x1="56" y1="64.6" x2="666" y2="64.6"/><text x="50" y="67.6" text-anchor="end">15 mila</text><line class="grid-line" x1="56" y1="28.1" x2="666" y2="28.1"/><text x="50" y="31.1" text-anchor="end">20 mila</text><rect x="338.0" y="14.0" width="46.0" height="160.0" fill="var(--pos)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
 </div>
 
+<h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione)</span></h2>
+      <div class="card"><div class="hbars" role="img" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">3 mila €<span class="muted small"> · 1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">3 mila €<span class="muted small"> · 1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di beni</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:43.3%;background:var(--brand)"></div></div>
+        <div class="hbar-v">1 mila €<span class="muted small"> · 0,4%</span></div>
+      </div></div></div>
+      
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>

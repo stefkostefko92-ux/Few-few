@@ -26,16 +26,22 @@ src/fetch-anagrafica.js  dati.salute CSV (през curl! WAF реже Node fetch
 src/fetch-finanze.js     CE/SP CSV по години → data/raw/bdap/{ce,sp}-<год>.csv
 src/lib/dataset.js       ЕДИНСТВЕН източник за модела: parsва CSV → enti[] (серии + анаграфика)
 src/build-report.js      dataset → reports/ (index.md, <регион>/<код>-<име>.md, dati-chiave.csv)
-src/analyze.js           dataset → правила за аномалии → data/segnalazioni.json (тестваем: analizzaEnte)
-src/build-site.js        dataset + segnalazioni → site/ (италиански статичен сайт, SVG графики)
+src/analyze.js           dataset → счетоводни правила → data/segnalazioni.json (тестваем: analizzaEnte)
+src/forensics.js         dataset + сурови CE → системен дефицит (GSA) + разходни аномалии → data/forensics.json
+src/build-site.js        dataset + segnalazioni + forensics → site/ (италиански сайт, SVG + hbars)
 src/lib/                 http (retry/кеш/curl), csv (парсер+ит. числа), dataset, format, site-ui, paths
 ```
 
 - `dataset.js` е единственият парсер — **не дублирай** зареждането в новите скриптове.
 - `analyze.js` изнася `analizzaEnte(ente, ctx)` + `derivati/median/percentile` за unit тест;
   `main()` се пуска само при директно стартиране (`import.meta.url === file://argv[1]`).
-- `build-site.js` зависи от `data/segnalazioni.json` → пусни `analyze` преди `site`
-  (или направо `npm run build`).
+- `build-site.js` зависи от `data/segnalazioni.json` И `data/forensics.json` → пусни
+  `analyze` и `forensics` преди `site` (или направо `npm run build`).
+- `forensics.js`: „система“ чете суровите CE директно (нужни са 000/999, които
+  `dataset.js` изключва); разходните категории идват от `CE_FORENSICS` в `dataset.js`
+  (многокодови категории се **сумират**). Изнася median/percentile/robustZ за тест.
+- Форензик флаг = дял над 90-и персентил И robust z>2 И материален (≥1 mln €), или
+  +60% годишна експлозия (>2 mln €). Формулировките казват „pista, non prova".
 - Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
   добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
 - Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.

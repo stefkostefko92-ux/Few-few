@@ -9,11 +9,14 @@
 import { join } from 'node:path';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { SITE_DIR } from './lib/paths.js';
-import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS } from './lib/dataset.js';
+import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from './lib/dataset.js';
 import { readJson } from './lib/http.js';
-import { SEGNALAZIONI_FILE } from './lib/paths.js';
+import { SEGNALAZIONI_FILE, DATA_DIR } from './lib/paths.js';
+import { join as pjoin } from 'node:path';
 import { euroIt, euroCompact, numeroIt, percentualeIt, slugify, esc } from './lib/format.js';
-import { page, kpi, badge, lineChart, barChart } from './lib/site-ui.js';
+import { page, kpi, badge, lineChart, barChart, hbars } from './lib/site-ui.js';
+
+const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 
 const REGOLE_LABEL = {
   disavanzo_grave: 'Disavanzo grave',
@@ -41,6 +44,10 @@ async function main() {
     throw new Error('няма segnalazioni.json — пусни първо `npm run analyze`');
   });
   const segnByCod = new Map(segn.enti.map((e) => [e.codice, e]));
+  const forense = await readJson(FORENSICS_FILE).catch(() => {
+    throw new Error('няма forensics.json — пусни първо `npm run forensics`');
+  });
+  const forByCod = new Map(forense.enti.map((e) => [e.codice, e]));
 
   await rm(SITE_DIR, { recursive: true, force: true });
   await mkdir(join(SITE_DIR, 'struttura'), { recursive: true });
@@ -68,23 +75,26 @@ async function main() {
     }
   }
 
-  await writeFile(join(SITE_DIR, 'index.html'), renderHome({ enti, segn, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }));
+  await writeFile(join(SITE_DIR, 'index.html'), renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }));
+  await writeFile(join(SITE_DIR, 'inchiesta.html'), renderInchiesta({ forense, href }));
+  await writeFile(join(SITE_DIR, 'classifiche.html'), renderClassifiche({ forense, href }));
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
   await writeFile(join(SITE_DIR, 'segnalazioni.html'), renderSegnalazioni({ segn, href }));
-  await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, ultimoAnnoCe }));
+  await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, ultimoAnnoCe }));
 
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
     await writeFile(
       join(SITE_DIR, 'struttura', `${fileCod}.html`),
-      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), ultimoAnnoCe })
+      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), ultimoAnnoCe })
     );
   }
-  console.log(`Готово: ${enti.length + 4} страници → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + 6} страници → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
-function renderHome({ enti, segn, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }) {
+function renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }) {
+  const sis = forense.sistema.perAnno[ultimoAnnoCe];
   const top = segn.enti.slice(0, 12);
   const rows = top
     .map((e) => {
@@ -111,6 +121,11 @@ e Ministero della Salute.</p>
   ${kpi('Risultato d’esercizio aggregato', euroCompact(totRisultato), totRisultato < 0 ? 'neg' : 'pos')}
   ${kpi('Strutture in perdita', `${numeroIt(inPerdita)} / ${numeroIt(conDati)}`, inPerdita > conDati / 2 ? 'neg' : '')}
 </div>
+
+<div class="note" style="margin-top:22px"><strong>«Non è possibile che ogni ospedale sia in perdita.»</strong>
+Giusto: nel ${ultimoAnnoCe}, ${sis.aziendeInUtile} aziende su ${sis.aziende} chiudono in utile o pareggio, e il rosso
+delle altre è in gran parte coperto dalla Gestione Sanitaria Accentrata regionale. La domanda vera è <em>dove</em>
+finiscono i soldi. → <a href="inchiesta.html">Leggi l’inchiesta</a> · <a href="classifiche.html">Le classifiche di spesa</a></div>
 
 <h2>Strutture da tenere d’occhio</h2>
 <p class="muted small">Ordinate per numero e gravità delle segnalazioni automatiche. Non sono giudizi:
@@ -283,7 +298,7 @@ può avere spiegazioni legittime (fusioni, finanziamenti straordinari, cambi di 
 }
 
 // ---------- METODOLOGIA ----------
-function renderMetodologia({ segn, ultimoAnnoCe }) {
+function renderMetodologia({ segn, forense, ultimoAnnoCe }) {
   const regole = [
     ['disavanzo_grave', 'Disavanzo grave', 'Alta', `Risultato d’esercizio inferiore al −${percentualeIt(segn.soglie.disavanzoGrave)} del valore della produzione nell’ultimo anno.`],
     ['patrimonio_netto_negativo', 'Patrimonio netto negativo', 'Alta', 'Patrimonio netto negativo nell’ultimo stato patrimoniale: potenziale squilibrio patrimoniale.'],
@@ -324,10 +339,25 @@ sanitaria accentrata regionale) e 999 (consolidato regionale) sono esclusi perch
   <tbody>${rows}</tbody>
 </table></div>
 
+<h2>L’inchiesta «follow the money»</h2>
+<p>Oltre alle segnalazioni contabili, analizziamo il <strong>dettaglio dei costi</strong> (modello CE, sezione B) per
+le voci più esposte a inefficienza e opacità: acquisti di beni, acquisti di servizi, consulenze e lavoro interinale,
+servizi non sanitari (pulizia, mensa, riscaldamento, rifiuti), manutenzioni esternalizzate, godimento di beni di terzi
+(affitti/noleggi) e acquisto di prestazioni sanitarie da privati.</p>
+<ul class="small">
+  <li>Ogni voce è <strong>normalizzata</strong> come quota dei costi della produzione e, dove disponibile, per posto letto (anagrafe del Ministero della Salute).</li>
+  <li>Ogni struttura è confrontata con la <strong>distribuzione nazionale</strong> (mediana, 90° percentile, z-score robusto su mediana e MAD).</li>
+  <li>Scatta un segnale se la voce supera il 90° percentile con z&gt;2 <em>e</em> l’importo è materiale (≥ 1 mln €), o se raddoppia da un anno all’altro (+60% e &gt; 2 mln €).</li>
+  <li>Il «rosso» di sistema è ricostruito sommando il risultato delle aziende e quello della Gestione Sanitaria Accentrata regionale (GSA, codice 000), che copre gran parte dei disavanzi.</li>
+</ul>
+<p class="small muted">Prossimo passo possibile: incrocio con gli appalti pubblici (ANAC) per risalire ai singoli
+contratti, ai fornitori e alle gare a offerta unica.</p>
+
 <h2>Limiti</h2>
 <ul class="small">
   <li>I dati sono di cassa/competenza da consuntivo: variazioni di perimetro possono generare falsi positivi.</li>
   <li>Le soglie sono volutamente prudenti per ridurre il rumore; alcune anomalie reali possono non emergere.</li>
+  <li>Un’anomalia di spesa <strong>non è prova di illecito</strong>: indica dove conviene approfondire.</li>
   <li>Il progetto è a scopo di trasparenza civica e non sostituisce le fonti ufficiali né la Corte dei conti.</li>
 </ul>
 <p class="small muted">Elaborazione automatica open source di Carbon Stealth VCC.</p>
@@ -341,7 +371,7 @@ sanitaria accentrata regionale) e 999 (consolidato regionale) sono esclusi perch
 }
 
 // ---------- DETTAGLIO STRUTTURA ----------
-function renderStruttura({ ente, struttureByCod, anagrafica, seg, ultimoAnnoCe }) {
+function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, ultimoAnnoCe }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
   const val = (k) => anni.map((a) => [a, ente.serie.get(a)[k]]).filter(([, v]) => v != null);
@@ -402,6 +432,32 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, ultimoAnnoCe }
       })
       .join('')}</tbody></table></div>`;
 
+  // „Dove vanno i soldi“ — разходен разбор + форензик флагове
+  let soldiBlock = '';
+  if (forse && forse.cat && Object.keys(forse.cat).length) {
+    const flaggedCats = new Set(forse.flags.map((f) => f.categoria));
+    const items = CE_FORENSICS.map((c) => forse.cat[c.key] && ({
+      label: FOR_LABEL[c.key],
+      valore: forse.cat[c.key].valore,
+      quota: forse.cat[c.key].quotaCosti,
+      flag: flaggedCats.has(c.key),
+    }))
+      .filter(Boolean)
+      .sort((a, b) => b.quota - a.quota);
+    const flagList = forse.flags.length
+      ? `<h3>Segnali «follow the money» <span class="small muted">(${forse.flags.length})</span></h3>` +
+        forse.flags
+          .map(
+            (f) => `<div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>${esc(f.label)}</span></div>
+            <div class="d">${esc(f.testo)}</div></div>`
+          )
+          .join('')
+      : '';
+    soldiBlock = `<h2>Dove vanno i soldi <span class="small muted">(${forse.anno}, quota dei costi della produzione)</span></h2>
+      <div class="card">${hbars(items, { fmt: euroCompact, maxLabel: 'Composizione della spesa per categoria' })}</div>
+      ${flagList}`;
+  }
+
   // Сигнали
   const segBlock = seg
     ? `<h2>Segnalazioni <span class="small muted">(${seg.segnalazioni.length})</span></h2>${seg.segnalazioni
@@ -456,6 +512,7 @@ ${segBlock}
   <div class="card">${chartRis}</div>
 </div>
 
+${soldiBlock}
 ${opTable}
 ${finTable}
 ${ceBlock}
@@ -469,6 +526,164 @@ ${spBlock}
     description: `Bilancio, entrate, spese e segnalazioni contabili di ${ente.denominazione} (${ente.regione}).`,
     active: 'strutture.html',
     rel: '../',
+    body,
+  });
+}
+
+const FOR_LABEL = Object.fromEntries(CE_FORENSICS.map((c) => [c.key, c.label]));
+
+// ---------- INCHIESTA ----------
+function renderInchiesta({ forense, href }) {
+  const anni = Object.keys(forense.sistema.perAnno).map(Number).sort((a, b) => a - b);
+  const S = (k) => anni.map((a) => [a, forense.sistema.perAnno[a][k]]);
+  const chart = lineChart(
+    [
+      { label: 'Aziende (AO/ASL)', color: 'var(--neg)', points: S('risultatoAziende') },
+      { label: 'Copertura regionale (GSA)', color: 'var(--pos)', points: S('risultatoGSA') },
+      { label: 'Sistema (aziende + GSA)', color: 'var(--brand)', points: S('risultatoSistema') },
+    ],
+    { caption: 'Risultato d’esercizio aggregato per anno (€): il rosso delle aziende è in gran parte coperto dalla GSA regionale' }
+  );
+  const ultimo = anni.at(-1);
+  const s = forense.sistema.perAnno[ultimo];
+
+  const rows = anni
+    .map((a) => {
+      const x = forense.sistema.perAnno[a];
+      return `<tr><td>${a}</td>
+        <td class="num">${x.aziendeInPerdita} / ${x.aziende}</td>
+        <td class="num neg">${euroCompact(x.risultatoAziende)}</td>
+        <td class="num pos">${euroCompact(x.risultatoGSA)}</td>
+        <td class="num ${x.risultatoSistema < 0 ? 'neg' : 'pos'}">${euroCompact(x.risultatoSistema)}</td></tr>`;
+    })
+    .join('');
+
+  const top = forense.enti
+    .filter((e) => e.flags.length)
+    .sort((a, b) => b.flags.length - a.flags.length || (b.cat.consulenzeInterinale?.valore || 0) - (a.cat.consulenzeInterinale?.valore || 0))
+    .slice(0, 15);
+  const flagCards = top
+    .map(
+      (e) => `<div class="seg alta">
+      <div class="t"><span class="badge alta">${e.flags.length}</span> <a href="${href(e.codice)}">${esc(e.denominazione)}</a> <span class="small muted">${esc(e.regione)} · ${e.anno}</span></div>
+      <div class="d">${e.flags.slice(0, 3).map((f) => esc(f.testo)).join('<br>')}${e.flags.length > 3 ? `<br><span class="muted small">…e altre ${e.flags.length - 3}</span>` : ''}</div>
+    </div>`
+    )
+    .join('');
+
+  const body = `
+<h1>Inchiesta: dove vanno davvero i soldi</h1>
+<p class="lead">«Non è possibile che ogni ospedale sia in perdita.» È l’obiezione giusta — e i dati danno una risposta netta.
+Il disavanzo delle aziende è in larga parte <strong>coperto a livello regionale</strong>; e non tutte le aziende sono in rosso.
+Ma quando si scende nelle voci di spesa, emergono anomalie che meritano un occhio.</p>
+
+<div class="note"><strong>La verità sul “rosso”.</strong> Le aziende sanitarie ricevono il Fondo Sanitario Regionale in parte
+tramite la <em>Gestione Sanitaria Accentrata</em> (GSA) della Regione. Il disavanzo delle singole aziende viene così
+in gran parte compensato dalla GSA: il risultato “di sistema” (aziende + GSA) è molto più vicino al pareggio del
+semplice rosso aziendale. <strong>Nel ${ultimo}, ${s.aziendeInUtile} aziende su ${s.aziende} chiudono in utile o pareggio.</strong></div>
+
+<h2>Il conto vero del sistema</h2>
+<div class="card">${chart}</div>
+<div class="grid kpis" style="margin-top:16px">
+  ${kpi(`Aziende in utile (${ultimo})`, `${s.aziendeInUtile} / ${s.aziende}`, 'pos')}
+  ${kpi('Rosso delle aziende', euroCompact(s.risultatoAziende), 'neg')}
+  ${kpi('Copertura GSA regionale', euroCompact(s.risultatoGSA), 'pos')}
+  ${kpi('Disavanzo di sistema', euroCompact(s.risultatoSistema), s.risultatoSistema < 0 ? 'neg' : 'pos')}
+</div>
+<div class="tablewrap" style="margin-top:14px"><table>
+  <thead><tr><th>Anno</th><th class="num">In perdita</th><th class="num">Rosso aziende</th><th class="num">Copertura GSA</th><th class="num">Sistema</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<p class="small muted">Il ${ultimo} è l’anno peggiore della serie: il disavanzo di sistema tocca ${euroCompact(s.risultatoSistema)}.
+Il problema quindi non è «ogni ospedale ruba», ma <em>dove</em> si concentra la spesa e <em>perché</em> alcune strutture
+si discostano nettamente dalle altre.</p>
+
+<h2>Le strutture con più anomalie di spesa</h2>
+<p class="muted small">Ordinate per numero di segnali «follow the money». Ogni segnale confronta una voce con la mediana
+nazionale. <a href="classifiche.html">Vedi le classifiche per categoria →</a></p>
+${flagCards}
+
+<div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
+Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.
+Sono <em>piste</em>, quelle che la Corte dei conti e l’ANAC seguono per prime — non verdetti.</div>
+`;
+  return page({
+    title: 'Inchiesta: dove vanno i soldi — Ospedali Trasparenti',
+    description: 'La verità sul disavanzo degli ospedali pubblici italiani e le anomalie di spesa: consulenze, prestazioni da privati, affitti. Analisi sui dati ufficiali.',
+    active: 'inchiesta.html',
+    body,
+  });
+}
+
+// ---------- CLASSIFICHE ----------
+function renderClassifiche({ forense, href }) {
+  const C = forense.classifiche;
+  const codToHref = (cod) => href(cod);
+  const tavola = (titolo, descr, list, valFmt, extraFmt, extraHead) => `
+<h2>${esc(titolo)}</h2>
+<p class="muted small">${esc(descr)}</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Struttura</th><th class="num">${esc(extraHead)}</th><th class="num">Importo</th></tr></thead>
+  <tbody>${list
+    .map(
+      (x, i) => `<tr><td class="num">${i + 1}</td>
+      <td><a href="${codToHref(x.codice)}">${esc(x.denominazione)}</a><div class="small muted">${esc(x.regione)}</div></td>
+      <td class="num">${esc(extraFmt(x))}</td><td class="num">${esc(valFmt(x))}</td></tr>`
+    )
+    .join('')}</tbody>
+</table></div>`;
+
+  const body = `
+<h1>Classifiche «follow the money»</h1>
+<p class="lead">Le voci di spesa più esposte a inefficienza e opacità, normalizzate e messe in fila.
+Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibile.</p>
+
+${tavola(
+  'Consulenze e lavoro interinale sul costo del personale',
+  'Quanto pesano consulenze, collaborazioni e interinale rispetto al personale interno. Mediana nazionale ~5%.',
+  C.consulenzeSuPersonale,
+  (x) => euroCompact(x.valore),
+  (x) => percentualeIt(x.extra),
+  '% del personale'
+)}
+${tavola(
+  'Dipendenza dagli erogatori privati',
+  'Acquisto di prestazioni sanitarie da soggetti privati come quota dei costi.',
+  C.dipendenzaPrivato,
+  (x) => euroCompact(x.valore),
+  (x) => percentualeIt(x.extra),
+  '% dei costi'
+)}
+${tavola(
+  'Godimento di beni di terzi (affitti e noleggi)',
+  'Affitti e noleggi come quota dei costi: valori alti possono nascondere operazioni immobiliari onerose.',
+  C.godimentoTerzi,
+  (x) => euroCompact(x.valore),
+  (x) => percentualeIt(x.extra),
+  '% dei costi'
+)}
+${tavola(
+  'Acquisti di beni per posto letto',
+  'Spesa per beni (farmaci, dispositivi) rapportata ai posti letto: outlier = possibili sovrapprezzi.',
+  C.beniPerLetto,
+  (x) => euroCompact(x.valore),
+  (x) => euroIt(x.extra) + '/letto',
+  'per posto letto'
+)}
+${tavola(
+  'Servizi non sanitari per posto letto',
+  'Pulizia, mensa, riscaldamento, rifiuti… per posto letto. I grandi appalti esternalizzati.',
+  C.serviziNonSanitariPerLetto,
+  (x) => euroCompact(x.valore),
+  (x) => euroIt(x.extra) + '/letto',
+  'per posto letto'
+)}
+<p class="small muted" style="margin-top:20px">Metodo e limiti nella <a href="metodologia.html">metodologia</a>.</p>
+`;
+  return page({
+    title: 'Classifiche follow the money — Ospedali Trasparenti',
+    description: 'Classifiche delle voci di spesa più esposte a inefficienza negli ospedali pubblici italiani: consulenze, privati, affitti, beni per posto letto.',
+    active: 'classifiche.html',
     body,
   });
 }

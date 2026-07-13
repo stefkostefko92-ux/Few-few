@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classifiche follow the money — Ospedali Trasparenti</title>
+<meta name="description" content="Classifiche delle voci di spesa più esposte a inefficienza negli ospedali pubblici italiani: consulenze, privati, affitti, beni per posto letto.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="classifiche.html" aria-current="page">Classifiche</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main><div class="wrap">
+
+<h1>Classifiche «follow the money»</h1>
+<p class="lead">Le voci di spesa più esposte a inefficienza e opacità, normalizzate e messe in fila.
+Non sono accuse: sono i punti dove conviene guardare. Ultimo esercizio disponibile.</p>
+
+
+<h2>Consulenze e lavoro interinale sul costo del personale</h2>
+<p class="muted small">Quanto pesano consulenze, collaborazioni e interinale rispetto al personale interno. Mediana nazionale ~5%.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Struttura</th><th class="num">% del personale</th><th class="num">Importo</th></tr></thead>
+  <tbody><tr><td class="num">1</td>
+      <td><a href="struttura/150908-azienda-ospedaliera-universitaria-universita-degli-studi-del.html">AZIENDA OSPEDALIERA UNIVERSITARIA - UNIVERSITA&#39; DEGLI STUDI DELLA CAMPANIA LUIGI VANVITELLI</a><div class="small muted">Campania</div></td>
+      <td class="num">75,1%</td><td class="num">33 mln €</td></tr><tr><td class="num">2</td>
+      <td><a href="struttura/010900-azienda-sanitaria-zero-della-regione-piemonte.html">AZIENDA SANITARIA ZERO DELLA REGIONE PIEMONTE</a><div class="small muted">Piemonte</div></td>
+      <td class="num">65,9%</td><td class="num">2 mln €</td></tr><tr><td class="num">3</td>
+      <td><a href="struttura/150909-azienda-ospedaliera-universitaria-federico-ii.html">AZIENDA OSPEDALIERA UNIVERSITARIA FEDERICO II</a><div class="small muted">Campania</div></td>
+      <td class="num">36,8%</td><td class="num">36 mln €</td></tr><tr><td class="num">4</td>
+      <td><a href="struttura/070970-azienda-tutela-della-salute-liguria.html">AZIENDA TUTELA DELLA SALUTE LIGURIA</a><div class="small muted">Liguria</div></td>
+      <td class="num">31,6%</td><td class="num">2 mln €</td></tr><tr><td class="num">5</td>
+      <td><a href="struttura/190928-azienda-ospedaliera-universitaria-policlinico-paolo-giaccone.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO PAOLO GIACCONE DI PALERMO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">29,2%</td><td class="num">31 mln €</td></tr><tr><td class="num">6</td>
+      <td><a href="struttura/030970-azienda-ospedaliera-s-paolo-di-milano.html">AZIENDA OSPEDALIERA S.PAOLO DI MILANO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">19,1%</td><td class="num">17 mln €</td></tr><tr><td class="num">7</td>
+      <td><a href="struttura/060960-azienda-regionale-di-coordinamento-per-la-salute.html">AZIENDA REGIONALE DI COORDINAMENTO PER LA SALUTE</a><div class="small muted">F. V. Giulia</div></td>
+      <td class="num">18,8%</td><td class="num">2 mln €</td></tr><tr><td class="num">8</td>
+      <td><a href="struttura/120906-azienda-ospedaliero-universitaria-policlinico-umberto-i.html">AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO UMBERTO I</a><div class="small muted">Lazio</div></td>
+      <td class="num">17,7%</td><td class="num">36 mln €</td></tr><tr><td class="num">9</td>
+      <td><a href="struttura/190925-azienda-ospedaliera-universitaria-policlinico-gaetano-martin.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO GAETANO MARTINO DI MESSINA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">17,6%</td><td class="num">20 mln €</td></tr><tr><td class="num">10</td>
+      <td><a href="struttura/120110-azienda-sanitaria-locale-di-rieti.html">AZIENDA SANITARIA LOCALE DI RIETI</a><div class="small muted">Lazio</div></td>
+      <td class="num">16%</td><td class="num">17 mln €</td></tr><tr><td class="num">11</td>
+      <td><a href="struttura/120920-azienda-ospedaliera-universitaria-policlinico-tor-vergata.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO TOR VERGATA</a><div class="small muted">Lazio</div></td>
+      <td class="num">14,6%</td><td class="num">14 mln €</td></tr><tr><td class="num">12</td>
+      <td><a href="struttura/200906-azienda-ospedaliera-universitaria-di-cagliari.html">AZIENDA OSPEDALIERA UNIVERSITARIA DI CAGLIARI</a><div class="small muted">Sardegna</div></td>
+      <td class="num">13,7%</td><td class="num">12 mln €</td></tr><tr><td class="num">13</td>
+      <td><a href="struttura/030922-fondazione-irccs-istituto-nazionale-dei-tumori.html">FONDAZIONE IRCCS ISTITUTO NAZIONALE DEI TUMORI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">13,2%</td><td class="num">14 mln €</td></tr><tr><td class="num">14</td>
+      <td><a href="struttura/090902-azienda-ospedaliero-universitaria-senese.html">AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE</a><div class="small muted">Toscana</div></td>
+      <td class="num">12,4%</td><td class="num">18 mln €</td></tr><tr><td class="num">15</td>
+      <td><a href="struttura/030975-azienda-ospedaliera-ospedale-di-circolo-di-melegnano.html">AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO DI MELEGNANO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">12,3%</td><td class="num">15 mln €</td></tr><tr><td class="num">16</td>
+      <td><a href="struttura/030923-fondazione-irccs-istituto-neurologico-carlo-besta.html">FONDAZIONE IRCCS ISTITUTO NEUROLOGICO CARLO BESTA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">11,8%</td><td class="num">5 mln €</td></tr><tr><td class="num">17</td>
+      <td><a href="struttura/030702-azienda-socio-sanitaria-territoriale-santi-paolo-e-carlo.html">AZIENDA SOCIO SANITARIA TERRITORIALE SANTI PAOLO E CARLO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">11,5%</td><td class="num">27 mln €</td></tr><tr><td class="num">18</td>
+      <td><a href="struttura/200304-azienda-socio-sanitaria-locale-n-4-dell-ogliastra.html">AZIENDA SOCIO SANITARIA LOCALE N.4 DELL&#39;OGLIASTRA</a><div class="small muted">Sardegna</div></td>
+      <td class="num">11,3%</td><td class="num">4 mln €</td></tr><tr><td class="num">19</td>
+      <td><a href="struttura/030993-agenzia-regionale-emergenza-urgenza-lombardia.html">AGENZIA REGIONALE EMERGENZA URGENZA - LOMBARDIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">11,3%</td><td class="num">4 mln €</td></tr><tr><td class="num">20</td>
+      <td><a href="struttura/120918-irccs-lazzaro-spallanzani.html">IRCCS LAZZARO SPALLANZANI</a><div class="small muted">Lazio</div></td>
+      <td class="num">11,1%</td><td class="num">6 mln €</td></tr></tbody>
+</table></div>
+
+<h2>Dipendenza dagli erogatori privati</h2>
+<p class="muted small">Acquisto di prestazioni sanitarie da soggetti privati come quota dei costi.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Struttura</th><th class="num">% dei costi</th><th class="num">Importo</th></tr></thead>
+  <tbody><tr><td class="num">1</td>
+      <td><a href="struttura/050122-azienda-ulss-n-22-bussolengo.html">AZIENDA ULSS N. 22 BUSSOLENGO</a><div class="small muted">Veneto</div></td>
+      <td class="num">40,6%</td><td class="num">257 mln €</td></tr><tr><td class="num">2</td>
+      <td><a href="struttura/120105-asl-di-rm-e.html">ASL DI RM/E</a><div class="small muted">Lazio</div></td>
+      <td class="num">35,5%</td><td class="num">621 mln €</td></tr><tr><td class="num">3</td>
+      <td><a href="struttura/120201-asl-roma-1.html">ASL ROMA 1</a><div class="small muted">Lazio</div></td>
+      <td class="num">28,6%</td><td class="num">928 mln €</td></tr><tr><td class="num">4</td>
+      <td><a href="struttura/030310-asl-di-milano2.html">ASL DI MILANO2</a><div class="small muted">Lombardia</div></td>
+      <td class="num">26,8%</td><td class="num">230 mln €</td></tr><tr><td class="num">5</td>
+      <td><a href="struttura/030303-azienda-sanitaria-locale-della-provincia-di-como.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI COMO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">22,3%</td><td class="num">183 mln €</td></tr><tr><td class="num">6</td>
+      <td><a href="struttura/030302-azienda-sanitaria-locale-di-brescia.html">AZIENDA SANITARIA LOCALE DI BRESCIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">20,1%</td><td class="num">339 mln €</td></tr><tr><td class="num">7</td>
+      <td><a href="struttura/030326-agenzia-di-tutela-della-salute-di-brescia.html">AGENZIA DI TUTELA DELLA SALUTE DI BRESCIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">19,5%</td><td class="num">355 mln €</td></tr><tr><td class="num">8</td>
+      <td><a href="struttura/030301-azienda-sanitaria-locale-della-provincia-di-bergamo.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI BERGAMO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">19,5%</td><td class="num">286 mln €</td></tr><tr><td class="num">9</td>
+      <td><a href="struttura/050119-azienda-ulss-n-19-adria.html">AZIENDA ULSS N.19 ADRIA</a><div class="small muted">Veneto</div></td>
+      <td class="num">19,5%</td><td class="num">31 mln €</td></tr><tr><td class="num">10</td>
+      <td><a href="struttura/030308-asl-di-milano.html">ASL DI MILANO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">19,4%</td><td class="num">511 mln €</td></tr><tr><td class="num">11</td>
+      <td><a href="struttura/030325-agenzia-di-tutela-della-salute-di-bergamo.html">AGENZIA DI TUTELA DELLA SALUTE DI BERGAMO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">19,3%</td><td class="num">325 mln €</td></tr><tr><td class="num">12</td>
+      <td><a href="struttura/120103-asl-di-rm-c.html">ASL DI RM/C</a><div class="small muted">Lazio</div></td>
+      <td class="num">17,9%</td><td class="num">231 mln €</td></tr><tr><td class="num">13</td>
+      <td><a href="struttura/030321-agenzia-di-tutela-della-salute-della-citta-metropolitana-di-.html">AGENZIA DI TUTELA DELLA SALUTE DELLA CITTA&#39; METROPOLITANA DI MILANO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">17,9%</td><td class="num">1 mld €</td></tr><tr><td class="num">14</td>
+      <td><a href="struttura/030312-azienda-sanitaria-locale-della-provincia-di-pavia.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI PAVIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">17,5%</td><td class="num">162 mln €</td></tr><tr><td class="num">15</td>
+      <td><a href="struttura/030311-asl-della-provincia-di-monza-e-brianza.html">ASL DELLA PROVINCIA DI MONZA E BRIANZA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">16,4%</td><td class="num">196 mln €</td></tr><tr><td class="num">16</td>
+      <td><a href="struttura/120202-asl-roma-2.html">ASL ROMA 2</a><div class="small muted">Lazio</div></td>
+      <td class="num">16,3%</td><td class="num">493 mln €</td></tr><tr><td class="num">17</td>
+      <td><a href="struttura/030328-agenzia-di-tutela-della-salute-di-pavia.html">AGENZIA DI TUTELA DELLA SALUTE DI PAVIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">15,9%</td><td class="num">167 mln €</td></tr><tr><td class="num">18</td>
+      <td><a href="struttura/030322-agenzia-di-tutela-della-salute-dell-insubria.html">AGENZIA DI TUTELA DELLA SALUTE DELL&#39;INSUBRIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">15,9%</td><td class="num">352 mln €</td></tr><tr><td class="num">19</td>
+      <td><a href="struttura/030324-agenzia-di-tutela-della-salute-della-brianza.html">AGENZIA DI TUTELA DELLA SALUTE DELLA BRIANZA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">15,9%</td><td class="num">283 mln €</td></tr><tr><td class="num">20</td>
+      <td><a href="struttura/160115-azienda-sanitaria-locale-della-provincia-di-foggia.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI FOGGIA</a><div class="small muted">Puglia</div></td>
+      <td class="num">15,4%</td><td class="num">202 mln €</td></tr></tbody>
+</table></div>
+
+<h2>Godimento di beni di terzi (affitti e noleggi)</h2>
+<p class="muted small">Affitti e noleggi come quota dei costi: valori alti possono nascondere operazioni immobiliari onerose.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Struttura</th><th class="num">% dei costi</th><th class="num">Importo</th></tr></thead>
+  <tbody><tr><td class="num">1</td>
+      <td><a href="struttura/050108-azienda-ulss-n-8-asolo.html">AZIENDA ULSS N.8 ASOLO</a><div class="small muted">Veneto</div></td>
+      <td class="num">11,5%</td><td class="num">51 mln €</td></tr><tr><td class="num">2</td>
+      <td><a href="struttura/200930-azienda-regionale-della-salute-regione-sardegna-ares.html">AZIENDA REGIONALE DELLA SALUTE REGIONE SARDEGNA - ARES</a><div class="small muted">Sardegna</div></td>
+      <td class="num">5,8%</td><td class="num">3 mln €</td></tr><tr><td class="num">3</td>
+      <td><a href="struttura/090104-azienda-usl4-di-prato.html">AZIENDA USL4 DI PRATO</a><div class="small muted">Toscana</div></td>
+      <td class="num">5,4%</td><td class="num">25 mln €</td></tr><tr><td class="num">4</td>
+      <td><a href="struttura/090102-azienda-usl2-di-lucca.html">AZIENDA USL2 DI LUCCA</a><div class="small muted">Toscana</div></td>
+      <td class="num">4,5%</td><td class="num">20 mln €</td></tr><tr><td class="num">5</td>
+      <td><a href="struttura/050104-azienda-ulss-n-4-alto-vicentino.html">AZIENDA ULSS N. 4 ALTO VICENTINO</a><div class="small muted">Veneto</div></td>
+      <td class="num">4,3%</td><td class="num">15 mln €</td></tr><tr><td class="num">6</td>
+      <td><a href="struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a><div class="small muted">Piemonte</div></td>
+      <td class="num">4,2%</td><td class="num">19 mln €</td></tr><tr><td class="num">7</td>
+      <td><a href="struttura/030727-azienda-socio-sanitaria-territoriale-di-pavia.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI PAVIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,9%</td><td class="num">16 mln €</td></tr><tr><td class="num">8</td>
+      <td><a href="struttura/090103-azienda-usl3-di-pistoia.html">AZIENDA USL3 DI PISTOIA</a><div class="small muted">Toscana</div></td>
+      <td class="num">3,9%</td><td class="num">20 mln €</td></tr><tr><td class="num">9</td>
+      <td><a href="struttura/030717-azienda-socio-sanitaria-territoriale-della-brianza.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA BRIANZA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,9%</td><td class="num">23 mln €</td></tr><tr><td class="num">10</td>
+      <td><a href="struttura/030706-azienda-socio-sanitaria-territoriale-rhodense.html">AZIENDA SOCIO SANITARIA TERRITORIALE RHODENSE</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,6%</td><td class="num">15 mln €</td></tr><tr><td class="num">11</td>
+      <td><a href="struttura/030725-azienda-socio-sanitaria-territoriale-di-mantova.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI MANTOVA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,5%</td><td class="num">18 mln €</td></tr><tr><td class="num">12</td>
+      <td><a href="struttura/030710-azienda-socio-sanitaria-territoriale-dei-sette-laghi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,4%</td><td class="num">23 mln €</td></tr><tr><td class="num">13</td>
+      <td><a href="struttura/030993-agenzia-regionale-emergenza-urgenza-lombardia.html">AGENZIA REGIONALE EMERGENZA URGENZA - LOMBARDIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,3%</td><td class="num">11 mln €</td></tr><tr><td class="num">14</td>
+      <td><a href="struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,3%</td><td class="num">27 mln €</td></tr><tr><td class="num">15</td>
+      <td><a href="struttura/030969-azienda-ospedaliera-fate-bene-fratelli-e-oftalmico-di-milano.html">AZIENDA OSPEDALIERA FATE BENE FRATELLI E OFTALMICO DI MILANO</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3,1%</td><td class="num">5 mln €</td></tr><tr><td class="num">16</td>
+      <td><a href="struttura/030708-azienda-socio-sanitaria-territoriale-melegnano-e-della-marte.html">AZIENDA SOCIO SANITARIA TERRITORIALE MELEGNANO E DELLA MARTESANA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">3%</td><td class="num">12 mln €</td></tr><tr><td class="num">17</td>
+      <td><a href="struttura/030718-azienda-socio-sanitaria-territoriale-papa-giovanni-xxiii.html">AZIENDA SOCIO SANITARIA TERRITORIALE PAPA GIOVANNI XXIII</a><div class="small muted">Lombardia</div></td>
+      <td class="num">2,9%</td><td class="num">22 mln €</td></tr><tr><td class="num">18</td>
+      <td><a href="struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">2,9%</td><td class="num">31 mln €</td></tr><tr><td class="num">19</td>
+      <td><a href="struttura/160902-ente-ospedaliero-specializzato-in-gastroenterologia-istituto.html">ENTE OSPEDALIERO SPECIALIZZATO IN GASTROENTEROLOGIA ISTITUTO NAZIONALE DI RICOVERO E CURA A CARATTERE SCIENTIFICO S. DE BELLIS</a><div class="small muted">Puglia</div></td>
+      <td class="num">2,8%</td><td class="num">2 mln €</td></tr><tr><td class="num">20</td>
+      <td><a href="struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">2,6%</td><td class="num">13 mln €</td></tr></tbody>
+</table></div>
+
+<h2>Acquisti di beni per posto letto</h2>
+<p class="muted small">Spesa per beni (farmaci, dispositivi) rapportata ai posti letto: outlier = possibili sovrapprezzi.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Struttura</th><th class="num">per posto letto</th><th class="num">Importo</th></tr></thead>
+  <tbody><tr><td class="num">1</td>
+      <td><a href="struttura/120206-asl-roma-6.html">ASL ROMA 6</a><div class="small muted">Lazio</div></td>
+      <td class="num">1.105.358 €/letto</td><td class="num">138 mln €</td></tr><tr><td class="num">2</td>
+      <td><a href="struttura/050952-irccs-istituto-oncologico-veneto.html">IRCCS - ISTITUTO ONCOLOGICO VENETO</a><div class="small muted">Veneto</div></td>
+      <td class="num">810.389 €/letto</td><td class="num">122 mln €</td></tr><tr><td class="num">3</td>
+      <td><a href="struttura/010212-azienda-sanitaria-locale-di-asti-asl-at.html">AZIENDA SANITARIA LOCALE DI ASTI - ASL AT</a><div class="small muted">Piemonte</div></td>
+      <td class="num">658.788 €/letto</td><td class="num">339 mln €</td></tr><tr><td class="num">4</td>
+      <td><a href="struttura/060902-centro-di-riferimento-oncologico-di-aviano-irccs.html">CENTRO DI RIFERIMENTO ONCOLOGICO DI AVIANO - IRCCS</a><div class="small muted">F. V. Giulia</div></td>
+      <td class="num">573.755 €/letto</td><td class="num">56 mln €</td></tr><tr><td class="num">5</td>
+      <td><a href="struttura/120204-azienda-unita-sanitaria-locale-roma-4.html">AZIENDA UNITA&#39; SANITARIA LOCALE ROMA 4</a><div class="small muted">Lazio</div></td>
+      <td class="num">556.855 €/letto</td><td class="num">69 mln €</td></tr><tr><td class="num">6</td>
+      <td><a href="struttura/080103-azienda-unita-sanitaria-locale-irccs-di-reggio-emilia.html">AZIENDA UNITA&#39; SANITARIA LOCALE - IRCCS DI REGGIO EMILIA</a><div class="small muted">Emilia Romagna</div></td>
+      <td class="num">500.438 €/letto</td><td class="num">729 mln €</td></tr><tr><td class="num">7</td>
+      <td><a href="struttura/150205-azienda-sanitaria-locale-napoli-2-nord.html">AZIENDA SANITARIA LOCALE NAPOLI 2 NORD</a><div class="small muted">Campania</div></td>
+      <td class="num">476.407 €/letto</td><td class="num">333 mln €</td></tr><tr><td class="num">8</td>
+      <td><a href="struttura/030922-fondazione-irccs-istituto-nazionale-dei-tumori.html">FONDAZIONE IRCCS ISTITUTO NAZIONALE DEI TUMORI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">457.673 €/letto</td><td class="num">126 mln €</td></tr><tr><td class="num">9</td>
+      <td><a href="struttura/150910-irccs-fondazione-pascale.html">IRCCS-FONDAZIONE PASCALE</a><div class="small muted">Campania</div></td>
+      <td class="num">445.940 €/letto</td><td class="num">80 mln €</td></tr><tr><td class="num">10</td>
+      <td><a href="struttura/180914-azienda-ospedaliero-universitaria-renato-dulbecco.html">AZIENDA OSPEDALIERO-UNIVERSITARIA RENATO DULBECCO</a><div class="small muted">Calabria</div></td>
+      <td class="num">442.678 €/letto</td><td class="num">112 mln €</td></tr><tr><td class="num">11</td>
+      <td><a href="struttura/030923-fondazione-irccs-istituto-neurologico-carlo-besta.html">FONDAZIONE IRCCS ISTITUTO NEUROLOGICO CARLO BESTA</a><div class="small muted">Lombardia</div></td>
+      <td class="num">442.598 €/letto</td><td class="num">75 mln €</td></tr><tr><td class="num">12</td>
+      <td><a href="struttura/160901-istituto-tumori-giovanni-paolo-ii-irccs-bari.html">ISTITUTO TUMORI GIOVANNI PAOLO II - IRCCS BARI</a><div class="small muted">Puglia</div></td>
+      <td class="num">403.639 €/letto</td><td class="num">48 mln €</td></tr><tr><td class="num">13</td>
+      <td><a href="struttura/150206-azienda-sanitaria-locale-napoli-3-sud.html">AZIENDA SANITARIA LOCALE NAPOLI 3 SUD</a><div class="small muted">Campania</div></td>
+      <td class="num">388.663 €/letto</td><td class="num">305 mln €</td></tr><tr><td class="num">14</td>
+      <td><a href="struttura/120908-istituti-fisioterapici-ospitalieri.html">ISTITUTI FISIOTERAPICI OSPITALIERI</a><div class="small muted">Lazio</div></td>
+      <td class="num">353.092 €/letto</td><td class="num">96 mln €</td></tr><tr><td class="num">15</td>
+      <td><a href="struttura/190928-azienda-ospedaliera-universitaria-policlinico-paolo-giaccone.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO PAOLO GIACCONE DI PALERMO</a><div class="small muted">Sicilia</div></td>
+      <td class="num">319.910 €/letto</td><td class="num">135 mln €</td></tr><tr><td class="num">16</td>
+      <td><a href="struttura/180204-azienda-sanitaria-provinciale-di-vibo-valentia.html">AZIENDA SANITARIA PROVINCIALE DI VIBO VALENTIA</a><div class="small muted">Calabria</div></td>
+      <td class="num">312.054 €/letto</td><td class="num">55 mln €</td></tr><tr><td class="num">17</td>
+      <td><a href="struttura/120111-azienda-sanitaria-locale-latina.html">AZIENDA SANITARIA LOCALE LATINA</a><div class="small muted">Lazio</div></td>
+      <td class="num">301.598 €/letto</td><td class="num">180 mln €</td></tr><tr><td class="num">18</td>
+      <td><a href="struttura/120920-azienda-ospedaliera-universitaria-policlinico-tor-vergata.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO TOR VERGATA</a><div class="small muted">Lazio</div></td>
+      <td class="num">297.344 €/letto</td><td class="num">138 mln €</td></tr><tr><td class="num">19</td>
+      <td><a href="struttura/170910-irccs-crob.html">IRCCS CROB</a><div class="small muted">Basilicata</div></td>
+      <td class="num">290.887 €/letto</td><td class="num">19 mln €</td></tr><tr><td class="num">20</td>
+      <td><a href="struttura/190923-azienda-ospedaliero-universitaria-policlinico-g-rodolico-san.html">AZIENDA OSPEDALIERO UNIVERSITARIA POLICLINICO G. RODOLICO - SAN MARCO DI CATANIA</a><div class="small muted">Sicilia</div></td>
+      <td class="num">272.705 €/letto</td><td class="num">218 mln €</td></tr></tbody>
+</table></div>
+
+<h2>Servizi non sanitari per posto letto</h2>
+<p class="muted small">Pulizia, mensa, riscaldamento, rifiuti… per posto letto. I grandi appalti esternalizzati.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>#</th><th>Struttura</th><th class="num">per posto letto</th><th class="num">Importo</th></tr></thead>
+  <tbody><tr><td class="num">1</td>
+      <td><a href="struttura/120206-asl-roma-6.html">ASL ROMA 6</a><div class="small muted">Lazio</div></td>
+      <td class="num">503.162 €/letto</td><td class="num">63 mln €</td></tr><tr><td class="num">2</td>
+      <td><a href="struttura/120204-azienda-unita-sanitaria-locale-roma-4.html">AZIENDA UNITA&#39; SANITARIA LOCALE ROMA 4</a><div class="small muted">Lazio</div></td>
+      <td class="num">254.990 €/letto</td><td class="num">32 mln €</td></tr><tr><td class="num">3</td>
+      <td><a href="struttura/150910-irccs-fondazione-pascale.html">IRCCS-FONDAZIONE PASCALE</a><div class="small muted">Campania</div></td>
+      <td class="num">145.957 €/letto</td><td class="num">26 mln €</td></tr><tr><td class="num">4</td>
+      <td><a href="struttura/180914-azienda-ospedaliero-universitaria-renato-dulbecco.html">AZIENDA OSPEDALIERO-UNIVERSITARIA RENATO DULBECCO</a><div class="small muted">Calabria</div></td>
+      <td class="num">144.248 €/letto</td><td class="num">36 mln €</td></tr><tr><td class="num">5</td>
+      <td><a href="struttura/150908-azienda-ospedaliera-universitaria-universita-degli-studi-del.html">AZIENDA OSPEDALIERA UNIVERSITARIA - UNIVERSITA&#39; DEGLI STUDI DELLA CAMPANIA LUIGI VANVITELLI</a><div class="small muted">Campania</div></td>
+      <td class="num">131.176 €/letto</td><td class="num">37 mln €</td></tr><tr><td class="num">6</td>
+      <td><a href="struttura/200303-azienda-socio-sanitaria-locale-n-3-di-nuoro.html">AZIENDA SOCIO SANITARIA LOCALE N.3 DI NUORO</a><div class="small muted">Sardegna</div></td>
+      <td class="num">128.382 €/letto</td><td class="num">43 mln €</td></tr><tr><td class="num">7</td>
+      <td><a href="struttura/170910-irccs-crob.html">IRCCS CROB</a><div class="small muted">Basilicata</div></td>
+      <td class="num">125.025 €/letto</td><td class="num">8 mln €</td></tr><tr><td class="num">8</td>
+      <td><a href="struttura/150909-azienda-ospedaliera-universitaria-federico-ii.html">AZIENDA OSPEDALIERA UNIVERSITARIA FEDERICO II</a><div class="small muted">Campania</div></td>
+      <td class="num">121.080 €/letto</td><td class="num">73 mln €</td></tr><tr><td class="num">9</td>
+      <td><a href="struttura/160901-istituto-tumori-giovanni-paolo-ii-irccs-bari.html">ISTITUTO TUMORI GIOVANNI PAOLO II - IRCCS BARI</a><div class="small muted">Puglia</div></td>
+      <td class="num">119.562 €/letto</td><td class="num">14 mln €</td></tr><tr><td class="num">10</td>
+      <td><a href="struttura/200304-azienda-socio-sanitaria-locale-n-4-dell-ogliastra.html">AZIENDA SOCIO SANITARIA LOCALE N.4 DELL&#39;OGLIASTRA</a><div class="small muted">Sardegna</div></td>
+      <td class="num">117.311 €/letto</td><td class="num">12 mln €</td></tr><tr><td class="num">11</td>
+      <td><a href="struttura/180204-azienda-sanitaria-provinciale-di-vibo-valentia.html">AZIENDA SANITARIA PROVINCIALE DI VIBO VALENTIA</a><div class="small muted">Calabria</div></td>
+      <td class="num">112.879 €/letto</td><td class="num">20 mln €</td></tr><tr><td class="num">12</td>
+      <td><a href="struttura/060902-centro-di-riferimento-oncologico-di-aviano-irccs.html">CENTRO DI RIFERIMENTO ONCOLOGICO DI AVIANO - IRCCS</a><div class="small muted">F. V. Giulia</div></td>
+      <td class="num">112.642 €/letto</td><td class="num">11 mln €</td></tr><tr><td class="num">13</td>
+      <td><a href="struttura/120205-azienda-sanitaria-locale-roma-5.html">AZIENDA SANITARIA LOCALE ROMA 5</a><div class="small muted">Lazio</div></td>
+      <td class="num">111.670 €/letto</td><td class="num">61 mln €</td></tr><tr><td class="num">14</td>
+      <td><a href="struttura/030922-fondazione-irccs-istituto-nazionale-dei-tumori.html">FONDAZIONE IRCCS ISTITUTO NAZIONALE DEI TUMORI</a><div class="small muted">Lombardia</div></td>
+      <td class="num">108.636 €/letto</td><td class="num">30 mln €</td></tr><tr><td class="num">15</td>
+      <td><a href="struttura/120908-istituti-fisioterapici-ospitalieri.html">ISTITUTI FISIOTERAPICI OSPITALIERI</a><div class="small muted">Lazio</div></td>
+      <td class="num">106.540 €/letto</td><td class="num">29 mln €</td></tr><tr><td class="num">16</td>
+      <td><a href="struttura/150206-azienda-sanitaria-locale-napoli-3-sud.html">AZIENDA SANITARIA LOCALE NAPOLI 3 SUD</a><div class="small muted">Campania</div></td>
+      <td class="num">106.002 €/letto</td><td class="num">83 mln €</td></tr><tr><td class="num">17</td>
+      <td><a href="struttura/120920-azienda-ospedaliera-universitaria-policlinico-tor-vergata.html">AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO TOR VERGATA</a><div class="small muted">Lazio</div></td>
+      <td class="num">105.029 €/letto</td><td class="num">49 mln €</td></tr><tr><td class="num">18</td>
+      <td><a href="struttura/200307-azienda-socio-sanitaria-locale-n-7-del-sulcis.html">AZIENDA SOCIO SANITARIA LOCALE N.7 DEL SULCIS</a><div class="small muted">Sardegna</div></td>
+      <td class="num">104.347 €/letto</td><td class="num">23 mln €</td></tr><tr><td class="num">19</td>
+      <td><a href="struttura/060901-irccs-materno-infantile-burlo-garofolo.html">IRCCS MATERNO INFANTILE BURLO GAROFOLO</a><div class="small muted">F. V. Giulia</div></td>
+      <td class="num">103.117 €/letto</td><td class="num">12 mln €</td></tr><tr><td class="num">20</td>
+      <td><a href="struttura/160902-ente-ospedaliero-specializzato-in-gastroenterologia-istituto.html">ENTE OSPEDALIERO SPECIALIZZATO IN GASTROENTEROLOGIA ISTITUTO NAZIONALE DI RICOVERO E CURA A CARATTERE SCIENTIFICO S. DE BELLIS</a><div class="small muted">Puglia</div></td>
+      <td class="num">102.710 €/letto</td><td class="num">13 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted" style="margin-top:20px">Metodo e limiti nella <a href="metodologia.html">metodologia</a>.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>:
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
+  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
+  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
+  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+</div></footer>
+</body>
+</html>

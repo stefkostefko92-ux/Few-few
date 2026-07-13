@@ -76,6 +76,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .hidden{display:none!important}
 figure.chart{margin:0}
 figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
 svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
 footer.site a{color:var(--muted);text-decoration:underline}
@@ -85,7 +92,7 @@ footer.site a{color:var(--muted);text-decoration:underline}
 <body>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
-  <nav class="main"><a href="../index.html">Home</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../classifiche.html">Classifiche</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main><div class="wrap">
 
@@ -108,6 +115,38 @@ footer.site a{color:var(--muted);text-decoration:underline}
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="174.0" x2="666" y2="174.0"/><text x="50" y="177.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="118.3" x2="666" y2="118.3"/><text x="50" y="121.3" text-anchor="end">1 mln</text><line class="grid-line" x1="56" y1="62.7" x2="666" y2="62.7"/><text x="50" y="65.7" text-anchor="end">2 mln</text><rect x="83.8" y="160.5" width="46.0" height="13.5" fill="var(--pos)" rx="2"/><text x="106.8" y="192" text-anchor="middle">2019</text><rect x="185.5" y="152.8" width="46.0" height="21.2" fill="var(--pos)" rx="2"/><text x="208.5" y="192" text-anchor="middle">2020</text><rect x="287.2" y="172.9" width="46.0" height="1.1" fill="var(--pos)" rx="2"/><text x="310.2" y="192" text-anchor="middle">2021</text><rect x="388.8" y="94.3" width="46.0" height="79.7" fill="var(--pos)" rx="2"/><text x="411.8" y="192" text-anchor="middle">2022</text><rect x="490.5" y="14.0" width="46.0" height="160.0" fill="var(--pos)" rx="2"/><text x="513.5" y="192" text-anchor="middle">2023</text><rect x="592.2" y="126.8" width="46.0" height="47.2" fill="var(--pos)" rx="2"/><text x="615.2" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
 </div>
 
+<h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione)</span></h2>
+      <div class="card"><div class="hbars" role="img" aria-label="Composizione della spesa per categoria"><div class="hbar-row flag">
+        <div class="hbar-l">Acquisti di beni <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--neg)"></div></div>
+        <div class="hbar-v">465 mln €<span class="muted small"> · 81,3%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:8.5%;background:var(--brand)"></div></div>
+        <div class="hbar-v">40 mln €<span class="muted small"> · 6,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:4.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">19 mln €<span class="muted small"> · 3,3%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">3 mln €<span class="muted small"> · 0,5%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">2 mln €<span class="muted small"> · 0,4%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">7 mila €<span class="muted small"> · 0%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisto di prestazioni sanitarie da privati</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">136 €<span class="muted small"> · 0%</span></div>
+      </div></div></div>
+      <h3>Segnali «follow the money» <span class="small muted">(1)</span></h3><div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Acquisti di beni</span></div>
+            <div class="d">Acquisti di beni: 465.303.184 € = 81,3% dei costi, contro una mediana nazionale del 15,6% (oltre il 90° percentile).</div></div>
 
 <h2>Indicatori per anno</h2>
     <div class="tablewrap"><table>
