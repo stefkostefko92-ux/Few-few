@@ -37,7 +37,26 @@ export const SOGLIE_COI = {
 // Много „affidamento diretto" всъщност са присъединявания към национално
 // състезавани конвенции (Consip/централи за покупки), записани небрежно —
 // личи от предмета. Те НЕ са „без конкуренция" и не бива да вдигат флагове.
-export const RE_CONVENZIONE = /ADESION\w*\s+(ALLA\s+)?CONVENZION|CONVENZION\w*\s+CONSIP|CONSIP|ACCORDO\s+QUADRO|CENTRALE\s+DI\s+COMMITTENZA/i;
+// Покрива и регионалните централи/агрегатори (не само националния Consip):
+// APPALTO SPECIFICO (call-off под състезаван accordo quadro), Azienda Zero,
+// Intercent-ER, Estar, SoReSa, SCR Piemonte, ARIA, soggetto aggregatore.
+export const RE_CONVENZIONE = /ADESION\w*[\s\S]{0,40}CONVENZION|CONVENZION\w*\s+CONSIP|CONSIP|APPALTO\s+SPECIFICO|ACCORDO[\s-]+QUADRO|CENTRALE\s+DI\s+COMMITTENZA|SOGGETTO\s+AGGREGATORE|AZIENDA\s+ZERO|INTERCENT|\bESTAR\b|\bSO\.?RE\.?SA\b|\bS\.?C\.?R\.?\s+PIEMONTE|\bARIA\s+S\.?P\.?A\b/i;
+
+// ПРАВЕН ФИЛТЪР (одит на Правния Разбирач): 11-цифров P.IVA НЕ гарантира
+// юридическо лице — ditta individuale/azienda agricola/либерални професии също
+// са с 11 цифри, а SNC/SAS вграждат личните имена на съдружниците в името.
+// В контекст „конфликт на интереси" назоваваме САМО капиталови/кооперативни
+// дружества (allowlist), никога субекти с лични имена по конструкция.
+const RE_FORMA_PERSONALE = /\bS\.?\s?N\.?\s?C\b|\bS\.?\s?A\.?\s?S\b|DITTA\s+INDIVIDUALE|AZIENDA\s+AGRICOLA|IMPRESA\s+INDIVIDUALE/i;
+const RE_FORMA_CAPITALE = /\bS\.?\s?P\.?\s?A\b|\bS\.?\s?R\.?\s?L\b|S\.?C\.?\s?A\s?R\.?\s?L|SOCIET[AÀ']{1,2}\s+(PER\s+AZIONI|A\s+RESPONSABILIT|COOPERATIVA|CONSORTILE|BENEFIT)|COOPERATIVA|CONSORZIO|\bCOOP\b|FONDAZIONE|\bGMBH\b|\bLTD\b|\bLIMITED\b|\bINC\b|\bCORP\b|\bB\.?V\b|\bN\.?V\b|\bA\.?G\b/i;
+export function eSocietaDiCapitali(nome) {
+  const n = nome || '';
+  if (!n.trim()) return false;
+  if (/^IMPRESA\s+INESISTENTE$/i.test(n.trim())) return false; // sentinel на ANAC, не реален субект
+  if (/AZIENDA\s+(SANITARIA|OSPEDALIER|SOCIO\s*SANITARIA)|A\.?\s?S\.?\s?L\b|A\.?\s?U\.?\s?S\.?\s?L\b/i.test(n)) return false; // публичен орган като „доставчик" — артефакт
+  if (RE_FORMA_PERSONALE.test(n)) return false;
+  return RE_FORMA_CAPITALE.test(n);
+}
 
 /**
  * Чист, тестваем анализ: списък договори (с полета codice, fornitoreCf,
@@ -47,7 +66,9 @@ export function analizzaCoppie(contratti, soglie = SOGLIE_COI) {
   const coppie = new Map(); // codice|cf → агрегат
   const perForn = new Map(); // cf → общ приход на доставчика (за dipendenza)
   for (const c of contratti) {
-    if (!c.fornitoreCf) continue; // само юридически лица (GDPR)
+    if (!c.fornitoreCf) continue; // изключва личните CF (16 знака) по конструкция
+    if (!eSocietaDiCapitali(c.fornitore)) continue; // само капиталови/кооп. форми (правен одит)
+    if (!(c.importo > 0)) continue; // икономически нулеви записи не бива да броят към праговете
     const convenzione = RE_CONVENZIONE.test(c.oggetto || '');
     const senza = !convenzione && (c.categoria === 'diretto' || c.categoria === 'negoziataSenza');
     const k = `${c.codice}|${c.fornitoreCf}`;
@@ -102,6 +123,8 @@ async function main() {
   await writeJson(join(DATA_DIR, 'coi.json'), {
     generatoIl: new Date().toISOString(),
     anni: config.anacAnni || [2023, 2024],
+    // периметърът на quotaFornitore = броят болници с опис (НЕ хардкодвай в текстовете)
+    perimetroAziende: files.length,
     soglie: SOGLIE_COI,
     nota: 'Indicatori di rischio nelle relazioni contrattuali ricorrenti (rotazione, dipendenza, esclusività). NON sono prova di conflitto di interessi: la verifica richiede i dati societari (Registro Imprese) e gli incarichi dei dirigenti (Amministrazione Trasparente). quotaFornitore è calcolata sul fatturato del fornitore TRACCIATO in questo dataset (le aziende sanitarie collegate), non sull’intero SSN.',
     statistiche: {

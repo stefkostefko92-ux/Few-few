@@ -214,7 +214,7 @@ export function siteUrl() {
  * `canonical` е релативният път на страницата спрямо корена (по подр. = `active`,
  * което е вярно за страниците от менюто). `jsonld` инжектира JSON-LD блок.
  */
-export function page({ title, active, rel = '', body, description = '', canonical = null, jsonld = null, ogType = 'website' }) {
+export function page({ title, active, rel = '', body, description = '', canonical = null, jsonld = null, ogType = 'website', noindex = false }) {
   const nav = NAV.map(
     ([href, label]) =>
       `<a href="${rel}${href}"${active === href ? ' aria-current="page"' : ''}>${label}</a>`
@@ -222,6 +222,7 @@ export function page({ title, active, rel = '', body, description = '', canonica
   const path = canonical != null ? canonical : active;
   const abs = SITE_URL && path ? `${SITE_URL}/${path}` : null;
   const meta = [
+    noindex ? '<meta name="robots" content="noindex">' : '',
     abs ? `<link rel="canonical" href="${esc(abs)}">` : '',
     `<meta property="og:type" content="${esc(ogType)}">`,
     `<meta property="og:site_name" content="Ospedali Trasparenti">`,

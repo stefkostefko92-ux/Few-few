@@ -17,6 +17,7 @@ import { matchAutoritaEnti } from './lib/match.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, slugify, esc } from './lib/format.js';
 import { page, kpi, badge, lineChart, barChart, hbars, setSiteUrl, siteUrl } from './lib/site-ui.js';
 import { VIEWBOX, REGIONI_GEO } from './lib/italia-geo.js';
+import { eSocietaDiCapitali } from './coi.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
@@ -245,8 +246,11 @@ async function main() {
       const haPagina = materiale;
       if (haPagina) {
         f.top.sort((a, b) => b.importo - a.importo);
-        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, coppie: coiByCf.get(f.cf) || [], strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
-        fornituraCfs.push(f.cf);
+        // ditta individuale/società di persone (лични имена по конструкция):
+        // без рискови флагове, noindex, извън sitemap (правен одит)
+        const societa = eSocietaDiCapitali(f.den);
+        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, societa, coppie: societa ? coiByCf.get(f.cf) || [] : [], strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
+        if (societa) fornituraCfs.push(f.cf);
         paginaForn++;
       }
       idxRows.push([f.cf, f.den, f.valore, f.n, f.perOsp.size, haPagina ? 1 : 0]);
@@ -1202,19 +1206,22 @@ ${appaltiBlk}
 }
 
 // ---------- RELAZIONI RICORRENTI (индикатори „конфликт на интереси") ----------
-const COI_FLAG_LABEL = {
-  rotazione: ['Rotazione', 'Affidamenti diretti ripetuti allo stesso fornitore: il principio di rotazione (art. 49, d.lgs. 36/2023) li limita espressamente.'],
-  dipendenza: ['Dipendenza', 'Il fornitore incassa quasi tutto il suo fatturato tracciato (nel perimetro delle 113 aziende collegate) da una sola azienda, con rapporti prevalentemente senza gara.'],
+// Периметърът (брой болници с опис) идва от данните — не се хардкодва.
+const coiFlagLabel = (perimetro) => ({
+  rotazione: ['Rotazione', 'Affidamenti diretti ripetuti allo stesso fornitore: per gli affidamenti sotto soglia il principio di rotazione (art. 49, d.lgs. 36/2023) li limita espressamente.'],
+  dipendenza: ['Dipendenza', `Il fornitore incassa quasi tutto il suo fatturato tracciato (nel perimetro delle ${perimetro} aziende collegate) da una sola azienda, con rapporti prevalentemente senza gara.`],
   esclusiva: ['Esclusiva', 'Relazione stabile senza concorrenza: molti contratti, quasi tutti senza gara.'],
-};
+});
 
 function renderConflitti({ coi, href }) {
   const MAX_RIGHE = 200;
   const st = coi.statistiche;
+  const perimetro = coi.perimetroAziende || Object.keys(coi.coppie.reduce((a, p) => ((a[p.codice] = 1), a), {})).length;
+  const FLAG_LABEL = coiFlagLabel(perimetro);
   const rows = coi.coppie
     .slice(0, MAX_RIGHE)
     .map((p) => {
-      const flags = p.flags.map((f) => `<span class="badge ${p.gravita === 'alta' ? 'alta' : 'media'}" title="${esc(COI_FLAG_LABEL[f][1])}">${COI_FLAG_LABEL[f][0]}</span>`).join(' ');
+      const flags = p.flags.map((f) => `<span class="badge ${p.gravita === 'alta' ? 'alta' : 'media'}" title="${esc(FLAG_LABEL[f][1])}">${FLAG_LABEL[f][0]}</span>`).join(' ');
       const forn = `<a href="fornitore/${esc(p.cf)}.html">${esc(p.fornitore || p.cf)}</a>`;
       return `<tr data-t="${esc(`${p.denominazione} ${p.fornitore || ''}`.toLowerCase())}" data-f="${esc(p.flags.join(' '))}">
       <td><a href="${href(p.codice)}">${esc(p.denominazione)}</a><div class="small muted">${esc(p.regione)}</div></td>
@@ -1250,10 +1257,14 @@ però un <strong>obbligo di legge</strong> (art. 49, d.lgs. 36/2023): le eccezio
 </div>
 
 <h2>Gli indicatori</h2>
-${Object.entries(COI_FLAG_LABEL).map(([k, [lab, spieg]]) => `<div class="seg ${k === 'rotazione' ? 'alta' : 'media'}"><div class="t"><span class="badge ${k === 'rotazione' ? 'alta' : 'media'}">${lab}</span></div><div class="d">${spieg}</div></div>`).join('')}
+${Object.entries(FLAG_LABEL).map(([k, [lab, spieg]]) => `<div class="seg ${k === 'rotazione' ? 'alta' : 'media'}"><div class="t"><span class="badge ${k === 'rotazione' ? 'alta' : 'media'}">${lab}</span></div><div class="d">${spieg}</div></div>`).join('')}
 <p class="small muted">Soglie: rotazione = ≥${coi.soglie.rotazioneDiretti} affidamenti diretti e ≥${euroCompact(coi.soglie.rotazioneValore)} alla stessa coppia;
 dipendenza = fornitore ≥${euroCompact(coi.soglie.dipendenzaValoreForn)} con ≥${Math.round(coi.soglie.dipendenzaQuota * 100)}% del fatturato da una sola azienda e ≥${Math.round(coi.soglie.dipendenzaSenzaGara * 100)}% senza gara;
-esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.soglie.esclusivaSenzaGara * 100)}% senza gara. Anni: ${coi.anni.join('–')}.</p>
+esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.soglie.esclusivaSenzaGara * 100)}% senza gara. Anni: ${coi.anni.join('–')}.
+Il principio di rotazione (art. 49) vincola gli affidamenti <strong>sotto soglia</strong>; sopra soglia si valutano
+esclusive, infungibilità e accordi quadro. Le adesioni a convenzioni/accordi quadro riconoscibili dall’oggetto
+(Consip, soggetti aggregatori regionali, appalti specifici) sono <strong>escluse</strong> dal conteggio «senza gara».
+Sono considerate solo società di capitali, cooperative e consorzi — mai ditte individuali o società di persone.</p>
 
 <h2>Le coppie da verificare</h2>
 <div class="controls">
@@ -1269,14 +1280,16 @@ esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.sog
 <div class="tablewrap"><table>
   <thead><tr><th scope="col">Azienda sanitaria</th><th scope="col">Fornitore</th><th scope="col">Indicatori</th>
   <th class="num" scope="col">Contratti</th><th class="num" scope="col">Diretti</th><th class="num" scope="col">Valore</th>
-  <th class="num" scope="col">Senza gara</th><th class="num" scope="col" title="Quota del fatturato tracciato del fornitore (perimetro: 113 aziende collegate) proveniente da questa azienda">Del fornitore</th></tr></thead>
+  <th class="num" scope="col">Senza gara</th><th class="num" scope="col" title="Quota del fatturato tracciato del fornitore (perimetro: ${perimetro} aziende collegate) proveniente da questa azienda">Del fornitore</th></tr></thead>
   <tbody id="rows">${rows}</tbody>
 </table></div>
 <p class="small muted">Mostrate le prime ${numeroIt(Math.min(MAX_RIGHE, coi.coppie.length))} coppie su ${numeroIt(coi.coppie.length)}
 (ordinate per gravità e valore). L’elenco completo è nei <a href="dati.html">dati aperti</a> (coi.json). «Del fornitore» =
-quota del fatturato 2023–24 del fornitore <em>tracciato in questo dataset</em> (le 113 aziende collegate — non l’intero SSN)
+quota del fatturato 2023–24 del fornitore <em>tracciato in questo dataset</em> (le ${perimetro} aziende collegate — non l’intero SSN)
 proveniente da questa azienda. Ogni contratto è verificabile per CIG dalla scheda dell’azienda.
 <strong>Indicatori, non prove.</strong></p>
+<p class="small muted">Ritieni un dato inesatto o vuoi fornire contesto? <a href="note-legali.html#rettifiche">Richiedi
+una rettifica</a> — le richieste motivate sono valutate tempestivamente.</p>
 
 <h2>Come si verifica davvero</h2>
 <ol>
@@ -1438,9 +1451,10 @@ fusioni, ripiani regionali).</p>
 <p class="small">I dati sono stati <strong>aggregati, normalizzati ed elaborati</strong>; eventuali errori di elaborazione
 non sono imputabili ai titolari delle fonti.</p>
 
-<h2>Rettifiche</h2>
+<h2 id="rettifiche">Rettifiche</h2>
 <p>Chi ritenga un dato inesatto o voglia fornire contesto può richiederne la <strong>rettifica</strong> scrivendo a
-<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>. Le richieste motivate saranno valutate tempestivamente.</p>
+<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>. Le richieste motivate saranno valutate tempestivamente e,
+ove fondate, il dato sarà corretto o contestualizzato alla prima rigenerazione del sito.</p>
 
 <h2>Limitazione di responsabilità</h2>
 <p>I contenuti sono forniti «così come sono», a fini informativi e di trasparenza. Non sostituiscono le fonti ufficiali
@@ -1640,7 +1654,7 @@ sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori perso
 }
 
 // ---------- ПРОФИЛИ НА ИЗПЪЛНИТЕЛИТЕ („segui il fornitore“) ----------
-function renderFornitore({ f, aziendeIdx, coppie = [], strutturaHref }) {
+function renderFornitore({ f, aziendeIdx, societa = true, coppie = [], strutturaHref }) {
   const quotaSg = f.n > 0 ? f.senzaGara / f.n : 0;
   const osp = [...f.perOsp.entries()]
     .map(([cod, v]) => ({ cod, nome: (aziendeIdx[cod] || ['', ''])[0], reg: (aziendeIdx[cod] || ['', ''])[1], ...v }))
@@ -1660,8 +1674,10 @@ function renderFornitore({ f, aziendeIdx, coppie = [], strutturaHref }) {
         <td class="num">${euroCompact(c.importo)}</td></tr>`;
     })
     .join('');
-  const flagConc = osp.length >= 3 && osp[0].valore / f.valore > 0.6;
-  const flagSg = f.n >= 5 && quotaSg > 0.7;
+  // рисковите флагове само за капиталови/кооп. форми — не за субекти с лични
+  // имена в наименованието (ditta individuale, SNC/SAS) — правен одит
+  const flagConc = societa && osp.length >= 3 && osp[0].valore / f.valore > 0.6;
+  const flagSg = societa && f.n >= 5 && quotaSg > 0.7;
   const body = `
 <a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
 <h1>${esc(f.den)}</h1>
@@ -1690,7 +1706,8 @@ ${coppie.length ? `<div class="seg ${coppie.some((p) => p.gravita === 'alta') ? 
   <thead><tr><th scope="col">Data</th><th scope="col">Oggetto · Azienda</th><th scope="col">Gara</th><th class="num" scope="col">Importo</th></tr></thead>
   <tbody>${topRows}</tbody>
 </table></div>
-<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.</p>
+<p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.
+Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#rettifiche">Richiedi una rettifica</a>.</p>
 `;
   return page({
     title: `${f.den} — fornitore del SSN — Ospedali Trasparenti`,
@@ -1698,6 +1715,7 @@ ${coppie.length ? `<div class="seg ${coppie.some((p) => p.gravita === 'alta') ? 
     active: 'fornitori.html',
     rel: '../',
     canonical: `fornitore/${f.cf}.html`,
+    noindex: !societa,
     body,
   });
 }
