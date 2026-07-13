@@ -1418,7 +1418,11 @@ esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.sog
 Il principio di rotazione (art. 49) vincola gli affidamenti <strong>sotto soglia</strong>; sopra soglia si valutano
 esclusive, infungibilità e accordi quadro. Le adesioni a convenzioni/accordi quadro riconoscibili dall’oggetto
 (Consip, soggetti aggregatori regionali, appalti specifici) sono <strong>escluse</strong> dal conteggio «senza gara».
-Sono considerate solo società di capitali, cooperative e consorzi — mai ditte individuali o società di persone.</p>
+Sono considerate solo società di capitali, cooperative e consorzi. Le <strong>ditte individuali e le società di
+persone</strong> (S.n.c., S.a.s.), la cui denominazione contiene per legge il nome di persone fisiche, sono
+<strong>escluse da questo elenco a tutela della riservatezza</strong> (Regolamento UE 2016/679 — GDPR): un’impresa
+individuale coincide con la persona che la esercita, e questi indicatori automatici non giustificano l’esposizione
+nominativa di singoli individui.</p>
 
 <h2>Le coppie da verificare</h2>
 <div class="controls">
@@ -1934,7 +1938,10 @@ persone fisiche non sono elencati.</p>
   <thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Aziende</th></tr></thead>
   <tbody id="rows">${rows}</tbody>
 </table></div>
-<p class="small muted">Mostrati i primi 4.000 per valore. I nomi collegati hanno una scheda dedicata (imprese con ≥ 3 contratti o ≥ 500.000 €).</p>
+<p class="small muted">Mostrati i primi 4.000 per valore. I nomi collegati hanno una scheda dedicata (imprese con ≥ 3 contratti o ≥ 500.000 €).
+A tutela della riservatezza delle persone fisiche (GDPR), gli operatori individuali non sono mai nominati e le imprese
+la cui denominazione contiene nomi di persona (ditte individuali, S.n.c./S.a.s.) sono escluse dagli indicatori di
+rischio e non compaiono tra i <a href="conflitti.html">rapporti ricorrenti</a>.</p>
 <script>
 (function(){var q=document.getElementById('q'),rows=[].slice.call(document.querySelectorAll('#rows tr')),c=document.getElementById('count');
 function a(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});c.textContent=n+' fornitori';}
