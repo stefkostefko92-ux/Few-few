@@ -79,6 +79,14 @@ src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui
   опростява ISTAT geojson, CC BY 4.0). Пресметни наново само при смяна на границите.
 - Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.
 
+## Реквизити на титуляря (проверени от carbonstealth.eu/contatti, 2026-07)
+
+**Carbon Stealth VCC** · ЕИК/VAT **BG208725180** · седалище **ul. Samuil 3,
+2670 Bobov Dol, Bulgaria** · **info@carbonstealth.eu** · тел. +39 379 296 9699
+(IT) / +359 877 414 874 (BG). Попълнени в `config.json → titolare` (импресум,
+privacy, rettifiche). **Не питай собственика повторно за тях.** Остава празен
+само `config.hosting` — попълва се при избор на хостинг.
+
 ## Капани
 
 - `package_search` на BDAP CKAN връща 0 — каталогът се сканира целият и се

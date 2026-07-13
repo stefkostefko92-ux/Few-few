@@ -1584,13 +1584,14 @@ SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
 function renderNoteLegali({ titolare = {} } = {}) {
   // реквизити на титуляря (GDPR чл. 13(1)(a)/(b)) — попълват се в config.json
   const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
+  const eik = titolare.eik ? ` — n. reg./VAT ${esc(titolare.eik)}` : '';
   const contatto = titolare.email
-    ? ` Contatto diretto: <a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>.`
+    ? ` Contatto diretto: <a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>${titolare.telefono ? ` · tel. ${esc(titolare.telefono)}` : ''}.`
     : ` Contatto: tramite <a href="https://carbonstealth.eu">carbonstealth.eu</a>.`;
   const body = `
 <h1>Note legali</h1>
 <h2>Titolare</h2>
-<p>Questo sito è pubblicato da <strong>${esc(titolare.nome || 'Carbon Stealth VCC')}</strong>${sede}
+<p>Questo sito è pubblicato da <strong>${esc(titolare.nome || 'Carbon Stealth VCC')}</strong>${sede}${eik}
 (<a href="https://carbonstealth.eu">carbonstealth.eu</a>).${contatto}
 Progetto di <strong>trasparenza civica senza scopo di lucro</strong>. Non è una testata giornalistica registrata ai sensi
 dell’art. 5 della L. 47/1948 e non costituisce prodotto editoriale periodico.</p>
