@@ -14,6 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
+  // Зад nginx: реалният клиентски IP идва от X-Forwarded-For (коректен rate limit + secure cookie).
+  app.set('trust proxy', 1);
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
 

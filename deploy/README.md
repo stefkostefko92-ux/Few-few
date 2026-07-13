@@ -58,12 +58,13 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock supreme-admanager` | кои проекти да се разгръщат тук |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
+| `ADMANAGER_DIR` | `/opt/supreme-admanager` | път на Supreme AdManager (systemd, порт 3060; .env с ENCRYPTION_KEY/SESSION_SECRET/ADMIN_* — ENCRYPTION_KEY е лениво валидиран, проверявай ръчно) |
 | `*_HEALTH_URL` | localhost | адрес за проверка на здравето |
 
 ## Важно
