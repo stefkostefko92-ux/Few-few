@@ -64,6 +64,14 @@ src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui
   `--max-old-space-size=4096` (виж npm script).
 - Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
   добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
+- `config.json → siteUrl` включва откриваемостта: canonical + OG/Twitter meta,
+  JSON-LD, `sitemap.xml`, `robots.txt` (празен siteUrl → всичко се пропуска, само
+  релативни адреси). `page()` приема `canonical`/`jsonld`; подстраниците
+  (struttura/regione/fornitore) подават свой `canonical`. `setSiteUrl()` в `site-ui.js`.
+- Профили на изпълнителите: `pIvaValida` (11 цифри, не всички еднакви, контролна
+  цифра) пази от боклучави CF; физически лица (16 знака) НЕ се профилират (GDPR).
+- Регионите: `REGIONI` в `build-site.js` (codice_regione → съкр./име/ANAC име/col,row
+  за схематичната карта). Картата е **схематична, не географска** (tile-grid).
 - Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.
 
 ## Капани
