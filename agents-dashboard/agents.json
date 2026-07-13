@@ -1212,9 +1212,20 @@
           "date": "2026-07-12",
           "event": "v11.8 — учене",
           "detail": "Научи: Supreme AdBlock v4.0.2 (commit 988b2b22) main_frame фикс потвърден коректен: conditionF… (+2 още)"
+        },
+        {
+          "version": "11.9.0",
+          "date": "2026-07-13",
+          "event": "v11.9 — учене",
+          "detail": "Научи: ospedali/ ETL: streamZip (fetch-aggiudicatari.js:27-43) резолва Promise на readline 'cl… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-13",
+          "type": "learning",
+          "summary": "Научи: „ospedali/ ETL: streamZip (fetch-aggiudicatari.js:27-43) резолва Promise на readline 'cl…\" (+2 още)"
+        },
         {
           "date": "2026-07-12",
           "type": "learning",
