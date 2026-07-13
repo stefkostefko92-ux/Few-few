@@ -713,7 +713,7 @@ il primo indicatore di opacità che guardano ANAC e Corte dei conti.</p>
 <div class="grid kpis">
   ${kpi(`Contratti senza gara (${anniTxt})`, percentualeIt(nz.quotaSenzaGaraNum), (nz.quotaSenzaGaraNum || 0) > 0.4 ? 'neg' : '')}
   ${kpi('Senza gara sul valore', percentualeIt(nz.quotaSenzaGara), (nz.quotaSenzaGara || 0) > 0.4 ? 'neg' : '')}
-  ${kpi('Valore appalti sanità', euroCompact(nz.importo))}
+  ${kpi('Valore messo a gara', euroCompact(nz.importo))}
   ${kpi('Contratti (lotti)', numeroIt(nz.n))}
 </div>
 
@@ -721,7 +721,11 @@ il primo indicatore di opacità che guardano ANAC e Corte dei conti.</p>
 procedura negoziata senza pubblicazione assegnano il contratto <em>senza confronto competitivo</em>. Sotto certe soglie
 è legittimo e più rapido, ma un ricorso sistematico è la spia classica di inefficienza o favoritismi. Gli acquisti in
 adesione ad accordi quadro/convenzioni (es. Consip/centrali regionali) sono invece già stati messi a gara e non contano
-come «senza gara».</p></div>
+come «senza gara».</div>
+<div class="note"><strong>Nota sugli importi.</strong> I valori sono <strong>importi messi a gara (base d’asta / valore
+del lotto)</strong>, non la spesa effettivamente pagata: gli accordi quadro hanno massimali molto superiori alla spesa
+reale. Sono quindi utili per <strong>confrontare</strong> enti e regioni, non come misura della spesa sostenuta. Per
+questo il segnale principale è la <strong>quota (in %), non il valore assoluto</strong>.</div>
 
 <h2>Le regioni a confronto</h2>
 <p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
@@ -943,6 +947,15 @@ semplice rosso aziendale. <strong>Nel ${ultimo}, ${s.aziendeInUtile} aziende su 
 <p class="small muted">Il ${ultimo} è l’anno peggiore della serie: il disavanzo di sistema tocca ${euroCompact(s.risultatoSistema)}.
 Il problema quindi non è «ogni ospedale ruba», ma <em>dove</em> si concentra la spesa e <em>perché</em> alcune strutture
 si discostano nettamente dalle altre.</p>
+
+<div class="note"><strong>Confronto con la Corte dei conti.</strong> Il nostro dato è la somma del
+<em>risultato d’esercizio</em> (voce ZZ9999 dei modelli CE), non la voce ufficiale di «disavanzo sanitario». La
+<a href="https://www.quotidianosanita.it/studi-e-analisi/corte-dei-conti-la-sanit-italiana-in-cammino-per-il-cambiamento-ma-restano-squilibri-strutturali-ritardi-e-bilanci-che-scricchiolano/">Corte dei conti</a>
+stima per il ${ultimo} un disavanzo di circa <strong>1,5 mld €</strong> con 16 regioni in rosso, il valore più alto del
+decennio: la <strong>direzione e l’ordine di grandezza coincidono</strong> con la nostra ricostruzione (${ultimo} anno
+peggiore, deficit triplicato). Le differenze sui singoli valori derivano dalla <strong>diversa definizione</strong>
+di disavanzo (coperture regionali, mobilità, payback farmaceutico): p.es. per l’Emilia-Romagna i due dati coincidono
+quasi all’euro (−194,2 mln), per altre regioni no. È un confronto di trasparenza, non una stima ufficiale.</div>
 
 <h2>Le strutture con più anomalie di spesa</h2>
 <p class="muted small">Ordinate per numero di segnali «follow the money». Ogni segnale confronta una voce con la mediana
