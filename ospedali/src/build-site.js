@@ -23,6 +23,7 @@ import {
   renderGlossario, renderGuida, renderPnrr, renderStorie, renderStoria, STORIE,
   renderAggiornamenti, renderApprofondimenti,
   renderPagamenti, renderPersonale, renderMobilita,
+  renderFineAnno, renderConfronta, renderApi, renderAccessibilita,
 } from './approfondimenti.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
@@ -90,6 +91,13 @@ const REGIONI = {
   '190': { abbr: 'SIC', nome: 'Sicilia', istat: '19', prefissi: ['190'], anac: ['SICILIA'] },
   '200': { abbr: 'SAR', nome: 'Sardegna', istat: '20', prefissi: ['200'], anac: ['SARDEGNA'] },
 };
+// Региони под „piano di rientro" (оздравителен план) към 07.2026 — проверено
+// от salute.gov.it/tema/piani-di-rientro (комисарствани: Calabria, Molise).
+const PIANO_RIENTRO = {
+  '130': 'piano', '180': 'commissariata', '150': 'piano', '120': 'piano',
+  '140': 'commissariata', '160': 'piano', '190': 'piano',
+};
+
 // codice_regione (3 цифри) → ключ на региона (Трентино: 041/042 → 'taa')
 const REG_KEY = {};
 for (const [key, m] of Object.entries(REGIONI)) for (const p of m.prefissi) REG_KEY[p] = key;
@@ -236,6 +244,7 @@ async function main() {
   const tuttiContratti = []; // глобален индекс за търсачката
   const catAgg = new Map(); // CPV макрокатегория → агрегат (за „Dove vanno i soldi")
   const topCand = []; // кандидати за „i 100 contratti più grandi" (пълни полета)
+  const mesiAgg = { nazionale: new Array(12).fill(0), perEnte: new Map() }; // преки възлагания по месец (bunching di fine anno)
 
   // Benchmark €/легло и €/приемане: национални медиани (пре-пас преди рендера)
   const cplTutti = [];
@@ -280,6 +289,16 @@ async function main() {
           const cf = ca.forn.get(c.fornitoreCf) || { cf: c.fornitoreCf, den: c.fornitore, importo: 0 };
           cf.importo += c.importo;
           ca.forn.set(c.fornitoreCf, cf);
+        }
+        // декемврийска треска: разпределение на ПРЕКИТЕ възлагания по месец
+        if (c.categoria === 'diretto' && /^\d{4}-\d{2}/.test(c.data || '')) {
+          const mese = Number(c.data.slice(5, 7)) - 1;
+          if (mese >= 0 && mese < 12) {
+            mesiAgg.nazionale[mese]++;
+            let em = mesiAgg.perEnte.get(ente.codice);
+            if (!em) mesiAgg.perEnte.set(ente.codice, (em = new Array(12).fill(0)));
+            em[mese]++;
+          }
         }
         // кандидати за топ 100 (пълни полета, само материалните)
         if (c.importo >= 5_000_000) topCand.push({ cig: c.cig, codice: ente.codice, data: c.data, importo: c.importo, oggetto: c.oggetto, fornitore: c.fornitoreAzienda ? c.fornitore : null, categoria: c.categoria });
@@ -480,9 +499,72 @@ async function main() {
     await writeFile(join(SITE_DIR, 'mobilita.html'), renderMobilita({ mob, regKeyByNome: (n) => nome2key.get(n) || null }));
   }
 
+  // Декемврийска треска (bunching): класация по dic/средно (мин 120 преки)
+  const bunchRighe = [...mesiAgg.perEnte.entries()]
+    .map(([cod, mm]) => {
+      const totale = mm.reduce((a, b) => a + b, 0);
+      const media = totale / 12;
+      return { cod, totale, dicembre: mm[11], rapporto: media ? mm[11] / media : 0 };
+    })
+    .filter((r) => r.totale >= 120)
+    .sort((a, b) => b.rapporto - a.rapporto)
+    .slice(0, 15)
+    .map((r) => {
+      const e = enti.find((x) => x.codice === r.cod);
+      return { ...r, nome: e ? e.denominazione : r.cod, regione: e ? e.regione : '', href: href(r.cod) };
+    });
+  await writeFile(join(SITE_DIR, 'fine-anno.html'), renderFineAnno({ mesi: mesiAgg.nazionale, perEnteRighe: bunchRighe }));
+
+  // Confronta: компактен per-ente датасет за клиентското сравнение
+  const confrontaDati = enti
+    .map((e) => {
+      const { anno: an, y } = ultimoCe(e);
+      if (y.valoreProduzione == null) return null;
+      const letti = postiLettoEnte(e, anagrafica);
+      const pe = pers && pers.perEnte[e.codice];
+      const app = appByCod.get(e.codice);
+      const seg = segnByCod.get(e.codice);
+      return {
+        n: e.denominazione.slice(0, 60), r: e.regione, h: href(e.codice), an,
+        v: y.valoreProduzione, c: y.costiProduzione ?? null, ri: y.risultatoEsercizio ?? null, cp: y.costoPersonale ?? null,
+        pl: letti || null, cpl: letti && y.costiProduzione ? Math.round(y.costiProduzione / letti) : null,
+        dip: pe ? pe.totale : null, med: pe ? pe.medici : null, qf: pe ? pe.quotaFlessibili : null,
+        na: app ? app.n : null, sg: app && app.quotaSenzaGaraNum != null ? app.quotaSenzaGaraNum : null,
+        ns: seg ? seg.segnalazioni.length : 0,
+      };
+    })
+    .filter(Boolean);
+  await writeFile(join(SITE_DIR, 'confronta.html'), renderConfronta({ datiJson: JSON.stringify(confrontaDati) }));
+
+  // API документация + декларация за достъпност
+  await writeFile(join(SITE_DIR, 'api.html'), renderApi({ su: siteUrl() }));
+  await writeFile(join(SITE_DIR, 'accessibilita.html'), renderAccessibilita());
+
+  // RSS: глобален фийд (storie + aggiornamenti) + per-болница (сигналите ѝ)
+  const su0 = siteUrl();
+  if (su0) {
+    const rfc = (d) => new Date(d).toUTCString();
+    const buildDate = rfc(segn.generatoIl || Date.now());
+    const item = (t, link, desc, date) =>
+      `<item><title>${esc(t)}</title><link>${esc(link)}</link><guid>${esc(link)}</guid><pubDate>${date}</pubDate><description>${esc(desc)}</description></item>`;
+    const globItems = STORIE.map((st) => item(st.titolo, `${su0}/storia/${st.slug}.html`, st.sommario, buildDate)).join('\n');
+    const feed = (title, link, items) =>
+      `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>${esc(title)}</title><link>${esc(link)}</link><description>Ospedali Trasparenti — dati e indicatori sulla sanità pubblica italiana</description><language>it</language><lastBuildDate>${buildDate}</lastBuildDate>\n${items}\n</channel></rss>\n`;
+    await writeFile(join(SITE_DIR, 'feed.xml'), feed('Ospedali Trasparenti — storie e aggiornamenti', `${su0}/`, globItems));
+    await mkdir(join(SITE_DIR, 'feed'), { recursive: true });
+    for (const e of enti) {
+      const seg = segnByCod.get(e.codice);
+      if (!seg || !seg.segnalazioni.length) continue;
+      const items = seg.segnalazioni
+        .map((sg) => item(`${sg.titolo} — ${e.denominazione}`, `${su0}/${href(e.codice)}`, sg.testo || sg.titolo, buildDate))
+        .join('\n');
+      await writeFile(join(SITE_DIR, 'feed', `${e.codice}.xml`), feed(`Segnalazioni — ${e.denominazione}`, `${su0}/${href(e.codice)}`, items));
+    }
+  }
+
   await writeFile(
     join(SITE_DIR, 'approfondimenti.html'),
-    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length, conNuovi: { pagamenti: !!tp, personale: !!pers, mobilita: !!mob } })
+    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length, conNuovi: { pagamenti: !!tp, personale: !!pers, mobilita: !!mob, fineAnno: true, confronta: true, api: true } })
   );
 
   // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
@@ -553,6 +635,10 @@ async function main() {
       'pagamenti.html',
       'personale.html',
       'mobilita.html',
+      'fine-anno.html',
+      'confronta.html',
+      'api.html',
+      'accessibilita.html',
       ...STORIE.map((s) => `storia/${s.slug}.html`),
       ...regioniData.map((r) => `regione/${r.key}.html`),
       ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
@@ -1425,7 +1511,8 @@ aziende (senza la Gestione Sanitaria Accentrata regionale), quindi non è il dis
   <tbody>${rows}</tbody>
 </table></div>
 <p class="small muted">La quota «senza gara» è calcolata sul 100% dei contratti ANAC di ogni sezione regionale
-(dato robusto per il confronto tra regioni). <a href="appalti.html">Dettaglio appalti →</a></p>
+(dato robusto per il confronto tra regioni). Sette regioni sono in <strong>piano di rientro</strong> (Calabria e
+Molise commissariate) — il contesto è indicato nelle rispettive schede. <a href="appalti.html">Dettaglio appalti →</a></p>
 `;
   return page({
     title: 'Regioni a confronto — Ospedali Trasparenti',
@@ -1492,6 +1579,7 @@ già messi a gara a monte), sul numero di contratti. Gli affidamenti sotto sogli
   const body = `
 <p class="small muted"><a href="../regioni.html">← Tutte le regioni</a></p>
 <h1>${esc(meta.nome)}</h1>
+${PIANO_RIENTRO[key] ? `<div class="seg ${PIANO_RIENTRO[key] === 'commissariata' ? 'alta' : 'media'}"><div class="t"><span class="badge ${PIANO_RIENTRO[key] === 'commissariata' ? 'alta' : 'media'}">${PIANO_RIENTRO[key] === 'commissariata' ? 'Commissariata' : 'Piano di rientro'}</span></div><div class="d">La sanità di questa regione è sottoposta a <strong>piano di rientro</strong>${PIANO_RIENTRO[key] === 'commissariata' ? ' con <strong>commissariamento</strong>' : ''}: i conti sono sotto controllo del Ministero della Salute e del MEF. Contesto essenziale per leggere deficit e vincoli di spesa. <a href="https://www.salute.gov.it/new/it/tema/piani-di-rientro/" target="_blank" rel="noopener">Fonte ufficiale</a>.</div></div>` : ''}
 <div class="grid kpis">
   ${kpi('Strutture con bilancio', `${numeroIt(g.conCe)} / ${numeroIt(g.enti.length)}`)}
   ${kpi(`Valore produzione (${ultimoAnnoCe})`, euroCompact(g.valore))}

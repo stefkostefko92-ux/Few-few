@@ -271,7 +271,8 @@ ${body}
   <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
   Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
   <a href="${rel}verifiche.html">Dati e verifiche</a> · <a href="${rel}metodologia.html">Metodologia</a> ·
-  <a href="${rel}note-legali.html">Note legali</a> · <a href="${rel}privacy.html">Privacy</a></p>
+  <a href="${rel}note-legali.html">Note legali</a> · <a href="${rel}privacy.html">Privacy</a> ·
+  <a href="${rel}accessibilita.html">Accessibilità</a> · <a href="${rel}feed.xml">RSS</a></p>
 </div></footer>
 </body>
 </html>`;

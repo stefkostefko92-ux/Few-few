@@ -478,6 +478,53 @@ plausibile la procedura. I CIG sono verificabili dalla <a href="struttura/180203
 dell’azienda</a>. Rettifiche e contesto: <a href="note-legali.html#rettifiche">scrivici</a>.</div>`,
     dati: '2023–2024 · ASP Catanzaro · Novartis Farma S.p.A. · 49 CIG · >1 mld €',
   },
+  {
+    slug: 'radiologia-su-misura-romagna',
+    titolo: 'Due contratti fotocopia da 27 milioni: la radiologia «bloccata» in Romagna',
+    sommario: 'Nello stesso giorno l\u2019AUSL della Romagna registra due affidamenti diretti identici da 27,2 milioni per sistemi radiologici dello stesso fornitore: il volto tipico del vendor lock-in.',
+    corpo: `
+<p>Il 15 ottobre 2024, nei dati ANAC, l\u2019<strong>AUSL della Romagna</strong> registra due affidamenti diretti gemelli
+da <strong>27,2 milioni di euro ciascuno</strong> con oggetto «RADIOLOGICI CARESTREAM», verso Carestream Health
+Italia S.r.l. Nel perimetro tracciato dal sito, l\u201989% del fatturato registrato del fornitore proviene da questa sola
+azienda; l\u201983% dei contratti della coppia risulta senza confronto competitivo.</p>
+<h2>Il fenomeno: vendor lock-in</h2>
+<p>Quando un ospedale installa una piattaforma tecnologica (radiologia digitale, PACS), aggiornamenti e manutenzioni
+successive diventano di fatto obbligati: solo il costruttore pu\u00f2 metterci le mani. \u00c8 il «monopolio tecnico» —
+legittimo quando l\u2019infungibilit\u00e0 \u00e8 documentata, ma \u00e8 anche il momento in cui il prezzo si negozia
+peggio: senza gara non c\u2019\u00e8 termine di paragone.</p>
+<h2>Cosa chiarirebbe il quadro</h2>
+<p>Le determine dei due CIG (nella <a href="struttura/080114-azienda-unita-sanitaria-locale-della-romagna.html">scheda
+dell\u2019azienda</a>) devono motivare l\u2019infungibilit\u00e0. Domande legittime: esisteva un\u2019alternativa?
+Il valore \u00e8 di mercato? Perch\u00e9 due lotti identici lo stesso giorno?</p>
+<div class="note"><strong>Pista, non prova.</strong> Il lock-in tecnologico \u00e8 spesso legale e talvolta inevitabile.
+Nessun addebito \u00e8 mosso all\u2019azienda n\u00e9 al fornitore. Contesto e rettifiche:
+<a href="note-legali.html#rettifiche">scrivici</a>.</div>`,
+    dati: '15.10.2024 · AUSL Romagna · Carestream Health Italia · 2 CIG × 27,2 mln €',
+  },
+  {
+    slug: 'cooperative-emilia-cento-per-cento',
+    titolo: 'Le cooperative che vivono di una sola ASL',
+    sommario: 'Attorno alle AUSL di Modena e Bologna orbitano cooperative sociali il cui fatturato tracciato dipende al 100% da un\u2019unica azienda sanitaria, con decine di affidamenti diretti ripetuti.',
+    corpo: `
+<p>Nei dati 2023\u20132024, diverse cooperative sociali dell\u2019Emilia-Romagna risultano avere il <strong>100% del
+fatturato tracciato</strong> da un\u2019unica AUSL: attorno a Modena, una cooperativa con 88 contratti (di cui 60
+affidamenti diretti), un\u2019altra con 22 diretti su 31 contratti; attorno a Bologna, consorzi con l\u201980\u2013100%
+dei contratti senza confronto competitivo.</p>
+<h2>Perch\u00e9 \u00e8 delicato</h2>
+<p>I servizi socio-sanitari hanno un regime speciale che consente convenzioni dirette con le cooperative sociali —
+\u00e8 la legge. Ma il principio di rotazione esiste proprio per evitare che la deroga diventi rendita: quando lo
+stesso fornitore vince per anni senza confronto e dipende interamente da quel committente, la verifica giusta \u00e8
+la pi\u00f9 semplice di tutte: <em>chi amministra la cooperativa, e chi decide gli affidamenti in ASL?</em></p>
+<h2>La verifica che manca</h2>
+<p>Con fonti gratuite abbiamo controllato i vertici: nessuna coincidenza di cognomi tra i presidenti delle cooperative
+e le direzioni generali delle AUSL interessate. La verifica completa (soci, consigli, parentele) richiede le visure del
+<a href="https://www.registroimprese.it/" target="_blank" rel="noopener">Registro Imprese</a> e le dichiarazioni di
+conflitto dei dirigenti — il percorso \u00e8 nella <a href="guida-verifica.html">guida</a>.</p>
+<div class="note"><strong>Pista, non prova.</strong> Le convenzioni con le cooperative sociali sono uno strumento
+legale e spesso virtuoso. Le coppie segnalate sono nella pagina <a href="conflitti.html">relazioni ricorrenti</a>;
+nessun addebito \u00e8 mosso a nessuno. Contesto e rettifiche: <a href="note-legali.html#rettifiche">scrivici</a>.</div>`,
+    dati: '2023–2024 · AUSL Modena / AUSL Bologna · cooperative sociali con dipendenza 100%',
+  },
 ];
 export function renderStorie() {
   const cards = STORIE.map(
@@ -558,7 +605,7 @@ verifiche</a> (con impronta SHA-256 delle fonti). Segnalazioni e correzioni: <a 
 }
 
 // ---------- Hub „Approfondimenti" ----------
-export function renderApprofondimenti({ nTop, totCategorie, nStrutture }) {
+export function renderApprofondimenti({ nTop, totCategorie, nStrutture, conNuovi = {} }) {
   const card = (href, titolo, descr) => `<div class="seg media"><div class="t"><a href="${href}">${titolo}</a></div><div class="d">${descr}</div></div>`;
   const body = `
 <h1>Approfondimenti</h1>
@@ -569,13 +616,19 @@ ${card('tendenze.html', 'Il decennio della sanità (2012–2024)', 'Tredici anni
 ${card('categorie.html', 'Dove vanno i soldi: le categorie di spesa', `Farmaci, pulizie, energia, informatica: ${euroCompact(totCategorie)} classificati per categoria, con i primi fornitori di ciascuna.`)}
 ${card('top-contratti.html', 'I 100 contratti più grandi', `I maxi-contratti 2023–2024 delle aziende sanitarie: chi, cosa, quanto e con quale procedura.`)}
 ${card('pnrr.html', 'Il PNRR nella sanità', 'Gli appalti finanziati dalla Missione 6 «Salute», regione per regione.')}
+${conNuovi.mobilita ? card('mobilita.html', 'Curarsi fuori regione', 'La mobilità sanitaria: quanto spende ogni regione per curare i propri cittadini altrove.') : ''}
+${conNuovi.personale ? card('personale.html', 'Il personale della sanità', 'Dipendenti, medici e lavoro precario per azienda — la strada verso i «medici a gettone».') : ''}
+${conNuovi.pagamenti ? card('pagamenti.html', 'Tempi di pagamento', 'Quanto in fretta gli ospedali pagano i fornitori: la serie ufficiale PCC/MEF.') : ''}
+${conNuovi.fineAnno ? card('fine-anno.html', 'La febbre di dicembre', 'La corsa agli affidamenti diretti prima della scadenza del bilancio, mese per mese.') : ''}
 <h2>Storie</h2>
 ${card('storie.html', 'Le storie nei dati', 'Casi concreti emersi dagli indicatori, raccontati con i numeri ufficiali e le spiegazioni possibili.')}
 <h2>Strumenti per il cittadino</h2>
+${conNuovi.confronta ? card('confronta.html', 'Confronta due aziende', 'Bilanci, personale, appalti e segnalazioni di due aziende, fianco a fianco.') : ''}
 ${card('dove.html', 'Trova la tua struttura', `Cerca il tuo comune tra ${numeroIt(nStrutture)} strutture di ricovero pubbliche e trova i conti della tua azienda sanitaria.`)}
 ${card('glossario.html', 'Glossario e domande frequenti', 'Affidamento diretto, CIG, GSA, accordi quadro: le parole chiave spiegate in modo semplice.')}
 ${card('guida-verifica.html', 'Come verificare un appalto in 5 minuti', 'Dal CIG alla determina, fino all’accesso civico (FOIA): la guida pratica completa.')}
 <h2>Il progetto</h2>
+${conNuovi.api ? card('api.html', 'API e dati riutilizzabili', 'Endpoint JSON/CSV stabili, senza chiavi: costruisci sopra i nostri dati.') : ''}
 ${card('aggiornamenti.html', 'Aggiornamenti', 'Cosa è stato caricato, cosa è cambiato e cosa è in preparazione (tempi di pagamento, liste d’attesa, personale).')}
 `;
   return page({
@@ -751,6 +804,196 @@ in senso opposto.</div>
     description: `${euroCompact(u.totPassiva)} spesi nel ${mob.ultimoAnno} per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.`,
     active: 'approfondimenti.html',
     canonical: 'mobilita.html',
+    body,
+  });
+}
+
+// ---------- Декемврийска треска (bunching di fine anno) ----------
+export function renderFineAnno({ mesi, perEnteRighe }) {
+  const MESI_IT = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+  const tot = mesi.reduce((s, v) => s + v, 0);
+  const attesa = tot / 12;
+  const dic = mesi[11];
+  const rapporto = attesa ? dic / attesa : 0;
+  const barre = hbars(
+    mesi.map((v, i) => ({ label: MESI_IT[i], valore: v, quota: tot ? v / tot : 0, flag: i === 11 && v > attesa * 1.5 })),
+    { fmt: numeroIt, maxLabel: 'Affidamenti diretti per mese di pubblicazione' }
+  );
+  const rows = perEnteRighe
+    .map(
+      (r) => `<tr><td><a href="${r.href}">${esc(r.nome)}</a><div class="small muted">${esc(r.regione)}</div></td>
+      <td class="num">${numeroIt(r.totale)}</td><td class="num">${numeroIt(r.dicembre)}</td>
+      <td class="num ${r.rapporto > 2 ? 'neg' : ''}">${r.rapporto.toFixed(1)}×</td></tr>`
+    )
+    .join('');
+  const body = `
+<h1>La febbre di dicembre: gli affidamenti di fine anno</h1>
+<p class="lead">I bilanci pubblici scadono il 31 dicembre — e i fondi non spesi spesso si perdono. Il risultato è un
+classico della finanza pubblica: la corsa a impegnare i soldi a fine anno. Nei dati 2023–2024, a dicembre gli
+affidamenti diretti sono <strong>${rapporto.toFixed(1)} volte</strong> la media mensile.</p>
+${barre}
+<div class="note"><strong>Perché conta (e i limiti).</strong> La concentrazione di spesa a fine anno è un indicatore
+riconosciuto dagli organi di controllo: gli acquisti frettolosi si negoziano peggio e si controllano meno. Ha però
+anche cause organizzative legittime (residui di budget, chiusure contabili, scadenze di gare pluriennali). Come
+sempre: <strong>indicatore, non prova</strong>.</div>
+<h2>Le aziende con la «febbre» più alta</h2>
+<p class="muted small">Rapporto tra gli affidamenti diretti di dicembre e la media mensile dell’azienda
+(minimo 120 affidamenti diretti nel biennio).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Azienda</th><th class="num" scope="col">Diretti totali</th>
+  <th class="num" scope="col">di cui a dicembre</th><th class="num" scope="col">Dicembre vs media</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<p class="small muted">Fonte: ANAC (CC BY 4.0), mese di pubblicazione del CIG, affidamenti diretti 2023–2024,
+perimetro: aziende collegate. Le adesioni a convenzioni riconoscibili non sono escluse da questo conteggio
+(il mese resta informativo anche per esse).</p>
+`;
+  return page({
+    title: 'La febbre di dicembre: gli affidamenti di fine anno — Ospedali Trasparenti',
+    description: `A dicembre gli affidamenti diretti della sanità sono ${rapporto.toFixed(1)} volte la media mensile: la classica corsa a spendere i fondi prima della scadenza del bilancio.`,
+    active: 'approfondimenti.html',
+    canonical: 'fine-anno.html',
+    body,
+  });
+}
+
+// ---------- Confronta due aziende ----------
+export function renderConfronta({ datiJson }) {
+  const body = `
+<h1>Confronta due aziende</h1>
+<p class="lead">Scegli due aziende sanitarie e mettile a confronto: bilanci, personale, appalti e segnalazioni,
+fianco a fianco. I numeri sono gli stessi delle schede — solo affiancati.</p>
+<div class="controls">
+  <select id="a" aria-label="Prima azienda"></select>
+  <select id="b" aria-label="Seconda azienda"></select>
+</div>
+<div class="tablewrap"><table id="cmp" hidden>
+  <thead><tr><th scope="col">Indicatore</th><th class="num" scope="col" id="ha"></th><th class="num" scope="col" id="hb"></th></tr></thead>
+  <tbody id="rows"></tbody>
+</table></div>
+<p class="small muted">Valore/costi/risultato: ultimo consuntivo disponibile. «Senza gara»: quota per numero di
+contratti 2023–2024 (solo aziende abbinate ad ANAC). I link portano alle schede complete.</p>
+<script>
+var DATI=${datiJson};
+(function(){
+  var sa=document.getElementById('a'),sb=document.getElementById('b'),tb=document.getElementById('rows'),
+      tab=document.getElementById('cmp'),ha=document.getElementById('ha'),hb=document.getElementById('hb');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function eur(v){if(v==null)return '—';var a=Math.abs(v);var s=a>=1e9?(v/1e9).toLocaleString('it-IT',{maximumFractionDigits:1})+' mld €':a>=1e6?Math.round(v/1e6).toLocaleString('it-IT')+' mln €':Math.round(v/1e3).toLocaleString('it-IT')+' mila €';return s;}
+  function pct(v){return v==null?'—':(v*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%';}
+  function n(v){return v==null?'—':v.toLocaleString('it-IT');}
+  DATI.sort(function(x,y){return x.n.localeCompare(y.n,'it');});
+  DATI.forEach(function(d,i){
+    [sa,sb].forEach(function(s){var o=document.createElement('option');o.value=i;o.textContent=d.n+' ('+d.r+')';s.appendChild(o.cloneNode(true));});
+  });
+  sb.selectedIndex=Math.min(1,DATI.length-1);
+  function riga(lab,va,vb,fmt){return '<tr><td>'+lab+'</td><td class="num">'+fmt(va)+'</td><td class="num">'+fmt(vb)+'</td></tr>';}
+  function render(){
+    var A=DATI[sa.value],B=DATI[sb.value];if(!A||!B)return;
+    ha.innerHTML='<a href="'+esc(A.h)+'">'+esc(A.n)+'</a>';hb.innerHTML='<a href="'+esc(B.h)+'">'+esc(B.n)+'</a>';
+    tb.innerHTML=
+      riga('Valore della produzione ('+(A.an||'—')+')',A.v,B.v,eur)+
+      riga('Costi della produzione',A.c,B.c,eur)+
+      riga('Risultato d\\u2019esercizio',A.ri,B.ri,eur)+
+      riga('Costo del personale',A.cp,B.cp,eur)+
+      riga('Posti letto',A.pl,B.pl,n)+
+      riga('Costi per posto letto',A.cpl,B.cpl,eur)+
+      riga('Dipendenti (Conto Annuale)',A.dip,B.dip,n)+
+      riga('di cui medici',A.med,B.med,n)+
+      riga('Quota lavoro flessibile',A.qf,B.qf,pct)+
+      riga('Contratti ANAC 2023\\u201324',A.na,B.na,n)+
+      riga('Quota senza gara (per numero)',A.sg,B.sg,pct)+
+      riga('Segnalazioni contabili',A.ns,B.ns,n);
+    tab.hidden=false;
+  }
+  sa.addEventListener('change',render);sb.addEventListener('change',render);render();
+})();
+</script>
+`;
+  return page({
+    title: 'Confronta due aziende sanitarie — Ospedali Trasparenti',
+    description: 'Metti a confronto bilanci, personale, appalti e segnalazioni di due aziende sanitarie italiane, fianco a fianco.',
+    active: 'approfondimenti.html',
+    canonical: 'confronta.html',
+    body,
+  });
+}
+
+// ---------- API документация ----------
+export function renderApi({ su }) {
+  const base = su || '';
+  const ep = (path, descr) => `<tr><td><code>${esc(path)}</code></td><td>${descr}</td></tr>`;
+  const body = `
+<h1>API e dati riutilizzabili</h1>
+<p class="lead">Tutti i dati del sito sono file statici JSON/CSV con URL stabili: puoi usarli come una API in sola
+lettura, senza chiavi né registrazione. Aggiornamento: a ogni rigenerazione del sito (vedi
+<a href="aggiornamenti.html">aggiornamenti</a>).</p>
+<h2>Endpoint</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">URL</th><th scope="col">Contenuto</th></tr></thead>
+  <tbody>
+    ${ep('/dati/segnalazioni.json', 'Segnalazioni contabili automatiche per azienda (regola, gravità, numeri citati)')}
+    ${ep('/dati/forensics.json', 'Deficit di sistema (GSA) + anomalie di spesa con benchmark tra pari')}
+    ${ep('/dati/appalti.json', 'Appalti ANAC aggregati per regione e per ente')}
+    ${ep('/dati/aggiudicatari.json', 'Fornitori, concentrazione, offerente unico')}
+    ${ep('/dati/coi.json', 'Relazioni ricorrenti azienda–fornitore (rotazione/dipendenza/esclusiva)')}
+    ${ep('/dati/mobilita.json', 'Mobilità sanitaria per regione e anno')}
+    ${ep('/dati/personale.json', 'Personale per azienda (Conto Annuale)')}
+    ${ep('/dati/tempi-pagamento.json', 'Tempi di pagamento enti SSN (serie nazionale PCC/RGS)')}
+    ${ep('/dati/anagrafica.json', 'Anagrafe delle strutture (posti letto, personale, ricoveri)')}
+    ${ep('/contratti-tutti.json', 'TUTTI i contratti collegati (~28 MB) — usato dal motore di ricerca')}
+    ${ep('/contratti/{codice}.csv', 'Registro contratti della singola azienda (CSV scaricabile)')}
+    ${ep('/sitemap.xml', 'Tutte le pagine del sito')}
+  </tbody>
+</table></div>
+<h2>Esempio</h2>
+<pre class="tablewrap" style="padding:14px;overflow-x:auto"><code>curl ${esc(base)}/dati/mobilita.json | jq '.perAnno["2024"].regioni[0]'</code></pre>
+<h2>Condizioni</h2>
+<p>Riutilizzo consentito citando le fonti originali (ANAC CC BY 4.0, BDAP IODL 2.0) e questo progetto.
+I dati sono elaborazioni automatiche fornite senza garanzia: verifica sempre sulle fonti ufficiali (il CIG è la
+chiave). Gli indicatori sono <strong>piste, non prove</strong> — chi li ripubblica è tenuto a mantenerne il contesto.</p>
+<p class="small muted">Gli URL sono stabili tra le rigenerazioni; i campi possono estendersi (mai rimossi senza
+avviso in <a href="aggiornamenti.html">aggiornamenti</a>).</p>
+`;
+  return page({
+    title: 'API e dati riutilizzabili — Ospedali Trasparenti',
+    description: 'Endpoint JSON/CSV stabili e senza chiavi: segnalazioni, appalti, fornitori, mobilità, personale. Open data riutilizzabili con citazione.',
+    active: 'approfondimenti.html',
+    canonical: 'api.html',
+    body,
+  });
+}
+
+// ---------- Dichiarazione di accessibilità ----------
+export function renderAccessibilita() {
+  const body = `
+<h1>Accessibilità</h1>
+<p class="lead">Questo sito è progettato per essere accessibile a tutti, in linea con le WCAG 2.1 livello AA
+e con lo European Accessibility Act.</p>
+<h2>Cosa facciamo</h2>
+<ul>
+  <li>Contrasti conformi AA su testo e componenti, in tema chiaro e scuro.</li>
+  <li>Navigazione completa da tastiera, focus visibile, «salta al contenuto».</li>
+  <li>Struttura semantica (landmark, intestazioni gerarchiche, tabelle con intestazioni di colonna).</li>
+  <li>Grafici SVG con etichette testuali e didascalie; la carta d’Italia è navigabile e descritta.</li>
+  <li>Rispetto della preferenza <code>prefers-reduced-motion</code> (nessuna animazione per chi la disattiva).</li>
+  <li>Testo ridimensionabile e layout fluido fino ai piccoli schermi, senza scorrimento orizzontale.</li>
+</ul>
+<h2>Limiti noti</h2>
+<ul>
+  <li>Le tabelle molto larghe scorrono orizzontalmente nel proprio riquadro (soluzione consapevole).</li>
+  <li>Il motore di ricerca dei contratti carica un indice pesante (~28 MB): su connessioni lente richiede pazienza.</li>
+</ul>
+<h2>Segnalazioni</h2>
+<p>Se incontri una barriera, scrivici: la correzione delle barriere ha priorità sulle nuove funzioni.
+Contatto nelle <a href="note-legali.html">note legali</a>.</p>
+<p class="small muted">Dichiarazione volontaria (soggetto privato). Ultimo riesame: luglio 2026.</p>
+`;
+  return page({
+    title: 'Accessibilità — Ospedali Trasparenti',
+    description: 'La dichiarazione di accessibilità del sito: conformità WCAG 2.1 AA, limiti noti e come segnalare barriere.',
+    active: '',
+    canonical: 'accessibilita.html',
     body,
   });
 }
