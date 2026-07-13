@@ -1,3 +1,6 @@
+# Ospedali Trasparenti — dati aperti sulla sanità pubblica italiana.
+# L'accesso è consentito a tutti i crawler, inclusi i bot AI (ricerca e training):
+# la finalità civica del progetto è massimizzare la diffusione dei dati.
 User-agent: *
 Allow: /
 

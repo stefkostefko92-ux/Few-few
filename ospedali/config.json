@@ -2,5 +2,16 @@
   "anni": { "da": 2012, "a": 2024 },
   "includiTrimestrali": false,
   "anacAnni": [2023, 2024],
-  "siteUrl": "https://ospedalitrasparenti.it"
+  "siteUrl": "https://ospedalitrasparenti.it",
+  "titolare": {
+    "nome": "Carbon Stealth VCC",
+    "indirizzo": "",
+    "email": "",
+    "notaBg": "ПОПЪЛНИ преди пускане: седалище (пълен адрес) и пряк имейл/PEC — GDPR чл. 13(1)(a)/(b) ги изисква в информативата (правен одит H1)"
+  },
+  "hosting": {
+    "provider": "",
+    "trasferimento": "",
+    "notaBg": "ПОПЪЛНИ преди пускане: напр. provider='Netlify, Inc. (USA)' + trasferimento='EU-US Data Privacy Framework' (провери на dataprivacyframework.gov), или ЕС-хостинг (Hetzner) без трансфер — GDPR чл. 13(1)(e)/(f) (правен одит H3)"
+  }
 }

@@ -1,0 +1,19 @@
+# Ospedali Trasparenti
+
+> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali
+> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.
+
+## Pagine principali
+
+- [Inchiesta: dove vanno i soldi](https://ospedalitrasparenti.it/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa
+- [Relazioni ricorrenti e possibili conflitti d'interesse](https://ospedalitrasparenti.it/conflitti.html): coppie azienda–fornitore da verificare
+- [Appalti della sanità](https://ospedalitrasparenti.it/appalti.html): quota senza gara per regione e per azienda
+- [Fornitori del SSN](https://ospedalitrasparenti.it/fornitori.html): chi incassa i soldi della sanità
+- [Regioni a confronto](https://ospedalitrasparenti.it/regioni.html): carta d'Italia della quota senza gara
+- [Metodologia e fonti](https://ospedalitrasparenti.it/metodologia.html): come calcoliamo ogni indicatore
+- [Dati aperti](https://ospedalitrasparenti.it/dati.html): dataset scaricabili (JSON/CSV) con licenze
+
+## Nota
+
+Gli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:
+piste da verificare, non prove né accuse.

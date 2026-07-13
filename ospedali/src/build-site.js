@@ -93,6 +93,51 @@ function ultimoCe(ente) {
   return anni.length ? { anno: anni.at(-1), y: ente.serie.get(anni.at(-1)) } : { anno: null, y: {} };
 }
 
+// Дата на снапшота на данните (от validazione) — за Article схемата, видимите
+// „Dati aggiornati al…" редове и sitemap lastmod. Задава се в main().
+let DATA_SNAPSHOT = '';
+
+// Article JSON-LD за разследващите страници (E-E-A-T: автор, дата, източници)
+function articleLd(titolo, descrizione, percorso) {
+  const su = siteUrl();
+  if (!su) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: titolo,
+    description: descrizione,
+    inLanguage: 'it',
+    datePublished: DATA_SNAPSHOT,
+    dateModified: DATA_SNAPSHOT,
+    mainEntityOfPage: `${su}/${percorso}`,
+    author: { '@type': 'Organization', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' },
+    publisher: { '@id': `${su}/#org` },
+    isBasedOn: ['https://dati.anticorruzione.it/opendata', 'https://openbdap.rgs.mef.gov.it/it/SSN/Analizza', 'https://www.dati.salute.gov.it/'],
+  };
+}
+
+// Видим ред за свежест на данните (AEO/E-E-A-T)
+function rigaAggiornamento() {
+  return DATA_SNAPSHOT
+    ? `<p class="small muted">Dati aggiornati al ${esc(DATA_SNAPSHOT)} · Fonti: ANAC, BDAP/RGS-MEF, Ministero della Salute.</p>`
+    : '';
+}
+
+// BreadcrumbList JSON-LD (за дълбоките страници)
+function briciole(items) {
+  const su = siteUrl();
+  if (!su) return null;
+  return {
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map(([nome, percorso], i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: nome,
+      item: percorso === '/' ? `${su}/` : `${su}/${percorso}`,
+    })),
+  };
+}
+
 async function main() {
   const config = await readJson(join(ROOT, 'config.json')).catch(() => ({}));
   setSiteUrl(config.siteUrl || '');
@@ -174,9 +219,10 @@ async function main() {
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
   await writeFile(join(SITE_DIR, 'segnalazioni.html'), renderSegnalazioni({ segn, href }));
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
-  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali());
-  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy());
+  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali({ titolare: config.titolare || {} }));
+  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ titolare: config.titolare || {}, hosting: config.hosting || {} }));
   const validaz = await readJson(VALIDAZIONE_FILE).catch(() => null);
+  DATA_SNAPSHOT = validaz && validaz.generatoIl ? validaz.generatoIl.slice(0, 10) : '';
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   let conContratti = 0;
@@ -353,16 +399,32 @@ async function main() {
       ...fornituraCfs.map((cf) => `fornitore/${cf}.html`),
     ];
     const prio = (p) => (p === 'index.html' ? '1.0' : p.includes('/') ? '0.6' : '0.8');
+    // lastmod = датата на снапшота на ДАННИТЕ (не на билда) — иначе всеки билд
+    // „подновява" 4400 адреса и lastmod губи доверие (SEO одит)
+    const lastmod = (validaz && validaz.generatoIl ? validaz.generatoIl : new Date().toISOString()).slice(0, 10);
+    void oggi;
     const urls = paths
-      .map((p) => `<url><loc>${esc(`${su}/${p}`)}</loc><lastmod>${oggi}</lastmod><priority>${prio(p)}</priority></url>`)
+      .map((p) => `<url><loc>${esc(`${su}/${p}`)}</loc><lastmod>${lastmod}</lastmod><priority>${prio(p)}</priority></url>`)
       .join('\n');
     await writeFile(
       join(SITE_DIR, 'sitemap.xml'),
       `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
     );
-    await writeFile(join(SITE_DIR, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${su}/sitemap.xml\n`);
-    console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt (${su})`);
+    // allow-all е съзнателно: гражданска цел → искаме и AI асистентите да ни
+    // намират и цитират (извличащи + обучаващи ботове са допуснати нарочно)
+    await writeFile(
+      join(SITE_DIR, 'robots.txt'),
+      `# Ospedali Trasparenti — dati aperti sulla sanità pubblica italiana.\n# L'accesso è consentito a tutti i crawler, inclusi i bot AI (ricerca e training):\n# la finalità civica del progetto è massimizzare la diffusione dei dati.\nUser-agent: *\nAllow: /\n\nSitemap: ${su}/sitemap.xml\n`
+    );
+    // llms.txt — карта за AI асистентите (Claude/Perplexity я четат)
+    await writeFile(
+      join(SITE_DIR, 'llms.txt'),
+      `# Ospedali Trasparenti\n\n> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali\n> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.\n\n## Pagine principali\n\n- [Inchiesta: dove vanno i soldi](${su}/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa\n- [Relazioni ricorrenti e possibili conflitti d'interesse](${su}/conflitti.html): coppie azienda–fornitore da verificare\n- [Appalti della sanità](${su}/appalti.html): quota senza gara per regione e per azienda\n- [Fornitori del SSN](${su}/fornitori.html): chi incassa i soldi della sanità\n- [Regioni a confronto](${su}/regioni.html): carta d'Italia della quota senza gara\n- [Metodologia e fonti](${su}/metodologia.html): come calcoliamo ogni indicatore\n- [Dati aperti](${su}/dati.html): dataset scaricabili (JSON/CSV) con licenze\n\n## Nota\n\nGli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:\npiste da verificare, non prove né accuse.\n`
+    );
+    console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt + llms.txt (${su})`);
   }
+  // OG картата (мета изображение за споделяния) — статичен асет
+  await copyFile(pjoin(ROOT, 'assets', 'og.png'), join(SITE_DIR, 'og.png')).catch(() => {});
 
   console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + (coi ? 1 : 0) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
@@ -430,8 +492,19 @@ sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segn
             '@id': `${su}/#org`,
             name: 'Ospedali Trasparenti',
             url: `${su}/`,
+            logo: `${su}/og.png`,
             description: 'Progetto di trasparenza civica sui conti e gli appalti degli ospedali pubblici italiani.',
-            parentOrganization: { '@type': 'Organization', name: 'Carbon Stealth VCC' },
+            parentOrganization: { '@type': 'Organization', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' },
+            sameAs: ['https://carbonstealth.eu'],
+            knowsAbout: [
+              'sanità pubblica italiana',
+              'appalti pubblici della sanità',
+              'bilanci delle aziende sanitarie',
+              'affidamenti diretti ASL',
+              'trasparenza della spesa sanitaria',
+              'dati aperti ANAC',
+              'modelli CE/SP BDAP',
+            ],
           },
           {
             '@type': 'WebSite',
@@ -450,9 +523,10 @@ sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segn
       }
     : null;
   return page({
-    title: 'Ospedali Trasparenti — i conti degli ospedali pubblici italiani',
-    description: 'Entrate e spese delle strutture sanitarie pubbliche italiane, con segnalazione automatica delle anomalie contabili. Dati open data RGS/MEF e Ministero della Salute.',
+    title: 'I conti della sanità pubblica italiana, in chiaro — Ospedali Trasparenti',
+    description: 'Entrate e spese delle strutture della sanità pubblica italiana, con segnalazione automatica delle anomalie contabili e degli appalti senza gara. Dati open data ANAC, RGS/MEF e Ministero della Salute.',
     active: 'index.html',
+    canonical: '/', // canonical към корена на домейна, не /index.html
     jsonld,
     body,
   });
@@ -691,12 +765,49 @@ pubblici (ANAC) per risalire ai singoli contratti, ai fornitori e alle gare a of
   <li>Un’anomalia di spesa <strong>non è prova di illecito</strong>: indica dove conviene approfondire.</li>
   <li>Il progetto è a scopo di trasparenza civica e non sostituisce le fonti ufficiali né la Corte dei conti.</li>
 </ul>
+<h2>Domande frequenti</h2>
+<h3>Cos’è un affidamento diretto?</h3>
+<p>L’affidamento diretto è l’assegnazione di un contratto pubblico a un operatore scelto dall’amministrazione
+<strong>senza gara</strong>. Il Codice dei contratti (d.lgs. 36/2023) lo consente sotto le soglie di legge
+(per servizi e forniture 140.000 €), con obbligo di motivazione e con il <strong>principio di rotazione</strong>
+(art. 49): non si può riaffidare ripetutamente allo stesso operatore senza giustificazione. Nel 2023–24 circa la metà
+dei contratti sanitari registrati in ANAC è stata assegnata con affidamento diretto o procedura negoziata senza
+pubblicazione: per questo il sito ne misura la quota per ogni azienda e regione.</p>
+<h3>Cos’è la Gestione Sanitaria Accentrata (GSA)?</h3>
+<p>La GSA è la contabilità sanitaria gestita <strong>direttamente dalla Regione</strong> (codice azienda 000), fuori
+dai bilanci delle singole aziende. Copre quote di finanziamento e ripiani: per questo il «rosso» delle aziende non è
+il disavanzo vero del sistema — va sommato al risultato della GSA. È il cuore della nostra
+<a href="inchiesta.html">inchiesta sul deficit</a>.</p>
+<h3>Quanto spende la sanità pubblica italiana?</h3>
+<p>Nel 2024 il valore della produzione delle aziende del Servizio Sanitario Nazionale tracciate in BDAP supera i
+<strong>240 miliardi di euro</strong>. La spesa è rendicontata nei modelli CE (conto economico) di ogni azienda,
+pubblicati dalla Ragioneria Generale dello Stato e rielaborati da questo sito, struttura per struttura.</p>
+<h3>Un indicatore di anomalia significa che c’è un illecito?</h3>
+<p><strong>No.</strong> Gli indicatori sono elaborazioni statistiche automatiche su dati ufficiali: segnalano dove
+conviene approfondire, non dimostrano irregolarità. Un’alta quota senza gara o una relazione ricorrente possono avere
+spiegazioni pienamente legittime (brevetti, monopoli tecnici, convenzioni). La verifica spetta alle autorità
+competenti (Corte dei conti, ANAC).</p>
+
 <p class="small muted">Elaborazione automatica open source di Carbon Stealth VCC.</p>
 `;
+  const suM = siteUrl();
+  const faqLd = suM
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          ['Cos’è un affidamento diretto?', 'L’assegnazione di un contratto pubblico senza gara, consentita sotto le soglie di legge (140.000 € per servizi e forniture) con obbligo di motivazione e principio di rotazione (art. 49, d.lgs. 36/2023). Nel 2023–24 circa la metà dei contratti sanitari in ANAC è stata assegnata così.'],
+          ['Cos’è la Gestione Sanitaria Accentrata (GSA)?', 'La contabilità sanitaria gestita direttamente dalla Regione (codice 000), fuori dai bilanci delle aziende: copre finanziamenti e ripiani, quindi il disavanzo vero del sistema è aziende + GSA.'],
+          ['Quanto spende la sanità pubblica italiana?', 'Nel 2024 il valore della produzione delle aziende del SSN tracciate in BDAP supera i 240 miliardi di euro, rendicontati nei modelli CE pubblicati dalla Ragioneria Generale dello Stato.'],
+          ['Un indicatore di anomalia significa che c’è un illecito?', 'No: gli indicatori sono elaborazioni statistiche automatiche che segnalano dove approfondire, non prove di irregolarità. La verifica spetta a Corte dei conti e ANAC.'],
+        ].map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+      }
+    : null;
   return page({
     title: 'Metodologia — Ospedali Trasparenti',
-    description: 'Fonti ufficiali e regole di segnalazione automatica delle anomalie contabili degli ospedali pubblici italiani.',
+    description: 'Fonti ufficiali e regole di segnalazione automatica delle anomalie contabili degli ospedali pubblici italiani. Cos’è un affidamento diretto, cos’è la GSA, quanto spende il SSN.',
     active: 'metodologia.html',
+    jsonld: faqLd,
     body,
   });
 }
@@ -857,12 +968,36 @@ ${spBlock}
 <p class="small muted" style="margin-top:26px">Fonte: <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>
 (modelli CE/SP del SSN) e <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a>. Importi in euro dai consuntivi.</p>
 `;
+  const percorso = `struttura/${ente.codice}-${slugify(ente.denominazione)}.html`;
+  const su = siteUrl();
+  // entity граф за дългата опашка („bilancio <болница>"): breadcrumb + субект
+  const jsonld = su
+    ? {
+        '@context': 'https://schema.org',
+        '@graph': [
+          briciole([['Home', '/'], ['Strutture', 'strutture.html'], [ente.denominazione, percorso]]),
+          {
+            '@type': 'GovernmentOrganization',
+            name: ente.denominazione,
+            address: { '@type': 'PostalAddress', addressRegion: ente.regione, addressCountry: 'IT' },
+            subjectOf: {
+              '@type': 'Dataset',
+              name: `Bilancio e appalti — ${ente.denominazione}`,
+              temporalCoverage: '2012/2024',
+              license: 'https://creativecommons.org/licenses/by/4.0/',
+              url: `${su}/${percorso}`,
+            },
+          },
+        ],
+      }
+    : null;
   return page({
     title: `${ente.denominazione} — Ospedali Trasparenti`,
     description: `Bilancio, entrate, spese e segnalazioni contabili di ${ente.denominazione} (${ente.regione}).`,
     active: 'strutture.html',
     rel: '../',
-    canonical: `struttura/${ente.codice}-${slugify(ente.denominazione)}.html`,
+    canonical: percorso,
+    jsonld,
     body,
   });
 }
@@ -1195,12 +1330,30 @@ ${appaltiBlk}
   <tbody>${rows}</tbody>
 </table></div>
 `;
+  const su = siteUrl();
+  const jsonldReg = su
+    ? {
+        '@context': 'https://schema.org',
+        '@graph': [
+          briciole([['Home', '/'], ['Regioni', 'regioni.html'], [meta.nome, `regione/${key}.html`]]),
+          {
+            '@type': 'Dataset',
+            name: `Sanità pubblica in ${meta.nome}: conti e appalti`,
+            spatialCoverage: { '@type': 'Place', name: meta.nome, address: { '@type': 'PostalAddress', addressCountry: 'IT' } },
+            temporalCoverage: '2012/2024',
+            license: 'https://creativecommons.org/licenses/by/4.0/',
+            url: `${su}/regione/${key}.html`,
+          },
+        ],
+      }
+    : null;
   return page({
     title: `${esc(meta.nome)} — sanità pubblica — Ospedali Trasparenti`,
     description: `Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in ${esc(meta.nome)}: valore della produzione, risultato, quota di appalti senza gara.`,
     active: 'regioni.html',
     rel: '../',
     canonical: `regione/${key}.html`,
+    jsonld: jsonldReg,
     body,
   });
 }
@@ -1241,13 +1394,14 @@ function renderConflitti({ coi, href }) {
 fornitore vive quasi solo di una singola azienda — la relazione merita una verifica. Qui incrociamo tutti i
 ${numeroIt(st.conFornitore)} contratti con fornitore identificato e segnaliamo le <strong>coppie azienda↔fornitore</strong>
 che presentano indicatori di rischio riconosciuti.</p>
+${rigaAggiornamento()}
 
 <div class="note"><strong>Cosa NON è questa pagina.</strong> Gli open data non possono dimostrare un conflitto di
 interessi: servirebbero gli assetti societari (Registro Imprese) e gli incarichi dei dirigenti (sezione «Amministrazione
 Trasparente» di ogni azienda). Questi sono <strong>indicatori, non prove</strong> — e spesso hanno spiegazioni legittime:
 i farmaci coperti da <strong>brevetto</strong> (es. case farmaceutiche) si acquistano per forza dal titolare, in esclusiva;
 esistono monopoli tecnici, manutenzioni vincolate al costruttore, convenzioni. La rotazione degli affidamenti diretti è
-però un <strong>obbligo di legge</strong> (art. 49, d.lgs. 36/2023): le eccezioni vanno motivate.</p></div>
+però un <strong>obbligo di legge</strong> (art. 49, d.lgs. 36/2023): le eccezioni vanno motivate.</div>
 
 <div class="grid kpis">
   ${kpi('Coppie segnalate', numeroIt(st.coppieSegnalate))}
@@ -1318,6 +1472,8 @@ una rettifica</a> — le richieste motivate sono valutate tempestivamente.</p>
     title: 'Relazioni ricorrenti e possibili conflitti d’interesse — Ospedali Trasparenti',
     description: 'Coppie azienda sanitaria–fornitore con affidamenti diretti ripetuti, dipendenza reciproca o esclusiva senza gara: indicatori di rischio da verificare, non prove. Dati ANAC.',
     active: 'conflitti.html',
+    ogType: 'article',
+    jsonld: articleLd('Relazioni ricorrenti e possibili conflitti d’interesse nella sanità pubblica', 'Coppie azienda sanitaria–fornitore con indicatori di rischio da verificare.', 'conflitti.html'),
     body,
   });
 }
@@ -1425,13 +1581,24 @@ SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
 }
 
 // ---------- NOTE LEGALI / PRIVACY ----------
-function renderNoteLegali() {
+function renderNoteLegali({ titolare = {} } = {}) {
+  // реквизити на титуляря (GDPR чл. 13(1)(a)/(b)) — попълват се в config.json
+  const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
+  const contatto = titolare.email
+    ? ` Contatto diretto: <a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>.`
+    : ` Contatto: tramite <a href="https://carbonstealth.eu">carbonstealth.eu</a>.`;
   const body = `
 <h1>Note legali</h1>
 <h2>Titolare</h2>
-<p>Questo sito è pubblicato da <strong>Carbon Stealth VCC</strong> (<a href="https://carbonstealth.eu">carbonstealth.eu</a>).
+<p>Questo sito è pubblicato da <strong>${esc(titolare.nome || 'Carbon Stealth VCC')}</strong>${sede}
+(<a href="https://carbonstealth.eu">carbonstealth.eu</a>).${contatto}
 Progetto di <strong>trasparenza civica senza scopo di lucro</strong>. Non è una testata giornalistica registrata ai sensi
 dell’art. 5 della L. 47/1948 e non costituisce prodotto editoriale periodico.</p>
+
+<h2>Riutilizzo dei dati elaborati</h2>
+<p class="small">I dataset derivati pubblicati in <a href="dati.html">Dati aperti</a> sono riutilizzabili citando la fonte
+originale (ANAC CC BY 4.0, BDAP IODL 2.0) e questo progetto. Sono forniti <strong>senza alcuna garanzia di completezza o
+accuratezza</strong>: chi li riutilizza è tenuto a verificarli sulle fonti ufficiali.</p>
 
 <h2>Natura dei contenuti</h2>
 <p>Il sito rielabora <strong>dati ufficiali in formato aperto</strong> e ne deriva indicatori automatici. Le
@@ -1453,8 +1620,9 @@ non sono imputabili ai titolari delle fonti.</p>
 
 <h2 id="rettifiche">Rettifiche</h2>
 <p>Chi ritenga un dato inesatto o voglia fornire contesto può richiederne la <strong>rettifica</strong> scrivendo a
-<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>. Le richieste motivate saranno valutate tempestivamente e,
-ove fondate, il dato sarà corretto o contestualizzato alla prima rigenerazione del sito.</p>
+${titolare.email ? `<a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>` : `<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>`}.
+Le richieste motivate saranno valutate tempestivamente e, ove fondate, il dato sarà corretto o contestualizzato alla
+prima rigenerazione del sito.</p>
 
 <h2>Limitazione di responsabilità</h2>
 <p>I contenuti sono forniti «così come sono», a fini informativi e di trasparenza. Non sostituiscono le fonti ufficiali
@@ -1463,28 +1631,45 @@ né i controlli della Corte dei conti o dell’ANAC.</p>
   return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, natura dei contenuti, fonti, licenze e rettifiche.', active: '', body });
 }
 
-function renderPrivacy() {
+function renderPrivacy({ titolare = {}, hosting = {} } = {}) {
+  const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
+  const contattoHtml = titolare.email
+    ? `<a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>`
+    : `<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>`;
+  // хостинг разкритие (GDPR чл. 13(1)(e)/(f)) — provider/trasferimento от config.json
+  const hostingHtml = hosting.provider
+    ? `<p>Il sito è ospitato da <strong>${esc(hosting.provider)}</strong>, che agisce come responsabile del trattamento e
+può registrare log tecnici (incluso l’indirizzo IP) per la sicurezza e il funzionamento del servizio (base giuridica
+art. 6.1.f GDPR).${hosting.trasferimento ? ` L’eventuale trasferimento extra-UE è disciplinato da <strong>${esc(hosting.trasferimento)}</strong>.` : ''}</p>`
+    : `<p>Il fornitore di hosting può registrare log tecnici (incluso l’indirizzo IP) per la sicurezza e il funzionamento
+del servizio (base giuridica art. 6.1.f GDPR). Il nominativo del fornitore e l’eventuale meccanismo di trasferimento
+extra-UE saranno indicati in questa pagina al momento della pubblicazione definitiva.</p>`;
   const body = `
 <h1>Informativa sulla privacy</h1>
 <p class="lead">Questo sito è statico e <strong>non usa cookie né strumenti di tracciamento</strong>; non raccoglie
 dati di navigazione tramite script propri.</p>
 
+<h2>Titolare del trattamento</h2>
+<p><strong>${esc(titolare.nome || 'Carbon Stealth VCC')}</strong>${sede}. Contatto: ${contattoHtml}.</p>
+
 <h2>Dati di terzi (operatori economici)</h2>
 <p>Il sito elabora dati economici ufficiali in formato aperto che possono includere <strong>denominazioni di operatori
-economici</strong>. Le imprese sono identificate dalla partita IVA; gli <strong>operatori persone fisiche non sono
-nominati</strong> (le denominazioni con codice fiscale personale sono sostituite da un’etichetta generica). Ove un dato
-riferito a una persona fisica risultasse comunque presente, il trattamento avviene per finalità di
-<strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs 196/2003 come
-modificato dal D.Lgs 101/2018).</p>
+economici</strong>, identificati dalla partita IVA. Le denominazioni associate a un <strong>codice fiscale personale
+(16 caratteri)</strong> sono sostituite da un’etichetta generica e non compaiono. Alcune <strong>ditte individuali e
+società di persone</strong> possono tuttavia contenere nomi di persone fisiche nella ragione sociale registrata nelle
+fonti pubbliche: per questi soggetti il sito non applica indicatori di rischio, esclude le relative pagine dai motori
+di ricerca (noindex) e non li include nell’analisi delle relazioni ricorrenti. Il trattamento avviene per finalità di
+<strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs 196/2003
+come modificato dal D.Lgs 101/2018). I dati rielaborati vengono aggiornati a ogni rigenerazione del sito; le fonti
+primarie restano pubbliche presso i rispettivi titolari (ANAC, BDAP/MEF, Ministero della Salute).</p>
 
 <h2>Diritti</h2>
-<p>È possibile esercitare i diritti di accesso, rettifica, opposizione e cancellazione scrivendo a
-<a href="https://carbonstealth.eu">Carbon Stealth VCC</a>.</p>
+<p>È possibile esercitare i diritti di <strong>accesso, rettifica, limitazione, opposizione e cancellazione</strong>
+(artt. 15–21 GDPR) scrivendo a ${contattoHtml}. È inoltre possibile proporre <strong>reclamo al Garante per la
+protezione dei dati personali</strong> (<a href="https://www.garanteprivacy.it/">garanteprivacy.it</a>).</p>
 
 <h2>Log di hosting</h2>
-<p>Il fornitore di hosting può registrare log tecnici (incluso l’indirizzo IP) per la sicurezza e il funzionamento del
-servizio (base giuridica art. 6.1.f GDPR). Per l’elenco dei responsabili e l’ubicazione dei server fare riferimento al
-titolare.</p>
+${hostingHtml}
 `;
   return page({ title: 'Privacy — Ospedali Trasparenti', description: 'Nessun cookie o tracciamento. Trattamento dei dati di terzi e diritti.', active: '', body });
 }
@@ -1593,6 +1778,8 @@ Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a
     title: 'Appalti pubblici della sanità — Ospedali Trasparenti',
     description: 'Gli appalti delle aziende sanitarie italiane dai dati ANAC: quota di spesa senza gara, affidamenti diretti, confronto tra regioni.',
     active: 'appalti.html',
+    ogType: 'article',
+    jsonld: articleLd('Gli appalti della sanità pubblica italiana', 'Quota di spesa senza gara, affidamenti diretti e confronto tra regioni dai dati ANAC.', 'appalti.html'),
     body,
   });
 }
@@ -1709,6 +1896,10 @@ ${coppie.length ? `<div class="seg ${coppie.some((p) => p.gravita === 'alta') ? 
 <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG + aggiudicatari), gare > 40.000 €.
 Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#rettifiche">Richiedi una rettifica</a>.</p>
 `;
+  const suF = siteUrl();
+  const jsonldForn = suF && societa
+    ? { '@context': 'https://schema.org', '@graph': [briciole([['Home', '/'], ['Fornitori', 'fornitori.html'], [f.den, `fornitore/${f.cf}.html`]])] }
+    : null;
   return page({
     title: `${f.den} — fornitore del SSN — Ospedali Trasparenti`,
     description: `Contratti pubblici di ${f.den} con le aziende sanitarie italiane: valore, aziende, procedure.`,
@@ -1716,6 +1907,7 @@ Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#r
     rel: '../',
     canonical: `fornitore/${f.cf}.html`,
     noindex: !societa,
+    jsonld: jsonldForn,
     body,
   });
 }
@@ -2014,6 +2206,7 @@ function renderInchiesta({ forense, appalti, appMatch, href }) {
 <p class="lead">«Non è possibile che ogni ospedale sia in perdita.» È l’obiezione giusta — e i dati danno una risposta netta.
 Il disavanzo delle aziende è in larga parte <strong>coperto a livello regionale</strong>; e non tutte le aziende sono in rosso.
 Ma quando si scende nelle voci di spesa, emergono anomalie che meritano un occhio.</p>
+${rigaAggiornamento()}
 
 <div class="note"><strong>La verità sul “rosso”.</strong> Le aziende sanitarie ricevono il Fondo Sanitario Regionale in parte
 tramite la <em>Gestione Sanitaria Accentrata</em> (GSA) della Regione. Il disavanzo delle singole aziende viene così
@@ -2065,6 +2258,8 @@ Sono <em>piste</em>, quelle che la Corte dei conti e l’ANAC seguono per prime 
     title: 'Inchiesta: dove vanno i soldi — Ospedali Trasparenti',
     description: 'La verità sul disavanzo degli ospedali pubblici italiani e le anomalie di spesa: consulenze, prestazioni da privati, affitti. Analisi sui dati ufficiali.',
     active: 'inchiesta.html',
+    ogType: 'article',
+    jsonld: articleLd('Inchiesta: dove vanno i soldi della sanità pubblica', 'Il disavanzo «vero» del sistema sanitario e le anomalie di spesa, dai dati ufficiali.', 'inchiesta.html'),
     body,
   });
 }
@@ -2138,6 +2333,8 @@ ${tavola(
     title: 'Classifiche follow the money — Ospedali Trasparenti',
     description: 'Classifiche delle voci di spesa più esposte a inefficienza negli ospedali pubblici italiani: consulenze, privati, affitti, beni per posto letto.',
     active: 'classifiche.html',
+    ogType: 'article',
+    jsonld: articleLd('Classifiche «follow the money» della spesa sanitaria', 'Le voci di spesa più esposte a inefficienza negli ospedali pubblici italiani.', 'classifiche.html'),
     body,
   });
 }

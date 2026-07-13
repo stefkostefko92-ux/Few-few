@@ -220,7 +220,8 @@ export function page({ title, active, rel = '', body, description = '', canonica
       `<a href="${rel}${href}"${active === href ? ' aria-current="page"' : ''}>${label}</a>`
   ).join('');
   const path = canonical != null ? canonical : active;
-  const abs = SITE_URL && path ? `${SITE_URL}/${path}` : null;
+  // canonical:'/' = коренът на домейна (началната страница, не /index.html)
+  const abs = !SITE_URL ? null : path === '/' ? `${SITE_URL}/` : path ? `${SITE_URL}/${path}` : null;
   const meta = [
     noindex ? '<meta name="robots" content="noindex">' : '',
     abs ? `<link rel="canonical" href="${esc(abs)}">` : '',
@@ -230,7 +231,9 @@ export function page({ title, active, rel = '', body, description = '', canonica
     `<meta property="og:title" content="${esc(title)}">`,
     description ? `<meta property="og:description" content="${esc(description)}">` : '',
     abs ? `<meta property="og:url" content="${esc(abs)}">` : '',
-    `<meta name="twitter:card" content="summary">`,
+    SITE_URL ? `<meta property="og:image" content="${esc(SITE_URL)}/og.png">` : '',
+    SITE_URL ? `<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">` : '',
+    `<meta name="twitter:card" content="${SITE_URL ? 'summary_large_image' : 'summary'}">`,
     `<meta name="twitter:title" content="${esc(title)}">`,
     description ? `<meta name="twitter:description" content="${esc(description)}">` : '',
     jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : '',
