@@ -999,23 +999,27 @@ Contatto nelle <a href="note-legali.html">note legali</a>.</p>
   });
 }
 
-// ---------- COVID ретроспекция (2019–2024) ----------
+// ---------- COVID ретроспекция (2019–2023 + бележка за прекъсването 2024) ----------
 export function renderStorico({ st }) {
+  // Сравнимата серия: годините преди прекъсването (D.Lgs 36/2023 + PCP от 01.2024).
   const anni = Object.keys(st.perAnno).map(Number).sort();
-  const serie = (k) => anni.map((a) => [a, st.perAnno[a][k]]).filter(([, v]) => v != null);
+  const anniComp = anni.filter((a) => st.perAnno[a].comparabile !== false);
+  const serie = (k) => anniComp.map((a) => [a, st.perAnno[a][k]]).filter(([, v]) => v != null);
   const a2019 = st.perAnno[2019];
   const a2020 = st.perAnno[2020];
-  const ultimo = st.perAnno[anni.at(-1)];
+  const ultimo = st.perAnno[anniComp.at(-1)];
+  const rotti = anni.filter((a) => st.perAnno[a].comparabile === false);
+  const a2024 = rotti.length ? st.perAnno[rotti[0]] : null;
   const body = `
-<h1>Prima, durante e dopo il COVID: sei anni di appalti</h1>
+<h1>Prima, durante e dopo il COVID: gli appalti 2019–${anniComp.at(-1)}</h1>
 <p class="lead">La pandemia ha sospeso le regole ordinarie degli acquisti pubblici: affidamenti d’urgenza, deroghe,
 scorte da costruire in giorni. Questa pagina misura cosa è successo davvero — e soprattutto <strong>se il mercato
 è tornato normale</strong> quando l’emergenza è finita.</p>
 <div class="grid kpis">
-  ${kpi('Contratti 2019 → ' + anni.at(-1), `${numeroIt(a2019 ? a2019.n : 0)} → ${numeroIt(ultimo.n)}`)}
+  ${kpi('Contratti 2019 → ' + anniComp.at(-1), `${numeroIt(a2019 ? a2019.n : 0)} → ${numeroIt(ultimo.n)}`)}
   ${kpi('Urgenza nel 2020', a2020 && a2020.quotaUrgenza != null ? percentualeIt(a2020.quotaUrgenza) : '—', 'neg')}
-  ${kpi(`Urgenza nel ${anni.at(-1)}`, ultimo.quotaUrgenza != null ? percentualeIt(ultimo.quotaUrgenza) : '—')}
-  ${kpi(`Senza gara (${anni.at(-1)})`, ultimo.quotaSenzaGara != null ? percentualeIt(ultimo.quotaSenzaGara) : '—')}
+  ${kpi(`Urgenza nel ${anniComp.at(-1)}`, ultimo.quotaUrgenza != null ? percentualeIt(ultimo.quotaUrgenza) : '—')}
+  ${kpi(`Senza gara: 2019 → ${anniComp.at(-1)}`, a2019 && a2019.quotaSenzaGara != null && ultimo.quotaSenzaGara != null ? `${percentualeIt(a2019.quotaSenzaGara)} → ${percentualeIt(ultimo.quotaSenzaGara)}` : '—', ultimo.quotaSenzaGara > (a2019?.quotaSenzaGara ?? 1) ? 'neg' : '')}
 </div>
 <h2>La quota «senza gara», anno per anno</h2>
 ${lineChart(
@@ -1023,7 +1027,7 @@ ${lineChart(
       { label: 'Quota senza gara (per numero)', color: 'var(--neg)', points: serie('quotaSenzaGara').map(([x, y]) => [x, y * 100]) },
       { label: 'Quota con flag urgenza', color: 'var(--amber)', points: serie('quotaUrgenza').map(([x, y]) => [x, y * 100]) },
     ],
-    { caption: 'Percentuale dei contratti sanitari (fonte: ANAC, gare > 40.000 €)' }
+    { caption: `Percentuale dei contratti dei committenti sanitari, 2019–${anniComp.at(-1)} (fonte: ANAC — BDNCP)` }
   )}
 <h2>I volumi</h2>
 ${lineChart([{ label: 'Contratti per anno', color: 'var(--brand)', points: serie('n') }], {
@@ -1031,9 +1035,22 @@ ${lineChart([{ label: 'Contratti per anno', color: 'var(--brand)', points: serie
   })}
 <div class="note"><strong>Come leggere.</strong> Il 2020–2021 è il periodo delle deroghe emergenziali: la quota di
 urgenze e affidamenti senza confronto è attesa e in gran parte giustificata. La domanda da trasparenza è un’altra:
-<em>le abitudini prese nell’emergenza sono rientrate?</em> Se la quota «senza gara» resta sopra i livelli
-pre-pandemia anche anni dopo, l’eccezione è diventata prassi. I numeri qui sopra danno la risposta, regione per
-regione la trovi negli <a href="appalti.html">appalti</a>.</div>
+<em>le abitudini prese nell’emergenza sono rientrate?</em> L’urgenza sì: dal ${a2020 && a2020.quotaUrgenza != null ? percentualeIt(a2020.quotaUrgenza) : '—'} del 2020
+si torna ai livelli pre-COVID. La quota «senza gara» invece nel ${anniComp.at(-1)} resta <strong>sopra</strong> il livello del 2019:
+l’eccezione rischia di diventare prassi. Il dettaglio per regione è negli <a href="appalti.html">appalti</a>.</div>
+${a2024 ? `<h2>E il ${rotti[0]}? Una serie nuova, non confrontabile</h2>
+<p>Dal 1° gennaio 2024 il nuovo Codice dei contratti (D.Lgs 36/2023) e le piattaforme di
+e-procurement certificate (PCP) hanno cambiato <em>cosa</em> finisce nella banca dati ANAC:
+ora ci entrano anche i micro-acquisti che prima passavano dal circuito SmartCIG, la soglia
+dell’affidamento diretto per servizi e forniture è salita a 140.000 €, e il flag «urgenza»
+viene compilato dalle piattaforme con criteri diversi (risulta attivo su circa il
+${percentualeIt(a2024.quotaUrgenza)} dei contratti, contro lo 0,3–2,7&nbsp;% degli anni precedenti — un salto
+che misura il cambio di modulistica, non un’epidemia di urgenze).</p>
+<p>Per questo il ${rotti[0]} — ${numeroIt(a2024.n)} contratti registrati, «senza gara» al
+${percentualeIt(a2024.quotaSenzaGara)} — <strong>non è confrontabile</strong> con gli anni precedenti e lo mostriamo
+separatamente invece di attaccarlo alle curve qui sopra: sarebbe un confronto tra mele e pere.
+Le analisi correnti del sito (finestra 2023–2024) usano criteri omogenei e non sono toccate
+da questa avvertenza.</p>` : ''}
 <p class="small muted">Fonte: ANAC — BDNCP (CC BY 4.0), stessi criteri del resto del sito (committenti sanitari,
 dedup per CIG, importi validi). Le adesioni a convenzioni non sono escluse da questa serie storica: la definizione è
 volutamente identica in tutti gli anni per rendere il confronto omogeneo.</p>

@@ -1,0 +1,92 @@
+{
+  "generatoIl": "2026-07-13T19:50:49.764Z",
+  "fonte": "ANAC — BDNCP, месечни CIG датасети (CC BY 4.0), здравни възложители",
+  "nota": "Годишни национални агрегати със същите правила като appalti.json (HEALTH филтър, дедуп по CIG, валиден importo). Прозорецът на останалата част от сайта остава 2023–2024.",
+  "perAnno": {
+    "2019": {
+      "anno": 2019,
+      "n": 108761,
+      "importo": 41807749106.11018,
+      "senzaGaraN": 24481,
+      "urgenzaN": 288,
+      "diretto": 6558,
+      "negoziataSenza": 17923,
+      "competitiva": 21352,
+      "quadro": 50675,
+      "quotaSenzaGara": 0.2250898759665689,
+      "quotaUrgenza": 0.002648008017579831,
+      "comparabile": true
+    },
+    "2020": {
+      "anno": 2020,
+      "n": 132024,
+      "importo": 46737935304.68011,
+      "senzaGaraN": 24819,
+      "urgenzaN": 3559,
+      "diretto": 8887,
+      "negoziataSenza": 15932,
+      "competitiva": 18984,
+      "quadro": 70103,
+      "quotaSenzaGara": 0.1879885475368115,
+      "quotaUrgenza": 0.02695721989941223,
+      "comparabile": true
+    },
+    "2021": {
+      "anno": 2021,
+      "n": 121145,
+      "importo": 55271566287.29036,
+      "senzaGaraN": 26091,
+      "urgenzaN": 1097,
+      "diretto": 12974,
+      "negoziataSenza": 13117,
+      "competitiva": 23712,
+      "quadro": 55566,
+      "quotaSenzaGara": 0.2153700111436708,
+      "quotaUrgenza": 0.009055264352635272,
+      "comparabile": true
+    },
+    "2022": {
+      "anno": 2022,
+      "n": 143437,
+      "importo": 60828908077.17025,
+      "senzaGaraN": 27549,
+      "urgenzaN": 380,
+      "diretto": 15856,
+      "negoziataSenza": 11693,
+      "competitiva": 24857,
+      "quadro": 76259,
+      "quotaSenzaGara": 0.19206341460013804,
+      "quotaUrgenza": 0.0026492467076137957,
+      "comparabile": true
+    },
+    "2023": {
+      "anno": 2023,
+      "n": 149626,
+      "importo": 68387329225.89944,
+      "senzaGaraN": 37818,
+      "urgenzaN": 391,
+      "diretto": 25900,
+      "negoziataSenza": 11918,
+      "competitiva": 29181,
+      "quadro": 67804,
+      "quotaSenzaGara": 0.2527501904749175,
+      "quotaUrgenza": 0.00261318220095438,
+      "comparabile": true
+    },
+    "2024": {
+      "anno": 2024,
+      "n": 277958,
+      "importo": 79332250136.1197,
+      "senzaGaraN": 187331,
+      "urgenzaN": 99317,
+      "diretto": 170287,
+      "negoziataSenza": 17044,
+      "competitiva": 33697,
+      "quadro": 54451,
+      "quotaSenzaGara": 0.6739543384252297,
+      "quotaUrgenza": 0.357309377675764,
+      "comparabile": false
+    }
+  },
+  "rotturaSerie": "От 01.2024 (D.Lgs 36/2023 + PCP) серията е несравнима: включени микро-покупки, по-висок праг за affidamento diretto, друга семантика на FLAG_URGENZA. Годините с comparabile=false се показват отделно."
+}

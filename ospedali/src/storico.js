@@ -62,13 +62,19 @@ async function main() {
     }
     agg.quotaSenzaGara = agg.n ? agg.senzaGaraN / agg.n : null;
     agg.quotaUrgenza = agg.n ? agg.urgenzaN / agg.n : null;
+    // Прекъсване на серията от 01.2024: новият Codice (D.Lgs 36/2023) + задължителните
+    // PCP платформи вкарват и микро-покупките (преди отделен smartCIG), вдигат прага за
+    // affidamento diretto до 140k € и сменят семантиката на FLAG_URGENZA (~40% „1“ срещу
+    // 0,3–2,7% преди) → 2024 НЕ е сравнима с 2019–2023 и се показва отделно.
+    agg.comparabile = anno <= 2023;
     perAnno[anno] = agg;
     console.log(`${anno}: ${agg.n.toLocaleString('it-IT')} договора, senza gara ${(agg.quotaSenzaGara * 100).toFixed(1)}%, urgenza ${(agg.quotaUrgenza * 100).toFixed(1)}%`);
   }
   await writeJson(join(DATA_DIR, 'storico.json'), {
     generatoIl: new Date().toISOString(),
-    fonte: 'ANAC — BDNCP, месечни CIG датасети (CC BY 4.0), gare > 40.000 €, здравни възложители',
+    fonte: 'ANAC — BDNCP, месечни CIG датасети (CC BY 4.0), здравни възложители',
     nota: 'Годишни национални агрегати със същите правила като appalti.json (HEALTH филтър, дедуп по CIG, валиден importo). Прозорецът на останалата част от сайта остава 2023–2024.',
+    rotturaSerie: 'От 01.2024 (D.Lgs 36/2023 + PCP) серията е несравнима: включени микро-покупки, по-висок праг за affidamento diretto, друга семантика на FLAG_URGENZA. Годините с comparabile=false се показват отделно.',
     perAnno,
   });
   console.log('Готово → data/storico.json');
