@@ -25,6 +25,15 @@ import {
   renderPagamenti, renderPersonale, renderMobilita,
   renderFineAnno, renderConfronta, renderApi, renderAccessibilita, renderStorico,
 } from './approfondimenti.js';
+// Нови източници (all-11) — всеки в отделен модул-страница
+import { renderApparecchiature } from './pagina-apparecchiature.js';
+import { renderSdo } from './pagina-sdo.js';
+import { renderAggiudicazioni } from './pagina-aggiudicazioni.js';
+import { renderTed } from './pagina-ted.js';
+import { renderConsulenze } from './pagina-perlapa.js';
+import { renderPnrrSalute } from './pagina-pnrr-salute.js';
+import { renderSiope } from './pagina-siope.js';
+import { renderPne } from './pagina-pne.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
@@ -499,6 +508,43 @@ async function main() {
     await writeFile(join(SITE_DIR, 'mobilita.html'), renderMobilita({ mob, regKeyByNome: (n) => nome2key.get(n) || null }));
   }
 
+  // --- Нови източници (all-11) — всеки по избор (страницата се пропуска без данните) ---
+  const popolazione = await readJson(pjoin(DATA_DIR, 'popolazione.json')).catch(() => ({ regioni: {}, italia: 0, anno: null }));
+  const nomeReg = (k) => (REGIONI[k] ? REGIONI[k].nome : k);
+  const regHref = (k) => (REGIONI[k] ? `regione/${k}.html` : null);
+
+  const apparecchiature = await readJson(pjoin(DATA_DIR, 'apparecchiature.json')).catch(() => null);
+  if (apparecchiature) await writeFile(join(SITE_DIR, 'apparecchiature.html'), renderApparecchiature({ app: apparecchiature, popolazione, nomeReg }));
+
+  const sdo = await readJson(pjoin(DATA_DIR, 'sdo.json')).catch(() => null);
+  if (sdo) await writeFile(join(SITE_DIR, 'sdo.html'), renderSdo({ sdo, popolazione, nomeReg }));
+
+  const aggiu = await readJson(pjoin(DATA_DIR, 'aggiudicazioni.json')).catch(() => null);
+  if (aggiu) await writeFile(join(SITE_DIR, 'aggiudicazioni.html'), renderAggiudicazioni({ agg: aggiu }));
+
+  const ted = await readJson(pjoin(DATA_DIR, 'ted.json')).catch(() => null);
+  if (ted) await writeFile(join(SITE_DIR, 'ted.html'), renderTed({ ted }));
+
+  const cons = await readJson(pjoin(DATA_DIR, 'consulenze.json')).catch(() => null);
+  if (cons) await writeFile(join(SITE_DIR, 'consulenze.html'), renderConsulenze({ cons }));
+
+  const pnrrSalute = await readJson(pjoin(DATA_DIR, 'pnrr-salute.json')).catch(() => null);
+  if (pnrrSalute) await writeFile(join(SITE_DIR, 'pnrr-salute.html'), renderPnrrSalute({ pnrr: pnrrSalute, popolazione, nomeReg, href: regHref }));
+
+  const siope = await readJson(pjoin(DATA_DIR, 'siope.json')).catch(() => null);
+  if (siope) await writeFile(join(SITE_DIR, 'siope.html'), renderSiope({ siope, nomeReg }));
+
+  // PNE (esiti clinici) — разход на глава per регион за кръстоската „soldi vs esiti"
+  const pne = await readJson(pjoin(DATA_DIR, 'pne.json')).catch(() => null);
+  if (pne) {
+    const costiPerAbitante = {};
+    for (const [key, g] of regCosti) {
+      const popReg = popolazione.regioni && popolazione.regioni[key];
+      if (g.dopo > 0 && popReg) costiPerAbitante[key] = g.dopo / popReg;
+    }
+    await writeFile(join(SITE_DIR, 'pne.html'), renderPne({ pne, costiPerAbitante, nomeReg }));
+  }
+
   // Декемврийска треска (bunching): класация по dic/средно (мин 120 преки)
   const bunchRighe = [...mesiAgg.perEnte.entries()]
     .map(([cod, mm]) => {
@@ -568,7 +614,15 @@ async function main() {
 
   await writeFile(
     join(SITE_DIR, 'approfondimenti.html'),
-    renderApprofondimenti({ nTop: top100.length, totCategorie, nStrutture: doveRighe.length, conNuovi: { pagamenti: !!tp, personale: !!pers, mobilita: !!mob, fineAnno: true, confronta: true, api: true, storico: !!sto } })
+    renderApprofondimenti({
+      nTop: top100.length, totCategorie, nStrutture: doveRighe.length,
+      conNuovi: {
+        pagamenti: !!tp, personale: !!pers, mobilita: !!mob, fineAnno: true, confronta: true, api: true, storico: !!sto,
+        apparecchiature: !!apparecchiature, sdo: !!sdo, aggiudicazioni: !!aggiu, ted: !!ted, consulenze: !!cons,
+        pnrrSalute: !!pnrrSalute, siope: !!(await readJson(pjoin(DATA_DIR, 'siope.json')).catch(() => null)),
+        pne: !!(await readJson(pjoin(DATA_DIR, 'pne.json')).catch(() => null)),
+      },
+    })
   );
 
   // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
@@ -585,6 +639,15 @@ async function main() {
     ['mobilita.json', 'JSON', 'Mobilità sanitaria per regione', 'Spesa per cure fuori regione (canali pubblico/privato) dai bilanci CE, per anno.', 'BDAP — RGS/MEF (IODL 2.0)'],
     ['personale.json', 'JSON', 'Personale del comparto sanità', 'Dipendenti, medici e lavoro flessibile per azienda (Conto Annuale).', 'BDAP — RGS/MEF (IODL 2.0)'],
     ['tempi-pagamento.json', 'JSON', 'Tempi di pagamento enti SSN', 'Serie nazionale PCC/RGS 2019–2025 (estrazione dal PDF ufficiale).', 'RGS/MEF'],
+    ['aggiudicazioni.json', 'JSON', 'Aggiudicazioni: offerenti, ribassi, ritardi', 'Numero di offerenti, ribasso e stati di avanzamento per i CIG sanitari (arricchimento ANAC).', 'ANAC — BDNCP (CC BY-SA 4.0)'],
+    ['ted.json', 'JSON', 'Offerte per gara (TED — UE)', 'Numero di offerenti nelle gare sopra-soglia della sanità italiana (CPV 33*/85*), era eForms.', 'TED — UE (riuso libero, Dec. 2011/833/UE)'],
+    ['apparecchiature.json', 'JSON', 'Dotazione tecnologica per struttura', 'Grandi apparecchiature (TAC, RMN, PET, acceleratori, robot) per struttura e regione.', 'Ministero della Salute (IODL 2.0)'],
+    ['sdo.json', 'JSON', 'Volumi di attività (SDO)', 'Ricoveri per struttura e regione (schede di dimissione ospedaliera 2022).', 'Ministero della Salute (IODL 2.0)'],
+    ['consulenze.json', 'JSON', 'Consulenze esterne (aggregato)', 'Spesa per incarichi di consulenza per azienda sanitaria, senza nomi di persone (PerlaPA).', 'Dip. Funzione Pubblica (CC BY 4.0)'],
+    ['pnrr-salute.json', 'JSON', 'PNRR Missione 6 (Salute) per regione', 'Fondi PNRR e progetti M6C1/M6C2 per regione (Case/Ospedali di Comunità, ammodernamento).', 'OpenPNRR/Openpolis su dati ReGiS (ODbL 1.0)'],
+    ['siope.json', 'JSON', 'Pagamenti per cassa (SIOPE)', 'Spesa sanitaria per cassa per regione e codice economico, con stagionalità di dicembre.', 'RGS/MEF — SIOPE (CC BY 3.0)'],
+    ['pne.json', 'JSON', 'Esiti clinici per regione (PNE)', 'Indicatori di esito PNE selezionati, aggregati per regione (elaborazione propria su dati AGENAS).', 'AGENAS — PNE'],
+    ['popolazione.json', 'JSON', 'Popolazione residente per regione', 'Popolazione Istat per la normalizzazione pro capite di spesa e dotazione.', 'Istat (CC BY)'],
     ['validazione.json', 'JSON', 'Controlli di consistenza e provenienza', 'Identità contabili verificate, copertura e impronta SHA-256 delle fonti.', 'Elaborazione propria'],
   ];
   const datasets = [];
@@ -641,6 +704,14 @@ async function main() {
       'mobilita.html',
       'fine-anno.html',
       ...(sto ? ['storico.html'] : []),
+      ...(apparecchiature ? ['apparecchiature.html'] : []),
+      ...(sdo ? ['sdo.html'] : []),
+      ...(aggiu ? ['aggiudicazioni.html'] : []),
+      ...(ted ? ['ted.html'] : []),
+      ...(cons ? ['consulenze.html'] : []),
+      ...(pnrrSalute ? ['pnrr-salute.html'] : []),
+      ...((await stat(join(SITE_DIR, 'siope.html')).catch(() => null)) ? ['siope.html'] : []),
+      ...((await stat(join(SITE_DIR, 'pne.html')).catch(() => null)) ? ['pne.html'] : []),
       'confronta.html',
       'api.html',
       'accessibilita.html',

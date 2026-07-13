@@ -621,6 +621,14 @@ ${conNuovi.personale ? card('personale.html', 'Il personale della sanità', 'Dip
 ${conNuovi.pagamenti ? card('pagamenti.html', 'Tempi di pagamento', 'Quanto in fretta gli ospedali pagano i fornitori: la serie ufficiale PCC/MEF.') : ''}
 ${conNuovi.fineAnno ? card('fine-anno.html', 'La febbre di dicembre', 'La corsa agli affidamenti diretti prima della scadenza del bilancio, mese per mese.') : ''}
 ${conNuovi.storico ? card('storico.html', 'Prima, durante e dopo il COVID', 'Sei anni di appalti sanitari: urgenze, deroghe e se il mercato è tornato normale.') : ''}
+${conNuovi.aggiudicazioni ? card('aggiudicazioni.html', 'Quanti partecipano alle gare', 'Il numero reale di offerenti, i ribassi e i ritardi: nelle gare competitive un solo offerente in metà dei casi.') : ''}
+${conNuovi.ted ? card('ted.html', 'Gare UE con un solo offerente', 'Il dato TED: quante offerte arrivano davvero nelle gare sopra-soglia — controllo indipendente del segnale ANAC.') : ''}
+${conNuovi.pne ? card('pne.html', 'Spendere di più cura meglio?', 'Esiti clinici (PNE) e spesa a confronto, regione per regione: dove si spende molto e si cura peggio.') : ''}
+${conNuovi.apparecchiature ? card('apparecchiature.html', 'La dotazione tecnologica', 'TAC, risonanze, PET, acceleratori e robot per milione di abitanti: cosa può fare ogni regione.') : ''}
+${conNuovi.sdo ? card('sdo.html', 'I volumi degli ospedali', 'Quanti ricoveri fa ogni struttura e ogni regione: le dimissioni ospedaliere, normalizzate per abitante.') : ''}
+${conNuovi.consulenze ? card('consulenze.html', 'Le consulenze esterne', 'Quanto spende la sanità per consulenti esterni, azienda per azienda (aggregato, senza nomi di persone).') : ''}
+${conNuovi.pnrrSalute ? card('pnrr-salute.html', 'PNRR: la sanità per regione', 'I fondi della Missione 6 (Case e Ospedali di Comunità, tecnologia) per regione e pro capite.') : ''}
+${conNuovi.siope ? card('siope.html', 'Dove escono i soldi per cassa', 'I pagamenti SIOPE della sanità per codice economico e la stagionalità di dicembre: un controllo indipendente.') : ''}
 <h2>Storie</h2>
 ${card('storie.html', 'Le storie nei dati', 'Casi concreti emersi dagli indicatori, raccontati con i numeri ufficiali e le spiegazioni possibili.')}
 <h2>Strumenti per il cittadino</h2>

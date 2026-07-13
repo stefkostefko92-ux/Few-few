@@ -1,0 +1,48 @@
+{
+  "generatoIl": "2026-07-13T20:42:44.355Z",
+  "fonte": "TED — Tenders Electronic Daily (UE, riuso libero, Dec. 2011/833/UE)",
+  "url": "https://ted.europa.eu/",
+  "nota": "Copre solo le gare sopra-soglia UE dell’era eForms (~2023 in poi): è un campione degli ultimi ~2 anni, non la storia completa. Il numero di offerte per lotto è quello dichiarato nei bandi di aggiudicazione (codice «tenders»). Complementa i dati ANAC (che coprono anche il sotto-soglia), non li sostituisce.",
+  "periodo": {
+    "da": "2023-12-14",
+    "a": "2026-07-13"
+  },
+  "nazionale": {
+    "nLotti": 9969,
+    "unOfferente": 4381,
+    "quotaUnOfferente": 0.43946233323302236,
+    "distribuzione": {
+      "1": 4381,
+      "2": 1918,
+      "3": 1217,
+      "4+": 2453
+    },
+    "valore": 105052607854.598
+  },
+  "perCpv": {
+    "33": {
+      "nLotti": 9107,
+      "unOfferente": 4040,
+      "quotaUnOfferente": 0.4436148018008126,
+      "distribuzione": {
+        "1": 4040,
+        "2": 1775,
+        "3": 1099,
+        "4+": 2193
+      },
+      "valore": 37981694354.5607
+    },
+    "85": {
+      "nLotti": 881,
+      "unOfferente": 341,
+      "quotaUnOfferente": 0.3870601589103292,
+      "distribuzione": {
+        "1": 341,
+        "2": 145,
+        "3": 119,
+        "4+": 276
+      },
+      "valore": 67087354480.03722
+    }
+  }
+}

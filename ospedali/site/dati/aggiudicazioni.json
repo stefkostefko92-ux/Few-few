@@ -1,0 +1,78 @@
+{
+  "generatoIl": "2026-07-13T20:54:00.856Z",
+  "fonte": "ANAC — BDNCP: aggiudicazioni, fine-contratto, stati-avanzamento (CC BY-SA 4.0)",
+  "url": "https://dati.anticorruzione.it/opendata",
+  "nota": "Обогатяване на здравните CIG (2023–2024) с брой оференти, ribasso, критерий и закъснения. „Un offerente\" не е доказателство за нередност.",
+  "aggiudicazioni": {
+    "nAgg": 274323,
+    "conOfferenti": 47544,
+    "unOfferente": 33134,
+    "quotaUnOfferente": 0.6969123338381289,
+    "distribuzione": {
+      "1": 33134,
+      "2": 5595,
+      "3": 3256,
+      "4+": 5559
+    },
+    "ribassoCompMediano": 14.2,
+    "ribassoCompMedio": 22.166352478318725,
+    "nRibassoComp": 16910,
+    "criterio": {
+      "prezzo": 23137,
+      "qualita": 16401,
+      "altro": 234785
+    },
+    "perCategoria": {
+      "diretto": {
+        "n": 179959,
+        "conOfferenti": 10847,
+        "unOfferente": 9680,
+        "quotaUnOfferente": 0.8924126486586152
+      },
+      "negoziataSenza": {
+        "n": 12945,
+        "conOfferenti": 10980,
+        "unOfferente": 9742,
+        "quotaUnOfferente": 0.8872495446265938
+      },
+      "competitiva": {
+        "n": 19632,
+        "conOfferenti": 18582,
+        "unOfferente": 9202,
+        "quotaUnOfferente": 0.4952104186847487
+      },
+      "quadro": {
+        "n": 54344,
+        "conOfferenti": 580,
+        "unOfferente": 457,
+        "quotaUnOfferente": 0.7879310344827586
+      },
+      "negoziata": {
+        "n": 6237,
+        "conOfferenti": 6233,
+        "unOfferente": 3770,
+        "quotaUnOfferente": 0.6048451788865715
+      },
+      "altro": {
+        "n": 1206,
+        "conOfferenti": 322,
+        "unOfferente": 283,
+        "quotaUnOfferente": 0.8788819875776398
+      }
+    }
+  },
+  "ritardi": {
+    "fineContratto": {
+      "n": 24837,
+      "conProroga": 0,
+      "quotaProroga": 0,
+      "giorniProrogaMediano": null
+    },
+    "statiAvanzamento": {
+      "nSal": 25541,
+      "inRitardo": 145,
+      "quotaRitardo": 0.005677146548686425,
+      "scostamentoMediano": 0
+    }
+  }
+}

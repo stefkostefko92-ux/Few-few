@@ -1,49 +1,49 @@
 {
-  "generatoIl": "2026-07-13T07:58:59.409Z",
+  "generatoIl": "2026-07-13T20:52:59.727Z",
   "anni": [
     2023,
     2024
   ],
   "fonte": "ANAC — Banca Dati Nazionale dei Contratti Pubblici (dati.anticorruzione.it), CIG > 40.000 €",
-  "righeSanitarie": 427584,
-  "autoritaSanitarie": 294,
+  "righeSanitarie": 425721,
+  "autoritaSanitarie": 289,
   "nazionale": {
-    "n": 427584,
-    "importo": 147719579362,
+    "n": 425721,
+    "importo": 142095507806,
     "cat": {
       "competitiva": {
-        "n": 62878,
-        "importo": 48115816831
+        "n": 62656,
+        "importo": 45243037159
       },
       "quadro": {
-        "n": 122255,
-        "importo": 42504857785
+        "n": 122041,
+        "importo": 42010273015
       },
       "diretto": {
-        "n": 196187,
-        "importo": 43774579270
+        "n": 195029,
+        "importo": 41816878260
       },
       "negoziataSenza": {
-        "n": 28962,
-        "importo": 11145875537
+        "n": 28836,
+        "importo": 10907989100
       },
       "negoziata": {
-        "n": 14895,
-        "importo": 1559877729
+        "n": 14789,
+        "importo": 1522682332
       },
       "altro": {
-        "n": 2407,
-        "importo": 618572210
+        "n": 2370,
+        "importo": 594647940
       }
     },
-    "urgenzaN": 99708,
-    "pnrrImporto": 8563522147,
-    "band40": 11198,
-    "band140": 6067,
-    "prorogaN": 17293,
-    "bunchingQuota": 0.08800277286466483,
-    "quotaSenzaGara": 0.3717885946099131,
-    "quotaSenzaGaraNum": 0.5265608628947762
+    "urgenzaN": 98921,
+    "pnrrImporto": 8183958896,
+    "band40": 11147,
+    "band140": 6017,
+    "prorogaN": 17238,
+    "bunchingQuota": 0.08800742453686375,
+    "quotaSenzaGara": 0.37105231667133426,
+    "quotaSenzaGaraNum": 0.5258490889573219
   },
   "regionale": [
     {
@@ -398,45 +398,6 @@
       "quotaSenzaGaraNum": 0.3981265356265356
     },
     {
-      "reg": "CENTRALE",
-      "n": 13365,
-      "importo": 8099430743,
-      "cat": {
-        "competitiva": {
-          "n": 1303,
-          "importo": 3461613858
-        },
-        "quadro": {
-          "n": 1838,
-          "importo": 1030734193
-        },
-        "diretto": {
-          "n": 9045,
-          "importo": 3016063516
-        },
-        "negoziataSenza": {
-          "n": 570,
-          "importo": 453569740
-        },
-        "negoziata": {
-          "n": 482,
-          "importo": 85603819
-        },
-        "altro": {
-          "n": 127,
-          "importo": 51845617
-        }
-      },
-      "urgenzaN": 5838,
-      "pnrrImporto": 833634042,
-      "band40": 322,
-      "band140": 286,
-      "prorogaN": 222,
-      "bunchingQuota": 0.06721945826423438,
-      "quotaSenzaGara": 0.42837989057689585,
-      "quotaSenzaGaraNum": 0.7194163860830527
-    },
-    {
       "reg": "CALABRIA",
       "n": 20854,
       "importo": 8074488189,
@@ -552,6 +513,45 @@
       "bunchingQuota": 0.06963508536993639,
       "quotaSenzaGara": 0.3179590731983564,
       "quotaSenzaGaraNum": 0.3500961802693048
+    },
+    {
+      "reg": "CENTRALE",
+      "n": 11502,
+      "importo": 2475359187,
+      "cat": {
+        "competitiva": {
+          "n": 1081,
+          "importo": 588834187
+        },
+        "quadro": {
+          "n": 1624,
+          "importo": 536149424
+        },
+        "diretto": {
+          "n": 7887,
+          "importo": 1058362506
+        },
+        "negoziataSenza": {
+          "n": 444,
+          "importo": 215683302
+        },
+        "negoziata": {
+          "n": 376,
+          "importo": 48408422
+        },
+        "altro": {
+          "n": 90,
+          "importo": 27921346
+        }
+      },
+      "urgenzaN": 5051,
+      "pnrrImporto": 454070791,
+      "band40": 271,
+      "band140": 236,
+      "prorogaN": 167,
+      "bunchingQuota": 0.06428299733739064,
+      "quotaSenzaGara": 0.5146912879597333,
+      "quotaSenzaGaraNum": 0.7243088158581117
     },
     {
       "reg": "UMBRIA",
@@ -1188,129 +1188,6 @@
           "categoria": "competitiva",
           "cpv": "SERVIZI DI GESTIONE ENERGIA",
           "data": "2023-11-28"
-        }
-      ]
-    },
-    {
-      "cf": "80078750587",
-      "den": "ISTITUTO NAZIONALE DELLA PREVIDENZA SOCIALE",
-      "reg": "CENTRALE",
-      "n": 853,
-      "importo": 4043680302,
-      "cat": {
-        "competitiva": {
-          "n": 96,
-          "importo": 2274676617
-        },
-        "quadro": {
-          "n": 139,
-          "importo": 281476762
-        },
-        "diretto": {
-          "n": 470,
-          "importo": 1258408456
-        },
-        "negoziataSenza": {
-          "n": 62,
-          "importo": 185338711
-        },
-        "negoziata": {
-          "n": 74,
-          "importo": 23624626
-        },
-        "altro": {
-          "n": 12,
-          "importo": 20155130
-        }
-      },
-      "urgenzaN": 263,
-      "pnrrImporto": 197009620,
-      "band40": 14,
-      "band140": 13,
-      "prorogaN": 35,
-      "bunchingQuota": 0.0574468085106383,
-      "quotaSenzaGara": 0.3570379106459696,
-      "quotaSenzaGaraNum": 0.6236811254396248,
-      "top": [
-        {
-          "oggetto": "SERVIZI APPLICATIVI INPS - PRESTAZIONI PENSIONISTICHE, ASSISTENZA E SOSTEGNO AL REDDITO - LOTTO 2",
-          "importo": 932285785.62,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI ASSISTENZA INFORMATICA E DI SUPPORTO",
-          "data": "2023-02-21"
-        },
-        {
-          "oggetto": "SERVIZI APPLICATIVI INPS - FUNZIONI DI SUPPORTO AL FUNZIONAMENTO E TRASVERSALI - LOTTO 3",
-          "importo": 513844553.25,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI ASSISTENZA INFORMATICA E DI SUPPORTO",
-          "data": "2023-02-21"
-        },
-        {
-          "oggetto": "SERVIZI APPLICATIVI INPS - ENTRATE E CONTRIBUTI LOTTO 1",
-          "importo": 421309518.84,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI ASSISTENZA INFORMATICA E DI SUPPORTO",
-          "data": "2023-02-21"
-        },
-        {
-          "oggetto": "ENERGIA ELETTRICA",
-          "importo": 341183050,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ELETTRICITÀ",
-          "data": "2024-10-08"
-        },
-        {
-          "oggetto": "ADESIONE CONVENZIONE CONSIP FM4 PER L'AFFIDAMENTO DI SERVIZI INTEGRATI, GESTIONALI ED OPERATIVI DA ESEGUIRSI NEGLI IMMOBILI, ADIBITI PREVALENTEMENTE AD USO UFFICIO IN USO A QUALSIA",
-          "importo": 284000000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-01-23"
-        },
-        {
-          "oggetto": "PULIZIA",
-          "importo": 179200000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI PULIZIA DI UFFICI",
-          "data": "2024-09-30"
-        },
-        {
-          "oggetto": "GAS NATURALE",
-          "importo": 123289452,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "EROGAZIONE DI GAS E SERVIZI CONNESSI",
-          "data": "2024-12-13"
-        },
-        {
-          "oggetto": "PMAS 2024-2026 - PIANO DI MANTENIMENTO E ADEGUAMENTO SOFTWARE E RELATIVI SERVIZI ACESSORI IBM, PER IL CEN INPS PER 36 MESI.",
-          "importo": 119244000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "PACCHETTI SOFTWARE PER L'INTERCONNETTIVITÀ DI PIATTAFORME",
-          "data": "2023-12-20"
-        },
-        {
-          "oggetto": "ADESIONE ALLA CONVENZIONE PER LA REALIZZAZIONE E GESTIONE DI UNA NUOVA INFRASTRUTTURA INFORMATICA AL SERVIZIO DELLA PUBBLICA AMMINISTRAZIONE DENOMINATA POLO STRATEGICO NAZIONALE",
-          "importo": 54991720.82,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-03"
-        },
-        {
-          "oggetto": "DIGITAL TRANSFORMATION",
-          "importo": 41001872,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI CONNESSI ALLA GESTIONE",
-          "data": "2024-07-26"
         }
       ]
     },
@@ -2910,129 +2787,6 @@
           "categoria": "diretto",
           "cpv": "",
           "data": "2024-11-05"
-        }
-      ]
-    },
-    {
-      "cf": "01165400589",
-      "den": "ISTITUTO NAZIONALE PERL ASSICURAZIONE CONTRO GLI INFORTUNI SUL LAVORO",
-      "reg": "CENTRALE",
-      "n": 922,
-      "importo": 1572435014,
-      "cat": {
-        "competitiva": {
-          "n": 124,
-          "importo": 596603054
-        },
-        "quadro": {
-          "n": 74,
-          "importo": 211420758
-        },
-        "diretto": {
-          "n": 608,
-          "importo": 695370913
-        },
-        "negoziataSenza": {
-          "n": 62,
-          "importo": 52320727
-        },
-        "negoziata": {
-          "n": 29,
-          "importo": 12950420
-        },
-        "altro": {
-          "n": 25,
-          "importo": 3769141
-        }
-      },
-      "urgenzaN": 457,
-      "pnrrImporto": 180866381,
-      "band40": 36,
-      "band140": 33,
-      "prorogaN": 20,
-      "bunchingQuota": 0.11348684210526316,
-      "quotaSenzaGara": 0.4754992310572775,
-      "quotaSenzaGaraNum": 0.7266811279826464,
-      "top": [
-        {
-          "oggetto": "AFFIDAMENTO DEL SERVIZIO DI PULIZIE, SANIFICAZIONE E ALTRI SERVIZI CONNESSI",
-          "importo": 279000000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ALTRI SERVIZI",
-          "data": "2024-09-06"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DEL SERVIZIO DI PULIZIE, SANIFICAZIONE E ALTRI SERVIZI CONNESSI",
-          "importo": 186000000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ALTRI SERVIZI",
-          "data": "2024-09-06"
-        },
-        {
-          "oggetto": "SERVIZI APPLICATIVI PER L'AREA ISTITUZIONALE DI INAIL - ED.3 ID 2748",
-          "importo": 98145540,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI SVILUPPO DI SOFTWARE",
-          "data": "2024-09-11"
-        },
-        {
-          "oggetto": "LICENZE MICROSOFT EA8",
-          "importo": 46308023.31,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "PACCHETTI SOFTWARE IT",
-          "data": "2023-12-04"
-        },
-        {
-          "oggetto": "ACCORDO QUADRO CON UNICO OPERATORE ECONOMICO DEI SERVIZI DI INGEGNERIA E ARCHITETTURA, INCLUSE INDAGINI CONNESSE, RELATIVI AD INTERVENTI COMPRESI NEGLI ATTI PROGRAMMATORI DELL'INAI",
-          "importo": 35899000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI ARCHITETTONICI, DI INGEGNERIA E MISURAZIONE",
-          "data": "2023-12-27"
-        },
-        {
-          "oggetto": "AQ POTENZIAMENTO SISTEMI CONVERGENTI DELL PER INAIL - ID 2574",
-          "importo": 31000000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "MACCHINE PER L'ELABORAZIONE DI DATI (HARDWARE)",
-          "data": "2023-03-24"
-        },
-        {
-          "oggetto": "CONVENZIONE PER L'AFFIDAMENTO DEL SERVIZIO DI RACCOLTA, TRASPORTO E SMALTIMENTO DEI RIFIUTI SANITARI PER LE NECESSITÀ DELLE AZIENDE SANITARIE E DEGLI ENTI CONVENZIONATI DELLA REGIO",
-          "importo": 28500000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI SMALTIMENTO DI RIFIUTI OSPEDALIERI",
-          "data": "2024-09-10"
-        },
-        {
-          "oggetto": "LAVORI DI RESTAURO E RISANAMENTO CONSERVATIVO DEL COMPLESSO MONUMENTALE DELL'ARCHIVIO CENTRALE DI STATO DI ROMA, PIAZZALE DEGLI ARCHIVI,27",
-          "importo": 28147520.21,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "LAVORI DI RESTAURO",
-          "data": "2023-06-16"
-        },
-        {
-          "oggetto": "AQ SAC 2L1 RTI ENTERPRISE SERVICES ITALIA",
-          "importo": 25858443,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO",
-          "data": "2024-08-07"
-        },
-        {
-          "oggetto": "AQ SAC 2L1 RTI ENTERPRISE SERVICES",
-          "importo": 25858443,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO",
-          "data": "2024-08-06"
         }
       ]
     },
@@ -29279,129 +29033,6 @@
       ]
     },
     {
-      "cf": "02430700589",
-      "den": "I.N.P.G.I. - ISTITUTO NAZIONALE DI PREVIDENZA DEI GIORNALISTI ITALIANI",
-      "reg": "CENTRALE",
-      "n": 46,
-      "importo": 2825321,
-      "cat": {
-        "competitiva": {
-          "n": 2,
-          "importo": 1500000
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 43,
-          "importo": 1285321
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 40000
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 38,
-      "pnrrImporto": 0,
-      "band40": 0,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0,
-      "quotaSenzaGara": 0.46908682658097073,
-      "quotaSenzaGaraNum": 0.9565217391304348,
-      "top": [
-        {
-          "oggetto": "SERVIZIO DI BANCA DEPOSITARIA PER L'INPGI",
-          "importo": 840000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI DEPOSITO",
-          "data": "2023-06-23"
-        },
-        {
-          "oggetto": "SERVIZIO DI RISK MANAGEMENT DI SUPPORTO AGLI ORGANI DELL'INPGI",
-          "importo": 660000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI CONSULENZA FINANZIARIA",
-          "data": "2023-06-12"
-        },
-        {
-          "oggetto": "BUONI PASTO ELETTRONICI",
-          "importo": 175392.2,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "BUONI PASTO",
-          "data": "2024-06-21"
-        },
-        {
-          "oggetto": "FORNITURA DI BUONI PASTO 2023",
-          "importo": 126000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "BUONI PASTO",
-          "data": "2023-06-07"
-        },
-        {
-          "oggetto": "SERVIZIO BIENNALE DI RECEPTION E GUARDIANIA DELLA SEDE INPGI IN ROMA, VIA NIZZA 35",
-          "importo": 100192.62,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI PORTINERIA",
-          "data": "2024-03-26"
-        },
-        {
-          "oggetto": "SERVIZIO DI PULIZIA DELLA SEDE INPGI IN ROMA VIA NIZZA 35 AI SENSI DELLART. 50 COMMA 1 LETTERA B) DEL D.LGS. 36/2023",
-          "importo": 82107.75,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI PULIZIA DI UFFICI",
-          "data": "2024-06-18"
-        },
-        {
-          "oggetto": "ATTIVAZIONE LICENZE E CANONI ANNUALI DELLE SOLUZIONI HR ZUCCHETTI",
-          "importo": 75498,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI FORNITURA DI SOFTWARE",
-          "data": "2023-05-25"
-        },
-        {
-          "oggetto": "REALIZZAZIONE DI UNA PIATTAFORMA DIGITALE DI CONTAC CENTER PER LA RICEZIONE E GESTIONE DELLE RICHIESTE DI ASSISTENZA DEGLI ISCRITTI ALL'INPGI",
-          "importo": 62405.32,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PACCHETTI SOFTWARE DI COMUNICAZIONE DESKTOP",
-          "data": "2024-04-05"
-        },
-        {
-          "oggetto": "SERVIZIO IN CLOUD PER L'UTILIZZO DELLA PIATTAFORMA INFORMATICA DENOMINATA ELIGO PER LA GESTIONE E LO SVOLGIMENTO DELLE ELEZIONI DEGLI ORGANI DELL'ISTITUTO.",
-          "importo": 58500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI ASSISTENZA INFORMATICA",
-          "data": "2024-04-24"
-        },
-        {
-          "oggetto": "FORNITURA ON LINE DI SERVIZI, NOTIZIE E INFORMAZIONI FINANZIARIE ATTRAVERSO SPECIFICA PIATTAFORMA",
-          "importo": 56832,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONTROLLO DEL MERCATO FINANZIARIO",
-          "data": "2023-11-23"
-        }
-      ]
-    },
-    {
       "cf": "80000530891",
       "den": "ISTITUTO NAZIONALE DEL DRAMMA ANTICO",
       "reg": "CENTRALE",
@@ -29521,105 +29152,6 @@
           "categoria": "diretto",
           "cpv": "SERVIZI DI CONSULENZA E INFORMAZIONE GIURIDICA",
           "data": "2023-02-24"
-        }
-      ]
-    },
-    {
-      "cf": "00968951004",
-      "den": "ISTITUTO NAZIONALE PER L'ASSICURAZIONE CONTRO GLI INFORTUNI SUL LAVORO",
-      "reg": "CENTRALE",
-      "n": 7,
-      "importo": 2706600,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 1,
-          "importo": 1687250
-        },
-        "diretto": {
-          "n": 2,
-          "importo": 212000
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 187000
-        },
-        "negoziata": {
-          "n": 3,
-          "importo": 620350
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 0,
-      "pnrrImporto": 1687250,
-      "band40": 0,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.5,
-      "quotaSenzaGara": 0.1474174491288061,
-      "quotaSenzaGaraNum": 0.42857142857142855,
-      "top": [
-        {
-          "oggetto": "WI0039/ACQUISTO DI SOTTOSCRIZIONI PER LICENZE SOFTWARE RED HAT IN CONVENZIONE CONSIP 'LICENZE SOFTWARE MULTIBRAND ED. 5 - LOTTO 4' - 2023.",
-          "importo": 1687249.54,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "PACCHETTI SOFTWARE IT",
-          "data": "2023-03-14"
-        },
-        {
-          "oggetto": "APPARATI DI BACKUP GRUPPI DI CONTINUITÀ DATA CENTER INAIL - UPS",
-          "importo": 213900,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "SERVER",
-          "data": "2023-02-07"
-        },
-        {
-          "oggetto": "FORNITURA DI ARREDI PER UFFICIO PER LE SEDI INAIL DISLOCATE NEL TERRITORIO REGIONALE",
-          "importo": 203225,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "MOBILI PER UFFICI",
-          "data": "2023-03-28"
-        },
-        {
-          "oggetto": "FORNITURA DI ARREDI PER UFFICIO PER LE SEDI INAIL DISLOCATE NEL TERRITORIO REGIONALE",
-          "importo": 203225,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "MOBILI PER UFFICI",
-          "data": "2023-05-24"
-        },
-        {
-          "oggetto": "ACQUISIZIONE SOFTWARE SPECIALISTICO PER ESIGENZE DELLA DIREZIONE RICERCA DIP. DIMEILA",
-          "importo": 187000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "PACCHETI SOFTWARE GENERALI",
-          "data": "2023-12-13"
-        },
-        {
-          "oggetto": "APPARATI DI CONNETTIVITÀ PER LE SEDI PERIFERICHE INAIL",
-          "importo": 139000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE DI TRASMISSIONE DATI",
-          "data": "2023-12-22"
-        },
-        {
-          "oggetto": "SERVIZIO DI LAVANOLO A RIDOTTO IMPATTO AMBIENTALE PRESSO I CENTRI MEDICO LEGALI E IL CENTRO DIAGNOSTICO POLISPECIALISTICO DI FIRENZE",
-          "importo": 73000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI LAVANDERIA E DI LAVAGGIO A SECCO",
-          "data": "2023-07-31"
         }
       ]
     },
@@ -30112,129 +29644,6 @@
           "categoria": "diretto",
           "cpv": "ARREDAMENTO",
           "data": "2024-06-04"
-        }
-      ]
-    },
-    {
-      "cf": "80221610589",
-      "den": "ISTITUTO NAZIONALE PER LA GRAFICA",
-      "reg": "CENTRALE",
-      "n": 35,
-      "importo": 2424321,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 35,
-          "importo": 2424321
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 29,
-      "pnrrImporto": 0,
-      "band40": 1,
-      "band140": 3,
-      "prorogaN": 0,
-      "bunchingQuota": 0.11428571428571428,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "LAVORI DI REVISIONE E MANUTENZIONE ORDINARIA DI TETTI E COPERTURE DEL PALAZZO DELLA CALCOGRAFIA E DI PALAZZO POLI SEDE DELL'ISTITUTO CENTRALE PER LA GRAFICA",
-          "importo": 518636.1,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-05-22"
-        },
-        {
-          "oggetto": "ACQUISTO PAC N. 3 OPERE D'ARTE DI GIUSEPPE PENONE",
-          "importo": 332000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI MUSEI",
-          "data": "2023-06-30"
-        },
-        {
-          "oggetto": "ACQUISTO PAC OPERA D'ARTE 'TRIUNPHS&LAMENTS FRIEZE II' DI WILLIAM KENTRIDGE",
-          "importo": 250000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI MUSEI",
-          "data": "2023-06-30"
-        },
-        {
-          "oggetto": "REALIZZAZIONE DI UN IMPIANTO DI CLIMATIZZAZIONE DEDICATO ALLE 3 SALE ESPOSITIVE UBICATE AL PRIMO PIANO DI PALAZZO POLI – SEDE DELL'ISTITUTO CENTRALE PER LA GRAFICA",
-          "importo": 149306.11,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "LAVORI DI INSTALLAZIONE DI IMPIANTI DI CLIMATIZZAZIONE",
-          "data": "2024-06-21"
-        },
-        {
-          "oggetto": "FORNITURA A NOLEGGIO DI PANNELLI E STAMPE MOSTRA GIOVANNI GENTILE",
-          "importo": 138500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-09"
-        },
-        {
-          "oggetto": "FORNITURA A NOLEGGIO DI PANNELLI E STAMPE PER LA MOSTRA E RELATIVO CATALOGO PER GIOVANNI GENTILE",
-          "importo": 138500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-08"
-        },
-        {
-          "oggetto": "INTERVENTI DI RIQUALIFICAZIONE ILLUMINOTECNICA AMBIENTI ISTITUTO CENTRALE PER LA GRAFICA",
-          "importo": 130000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "LAVORI DI RESTAURO",
-          "data": "2023-07-12"
-        },
-        {
-          "oggetto": "SERVIZIO DI DISINFESTAZIONE E SPOLVERATURA STRAORDINARIA OPERE GRAFICHE DELLE COLLEZIONI DEL GABINETTO DISEGNI E STAMPE,",
-          "importo": 106875,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-05-17"
-        },
-        {
-          "oggetto": "ACQUISTO PAC OPERA D'ARTE 'PREGANZIOL' DI GUIDO GUIDI",
-          "importo": 70000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI MUSEI",
-          "data": "2023-06-28"
-        },
-        {
-          "oggetto": "INTERVENTO DI RIQUALIFICAZIONE ILLUMINOTECNICA DELLE SALE ESPOSITIVE SITUATE AL PIANO TERRA DI PALAZZO POLI SEDE DELL'ISTITUTO CENTRALE PER LA GRAFICA.",
-          "importo": 68900,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ELETTRICI DI EDIFICI",
-          "data": "2024-09-13"
         }
       ]
     },

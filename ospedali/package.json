@@ -28,6 +28,16 @@
     "lint": "sh -c 'for f in src/*.js src/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'",
     "mobilita": "node --max-old-space-size=4096 src/mobilita.js",
     "personale": "node --max-old-space-size=4096 src/personale.js",
-    "storico": "node --max-old-space-size=4096 src/storico.js"
+    "storico": "node --max-old-space-size=4096 src/storico.js",
+    "popolazione": "node src/fetch-popolazione.js",
+    "apparecchiature": "node src/fetch-apparecchiature.js",
+    "sdo": "node src/fetch-sdo.js",
+    "aggiudicazioni": "node --max-old-space-size=4096 src/fetch-aggiudicazioni.js",
+    "ted": "node src/fetch-ted.js",
+    "consulenze": "node --max-old-space-size=4096 src/fetch-perlapa.js",
+    "pnrr-salute": "node --max-old-space-size=4096 src/fetch-pnrr-salute.js",
+    "siope": "node --max-old-space-size=4096 src/fetch-siope.js",
+    "pne": "node --max-old-space-size=4096 src/fetch-pne.js",
+    "fetch:nuovi": "npm run popolazione && npm run apparecchiature && npm run sdo && npm run aggiudicazioni && npm run ted && npm run consulenze && npm run pnrr-salute && npm run siope"
   }
 }

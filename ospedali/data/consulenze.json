@@ -1,0 +1,1832 @@
+{
+  "generatoIl": "2026-07-13T20:57:48.097Z",
+  "fonte": "Dipartimento Funzione Pubblica — PerlaPA / Anagrafe delle Prestazioni (CC BY 4.0)",
+  "url": "https://consulentipubblici.dfp.gov.it/",
+  "perAnno": {
+    "2022": {
+      "nIncarichi": 6617,
+      "importo": 141884018.53000024,
+      "nEnti": 180
+    },
+    "2023": {
+      "nIncarichi": 17785,
+      "importo": 320828811.6899992,
+      "nEnti": 185
+    },
+    "2024": {
+      "nIncarichi": 23004,
+      "importo": 433125526.2100015,
+      "nEnti": 189
+    }
+  },
+  "perEnte": {
+    "AZIENDA USL DELLA VALLE D'AOSTA": {
+      "nIncarichi": 450,
+      "importo": 4030505.869999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ASL ROMA 4": {
+      "nIncarichi": 287,
+      "importo": 1810289.3,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA POLICLINICO UMBERTO I": {
+      "nIncarichi": 230,
+      "importo": 7158231.429999992,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE AL DI ALESSANDRIA": {
+      "nIncarichi": 233,
+      "importo": 8567534.61,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE DI PARMA": {
+      "nIncarichi": 222,
+      "importo": 8209661.4799999995,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N. 3 SERENISSIMA": {
+      "nIncarichi": 678,
+      "importo": 23198125.169999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE N. 4 DI TERAMO": {
+      "nIncarichi": 393,
+      "importo": 2728474.28,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO - UNIVERSITARIA DI MODENA": {
+      "nIncarichi": 427,
+      "importo": 6573785.649999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE VCO": {
+      "nIncarichi": 116,
+      "importo": 3714847.340000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ENTE OSPEDALIERO SPECIALIZZATO IN GASTROENTEROLOGIA ISTITUTO NAZIONALE DI RICOVERO E CURA A CARATTERE SCIENTIFICO S. DE BELLIS": {
+      "nIncarichi": 44,
+      "importo": 803802.1799999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA SAN GIUSEPPE MOSCATI DI AVELLINO": {
+      "nIncarichi": 63,
+      "importo": 1646119.41,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 1 DI SASSARI": {
+      "nIncarichi": 4,
+      "importo": 117000,
+      "anni": [
+        2022,
+        2023
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE ROMA 5": {
+      "nIncarichi": 313,
+      "importo": 2195337.160000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA DI POTENZA ASP": {
+      "nIncarichi": 23,
+      "importo": 1054075.4200000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N.6 EUGANEA": {
+      "nIncarichi": 986,
+      "importo": 20051913.099999983,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA": {
+      "nIncarichi": 362,
+      "importo": 2952204.8499999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N.5 POLESANA": {
+      "nIncarichi": 544,
+      "importo": 9050463.299999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DEL GARDA": {
+      "nIncarichi": 723,
+      "importo": 11015973.680000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE DI MODENA": {
+      "nIncarichi": 558,
+      "importo": 12447356.639999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL PIACENZA": {
+      "nIncarichi": 618,
+      "importo": 15669506.800000012,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ASST CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI CTO": {
+      "nIncarichi": 38,
+      "importo": 841106.6300000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA LIGURE SANITARIA DELLA REGIONE LIGURIA": {
+      "nIncarichi": 21,
+      "importo": 742184,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE TO3": {
+      "nIncarichi": 225,
+      "importo": 5117977.040000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA": {
+      "nIncarichi": 1005,
+      "importo": 14566415.929999994,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DI BERGAMO": {
+      "nIncarichi": 247,
+      "importo": 1412644.3199999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA S.PIO- BENEVENTO": {
+      "nIncarichi": 263,
+      "importo": 867935.9199999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA DELL'ALTO ADIGE - SUEDTIROLER SANITAETSBETRIEB": {
+      "nIncarichi": 1438,
+      "importo": 32896236.82000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA DELLE MARCHE": {
+      "nIncarichi": 67,
+      "importo": 812589.8900000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA COMPLESSO OSPEDALIERO SAN GIOVANNI ADDOLORATA": {
+      "nIncarichi": 264,
+      "importo": 1868793.530000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE VITERBO": {
+      "nIncarichi": 642,
+      "importo": 13522359.199999977,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA BIANCHI MELACRINO MORELLI": {
+      "nIncarichi": 68,
+      "importo": 252177.05999999997,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ENTE OSPEDALIERO OSPEDALI GALLIERA DI GENOVA": {
+      "nIncarichi": 263,
+      "importo": 2232791.42,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALLE OLONA": {
+      "nIncarichi": 480,
+      "importo": 15723265.039999994,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE ROMA 2": {
+      "nIncarichi": 20,
+      "importo": 75931.98,
+      "anni": [
+        2022,
+        2023
+      ]
+    },
+    "ISTITUTO NAZIONALE DI ASTROFISICA - INAF": {
+      "nIncarichi": 24,
+      "importo": 638789.57,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "REGIONE MARCHE AZIENDA SANITARIA UNICA REGIONALE": {
+      "nIncarichi": 17,
+      "importo": 700673.2100000001,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA OSPEDALIERA DI RILIEVO NAZIONALE ANTONIO CARDARELLI": {
+      "nIncarichi": 288,
+      "importo": 2384870.520000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "A.O.U. POLICLINICO 'G. MARTINO' DI MESSINA": {
+      "nIncarichi": 238,
+      "importo": 4658233.350000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI": {
+      "nIncarichi": 405,
+      "importo": 9695786.209999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI AGRIGENTO": {
+      "nIncarichi": 79,
+      "importo": 779133.7599999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE NO": {
+      "nIncarichi": 207,
+      "importo": 2608404.03,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL DELLA ROMAGNA": {
+      "nIncarichi": 396,
+      "importo": 7592446.299999995,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE N. 5 DI REGGIO CALABRIA": {
+      "nIncarichi": 9,
+      "importo": 157637.49,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA UNIVERSITARIA GIULIANO ISONTINA": {
+      "nIncarichi": 617,
+      "importo": 7182319.5699999975,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N. 1 DOLOMITI": {
+      "nIncarichi": 366,
+      "importo": 11798722.900000004,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA UNIVERSITARIA FRIULI CENTRALE": {
+      "nIncarichi": 596,
+      "importo": 6502902.299999995,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE DI BRINDISI": {
+      "nIncarichi": 255,
+      "importo": 977682.1600000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL DI REGGIO EMILIA": {
+      "nIncarichi": 668,
+      "importo": 9949323.969999997,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "FONDAZIONE IRCCS ISTITUTO NAZIONALE DEI TUMORI": {
+      "nIncarichi": 505,
+      "importo": 17130407.80999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "INRCA - IRCCS ISTITUTO NAZIONALE DI RICOVERO E CURA PER ANZIANI": {
+      "nIncarichi": 135,
+      "importo": 3201084.2999999993,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DELLA VAL PADANA": {
+      "nIncarichi": 102,
+      "importo": 1653825.6200000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ASL FOGGIA": {
+      "nIncarichi": 234,
+      "importo": 1450308.1000000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE ROMA 3": {
+      "nIncarichi": 110,
+      "importo": 98496.12999999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE DI MATERA": {
+      "nIncarichi": 20,
+      "importo": 370229.17,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA - UNIVERSITA' DEGLI STUDI DELLA CAMPANIA LUIGI VANVITELLI": {
+      "nIncarichi": 125,
+      "importo": 773963.3800000005,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE TO4": {
+      "nIncarichi": 109,
+      "importo": 2332462.9199999995,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 8 DI CAGLIARI": {
+      "nIncarichi": 105,
+      "importo": 2272555.7600000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMONA": {
+      "nIncarichi": 456,
+      "importo": 20002304.060000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE CITTA' DI TORINO": {
+      "nIncarichi": 334,
+      "importo": 7075077.420000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA \"SS.ANTONIO E BIAGIO E C.ARRIGO\" ALESSANDRIA": {
+      "nIncarichi": 87,
+      "importo": 1625501.9899999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO EST": {
+      "nIncarichi": 587,
+      "importo": 17305577.880000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA DI FERRARA": {
+      "nIncarichi": 162,
+      "importo": 4993967.409999997,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE PAPA GIOVANNI XXIII": {
+      "nIncarichi": 592,
+      "importo": 18982233.30000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL DI FERRARA": {
+      "nIncarichi": 391,
+      "importo": 11076775.789999994,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALTELLINA E DELL'ALTO LARIO": {
+      "nIncarichi": 102,
+      "importo": 4631269.23,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO OVEST": {
+      "nIncarichi": 651,
+      "importo": 9261003.330000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "FONDAZIONE IRCCS POLICLINICO 'S.MATTEO'": {
+      "nIncarichi": 109,
+      "importo": 2472218.02,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA MEYER IRCCS": {
+      "nIncarichi": 163,
+      "importo": 3625874.33,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE SANTI PAOLO E CARLO": {
+      "nIncarichi": 503,
+      "importo": 20191259.279999997,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA TERRITORIALE DI PESARO E URBINO": {
+      "nIncarichi": 126,
+      "importo": 3575699.54,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA DEI COLLI": {
+      "nIncarichi": 113,
+      "importo": 933639.1599999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA VERONA": {
+      "nIncarichi": 617,
+      "importo": 4444642.339999992,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE BARI": {
+      "nIncarichi": 105,
+      "importo": 145802.31,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE RAGUSA": {
+      "nIncarichi": 129,
+      "importo": 865345.9200000004,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DELLA CITTA' METROPOLITANA DI MILANO": {
+      "nIncarichi": 95,
+      "importo": 2593144.1800000006,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI PALERMO": {
+      "nIncarichi": 95,
+      "importo": 1873072.3100000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA TERRITORIALE DI ANCONA": {
+      "nIncarichi": 76,
+      "importo": 3468130.69,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ASST FATEBENEFRATELLI SACCO": {
+      "nIncarichi": 698,
+      "importo": 10314399.559999991,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO UNIVERSITARIA SANT'ANDREA": {
+      "nIncarichi": 172,
+      "importo": 918583.7900000004,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE": {
+      "nIncarichi": 136,
+      "importo": 2896610.880000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE DI GEOFISICA E VULCANOLOGIA - INGV": {
+      "nIncarichi": 33,
+      "importo": 438346.52999999997,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE 2 DI SAVONA": {
+      "nIncarichi": 394,
+      "importo": 18746735.199999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE BENEVENTO 1": {
+      "nIncarichi": 19,
+      "importo": 883673.12,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMA": {
+      "nIncarichi": 293,
+      "importo": 3167510.490000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA OSPEDALIERA SS. ANTONIO E BIAGIO E C. ARRIGO": {
+      "nIncarichi": 28,
+      "importo": 698865.6000000002,
+      "anni": [
+        2022,
+        2023
+      ]
+    },
+    "IRCCS BURLO GAROFOLO DI TRIESTE": {
+      "nIncarichi": 74,
+      "importo": 709407.51,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA OSPEDALI RIUNITI VILLA SOFIA CERVELLO": {
+      "nIncarichi": 368,
+      "importo": 23610.359999999924,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA SANTA CROCE E CARLE": {
+      "nIncarichi": 328,
+      "importo": 1356025.0700000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE CN1": {
+      "nIncarichi": 209,
+      "importo": 2601815.19,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA BRIANZA": {
+      "nIncarichi": 518,
+      "importo": 10576686.20999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N. 9 SCALIGERA": {
+      "nIncarichi": 548,
+      "importo": 15077629.839999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ASST RHODENSE": {
+      "nIncarichi": 447,
+      "importo": 6209177.560000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI MONZA": {
+      "nIncarichi": 50,
+      "importo": 1168763.5,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA PROVINCIALE PER I SERVIZI SANITARI DELLA PROVINCIA AUTONOMA DI TRENTO": {
+      "nIncarichi": 1006,
+      "importo": 27102189.63000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIOSANITARIA LIGURE N. 4 - SISTEMA SANITARIO REGIONE LIGURIA": {
+      "nIncarichi": 192,
+      "importo": 1369550.5500000005,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIOSANITARIA 3": {
+      "nIncarichi": 563,
+      "importo": 4066533.900000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI BIELLA": {
+      "nIncarichi": 214,
+      "importo": 3126141.3900000006,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "A.O.U. - 'SAN GIOVANNI DI DIO E RUGGI D'ARAGONA'": {
+      "nIncarichi": 23,
+      "importo": 324460.8300000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE DI NAPOLI 3 SUD": {
+      "nIncarichi": 137,
+      "importo": 300231.8,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI MANTOVA": {
+      "nIncarichi": 476,
+      "importo": 25379970.669999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA": {
+      "nIncarichi": 492,
+      "importo": 10228875.469999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 7 DEL SULCIS": {
+      "nIncarichi": 68,
+      "importo": 1736642.6800000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO DI ISTRUZIONE SUPERIORE CESTARI-RIGHI": {
+      "nIncarichi": 13,
+      "importo": 44381.58,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE NORD MILANO": {
+      "nIncarichi": 576,
+      "importo": 4914028.179999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE 2 LANCIANO VASTO CHIETI": {
+      "nIncarichi": 56,
+      "importo": 2735596.1199999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA DI CAGLIARI": {
+      "nIncarichi": 13,
+      "importo": 372850,
+      "anni": [
+        2022,
+        2023
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA": {
+      "nIncarichi": 471,
+      "importo": 6214999.0200000005,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA DI RILIEVO NAZIONALE E DI ALTA SPECIALIZZAZIONE GARIBALDI": {
+      "nIncarichi": 157,
+      "importo": 2195737.72,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI PAVIA": {
+      "nIncarichi": 392,
+      "importo": 13918371.03,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO - UNIVERSITARIA CITTA' DELLA SALUTE E DELLA SCIENZA DI TORINO": {
+      "nIncarichi": 367,
+      "importo": 4528183.089999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DELL'INSUBRIA": {
+      "nIncarichi": 79,
+      "importo": 1467029.44,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA OSPEDALI RIUNITI MARCHE NORD": {
+      "nIncarichi": 9,
+      "importo": 87932.49,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA ULSS N.8 BERICA": {
+      "nIncarichi": 570,
+      "importo": 19602140.639999993,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE VERCELLI": {
+      "nIncarichi": 288,
+      "importo": 5125584.780000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI LODI": {
+      "nIncarichi": 231,
+      "importo": 5372527.329999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO ONCOLOGICO VENETO": {
+      "nIncarichi": 274,
+      "importo": 1430089.6600000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N. 4 VENETO ORIENTALE": {
+      "nIncarichi": 300,
+      "importo": 11075689.350000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALCAMONICA": {
+      "nIncarichi": 204,
+      "importo": 7345468.9799999995,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA": {
+      "nIncarichi": 452,
+      "importo": 6355316.549999991,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA SAN CARLO DI POTENZA": {
+      "nIncarichi": 107,
+      "importo": 3526388.8000000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA PAPARDO": {
+      "nIncarichi": 230,
+      "importo": 1566422.0099999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI COSENZA": {
+      "nIncarichi": 150,
+      "importo": 1168727.27,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE - ASL - ASTI": {
+      "nIncarichi": 47,
+      "importo": 336112.26999999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DELLA MONTAGNA": {
+      "nIncarichi": 38,
+      "importo": 612417.52,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "IRCCS OSPEDALE POLICLINICO SAN MARTINO": {
+      "nIncarichi": 437,
+      "importo": 4374279.770000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA DI PARMA": {
+      "nIncarichi": 261,
+      "importo": 3915522.17,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE PER LA PROMOZIONE DELLA SALUTE DELLE POPOLAZIONI MIGRANTI E PER IL CONTRASTO DELLE MALATTIE DELLA POVERTA'": {
+      "nIncarichi": 86,
+      "importo": 1576979.5100000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE DI STATISTICA - ISTAT": {
+      "nIncarichi": 13,
+      "importo": 864599.55,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA DI BOLOGNA IRCCS ISTITUTO DI RICERCA E DI CURA A CARATTERE SCIENTIFICO": {
+      "nIncarichi": 218,
+      "importo": 1120375.5899999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE UMBRIA 1": {
+      "nIncarichi": 124,
+      "importo": 4224679.770000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE CASERTA": {
+      "nIncarichi": 463,
+      "importo": 4186738.579999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL DI BOLOGNA": {
+      "nIncarichi": 686,
+      "importo": 1300349.2,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE UMBRIA 2": {
+      "nIncarichi": 57,
+      "importo": 3407744.73,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO UNIVERSITARIA MEYER DI FIRENZE": {
+      "nIncarichi": 43,
+      "importo": 1491880,
+      "anni": [
+        2022,
+        2023
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE TOSCANA CENTRO": {
+      "nIncarichi": 1111,
+      "importo": 9113845.300000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ARNAS G. BROTZU": {
+      "nIncarichi": 96,
+      "importo": 1006343.89,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA DI PERUGIA": {
+      "nIncarichi": 438,
+      "importo": 1468205.8999999997,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA FRANCIACORTA": {
+      "nIncarichi": 266,
+      "importo": 6318849.810000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO PAOLO GIACCONE": {
+      "nIncarichi": 112,
+      "importo": 2500815.84,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "FONDAZIONE IRCCS CA GRANDA OSPEDALE MAGGIORE POLICLINICO": {
+      "nIncarichi": 882,
+      "importo": 20163913.150000006,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA TERRITORIALE MELEGNANO E DELLA MARTESANA": {
+      "nIncarichi": 391,
+      "importo": 13856688.590000002,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N. 2 MARCA TREVIGIANA": {
+      "nIncarichi": 1121,
+      "importo": 18460012.800000012,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ULSS N.7 PEDEMONTANA": {
+      "nIncarichi": 340,
+      "importo": 8156815.550000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA REGIONALE STRATEGICA PER LA SALUTE ED IL SOCIALE": {
+      "nIncarichi": 37,
+      "importo": 848973.3600000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI TRAPANI": {
+      "nIncarichi": 187,
+      "importo": 7980711.040000001,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE PER L'ANALISI DELLE POLITICHE PUBBLICHE (INAPP)": {
+      "nIncarichi": 193,
+      "importo": 2103774.85,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE AVELLINO": {
+      "nIncarichi": 81,
+      "importo": 434751.11,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "FONDAZIONE ISTITUTO NEUROLOGICO C. BESTA MILANO": {
+      "nIncarichi": 15,
+      "importo": 53952.32,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO UNIVERSITARIA CONSORZIALE POLICLINICO DI BARI": {
+      "nIncarichi": 19,
+      "importo": 50096.14,
+      "anni": [
+        2022,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA SANTOBONO PAUSILIPON": {
+      "nIncarichi": 153,
+      "importo": 1625655.419999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "FONDAZIONE PTV POLICLINICO TOR VERGATA": {
+      "nIncarichi": 190,
+      "importo": 4500364.39,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA UNITA' SANITARIA LOCALE TOSCANA SUD EST": {
+      "nIncarichi": 90,
+      "importo": 1498280.3,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO UNIVERSITARIA OSPEDALI RIUNITI DI FOGGIA": {
+      "nIncarichi": 128,
+      "importo": 748224.7299999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE DI OCEANOGRAFIA E DI GEOFISICA SPERIMENTALE - OGS": {
+      "nIncarichi": 18,
+      "importo": 386464.28,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL IMOLA": {
+      "nIncarichi": 121,
+      "importo": 325213.0399999999,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA ZERO PIEMONTE": {
+      "nIncarichi": 1,
+      "importo": 9850,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA ZERO": {
+      "nIncarichi": 152,
+      "importo": 1514853.39,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AOU SASSARI - AZIENDA OSPEDALIERA UNIVERSITARIA DI SASSARI": {
+      "nIncarichi": 12,
+      "importo": 366635,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE DI FISICA NUCLEARE": {
+      "nIncarichi": 14,
+      "importo": 1103647.5300000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE CROTONE": {
+      "nIncarichi": 4,
+      "importo": 20994.52,
+      "anni": [
+        2022,
+        2024
+      ]
+    },
+    "AGENZIA REGIONALE EMERGENZA SANITARIA 118": {
+      "nIncarichi": 76,
+      "importo": 757605.2099999998,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA SOCIOSANITARIA LIGURE N.1": {
+      "nIncarichi": 233,
+      "importo": 9325865.630000003,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE PER LA VALUTAZIONE DEL SISTEMA EDUCATIVO DI ISTRUZIONE E DI FORMAZIONE - INVALSI": {
+      "nIncarichi": 51,
+      "importo": 643860.04,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA SAN CAMILLO FORLANINI": {
+      "nIncarichi": 74,
+      "importo": 2417176.34,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE TO5 DI CHIERI": {
+      "nIncarichi": 46,
+      "importo": 153468.59999999998,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "ESTAR ENTE DI SUPPORTO TECNICO AMMINISTRATIVO REGIONALE": {
+      "nIncarichi": 5,
+      "importo": 45000,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA DI COSENZA": {
+      "nIncarichi": 1,
+      "importo": 1500,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 6 DEL MEDIO CAMPIDANO": {
+      "nIncarichi": 5,
+      "importo": 54432.8,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE NAPOLI 1 CENTRO": {
+      "nIncarichi": 3,
+      "importo": 175547.24,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA SANITARIA DELLA PROVINCIA AUTONOMA DI BOLZANO - SANITATSBETRIEB DER AUTONOMEN PROVINZ BOZEN": {
+      "nIncarichi": 11,
+      "importo": 281212.01,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA 'FEDERICO II' DI NAPOLI": {
+      "nIncarichi": 43,
+      "importo": 228034.94999999998,
+      "anni": [
+        2022,
+        2023
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 4 DELL'OGLIASTRA": {
+      "nIncarichi": 110,
+      "importo": 3181367.6,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZ.OSP.UNIV.OSPEDALI RIUN.UMBERTO I-LANCISI-SALESI": {
+      "nIncarichi": 7,
+      "importo": 51546.369999999995,
+      "anni": [
+        2022
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DI BRESCIA": {
+      "nIncarichi": 23,
+      "importo": 458834.19999999995,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA FRIULI OCCIDENTALE": {
+      "nIncarichi": 330,
+      "importo": 4394981.69,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA PUGLIESE - CIACCIO": {
+      "nIncarichi": 4,
+      "importo": 61333.34,
+      "anni": [
+        2022
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DI PAVIA": {
+      "nIncarichi": 28,
+      "importo": 483326.57999999996,
+      "anni": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "A.O.U. SAN LUIGI GONZAGA": {
+      "nIncarichi": 2,
+      "importo": 6328.36,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA OSPEDALIERA UNIVERSITARIA MATER DOMINI": {
+      "nIncarichi": 5,
+      "importo": 34536.229999999996,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA SANITARIA REGIONALE MOLISE": {
+      "nIncarichi": 3,
+      "importo": 120857.65,
+      "anni": [
+        2022
+      ]
+    },
+    "AZIENDA SANITARIA TERRITORIALE DI FERMO": {
+      "nIncarichi": 99,
+      "importo": 1049761.04,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "ASL2 - AZIENDA SOCIOSANITARIA LIGURE": {
+      "nIncarichi": 24,
+      "importo": 70888.71,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "IRCCS LAZZARO SPALLANZANI": {
+      "nIncarichi": 30,
+      "importo": 796573.7999999999,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERA PER L'EMERGENZA CANNIZZARO": {
+      "nIncarichi": 107,
+      "importo": 508827.91999999987,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "ASST OVEST MILANESE": {
+      "nIncarichi": 292,
+      "importo": 4431010.119999999,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA RENATO DULBECCO": {
+      "nIncarichi": 32,
+      "importo": 147110.00000000003,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 5 DI ORISTANO": {
+      "nIncarichi": 145,
+      "importo": 4295558.75,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI ENNA": {
+      "nIncarichi": 37,
+      "importo": 170237.50000000006,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "IRCCS CENTRO NEUROLESI BONINO PULEJO": {
+      "nIncarichi": 56,
+      "importo": 678193.2399999999,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO ORTOPEDICO RIZZOLI": {
+      "nIncarichi": 25,
+      "importo": 256462.97,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI SIRACUSA": {
+      "nIncarichi": 7,
+      "importo": 88884,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA USL PESCARA": {
+      "nIncarichi": 9,
+      "importo": 344527.01,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE DI TARANTO": {
+      "nIncarichi": 27,
+      "importo": 606952,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "FONDAZIONE IRCCS SAN GERARDO DEI TINTORI DI MONZA": {
+      "nIncarichi": 254,
+      "importo": 4675636.5,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 2 DELLA GALLURA": {
+      "nIncarichi": 26,
+      "importo": 616121.04,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AGENZIA DI TUTELA DELLA SALUTE DELLA BRIANZA": {
+      "nIncarichi": 79,
+      "importo": 131275.76,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "ISTITUTO DI ISTRUZIONE ALCIDE DEGASPERI": {
+      "nIncarichi": 52,
+      "importo": 33902.55,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE BT DI ANDRIA": {
+      "nIncarichi": 39,
+      "importo": 719308.8899999999,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA REGIONALE EMERGENZA SANITARIA - ARES 118": {
+      "nIncarichi": 158,
+      "importo": 1790698.95,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA REGIONALE DELLA SALUTE REGIONE SARDEGNA": {
+      "nIncarichi": 4,
+      "importo": 112000,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA TERRITORIALE DI MACERATA": {
+      "nIncarichi": 11,
+      "importo": 521369.7,
+      "anni": [
+        2023,
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA PROVINCIALE DI MESSINA": {
+      "nIncarichi": 232,
+      "importo": 1442032.3600000015,
+      "anni": [
+        2024
+      ]
+    },
+    "AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO \"G. RODOLICO-SAN MARCO\" DI CATANIA": {
+      "nIncarichi": 23,
+      "importo": 378065.91000000003,
+      "anni": [
+        2024
+      ]
+    },
+    "IRCCS AZIENDA OSPEDALIERA METROPOLITANA": {
+      "nIncarichi": 4,
+      "importo": 11302.36,
+      "anni": [
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE NAPOLI 3 SUD": {
+      "nIncarichi": 2,
+      "importo": 5235.4400000000005,
+      "anni": [
+        2024
+      ]
+    },
+    "AZIENDA SOCIO SANITARIA LOCALE N. 3 DI NUORO": {
+      "nIncarichi": 7,
+      "importo": 53811.14,
+      "anni": [
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE ROMA 6": {
+      "nIncarichi": 75,
+      "importo": 528404.18,
+      "anni": [
+        2024
+      ]
+    },
+    "AZIENDA SANITARIA LOCALE DI LECCE": {
+      "nIncarichi": 1,
+      "importo": 2464,
+      "anni": [
+        2024
+      ]
+    },
+    "ISTITUTO NAZIONALE DI RICERCA METROLOGICA - INRIM": {
+      "nIncarichi": 1,
+      "importo": 15000,
+      "anni": [
+        2024
+      ]
+    }
+  }
+}
