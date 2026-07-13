@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AZIENDA PER L&#39;ASSISTENZA SANITARIA N.3 ALTO FRIULI-COLLINARE-MEDIO FRIULI — Ospedali Trasparenti</title>
+<meta name="description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA PER L&#39;ASSISTENZA SANITARIA N.3 ALTO FRIULI-COLLINARE-MEDIO FRIULI (F. V. Giulia).">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#b7791f; --bassa:#6b7a89;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main"><a href="../index.html">Home</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main><div class="wrap">
+
+<a class="backlink" href="../strutture.html">← Tutte le strutture</a>
+<h1>AZIENDA PER L&#39;ASSISTENZA SANITARIA N.3 ALTO FRIULI-COLLINARE-MEDIO FRIULI</h1>
+<p><span class="chip">F. V. Giulia</span> <span class="chip">Azienda Sanitaria Locale (ASL) con presìdi ospedalieri</span> <span class="chip">codice 060203</span></p>
+
+
+<div class="grid kpis">
+    <div class="card kpi"><div class="n ">358.408.328 €</div><div class="l">Valore produzione (2019)</div></div>
+    <div class="card kpi"><div class="n ">349.565.157 €</div><div class="l">Costi produzione</div></div>
+    <div class="card kpi"><div class="n pos">1.105.330 €</div><div class="l">Risultato d’esercizio</div></div>
+    <div class="card kpi"><div class="n ">99.792.815 €</div><div class="l">Costo del personale</div></div>
+  </div>
+<h2>Segnalazioni</h2><p class="note">Nessuna anomalia rilevata dai controlli automatici sui dati disponibili.</p>
+
+<h2>Andamento economico</h2>
+<div class="grid" style="grid-template-columns:1fr">
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Ricavi e costi della produzione per anno (€)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="158.2" x2="666" y2="158.2"/><text x="50" y="161.2" text-anchor="end">100 mln</text><line class="grid-line" x1="56" y1="102.4" x2="666" y2="102.4"/><text x="50" y="105.4" text-anchor="end">200 mln</text><line class="grid-line" x1="56" y1="46.6" x2="666" y2="46.6"/><text x="50" y="49.6" text-anchor="end">300 mln</text><text x="56.0" y="232" text-anchor="middle">2015</text><text x="208.5" y="232" text-anchor="middle">2016</text><text x="361.0" y="232" text-anchor="middle">2017</text><text x="513.5" y="232" text-anchor="middle">2018</text><text x="666.0" y="232" text-anchor="middle">2019</text><path d="M56.0,37.5 L208.5,26.7 L361.0,27.0 L513.5,20.3 L666.0,14.0" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="37.5" r="2.5" fill="var(--brand)"/><circle cx="208.5" cy="26.7" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="27.0" r="2.5" fill="var(--brand)"/><circle cx="513.5" cy="20.3" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="14.0" r="2.5" fill="var(--brand)"/><path d="M56.0,39.1 L208.5,27.0 L361.0,30.0 L513.5,25.7 L666.0,18.9" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="39.1" r="2.5" fill="var(--neg)"/><circle cx="208.5" cy="27.0" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="30.0" r="2.5" fill="var(--neg)"/><circle cx="513.5" cy="25.7" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="18.9" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Valore della produzione</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Costi della produzione</text></g></g></svg><figcaption>Ricavi e costi della produzione per anno (€)</figcaption></figure></div>
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="162.2" x2="666" y2="162.2"/><text x="50" y="165.2" text-anchor="end">-8 mln</text><line class="grid-line" x1="56" y1="129.7" x2="666" y2="129.7"/><text x="50" y="132.7" text-anchor="end">-6 mln</text><line class="grid-line" x1="56" y1="97.1" x2="666" y2="97.1"/><text x="50" y="100.1" text-anchor="end">-4 mln</text><line class="grid-line" x1="56" y1="64.5" x2="666" y2="64.5"/><text x="50" y="67.5" text-anchor="end">-2 mln</text><line class="grid-line" x1="56" y1="32.0" x2="666" y2="32.0"/><text x="50" y="35.0" text-anchor="end">0</text><rect x="94.0" y="31.8" width="46.0" height="1.0" fill="var(--pos)" rx="2"/><text x="117.0" y="192" text-anchor="middle">2015</text><rect x="216.0" y="32.0" width="46.0" height="142.0" fill="var(--neg)" rx="2"/><text x="239.0" y="192" text-anchor="middle">2016</text><rect x="338.0" y="31.9" width="46.0" height="1.0" fill="var(--pos)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2017</text><rect x="460.0" y="26.2" width="46.0" height="5.8" fill="var(--pos)" rx="2"/><text x="483.0" y="192" text-anchor="middle">2018</text><rect x="582.0" y="14.0" width="46.0" height="18.0" fill="var(--pos)" rx="2"/><text x="605.0" y="192" text-anchor="middle">2019</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
+</div>
+
+
+<h2>Indicatori per anno</h2>
+    <div class="tablewrap"><table>
+    <thead><tr><th>Anno</th><th class="num">Contributi in c/esercizio (A.1)</th><th class="num">Valore della produzione (A)</th><th class="num">Costi della produzione (B)</th><th class="num">Costo del personale</th><th class="num">Ammortamenti</th><th class="num">Risultato di esercizio</th><th class="num">Totale attivo</th><th class="num">Patrimonio netto</th><th class="num">Debiti</th></tr></thead>
+    <tbody><tr><td>2015</td><td class="num ">276.617.000 €</td><td class="num ">316.233.000 €</td><td class="num ">313.418.000 €</td><td class="num ">96.801.000 €</td><td class="num ">7.255.000 €</td><td class="num pos">13.000 €</td><td class="num ">192.453.000 €</td><td class="num ">124.582.000 €</td><td class="num ">65.775.000 €</td></tr><tr><td>2016</td><td class="num ">290.178.000 €</td><td class="num ">335.699.000 €</td><td class="num ">335.091.000 €</td><td class="num ">95.536.000 €</td><td class="num ">7.102.000 €</td><td class="num neg">-8.724.000 €</td><td class="num ">194.788.000 €</td><td class="num ">109.216.000 €</td><td class="num ">81.541.000 €</td></tr><tr><td>2017</td><td class="num ">293.481.000 €</td><td class="num ">335.153.000 €</td><td class="num ">329.741.000 €</td><td class="num ">96.965.000 €</td><td class="num ">7.089.000 €</td><td class="num pos">3000 €</td><td class="num ">204.579.000 €</td><td class="num ">113.295.000 €</td><td class="num ">86.196.000 €</td></tr><tr><td>2018</td><td class="num ">306.424.000 €</td><td class="num ">347.048.000 €</td><td class="num ">337.430.000 €</td><td class="num ">99.474.000 €</td><td class="num ">6.823.000 €</td><td class="num pos">356.000 €</td><td class="num ">202.300.000 €</td><td class="num ">110.999.000 €</td><td class="num ">82.962.000 €</td></tr><tr><td>2019</td><td class="num ">310.153.776 €</td><td class="num ">358.408.328 €</td><td class="num ">349.565.157 €</td><td class="num ">99.792.815 €</td><td class="num ">6.986.247 €</td><td class="num pos">1.105.330 €</td><td class="num ">219.529.810 €</td><td class="num ">130.747.559 €</td><td class="num ">77.964.533 €</td></tr></tbody></table></div>
+<h2>Conto economico dettagliato <span class="small muted">(2019)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th>Voce</th><th class="num">Importo</th></tr></thead><tbody><tr><td>A.1) Contributi in c/esercizio</td><td class="num">310.153.776 €</td></tr><tr><td>A.1.A) Contributi da Regione o Prov. Aut. per quota F.S. regionale</td><td class="num">301.906.689 €</td></tr><tr><td>A.1.B) Contributi c/esercizio (extra fondo)</td><td class="num">8.200.691 €</td></tr><tr><td>A.1.D) Contributi c/esercizio da privati</td><td class="num">46.396 €</td></tr><tr><td>A.3) Utilizzo fondi per quote inutilizzate contributi finalizzati e vincolati di esercizi precedenti</td><td class="num">428.038 €</td></tr><tr><td>A.3.C) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da soggetti pubblici (extra fondo) vincolati</td><td class="num">404.967 €</td></tr><tr><td>A.3.E) Utilizzo fondi per quote inutilizzate contributi vincolati di esercizi precedenti da privati</td><td class="num">23.071 €</td></tr><tr><td>A.4) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria</td><td class="num">28.613.940 €</td></tr><tr><td>A.4.A) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a soggetti pubblici</td><td class="num">23.681.544 €</td></tr><tr><td>A.4.C) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a privati</td><td class="num">2.393.785 €</td></tr><tr><td>A.4.D) Ricavi per prestazioni sanitarie erogate in regime di intramoenia</td><td class="num">2.538.611 €</td></tr><tr><td>A.5) Concorsi, recuperi e rimborsi</td><td class="num">6.793.504 €</td></tr><tr><td>A.5.B) Concorsi, recuperi e rimborsi da Regione</td><td class="num">20.475 €</td></tr><tr><td>A.5.C) Concorsi, recuperi e rimborsi da Aziende sanitarie pubbliche della Regione</td><td class="num">333.355 €</td></tr><tr><td>A.5.D) Concorsi, recuperi e rimborsi da altri soggetti pubblici</td><td class="num">299.179 €</td></tr><tr><td>A.5.E) Concorsi, recuperi e rimborsi da privati</td><td class="num">6.140.495 €</td></tr><tr><td>A.6) Compartecipazione alla spesa per prestazioni sanitarie (Ticket)</td><td class="num">5.208.681 €</td></tr><tr><td>A.6.A) Compartecipazione alla spesa per prestazioni sanitarie - Ticket sulle prestazioni di specialistica ambulatoriale e APA-PAC</td><td class="num">5.135.471 €</td></tr><tr><td>A.6.B) Compartecipazione alla spesa per prestazioni sanitarie - Ticket sul pronto soccorso</td><td class="num">73.210 €</td></tr><tr><td>A.7) Quota contributi c/capitale imputata all&#39;esercizio</td><td class="num">6.913.468 €</td></tr><tr><td>A.7.B) Quota imputata all&#39;esercizio dei finanziamenti per investimenti da Regione</td><td class="num">4.295.754 €</td></tr><tr><td>A.7.C) Quota imputata all&#39;esercizio dei finanziamenti per beni di prima dotazione</td><td class="num">2.305.432 €</td></tr><tr><td>A.7.F) Quota imputata all&#39;esercizio di altre poste del patrimonio netto</td><td class="num">312.282 €</td></tr><tr><td>A.9) Altri ricavi e proventi</td><td class="num">296.921 €</td></tr><tr><td>A.9.A) Ricavi per prestazioni non sanitarie</td><td class="num">983 €</td></tr><tr><td>A.9.B) Fitti attivi ed altri proventi da attivita&#39; immobiliari</td><td class="num">180.677 €</td></tr><tr><td>A.9.C) Altri proventi diversi</td><td class="num">115.261 €</td></tr><tr><td>Totale valore della produzione (A)</td><td class="num">358.408.328 €</td></tr><tr><td>B.1) Acquisti di beni</td><td class="num">46.301.161 €</td></tr><tr><td>B.1.A) Acquisti di beni sanitari</td><td class="num">44.108.945 €</td></tr><tr><td>B.1.B) Acquisti di beni non sanitari</td><td class="num">2.192.216 €</td></tr><tr><td>B.2) Acquisti di servizi</td><td class="num">179.292.376 €</td></tr><tr><td>B.2.A) Acquisti servizi sanitari</td><td class="num">166.327.079 €</td></tr><tr><td>B.2.B) Acquisti di servizi non sanitari</td><td class="num">12.965.297 €</td></tr><tr><td>B.3) Manutenzione e riparazione (ordinaria esternalizzata)</td><td class="num">10.790.330 €</td></tr><tr><td>B.3.A) Manutenzione e riparazione ai fabbricati e loro pertinenze</td><td class="num">1.089.454 €</td></tr><tr><td>B.3.B) Manutenzione e riparazione agli impianti e macchinari</td><td class="num">6.945.997 €</td></tr><tr><td>B.3.C) Manutenzione e riparazione alle attrezzature sanitarie e scientifiche</td><td class="num">2.204.942 €</td></tr><tr><td>B.3.D) Manutenzione e riparazione ai mobili e arredi</td><td class="num">2560 €</td></tr><tr><td>B.3.E) Manutenzione e riparazione agli automezzi</td><td class="num">169.933 €</td></tr><tr><td>B.3.F) Altre manutenzioni e riparazioni</td><td class="num">377.444 €</td></tr><tr><td>B.4) Godimento di beni di terzi</td><td class="num">1.548.730 €</td></tr><tr><td>B.4.A) Fitti passivi</td><td class="num">124.335 €</td></tr><tr><td>B.4.B) Canoni di noleggio</td><td class="num">1.424.395 €</td></tr><tr><td>Totale Costo del personale</td><td class="num">99.792.815 €</td></tr><tr><td>B.5) Personale del ruolo sanitario</td><td class="num">76.891.474 €</td></tr><tr><td>B.5.A) Costo del personale dirigente ruolo sanitario</td><td class="num">33.747.271 €</td></tr><tr><td>B.5.B) Costo del personale comparto ruolo sanitario</td><td class="num">43.144.203 €</td></tr><tr><td>B.6) Personale del ruolo professionale</td><td class="num">210.327 €</td></tr><tr><td>B.6.A) Costo del personale dirigente ruolo professionale</td><td class="num">210.327 €</td></tr><tr><td>B.7) Personale del ruolo tecnico</td><td class="num">16.765.643 €</td></tr><tr><td>B.7.A) Costo del personale dirigente ruolo tecnico</td><td class="num">145.019 €</td></tr><tr><td>B.7.B) Costo del personale comparto ruolo tecnico</td><td class="num">16.620.624 €</td></tr><tr><td>B.8) Personale del ruolo amministrativo</td><td class="num">5.925.371 €</td></tr><tr><td>B.8.A) Costo del personale dirigente ruolo amministrativo</td><td class="num">740.396 €</td></tr><tr><td>B.8.B) Costo del personale comparto ruolo amministrativo</td><td class="num">5.184.975 €</td></tr><tr><td>B.9) Oneri diversi di gestione</td><td class="num">822.260 €</td></tr><tr><td>B.9.A) Imposte e tasse (escluso IRAP e IRES)</td><td class="num">272.520 €</td></tr><tr><td>B.9.C) Altri oneri diversi di gestione</td><td class="num">549.739 €</td></tr><tr><td>Totale Ammortamenti</td><td class="num">6.986.247 €</td></tr><tr><td>B.10) Ammortamenti delle immobilizzazioni immateriali</td><td class="num">38.245 €</td></tr><tr><td>B.11) Ammortamenti delle immobilizzazioni materiali</td><td class="num">6.948.002 €</td></tr><tr><td>B.11.A) Ammortamento dei fabbricati</td><td class="num">4.910.638 €</td></tr><tr><td>B.11.B) Ammortamenti delle altre immobilizzazioni materiali</td><td class="num">2.037.364 €</td></tr><tr><td>B.12) Svalutazione delle immobilizzazioni e dei crediti</td><td class="num">237.087 €</td></tr><tr><td>B.12.B) Svalutazione dei crediti</td><td class="num">237.087 €</td></tr><tr><td>B.13) Variazione delle rimanenze</td><td class="num">-51.815 €</td></tr><tr><td>B.13.A) Variazione rimanenze sanitarie</td><td class="num">-64.480 €</td></tr><tr><td>B.13.B) Variazione rimanenze non sanitarie</td><td class="num">12.664 €</td></tr><tr><td>B.14) Accantonamenti dell&#39;esercizio</td><td class="num">3.845.965 €</td></tr><tr><td>B.14.A) Accantonamenti per rischi</td><td class="num">3942 €</td></tr><tr><td>B.14.B) Accantonamenti per premio di operosita&#39; (SUMAI)</td><td class="num">61.203 €</td></tr><tr><td>B.14.C) Accantonamenti per quote inutilizzate di contributi finalizzati e vincolati</td><td class="num">1.345.319 €</td></tr><tr><td>B.14.D) Altri accantonamenti</td><td class="num">2.435.501 €</td></tr><tr><td>Totale costi della produzione (B)</td><td class="num">349.565.157 €</td></tr><tr><td>C.1) Interessi attivi</td><td class="num">2257 €</td></tr><tr><td>C.1.A) Interessi attivi su c/tesoreria unica</td><td class="num">1 €</td></tr><tr><td>C.1.C) Altri interessi attivi</td><td class="num">2256 €</td></tr><tr><td>Totale proventi e oneri finanziari (C)</td><td class="num">2257 €</td></tr><tr><td>E.1) Proventi straordinari</td><td class="num">590.546 €</td></tr><tr><td>E.1.A) Plusvalenze</td><td class="num">0 €</td></tr><tr><td>E.1.B) Altri proventi straordinari</td><td class="num">590.546 €</td></tr><tr><td>E.2) Oneri straordinari</td><td class="num">1.196.751 €</td></tr><tr><td>E.2.A) Minusvalenze</td><td class="num">72.067 €</td></tr><tr><td>E.2.B) Altri oneri straordinari</td><td class="num">1.124.685 €</td></tr><tr><td>Totale proventi e oneri straordinari (E)</td><td class="num">-606.206 €</td></tr><tr><td>Risultato prima delle imposte (A - B +/- C +/- D +/- E)</td><td class="num">8.239.222 €</td></tr><tr><td>Y.1) IRAP</td><td class="num">6.967.508 €</td></tr><tr><td>Y.1.A) IRAP relativa a personale dipendente</td><td class="num">6.596.871 €</td></tr><tr><td>Y.1.B) IRAP relativa a collaboratori e personale assimilato a lavoro dipendente</td><td class="num">215.667 €</td></tr><tr><td>Y.1.C) IRAP relativa ad attivita&#39; di libera professione (intramoenia)</td><td class="num">154.971 €</td></tr><tr><td>Y.2) IRES</td><td class="num">166.384 €</td></tr><tr><td>Y.2.A) IRES su attivita&#39; istituzionale</td><td class="num">166.384 €</td></tr><tr><td>Totale imposte e tasse (Y)</td><td class="num">7.133.892 €</td></tr><tr><td>RISULTATO DI ESERCIZIO</td><td class="num">1.105.330 €</td></tr></tbody></table></div>
+<h2>Stato patrimoniale <span class="small muted">(2019)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th>Voce</th><th class="num">Importo</th></tr></thead><tbody><tr><td>A) IMMOBILIZZAZIONI</td><td class="num">93.445.693 €</td></tr><tr><td>B) ATTIVO CIRCOLANTE</td><td class="num">125.918.327 €</td></tr><tr><td>C) RATEI E RISCONTI ATTIVI</td><td class="num">165.790 €</td></tr><tr><td>E) CONTI D&#39;ORDINE</td><td class="num">10.327.530 €</td></tr><tr><td>A) PATRIMONIO NETTO</td><td class="num">130.747.559 €</td></tr><tr><td>B) FONDI PER RISCHI E ONERI</td><td class="num">10.055.063 €</td></tr><tr><td>C) TRATTAMENTO FINE RAPPORTO</td><td class="num">759.831 €</td></tr><tr><td>D) DEBITI</td><td class="num">77.964.533 €</td></tr><tr><td>E) RATEI E RISCONTI PASSIVI</td><td class="num">2824 €</td></tr><tr><td>G) CONTI D&#39;ORDINE</td><td class="num">10.327.530 €</td></tr></tbody></table></div>
+
+<p class="small muted" style="margin-top:26px">Fonte: <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>
+(modelli CE/SP del SSN) e <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a>. Importi in euro dai consuntivi.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>:
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a> (modelli CE/SP del SSN) e
+  <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a> (Ministero della Salute).</p>
+  <p class="small">Le segnalazioni sono indicatori automatici, non accuse: richiedono verifica.
+  Importi in euro dai consuntivi annuali. Progetto a scopo di trasparenza civica — Carbon Stealth VCC.</p>
+</div></footer>
+</body>
+</html>

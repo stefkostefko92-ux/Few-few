@@ -1,0 +1,4059 @@
+{
+  "generatoIl": "2026-07-13T06:00:42.181Z",
+  "ultimoAnnoCe": 2024,
+  "entiAnalizzati": 342,
+  "entiConSegnalazioni": 153,
+  "totaleSegnalazioni": 312,
+  "perGravita": {
+    "alta": 62,
+    "media": 146,
+    "bassa": 104
+  },
+  "perRegola": {
+    "disavanzo_persistente": 55,
+    "squilibrio_strutturale": 58,
+    "disavanzo_grave": 49,
+    "salto_costi": 33,
+    "crescita_debiti": 30,
+    "salto_ricavi": 27,
+    "personale_elevato": 47,
+    "patrimonio_netto_negativo": 9,
+    "debiti_oltre_attivo": 4
+  },
+  "soglie": {
+    "disavanzoGrave": 0.05,
+    "saltoRicavi": 0.3,
+    "saltoCosti": 0.25,
+    "crescitaDebiti": 0.4,
+    "personaleP90": 0.4601544524324966,
+    "personaleMediano": 0.29380333553239407
+  },
+  "enti": [
+    {
+      "codice": "180914",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA RENATO DULBECCO",
+      "regione": "Calabria",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 474,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -9,7% del valore della produzione (-37.418.891 € su 387.564.296 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2024 il patrimonio netto è negativo (-196.462.767 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2024
+        },
+        {
+          "regola": "debiti_oltre_attivo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Debiti superiori al totale attivo",
+          "dettaglio": "I debiti (469.417.101 €) superano il totale attivo (326.882.603 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2023)",
+          "dettaglio": "I costi della produzione variano del +174,5% tra 2022 (133.826.265 €) e 2023 (367.354.115 €).",
+          "anno": 2023
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2020)",
+          "dettaglio": "I costi della produzione variano del -27% tra 2019 (177.385.348 €) e 2020 (129.423.523 €).",
+          "anno": 2020
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2019)",
+          "dettaglio": "I costi della produzione variano del +68% tra 2018 (105.590.011 €) e 2019 (177.385.348 €).",
+          "anno": 2019
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +279,1% tra 2012 (123.820.000 €) e 2024 (469.417.101 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2023)",
+          "dettaglio": "Il valore della produzione varia del +212,4% tra 2022 (112.744.761 €) e 2023 (352.180.656 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2023
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2016)",
+          "dettaglio": "Il valore della produzione varia del +46,9% tra 2015 (51.965.000 €) e 2016 (76.319.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "180916",
+      "denominazione": "INRCA",
+      "regione": "Calabria",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 400,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -49% del valore della produzione (-2.581.891 € su 5.273.661 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2024 il patrimonio netto è negativo (-16.617.155 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2024
+        },
+        {
+          "regola": "debiti_oltre_attivo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Debiti superiori al totale attivo",
+          "dettaglio": "I debiti (18.371.598 €) superano il totale attivo (3.892.130 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2024)",
+          "dettaglio": "Il valore della produzione varia del +63,6% tra 2023 (3.224.171 €) e 2024 (5.273.661 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 87,7% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +172,2% tra 2012 (6.750.000 €) e 2024 (18.371.598 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2022)",
+          "dettaglio": "Il valore della produzione varia del +43,5% tra 2021 (2.223.501 €) e 2022 (3.191.131 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2022
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2021)",
+          "dettaglio": "Il valore della produzione varia del -59,8% tra 2020 (5.525.772 €) e 2021 (2.223.501 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2021
+        }
+      ]
+    },
+    {
+      "codice": "180912",
+      "denominazione": "AZIENDA OSPEDALIERA DI COSENZA",
+      "regione": "Calabria",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 268,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -13,1% del valore della produzione (-29.359.310 € su 224.113.523 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2024 il patrimonio netto è negativo (-6.545.268 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 48,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "180202",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE CROTONE",
+      "regione": "Calabria",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 260,
+      "segnalazioni": [
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2024 il patrimonio netto è negativo (-137.436.704 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2024
+        },
+        {
+          "regola": "debiti_oltre_attivo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Debiti superiori al totale attivo",
+          "dettaglio": "I debiti (246.321.541 €) superano il totale attivo (159.978.276 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2021, 2022, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2020, 2021, 2022).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120102",
+      "denominazione": "UNITA' SANITARIA LOCALE ROMA B",
+      "regione": "Lazio",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 200,
+      "segnalazioni": [
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2015 il patrimonio netto è negativo (-133.862.000 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2015
+        },
+        {
+          "regola": "debiti_oltre_attivo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Debiti superiori al totale attivo",
+          "dettaglio": "I debiti (562.994.000 €) superano il totale attivo (513.389.000 €).",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "200101",
+      "denominazione": "AZIENDA PER LA TUTELA DELLA SALUTE",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 200,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -11,1% del valore della produzione (-65.272.000 € su 587.479.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2016 il patrimonio netto è negativo (-63.278.000 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "160901",
+      "denominazione": "ISTITUTO TUMORI GIOVANNI PAOLO II - IRCCS BARI",
+      "regione": "Puglia",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 198,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -7,9% del valore della produzione (-9.873.358 € su 124.678.596 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2018)",
+          "dettaglio": "I costi della produzione variano del +27,5% tra 2017 (76.058.000 €) e 2018 (96.978.000 €).",
+          "anno": 2018
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2018)",
+          "dettaglio": "Il valore della produzione varia del +38,9% tra 2017 (69.394.000 €) e 2018 (96.421.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2018
+        }
+      ]
+    },
+    {
+      "codice": "120918",
+      "denominazione": "IRCCS LAZZARO SPALLANZANI",
+      "regione": "Lazio",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 176,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -34,8% del valore della produzione (-43.791.522 € su 125.873.289 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2015)",
+          "dettaglio": "I costi della produzione variano del +91,3% tra 2014 (112.340.000 €) e 2015 (214.874.000 €).",
+          "anno": 2015
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2022)",
+          "dettaglio": "Il valore della produzione varia del -30,5% tra 2021 (174.754.258 €) e 2022 (121.403.616 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2022
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2015)",
+          "dettaglio": "Il valore della produzione varia del +102,6% tra 2014 (97.427.000 €) e 2015 (197.372.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "070940",
+      "denominazione": "ISTITUTO GIANNINA GASLINI",
+      "regione": "Liguria",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -6,7% del valore della produzione (-16.796.277 € su 250.856.813 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 49,4% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120901",
+      "denominazione": "AZIENDA OSPEDALIERA SAN CAMILLO - FORLANINI",
+      "regione": "Lazio",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -38,4% del valore della produzione (-134.992.136 € su 351.294.617 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 68,3% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120902",
+      "denominazione": "AZIENDA OSPEDALIERA COMPLESSO OSPEDALIERO SAN GIOVANNI ADDOLORATA",
+      "regione": "Lazio",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -31,2% del valore della produzione (-70.064.347 € su 224.277.052 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 59,7% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120919",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA S. ANDREA",
+      "regione": "Lazio",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -22,9% del valore della produzione (-56.893.858 € su 248.701.143 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 46,2% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120921",
+      "denominazione": "AZIENDA REGIONALE EMERGENZA SANITARIA - ARES 118",
+      "regione": "Lazio",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -15,6% del valore della produzione (-36.158.088 € su 231.695.917 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 54,9% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "160907",
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO DI BARI - GIOVANNI XXIII",
+      "regione": "Puglia",
+      "tipo": "Azienda Ospedaliera universitaria integrata con il Servizio Sanitario Nazionale",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -7,5% del valore della produzione (-38.917.008 € su 521.393.921 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 46,3% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "160910",
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA OSPEDALI RIUNITI DI FOGGIA",
+      "regione": "Puglia",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "alta",
+      "pesoTotale": 168,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -9,3% del valore della produzione (-29.863.819 € su 321.271.052 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2021, 2022, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 51,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010206",
+      "denominazione": "AZIENDA SANITARIA LOCALE VC DI VERCELLI",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -10% del valore della produzione (-39.768.668 € su 398.558.192 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010209",
+      "denominazione": "AZIENDA SANITARIA LOCALE DEL VERBANO CUSIO OSSOLA",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -10,5% del valore della produzione (-42.383.649 € su 404.174.445 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010211",
+      "denominazione": "AZIENDA SANITARIA LOCALE CN2",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -8,1% del valore della produzione (-33.694.328 € su 416.937.537 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2021, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010213",
+      "denominazione": "AZIENDA SANITARIA LOCALE AL DI ALESSANDRIA",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -6,3% del valore della produzione (-57.758.526 € su 923.954.802 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010905",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA MAGGIORE DELLA CARITA' DI NOVARA",
+      "regione": "Piemonte",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -6,2% del valore della produzione (-24.359.457 € su 395.291.972 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2020, 2021, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050503",
+      "denominazione": "AZIENDA ULSS N.3 SERENISSIMA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -10,3% del valore della produzione (-150.733.042 € su 1.459.767.435 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050505",
+      "denominazione": "AZIENDA ULSS N. 5 POLESANA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -9,3% del valore della produzione (-58.099.506 € su 626.630.751 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050901",
+      "denominazione": "AZIENDA OSPEDALE-UNIVERSITA' PADOVA",
+      "regione": "Veneto",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -9,4% del valore della produzione (-75.649.021 € su 801.668.998 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050912",
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA DI VERONA",
+      "regione": "Veneto",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -15,5% del valore della produzione (-106.690.541 € su 686.485.712 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120906",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO UMBERTO I",
+      "regione": "Lazio",
+      "tipo": "Azienda Ospedaliera universitaria integrata con il Servizio Sanitario Nazionale",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -29,1% del valore della produzione (-144.205.917 € su 495.081.956 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120908",
+      "denominazione": "ISTITUTI FISIOTERAPICI OSPITALIERI",
+      "regione": "Lazio",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -18,5% del valore della produzione (-43.850.754 € su 236.532.533 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120920",
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO TOR VERGATA",
+      "regione": "Lazio",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -14,5% del valore della produzione (-48.673.255 € su 334.951.338 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "130202",
+      "denominazione": "AZIENDA SANITARIA LOCALE 2 LANCIANO-VASTO-CHIETI",
+      "regione": "Abruzzo",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -5% del valore della produzione (-47.474.689 € su 945.793.144 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "140201",
+      "denominazione": "ASREM - AZIENDA SANITARIA REGIONALE DEL MOLISE",
+      "regione": "Molise",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2024 il patrimonio netto è negativo (-36.188.394 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "160902",
+      "denominazione": "ENTE OSPEDALIERO SPECIALIZZATO IN GASTROENTEROLOGIA ISTITUTO NAZIONALE DI RICOVERO E CURA A CARATTERE SCIENTIFICO S. DE BELLIS",
+      "regione": "Puglia",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 160,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -9,1% del valore della produzione (-6.255.733 € su 69.082.401 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200904",
+      "denominazione": "ARNAS G. BROTZU",
+      "regione": "Sardegna",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 154,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -14,9% del valore della produzione (-56.554.623 € su 380.463.157 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2015)",
+          "dettaglio": "I costi della produzione variano del +39,9% tra 2014 (188.698.000 €) e 2015 (264.012.000 €).",
+          "anno": 2015
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +111,6% tra 2012 (63.431.000 €) e 2024 (134.232.465 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2016)",
+          "dettaglio": "Il valore della produzione varia del +31,3% tra 2015 (240.110.000 €) e 2016 (315.227.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2016
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2015)",
+          "dettaglio": "Il valore della produzione varia del +37,4% tra 2014 (174.808.000 €) e 2015 (240.110.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "200905",
+      "denominazione": "AZIENDA OSPEDALIERO UNIVERSITARIA DI SASSARI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Ospedaliera universitaria integrata con il Servizio Sanitario Nazionale",
+      "gravitaMax": "alta",
+      "pesoTotale": 146,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -17,7% del valore della produzione (-72.571.654 € su 410.340.781 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2016)",
+          "dettaglio": "I costi della produzione variano del +87,2% tra 2015 (152.180.000 €) e 2016 (284.872.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +236,4% tra 2012 (85.974.000 €) e 2024 (289.228.708 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2016)",
+          "dettaglio": "Il valore della produzione varia del +122,9% tra 2015 (130.045.000 €) e 2016 (289.880.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "010908",
+      "denominazione": "AZIENDA OSPEDALIERA ORDINE MAURIZIANO DI TORINO",
+      "regione": "Piemonte",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 130,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -8,8% del valore della produzione (-23.259.321 € su 263.826.203 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2021, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "090902",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE",
+      "regione": "Toscana",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "alta",
+      "pesoTotale": 130,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -5,3% del valore della produzione (-18.249.836 € su 345.636.152 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200104",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI LANUSEI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 130,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -5,9% del valore della produzione (-7.156.000 € su 121.554.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2016)",
+          "dettaglio": "I costi della produzione variano del +28,1% tra 2015 (102.403.000 €) e 2016 (131.224.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "190960",
+      "denominazione": "IRCCS CENTRO NEUROLESI BONINO PULEJO",
+      "regione": "Sicilia",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "media",
+      "pesoTotale": 122,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2018)",
+          "dettaglio": "I costi della produzione variano del +26,1% tra 2017 (58.401.000 €) e 2018 (73.663.000 €).",
+          "anno": 2018
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2017)",
+          "dettaglio": "I costi della produzione variano del +68,8% tra 2016 (34.591.000 €) e 2017 (58.401.000 €).",
+          "anno": 2017
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2016)",
+          "dettaglio": "I costi della produzione variano del +32,6% tra 2015 (26.091.000 €) e 2016 (34.591.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 51,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +515,1% tra 2012 (5.106.000 €) e 2024 (31.408.781 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2018)",
+          "dettaglio": "Il valore della produzione varia del +32,9% tra 2017 (57.802.000 €) e 2018 (76.826.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2018
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2017)",
+          "dettaglio": "Il valore della produzione varia del +61% tra 2016 (35.896.000 €) e 2017 (57.802.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2017
+        }
+      ]
+    },
+    {
+      "codice": "120903",
+      "denominazione": "AZIENDA COMPLESSO OSPEDALIERO SAN FILIPPO NERI",
+      "regione": "Lazio",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "alta",
+      "pesoTotale": 108,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2014 il risultato d’esercizio è pari al -80,8% del valore della produzione (-104.552.000 € su 129.323.000 €).",
+          "anno": 2014
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2014 il costo del personale è il 83,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2014
+        }
+      ]
+    },
+    {
+      "codice": "120912",
+      "denominazione": "INRCA",
+      "regione": "Lazio",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 108,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2012 il risultato d’esercizio è pari al -114,3% del valore della produzione (-6.532.000 € su 5.715.000 €).",
+          "anno": 2012
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2012 il costo del personale è il 111,6% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2012
+        }
+      ]
+    },
+    {
+      "codice": "200303",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.3 DI NUORO",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 108,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -5,6% del valore della produzione (-23.435.672 € su 419.597.429 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +256,2% tra 2022 (30.966.841 €) e 2024 (110.303.409 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200306",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.6 DEL MEDIO CAMPIDANO",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 108,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -7,2% del valore della produzione (-15.148.517 € su 211.180.002 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +125,5% tra 2022 (13.876.805 €) e 2024 (31.298.424 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200307",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.7 DEL SULCIS",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 108,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -7,2% del valore della produzione (-21.488.817 € su 299.703.893 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +113,9% tra 2022 (20.113.282 €) e 2024 (43.031.510 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200903",
+      "denominazione": "INRCA CENTRO PER LE BRONCOPNEUMOPATIE",
+      "regione": "Sardegna",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "alta",
+      "pesoTotale": 108,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2012 il risultato d’esercizio è pari al -30% del valore della produzione (-903.000 € su 3.006.000 €).",
+          "anno": 2012
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2012 il costo del personale è il 84% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2012
+        }
+      ]
+    },
+    {
+      "codice": "050104",
+      "denominazione": "AZIENDA ULSS N. 4 ALTO VICENTINO",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -5,5% del valore della produzione (-17.997.000 € su 328.171.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "050112",
+      "denominazione": "AZIENDA ULSS N.3 SERENISSIMA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -8% del valore della produzione (-57.024.000 € su 710.027.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "050114",
+      "denominazione": "AZIENDA ULSS N.14 CHIOGGIA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -6% del valore della produzione (-7.966.000 € su 132.737.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "050117",
+      "denominazione": "AZIENDA ULSS N.17 MONSELICE",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -5,1% del valore della produzione (-16.983.000 € su 330.241.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "120103",
+      "denominazione": "ASL DI RM/C",
+      "regione": "Lazio",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2015 il patrimonio netto è negativo (-10.961.000 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "120104",
+      "denominazione": "ASL ROMA 3",
+      "regione": "Lazio",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "patrimonio_netto_negativo",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Patrimonio netto negativo",
+          "dettaglio": "Nel 2015 il patrimonio netto è negativo (-42.908.000 €): situazione di potenziale squilibrio patrimoniale.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "200102",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI OLBIA",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -6,5% del valore della produzione (-17.922.000 € su 274.725.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "200103",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI NUORO",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -10,2% del valore della produzione (-34.440.000 € su 336.469.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "200105",
+      "denominazione": "ASL DI ORISTANO",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -7,9% del valore della produzione (-24.148.000 € su 306.107.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "200107",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI CARBONIA",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -13,4% del valore della produzione (-33.227.000 € su 248.423.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "200108",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI CAGLIARI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2016 il risultato d’esercizio è pari al -5,8% del valore della produzione (-58.126.000 € su 999.359.000 €).",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "200906",
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA DI CAGLIARI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Ospedaliera universitaria integrata con il Servizio Sanitario Nazionale",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -6% del valore della produzione (-12.048.657 € su 201.895.102 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200918",
+      "denominazione": "AZIENDA REGIONALE DELL'EMERGENZA E URGENZA DELLA SARDEGNA - AREUS",
+      "regione": "Sardegna",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "alta",
+      "pesoTotale": 100,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_grave",
+          "gravita": "alta",
+          "peso": 100,
+          "titolo": "Disavanzo grave nell’ultimo esercizio",
+          "dettaglio": "Nel 2024 il risultato d’esercizio è pari al -5,9% del valore della produzione (-6.679.877 € su 113.514.598 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "180203",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE DI CATANZARO",
+      "regione": "Calabria",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 90,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2013)",
+          "dettaglio": "I costi della produzione variano del +30,9% tra 2012 (481.291.000 €) e 2013 (630.058.000 €).",
+          "anno": 2013
+        }
+      ]
+    },
+    {
+      "codice": "030992",
+      "denominazione": "AGENZIA DI CONTROLLO DEL SISTEMA SOCIO SANITARIO LOMBARDO",
+      "regione": "Lombardia",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "media",
+      "pesoTotale": 84,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2024)",
+          "dettaglio": "I costi della produzione variano del +779,7% tra 2023 (1.875.593 €) e 2024 (16.498.731 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2017)",
+          "dettaglio": "I costi della produzione variano del +167,3% tra 2016 (721.000 €) e 2017 (1.927.000 €).",
+          "anno": 2017
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2024)",
+          "dettaglio": "Il valore della produzione varia del +724,8% tra 2023 (2.019.276 €) e 2024 (16.655.799 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +228,3% tra 2016 (444.000 €) e 2024 (1.457.631 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2017)",
+          "dettaglio": "Il valore della produzione varia del +165,7% tra 2016 (750.000 €) e 2017 (1.993.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2017
+        }
+      ]
+    },
+    {
+      "codice": "180917",
+      "denominazione": "AZIENDA PER IL GOVERNO DELLA SANITA' DELLA REGIONE CALABRIA_AZIENDA_ZERO",
+      "regione": "Calabria",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "media",
+      "pesoTotale": 76,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2024)",
+          "dettaglio": "I costi della produzione variano del +2597,9% tra 2023 (156.600 €) e 2024 (4.224.869 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2023)",
+          "dettaglio": "I costi della produzione variano del +77,6% tra 2022 (88.195 €) e 2023 (156.600 €).",
+          "anno": 2023
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2024)",
+          "dettaglio": "Il valore della produzione varia del +528,8% tra 2023 (700.000 €) e 2024 (4.401.711 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +104,6% tra 2022 (88.195 €) e 2024 (180.434 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010909",
+      "denominazione": "AZIENDA OSPEDALIERO UNIVERSITARIA CITTA' DELLA SALUTE E DELLA SCIENZA DI TORINO",
+      "regione": "Piemonte",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 68,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 46% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030717",
+      "denominazione": "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA BRIANZA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "media",
+      "pesoTotale": 68,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2024)",
+          "dettaglio": "I costi della produzione variano del +27,5% tra 2023 (469.608.424 €) e 2024 (598.598.438 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2021)",
+          "dettaglio": "I costi della produzione variano del +50,6% tra 2020 (254.145.279 €) e 2021 (382.775.726 €).",
+          "anno": 2021
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2021)",
+          "dettaglio": "Il valore della produzione varia del +48,1% tra 2020 (262.602.471 €) e 2021 (388.983.241 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2021
+        }
+      ]
+    },
+    {
+      "codice": "080902",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA DI PARMA",
+      "regione": "Emilia Romagna",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 68,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2021)",
+          "dettaglio": "I costi della produzione variano del -29,7% tra 2020 (651.108.501 €) e 2021 (457.917.578 €).",
+          "anno": 2021
+        },
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2020)",
+          "dettaglio": "I costi della produzione variano del +59,5% tra 2019 (408.208.638 €) e 2020 (651.108.501 €).",
+          "anno": 2020
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2020)",
+          "dettaglio": "Il valore della produzione varia del +62% tra 2019 (410.398.892 €) e 2020 (664.783.625 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2020
+        }
+      ]
+    },
+    {
+      "codice": "130203",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI PESCARA",
+      "regione": "Abruzzo",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 68,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2022, 2023).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +47% tra 2012 (194.838.000 €) e 2024 (286.498.941 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010203",
+      "denominazione": "AZIENDA SANITARIA LOCALE TO3",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010205",
+      "denominazione": "AZIENDA SANITARIA LOCALE TO5 DI CHIERI",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010208",
+      "denominazione": "AZIENDA SANITARIA LOCALE NO DI NOVARA",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010210",
+      "denominazione": "AZIENDA SANITARIA LOCALE CN1",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010301",
+      "denominazione": "AZIENDA SANITARIA LOCALE CITTA' DI TORINO",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010906",
+      "denominazione": "AZIENDA OSPEDALIERA S. CROCE E CARLE DI CUNEO",
+      "regione": "Piemonte",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2021, 2022, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2020, 2021, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050501",
+      "denominazione": "AZIENDA ULSS N.1 DOLOMITI",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050506",
+      "denominazione": "AZIENDA ULSS N.6 EUGANEA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2021, 2022, 2023).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050508",
+      "denominazione": "AZIENDA ULSS N.8 BERICA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2020, 2022, 2023).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "090203",
+      "denominazione": "AZIENDA UNITA' SANITARIA LOCALE TOSCANA SUD EST",
+      "regione": "Toscana",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "130201",
+      "denominazione": "AZIENDA SANITARIA LOCALE 1 DI AVEZZANO-SULMONA-L'AQUILA",
+      "regione": "Abruzzo",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "130204",
+      "denominazione": "AZIENDA SANITARIA LOCALE 4 TERAMO",
+      "regione": "Abruzzo",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2021, 2022, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "150204",
+      "denominazione": "AZIENDA SANITARIA LOCALE NAPOLI 1 CENTRO",
+      "regione": "Campania",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 60,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2021, 2022, 2023).",
+          "anno": 2024
+        },
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2022, 2023).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010900",
+      "denominazione": "AZIENDA SANITARIA ZERO DELLA REGIONE PIEMONTE",
+      "regione": "Piemonte",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "media",
+      "pesoTotale": 46,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2023)",
+          "dettaglio": "I costi della produzione variano del +8535,8% tra 2022 (1.977.589 €) e 2023 (170.780.170 €).",
+          "anno": 2023
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +4123% tra 2022 (1.043.532 €) e 2024 (44.067.873 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2023)",
+          "dettaglio": "Il valore della produzione varia del +8490,9% tra 2022 (1.989.189 €) e 2023 (170.889.820 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2023
+        }
+      ]
+    },
+    {
+      "codice": "060201",
+      "denominazione": "AZIENDA SANITARIA UNIVERSITARIA INTEGRATA DI TRIESTE",
+      "regione": "F. V. Giulia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 46,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2016)",
+          "dettaglio": "I costi della produzione variano del +35,6% tra 2015 (403.447.000 €) e 2016 (546.986.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +54,4% tra 2015 (61.846.000 €) e 2019 (95.520.328 €).",
+          "anno": 2019
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2016)",
+          "dettaglio": "Il valore della produzione varia del +37,3% tra 2015 (405.164.000 €) e 2016 (556.452.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "060204",
+      "denominazione": "AZIENDA SANITARIA UNIVERSITARIA INTEGRATA DI UDINE",
+      "regione": "F. V. Giulia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 46,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2016)",
+          "dettaglio": "I costi della produzione variano del +68,8% tra 2015 (399.354.000 €) e 2016 (674.210.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +87,9% tra 2015 (64.853.000 €) e 2019 (121.855.991 €).",
+          "anno": 2019
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2016)",
+          "dettaglio": "Il valore della produzione varia del +70,6% tra 2015 (403.612.000 €) e 2016 (688.595.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "080903",
+      "denominazione": "AZIENDA OSPEDALIERA ARCISPEDALE SANTA MARIA NUOVA",
+      "regione": "Emilia Romagna",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "media",
+      "pesoTotale": 46,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2017)",
+          "dettaglio": "I costi della produzione variano del -49,9% tra 2016 (287.817.000 €) e 2017 (144.138.000 €).",
+          "anno": 2017
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2017)",
+          "dettaglio": "Il valore della produzione varia del -50,4% tra 2016 (298.561.000 €) e 2017 (147.972.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2017
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2017 il costo del personale è il 47,6% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2017
+        }
+      ]
+    },
+    {
+      "codice": "170901",
+      "denominazione": "AZIENDA OSPEDALIERA REGIONALE SAN CARLO DI POTENZA",
+      "regione": "Basilicata",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "media",
+      "pesoTotale": 46,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2017)",
+          "dettaglio": "I costi della produzione variano del +44,6% tra 2016 (204.532.000 €) e 2017 (295.697.000 €).",
+          "anno": 2017
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +50,3% tra 2012 (49.461.000 €) e 2024 (74.364.164 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2017)",
+          "dettaglio": "Il valore della produzione varia del +44% tra 2016 (214.454.000 €) e 2017 (308.743.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2017
+        }
+      ]
+    },
+    {
+      "codice": "030993",
+      "denominazione": "AGENZIA REGIONALE EMERGENZA URGENZA - LOMBARDIA",
+      "regione": "Lombardia",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +45,9% tra 2021 (63.177.950 €) e 2024 (92.204.590 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050952",
+      "denominazione": "IRCCS - ISTITUTO ONCOLOGICO VENETO",
+      "regione": "Veneto",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2015)",
+          "dettaglio": "I costi della produzione variano del +30,9% tra 2014 (70.946.000 €) e 2015 (92.898.000 €).",
+          "anno": 2015
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2015)",
+          "dettaglio": "Il valore della produzione varia del +30,4% tra 2014 (72.173.000 €) e 2015 (94.119.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "070970",
+      "denominazione": "AZIENDA TUTELA DELLA SALUTE LIGURIA",
+      "regione": "Liguria",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +68,6% tra 2021 (98.138.991 €) e 2024 (165.450.318 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "080904",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA POLICLINICO DI MODENA",
+      "regione": "Emilia Romagna",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2017)",
+          "dettaglio": "I costi della produzione variano del +56,7% tra 2016 (258.436.000 €) e 2017 (405.028.000 €).",
+          "anno": 2017
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2017)",
+          "dettaglio": "Il valore della produzione varia del +54,8% tra 2016 (266.362.000 €) e 2017 (412.293.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2017
+        }
+      ]
+    },
+    {
+      "codice": "090901",
+      "denominazione": "AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA",
+      "regione": "Toscana",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +63,3% tra 2012 (349.593.000 €) e 2024 (570.899.718 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "110921",
+      "denominazione": "INRCA - IRCCS ISTITUTO NAZIONALE DI RICOVERO E CURA PER ANZIANI",
+      "regione": "Marche",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2018)",
+          "dettaglio": "I costi della produzione variano del +27,6% tra 2017 (65.019.000 €) e 2018 (82.978.000 €).",
+          "anno": 2018
+        },
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 49,6% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "150910",
+      "denominazione": "IRCCS-FONDAZIONE PASCALE",
+      "regione": "Campania",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2024)",
+          "dettaglio": "I costi della produzione variano del +28,4% tra 2023 (205.619.956 €) e 2024 (264.013.748 €).",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +101% tra 2012 (76.478.000 €) e 2024 (153.705.647 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "180201",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE DI COSENZA",
+      "regione": "Calabria",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2013)",
+          "dettaglio": "I costi della produzione variano del +27,7% tra 2012 (959.835.000 €) e 2013 (1.225.526.000 €).",
+          "anno": 2013
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2013)",
+          "dettaglio": "Il valore della produzione varia del +30,1% tra 2012 (931.214.000 €) e 2013 (1.211.646.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2013
+        }
+      ]
+    },
+    {
+      "codice": "200106",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI SANLURI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 38,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2016)",
+          "dettaglio": "I costi della produzione variano del +38,8% tra 2015 (138.448.000 €) e 2016 (192.125.000 €).",
+          "anno": 2016
+        },
+        {
+          "regola": "salto_ricavi",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Variazione anomala dei ricavi (2016)",
+          "dettaglio": "Il valore della produzione varia del +42,3% tra 2015 (127.378.000 €) e 2016 (181.220.000 €). Possibile riorganizzazione, fusione o discontinuità di rendicontazione.",
+          "anno": 2016
+        }
+      ]
+    },
+    {
+      "codice": "010204",
+      "denominazione": "AZIENDA SANITARIA LOCALE TO4",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010207",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI BIELLA",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010212",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI ASTI - ASL AT",
+      "regione": "Piemonte",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030321",
+      "denominazione": "AGENZIA DI TUTELA DELLA SALUTE DELLA CITTA' METROPOLITANA DI MILANO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030322",
+      "denominazione": "AGENZIA DI TUTELA DELLA SALUTE DELL'INSUBRIA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030325",
+      "denominazione": "AGENZIA DI TUTELA DELLA SALUTE DI BERGAMO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030326",
+      "denominazione": "AGENZIA DI TUTELA DELLA SALUTE DI BRESCIA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030327",
+      "denominazione": "AGENZIA DI TUTELA DELLA SALUTE DELLA VAL PADANA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2022, 2023).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030328",
+      "denominazione": "AGENZIA DI TUTELA DELLA SALUTE DI PAVIA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2021, 2022, 2023).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030719",
+      "denominazione": "AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO OVEST",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2024)",
+          "dettaglio": "I costi della produzione variano del +29,5% tra 2023 (192.286.776 €) e 2024 (248.969.693 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "050507",
+      "denominazione": "AZIENDA ULSS N. 7 PEDEMONTANA",
+      "regione": "Veneto",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2020, 2021, 2022, 2023).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "080909",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA DI FERRARA ARCISPEDALE SANT'ANNA",
+      "regione": "Emilia Romagna",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "090201",
+      "denominazione": "AZIENDA UNITA' SANITARIA LOCALE TOSCANA CENTRO",
+      "regione": "Toscana",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "090202",
+      "denominazione": "AZIENDA UNITA' SANITARIA LOCALE TOSCANA NORD OVEST",
+      "regione": "Toscana",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "090903",
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA CAREGGI",
+      "regione": "Toscana",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "090904",
+      "denominazione": "AZIENDA OSPEDALIERO UNIVERSITARIA MEYER",
+      "regione": "Toscana",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 5 degli ultimi 5 esercizi (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "100202",
+      "denominazione": "AZIENDA UNITA' SANITARIA LOCALE UMBRIA 2",
+      "regione": "Umbria",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "120201",
+      "denominazione": "ASL ROMA 1",
+      "regione": "Lazio",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "170202",
+      "denominazione": "AZIENDA SANITARIA LOCALE DI MATERA A.S.M.",
+      "regione": "Basilicata",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "disavanzo_persistente",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Disavanzo persistente",
+          "dettaglio": "Risultato d’esercizio negativo in 4 degli ultimi 5 esercizi (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "180205",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE DI REGGIO CALABRIA",
+      "regione": "Calabria",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "salto_costi",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Variazione anomala dei costi (2013)",
+          "dettaglio": "I costi della produzione variano del +27,8% tra 2012 (685.821.000 €) e 2013 (876.813.000 €).",
+          "anno": 2013
+        }
+      ]
+    },
+    {
+      "codice": "190203",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE DI CATANIA",
+      "regione": "Sicilia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "190205",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE DI MESSINA",
+      "regione": "Sicilia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 3 esercizi recenti (2021, 2022, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "190206",
+      "denominazione": "AZIENDA SANITARIA PROVINCIALE DI PALERMO",
+      "regione": "Sicilia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "media",
+      "pesoTotale": 30,
+      "segnalazioni": [
+        {
+          "regola": "squilibrio_strutturale",
+          "gravita": "media",
+          "peso": 30,
+          "titolo": "Squilibrio strutturale costi/ricavi",
+          "dettaglio": "Costi della produzione superiori al valore della produzione in 5 esercizi recenti (2020, 2021, 2022, 2023, 2024).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "060901",
+      "denominazione": "IRCCS MATERNO INFANTILE BURLO GAROFOLO",
+      "regione": "F. V. Giulia",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "bassa",
+      "pesoTotale": 16,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 47,3% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        },
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +113,7% tra 2012 (13.459.000 €) e 2024 (28.762.966 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "010910",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE INFANTILE REGINA MARGHERITA",
+      "regione": "Piemonte",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 74,9% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030713",
+      "denominazione": "AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALTELLINA E DELL'ALTO LARIO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 46,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030726",
+      "denominazione": "AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +40,5% tra 2016 (23.933.000 €) e 2024 (33.614.331 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030920",
+      "denominazione": "I.N.R.C.A.- PRESIDIO DI CASATENOVO",
+      "regione": "Lombardia",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 50,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "030951",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO E FONDAZINE MACCHI",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 46% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030952",
+      "denominazione": "AZIENDA OSPEDALIERA S. ANTONIO ABATE DI GALLARATE",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 53,7% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030953",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO DI BUSTO ARSIZIO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 49,4% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030955",
+      "denominazione": "AZIENDA OSPEDALIERA MELLINO MELLINI",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 55,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030956",
+      "denominazione": "AZIENDA OSPEDALIERA DI DESENZANO DEL GARDA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 55,5% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030957",
+      "denominazione": "AZIENDA OSPEDALIERA ISTITUTI OSPITALIERI DI CREMONA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 47,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030958",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE MAGGIORE DI CREMA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 49,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030959",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE SANT'ANNA DI COMO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 47,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030960",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE DI LECCO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 49% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030963",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE TREVIGLIO CARAVAGGIO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 50,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030964",
+      "denominazione": "AZIENDA OSPEDALIERA BOLOGNINI DI SERIATE",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 58,9% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030965",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE CARLO POMA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 51,9% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030968",
+      "denominazione": "AZIENDA OSPEDALIERA I.C.P. DI MILANO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 52,4% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030969",
+      "denominazione": "AZIENDA OSPEDALIERA FATE BENE FRATELLI E OFTALMICO DI MILANO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 58% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030972",
+      "denominazione": "AZIENDA OSPEDALIERA S. CARLO BORROMEO DI MILANO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 54,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030974",
+      "denominazione": "AZIENDA OSPEDALIERA G. SALVINI DI GARBAGNATE",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 57,2% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030975",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO DI MELEGNANO",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 52% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030978",
+      "denominazione": "AZIENDA OSPEDALIERA DELLA PROVINCIA DI LODI",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 54,6% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030979",
+      "denominazione": "AZIENDA OSPEDALIERA DELLA PROVINCIA DI PAVIA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 52,7% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030980",
+      "denominazione": "AZIENDA OSPEDALIERA VALTELLINA E VALCHIAVENNA",
+      "regione": "Lombardia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 59,3% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "030991",
+      "denominazione": "AZIENDA REGIONALE EMERGENZA URGENZA -AREU 118 LOMBARDIA",
+      "regione": "Lombardia",
+      "tipo": "Altra struttura del SSN (es. Azienda Zero/ESTAR)",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +54,5% tra 2012 (16.418.000 €) e 2020 (25.358.416 €).",
+          "anno": 2020
+        }
+      ]
+    },
+    {
+      "codice": "041201",
+      "denominazione": "AZIENDA SANITARIA DELL'ALTO ADIGE",
+      "regione": "P. A. Bolzano",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +52,1% tra 2012 (260.546.000 €) e 2024 (396.291.615 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "060205",
+      "denominazione": "AZIENDA SANITARIA FRIULI OCCIDENTALE",
+      "regione": "F. V. Giulia",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +91,2% tra 2015 (101.770.000 €) e 2024 (194.552.080 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "060912",
+      "denominazione": "AZIENDA OSPEDALIERA SANTA MARIA DEGLI ANGELI DI PORDENONE",
+      "regione": "F. V. Giulia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2014 il costo del personale è il 50,6% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2014
+        }
+      ]
+    },
+    {
+      "codice": "060913",
+      "denominazione": "AZIENDA OSPEDALIERO UNIVERSITARIA OSPEDALI RIUNITI DI TRIESTE",
+      "regione": "F. V. Giulia",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2015 il costo del personale è il 49,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2015
+        }
+      ]
+    },
+    {
+      "codice": "150902",
+      "denominazione": "AZIENDA OSPEDALIERA SANTOBONO - PAUSILIPON",
+      "regione": "Campania",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 51,1% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "150904",
+      "denominazione": "AZIENDA OSPEDALIERO UNIVERSITARIA SAN GIOVANNI DI DIO E RUGGI D'ARAGONA - SCUOLA MEDICA SALERNITANA",
+      "regione": "Campania",
+      "tipo": "Azienda Ospedaliera integrata con l'Università",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 46,8% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "150906",
+      "denominazione": "AORN SAN PIO DI BENEVENTO AZIENDA DI ALTA SPECIALIZZAZIONE E DI RILIEVO NAZIONALE",
+      "regione": "Campania",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 49,2% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "150907",
+      "denominazione": "AZIENDA OSPEDALIERA SANT'ANNA E SAN SEBASTIANO DI CASERTA",
+      "regione": "Campania",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 46% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "170910",
+      "denominazione": "IRCCS CROB",
+      "regione": "Basilicata",
+      "tipo": "IRCCS pubblico",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +115% tra 2012 (8.732.000 €) e 2024 (18.773.502 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "180915",
+      "denominazione": "AZIENDA OSPEDALIERA BIANCHI MELACRINO MORELLI DI REGGIO CALABRIA",
+      "regione": "Calabria",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +77,2% tra 2012 (45.002.000 €) e 2024 (79.723.426 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "190926",
+      "denominazione": "AZIENDA OSPEDALIERA OSPEDALI RIUNITI VILLA SOFIA CERVELLO DI PALERMO",
+      "regione": "Sicilia",
+      "tipo": "Azienda Ospedaliera",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "personale_elevato",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Incidenza del personale tra le più alte",
+          "dettaglio": "Nel 2024 il costo del personale è il 47,3% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200301",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.1 DI SASSARI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +67,4% tra 2022 (44.667.405 €) e 2024 (74.779.825 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200302",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.2 DELLA GALLURA",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +109% tra 2022 (21.621.970 €) e 2024 (45.182.289 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200305",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.5 DI ORISTANO",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +721,8% tra 2022 (21.614.916 €) e 2024 (177.627.049 €).",
+          "anno": 2024
+        }
+      ]
+    },
+    {
+      "codice": "200308",
+      "denominazione": "AZIENDA SOCIO SANITARIA LOCALE N.8 DI CAGLIARI",
+      "regione": "Sardegna",
+      "tipo": "Azienda Sanitaria Locale (ASL) con presìdi ospedalieri",
+      "gravitaMax": "bassa",
+      "pesoTotale": 8,
+      "segnalazioni": [
+        {
+          "regola": "crescita_debiti",
+          "gravita": "bassa",
+          "peso": 8,
+          "titolo": "Forte crescita dell’indebitamento",
+          "dettaglio": "I debiti crescono del +90,4% tra 2022 (81.674.030 €) e 2024 (155.485.593 €).",
+          "anno": 2024
+        }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 - **Код (регион + структура):** `200930`
 - **Регион:** Sardegna
-- **Тип:** Друга структура от SSN (напр. Azienda Zero/ESTAR)
+- **Тип:** Altra struttura del SSN (es. Azienda Zero/ESTAR)
 - **Източници:** [BDAP Open Data — CE/SP на структурите от SSN](https://openbdap.rgs.mef.gov.it/it/SSN/Analizza), [dati.salute.gov.it — анаграфика](https://www.dati.salute.gov.it/)
 
 ## Финансови показатели по години (CE/SP)

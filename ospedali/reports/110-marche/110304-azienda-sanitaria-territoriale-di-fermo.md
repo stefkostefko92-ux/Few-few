@@ -2,7 +2,7 @@
 
 - **Код (регион + структура):** `110304`
 - **Регион:** Marche
-- **Тип:** Местна здравна единица (ASL) с болнични президии
+- **Тип:** Azienda Sanitaria Locale (ASL) con presìdi ospedalieri
 - **Източници:** [BDAP Open Data — CE/SP на структурите от SSN](https://openbdap.rgs.mef.gov.it/it/SSN/Analizza), [dati.salute.gov.it — анаграфика](https://www.dati.salute.gov.it/)
 
 ## Финансови показатели по години (CE/SP)

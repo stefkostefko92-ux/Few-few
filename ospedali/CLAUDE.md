@@ -24,9 +24,21 @@ npm test       # node --test test/*.test.js
 src/fetch-catalogo.js    CKAN package_list → кеш data/raw/bdap-pkgs/ → data/catalogo-bdap.json
 src/fetch-anagrafica.js  dati.salute CSV (през curl! WAF реже Node fetch) → data/anagrafica.json
 src/fetch-finanze.js     CE/SP CSV по години → data/raw/bdap/{ce,sp}-<год>.csv
-src/build-report.js      парсва всичко → reports/ (index.md, <регион>/<код>-<име>.md, dati-chiave.csv)
-src/lib/                 http (retry/кеш/curl), csv (парсер + ит. числа), paths
+src/lib/dataset.js       ЕДИНСТВЕН източник за модела: parsва CSV → enti[] (серии + анаграфика)
+src/build-report.js      dataset → reports/ (index.md, <регион>/<код>-<име>.md, dati-chiave.csv)
+src/analyze.js           dataset → правила за аномалии → data/segnalazioni.json (тестваем: analizzaEnte)
+src/build-site.js        dataset + segnalazioni → site/ (италиански статичен сайт, SVG графики)
+src/lib/                 http (retry/кеш/curl), csv (парсер+ит. числа), dataset, format, site-ui, paths
 ```
+
+- `dataset.js` е единственият парсер — **не дублирай** зареждането в новите скриптове.
+- `analyze.js` изнася `analizzaEnte(ente, ctx)` + `derivati/median/percentile` за unit тест;
+  `main()` се пуска само при директно стартиране (`import.meta.url === file://argv[1]`).
+- `build-site.js` зависи от `data/segnalazioni.json` → пусни `analyze` преди `site`
+  (или направо `npm run build`).
+- Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
+  добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
+- Сигналите са **индикатори, не обвинения** — формулировките го казват изрично.
 
 ## Капани
 
@@ -39,4 +51,5 @@ src/lib/                 http (retry/кеш/curl), csv (парсер + ит. ч�
   никога по позиции.
 - Старите години (2012–2015) ползват други кодове на позициите — показателите се
   разпознават и по описание (regex), не само по код.
-- `data/raw/` е в `.gitignore` (стотици MB); `data/*.json` и `reports/` се комитват.
+- `data/raw/` е в `.gitignore` (стотици MB); `data/*.json`, `reports/` и `site/` се комитват
+  (сайтът зависи от суровите CSV, които не са в git → трябва да е готов в репото, за да се разгръща).

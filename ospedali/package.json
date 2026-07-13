@@ -12,7 +12,10 @@
     "fetch:finanze": "node src/fetch-finanze.js",
     "fetch:all": "npm run fetch:catalogo && npm run fetch:anagrafica && npm run fetch:finanze",
     "report": "node src/build-report.js",
-    "all": "npm run fetch:all && npm run report",
+    "analyze": "node src/analyze.js",
+    "site": "node src/build-site.js",
+    "build": "npm run report && npm run analyze && npm run site",
+    "all": "npm run fetch:all && npm run build",
     "test": "node --test test/*.test.js",
     "lint": "sh -c 'for f in src/*.js src/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'"
   }
