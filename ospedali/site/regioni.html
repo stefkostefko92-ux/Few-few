@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regioni a confronto — Ospedali Trasparenti</title>
+<meta name="description" content="Carta schematica dell’Italia e classifica regionale della quota di appalti senza gara nella sanità pubblica. Dati ANAC.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+.controls button:hover{filter:brightness(1.08)}
+.mapfig{margin:22px 0}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html">Inchiesta</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html" aria-current="page">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="dati.html">Dati</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<h1>Le regioni a confronto</h1>
+<p class="lead">La sanità è organizzata su base regionale: ogni Regione governa le proprie aziende. La carta mostra,
+per regione, la <strong>quota di appalti senza gara</strong> — un indicatore di apertura del mercato, non una prova di
+irregolarità. Clicca una regione per la scheda completa.</p>
+
+<figure class="mapfig">
+<svg viewBox="0 0 392 590" role="list" aria-label="Carta schematica dell’Italia: quota di appalti senza gara per regione" style="max-width:392px;width:100%;height:auto">
+<a href="regione/100.html" role="listitem"><title>Umbria: senza gara 68%, 7 strutture</title>
+      <rect x="198" y="198" width="62" height="62" rx="7" fill="rgb(217,41,36)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="225" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">UMB</text>
+      <text x="229" y="243" text-anchor="middle" font-size="12" fill="#fff">68%</text></a>
+<a href="regione/110.html" role="listitem"><title>Marche: senza gara 61%, 9 strutture</title>
+      <rect x="264" y="198" width="62" height="62" rx="7" fill="rgb(236,91,73)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="295" y="225" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">MAR</text>
+      <text x="295" y="243" text-anchor="middle" font-size="12" fill="#fff">61%</text></a>
+<a href="regione/120.html" role="listitem"><title>Lazio: senza gara 50%, 28 strutture</title>
+      <rect x="198" y="264" width="62" height="62" rx="7" fill="rgb(252,154,123)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="291" text-anchor="middle" font-size="14" font-weight="700" fill="#222">LAZ</text>
+      <text x="229" y="309" text-anchor="middle" font-size="12" fill="#222">50%</text></a>
+<a href="regione/130.html" role="listitem"><title>Abruzzo: senza gara 35%, 4 strutture</title>
+      <rect x="264" y="264" width="62" height="62" rx="7" fill="rgb(253,204,185)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="295" y="291" text-anchor="middle" font-size="14" font-weight="700" fill="#222">ABR</text>
+      <text x="295" y="309" text-anchor="middle" font-size="12" fill="#222">35%</text></a>
+<a href="regione/140.html" role="listitem"><title>Molise: senza gara 25%, 1 strutture</title>
+      <rect x="264" y="330" width="62" height="62" rx="7" fill="rgb(255,245,240)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="295" y="357" text-anchor="middle" font-size="14" font-weight="700" fill="#222">MOL</text>
+      <text x="295" y="375" text-anchor="middle" font-size="12" fill="#222">25%</text></a>
+<a href="regione/150.html" role="listitem"><title>Campania: senza gara 40%, 17 strutture</title>
+      <rect x="198" y="330" width="62" height="62" rx="7" fill="rgb(252,185,159)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="357" text-anchor="middle" font-size="14" font-weight="700" fill="#222">CAM</text>
+      <text x="229" y="375" text-anchor="middle" font-size="12" fill="#222">40%</text></a>
+<a href="regione/160.html" role="listitem"><title>Puglia: senza gara 58%, 10 strutture</title>
+      <rect x="330" y="330" width="62" height="62" rx="7" fill="rgb(241,110,87)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="361" y="357" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">PUG</text>
+      <text x="361" y="375" text-anchor="middle" font-size="12" fill="#fff">58%</text></a>
+<a href="regione/170.html" role="listitem"><title>Basilicata: senza gara 34%, 4 strutture</title>
+      <rect x="264" y="396" width="62" height="62" rx="7" fill="rgb(253,210,192)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="295" y="423" text-anchor="middle" font-size="14" font-weight="700" fill="#222">BAS</text>
+      <text x="295" y="441" text-anchor="middle" font-size="12" fill="#222">34%</text></a>
+<a href="regione/180.html" role="listitem"><title>Calabria: senza gara 66%, 11 strutture</title>
+      <rect x="264" y="462" width="62" height="62" rx="7" fill="rgb(223,50,42)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="295" y="489" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">CAL</text>
+      <text x="295" y="507" text-anchor="middle" font-size="12" fill="#fff">66%</text></a>
+<a href="regione/190.html" role="listitem"><title>Sicilia: senza gara 41%, 18 strutture</title>
+      <rect x="198" y="528" width="62" height="62" rx="7" fill="rgb(252,183,156)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="555" text-anchor="middle" font-size="14" font-weight="700" fill="#222">SIC</text>
+      <text x="229" y="573" text-anchor="middle" font-size="12" fill="#222">41%</text></a>
+<a href="regione/200.html" role="listitem"><title>Sardegna: senza gara 41%, 23 strutture</title>
+      <rect x="66" y="396" width="62" height="62" rx="7" fill="rgb(252,181,154)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="97" y="423" text-anchor="middle" font-size="14" font-weight="700" fill="#222">SAR</text>
+      <text x="97" y="441" text-anchor="middle" font-size="12" fill="#222">41%</text></a>
+<a href="regione/010.html" role="listitem"><title>Piemonte: senza gara 53%, 22 strutture</title>
+      <rect x="66" y="66" width="62" height="62" rx="7" fill="rgb(252,148,116)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="97" y="93" text-anchor="middle" font-size="14" font-weight="700" fill="#222">PIE</text>
+      <text x="97" y="111" text-anchor="middle" font-size="12" fill="#222">53%</text></a>
+<a href="regione/020.html" role="listitem"><title>Valle d&#39;Aosta: senza gara 81%, 1 strutture</title>
+      <rect x="0" y="66" width="62" height="62" rx="7" fill="rgb(153,0,13)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="31" y="93" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">VDA</text>
+      <text x="31" y="111" text-anchor="middle" font-size="12" fill="#fff">81%</text></a>
+<a href="regione/030.html" role="listitem"><title>Lombardia: senza gara 55%, 88 strutture</title>
+      <rect x="132" y="0" width="62" height="62" rx="7" fill="rgb(247,129,101)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="163" y="27" text-anchor="middle" font-size="14" font-weight="700" fill="#222">LOM</text>
+      <text x="163" y="45" text-anchor="middle" font-size="12" fill="#222">55%</text></a>
+<a href="regione/041.html" role="listitem"><title>P.A. Bolzano: senza gara 59%, 1 strutture</title>
+      <rect x="198" y="0" width="62" height="62" rx="7" fill="rgb(239,103,82)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="27" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">BZ</text>
+      <text x="229" y="45" text-anchor="middle" font-size="12" fill="#fff">59%</text></a>
+<a href="regione/042.html" role="listitem"><title>P.A. Trento: senza gara 76%, 1 strutture</title>
+      <rect x="198" y="66" width="62" height="62" rx="7" fill="rgb(176,15,21)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="93" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">TN</text>
+      <text x="229" y="111" text-anchor="middle" font-size="12" fill="#fff">76%</text></a>
+<a href="regione/050.html" role="listitem"><title>Veneto: senza gara 52%, 33 strutture</title>
+      <rect x="264" y="66" width="62" height="62" rx="7" fill="rgb(252,150,119)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="295" y="93" text-anchor="middle" font-size="14" font-weight="700" fill="#222">VEN</text>
+      <text x="295" y="111" text-anchor="middle" font-size="12" fill="#222">52%</text></a>
+<a href="regione/060.html" role="listitem"><title>Friuli-Venezia Giulia: senza gara 68%, 19 strutture</title>
+      <rect x="330" y="66" width="62" height="62" rx="7" fill="rgb(215,40,35)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="361" y="93" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">FVG</text>
+      <text x="361" y="111" text-anchor="middle" font-size="12" fill="#fff">68%</text></a>
+<a href="regione/070.html" role="listitem"><title>Liguria: senza gara 61%, 8 strutture</title>
+      <rect x="66" y="132" width="62" height="62" rx="7" fill="rgb(236,91,73)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="97" y="159" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">LIG</text>
+      <text x="97" y="177" text-anchor="middle" font-size="12" fill="#fff">61%</text></a>
+<a href="regione/080.html" role="listitem"><title>Emilia-Romagna: senza gara 54%, 18 strutture</title>
+      <rect x="198" y="132" width="62" height="62" rx="7" fill="rgb(250,140,109)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="229" y="159" text-anchor="middle" font-size="14" font-weight="700" fill="#222">EMR</text>
+      <text x="229" y="177" text-anchor="middle" font-size="12" fill="#222">54%</text></a>
+<a href="regione/090.html" role="listitem"><title>Toscana: senza gara 39%, 19 strutture</title>
+      <rect x="132" y="198" width="62" height="62" rx="7" fill="rgb(252,188,162)" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="163" y="225" text-anchor="middle" font-size="14" font-weight="700" fill="#222">TOS</text>
+      <text x="163" y="243" text-anchor="middle" font-size="12" fill="#222">39%</text></a>
+</svg>
+<div class="maplegend">
+  <span class="small muted">Quota senza gara:</span>
+  <svg width="220" height="14" aria-hidden="true"><defs><linearGradient id="lg"><stop offset="0%" stop-color="rgb(255,245,240)"></stop><stop offset="25%" stop-color="rgb(252,187,161)"></stop><stop offset="50%" stop-color="rgb(252,146,114)"></stop><stop offset="75%" stop-color="rgb(222,45,38)"></stop><stop offset="100%" stop-color="rgb(153,0,13)"></stop></linearGradient></defs><rect width="220" height="14" rx="3" fill="url(#lg)"></rect></svg>
+  <span class="small muted">25% → 81%</span>
+</div>
+<figcaption class="small muted">Carta <strong>schematica</strong> (non geografica): ogni regione è una cella di pari dimensione,
+colorata per quota di appalti aggiudicati senza gara (affidamento diretto + negoziata senza pubblicazione, sul numero di
+contratti). Clicca una regione per la scheda. Fonte: ANAC.</figcaption>
+</figure>
+
+<h2>Classifica per quota senza gara</h2>
+<p class="muted small">Ordinate dalla quota più alta. Il «risultato» è la somma dei risultati d’esercizio delle sole
+aziende (senza la Gestione Sanitaria Accentrata regionale), quindi non è il disavanzo «vero» della regione.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Regione</th><th class="num" scope="col">Senza gara</th><th class="num" scope="col">Strutture</th><th class="num" scope="col">Valore produzione</th><th class="num" scope="col">Risultato aziende</th></tr></thead>
+  <tbody><tr>
+      <td><a href="regione/020.html">Valle d&#39;Aosta</a></td>
+      <td class="num">80,9%</td>
+      <td class="num">1</td>
+      <td class="num">393 mln €</td>
+      <td class="num neg">−2 mln €</td>
+    </tr><tr>
+      <td><a href="regione/042.html">P.A. Trento</a></td>
+      <td class="num">76,3%</td>
+      <td class="num">1</td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">23 mila €</td>
+    </tr><tr>
+      <td><a href="regione/060.html">Friuli-Venezia Giulia</a></td>
+      <td class="num">68,5%</td>
+      <td class="num">19</td>
+      <td class="num">9 mld €</td>
+      <td class="num pos">20 mln €</td>
+    </tr><tr>
+      <td><a href="regione/100.html">Umbria</a></td>
+      <td class="num">68,1%</td>
+      <td class="num">7</td>
+      <td class="num">4 mld €</td>
+      <td class="num neg">−31 mln €</td>
+    </tr><tr>
+      <td><a href="regione/180.html">Calabria</a></td>
+      <td class="num">66,4%</td>
+      <td class="num">11</td>
+      <td class="num">5 mld €</td>
+      <td class="num neg">−98 mln €</td>
+    </tr><tr>
+      <td><a href="regione/110.html">Marche</a></td>
+      <td class="num">60,7%</td>
+      <td class="num">9</td>
+      <td class="num">8 mld €</td>
+      <td class="num pos">0 €</td>
+    </tr><tr>
+      <td><a href="regione/070.html">Liguria</a></td>
+      <td class="num">60,6%</td>
+      <td class="num">8</td>
+      <td class="num">5 mld €</td>
+      <td class="num neg">−98 mln €</td>
+    </tr><tr>
+      <td><a href="regione/041.html">P.A. Bolzano</a></td>
+      <td class="num">59%</td>
+      <td class="num">1</td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">36 mln €</td>
+    </tr><tr>
+      <td><a href="regione/160.html">Puglia</a></td>
+      <td class="num">58%</td>
+      <td class="num">10</td>
+      <td class="num">10 mld €</td>
+      <td class="num neg">−85 mln €</td>
+    </tr><tr>
+      <td><a href="regione/030.html">Lombardia</a></td>
+      <td class="num">55,5%</td>
+      <td class="num">88</td>
+      <td class="num">54 mld €</td>
+      <td class="num neg">−13 mln €</td>
+    </tr><tr>
+      <td><a href="regione/080.html">Emilia-Romagna</a></td>
+      <td class="num">53,9%</td>
+      <td class="num">18</td>
+      <td class="num">17 mld €</td>
+      <td class="num neg">−195 mln €</td>
+    </tr><tr>
+      <td><a href="regione/010.html">Piemonte</a></td>
+      <td class="num">52,6%</td>
+      <td class="num">22</td>
+      <td class="num">15 mld €</td>
+      <td class="num neg">−474 mln €</td>
+    </tr><tr>
+      <td><a href="regione/050.html">Veneto</a></td>
+      <td class="num">51,7%</td>
+      <td class="num">33</td>
+      <td class="num">22 mld €</td>
+      <td class="num neg">−648 mln €</td>
+    </tr><tr>
+      <td><a href="regione/120.html">Lazio</a></td>
+      <td class="num">50,4%</td>
+      <td class="num">28</td>
+      <td class="num">25 mld €</td>
+      <td class="num neg">−690 mln €</td>
+    </tr><tr>
+      <td><a href="regione/200.html">Sardegna</a></td>
+      <td class="num">41,1%</td>
+      <td class="num">23</td>
+      <td class="num">11 mld €</td>
+      <td class="num neg">−478 mln €</td>
+    </tr><tr>
+      <td><a href="regione/190.html">Sicilia</a></td>
+      <td class="num">40,6%</td>
+      <td class="num">18</td>
+      <td class="num">13 mld €</td>
+      <td class="num pos">1 mln €</td>
+    </tr><tr>
+      <td><a href="regione/150.html">Campania</a></td>
+      <td class="num">39,8%</td>
+      <td class="num">17</td>
+      <td class="num">15 mld €</td>
+      <td class="num pos">912 mila €</td>
+    </tr><tr>
+      <td><a href="regione/090.html">Toscana</a></td>
+      <td class="num">39%</td>
+      <td class="num">19</td>
+      <td class="num">17 mld €</td>
+      <td class="num neg">−197 mln €</td>
+    </tr><tr>
+      <td><a href="regione/130.html">Abruzzo</a></td>
+      <td class="num">35%</td>
+      <td class="num">4</td>
+      <td class="num">3 mld €</td>
+      <td class="num neg">−122 mln €</td>
+    </tr><tr>
+      <td><a href="regione/170.html">Basilicata</a></td>
+      <td class="num">33,7%</td>
+      <td class="num">4</td>
+      <td class="num">2 mld €</td>
+      <td class="num neg">−37 mln €</td>
+    </tr><tr>
+      <td><a href="regione/140.html">Molise</a></td>
+      <td class="num">25,2%</td>
+      <td class="num">1</td>
+      <td class="num">588 mln €</td>
+      <td class="num neg">−13 mln €</td>
+    </tr></tbody>
+</table></div>
+<p class="small muted">La quota «senza gara» è calcolata sul 100% dei contratti ANAC di ogni sezione regionale
+(dato robusto per il confronto tra regioni). <a href="appalti.html">Dettaglio appalti →</a></p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="verifiche.html">Dati e verifiche</a> · <a href="metodologia.html">Metodologia</a> ·
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

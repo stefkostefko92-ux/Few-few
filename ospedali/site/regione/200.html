@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sardegna — sanità pubblica — Ospedali Trasparenti</title>
+<meta name="description" content="Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in Sardegna: valore della produzione, risultato, quota di appalti senza gara.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+.controls button:hover{filter:brightness(1.08)}
+.mapfig{margin:22px 0}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html" aria-current="page">Regioni</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<p class="small muted"><a href="../regioni.html">← Tutte le regioni</a></p>
+<h1>Sardegna</h1>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">23 / 23</div><div class="l">Strutture con bilancio</div></div>
+  <div class="card kpi"><div class="n ">11 mld €</div><div class="l">Valore produzione (2024)</div></div>
+  <div class="card kpi"><div class="n neg">−478 mln €</div><div class="l">Risultato aziende (aggregato)</div></div>
+  <div class="card kpi"><div class="n neg">20 / 23</div><div class="l">Strutture in perdita</div></div>
+</div>
+<div class="note"><strong>Nota.</strong> Il «risultato aziende» somma i soli conti economici delle aziende della regione;
+non include la Gestione Sanitaria Accentrata (GSA), che a livello regionale copre gran parte dei disavanzi. È quindi un
+dato di contesto, non il disavanzo «vero» della regione. → <a href="../inchiesta.html">L’inchiesta sul deficit</a></div>
+
+<h2>Appalti sanitari della regione</h2>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">9476</div><div class="l">Contratti (sezione regionale)</div></div>
+  <div class="card kpi"><div class="n ">2 mld €</div><div class="l">Valore complessivo</div></div>
+  <div class="card kpi"><div class="n ">41,1%</div><div class="l">Quota senza gara</div></div>
+  <div class="card kpi"><div class="n ">190</div><div class="l">Sotto soglia (frazionamento?)</div></div>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Tipo di procedura</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td>Affidamento diretto</td><td class="num">2608</td><td class="num">1 mld €</td></tr><tr><td>Negoziata senza pubblicazione</td><td class="num">1287</td><td class="num">138 mln €</td></tr><tr><td>Negoziata con pubblicazione</td><td class="num">786</td><td class="num">27 mln €</td></tr><tr><td>Procedura aperta/competitiva</td><td class="num">1190</td><td class="num">415 mln €</td></tr><tr><td>Accordo quadro/convenzione</td><td class="num">3478</td><td class="num">430 mln €</td></tr><tr><td>Altro</td><td class="num">127</td><td class="num">16 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted">«Senza gara» = affidamento diretto + negoziata senza pubblicazione (esclusi gli accordi quadro,
+già messi a gara a monte), sul numero di contratti. Gli affidamenti sotto soglia appena inferiori ai limiti di legge
+(35–40k / 130–140k €) sono un possibile segnale di frazionamento, <strong>non una prova</strong>.</p>
+<h2>Strutture della regione</h2>
+<p class="muted small">Ordinate per gravità e numero delle segnalazioni contabili automatiche (indicatori, non accuse).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Struttura</th><th scope="col">Gravità</th><th class="num" scope="col">Segn.</th><th class="num" scope="col">Valore prod.</th><th class="num" scope="col">Risultato</th></tr></thead>
+  <tbody><tr>
+      <td><a href="../struttura/200904-arnas-g-brotzu.html">ARNAS G. BROTZU</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">5</td>
+      <td class="num">380 mln €</td>
+      <td class="num neg">−57 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200905-azienda-ospedaliero-universitaria-di-sassari.html">AZIENDA OSPEDALIERO UNIVERSITARIA DI SASSARI</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">4</td>
+      <td class="num">410 mln €</td>
+      <td class="num neg">−73 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200101-azienda-per-la-tutela-della-salute.html">AZIENDA PER LA TUTELA DELLA SALUTE</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">587 mln €</td>
+      <td class="num neg">−65 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200303-azienda-socio-sanitaria-locale-n-3-di-nuoro.html">AZIENDA SOCIO SANITARIA LOCALE N.3 DI NUORO</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">420 mln €</td>
+      <td class="num neg">−23 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200307-azienda-socio-sanitaria-locale-n-7-del-sulcis.html">AZIENDA SOCIO SANITARIA LOCALE N.7 DEL SULCIS</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">300 mln €</td>
+      <td class="num neg">−21 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200306-azienda-socio-sanitaria-locale-n-6-del-medio-campidano.html">AZIENDA SOCIO SANITARIA LOCALE N.6 DEL MEDIO CAMPIDANO</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">211 mln €</td>
+      <td class="num neg">−15 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200104-azienda-sanitaria-locale-di-lanusei.html">AZIENDA SANITARIA LOCALE DI LANUSEI</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">122 mln €</td>
+      <td class="num neg">−7 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200903-inrca-centro-per-le-broncopneumopatie.html">INRCA CENTRO PER LE BRONCOPNEUMOPATIE</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">3 mln €</td>
+      <td class="num neg">−903 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/200108-azienda-sanitaria-locale-di-cagliari.html">AZIENDA SANITARIA LOCALE DI CAGLIARI</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">999 mln €</td>
+      <td class="num neg">−58 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200103-azienda-sanitaria-locale-di-nuoro.html">AZIENDA SANITARIA LOCALE DI NUORO</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">336 mln €</td>
+      <td class="num neg">−34 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200105-asl-di-oristano.html">ASL DI ORISTANO</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">306 mln €</td>
+      <td class="num neg">−24 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200102-azienda-sanitaria-locale-di-olbia.html">AZIENDA SANITARIA LOCALE DI OLBIA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">275 mln €</td>
+      <td class="num neg">−18 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200107-azienda-sanitaria-locale-di-carbonia.html">AZIENDA SANITARIA LOCALE DI CARBONIA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">248 mln €</td>
+      <td class="num neg">−33 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200906-azienda-ospedaliera-universitaria-di-cagliari.html">AZIENDA OSPEDALIERA UNIVERSITARIA DI CAGLIARI</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">202 mln €</td>
+      <td class="num neg">−12 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200918-azienda-regionale-dell-emergenza-e-urgenza-della-sardegna-ar.html">AZIENDA REGIONALE DELL&#39;EMERGENZA E URGENZA DELLA SARDEGNA - AREUS</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">114 mln €</td>
+      <td class="num neg">−7 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200106-azienda-sanitaria-locale-di-sanluri.html">AZIENDA SANITARIA LOCALE DI SANLURI</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">181 mln €</td>
+      <td class="num neg">−9 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200308-azienda-socio-sanitaria-locale-n-8-di-cagliari.html">AZIENDA SOCIO SANITARIA LOCALE N.8 DI CAGLIARI</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">689 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/200301-azienda-socio-sanitaria-locale-n-1-di-sassari.html">AZIENDA SOCIO SANITARIA LOCALE N.1 DI SASSARI</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">707 mln €</td>
+      <td class="num neg">−33 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200302-azienda-socio-sanitaria-locale-n-2-della-gallura.html">AZIENDA SOCIO SANITARIA LOCALE N.2 DELLA GALLURA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">365 mln €</td>
+      <td class="num neg">−6 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200305-azienda-socio-sanitaria-locale-n-5-di-oristano.html">AZIENDA SOCIO SANITARIA LOCALE N.5 DI ORISTANO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">364 mln €</td>
+      <td class="num neg">−15 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200201-azienda-per-la-tutela-della-salute-ats-sardegna.html">AZIENDA PER LA TUTELA DELLA SALUTE - ATS SARDEGNA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">3 mld €</td>
+      <td class="num pos">8 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200304-azienda-socio-sanitaria-locale-n-4-dell-ogliastra.html">AZIENDA SOCIO SANITARIA LOCALE N.4 DELL&#39;OGLIASTRA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">145 mln €</td>
+      <td class="num neg">−5 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/200930-azienda-regionale-della-salute-regione-sardegna-ares.html">AZIENDA REGIONALE DELLA SALUTE REGIONE SARDEGNA - ARES</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">89 mln €</td>
+      <td class="num pos">32 mln €</td>
+    </tr></tbody>
+</table></div>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

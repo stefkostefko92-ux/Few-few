@@ -69,6 +69,10 @@ tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)
 .controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
   background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
 .controls button:hover{filter:brightness(1.08)}
+.mapfig{margin:22px 0}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
 .muted{color:var(--muted)}
 .small{font-size:13.5px}
 .note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
@@ -99,6 +103,7 @@ const NAV = [
   ['fornitori.html', 'Fornitori'],
   ['cerca.html', 'Cerca'],
   ['classifiche.html', 'Classifiche'],
+  ['regioni.html', 'Regioni'],
   ['strutture.html', 'Strutture'],
   ['segnalazioni.html', 'Segnalazioni'],
   ['dati.html', 'Dati'],

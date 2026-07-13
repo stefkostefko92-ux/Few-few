@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veneto — sanità pubblica — Ospedali Trasparenti</title>
+<meta name="description" content="Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in Veneto: valore della produzione, risultato, quota di appalti senza gara.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+.controls button:hover{filter:brightness(1.08)}
+.mapfig{margin:22px 0}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html" aria-current="page">Regioni</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<p class="small muted"><a href="../regioni.html">← Tutte le regioni</a></p>
+<h1>Veneto</h1>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">33 / 33</div><div class="l">Strutture con bilancio</div></div>
+  <div class="card kpi"><div class="n ">22 mld €</div><div class="l">Valore produzione (2024)</div></div>
+  <div class="card kpi"><div class="n neg">−648 mln €</div><div class="l">Risultato aziende (aggregato)</div></div>
+  <div class="card kpi"><div class="n neg">18 / 33</div><div class="l">Strutture in perdita</div></div>
+</div>
+<div class="note"><strong>Nota.</strong> Il «risultato aziende» somma i soli conti economici delle aziende della regione;
+non include la Gestione Sanitaria Accentrata (GSA), che a livello regionale copre gran parte dei disavanzi. È quindi un
+dato di contesto, non il disavanzo «vero» della regione. → <a href="../inchiesta.html">L’inchiesta sul deficit</a></div>
+
+<h2>Appalti sanitari della regione</h2>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">21.351</div><div class="l">Contratti (sezione regionale)</div></div>
+  <div class="card kpi"><div class="n ">14 mld €</div><div class="l">Valore complessivo</div></div>
+  <div class="card kpi"><div class="n neg">51,7%</div><div class="l">Quota senza gara</div></div>
+  <div class="card kpi"><div class="n ">1272</div><div class="l">Sotto soglia (frazionamento?)</div></div>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Tipo di procedura</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td>Affidamento diretto</td><td class="num">9739</td><td class="num">2 mld €</td></tr><tr><td>Negoziata senza pubblicazione</td><td class="num">1290</td><td class="num">3 mld €</td></tr><tr><td>Negoziata con pubblicazione</td><td class="num">974</td><td class="num">119 mln €</td></tr><tr><td>Procedura aperta/competitiva</td><td class="num">2437</td><td class="num">5 mld €</td></tr><tr><td>Accordo quadro/convenzione</td><td class="num">6850</td><td class="num">4 mld €</td></tr><tr><td>Altro</td><td class="num">61</td><td class="num">16 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted">«Senza gara» = affidamento diretto + negoziata senza pubblicazione (esclusi gli accordi quadro,
+già messi a gara a monte), sul numero di contratti. Gli affidamenti sotto soglia appena inferiori ai limiti di legge
+(35–40k / 130–140k €) sono un possibile segnale di frazionamento, <strong>non una prova</strong>.</p>
+<h2>Strutture della regione</h2>
+<p class="muted small">Ordinate per gravità e numero delle segnalazioni contabili automatiche (indicatori, non accuse).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Struttura</th><th scope="col">Gravità</th><th class="num" scope="col">Segn.</th><th class="num" scope="col">Valore prod.</th><th class="num" scope="col">Risultato</th></tr></thead>
+  <tbody><tr>
+      <td><a href="../struttura/050503-azienda-ulss-n-3-serenissima.html">AZIENDA ULSS N.3 SERENISSIMA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">2 mld €</td>
+      <td class="num neg">−151 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050901-azienda-ospedale-universita-padova.html">AZIENDA OSPEDALE-UNIVERSITA&#39; PADOVA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">802 mln €</td>
+      <td class="num neg">−76 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050912-azienda-ospedaliera-universitaria-integrata-di-verona.html">AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA DI VERONA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">686 mln €</td>
+      <td class="num neg">−107 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050505-azienda-ulss-n-5-polesana.html">AZIENDA ULSS N. 5 POLESANA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">627 mln €</td>
+      <td class="num neg">−58 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050112-azienda-ulss-n-3-serenissima.html">AZIENDA ULSS N.3 SERENISSIMA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">710 mln €</td>
+      <td class="num neg">−57 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050117-azienda-ulss-n-17-monselice.html">AZIENDA ULSS N.17 MONSELICE</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">330 mln €</td>
+      <td class="num neg">−17 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050104-azienda-ulss-n-4-alto-vicentino.html">AZIENDA ULSS N. 4 ALTO VICENTINO</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">328 mln €</td>
+      <td class="num neg">−18 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050114-azienda-ulss-n-14-chioggia.html">AZIENDA ULSS N.14 CHIOGGIA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">1</td>
+      <td class="num">133 mln €</td>
+      <td class="num neg">−8 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050506-azienda-ulss-n-6-euganea.html">AZIENDA ULSS N.6 EUGANEA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">2 mld €</td>
+      <td class="num neg">−15 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050508-azienda-ulss-n-8-berica.html">AZIENDA ULSS N.8 BERICA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">−20 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050501-azienda-ulss-n-1-dolomiti.html">AZIENDA ULSS N.1 DOLOMITI</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">554 mln €</td>
+      <td class="num neg">−18 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050952-irccs-istituto-oncologico-veneto.html">IRCCS - ISTITUTO ONCOLOGICO VENETO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">265 mln €</td>
+      <td class="num pos">1 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050507-azienda-ulss-n-7-pedemontana.html">AZIENDA ULSS N. 7 PEDEMONTANA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">805 mln €</td>
+      <td class="num pos">659 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050509-azienda-ulss-n-9-scaligera.html">AZIENDA ULSS N.9 SCALIGERA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">24 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050502-azienda-ulss-n-2-marca-trevigiana.html">AZIENDA ULSS N.2 MARCA TREVIGIANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">87 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050116-azienda-ulss-n-6-euganea.html">AZIENDA ULSS N.6 EUGANEA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">953 mln €</td>
+      <td class="num neg">−22 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050120-azienda-ulss-n-9-scaligera.html">AZIENDA ULSS N.9 SCALIGERA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">809 mln €</td>
+      <td class="num neg">−40 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050109-azienda-ulss-n-2-marca-trevigiana.html">AZIENDA ULSS N.2 MARCA TREVIGIANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">806 mln €</td>
+      <td class="num neg">−8 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050106-azienda-ulss-n-8-berica.html">AZIENDA ULSS N.8 BERICA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">670 mln €</td>
+      <td class="num pos">238 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050122-azienda-ulss-n-22-bussolengo.html">AZIENDA ULSS N. 22 BUSSOLENGO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">636 mln €</td>
+      <td class="num pos">219 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050504-azienda-ulss-n-4-veneto-orientale.html">AZIENDA ULSS N.4 VENETO ORIENTALE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">543 mln €</td>
+      <td class="num pos">271 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050113-azienda-ulss-n-13-mirano.html">AZIENDA ULSS N.13 MIRANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">456 mln €</td>
+      <td class="num pos">391 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050115-azienda-ulss-n-15-alta-padovana.html">AZIENDA ULSS N.15 ALTA PADOVANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">449 mln €</td>
+      <td class="num pos">543 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050108-azienda-ulss-n-8-asolo.html">AZIENDA ULSS N.8 ASOLO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">441 mln €</td>
+      <td class="num pos">516 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050118-azienda-ulss-n-5-polesana.html">AZIENDA ULSS N. 5 POLESANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">389 mln €</td>
+      <td class="num neg">−10 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050110-azienda-ulss-n-4-veneto-orientale.html">AZIENDA ULSS N.4 VENETO ORIENTALE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">384 mln €</td>
+      <td class="num neg">−12 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050107-azienda-ulss-n-7-pieve-di-soligo.html">AZIENDA ULSS N.7 PIEVE DI SOLIGO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">372 mln €</td>
+      <td class="num pos">217 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050103-azienda-ulss-n-7-pedemontana.html">AZIENDA ULSS N. 7 PEDEMONTANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">317 mln €</td>
+      <td class="num pos">150 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050105-azienda-ulss-n-5-ovest-vicentino.html">AZIENDA ULSS N. 5 OVEST VICENTINO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">306 mln €</td>
+      <td class="num pos">113 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050101-azienda-ulss-n-1-dolomiti.html">AZIENDA ULSS N.1 DOLOMITI</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">291 mln €</td>
+      <td class="num neg">−6 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050121-azienda-ulss-n-21-legnago.html">AZIENDA ULSS N. 21 LEGNAGO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">285 mln €</td>
+      <td class="num neg">−12 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/050102-azienda-ulss-n-2-feltre.html">AZIENDA ULSS N. 2 FELTRE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">179 mln €</td>
+      <td class="num pos">11 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/050119-azienda-ulss-n-19-adria.html">AZIENDA ULSS N.19 ADRIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">162 mln €</td>
+      <td class="num pos">676 mila €</td>
+    </tr></tbody>
+</table></div>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

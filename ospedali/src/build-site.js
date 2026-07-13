@@ -55,6 +55,33 @@ const REGOLE_LABEL = {
   risultato_arrotondato: 'Risultato “troppo tondo”',
 };
 
+// Регионите на SSN: codice_regione → съкращение, име, име в ANAC (за join) и
+// позиция (col,row) в схематична решетъчна карта (tile-grid cartogram) на Италия.
+// Картата е схематична, не географски точна — всеки регион е равностоен плочка.
+const REGIONI = {
+  '010': { abbr: 'PIE', nome: 'Piemonte', anac: 'PIEMONTE', col: 1, row: 1 },
+  '020': { abbr: 'VDA', nome: "Valle d'Aosta", anac: "VALLE D'AOSTA", col: 0, row: 1 },
+  '030': { abbr: 'LOM', nome: 'Lombardia', anac: 'LOMBARDIA', col: 2, row: 0 },
+  '041': { abbr: 'BZ', nome: 'P.A. Bolzano', anac: 'PROVINCIA AUTONOMA DI BOLZANO', col: 3, row: 0 },
+  '042': { abbr: 'TN', nome: 'P.A. Trento', anac: 'PROVINCIA AUTONOMA DI TRENTO', col: 3, row: 1 },
+  '050': { abbr: 'VEN', nome: 'Veneto', anac: 'VENETO', col: 4, row: 1 },
+  '060': { abbr: 'FVG', nome: 'Friuli-Venezia Giulia', anac: 'FRIULI VENEZIA GIULIA', col: 5, row: 1 },
+  '070': { abbr: 'LIG', nome: 'Liguria', anac: 'LIGURIA', col: 1, row: 2 },
+  '080': { abbr: 'EMR', nome: 'Emilia-Romagna', anac: 'EMILIA ROMAGNA', col: 3, row: 2 },
+  '090': { abbr: 'TOS', nome: 'Toscana', anac: 'TOSCANA', col: 2, row: 3 },
+  '100': { abbr: 'UMB', nome: 'Umbria', anac: 'UMBRIA', col: 3, row: 3 },
+  '110': { abbr: 'MAR', nome: 'Marche', anac: 'MARCHE', col: 4, row: 3 },
+  '120': { abbr: 'LAZ', nome: 'Lazio', anac: 'LAZIO', col: 3, row: 4 },
+  '130': { abbr: 'ABR', nome: 'Abruzzo', anac: 'ABRUZZO', col: 4, row: 4 },
+  '140': { abbr: 'MOL', nome: 'Molise', anac: 'MOLISE', col: 4, row: 5 },
+  '150': { abbr: 'CAM', nome: 'Campania', anac: 'CAMPANIA', col: 3, row: 5 },
+  '160': { abbr: 'PUG', nome: 'Puglia', anac: 'PUGLIA', col: 5, row: 5 },
+  '170': { abbr: 'BAS', nome: 'Basilicata', anac: 'BASILICATA', col: 4, row: 6 },
+  '180': { abbr: 'CAL', nome: 'Calabria', anac: 'CALABRIA', col: 4, row: 7 },
+  '190': { abbr: 'SIC', nome: 'Sicilia', anac: 'SICILIA', col: 3, row: 8 },
+  '200': { abbr: 'SAR', nome: 'Sardegna', anac: 'SARDEGNA', col: 1, row: 6 },
+};
+
 function ultimoCe(ente) {
   const anni = anniConCe(ente);
   return anni.length ? { anno: anni.at(-1), y: ente.serie.get(anni.at(-1)) } : { anno: null, y: {} };
@@ -210,6 +237,43 @@ async function main() {
     paginaForn++;
   }
 
+  // Регионални страници + схематична карта (tile-grid cartogram)
+  const appRegByName = new Map((appalti ? appalti.regionale : []).map((r) => [r.reg, r]));
+  const regAgg = new Map(); // codReg → агрегат
+  for (const ente of enti) {
+    const codReg = ente.codice.slice(0, 3);
+    if (!REGIONI[codReg]) continue;
+    let g = regAgg.get(codReg);
+    if (!g) {
+      g = { codReg, valore: 0, risultato: 0, nInPerdita: 0, conCe: 0, enti: [] };
+      regAgg.set(codReg, g);
+    }
+    const { y } = ultimoCe(ente);
+    if (y.valoreProduzione != null) {
+      g.valore += y.valoreProduzione;
+      g.conCe++;
+      if (y.risultatoEsercizio != null) {
+        g.risultato += y.risultatoEsercizio;
+        if (y.risultatoEsercizio < 0) g.nInPerdita++;
+      }
+    }
+    g.enti.push(ente);
+  }
+  await mkdir(join(SITE_DIR, 'regione'), { recursive: true });
+  const regioniData = [];
+  for (const [codReg, meta] of Object.entries(REGIONI)) {
+    const g = regAgg.get(codReg);
+    if (!g) continue;
+    const appReg = appRegByName.get(meta.anac) || null;
+    const senzaGaraPct = appReg && appReg.n ? (appReg.cat.diretto.n + appReg.cat.negoziataSenza.n) / appReg.n : null;
+    await writeFile(
+      join(SITE_DIR, 'regione', `${codReg}.html`),
+      renderRegione({ codReg, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod })
+    );
+    regioniData.push({ codReg, abbr: meta.abbr, nome: meta.nome, col: meta.col, row: meta.row, senzaGaraPct, nEnti: g.enti.length, valore: g.valore, risultato: g.risultato, appN: appReg ? appReg.n : 0 });
+  }
+  await writeFile(join(SITE_DIR, 'regioni.html'), renderRegioniIndex({ regioniData }));
+
   // Hub за отворени данни: копира машинно-четимите датасети в site/dati/ и събира
   // размерите им, за да ги публикува за повторно ползване (open data).
   await mkdir(join(SITE_DIR, 'dati'), { recursive: true });
@@ -241,7 +305,7 @@ async function main() {
   datasets.sort((a, b) => (b.bytes || 0) - (a.bytes || 0));
   await writeFile(join(SITE_DIR, 'dati.html'), renderDati({ datasets, validaz, generatoIl: (validaz && validaz.generatoIl) || new Date().toISOString() }));
 
-  console.log(`Готово: ${enti.length + (appalti ? 12 : 11) + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
+  console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
 
 // ---------- HOME ----------
@@ -785,6 +849,196 @@ rieseguibile con <code>npm run all</code>.</p>
     title: 'Dati e verifiche — Ospedali Trasparenti',
     description: 'Controlli di consistenza contabile, copertura dei dati e impronta delle fonti: numeri verificabili e riproducibili.',
     active: 'verifiche.html',
+    body,
+  });
+}
+
+// ---------- REGIONI (страници + схематична карта) ----------
+// Цветова скала за дела „senza gara“: светло → тъмночервено (ColorBrewer Reds).
+function scalaRossi(t) {
+  const stops = [
+    [0.0, [255, 245, 240]],
+    [0.25, [252, 187, 161]],
+    [0.5, [252, 146, 114]],
+    [0.75, [222, 45, 38]],
+    [1.0, [153, 0, 13]],
+  ];
+  const x = Math.max(0, Math.min(1, t));
+  for (let i = 1; i < stops.length; i++) {
+    if (x <= stops[i][0]) {
+      const [a, ca] = stops[i - 1];
+      const [b, cb] = stops[i];
+      const f = (x - a) / (b - a || 1);
+      const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f));
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    }
+  }
+  return 'rgb(153,0,13)';
+}
+
+function cartogramma(regioniData) {
+  const withPct = regioniData.filter((r) => r.senzaGaraPct != null);
+  const vals = withPct.map((r) => r.senzaGaraPct);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const CELL = 62;
+  const GAP = 4;
+  const step = CELL + GAP;
+  const cols = Math.max(...regioniData.map((r) => r.col)) + 1;
+  const rows = Math.max(...regioniData.map((r) => r.row)) + 1;
+  const W = cols * step - GAP;
+  const H = rows * step - GAP;
+  const tiles = regioniData
+    .map((r) => {
+      const x = r.col * step;
+      const y = r.row * step;
+      const t = r.senzaGaraPct != null && max > min ? (r.senzaGaraPct - min) / (max - min) : null;
+      const fill = t != null ? scalaRossi(t) : '#c9d2db';
+      const testo = t != null && t > 0.55 ? '#fff' : '#222';
+      const pct = r.senzaGaraPct != null ? `${Math.round(r.senzaGaraPct * 100)}%` : '—';
+      const label = `${r.nome}: senza gara ${pct}, ${r.nEnti} strutture`;
+      return `<a href="regione/${r.codReg}.html" role="listitem"><title>${esc(label)}</title>
+      <rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="7" fill="${fill}" stroke="rgba(0,0,0,.18)"></rect>
+      <text x="${x + CELL / 2}" y="${y + CELL / 2 - 4}" text-anchor="middle" font-size="14" font-weight="700" fill="${testo}">${esc(r.abbr)}</text>
+      <text x="${x + CELL / 2}" y="${y + CELL / 2 + 14}" text-anchor="middle" font-size="12" fill="${testo}">${pct}</text></a>`;
+    })
+    .join('\n');
+  // легенда
+  const legW = 220;
+  const legStops = [0, 0.25, 0.5, 0.75, 1].map((s) => `<stop offset="${s * 100}%" stop-color="${scalaRossi(s)}"></stop>`).join('');
+  return `<figure class="mapfig">
+<svg viewBox="0 0 ${W} ${H}" role="list" aria-label="Carta schematica dell’Italia: quota di appalti senza gara per regione" style="max-width:${W}px;width:100%;height:auto">
+${tiles}
+</svg>
+<div class="maplegend">
+  <span class="small muted">Quota senza gara:</span>
+  <svg width="${legW}" height="14" aria-hidden="true"><defs><linearGradient id="lg">${legStops}</linearGradient></defs><rect width="${legW}" height="14" rx="3" fill="url(#lg)"></rect></svg>
+  <span class="small muted">${Math.round(min * 100)}% → ${Math.round(max * 100)}%</span>
+</div>
+<figcaption class="small muted">Carta <strong>schematica</strong> (non geografica): ogni regione è una cella di pari dimensione,
+colorata per quota di appalti aggiudicati senza gara (affidamento diretto + negoziata senza pubblicazione, sul numero di
+contratti). Clicca una regione per la scheda. Fonte: ANAC.</figcaption>
+</figure>`;
+}
+
+function renderRegioniIndex({ regioniData }) {
+  const ordinate = [...regioniData].filter((r) => r.senzaGaraPct != null).sort((a, b) => b.senzaGaraPct - a.senzaGaraPct);
+  const rows = ordinate
+    .map(
+      (r) => `<tr>
+      <td><a href="regione/${r.codReg}.html">${esc(r.nome)}</a></td>
+      <td class="num">${percentualeIt(r.senzaGaraPct)}</td>
+      <td class="num">${numeroIt(r.nEnti)}</td>
+      <td class="num">${euroCompact(r.valore)}</td>
+      <td class="num ${r.risultato < 0 ? 'neg' : 'pos'}">${euroCompact(r.risultato)}</td>
+    </tr>`
+    )
+    .join('');
+  const body = `
+<h1>Le regioni a confronto</h1>
+<p class="lead">La sanità è organizzata su base regionale: ogni Regione governa le proprie aziende. La carta mostra,
+per regione, la <strong>quota di appalti senza gara</strong> — un indicatore di apertura del mercato, non una prova di
+irregolarità. Clicca una regione per la scheda completa.</p>
+
+${cartogramma(regioniData)}
+
+<h2>Classifica per quota senza gara</h2>
+<p class="muted small">Ordinate dalla quota più alta. Il «risultato» è la somma dei risultati d’esercizio delle sole
+aziende (senza la Gestione Sanitaria Accentrata regionale), quindi non è il disavanzo «vero» della regione.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Regione</th><th class="num" scope="col">Senza gara</th><th class="num" scope="col">Strutture</th><th class="num" scope="col">Valore produzione</th><th class="num" scope="col">Risultato aziende</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+<p class="small muted">La quota «senza gara» è calcolata sul 100% dei contratti ANAC di ogni sezione regionale
+(dato robusto per il confronto tra regioni). <a href="appalti.html">Dettaglio appalti →</a></p>
+`;
+  return page({
+    title: 'Regioni a confronto — Ospedali Trasparenti',
+    description: 'Carta schematica dell’Italia e classifica regionale della quota di appalti senza gara nella sanità pubblica. Dati ANAC.',
+    active: 'regioni.html',
+    body,
+  });
+}
+
+function renderRegione({ codReg, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod }) {
+  const hrefStrut = (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html`;
+  // структури, подредени по брой/тежест на сигналите
+  const gravOrd = { alta: 3, media: 2, bassa: 1 };
+  const strutture = [...g.enti]
+    .map((e) => {
+      const s = segnByCod.get(e.codice);
+      const { y } = ultimoCe(e);
+      return { e, nSeg: s ? s.segnalazioni.length : 0, gravMax: s ? s.gravitaMax : null, valore: y.valoreProduzione, ris: y.risultatoEsercizio };
+    })
+    .sort((a, b) => (gravOrd[b.gravMax] || 0) - (gravOrd[a.gravMax] || 0) || b.nSeg - a.nSeg || (b.valore || 0) - (a.valore || 0));
+  const rows = strutture
+    .map(
+      (r) => `<tr>
+      <td><a href="${hrefStrut(r.e.codice)}">${esc(r.e.denominazione)}</a></td>
+      <td>${r.gravMax ? badge(r.gravMax) : '<span class="small muted">—</span>'}</td>
+      <td class="num">${r.nSeg || ''}</td>
+      <td class="num">${r.valore != null ? euroCompact(r.valore) : '—'}</td>
+      <td class="num ${r.ris < 0 ? 'neg' : 'pos'}">${r.ris != null ? euroCompact(r.ris) : '—'}</td>
+    </tr>`
+    )
+    .join('');
+  // разбивка на поръчките за региона
+  let appaltiBlk = '';
+  if (appReg) {
+    const cat = appReg.cat;
+    const ordine = [
+      ['diretto', 'Affidamento diretto'],
+      ['negoziataSenza', 'Negoziata senza pubblicazione'],
+      ['negoziata', 'Negoziata con pubblicazione'],
+      ['competitiva', 'Procedura aperta/competitiva'],
+      ['quadro', 'Accordo quadro/convenzione'],
+      ['altro', 'Altro'],
+    ];
+    const catRows = ordine
+      .filter(([k]) => cat[k] && cat[k].n)
+      .map(([k, lab]) => `<tr><td>${lab}</td><td class="num">${numeroIt(cat[k].n)}</td><td class="num">${euroCompact(cat[k].importo)}</td></tr>`)
+      .join('');
+    appaltiBlk = `
+<h2>Appalti sanitari della regione</h2>
+<div class="grid kpis">
+  ${kpi('Contratti (sezione regionale)', numeroIt(appReg.n))}
+  ${kpi('Valore complessivo', euroCompact(appReg.importo))}
+  ${kpi('Quota senza gara', senzaGaraPct != null ? percentualeIt(senzaGaraPct) : '—', senzaGaraPct > 0.5 ? 'neg' : '')}
+  ${kpi('Sotto soglia (frazionamento?)', numeroIt((appReg.band40 || 0) + (appReg.band140 || 0)))}
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Tipo di procedura</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody>${catRows}</tbody>
+</table></div>
+<p class="small muted">«Senza gara» = affidamento diretto + negoziata senza pubblicazione (esclusi gli accordi quadro,
+già messi a gara a monte), sul numero di contratti. Gli affidamenti sotto soglia appena inferiori ai limiti di legge
+(35–40k / 130–140k €) sono un possibile segnale di frazionamento, <strong>non una prova</strong>.</p>`;
+  }
+  const body = `
+<p class="small muted"><a href="../regioni.html">← Tutte le regioni</a></p>
+<h1>${esc(meta.nome)}</h1>
+<div class="grid kpis">
+  ${kpi('Strutture con bilancio', `${numeroIt(g.conCe)} / ${numeroIt(g.enti.length)}`)}
+  ${kpi(`Valore produzione (${ultimoAnnoCe})`, euroCompact(g.valore))}
+  ${kpi('Risultato aziende (aggregato)', euroCompact(g.risultato), g.risultato < 0 ? 'neg' : 'pos')}
+  ${kpi('Strutture in perdita', `${numeroIt(g.nInPerdita)} / ${numeroIt(g.conCe)}`, g.nInPerdita > g.conCe / 2 ? 'neg' : '')}
+</div>
+<div class="note"><strong>Nota.</strong> Il «risultato aziende» somma i soli conti economici delle aziende della regione;
+non include la Gestione Sanitaria Accentrata (GSA), che a livello regionale copre gran parte dei disavanzi. È quindi un
+dato di contesto, non il disavanzo «vero» della regione. → <a href="../inchiesta.html">L’inchiesta sul deficit</a></div>
+${appaltiBlk}
+<h2>Strutture della regione</h2>
+<p class="muted small">Ordinate per gravità e numero delle segnalazioni contabili automatiche (indicatori, non accuse).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Struttura</th><th scope="col">Gravità</th><th class="num" scope="col">Segn.</th><th class="num" scope="col">Valore prod.</th><th class="num" scope="col">Risultato</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table></div>
+`;
+  return page({
+    title: `${esc(meta.nome)} — sanità pubblica — Ospedali Trasparenti`,
+    description: `Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in ${esc(meta.nome)}: valore della produzione, risultato, quota di appalti senza gara.`,
+    active: 'regioni.html',
+    rel: '../',
     body,
   });
 }

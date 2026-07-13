@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lombardia — sanità pubblica — Ospedali Trasparenti</title>
+<meta name="description" content="Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in Lombardia: valore della produzione, risultato, quota di appalti senza gara.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+.controls button:hover{filter:brightness(1.08)}
+.mapfig{margin:22px 0}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html" aria-current="page">Regioni</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<p class="small muted"><a href="../regioni.html">← Tutte le regioni</a></p>
+<h1>Lombardia</h1>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">88 / 88</div><div class="l">Strutture con bilancio</div></div>
+  <div class="card kpi"><div class="n ">54 mld €</div><div class="l">Valore produzione (2024)</div></div>
+  <div class="card kpi"><div class="n neg">−13 mln €</div><div class="l">Risultato aziende (aggregato)</div></div>
+  <div class="card kpi"><div class="n ">1 / 88</div><div class="l">Strutture in perdita</div></div>
+</div>
+<div class="note"><strong>Nota.</strong> Il «risultato aziende» somma i soli conti economici delle aziende della regione;
+non include la Gestione Sanitaria Accentrata (GSA), che a livello regionale copre gran parte dei disavanzi. È quindi un
+dato di contesto, non il disavanzo «vero» della regione. → <a href="../inchiesta.html">L’inchiesta sul deficit</a></div>
+
+<h2>Appalti sanitari della regione</h2>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">70.781</div><div class="l">Contratti (sezione regionale)</div></div>
+  <div class="card kpi"><div class="n ">21 mld €</div><div class="l">Valore complessivo</div></div>
+  <div class="card kpi"><div class="n neg">55,5%</div><div class="l">Quota senza gara</div></div>
+  <div class="card kpi"><div class="n ">4202</div><div class="l">Sotto soglia (frazionamento?)</div></div>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Tipo di procedura</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td>Affidamento diretto</td><td class="num">35.993</td><td class="num">5 mld €</td></tr><tr><td>Negoziata senza pubblicazione</td><td class="num">3257</td><td class="num">1 mld €</td></tr><tr><td>Negoziata con pubblicazione</td><td class="num">1523</td><td class="num">185 mln €</td></tr><tr><td>Procedura aperta/competitiva</td><td class="num">5414</td><td class="num">8 mld €</td></tr><tr><td>Accordo quadro/convenzione</td><td class="num">24.076</td><td class="num">6 mld €</td></tr><tr><td>Altro</td><td class="num">518</td><td class="num">82 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted">«Senza gara» = affidamento diretto + negoziata senza pubblicazione (esclusi gli accordi quadro,
+già messi a gara a monte), sul numero di contratti. Gli affidamenti sotto soglia appena inferiori ai limiti di legge
+(35–40k / 130–140k €) sono un possibile segnale di frazionamento, <strong>non una prova</strong>.</p>
+<h2>Strutture della regione</h2>
+<p class="muted small">Ordinate per gravità e numero delle segnalazioni contabili automatiche (indicatori, non accuse).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Struttura</th><th scope="col">Gravità</th><th class="num" scope="col">Segn.</th><th class="num" scope="col">Valore prod.</th><th class="num" scope="col">Risultato</th></tr></thead>
+  <tbody><tr>
+      <td><a href="../struttura/030992-agenzia-di-controllo-del-sistema-socio-sanitario-lombardo.html">AGENZIA DI CONTROLLO DEL SISTEMA SOCIO SANITARIO LOMBARDO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">5</td>
+      <td class="num">17 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030717-azienda-socio-sanitaria-territoriale-della-brianza.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA BRIANZA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">3</td>
+      <td class="num">613 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030993-agenzia-regionale-emergenza-urgenza-lombardia.html">AGENZIA REGIONALE EMERGENZA URGENZA - LOMBARDIA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">333 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030321-agenzia-di-tutela-della-salute-della-citta-metropolitana-di-.html">AGENZIA DI TUTELA DELLA SALUTE DELLA CITTA&#39; METROPOLITANA DI MILANO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">6 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030322-agenzia-di-tutela-della-salute-dell-insubria.html">AGENZIA DI TUTELA DELLA SALUTE DELL&#39;INSUBRIA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030326-agenzia-di-tutela-della-salute-di-brescia.html">AGENZIA DI TUTELA DELLA SALUTE DI BRESCIA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030325-agenzia-di-tutela-della-salute-di-bergamo.html">AGENZIA DI TUTELA DELLA SALUTE DI BERGAMO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030327-agenzia-di-tutela-della-salute-della-val-padana.html">AGENZIA DI TUTELA DELLA SALUTE DELLA VAL PADANA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030328-agenzia-di-tutela-della-salute-di-pavia.html">AGENZIA DI TUTELA DELLA SALUTE DI PAVIA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030719-azienda-socio-sanitaria-territoriale-di-bergamo-ovest.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO OVEST</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">252 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030951-azienda-ospedaliera-ospedale-di-circolo-e-fondazine-macchi.html">AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO E FONDAZINE MACCHI</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">388 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030959-azienda-ospedaliera-ospedale-sant-anna-di-como.html">AZIENDA OSPEDALIERA OSPEDALE SANT&#39;ANNA DI COMO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">336 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030965-azienda-ospedaliera-ospedale-carlo-poma.html">AZIENDA OSPEDALIERA OSPEDALE CARLO POMA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">331 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030713-azienda-socio-sanitaria-territoriale-della-valtellina-e-dell.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALTELLINA E DELL&#39;ALTO LARIO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">319 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030953-azienda-ospedaliera-ospedale-di-circolo-di-busto-arsizio.html">AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO DI BUSTO ARSIZIO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">303 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030991-azienda-regionale-emergenza-urgenza-areu-118-lombardia.html">AZIENDA REGIONALE EMERGENZA URGENZA -AREU 118 LOMBARDIA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">291 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030968-azienda-ospedaliera-i-c-p-di-milano.html">AZIENDA OSPEDALIERA I.C.P. DI MILANO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">287 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030974-azienda-ospedaliera-g-salvini-di-garbagnate.html">AZIENDA OSPEDALIERA G. SALVINI DI GARBAGNATE</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">281 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030960-azienda-ospedaliera-ospedale-di-lecco.html">AZIENDA OSPEDALIERA OSPEDALE DI LECCO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">276 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030979-azienda-ospedaliera-della-provincia-di-pavia.html">AZIENDA OSPEDALIERA DELLA PROVINCIA DI PAVIA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">254 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030957-azienda-ospedaliera-istituti-ospitalieri-di-cremona.html">AZIENDA OSPEDALIERA ISTITUTI OSPITALIERI DI CREMONA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">250 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030975-azienda-ospedaliera-ospedale-di-circolo-di-melegnano.html">AZIENDA OSPEDALIERA OSPEDALE DI CIRCOLO DI MELEGNANO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">235 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030980-azienda-ospedaliera-valtellina-e-valchiavenna.html">AZIENDA OSPEDALIERA VALTELLINA E VALCHIAVENNA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">228 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030956-azienda-ospedaliera-di-desenzano-del-garda.html">AZIENDA OSPEDALIERA DI DESENZANO DEL GARDA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">219 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030978-azienda-ospedaliera-della-provincia-di-lodi.html">AZIENDA OSPEDALIERA DELLA PROVINCIA DI LODI</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">194 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030726-azienda-socio-sanitaria-territoriale-di-crema.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">193 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030963-azienda-ospedaliera-ospedale-treviglio-caravaggio.html">AZIENDA OSPEDALIERA OSPEDALE TREVIGLIO CARAVAGGIO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">193 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030964-azienda-ospedaliera-bolognini-di-seriate.html">AZIENDA OSPEDALIERA BOLOGNINI DI SERIATE</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">181 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030972-azienda-ospedaliera-s-carlo-borromeo-di-milano.html">AZIENDA OSPEDALIERA S. CARLO BORROMEO DI MILANO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">176 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030969-azienda-ospedaliera-fate-bene-fratelli-e-oftalmico-di-milano.html">AZIENDA OSPEDALIERA FATE BENE FRATELLI E OFTALMICO DI MILANO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">162 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030952-azienda-ospedaliera-s-antonio-abate-di-gallarate.html">AZIENDA OSPEDALIERA S. ANTONIO ABATE DI GALLARATE</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">155 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030958-azienda-ospedaliera-ospedale-maggiore-di-crema.html">AZIENDA OSPEDALIERA OSPEDALE MAGGIORE DI CREMA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">129 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030955-azienda-ospedaliera-mellino-mellini.html">AZIENDA OSPEDALIERA MELLINO MELLINI</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">121 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030920-i-n-r-c-a-presidio-di-casatenovo.html">I.N.R.C.A.- PRESIDIO DI CASATENOVO</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">10 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030308-asl-di-milano.html">ASL DI MILANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">3 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030324-agenzia-di-tutela-della-salute-della-brianza.html">AGENZIA DI TUTELA DELLA SALUTE DELLA BRIANZA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030302-azienda-sanitaria-locale-di-brescia.html">AZIENDA SANITARIA LOCALE DI BRESCIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030301-azienda-sanitaria-locale-della-provincia-di-bergamo.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI BERGAMO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">2 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030309-asl-di-milano1.html">ASL DI MILANO1</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030314-azienda-sanitaria-locale-della-provincia-di-varese.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI VARESE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030311-asl-della-provincia-di-monza-e-brianza.html">ASL DELLA PROVINCIA DI MONZA E BRIANZA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030721-azienda-socio-sanitaria-territoriale-degli-spedali-civili-di.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">1 mld €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030312-azienda-sanitaria-locale-della-provincia-di-pavia.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI PAVIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">921 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030310-asl-di-milano2.html">ASL DI MILANO2</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">856 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030701-azienda-socio-sanitaria-territoriale-grande-ospedale-metropo.html">AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">845 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030303-azienda-sanitaria-locale-della-provincia-di-como.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI COMO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">820 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030718-azienda-socio-sanitaria-territoriale-papa-giovanni-xxiii.html">AZIENDA SOCIO SANITARIA TERRITORIALE PAPA GIOVANNI XXIII</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">789 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030954-azienda-ospedaliera-spedali-civili-di-brescia.html">AZIENDA OSPEDALIERA SPEDALI CIVILI DI BRESCIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">718 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030703-azienda-socio-sanitaria-territoriale-fatebenefratelli-sacco.html">AZIENDA SOCIO SANITARIA TERRITORIALE FATEBENEFRATELLI SACCO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">708 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030710-azienda-socio-sanitaria-territoriale-dei-sette-laghi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">707 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030925-fondazione-irccs-ca-granda-ospedale-maggiore-policlinico.html">FONDAZIONE IRCCS CA&#39; GRANDA - OSPEDALE MAGGIORE POLICLINICO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">697 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030307-azienda-sanitaria-locale-provincia-di-mantova.html">AZIENDA SANITARIA LOCALE PROVINCIA DI MANTOVA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">629 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030304-azienda-sanitaria-locale-a-s-l-della-provincia-di-cremona.html">AZIENDA SANITARIA LOCALE (A.S.L.) DELLA PROVINCIA DI CREMONA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">616 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030705-azienda-socio-sanitaria-territoriale-ovest-milanese.html">AZIENDA SOCIO SANITARIA TERRITORIALE OVEST MILANESE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">590 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030967-azienda-ospedaliera-niguarda-di-milano.html">AZIENDA OSPEDALIERA NIGUARDA DI MILANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">552 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030702-azienda-socio-sanitaria-territoriale-santi-paolo-e-carlo.html">AZIENDA SOCIO SANITARIA TERRITORIALE SANTI PAOLO E CARLO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">551 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030725-azienda-socio-sanitaria-territoriale-di-mantova.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI MANTOVA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">542 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030924-fondazione-irccs-policlinico-san-matteo.html">FONDAZIONE IRCCS POLICLINICO SAN MATTEO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">531 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030962-azienda-ospedaliera-papa-giovanni-xxiii.html">AZIENDA OSPEDALIERA PAPA GIOVANNI XXIII</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">516 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030712-azienda-socio-sanitaria-territoriale-lariana.html">AZIENDA SOCIO SANITARIA TERRITORIALE LARIANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">512 mln €</td>
+      <td class="num neg">−13 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/030711-azienda-socio-sanitaria-territoriale-della-valle-olona.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALLE OLONA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">496 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030926-fondazione-irccs-san-gerardo-dei-tintori.html">FONDAZIONE IRCCS SAN GERARDO DEI TINTORI</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">491 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030323-agenzia-di-tutela-della-salute-della-montagna.html">AGENZIA DI TUTELA DELLA SALUTE DELLA MONTAGNA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">487 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030305-azienda-sanitaria-locale-della-provincia-di-lecco.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI LECCO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">462 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030716-azienda-socio-sanitaria-territoriale-asst-di-monza.html">AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) DI MONZA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">457 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030706-azienda-socio-sanitaria-territoriale-rhodense.html">AZIENDA SOCIO SANITARIA TERRITORIALE RHODENSE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">436 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030715-azienda-socio-sanitaria-territoriale-di-lecco.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI LECCO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">432 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030727-azienda-socio-sanitaria-territoriale-di-pavia.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI PAVIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">408 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030708-azienda-socio-sanitaria-territoriale-melegnano-e-della-marte.html">AZIENDA SOCIO SANITARIA TERRITORIALE MELEGNANO E DELLA MARTESANA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">407 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030922-fondazione-irccs-istituto-nazionale-dei-tumori.html">FONDAZIONE IRCCS ISTITUTO NAZIONALE DEI TUMORI</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">400 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030973-azienda-ospedaliera-ospedale-civile-di-legnano.html">AZIENDA OSPEDALIERA OSPEDALE CIVILE DI LEGNANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">398 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030724-azienda-socio-sanitaria-territoriale-di-cremona.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMONA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">351 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030306-asl-di-lodi.html">ASL DI LODI</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">350 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030976-azienda-ospedaliera-di-desio-e-vimercate.html">AZIENDA OSPEDALIERA DI DESIO E VIMERCATE</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">350 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030977-azienda-ospedaliera-ospedale-s-gerardo-di-monza.html">AZIENDA OSPEDALIERA OSPEDALE S. GERARDO DI MONZA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">345 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030723-azienda-socio-sanitaria-territoriale-del-garda.html">AZIENDA SOCIO SANITARIA TERRITORIALE DEL GARDA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">335 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030720-azienda-socio-sanitaria-territoriale-di-bergamo-est.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO EST</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">311 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030709-azienda-socio-sanitaria-territoriale-di-lodi.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI LODI</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">298 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030966-azienda-ospedaliera-sacco-di-milano.html">AZIENDA OSPEDALIERA SACCO DI MILANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">297 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030313-azienda-sanitaria-locale-della-provincia-di-sondrio.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI SONDRIO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">277 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030707-azienda-socio-sanitaria-territoriale-nord-milano.html">AZIENDA SOCIO SANITARIA TERRITORIALE NORD MILANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">261 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030970-azienda-ospedaliera-s-paolo-di-milano.html">AZIENDA OSPEDALIERA S.PAOLO DI MILANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">222 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030722-azienda-socio-sanitaria-territoriale-della-franciacorta.html">AZIENDA SOCIO-SANITARIA TERRITORIALE DELLA FRANCIACORTA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">205 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030315-azienda-sanitaria-locale-di-vallecamonica-sebino.html">AZIENDA SANITARIA LOCALE DI VALLECAMONICA-SEBINO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">199 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030923-fondazione-irccs-istituto-neurologico-carlo-besta.html">FONDAZIONE IRCCS ISTITUTO NEUROLOGICO CARLO BESTA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">182 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030704-azienda-socio-sanitaria-territoriale-centro-specialistico-or.html">AZIENDA SOCIO SANITARIA TERRITORIALE CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI/CTO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">158 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030714-azienda-socio-sanitaria-territoriale-della-valcamonica.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA VALCAMONICA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">142 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/030971-azienda-ospedaliera-g-pini-di-milano.html">AZIENDA OSPEDALIERA G. PINI DI MILANO</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">107 mln €</td>
+      <td class="num pos">—</td>
+    </tr></tbody>
+</table></div>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>

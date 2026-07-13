@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piemonte — sanità pubblica — Ospedali Trasparenti</title>
+<meta name="description" content="Conti e appalti delle aziende sanitarie e ospedaliere pubbliche in Piemonte: valore della produzione, risultato, quota di appalti senza gara.">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --ink:#15202b; --muted:#5b6b7a; --line:#e2e7ec;
+  --brand:#0b5cad; --brand-ink:#08447f;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  --radius:12px; --shadow:0 1px 3px rgba(16,32,48,.08),0 8px 24px rgba(16,32,48,.05);
+  --maxw:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e141b; --surface:#161f2a; --ink:#e7edf3; --muted:#9fb0c0; --line:#26323f;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
+.brand span{color:var(--brand)}
+nav.main{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto;font-size:15px}
+nav.main a{color:var(--muted);font-weight:500}
+nav.main a:hover,nav.main a[aria-current]{color:var(--brand)}
+main{padding:28px 0 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:34px 0 14px}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);font-size:17px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .n{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 4%);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);position:sticky;top:0;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:color-mix(in srgb,var(--surface) 100%,var(--brand) 5%)}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;
+  line-height:1.5;color:#fff;white-space:nowrap}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  font-size:12.5px;color:var(--muted);background:var(--surface)}
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:8px;
+  background:var(--surface);padding:12px 14px;margin:10px 0}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:4px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.controls input,.controls select{font:inherit;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:9px 16px;border:1px solid var(--brand);border-radius:9px;
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+.controls button:hover{filter:brightness(1.08)}
+.mapfig{margin:22px 0}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 10%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 30%);
+  border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;z-index:20}
+.skip:focus{left:0}
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hbars{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:600}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+svg .grid-line{stroke:var(--line)} svg text{fill:var(--muted);font-size:11px}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padding:24px 0 50px}
+footer.site a{color:var(--muted);text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:10px;font-size:14px}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html">Ospedali <span>Trasparenti</span></a>
+  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html" aria-current="page">Regioni</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<p class="small muted"><a href="../regioni.html">← Tutte le regioni</a></p>
+<h1>Piemonte</h1>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">22 / 22</div><div class="l">Strutture con bilancio</div></div>
+  <div class="card kpi"><div class="n ">15 mld €</div><div class="l">Valore produzione (2024)</div></div>
+  <div class="card kpi"><div class="n neg">−474 mln €</div><div class="l">Risultato aziende (aggregato)</div></div>
+  <div class="card kpi"><div class="n neg">17 / 22</div><div class="l">Strutture in perdita</div></div>
+</div>
+<div class="note"><strong>Nota.</strong> Il «risultato aziende» somma i soli conti economici delle aziende della regione;
+non include la Gestione Sanitaria Accentrata (GSA), che a livello regionale copre gran parte dei disavanzi. È quindi un
+dato di contesto, non il disavanzo «vero» della regione. → <a href="../inchiesta.html">L’inchiesta sul deficit</a></div>
+
+<h2>Appalti sanitari della regione</h2>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">50.713</div><div class="l">Contratti (sezione regionale)</div></div>
+  <div class="card kpi"><div class="n ">11 mld €</div><div class="l">Valore complessivo</div></div>
+  <div class="card kpi"><div class="n neg">52,6%</div><div class="l">Quota senza gara</div></div>
+  <div class="card kpi"><div class="n ">1103</div><div class="l">Sotto soglia (frazionamento?)</div></div>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Tipo di procedura</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td>Affidamento diretto</td><td class="num">24.441</td><td class="num">4 mld €</td></tr><tr><td>Negoziata senza pubblicazione</td><td class="num">2218</td><td class="num">419 mln €</td></tr><tr><td>Negoziata con pubblicazione</td><td class="num">1640</td><td class="num">151 mln €</td></tr><tr><td>Procedura aperta/competitiva</td><td class="num">3906</td><td class="num">2 mld €</td></tr><tr><td>Accordo quadro/convenzione</td><td class="num">18.269</td><td class="num">4 mld €</td></tr><tr><td>Altro</td><td class="num">239</td><td class="num">35 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted">«Senza gara» = affidamento diretto + negoziata senza pubblicazione (esclusi gli accordi quadro,
+già messi a gara a monte), sul numero di contratti. Gli affidamenti sotto soglia appena inferiori ai limiti di legge
+(35–40k / 130–140k €) sono un possibile segnale di frazionamento, <strong>non una prova</strong>.</p>
+<h2>Strutture della regione</h2>
+<p class="muted small">Ordinate per gravità e numero delle segnalazioni contabili automatiche (indicatori, non accuse).</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Struttura</th><th scope="col">Gravità</th><th class="num" scope="col">Segn.</th><th class="num" scope="col">Valore prod.</th><th class="num" scope="col">Risultato</th></tr></thead>
+  <tbody><tr>
+      <td><a href="../struttura/010213-azienda-sanitaria-locale-al-di-alessandria.html">AZIENDA SANITARIA LOCALE AL DI ALESSANDRIA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">924 mln €</td>
+      <td class="num neg">−58 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010211-azienda-sanitaria-locale-cn2.html">AZIENDA SANITARIA LOCALE CN2</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">417 mln €</td>
+      <td class="num neg">−34 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010209-azienda-sanitaria-locale-del-verbano-cusio-ossola.html">AZIENDA SANITARIA LOCALE DEL VERBANO CUSIO OSSOLA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">404 mln €</td>
+      <td class="num neg">−42 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010206-azienda-sanitaria-locale-vc-di-vercelli.html">AZIENDA SANITARIA LOCALE VC DI VERCELLI</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">399 mln €</td>
+      <td class="num neg">−40 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010905-azienda-ospedaliero-universitaria-maggiore-della-carita-di-n.html">AZIENDA OSPEDALIERO-UNIVERSITARIA MAGGIORE DELLA CARITA&#39; DI NOVARA</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">3</td>
+      <td class="num">395 mln €</td>
+      <td class="num neg">−24 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010908-azienda-ospedaliera-ordine-mauriziano-di-torino.html">AZIENDA OSPEDALIERA ORDINE MAURIZIANO DI TORINO</a></td>
+      <td><span class="badge alta">Alta</span></td>
+      <td class="num">2</td>
+      <td class="num">264 mln €</td>
+      <td class="num neg">−23 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010909-azienda-ospedaliero-universitaria-citta-della-salute-e-della.html">AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">3</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">−51 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010900-azienda-sanitaria-zero-della-regione-piemonte.html">AZIENDA SANITARIA ZERO DELLA REGIONE PIEMONTE</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">3</td>
+      <td class="num">180 mln €</td>
+      <td class="num pos">—</td>
+    </tr><tr>
+      <td><a href="../struttura/010301-azienda-sanitaria-locale-citta-di-torino.html">AZIENDA SANITARIA LOCALE CITTA&#39; DI TORINO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">2 mld €</td>
+      <td class="num neg">−97 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010203-azienda-sanitaria-locale-to3.html">AZIENDA SANITARIA LOCALE TO3</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">−11 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010210-azienda-sanitaria-locale-cn1.html">AZIENDA SANITARIA LOCALE CN1</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">888 mln €</td>
+      <td class="num neg">−8 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010208-azienda-sanitaria-locale-no-di-novara.html">AZIENDA SANITARIA LOCALE NO DI NOVARA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">791 mln €</td>
+      <td class="num neg">−14 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010205-azienda-sanitaria-locale-to5-di-chieri.html">AZIENDA SANITARIA LOCALE TO5 DI CHIERI</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">692 mln €</td>
+      <td class="num neg">−23 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010906-azienda-ospedaliera-s-croce-e-carle-di-cuneo.html">AZIENDA OSPEDALIERA S. CROCE E CARLE DI CUNEO</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">2</td>
+      <td class="num">319 mln €</td>
+      <td class="num neg">−4 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010204-azienda-sanitaria-locale-to4.html">AZIENDA SANITARIA LOCALE TO4</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">1 mld €</td>
+      <td class="num neg">−10 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010212-azienda-sanitaria-locale-di-asti-asl-at.html">AZIENDA SANITARIA LOCALE DI ASTI - ASL AT</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">698 mln €</td>
+      <td class="num neg">−19 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010207-azienda-sanitaria-locale-di-biella.html">AZIENDA SANITARIA LOCALE DI BIELLA</a></td>
+      <td><span class="badge media">Media</span></td>
+      <td class="num">1</td>
+      <td class="num">386 mln €</td>
+      <td class="num neg">−15 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010910-azienda-ospedaliera-ospedale-infantile-regina-margherita.html">AZIENDA OSPEDALIERA OSPEDALE INFANTILE REGINA MARGHERITA</a></td>
+      <td><span class="badge bassa">Bassa</span></td>
+      <td class="num">1</td>
+      <td class="num">290 mila €</td>
+      <td class="num pos">22 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/010202-azienda-sanitaria-locale-to-2.html">AZIENDA SANITARIA LOCALE TO 2</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">966 mln €</td>
+      <td class="num pos">566 mila €</td>
+    </tr><tr>
+      <td><a href="../struttura/010201-azienda-sanitaria-locale-to-1.html">AZIENDA SANITARIA LOCALE TO 1</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">937 mln €</td>
+      <td class="num pos">2 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010907-azienda-ospedaliero-universitaria-ss-antonio-e-biagio-e-c-ar.html">AZIENDA OSPEDALIERO-UNIVERSITARIA &quot;SS.ANTONIO E BIAGIO E C.ARRIGO&quot; ALESSANDRIA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">334 mln €</td>
+      <td class="num neg">−5 mln €</td>
+    </tr><tr>
+      <td><a href="../struttura/010904-azienda-ospedaliero-universitaria-s-luigi-gonzaga.html">AZIENDA OSPEDALIERO UNIVERSITARIA S. LUIGI GONZAGA</a></td>
+      <td><span class="small muted">—</span></td>
+      <td class="num"></td>
+      <td class="num">211 mln €</td>
+      <td class="num pos">28 mila €</td>
+    </tr></tbody>
+</table></div>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a></p>
+</div></footer>
+</body>
+</html>
