@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHero, Section, Badge } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd } from "@/lib/seo";
-import { Scale, ArrowOutflow, Info } from "@/components/icons";
+import { Scale, ArrowOutflow, Info, External } from "@/components/icons";
 import { withConflicts } from "@/lib/aggregate";
 import { sector as getSector } from "@/data/sectors";
 
@@ -108,6 +108,75 @@ export default function ConflictsPage() {
           </div>
         </Section>
 
+        {/* Роднински и свързани лица — методология за проверка */}
+        <Section
+          title="Роднински и свързани лица: как се проверява"
+          icon={<Scale className="h-6 w-6 text-rose-600" aria-hidden />}
+        >
+          <p className="max-w-3xl text-slate-600">
+            Дали на висок пост в държавно предприятие седи <strong>роднина на
+            собственик на фирма-изпълнител</strong> на поръчките — това е
+            законен и важен въпрос, но <strong>отговорът се доказва с първични
+            документи</strong>, не с предположения. Роднинството не е в отворен
+            регистър; затова тук е методът, по който то се установява коректно.
+          </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="font-bold text-slate-900">Какво казва законът</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                „Свързани лица“ по § 1 от ДР на Търговския закон и § 1, т. 15 от
+                ЗПКОНПИ включват: съпрузи и лица във фактическо съжителство;
+                роднини по права линия; по съребрена линия до четвърта степен;
+                по сватовство до втора степен; както и икономически свързани лица
+                (общ контрол, зависимост). Заемащите висши публични длъжности и
+                ръководителите на държавни предприятия декларират свързани лица и
+                конфликт на интереси.
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="font-bold text-slate-900">Стъпките на проверката</h3>
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-600">
+                <li>Вземи изпълнителите на поръчките на дружеството от СИГМА/ЦАИС ЕОП.</li>
+                <li>Виж <strong>действителните собственици</strong> на фирмите-изпълнители в Регистъра на действителните собственици (по ЗМИП) и в Търговския регистър.</li>
+                <li>Виж управителните и надзорните органи на държавното предприятие (Търговски регистър).</li>
+                <li>Сравни имената; при съвпадение/близост потърси декларации по ЗПКОНПИ и решения на КПК.</li>
+                <li>Роднинството се потвърждава само с официален документ (декларация, акт на КПК, съдебен акт).</li>
+              </ol>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <RegisterLink href="https://portal.registryagency.bg/" title="Търговски регистър">
+              Управители, съдружници, история на дружествата
+            </RegisterLink>
+            <RegisterLink href="https://portal.registryagency.bg/" title="Регистър на действителните собственици">
+              Кой реално стои зад фирмата (по ЗМИП)
+            </RegisterLink>
+            <RegisterLink href="https://www.caciaf.bg/" title="Комисия за противодействие на корупцията (КПК)">
+              Проверки и решения за конфликт на интереси; декларации по ЗПКОНПИ
+            </RegisterLink>
+            <RegisterLink href="https://sigma.midt.bg/" title="СИГМА">
+              Изпълнителите и сумите по поръчки на всяко дружество
+            </RegisterLink>
+            <RegisterLink href="https://app.eop.bg/" title="ЦАИС ЕОП">
+              Договори и участници в обществените поръчки
+            </RegisterLink>
+            <RegisterLink href="https://www.bulnao.government.bg/" title="Сметна палата">
+              Одитни доклади, вкл. за конфликт на интереси
+            </RegisterLink>
+          </div>
+
+          <div className="mt-6 rounded-xl border-l-4 border-rose-500 bg-rose-50 p-4 text-sm text-slate-700">
+            <strong>Защо тук няма списък с имена.</strong> Този сайт не публикува
+            твърдения „лицето Х е роднина на собственика Y“, защото роднинството
+            не е публично проверимо машинно, а невярно такова твърдение за
+            конкретен човек е клевета и вреда. Установяването на конкретен случай
+            е работа на компетентните органи (КПК, прокуратура, Сметна палата) и
+            на разследващата журналистика — с първични документи.
+          </div>
+        </Section>
+
         <Section icon={<Info className="h-6 w-6 text-brand-700" aria-hidden />}>
           <div className="rounded-2xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="text-lg font-bold text-slate-900">Как да проверите сами</h2>
@@ -137,5 +206,30 @@ export default function ConflictsPage() {
         </Section>
       </div>
     </>
+  );
+}
+
+function RegisterLink({
+  href,
+  title,
+  children,
+}: {
+  href: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm"
+    >
+      <span className="flex items-center justify-between gap-2">
+        <span className="font-semibold text-slate-900">{title}</span>
+        <External className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
+      </span>
+      <span className="mt-1 text-sm text-slate-600">{children}</span>
+    </a>
   );
 }
