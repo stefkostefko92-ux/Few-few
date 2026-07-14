@@ -17,7 +17,7 @@ import { catProc } from './fetch-appalti.js';
 
 const execFileAsync = promisify(execFile);
 const ANAC_DIR = join(RAW_DIR, 'anac');
-const ANNI = [2019, 2020, 2021, 2022, 2023, 2024];
+const ANNI = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 const IMPORTO_MAX = 1_000_000_000;
 
 // идентични с fetch-appalti (държим ги в синхрон при промяна там)
@@ -73,7 +73,7 @@ async function main() {
   await writeJson(join(DATA_DIR, 'storico.json'), {
     generatoIl: new Date().toISOString(),
     fonte: 'ANAC — BDNCP, месечни CIG датасети (CC BY 4.0), здравни възложители',
-    nota: 'Годишни национални агрегати със същите правила като appalti.json (HEALTH филтър, дедуп по CIG, валиден importo). Прозорецът на останалата част от сайта остава 2023–2024.',
+    nota: 'Годишни национални агрегати със същите правила като appalti.json (HEALTH филтър, дедуп по CIG, валиден importo). Прозорецът на останалата част от сайта е 2023–2025.',
     rotturaSerie: 'От 01.2024 (D.Lgs 36/2023 + PCP) серията е несравнима: включени микро-покупки, по-висок праг за affidamento diretto, друга семантика на FLAG_URGENZA. Годините с comparabile=false се показват отделно.',
     perAnno,
   });

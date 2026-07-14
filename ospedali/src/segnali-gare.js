@@ -26,7 +26,7 @@ import { DATA_DIR, RAW_DIR } from './lib/paths.js';
 const execFileAsync = promisify(execFile);
 const ANAC_DIR = join(RAW_DIR, 'anac');
 const ANAC2 = join(RAW_DIR, 'anac2');
-const ANNI = [2019, 2020, 2021, 2022, 2023, 2024];
+const ANNI = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
 // Праг за ЕС-публикация (forniture/servizi, обикновени сектори) по двугодишни линии
 // (Reg. 2017/2365: 2018-19=221k; 2019/1828: 2020-21=214k; 2021/1952: 2022-23=215k;
@@ -222,7 +222,7 @@ async function main() {
 
   const out = {
     generatoIl: new Date().toISOString(),
-    fonte: 'ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2024',
+    fonte: 'ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2025',
     nota: 'Indicatori di rischio sulle procedure di gara. Ogni segnale è un INDICATORE, non una prova: possono esistere spiegazioni lecite (urgenza reale, mercati di nicchia, esigenze cliniche).',
     nazionale: {
       termineBreve: { n: naz.termineBreveN, base: naz.competN, quota: naz.competN ? naz.termineBreveN / naz.competN : null },
