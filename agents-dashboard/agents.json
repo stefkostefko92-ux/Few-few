@@ -4666,9 +4666,20 @@
           "date": "2026-07-11",
           "event": "v10.8 — учене",
           "detail": "Научи: mastilko/ Vizitka-импорт е чисто клиентски: VizitkaImport.tsx е 'use client' и fetch(vi… (+1 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-14",
+          "event": "v10.9 — учене",
+          "detail": "Научи: mastilko.service ползва САМО seccomp денилист (SystemCallFilter=~@mount @swap @reboot @… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: „mastilko.service ползва САМО seccomp денилист (SystemCallFilter=~@mount @swap @reboot @…\" (+4 още)"
+        },
         {
           "date": "2026-07-11",
           "type": "learning",
