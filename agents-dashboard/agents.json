@@ -443,9 +443,20 @@
           "date": "2026-07-14",
           "event": "v11.0 — учене",
           "detail": "Научи: При open-data сайт, назоваващ изпълнители, noindex+изключване-от-рисков-анализ на профи… (+1 още)"
+        },
+        {
+          "version": "11.1.0",
+          "date": "2026-07-14",
+          "event": "v11.1 — учене",
+          "detail": "Научи: При civic-transparency сайт с verbatim публичен oggetto от ANAC BDNCP: структурното пол… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: „При civic-transparency сайт с verbatim публичен oggetto от ANAC BDNCP: структурното пол…\" (+1 още)"
+        },
         {
           "date": "2026-07-14",
           "type": "learning",
