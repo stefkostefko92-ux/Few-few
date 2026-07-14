@@ -252,6 +252,10 @@ export function page({ title, active, rel = '', body, description = '', canonica
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="${rel}favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="${rel}favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="${rel}favicon-16.png">
+<link rel="apple-touch-icon" href="${rel}apple-touch-icon.png">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 ${meta}

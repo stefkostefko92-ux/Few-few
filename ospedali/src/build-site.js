@@ -805,6 +805,10 @@ async function main() {
   await copyFile(pjoin(ROOT, 'assets', 'og.png'), join(SITE_DIR, 'og.png')).catch(() => {});
   // Логото (прозрачен PNG, фонът махнат) — марка в хедъра на всяка страница
   await copyFile(pjoin(ROOT, 'assets', 'logo.png'), join(SITE_DIR, 'logo.png')).catch(() => {});
+  // Favicon-и (иконата от логото) — .ico + PNG размери + apple-touch
+  for (const f of ['favicon.ico', 'favicon-32.png', 'favicon-16.png', 'apple-touch-icon.png']) {
+    await copyFile(pjoin(ROOT, 'assets', f), join(SITE_DIR, f)).catch(() => {});
+  }
 
   console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + (coi ? 1 : 0) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
