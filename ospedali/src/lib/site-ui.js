@@ -421,7 +421,9 @@ export function hbars(items, { fmt = (v) => v, maxLabel = '' } = {}) {
       </div>`;
     })
     .join('');
-  return `<div class="hbars" role="img" aria-label="${esc(maxLabel)}">${rows}</div>`;
+  // role="group" (не "img"): групата носи етикет, но редовете етикет→стойност→%
+  // остават четими за екранни четци (данните са текст, не картина).
+  return `<div class="hbars" role="group" aria-label="${esc(maxLabel)}">${rows}</div>`;
 }
 
 function niceTicks(min, max, n) {

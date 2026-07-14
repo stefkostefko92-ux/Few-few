@@ -8,7 +8,7 @@
 // напредък на строежите (той се следи от ReGiS/Italiadomani).
 
 import { page, kpi, hbars } from './lib/site-ui.js';
-import { euroCompact, euroIt, numeroIt } from './lib/format.js';
+import { euroCompact, euroIt, numeroIt, esc } from './lib/format.js';
 
 export function renderPnrrSalute({ pnrr, popolazione, nomeReg, href, jsonld }) {
   const naz = pnrr.nazionale;
@@ -84,7 +84,7 @@ regione: per questo la somma regionale è leggermente inferiore al totale. È un
 di efficienza o ritardo.</div>
 
 <p class="small muted">Per la cornice generale e gli appalti finanziati dal PNRR, vedi
-<a href="pnrr.html">Il PNRR nella sanità</a>. Fonte: <a href="${pnrr.url}" target="_blank" rel="noopener">OpenPNRR
+<a href="pnrr.html">Il PNRR nella sanità</a>. Fonte: <a href="${esc(pnrr.url)}" target="_blank" rel="noopener">OpenPNRR
 (Openpolis)</a> su dati <strong>ReGiS</strong> (Ragioneria Generale dello Stato / MEF), Missione 6 Salute — licenza ODbL 1.0.
 Dato scaricabile in <a href="dati.html">dati aperti</a> (pnrr-salute.json).</p>
 `;

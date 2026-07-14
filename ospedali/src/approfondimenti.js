@@ -902,7 +902,7 @@ fianco a fianco. I numeri sono gli stessi delle schede — solo affiancati.</p>
 <p class="small muted">Valore/costi/risultato: ultimo consuntivo disponibile. «Senza gara»: quota per numero di
 contratti 2023–2025 (solo aziende abbinate ad ANAC). I link portano alle schede complete.</p>
 <script>
-var DATI=${datiJson};
+var DATI=${datiJson.replace(/</g, '\\u003c')};
 (function(){
   var sa=document.getElementById('a'),sb=document.getElementById('b'),tb=document.getElementById('rows'),
       tab=document.getElementById('cmp'),ha=document.getElementById('ha'),hb=document.getElementById('hb');

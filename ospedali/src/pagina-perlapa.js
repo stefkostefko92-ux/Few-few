@@ -3,7 +3,7 @@
 // Рамкиране: „indicatore, non prova“.
 
 import { page, kpi, hbars, lineChart } from './lib/site-ui.js';
-import { euroIt, euroCompact, numeroIt } from './lib/format.js';
+import { euroIt, euroCompact, numeroIt, esc } from './lib/format.js';
 
 /**
  * @param {Object}   p
@@ -74,7 +74,7 @@ professionisti incaricati (persone fisiche): qui <strong>non vengono mai mostrat
 
 <p class="small muted">Il collegamento con le aziende sanitarie avviene <strong>per denominazione</strong> (la fonte non
 riporta un codice fiscale univoco): possibili disallineamenti o omonimie. Fonte:
-<a href="${cons.url}" target="_blank" rel="noopener">Dipartimento della Funzione Pubblica — PerlaPA, Anagrafe delle
+<a href="${esc(cons.url)}" target="_blank" rel="noopener">Dipartimento della Funzione Pubblica — PerlaPA, Anagrafe delle
 Prestazioni</a> (CC BY 4.0). Elaborazione propria; i nomi delle persone fisiche sono esclusi in fase di elaborazione.</p>
 `;
 

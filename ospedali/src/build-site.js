@@ -2523,7 +2523,10 @@ messo a gara; gli operatori persone fisiche non sono nominati. <strong>Indicator
 
 // ---------- РЕГИСТЪР НА ДОГОВОРИТЕ (маниакален детайл) ----------
 function csvCell(v) {
-  const s = String(v ?? '');
+  let s = String(v ?? '');
+  // Неутрализирай CSV formula injection: клетка, започваща с формула-знак, може
+  // да се изпълни при отваряне в Excel/Sheets. Числата (вкл. отрицателни) пазим.
+  if (/^[=+@\t\r]/.test(s) || (s.startsWith('-') && !/^-?\d/.test(s))) s = `'${s}`;
   return /[";\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
 }
 /** Пълен CSV с всеки договор — сваляемият, проверим до последния евро запис. */
