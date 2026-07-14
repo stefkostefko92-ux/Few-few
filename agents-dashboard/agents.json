@@ -1326,9 +1326,20 @@
           "date": "2026-07-14",
           "event": "v12.6 — учене",
           "detail": "Научи: ospedali/ НЯМА CI workflow — .github/workflows/ съдържа android/cspos/eternaltouch/mast… (+1 още)"
+        },
+        {
+          "version": "12.7.0",
+          "date": "2026-07-14",
+          "event": "v12.7 — учене",
+          "detail": "Научи: ospedali/ percentile() (analyze.js:57-62, дублиран forensics.js:56-60) ползва Math.floo… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: „ospedali/ percentile() (analyze.js:57-62, дублиран forensics.js:56-60) ползва Math.floo…\" (+2 още)"
+        },
         {
           "date": "2026-07-14",
           "type": "learning",
