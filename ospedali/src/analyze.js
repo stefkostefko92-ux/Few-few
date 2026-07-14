@@ -11,6 +11,10 @@
 import { loadDataset, tipoEnte, anniConCe } from './lib/dataset.js';
 import { writeJson } from './lib/http.js';
 import { SEGNALAZIONI_FILE } from './lib/paths.js';
+// median/percentile са изнесени в общ модул (DRY) — реекспорт за обратна
+// съвместимост с тестовете, които ги вземат оттук.
+import { median, percentile } from './lib/stats.js';
+export { median, percentile };
 
 // Прагове (обосновани, консервативни — да не се вдига шум).
 export const SOGLIE = {
@@ -46,19 +50,6 @@ export function derivati(y) {
     d.personaleRatio = y.costoPersonale / y.valoreProduzione;
   if (y.debiti != null && y.totaleAttivo > 0) d.debitiSuAttivo = y.debiti / y.totaleAttivo;
   return d;
-}
-
-export function median(arr) {
-  if (arr.length === 0) return null;
-  const s = [...arr].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
-export function percentile(arr, p) {
-  if (arr.length === 0) return null;
-  const s = [...arr].sort((a, b) => a - b);
-  const i = Math.min(s.length - 1, Math.floor((p / 100) * s.length));
-  return s[i];
 }
 
 /**

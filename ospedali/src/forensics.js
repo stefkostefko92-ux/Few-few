@@ -29,6 +29,9 @@ import {
   ricoveriEnte,
   CE_FORENSICS,
 } from './lib/dataset.js';
+// median/percentile/robustZ са изнесени в общ модул (DRY) — реекспортват се в
+// края на файла за обратна съвместимост с тестовете.
+import { median, percentile, robustZ } from './lib/stats.js';
 
 const BDAP_DIR = join(RAW_DIR, 'bdap');
 const FORENSICS_FILE = join(DATA_DIR, 'forensics.json');
@@ -47,21 +50,103 @@ function bucketDimensione(costi) {
   return '>1G';
 }
 
-function median(a) {
-  if (!a.length) return null;
-  const s = [...a].sort((x, y) => x - y);
-  const m = s.length >> 1;
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+// Абсолютен праг на материалност: под този размер не вдигаме шум.
+const SOGLIA_MATERIALITA = 1_000_000;
+const scopeLabel = (s) => (s === 'gruppo' ? 'di aziende simili' : 'nazionale');
+
+/**
+ * Чист флаг-двигател за едно предприятие спрямо неговия бенчмарк (peer или
+ * национален): отклонения по дял (over-P90 И robust z>2 И материален), висок дял
+ * консултации/наемен труд спрямо персонала и силна зависимост от частни доставчици.
+ * Годишните експлозии се смятат отделно (`flagsEsplosione`), защото искат серия.
+ * `pbench` = бенчмаркът за групата на `m`; ctx: { scope, consMedianaPers, consP90Pers }.
+ * Поведението е ТОЧНО както в предишния inline вариант в main().
+ */
+export function flagsBenchmark(m, pbench, ctx = {}) {
+  const { scope = 'nazionale', consMedianaPers = null, consP90Pers = null } = ctx;
+  const flags = [];
+  const sl = scopeLabel(scope);
+  for (const c of CE_FORENSICS) {
+    const cell = m.cat[c.key];
+    if (!cell || cell.valore < SOGLIA_MATERIALITA) continue;
+    const b = pbench[c.key];
+    const zQuota = robustZ(cell.quotaCosti, b.quotaMediana, b.quotaMad);
+    const overP90 = b.quotaP90 != null && cell.quotaCosti > b.quotaP90;
+    if (overP90 && zQuota != null && zQuota > 2) {
+      flags.push({
+        categoria: c.key,
+        tipo: 'outlier_quota',
+        label: c.label,
+        valore: Math.round(cell.valore),
+        testo:
+          `${c.label}: ${fmtEur(cell.valore)} = ${pct(cell.quotaCosti)} dei costi, contro una mediana ${sl} del ` +
+          `${pct(b.quotaMediana)} (oltre il 90° percentile del gruppo di confronto).`,
+        z: round1(zQuota),
+      });
+    }
+  }
+  // висок дял консултации/наемен труд спрямо персонала
+  const ci = m.cat.consulenzeInterinale;
+  const consP90 = pbench._consPersP90 ?? consP90Pers;
+  const consMed = pbench._consPersMediana ?? consMedianaPers;
+  if (ci && ci.quotaPersonale != null && ci.valore >= SOGLIA_MATERIALITA && ci.quotaPersonale > Math.max(0.2, consP90)) {
+    flags.push({
+      categoria: 'consulenzeInterinale',
+      tipo: 'consulenze_su_personale',
+      label: 'Consulenze e lavoro interinale sproporzionati',
+      valore: Math.round(ci.valore),
+      testo:
+        `Consulenze, collaborazioni e interinale pari al ${pct(ci.quotaPersonale)} del costo del personale ` +
+        `(${fmtEur(ci.valore)}); mediana ${sl} ${pct(consMed)}. Possibile aggiramento delle assunzioni.`,
+      z: null,
+    });
+  }
+  // висока зависимост от частни доставчици
+  const pv = m.cat.prestazioniDaPrivato;
+  if (pv && pv.valore >= SOGLIA_MATERIALITA) {
+    const b = pbench.prestazioniDaPrivato;
+    if (b.quotaP90 != null && pv.quotaCosti > b.quotaP90) {
+      flags.push({
+        categoria: 'prestazioniDaPrivato',
+        tipo: 'dipendenza_privato',
+        label: 'Forte dipendenza da erogatori privati',
+        valore: Math.round(pv.valore),
+        testo:
+          `Acquisto di prestazioni sanitarie da privati per ${fmtEur(pv.valore)} = ${pct(pv.quotaCosti)} dei costi ` +
+          `(oltre il 90° percentile nazionale).`,
+        z: null,
+      });
+    }
+  }
+  return flags;
 }
-function percentile(a, p) {
-  if (!a.length) return null;
-  const s = [...a].sort((x, y) => x - y);
-  return s[Math.min(s.length - 1, Math.floor((p / 100) * s.length))];
-}
-/** Robust z-score чрез медиана и MAD (устойчив на екстремни стойности). */
-function robustZ(v, med, mad) {
-  if (v == null || med == null || !mad) return null;
-  return (v - med) / (1.4826 * mad);
+
+/**
+ * Годишни експлозии на разход за едно предприятие: за всяка категория — скок
+ * >60% спрямо предходната година И над +2 mln € абсолютно. `rec` носи .cat/.anno;
+ * `prev` е серийният ред за предходната година; `annoPrec` е самата предходна
+ * година (само за текста). Поведението е ТОЧНО както в предишния inline вариант.
+ */
+export function flagsEsplosione(rec, prev, annoPrec) {
+  const flags = [];
+  for (const c of CE_FORENSICS) {
+    const now = rec.cat[c.key]?.valore;
+    const before = prev[c.key];
+    if (now == null || before == null || before <= 0) continue;
+    const g = (now - before) / before;
+    if (g > 0.6 && now - before > 2_000_000) {
+      flags.push({
+        categoria: c.key,
+        tipo: 'esplosione_annua',
+        label: `Esplosione di spesa: ${c.label}`,
+        valore: Math.round(now),
+        testo:
+          `${c.label} +${pct(g)} in un anno: da ${fmtEur(before)} (${annoPrec}) a ${fmtEur(now)} (${rec.anno}).`,
+        z: null,
+      });
+    }
+  }
+  return flags;
 }
 
 /** Част 1: разбор на системния дефицит директно от суровите CE файлове. */
@@ -187,66 +272,11 @@ async function main() {
   const consMedianaPers = bench._consPersMediana;
   const consP90Pers = bench._consPersP90;
 
-  // ---- Флагове за всяко предприятие ----
-  const SOGLIA_MATERIALITA = 1_000_000; // под този абсолют не вдигаме шум
+  // ---- Флагове за всяко предприятие (чистата логика е в `flagsBenchmark`) ----
   const perEnte = [];
-  const scopeLabel = (s) => (s === 'gruppo' ? 'di aziende simili' : 'nazionale');
   for (const m of metriche) {
-    const flags = [];
     const { b: pbench, scope } = benchFor(m); // peer или национален
-    const sl = scopeLabel(scope);
-    for (const c of CE_FORENSICS) {
-      const cell = m.cat[c.key];
-      if (!cell || cell.valore < SOGLIA_MATERIALITA) continue;
-      const b = pbench[c.key];
-      const zQuota = robustZ(cell.quotaCosti, b.quotaMediana, b.quotaMad);
-      const overP90 = b.quotaP90 != null && cell.quotaCosti > b.quotaP90;
-      if (overP90 && zQuota != null && zQuota > 2) {
-        flags.push({
-          categoria: c.key,
-          tipo: 'outlier_quota',
-          label: c.label,
-          valore: Math.round(cell.valore),
-          testo:
-            `${c.label}: ${fmtEur(cell.valore)} = ${pct(cell.quotaCosti)} dei costi, contro una mediana ${sl} del ` +
-            `${pct(b.quotaMediana)} (oltre il 90° percentile del gruppo di confronto).`,
-          z: round1(zQuota),
-        });
-      }
-    }
-    // висок дял консултации/наемен труд спрямо персонала
-    const ci = m.cat.consulenzeInterinale;
-    const consP90 = pbench._consPersP90 ?? consP90Pers;
-    const consMed = pbench._consPersMediana ?? consMedianaPers;
-    if (ci && ci.quotaPersonale != null && ci.valore >= SOGLIA_MATERIALITA && ci.quotaPersonale > Math.max(0.2, consP90)) {
-      flags.push({
-        categoria: 'consulenzeInterinale',
-        tipo: 'consulenze_su_personale',
-        label: 'Consulenze e lavoro interinale sproporzionati',
-        valore: Math.round(ci.valore),
-        testo:
-          `Consulenze, collaborazioni e interinale pari al ${pct(ci.quotaPersonale)} del costo del personale ` +
-          `(${fmtEur(ci.valore)}); mediana ${sl} ${pct(consMed)}. Possibile aggiramento delle assunzioni.`,
-        z: null,
-      });
-    }
-    // висока зависимост от частни доставчици
-    const pv = m.cat.prestazioniDaPrivato;
-    if (pv && pv.valore >= SOGLIA_MATERIALITA) {
-      const b = pbench.prestazioniDaPrivato;
-      if (b.quotaP90 != null && pv.quotaCosti > b.quotaP90) {
-        flags.push({
-          categoria: 'prestazioniDaPrivato',
-          tipo: 'dipendenza_privato',
-          label: 'Forte dipendenza da erogatori privati',
-          valore: Math.round(pv.valore),
-          testo:
-            `Acquisto di prestazioni sanitarie da privati per ${fmtEur(pv.valore)} = ${pct(pv.quotaCosti)} dei costi ` +
-            `(oltre il 90° percentile nazionale).`,
-          z: null,
-        });
-      }
-    }
+    const flags = flagsBenchmark(m, pbench, { scope, consMedianaPers, consP90Pers });
     // годишните експлозии се добавят в отделна обиколка по-долу (нужна е серията)
     perEnte.push({ ...m, flags });
   }
@@ -259,23 +289,7 @@ async function main() {
     const i = anni.indexOf(rec.anno);
     if (i < 1) continue;
     const prev = ente.serie.get(anni[i - 1]);
-    for (const c of CE_FORENSICS) {
-      const now = rec.cat[c.key]?.valore;
-      const before = prev[c.key];
-      if (now == null || before == null || before <= 0) continue;
-      const g = (now - before) / before;
-      if (g > 0.6 && now - before > 2_000_000) {
-        rec.flags.push({
-          categoria: c.key,
-          tipo: 'esplosione_annua',
-          label: `Esplosione di spesa: ${c.label}`,
-          valore: Math.round(now),
-          testo:
-            `${c.label} +${pct(g)} in un anno: da ${fmtEur(before)} (${anni[i - 1]}) a ${fmtEur(now)} (${rec.anno}).`,
-          z: null,
-        });
-      }
-    }
+    rec.flags.push(...flagsEsplosione(rec, prev, anni[i - 1]));
   }
 
   // ---- Класации (league tables) ----
