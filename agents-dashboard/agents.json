@@ -1274,9 +1274,20 @@
           "date": "2026-07-14",
           "event": "v12.1 — учене",
           "detail": "Научи: ospedali/ clusterFrazionamento (segnali-gare.js:52-67) дедупва по начален индекс i в `u…"
+        },
+        {
+          "version": "12.2.0",
+          "date": "2026-07-14",
+          "event": "v12.2 — учене",
+          "detail": "Научи: ospedali/ анонимизира доставчици по isAzienda=/^[0-9]{11}$/ (наличие на P.IVA), НО ditt… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: „ospedali/ анонимизира доставчици по isAzienda=/^[0-9]{11}$/ (наличие на P.IVA), НО ditt…\" (+2 още)"
+        },
         {
           "date": "2026-07-14",
           "type": "learning",
