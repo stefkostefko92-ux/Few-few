@@ -52,7 +52,14 @@ src/cordate.js           aggiudicatari+partecipanti (поточно) → дво�
                          винаги печели, другата никога) → data/cordate.json. Изключва ATI (ruolo), брои
                          ВСИЧКИ победители per лот (иначе многолотовите дават фалшив картел); само P.IVA юр. лица
 src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudicatari → site/
-src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui, match (болница↔ANAC), paths
+                         (main() + home/strutture/struttura/segnalazioni/metodologia; старите
+                         тежки render-и са изнесени в src/render/*.js — appalti, fornitori,
+                         regioni, inchiesta, legal)
+src/render/              изнесени render модули (виж по-горе); всеки връща HTML стринг
+src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидация), csv, dataset,
+                         format, site-ui, site-shared (споделени helpers/константи +
+                         setDataSnapshot), stats (median/percentile/robustZ — единствен
+                         източник), enti-ssn (HEALTH/NOT_HEALTH), match (болница↔ANAC), paths
 ```
 
 - `dataset.js` е единственият парсер — **не дублирай** зареждането в новите скриптове.
@@ -120,10 +127,12 @@ privacy, rettifiche). **Не питай собственика повторно 
 
 ## Капани
 
-- **HEALTH/NOT_HEALTH regex (SSN възложители) е копиран в 3 файла** —
-  `fetch-appalti.js` (източник), `storico.js`, `fetch-perlapa.js`. Промяна на един →
-  промени и трите. NOT_HEALTH вече изключва ИНПС/ИНАИЛ/previdenza (иначе „ISTITUTO
-  NAZIONALE“ ги улавя като здравни). НЕ изключвай INMP (мигрантско здраве — легитимно).
+- **HEALTH/NOT_HEALTH regex (SSN възложители) вече е DRY** — единствен източник
+  `src/lib/enti-ssn.js` (+ helper `eEnteSanitario(nome)`), импортиран във
+  `fetch-appalti.js`, `storico.js`, `fetch-perlapa.js`. Промяна се прави само там.
+  NOT_HEALTH изключва ИНПС/ИНАИЛ/previdenza (иначе „ISTITUTO NAZIONALE“ ги улавя като
+  здравни). НЕ изключвай INMP (мигрантско здраве — легитимно). Промяна на регекса
+  мести замразените данни → пусни ETL наново и провери числата.
 
 - `package_search` на BDAP CKAN връща 0 — каталогът се сканира целият и се
   кешира; **не трий** `data/raw/bdap-pkgs/` без нужда (30 мин повторно теглене).
