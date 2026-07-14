@@ -1,3 +1,4 @@
+// @ts-check
 // HTML за админ панела (login + табло). Self-contained, inline CSS/JS.
 // Данните се дърпат от /admin/api/* с fetch.
 
@@ -52,6 +53,11 @@ svg .bar{fill:var(--brand)}
 .saved{color:var(--pos);font-size:13px}
 `;
 
+/**
+ * @param {string} title
+ * @param {string} body
+ * @returns {string}
+ */
 const shell = (title, body) =>
   `<!doctype html><html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,6 +66,7 @@ const shell = (title, body) =>
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <style>${CSS}</style></head><body>${body}</body></html>`;
 
+/** @returns {string} */
 export function loginPage() {
   return shell(
     'Accesso amministratore',
@@ -82,6 +89,7 @@ export function loginPage() {
   );
 }
 
+/** @returns {string} */
 export function dashboardPage() {
   return shell(
     'Amministrazione',

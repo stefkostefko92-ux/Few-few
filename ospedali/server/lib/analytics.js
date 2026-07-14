@@ -1,3 +1,4 @@
+// @ts-check
 // Анонимен агрегатен брояч на посещения (GDPR-safe).
 //
 // НЕ съхранява IP адреси, НЕ поставя бисквитки. „Уникални посетители" се броят
@@ -10,17 +11,45 @@ import { createHmac, randomBytes } from 'node:crypto';
 import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-/** Дата „YYYY-MM-DD" (Europe/Rome не е критично за агрегати — ползваме UTC-ден). */
+/**
+ * @typedef {Object} GiornoStat
+ * @property {number} views
+ * @property {number} visitors
+ */
+/**
+ * @typedef {Object} StatoAnalytics
+ * @property {string} since
+ * @property {number} totalViews
+ * @property {Record<string, GiornoStat>} byDay
+ * @property {Record<string, number>} byPath
+ */
+
+/**
+ * Дата „YYYY-MM-DD" (Europe/Rome не е критично за агрегати — ползваме UTC-ден).
+ * @param {Date} [date]
+ * @returns {string}
+ */
 export function giornoDi(date = new Date()) {
   return date.toISOString().slice(0, 10);
 }
 
-/** Еднопосочен хеш на посетителя за деня (солта е дневна и не се пази на диск). */
+/**
+ * Еднопосочен хеш на посетителя за деня (солта е дневна и не се пази на диск).
+ * @param {import('node:crypto').BinaryLike} salt
+ * @param {string|undefined|null} ip
+ * @param {string|undefined|null} userAgent
+ * @returns {string}
+ */
 export function hashVisitatore(salt, ip, userAgent) {
   return createHmac('sha256', salt).update(`${ip || ''}|${userAgent || ''}`).digest('base64');
 }
 
-/** Чиста агрегация: вписва едно посещение в състоянието (за unit тест). */
+/**
+ * Чиста агрегация: вписва едно посещение в състоянието (за unit тест).
+ * @param {StatoAnalytics} stato
+ * @param {{ path: string, giorno: string, nuovoVisitatore: boolean }} vista
+ * @returns {StatoAnalytics}
+ */
 export function applicaVista(stato, { path, giorno, nuovoVisitatore }) {
   stato.totalViews = (stato.totalViews || 0) + 1;
   stato.byDay ||= {};
@@ -32,19 +61,24 @@ export function applicaVista(stato, { path, giorno, nuovoVisitatore }) {
   return stato;
 }
 
+/** @returns {StatoAnalytics} */
 const statoVuoto = () => ({ since: giornoDi(), totalViews: 0, byDay: {}, byPath: {} });
 
 export class Contatore {
+  /** @param {string} file */
   constructor(file) {
     this.file = file;
     this.stato = statoVuoto();
+    /** @type {Set<string>} */
     this._giornoSet = new Set(); // хешове на посетители за текущия ден (само памет)
     this._giorno = giornoDi();
     this._salt = randomBytes(32); // дневна ротираща сол (само памет)
     this._dirty = false;
+    /** @type {ReturnType<typeof setTimeout>|null} */
     this._timer = null;
   }
 
+  /** @returns {Promise<this>} */
   async carica() {
     try {
       this.stato = { ...statoVuoto(), ...JSON.parse(await readFile(this.file, 'utf8')) };
@@ -63,7 +97,13 @@ export class Contatore {
     }
   }
 
-  /** Вписва посещение на HTML страница. ip/ua се ползват само за дневния хеш. */
+  /**
+   * Вписва посещение на HTML страница. ip/ua се ползват само за дневния хеш.
+   * @param {string} path
+   * @param {string|undefined|null} ip
+   * @param {string|undefined|null} userAgent
+   * @returns {void}
+   */
   registra(path, ip, userAgent) {
     this._rotaGiorno();
     const h = hashVisitatore(this._salt, ip, userAgent);
@@ -73,6 +113,7 @@ export class Contatore {
     this._pianificaSalva();
   }
 
+  /** @returns {void} */
   _pianificaSalva() {
     this._dirty = true;
     if (this._timer) return;
@@ -83,6 +124,7 @@ export class Contatore {
     if (this._timer.unref) this._timer.unref();
   }
 
+  /** @returns {Promise<void>} */
   async salva() {
     this._dirty = false;
     await mkdir(dirname(this.file), { recursive: true }).catch(() => {});
@@ -93,7 +135,11 @@ export class Contatore {
     await rename(tmp, this.file);
   }
 
-  /** Резюме за админ таблото. */
+  /**
+   * Резюме за админ таблото.
+   * @returns {{ since: string, totalViews: number, oggi: GiornoStat, viste7: number,
+   *   serie: Array<GiornoStat & { giorno: string }>, topPagine: Array<{ path: string, views: number }> }}
+   */
   riepilogo() {
     const oggi = giornoDi();
     const giorni = Object.keys(this.stato.byDay).sort();

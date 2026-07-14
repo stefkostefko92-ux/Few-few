@@ -1,3 +1,4 @@
+// @ts-check
 // Ospedali Trasparenti — админ сервиз (нула зависимости, node:http).
 // Обслужва статичния сайт от ../site, брои анонимно посещенията, дава админ
 // панел (парола) с реален брояч и превключватели за скриване на страници.
@@ -6,14 +7,20 @@
 // Тайни:       OSPEDALI_ADMIN_PASSWORD, OSPEDALI_SESSION_SECRET (env / server/.env)
 
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, access } from 'node:fs/promises';
+import { constants as FS } from 'node:fs';
 import { join, normalize, extname, sep } from 'node:path';
 import { initConfig } from './lib/config.js';
 import { Contatore } from './lib/analytics.js';
 import { signSession, verifySession, parseCookies, cookieSet, verifyPassword } from './lib/auth.js';
 import { loadVisibility, saveVisibility, isHidden, iniettaHideCss, nomePagina, scanPages, PROTETTE } from './lib/visibility.js';
 import { loginPage, dashboardPage } from './lib/admin-ui.js';
+import { appendAudit } from './lib/audit.js';
 
+/** @typedef {import('node:http').IncomingMessage} IncomingMessage */
+/** @typedef {import('node:http').ServerResponse} ServerResponse */
+
+/** @type {Record<string, string>} */
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
@@ -24,36 +31,69 @@ const MIME = {
 };
 
 // ── Чисти помощници (без състояние) ───────────────────────────────────────────
+/**
+ * @param {ServerResponse} res
+ * @param {number} status
+ * @param {string|Buffer} body
+ * @param {Record<string, string|number>} [headers]
+ * @returns {void}
+ */
 function send(res, status, body, headers = {}) {
   res.writeHead(status, { 'x-content-type-options': 'nosniff', ...headers });
   res.end(body);
 }
+/**
+ * @param {ServerResponse} res
+ * @param {number} status
+ * @param {unknown} obj
+ * @param {Record<string, string|number>} [headers]
+ * @returns {void}
+ */
 function json(res, status, obj, headers = {}) {
   send(res, status, JSON.stringify(obj), { 'content-type': 'application/json; charset=utf-8', ...headers });
 }
+/**
+ * Чете тялото на заявка до `limit` байта (иначе хвърля).
+ * @param {IncomingMessage} req
+ * @param {number} [limit]
+ * @returns {Promise<string>}
+ */
 async function readBody(req, limit = 1e5) {
   const chunks = [];
   let size = 0;
   for await (const c of req) { size += c.length; if (size > limit) throw new Error('too large'); chunks.push(c); }
   return Buffer.concat(chunks).toString('utf8');
 }
+/**
+ * IP на клиента (за дневния анонимен хеш; НЕ се записва суров).
+ * @param {IncomingMessage} req
+ * @returns {string}
+ */
 const clientIp = (req) =>
-  (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '';
+  (String(req.headers['x-forwarded-for'] || '')).split(',')[0].trim() || req.socket.remoteAddress || '';
 
 // ── Фабрика: сглобява сервиза около изолирано състояние (за serve + тестове) ───
 // Връща { server, cfg, contatore } — БЕЗ да слуша порт (викащият прави .listen).
+/**
+ * @param {Partial<import('./lib/config.js').Config>} [overrides]
+ * @returns {Promise<{ server: import('node:http').Server, cfg: import('./lib/config.js').Config, contatore: Contatore }>}
+ */
 export async function creaApp(overrides = {}) {
+  /** @type {import('./lib/config.js').Config} */
   const cfg = { ...(await initConfig()), ...overrides };
   const contatore = await new Contatore(cfg.analyticsFile).carica();
   let visibility = await loadVisibility(cfg.visibilityFile);
 
   // Прост throttle срещу brute force на входа (по IP, в паметта).
+  /** @type {Map<string, { n: number, bloccoFino: number }>} */
   const tentativi = new Map();
+  /** @param {string} ip @returns {boolean} */
   function throttled(ip) {
     const t = tentativi.get(ip);
     if (t && t.bloccoFino > Date.now()) return true;
     return false;
   }
+  /** @param {string} ip @param {boolean} ok @returns {void} */
   function segnaTentativo(ip, ok) {
     if (ok) { tentativi.delete(ip); return; }
     const t = tentativi.get(ip) || { n: 0, bloccoFino: 0 };
@@ -62,28 +102,43 @@ export async function creaApp(overrides = {}) {
     tentativi.set(ip, t);
   }
 
+  /** @param {IncomingMessage} req @returns {boolean} */
   function authed(req) {
     const c = parseCookies(req.headers.cookie);
     return !!verifySession(cfg.sessionSecret, c.ost_admin);
   }
 
+  // Кратък best-effort запис в одита (никога не блокира заявката, без суров IP).
+  /** @param {string} azione @param {'ok'|'fail'} esito @param {Record<string, string|number|boolean>} [dettagli] @returns {void} */
+  function audit(azione, esito, dettagli) {
+    void appendAudit(cfg.auditFile, { azione, esito, dettagli });
+  }
+
   // ── Админ маршрути ──────────────────────────────────────────────────────────
+  /**
+   * @param {IncomingMessage} req
+   * @param {ServerResponse} res
+   * @param {URL} url
+   * @returns {Promise<void>}
+   */
   async function handleAdmin(req, res, url) {
     // throttle по РЕАЛНИЯ TCP-peer (не по подправимия X-Forwarded-For) — defense-in-depth
     const ip = req.socket.remoteAddress || clientIp(req);
 
     if (req.method === 'POST' && url.pathname === '/admin/api/login') {
-      if (throttled(ip)) return json(res, 429, { error: 'too_many' });
+      if (throttled(ip)) { audit('login', 'fail', { motivo: 'throttled' }); return json(res, 429, { error: 'too_many' }); }
       let pw = '';
       try { pw = (JSON.parse(await readBody(req)).password || ''); } catch { /* */ }
       const ok = verifyPassword(pw, cfg.admin);
       segnaTentativo(ip, ok);
+      audit('login', ok ? 'ok' : 'fail');
       if (!ok) return json(res, 401, { error: 'bad_credentials' });
       const token = signSession(cfg.sessionSecret);
       return json(res, 200, { ok: true }, { 'set-cookie': cookieSet('ost_admin', token, { maxAge: 8 * 3600, secure: cfg.secureCookies }) });
     }
 
     if (req.method === 'POST' && url.pathname === '/admin/api/logout') {
+      audit('logout', 'ok');
       return json(res, 200, { ok: true }, { 'set-cookie': cookieSet('ost_admin', '', { maxAge: 0, secure: cfg.secureCookies }) });
     }
 
@@ -109,12 +164,20 @@ export async function creaApp(overrides = {}) {
       hidden = [...new Set(hidden)].filter((h) => /^[\w.-]+\.html$/.test(h) && !PROTETTE.has(h));
       visibility = { hidden };
       await saveVisibility(cfg.visibilityFile, visibility);
+      // Одит: смяна на видимост — само БРОЯТ скрити страници (без имена → без съдържателни данни).
+      audit('visibility', 'ok', { nascoste: hidden.length });
       return json(res, 200, { ok: true, hidden });
     }
     return json(res, 404, { error: 'not_found' });
   }
 
   // ── Статичен сайт + броене ────────────────────────────────────────────────
+  /**
+   * @param {IncomingMessage} req
+   * @param {ServerResponse} res
+   * @param {URL} url
+   * @returns {Promise<void>}
+   */
   async function serveStatic(req, res, url) {
     // Защита срещу path traversal
     let rel;
@@ -149,6 +212,7 @@ export async function creaApp(overrides = {}) {
     return send(res, 200, buf, { 'content-type': type, 'cache-control': 'public, max-age=3600' });
   }
 
+  /** @param {ServerResponse} res @returns {Promise<void>} */
   async function serveNotFound(res) {
     // ползва 404.html ако е налична, иначе просто текст
     try {
@@ -159,16 +223,32 @@ export async function creaApp(overrides = {}) {
     }
   }
 
+  // По-дълбока проверка на здравето: state директорията записваема + брояча зареден.
+  // Happy path остава 200 {ok:true,…}; при проблем → 503 {ok:false,reason}.
+  /** @param {ServerResponse} res @returns {Promise<void>} */
+  async function serveHealth(res) {
+    try {
+      await access(cfg.stateDir, FS.W_OK); // записваемо ли е състоянието?
+    } catch {
+      return json(res, 503, { ok: false, reason: 'state_not_writable' });
+    }
+    // Брояча трябва да е зареден (обект със състояние) — иначе нещо е сбъркано.
+    if (!contatore || !contatore.stato || typeof contatore.stato.totalViews !== 'number') {
+      return json(res, 503, { ok: false, reason: 'counter_not_loaded' });
+    }
+    return json(res, 200, { ok: true, since: contatore.stato.since });
+  }
+
   const server = createServer(async (req, res) => {
     try {
-      const url = new URL(req.url, 'http://localhost');
-      if (url.pathname === '/healthz') return json(res, 200, { ok: true });
+      const url = new URL(req.url || '/', 'http://localhost');
+      if (url.pathname === '/healthz') return await serveHealth(res);
       if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) return await handleAdmin(req, res, url);
       if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method Not Allowed');
       return await serveStatic(req, res, url);
     } catch (err) {
       send(res, 500, 'Errore interno.');
-      console.error('errore:', err.message);
+      console.error('errore:', err instanceof Error ? err.message : err);
     }
   });
 
@@ -193,6 +273,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // Graceful shutdown: запиши състоянието, затвори сервиза, кратък таймаут.
   let arresto = false;
+  /** @param {string} segnale @returns {Promise<void>} */
   async function spegni(segnale) {
     if (arresto) return;
     arresto = true;

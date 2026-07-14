@@ -67,10 +67,11 @@ function req(method, path, { body, headers } = {}) {
   });
 }
 
-test('/healthz → 200 {ok:true}', async () => {
+test('/healthz → 200 {ok:true, …} (happy path, обратно съвместимо)', async () => {
   const res = await req('GET', '/healthz');
   assert.equal(res.status, 200);
-  assert.deepEqual(JSON.parse(res.body), { ok: true });
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true); // обратна съвместимост: ok:true при здраво състояние
 });
 
 test('несъществуващ път → 404', async () => {
