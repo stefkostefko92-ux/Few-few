@@ -2088,7 +2088,10 @@ economici</strong>, identificati dalla partita IVA. Le denominazioni associate a
 (16 caratteri)</strong> sono sostituite da un’etichetta generica e non compaiono. Alcune <strong>ditte individuali e
 società di persone</strong> possono tuttavia contenere nomi di persone fisiche nella ragione sociale registrata nelle
 fonti pubbliche: per questi soggetti il sito non applica indicatori di rischio, esclude le relative pagine dai motori
-di ricerca (noindex) e non li include nell’analisi delle relazioni ricorrenti. Il trattamento avviene per finalità di
+di ricerca (noindex) e non li include nell’analisi delle relazioni ricorrenti. Inoltre, i <strong>nomi di persone
+fisiche</strong> eventualmente presenti nel <strong>testo libero degli oggetti di gara</strong> (le descrizioni
+ufficiali riprese verbatim dalla banca dati ANAC) vengono rimossi in fase di elaborazione e sostituiti da
+un’etichetta generica, così da non essere mai mostrati né indicizzati. Il trattamento avviene per finalità di
 <strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs. 196/2003
 come modificato dal D.Lgs. 101/2018). I dati rielaborati vengono aggiornati a ogni rigenerazione del sito; le fonti
 primarie restano pubbliche presso i rispettivi titolari (ANAC, BDAP/MEF, Ministero della Salute).</p>
