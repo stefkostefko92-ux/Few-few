@@ -143,7 +143,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-12",
+    "updated": "2026-07-14",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -10305,6 +10305,74 @@ const FALLBACK = {
           "date": "2026-07-01",
           "type": "learning",
           "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“."
+        }
+      ]
+    },
+    {
+      "id": "ai-djiyata",
+      "name": "AI-джията",
+      "title": "Интеграция на LLM/AI в продукти",
+      "emoji": "🤖",
+      "accent": "#7c5cff",
+      "tagline": "Свързва продуктите с Gemini/OpenAI/Claude — надеждно, евтино, сигурно, законно.",
+      "file": ".claude/agents/ai-djiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Интегрира LLM/AI доставчици (Google Gemini, OpenAI, Anthropic Claude) в продуктите надеждно, евтино, сигурно и законно: избор и жизнен цикъл на модел (депрекации, „-latest“ алиаси), generation config (thinking/reasoning бюджети, maxOutputTokens), автентикация (формат на ключ, хедъри), rate limits и квоти (безплатен vs платен tier, ЕИП), streaming, структуриран изход/function calling, prompt инженерство, устойчивост и цена. Ключът само на сървъра; входът на потребителя се разкрива (GDPR).",
+      "capabilities": [
+        "Жизнен цикъл на модел (депрекации, фиксирана версия vs „-latest“ алиас, 404 непознат модел)",
+        "Generation config: thinking/reasoning бюджети (thinkingBudget:0), maxOutputTokens, temperature",
+        "Автентикация: формат на ключ (AIza… vs OAuth), x-goog-api-key / Authorization Bearer",
+        "Rate limits & квоти: безплатен vs платен tier, 429 RESOURCE_EXHAUSTED, backoff, регионални/ЕИП ограничения",
+        "Устойчив сървърен proxy route: таймаут, обработка по код (401/404/429/5xx), Zod валидация, изящна деградация",
+        "Формати: streaming (SSE), структуриран изход/JSON, function/tool calling, мултимодал, embeddings",
+        "Prompt инженерство: роли, few-shot, локализация (BG изход), защита от prompt injection",
+        "Сигурност & GDPR: ключ само на сървъра (mode 600), разкриване на трансфера, „не въвеждай лични данни“",
+        "Цена: токен-осъзнатост, избор на по-евтин модел (flash/mini/haiku) за прости задачи"
+      ],
+      "knowledge": {
+        "sources": 0,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
+          "OpenAI / Anthropic API конвенции (Bearer auth, streaming, tool calling)",
+          "Роден от реалната Gemini интеграция на mastilko (src/app/api/ai/route.ts) + живо отстраняване на грешки"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-14",
+          "event": "Раждане",
+          "detail": "Създаден заради липсващо покритие на LLM/AI интеграцията (mastilko ползва Gemini Flash, без агент-собственик). Домейн: избор на модел, generation config, авт., квоти, сигурност/GDPR."
+        },
+        {
+          "version": "0.7.0",
+          "date": "2026-07-14",
+          "event": "Обучен",
+          "detail": "Засят с 6 проверени поуки от Gemini интеграцията на mastilko: депрекация на фиксиран модел (404→-latest алиас), thinking бюджет реже отговора, free-tier/ЕИП квота, формат на ключ, runtime env, устойчив proxy route."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "birth",
+          "summary": "Роден: покрива LLM/AI интеграцията (Gemini/OpenAI/Claude) — модели, config, авт., квоти, сигурност."
+        },
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: gemini-2.5-flash спира за нови проекти (404) → ползвай gemini-flash-latest алиас; thinkingBudget:0 за пълен отговор. (+4 още)"
         }
       ]
     }
