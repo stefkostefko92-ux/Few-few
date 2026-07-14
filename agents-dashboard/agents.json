@@ -4818,6 +4818,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-14",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „ospedali деплой е systemd модел БЕЗ npm ci/build — нула зависимости, обслужва предбилдн…\" (+2)"
+        },
+        {
           "date": "2026-07-09",
           "type": "learning",
           "summary": "Научи: „Под set -euo pipefail редът VAR=\"$(grep '^KEY=' file | cut -d= -f2)\" убива скрипта ТИХО…\" · 2 в карантина"
