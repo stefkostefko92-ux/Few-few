@@ -803,6 +803,8 @@ async function main() {
   }
   // OG картата (мета изображение за споделяния) — статичен асет
   await copyFile(pjoin(ROOT, 'assets', 'og.png'), join(SITE_DIR, 'og.png')).catch(() => {});
+  // Логото (прозрачен PNG, фонът махнат) — марка в хедъра на всяка страница
+  await copyFile(pjoin(ROOT, 'assets', 'logo.png'), join(SITE_DIR, 'logo.png')).catch(() => {});
 
   console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + (coi ? 1 : 0) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
@@ -870,7 +872,7 @@ sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segn
             '@id': `${su}/#org`,
             name: 'Ospedali Trasparenti',
             url: `${su}/`,
-            logo: `${su}/og.png`,
+            logo: `${su}/logo.png`,
             description: 'Progetto di trasparenza civica sui conti e gli appalti degli ospedali pubblici italiani.',
             parentOrganization: { '@type': 'Organization', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' },
             sameAs: ['https://carbonstealth.eu'],
