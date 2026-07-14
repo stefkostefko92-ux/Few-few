@@ -3410,9 +3410,20 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-14",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Ospedali Trasparenti (ospedali/site/*.html) — целият публичен UI е на италиански, самос… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: „Ospedali Trasparenti (ospedali/site/*.html) — целият публичен UI е на италиански, самос…\" (+2 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
