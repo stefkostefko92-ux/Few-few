@@ -20,6 +20,7 @@ import { readFile, rm } from 'node:fs/promises';
 import { parseCsv, parseItalianNumber } from './lib/csv.js';
 import { curlDownloadToFile, writeJson } from './lib/http.js';
 import { RAW_DIR, DATA_DIR } from './lib/paths.js';
+import { HEALTH, NOT_HEALTH } from './lib/enti-ssn.js';
 
 const CONS_FILE = join(DATA_DIR, 'consulenze.json');
 const ANNI = [2022, 2023, 2024];
@@ -27,12 +28,8 @@ const URL_BASE =
   'https://adp-api.perlapa.gov.it/api/public/incarichi/Consulenti/Export';
 
 // ── Филтър „здравни структури“ (SSN) ────────────────────────────────────────
-// ВАЖНО: двата regex-а са КОПИРАНИ ДОСЛОВНО от src/fetch-appalti.js — държим ги
-// в синхрон. При промяна тук → промени и там (и обратно).
-const HEALTH =
-  /AZIENDA (OSPEDALIER|SANITARIA|SOCIO|UNITA|USL|ULSS|PROVINCIALE PER I SERVIZI SANITARI|REGIONALE DELLA SALUTE|LIGURE SANITARIA)|OSPEDALIER|OSPEDALI RIUN|A\.?O\.?U|\bA\.?S\.?L\b|\bA\.?S\.?S\.?T\b|\bA\.?U\.?L\.?S\.?S\b|\bASUR\b|\bASUGI\b|\bASUFC\b|\bAPSS\b|IRCCS|POLICLINICO|ISTITUTO (ONCOLOGICO|NAZIONALE|ORTOPEDICO|TUMORI|NEUROLOGICO)|FONDAZIONE\s+(IRCCS|POLICLINICO|OSPEDAL|ISTITUTO)|ESTAR|ESTAV|SORESA|AZIENDA ZERO|EGAS|ARNAS|ENTE OSPEDALIERO|AGENZIA (DI )?TUTELA DELLA SALUTE|AGENZIA REGIONALE STRATEGICA PER LA SALUTE|A\.?RE\.?S\.?S|\bUNITA'? SANITARIA LOCALE\b|SANITAETSBETRIEB|EMERGENZA SANITARIA|\bAREU\b|\bA\.?LI\.?SA\b|AZIENDA REGIONALE PER LA SALUTE/;
-// Изрично изключване на нездравни субекти, случайно уловени от общи думи.
-const NOT_HEALTH = /ACQUE|SPORT E SALUTE|ISTITUTO SUPERIORE DI SANIT|\bMINISTERO\b|CARABINIER|\bCOMUNE\b|\bUNIONE\b|BONIFICA|AZIENDA CASA|\bA\.?C\.?E\.?R\b|\bSTART\b|INFORMATICA|VIGILI DEL FUOCO|SOCIETA DELLE FONTI|INPS|INAIL|PREVIDENZA|ASSICURAZIONE CONTRO GLI INFORTUNI|ISTITUTO NAZIONALE PER LA GRAFICA|I\.N\.P\.G\.I|FISICA NUCLEARE|ASTROFISICA|GEOFISICA|VULCANOLOGIA|\bISTAT\b|DOCUMENTAZIONE, INNOVAZIONE|VALUTAZIONE DEL SISTEMA EDUCATIVO|RICERCHE TURISTICHE|ALTA MATEMATICA|ISTITUTO TECNICO SUPERIORE|DRAMMA ANTICO/;
+// HEALTH/NOT_HEALTH идват от src/lib/enti-ssn.js (единствен източник, споделен с
+// fetch-appalti.js и storico.js). Замразени launch данни — не пипай регексите.
 
 /** Нормализирано име на структурата: trim + сгъване на интервалите + UPPERCASE. */
 function normalizza(nome) {

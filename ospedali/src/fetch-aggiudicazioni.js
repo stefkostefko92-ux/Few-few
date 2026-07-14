@@ -20,6 +20,11 @@ import { DATA_DIR, RAW_DIR } from './lib/paths.js';
 const ANAC2 = join(RAW_DIR, 'anac2');
 const HEALTH_TSV = join(RAW_DIR, 'anac', 'health-cig-cf.tsv');
 
+// TODO(замразено): полетата долу се четат ПОЗИЦИОННО по индекс (f[2], f[3], f[5],
+// f[8], f[9]) вместо по име на колона от хедъра. По-устойчиво би било splitQuoted
+// на хедъра → карта {име→индекс} и достъп по име (както dataset.js за CE/SP). НЕ го
+// сменяй сега: изходът data/aggiudicazioni.json е замразен launch данни и всяка
+// разлика в подредбата на колоните на ANAC би променила резултата.
 /** Разделя ред „a";"b";"c" на полета, зачитайки кавичките (без вградени нови редове). */
 function splitQuoted(line) {
   const out = [];

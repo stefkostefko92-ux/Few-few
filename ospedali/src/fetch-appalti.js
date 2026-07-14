@@ -19,6 +19,7 @@ import { promisify } from 'node:util';
 import { parseCsv } from './lib/csv.js';
 import { curlDownloadToFile, writeJson, readJson } from './lib/http.js';
 import { RAW_DIR, DATA_DIR, ROOT } from './lib/paths.js';
+import { HEALTH, NOT_HEALTH } from './lib/enti-ssn.js';
 
 const execFileAsync = promisify(execFile);
 const ANAC_DIR = join(RAW_DIR, 'anac');
@@ -26,13 +27,8 @@ const APPALTI_FILE = join(DATA_DIR, 'appalti.json');
 const BASE = 'https://dati.anticorruzione.it/opendata/download/dataset';
 const UA = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36' };
 
-// Здравни възложители (по денонимация). Прецизно включване + стеснена FONDAZIONE,
-// за да хванем всички регионални варианти (ATS, ARES, APSS, Sanitätsbetrieb, USL…)
-// без да вмъкваме нездравни субекти (ACER, Sport e Salute, ISS…).
-const HEALTH =
-  /AZIENDA (OSPEDALIER|SANITARIA|SOCIO|UNITA|USL|ULSS|PROVINCIALE PER I SERVIZI SANITARI|REGIONALE DELLA SALUTE|LIGURE SANITARIA)|OSPEDALIER|OSPEDALI RIUN|A\.?O\.?U|\bA\.?S\.?L\b|\bA\.?S\.?S\.?T\b|\bA\.?U\.?L\.?S\.?S\b|\bASUR\b|\bASUGI\b|\bASUFC\b|\bAPSS\b|IRCCS|POLICLINICO|ISTITUTO (ONCOLOGICO|NAZIONALE|ORTOPEDICO|TUMORI|NEUROLOGICO)|FONDAZIONE\s+(IRCCS|POLICLINICO|OSPEDAL|ISTITUTO)|ESTAR|ESTAV|SORESA|AZIENDA ZERO|EGAS|ARNAS|ENTE OSPEDALIERO|AGENZIA (DI )?TUTELA DELLA SALUTE|AGENZIA REGIONALE STRATEGICA PER LA SALUTE|A\.?RE\.?S\.?S|\bUNITA'? SANITARIA LOCALE\b|SANITAETSBETRIEB|EMERGENZA SANITARIA|\bAREU\b|\bA\.?LI\.?SA\b|AZIENDA REGIONALE PER LA SALUTE/;
-// Изрично изключване на нездравни субекти, случайно уловени от общи думи.
-const NOT_HEALTH = /ACQUE|SPORT E SALUTE|ISTITUTO SUPERIORE DI SANIT|\bMINISTERO\b|CARABINIER|\bCOMUNE\b|\bUNIONE\b|BONIFICA|AZIENDA CASA|\bA\.?C\.?E\.?R\b|\bSTART\b|INFORMATICA|VIGILI DEL FUOCO|SOCIETA DELLE FONTI|INPS|INAIL|PREVIDENZA|ASSICURAZIONE CONTRO GLI INFORTUNI|ISTITUTO NAZIONALE PER LA GRAFICA|I\.N\.P\.G\.I|FISICA NUCLEARE|ASTROFISICA|GEOFISICA|VULCANOLOGIA|\bISTAT\b|DOCUMENTAZIONE, INNOVAZIONE|VALUTAZIONE DEL SISTEMA EDUCATIVO|RICERCHE TURISTICHE|ALTA MATEMATICA|ISTITUTO TECNICO SUPERIORE|DRAMMA ANTICO/;
+// HEALTH/NOT_HEALTH regex-ите живеят в src/lib/enti-ssn.js (споделени с
+// storico.js и fetch-perlapa.js). Тук са ЗАМРАЗЕНИ launch данни — не пипай.
 
 /** Категория на процедурата: конкурентна / рамково / пряко / договаряне без обявление. */
 export function catProc(t) {
@@ -93,12 +89,20 @@ async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
   const url = `${BASE}/cig-${anno}/filesystem/${zipName}`;
   let fresh;
   try {
-    fresh = await curlDownloadToFile(url, zipPath, { headers: UA, timeoutSec: 240 });
+    fresh = await curlDownloadToFile(url, zipPath, { headers: UA, timeoutSec: 240, expectZip: true });
   } catch (err) {
-    console.warn(`  пропускам ${anno}-${mm}: ${err.message}`);
-    return 0;
+    console.warn(`  пропускам ${anno}-${mm} (сваляне): ${err.message}`);
+    return -1; // провал → брои се, за да не мине за тих 0
   }
-  await execFileAsync('unzip', ['-o', zipPath, '-d', ANAC_DIR]);
+  // Разархивирането може да гръмне при повреден/отрязан ZIP → не проваляй целия
+  // пробег, а изтрий боклучавия кеш, отчети провала и продължи със следващия месец.
+  try {
+    await execFileAsync('unzip', ['-o', zipPath, '-d', ANAC_DIR]);
+  } catch (err) {
+    console.warn(`  пропускам ${anno}-${mm} (разархивиране): ${err.message}`);
+    await rm(zipPath, { force: true });
+    return -1;
+  }
   const csvPath = join(ANAC_DIR, `cig_csv_${anno}_${mm}.csv`);
   let righe = 0;
   try {
@@ -169,9 +173,14 @@ async function main() {
   const seenCig = new Set();
   const cigCf = new Map(); // cig → cf на здравния възложител (за aggiudicatari/partecipanti)
   let totale = 0;
+  let falliti = 0; // месеци, които не се свалиха/разархивираха (частичен агрегат)
   for (const anno of anni) {
     console.log(`Anno ${anno}…`);
-    for (let m = 1; m <= 12; m++) totale += await processMonth(anno, m, regionale, autorita, seenCig, cigCf);
+    for (let m = 1; m <= 12; m++) {
+      const r = await processMonth(anno, m, regionale, autorita, seenCig, cigCf);
+      if (r < 0) falliti++;
+      else totale += r;
+    }
   }
 
   // Записваме картата CIG→CF/категория/сума за следващата стъпка (изпълнители/участници)
@@ -220,6 +229,12 @@ async function main() {
     `Готово: ${totale} здравни поръчки, ${autList.length} възложителя, ` +
       `${(nz.importo / 1e9).toFixed(1)} mld €; senza gara ${(nz.quotaSenzaGara * 100).toFixed(1)}% → ${APPALTI_FILE}`
   );
+  if (falliti > 0) {
+    console.warn(
+      `⚠ WARN: ${falliti} месец(а) се провали(ха) (сваляне/разархивиране) — ` +
+        `агрегатът в ${APPALTI_FILE} е ЧАСТИЧЕН. Провери логовете по-горе и пусни наново.`
+    );
+  }
 }
 
 function summary(a) {

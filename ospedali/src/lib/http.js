@@ -1,12 +1,40 @@
 // HTTP помощници: изтегляне с повторни опити, експоненциално изчакване и кеш на диска.
 // Всички източници са официални open data портали — не изискват ключове.
 
-import { mkdir, readFile, writeFile, stat, rename } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, stat, rename, unlink, open } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
+
+// ZIP magic bytes: локален файлов хедър (PK\x03\x04), празен архив / край на
+// централната директория (PK\x05\x06), разделен архив (PK\x07\x08).
+const ZIP_MAGICS = [
+  Buffer.from([0x50, 0x4b, 0x03, 0x04]),
+  Buffer.from([0x50, 0x4b, 0x05, 0x06]),
+  Buffer.from([0x50, 0x4b, 0x07, 0x08]),
+];
+
+/**
+ * Чете само първите 4 байта на файл и проверява дали са валиден ZIP подпис.
+ * Защита срещу отровен кеш: прекъснато/повредено сваляне отпреди, HTML грешка
+ * от WAF, или изтрит наполовина файл — да не трови следващите пускания.
+ */
+export async function eZipValido(filePath) {
+  let fh;
+  try {
+    fh = await open(filePath, 'r');
+    const buf = Buffer.alloc(4);
+    const { bytesRead } = await fh.read(buf, 0, 4, 0);
+    if (bytesRead < 4) return false;
+    return ZIP_MAGICS.some((m) => buf.equals(m));
+  } catch {
+    return false;
+  } finally {
+    await fh?.close();
+  }
+}
 
 const USER_AGENT =
   'ospedali-trasparenti/0.1 (open data ETL; https://carbonstealth.eu)';
@@ -83,10 +111,20 @@ export async function curlText(url, { retries = 4, timeoutSec = 90, headers = {}
 }
 
 /** Сваля URL във файл през системния curl (идемпотентно, байтово точно чрез -o). */
-export async function curlDownloadToFile(url, filePath, { retries = 4, timeoutSec = 180, headers = {} } = {}) {
+export async function curlDownloadToFile(url, filePath, { retries = 4, timeoutSec = 180, headers = {}, expectZip = false } = {}) {
   try {
     const st = await stat(filePath);
-    if (st.size > 0) return false;
+    if (st.size > 0) {
+      // Кеширан ZIP може да е повреден (прекъснато сваляне, HTML от WAF, изтрит
+      // наполовина) → провери magic bytes; ако е боклук, изтрий и пре-тегли,
+      // вместо да отровиш unzip/парсването нататък. Без expectZip → старо поведение.
+      if (expectZip && !(await eZipValido(filePath))) {
+        console.warn(`  повреден ZIP кеш ${filePath} → изтривам и тегля наново`);
+        await unlink(filePath).catch(() => {});
+      } else {
+        return false;
+      }
+    }
   } catch {
     // няма файл — сваляме
   }
