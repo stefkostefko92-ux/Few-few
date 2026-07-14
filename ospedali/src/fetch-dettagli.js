@@ -31,6 +31,37 @@ const isAzienda = (cf) => /^[0-9]{11}$/.test(cf);
 // capitali — eSocietaDiCapitali проверява правната форма (както coi.js/cordate.js).
 const forniProfilabile = (cf, den) => isAzienda(cf) && eSocietaDiCapitali(den);
 
+// GDPR (одит на Правния Разбирач): дословният публичен ANAC `oggetto` понякога
+// пренася НАИМЕНОВАНИЕ на società di persone (S.n.c./S.a.s.) с ЛИЧНО ИМЕ на
+// съдружник вътре в свободния текст — напр. „…DITTA PRESIFARM DI D'ARRIGO
+// TOMMASO S.A.S.". Тъй като това е свободен текст, филтърът на структурното поле
+// не го хваща и името „изтича" върху ИНДЕКСИРАН профил на капиталово дружество.
+// Проектната политика е „физически лица НИКОГА не се назовават" → маскираме
+// опашката „DITTA/DI <лично име> … S.A.S./S.N.C." → „(operatore non nominato)".
+// Само UPPERCASE фрагменти (личните имена в ANAC са с главни букви) — за да не
+// режем описателен текст. Не пипа S.P.A./S.R.L. (капиталови форми).
+// „DITTA" е надежден въвеждащ маркер на наименование → безопасен широк, но
+// къс (≤80 знака), нежаден прозорец до най-близкото S.A.S./S.N.C. (хваща &, E,
+// „& C.", слепено „C.S.A.S.").
+const RE_OGG_DITTA =
+  /\bDITTA\s+[A-ZÀ-Ù0-9'’.&\- ]{1,80}?\s?S\.?\s?[AN]\.?\s?[SC]\.?(?![A-Z])/g;
+// „DI <лично име> … S.A.S./S.N.C." без „DITTA": токенно, тясно (личните имена са
+// 2–5 къси думи + евентуални съединители &/E/„C."), за да не режем описателен текст.
+const RE_OGG_DI =
+  /\bDI\s+[A-ZÀ-Ù'’][A-ZÀ-Ù'’.]+(?:\s+(?:&|E|C\.?|FIGL\w+|[A-ZÀ-Ù'’][A-ZÀ-Ù'’.]+)){0,4}\s?S\.?\s?[AN]\.?\s?[SC]\.?(?![A-Z])/g;
+// Именувани физически лица в свободния текст с ПРОФЕСИОНАЛНА ТИТЛА (адвокати,
+// нотариуси, професори…): напр. „INCARICO LEGALE AVV. FRANCO ROSSI". Титлата е
+// силен маркер → маскираме титла + 1–3 главни думи (името), пазим титлата за
+// контекст: „AVV. (nominativo omesso)". Само главни имена → не режем текст.
+const RE_OGG_TITOLO =
+  /\b((?:AVV|NOT|GEOM|RAG|ARCH|ING|DOTT\.?SSA|DOTT|PROF\.?SSA|PROF|SIG\.?RA|SIG\.?NA|SIG)\.?)\s+[A-ZÀ-Ù][A-ZÀ-Ù'’]+(?:\s+[A-ZÀ-Ù][A-ZÀ-Ù'’]+){0,2}/g;
+export function sanitizzaOggetto(txt) {
+  return String(txt || '')
+    .replace(RE_OGG_DITTA, '(operatore non nominato)')
+    .replace(RE_OGG_DI, '(operatore non nominato)')
+    .replace(RE_OGG_TITOLO, '$1 (nominativo omesso)');
+}
+
 async function main() {
   const config = await readJson(join(ROOT, 'config.json'));
   const anni = config.anacAnni || [2023, 2024];
@@ -67,7 +98,7 @@ async function main() {
             cig,
             codice: byCf.get(cf),
             data: (r.data_pubblicazione || `${anno}-${mm}`).slice(0, 10),
-            oggetto: fixMojibake(r.oggetto_lotto || r.oggetto_gara || '').slice(0, 300),
+            oggetto: sanitizzaOggetto(fixMojibake(r.oggetto_lotto || r.oggetto_gara || '')).slice(0, 300),
             importo: Math.round(importo),
             procedura: (r.tipo_scelta_contraente || '').slice(0, 80),
             categoria: catProc(r.tipo_scelta_contraente),
