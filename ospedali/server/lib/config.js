@@ -1,7 +1,7 @@
 // Конфигурация + тайни за админ сервиза. Тайните НИКОГА не влизат в репото —
 // четат се от обкръжението (systemd Environment=) или от server/.env (mode 600).
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -52,7 +52,12 @@ export async function initConfig() {
   } else {
     const pw = randomBytes(9).toString('base64url');
     cfg.admin = hashPassword(pw);
-    await writeFile(credFile, JSON.stringify(cfg.admin)).catch(() => {});
+    // Атомен запис (tmp → rename в същата директория); best-effort.
+    try {
+      const tmp = `${credFile}.tmp`;
+      await writeFile(tmp, JSON.stringify(cfg.admin));
+      await rename(tmp, credFile);
+    } catch { /* без спиране — паролата остава само в паметта за тази сесия */ }
     cfg.adminSource = 'generated';
     cfg.generatedPassword = pw;
   }

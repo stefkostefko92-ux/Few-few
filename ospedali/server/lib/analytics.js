@@ -7,7 +7,7 @@
 // (брой посещения/посетители/страница) — никакви лични данни.
 
 import { createHmac, randomBytes } from 'node:crypto';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
 /** Дата „YYYY-MM-DD" (Europe/Rome не е критично за агрегати — ползваме UTC-ден). */
@@ -86,7 +86,11 @@ export class Contatore {
   async salva() {
     this._dirty = false;
     await mkdir(dirname(this.file), { recursive: true }).catch(() => {});
-    await writeFile(this.file, JSON.stringify(this.stato));
+    // Атомен запис: пиши във временен файл в същата директория, после rename
+    // (rename е атомарен на същата ФС) → срив по средата не корумпира състоянието.
+    const tmp = `${this.file}.tmp`;
+    await writeFile(tmp, JSON.stringify(this.stato));
+    await rename(tmp, this.file);
   }
 
   /** Резюме за админ таблото. */

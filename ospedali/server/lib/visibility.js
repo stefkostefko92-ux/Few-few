@@ -2,7 +2,7 @@
 // а връзките към нея се крият чрез инжектиран CSS в <head> на всяка страница.
 // Обратимо е и моментално (без ре-билд на сайта).
 
-import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
+import { readFile, writeFile, rename, mkdir, readdir } from 'node:fs/promises';
 import { join, dirname, basename } from 'node:path';
 
 export async function loadVisibility(file) {
@@ -16,7 +16,11 @@ export async function loadVisibility(file) {
 
 export async function saveVisibility(file, data) {
   await mkdir(dirname(file), { recursive: true }).catch(() => {});
-  await writeFile(file, JSON.stringify({ hidden: [...new Set(data.hidden || [])] }, null, 2));
+  // Атомен запис: временен файл в същата директория → rename (атомарно на ФС),
+  // за да не се корумпира списъкът при срив по средата на записа.
+  const tmp = `${file}.tmp`;
+  await writeFile(tmp, JSON.stringify({ hidden: [...new Set(data.hidden || [])] }, null, 2));
+  await rename(tmp, file);
 }
 
 /** Само име на файл (без път/заявка), напр. „cordate.html". null ако не е .html. */
