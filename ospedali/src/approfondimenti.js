@@ -639,6 +639,7 @@ ${conNuovi.pagamenti ? card('pagamenti.html', 'Tempi di pagamento', 'Quanto in f
 ${conNuovi.fineAnno ? card('fine-anno.html', 'La febbre di dicembre', 'La corsa agli affidamenti diretti prima della scadenza del bilancio, mese per mese.') : ''}
 ${conNuovi.storico ? card('storico.html', 'Prima, durante e dopo il COVID', 'Sei anni di appalti sanitari: urgenze, deroghe e se il mercato è tornato normale.') : ''}
 ${conNuovi.aggiudicazioni ? card('aggiudicazioni.html', 'Quanti partecipano alle gare', 'Il numero reale di offerenti, i ribassi e i ritardi: nelle gare competitive un solo offerente in metà dei casi.') : ''}
+${conNuovi.cordate ? card('cordate.html', 'Le «cordate» di offerenti', 'Coppie di imprese che concorrono sempre insieme dove una vince e l’altra mai: indicatore di possibile cover bidding, da verificare.') : ''}
 ${conNuovi.ted ? card('ted.html', 'Gare UE con un solo offerente', 'Il dato TED: quante offerte arrivano davvero nelle gare sopra-soglia — controllo indipendente del segnale ANAC.') : ''}
 ${conNuovi.pne ? card('pne.html', 'Spendere di più cura meglio?', 'Esiti clinici (PNE) e spesa a confronto, regione per regione: dove si spende molto e si cura peggio.') : ''}
 ${conNuovi.apparecchiature ? card('apparecchiature.html', 'La dotazione tecnologica', 'TAC, risonanze, PET, acceleratori e robot per milione di abitanti: cosa può fare ogni regione.') : ''}

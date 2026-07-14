@@ -48,6 +48,9 @@ src/fetch-perlapa.js     PerlaPA bulk CSV (~50MB/год) → data/consulenze.jso
 src/fetch-pnrr-salute.js OpenPNRR (117MB, филтър M6) → data/pnrr-salute.json (Missione 6 per регион)
 src/fetch-siope.js       BDAP CKAN SIOPE (per регион) → data/siope.json (каса, месечни потоци, dic/media)
 src/fetch-pne.js         AGENAS PNE API (бавно, backoff; лиценз непотвърден → само регионални агрегати) → data/pne.json
+src/cordate.js           aggiudicatari+partecipanti (поточно) → двойки „cover bidding" (заедно, едната
+                         винаги печели, другата никога) → data/cordate.json. Изключва ATI (ruolo), брои
+                         ВСИЧКИ победители per лот (иначе многолотовите дават фалшив картел); само P.IVA юр. лица
 src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudicatari → site/
 src/lib/                 http (retry/кеш/curl), csv, dataset, format, site-ui, match (болница↔ANAC), paths
 ```

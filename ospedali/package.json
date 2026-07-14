@@ -38,6 +38,7 @@
     "pnrr-salute": "node --max-old-space-size=4096 src/fetch-pnrr-salute.js",
     "siope": "node --max-old-space-size=4096 src/fetch-siope.js",
     "pne": "node --max-old-space-size=4096 src/fetch-pne.js",
+    "cordate": "node --max-old-space-size=4096 src/cordate.js",
     "fetch:nuovi": "npm run popolazione && npm run apparecchiature && npm run sdo && npm run aggiudicazioni && npm run ted && npm run consulenze && npm run pnrr-salute && npm run siope"
   }
 }

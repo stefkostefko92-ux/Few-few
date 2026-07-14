@@ -34,6 +34,7 @@ import { renderConsulenze } from './pagina-perlapa.js';
 import { renderPnrrSalute } from './pagina-pnrr-salute.js';
 import { renderSiope } from './pagina-siope.js';
 import { renderPne } from './pagina-pne.js';
+import { renderCordate } from './pagina-cordate.js';
 
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
@@ -555,6 +556,9 @@ async function main() {
   if (pnrrSalute) await writeFile(join(SITE_DIR, 'pnrr-salute.html'), renderPnrrSalute({ pnrr: pnrrSalute, popolazione, nomeReg, href: regHref }));
   if (siope) await writeFile(join(SITE_DIR, 'siope.html'), renderSiope({ siope, nomeReg }));
 
+  const cordate = await readJson(pjoin(DATA_DIR, 'cordate.json')).catch(() => null);
+  if (cordate) await writeFile(join(SITE_DIR, 'cordate.html'), renderCordate({ cordate }));
+
   // PNE (esiti clinici) — разход на глава per регион за кръстоската „soldi vs esiti"
   const pne = await readJson(pjoin(DATA_DIR, 'pne.json')).catch(() => null);
   if (pne) {
@@ -640,7 +644,7 @@ async function main() {
       conNuovi: {
         pagamenti: !!tp, personale: !!pers, mobilita: !!mob, fineAnno: true, confronta: true, api: true, storico: !!sto,
         apparecchiature: !!apparecchiature, sdo: !!sdo, aggiudicazioni: !!aggiu, ted: !!ted, consulenze: !!cons,
-        pnrrSalute: !!pnrrSalute, siope: !!(await readJson(pjoin(DATA_DIR, 'siope.json')).catch(() => null)),
+        pnrrSalute: !!pnrrSalute, siope: !!siope, cordate: !!cordate,
         pne: !!(await readJson(pjoin(DATA_DIR, 'pne.json')).catch(() => null)),
       },
     })
@@ -661,6 +665,7 @@ async function main() {
     ['personale.json', 'JSON', 'Personale del comparto sanità', 'Dipendenti, medici e lavoro flessibile per azienda (Conto Annuale).', 'BDAP — RGS/MEF (IODL 2.0)'],
     ['tempi-pagamento.json', 'JSON', 'Tempi di pagamento enti SSN', 'Serie nazionale PCC/RGS 2019–2025 (estrazione dal PDF ufficiale).', 'RGS/MEF'],
     ['aggiudicazioni.json', 'JSON', 'Aggiudicazioni: offerenti, ribassi, ritardi', 'Numero di offerenti, ribasso e stati di avanzamento per i CIG sanitari (arricchimento ANAC).', 'ANAC — BDNCP (CC BY-SA 4.0)'],
+    ['cordate.json', 'JSON', 'Cordate di offerenti (possibile cover bidding)', 'Coppie di imprese che concorrono spesso insieme dove una vince e l’altra mai: indicatore, non prova.', 'ANAC — BDNCP (CC BY-SA 4.0)'],
     ['ted.json', 'JSON', 'Offerte per gara (TED — UE)', 'Numero di offerenti nelle gare sopra-soglia della sanità italiana (CPV 33*/85*), era eForms.', 'TED — UE (riuso libero, Dec. 2011/833/UE)'],
     ['apparecchiature.json', 'JSON', 'Dotazione tecnologica per struttura', 'Grandi apparecchiature (TAC, RMN, PET, acceleratori, robot) per struttura e regione.', 'Ministero della Salute (IODL 2.0)'],
     ['sdo.json', 'JSON', 'Volumi di attività (SDO)', 'Ricoveri per struttura e regione (schede di dimissione ospedaliera 2022).', 'Ministero della Salute (IODL 2.0)'],
@@ -733,6 +738,7 @@ async function main() {
       ...(pnrrSalute ? ['pnrr-salute.html'] : []),
       ...((await stat(join(SITE_DIR, 'siope.html')).catch(() => null)) ? ['siope.html'] : []),
       ...((await stat(join(SITE_DIR, 'pne.html')).catch(() => null)) ? ['pne.html'] : []),
+      ...(cordate ? ['cordate.html'] : []),
       'confronta.html',
       'api.html',
       'accessibilita.html',

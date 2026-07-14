@@ -1,0 +1,613 @@
+{
+  "generatoIl": "2026-07-14T04:42:09.609Z",
+  "fonte": "ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), gare sanitarie competitive 2023–2024",
+  "nota": "Coppie di imprese che concorrono spesso insieme dove una vince e l’altra non vince mai: indicatore di possibile cover bidding, NON prova. Solo persone giuridiche (P.IVA). Verifica: AGCM/Antitrust, Registro Imprese.",
+  "soglie": {
+    "insieme": 5,
+    "minVittorie": 3,
+    "maxPartecipanti": 15
+  },
+  "totaleCordate": 102,
+  "cordate": [
+    {
+      "vincitoreCf": "01313240424",
+      "coprCf": "03690650134",
+      "insieme": 28,
+      "vinteDalVincitore": 5,
+      "valore": 3039618,
+      "nAuth": 3,
+      "vincitoreDen": "NACATUR INTERNATIONAL IMPORT EXPORT S.R.L.",
+      "coprDen": "PIKDARE-SOCIETA' PER AZIONI"
+    },
+    {
+      "vincitoreCf": "03225090723",
+      "coprCf": "03110040635",
+      "insieme": 22,
+      "vinteDalVincitore": 7,
+      "valore": 1213758,
+      "nAuth": 1,
+      "vincitoreDen": "BIO SUD MEDICAL SYSTEMS - S.R.L.",
+      "coprDen": "TECNOMEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "02790240101",
+      "coprCf": "05435570261",
+      "insieme": 20,
+      "vinteDalVincitore": 16,
+      "valore": 1104028,
+      "nAuth": 4,
+      "vincitoreDen": "BENEFIS S.R.L.",
+      "coprDen": "KRAPE ITALIA S.R.L."
+    },
+    {
+      "vincitoreCf": "08082461008",
+      "coprCf": "07717721216",
+      "insieme": 19,
+      "vinteDalVincitore": 5,
+      "valore": 1657151,
+      "nAuth": 3,
+      "vincitoreDen": "JOHNSON & JOHNSON MEDICAL S.P.A.",
+      "coprDen": "MEDI CORP S.R.L."
+    },
+    {
+      "vincitoreCf": "03225090723",
+      "coprCf": "08462901003",
+      "insieme": 16,
+      "vinteDalVincitore": 6,
+      "valore": 1128186,
+      "nAuth": 1,
+      "vincitoreDen": "BIO SUD MEDICAL SYSTEMS - S.R.L.",
+      "coprDen": "ELEMED S.R.L."
+    },
+    {
+      "vincitoreCf": "04127270157",
+      "coprCf": "02761580873",
+      "insieme": 16,
+      "vinteDalVincitore": 9,
+      "valore": 331090,
+      "nAuth": 1,
+      "vincitoreDen": "SOL S.P.A.",
+      "coprDen": "DIAMEDICA S.R.L."
+    },
+    {
+      "vincitoreCf": "04720630633",
+      "coprCf": "06572271218",
+      "insieme": 15,
+      "vinteDalVincitore": 3,
+      "valore": 887550,
+      "nAuth": 3,
+      "vincitoreDen": "SVAS BIOSANA S.P.A.",
+      "coprDen": "A.M.G. MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "12244190158",
+      "coprCf": "00207810284",
+      "insieme": 14,
+      "vinteDalVincitore": 3,
+      "valore": 1156602,
+      "nAuth": 4,
+      "vincitoreDen": "MEDLINE INTERNATIONAL ITALY S.R.L.",
+      "coprDen": "LOHMANN & RAUSCHER S.R.L."
+    },
+    {
+      "vincitoreCf": "02790240101",
+      "coprCf": "04720630633",
+      "insieme": 13,
+      "vinteDalVincitore": 10,
+      "valore": 804140,
+      "nAuth": 5,
+      "vincitoreDen": "BENEFIS S.R.L.",
+      "coprDen": "SVAS BIOSANA S.P.A."
+    },
+    {
+      "vincitoreCf": "09284460962",
+      "coprCf": "01282940681",
+      "insieme": 13,
+      "vinteDalVincitore": 4,
+      "valore": 637411,
+      "nAuth": 1,
+      "vincitoreDen": "INTEGRA LIFESCIENCES ITALY S.R.L.",
+      "coprDen": "CHIRURMEDICA S.R.L."
+    },
+    {
+      "vincitoreCf": "01313240424",
+      "coprCf": "01316780426",
+      "insieme": 12,
+      "vinteDalVincitore": 4,
+      "valore": 5446520,
+      "nAuth": 4,
+      "vincitoreDen": "NACATUR INTERNATIONAL IMPORT EXPORT S.R.L.",
+      "coprDen": "RAYS  S.P.A."
+    },
+    {
+      "vincitoreCf": "09009860967",
+      "coprCf": "04358570242",
+      "insieme": 12,
+      "vinteDalVincitore": 7,
+      "valore": 3697839,
+      "nAuth": 6,
+      "vincitoreDen": "POLYTECH HEALTH & AESTHETICS ITALIA SRL",
+      "coprDen": "SILIMED S.R.L."
+    },
+    {
+      "vincitoreCf": "01262470667",
+      "coprCf": "03110040635",
+      "insieme": 12,
+      "vinteDalVincitore": 6,
+      "valore": 907146,
+      "nAuth": 1,
+      "vincitoreDen": "ASSUT EUROPE S.P.A.",
+      "coprDen": "TECNOMEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "01409770631",
+      "coprCf": "04720630633",
+      "insieme": 12,
+      "vinteDalVincitore": 6,
+      "valore": 454090,
+      "nAuth": 3,
+      "vincitoreDen": "SCOGNAMIGLIO SRL",
+      "coprDen": "SVAS BIOSANA S.P.A."
+    },
+    {
+      "vincitoreCf": "02812360101",
+      "coprCf": "01171880428",
+      "insieme": 12,
+      "vinteDalVincitore": 7,
+      "valore": 235010,
+      "nAuth": 2,
+      "vincitoreDen": "MED ITALIA BIOMEDICA SOCIETA' A RESPONSABILITA' LIMITATA",
+      "coprDen": "STUDIO PACINOTTI S.R.L."
+    },
+    {
+      "vincitoreCf": "04720630633",
+      "coprCf": "03578710729",
+      "insieme": 11,
+      "vinteDalVincitore": 4,
+      "valore": 801460,
+      "nAuth": 4,
+      "vincitoreDen": "SVAS BIOSANA S.P.A.",
+      "coprDen": "F.A.S.E. S.R.L."
+    },
+    {
+      "vincitoreCf": "00311560692",
+      "coprCf": "05643110728",
+      "insieme": 11,
+      "vinteDalVincitore": 6,
+      "valore": 782468,
+      "nAuth": 1,
+      "vincitoreDen": "FIMAS S.R.L.",
+      "coprDen": "MEDIPOINT SRL"
+    },
+    {
+      "vincitoreCf": "01409770631",
+      "coprCf": "06572271218",
+      "insieme": 10,
+      "vinteDalVincitore": 3,
+      "valore": 1748840,
+      "nAuth": 3,
+      "vincitoreDen": "SCOGNAMIGLIO SRL",
+      "coprDen": "A.M.G. MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "02705540165",
+      "coprCf": "00650230428",
+      "insieme": 10,
+      "vinteDalVincitore": 10,
+      "valore": 730406,
+      "nAuth": 2,
+      "vincitoreDen": "DIAPATH S.P.A.",
+      "coprDen": "MECCANICA G.M. S.R.L."
+    },
+    {
+      "vincitoreCf": "03225090723",
+      "coprCf": "00674840152",
+      "insieme": 10,
+      "vinteDalVincitore": 3,
+      "valore": 601266,
+      "nAuth": 1,
+      "vincitoreDen": "BIO SUD MEDICAL SYSTEMS - S.R.L.",
+      "coprDen": "B. BRAUN MILANO SPA"
+    },
+    {
+      "vincitoreCf": "03544600137",
+      "coprCf": "07123400157",
+      "insieme": 10,
+      "vinteDalVincitore": 3,
+      "valore": 583800,
+      "nAuth": 2,
+      "vincitoreDen": "INNOVA HTS S.R.L.",
+      "coprDen": "COOK ITALIA S.R.L."
+    },
+    {
+      "vincitoreCf": "02790240101",
+      "coprCf": "06572271218",
+      "insieme": 10,
+      "vinteDalVincitore": 9,
+      "valore": 510398,
+      "nAuth": 4,
+      "vincitoreDen": "BENEFIS S.R.L.",
+      "coprDen": "A.M.G. MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "02812360101",
+      "coprCf": "01831720675",
+      "insieme": 10,
+      "vinteDalVincitore": 5,
+      "valore": 204760,
+      "nAuth": 2,
+      "vincitoreDen": "MED ITALIA BIOMEDICA SOCIETA' A RESPONSABILITA' LIMITATA",
+      "coprDen": "STARMED S.R.L."
+    },
+    {
+      "vincitoreCf": "07130030823",
+      "coprCf": "01471280162",
+      "insieme": 9,
+      "vinteDalVincitore": 6,
+      "valore": 2801426,
+      "nAuth": 3,
+      "vincitoreDen": "GRUPA ITALIA SOCIETA' A RESPONSABILITA' LIMITATA",
+      "coprDen": "MEDIBERG SOCIETA' A RESPONSABILITA' LIMITATA"
+    },
+    {
+      "vincitoreCf": "08082461008",
+      "coprCf": "04358570242",
+      "insieme": 9,
+      "vinteDalVincitore": 6,
+      "valore": 2527942,
+      "nAuth": 4,
+      "vincitoreDen": "JOHNSON & JOHNSON MEDICAL S.P.A.",
+      "coprDen": "SILIMED S.R.L."
+    },
+    {
+      "vincitoreCf": "09699320017",
+      "coprCf": "07717721216",
+      "insieme": 9,
+      "vinteDalVincitore": 3,
+      "valore": 1229745,
+      "nAuth": 2,
+      "vincitoreDen": "BIOTRONIK ITALIA S.P.A.",
+      "coprDen": "MEDI CORP S.R.L."
+    },
+    {
+      "vincitoreCf": "03225090723",
+      "coprCf": "07717721216",
+      "insieme": 9,
+      "vinteDalVincitore": 4,
+      "valore": 609366,
+      "nAuth": 1,
+      "vincitoreDen": "BIO SUD MEDICAL SYSTEMS - S.R.L.",
+      "coprDen": "MEDI CORP S.R.L."
+    },
+    {
+      "vincitoreCf": "00440180545",
+      "coprCf": "09831040150",
+      "insieme": 9,
+      "vinteDalVincitore": 4,
+      "valore": 552300,
+      "nAuth": 4,
+      "vincitoreDen": "BETATEX S.P.A.",
+      "coprDen": "N.G.C. MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "00311560692",
+      "coprCf": "03777830369",
+      "insieme": 9,
+      "vinteDalVincitore": 5,
+      "valore": 281695,
+      "nAuth": 1,
+      "vincitoreDen": "FIMAS S.R.L.",
+      "coprDen": "WOLFYR ITALIA SRL"
+    },
+    {
+      "vincitoreCf": "04526141215",
+      "coprCf": "11206730159",
+      "insieme": 9,
+      "vinteDalVincitore": 5,
+      "valore": 215279,
+      "nAuth": 2,
+      "vincitoreDen": "TECSUD S.R.L.",
+      "coprDen": "BOSTON SCIENTIFIC SPA"
+    },
+    {
+      "vincitoreCf": "04526141215",
+      "coprCf": "07869740584",
+      "insieme": 9,
+      "vinteDalVincitore": 7,
+      "valore": 172027,
+      "nAuth": 2,
+      "vincitoreDen": "TECSUD S.R.L.",
+      "coprDen": "CANTEL MEDICAL (ITALY) S.R.L."
+    },
+    {
+      "vincitoreCf": "00970310397",
+      "coprCf": "02008340016",
+      "insieme": 8,
+      "vinteDalVincitore": 6,
+      "valore": 3127180,
+      "nAuth": 3,
+      "vincitoreDen": "TEMA SINERGIE SPA",
+      "coprDen": "TECNOLOGIE AVANZATE *T.A. - S.R.L."
+    },
+    {
+      "vincitoreCf": "02737030151",
+      "coprCf": "03698030289",
+      "insieme": 8,
+      "vinteDalVincitore": 5,
+      "valore": 2225898,
+      "nAuth": 2,
+      "vincitoreDen": "BURKE & BURKE S.P.A.",
+      "coprDen": "EUROMED SRL"
+    },
+    {
+      "vincitoreCf": "09238800156",
+      "coprCf": "07973040582",
+      "insieme": 8,
+      "vinteDalVincitore": 8,
+      "valore": 1967472,
+      "nAuth": 2,
+      "vincitoreDen": "MEDTRONIC ITALIA S.P.A.",
+      "coprDen": "ALSE MEDICA SRL"
+    },
+    {
+      "vincitoreCf": "04720630633",
+      "coprCf": "07192641210",
+      "insieme": 8,
+      "vinteDalVincitore": 6,
+      "valore": 1378800,
+      "nAuth": 1,
+      "vincitoreDen": "SVAS BIOSANA S.P.A.",
+      "coprDen": "BRUNO BARBATO MEDICALI S.R.L."
+    },
+    {
+      "vincitoreCf": "02790240101",
+      "coprCf": "05215390872",
+      "insieme": 8,
+      "vinteDalVincitore": 6,
+      "valore": 803680,
+      "nAuth": 4,
+      "vincitoreDen": "BENEFIS S.R.L.",
+      "coprDen": "IDS S.R.L."
+    },
+    {
+      "vincitoreCf": "04192991000",
+      "coprCf": "05643110728",
+      "insieme": 8,
+      "vinteDalVincitore": 3,
+      "valore": 736743,
+      "nAuth": 1,
+      "vincitoreDen": "KARL STORZ ENDOSCOPIA ITALIA S.R.L.",
+      "coprDen": "MEDIPOINT SRL"
+    },
+    {
+      "vincitoreCf": "07130030823",
+      "coprCf": "00207810284",
+      "insieme": 8,
+      "vinteDalVincitore": 5,
+      "valore": 716002,
+      "nAuth": 1,
+      "vincitoreDen": "GRUPA ITALIA SOCIETA' A RESPONSABILITA' LIMITATA",
+      "coprDen": "LOHMANN & RAUSCHER S.R.L."
+    },
+    {
+      "vincitoreCf": "09238800156",
+      "coprCf": "01063890394",
+      "insieme": 8,
+      "vinteDalVincitore": 4,
+      "valore": 633897,
+      "nAuth": 4,
+      "vincitoreDen": "MEDTRONIC ITALIA S.P.A.",
+      "coprDen": "DEAS   S.R.L."
+    },
+    {
+      "vincitoreCf": "04757530284",
+      "coprCf": "02507160824",
+      "insieme": 8,
+      "vinteDalVincitore": 5,
+      "valore": 518727,
+      "nAuth": 3,
+      "vincitoreDen": "EFFEBI HOSPITAL S.R.L.",
+      "coprDen": "E.F.M. EMANUELE FIORE MANCINI SRL"
+    },
+    {
+      "vincitoreCf": "02790240101",
+      "coprCf": "03578710729",
+      "insieme": 8,
+      "vinteDalVincitore": 6,
+      "valore": 389559,
+      "nAuth": 7,
+      "vincitoreDen": "BENEFIS S.R.L.",
+      "coprDen": "F.A.S.E. S.R.L."
+    },
+    {
+      "vincitoreCf": "11206730159",
+      "coprCf": "01535310427",
+      "insieme": 8,
+      "vinteDalVincitore": 3,
+      "valore": 285600,
+      "nAuth": 2,
+      "vincitoreDen": "BOSTON SCIENTIFIC SPA",
+      "coprDen": "ACTIVA S.R.L."
+    },
+    {
+      "vincitoreCf": "04192991000",
+      "coprCf": "03777830369",
+      "insieme": 8,
+      "vinteDalVincitore": 5,
+      "valore": 236801,
+      "nAuth": 1,
+      "vincitoreDen": "KARL STORZ ENDOSCOPIA ITALIA S.R.L.",
+      "coprDen": "WOLFYR ITALIA SRL"
+    },
+    {
+      "vincitoreCf": "05063800873",
+      "coprCf": "02584590877",
+      "insieme": 8,
+      "vinteDalVincitore": 8,
+      "valore": 69825,
+      "nAuth": 1,
+      "vincitoreDen": "L.S. MEDICAL S.R.L.",
+      "coprDen": "ETRALON  S.R.L."
+    },
+    {
+      "vincitoreCf": "05063800873",
+      "coprCf": "03821920877",
+      "insieme": 8,
+      "vinteDalVincitore": 8,
+      "valore": 65550,
+      "nAuth": 1,
+      "vincitoreDen": "L.S. MEDICAL S.R.L.",
+      "coprDen": "MT ORTHO S.R.L."
+    },
+    {
+      "vincitoreCf": "01409770631",
+      "coprCf": "00492340583",
+      "insieme": 7,
+      "vinteDalVincitore": 4,
+      "valore": 2835531,
+      "nAuth": 2,
+      "vincitoreDen": "SCOGNAMIGLIO SRL",
+      "coprDen": "BAXTER S.P.A."
+    },
+    {
+      "vincitoreCf": "00674840152",
+      "coprCf": "11408800966",
+      "insieme": 7,
+      "vinteDalVincitore": 4,
+      "valore": 1817090,
+      "nAuth": 3,
+      "vincitoreDen": "B. BRAUN MILANO SPA",
+      "coprDen": "BIOMEDICA ITALIA SRL"
+    },
+    {
+      "vincitoreCf": "04720630633",
+      "coprCf": "11408800966",
+      "insieme": 7,
+      "vinteDalVincitore": 5,
+      "valore": 1303800,
+      "nAuth": 1,
+      "vincitoreDen": "SVAS BIOSANA S.P.A.",
+      "coprDen": "BIOMEDICA ITALIA SRL"
+    },
+    {
+      "vincitoreCf": "04720630633",
+      "coprCf": "05751200659",
+      "insieme": 7,
+      "vinteDalVincitore": 5,
+      "valore": 1303800,
+      "nAuth": 1,
+      "vincitoreDen": "SVAS BIOSANA S.P.A.",
+      "coprDen": "IKIT S.R.L."
+    },
+    {
+      "vincitoreCf": "09238800156",
+      "coprCf": "04830660280",
+      "insieme": 7,
+      "vinteDalVincitore": 4,
+      "valore": 1048250,
+      "nAuth": 3,
+      "vincitoreDen": "MEDTRONIC ITALIA S.P.A.",
+      "coprDen": "ATOS MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "08862820969",
+      "coprCf": "09831040150",
+      "insieme": 7,
+      "vinteDalVincitore": 5,
+      "valore": 474000,
+      "nAuth": 3,
+      "vincitoreDen": "AB MEDICA S.P.A.",
+      "coprDen": "N.G.C. MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "02092530365",
+      "coprCf": "03698030289",
+      "insieme": 7,
+      "vinteDalVincitore": 3,
+      "valore": 415982,
+      "nAuth": 2,
+      "vincitoreDen": "INTERSURGICAL S.P.A.",
+      "coprDen": "EUROMED SRL"
+    },
+    {
+      "vincitoreCf": "01538680685",
+      "coprCf": "01349800688",
+      "insieme": 7,
+      "vinteDalVincitore": 7,
+      "valore": 365500,
+      "nAuth": 1,
+      "vincitoreDen": "INFOTEAM S.R.L.",
+      "coprDen": "EUROINFORMATICA S.R.L."
+    },
+    {
+      "vincitoreCf": "01538680685",
+      "coprCf": "02082040680",
+      "insieme": 7,
+      "vinteDalVincitore": 7,
+      "valore": 365500,
+      "nAuth": 1,
+      "vincitoreDen": "INFOTEAM S.R.L.",
+      "coprDen": "SETEK SRL"
+    },
+    {
+      "vincitoreCf": "05063800873",
+      "coprCf": "08082461008",
+      "insieme": 7,
+      "vinteDalVincitore": 7,
+      "valore": 58425,
+      "nAuth": 1,
+      "vincitoreDen": "L.S. MEDICAL S.R.L.",
+      "coprDen": "JOHNSON & JOHNSON MEDICAL S.P.A."
+    },
+    {
+      "vincitoreCf": "00322800376",
+      "coprCf": "01864740129",
+      "insieme": 7,
+      "vinteDalVincitore": 4,
+      "valore": 26710,
+      "nAuth": 1,
+      "vincitoreDen": "FARMACEUTICI - MEDICAZIONE - ARTICOLI CHIRURGICI  -*FARMAC - ZABBAN S.P.A.",
+      "coprDen": "CSLMEDICAL SRL"
+    },
+    {
+      "vincitoreCf": "04192991000",
+      "coprCf": "11575580151",
+      "insieme": 6,
+      "vinteDalVincitore": 5,
+      "valore": 19468923,
+      "nAuth": 3,
+      "vincitoreDen": "KARL STORZ ENDOSCOPIA ITALIA S.R.L.",
+      "coprDen": "MOVI SPA"
+    },
+    {
+      "vincitoreCf": "00136740404",
+      "coprCf": "01167730355",
+      "insieme": 6,
+      "vinteDalVincitore": 3,
+      "valore": 4038558,
+      "nAuth": 2,
+      "vincitoreDen": "CERACARTA - S.P.A.",
+      "coprDen": "BS MEDICAL S.R.L."
+    },
+    {
+      "vincitoreCf": "08042180961",
+      "coprCf": "13668420964",
+      "insieme": 6,
+      "vinteDalVincitore": 6,
+      "valore": 3919641,
+      "nAuth": 1,
+      "vincitoreDen": "COOPERATIVA SOCIALE ITAL ENFERM LOMBARDIA ONLUS",
+      "coprDen": "CENTRO SERVIZI ITALIANI CONSORZIO STABILE"
+    },
+    {
+      "vincitoreCf": "09238800156",
+      "coprCf": "11316050969",
+      "insieme": 6,
+      "vinteDalVincitore": 3,
+      "valore": 3839818,
+      "nAuth": 2,
+      "vincitoreDen": "MEDTRONIC ITALIA S.P.A.",
+      "coprDen": "SILONY MEDICAL ITALIA S.R.L."
+    }
+  ]
+}
