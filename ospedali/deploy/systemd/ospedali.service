@@ -1,0 +1,50 @@
+[Unit]
+Description=Ospedali Trasparenti — sito + admin (нула зависимости)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/ospedali
+ExecStart=/usr/bin/node server/server.js
+Restart=on-failure
+RestartSec=3
+
+# Тайни + по избор порт/host (mode 600, собственост www-data). Префиксът „-" прави
+# файла по избор — сервизът генерира случайна админ парола, ако липсва (виж лога).
+EnvironmentFile=-/opt/ospedali/server/.env
+
+# --- Sandboxing / hardening ---
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+# Единствено рънтайм състоянието е записваемо (брояч + видимост + хеш на паролата).
+ReadWritePaths=/opt/ospedali/server/.state
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# MemoryDenyWriteExecute е несъвместим с V8 JIT на Node — процесът иска изпълнима
+# памет и seccomp го убива със SIGSYS (status=31). Затова е изключен за Node услугата.
+MemoryDenyWriteExecute=false
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

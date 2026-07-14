@@ -37,6 +37,12 @@ OSPEDALI_ADMIN_PASSWORD=test OSPEDALI_INSECURE_COOKIES=1 npm run serve
 (`OSPEDALI_INSECURE_COOKIES=1` маха флага `Secure` за тест по http; в продукция
 НЕ го задавай — бисквитката е `Secure`, защото сайтът е зад TLS.)
 
+> **Автоматизиран деплой:** каноничният път е `deploy/autodeploy.sh` (функция
+> `deploy_ospedali`, systemd модел без билд). Готовите артефакти + еднократните
+> стъпки (DNS, `.env`, Nginx vhost, certbot) са в
+> [`../deploy/DEPLOY.md`](../deploy/DEPLOY.md). Секциите долу са референтният чернови
+> оригинал.
+
 ## systemd (`/etc/systemd/system/ospedali.service`)
 
 ```ini
