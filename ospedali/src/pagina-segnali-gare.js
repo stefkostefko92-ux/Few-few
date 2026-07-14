@@ -54,7 +54,7 @@ ${tabella(seg.topSottoSoglia, [
 <p class="small muted">Tre o più affidamenti diretti per lo stesso settore (CPV) allo stesso committente entro 30 giorni,
 ciascuno sotto una soglia prudenziale di 40.000 € (soglia scelta come segnale conservativo, non come limite di legge)
 ma insieme oltre: possibile spacchettamento per evitare la gara. Nazionale:
-${fr ? `${numeroIt(fr.cluster)} cluster, ${euroCompact(fr.valore)}` : '—'}.</p>
+${fr ? `${numeroIt(fr.cluster)} cluster, almeno ${euroCompact(fr.valore)}` : '—'} (stima prudenziale, limite inferiore).</p>
 ${tabella(seg.topFrazionamento, [
     { t: 'Committente', f: (r) => esc(r.den) },
     { t: 'Cluster', num: true, f: (r) => numeroIt(r.cluster) },

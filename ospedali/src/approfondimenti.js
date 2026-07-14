@@ -8,6 +8,13 @@
 import { page, kpi, lineChart, hbars } from './lib/site-ui.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
 
+// Изчислени от build-site стойности, за да не застаряват твърдо закодирани числа в
+// прозата (напр. брой свързани болници). Задават се веднъж преди рендер, по същия
+// модел като setDataSnapshot — така разказните функции четат живата стойност.
+let CTX = { nAbbinate: 113 };
+/** Задава изчислените стойности (напр. `nAbbinate`) преди рендер на approfondimenti. */
+export function setApprofondimentiCtx(c) { CTX = { ...CTX, ...c }; }
+
 // ---------- Класификация на CPV описания в макрокатегории ----------
 // Евристика по ключови думи върху descrizione_cpv (ANAC). Ред = приоритет.
 const CPV_REGOLE = [
@@ -299,7 +306,7 @@ azienda.`],
 questo sito supera i <strong>240 miliardi di euro</strong>, e i costi della produzione sono dello stesso ordine (fonte:
 BDAP — RGS/MEF, modelli CE consuntivi). Circa un terzo dei costi è personale; il resto è acquisto di beni e servizi —
 farmaci, dispositivi, servizi esternalizzati — cioè la spesa che passa per i contratti pubblici tracciati qui.`],
-  ['Chi sono i fornitori delle ASL?', `Nel 2023–2025, le 113 aziende sanitarie collegate su questo sito hanno aggiudicato
+  ['Chi sono i fornitori delle ASL?', `Nel 2023–2025, le ${CTX.nAbbinate} aziende sanitarie collegate su questo sito hanno aggiudicato
 contratti a migliaia di imprese: dalle multinazionali del farmaco e dei dispositivi (i valori maggiori) alle cooperative
 locali di servizi. La pagina <a href="fornitori.html">Fornitori</a> elenca le imprese con valore aggiudicato, numero di
 contratti e aziende servite; ogni impresa rilevante ha una scheda con i suoi contratti principali.`],
@@ -436,7 +443,7 @@ export const STORIE = [
 affidamenti con oggetto «VEICOLI A NOLEGGIO» allo stesso operatore, <strong>Leasys Italia S.p.A.</strong> (gruppo
 Stellantis): 43,0 + 27,1 + 25,2 + 19,7 milioni di euro — oltre <strong>115 milioni</strong> in un solo giorno,
 registrati come <em>affidamento diretto</em>.</p>
-<p>Nel perimetro tracciato da questo sito (2023–2025, 113 aziende collegate), il 95% del fatturato registrato di
+<p>Nel perimetro tracciato da questo sito (2023–2025, ${CTX.nAbbinate} aziende collegate), il 95% del fatturato registrato di
 Leasys verso la sanità proviene da questa sola azienda; l’86% dei contratti della coppia risulta senza confronto
 competitivo registrato.</p>
 <h2>Le spiegazioni possibili</h2>

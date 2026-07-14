@@ -35,6 +35,7 @@ import {
   renderAggiornamenti, renderApprofondimenti,
   renderPagamenti, renderPersonale, renderMobilita,
   renderFineAnno, renderConfronta, renderApi, renderAccessibilita, renderStorico,
+  setApprofondimentiCtx,
 } from './approfondimenti.js';
 // Нови източници (all-11) — всеки в отделен модул-страница
 import { renderApparecchiature } from './pagina-apparecchiature.js';
@@ -89,6 +90,8 @@ async function main() {
     // национална медиана на дела „senza gara“ по БРОЙ сред свързаните болници (за флаг)
     const quote = [...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null).sort((a, b) => a - b);
     appMatch.medianaSenzaGaraNum = quote.length ? quote[Math.floor(quote.length / 2)] : null;
+    // Подай живия брой свързани болници на approfondimenti прозата (вместо твърдо число).
+    setApprofondimentiCtx({ nAbbinate: appMatch.abbinate });
     void byCf;
   }
 
