@@ -8,7 +8,7 @@
 import { page, kpi } from './lib/site-ui.js';
 import { euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
 
-export function renderCordate({ cordate }) {
+export function renderCordate({ cordate, jsonld }) {
   const c = cordate.cordate || [];
   const tot = cordate.totaleCordate || c.length;
   const forte = c[0];
@@ -98,6 +98,7 @@ concorrenti. Dati grezzi: <a href="dati.html">open data</a> (cordate.json).</p>
     description: 'Coppie di imprese che concorrono spesso alle stesse gare sanitarie dove una vince e l’altra non vince mai: un indicatore di possibile cover bidding, da verificare. Dati ANAC.',
     active: 'inchiesta.html',
     canonical: 'cordate.html',
+    jsonld,
     body,
   });
 }

@@ -237,7 +237,7 @@ export function page({ title, active, rel = '', body, description = '', canonica
     `<meta name="twitter:card" content="${SITE_URL ? 'summary_large_image' : 'summary'}">`,
     `<meta name="twitter:title" content="${esc(title)}">`,
     description ? `<meta name="twitter:description" content="${esc(description)}">` : '',
-    jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : '',
+    jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, '\\u003c')}</script>` : '',
   ]
     .filter(Boolean)
     .join('\n');

@@ -15,7 +15,7 @@ const CAT_LABEL = {
 };
 const f1 = (x) => (x == null ? '—' : x.toLocaleString('it-IT', { maximumFractionDigits: 1 }));
 
-export function renderAggiudicazioni({ agg }) {
+export function renderAggiudicazioni({ agg, jsonld }) {
   const a = agg.aggiudicazioni;
   const comp = a.perCategoria.competitiva || { n: 0, conOfferenti: 0, quotaUnOfferente: null };
   const d = a.distribuzione;
@@ -71,7 +71,7 @@ generosa del campo.</p>
 aggiudicazioni (${numeroIt(a.conOfferenti)} su ${numeroIt(a.nAgg)}): il dato di copertura non è totale e va preso come
 <em>campione</em>, non come censimento. «Un offerente» è un <strong>indicatore</strong> di scarsa concorrenza, non
 una prova di irregolarità: può dipendere da mercati di nicchia, requisiti stringenti o tempi troppo corti. La lettura
-onesta è comparativa: dove l’offerente unico è sistematico, vale la pena guardare più da vicino.</p></div>
+onesta è comparativa: dove l’offerente unico è sistematico, vale la pena guardare più da vicino.</div>
 <p class="small muted">Fonte: <a href="${esc(agg.url)}" target="_blank" rel="noopener">ANAC — BDNCP</a>: dataset
 <em>aggiudicazioni</em> e <em>stati-avanzamento</em>, incrociati con i CIG sanitari 2023–2024 (CC BY-SA 4.0).</p>
 `;
@@ -80,6 +80,7 @@ onesta è comparativa: dove l’offerente unico è sistematico, vale la pena gua
     description: `Nelle procedure competitive della sanità italiana un solo offerente nel ${percentualeIt(comp.quotaUnOfferente)} dei casi. Numero di offerte, ribassi e ritardi dai dati ANAC.`,
     active: 'approfondimenti.html',
     canonical: 'aggiudicazioni.html',
+    jsonld,
     body,
   });
 }

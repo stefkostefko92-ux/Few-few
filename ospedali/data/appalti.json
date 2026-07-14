@@ -1,55 +1,55 @@
 {
-  "generatoIl": "2026-07-14T05:14:48.562Z",
+  "generatoIl": "2026-07-14T06:07:44.707Z",
   "anni": [
     2023,
     2024
   ],
   "fonte": "ANAC — Banca Dati Nazionale dei Contratti Pubblici (dati.anticorruzione.it), CIG > 40.000 €",
-  "righeSanitarie": 420514,
-  "autoritaSanitarie": 280,
+  "righeSanitarie": 419324,
+  "autoritaSanitarie": 261,
   "nazionale": {
-    "n": 420514,
-    "importo": 140771340584,
+    "n": 419324,
+    "importo": 140723194340,
     "cat": {
       "competitiva": {
-        "n": 62385,
-        "importo": 44887339537
+        "n": 62347,
+        "importo": 44878599946
       },
       "quadro": {
         "n": 121871,
         "importo": 41902486500
       },
       "diretto": {
-        "n": 190682,
-        "importo": 41126536246
+        "n": 189637,
+        "importo": 41100566755
       },
       "negoziataSenza": {
-        "n": 28604,
-        "importo": 10768752157
+        "n": 28578,
+        "importo": 10758505729
       },
       "negoziata": {
-        "n": 14622,
-        "importo": 1493786036
+        "n": 14546,
+        "importo": 1491244991
       },
       "altro": {
-        "n": 2350,
-        "importo": 592440108
+        "n": 2345,
+        "importo": 591790418
       }
     },
-    "urgenzaN": 95806,
-    "pnrrImporto": 7790520429,
-    "band40": 10931,
-    "band140": 5851,
-    "prorogaN": 17137,
-    "bunchingQuota": 0.08801040475765935,
-    "quotaSenzaGara": 0.3686495289995251,
-    "quotaSenzaGaraNum": 0.521471342214528
+    "urgenzaN": 95503,
+    "pnrrImporto": 7755949931,
+    "band40": 10914,
+    "band140": 5831,
+    "prorogaN": 17135,
+    "bunchingQuota": 0.0883002789540016,
+    "quotaSenzaGara": 0.36851830096149213,
+    "quotaSenzaGaraNum": 0.5203971153570985
   },
   "regionale": [
     {
       "reg": "LOMBARDIA",
-      "n": 70781,
-      "importo": 21305252849,
+      "n": 70771,
+      "importo": 21304781476,
       "cat": {
         "competitiva": {
           "n": 5414,
@@ -60,8 +60,8 @@
           "importo": 6432344656
         },
         "diretto": {
-          "n": 35993,
-          "importo": 4921880667
+          "n": 35983,
+          "importo": 4921409294
         },
         "negoziataSenza": {
           "n": 3257,
@@ -76,14 +76,14 @@
           "importo": 82235354
         }
       },
-      "urgenzaN": 12964,
-      "pnrrImporto": 962996002,
-      "band40": 3388,
+      "urgenzaN": 12956,
+      "pnrrImporto": 962524629,
+      "band40": 3387,
       "band140": 814,
       "prorogaN": 2229,
-      "bunchingQuota": 0.11674492262384352,
-      "quotaSenzaGara": 0.2975272603244135,
-      "quotaSenzaGaraNum": 0.5545273449089445
+      "bunchingQuota": 0.1167495761887558,
+      "quotaSenzaGara": 0.2975117179581042,
+      "quotaSenzaGaraNum": 0.5544643992595837
     },
     {
       "reg": "VENETO",
@@ -204,8 +204,8 @@
     },
     {
       "reg": "PIEMONTE",
-      "n": 50713,
-      "importo": 10495942628,
+      "n": 50409,
+      "importo": 10492620964,
       "cat": {
         "competitiva": {
           "n": 3906,
@@ -216,12 +216,12 @@
           "importo": 3836408536
         },
         "diretto": {
-          "n": 24441,
-          "importo": 3758523631
+          "n": 24138,
+          "importo": 3756491557
         },
         "negoziataSenza": {
-          "n": 2218,
-          "importo": 419374429
+          "n": 2217,
+          "importo": 418084840
         },
         "negoziata": {
           "n": 1640,
@@ -232,14 +232,14 @@
           "importo": 34686646
         }
       },
-      "urgenzaN": 6387,
-      "pnrrImporto": 409834061,
-      "band40": 707,
-      "band140": 396,
+      "urgenzaN": 6359,
+      "pnrrImporto": 407368008,
+      "band40": 705,
+      "band140": 395,
       "prorogaN": 2651,
-      "bunchingQuota": 0.0451290863712614,
-      "quotaSenzaGara": 0.39804886597440253,
-      "quotaSenzaGaraNum": 0.5256837497288663
+      "bunchingQuota": 0.04557129836771895,
+      "quotaSenzaGara": 0.3978583054536212,
+      "quotaSenzaGaraNum": 0.5228233053621377
     },
     {
       "reg": "TOSCANA",
@@ -321,42 +321,42 @@
     },
     {
       "reg": "NON CLASSIFICATO",
-      "n": 20192,
-      "importo": 9651656082,
+      "n": 19894,
+      "importo": 9621594605,
       "cat": {
         "competitiva": {
-          "n": 2310,
-          "importo": 2093595445
+          "n": 2303,
+          "importo": 2088852958
         },
         "quadro": {
           "n": 5356,
           "importo": 3347387866
         },
         "diretto": {
-          "n": 11001,
-          "importo": 3447663866
+          "n": 10735,
+          "importo": 3428341715
         },
         "negoziataSenza": {
-          "n": 1049,
-          "importo": 546286152
+          "n": 1026,
+          "importo": 540709313
         },
         "negoziata": {
           "n": 299,
           "importo": 74708585
         },
         "altro": {
-          "n": 177,
-          "importo": 142014168
+          "n": 175,
+          "importo": 141594168
         }
       },
-      "urgenzaN": 6526,
-      "pnrrImporto": 556556400,
-      "band40": 717,
-      "band140": 954,
+      "urgenzaN": 6311,
+      "pnrrImporto": 536326654,
+      "band40": 706,
+      "band140": 942,
       "prorogaN": 814,
-      "bunchingQuota": 0.15189528224706844,
-      "quotaSenzaGara": 0.41380981501974196,
-      "quotaSenzaGaraNum": 0.596770998415214
+      "bunchingQuota": 0.15351653469958082,
+      "quotaSenzaGara": 0.4125148887197454,
+      "quotaSenzaGaraNum": 0.5911832713380919
     },
     {
       "reg": "CAMPANIA",
@@ -750,42 +750,42 @@
     },
     {
       "reg": "CENTRALE",
-      "n": 6313,
-      "importo": 1166679891,
+      "n": 5735,
+      "importo": 1152388160,
       "cat": {
         "competitiva": {
-          "n": 811,
-          "importo": 233447219
+          "n": 780,
+          "importo": 229450115
         },
         "quadro": {
           "n": 1454,
           "importo": 428362909
         },
         "diretto": {
-          "n": 3552,
-          "importo": 368339008
+          "n": 3086,
+          "importo": 364195116
         },
         "negoziataSenza": {
-          "n": 217,
-          "importo": 91305114
+          "n": 215,
+          "importo": 87925114
         },
         "negoziata": {
-          "n": 209,
-          "importo": 19512126
+          "n": 133,
+          "importo": 16971082
         },
         "altro": {
-          "n": 70,
-          "importo": 25713514
+          "n": 67,
+          "importo": 25483824
         }
       },
-      "urgenzaN": 1947,
-      "pnrrImporto": 63267484,
-      "band40": 57,
-      "band140": 70,
-      "prorogaN": 67,
-      "bunchingQuota": 0.03575450450450451,
-      "quotaSenzaGara": 0.3939762102170086,
-      "quotaSenzaGaraNum": 0.5970220180579756
+      "urgenzaN": 1895,
+      "pnrrImporto": 51864158,
+      "band40": 54,
+      "band140": 63,
+      "prorogaN": 65,
+      "bunchingQuota": 0.03791315618924174,
+      "quotaSenzaGara": 0.39233328273007734,
+      "quotaSenzaGaraNum": 0.575588491717524
     },
     {
       "reg": "MARCHE",
@@ -26407,252 +26407,6 @@
       ]
     },
     {
-      "cf": "01597860996",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LA MOBILITA SOSTENIBILE NEI SETTORI DEL TRASPORTO MARITTIMO E DELLA PESCA ACCADEMIA ITALIANA DELLA MARINA M",
-      "reg": "CENTRALE",
-      "n": 532,
-      "importo": 8825937,
-      "cat": {
-        "competitiva": {
-          "n": 29,
-          "importo": 3356251
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 426,
-          "importo": 1764880
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 3280000
-        },
-        "negoziata": {
-          "n": 73,
-          "importo": 195117
-        },
-        "altro": {
-          "n": 3,
-          "importo": 229690
-        }
-      },
-      "urgenzaN": 29,
-      "pnrrImporto": 6592177,
-      "band40": 1,
-      "band140": 3,
-      "prorogaN": 2,
-      "bunchingQuota": 0.009389671361502348,
-      "quotaSenzaGara": 0.5715970828725266,
-      "quotaSenzaGaraNum": 0.8026315789473685,
-      "top": [
-        {
-          "oggetto": "SIMULATORE DI NAVIGAZIONE",
-          "importo": 3280000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "SIMULATORI DI PONTI DI NAVI",
-          "data": "2023-07-05"
-        },
-        {
-          "oggetto": "BANDO DI GARA APERTO PER LA FORNITURA DI SIMULATORE DP",
-          "importo": 2200000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI",
-          "data": "2023-12-22"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DELLA FORNITURA DI ARREDO TECNICO PER LABORATORI",
-          "importo": 198690,
-          "procedura": "ALTRA PROCEDURA A FASE UNICA",
-          "categoria": "altro",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-09"
-        },
-        {
-          "oggetto": "AFFIDAMENTO PER ACQUISTO UPGRADING SIM RADAR",
-          "importo": 149000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHI RADAR",
-          "data": "2023-11-27"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DIRETTO PER ACQUISTO ARREDAMENTI",
-          "importo": 140000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO VARIO",
-          "data": "2023-11-27"
-        },
-        {
-          "oggetto": "AFFIDAMENTO FORNITURA DIVISE ALLIEVI",
-          "importo": 139999,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "INDUMENTI AD USO PROFESSIONALE, INDUMENTI SPECIALI DA LAVORO E ACCESSORI",
-          "data": "2024-09-17"
-        },
-        {
-          "oggetto": "CONVENZIONE QUADRO DOCENZA E RESIDENZIALITA",
-          "importo": 139999,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORMAZIONE PROFESSIONALE",
-          "data": "2024-11-27"
-        },
-        {
-          "oggetto": "CONVENZIONE QUADRO DOCENZE C&C",
-          "importo": 139999,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORMAZIONE PROFESSIONALE",
-          "data": "2024-11-27"
-        },
-        {
-          "oggetto": "CONVENZIONE QUADRO DOCENZA CORSI STCW",
-          "importo": 139999,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORMAZIONE",
-          "data": "2024-12-12"
-        },
-        {
-          "oggetto": "SERVIZIO ANNUALE FORMAZIONE",
-          "importo": 139999,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORMAZIONE",
-          "data": "2024-12-03"
-        }
-      ]
-    },
-    {
-      "cf": "95124690637",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER TECNOLOGIE INNOVATIVE PER I BENI E LE ATTIVITA' CULRURALI E TURISTICHE",
-      "reg": "NON CLASSIFICATO",
-      "n": 42,
-      "importo": 7353082,
-      "cat": {
-        "competitiva": {
-          "n": 1,
-          "importo": 1824838
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 21,
-          "importo": 2184905
-        },
-        "negoziataSenza": {
-          "n": 20,
-          "importo": 3343339
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 22,
-      "pnrrImporto": 5933814,
-      "band40": 0,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0,
-      "quotaSenzaGara": 0.751826751966968,
-      "quotaSenzaGaraNum": 0.9761904761904762,
-      "top": [
-        {
-          "oggetto": "REALIZZAZIONE DI N.7 LABORATORI",
-          "importo": 1824838.31,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "MACCHINE PER L'ELABORAZIONE DI DATI (HARDWARE)",
-          "data": "2024-04-12"
-        },
-        {
-          "oggetto": "ALBERGHIERO SMART LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 176154.37,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "FORNITURE PER COMPUTER",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "ENOGASTRONOMIA SMART LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 176154.37,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "ELETTRODOMESTICI",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "DIGITAL MUSEUM LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 176154.37,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "FORNITURE PER COMPUTER",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "GREEN ACT LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 175910.69,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "FORNITURE PER COMPUTER",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "AR/VR LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 175884.32,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "ATTREZZATURE MULTIMEDIALI",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "AR/VR LAB 2 SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 175884.32,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "PARTI DI COMPUTER",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "ROBOTICS & AUTOMATION LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 175884.32,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "PARTI DI COMPUTER",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "'MULTIMEDIA CULTURE LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATORI 4.0",
-          "importo": 175414.67,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "FORNITURE PER COMPUTER",
-          "data": "2024-01-15"
-        },
-        {
-          "oggetto": "ACCOGLIENZA TURISTICA E RICETTIVITÀ ALBERGHIERA LAB SOLUZIONE INTEGRATA PER FORNITURA ATTREZZATURE, SPESE DI PUBBLICITÀ, ARREDI TECNICI INNOVATIVI, ADATTAMENTI EDILI PER I LABORATO",
-          "importo": 175414.67,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "FORNITURE PER COMPUTER",
-          "data": "2024-01-15"
-        }
-      ]
-    },
-    {
       "cf": "00988200143",
       "den": "AGENZIA DI TUTELA DELLA SALUTE DELLA MONTAGNA",
       "reg": "LOMBARDIA",
@@ -26946,129 +26700,6 @@
           "categoria": "negoziata",
           "cpv": "SERVIZI DI STAMPA E DI CONSEGNA",
           "data": "2023-05-18"
-        }
-      ]
-    },
-    {
-      "cf": "95186040168",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LE NUOVE TECNOLOGIE PER IL MADE IN ITALY - JOBSACADEMY",
-      "reg": "NON CLASSIFICATO",
-      "n": 39,
-      "importo": 5528480,
-      "cat": {
-        "competitiva": {
-          "n": 1,
-          "importo": 900000
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 38,
-          "importo": 4628480
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 39,
-      "pnrrImporto": 1082000,
-      "band40": 0,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0,
-      "quotaSenzaGara": 0.8372066045403538,
-      "quotaSenzaGaraNum": 0.9743589743589743,
-      "top": [
-        {
-          "oggetto": "<STRONG>GARA EUROPEA A PROCEDURA APERTA PER L&#8217;AFFIDAMENTO DEI SERVIZI DI TUTORAGGIO E COACHING </STRONG>FINALIZZATA AL SUPPORTO DEGLI STUDENTI DELLA FONDAZIONE ITS ACADEMY, F",
-          "importo": 900000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORMAZIONE",
-          "data": "2024-11-22"
-        },
-        {
-          "oggetto": "LABORATORIO 26 – LAB DIGITAL MARKETING - SOCIAL MEDIA CONTENT MARKETING (GRAFICA E REALTA' VIRTUALE) SUB.1",
-          "importo": 220000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE INFORMATICHE E FORNITURE",
-          "data": "2024-04-30"
-        },
-        {
-          "oggetto": "LABORATORIO 18 - LABORATORIO DI PLC E MECCATRONICA SUB.1 A",
-          "importo": 219995,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SISTEMA DI AUTOMAZIONE",
-          "data": "2024-04-29"
-        },
-        {
-          "oggetto": "WORKSTATION PC FISSI E LIM _ SUB.1",
-          "importo": 219964,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE INFORMATICHE E FORNITURE",
-          "data": "2024-04-24"
-        },
-        {
-          "oggetto": "LABORATORIO 19 - LABORATORIO DI AUTOMAZIONE 4.0 - ELETTRICO SUB.2",
-          "importo": 219900,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "LAVAGNE ELETTRONICHE O ACCESSORI",
-          "data": "2024-04-29"
-        },
-        {
-          "oggetto": "LABORATORIO 14 _ LAB DI ELETTRO-PNEUMATICA E CERTIFICAZIONI SUB.1",
-          "importo": 219796.15,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI DI MISURA",
-          "data": "2024-04-24"
-        },
-        {
-          "oggetto": "LABORATORIO 24 _ LABORATORIO DESIGN E TECNOLOGIE DEI MATERIALI SUB.1",
-          "importo": 219500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MACCHINE UTENSILI",
-          "data": "2024-04-26"
-        },
-        {
-          "oggetto": "LABORATORIO 29/30 – LABORATORIO ERP SUB.1",
-          "importo": 219100,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Pacchetti software e sistemi informatici vari",
-          "data": "2024-04-24"
-        },
-        {
-          "oggetto": "LABORATORIO 22 - LAB DI ADDITIVE MANUFACTURING - STAMPA 3D",
-          "importo": 215000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MACCHINARI VARI PER USI GENERALI E SPECIFICI",
-          "data": "2024-03-13"
-        },
-        {
-          "oggetto": "LABORATORIO 19 _ LABORATORIO DI AUTOMAZIONE 4.0 SUB.1",
-          "importo": 205000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURA ELETTRONICA",
-          "data": "2024-04-24"
         }
       ]
     },
@@ -27680,129 +27311,6 @@
       ]
     },
     {
-      "cf": "97734430016",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LE TECNOLOGIE DELLA INFORMAZIONE E DELLA COMUNICAZIONE",
-      "reg": "PIEMONTE",
-      "n": 304,
-      "importo": 3321664,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 303,
-          "importo": 2032075
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 1289589
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 28,
-      "pnrrImporto": 2466053,
-      "band40": 2,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.009900990099009901,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "PROCEDURA NEGOZIATA SOTTO SOGLIA",
-          "importo": 1289589.1,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "LAVORI DI COSTRUZIONE DI ISTITUTI PROFESSIONALI",
-          "data": "2024-02-02"
-        },
-        {
-          "oggetto": "SERVIZI DI INGEGNERIA E ARCHITETTURA PRESSO SEDE DI VIA BLIGNY 18",
-          "importo": 214255.37,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI ARCHITETTONICI, DI INGEGNERIA E PIANIFICAZIONE",
-          "data": "2023-07-21"
-        },
-        {
-          "oggetto": "FORNITURA DI ATTREZZATURE INFORMATICHE PER LE SEDI DI TORINO, BRA E NOVARA",
-          "importo": 202719,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PIATTAFORME INFORMATICHE",
-          "data": "2023-07-24"
-        },
-        {
-          "oggetto": "FORNITURA DI LICENZE SOFTWARE NELL'AMBITO DEL PROGETTO DELLA FONDAZIONE A VALERE SULLA MISSIONE 4-ISTRUZIONE E RICERCA, COMPONENTE 1, INVESTIMENTO 1.5 DEL PNRR (DECRETO DEL MIM N. ",
-          "importo": 185000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PACCHETI SOFTWARE GENERALI",
-          "data": "2024-04-24"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DIRETTO DI FORNITURA DI ARREDI NELL'AMBITO DEL PROGETTO CRESCERE PER COMPETERE DELLA FONDAZIONE A VALERE SULLA MISSIONE 4-ISTRUZIONE E RICERCA, COMPONENTE 1, INVESTIMEN",
-          "importo": 140000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO VARIO",
-          "data": "2024-04-18"
-        },
-        {
-          "oggetto": "ACQUISIZIONE IN AFFIDAMENTO DIRETTO DELLA PRESTAZIONE DI SERVIZI DI SUPPORTO AL R.U.P. EX ART. 31, COMMA 11, DEL D.LGS. N. 50/2016, IN AMBITO GIURIDICO-LEGALE, GIURIDICO-AMMINISTRA",
-          "importo": 135000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONSULENZA GIURIDICA",
-          "data": "2023-11-15"
-        },
-        {
-          "oggetto": "SERVIZI DI SUPPORTO AL RUP IN AMBITO GIURIDICO LEGALE",
-          "importo": 65000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI GIURIDICI",
-          "data": "2024-01-22"
-        },
-        {
-          "oggetto": "FORNITURA ARREDI PER LABORATORI 4.0",
-          "importo": 46500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ATTREZZATURA PER L'INSEGNAMENTO",
-          "data": "2023-08-14"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DIRETTO DI SERVIZI E FORNITURA PER LA REALIZZAZIONE DI UN LABORATORIO DEVSECOPS",
-          "importo": 45000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "INFRASTRUTTURA DI RETE",
-          "data": "2024-07-16"
-        },
-        {
-          "oggetto": "ACQUISIZIONE IN AFFIDAMENTO DIRETTO PER INCARICO PROFESSIONALE AVENTE AD OGGETTO SERVIZIO DI CONSULENZA A SUPPORTO DEL RUP IN AMBITO TECNICO",
-          "importo": 38000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI ANALISI O CONSULENZA TECNICA",
-          "data": "2023-12-21"
-        }
-      ]
-    },
-    {
       "cf": "02166640132",
       "den": "AZIENDA OSPEDALIERA DELLA PROVINCIA DI LECCO",
       "reg": "LOMBARDIA",
@@ -27922,252 +27430,6 @@
           "categoria": "diretto",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-03-27"
-        }
-      ]
-    },
-    {
-      "cf": "94628870159",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER ENERGIA, AMBIENTE ED EDILIZIA SOSTENIBILE",
-      "reg": "NON CLASSIFICATO",
-      "n": 13,
-      "importo": 3031664,
-      "cat": {
-        "competitiva": {
-          "n": 4,
-          "importo": 1975548
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 9,
-          "importo": 1056116
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 3,
-      "pnrrImporto": 3001677,
-      "band40": 1,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0.1111111111111111,
-      "quotaSenzaGara": 0.34836174597914565,
-      "quotaSenzaGaraNum": 0.6923076923076923,
-      "top": [
-        {
-          "oggetto": "GARA EUROPEA A PROCEDURA APERTA TELEMATICA, AI SENSI DELL'ART. 71 E 107 COMMA 3 DEL D.LGS 36/2023, PER L'AFFIDAMENTO DEI LAVORI PER LA REALIZZAZIONE DI LABORATORI IN GRADO DI RISPO",
-          "importo": 870132.56,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "LAVORI DI COSTRUZIONE DI EDIFICI PER L'ISTRUZIONE E LA RICERCA",
-          "data": "2023-12-22"
-        },
-        {
-          "oggetto": "IDROGENO",
-          "importo": 557300,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI",
-          "data": "2023-12-20"
-        },
-        {
-          "oggetto": "SOFTWARE",
-          "importo": 311400,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORNITURA DI SOFTWARE",
-          "data": "2023-12-20"
-        },
-        {
-          "oggetto": "ELETTRICO",
-          "importo": 236715.78,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "APPARECCHI ED ACCESSORI ELETTRICI",
-          "data": "2023-12-20"
-        },
-        {
-          "oggetto": "ATTREZZATURE LABORATORIO ROBOTICA RELATIVE AL PROGETTO 'ITS GREEN LABORATORI 4.0' CUP G44D23001940006",
-          "importo": 213000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE PER CONDUTTURE",
-          "data": "2023-12-31"
-        },
-        {
-          "oggetto": "FORNITURA DI ATTREZZATURE HARDWARE RELATIVE AL PROGETTO 'ITS GREEN LABORATORI 4.0' CUP G44D23001940006",
-          "importo": 207363.16,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE INFORMATICHE",
-          "data": "2023-12-31"
-        },
-        {
-          "oggetto": "RICHIESTA D'OFFERTA PER CONTO DELLA FONDAZIONE ITS ENERGIA AMBIENTE ED EDILIZIA SOSTENIBILE, AI FINI DELL'AFFIDAMENTO DIRETTO DEL SERVIZIO DI PROGETTAZIONE DI FATTIBILITA' TECNICA ",
-          "importo": 192458.01,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI PROGETTAZIONE DI EDIFICI",
-          "data": "2023-10-18"
-        },
-        {
-          "oggetto": "FORNITURA DI ATTREZZATURE PER LABORATORIO 'NUOVE ENERGIE' RELATIVE AL PROGETTO 'ITS GREEN LABORATORI' 4.0 CUP G44D23001940006",
-          "importo": 122570,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI INSTALLAZIONE DI ATTREZZATURE PER LABORATORIO",
-          "data": "2023-12-31"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DEL SERVIZIO DI CONSULENZA/SUPPORTO SPECIALISTICO CONDUZIONE CAMPAGNE MARKETING ED ALTRI SERVIZI PUBBLICITARI,DESTINATO ALL'IMPLEMENTAZIONE ORIENTAMENTO FORMATIVO (DURA",
-          "importo": 110000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI MARKETING",
-          "data": "2024-11-27"
-        },
-        {
-          "oggetto": "ARREDAMENTI RELATIVI AL PROGETTO ITS GREEN LABORATORI 4.0' CUP G44D23001940006",
-          "importo": 87577.6,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MOBILI PER LABORATORIO",
-          "data": "2023-12-31"
-        }
-      ]
-    },
-    {
-      "cf": "80000530891",
-      "den": "ISTITUTO NAZIONALE DEL DRAMMA ANTICO",
-      "reg": "CENTRALE",
-      "n": 18,
-      "importo": 2777705,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 14,
-          "importo": 331777
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 100000
-        },
-        "negoziata": {
-          "n": 3,
-          "importo": 2345928
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 0,
-      "pnrrImporto": 2577705,
-      "band40": 2,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0.14285714285714285,
-      "quotaSenzaGara": 0.1554439115052565,
-      "quotaSenzaGaraNum": 0.8333333333333334,
-      "top": [
-        {
-          "oggetto": "APPALTO INTEGRATO INERENTE LA PROGETTAZIONE DEFINITIVA, ESECUTIVA, COORDINAMENTO DELLA SICUREZZA IN FASE DI PROGETTAZIONE E L'ESECUZIONE DEI LAVORI DI RIMOZIONE DELLE BARRIERE FISI",
-          "importo": 1617376.4,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "EDIFICI DI PARTICOLARE INTERESSE STORICO O ARCHITETTONICO",
-          "data": "2023-05-15"
-        },
-        {
-          "oggetto": "ILLUMINAZIONE DEL TEATRO GRECO DI SIRACUSA",
-          "importo": 628551.16,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ELETTRICI DI EDIFICI",
-          "data": "2023-02-17"
-        },
-        {
-          "oggetto": "PROGETTO REBRANDING",
-          "importo": 100000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)",
-          "categoria": "negoziataSenza",
-          "cpv": "SERVIZI DI MARKETING",
-          "data": "2023-08-23"
-        },
-        {
-          "oggetto": "PROGETTO REBRANDING",
-          "importo": 100000,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "SERVIZI DI MARKETING",
-          "data": "2023-10-09"
-        },
-        {
-          "oggetto": "INSTALLAZIONE E FORNITURA DI SERVER, STORAGE E APPARATI NETWORKING",
-          "importo": 65000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI SVILUPPO DI SOFTWARE",
-          "data": "2023-11-16"
-        },
-        {
-          "oggetto": "MONOBLOCCHI AD USO CAMERINI E WC",
-          "importo": 58000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUTTURE VARIE DI COSTRUZIONI",
-          "data": "2023-03-30"
-        },
-        {
-          "oggetto": "DIREZIONE LAVORI, MISURA, CONTABILITÀ: AVVISO PNRR - INTERVENTO DI RIMOZIONE DELLE BARRIERE FISICHE E COGNITIVE PRESSO IL TEATRO GRECO DI SIRACUSA, VIA G. AGNELLO - SIRACUSA",
-          "importo": 57692.31,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SUPERVISIONE DI LAVORI DI COSTRUZIONE",
-          "data": "2023-08-24"
-        },
-        {
-          "oggetto": "DIREZIONE LAVORI",
-          "importo": 39955,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SUPERVISIONE DI LAVORI DI COSTRUZIONE",
-          "data": "2023-03-23"
-        },
-        {
-          "oggetto": "ATTREZZATURE PER RIPRODUZIONE",
-          "importo": 35330,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ATTREZZATURA PER RIPRODUZIONE",
-          "data": "2023-03-20"
-        },
-        {
-          "oggetto": "SERVIZIO DI SUPPORTO SPECIALISTICO AL RUP",
-          "importo": 20000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONSULENZA E INFORMAZIONE GIURIDICA",
-          "data": "2023-02-24"
         }
       ]
     },
@@ -28295,129 +27557,6 @@
       ]
     },
     {
-      "cf": "91050240463",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LA MOBILITA' SOSTENIBILE ISYL ITALIAN SUPER YACHT LIFE",
-      "reg": "NON CLASSIFICATO",
-      "n": 22,
-      "importo": 2528997,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 20,
-          "importo": 2108997
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 2,
-          "importo": 420000
-        }
-      },
-      "urgenzaN": 20,
-      "pnrrImporto": 1674000,
-      "band40": 0,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.05,
-      "quotaSenzaGara": 0.8339262778106611,
-      "quotaSenzaGaraNum": 0.9090909090909091,
-      "top": [
-        {
-          "oggetto": "STRUTTURA DIMOSTRATIVA ASSEMBLAGGIO SCAFO E MOTORE",
-          "importo": 210000,
-          "procedura": "ALTRA PROCEDURA A FASE UNICA",
-          "categoria": "altro",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-23"
-        },
-        {
-          "oggetto": "STRUTTURA DIMOSTRATIVA ASSEMBLAGGIO SCAFO E MOTORE",
-          "importo": 210000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-24"
-        },
-        {
-          "oggetto": "STRUTTURA DIMOSTRATIVA ASSEMBLAGGIO SCAFO E MOTORE",
-          "importo": 210000,
-          "procedura": "ALTRA PROCEDURA A FASE UNICA",
-          "categoria": "altro",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-23"
-        },
-        {
-          "oggetto": "PLANCIA YACHT CON STRUMENTI DI NAVIGAZIONE E TIMONE",
-          "importo": 207000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-03-13"
-        },
-        {
-          "oggetto": "ALLESTIMENTO INTERNI DI IMBARCAZIONI PER STRUTTURA DIMOSTRATIVA",
-          "importo": 175000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-29"
-        },
-        {
-          "oggetto": "ALLESTIMENTO INTERNI DI IMBARCAZIONI PER STRUTTURA DIMOSTRATIVA",
-          "importo": 175000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-29"
-        },
-        {
-          "oggetto": "ALLESTIMENTO INTERNI DI IMBARCAZIONI PER STRUTTURA DIMOSTRATIVA",
-          "importo": 175000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-29"
-        },
-        {
-          "oggetto": "FORNITURA LICENZE SOFTWARE ITOS E VBS PER USO DIDATTICO",
-          "importo": 132500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-06-07"
-        },
-        {
-          "oggetto": "FORNITURA DI SOFTWARE PIATTAFORMA MES",
-          "importo": 129500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-23"
-        },
-        {
-          "oggetto": "SERVIZIO DI ASSISTENZA LEGALE E AMMINISTRATIVA (SUPPORTO AL RUP)",
-          "importo": 120000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONSULENZA GIURIDICA",
-          "data": "2023-11-22"
-        }
-      ]
-    },
-    {
       "cf": "91361180374",
       "den": "FONDAZIONE ISTITUTO SUPERIORE MECCANICA,MECCATRONICA, MOTORISTICA, PACKAGING",
       "reg": "NON CLASSIFICATO",
@@ -28537,129 +27676,6 @@
           "categoria": "altro",
           "cpv": "PARETI DIVISORIE",
           "data": "2024-10-03"
-        }
-      ]
-    },
-    {
-      "cf": "93028760143",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER L'INNOVAZIONE DEL SISTEMA AGROALIMENTARE",
-      "reg": "NON CLASSIFICATO",
-      "n": 16,
-      "importo": 2452808,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 15,
-          "importo": 1052808
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 1400000
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 15,
-      "pnrrImporto": 1400000,
-      "band40": 1,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.13333333333333333,
-      "quotaSenzaGara": 1.0000000000000002,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "LAVORI DI NUOVA URBANIZZAZIONE SECONDARIA PER REALIZZAZIONE POLO DI RICERCA AGROALIMENTARE NELL'AMBITO SITO A SONDRIO IN VIA VALERIANA N. 32 DI PROPRIETA' DELLA FONDAZIONE DOTT. PI",
-          "importo": 1400000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "LAVORI GENERALI DI COSTRUZIONE DI EDIFICI",
-          "data": "2024-07-26"
-        },
-        {
-          "oggetto": "FORNITURA DI ANALIZZATORI PER PRODOTTI ALIMENTARI",
-          "importo": 209800,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI VARI DI VALUTAZIONE O PROVA",
-          "data": "2024-06-10"
-        },
-        {
-          "oggetto": "FORNITURA DI ATTREZZATURE PER IL LABORATORIO DI CHIMICA",
-          "importo": 137000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI VARI DI VALUTAZIONE O PROVA",
-          "data": "2024-06-10"
-        },
-        {
-          "oggetto": "REDAZIONE PROGETTAZIONE EDILIZIA ED ESECUTIVA, DIREZIONE LAVORI, COORDINAMENTO DELLA SICUREZZA IN FASE DI PROGETTAZIONE ED ESECUZIONE PER INTERVENTI DI NUOVA URBANIZZAZIONE SECONDA",
-          "importo": 103431.4,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI ARCHITETTONICI E SERVIZI AFFINI",
-          "data": "2024-08-07"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER ACQUISTO ATTREZZATURE PER LABORATORI INFORMATICI E MULTIMEDIALI",
-          "importo": 92650.2,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE INFORMATICHE E FORNITURE",
-          "data": "2024-05-23"
-        },
-        {
-          "oggetto": "REALIZZAZIONE DI ARREDI TECNICI PER LABORATORI DI ANALISI SENSORIALE, CHIMICA E MICROBIOLOGIA",
-          "importo": 92000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO",
-          "data": "2024-06-04"
-        },
-        {
-          "oggetto": "FORNITURA DI ATTREZZATURE PER LABORATORIO DI MICROBIOLOGIA",
-          "importo": 77000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI VARI DI VALUTAZIONE O PROVA",
-          "data": "2024-06-10"
-        },
-        {
-          "oggetto": "REALIZZAZIONE ARREDI TECNICI PER LABORATORIO DI CHIMICA",
-          "importo": 67000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO",
-          "data": "2024-06-04"
-        },
-        {
-          "oggetto": "FORNITURA DI HARDWARE MULTIMEDIALE DI SUPPORTO ALL'INSEGNAMENTO",
-          "importo": 54254,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MATERIALI PER TELECOMUNICAZIONI",
-          "data": "2024-06-10"
-        },
-        {
-          "oggetto": "REALIZZAZIONE ARREDI TECNICI PER LABORATORIO DI MICROBIOLOGIA",
-          "importo": 49800,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO",
-          "data": "2024-06-04"
         }
       ]
     },
@@ -28862,375 +27878,6 @@
       ]
     },
     {
-      "cf": "01670240496",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PRIME",
-      "reg": "NON CLASSIFICATO",
-      "n": 59,
-      "importo": 2063151,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 58,
-          "importo": 1663151
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 400000
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 53,
-      "pnrrImporto": 1960770,
-      "band40": 1,
-      "band140": 2,
-      "prorogaN": 0,
-      "bunchingQuota": 0.05172413793103448,
-      "quotaSenzaGara": 0.9999999999999999,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "F3 - FORNITURA DI ISOLA FLESSIBILE PER LA MANIFATTURA AVANZATA PER PER LA REALIZZAZIONE DEI LABORATORI ITS PRIME RELATIVI AL PROGETTO POTENZIAMENTO LABORATORI ITS - PRIME INNO.LAB",
-          "importo": 400000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "APPARECCHIATURA ELETTRONICA",
-          "data": "2024-05-29"
-        },
-        {
-          "oggetto": "PROGETTO PRIME INNO.LAB - CUP C54D23000720006 CENTRO DI LAVORO CNC",
-          "importo": 134450,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "CENTRO DI LAVORAZIONE",
-          "data": "2024-06-14"
-        },
-        {
-          "oggetto": "PROGETTO PRIME INNO.LAB - CUP C54D23000720006 CENTRO DI LAVORO CNC",
-          "importo": 134000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "CENTRO DI LAVORAZIONE",
-          "data": "2024-06-14"
-        },
-        {
-          "oggetto": "LAVORI EDILI",
-          "importo": 94966.93,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-06-10"
-        },
-        {
-          "oggetto": "LAVORI EDILI SEDE LABORATORI PISTOIA",
-          "importo": 94966.93,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-06-11"
-        },
-        {
-          "oggetto": "PROGETTAZIONE E DIREZIONE LAVORI STRUTTURALE E IMPIANTISTICA LABORATORI BANDO PNRR PROGETTO",
-          "importo": 78520,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI PROGETTAZIONE DI EDIFICI",
-          "data": "2023-11-21"
-        },
-        {
-          "oggetto": "PROGETTO PRIME INNO.LAB - CUP C54D23000720006 ROBOT PER MACCHINE CNC",
-          "importo": 67500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI OTTICI",
-          "data": "2024-06-14"
-        },
-        {
-          "oggetto": "PROGETTO PRIME INNO.LAB - CUP C54D23000720006 TORNIO CNC",
-          "importo": 63000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PRESSE",
-          "data": "2024-06-14"
-        },
-        {
-          "oggetto": "PROGETTO PRIME INNO.LAB - CUP C54D23000720006 TORNIO CNC",
-          "importo": 63000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "RULLI COMPRESSORI",
-          "data": "2024-06-14"
-        },
-        {
-          "oggetto": "PROGETTO PRIME INNO.LAB - CUP C54D23000720006 SCANNER 3D LASER TOF 3D",
-          "importo": 56900,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-05-02"
-        }
-      ]
-    },
-    {
-      "cf": "93046340019",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE BIOTECNOLOGIE E NUOVE SCIENZE DELLA VITA",
-      "reg": "NON CLASSIFICATO",
-      "n": 31,
-      "importo": 2006929,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 31,
-          "importo": 2006929
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 28,
-      "pnrrImporto": 2006929,
-      "band40": 2,
-      "band140": 6,
-      "prorogaN": 0,
-      "bunchingQuota": 0.25806451612903225,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "FORNITURA DI UN ECOTOMOGRAFO COMPLETO DI SOFTWARE, SONDE E ACCESSORI",
-          "importo": 180000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ECOGRAFI, ULTRASONOGRAFI E APPARECCHI DOPPLER",
-          "data": "2024-02-19"
-        },
-        {
-          "oggetto": "FORNITURA DI STRUMENTAZIONE PER L'ANALISI TERMICA DEI MATERIALI POLIMERICI E PLASTICI PER IL LABORATORIO MATERIALI - CS/NFU",
-          "importo": 139000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "REOMETRI",
-          "data": "2024-01-31"
-        },
-        {
-          "oggetto": "FORNITURA DI PICCOLA LINEA AUTOMATIZZATA I4.0 DI PRODUZIONE NUTRACEUTICA-COSMETICA-GALENICA, COMPLETA DI SOFTWARE DI CONTROLLO (LAB. IMPIANTI - NFU)",
-          "importo": 139000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MACCHINARI VARI PER IMPIEGHI SPECIALI",
-          "data": "2024-02-06"
-        },
-        {
-          "oggetto": "FORNITURA DI STRUMENTAZIONE PROFESSIONALE PER ADDITIVE MANUFACTUTING 3D (STAMPANTE 3D A POLVERI, STAMPANTE 3D A RESINA, STAMPANTE 3D PER BIOPRINTING) E SCANNER 3D PER REVERSE ENGEN",
-          "importo": 138800,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STAMPANTI E TRACCIATORI",
-          "data": "2024-02-07"
-        },
-        {
-          "oggetto": "FORNITURA DI STRUMENTAZIONE DI MISURA PER LA GESTIONE DI VERIFICHE DI SICUREZZA ELETTRICA SU APPARECCHIATURE ELETTROMEDICALI, COMPRENSIVA DI ADDESTRAMENTO DEL PERSONALE ITS SUL COR",
-          "importo": 138126,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI PER LA MISURAZIONE DI GRANDEZZE",
-          "data": "2024-02-05"
-        },
-        {
-          "oggetto": "FORNITURA DI APPARECCHIATURE BIOMEDICHE DESTINATE ALL’ALLESTIMENTO DI UNA SALA OPERATORIA DIDATTICA PRESSO LA SEDE ITS DI COLLERETTO GIACOSA (LAB. CS)",
-          "importo": 133332.4,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHI E STRUMENTI PER SALA OPERATORIA",
-          "data": "2024-02-09"
-        },
-        {
-          "oggetto": "FORNITURA DI STRUMENTAZIONE ANALITICA PER PUREZZA E TITOLAZIONI PER IL LABORATORIO DI CHIMICA",
-          "importo": 131594.32,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SPETTROMETRI",
-          "data": "2024-01-30"
-        },
-        {
-          "oggetto": "FORNITURA DI STRUMENTAZIONE DI BIOLOGIA MOLECOLARE PER SEPARAZIONE, ESTRAZIONE E PURIFICAZIONE DNA/RNA",
-          "importo": 119196,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SISTEMI DIAGNOSTICI",
-          "data": "2024-02-01"
-        },
-        {
-          "oggetto": "FORNITURA DI ARREDI TECNICI INNOVATIVI PER I LABORATORI INFORMATICI MULTIFUNZIONALI DELLE SEDI DI COLLERETTO GIACOSA E TORINO",
-          "importo": 106311,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDO SCOLASTICO",
-          "data": "2024-02-02"
-        },
-        {
-          "oggetto": "FORNITURA DI ARREDI TECNICI PER I LABORATORI SCIENTIFICI DELLA FONDAZIONE ITS BIOTECNOLOGIE",
-          "importo": 105053.8,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MOBILI PER LABORATORIO",
-          "data": "2024-02-01"
-        }
-      ]
-    },
-    {
-      "cf": "96531160586",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE MARIA GAETANA AGNESI TECH &AMP; INNOVATION ACADEMY",
-      "reg": "NON CLASSIFICATO",
-      "n": 13,
-      "importo": 1883214,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 13,
-          "importo": 1883214
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 11,
-      "pnrrImporto": 395100,
-      "band40": 1,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0.07692307692307693,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO PER LA FORNITURA DI SERVIZIO DI CONNETTIVITÀ A BANDA LARGA E COPERTURA RADIO 5G, OGNI COMPONENTE COMPRESA",
-          "importo": 208864,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI INTERNET",
-          "data": "2024-03-25"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DI CONTRATTO DI FORNITURA APPARATI NECESSARI ALLA REALIZZAZIONE DI AREA IMMERSIVA - CINEMA NELL'AMBITO DEL PROGETTO LA.D.I. LABORATORI DIGITALI IMMERSIVI",
-          "importo": 205500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ATTREZZATURE MULTIMEDIALI",
-          "data": "2024-03-20"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DI CONTRATTO DI FORNITURA APPARATI NECESSARI ALLA REALIZZAZIONE DI AREA IMMERSIVA CINEMA NELL'AMBITO DEL PROGETTO LA.D.I. LABORATORI DIGITALI IMMERSIVI",
-          "importo": 205500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "AMPLIFICATORI DI FREQUENZE AUDIO",
-          "data": "2024-03-25"
-        },
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO PER LA FORNITURA DI UNA SOLUZIONE DI REALTÀ VIRTUALE (PIATTAFORMA SW E SISTEMI CORRELATI) E SIMULATORI AI",
-          "importo": 200968,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ATTREZZATURE MULTIMEDIALI",
-          "data": "2024-09-20"
-        },
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO DI BENI PER I LABORATORI INFORMATICI",
-          "importo": 189600,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ATTREZZATURE MULTIMEDIALI",
-          "data": "2024-03-20"
-        },
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO PER LA FORNITURA DI INFRASTRUTTURA IAAS PER BIG DATA (CLOUD COMPUTING PER DATA CENTER VIRTUALE DEDICATO)",
-          "importo": 188714,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PACCHETI SOFTWARE GENERALI",
-          "data": "2024-03-25"
-        },
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO PER LA FORNITURA DI ATTREZZATURE PER ALLESTIMENTO DEI LABORATORI INFORMATICI DELLA FONDAZIONE ITS MARIA GAETANA AGNESI TECH & INNOVATION ACADEMY",
-          "importo": 183354,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-03-25"
-        },
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO PER LA FORNITURA DI ATTREZZATURE PER ALLESTIMENTO DEI LABORATORI INFORMATICI DELLA FONDAZIONE ITS MARIA GAETANA AGNESI TECH & INNOVATION ACADEMY",
-          "importo": 183354,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-17"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DI SERVIZI SPECIALISTICI RELATIVI AD ATTIVITÀ DI MONITORAGGIO DEGLI INTERVENTI ANCHE IN CONSIDERAZIONE DEGLI ADEMPIMENTI REGIONALI E NAZIONALI, DI SUPPORTO ALLA PROGETT",
-          "importo": 120000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI CONNESSI ALLA GESTIONE",
-          "data": "2023-08-23"
-        },
-        {
-          "oggetto": "PROCEDURA DI ACQUISTO PER LA FORNITURA DI ATTREZZATURE INFORMATICHE PER ALLESTIMENTO DI 2 AULE MULTIMEDIALI",
-          "importo": 115000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "COMPUTER PERSONALI",
-          "data": "2024-03-25"
-        }
-      ]
-    },
-    {
       "cf": "09314290967",
       "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) DI MONZA",
       "reg": "LOMBARDIA",
@@ -29306,129 +27953,6 @@
       ]
     },
     {
-      "cf": "92083390606",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE MECCATRONICO DEL LAZIO",
-      "reg": "NON CLASSIFICATO",
-      "n": 34,
-      "importo": 1683636,
-      "cat": {
-        "competitiva": {
-          "n": 1,
-          "importo": 42100
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 32,
-          "importo": 1208036
-        },
-        "negoziataSenza": {
-          "n": 1,
-          "importo": 433500
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 0,
-      "pnrrImporto": 1683636,
-      "band40": 0,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.03125,
-      "quotaSenzaGara": 0.9749945879022557,
-      "quotaSenzaGaraNum": 0.9705882352941176,
-      "top": [
-        {
-          "oggetto": "LAVORI DI MANUTENZIONE STRAORDINARIA DEL PIANO SECONDO SOTTOSTRADA DELLA SEDE DELL'UNIVERSITÀ DEGLI STUDI DI CASSINO SITA IN PIAZZA MARZI N. 1, FROSINONE', FINANZIATO DALL'UNIONE E",
-          "importo": 433500,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "LAVORI DI RIPARAZIONE",
-          "data": "2023-09-19"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER LA FORNITURA DI SISTEMI FESTO PER L'AUTOMAZIONE PNEUMATICA, AUTOMAZIONE ELETTRICA-MOTORI ELETTRICI, CNC, CONTROLLO E SIMULAZIONE, SISTEMA MPS",
-          "importo": 130100.8,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI",
-          "data": "2023-10-20"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER LA SEGUENTE FORNITURA: MICROSCOPIO ELETTRONICO",
-          "importo": 100600,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MICROSCOPI ELETTRONICI A SCANSIONE",
-          "data": "2023-10-13"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER LA SEGUENTE FORNITURA: MACCHINA DINANOMETRICA",
-          "importo": 92000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHI DI MISURAZIONE E CONTROLLO",
-          "data": "2023-11-03"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA DI SERVIZIO DI ASSISTENZA AL RUP",
-          "importo": 76050,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI SUPPORTO TECNICO",
-          "data": "2023-12-15"
-        },
-        {
-          "oggetto": "PROGETTO 'LABORATORIO DI MECCATRONICA PER LA FABBRICA DIGITALE', FINANZIATO DALL'UNIONE EUROPEANEXTGENERATIONEU, PIANO NAZIONALE DI RIPRESA E RESILIENZA, MISSIONE 4: ISTRUZIONE E R",
-          "importo": 76050,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI SUPPORTO TECNICO",
-          "data": "2023-12-21"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA DI FORNITURA DI RTS-200 ROBOTICS TRAINING SYSTEM",
-          "importo": 63834,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ROBOT INDUSTRIALI",
-          "data": "2023-11-16"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER LA FORNITURA DI SISTEMA DI DIRECT DIGITAL MANUFACTURING STRATASYS F190CR",
-          "importo": 52397,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STAMPANTI E TRACCIATORI",
-          "data": "2023-11-09"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER LA FORNITURA DI STRUMENTAZIONI PER MISURE MECCANICHE E TERMICHE",
-          "importo": 51441.8,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STAZIONI METEOROLOGICHE",
-          "data": "2023-11-06"
-        },
-        {
-          "oggetto": "RICHIESTA DI OFFERTA PER LA SEGUENTE FORNITURA: PRESSA FONTIJNE",
-          "importo": 51000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MACCHINE IDRAULICHE",
-          "data": "2023-10-13"
-        }
-      ]
-    },
-    {
       "cf": "90000900374",
       "den": "AZIENDA USL DI IMOLA",
       "reg": "EMILIA ROMAGNA",
@@ -29500,244 +28024,6 @@
           "categoria": "diretto",
           "cpv": "APPARECCHIATURA INFORMATICA VARIA",
           "data": "2024-07-09"
-        }
-      ]
-    },
-    {
-      "cf": "04751020878",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LE TECNOLOGIE DELL INFORMAZIONE E DELLA COMUNICAZIONE STEVE JOBS",
-      "reg": "CENTRALE",
-      "n": 19,
-      "importo": 1488236,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 19,
-          "importo": 1488236
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 15,
-      "pnrrImporto": 1033593,
-      "band40": 0,
-      "band140": 3,
-      "prorogaN": 0,
-      "bunchingQuota": 0.15789473684210525,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "ARREDI SCOLASTICI INNOVATIVI",
-          "importo": 172851.31,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-15"
-        },
-        {
-          "oggetto": "NOME LOTTO",
-          "importo": 139900,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-01-10"
-        },
-        {
-          "oggetto": "FORNITURA E POSA IN OPERA DI ATTREZZATURE INFORMATICHE PER I LABORATORI IMMERSIVI",
-          "importo": 139400,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURA INFORMATICA VARIA",
-          "data": "2024-06-17"
-        },
-        {
-          "oggetto": "SERVIZI MOBILITÀ ERASMUS",
-          "importo": 139000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI FORMAZIONE",
-          "data": "2024-08-26"
-        },
-        {
-          "oggetto": "FORNITURA ATTREZZATURE INFORMATICHE PER LABORATORI",
-          "importo": 125000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MACCHINARI, ATTREZZATURE E FORNITURE VARIE",
-          "data": "2024-06-14"
-        },
-        {
-          "oggetto": "ATTREZZATURE INFORMATICHE",
-          "importo": 124000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURA INFORMATICA VARIA",
-          "data": "2024-06-13"
-        },
-        {
-          "oggetto": "PNRR - SUPPORTO RUP -M4C1I1.5-2023-1002-P-26290",
-          "importo": 111501.84,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SUPERVISIONE DI PROGETTI E DOCUMENTAZIONE",
-          "data": "2023-12-28"
-        },
-        {
-          "oggetto": "LOCAZIONE IMMOBILE",
-          "importo": 108000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-06-11"
-        },
-        {
-          "oggetto": "PNRR LABORATORI MECCATRONICA ITS STEVE JOBS",
-          "importo": 94870,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "MACCHINE UTENSILI OPERANTI CON LASER E CENTRI DI LAVORAZIONE",
-          "data": "2024-06-17"
-        },
-        {
-          "oggetto": "FORNITURA ARREDI INNOVATIVI",
-          "importo": 93000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO VARIO",
-          "data": "2024-06-17"
-        }
-      ]
-    },
-    {
-      "cf": "91019280808",
-      "den": "ISTITUTO TECNICO SUPERIORE PEGASUS",
-      "reg": "CENTRALE",
-      "n": 9,
-      "importo": 1199852,
-      "cat": {
-        "competitiva": {
-          "n": 2,
-          "importo": 640854
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 7,
-          "importo": 558998
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 8,
-      "pnrrImporto": 1199852,
-      "band40": 0,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.14285714285714285,
-      "quotaSenzaGara": 0.4658894058109716,
-      "quotaSenzaGaraNum": 0.7777777777777778,
-      "top": [
-        {
-          "oggetto": "RISTRUTTURAZIONE E ADEGUAMENTO DEI LOCALI DESTINATI AI LABORATORI ITS",
-          "importo": 425853.67,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "LAVORI DI RISTRUTTURAZIONE",
-          "data": "2024-08-29"
-        },
-        {
-          "oggetto": "ACQUISTO ATTREZZATURA LABORATORIO IMMERSIVO",
-          "importo": 215000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI",
-          "data": "2024-09-11"
-        },
-        {
-          "oggetto": "LAVORI DI ADEGUAMENTO DEI LOCALI DELL'IMBARCAZIONE DESTINATA A LABORATORIO/STUDENTATO ITS",
-          "importo": 175412.66,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "NAVI",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "LAVORI DI ADEGUAMENTO DEI LOCALI DELL'IMBARCAZIONE DESTINATA A LABORATORIO/STUDENTATO ITS, DELLA NAVE EDRA - M4C1L1.5-2023-1002-P-26970.",
-          "importo": 149997,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "NAVI",
-          "data": "2024-12-12"
-        },
-        {
-          "oggetto": "AFFIDAMENTO NOLO A CALDO IMBARCAZIONE DESTINATA A LABORATORIO/STUDENTATO ITS",
-          "importo": 137600,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "NOLEGGIO DI BARCHE CON EQUIPAGGIO",
-          "data": "2024-07-12"
-        },
-        {
-          "oggetto": "SERVIZI TECNICI DI PROGETTAZIONE (FTE ED ESECUTIVA), DIREZIONE LAVORI E COORDINAMENTO DELLA SICUREZZA IN FASE PROGETTUALE ED ESECUTIVA",
-          "importo": 52488.68,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PREPARAZIONE DI PROGETTI E PROGETTAZIONI, STIMA DEI COSTI",
-          "data": "2023-11-11"
-        },
-        {
-          "oggetto": "SERVIZIO DI TRASPORTO NAVE EDRA",
-          "importo": 18500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "NAVI",
-          "data": "2024-12-12"
-        },
-        {
-          "oggetto": "INCARICO SUPPORTO TECNICO-OPERATIVO SPECIALISTICO",
-          "importo": 15000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI SUPPORTO TECNICO",
-          "data": "2024-10-10"
-        },
-        {
-          "oggetto": "ACQUISTO PIATTAFORMA DI E-PROCUREMENT A SERVIZIO DELLA FONDAZIONE I.T.S. PEGASUS",
-          "importo": 10000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PIATTAFORME INFORMATICHE",
-          "data": "2024-10-10"
         }
       ]
     },
@@ -30035,129 +28321,6 @@
           "categoria": "diretto",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-05-07"
-        }
-      ]
-    },
-    {
-      "cf": "90021020640",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE ANTONIO BRUNO",
-      "reg": "NON CLASSIFICATO",
-      "n": 13,
-      "importo": 748234,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 13,
-          "importo": 748234
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 13,
-      "pnrrImporto": 700799,
-      "band40": 1,
-      "band140": 1,
-      "prorogaN": 0,
-      "bunchingQuota": 0.15384615384615385,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "AD3 - PROGETTO B1 - GALANTE",
-          "importo": 133000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD2 - PROGETTO A5-1 - KRUNA",
-          "importo": 128910,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD9 - PROGETTO UTILITY - MEGA SYSTEM",
-          "importo": 110200,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD1 - PROGETTO A1 - PROGETTO A3-1 - DTES",
-          "importo": 66061.91,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD4 - PROGETTO B1 - FESTO",
-          "importo": 59000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD8 - PROGETTO B4 - ROBOZE",
-          "importo": 55000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD7 - PROGETTO B3 - 4OP",
-          "importo": 49950,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD5 - PROGETTO B2 - L'ABCD",
-          "importo": 39435,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD12 - ATTIVITÀ ING. NICOLA SCAPERROTTA",
-          "importo": 30000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ALTRI SERVIZI",
-          "data": "2024-07-15"
-        },
-        {
-          "oggetto": "AD10 - PROGETTO UTILITY - TECHNOLOGY SRL",
-          "importo": 30000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDI ED ATTREZZATURE VARIE",
-          "data": "2024-07-15"
         }
       ]
     },
@@ -30538,129 +28701,6 @@
           "categoria": "diretto",
           "cpv": "SERVIZI DI ASSICURAZIONE CREDITI",
           "data": "2023-09-21"
-        }
-      ]
-    },
-    {
-      "cf": "91133270156",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LO SVILUPPO DEL SISTEMA CASA NEL MADE IN ITALY ROSARIO MESSINA",
-      "reg": "LOMBARDIA",
-      "n": 10,
-      "importo": 471373,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 10,
-          "importo": 471373
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 8,
-      "pnrrImporto": 471373,
-      "band40": 1,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0.1,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "FORNITURA E POSA VARI MACCHINARI PER LA LAVORAZIONE DI PELLE E TESSUTI - MISSIONE 4: ISTRUZIONE E RICERCA – COMPONENTE 1 DEL PNRR – POTENZIAMENTO DELL'OFFERTA DEI SERVIZI DI ISTRUZ",
-          "importo": 158211.44,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-12"
-        },
-        {
-          "oggetto": "FORNITURA DI HARDWARE E SOFTWARE PER REALIZZAZIONE N. 2 AULE INFORMATICHE DA 25 POSTAZIONI CADAUNA - MISSIONE 4: ISTRUZIONE E RICERCA – COMPONENTE 1 DEL PNRR – POTENZIAMENTO DELL'O",
-          "importo": 101455,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-15"
-        },
-        {
-          "oggetto": "FORNITURA E POSA SISTEMA DI ASPIRAZIONE TRUCIOLI E POLVERI PER LABORATORIO FALEGNAMERIA MISSIONE 4: ISTRUZIONE E RICERCA – COMPONENTE 1 DEL PNRR – POTENZIAMENTO DELL'OFFERTA DEI SE",
-          "importo": 76500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-08"
-        },
-        {
-          "oggetto": "MISSIONE 4: ISTRUZIONE E RICERCA - COMPONENTE 1 DEL PNRR - POTENZIAMENTO DELL'OFFERTA DEI SERVIZI DI ISTRUZIONE: DAGLI ASILI NIDO ALLE UNIVERSITÀ - INVESTIMENTO 1.5: SVILUPPO DEL S",
-          "importo": 39000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONSULENZA GIURIDICA",
-          "data": "2023-12-13"
-        },
-        {
-          "oggetto": "FORMAZIONE SPECIALISTICA PER ATTIVITÀ DI MANUTENZIONE ORDINARIA E STRAORDINARIA DI MACCHINE PER LA LAVORAZIONE DEL LEGNO - MISSIONE 4: ISTRUZIONE E RICERCA - COMPONENTE 1 DEL PNRR ",
-          "importo": 26229.51,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI FORMAZIONE SPECIALISTICA",
-          "data": "2024-12-27"
-        },
-        {
-          "oggetto": "MISSIONE 4: ISTRUZIONE E RICERCA - COMPONENTE 1 DEL PNRR - POTENZIAMENTO DELL'OFFERTA DEI SERVIZI DI ISTRUZIONE: DAGLI ASILI NIDO ALLE UNIVERSITÀ - INVESTIMENTO 1.5: SVILUPPO DEL S",
-          "importo": 24000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI ASSISTENZA PROFESSIONALE",
-          "data": "2023-12-13"
-        },
-        {
-          "oggetto": "FORNITURA DI UN SOFTWARE GESTIONALE PER IL CONTROLLO DELLA PRODUZIONE - MISSIONE 4: ISTRUZIONE E RICERCA – COMPONENTE 1 DEL PNRR – POTENZIAMENTO DELL'OFFERTA DEI SERVIZI DI ISTRUZI",
-          "importo": 16650,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-04-18"
-        },
-        {
-          "oggetto": "INCARICO PROFESSIONALE - COLLAUDO STATICO E TECNICO-AMMINISTRATIVO - INTERVENTI EDILIZI PER L'AMPLIAMENTO DEL POLO SCOLASTICO ITS ROSARIO MESSINAMISSIONE 4: ISTRUZIONE E RICERCA – ",
-          "importo": 15496,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI COLLAUDO E VERIFICA DI EDIFICI",
-          "data": "2024-12-17"
-        },
-        {
-          "oggetto": "COUNSELLING DI ORIENTAMENTO INNOVATIVO - MISSIONE 4: ISTRUZIONE E RICERCA - COMPONENTE 1 DEL PNRR – POTENZIAMENTO DELL'OFFERTA DEI SERVIZI DI ISTRUZIONE: DAGLI ASILI NIDO ALLE UNIV",
-          "importo": 8631.1,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI FORMAZIONE SPECIALISTICA",
-          "data": "2024-12-27"
-        },
-        {
-          "oggetto": "INCARICO PROFESSIONALE - SPESE PER CERTIFICAZIONI DELL'OPERA - INTERVENTI EDILIZI PER L'AMPLIAMENTO DEL POLO SCOLASTICO ITS ROSARIO MESSINAMISSIONE 4: ISTRUZIONE E RICERCA – COMPON",
-          "importo": 5200,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONSULENZA IN EFFICIENZA ENERGETICA",
-          "data": "2024-12-17"
         }
       ]
     },
@@ -31157,105 +29197,6 @@
       ]
     },
     {
-      "cf": "90036450360",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE NUOVE TECNOLOGIE DELLA VITA",
-      "reg": "NON CLASSIFICATO",
-      "n": 7,
-      "importo": 301136,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 7,
-          "importo": 301136
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 7,
-      "pnrrImporto": 115000,
-      "band40": 4,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0.5714285714285714,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "SERVIZIO DI COMUNICAZIONE E PROMOZIONE A SUPPORTO DELL'OFFERTA FORMATIVA GENERALE DELLA FONDAZIONE I.T.S. NUOVE TECNOLOGIE DELLA VITA ACCADEMY",
-          "importo": 115000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "",
-          "data": "2024-11-08"
-        },
-        {
-          "oggetto": "SERVIZIO DI SUPPORTO TECNICO PER IL LABORATORIO DI STAMPANTI 3D",
-          "importo": 39936,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "",
-          "data": "2024-10-24"
-        },
-        {
-          "oggetto": "L'AFFIDAMENTO HA AD OGGETTO IL SERVIZIO DI MOBILITÀ ALL'ESTERO PER GLI STUDENTI ISCRITTI AL PRIMO ANNO DEI CORSI ORGANIZZATI DA FONDAZIONE ITS NUOVE TECNOLOGIE DELLA VITA.L'APPALTO",
-          "importo": 39600,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI SCOLASTICI VARI",
-          "data": "2024-07-23"
-        },
-        {
-          "oggetto": "ATTIVITÀ DI ASSISTENZA E CONSULENZA LEGALE NELL'AMBITO DEL PROGETTO AZIONI FORMATIVE E DI SUPPORTO PER ITS BIOMEDICALE MIRANDOLA",
-          "importo": 39600,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "",
-          "data": "2024-10-24"
-        },
-        {
-          "oggetto": "SERVIZIO DI SUPPORTO TECNICO PER IL LABORATORIO DI PROTOTIPAZIONE TRE STAMPANTI 3D",
-          "importo": 39000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "",
-          "data": "2024-09-30"
-        },
-        {
-          "oggetto": "SERVIZIO DI SUPPORTO AL RUP AI SENSI DELL'ART. 15 COMMA 6 DEL D.LGS 36/2023, CON SPECIFICO RIFERIMENTO ALL'ATTUAZIONE DEL PRINCIPIO DEL DNSH E AL RISPETTO DEGLI OBIETTIVI PNRR NELL",
-          "importo": 15000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "",
-          "data": "2024-10-23"
-        },
-        {
-          "oggetto": "SERVIZIO DI INCARICO ORGANO DI CONTROLLO MONOCRATICO/REVISORE LEGALE DEI CONTI",
-          "importo": 13000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "",
-          "data": "2024-11-28"
-        }
-      ]
-    },
-    {
       "cf": "00315940536",
       "den": "AZIENDA USL 9 DI GROSSETO",
       "reg": "TOSCANA",
@@ -31311,89 +29252,6 @@
           "categoria": "altro",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-01-25"
-        }
-      ]
-    },
-    {
-      "cf": "93064530897",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER LE TECNOLOGIE INNOVATIVE PER I BENI E LE ATTIVIT? CULTURALI-ARCHIMEDE",
-      "reg": "NON CLASSIFICATO",
-      "n": 5,
-      "importo": 276020,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 5,
-          "importo": 276020
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 0,
-      "pnrrImporto": 276020,
-      "band40": 0,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "AFFIDAMENTO DIRETTO PREVIA PROCEDURA COMPARATIVA DELL'INCARICO DI PROGETTAZIONE TECNICA, COORDINAMENTO DELLA SICUREZZA IN FASE DI PROGETTAZIONE E IN FASE DI ESECUZIONE, DIREZIONE L",
-          "importo": 111020,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI INGEGNERIA INTEGRATI",
-          "data": "2023-09-12"
-        },
-        {
-          "oggetto": "SUPPORTO SPECIALISTICO PER L'ATTUAZIONE DEL PROGETTO PNRR 'POTENZIAMENTO DEI LABORATORI DELLE FONDAZIONI ITS ACADEMY -MISSIONE 4 - COMPONENTE 1 - INVESTIMENTO 1.5 'SVILUPPO DEL SIS",
-          "importo": 60000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI AMMINISTRATIVI PER PROGETTI DI SVILUPPO",
-          "data": "2023-09-07"
-        },
-        {
-          "oggetto": "SUPPORTO LEGALE SPECIALISTICO AL RUP PER L'ESPLETAMENTO DI PROCEDURE AFFERENTI AL PROGETTO PNRR 'POTENZIAMENTO DEI LABORATORI DELLE FONDAZIONI ITS ACADEMY -MISSIONE 4 - COMPONENTE ",
-          "importo": 60000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CONSULENZA GIURIDICA",
-          "data": "2023-10-11"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DEL SERVIZIO DI ESPLETAMENTO DELLA PROCEDURA DI GARA FINALIZZATA ALL' ATTUAZIONE DELL'INTERVENTO 'SPESE PER ATTREZZATURE E ARREDI TECNICI INNOVATIVI PER I LABORATORI 4.",
-          "importo": 30000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI ASSISTENZA PROFESSIONALE",
-          "data": "2023-11-27"
-        },
-        {
-          "oggetto": "AFFIDAMENTO DEL SERVIZIO DI ESPLETAMENTO DELLA PROCEDURA DI GARA FINALIZZATA ALLA ATTUAZIONE DELL'INTERVENTO 'ESECUZIONE DI INTERVENTI DI MANUTENZIONE ORDINARIA E STRAORDINARIA DEL",
-          "importo": 15000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI ASSISTENZA PROFESSIONALE",
-          "data": "2023-11-27"
         }
       ]
     },
@@ -31477,81 +29335,6 @@
           "categoria": "altro",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-02-12"
-        }
-      ]
-    },
-    {
-      "cf": "93080570844",
-      "den": "FONDAZIONE ISTITUTO TECNICO SUPERIORE PER L'AGRICOLTURA E L'ALIMENTAZIONE SICANI",
-      "reg": "NON CLASSIFICATO",
-      "n": 4,
-      "importo": 204125,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 4,
-          "importo": 204125
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 4,
-      "pnrrImporto": 0,
-      "band40": 0,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "FORNITURA DI UN LABORATORIO IMMERSIVO MULTISENSORIALE - PROGETTO M4C1I1.5-2023-1002-P-27056 - CUP: G54D23001380006 PNRR MISSIONE 4: ISTRUZIONE E RICERCA, COMPONENTE 1",
-          "importo": 111300,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "APPARECCHIATURE INFORMATICHE E FORNITURE",
-          "data": "2024-12-17"
-        },
-        {
-          "oggetto": "FORNITURA DI UNO STRUMENTO CIRAS-4 PORTABLE CO2/H2O GAS ANALYSIS SYSTEM COMPLETO - PROGETTO M4C1I1.5-2023-1002-P-27056 - CUP: G54D23001380006 PNRR MISSIONE 4: ISTRUZIONE E RICERCA,",
-          "importo": 53500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "RICERCA, SPERIMENTAZIONE E SIMULATORI TECNICO-SCIENTIFICI",
-          "data": "2024-12-17"
-        },
-        {
-          "oggetto": "FORNITURA DI UN LABORATORIO SENSORIALE COMPOSTO DA N. 25 POSTAZIONI ASSAGGIO - PROGETTO M4C1I1.5-2023-1002-P-27056 - CUP: G54D23001380006 PNRR MISSIONE 4: ISTRUZIONE E RICERCA, COM",
-          "importo": 22625,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ARREDAMENTO VARIO",
-          "data": "2024-11-29"
-        },
-        {
-          "oggetto": "FORNITURA DI UN POLARIMETRO PROGETTO PNNR M4C1I1.5-2023",
-          "importo": 16700,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI DI MISURAZIONE",
-          "data": "2024-12-17"
         }
       ]
     },

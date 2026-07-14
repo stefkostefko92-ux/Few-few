@@ -16,7 +16,7 @@ import { euroCompact, percentualeIt, esc } from './lib/format.js';
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
 
-export function renderSiope({ siope, nomeReg }) {
+export function renderSiope({ siope, nomeReg, jsonld }) {
   const nome = typeof nomeReg === 'function' ? nomeReg : (k) => k;
   const n = siope.nazionale;
   const tot = n.spesaTotale || 0;
@@ -81,7 +81,7 @@ Di questi, <strong>${percentualeIt(quota(n.perMacro.Personale))}</strong> è and
   ${kpi('Dicembre sul mese medio', `${n.dicSuMedia.toLocaleString('it-IT', { maximumFractionDigits: 2 })}×`, n.dicSuMedia >= 1.3 ? 'neg' : '')}
 </div>
 
-<h2>Mese per mese: c'è il picco di dicembre?</h2>
+<h2>Mese per mese: c’è il picco di dicembre?</h2>
 <p class="muted small">Il flusso di pagamenti mese per mese (differenza tra i dati cumulati SIOPE). Un ultimo mese
 più alto della media segnala una concentrazione di cassa a fine anno — che può essere stagionalità (fatture di fine
 esercizio) oppure «spesa del budget» prima della chiusura del bilancio.</p>
@@ -96,19 +96,19 @@ ospedaliera acquistata da strutture private accreditate.</p>
 ${macroBarre}
 
 <h2>La febbre di dicembre, regione per regione</h2>
-<p class="muted small">Per ogni regione, quanto pesa il pagamento di dicembre rispetto al mese medio dell'anno
-(barra e percentuale) e l'importo di dicembre. In cima le regioni con la maggiore concentrazione di cassa a fine anno.</p>
+<p class="muted small">Per ogni regione, quanto pesa il pagamento di dicembre rispetto al mese medio dell’anno
+(barra e percentuale) e l’importo di dicembre. In cima le regioni con la maggiore concentrazione di cassa a fine anno.</p>
 ${regBarre}
 ${notaMancanti}
 
 <div class="note"><strong>Come leggere (e i limiti).</strong> SIOPE misura la <strong>cassa</strong> — il momento in
 cui i soldi escono davvero dai conti — ed è cosa diversa dal bilancio economico (CE), che registra i costi per
 <em>competenza</em>. Per questo serve come <strong>verifica indipendente</strong>: due fonti ufficiali, due basi
-diverse, che devono raccontare la stessa storia. Un picco di dicembre <strong>non è di per sé un'anomalia</strong>:
+diverse, che devono raccontare la stessa storia. Un picco di dicembre <strong>non è di per sé un’anomalia</strong>:
 può essere stagionalità (fatture concentrate a fine esercizio) o «spesa del budget» prima della chiusura. È un
-<em>indicatore, non una prova</em>. Il dato è aggregato a livello <strong>regionale</strong> — l'insieme di tutte le
+<em>indicatore, non una prova</em>. Il dato è aggregato a livello <strong>regionale</strong> — l’insieme di tutte le
 aziende sanitarie della regione — perché SIOPE identifica gli enti per nome e non con un codice univoco confrontabile:
-l'aggregato regionale evita abbinamenti errati. Il perimetro è quello delle aziende operative (ASL, aziende
+l’aggregato regionale evita abbinamenti errati. Il perimetro è quello delle aziende operative (ASL, aziende
 ospedaliere, IRCCS pubblici, IZS); sono esclusi la gestione sanitaria accentrata regionale (GSA) e i pagamenti
 centrali, che duplicherebbero le uscite delle aziende.</div>
 <p class="small muted">Fonte: <a href="${esc(siope.url)}" target="_blank" rel="noopener">RGS/MEF — SIOPE</a>
@@ -121,6 +121,7 @@ Dati grezzi: <a href="dati.html">open data</a> (siope.json).</p>
     description: `Nel ${siope.anno} le aziende sanitarie pubbliche hanno pagato ${euroCompact(tot)} per cassa: quanto al personale, ai farmaci e ai privati, mese per mese, con il picco di dicembre regione per regione. Dati SIOPE RGS/MEF.`,
     active: 'approfondimenti.html',
     canonical: 'siope.html',
+    jsonld,
     body,
   });
 }

@@ -11,7 +11,7 @@
 import { page, kpi, hbars } from './lib/site-ui.js';
 import { numeroIt, esc } from './lib/format.js';
 
-export function renderSdo({ sdo, popolazione, nomeReg }) {
+export function renderSdo({ sdo, popolazione, nomeReg, jsonld }) {
   const pop = popolazione && popolazione.regioni ? popolazione.regioni : {};
   const nome = typeof nomeReg === 'function' ? nomeReg : (k) => k;
 
@@ -97,6 +97,7 @@ Dati grezzi: <a href="dati.html">open data</a> (sdo.json).</p>
     description: `${numeroIt(sdo.nazionale.dimissioni)} dimissioni ospedaliere nel ${sdo.anno}: i volumi di attività per regione e per struttura, normalizzati per abitante. Dati SDO del Ministero della Salute.`,
     active: 'approfondimenti.html',
     canonical: 'sdo.html',
+    jsonld,
     body,
   });
 }

@@ -13,7 +13,7 @@ function tabella(righe, colonne) {
   return `<div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
-export function renderSegnaliGare({ seg }) {
+export function renderSegnaliGare({ seg, jsonld }) {
   const n = seg.nazionale;
   const rz = n.ribassoZero, tb = n.termineBreve, ss = n.sottoSoglia, fr = n.frazionamento, iu = n.invitatiUnico, sa = n.subappalto;
 
@@ -83,6 +83,7 @@ inesatto? <a href="note-legali.html#rettifiche">Richiedi una rettifica</a>.</div
     description: 'Tempi stretti, importi sotto soglia, frazionamento, ribassi nulli, inviti a vuoto, subappalto: gli indicatori di rischio sulle gare della sanità pubblica italiana. Dati ANAC.',
     active: 'inchiesta.html',
     canonical: 'segnali-gare.html',
+    jsonld,
     body,
   });
 }

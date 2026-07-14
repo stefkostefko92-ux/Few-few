@@ -203,7 +203,7 @@ async function main() {
       'Copre solo le gare sopra-soglia UE dell’era eForms (~2023 in poi): è un ' +
       'campione degli ultimi ~2 anni, non la storia completa. Il numero di offerte ' +
       'per lotto è quello dichiarato nei bandi di aggiudicazione (codice «tenders»). ' +
-      'Complementa i dati ANAC (che coprono anche il sotto-soglia), non li sostituisce.',
+      'Integra i dati ANAC (che coprono anche il sotto-soglia), non li sostituisce.',
     ...dati,
   });
 

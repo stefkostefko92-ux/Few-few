@@ -20,6 +20,19 @@
 - [Il PNRR nella sanità](https://ospedalitrasparenti.it/pnrr.html)
 - [Le storie nei dati](https://ospedalitrasparenti.it/storie.html)
 
+## Indicatori sulle gare e approfondimenti
+
+- [Chi si presenta insieme alle gare](https://ospedalitrasparenti.it/cordate.html): coppie di società che concorrono insieme, una vince e l'altra mai
+- [Sei indicatori sulle gare](https://ospedalitrasparenti.it/segnali-gare.html): frazionamento, soglie UE, tempi troppo brevi
+- [Quanti partecipano davvero alle gare](https://ospedalitrasparenti.it/aggiudicazioni.html): offerenti per gara e ribassi (ANAC)
+- [Le gare europee della sanità](https://ospedalitrasparenti.it/ted.html): offerenti per lotto sopra-soglia UE (TED)
+- [Le consulenze esterne della sanità](https://ospedalitrasparenti.it/consulenze.html): spesa per incarichi esterni, aggregata per azienda
+- [La dotazione tecnologica](https://ospedalitrasparenti.it/apparecchiature.html): grandi apparecchiature per milione di abitanti
+- [La cassa della sanità mese per mese](https://ospedalitrasparenti.it/siope.html): flussi SIOPE e concentrazione a fine anno
+- [Il PNRR della sanità (Missione 6)](https://ospedalitrasparenti.it/pnrr-salute.html): fondi e progetti per regione
+- [I ricoveri negli ospedali](https://ospedalitrasparenti.it/sdo.html): volumi di dimissione per regione
+- [Il decennio delle gare 2019-2024](https://ospedalitrasparenti.it/storico.html): come la pandemia ha cambiato gli appalti
+
 ## Nota
 
 Gli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:

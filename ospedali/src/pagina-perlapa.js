@@ -10,7 +10,7 @@ import { euroIt, euroCompact, numeroIt } from './lib/format.js';
  * @param {Object}   p.cons         — съдържанието на data/consulenze.json
  * @param {Function} [p.nomePerCod] — по избор: код→име (не се ползва, join-ът е по име)
  */
-export function renderConsulenze({ cons, nomePerCod }) {
+export function renderConsulenze({ cons, nomePerCod, jsonld }) {
   void nomePerCod; // join-ът е по ИМЕ на структурата, не по код
 
   const anni = Object.keys(cons.perAnno).map(Number).sort((a, b) => a - b);
@@ -36,7 +36,7 @@ export function renderConsulenze({ cons, nomePerCod }) {
 <p class="lead">Tra il ${primo} e il ${ultimo} le strutture del Servizio Sanitario Nazionale hanno conferito
 <strong>${numeroIt(totIncarichi)}</strong> incarichi di consulenza e collaborazione esterna, per un totale di
 <strong>${euroIt(totImporto)}</strong> distribuiti su <strong>${numeroIt(nEnti)}</strong> aziende. Sono incarichi
-<strong>legali e obbligatoriamente pubblici</strong> (art. 15 D.Lgs. 33/2013): una spesa alta non è di per sé
+<strong>leciti e obbligatoriamente pubblici</strong> (art. 15 D.Lgs. 33/2013): una spesa alta non è di per sé
 un’irregolarità, ma un <em>indicatore</em> di quanto un’azienda dipenda da competenze esterne.</p>
 
 <div class="grid kpis">
@@ -83,6 +83,7 @@ Prestazioni</a> (CC BY 4.0). Elaborazione propria; i nomi delle persone fisiche 
     description: `${numeroIt(totIncarichi)} incarichi di consulenza esterna delle aziende sanitarie per ${euroCompact(totImporto)} (${primo}–${ultimo}). Aggregati per azienda, senza nomi di persone. Fonte PerlaPA.`,
     active: 'approfondimenti.html',
     canonical: 'consulenze.html',
+    jsonld,
     body,
   });
 }

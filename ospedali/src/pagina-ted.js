@@ -18,7 +18,7 @@ function rigaCpv(etichetta, g) {
     <td class="num">${euroCompact(g.valore)}</td></tr>`;
 }
 
-export function renderTed({ ted }) {
+export function renderTed({ ted, jsonld }) {
   const n = ted.nazionale;
   const c33 = ted.perCpv['33'];
   const c85 = ted.perCpv['85'];
@@ -92,6 +92,7 @@ ${esc(ted.nota || '')} Dati aggregati: nessun nome di aggiudicatario è conserva
     description: `Nella sanità italiana il ${percentualeIt(n.quotaUnOfferente)} dei lotti delle gare sopra-soglia UE riceve una sola offerta. Il dato TED, controllo indipendente del segnale ANAC.`,
     active: 'approfondimenti.html',
     canonical: 'ted.html',
+    jsonld,
     body,
   });
 }

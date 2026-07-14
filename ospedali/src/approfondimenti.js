@@ -1066,7 +1066,7 @@ urgenze e affidamenti senza confronto è attesa e in gran parte giustificata. La
 si torna ai livelli pre-COVID. La quota «senza gara» invece nel ${anniComp.at(-1)} resta <strong>sopra</strong> il livello del 2019:
 l’eccezione rischia di diventare prassi. Il dettaglio per regione è negli <a href="appalti.html">appalti</a>.</div>
 ${a2024 ? `<h2>E il ${rotti[0]}? Una serie nuova, non confrontabile</h2>
-<p>Dal 1° gennaio 2024 il nuovo Codice dei contratti (D.Lgs 36/2023) e le piattaforme di
+<p>Dal 1° gennaio 2024 il nuovo Codice dei contratti (D.Lgs. 36/2023) e le piattaforme di
 e-procurement certificate (PCP) hanno cambiato <em>cosa</em> finisce nella banca dati ANAC:
 ora ci entrano anche i micro-acquisti che prima passavano dal circuito SmartCIG, la soglia
 dell’affidamento diretto per servizi e forniture è salita a 140.000 €, e il flag «urgenza»

@@ -10,7 +10,7 @@
 import { page, kpi, hbars } from './lib/site-ui.js';
 import { euroCompact, euroIt, numeroIt } from './lib/format.js';
 
-export function renderPnrrSalute({ pnrr, popolazione, nomeReg, href }) {
+export function renderPnrrSalute({ pnrr, popolazione, nomeReg, href, jsonld }) {
   const naz = pnrr.nazionale;
   const nome = (key) => (typeof nomeReg === 'function' ? nomeReg(key) : nomeReg?.[key]) || key;
   const link = (key) => (typeof href === 'function' ? href(key) : null);
@@ -94,6 +94,7 @@ Dato scaricabile in <a href="dati.html">dati aperti</a> (pnrr-salute.json).</p>
     description: `${euroCompact(naz.finanziamentoPnrr)} del PNRR per la sanità (Missione 6): Case e Ospedali di Comunità, ammodernamento tecnologico. La distribuzione regionale e pro capite, dai dati ufficiali ReGiS.`,
     active: 'approfondimenti.html',
     canonical: 'pnrr-salute.html',
+    jsonld,
     body,
   });
 }

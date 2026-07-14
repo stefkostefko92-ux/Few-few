@@ -148,6 +148,14 @@ function rigaAggiornamento() {
     : '';
 }
 
+// Комбиниран граф Article + BreadcrumbList за подстраниците на „Approfondimenti“.
+function pagLd(titolo, descrizione, percorso, nome) {
+  const a = articleLd(titolo, descrizione, percorso);
+  const b = briciole([['Home', '/'], ['Approfondimenti', 'approfondimenti.html'], [nome, percorso]]);
+  const nodi = [a, b].filter(Boolean);
+  return nodi.length ? { '@context': 'https://schema.org', '@graph': nodi } : null;
+}
+
 // BreadcrumbList JSON-LD (за дълбоките страници)
 function briciole(items) {
   const su = siteUrl();
@@ -237,7 +245,9 @@ async function main() {
   }
 
   await writeFile(join(SITE_DIR, 'index.html'), renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }));
-  await writeFile(join(SITE_DIR, 'inchiesta.html'), renderInchiesta({ forense, appalti, appMatch, href }));
+  const conCordate = !!(await readJson(pjoin(DATA_DIR, 'cordate.json')).catch(() => null));
+  const conSegGare = !!(await readJson(pjoin(DATA_DIR, 'segnali-gare.json')).catch(() => null));
+  await writeFile(join(SITE_DIR, 'inchiesta.html'), renderInchiesta({ forense, appalti, appMatch, href, conCordate, conSegGare }));
   if (coi) await writeFile(join(SITE_DIR, 'conflitti.html'), renderConflitti({ coi, href }));
   await writeFile(join(SITE_DIR, 'classifiche.html'), renderClassifiche({ forense, href }));
   if (appalti) await writeFile(join(SITE_DIR, 'appalti.html'), renderAppalti({ appalti, appByCod, appMatch, enti, href }));
@@ -542,26 +552,26 @@ async function main() {
   }
 
   // --- Нови източници (all-11) — данните са заредени по-горе; тук само страниците ---
-  if (apparecchiature) await writeFile(join(SITE_DIR, 'apparecchiature.html'), renderApparecchiature({ app: apparecchiature, popolazione, nomeReg }));
-  if (sdo) await writeFile(join(SITE_DIR, 'sdo.html'), renderSdo({ sdo, popolazione, nomeReg }));
+  if (apparecchiature) await writeFile(join(SITE_DIR, 'apparecchiature.html'), renderApparecchiature({ app: apparecchiature, popolazione, nomeReg, jsonld: pagLd('La dotazione tecnologica degli ospedali', 'Grandi apparecchiature diagnostiche e terapeutiche per milione di abitanti, regione per regione.', 'apparecchiature.html', 'Dotazione tecnologica') }));
+  if (sdo) await writeFile(join(SITE_DIR, 'sdo.html'), renderSdo({ sdo, popolazione, nomeReg, jsonld: pagLd('I ricoveri negli ospedali italiani', 'Volumi di dimissioni ospedaliere per regione dalle schede di dimissione (SDO).', 'sdo.html', 'Ricoveri (SDO)') }));
 
   const aggiu = await readJson(pjoin(DATA_DIR, 'aggiudicazioni.json')).catch(() => null);
-  if (aggiu) await writeFile(join(SITE_DIR, 'aggiudicazioni.html'), renderAggiudicazioni({ agg: aggiu }));
+  if (aggiu) await writeFile(join(SITE_DIR, 'aggiudicazioni.html'), renderAggiudicazioni({ agg: aggiu, jsonld: pagLd('Quanti partecipano davvero alle gare della sanità', 'Numero di offerenti, ribassi e affidamenti a offerente unico dai dati ANAC.', 'aggiudicazioni.html', 'Concorrenza nelle gare') }));
 
   const ted = await readJson(pjoin(DATA_DIR, 'ted.json')).catch(() => null);
-  if (ted) await writeFile(join(SITE_DIR, 'ted.html'), renderTed({ ted }));
+  if (ted) await writeFile(join(SITE_DIR, 'ted.html'), renderTed({ ted, jsonld: pagLd('Le gare europee della sanità italiana', 'Offerenti per lotto nelle gare sopra-soglia UE pubblicate su TED.', 'ted.html', 'Gare europee (TED)') }));
 
   const cons = await readJson(pjoin(DATA_DIR, 'consulenze.json')).catch(() => null);
-  if (cons) await writeFile(join(SITE_DIR, 'consulenze.html'), renderConsulenze({ cons }));
+  if (cons) await writeFile(join(SITE_DIR, 'consulenze.html'), renderConsulenze({ cons, jsonld: pagLd('Le consulenze esterne della sanità', 'Spesa e numero di incarichi di consulenza esterna delle aziende sanitarie, per azienda.', 'consulenze.html', 'Consulenze esterne') }));
 
-  if (pnrrSalute) await writeFile(join(SITE_DIR, 'pnrr-salute.html'), renderPnrrSalute({ pnrr: pnrrSalute, popolazione, nomeReg, href: regHref }));
-  if (siope) await writeFile(join(SITE_DIR, 'siope.html'), renderSiope({ siope, nomeReg }));
+  if (pnrrSalute) await writeFile(join(SITE_DIR, 'pnrr-salute.html'), renderPnrrSalute({ pnrr: pnrrSalute, popolazione, nomeReg, href: regHref, jsonld: pagLd('Il PNRR della sanità (Missione 6)', 'Fondi e progetti della Missione 6 del PNRR per la sanità, regione per regione.', 'pnrr-salute.html', 'PNRR sanità') }));
+  if (siope) await writeFile(join(SITE_DIR, 'siope.html'), renderSiope({ siope, nomeReg, jsonld: pagLd('La cassa della sanità mese per mese', 'Flussi di cassa SIOPE delle aziende sanitarie e concentrazione dei pagamenti a fine anno.', 'siope.html', 'Cassa (SIOPE)') }));
 
   const cordate = await readJson(pjoin(DATA_DIR, 'cordate.json')).catch(() => null);
-  if (cordate) await writeFile(join(SITE_DIR, 'cordate.html'), renderCordate({ cordate }));
+  if (cordate) await writeFile(join(SITE_DIR, 'cordate.html'), renderCordate({ cordate, jsonld: pagLd('Chi si presenta insieme alle gare', 'Coppie di società che concorrono insieme dove una vince e l’altra mai: un indicatore da verificare.', 'cordate.html', 'Cordate nelle gare') }));
 
   const segGare = await readJson(pjoin(DATA_DIR, 'segnali-gare.json')).catch(() => null);
-  if (segGare) await writeFile(join(SITE_DIR, 'segnali-gare.html'), renderSegnaliGare({ seg: segGare }));
+  if (segGare) await writeFile(join(SITE_DIR, 'segnali-gare.html'), renderSegnaliGare({ seg: segGare, jsonld: pagLd('Sei indicatori sulle gare della sanità', 'Frazionamento, soglie UE, tempi troppo brevi: indicatori di rischio sulle gare, non prove.', 'segnali-gare.html', 'Indicatori sulle gare') }));
 
   // PNE (esiti clinici) — разход на глава per регион за кръстоската „soldi vs esiti"
   const pne = await readJson(pjoin(DATA_DIR, 'pne.json')).catch(() => null);
@@ -774,7 +784,20 @@ async function main() {
     // llms.txt — карта за AI асистентите (Claude/Perplexity я четат)
     await writeFile(
       join(SITE_DIR, 'llms.txt'),
-      `# Ospedali Trasparenti\n\n> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali\n> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.\n\n## Pagine principali\n\n- [Inchiesta: dove vanno i soldi](${su}/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa\n- [Relazioni ricorrenti e possibili conflitti d'interesse](${su}/conflitti.html): coppie azienda–fornitore da verificare\n- [Appalti della sanità](${su}/appalti.html): quota senza gara per regione e per azienda\n- [Fornitori del SSN](${su}/fornitori.html): chi incassa i soldi della sanità\n- [Regioni a confronto](${su}/regioni.html): carta d'Italia della quota senza gara\n- [Metodologia e fonti](${su}/metodologia.html): come calcoliamo ogni indicatore\n- [Dati aperti](${su}/dati.html): dataset scaricabili (JSON/CSV) con licenze\n- [Il decennio della sanità 2012-2024](${su}/tendenze.html): tendenze di ricavi, costi e personale\n- [Dove vanno i soldi: categorie di spesa](${su}/categorie.html): farmaci, pulizie, energia con i primi fornitori\n- [I 100 contratti più grandi](${su}/top-contratti.html)\n- [Glossario e FAQ](${su}/glossario.html): affidamento diretto, CIG, GSA, accordi quadro\n- [Come verificare un appalto](${su}/guida-verifica.html): guida pratica con accesso civico FOIA\n- [Il PNRR nella sanità](${su}/pnrr.html)\n- [Le storie nei dati](${su}/storie.html)\n\n## Nota\n\nGli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:\npiste da verificare, non prove né accuse.\n`
+      `# Ospedali Trasparenti\n\n> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali\n> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.\n\n## Pagine principali\n\n- [Inchiesta: dove vanno i soldi](${su}/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa\n- [Relazioni ricorrenti e possibili conflitti d'interesse](${su}/conflitti.html): coppie azienda–fornitore da verificare\n- [Appalti della sanità](${su}/appalti.html): quota senza gara per regione e per azienda\n- [Fornitori del SSN](${su}/fornitori.html): chi incassa i soldi della sanità\n- [Regioni a confronto](${su}/regioni.html): carta d'Italia della quota senza gara\n- [Metodologia e fonti](${su}/metodologia.html): come calcoliamo ogni indicatore\n- [Dati aperti](${su}/dati.html): dataset scaricabili (JSON/CSV) con licenze\n- [Il decennio della sanità 2012-2024](${su}/tendenze.html): tendenze di ricavi, costi e personale\n- [Dove vanno i soldi: categorie di spesa](${su}/categorie.html): farmaci, pulizie, energia con i primi fornitori\n- [I 100 contratti più grandi](${su}/top-contratti.html)\n- [Glossario e FAQ](${su}/glossario.html): affidamento diretto, CIG, GSA, accordi quadro\n- [Come verificare un appalto](${su}/guida-verifica.html): guida pratica con accesso civico FOIA\n- [Il PNRR nella sanità](${su}/pnrr.html)\n- [Le storie nei dati](${su}/storie.html)\n\n## Indicatori sulle gare e approfondimenti\n\n${[
+        cordate && `- [Chi si presenta insieme alle gare](${su}/cordate.html): coppie di società che concorrono insieme, una vince e l'altra mai`,
+        segGare && `- [Sei indicatori sulle gare](${su}/segnali-gare.html): frazionamento, soglie UE, tempi troppo brevi`,
+        aggiu && `- [Quanti partecipano davvero alle gare](${su}/aggiudicazioni.html): offerenti per gara e ribassi (ANAC)`,
+        ted && `- [Le gare europee della sanità](${su}/ted.html): offerenti per lotto sopra-soglia UE (TED)`,
+        cons && `- [Le consulenze esterne della sanità](${su}/consulenze.html): spesa per incarichi esterni, aggregata per azienda`,
+        apparecchiature && `- [La dotazione tecnologica](${su}/apparecchiature.html): grandi apparecchiature per milione di abitanti`,
+        siope && `- [La cassa della sanità mese per mese](${su}/siope.html): flussi SIOPE e concentrazione a fine anno`,
+        pnrrSalute && `- [Il PNRR della sanità (Missione 6)](${su}/pnrr-salute.html): fondi e progetti per regione`,
+        sdo && `- [I ricoveri negli ospedali](${su}/sdo.html): volumi di dimissione per regione`,
+        sto && `- [Il decennio delle gare 2019-2024](${su}/storico.html): come la pandemia ha cambiato gli appalti`,
+      ]
+        .filter(Boolean)
+        .join('\n')}\n\n## Nota\n\nGli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:\npiste da verificare, non prove né accuse.\n`
     );
     console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt + llms.txt (${su})`);
   }
@@ -2066,8 +2089,8 @@ economici</strong>, identificati dalla partita IVA. Le denominazioni associate a
 società di persone</strong> possono tuttavia contenere nomi di persone fisiche nella ragione sociale registrata nelle
 fonti pubbliche: per questi soggetti il sito non applica indicatori di rischio, esclude le relative pagine dai motori
 di ricerca (noindex) e non li include nell’analisi delle relazioni ricorrenti. Il trattamento avviene per finalità di
-<strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs 196/2003
-come modificato dal D.Lgs 101/2018). I dati rielaborati vengono aggiornati a ogni rigenerazione del sito; le fonti
+<strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs. 196/2003
+come modificato dal D.Lgs. 101/2018). I dati rielaborati vengono aggiornati a ogni rigenerazione del sito; le fonti
 primarie restano pubbliche presso i rispettivi titolari (ANAC, BDAP/MEF, Ministero della Salute).</p>
 
 <h2>Diritti</h2>
@@ -2573,7 +2596,7 @@ function appaltiBlock(app, appMatch) {
 }
 
 // ---------- INCHIESTA ----------
-function renderInchiesta({ forense, appalti, appMatch, href }) {
+function renderInchiesta({ forense, appalti, appMatch, href, conCordate, conSegGare }) {
   const anni = Object.keys(forense.sistema.perAnno).map(Number).sort((a, b) => a - b);
   const S = (k) => anni.map((a) => [a, forense.sistema.perAnno[a][k]]);
   const chart = lineChart(
@@ -2659,6 +2682,9 @@ A livello nazionale <strong>${percentualeIt(appalti.nazionale.quotaSenzaGaraNum)
 (il ${percentualeIt(appalti.nazionale.quotaSenzaGara)} del valore) è affidato <strong>senza gara</strong>
 — affidamento diretto o negoziata senza bando.
 → <a href="appalti.html">Il confronto tra regioni e le aziende con più appalti senza gara</a></p>` : ''}
+
+${conCordate || conSegGare ? `<p class="muted small">Altri indicatori sulle gare, da verificare:
+${conSegGare ? '<a href="segnali-gare.html">frazionamento, soglie UE e tempi troppo brevi</a>' : ''}${conCordate && conSegGare ? ' · ' : ''}${conCordate ? '<a href="cordate.html">chi si presenta sempre insieme alle gare</a>' : ''}.</p>` : ''}
 
 <div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
 Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.

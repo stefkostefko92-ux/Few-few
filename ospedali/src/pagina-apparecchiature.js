@@ -21,7 +21,7 @@ function sommaGruppo(cat, tipi) {
   return tipi.reduce((s, t) => s + (cat[t] || 0), 0);
 }
 
-export function renderApparecchiature({ app, popolazione, nomeReg }) {
+export function renderApparecchiature({ app, popolazione, nomeReg, jsonld }) {
   const pop = popolazione.regioni || {};
   const naz = app.nazionale;
   const totNaz = Object.values(naz).reduce((a, b) => a + b, 0);
@@ -53,7 +53,7 @@ export function renderApparecchiature({ app, popolazione, nomeReg }) {
 
   const body = `
 <h1>La dotazione tecnologica degli ospedali</h1>
-<p class="lead">Quante grandi apparecchiature — TAC, risonanze, PET, acceleratori per la radioterapia, robot
+<p class="lead">Quante grandi apparecchiature — TC, risonanze, PET, acceleratori per la radioterapia, robot
 chirurgici — ha ogni regione, ogni milione di abitanti. In tutta Italia il registro ministeriale conta
 <strong>${numeroIt(totNaz)}</strong> grandi apparecchiature, ${f1(perMilione(totNaz, popIt))} per milione di
 abitanti. La dotazione dice cosa una regione <em>può</em> fare: dove è bassa, l’accesso a diagnosi e cure avanzate
@@ -79,16 +79,17 @@ ministeriale elenca tipo, classe CND e numero di apparecchiature per struttura, 
 installazione</strong>, quindi non possiamo dire quali macchinari siano vecchi. Il dato riflette anche la
 <em>completezza delle dichiarazioni</em> al registro: alcune regioni sotto-dichiarano (una dotazione anomalmente
 bassa va letta con prudenza, può essere un buco di comunicazione più che di macchinari). Una dotazione alta non è
-di per sé un bene o un male: va incrociata con i volumi di attività e con la popolazione servita.</p></div>
+di per sé un bene o un male: va incrociata con i volumi di attività e con la popolazione servita.</div>
 <p class="small muted">Fonte: <a href="${esc(app.url)}" target="_blank" rel="noopener">Ministero della Salute —
 Grandi apparecchiature sanitarie</a> (DM 22/04/2014, IODL 2.0). Popolazione: Istat ${popolazione.anno}. Normalizzazione
 propria per milione di abitanti.</p>
 `;
   return page({
     title: 'La dotazione tecnologica degli ospedali italiani, regione per regione — Ospedali Trasparenti',
-    description: `TAC, risonanze, PET, acceleratori e robot chirurgici per milione di abitanti in ogni regione. ${numeroIt(totNaz)} grandi apparecchiature nel registro del Ministero della Salute.`,
+    description: `TC, risonanze, PET, acceleratori e robot chirurgici per milione di abitanti in ogni regione. ${numeroIt(totNaz)} grandi apparecchiature nel registro del Ministero della Salute.`,
     active: 'approfondimenti.html',
     canonical: 'apparecchiature.html',
+    jsonld,
     body,
   });
 }

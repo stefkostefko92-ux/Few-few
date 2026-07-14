@@ -1,35 +1,35 @@
 {
-  "generatoIl": "2026-07-14T05:39:58.337Z",
+  "generatoIl": "2026-07-14T06:17:29.319Z",
   "fonte": "ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2024",
   "nota": "Indicatori di rischio sulle procedure di gara. Ogni segnale è un INDICATORE, non una prova: possono esistere spiegazioni lecite (urgenza reale, mercati di nicchia, esigenze cliniche).",
   "nazionale": {
     "termineBreve": {
-      "n": 9940,
-      "base": 77336,
-      "quota": 0.12853005068790732
+      "n": 9935,
+      "base": 77221,
+      "quota": 0.128656712552285
     },
     "sottoSoglia": {
-      "sotto": 5421,
+      "sotto": 5397,
       "sopra": 3054,
-      "rapporto": 1.775049115913556
+      "rapporto": 1.7671905697445973
     },
     "frazionamento": {
-      "cluster": 3823,
-      "valore": 1078637288
+      "cluster": 3810,
+      "valore": 1077802426
     },
     "ribassoZero": {
       "n": 3569,
-      "base": 11753,
-      "quota": 0.303667148813069
+      "base": 11750,
+      "quota": 0.3037446808510638
     },
     "invitatiUnico": {
-      "n": 373,
-      "base": 373
+      "n": 372,
+      "base": 372
     },
     "subappalto": {
-      "n": 4763,
-      "base": 270032,
-      "quota": 0.017638650234046337
+      "n": 4759,
+      "base": 269687,
+      "quota": 0.017646382658415127
     }
   },
   "topTermineBreve": [

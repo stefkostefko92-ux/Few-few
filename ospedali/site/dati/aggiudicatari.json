@@ -1,8 +1,8 @@
 {
-  "generatoIl": "2026-07-14T05:17:05.147Z",
+  "generatoIl": "2026-07-14T06:08:38.878Z",
   "fonte": "ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), incrociati con i CIG sanitari",
   "note": "Unico offerente, concentrazione dei fornitori e vincitori ricorrenti sono indicatori, non prove.",
-  "autoritaConDati": 265,
+  "autoritaConDati": 247,
   "fornitoriNazionali": [
     {
       "cf": "07195130153",
@@ -25,8 +25,8 @@
     {
       "cf": "00488410010",
       "den": "TIM S.P.A.",
-      "valore": 1495446614,
-      "n": 806
+      "valore": 1494848068,
+      "n": 803
     },
     {
       "cf": "00747170157",
@@ -8326,126 +8326,6 @@
       "gareUnicoOfferente": 9,
       "quotaUnicoOfferente": 0.6923076923076923
     },
-    "97734430016": {
-      "valoreAggiudicato": 1372015,
-      "nFornitori": 36,
-      "top1Quota": 0.15616082914545396,
-      "topFornitori": [
-        {
-          "cf": "12666430017",
-          "den": "ARCHINEERING INGEGNERIA E ARCHITETTURA",
-          "valore": 214255,
-          "n": 1
-        },
-        {
-          "cf": "02044780019",
-          "den": "BELLUCCI S.P.A.",
-          "valore": 202719,
-          "n": 1
-        },
-        {
-          "cf": "03301640482",
-          "den": "VAR GROUP S.P.A.",
-          "valore": 185000,
-          "n": 1
-        },
-        {
-          "cf": "01969690021",
-          "den": "VIOLAUFFICIO DI ARCH. M. VIOLA",
-          "valore": 140000,
-          "n": 1
-        },
-        {
-          "cf": "09536980015",
-          "den": "AVV. MATTEO CHIOSSO",
-          "valore": 135000,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 1,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": 0
-    },
-    "95186040168": {
-      "valoreAggiudicato": 5528479,
-      "nFornitori": 39,
-      "top1Quota": 0.1627934193111704,
-      "topFornitori": [
-        {
-          "cf": "17853501009",
-          "den": "GEM COACHING SRL",
-          "valore": 900000,
-          "n": 1
-        },
-        {
-          "cf": "04275960161",
-          "den": "RUNELAB SRL",
-          "valore": 220000,
-          "n": 1
-        },
-        {
-          "cf": "00862680154",
-          "den": "DE LORENZO S.P.A.",
-          "valore": 219995,
-          "n": 1
-        },
-        {
-          "cf": "04651510168",
-          "den": "NEFIS SRL",
-          "valore": 219964,
-          "n": 1
-        },
-        {
-          "cf": "03561190160",
-          "den": "CBL FAST S.N.C. DI SANGALETTI FABIO SEVERO  &  C.",
-          "valore": 219900,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 1,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": 0
-    },
-    "95124690637": {
-      "valoreAggiudicato": 2184909,
-      "nFornitori": 18,
-      "top1Quota": 0.10792852242358834,
-      "topFornitori": [
-        {
-          "cf": "09905801214",
-          "den": "CITYLAB S.R.L.S.",
-          "valore": 235814,
-          "n": 2
-        },
-        {
-          "cf": "08570381213",
-          "den": "GR APPALTI SOCIETA' COOPERATIVA",
-          "valore": 235814,
-          "n": 2
-        },
-        {
-          "cf": "10428571219",
-          "den": "MARENGO SRL",
-          "valore": 231715,
-          "n": 2
-        },
-        {
-          "cf": "01996310650",
-          "den": "LA GRECA ANGELO & C. S.R.L.",
-          "valore": 117907,
-          "n": 1
-        },
-        {
-          "cf": "02734350750",
-          "den": "CLIO S.R.L.",
-          "valore": 117907,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
     "02175860424": {
       "valoreAggiudicato": 7529430,
       "nFornitori": 18,
@@ -8485,86 +8365,6 @@
       "gareConPartecipanti": 2,
       "gareUnicoOfferente": 2,
       "quotaUnicoOfferente": 1
-    },
-    "91133270156": {
-      "valoreAggiudicato": 408373,
-      "nFornitori": 8,
-      "top1Quota": 0.38741787532476435,
-      "topFornitori": [
-        {
-          "cf": "05841000960",
-          "den": "DAMAS SNC DI ZANIN MARCO E AGGIO ANDREA",
-          "valore": 158211,
-          "n": 1
-        },
-        {
-          "cf": "07311000157",
-          "den": "MONTI & RUSSO DIGITAL SRL IN BREVE MR DIGITAL SRL",
-          "valore": 101455,
-          "n": 1
-        },
-        {
-          "cf": "05048190960",
-          "den": "GFC IMPIANTI S.R.L.",
-          "valore": 76500,
-          "n": 1
-        },
-        {
-          "cf": "00126480409",
-          "den": "SCM GROUP  S.P.A.",
-          "valore": 26230,
-          "n": 1
-        },
-        {
-          "cf": "10051270964",
-          "den": "ACADEMY S.R.L.",
-          "valore": 16650,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
-    "90021020640": {
-      "valoreAggiudicato": 748235,
-      "nFornitori": 13,
-      "top1Quota": 0.17775164219797257,
-      "topFornitori": [
-        {
-          "cf": "01721240644",
-          "den": "*GALANTE FRANCO*",
-          "valore": 133000,
-          "n": 1
-        },
-        {
-          "cf": "04914140654",
-          "den": "KRUNA S.R.L.",
-          "valore": 128910,
-          "n": 1
-        },
-        {
-          "cf": "02902030648",
-          "den": "MEGA SYSTEM  S.R.L.",
-          "valore": 110200,
-          "n": 1
-        },
-        {
-          "cf": "04339891212",
-          "den": "DIFFUSIONE TECNOLOGIE E SERVIZI SRL",
-          "valore": 66062,
-          "n": 1
-        },
-        {
-          "cf": "13236390152",
-          "den": "FESTO C.T.E. S.R.L.",
-          "valore": 59000,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
     },
     "04329160826": {
       "valoreAggiudicato": 326174,
@@ -8822,86 +8622,6 @@
       "gareUnicoOfferente": 9,
       "quotaUnicoOfferente": 0.8181818181818182
     },
-    "93046340019": {
-      "valoreAggiudicato": 2006930,
-      "nFornitori": 29,
-      "top1Quota": 0.08968922682903739,
-      "topFornitori": [
-        {
-          "cf": "00562490011",
-          "den": "VIGLIA - S.R.L.",
-          "valore": 180000,
-          "n": 1
-        },
-        {
-          "cf": "05434951009",
-          "den": "ALFATEST SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 139000,
-          "n": 1
-        },
-        {
-          "cf": "01982210013",
-          "den": "BONETTO SRL",
-          "valore": 139000,
-          "n": 1
-        },
-        {
-          "cf": "05142580264",
-          "den": "3DZ S.P.A.",
-          "valore": 138800,
-          "n": 1
-        },
-        {
-          "cf": "00881170153",
-          "den": "S.L.T. S.R.L.",
-          "valore": 138126,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
-    "91050240463": {
-      "valoreAggiudicato": 2378997,
-      "nFornitori": 15,
-      "top1Quota": 0.31315718346849536,
-      "topFornitori": [
-        {
-          "cf": "02574610461",
-          "den": "CANTIERI NAVALI TUREDDI GROUP SPA",
-          "valore": 745000,
-          "n": 4
-        },
-        {
-          "cf": "01307170504",
-          "den": "MOBILART SRL",
-          "valore": 525000,
-          "n": 3
-        },
-        {
-          "cf": "01831230469",
-          "den": "SEA ENERGY S.R.L",
-          "valore": 207000,
-          "n": 1
-        },
-        {
-          "cf": "00812680254",
-          "den": "DBA PROGETTI SPA",
-          "valore": 132500,
-          "n": 1
-        },
-        {
-          "cf": "01577590506",
-          "den": "NET7 S.R.L.",
-          "valore": 129500,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
     "02282380746": {
       "valoreAggiudicato": 1027200,
       "nFornitori": 14,
@@ -8941,46 +8661,6 @@
       "gareConPartecipanti": 0,
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
-    },
-    "01670240496": {
-      "valoreAggiudicato": 1444374,
-      "nFornitori": 35,
-      "top1Quota": 0.18000877888967814,
-      "topFornitori": [
-        {
-          "cf": "02372890349",
-          "den": "OVERMACH - S.P.A.",
-          "valore": 260000,
-          "n": 3
-        },
-        {
-          "cf": "06973630483",
-          "den": "COSTRUZIONI SAUDINO S.R.L.",
-          "valore": 189934,
-          "n": 2
-        },
-        {
-          "cf": "01562990885",
-          "den": "M. ART S.R.L.S.",
-          "valore": 155000,
-          "n": 4
-        },
-        {
-          "cf": "11657390016",
-          "den": "NIRI SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 134450,
-          "n": 1
-        },
-        {
-          "cf": "00266430107",
-          "den": "HOMBERGER S.P.A.",
-          "valore": 67500,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 1,
-      "gareUnicoOfferente": 1,
-      "quotaUnicoOfferente": 1
     },
     "93158770870": {
       "valoreAggiudicato": 8691941,
@@ -9102,46 +8782,6 @@
       "gareUnicoOfferente": 4,
       "quotaUnicoOfferente": 0.8
     },
-    "96531160586": {
-      "valoreAggiudicato": 1741254,
-      "nFornitori": 8,
-      "top1Quota": 0.3437442211188029,
-      "topFornitori": [
-        {
-          "cf": "00488410010",
-          "den": "TIM S.P.A.",
-          "valore": 598546,
-          "n": 3
-        },
-        {
-          "cf": "02744700697",
-          "den": "ON DISPLAY SRL",
-          "valore": 205500,
-          "n": 1
-        },
-        {
-          "cf": "02746080692",
-          "den": "CONCILIUM SRL",
-          "valore": 205500,
-          "n": 1
-        },
-        {
-          "cf": "02147390690),",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 189600,
-          "n": 1
-        },
-        {
-          "cf": "02462330966",
-          "den": "VMS'S GROUP S.R.L.",
-          "valore": 183354,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
     "00068310945": {
       "valoreAggiudicato": 14443943,
       "nFornitori": 24,
@@ -9221,46 +8861,6 @@
       "gareConPartecipanti": 3,
       "gareUnicoOfferente": 2,
       "quotaUnicoOfferente": 0.6666666666666666
-    },
-    "04751020878": {
-      "valoreAggiudicato": 1406625,
-      "nFornitori": 15,
-      "top1Quota": 0.12288349773393761,
-      "topFornitori": [
-        {
-          "cf": "02433460876",
-          "den": "SPAZIO DI GAETANO GROSSO",
-          "valore": 172851,
-          "n": 1
-        },
-        {
-          "cf": "MSSGPP70L18C351X",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 139900,
-          "n": 1
-        },
-        {
-          "cf": "05998080872",
-          "den": "M.S. TECNICA IMPIANTI S.R.L.",
-          "valore": 139400,
-          "n": 1
-        },
-        {
-          "cf": "03522500788",
-          "den": "ALPHARD DI MANLIO SCALZILLI",
-          "valore": 139000,
-          "n": 1
-        },
-        {
-          "cf": "06977970828",
-          "den": "CYBERSEC4  S.R.L.",
-          "valore": 125000,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
     },
     "07026330725": {
       "valoreAggiudicato": 134189,
@@ -9376,46 +8976,6 @@
       "gareUnicoOfferente": 2,
       "quotaUnicoOfferente": 1
     },
-    "80000530891": {
-      "valoreAggiudicato": 2475374,
-      "nFornitori": 10,
-      "top1Quota": 0.6533865185624476,
-      "topFornitori": [
-        {
-          "cf": "06950000825",
-          "den": "SCANCARELLO SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 1617376,
-          "n": 1
-        },
-        {
-          "cf": "10836260967",
-          "den": "INFRASTRUTTURE M&B SRL",
-          "valore": 628551,
-          "n": 1
-        },
-        {
-          "cf": "01287710899",
-          "den": "BASILE ORAZIO S.A.S.",
-          "valore": 65000,
-          "n": 2
-        },
-        {
-          "cf": "02058910890",
-          "den": "DARIO TICALI",
-          "valore": 57692,
-          "n": 1
-        },
-        {
-          "cf": "06424320825",
-          "den": "B.A.D. SOCIETA' A RESPONSABILITA' LIMITATA SEMPLIFICATA",
-          "valore": 39955,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 2,
-      "gareUnicoOfferente": 2,
-      "quotaUnicoOfferente": 1
-    },
     "91361180374": {
       "valoreAggiudicato": 1784552,
       "nFornitori": 12,
@@ -9495,86 +9055,6 @@
       "gareConPartecipanti": 5,
       "gareUnicoOfferente": 1,
       "quotaUnicoOfferente": 0.2
-    },
-    "93028760143": {
-      "valoreAggiudicato": 2452808,
-      "nFornitori": 11,
-      "top1Quota": 0.5707743940822111,
-      "topFornitori": [
-        {
-          "cf": "13394670155",
-          "den": "C.M. VALTELLINA S.A.S. DI LIDO MOVIGLIATTI",
-          "valore": 1400000,
-          "n": 1
-        },
-        {
-          "cf": "04878310962",
-          "den": "ANALYTICAL SERVICE S.R.L.",
-          "valore": 214000,
-          "n": 2
-        },
-        {
-          "cf": "00410720288",
-          "den": "FOSS ITALIA  S.R.L.",
-          "valore": 209800,
-          "n": 1
-        },
-        {
-          "cf": "04980350013",
-          "den": "MONTEPAONE S.R.L.",
-          "valore": 208800,
-          "n": 3
-        },
-        {
-          "cf": "01069990149",
-          "den": "STUDIO BATTAGLIA S.R.L. SOCIETA' TRA PROFESSIONISTI",
-          "valore": 144831,
-          "n": 2
-        }
-      ],
-      "gareConPartecipanti": 1,
-      "gareUnicoOfferente": 1,
-      "quotaUnicoOfferente": 1
-    },
-    "90036450360": {
-      "valoreAggiudicato": 301136,
-      "nFornitori": 7,
-      "top1Quota": 0.38188725359970244,
-      "topFornitori": [
-        {
-          "cf": "01452040387",
-          "den": "DINAMICA MEDIA S.R.L.",
-          "valore": 115000,
-          "n": 1
-        },
-        {
-          "cf": "03760070361",
-          "den": "IDEATIVA SRL",
-          "valore": 39936,
-          "n": 1
-        },
-        {
-          "cf": "VLRLSE72M62H223V",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 39600,
-          "n": 1
-        },
-        {
-          "cf": "00453310351",
-          "den": "I.F.O.A. - ISTITUTO FORMAZIONE OPERATORI AZIENDALI",
-          "valore": 39600,
-          "n": 1
-        },
-        {
-          "cf": "03350050369",
-          "den": "GB SOLUZIONI",
-          "valore": 39000,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
     },
     "95152320636": {
       "valoreAggiudicato": 5234857,
@@ -9804,46 +9284,6 @@
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
     },
-    "01597860996": {
-      "valoreAggiudicato": 1234375,
-      "nFornitori": 12,
-      "top1Quota": 0.1609640506329114,
-      "topFornitori": [
-        {
-          "cf": "02950550109",
-          "den": "PUNTO QUATTRO SOCIETA' A RESPONSABILITA' LIMITATA PUNTO QUATTRO S",
-          "valore": 198690,
-          "n": 1
-        },
-        {
-          "cf": "02179120999",
-          "den": "ENTE RADAR ITALIAN SHIPPING ACADEMY S.R.L.",
-          "valore": 194359,
-          "n": 7
-        },
-        {
-          "cf": "02493570697",
-          "den": "SAFETY TOTAL SYSTEM MARINE GROUP",
-          "valore": 174499,
-          "n": 5
-        },
-        {
-          "cf": "03419760172",
-          "den": "C.M.A. SISTEMI ANTINCENDIO S.R.L.",
-          "valore": 169039,
-          "n": 3
-        },
-        {
-          "cf": "03836960108",
-          "den": "RIBERTI S.R.L.",
-          "valore": 139999,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 23,
-      "gareUnicoOfferente": 23,
-      "quotaUnicoOfferente": 1
-    },
     "01687160901": {
       "valoreAggiudicato": 3381074,
       "nFornitori": 9,
@@ -9900,40 +9340,6 @@
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
     },
-    "93080570844": {
-      "valoreAggiudicato": 204125,
-      "nFornitori": 4,
-      "top1Quota": 0.545254133496632,
-      "topFornitori": [
-        {
-          "cf": "01681100622",
-          "den": "DMC S.R.L.",
-          "valore": 111300,
-          "n": 1
-        },
-        {
-          "cf": "07215940482",
-          "den": "ROSSI STRUMENTI S.R.L.S.",
-          "valore": 53500,
-          "n": 1
-        },
-        {
-          "cf": "01945450854",
-          "den": "PUBBLITALIA 3D DI CARRUBBA MARCO & C SAS",
-          "valore": 22625,
-          "n": 1
-        },
-        {
-          "cf": "10606840014",
-          "den": "ANTON PAAR ITALIA S.R.L.",
-          "valore": 16700,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
     "90000900374": {
       "valoreAggiudicato": 1659154,
       "nFornitori": 4,
@@ -9967,46 +9373,6 @@
       "gareConPartecipanti": 0,
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
-    },
-    "94628870159": {
-      "valoreAggiudicato": 3031665,
-      "nFornitori": 13,
-      "top1Quota": 0.2870148911571694,
-      "topFornitori": [
-        {
-          "cf": "05193640652",
-          "den": "SA.MA IMPIANTI S.R.L.",
-          "valore": 870133,
-          "n": 1
-        },
-        {
-          "cf": "11660090967",
-          "den": "SIMPLIFHY  SB S.R.L.",
-          "valore": 557300,
-          "n": 1
-        },
-        {
-          "cf": "03492000173",
-          "den": "CARRARO LAB SRL",
-          "valore": 311400,
-          "n": 1
-        },
-        {
-          "cf": "06248000967",
-          "den": "ITALTEC TECHNICAL TRAINING SYSTEMS S.R.L. IN FORMA ABBREVIATA ITALTEC S.R.L.",
-          "valore": 236716,
-          "n": 1
-        },
-        {
-          "cf": "00952120012",
-          "den": "COMAU S.P.A.",
-          "valore": 213000,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 4,
-      "gareUnicoOfferente": 4,
-      "quotaUnicoOfferente": 1
     },
     "91021780274": {
       "valoreAggiudicato": 190361,
@@ -10108,46 +9474,6 @@
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
     },
-    "91019280808": {
-      "valoreAggiudicato": 1147364,
-      "nFornitori": 8,
-      "top1Quota": 0.37115858611565294,
-      "topFornitori": [
-        {
-          "cf": "07642640721",
-          "den": "COSTRUTTORI QUALIFICATI SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 425854,
-          "n": 1
-        },
-        {
-          "cf": "03492000173",
-          "den": "CARRARO LAB SRL",
-          "valore": 215000,
-          "n": 1
-        },
-        {
-          "cf": "09213541213",
-          "den": "PALUMBO SHIPYARDS NAPOLI S.R.L.",
-          "valore": 175413,
-          "n": 1
-        },
-        {
-          "cf": "01678330893",
-          "den": "CANTIERE NAVALE DI AUGUSTA S.R.L.",
-          "valore": 149997,
-          "n": 1
-        },
-        {
-          "cf": "05418330964",
-          "den": "COSTA VIOLA SHIPPING S.R.L.",
-          "valore": 137600,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 2,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": 0
-    },
     "02573100233": {
       "valoreAggiudicato": 2173229,
       "nFornitori": 4,
@@ -10197,28 +9523,6 @@
       "gareConPartecipanti": 0,
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
-    },
-    "92083390606": {
-      "valoreAggiudicato": 466222,
-      "nFornitori": 2,
-      "top1Quota": 0.9298145518658493,
-      "topFornitori": [
-        {
-          "cf": "03679170583",
-          "den": "SOLARTEC - SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 433500,
-          "n": 1
-        },
-        {
-          "cf": "02175740303",
-          "den": "BEANTECH S.R.L.",
-          "valore": 32722,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 1,
-      "gareUnicoOfferente": 1,
-      "quotaUnicoOfferente": 1
     },
     "02775310739": {
       "valoreAggiudicato": 195856,

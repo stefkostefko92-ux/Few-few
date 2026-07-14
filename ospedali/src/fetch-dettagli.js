@@ -18,6 +18,7 @@ import { RAW_DIR, DATA_DIR, ROOT } from './lib/paths.js';
 import { loadDataset } from './lib/dataset.js';
 import { matchAutoritaEnti } from './lib/match.js';
 import { catProc } from './fetch-appalti.js';
+import { eSocietaDiCapitali } from './coi.js';
 
 const execFileAsync = promisify(execFile);
 const ANAC_DIR = join(RAW_DIR, 'anac');
@@ -25,6 +26,10 @@ const OUT_DIR = join(DATA_DIR, 'contratti');
 
 const unq = (s) => (s ? s.replace(/^"/, '').replace(/"$/, '').trim() : '');
 const isAzienda = (cf) => /^[0-9]{11}$/.test(cf);
+// GDPR: 11-цифрен P.IVA НЕ гарантира юр. лице (ditte individuali/S.n.c./S.a.s. също
+// имат P.IVA + лично име в наименованието). Профилираме/назоваваме САМО società di
+// capitali — eSocietaDiCapitali проверява правната форма (както coi.js/cordate.js).
+const forniProfilabile = (cf, den) => isAzienda(cf) && eSocietaDiCapitali(den);
 
 async function main() {
   const config = await readJson(join(ROOT, 'config.json'));
@@ -86,9 +91,11 @@ async function main() {
     if (!rec || rec.fornitore) return;
     const cf = unq(c[2]);
     if (!cf) return;
-    rec.fornitore = isAzienda(cf) ? fixMojibake(unq(c[3])) : 'Operatore individuale (persona fisica)';
-    rec.fornitoreAzienda = isAzienda(cf);
-    rec.fornitoreCf = isAzienda(cf) ? cf : null; // само юридически лица се профилират
+    const den = fixMojibake(unq(c[3]));
+    const az = forniProfilabile(cf, den); // само società di capitali се назовават/профилират
+    rec.fornitore = az ? den : 'Operatore individuale (persona fisica)';
+    rec.fornitoreAzienda = az;
+    rec.fornitoreCf = az ? cf : null;
   });
 
   // 4) Групиране по болница и запис
