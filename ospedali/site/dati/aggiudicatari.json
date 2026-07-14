@@ -1,8 +1,8 @@
 {
-  "generatoIl": "2026-07-13T07:59:41.567Z",
+  "generatoIl": "2026-07-14T05:17:05.147Z",
   "fonte": "ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), incrociati con i CIG sanitari",
   "note": "Unico offerente, concentrazione dei fornitori e vincitori ricorrenti sono indicatori, non prove.",
-  "autoritaConDati": 278,
+  "autoritaConDati": 265,
   "fornitoriNazionali": [
     {
       "cf": "07195130153",
@@ -25,20 +25,14 @@
     {
       "cf": "00488410010",
       "den": "TIM S.P.A.",
-      "valore": 1566108196,
-      "n": 832
+      "valore": 1495446614,
+      "n": 806
     },
     {
       "cf": "00747170157",
       "den": "ROCHE SOCIETA' PER AZIONI",
       "valore": 1348159504,
       "n": 2209
-    },
-    {
-      "cf": "08539010010",
-      "den": "VODAFONE SPA",
-      "valore": 1218779533,
-      "n": 483
     },
     {
       "cf": "00962280590",
@@ -49,14 +43,20 @@
     {
       "cf": "12878470157",
       "den": "FASTWEB SPA",
-      "valore": 1181786300,
-      "n": 290
+      "valore": 1180111773,
+      "n": 287
     },
     {
       "cf": "02789580590",
       "den": "VIATRIS ITALIA SRL",
       "valore": 1161091620,
       "n": 4323
+    },
+    {
+      "cf": "08539010010",
+      "den": "VODAFONE SPA",
+      "valore": 1112295712,
+      "n": 434
     },
     {
       "cf": "11654150157",
@@ -93,12 +93,6 @@
       "den": "MSD ITALIA S.R.L.",
       "valore": 977977393,
       "n": 1168
-    },
-    {
-      "cf": "00124140211",
-      "den": "DUSSMANN SERVICE S.R.L.",
-      "valore": 916597376,
-      "n": 75
     },
     {
       "cf": "00421210485",
@@ -155,12 +149,6 @@
       "n": 1703
     },
     {
-      "cf": "93026890017",
-      "den": "VODAFONE ITALIA S.P.A.",
-      "valore": 655098422,
-      "n": 316
-    },
-    {
       "cf": "00696360155",
       "den": "TAKEDA ITALIA S.P.A.",
       "valore": 651974546,
@@ -169,8 +157,14 @@
     {
       "cf": "10181220152",
       "den": "ROCHE DIAGNOSTICS S.P.A.",
-      "valore": 649879657,
-      "n": 458
+      "valore": 649841657,
+      "n": 457
+    },
+    {
+      "cf": "93026890017",
+      "den": "VODAFONE ITALIA S.P.A.",
+      "valore": 645688183,
+      "n": 274
     },
     {
       "cf": "08433930966",
@@ -215,12 +209,6 @@
       "n": 243
     },
     {
-      "cf": "02221101203",
-      "den": "HERA COMM S.P.A.",
-      "valore": 575810863,
-      "n": 98
-    },
-    {
       "cf": "03918040589",
       "den": "NOVO NORDISK SOCIETA' PER AZIONI",
       "valore": 501449565,
@@ -241,8 +229,20 @@
     {
       "cf": "00051570893",
       "den": "ITALIANA PETROLI SPA",
-      "valore": 477751866,
-      "n": 134
+      "valore": 477203858,
+      "n": 128
+    },
+    {
+      "cf": "11575580151",
+      "den": "MOVI SPA",
+      "valore": 473502844,
+      "n": 1085
+    },
+    {
+      "cf": "04785851009",
+      "den": "SIEMENS HEALTHCARE S.R.L.",
+      "valore": 471885503,
+      "n": 649
     }
   ],
   "perCf": {
@@ -2246,46 +2246,6 @@
       "gareUnicoOfferente": 212,
       "quotaUnicoOfferente": 0.7544483985765125
     },
-    "84001850589": {
-      "valoreAggiudicato": 693951760,
-      "nFornitori": 1215,
-      "top1Quota": 0.6009181301017235,
-      "topFornitori": [
-        {
-          "cf": "03932910965",
-          "den": "KEYENCE ITALIA S.P.A.",
-          "valore": 417008194,
-          "n": 1
-        },
-        {
-          "cf": "00712630706",
-          "den": "GEOTEC SOCIETA' PER AZIONI.",
-          "valore": 14241428,
-          "n": 1
-        },
-        {
-          "cf": "01234890992",
-          "den": "ASG SUPERCONDUCTORS SPA",
-          "valore": 11950000,
-          "n": 1
-        },
-        {
-          "cf": "04287810248",
-          "den": "ZANON RESEARCH & INNOVATION S.R.L.",
-          "valore": 10620000,
-          "n": 2
-        },
-        {
-          "cf": "01621030889",
-          "den": "RICCA IT S.R.L.",
-          "valore": 9901012,
-          "n": 9
-        }
-      ],
-      "gareConPartecipanti": 183,
-      "gareUnicoOfferente": 157,
-      "quotaUnicoOfferente": 0.8579234972677595
-    },
     "03510050127": {
       "valoreAggiudicato": 724395647,
       "nFornitori": 1126,
@@ -2485,46 +2445,6 @@
       "gareConPartecipanti": 74,
       "gareUnicoOfferente": 71,
       "quotaUnicoOfferente": 0.9594594594594594
-    },
-    "01165400589": {
-      "valoreAggiudicato": 1147995596,
-      "nFornitori": 488,
-      "top1Quota": 0.40562002295346783,
-      "topFornitori": [
-        {
-          "cf": "00124140211",
-          "den": "DUSSMANN SERVICE S.R.L.",
-          "valore": 465650000,
-          "n": 3
-        },
-        {
-          "cf": "12582280157",
-          "den": "ENTERPRISE SERVICES ITALIA S.R.L.",
-          "valore": 51716886,
-          "n": 2
-        },
-        {
-          "cf": "13454210157",
-          "den": "ACCENTURE S.P.A.",
-          "valore": 51331367,
-          "n": 4
-        },
-        {
-          "cf": "08619670584",
-          "den": "ITALWARE - S.R.L.",
-          "valore": 41308619,
-          "n": 3
-        },
-        {
-          "cf": "08539010010",
-          "den": "VODAFONE SPA",
-          "valore": 32728822,
-          "n": 4
-        }
-      ],
-      "gareConPartecipanti": 156,
-      "gareUnicoOfferente": 78,
-      "quotaUnicoOfferente": 0.5
     },
     "02026690731": {
       "valoreAggiudicato": 461917436,
@@ -3126,46 +3046,6 @@
       "gareUnicoOfferente": 30,
       "quotaUnicoOfferente": 0.6818181818181818
     },
-    "80078750587": {
-      "valoreAggiudicato": 1644980646,
-      "nFornitori": 363,
-      "top1Quota": 0.21801251453751147,
-      "topFornitori": [
-        {
-          "cf": "02221101203",
-          "den": "HERA COMM S.P.A.",
-          "valore": 358626367,
-          "n": 14
-        },
-        {
-          "cf": "00701710634",
-          "den": "FLORIDA 2000 S.R.L.",
-          "valore": 284000000,
-          "n": 1
-        },
-        {
-          "cf": "00124140211",
-          "den": "DUSSMANN SERVICE S.R.L.",
-          "valore": 197696567,
-          "n": 5
-        },
-        {
-          "cf": "01219980529",
-          "den": "ESTRA ENERGIE S.R.L.",
-          "valore": 125297452,
-          "n": 4
-        },
-        {
-          "cf": "08619670584",
-          "den": "ITALWARE - S.R.L.",
-          "valore": 82965721,
-          "n": 14
-        }
-      ],
-      "gareConPartecipanti": 116,
-      "gareUnicoOfferente": 71,
-      "quotaUnicoOfferente": 0.6120689655172413
-    },
     "02406911202": {
       "valoreAggiudicato": 1941202316,
       "nFornitori": 869,
@@ -3685,46 +3565,6 @@
       "gareConPartecipanti": 3,
       "gareUnicoOfferente": 3,
       "quotaUnicoOfferente": 1
-    },
-    "97220210583": {
-      "valoreAggiudicato": 129704683,
-      "nFornitori": 584,
-      "top1Quota": 0.2004553682922921,
-      "topFornitori": [
-        {
-          "cf": "01507200937",
-          "den": "CIMOLAI S.P.A.",
-          "valore": 26000000,
-          "n": 1
-        },
-        {
-          "cf": "03091480271",
-          "den": "DAL BEN S.P.A.",
-          "valore": 18600000,
-          "n": 2
-        },
-        {
-          "cf": "00709780217",
-          "den": "MICROGATE S.R.L.",
-          "valore": 15060000,
-          "n": 2
-        },
-        {
-          "cf": "20651752805",
-          "den": "MAX-PLANCK GESELLSCHAFT E.V.",
-          "valore": 7378000,
-          "n": 1
-        },
-        {
-          "cf": "01956450132",
-          "den": "MEDIA LARIO S.R.L.",
-          "valore": 4979000,
-          "n": 2
-        }
-      ],
-      "gareConPartecipanti": 73,
-      "gareUnicoOfferente": 54,
-      "quotaUnicoOfferente": 0.7397260273972602
     },
     "01684950593": {
       "valoreAggiudicato": 233685312,
@@ -5045,46 +4885,6 @@
       "gareConPartecipanti": 473,
       "gareUnicoOfferente": 273,
       "quotaUnicoOfferente": 0.5771670190274841
-    },
-    "06838821004": {
-      "valoreAggiudicato": 42722123,
-      "nFornitori": 349,
-      "top1Quota": 0.17741089318056597,
-      "topFornitori": [
-        {
-          "cf": "04704851007",
-          "den": "ELETTRA TLC",
-          "valore": 7579370,
-          "n": 1
-        },
-        {
-          "cf": "01657700157",
-          "den": "CODEVINTEC ITALIANA S.R.L. COMPAGNIA PER LO SVILUPPO INDUSTRIALE E TECNICO",
-          "valore": 3215907,
-          "n": 13
-        },
-        {
-          "cf": "B97686158",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 2351240,
-          "n": 1
-        },
-        {
-          "cf": "03543000370",
-          "den": "DAY RISTOSERVICE S.P.A. SOCIETA' BENEFIT",
-          "valore": 1882714,
-          "n": 3
-        },
-        {
-          "cf": "00488410010",
-          "den": "TIM S.P.A.",
-          "valore": 1427005,
-          "n": 2
-        }
-      ],
-      "gareConPartecipanti": 60,
-      "gareUnicoOfferente": 52,
-      "quotaUnicoOfferente": 0.8666666666666667
     },
     "02241740360": {
       "valoreAggiudicato": 235398399,
@@ -8006,46 +7806,6 @@
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
     },
-    "80111810588": {
-      "valoreAggiudicato": 121657060,
-      "nFornitori": 110,
-      "top1Quota": 0.08788729564893316,
-      "topFornitori": [
-        {
-          "cf": "07059981006",
-          "den": "TELECONSYS S.P.A.",
-          "valore": 10692110,
-          "n": 2
-        },
-        {
-          "cf": "01442240030",
-          "den": "IBM ITALIA S.P.A.",
-          "valore": 8999718,
-          "n": 1
-        },
-        {
-          "cf": "07461981214",
-          "den": "ONECLICK S.R.L.",
-          "valore": 8217836,
-          "n": 2
-        },
-        {
-          "cf": "05231661009",
-          "den": "R1 S.P.A.",
-          "valore": 8097478,
-          "n": 5
-        },
-        {
-          "cf": "05850080630",
-          "den": "ROMEO GESTIONI S.P.A.",
-          "valore": 7660660,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 51,
-      "gareUnicoOfferente": 41,
-      "quotaUnicoOfferente": 0.803921568627451
-    },
     "06322711216": {
       "valoreAggiudicato": 1425610555,
       "nFornitori": 375,
@@ -8125,46 +7885,6 @@
       "gareConPartecipanti": 282,
       "gareUnicoOfferente": 107,
       "quotaUnicoOfferente": 0.37943262411347517
-    },
-    "80030350484": {
-      "valoreAggiudicato": 9058719,
-      "nFornitori": 95,
-      "top1Quota": 0.28956412048988384,
-      "topFornitori": [
-        {
-          "cf": "01995120019",
-          "den": "CONSORZIO PER IL SISTEMA INFORMATIVO*(CSI PIEMONTE)",
-          "valore": 2623080,
-          "n": 9
-        },
-        {
-          "cf": "00488410010",
-          "den": "TIM S.P.A.",
-          "valore": 861806,
-          "n": 4
-        },
-        {
-          "cf": "06525120488",
-          "den": "STUDIO RIPRESE FIRENZE S.R.L.",
-          "valore": 491250,
-          "n": 2
-        },
-        {
-          "cf": "00378740344",
-          "den": "COLSER SOCIETA' COOPERATIVA",
-          "valore": 317469,
-          "n": 1
-        },
-        {
-          "cf": "00354100604",
-          "den": "CICCARELLI SRL",
-          "valore": 254790,
-          "n": 9
-        }
-      ],
-      "gareConPartecipanti": 4,
-      "gareUnicoOfferente": 3,
-      "quotaUnicoOfferente": 0.75
     },
     "00988200143": {
       "valoreAggiudicato": 6918856,
@@ -8726,46 +8446,6 @@
       "gareUnicoOfferente": 0,
       "quotaUnicoOfferente": null
     },
-    "04416711002": {
-      "valoreAggiudicato": 3796859,
-      "nFornitori": 27,
-      "top1Quota": 0.37320321876582724,
-      "topFornitori": [
-        {
-          "cf": "15159081007",
-          "den": "EXPERIENCE CLOUD CONSULTING SRL IN BREVE XCC S.R.L.",
-          "valore": 1417000,
-          "n": 3
-        },
-        {
-          "cf": "12730090151",
-          "den": "RANDSTAD ITALIA S.P.A.",
-          "valore": 1085900,
-          "n": 4
-        },
-        {
-          "cf": "05053521000",
-          "den": "SOCIETA' PER LA CERTIFICAZIONE DELLA QUALITA' NELL'AGROALIMENTARE SOCIETA' PER AZIONI IN BREVE AGROQUALITA' S.P.A.",
-          "valore": 318308,
-          "n": 5
-        },
-        {
-          "cf": "03970540963",
-          "den": "ITALIAONLINE S.P.A.",
-          "valore": 210000,
-          "n": 1
-        },
-        {
-          "cf": "04409581008",
-          "den": "STUDIO VANNI TANI IANIRO",
-          "valore": 150000,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 5,
-      "gareUnicoOfferente": 3,
-      "quotaUnicoOfferente": 0.6
-    },
     "02175860424": {
       "valoreAggiudicato": 7529430,
       "nFornitori": 18,
@@ -8804,46 +8484,6 @@
       ],
       "gareConPartecipanti": 2,
       "gareUnicoOfferente": 2,
-      "quotaUnicoOfferente": 1
-    },
-    "02430700589": {
-      "valoreAggiudicato": 2513990,
-      "nFornitori": 35,
-      "top1Quota": 0.33413020735961557,
-      "topFornitori": [
-        {
-          "cf": "00053810149",
-          "den": "BANCA POPOLARE DI SONDRIO SOCIETA' PER AZIONI",
-          "valore": 840000,
-          "n": 1
-        },
-        {
-          "cf": "13465971003",
-          "den": "MANGUSTA RISK LIMITED",
-          "valore": 660000,
-          "n": 1
-        },
-        {
-          "cf": "01014660417",
-          "den": "EDENRED ITALIA S.R.L.",
-          "valore": 175392,
-          "n": 1
-        },
-        {
-          "cf": "13223871008",
-          "den": "STUPPIA INVESTIGAZIONI - SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 100193,
-          "n": 1
-        },
-        {
-          "cf": "14057751001",
-          "den": "OVER SERVIZI - SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 82108,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 3,
-      "gareUnicoOfferente": 3,
       "quotaUnicoOfferente": 1
     },
     "91133270156": {
@@ -9044,46 +8684,6 @@
       ],
       "gareConPartecipanti": 4,
       "gareUnicoOfferente": 4,
-      "quotaUnicoOfferente": 1
-    },
-    "92000450582": {
-      "valoreAggiudicato": 98591362,
-      "nFornitori": 34,
-      "top1Quota": 0.7390944147825039,
-      "topFornitori": [
-        {
-          "cf": "08539010010",
-          "den": "VODAFONE SPA",
-          "valore": 72868325,
-          "n": 3
-        },
-        {
-          "cf": "L20132215503",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 23167826,
-          "n": 1
-        },
-        {
-          "cf": "05577471005",
-          "den": "E.P. - SOCIETA' PER AZIONI",
-          "valore": 504474,
-          "n": 2
-        },
-        {
-          "cf": "05422641000",
-          "den": "MAJESTY TOUR - SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 326000,
-          "n": 3
-        },
-        {
-          "cf": "00317740371",
-          "den": "CINECA CONSORZIO INTERUNIVERSITARIO",
-          "valore": 222444,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 7,
-      "gareUnicoOfferente": 7,
       "quotaUnicoOfferente": 1
     },
     "02166640132": {
@@ -9736,46 +9336,6 @@
       "gareUnicoOfferente": 1,
       "quotaUnicoOfferente": 1
     },
-    "00055590327": {
-      "valoreAggiudicato": 2229866,
-      "nFornitori": 12,
-      "top1Quota": 0.6705784114381761,
-      "topFornitori": [
-        {
-          "cf": "02654190103",
-          "den": "KONGSBERG MARITIME ITALY S.R.L.",
-          "valore": 1495300,
-          "n": 2
-        },
-        {
-          "cf": "08954480151",
-          "den": "VALMET S.P.A.",
-          "valore": 460300,
-          "n": 1
-        },
-        {
-          "cf": "88-3416989",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 105000,
-          "n": 1
-        },
-        {
-          "cf": "03185640830",
-          "den": "LOGISTICA CANNISTRA' SRL",
-          "valore": 43200,
-          "n": 2
-        },
-        {
-          "cf": "02638330833",
-          "den": "ARENA SUB S.R.L.",
-          "valore": 39500,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 4,
-      "gareUnicoOfferente": 3,
-      "quotaUnicoOfferente": 0.75
-    },
     "04175700964": {
       "valoreAggiudicato": 1116049,
       "nFornitori": 27,
@@ -9815,46 +9375,6 @@
       "gareConPartecipanti": 2,
       "gareUnicoOfferente": 2,
       "quotaUnicoOfferente": 1
-    },
-    "80221610589": {
-      "valoreAggiudicato": 1539571,
-      "nFornitori": 24,
-      "top1Quota": 0.3368704658635425,
-      "topFornitori": [
-        {
-          "cf": "09727051006",
-          "den": "RE.I.CO. SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 518636,
-          "n": 1
-        },
-        {
-          "cf": "05384121009",
-          "den": "I & B ITALIA S.R.L.",
-          "valore": 277000,
-          "n": 2
-        },
-        {
-          "cf": "17065211009",
-          "den": "JD IMPIANTI SOCIETA' A RESPONSABILITA' LIMITATA",
-          "valore": 149306,
-          "n": 1
-        },
-        {
-          "cf": "13639911000",
-          "den": "ECOTRADE SOLUTION S.R.L.",
-          "valore": 106875,
-          "n": 1
-        },
-        {
-          "cf": "02044860597",
-          "den": "T.A.C.E. S.R.L.",
-          "valore": 68900,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
     },
     "80000530891": {
       "valoreAggiudicato": 2475374,
@@ -10157,46 +9677,6 @@
           "cf": "02249010659",
           "den": "SO.C.A.M. - SOCIETA' COOPERATIVA",
           "valore": 256,
-          "n": 1
-        }
-      ],
-      "gareConPartecipanti": 0,
-      "gareUnicoOfferente": 0,
-      "quotaUnicoOfferente": null
-    },
-    "80126810581": {
-      "valoreAggiudicato": 299327,
-      "nFornitori": 22,
-      "top1Quota": 0.21108353072058317,
-      "topFornitori": [
-        {
-          "cf": "00731370656",
-          "den": "SOVI - TURISMO S.R.L. (SOGGIORNO,VIAGGI,TURISMO)",
-          "valore": 63183,
-          "n": 1
-        },
-        {
-          "cf": "00722590163",
-          "den": "LE PANORAMICHE S.P.A.",
-          "valore": 36364,
-          "n": 1
-        },
-        {
-          "cf": "10497451004",
-          "den": "MEDIA PROMOTION S.R.L.",
-          "valore": 31982,
-          "n": 2
-        },
-        {
-          "cf": "80005050507/IT00420000507",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 25952,
-          "n": 1
-        },
-        {
-          "cf": "00317740371/00502591209",
-          "den": "Operatore individuale (persona fisica)",
-          "valore": 22043,
           "n": 1
         }
       ],

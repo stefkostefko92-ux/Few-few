@@ -2,7 +2,7 @@
 // едната печели, другата никога.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { analizzaCordate } from '../src/cordate.js';
+import { analizzaCordate, analizzaVincitori } from '../src/cordate.js';
 
 const A = '11111111111', B = '22222222222', C = '33333333333';
 const PF = 'RSSMRA80A01H501U'; // физическо лице (16 знака) → не се брои
@@ -46,4 +46,16 @@ test('cordate: победителят печели част, губещият н
   assert.equal(r.length, 1);
   assert.equal(r[0].vincitoreCf, A);
   assert.equal(r[0].vinteDalVincitore, 4);
+});
+
+test('vincitori: доминиране (≥80% win-rate при възложител) се флагва', () => {
+  const gare = [];
+  // A печели 7 от 8 гари при възложител Z1 → доминиране
+  for (let i = 0; i < 8; i++) gare.push({ winners: new Set([i < 7 ? A : B]), parts: [A, B, C], auth: 'Z1', importo: 100 });
+  const r = analizzaVincitori(gare, { minGare: 6, minWinRate: 0.8 });
+  const a = r.find((x) => x.cf === A);
+  assert.ok(a, 'A трябва да е флагнат');
+  assert.equal(a.domini, 1);
+  assert.equal(a.vinteTot, 7);
+  assert.ok(r.find((x) => x.cf === C) === undefined, 'C печели 0 → не се флагва');
 });

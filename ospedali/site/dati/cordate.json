@@ -1,5 +1,5 @@
 {
-  "generatoIl": "2026-07-14T04:42:09.609Z",
+  "generatoIl": "2026-07-14T05:16:02.055Z",
   "fonte": "ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), gare sanitarie competitive 2023–2024",
   "nota": "Coppie di imprese che concorrono spesso insieme dove una vince e l’altra non vince mai: indicatore di possibile cover bidding, NON prova. Solo persone giuridiche (P.IVA). Verifica: AGCM/Antitrust, Registro Imprese.",
   "soglie": {
@@ -608,6 +608,278 @@
       "nAuth": 2,
       "vincitoreDen": "MEDTRONIC ITALIA S.P.A.",
       "coprDen": "SILONY MEDICAL ITALIA S.R.L."
+    }
+  ],
+  "vincitori": [
+    {
+      "cf": "09238800156",
+      "domini": 33,
+      "gareTot": 671,
+      "vinteTot": 632,
+      "valore": 1405833310,
+      "winRate": 0.9418777943368107,
+      "den": "MEDTRONIC ITALIA S.P.A."
+    },
+    {
+      "cf": "11206730159",
+      "domini": 22,
+      "gareTot": 462,
+      "vinteTot": 445,
+      "valore": 577289937,
+      "winRate": 0.9632034632034632,
+      "den": "BOSTON SCIENTIFIC SPA"
+    },
+    {
+      "cf": "11264670156",
+      "domini": 18,
+      "gareTot": 211,
+      "vinteTot": 205,
+      "valore": 451333477,
+      "winRate": 0.9715639810426541,
+      "den": "ABBOTT MEDICAL ITALIA S.R.L."
+    },
+    {
+      "cf": "08082461008",
+      "domini": 17,
+      "gareTot": 295,
+      "vinteTot": 294,
+      "valore": 507557890,
+      "winRate": 0.9966101694915255,
+      "den": "JOHNSON & JOHNSON MEDICAL S.P.A."
+    },
+    {
+      "cf": "09012850153",
+      "domini": 11,
+      "gareTot": 243,
+      "vinteTot": 242,
+      "valore": 338628689,
+      "winRate": 0.9958847736625515,
+      "den": "ZIMMER BIOMET ITALIA S.R.L."
+    },
+    {
+      "cf": "00674840152",
+      "domini": 11,
+      "gareTot": 167,
+      "vinteTot": 158,
+      "valore": 323955963,
+      "winRate": 0.9461077844311377,
+      "den": "B. BRAUN MILANO SPA"
+    },
+    {
+      "cf": "04029180371",
+      "domini": 9,
+      "gareTot": 162,
+      "vinteTot": 159,
+      "valore": 248914060,
+      "winRate": 0.9814814814814815,
+      "den": "COLOPLAST - S.P.A."
+    },
+    {
+      "cf": "07123400157",
+      "domini": 9,
+      "gareTot": 141,
+      "vinteTot": 138,
+      "valore": 124899671,
+      "winRate": 0.9787234042553191,
+      "den": "COOK ITALIA S.R.L."
+    },
+    {
+      "cf": "06032681006",
+      "domini": 8,
+      "gareTot": 109,
+      "vinteTot": 109,
+      "valore": 139292945,
+      "winRate": 1,
+      "den": "STRYKER ITALIA SRL"
+    },
+    {
+      "cf": "10994940152",
+      "domini": 8,
+      "gareTot": 111,
+      "vinteTot": 107,
+      "valore": 335494752,
+      "winRate": 0.963963963963964,
+      "den": "OLYMPUS ITALIA S.R.L."
+    },
+    {
+      "cf": "02790240101",
+      "domini": 8,
+      "gareTot": 100,
+      "vinteTot": 96,
+      "valore": 18696157,
+      "winRate": 0.96,
+      "den": "BENEFIS S.R.L."
+    },
+    {
+      "cf": "10191080158",
+      "domini": 8,
+      "gareTot": 92,
+      "vinteTot": 88,
+      "valore": 60950517,
+      "winRate": 0.9565217391304348,
+      "den": "INNOVAMEDICA S.P.A."
+    },
+    {
+      "cf": "01427710304",
+      "domini": 7,
+      "gareTot": 97,
+      "vinteTot": 97,
+      "valore": 154721084,
+      "winRate": 1,
+      "den": "LIMACORPORATE S.P.A."
+    },
+    {
+      "cf": "13342400150",
+      "domini": 7,
+      "gareTot": 90,
+      "vinteTot": 88,
+      "valore": 39369776,
+      "winRate": 0.9777777777777777,
+      "den": "CURIUM ITALY S.R.L."
+    },
+    {
+      "cf": "11667890153",
+      "domini": 7,
+      "gareTot": 85,
+      "vinteTot": 82,
+      "valore": 22359092,
+      "winRate": 0.9647058823529412,
+      "den": "DANONE NUTRICIA SPA SOCIETA' BENEFIT IN FORMA ABBREVIATA D.N. SPA O DANONE N. SPA S. BENEFIT O DANONE S.P.A SOCIETA' BENEFIT O D. S.P.A."
+    },
+    {
+      "cf": "12572900152",
+      "domini": 6,
+      "gareTot": 210,
+      "vinteTot": 208,
+      "valore": 313800332,
+      "winRate": 0.9904761904761905,
+      "den": "STRYKER ITALIA S.R.L."
+    },
+    {
+      "cf": "06324460150",
+      "domini": 6,
+      "gareTot": 134,
+      "vinteTot": 128,
+      "valore": 286001550,
+      "winRate": 0.9552238805970149,
+      "den": "TELEFLEX MEDICAL S.R.L."
+    },
+    {
+      "cf": "09301330966",
+      "domini": 6,
+      "gareTot": 117,
+      "vinteTot": 117,
+      "valore": 129259880,
+      "winRate": 1,
+      "den": "ARTHREX ITALIA S.R.L."
+    },
+    {
+      "cf": "10077121001",
+      "domini": 6,
+      "gareTot": 102,
+      "vinteTot": 102,
+      "valore": 19926531,
+      "winRate": 1,
+      "den": "VIOLATECH SRL"
+    },
+    {
+      "cf": "00805390283",
+      "domini": 6,
+      "gareTot": 106,
+      "vinteTot": 102,
+      "valore": 20427962,
+      "winRate": 0.9622641509433962,
+      "den": "LABOINDUSTRIA S.P.A."
+    },
+    {
+      "cf": "07532430589",
+      "domini": 6,
+      "gareTot": 87,
+      "vinteTot": 86,
+      "valore": 153837230,
+      "winRate": 0.9885057471264368,
+      "den": "UBER ROS S.P.A."
+    },
+    {
+      "cf": "08976680150",
+      "domini": 6,
+      "gareTot": 79,
+      "vinteTot": 79,
+      "valore": 146489797,
+      "winRate": 1,
+      "den": "ORTHOFIX S.R.L."
+    },
+    {
+      "cf": "09331210154",
+      "domini": 6,
+      "gareTot": 71,
+      "vinteTot": 71,
+      "valore": 150989920,
+      "winRate": 1,
+      "den": "SMITH & NEPHEW SRL"
+    },
+    {
+      "cf": "03748120155",
+      "domini": 6,
+      "gareTot": 66,
+      "vinteTot": 66,
+      "valore": 57826669,
+      "winRate": 1,
+      "den": "W.L. GORE & ASSOCIATI S.R.L.  CON SIGLA GORE S.R.L."
+    },
+    {
+      "cf": "00972790109",
+      "domini": 6,
+      "gareTot": 62,
+      "vinteTot": 62,
+      "valore": 146207788,
+      "winRate": 1,
+      "den": "MIKAI SPA"
+    },
+    {
+      "cf": "93517310152",
+      "domini": 5,
+      "gareTot": 108,
+      "vinteTot": 108,
+      "valore": 268055501,
+      "winRate": 1,
+      "den": "HOLLISTER S.P.A."
+    },
+    {
+      "cf": "06209390969",
+      "domini": 5,
+      "gareTot": 104,
+      "vinteTot": 104,
+      "valore": 256801357,
+      "winRate": 1,
+      "den": "CONVATEC ITALIA S.R.L."
+    },
+    {
+      "cf": "00458450012",
+      "domini": 5,
+      "gareTot": 94,
+      "vinteTot": 93,
+      "valore": 39517064,
+      "winRate": 0.9893617021276596,
+      "den": "M.G. LORENZATTO - S.R.L."
+    },
+    {
+      "cf": "00803890151",
+      "domini": 5,
+      "gareTot": 93,
+      "vinteTot": 91,
+      "valore": 14134446,
+      "winRate": 0.978494623655914,
+      "den": "BECTON, DICKINSON ITALIA S.P.A."
+    },
+    {
+      "cf": "04051160234",
+      "domini": 5,
+      "gareTot": 72,
+      "vinteTot": 72,
+      "valore": 20827551,
+      "winRate": 1,
+      "den": "GIOCHEMICA S.R.L."
     }
   ]
 }

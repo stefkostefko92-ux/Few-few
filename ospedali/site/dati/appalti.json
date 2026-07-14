@@ -1,49 +1,49 @@
 {
-  "generatoIl": "2026-07-13T20:52:59.727Z",
+  "generatoIl": "2026-07-14T05:14:48.562Z",
   "anni": [
     2023,
     2024
   ],
   "fonte": "ANAC — Banca Dati Nazionale dei Contratti Pubblici (dati.anticorruzione.it), CIG > 40.000 €",
-  "righeSanitarie": 425721,
-  "autoritaSanitarie": 289,
+  "righeSanitarie": 420514,
+  "autoritaSanitarie": 280,
   "nazionale": {
-    "n": 425721,
-    "importo": 142095507806,
+    "n": 420514,
+    "importo": 140771340584,
     "cat": {
       "competitiva": {
-        "n": 62656,
-        "importo": 45243037159
+        "n": 62385,
+        "importo": 44887339537
       },
       "quadro": {
-        "n": 122041,
-        "importo": 42010273015
+        "n": 121871,
+        "importo": 41902486500
       },
       "diretto": {
-        "n": 195029,
-        "importo": 41816878260
+        "n": 190682,
+        "importo": 41126536246
       },
       "negoziataSenza": {
-        "n": 28836,
-        "importo": 10907989100
+        "n": 28604,
+        "importo": 10768752157
       },
       "negoziata": {
-        "n": 14789,
-        "importo": 1522682332
+        "n": 14622,
+        "importo": 1493786036
       },
       "altro": {
-        "n": 2370,
-        "importo": 594647940
+        "n": 2350,
+        "importo": 592440108
       }
     },
-    "urgenzaN": 98921,
-    "pnrrImporto": 8183958896,
-    "band40": 11147,
-    "band140": 6017,
-    "prorogaN": 17238,
-    "bunchingQuota": 0.08800742453686375,
-    "quotaSenzaGara": 0.37105231667133426,
-    "quotaSenzaGaraNum": 0.5258490889573219
+    "urgenzaN": 95806,
+    "pnrrImporto": 7790520429,
+    "band40": 10931,
+    "band140": 5851,
+    "prorogaN": 17137,
+    "bunchingQuota": 0.08801040475765935,
+    "quotaSenzaGara": 0.3686495289995251,
+    "quotaSenzaGaraNum": 0.521471342214528
   },
   "regionale": [
     {
@@ -321,24 +321,24 @@
     },
     {
       "reg": "NON CLASSIFICATO",
-      "n": 20210,
-      "importo": 9667144008,
+      "n": 20192,
+      "importo": 9651656082,
       "cat": {
         "competitiva": {
-          "n": 2311,
-          "importo": 2093906100
+          "n": 2310,
+          "importo": 2093595445
         },
         "quadro": {
           "n": 5356,
           "importo": 3347387866
         },
         "diretto": {
-          "n": 11013,
-          "importo": 3447982382
+          "n": 11001,
+          "importo": 3447663866
         },
         "negoziataSenza": {
-          "n": 1054,
-          "importo": 561144907
+          "n": 1049,
+          "importo": 546286152
         },
         "negoziata": {
           "n": 299,
@@ -349,14 +349,14 @@
           "importo": 142014168
         }
       },
-      "urgenzaN": 6537,
-      "pnrrImporto": 559191560,
-      "band40": 719,
+      "urgenzaN": 6526,
+      "pnrrImporto": 556556400,
+      "band40": 717,
       "band140": 954,
-      "prorogaN": 815,
-      "bunchingQuota": 0.15191137746299826,
-      "quotaSenzaGara": 0.41471682697690826,
-      "quotaSenzaGaraNum": 0.5970806531420089
+      "prorogaN": 814,
+      "bunchingQuota": 0.15189528224706844,
+      "quotaSenzaGara": 0.41380981501974196,
+      "quotaSenzaGaraNum": 0.596770998415214
     },
     {
       "reg": "CAMPANIA",
@@ -513,45 +513,6 @@
       "bunchingQuota": 0.06963508536993639,
       "quotaSenzaGara": 0.3179590731983564,
       "quotaSenzaGaraNum": 0.3500961802693048
-    },
-    {
-      "reg": "CENTRALE",
-      "n": 11502,
-      "importo": 2475359187,
-      "cat": {
-        "competitiva": {
-          "n": 1081,
-          "importo": 588834187
-        },
-        "quadro": {
-          "n": 1624,
-          "importo": 536149424
-        },
-        "diretto": {
-          "n": 7887,
-          "importo": 1058362506
-        },
-        "negoziataSenza": {
-          "n": 444,
-          "importo": 215683302
-        },
-        "negoziata": {
-          "n": 376,
-          "importo": 48408422
-        },
-        "altro": {
-          "n": 90,
-          "importo": 27921346
-        }
-      },
-      "urgenzaN": 5051,
-      "pnrrImporto": 454070791,
-      "band40": 271,
-      "band140": 236,
-      "prorogaN": 167,
-      "bunchingQuota": 0.06428299733739064,
-      "quotaSenzaGara": 0.5146912879597333,
-      "quotaSenzaGaraNum": 0.7243088158581117
     },
     {
       "reg": "UMBRIA",
@@ -786,6 +747,45 @@
       "bunchingQuota": 0.15071507150715072,
       "quotaSenzaGara": 0.49105583232964706,
       "quotaSenzaGaraNum": 0.762550384756321
+    },
+    {
+      "reg": "CENTRALE",
+      "n": 6313,
+      "importo": 1166679891,
+      "cat": {
+        "competitiva": {
+          "n": 811,
+          "importo": 233447219
+        },
+        "quadro": {
+          "n": 1454,
+          "importo": 428362909
+        },
+        "diretto": {
+          "n": 3552,
+          "importo": 368339008
+        },
+        "negoziataSenza": {
+          "n": 217,
+          "importo": 91305114
+        },
+        "negoziata": {
+          "n": 209,
+          "importo": 19512126
+        },
+        "altro": {
+          "n": 70,
+          "importo": 25713514
+        }
+      },
+      "urgenzaN": 1947,
+      "pnrrImporto": 63267484,
+      "band40": 57,
+      "band140": 70,
+      "prorogaN": 67,
+      "bunchingQuota": 0.03575450450450451,
+      "quotaSenzaGara": 0.3939762102170086,
+      "quotaSenzaGaraNum": 0.5970220180579756
     },
     {
       "reg": "MARCHE",
@@ -7461,129 +7461,6 @@
           "categoria": "diretto",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-05-22"
-        }
-      ]
-    },
-    {
-      "cf": "84001850589",
-      "den": "ISTITUTO NAZIONALE DI FISICA NUCLEARE (I.N.F.N.)",
-      "reg": "CENTRALE",
-      "n": 2899,
-      "importo": 811161156,
-      "cat": {
-        "competitiva": {
-          "n": 104,
-          "importo": 114053226
-        },
-        "quadro": {
-          "n": 78,
-          "importo": 41817397
-        },
-        "diretto": {
-          "n": 2456,
-          "importo": 529132555
-        },
-        "negoziataSenza": {
-          "n": 151,
-          "importo": 103093999
-        },
-        "negoziata": {
-          "n": 92,
-          "importo": 20994187
-        },
-        "altro": {
-          "n": 18,
-          "importo": 2069792
-        }
-      },
-      "urgenzaN": 1751,
-      "pnrrImporto": 207936797,
-      "band40": 96,
-      "band140": 103,
-      "prorogaN": 48,
-      "bunchingQuota": 0.08102605863192182,
-      "quotaSenzaGara": 0.779409307165558,
-      "quotaSenzaGaraNum": 0.8992756122800966,
-      "top": [
-        {
-          "oggetto": "MARCATORE LASER PER MICROLAVORAZIONI SU WAFER E CRISTALLI DI SILICIO O DI GERMANIO.",
-          "importo": 417008194,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ATTREZZATURE DA LABORATORIO, OTTICHE E DI PRECISIONE (ESCLUSO VETRI)",
-          "data": "2024-10-01"
-        },
-        {
-          "oggetto": "STUDIO PROPEDEUTICO ALLO SVILUPPO DEL PROGETTO DI FATTIBILITÀ TECNICA ED ECONOMICA DELL'OSSERVATORIO DI ONDE GRAVITAZIONALI EINSTEIN TELESCOPE NELLA REGIONE SARDEGNA, IN DIVERSE CO",
-          "importo": 14241427.58,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI PROGETTAZIONE TECNICA PER LA COSTRUZIONE DI OPERE DI INGEGNERIA CIVILE",
-          "data": "2023-05-03"
-        },
-        {
-          "oggetto": "FORNITURA DI PROGETTAZIONE, COSTRUZIONE E QUALIFICA DI DUE DISPOSITIVI PROTOTIPI SUPERCONDUTTORI PER RICERCA SULLA TRASMISSIONE DI POTENZA ELETTRICA A ZERO EMISSIONI E PER GENERARE",
-          "importo": 11950000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "CAVI E PRODOTTI AFFINI",
-          "data": "2023-02-27"
-        },
-        {
-          "oggetto": "FORNITURA DI N. 38 (TRENTOTTO) CAVITÀ SUPERCONDUTTIVE PER IL PROGETTO PIP-II DI FERMILAB, CON OPZIONE I) PER LA FORNITURA DI N. 2 CAVITÀ AGGIUNTIVE E OPZIONE II) DI N. 20 RITRATTAM",
-          "importo": 10500000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "ACCELERATORI DI PARTICELLE",
-          "data": "2023-10-30"
-        },
-        {
-          "oggetto": "FORNITURA DI NODI CALCOLO E ACCESSORI CORRELATI E RELATIVO SERVIZIO DI MANUTENZIONE IN GARANZIA ALMENO TRIENNALE",
-          "importo": 8680000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "APPARECCHIATURE INFORMATICHE",
-          "data": "2023-06-21"
-        },
-        {
-          "oggetto": "ENERGIA ELETTRICA LNF E PRESIDENZA 2023",
-          "importo": 7239032,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "ELETTRICITÀ",
-          "data": "2023-03-01"
-        },
-        {
-          "oggetto": "LOTTO 1 - LNF - SERVIZI DI PULIZIA E SANIFICAZIONE, MANUTENZIONE DEL VERDE, FACCHINAGGIO E TRASPORTO, DISINFESTAZIONE E DERATTIZZAZIONE",
-          "importo": 6989216.28,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI PULIZIA",
-          "data": "2023-05-22"
-        },
-        {
-          "oggetto": "SERVIZIO DI VIGILANZA ARMATA PER I LABORATORI NAZIONALI DEL GRAN SASSO (LNGS) DELL'INFN",
-          "importo": 6364827.76,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI VIGILANZA DI EDIFICI",
-          "data": "2023-02-01"
-        },
-        {
-          "oggetto": "FORNITURA DELLE MECCANICHE E SISTEMI DI INTERFACCIA PER LE JB DEL PROGETTO KM3NET4RR",
-          "importo": 5600000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "APPARECCHIATURA ELETTROMECCANICA",
-          "data": "2023-04-11"
-        },
-        {
-          "oggetto": "SISTEMA DI STORAGE DOTATO DI CONTROLLER HARDWARE",
-          "importo": 5365550,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "FILE SERVER",
-          "data": "2024-12-04"
         }
       ]
     },
@@ -22102,129 +21979,6 @@
       ]
     },
     {
-      "cf": "97220210583",
-      "den": "ISTITUTO NAZIONALE DI ASTROFISICA",
-      "reg": "CENTRALE",
-      "n": 1138,
-      "importo": 177114145,
-      "cat": {
-        "competitiva": {
-          "n": 71,
-          "importo": 127603636
-        },
-        "quadro": {
-          "n": 26,
-          "importo": 3780666
-        },
-        "diretto": {
-          "n": 995,
-          "importo": 34177036
-        },
-        "negoziataSenza": {
-          "n": 32,
-          "importo": 9210622
-        },
-        "negoziata": {
-          "n": 13,
-          "importo": 2228735
-        },
-        "altro": {
-          "n": 1,
-          "importo": 113450
-        }
-      },
-      "urgenzaN": 766,
-      "pnrrImporto": 141601350,
-      "band40": 60,
-      "band140": 37,
-      "prorogaN": 27,
-      "bunchingQuota": 0.09748743718592964,
-      "quotaSenzaGara": 0.24497003170416146,
-      "quotaSenzaGaraNum": 0.9024604569420035,
-      "top": [
-        {
-          "oggetto": "PROCEDURA APERTA EUROPEA PER L'AFFIDAMENTO, NELL'AMBITO DEL PROGETTO DAL TITOLO CHERENKOV TELESCOPE ARRAY PLUS (CTA+), DELLA FORNITURA DI DUE STRUTTURE ELETTROMECCANICHE PER I TELE",
-          "importo": 26000000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "TELESCOPI",
-          "data": "2024-04-02"
-        },
-        {
-          "oggetto": "FORNITURA DI DUE STRUTTURE ELETTROMECCANICHE DEI TELESCOPI LST-SUD CTA, PREVISTE DAL PROGETTO DAL TITOLO 'CHERENKOV TELESCOPE ARRAY PLUS (CTA+)'",
-          "importo": 25000000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "TELESCOPI",
-          "data": "2023-11-22"
-        },
-        {
-          "oggetto": "STRUTTURE ELETTROMECCANICHE DEI TELESCOPI SST DI CTAO, IVI INCLUSI I SOTTOSISTEMI E TUTTE LE ATTIVITÀ CORRELATE, NECESSARIE ALLA LORO MESSA IN OPERA', PREVISTA DAL PROGETTO DAL TIT",
-          "importo": 18100000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "TELESCOPI",
-          "data": "2023-10-18"
-        },
-        {
-          "oggetto": "FORNITURA DI N. 2 (DUE) SPECCHI DEFORMABILI PER L'ELT MORFEO",
-          "importo": 15000000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "STRUMENTI PER L'ASTRONOMIA E OTTICI",
-          "data": "2023-06-09"
-        },
-        {
-          "oggetto": "PROCEDURA APERTA AI SENSI DELLART.71 DEL D.LGS. N.36/2023 PER IL DISEGNO E LA FORNITURA DI N.58 RICEVITORI CRIOGENICI SKA-COMPLIANT IN BANDA 5B DA INSTALLARE SULLE ANTENNE MEERKAT ",
-          "importo": 7378000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "STRUMENTI PER L'ASTRONOMIA E OTTICI",
-          "data": "2024-03-14"
-        },
-        {
-          "oggetto": "LA FORNITURA RICHIESTA È RELATIVA A: - N. 410 PANNELLI RIFLETTENTI PER GLI SPECCHI PRIMARI PARABOLICI DI 2 TELESCOPI LST-SUD INCLUSIVO DI UNA SERIE DI PANNELLI DI RISERVA E - N. 72",
-          "importo": 4969000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "STRUMENTI PER L'ASTRONOMIA E OTTICI",
-          "data": "2024-03-29"
-        },
-        {
-          "oggetto": "SPECCHI TASSELLATI PER I DIVERSI TELESCOPI DEL CHERENKOV TELESCOPE ARRAY OBSERVATORY",
-          "importo": 4250000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "STRUMENTI PER L'ASTRONOMIA E OTTICI",
-          "data": "2023-11-29"
-        },
-        {
-          "oggetto": "1) N.58 DIGITALIZZATORI PER LA BANDA-5, CON PREVISIONE DI ULTERIORE FORNITURA SPARE A GARANZIA, COMPLETAMENTO E MIGLIORAMENTO DEL PROGETTO SCIENTIFICO MEERKAT, DA INSTALLARE SULLE ",
-          "importo": 3846937,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "APPARECCHIATURA ELETTRONICA",
-          "data": "2024-02-15"
-        },
-        {
-          "oggetto": "ACQUISIZIONE E IMPLEMENTAZIONE DI UN 'MOTORE DI CORRELAZIONE', DENOMINATO 'X-ENGINE'",
-          "importo": 2332570,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "UNITÀ CENTRALE DI ELABORAZIONE",
-          "data": "2023-12-13"
-        },
-        {
-          "oggetto": "FORNITURA DI SISTEMI INFORMATICI DI HIGH PERFORMANCE COMPUTING PER IL CALCOLI, LA RIDUZIONE E LO STORAGE DEI DATI RICEVUTI DA ENTRAMBI I RAMI DEL RADIOTELESCOPIO CROCE DEL NORD.",
-          "importo": 1928196.72,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "UNITÀ CENTRALE DI ELABORAZIONE",
-          "data": "2024-08-28"
-        }
-      ]
-    },
-    {
       "cf": "00727270720",
       "den": "ISTITUTO TUMORI GIOVANNI PAOLO III.R.C.C.S.",
       "reg": "PUGLIA",
@@ -22959,129 +22713,6 @@
           "categoria": "competitiva",
           "cpv": "PACCHETTI SOFTWARE PER RETI",
           "data": "2023-10-02"
-        }
-      ]
-    },
-    {
-      "cf": "80111810588",
-      "den": "ISTAT - ISTITUTO NAZIONALE DI STATISTICA",
-      "reg": "CENTRALE",
-      "n": 205,
-      "importo": 145422368,
-      "cat": {
-        "competitiva": {
-          "n": 26,
-          "importo": 55303384
-        },
-        "quadro": {
-          "n": 29,
-          "importo": 56647622
-        },
-        "diretto": {
-          "n": 104,
-          "importo": 22824403
-        },
-        "negoziataSenza": {
-          "n": 27,
-          "importo": 8303681
-        },
-        "negoziata": {
-          "n": 18,
-          "importo": 2318688
-        },
-        "altro": {
-          "n": 1,
-          "importo": 24590
-        }
-      },
-      "urgenzaN": 60,
-      "pnrrImporto": 13090496,
-      "band40": 7,
-      "band140": 3,
-      "prorogaN": 4,
-      "bunchingQuota": 0.09615384615384616,
-      "quotaSenzaGara": 0.21405293100862083,
-      "quotaSenzaGaraNum": 0.6390243902439025,
-      "top": [
-        {
-          "oggetto": "SERVIZI APPLICATIVI",
-          "importo": 8999718.4,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI: CONSULENZA, SVILUPPO DI SOFTWARE, INTERNET E SUPPORTO",
-          "data": "2024-11-28"
-        },
-        {
-          "oggetto": "SERVIZI APPLICATIVI SAC 2 LOTTO 1 - INDAGINI E SISTEMI DI VALIDAZIONE",
-          "importo": 8492250,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE",
-          "data": "2024-04-18"
-        },
-        {
-          "oggetto": "SERVIZI DI FACILITY MANAGEMENT",
-          "importo": 7660660.47,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "SERVIZI DI AMMINISTRAZIONE DI EDIFICI E GESTIONE IMPIANTI",
-          "data": "2023-05-15"
-        },
-        {
-          "oggetto": "INDAGINE CAPI/CATI EU SILC PER ISTAT 2 - ID 2593",
-          "importo": 7313000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI ESECUZIONE DI INDAGINI",
-          "data": "2023-04-04"
-        },
-        {
-          "oggetto": "MANUTENZIONE APPARATI HARDWARE E PUNTO UNICO DI CONTATTO - SERVIZI DI GESTIONE E MANUTENZIONE SISTEMI IP E PDL",
-          "importo": 6087401.1,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "MANUTENZIONE E RIPARAZIONE DI ATTREZZATURA INFORMATICA",
-          "data": "2023-02-28"
-        },
-        {
-          "oggetto": "FORNITURA DI UN ACCORDO ORACLE ULA E DEI SERVIZI CONNESSI RELATIVI A HARDWARE, SOFTWARE E SUPPORTO",
-          "importo": 5300000,
-          "procedura": "PROCEDURA RISTRETTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI INTERNET",
-          "data": "2024-05-14"
-        },
-        {
-          "oggetto": "ADESIONE ALLA CONVENZIONE PER LA REALIZZAZIONE E GESTIONE DI UNA NUOVA INFRASTRUTTURA INFORMATICA AL SERVIZIO DELLA PUBBLICA AMMINISTRAZIONE DENOMINATA POLO STRATEGICO NAZIONALE ('",
-          "importo": 4804838.51,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "SERVIZI DI PROVIDER",
-          "data": "2024-10-09"
-        },
-        {
-          "oggetto": "LOTTO 1",
-          "importo": 4398028.84,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI POSTALI",
-          "data": "2023-05-23"
-        },
-        {
-          "oggetto": "LOTTO 2",
-          "importo": 4147021.8,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI POSTALI",
-          "data": "2023-05-23"
-        },
-        {
-          "oggetto": "LOTTO 2 SERVIZI DI GESTIONE DELLA CORRISPONDENZA A MONTE E A VALLE DEL RECAPITO",
-          "importo": 4140908.74,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI STAMPA",
-          "data": "2023-03-07"
         }
       ]
     },
@@ -24193,129 +23824,6 @@
       ]
     },
     {
-      "cf": "92000450582",
-      "den": "ISTITUTO NAZIONALE PER LA VALUTAZIONE DEL SISTEMA EDUCATIVO DI ISTRUZIONE E DI FORMAZIONE",
-      "reg": "CENTRALE",
-      "n": 50,
-      "importo": 99613003,
-      "cat": {
-        "competitiva": {
-          "n": 2,
-          "importo": 23175626
-        },
-        "quadro": {
-          "n": 4,
-          "importo": 787885
-        },
-        "diretto": {
-          "n": 35,
-          "importo": 75130560
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 9,
-          "importo": 518932
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 26,
-      "pnrrImporto": 0,
-      "band40": 2,
-      "band140": 1,
-      "prorogaN": 2,
-      "bunchingQuota": 0.08571428571428572,
-      "quotaSenzaGara": 0.7542244194417911,
-      "quotaSenzaGaraNum": 0.7,
-      "top": [
-        {
-          "oggetto": "SERVIZI DI TELEFONIA",
-          "importo": 72834293.59,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI TELEFONIA MOBILI",
-          "data": "2024-01-29"
-        },
-        {
-          "oggetto": "PROCEDURA APERTA SERVIZI FINALIZZATI ALLA CREAZIONE DI SOLUZIONI INFORMATICHE CHE GARANTISCANO LA REALIZZAZIONE DI SOMMINISTRAZIONI COMPUTER BASED",
-          "importo": 23167826.4,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI GESTIONE DI ATTREZZATURE INFORMATICHE PER LO SVILUPPO DI SISTEMI INFORMATICI",
-          "data": "2024-06-20"
-        },
-        {
-          "oggetto": "SERVIZI DI SVILUPPO, MANUTENZIONE E ASSISTENZA' MEDIANTE ORDINATIVO DI FORNITURA NELL'AMBITO DELL'ACCORDO QUADRO PER I SERVIZI APPLICATIVI PER LE PUBBLICHE AMMINISTRAZIONI CENTRALI",
-          "importo": 365380,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE",
-          "data": "2023-09-25"
-        },
-        {
-          "oggetto": "FORNITURA DEL SERVIZIO SOSTITUTIVO DI MENSA MEDIANTE BUONI PASTO CARTACEI ED ELETTRONICI - CONVENZIONE CONSIP BUONI PASTO 9 LOTTO ACCESSORIO CENTRO",
-          "importo": 269232,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "BUONI PASTO",
-          "data": "2023-10-03"
-        },
-        {
-          "oggetto": "BUONI PASTO ELETTRONICI",
-          "importo": 252237.44,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "BUONI PASTO",
-          "data": "2024-08-07"
-        },
-        {
-          "oggetto": "BUONI PASTO ELETTRONICI 24 MESI",
-          "importo": 252237.44,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "BUONI PASTO",
-          "data": "2024-08-08"
-        },
-        {
-          "oggetto": "SOLUZIONI CINECA E SERVIZI DI ASSISTENZA CONNESSI ANNI 2025 - 2027",
-          "importo": 222444.21,
-          "procedura": "AFFIDAMENTO DIRETTO A SOCIETA' IN HOUSE",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI",
-          "data": "2024-12-18"
-        },
-        {
-          "oggetto": "SERVIZIO DI TESORERIA 2024 2030 INVALSI",
-          "importo": 180000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI BANCARI",
-          "data": "2024-04-17"
-        },
-        {
-          "oggetto": "SERVIZI DI MEETING",
-          "importo": 138800,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI ALBERGHIERI PER RIUNIONI E CONFERENZE",
-          "data": "2023-02-20"
-        },
-        {
-          "oggetto": "POLIZZA SANITARIA INVALSI IN FAVORE DEL PERSONALE DIPENDENTE",
-          "importo": 129000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI ASSICURATIVI",
-          "data": "2023-05-02"
-        }
-      ]
-    },
-    {
       "cf": "01620480911",
       "den": "AZIENDA SOCIO SANITARIA LOCALE N. 3 DI NUORO",
       "reg": "NON CLASSIFICATO",
@@ -25050,129 +24558,6 @@
           "categoria": "competitiva",
           "cpv": "ALTRI SERVIZI",
           "data": "2023-05-29"
-        }
-      ]
-    },
-    {
-      "cf": "06838821004",
-      "den": "ISTITUTO NAZIONALE DI GEOFISICA E VULCANOLOGIA",
-      "reg": "CENTRALE",
-      "n": 671,
-      "importo": 60865536,
-      "cat": {
-        "competitiva": {
-          "n": 57,
-          "importo": 31310595
-        },
-        "quadro": {
-          "n": 27,
-          "importo": 3887949
-        },
-        "diretto": {
-          "n": 544,
-          "importo": 19634399
-        },
-        "negoziataSenza": {
-          "n": 17,
-          "importo": 3769886
-        },
-        "negoziata": {
-          "n": 26,
-          "importo": 2262707
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 389,
-      "pnrrImporto": 28119236,
-      "band40": 36,
-      "band140": 16,
-      "prorogaN": 8,
-      "bunchingQuota": 0.09558823529411764,
-      "quotaSenzaGara": 0.3845244255236574,
-      "quotaSenzaGaraNum": 0.8360655737704918,
-      "top": [
-        {
-          "oggetto": "CAVO SOTTOMARINO ELETTRO-OTTICO CON SISTEMA DI ALIMENTAZIONE E DI CONTROLLO",
-          "importo": 7579370,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "CAVI SOTTOMARINI",
-          "data": "2023-05-30"
-        },
-        {
-          "oggetto": "PROCEDURA APERTA, AI SENSI DELL'ART. 71 DEL D.LGS. N. 36/2023, IN MODALITÀ TELEMATICA, PER L'AFFIDAMENTO DELLA FORNITURA E POSA IN OPERA DI UN SISTEMA DART-LIKE COMPOSTO DI TRE SIS",
-          "importo": 2351240,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "STRUMENTI E APPARECCHIATURE PER TOPOGRAFIA, IDROGRAFIA, OCEANOGRAFIA E IDROLOGIA",
-          "data": "2024-06-21"
-        },
-        {
-          "oggetto": "NOLEGGIO A LUNGO TERMINE AUTOMEZZI E SERVIZI CONNESSI",
-          "importo": 1956000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "NOLEGGIO DI VEICOLI PER TRASPORTO PASSEGGERI CON AUTISTA",
-          "data": "2023-08-04"
-        },
-        {
-          "oggetto": "FORNITURA DI N. 146 STRUMENTAZIONI SISMICHE A LARGA BANDA",
-          "importo": 1636178.69,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "APPARECCHIATURE SISMICHE",
-          "data": "2023-06-26"
-        },
-        {
-          "oggetto": "LOTTO 1 - N. 3 MASS SPECTROMETERS FOR NOBLE GAS - N. 2 MASS SPECTROMETERS FOR STABLE ISOTOPES",
-          "importo": 1398673.23,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SPETTROMETRI DI MASSA",
-          "data": "2024-04-22"
-        },
-        {
-          "oggetto": "PROCEDURA APERTA, AI SENSI DELL&#8217;ART. 71 DEL D.LGS. N. 36/2023, IN MODALIT&#192; TELEMATICA, PER L&#8217;AFFIDAMENTO DELLA FORNITURA DI SPETTROFOTOMETRI LASER, SUDDIVISA IN 2 ",
-          "importo": 1060000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SPETTROMETRI",
-          "data": "2024-11-07"
-        },
-        {
-          "oggetto": "BUONI PASTO SEDE ROMA",
-          "importo": 971232,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-01"
-        },
-        {
-          "oggetto": "FORNITURA DI N. 75 STRUMENTAZIONI GNSS (MEET)",
-          "importo": 910554,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SISTEMI DI NAVIGAZIONE E POSIZIONAMENTO GLOBALE (GPS O EQUIVALENTE)",
-          "data": "2023-01-17"
-        },
-        {
-          "oggetto": "PROCEDURA APERTA AVENTE AD OGGETTO LA FORNITURA COSTITUITA DA MICROSONDA ELETTRONICA COMPLETA DI STRUMENTAZIONE PER LA PREPARAZIONE DEL CAMPIONE",
-          "importo": 849000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "MICROSCOPI ELETTRONICI A SCANSIONE",
-          "data": "2023-06-22"
-        },
-        {
-          "oggetto": "FORNITURA DI APPARATI HARDWARE E SISTEMI DI CYBER SICUREZZA",
-          "importo": 820000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "APPARECCHIATURE DI RETE",
-          "data": "2024-06-07"
         }
       ]
     },
@@ -26653,129 +26038,6 @@
       ]
     },
     {
-      "cf": "00055590327",
-      "den": "OGS (ISTITUTO NAZIONALE DI OCEANOGRAFIA E DI GEOFISICA SPERIMENTALE)",
-      "reg": "NON CLASSIFICATO",
-      "n": 18,
-      "importo": 15487926,
-      "cat": {
-        "competitiva": {
-          "n": 1,
-          "importo": 310655
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 12,
-          "importo": 318516
-        },
-        "negoziataSenza": {
-          "n": 5,
-          "importo": 14858755
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 11,
-      "pnrrImporto": 2635160,
-      "band40": 2,
-      "band140": 0,
-      "prorogaN": 1,
-      "bunchingQuota": 0.16666666666666666,
-      "quotaSenzaGara": 0.9799421174920386,
-      "quotaSenzaGaraNum": 0.9444444444444444,
-      "top": [
-        {
-          "oggetto": "RINNOVO DEL SERVIZIO DI GESTIONE ARMATORIALE DELLA N/R LAURA BASSI PER IL PERIODO 01/04/2024 - 31/03/2025 DI CUI AI CONTRATTI REP. N. 240 DI LOCAZIONE A SCAFO NUDO DELLA N/R LAURA ",
-          "importo": 12592500,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "SERVIZI DI GESTIONE NAVI",
-          "data": "2024-02-19"
-        },
-        {
-          "oggetto": "FORNITURA DI UN SISTEMA DI AUTOMAZIONE PER DEPOSIZIONE STRUMENTI SCIENTIFICI PER LA NAVE LAURA BASSI, FINANZIATA NELL'AMBITO DEL PNRR - PROGETTO 'ITINERIS'",
-          "importo": 840300,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "APPARECCHIATURE DI SOLLEVAMENTO E MOVIMENTAZIONE",
-          "data": "2023-06-22"
-        },
-        {
-          "oggetto": "FORNITURA DI UN SISTEMA DIGITALE PER OPERAZIONI REMOTE DELLA N/R LAURA BASSI",
-          "importo": 655000,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "COMPONENTI ELETTRONICI",
-          "data": "2023-10-18"
-        },
-        {
-          "oggetto": "FORNITURA DI UN SISTEMA DI AUTOMAZIONE, COLLEZIONAMENTO DATI, TELEMETRIA PER LA NAVE LAURA BASSI, FINANZIATA NELL'AMBITO DEL PNRR - PROGETTO ITINERIS",
-          "importo": 460300,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "APPARECCHIATURA INFORMATICA VARIA",
-          "data": "2023-06-21"
-        },
-        {
-          "oggetto": "FORNITURA DI UN'IMBARCAZIONE DA RICERCA FINANZIATA NELL'AMBITO DEL PNRR PROGETTO 'EMBRC - UNLOCKING THE POTENTIAL FOR HEALTH AND FOOD FROM THE SEAS'",
-          "importo": 310655,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "IMBARCAZIONI SPECIALIZZATE",
-          "data": "2023-10-04"
-        },
-        {
-          "oggetto": "FORNITURA DI UN'IMBARCAZIONE DA RICERCA NELL'AMBITO DEL PNRR PROGETTO EMBRC-UP (CODICE: IR0000035). CUP C63C22000570001 - CUI F00055590327202300009.",
-          "importo": 310655,
-          "procedura": "PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE",
-          "categoria": "negoziataSenza",
-          "cpv": "IMBARCAZIONI SPECIALIZZATE",
-          "data": "2024-02-19"
-        },
-        {
-          "oggetto": "FORNITURA DI UN SISTEMA DI CONTROLLO DELLA PROFONDITÀ DEI CAVI SISMICI DELLA N/R LAURA BASSI.",
-          "importo": 105000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STRUMENTI DI MISURAZIONE",
-          "data": "2024-02-26"
-        },
-        {
-          "oggetto": "FORNITURA DI UNA CERTIFICAZIONE REMOTE SHIP E DOLPHIN",
-          "importo": 44250,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI CERTIFICAZIONE",
-          "data": "2023-09-25"
-        },
-        {
-          "oggetto": "SERVIZIO DI NOLEGGIO DI UNA IMBARCAZIONE PER IL TRAINING DEL SISTEMA AUV",
-          "importo": 39500,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "NOLEGGIO DI IMBARCAZIONI CON EQUIPAGGIO",
-          "data": "2024-04-08"
-        },
-        {
-          "oggetto": "SERVIZIO DI CUSTODIA E STOCCAGGIO STRUMENTAZIONE SCIENTIFICA",
-          "importo": 36000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI MAGAZZINAGGIO E DEPOSITO MERCI",
-          "data": "2024-08-07"
-        }
-      ]
-    },
-    {
       "cf": "93158770870",
       "den": "FONDAZIONE ISTITUTO SUP. PER LA MOBILITA' SOSTENIBILE",
       "reg": "NON CLASSIFICATO",
@@ -27141,129 +26403,6 @@
           "categoria": "diretto",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-03-18"
-        }
-      ]
-    },
-    {
-      "cf": "80030350484",
-      "den": "ISTITUTO NAZIONALE DI DOCUMENTAZIONE, INNOVAZIONE E RICERCA EDUCATIVA",
-      "reg": "CENTRALE",
-      "n": 149,
-      "importo": 9778724,
-      "cat": {
-        "competitiva": {
-          "n": 1,
-          "importo": 471000
-        },
-        "quadro": {
-          "n": 5,
-          "importo": 827995
-        },
-        "diretto": {
-          "n": 136,
-          "importo": 8038681
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 7,
-          "importo": 441048
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 59,
-      "pnrrImporto": 51250,
-      "band40": 10,
-      "band140": 6,
-      "prorogaN": 10,
-      "bunchingQuota": 0.11764705882352941,
-      "quotaSenzaGara": 0.8220583075399102,
-      "quotaSenzaGaraNum": 0.912751677852349,
-      "top": [
-        {
-          "oggetto": "SERVIZI CLOUD NIVOLA PER INDIRE",
-          "importo": 1361357.78,
-          "procedura": "AFFIDAMENTO DIRETTO A SOCIETA' IN HOUSE",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI",
-          "data": "2024-12-17"
-        },
-        {
-          "oggetto": "PROCEDURA APERTA SOPRA SOGLIA COMUNITARIA AI SENSI DELL'ART. 60 DEL D.LGS 50/2016, INTERAMENTE GESTITA IN MODALITÀ TELEMATICA, ATTRAVERSO L'UTILIZZO DELLA PIATTAFORMA REGIONALE STA",
-          "importo": 471000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI PRODUZIONE DI FILM E VIDEO",
-          "data": "2023-06-28"
-        },
-        {
-          "oggetto": "SERVIZI DI SICUREZZA DA REMOTO, COMPLIANCE E CONTROLLO PER LE PUBBLICHE AMMINISTRAZIONI",
-          "importo": 399902.8,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-05-28"
-        },
-        {
-          "oggetto": "REALIZZAZIONE ATTIVITÀ SISTEMA INFORMATIVO PER PROCESSI GESTIONALI PROGRAMMA ERASMUS PLUS FASE III",
-          "importo": 349988.13,
-          "procedura": "AFFIDAMENTO DIRETTO A SOCIETA' IN HOUSE",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI GESTIONE CONNESSI ALL'INFORMATICA",
-          "data": "2024-12-10"
-        },
-        {
-          "oggetto": "ADESIONE CONVENZIONE QUADRO PER L'AFFIDAMENTO DEL SERVIZIO DI PULIZIE E PRESTAZIONI ACCESSORIE DEGLI IMMOBILI E DELLE AREE DELLE AMMINISTRAZIONI SITUATE NEL TERRITORIO DELLA REGION",
-          "importo": 317468.96,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "SERVIZI DI PULIZIA",
-          "data": "2023-01-10"
-        },
-        {
-          "oggetto": "ACQUISTO DEI SERVIZI CLOUD NIVOLA PER AGENZIA NAZIONALE ERASMUS",
-          "importo": 260348.7,
-          "procedura": "AFFIDAMENTO DIRETTO A SOCIETA' IN HOUSE",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI",
-          "data": "2024-12-09"
-        },
-        {
-          "oggetto": "UN ACCORDO QUADRO CON UN SOLO OPERATORE ECONOMICO PER L'AFFIDAMENTO DEI SERVIZI DI ORGANIZZAZIONE E REALIZZAZIONE DI EVENTI ONLINE E IBRIDI COLLEGATI ALLE ATTIVITÀ ISTITUZIONALI DI",
-          "importo": 206000,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "SERVIZI DI ORGANIZZAZIONE DI EVENTI",
-          "data": "2023-06-28"
-        },
-        {
-          "oggetto": "ADESIONE ACCORDO QUADRO CONSIP SPC2 SERVIZI DI CONNETTIVITÀ",
-          "importo": 198725.76,
-          "procedura": "AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE",
-          "categoria": "quadro",
-          "cpv": "SERVIZI DI GESTIONE CONNESSI ALL'INFORMATICA",
-          "data": "2023-12-28"
-        },
-        {
-          "oggetto": "L'ACQUISIZIONE DELLE LICENZE DI VIRTUALIZZAZIONE PER IL DATACENTER DELLA SEDE INDIRE DI VIA LOMBROSO 6/11",
-          "importo": 196452.5,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI GESTIONE DELLE LICENZE",
-          "data": "2024-11-06"
-        },
-        {
-          "oggetto": "LICENZE DI VIRTUALIZZAZIONE PER IL DATACENTER DELLA SEDE INDIRE DI VIA LOMBROSO 6/11",
-          "importo": 196452.48,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PACCHETTI SOFTWARE PER LA GESTIONE DI LICENZE",
-          "data": "2024-11-28"
         }
       ]
     },
@@ -28299,129 +27438,6 @@
           "categoria": "diretto",
           "cpv": "Cpv prevalente non disponibile",
           "data": "2024-02-29"
-        }
-      ]
-    },
-    {
-      "cf": "04416711002",
-      "den": "ISTITUTO NAZIONALE RICERCHE TURISTICHE - ISNART SCPA",
-      "reg": "CENTRALE",
-      "n": 52,
-      "importo": 4425036,
-      "cat": {
-        "competitiva": {
-          "n": 9,
-          "importo": 3469500
-        },
-        "quadro": {
-          "n": 1,
-          "importo": 37000
-        },
-        "diretto": {
-          "n": 40,
-          "importo": 786536
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 2,
-          "importo": 132000
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 31,
-      "pnrrImporto": 4177,
-      "band40": 2,
-      "band140": 0,
-      "prorogaN": 1,
-      "bunchingQuota": 0.05,
-      "quotaSenzaGara": 0.17774679136278385,
-      "quotaSenzaGaraNum": 0.7692307692307693,
-      "top": [
-        {
-          "oggetto": "SERVIZIO DI FORNITURA DATI SULLE TRANSAZIONI ESEGUITE ATTRAVERSO CARTE DI CREDITO E DI DEBITO NEI TERRITORI ITALIANI",
-          "importo": 1400000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI BANCHE DATI",
-          "data": "2023-04-28"
-        },
-        {
-          "oggetto": "PROCEDURA DI GARA APERTA SOPRA SOGLIA PER LA CONCLUSIONE DI UN ACCORDO QUADRO CON UN UNICO OPERATORE ECONOMICO, AI SENSI DELL'ART. 59, COMMA 3, DEL D. LGS. N. 36/2023 E S.M.I., PER",
-          "importo": 954500,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORNITURA DI PERSONALE D'UFFICIO",
-          "data": "2024-12-12"
-        },
-        {
-          "oggetto": "SERVIZIO DI MANUTENZIONE IMPLEMENTATIVA, VALORIZZAZIONE E POTENZIAMENTO DEI SISTEMI INFORMATICI DI ANALISI DEL TURISMO DELLE CAMERE DI COMMERCIO E RELATIVI SERVIZI: PIATTAFORMA STE",
-          "importo": 345000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI ELABORAZIONE DATI",
-          "data": "2024-07-12"
-        },
-        {
-          "oggetto": "SERVIZIO DI REALIZZAZIONE DI AUDIT DI PARTE TERZA NELL'AMBITO DELLE ATTIVITÀ CONNESSE ALLA GESTIONE, ALLA PROMOZIONE E ALLO SVILUPPO DEL MARCHIO OSPITALITÀ ITALIANA",
-          "importo": 300000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI CERTIFICAZIONE",
-          "data": "2023-11-22"
-        },
-        {
-          "oggetto": "DATI SULLA PRESENZA E SUI COMPORTAMENTI DEI TURISTI IN ITALIA (LOCATION INTELLIGENCE)",
-          "importo": 210000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI FORNITURA DATI",
-          "data": "2023-03-09"
-        },
-        {
-          "oggetto": "SERVIZIO DI ASSISTENZA E CONSULENZA AMMINISTRATIVA, CONTABILE, FISCALE, TRIBUTARIA E DEL LAVORO",
-          "importo": 150000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI CONTABILITÀ",
-          "data": "2023-01-13"
-        },
-        {
-          "oggetto": "SERVIZIO DI INDAGINE CATI ALLE IMPRESE RICETTIVE SUL TERRITORIO ITALIANO",
-          "importo": 72000,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "SERVIZI DI INDAGINI TELEFONICHE",
-          "data": "2023-03-28"
-        },
-        {
-          "oggetto": "SERVIZI DI UFFICIO STAMPA E DIGITAL P.R. DI ISNART",
-          "importo": 70000,
-          "procedura": "PROCEDURA APERTA",
-          "categoria": "competitiva",
-          "cpv": "SERVIZI DI AGENZIE DI STAMPA",
-          "data": "2024-09-06"
-        },
-        {
-          "oggetto": "SERVIZIO DI INDAGINE DIRETTA AI TURISTI E CICLOTURISTI ITALIANI E STRANIERI IN VACANZA IN ITALIA",
-          "importo": 62015.86,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "RICERCA DI MERCATO ED ECONOMICA, INDAGINI E STATISTICHE",
-          "data": "2024-12-31"
-        },
-        {
-          "oggetto": "SERVIZIO DI INDAGINE CAPI AD UN CAMPIONE RAPPRESENTATIVO DI 10.000 TURISTI ITALIANI E STRANIERI IN VACANZA NELLE DESTINAZIONI TURISTICHE IN ITALIA",
-          "importo": 60000,
-          "procedura": "PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA",
-          "categoria": "negoziata",
-          "cpv": "SERVIZI DI INDAGINE",
-          "data": "2023-03-28"
         }
       ]
     },
@@ -32236,129 +31252,6 @@
           "categoria": "diretto",
           "cpv": "",
           "data": "2024-11-28"
-        }
-      ]
-    },
-    {
-      "cf": "80126810581",
-      "den": "ISTITUTO NAZIONALE DI ALTA MATEMATICA FRANCESCO SEVERI",
-      "reg": "CENTRALE",
-      "n": 25,
-      "importo": 299328,
-      "cat": {
-        "competitiva": {
-          "n": 0,
-          "importo": 0
-        },
-        "quadro": {
-          "n": 0,
-          "importo": 0
-        },
-        "diretto": {
-          "n": 25,
-          "importo": 299328
-        },
-        "negoziataSenza": {
-          "n": 0,
-          "importo": 0
-        },
-        "negoziata": {
-          "n": 0,
-          "importo": 0
-        },
-        "altro": {
-          "n": 0,
-          "importo": 0
-        }
-      },
-      "urgenzaN": 22,
-      "pnrrImporto": 0,
-      "band40": 1,
-      "band140": 0,
-      "prorogaN": 0,
-      "bunchingQuota": 0.04,
-      "quotaSenzaGara": 1,
-      "quotaSenzaGaraNum": 1,
-      "top": [
-        {
-          "oggetto": "FORNITURA SERVIZI SCUOLA ESTIVA DI FISICA MATEMATICA 2024",
-          "importo": 63183.36,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Alberghi e ristoranti",
-          "data": "2024-07-19"
-        },
-        {
-          "oggetto": "SERVIZI ALBERGHIERI E CONGRESSUALI PER L'EVENTO ASSEMBLEA GRUPPO GNFM 2024",
-          "importo": 36363.63,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ALBERGHI E RISTORANTI",
-          "data": "2024-09-19"
-        },
-        {
-          "oggetto": "SERVIZI ALBERGHIERI E LOGISTICI PRESSO IL PALAZZONE DI CORTONA DELLA SCUOLA NORMALE SUPERIORE DI PISA PER IL 2024",
-          "importo": 25952,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "ALTRI SERVIZI ALBERGHIERI",
-          "data": "2024-11-21"
-        },
-        {
-          "oggetto": "SERVIZI DELLA PIATTAFORMA PICA DEL CINECA – ANNO 2024 PER RACCOLTA ADESIONE AI GRUPPI NAZIONALI DI RICERCA 2025",
-          "importo": 22043,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI INFORMATICI",
-          "data": "2024-10-30"
-        },
-        {
-          "oggetto": "SISTEMA DI GESTIONE PIATTAFORMA CLOUD PER APPLICATIVI INDAM E DISASTER RECOVERY",
-          "importo": 19982,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI DI BACK-UP INFORMATICO",
-          "data": "2024-09-04"
-        },
-        {
-          "oggetto": "REALIZZAZIONE PIATTAFORMA PERSONALIZZATA PER LA GESTIONE DELLE ELEZIONI DEGLI ORGANI E DEI CONSIGLI SCIENTIFICI DEI GRUPPI NAZIONALI INDAM",
-          "importo": 12000,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "PIATTAFORME INFORMATICHE",
-          "data": "2024-10-30"
-        },
-        {
-          "oggetto": "WORKSHOP ROMA SERVIZI ALBERGHIERI: INNOVATIONS IN NUMERICAL TREATMENT OF STIFF DIFFERENTIAL EQUATIONS 19-23 FEB. 2024",
-          "importo": 9236.36,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "Cpv prevalente non disponibile",
-          "data": "2024-02-14"
-        },
-        {
-          "oggetto": "FORNITURA DI N° 2 STAMPANTE E SERVIZI ACCESSORI",
-          "importo": 8820.6,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "STAMPANTI LASER",
-          "data": "2024-10-23"
-        },
-        {
-          "oggetto": "WORKSHOP BARI GNFM NEAT 2024",
-          "importo": 8536.37,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI ALBERGHIERI",
-          "data": "2024-06-27"
-        },
-        {
-          "oggetto": "WORKSHOP ROMA SERVIZI ALBERGHIERI FUTURE ON PERTURBATIVE MODELING WITH CONTACTS",
-          "importo": 7630,
-          "procedura": "AFFIDAMENTO DIRETTO",
-          "categoria": "diretto",
-          "cpv": "SERVIZI ALBERGHIERI",
-          "data": "2024-07-25"
         }
       ]
     },

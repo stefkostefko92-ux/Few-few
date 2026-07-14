@@ -12,6 +12,24 @@ export function renderCordate({ cordate }) {
   const c = cordate.cordate || [];
   const tot = cordate.totaleCordate || c.length;
   const forte = c[0];
+  const vinc = cordate.vincitori || [];
+  const vincRows = vinc
+    .map(
+      (v) => `<tr><td>${esc(v.den)}</td><td class="num">${v.domini}</td>
+      <td class="num">${v.vinteTot}/${v.gareTot} <span class="small muted">(${percentualeIt(v.winRate)})</span></td>
+      <td class="num">${euroCompact(v.valore)}</td></tr>`
+    )
+    .join('');
+  const vincBlk = vinc.length
+    ? `<h2>Chi vince (quasi) sempre: i dominatori locali</h2>
+<p class="small muted">Imprese che vincono almeno l’80% delle gare competitive a cui partecipano, presso lo stesso
+committente, in almeno 6 gare. «Domìni» = quanti committenti diversi dove si ripete lo schema. Anche qui: può essere
+competitività reale o specializzazione, è un <strong>indicatore</strong>.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Impresa</th><th class="num" scope="col">Committenti dominati</th><th class="num" scope="col">Gare vinte/partecipate</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody>${vincRows}</tbody>
+</table></div>`
+    : '';
 
   const rows = c
     .map((x) => {
@@ -53,6 +71,7 @@ almeno un lotto della gara; se in una gara vincono entrambe (lotti diversi) la c
   </tr></thead>
   <tbody>${rows}</tbody>
 </table></div>
+${vincBlk}
 <div class="note"><strong>Come leggere — e le cautele.</strong> Questo è l’indicatore più delicato del sito.
 Due imprese che concorrono spesso insieme, dove una vince e l’altra resta sempre a mani vuote, <em>possono</em>
 disegnare uno schema di gara concordata (una fa la «comparsa» per simulare concorrenza). Ma ci sono spiegazioni

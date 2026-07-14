@@ -94,6 +94,37 @@ export function analizzaCordate(gare, { soglia = SOGLIA_INSIEME, minVittorie = M
   return cordate;
 }
 
+/**
+ * „Vincitore ricorrente" — доминиране: фирма печели много висок дял от конкурентните
+ * гари, в които участва при СЪЩИЯ възложител. Групира по фирма (домини при N възложителя).
+ * Вход: гари { winners:Set, parts:[cf…], auth }. Само P.IVA юр. лица.
+ */
+export function analizzaVincitori(gare, { minGare = 6, minWinRate = 0.8 } = {}) {
+  const rel = new Map(); // `${auth}|${cf}` → {part, won, val}
+  for (const g of gare) {
+    if (!g.auth) continue;
+    const win = g.winners instanceof Set ? g.winners : new Set(g.winners || []);
+    for (const cf of new Set(g.parts.filter(isAzienda))) {
+      const k = `${g.auth}|${cf}`;
+      let r = rel.get(k);
+      if (!r) { r = { part: 0, won: 0, val: 0 }; rel.set(k, r); }
+      r.part++;
+      if (win.has(cf)) { r.won++; r.val += g.importo || 0; }
+    }
+  }
+  const perForn = new Map(); // cf → {domini, gareTot, vinteTot, valore}
+  for (const [k, r] of rel) {
+    if (r.part < minGare || r.won / r.part < minWinRate) continue;
+    const cf = k.slice(k.indexOf('|') + 1);
+    let f = perForn.get(cf);
+    if (!f) { f = { domini: 0, gareTot: 0, vinteTot: 0, valore: 0 }; perForn.set(cf, f); }
+    f.domini++; f.gareTot += r.part; f.vinteTot += r.won; f.valore += r.val;
+  }
+  return [...perForn.entries()]
+    .map(([cf, f]) => ({ cf, ...f, winRate: f.gareTot ? f.vinteTot / f.gareTot : 0, valore: Math.round(f.valore) }))
+    .sort((a, b) => b.domini - a.domini || b.vinteTot - a.vinteTot);
+}
+
 async function main() {
   const tsvPath = join(ANAC_DIR, 'health-cig-cf.tsv');
   await stat(tsvPath).catch(() => { throw new Error('няма health-cig-cf.tsv — пусни първо `npm run fetch:appalti`'); });
@@ -148,6 +179,11 @@ async function main() {
     vincitoreDen: cfDen.get(c.vincitoreCf) || c.vincitoreCf,
     coprDen: cfDen.get(c.coprCf) || c.coprCf,
   }));
+  // vincitore ricorrente (доминиране при възложител)
+  const vincitori = analizzaVincitori(gare).slice(0, 30).map((v) => ({
+    ...v, den: cfDen.get(v.cf) || v.cf,
+  }));
+  console.log(`Vincitori ricorrenti: ${vincitori.length} (топ: ${vincitori[0] ? vincitori[0].domini + ' домини, ' + (vincitori[0].winRate * 100).toFixed(0) + '% win-rate' : '—'})`);
 
   await writeFile(join(DATA_DIR, 'cordate.json'), JSON.stringify({
     generatoIl: new Date().toISOString(),
@@ -156,6 +192,7 @@ async function main() {
     soglie: { insieme: SOGLIA_INSIEME, minVittorie: MIN_VITTORIE, maxPartecipanti: MAX_PART },
     totaleCordate: cordate.length,
     cordate: top,
+    vincitori,
   }, null, 2) + '\n');
   console.log(`Готово → data/cordate.json: ${cordate.length} cordate (топ ${top.length} с имена)`);
   if (top[0]) console.log(`  най-силна: ${top[0].insieme} гари заедно, победи ${top[0].vinteDalVincitore}, стойност ${(top[0].valore / 1e6).toFixed(1)} mln`);

@@ -1,77 +1,77 @@
 {
-  "generatoIl": "2026-07-13T20:54:00.856Z",
+  "generatoIl": "2026-07-14T05:17:19.103Z",
   "fonte": "ANAC — BDNCP: aggiudicazioni, fine-contratto, stati-avanzamento (CC BY-SA 4.0)",
   "url": "https://dati.anticorruzione.it/opendata",
   "nota": "Обогатяване на здравните CIG (2023–2024) с брой оференти, ribasso, критерий и закъснения. „Un offerente\" не е доказателство за нередност.",
   "aggiudicazioni": {
-    "nAgg": 274323,
-    "conOfferenti": 47544,
-    "unOfferente": 33134,
-    "quotaUnOfferente": 0.6969123338381289,
+    "nAgg": 270031,
+    "conOfferenti": 46866,
+    "unOfferente": 32581,
+    "quotaUnOfferente": 0.6951948107369949,
     "distribuzione": {
-      "1": 33134,
-      "2": 5595,
-      "3": 3256,
-      "4+": 5559
+      "1": 32581,
+      "2": 5544,
+      "3": 3234,
+      "4+": 5507
     },
-    "ribassoCompMediano": 14.2,
-    "ribassoCompMedio": 22.166352478318725,
-    "nRibassoComp": 16910,
+    "ribassoCompMediano": 14.32,
+    "ribassoCompMedio": 22.28544322233831,
+    "nRibassoComp": 16731,
     "criterio": {
-      "prezzo": 23137,
-      "qualita": 16401,
-      "altro": 234785
+      "prezzo": 22898,
+      "qualita": 16225,
+      "altro": 230908
     },
     "perCategoria": {
       "diretto": {
-        "n": 179959,
-        "conOfferenti": 10847,
-        "unOfferente": 9680,
-        "quotaUnOfferente": 0.8924126486586152
+        "n": 176119,
+        "conOfferenti": 10488,
+        "unOfferente": 9331,
+        "quotaUnOfferente": 0.8896834477498093
       },
       "negoziataSenza": {
-        "n": 12945,
-        "conOfferenti": 10980,
-        "unOfferente": 9742,
-        "quotaUnOfferente": 0.8872495446265938
+        "n": 12831,
+        "conOfferenti": 10898,
+        "unOfferente": 9685,
+        "quotaUnOfferente": 0.8886951734263168
       },
       "competitiva": {
-        "n": 19632,
-        "conOfferenti": 18582,
-        "unOfferente": 9202,
-        "quotaUnOfferente": 0.4952104186847487
+        "n": 19464,
+        "conOfferenti": 18434,
+        "unOfferente": 9114,
+        "quotaUnOfferente": 0.49441249864381037
       },
       "quadro": {
-        "n": 54344,
-        "conOfferenti": 580,
-        "unOfferente": 457,
-        "quotaUnOfferente": 0.7879310344827586
+        "n": 54265,
+        "conOfferenti": 575,
+        "unOfferente": 452,
+        "quotaUnOfferente": 0.7860869565217391
       },
       "negoziata": {
-        "n": 6237,
-        "conOfferenti": 6233,
-        "unOfferente": 3770,
-        "quotaUnOfferente": 0.6048451788865715
+        "n": 6154,
+        "conOfferenti": 6150,
+        "unOfferente": 3717,
+        "quotaUnOfferente": 0.604390243902439
       },
       "altro": {
-        "n": 1206,
-        "conOfferenti": 322,
-        "unOfferente": 283,
-        "quotaUnOfferente": 0.8788819875776398
+        "n": 1198,
+        "conOfferenti": 321,
+        "unOfferente": 282,
+        "quotaUnOfferente": 0.8785046728971962
       }
     }
   },
   "ritardi": {
     "fineContratto": {
-      "n": 24837,
+      "n": 24194,
       "conProroga": 0,
       "quotaProroga": 0,
       "giorniProrogaMediano": null
     },
     "statiAvanzamento": {
-      "nSal": 25541,
-      "inRitardo": 145,
-      "quotaRitardo": 0.005677146548686425,
+      "nSal": 25127,
+      "inRitardo": 120,
+      "quotaRitardo": 0.004775739244637243,
       "scostamentoMediano": 0
     }
   }

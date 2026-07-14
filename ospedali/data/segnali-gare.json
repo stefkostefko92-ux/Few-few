@@ -1,0 +1,283 @@
+{
+  "generatoIl": "2026-07-14T05:22:21.430Z",
+  "fonte": "ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2024",
+  "nota": "Indicatori di rischio sulle procedure di gara. Ogni segnale è un INDICATORE, non una prova: possono esistere spiegazioni lecite (urgenza reale, mercati di nicchia, esigenze cliniche).",
+  "nazionale": {
+    "termineBreve": {
+      "n": 9940,
+      "base": 77336,
+      "quota": 0.12853005068790732
+    },
+    "sottoSoglia": {
+      "sotto": 5421,
+      "sopra": 3054,
+      "rapporto": 1.775049115913556
+    },
+    "frazionamento": {
+      "cluster": 12689,
+      "valore": 7386215353
+    },
+    "ribassoZero": {
+      "n": 3569,
+      "base": 11753,
+      "quota": 0.303667148813069
+    },
+    "invitatiUnico": {
+      "n": 373,
+      "base": 373
+    },
+    "subappalto": {
+      "n": 4763,
+      "base": 270032,
+      "quota": 0.017638650234046337
+    }
+  },
+  "topTermineBreve": [
+    {
+      "den": "AZIENDA SANITARIA LOCALE VCO",
+      "n": 108,
+      "quota": 0.864
+    },
+    {
+      "den": "AZIENDA SANITARIA LOCALE SALERNO",
+      "n": 1433,
+      "quota": 0.7255696202531645
+    },
+    {
+      "den": "AGENZIA DI TUTELA DELLA SALUTE DI BERGAMO",
+      "n": 52,
+      "quota": 0.6341463414634146
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA LOCALE N.1 DI SASSARI",
+      "n": 41,
+      "quota": 0.6029411764705882
+    },
+    {
+      "den": "AZIENDA OSPEDALIERA SANT ANDREA",
+      "n": 472,
+      "quota": 0.5819975339087546
+    },
+    {
+      "den": "AZIENDA PROVINCIALE PER I SERVIZI SANITARI",
+      "n": 267,
+      "quota": 0.565677966101695
+    },
+    {
+      "den": "AZIENDA SANITARIA REGIONALE DEL MOLISE",
+      "n": 411,
+      "quota": 0.548
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) DELLA VALLE OLONA",
+      "n": 54,
+      "quota": 0.47368421052631576
+    },
+    {
+      "den": "AZ.OSPEDALIERO UNIVERSITARIA DI BOLOGNA - POLICLINICO S.ORSOLA MALPIGHI",
+      "n": 41,
+      "quota": 0.44565217391304346
+    },
+    {
+      "den": "AZIENDA ULSS N. 7 PEDEMONTANA",
+      "n": 75,
+      "quota": 0.4437869822485207
+    },
+    {
+      "den": "AZIENDA SANITARIA PROVINCIALE DI REGGIO CALABRIA",
+      "n": 72,
+      "quota": 0.43636363636363634
+    },
+    {
+      "den": "ASST CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI/CTO",
+      "n": 50,
+      "quota": 0.43103448275862066
+    }
+  ],
+  "topSottoSoglia": [
+    {
+      "den": "AZIENDA USL DELLA ROMAGNA",
+      "n": 100,
+      "quota": 100
+    },
+    {
+      "den": "AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA ISTITUTI OSPITALIERI DI VERONA",
+      "n": 96,
+      "quota": 96
+    },
+    {
+      "den": "AZIENDA SANITARIA REGIONALE DEL MOLISE",
+      "n": 94,
+      "quota": 94
+    },
+    {
+      "den": "ESTAR (ENTE DI SUPPORTO TECNICO AMMINISTRATIVO REGIONALE)",
+      "n": 84,
+      "quota": 84
+    },
+    {
+      "den": "AZIENDA SANITARIA PROVINCIALE DI CATANZARO",
+      "n": 79,
+      "quota": 79
+    },
+    {
+      "den": "AZIENDA SANITARIA LOCALE TERAMO",
+      "n": 78,
+      "quota": 78
+    },
+    {
+      "den": "AZIENDA USL DI BOLOGNA",
+      "n": 77,
+      "quota": 77
+    },
+    {
+      "den": "AZIENDA SANITARIA PROVINCIALE DI VIBO VALENTIA",
+      "n": 67,
+      "quota": 67
+    },
+    {
+      "den": "AZIENDA OSPEDALIERA DI PADOVA",
+      "n": 66,
+      "quota": 66
+    },
+    {
+      "den": "AZIENDA REGIONALE DELLA SALUTE REGIONE SARDEGNA",
+      "n": 64,
+      "quota": 64
+    },
+    {
+      "den": "AZIENDA OSPEDALIERA CITTA DELLA SALUTE E DELLA SCIENZA DI TORINO",
+      "n": 64,
+      "quota": 64
+    },
+    {
+      "den": "AZIENDA OSPEDALIERO-UNIVERSITARIA MAGGIORE DELLA CARITA",
+      "n": 59,
+      "quota": 59
+    }
+  ],
+  "topFrazionamento": [
+    {
+      "den": "SANITAETSBETRIEB DER AUTONOMEN PROVINZ BOZEN",
+      "cluster": 262,
+      "valore": 97846137
+    },
+    {
+      "den": "AZIENDA SANITARIA LOCALE SALERNO",
+      "cluster": 206,
+      "valore": 234201233
+    },
+    {
+      "den": "AZIENDA SANITARIA LOCALE BA",
+      "cluster": 191,
+      "valore": 91319853
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) GRANDE OSPEDALE METROPOLITANO NIGUARDA",
+      "cluster": 168,
+      "valore": 121586760
+    },
+    {
+      "den": "AZIENDA USL TOSCANA NORD OVEST",
+      "cluster": 161,
+      "valore": 30596272
+    },
+    {
+      "den": "AZ.OSPEDALIERO UNIVERSITARIA DI BOLOGNA - POLICLINICO S.ORSOLA MALPIGHI",
+      "cluster": 152,
+      "valore": 122550596
+    },
+    {
+      "den": "ISTITUTO ORTOPEDICO RIZZOLI",
+      "cluster": 148,
+      "valore": 166768813
+    },
+    {
+      "den": "AZIENDA USL DELLA ROMAGNA",
+      "cluster": 140,
+      "valore": 98385988
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI",
+      "cluster": 137,
+      "valore": 668095004
+    },
+    {
+      "den": "AZIENDA SANITARIA LOCALE DI CASERTA",
+      "cluster": 135,
+      "valore": 137184359
+    },
+    {
+      "den": "AZIENDA USL DI BOLOGNA",
+      "cluster": 133,
+      "valore": 88425042
+    },
+    {
+      "den": "ASL NAPOLI 2 NORD",
+      "cluster": 129,
+      "valore": 145832010
+    }
+  ],
+  "topRibassoZero": [
+    {
+      "den": "AZIENZA SANITARIA LOCALE A.S.L. TO5",
+      "n": 19,
+      "quota": 1
+    },
+    {
+      "den": "AGENZIA DI TUTELA DELLA SALUTE DI BRESCIA",
+      "n": 31,
+      "quota": 0.96875
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) GRANDE OSPEDALE METROPOLITANO NIGUARDA",
+      "n": 38,
+      "quota": 0.95
+    },
+    {
+      "den": "ASST CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI/CTO",
+      "n": 17,
+      "quota": 0.9444444444444444
+    },
+    {
+      "den": "AZIENDA SOCIO-SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA",
+      "n": 346,
+      "quota": 0.9376693766937669
+    },
+    {
+      "den": "AZIENDA UNITA' SANITARIA LOCALE FROSINONE",
+      "n": 69,
+      "quota": 0.9078947368421053
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) LARIANA",
+      "n": 31,
+      "quota": 0.8378378378378378
+    },
+    {
+      "den": "FONDAZIONE IRCCS POLICLINICO S.MATTEO",
+      "n": 87,
+      "quota": 0.8207547169811321
+    },
+    {
+      "den": "AZIENDA OSPEDALIERA G BROTZU",
+      "n": 31,
+      "quota": 0.7948717948717948
+    },
+    {
+      "den": "AZIENDA UNITA SANITARIA LOCALE ROMA G",
+      "n": 29,
+      "quota": 0.7837837837837838
+    },
+    {
+      "den": "AZIENDA USL RMF",
+      "n": 166,
+      "quota": 0.7685185185185185
+    },
+    {
+      "den": "FONDAZIONE IRCCS SAN GERARDO DEI TINTORI",
+      "n": 24,
+      "quota": 0.75
+    }
+  ]
+}

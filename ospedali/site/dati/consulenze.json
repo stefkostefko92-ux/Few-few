@@ -1,22 +1,22 @@
 {
-  "generatoIl": "2026-07-13T20:57:48.097Z",
+  "generatoIl": "2026-07-14T05:17:20.010Z",
   "fonte": "Dipartimento Funzione Pubblica — PerlaPA / Anagrafe delle Prestazioni (CC BY 4.0)",
   "url": "https://consulentipubblici.dfp.gov.it/",
   "perAnno": {
     "2022": {
-      "nIncarichi": 6617,
-      "importo": 141884018.53000024,
-      "nEnti": 180
+      "nIncarichi": 6597,
+      "importo": 141346188.76000017,
+      "nEnti": 174
     },
     "2023": {
-      "nIncarichi": 17785,
-      "importo": 320828811.6899992,
-      "nEnti": 185
+      "nIncarichi": 17689,
+      "importo": 318904293.5699993,
+      "nEnti": 179
     },
     "2024": {
-      "nIncarichi": 23004,
-      "importo": 433125526.2100015,
-      "nEnti": 189
+      "nIncarichi": 22950,
+      "importo": 431276778.1500014,
+      "nEnti": 183
     }
   },
   "perEnte": {
@@ -102,8 +102,8 @@
       ]
     },
     "ENTE OSPEDALIERO SPECIALIZZATO IN GASTROENTEROLOGIA ISTITUTO NAZIONALE DI RICOVERO E CURA A CARATTERE SCIENTIFICO S. DE BELLIS": {
-      "nIncarichi": 44,
-      "importo": 803802.1799999999,
+      "nIncarichi": 43,
+      "importo": 803282.1799999998,
       "anni": [
         2022,
         2023,
@@ -155,8 +155,8 @@
       ]
     },
     "AZIENDA OSPEDALIERA": {
-      "nIncarichi": 362,
-      "importo": 2952204.8499999996,
+      "nIncarichi": 361,
+      "importo": 2946013.8,
       "anni": [
         2022,
         2023,
@@ -254,8 +254,8 @@
       ]
     },
     "AZIENDA SANITARIA DELL'ALTO ADIGE - SUEDTIROLER SANITAETSBETRIEB": {
-      "nIncarichi": 1438,
-      "importo": 32896236.82000001,
+      "nIncarichi": 1437,
+      "importo": 32895796.82000001,
       "anni": [
         2022,
         2023,
@@ -322,15 +322,6 @@
       "anni": [
         2022,
         2023
-      ]
-    },
-    "ISTITUTO NAZIONALE DI ASTROFISICA - INAF": {
-      "nIncarichi": 24,
-      "importo": 638789.57,
-      "anni": [
-        2022,
-        2023,
-        2024
       ]
     },
     "REGIONE MARCHE AZIENDA SANITARIA UNICA REGIONALE": {
@@ -440,8 +431,8 @@
       ]
     },
     "AZIENDA USL DI REGGIO EMILIA": {
-      "nIncarichi": 668,
-      "importo": 9949323.969999997,
+      "nIncarichi": 667,
+      "importo": 9919323.969999997,
       "anni": [
         2022,
         2023,
@@ -530,8 +521,8 @@
       ]
     },
     "AZIENDA SOCIO SANITARIA TERRITORIALE DI CREMONA": {
-      "nIncarichi": 456,
-      "importo": 20002304.060000002,
+      "nIncarichi": 454,
+      "importo": 19881253.460000005,
       "anni": [
         2022,
         2023,
@@ -550,15 +541,6 @@
     "AZIENDA OSPEDALIERO-UNIVERSITARIA \"SS.ANTONIO E BIAGIO E C.ARRIGO\" ALESSANDRIA": {
       "nIncarichi": 87,
       "importo": 1625501.9899999998,
-      "anni": [
-        2022,
-        2023,
-        2024
-      ]
-    },
-    "AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO EST": {
-      "nIncarichi": 587,
-      "importo": 17305577.880000003,
       "anni": [
         2022,
         2023,
@@ -584,8 +566,8 @@
       ]
     },
     "AZIENDA USL DI FERRARA": {
-      "nIncarichi": 391,
-      "importo": 11076775.789999994,
+      "nIncarichi": 390,
+      "importo": 11051575.789999994,
       "anni": [
         2022,
         2023,
@@ -629,8 +611,8 @@
       ]
     },
     "AZIENDA SOCIO SANITARIA TERRITORIALE SANTI PAOLO E CARLO": {
-      "nIncarichi": 503,
-      "importo": 20191259.279999997,
+      "nIncarichi": 502,
+      "importo": 20189275.279999997,
       "anni": [
         2022,
         2023,
@@ -674,8 +656,8 @@
       ]
     },
     "AZIENDA SANITARIA PROVINCIALE RAGUSA": {
-      "nIncarichi": 129,
-      "importo": 865345.9200000004,
+      "nIncarichi": 128,
+      "importo": 857550.9200000004,
       "anni": [
         2022,
         2023,
@@ -730,15 +712,6 @@
     "AZIENDA OSPEDALIERO-UNIVERSITARIA SENESE": {
       "nIncarichi": 136,
       "importo": 2896610.880000001,
-      "anni": [
-        2022,
-        2023,
-        2024
-      ]
-    },
-    "ISTITUTO NAZIONALE DI GEOFISICA E VULCANOLOGIA - INGV": {
-      "nIncarichi": 33,
-      "importo": 438346.52999999997,
       "anni": [
         2022,
         2023,
@@ -860,8 +833,8 @@
       ]
     },
     "AZIENDA SOCIOSANITARIA LIGURE N. 4 - SISTEMA SANITARIO REGIONE LIGURIA": {
-      "nIncarichi": 192,
-      "importo": 1369550.5500000005,
+      "nIncarichi": 191,
+      "importo": 1367582.3900000004,
       "anni": [
         2022,
         2023,
@@ -914,8 +887,8 @@
       ]
     },
     "AZIENDA SOCIO SANITARIA TERRITORIALE GRANDE OSPEDALE METROPOLITANO NIGUARDA": {
-      "nIncarichi": 492,
-      "importo": 10228875.469999999,
+      "nIncarichi": 491,
+      "importo": 10222625.829999998,
       "anni": [
         2022,
         2023,
@@ -1073,8 +1046,8 @@
       ]
     },
     "AZIENDA OSPEDALIERO - UNIVERSITARIA PISANA": {
-      "nIncarichi": 452,
-      "importo": 6355316.549999991,
+      "nIncarichi": 451,
+      "importo": 6349516.549999991,
       "anni": [
         2022,
         2023,
@@ -1127,7 +1100,7 @@
       ]
     },
     "IRCCS OSPEDALE POLICLINICO SAN MARTINO": {
-      "nIncarichi": 437,
+      "nIncarichi": 436,
       "importo": 4374279.770000003,
       "anni": [
         2022,
@@ -1145,17 +1118,8 @@
       ]
     },
     "ISTITUTO NAZIONALE PER LA PROMOZIONE DELLA SALUTE DELLE POPOLAZIONI MIGRANTI E PER IL CONTRASTO DELLE MALATTIE DELLA POVERTA'": {
-      "nIncarichi": 86,
-      "importo": 1576979.5100000002,
-      "anni": [
-        2022,
-        2023,
-        2024
-      ]
-    },
-    "ISTITUTO NAZIONALE DI STATISTICA - ISTAT": {
-      "nIncarichi": 13,
-      "importo": 864599.55,
+      "nIncarichi": 85,
+      "importo": 1553429.5100000002,
       "anni": [
         2022,
         2023,
@@ -1385,18 +1349,18 @@
         2024
       ]
     },
-    "ISTITUTO NAZIONALE DI OCEANOGRAFIA E DI GEOFISICA SPERIMENTALE - OGS": {
-      "nIncarichi": 18,
-      "importo": 386464.28,
+    "AZIENDA USL IMOLA": {
+      "nIncarichi": 121,
+      "importo": 325213.0399999999,
       "anni": [
         2022,
         2023,
         2024
       ]
     },
-    "AZIENDA USL IMOLA": {
-      "nIncarichi": 121,
-      "importo": 325213.0399999999,
+    "AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO EST": {
+      "nIncarichi": 586,
+      "importo": 17301137.880000003,
       "anni": [
         2022,
         2023,
@@ -1411,8 +1375,8 @@
       ]
     },
     "AZIENDA ZERO": {
-      "nIncarichi": 152,
-      "importo": 1514853.39,
+      "nIncarichi": 150,
+      "importo": 1514653.39,
       "anni": [
         2022,
         2023,
@@ -1422,15 +1386,6 @@
     "AOU SASSARI - AZIENDA OSPEDALIERA UNIVERSITARIA DI SASSARI": {
       "nIncarichi": 12,
       "importo": 366635,
-      "anni": [
-        2022,
-        2023,
-        2024
-      ]
-    },
-    "ISTITUTO NAZIONALE DI FISICA NUCLEARE": {
-      "nIncarichi": 14,
-      "importo": 1103647.5300000003,
       "anni": [
         2022,
         2023,
@@ -1455,15 +1410,6 @@
     "AZIENDA SOCIOSANITARIA LIGURE N.1": {
       "nIncarichi": 233,
       "importo": 9325865.630000003,
-      "anni": [
-        2022,
-        2023,
-        2024
-      ]
-    },
-    "ISTITUTO NAZIONALE PER LA VALUTAZIONE DEL SISTEMA EDUCATIVO DI ISTRUZIONE E DI FORMAZIONE - INVALSI": {
-      "nIncarichi": 51,
-      "importo": 643860.04,
       "anni": [
         2022,
         2023,
