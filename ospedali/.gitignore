@@ -2,3 +2,6 @@ node_modules/
 data/raw/
 data/contratti/
 *.part
+# админ сервиз: тайни + рънтайм състояние (никога в репото)
+server/.env
+server/.state/

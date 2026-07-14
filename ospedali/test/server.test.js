@@ -1,0 +1,85 @@
+// Тестове за чистата логика на админ сервиза (без мрежа).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+import { applicaVista, hashVisitatore, giornoDi } from '../server/lib/analytics.js';
+import { hashPassword, verifyPassword, signSession, verifySession, parseCookies } from '../server/lib/auth.js';
+import { hideCss, iniettaHideCss, nomePagina, isHidden } from '../server/lib/visibility.js';
+
+// ── analytics ────────────────────────────────────────────────────────────────
+test('applicaVista агрегира по ден, път и уникални', () => {
+  const s = { byDay: {}, byPath: {} };
+  applicaVista(s, { path: '/a.html', giorno: '2026-07-14', nuovoVisitatore: true });
+  applicaVista(s, { path: '/a.html', giorno: '2026-07-14', nuovoVisitatore: false });
+  applicaVista(s, { path: '/b.html', giorno: '2026-07-14', nuovoVisitatore: true });
+  assert.equal(s.totalViews, 3);
+  assert.equal(s.byDay['2026-07-14'].views, 3);
+  assert.equal(s.byDay['2026-07-14'].visitors, 2);
+  assert.equal(s.byPath['/a.html'], 2);
+  assert.equal(s.byPath['/b.html'], 1);
+});
+
+test('hashVisitatore е детерминиран и не съдържа суровия IP', () => {
+  const salt = 'x';
+  const h1 = hashVisitatore(salt, '1.2.3.4', 'UA');
+  const h2 = hashVisitatore(salt, '1.2.3.4', 'UA');
+  const h3 = hashVisitatore(salt, '9.9.9.9', 'UA');
+  assert.equal(h1, h2);
+  assert.notEqual(h1, h3);
+  assert.ok(!h1.includes('1.2.3.4'));
+});
+
+test('giornoDi връща YYYY-MM-DD', () => {
+  assert.match(giornoDi(new Date('2026-07-14T10:00:00Z')), /^2026-07-14$/);
+});
+
+// ── auth ─────────────────────────────────────────────────────────────────────
+test('парола: hash + verify', () => {
+  const rec = hashPassword('segreto123');
+  assert.ok(verifyPassword('segreto123', rec));
+  assert.ok(!verifyPassword('sbagliata', rec));
+  assert.ok(!verifyPassword('segreto123', null));
+});
+
+test('сесия: валидна, подправена, изтекла', () => {
+  const secret = 's3cr3t';
+  const now = 1_000_000;
+  const tok = signSession(secret, 3600, now);
+  assert.ok(verifySession(secret, tok, now + 1000));
+  assert.equal(verifySession(secret, tok, now + 3600 * 1000 + 1), null); // изтекла
+  assert.equal(verifySession(secret, tok + 'x', now), null); // подправен подпис
+  assert.equal(verifySession('altro', tok, now), null); // грешен ключ
+  assert.equal(verifySession(secret, null, now), null);
+});
+
+test('parseCookies', () => {
+  const c = parseCookies('a=1; ost_admin=abc.def; b=2');
+  assert.equal(c.ost_admin, 'abc.def');
+  assert.equal(c.a, '1');
+});
+
+// ── visibility ───────────────────────────────────────────────────────────────
+test('nomePagina + isHidden', () => {
+  assert.equal(nomePagina('/cordate.html'), 'cordate.html');
+  assert.equal(nomePagina('/fornitore/123.html'), '123.html');
+  assert.equal(nomePagina('/'), 'index.html');
+  assert.equal(nomePagina('/x.csv'), null);
+  assert.ok(isHidden('/cordate.html', ['cordate.html']));
+  assert.ok(!isHidden('/appalti.html', ['cordate.html']));
+});
+
+test('hideCss генерира селектори само за валидни имена', () => {
+  const css = hideCss(['cordate.html', 'segnali-gare.html', 'bad;name']);
+  assert.match(css, /a\[href\$="cordate\.html"\]/);
+  assert.match(css, /a\[href\$="segnali-gare\.html"\]/);
+  assert.ok(!css.includes('bad;name'));
+  assert.equal(hideCss([]), '');
+});
+
+test('iniettaHideCss вмъква преди </head>', () => {
+  const html = '<html><head><title>x</title></head><body>y</body></html>';
+  const out = iniettaHideCss(html, ['cordate.html']);
+  assert.ok(out.indexOf('vis-hide') < out.indexOf('</head>'));
+  assert.ok(out.includes('<body>y</body>'));
+  assert.equal(iniettaHideCss(html, []), html); // без скрити → без промяна
+});

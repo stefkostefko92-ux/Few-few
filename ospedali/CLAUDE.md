@@ -103,6 +103,21 @@ privacy, rettifiche). **Не питай собственика повторно 
 трансфер извън ЕС → privacy не изисква DPF/SCC клауза. VPS-аджията ползва
 същия модел деплой като другите продукти (виж deploy/README.md).
 
+## Админ сервиз — `server/`
+
+Лек Node сервиз (**нула зависимости**, само `node:http`/`node:crypto`) пред
+статичния сайт: обслужва `site/`, брои **анонимно** посещенията и дава **админ
+панел** (`/admin`, парола) с реален брояч + превключватели за скриване на
+страници. `npm run serve`. Деплой (systemd + Nginx + TLS) → `server/DEPLOY.md`.
+
+- `server/server.js` — HTTP сервиз (статика + броене + инжектиране на hide-CSS + 404 за скрити).
+- `server/lib/analytics.js` — анонимен брояч (без IP/бисквитки; дневна ротираща сол в паметта → само агрегати на диска). `Contatore`, чисти: `applicaVista`/`hashVisitatore`.
+- `server/lib/auth.js` — scrypt парола + HMAC подписана сесийна бисквитка (чисти, тествани).
+- `server/lib/visibility.js` — скрити страници → 404 + `hideCss` крие връзките (моментално, обратимо, без ре-билд). `PROTETTE` (index/legal/privacy/…) НЕ се крият.
+- `server/lib/config.js` — тайни от env / `server/.env` (mode 600). `server/.state/` (брояч+видимост) и `server/.env` са в `.gitignore`.
+- Скрива по ИМЕ на файл (`cordate.html`) → важи и за root, и за дълбоките (`../cordate.html`).
+- `data/*.json` на сайта се пазят в git; **рънтайм състоянието на сервиза — не**.
+
 ## Капани
 
 - **HEALTH/NOT_HEALTH regex (SSN възложители) е копиран в 3 файла** —

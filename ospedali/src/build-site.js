@@ -810,6 +810,21 @@ async function main() {
     await copyFile(pjoin(ROOT, 'assets', f), join(SITE_DIR, f)).catch(() => {});
   }
 
+  // 404 — за несъществуващи адреси и за страници, скрити от админ панела
+  await writeFile(
+    join(SITE_DIR, '404.html'),
+    page({
+      title: 'Pagina non trovata',
+      active: '',
+      noindex: true,
+      description: 'La pagina richiesta non esiste o non è più disponibile.',
+      body: `<h1>Pagina non trovata</h1>
+<p class="lead">La pagina che cerchi non esiste o non è più disponibile.</p>
+<p><a href="index.html">← Torna alla home</a> · <a href="strutture.html">Cerca una struttura</a> ·
+<a href="dati.html">Dati aperti</a></p>`,
+    })
+  );
+
   console.log(`Готово: ${enti.length + (appalti ? 13 : 12) + (coi ? 1 : 0) + regioniData.length + paginaCerca + paginaForn} страници (${conContratti} с опис, ${paginaForn} за изпълнители, ${regioniData.length} региона, ${numeroIt(tuttiContratti.length)} договора) → ${SITE_DIR}`);
 }
 
