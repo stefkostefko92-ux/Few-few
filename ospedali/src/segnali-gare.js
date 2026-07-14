@@ -53,17 +53,24 @@ export function termineBreve(giorni) {
  */
 export function clusterFrazionamento(diretti, { window = 30, soglia = 40_000 } = {}) {
   const arr = diretti.filter((d) => d.importo > 0 && d.importo < soglia).sort((a, b) => a.t - b.t);
-  let cluster = 0, valore = 0, i = 0, ultimoFine = -1;
-  for (let j = 0; j < arr.length; j++) {
-    while (arr[j].t - arr[i].t > window * 86400000) i++;
+  let cluster = 0, valore = 0, i = 0;
+  while (i < arr.length) {
+    // Максимален прозорец, започващ от i: включи ВСИЧКИ възлагания в рамките на
+    // `window` дни от arr[i] (не спирай на 3-тото — иначе 4-то/5-то в същия
+    // прозорец се изпускат и valore подценява).
+    let j = i;
+    while (j + 1 < arr.length && arr[j + 1].t - arr[i].t <= window * 86400000) j++;
     const n = j - i + 1;
-    if (n >= 3 && i > ultimoFine) {
+    if (n >= 3) {
       let s = 0;
       for (let k = i; k <= j; k++) s += arr[k].importo;
       if (s > soglia) {
-        cluster++; valore += s; ultimoFine = j; // непокриващи се клъстери (без двойно броене)
+        cluster++; valore += s;
+        i = j + 1; // непокриващи се клъстери (без двойно броене)
+        continue;
       }
     }
+    i++;
   }
   return { cluster, valore: Math.round(valore) };
 }
