@@ -16,7 +16,15 @@ Markdown отчет за всяка структура от SSN. Виж `README.
 ```bash
 npm run lint   # node --check на всички src файлове
 npm test       # node --test test/*.test.js
+# Типова проверка (строг @ts-check; TS/@types се теглят само за проверката, БЕЗ да
+# влизат в package.json — runtime остава нула зависимости). CI я налага на Node 22:
+npm i --no-save typescript@5.7 @types/node && npx tsc --allowJs --checkJs --noEmit \
+  --strict --module NodeNext --skipLibCheck --target ES2022 --types node \
+  src/*.js src/lib/*.js src/render/*.js server/*.js server/lib/*.js
 ```
+
+Целият `src/`+`server/` е под строг `@ts-check` + JSDoc (0 `@ts-ignore`). Типовете на
+data моделите живеят в `src/lib/models.js` (само JSDoc typedef, не влиза в билда).
 
 ## Архитектура
 

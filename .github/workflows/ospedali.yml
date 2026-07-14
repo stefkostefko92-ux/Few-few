@@ -27,3 +27,12 @@ jobs:
       # Нула зависимости → без npm ci и без npm кеш (няма lockfile).
       - run: npm run lint
       - run: npm test
+      # Типова проверка: strict @ts-check. TypeScript/@types/node се теглят само за
+      # CI (--no-save) → package.json остава без зависимости. Само на един Node.
+      - name: typecheck (@ts-check)
+        if: matrix.node == 22
+        run: |
+          npm i --no-save typescript@5.7 @types/node
+          npx tsc --allowJs --checkJs --noEmit --strict --module NodeNext \
+            --moduleResolution NodeNext --skipLibCheck --target ES2022 --types node \
+            src/*.js src/lib/*.js src/render/*.js server/*.js server/lib/*.js
