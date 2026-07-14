@@ -1,3 +1,4 @@
+// @ts-check
 // Профили и индекс на изпълнителите („segui il fornitore") + глобалната търсачка
 // през всички договори. Изнесени дословно от build-site.js — само местене.
 
@@ -5,7 +6,35 @@ import { esc, euroCompact, numeroIt, percentualeIt } from '../lib/format.js';
 import { page, kpi, siteUrl } from '../lib/site-ui.js';
 import { briciole } from '../lib/site-shared.js';
 
-/** Национална класация на изпълнителите (кой прибира парите). */
+/** @typedef {import('../lib/models.js').AppMatch} AppMatch */
+/** @typedef {import('../lib/models.js').CoiCoppia} CoiCoppia */
+
+/**
+ * @typedef {object} FornitoreTop топ договор в профила на изпълнителя
+ * @property {string} [cig]
+ * @property {string} codice
+ * @property {string} [data]
+ * @property {string} [oggetto]
+ * @property {number} importo
+ * @property {string} [categoria]
+ */
+/**
+ * @typedef {object} FornitoreProfile профил на изпълнител (build-site fornAgg)
+ * @property {string} cf
+ * @property {string} den
+ * @property {number} valore
+ * @property {number} n
+ * @property {number} senzaGara
+ * @property {Map<string, { valore: number, n: number }>} perOsp
+ * @property {FornitoreTop[]} top
+ */
+/** @typedef {Record<string, [string, string]>} AziendeIdx */
+
+/**
+ * Национална класация на изпълнителите (кой прибира парите).
+ * @param {AppMatch|null} appMatch
+ * @returns {string}
+ */
 export function renderFornitori(appMatch) {
   if (!appMatch?.aggiu?.fornitoriNazionali?.length) return '';
   const rows = appMatch.aggiu.fornitoriNazionali
@@ -28,6 +57,15 @@ sono riportate a fini di trasparenza sugli appalti pubblici; gli operatori perso
 }
 
 // ---------- ПРОФИЛИ НА ИЗПЪЛНИТЕЛИТЕ („segui il fornitore“) ----------
+/**
+ * @param {object} p
+ * @param {FornitoreProfile} p.f
+ * @param {AziendeIdx} p.aziendeIdx
+ * @param {boolean} [p.societa]
+ * @param {CoiCoppia[]} [p.coppie]
+ * @param {(cod: string) => string} p.strutturaHref
+ * @returns {string}
+ */
 export function renderFornitore({ f, aziendeIdx, societa = true, coppie = [], strutturaHref }) {
   const quotaSg = f.n > 0 ? f.senzaGara / f.n : 0;
   const osp = [...f.perOsp.entries()]
@@ -99,6 +137,10 @@ Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#r
   });
 }
 
+/**
+ * @param {{ righe: Array<[string, string, number, number, number, number]>, totali: number }} p
+ * @returns {string}
+ */
 export function renderFornitoriIndex({ righe, totali }) {
   // righe: [cf, den, valore, n, nOsp, haPagina]
   const rows = righe
@@ -138,6 +180,10 @@ q.addEventListener('input',a);a();})();
 }
 
 // ---------- ГЛОБАЛНА ТЪРСАЧКА ПРЕЗ ВСИЧКИ ДОГОВОРИ ----------
+/**
+ * @param {{ n: number, aziende: number }} p
+ * @returns {string}
+ */
 export function renderCerca({ n, aziende }) {
   const body = `
 <h1>Cerca in tutti gli appalti</h1>

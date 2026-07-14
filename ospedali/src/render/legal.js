@@ -1,10 +1,21 @@
+// @ts-check
 // Правни/справочни страници на сайта: „Dati e verifiche", „Dati aperti" (hub),
 // „Note legali" и „Privacy". Изнесени дословно от build-site.js — само местене.
 
 import { esc, numeroIt, percentualeIt } from '../lib/format.js';
 import { page, kpi, siteUrl } from '../lib/site-ui.js';
 
+/** @typedef {import('../lib/models.js').Validazione} Validazione */
+/** @typedef {import('../lib/models.js').AppMatch} AppMatch */
+/** @typedef {import('../lib/models.js').DatasetInfo} DatasetInfo */
+/** @typedef {import('../lib/models.js').Titolare} Titolare */
+/** @typedef {import('../lib/models.js').Hosting} Hosting */
+
 // ---------- DATI E VERIFICHE ----------
+/**
+ * @param {{ validaz: Validazione, appMatch: AppMatch|null }} p
+ * @returns {string}
+ */
 export function renderVerifiche({ validaz, appMatch }) {
   const c = validaz.consistenzaCE;
   const cov = validaz.copertura;
@@ -79,12 +90,20 @@ rieseguibile con <code>npm run all</code>.</p>
 }
 
 // ---------- DATI APERTI (hub) ----------
+/**
+ * @param {number|null} b
+ * @returns {string}
+ */
 function formatBytes(b) {
   if (b == null) return '—';
   if (b >= 1024 * 1024) return `${numeroIt(Math.round((b / (1024 * 1024)) * 10) / 10)} MB`;
   if (b >= 1024) return `${numeroIt(Math.round(b / 1024))} KB`;
   return `${numeroIt(b)} B`;
 }
+/**
+ * @param {{ datasets: DatasetInfo[], validaz?: Validazione|null, generatoIl: string }} p
+ * @returns {string}
+ */
 export function renderDati({ datasets, generatoIl }) {
   const rows = datasets
     .map(
@@ -181,6 +200,10 @@ SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
 }
 
 // ---------- NOTE LEGALI / PRIVACY ----------
+/**
+ * @param {{ titolare?: Titolare }} [p]
+ * @returns {string}
+ */
 export function renderNoteLegali({ titolare = {} } = {}) {
   // реквизити на титуляря (GDPR чл. 13(1)(a)/(b)) — попълват се в config.json
   const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
@@ -236,6 +259,10 @@ né i controlli della Corte dei conti o dell’ANAC.</p>
   return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, natura dei contenuti, fonti, licenze e rettifiche.', active: '', body });
 }
 
+/**
+ * @param {{ titolare?: Titolare, hosting?: Hosting }} [p]
+ * @returns {string}
+ */
 export function renderPrivacy({ titolare = {}, hosting = {} } = {}) {
   const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
   const contattoHtml = titolare.email

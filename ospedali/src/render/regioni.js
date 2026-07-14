@@ -1,3 +1,4 @@
+// @ts-check
 // Регионални страници + географска карта на Италия (истински choropleth) и
 // индексът им. Изнесени дословно от build-site.js — само местене.
 
@@ -6,9 +7,36 @@ import { page, kpi, badge, siteUrl } from '../lib/site-ui.js';
 import { REGIONI, PIANO_RIENTRO, ultimoCe, briciole } from '../lib/site-shared.js';
 import { VIEWBOX, REGIONI_GEO } from '../lib/italia-geo.js';
 
+/** @typedef {import('../lib/models.js').RegioneMeta} RegioneMeta */
+/** @typedef {import('../lib/models.js').RegAgg} RegAgg */
+/** @typedef {import('../lib/models.js').RegioniDataRow} RegioniDataRow */
+/** @typedef {import('../lib/models.js').RegionaleRow} RegionaleRow */
+/** @typedef {import('../lib/models.js').SegnEnte} SegnEnte */
+
+/**
+ * @typedef {object} MapLabelFuori изнесен етикет с водеща линия
+ * @property {number} tx
+ * @property {number} ty
+ * @property {number} lx1
+ * @property {number} ly1
+ * @property {number} lx2
+ * @property {number} ly2
+ */
+/**
+ * @typedef {object} MapLabel котва на етикета върху картата
+ * @property {number} [x]
+ * @property {number} [y]
+ * @property {MapLabelFuori} [fuori]
+ */
+
 // ---------- REGIONI (страници + схематична карта) ----------
 // Цветова скала за дела „senza gara“: светло → тъмночервено (ColorBrewer Reds).
+/**
+ * @param {number} t дял [0..1]
+ * @returns {string} `rgb(r,g,b)`
+ */
 function scalaRossi(t) {
+  /** @type {Array<[number, number[]]>} */
   const stops = [
     [0.0, [255, 245, 240]],
     [0.25, [252, 187, 161]],
@@ -30,18 +58,23 @@ function scalaRossi(t) {
 }
 
 // Обединява няколко ANAC регионални реда (за Трентино: Болцано + Тренто).
+/**
+ * @param {RegionaleRow[]} rows
+ * @returns {RegionaleRow|null}
+ */
 export function mergeAppRows(rows) {
   if (!rows.length) return null;
   if (rows.length === 1) return rows[0];
+  /** @type {RegionaleRow} */
   const out = { reg: rows[0].reg, n: 0, importo: 0, cat: {}, band40: 0, band140: 0, prorogaN: 0, urgenzaN: 0, pnrrImporto: 0 };
   for (const r of rows) {
     out.n += r.n || 0;
     out.importo += r.importo || 0;
-    out.band40 += r.band40 || 0;
-    out.band140 += r.band140 || 0;
-    out.prorogaN += r.prorogaN || 0;
-    out.urgenzaN += r.urgenzaN || 0;
-    out.pnrrImporto += r.pnrrImporto || 0;
+    out.band40 = (out.band40 ?? 0) + (r.band40 || 0);
+    out.band140 = (out.band140 ?? 0) + (r.band140 || 0);
+    out.prorogaN = (out.prorogaN ?? 0) + (r.prorogaN || 0);
+    out.urgenzaN = (out.urgenzaN ?? 0) + (r.urgenzaN || 0);
+    out.pnrrImporto = (out.pnrrImporto ?? 0) + (r.pnrrImporto || 0);
     for (const [k, v] of Object.entries(r.cat || {})) {
       if (!out.cat[k]) out.cat[k] = { n: 0, importo: 0 };
       out.cat[k].n += v.n || 0;
@@ -56,6 +89,7 @@ export function mergeAppRows(rows) {
 // детайлност го дърпа), после визуални корекции. Малките/тънките региони
 // (VdA, Liguria, Molise) са с ИЗНЕСЕН етикет + водеща линия, като в
 // професионалната картография.
+/** @type {Record<string, MapLabel>} */
 const MAP_LABELS = {
   '01': { x: 105, y: 230 }, // Piemonte
   '02': { fuori: { tx: 68, ty: 94, lx1: 66, ly1: 104, lx2: 64, ly2: 138 } }, // Valle d'Aosta
@@ -80,9 +114,14 @@ const MAP_LABELS = {
 };
 
 // WCAG relative luminance на "rgb(r,g,b)" — за избора бял/тъмен текст на етикета.
+/**
+ * @param {string} rgb
+ * @returns {number}
+ */
 function luminanza(rgb) {
   const m = rgb.match(/rgb\((\d+),(\d+),(\d+)\)/);
   if (!m) return 0.5;
+  /** @param {number} v */
   const lin = (v) => {
     const c = v / 255;
     return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -90,9 +129,13 @@ function luminanza(rgb) {
   return 0.2126 * lin(+m[1]) + 0.7152 * lin(+m[2]) + 0.0722 * lin(+m[3]);
 }
 
+/**
+ * @param {RegioniDataRow[]} regioniData
+ * @returns {string}
+ */
 function cartogramma(regioniData) {
   const byKey = new Map(regioniData.map((r) => [r.key, r]));
-  const vals = regioniData.filter((r) => r.senzaGaraPct != null).map((r) => r.senzaGaraPct);
+  const vals = regioniData.filter((r) => r.senzaGaraPct != null).map((r) => /** @type {number} */ (r.senzaGaraPct));
   const min = Math.min(...vals);
   const max = Math.max(...vals);
   const shapes = Object.entries(REGIONI)
@@ -120,8 +163,8 @@ function cartogramma(regioniData) {
           const chiaro = luminanza(fill) < 0.25;
           const testo = chiaro ? '#fff' : '#26313c';
           const alone = chiaro ? 'rgba(60,10,5,.55)' : 'rgba(255,255,255,.9)';
-          etichetta = `<text x="${pos.x}" y="${pos.y - 5}" text-anchor="middle" font-size="30" font-weight="700" letter-spacing=".5" fill="${testo}" stroke="${alone}" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(meta.abbr)}</text>
-        <text x="${pos.x}" y="${pos.y + 21}" text-anchor="middle" font-size="24" font-weight="600" fill="${testo}" stroke="${alone}" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${pct}</text>`;
+          etichetta = `<text x="${pos.x}" y="${(pos.y ?? 0) - 5}" text-anchor="middle" font-size="30" font-weight="700" letter-spacing=".5" fill="${testo}" stroke="${alone}" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(meta.abbr)}</text>
+        <text x="${pos.x}" y="${(pos.y ?? 0) + 21}" text-anchor="middle" font-size="24" font-weight="600" fill="${testo}" stroke="${alone}" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${pct}</text>`;
         }
       }
       return `<a href="regione/${key}.html" role="listitem"><title>${esc(label)}</title>
@@ -145,8 +188,12 @@ la scheda. Confini: © <a href="https://www.istat.it/">ISTAT</a> (CC BY 4.0); da
 </figure>`;
 }
 
+/**
+ * @param {{ regioniData: RegioniDataRow[] }} p
+ * @returns {string}
+ */
 export function renderRegioniIndex({ regioniData }) {
-  const ordinate = [...regioniData].filter((r) => r.senzaGaraPct != null).sort((a, b) => b.senzaGaraPct - a.senzaGaraPct);
+  const ordinate = [...regioniData].filter((r) => r.senzaGaraPct != null).sort((a, b) => (b.senzaGaraPct ?? 0) - (a.senzaGaraPct ?? 0));
   const rows = ordinate
     .map(
       (r) => `<tr>
@@ -185,9 +232,23 @@ Molise commissariate) — il contesto è indicato nelle rispettive schede. <a hr
   });
 }
 
+/**
+ * @param {object} p
+ * @param {string} p.key
+ * @param {RegioneMeta} p.meta
+ * @param {RegAgg} p.g
+ * @param {RegionaleRow|null} p.appReg
+ * @param {number|null} p.senzaGaraPct
+ * @param {Map<string, SegnEnte>} p.segnByCod
+ * @param {number} p.ultimoAnnoCe
+ * @param {Map<string, string>} p.slugByCod
+ * @returns {string}
+ */
 export function renderRegione({ key, meta, g, appReg, senzaGaraPct, segnByCod, ultimoAnnoCe, slugByCod }) {
+  /** @param {string} cod */
   const hrefStrut = (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html`;
   // структури, подредени по брой/тежест на сигналите
+  /** @type {Record<string, number>} */
   const gravOrd = { alta: 3, media: 2, bassa: 1 };
   const strutture = [...g.enti]
     .map((e) => {
@@ -195,7 +256,7 @@ export function renderRegione({ key, meta, g, appReg, senzaGaraPct, segnByCod, u
       const { y } = ultimoCe(e);
       return { e, nSeg: s ? s.segnalazioni.length : 0, gravMax: s ? s.gravitaMax : null, valore: y.valoreProduzione, ris: y.risultatoEsercizio };
     })
-    .sort((a, b) => (gravOrd[b.gravMax] || 0) - (gravOrd[a.gravMax] || 0) || b.nSeg - a.nSeg || (b.valore || 0) - (a.valore || 0));
+    .sort((a, b) => (gravOrd[b.gravMax ?? ''] || 0) - (gravOrd[a.gravMax ?? ''] || 0) || b.nSeg - a.nSeg || (b.valore || 0) - (a.valore || 0));
   const rows = strutture
     .map(
       (r) => `<tr>
@@ -228,7 +289,7 @@ export function renderRegione({ key, meta, g, appReg, senzaGaraPct, segnByCod, u
 <div class="grid kpis">
   ${kpi('Contratti (sezione regionale)', numeroIt(appReg.n))}
   ${kpi('Valore complessivo', euroCompact(appReg.importo))}
-  ${kpi('Quota senza gara', senzaGaraPct != null ? percentualeIt(senzaGaraPct) : '—', senzaGaraPct > 0.5 ? 'neg' : '')}
+  ${kpi('Quota senza gara', senzaGaraPct != null ? percentualeIt(senzaGaraPct) : '—', (senzaGaraPct ?? 0) > 0.5 ? 'neg' : '')}
   ${kpi('Sotto soglia (frazionamento?)', numeroIt((appReg.band40 || 0) + (appReg.band140 || 0)))}
 </div>
 <div class="tablewrap"><table>

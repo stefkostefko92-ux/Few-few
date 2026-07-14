@@ -11,24 +11,42 @@
 //   siope   = обектът от data/siope.json (fetch-siope → aggrega)
 //   nomeReg = (key) → четимо име на региона (при липса покажи ключа)
 
+// @ts-check
 import { page, kpi, hbars, barChart } from './lib/site-ui.js';
 import { euroCompact, percentualeIt, esc } from './lib/format.js';
 
-const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+const MESI =['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
 
+/**
+ * @typedef {object} SiopeData данни от data/siope.json
+ * @property {number} anno
+ * @property {string} url
+ * @property {{ spesaTotale?: number, mesi: number[], perMacro: Record<string, number>, dicSuMedia: number }} nazionale
+ * @property {Record<string, { mesi?: number[], dicSuMedia?: number }>} perRegione
+ * @property {string[]} [regioniMancanti]
+ */
+
+/**
+ * @param {{ siope: SiopeData, nomeReg: ((k: string) => string) | unknown, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderSiope({ siope, nomeReg, jsonld }) {
-  const nome = typeof nomeReg === 'function' ? nomeReg : (k) => k;
+  /** @type {(k: string) => string} */
+  const nome = typeof nomeReg === 'function' ? /** @type {(k: string) => string} */ (nomeReg) : (k) => k;
   const n = siope.nazionale;
   const tot = n.spesaTotale || 0;
+  /** @param {number} v */
   const quota = (v) => (tot ? v / tot : 0);
 
   // 12-те месечни потока (национален агрегат): виждаме ли декемврийски скок?
   const barre = barChart(
-    n.mesi.map((v, i) => [MESI[i], v]),
+    // p[0] е месечен етикет (низ) — barChart го рендира като текст на оста
+    /** @type {any} */ (n.mesi.map((v, i) => [MESI[i], v])),
     { caption: `Pagamenti per cassa della sanità pubblica, flusso mensile ${siope.anno} (in €)` }
   );
 
   // разбивка по макро-категория
+  /** @type {Record<string, string>} */
   const MACRO_LABEL = {
     Farmaci: 'Farmaci',
     Dispositivi: 'Dispositivi e beni sanitari',

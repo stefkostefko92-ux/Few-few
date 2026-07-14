@@ -1,3 +1,4 @@
+// @ts-check
 // Страница „Metodologia e fonti" — метод, източници, правила, FAQ, disclaimer.
 // Изнесена дословно от build-site.js — само местене.
 
@@ -5,7 +6,21 @@ import { esc, percentualeIt } from '../lib/format.js';
 import { page, badge, siteUrl } from '../lib/site-ui.js';
 import { rangeAnni } from '../lib/site-shared.js';
 
+/** @typedef {import('../lib/models.js').SegnData} SegnData */
+/** @typedef {import('../lib/models.js').ForenseData} ForenseData */
+/** @typedef {import('../lib/models.js').AppaltiData} AppaltiData */
+/** @typedef {import('../lib/models.js').AppMatch} AppMatch */
+
 // ---------- METODOLOGIA ----------
+/**
+ * @param {object} p
+ * @param {SegnData} p.segn
+ * @param {ForenseData} p.forense
+ * @param {AppaltiData|null} p.appalti
+ * @param {AppMatch|null} p.appMatch
+ * @param {number} p.ultimoAnnoCe
+ * @returns {string}
+ */
 export function renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }) {
   const regole = [
     ['disavanzo_grave', 'Disavanzo grave', 'Alta', `Risultato d’esercizio inferiore al −${percentualeIt(segn.soglie.disavanzoGrave)} del valore della produzione nell’ultimo anno.`],

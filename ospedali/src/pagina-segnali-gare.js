@@ -1,9 +1,15 @@
 // Страница „I semafori delle gare" — табло с процедурните индикатори за риск.
 // Всеки е ИНДИКАТОР, не доказателство. Числа национално + топ възложители.
 
+// @ts-check
 import { page, kpi } from './lib/site-ui.js';
 import { euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
 
+/**
+ * @param {any[]|null|undefined} righe
+ * @param {Array<{ t: string, num?: boolean, f: (r: any) => string }>} colonne
+ * @returns {string}
+ */
 function tabella(righe, colonne) {
   if (!righe || !righe.length) return '<p class="small muted">Nessun dato sufficiente.</p>';
   const head = colonne.map((c) => `<th class="${c.num ? 'num' : ''}" scope="col">${esc(c.t)}</th>`).join('');
@@ -13,6 +19,10 @@ function tabella(righe, colonne) {
   return `<div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
+/**
+ * @param {{ seg: { nazionale: Record<string, any>, topTermineBreve?: any[], topSottoSoglia?: any[], topFrazionamento?: any[], topRibassoZero?: any[], fonte?: string }, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderSegnaliGare({ seg, jsonld }) {
   const n = seg.nazionale;
   const rz = n.ribassoZero, tb = n.termineBreve, ss = n.sottoSoglia, fr = n.frazionamento, iu = n.invitatiUnico, sa = n.subappalto;

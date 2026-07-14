@@ -3,6 +3,7 @@
 //  2) „Aziende Ospedaliere, AOU e IRCCS pubblici“ — самостоятелните болнични предприятия.
 // Резултат: data/anagrafica.json + сурови CSV в data/raw/salute/.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { curlDownloadToFile, curlText, writeJson } from './lib/http.js';
@@ -28,14 +29,14 @@ const DATASETS = [
   },
 ];
 
-/** Намира първия CSV ресурс в HTML страницата на датасета. */
+/** Намира първия CSV ресурс в HTML страницата на датасета. @param {string} html @returns {string} */
 function extractCsvUrl(html) {
   const m = html.match(/"(\/sites\/default\/files\/[^"]+\.csv)"/i);
   if (!m) throw new Error('не намерих CSV ресурс в страницата на датасета');
   return BASE + m[1];
 }
 
-/** Чете CSV файл, оправяйки латинската кодировка на министерството при нужда. */
+/** Чете CSV файл, оправяйки латинската кодировка на министерството при нужда. @param {string} path @returns {Promise<Record<string, string>[]>} */
 async function readCsvFile(path) {
   const buf = await readFile(path);
   let text = buf.toString('utf8');
@@ -44,6 +45,7 @@ async function readCsvFile(path) {
 }
 
 async function main() {
+  /** @type {Record<string, string>} */
   const csvPaths = {};
   for (const ds of DATASETS) {
     console.log(`Датасет „${ds.key}“ — търся CSV ресурса…`);
@@ -121,7 +123,7 @@ async function main() {
   );
 }
 
-main().catch((err) => {
+main().catch((/** @type {unknown} */ err) => {
   console.error('Грешка:', err);
   process.exitCode = 1;
 });

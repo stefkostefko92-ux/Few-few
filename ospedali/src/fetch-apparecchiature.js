@@ -11,6 +11,7 @@
 //
 // Изход: data/apparecchiature.json (сурови бройки; pro-capite се смята при билда).
 
+// @ts-check
 import { join } from 'node:path';
 import { writeFile, mkdir, readFile, stat } from 'node:fs/promises';
 import { curlText, curlDownloadToFile, writeJson } from './lib/http.js';
@@ -22,6 +23,7 @@ const BASE = 'https://www.dati.salute.gov.it';
 const RAW = join(RAW_DIR, 'apparecchiature.csv');
 
 // codice_regione (3 цифри в датасета) → нашия ключ (Трентино 041/042 → 'taa').
+/** @type {Record<string, string>} */
 const REG_KEY = {
   '010': '010', '020': '020', '030': '030', '041': 'taa', '042': 'taa',
   '050': '050', '060': '060', '070': '070', '080': '080', '090': '090',
@@ -30,6 +32,7 @@ const REG_KEY = {
 };
 
 // Макро-категории (tipo_apparecchiatura) → етикет + ред за показване.
+/** @type {Record<string, string>} */
 export const CAT_APP = {
   TAC: 'TC (tomografia computerizzata)',
   RMN: 'Risonanza magnetica',
@@ -52,9 +55,13 @@ export const GRUPPI_APP = [
 ];
 
 /** Агрегира редовете на апаратурата → национално, per регион, per структура. */
+/** @param {Record<string, string>[]} rows */
 export function aggrega(rows) {
+  /** @type {Record<string, number>} */
   const naz = {};
+  /** @type {Record<string, any>} */
   const perRegione = {};
+  /** @type {Record<string, any>} */
   const perStruttura = {};
   for (const r of rows) {
     const key = REG_KEY[(r.codice_regione || '').trim()];

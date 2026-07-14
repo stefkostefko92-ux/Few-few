@@ -13,15 +13,18 @@
 //   costiPerAbitante = { key → разход на глава (€) } (по избор; крие се при липса)
 //   nomeReg         = (key) → четимо име на региона (при липса покажи ключа)
 
+// @ts-check
 import { page, kpi, hbars } from './lib/site-ui.js';
 import { numeroIt, euroIt, esc } from './lib/format.js';
 
-/** Процент от PNE (стойността е вече в проценти, напр. 25,3 → „25,3%"). */
+/** Процент от PNE (стойността е вече в проценти, напр. 25,3 → „25,3%").
+ * @param {number|null|undefined} v @returns {string} */
 function pct(v) {
   return v == null ? '—' : `${v.toLocaleString('it-IT', { maximumFractionDigits: 1 })}%`;
 }
 
-/** Клас за клетка спрямо националната средна и посоката на „по-добре". */
+/** Клас за клетка спрямо националната средна и посоката на „по-добре".
+ * @param {number|null|undefined} v @param {number|null|undefined} naz @param {string} [tipoMigliore] @returns {string} */
 function classeCella(v, naz, tipoMigliore) {
   if (v == null || naz == null) return '';
   const soglia = 0.05; // ±5% относителна разлика → неутрално
@@ -31,13 +34,20 @@ function classeCella(v, naz, tipoMigliore) {
   return migliore ? 'pos' : peggiore ? 'neg' : '';
 }
 
+/**
+ * @param {{ pne: { indicatori?: any[], perRegione?: Record<string, any>, nazionale?: Record<string, any>, copertura?: Record<string, any>, edizione?: string }, costiPerAbitante: Record<string, number>|unknown, nomeReg: ((k: string) => string)|unknown }} p
+ * @returns {string}
+ */
 export function renderPne({ pne, costiPerAbitante, nomeReg }) {
-  const nome = typeof nomeReg === 'function' ? nomeReg : (k) => k;
-  const costi = costiPerAbitante && typeof costiPerAbitante === 'object' ? costiPerAbitante : {};
+  /** @type {(k: string) => string} */
+  const nome = typeof nomeReg === 'function' ? /** @type {(k: string) => string} */ (nomeReg) : (k) => k;
+  /** @type {Record<string, number>} */
+  const costi = costiPerAbitante && typeof costiPerAbitante === 'object' ? /** @type {Record<string, number>} */ (costiPerAbitante) : {};
   const conCosti = Object.keys(costi).length > 0;
   const inds = Array.isArray(pne.indicatori) ? pne.indicatori : [];
   const perRegione = pne.perRegione || {};
   const nazionale = pne.nazionale || {};
+  /** @param {string} codice */
   const nInd = (codice) => (nazionale[codice] ? nazionale[codice].valore : null);
 
   // редовете (региони), които имат поне един подбран индикатор
@@ -45,6 +55,7 @@ export function renderPne({ pne, costiPerAbitante, nomeReg }) {
 
   // ---- KPI: национални стойности за 3-4 водещи индикатора ----
   const kpiOrder = ['cesarei', 'femore48', 'mortalitaIma', 'mortalitaIctus'];
+  /** @type {Record<string, string>} */
   const etichetteKpi = {
     cesarei: 'Parti cesarei primari',
     femore48: 'Femore operato entro 48h',
@@ -99,12 +110,14 @@ export function renderPne({ pne, costiPerAbitante, nomeReg }) {
   const indCes = inds.find((i) => i.chiave === 'cesarei');
   let hbarsCes = '';
   if (indCes) {
-    const items = chiavi
-      .map((key) => {
-        const g = perRegione[key][indCes.codice];
-        return g && g.valore != null ? { key, valore: g.valore, nStrutture: g.nStrutture } : null;
-      })
-      .filter(Boolean)
+    const items = /** @type {Array<{ key: string, valore: number, nStrutture: any }>} */ (
+      chiavi
+        .map((key) => {
+          const g = perRegione[key][indCes.codice];
+          return g && g.valore != null ? { key, valore: g.valore, nStrutture: g.nStrutture } : null;
+        })
+        .filter(Boolean)
+    )
       .sort((a, b) => b.valore - a.valore)
       .map((r) => {
         const naz = nInd(indCes.codice);
@@ -195,16 +208,16 @@ popolazione residente Istat. Dati grezzi aggregati: <a href="dati.html">open dat
   });
 }
 
-/** Кратък етикет за колона в таблицата. */
+/** Кратък етикет за колона в таблицата. @param {string} chiave @returns {string} */
 function shortLabel(chiave) {
   return (
-    {
+    /** @type {Record<string, string>} */ ({
       cesarei: 'Cesarei',
       femore48: 'Femore <48h',
       mortalitaIma: 'Mort. infarto',
       mortalitaIctus: 'Mort. ictus',
       mortalitaScompenso: 'Mort. scompenso',
       colecistectomia: 'Colecist. lap.',
-    }[chiave] || chiave
+    })[chiave] || chiave
   );
 }

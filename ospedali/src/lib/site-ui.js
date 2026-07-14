@@ -1,7 +1,39 @@
+// @ts-check
 // Споделен HTML слой за статичния сайт (на италиански): оформление, CSS,
 // SVG графики. Нула външни ресурси — самодостатъчно (добро за CSP и Netlify).
 
 import { esc } from './format.js';
+
+/**
+ * Точка от графика: `[година, стойност]` (масив от 2 числа — избягва
+ * tuple-inference проблеми при `.map((a) => [a, v])`).
+ * @typedef {number[]} Punto
+ */
+/**
+ * @typedef {object} Serie серия за линейна графика
+ * @property {string} label
+ * @property {string} color
+ * @property {Punto[]} points
+ */
+/**
+ * @typedef {object} HbarItem ред за хоризонтална лента
+ * @property {string} label
+ * @property {number} valore
+ * @property {number} quota дял [0..1]
+ * @property {boolean} [flag]
+ */
+/**
+ * @typedef {object} PageOpts опции за обвивката на страница
+ * @property {string} title
+ * @property {string} [active] активен елемент от менюто (href)
+ * @property {string} [rel] префикс за връзки (напр. '../')
+ * @property {string} body
+ * @property {string} [description]
+ * @property {string|null} [canonical] релативен път спрямо корена
+ * @property {Record<string, unknown>|null} [jsonld]
+ * @property {string} [ogType]
+ * @property {boolean} [noindex]
+ */
 
 export const CSS = `
 :root{
@@ -209,9 +241,14 @@ const NAV = [
 // Абсолютният адрес на сайта (за canonical/OG/sitemap). Задава се веднъж от
 // build-site през setSiteUrl(); празен = релативни адреси (без absolute meta).
 let SITE_URL = '';
+/**
+ * @param {string|null|undefined} url
+ * @returns {void}
+ */
 export function setSiteUrl(url) {
   SITE_URL = (url || '').replace(/\/$/, '');
 }
+/** @returns {string} */
 export function siteUrl() {
   return SITE_URL;
 }
@@ -220,6 +257,8 @@ export function siteUrl() {
  * Обвивка на страница. `rel` е префиксът за връзки (напр. '../' за детайлните).
  * `canonical` е релативният път на страницата спрямо корена (по подр. = `active`,
  * което е вярно за страниците от менюто). `jsonld` инжектира JSON-LD блок.
+ * @param {PageOpts} opts
+ * @returns {string}
  */
 export function page({ title, active, rel = '', body, description = '', canonical = null, jsonld = null, ogType = 'website', noindex = false }) {
   const nav = NAV.map(
@@ -288,20 +327,33 @@ ${body}
 </html>`;
 }
 
-/** KPI карта. */
+/**
+ * KPI карта.
+ * @param {string} label
+ * @param {string|number} value
+ * @param {string} [cls]
+ * @returns {string}
+ */
 export function kpi(label, value, cls = '') {
   return `<div class="card kpi"><div class="n ${cls}">${esc(value)}</div><div class="l">${esc(label)}</div></div>`;
 }
 
-/** Значка за тежест. */
+/**
+ * Значка за тежест.
+ * @param {string} gravita
+ * @returns {string}
+ */
 export function badge(gravita) {
-  const t = { alta: 'Alta', media: 'Media', bassa: 'Bassa' }[gravita] || gravita;
+  const t = /** @type {Record<string, string>} */ ({ alta: 'Alta', media: 'Media', bassa: 'Bassa' })[gravita] || gravita;
   return `<span class="badge ${gravita}">${t}</span>`;
 }
 
 /**
  * Линейна SVG графика с няколко серии. series:[{label,color,points:[[year,val]]}].
  * Автоскала по y; обща x-ос от подадените години.
+ * @param {Serie[]} series
+ * @param {{ width?: number, height?: number, caption?: string }} [opts]
+ * @returns {string}
  */
 export function lineChart(series, { width = 680, height = 240, caption = '' } = {}) {
   const pad = { t: 14, r: 14, b: 26, l: 56 };
@@ -311,12 +363,14 @@ export function lineChart(series, { width = 680, height = 240, caption = '' } = 
   if (pts.length === 0) return '';
   const xs = [...new Set(pts.map((p) => p[0]))].sort((a, b) => a - b);
   const xmin = xs[0];
-  const xmax = xs.at(-1);
+  const xmax = xs.at(-1) ?? xmin;
   const ys = pts.map((p) => p[1]);
   let ymin = Math.min(0, ...ys);
   let ymax = Math.max(0, ...ys);
   if (ymin === ymax) ymax = ymin + 1;
+  /** @type {(yr: number) => number} */
   const x = (yr) => pad.l + (xmax === xmin ? iw / 2 : ((yr - xmin) / (xmax - xmin)) * iw);
+  /** @type {(v: number) => number} */
   const y = (v) => pad.t + ih - ((v - ymin) / (ymax - ymin)) * ih;
 
   const ticks = niceTicks(ymin, ymax, 4);
@@ -363,7 +417,12 @@ export function lineChart(series, { width = 680, height = 240, caption = '' } = 
   );
 }
 
-/** Стълбовидна графика за резултата по години (зелено/червено). */
+/**
+ * Стълбовидна графика за резултата по години (зелено/червено).
+ * @param {Punto[]} points
+ * @param {{ width?: number, height?: number, caption?: string }} [opts]
+ * @returns {string}
+ */
 export function barChart(points, { width = 680, height = 200, caption = '' } = {}) {
   const pad = { t: 14, r: 14, b: 26, l: 56 };
   const iw = width - pad.l - pad.r;
@@ -373,6 +432,7 @@ export function barChart(points, { width = 680, height = 200, caption = '' } = {
   let ymin = Math.min(0, ...ys);
   let ymax = Math.max(0, ...ys);
   if (ymin === ymax) ymax = ymin + 1;
+  /** @type {(v: number) => number} */
   const y = (v) => pad.t + ih - ((v - ymin) / (ymax - ymin)) * ih;
   const bw = Math.min(46, (iw / points.length) * 0.7);
   const step = iw / points.length;
@@ -406,7 +466,12 @@ export function barChart(points, { width = 680, height = 200, caption = '' } = {
   );
 }
 
-/** Хоризонтални ленти за разбивка (категория → дял). items:[{label,valore,quota,flag}]. */
+/**
+ * Хоризонтални ленти за разбивка (категория → дял). items:[{label,valore,quota,flag}].
+ * @param {HbarItem[]} items
+ * @param {{ fmt?: (v: number) => string|number, maxLabel?: string }} [opts]
+ * @returns {string}
+ */
 export function hbars(items, { fmt = (v) => v, maxLabel = '' } = {}) {
   if (!items.length) return '';
   const max = Math.max(...items.map((i) => i.quota || 0), 0.0001);
@@ -426,20 +491,35 @@ export function hbars(items, { fmt = (v) => v, maxLabel = '' } = {}) {
   return `<div class="hbars" role="group" aria-label="${esc(maxLabel)}">${rows}</div>`;
 }
 
+/**
+ * @param {number} min
+ * @param {number} max
+ * @param {number} n
+ * @returns {number[]}
+ */
 function niceTicks(min, max, n) {
   const span = max - min || 1;
   const step = niceNum(span / n);
   const start = Math.ceil(min / step) * step;
+  /** @type {number[]} */
   const ticks = [];
   for (let v = start; v <= max + step * 0.001; v += step) ticks.push(v);
   return ticks;
 }
+/**
+ * @param {number} x
+ * @returns {number}
+ */
 function niceNum(x) {
   const exp = Math.floor(Math.log10(x));
   const f = x / 10 ** exp;
   const nf = f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10;
   return nf * 10 ** exp;
 }
+/**
+ * @param {number} v
+ * @returns {string}
+ */
 function fmtAxis(v) {
   const a = Math.abs(v);
   if (a >= 1e9) return (v / 1e9).toLocaleString('it-IT', { maximumFractionDigits: 1 }) + ' mld';

@@ -6,6 +6,7 @@
 // изтеглят метаданните на всички датасети. Те се кешират в data/raw/bdap-pkgs/,
 // така че следващите пускания са инкрементални (само новите датасети).
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, readdir, mkdir } from 'node:fs/promises';
 import { fetchJson, writeJson, mapLimit } from './lib/http.js';
@@ -17,6 +18,7 @@ const PKG_DIR = join(RAW_DIR, 'bdap-pkgs');
 const TITLE_RE =
   /^(\d{4})(?:\/(I{1,3}|IV) Trim\.)? - Modello di rilevazione (del Conto Economico|dello Stato Patrimoniale|dei Livelli di Assistenza) degli enti del SSN( a livello \w+\.?)?$/;
 
+/** @type {Record<string, string>} */
 const KIND = {
   'del Conto Economico': 'CE',
   'dello Stato Patrimoniale': 'SP',
@@ -33,7 +35,7 @@ async function main() {
   console.log(`  ${ids.length} датасета в каталога`);
 
   const cached = new Set(await readdir(PKG_DIR));
-  const missing = ids.filter((id) => !cached.has(`${id}.json`));
+  const missing = ids.filter((/** @type {string} */ id) => !cached.has(`${id}.json`));
   console.log(`  ${missing.length} липсват в кеша — тегля метаданните им…`);
 
   let done = 0;
@@ -42,13 +44,14 @@ async function main() {
       const pkg = await fetchJson(`${CKAN}/package_show?id=${id}`);
       if (pkg.success) await writeJson(join(PKG_DIR, `${id}.json`), pkg.result);
     } catch (err) {
-      console.warn(`  пропускам ${id}: ${err.message}`);
+      console.warn(`  пропускам ${id}: ${err instanceof Error ? err.message : String(err)}`);
     }
     done++;
     if (done % 200 === 0) console.log(`  …${done}/${missing.length}`);
   });
 
   // Филтриране: само моделите по отделна структура (без „a livello Nazionale/Regionale“).
+  /** @type {Array<{ kind: string, anno: number, trimestre: string|null, title: string, csvUrl: string }>} */
   const datasets = [];
   for (const file of await readdir(PKG_DIR)) {
     if (!file.endsWith('.json')) continue;
@@ -63,7 +66,7 @@ async function main() {
     const m = title.match(TITLE_RE);
     if (!m || m[4]) continue; // не е модел по ente или е агрегат по регион/държава
     const csv = (pkg.resources || []).find(
-      (r) => (r.format || '').toLowerCase() === 'csv' && /\/datastore\/dump\//.test(r.url || '')
+      (/** @type {any} */ r) => (r.format || '').toLowerCase() === 'csv' && /\/datastore\/dump\//.test(r.url || '')
     );
     if (!csv) continue;
     datasets.push({

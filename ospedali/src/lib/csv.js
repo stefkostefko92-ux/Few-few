@@ -1,12 +1,19 @@
+// @ts-check
 // Малък CSV парсер за официалните италиански open data файлове:
 // разделител „;“ или „,“, кавички по RFC 4180, италиански числа („7.035“, „1.234,56“).
 
-/** Парсва CSV текст до масив от обекти по заглавния ред. */
+/**
+ * Парсва CSV текст до масив от обекти по заглавния ред.
+ * @param {string} text
+ * @param {{ separator?: string }} [opts]
+ * @returns {Record<string, string>[]}
+ */
 export function parseCsv(text, { separator = ';' } = {}) {
   const rows = parseRows(text, separator);
   if (rows.length === 0) return [];
   const header = rows[0].map((h) => h.trim());
   return rows.slice(1).filter((r) => r.some((c) => c.trim() !== '')).map((r) => {
+    /** @type {Record<string, string>} */
     const obj = {};
     for (let i = 0; i < header.length; i++) {
       if (header[i] === '') continue; // висящ разделител в края на заглавието
@@ -16,7 +23,12 @@ export function parseCsv(text, { separator = ';' } = {}) {
   });
 }
 
-/** Ниско ниво: парсва редове и клетки, зачитайки кавички и нови редове в тях. */
+/**
+ * Ниско ниво: парсва редове и клетки, зачитайки кавички и нови редове в тях.
+ * @param {string} text
+ * @param {string} [separator]
+ * @returns {string[][]}
+ */
 export function parseRows(text, separator = ';') {
   // премахваме BOM
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
@@ -62,6 +74,8 @@ export function parseRows(text, separator = ';') {
  * Поправя двойно кодиран UTF-8 (mojibake), какъвто има в ЧАСТ от записите на
  * ANAC (напр. „UNITÃ “ вместо „UNITÀ“). Прилага се само при разпознат шаблон,
  * за да не се чупят коректните низове. До 2 прохода за двойно-двойно кодиране.
+ * @param {string} s
+ * @returns {string}
  */
 export function fixMojibake(s) {
   if (!s) return s;
@@ -79,6 +93,8 @@ export function fixMojibake(s) {
  * Парсва число от италиански формат.
  * „7.035“ → 7035 (точка = разделител на хиляди), „1.234,56“ → 1234.56,
  * „7858272000.00“ → 7858272000 (машинен формат с десетична точка).
+ * @param {string|number|null|undefined} value
+ * @returns {number|null}
  */
 export function parseItalianNumber(value) {
   if (value == null) return null;

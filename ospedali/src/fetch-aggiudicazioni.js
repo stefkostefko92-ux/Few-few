@@ -10,6 +10,7 @@
 //
 // Изход: data/aggiudicazioni.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
@@ -26,7 +27,9 @@ const HEALTH_TSV = join(RAW_DIR, 'anac', 'health-cig-cf.tsv');
 // сменяй сега: изходът data/aggiudicazioni.json е замразен launch данни и всяка
 // разлика в подредбата на колоните на ANAC би променила резултата.
 /** Разделя ред „a";"b";"c" на полета, зачитайки кавичките (без вградени нови редове). */
+/** @param {string} line @returns {string[]} */
 function splitQuoted(line) {
+  /** @type {string[]} */
   const out = [];
   let cell = '';
   let q = false;
@@ -46,6 +49,7 @@ function splitQuoted(line) {
 }
 
 /** Бърз евтин прочит на първото поле (cig) без пълен парс. */
+/** @param {string} line @returns {string|null} */
 function primoCig(line) {
   if (line[0] !== '"') return null;
   const end = line.indexOf('"', 1);
@@ -53,6 +57,7 @@ function primoCig(line) {
 }
 
 /** Категория на критерия за възлагане. */
+/** @param {string|null|undefined} s @returns {string} */
 export function classificaCriterio(s) {
   const u = (s || '').toUpperCase();
   if (u.includes('MINOR PREZZO') || u.includes('PREZZO PIU') || u.includes('PREZZO PIÙ') || u.includes('MASSIMO RIBASSO')) return 'prezzo';
@@ -60,6 +65,7 @@ export function classificaCriterio(s) {
   return 'altro';
 }
 
+/** @param {string} file @returns {AsyncGenerator<string>} */
 async function* righe(file) {
   const rl = createInterface({ input: createReadStream(file, 'utf8'), crlfDelay: Infinity });
   let first = true;
@@ -71,6 +77,7 @@ async function* righe(file) {
 
 /** Зарежда cig → категория (от нашата процедурна класификация) за здравните CIG. */
 async function caricaHealth() {
+  /** @type {Map<string, string>} */
   const cat = new Map();
   for await (const line of righe(HEALTH_TSV)) {
     const [cig, , categoria] = line.split('\t');
@@ -80,10 +87,12 @@ async function caricaHealth() {
 }
 
 const distr = () => ({ 1: 0, 2: 0, 3: 0, '4+': 0 });
+/** @param {Record<string, number>} d @param {number} n */
 function pushDistr(d, n) {
   if (n >= 4) d['4+']++;
   else if (n >= 1) d[n]++;
 }
+/** @param {number[]} arr @returns {number|null} */
 function mediana(arr) {
   if (!arr.length) return null;
   const s = [...arr].sort((a, b) => a - b);
@@ -97,9 +106,12 @@ async function main() {
 
   // --- aggiudicazioni ---
   const CATS = ['diretto', 'negoziataSenza', 'competitiva', 'quadro', 'negoziata', 'altro'];
+  /** @type {Record<string, any>} */
   const naz = { nAgg: 0, conOfferenti: 0, unOfferente: 0, distribuzione: distr(), criterio: { prezzo: 0, qualita: 0, altro: 0 } };
+  /** @type {Record<string, any>} */
   const perCat = {};
   for (const c of CATS) perCat[c] = { n: 0, conOfferenti: 0, unOfferente: 0 };
+  /** @type {number[]} */
   const ribassiComp = []; // ribasso само за конкурентни процедури (diretto = винаги 0)
   const aggFile = join(ANAC2, 'aggiudicazioni_csv.csv');
   if (await stat(aggFile).catch(() => null)) {
@@ -110,7 +122,7 @@ async function main() {
       const esito = (f[2] || '').toUpperCase();
       if (!esito.includes('AGGIUDICATA')) continue; // само реално възложени
       naz.nAgg++;
-      const categoria = cat.get(cig);
+      const categoria = cat.get(cig) || 'altro';
       const pc = perCat[categoria] || perCat.altro;
       pc.n++;
       // брой оференти: num_imprese_offerenti (idx9), падни на numero_offerte_ammesse (idx5)
@@ -140,6 +152,7 @@ async function main() {
   }
 
   // --- fine-contratto: proroghe ---
+  /** @type {{ n: number, conProroga: number, giorniProroga: number[] }} */
   const fine = { n: 0, conProroga: 0, giorniProroga: [] };
   const fineFile = join(ANAC2, 'fine-contratto_csv.csv');
   if (await stat(fineFile).catch(() => null)) {
@@ -154,6 +167,7 @@ async function main() {
   }
 
   // --- stati-avanzamento: забавени SAL ---
+  /** @type {{ nSal: number, inRitardo: number, scostamenti: number[] }} */
   const sal = { nSal: 0, inRitardo: 0, scostamenti: [] };
   const salFile = join(ANAC2, 'stati-avanzamento_csv.csv');
   if (await stat(salFile).catch(() => null)) {

@@ -7,12 +7,19 @@
 // Това са ПЛАНИРАНИ/разпределени средства и брой проекти по ReGiS, не физически
 // напредък на строежите (той се следи от ReGiS/Italiadomani).
 
+// @ts-check
 import { page, kpi, hbars } from './lib/site-ui.js';
 import { euroCompact, euroIt, numeroIt, esc } from './lib/format.js';
 
+/**
+ * @param {{ pnrr: any, popolazione: { regioni?: Record<string, number> }|undefined, nomeReg: ((k: string) => string)|Record<string, string>|undefined, href: ((k: string) => string)|unknown, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderPnrrSalute({ pnrr, popolazione, nomeReg, href, jsonld }) {
   const naz = pnrr.nazionale;
+  /** @param {string} key */
   const nome = (key) => (typeof nomeReg === 'function' ? nomeReg(key) : nomeReg?.[key]) || key;
+  /** @param {string} key */
   const link = (key) => (typeof href === 'function' ? href(key) : null);
   const m6c1 = naz.perMisura.M6C1 || { n: 0, importo: 0 };
   const m6c2 = naz.perMisura.M6C2 || { n: 0, importo: 0 };
@@ -33,6 +40,7 @@ export function renderPnrrSalute({ pnrr, popolazione, nomeReg, href, jsonld }) {
     .sort((a, b) => b.importo - a.importo);
 
   // hbars екранира етикета → само чисто име (без HTML връзки, иначе излиза сурово).
+  /** @param {{ nome: string }} r */
   const label = (r) => r.nome;
 
   const maxImporto = Math.max(...righe.map((r) => r.importo), 1);
@@ -41,10 +49,10 @@ export function renderPnrrSalute({ pnrr, popolazione, nomeReg, href, jsonld }) {
     { fmt: euroCompact, maxLabel: 'Finanziamento PNRR Missione 6 per regione' }
   );
 
-  const conPop = righe.filter((r) => r.proCapite != null).sort((a, b) => b.proCapite - a.proCapite);
-  const maxPc = Math.max(...conPop.map((r) => r.proCapite), 1);
+  const conPop = righe.filter((r) => r.proCapite != null).sort((a, b) => (b.proCapite ?? 0) - (a.proCapite ?? 0));
+  const maxPc = Math.max(...conPop.map((r) => r.proCapite ?? 0), 1);
   const barrePc = hbars(
-    conPop.map((r) => ({ label: label(r), valore: r.proCapite, quota: r.proCapite / maxPc })),
+    conPop.map((r) => ({ label: label(r), valore: r.proCapite ?? 0, quota: (r.proCapite ?? 0) / maxPc })),
     { fmt: (v) => `${euroIt(v)}/ab.`, maxLabel: 'Finanziamento PNRR Missione 6 per abitante' }
   );
 

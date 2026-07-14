@@ -1,3 +1,4 @@
+// @ts-check
 // Страница „Appalti" (ANAC), блокът за поръчки и регистърът на договорите в
 // детайлната страница, плюс CSV експорта. Изнесени дословно от build-site.js.
 
@@ -6,6 +7,13 @@ import { page, kpi, hbars } from '../lib/site-ui.js';
 import { rangeAnni, articleLd } from '../lib/site-shared.js';
 import { renderFornitori } from './fornitori.js';
 
+/** @typedef {import('../lib/dataset.js').Ente} Ente */
+/** @typedef {import('../lib/models.js').AppaltiData} AppaltiData */
+/** @typedef {import('../lib/models.js').Autorita} Autorita */
+/** @typedef {import('../lib/models.js').AppMatch} AppMatch */
+/** @typedef {import('../lib/models.js').ContrattoTop} ContrattoTop */
+
+/** @type {Record<string, string>} */
 const PROC_LABEL = {
   competitiva: 'Procedura competitiva (gara aperta/ristretta)',
   quadro: 'Accordo quadro / convenzione (pre-competuto)',
@@ -17,6 +25,15 @@ const PROC_LABEL = {
 const PROC_ORDER = ['diretto', 'negoziataSenza', 'quadro', 'competitiva', 'negoziata', 'altro'];
 
 // ---------- APPALTI (ANAC) ----------
+/**
+ * @param {object} p
+ * @param {AppaltiData} p.appalti
+ * @param {Map<string, Autorita>} p.appByCod
+ * @param {AppMatch|null} p.appMatch
+ * @param {Ente[]} p.enti
+ * @param {(cod: string) => string} p.href
+ * @returns {string}
+ */
 export function renderAppalti({ appalti, appByCod, appMatch, enti, href }) {
   const nz = appalti.nazionale;
   const codByCf = new Map();
@@ -46,7 +63,7 @@ export function renderAppalti({ appalti, appByCod, appMatch, enti, href }) {
   // Топ възложители по дял „senza gara“ (материални)
   const topAut = appalti.autorita
     .filter((a) => a.importo >= 20_000_000 && a.n >= 100 && a.quotaSenzaGaraNum != null)
-    .sort((a, b) => b.quotaSenzaGaraNum - a.quotaSenzaGaraNum)
+    .sort((a, b) => (b.quotaSenzaGaraNum ?? 0) - (a.quotaSenzaGaraNum ?? 0))
     .slice(0, 20);
   const autRows = topAut
     .map((a) => {
@@ -122,22 +139,30 @@ Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC — dati aperti</a
   });
 }
 
-/** Класация: възложители с най-много търгове с един кандидат. */
+/**
+ * Класация: възложители с най-много търгове с един кандидат.
+ * @param {AppMatch|null} appMatch
+ * @param {Map<string, string>} codByCf
+ * @param {(cod: string) => string} href
+ * @returns {string}
+ */
 function renderOfferenteUnico(appMatch, codByCf, href) {
   if (!appMatch?.aggiu) return '';
   const { aggiu, autByCf } = appMatch;
   const list = Object.entries(aggiu.perCf)
     .filter(([, v]) => v.gareConPartecipanti >= 50 && v.quotaUnicoOfferente != null)
-    .map(([cf, v]) => ({ cf, ...v, aut: autByCf.get(cf) }))
+    .map(([cf, v]) => ({ cf, ...v, aut: autByCf?.get(cf) }))
     .filter((x) => x.aut)
-    .sort((a, b) => b.quotaUnicoOfferente - a.quotaUnicoOfferente)
+    .sort((a, b) => (b.quotaUnicoOfferente ?? 0) - (a.quotaUnicoOfferente ?? 0))
     .slice(0, 15);
   if (!list.length) return '';
   const rows = list
     .map((x) => {
+      const aut = x.aut;
+      if (!aut) return ''; // невъзможно след filter — само стеснява типа
       const cod = codByCf.get(x.cf);
-      const nome = cod ? `<a href="${href(cod)}">${esc(x.aut.den)}</a>` : esc(x.aut.den);
-      return `<tr><td>${nome}<div class="small muted">${esc(x.aut.reg)}</div></td>
+      const nome = cod ? `<a href="${href(cod)}">${esc(aut.den)}</a>` : esc(aut.den);
+      return `<tr><td>${nome}<div class="small muted">${esc(aut.reg)}</div></td>
         <td class="num neg">${percentualeIt(x.quotaUnicoOfferente)}</td>
         <td class="num">${numeroIt(x.gareUnicoOfferente)}/${numeroIt(x.gareConPartecipanti)}</td></tr>`;
     })
@@ -156,7 +181,25 @@ I raggruppamenti di imprese (RTI) sono conteggiati come più offerte.</div>
 </table></div>`;
 }
 
+/**
+ * @typedef {object} Contratto пълен договор от data/contratti/<codice>.json
+ * @property {string} [cig]
+ * @property {string} [data]
+ * @property {string} [oggetto]
+ * @property {number} importo
+ * @property {string} [procedura]
+ * @property {string} [cpv]
+ * @property {string} [fornitore]
+ * @property {string} [fornitoreCf]
+ * @property {boolean} [fornitoreAzienda]
+ * @property {string} categoria
+ */
+
 // ---------- РЕГИСТЪР НА ДОГОВОРИТЕ (маниакален детайл) ----------
+/**
+ * @param {unknown} v
+ * @returns {string}
+ */
 function csvCell(v) {
   let s = String(v ?? '');
   // Неутрализирай CSV formula injection: клетка, започваща с формула-знак, може
@@ -164,7 +207,12 @@ function csvCell(v) {
   if (/^[=+@\t\r]/.test(s) || (s.startsWith('-') && !/^-?\d/.test(s))) s = `'${s}`;
   return /[";\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
 }
-/** Пълен CSV с всеки договор — сваляемият, проверим до последния евро запис. */
+/**
+ * Пълен CSV с всеки договор — сваляемият, проверим до последния евро запис.
+ * @param {Ente} ente
+ * @param {Contratto[]} list
+ * @returns {string}
+ */
 export function contrattiCsv(ente, list) {
   const head = 'cig;data;oggetto;importo_euro;procedura;cpv;fornitore';
   const lines = list.map((c) =>
@@ -173,9 +221,15 @@ export function contrattiCsv(ente, list) {
   return `# Ospedali Trasparenti — contratti pubblici di ${ente.denominazione} (ANAC)\n` + `# ${list.length} contratti. Importi = valore messo a gara. Fonte: dati.anticorruzione.it\n` + head + '\n' + lines.join('\n') + '\n';
 }
 
+/** @param {string} [p] */
 const PROC_ABBR = (p) => (p || '').replace(/AFFIDAMENTO DIRETTO IN ADESIONE AD ACCORDO QUADRO\/CONVENZIONE/i, 'Affid. diretto (accordo quadro)').replace(/AFFIDAMENTO DIRETTO/i, 'Affidamento diretto').replace(/PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE/i, 'Negoziata senza bando').replace(/PROCEDURA APERTA/i, 'Procedura aperta');
 
-/** Регистър на договорите в детайлната страница (топ N inline + пълен CSV). */
+/**
+ * Регистър на договорите в детайлната страница (топ N inline + пълен CSV).
+ * @param {Ente} ente
+ * @param {Contratto[]|null} list
+ * @returns {string}
+ */
 export function contrattiBlock(ente, list) {
   if (!list || !list.length) return '';
   const MAX_INLINE = 300;
@@ -212,15 +266,22 @@ ${list.length > MAX_INLINE ? `<p class="small muted">Mostrati i ${MAX_INLINE} co
 </script>`;
 }
 
-/** Блок за поръчките в детайлната страница (при свързан възложител). */
+/**
+ * Блок за поръчките в детайлната страница (при свързан възложител).
+ * @param {Autorita|undefined} app
+ * @param {AppMatch|null} appMatch
+ * @returns {string}
+ */
 export function appaltiBlock(app, appMatch) {
   if (!app) return '';
-  const items = PROC_ORDER.map((k) => app.cat[k] && app.cat[k].importo > 0 && ({
-    label: PROC_LABEL[k],
-    valore: app.cat[k].importo,
-    quota: app.importo > 0 ? app.cat[k].importo / app.importo : 0,
-    flag: k === 'diretto' || k === 'negoziataSenza',
-  })).filter(Boolean);
+  const items = /** @type {import('../lib/site-ui.js').HbarItem[]} */ (
+    PROC_ORDER.map((k) => app.cat[k] && app.cat[k].importo > 0 && ({
+      label: PROC_LABEL[k],
+      valore: app.cat[k].importo,
+      quota: app.importo > 0 ? app.cat[k].importo / app.importo : 0,
+      flag: k === 'diretto' || k === 'negoziataSenza',
+    })).filter(Boolean)
+  );
   const sgNum = app.quotaSenzaGaraNum;
   const sgVal = app.quotaSenzaGara;
   const med = appMatch?.medianaSenzaGaraNum;
@@ -238,9 +299,9 @@ export function appaltiBlock(app, appMatch) {
   // Изпълнители + търгове с един кандидат + концентрация
   const ag = app.aggiu;
   const sbQ = ag?.quotaUnicoOfferente;
-  const flagSb = sbQ != null && ag.gareConPartecipanti >= 20 && sbQ > 0.6;
+  const flagSb = ag != null && sbQ != null && ag.gareConPartecipanti >= 20 && sbQ > 0.6;
   const concQ = ag?.top1Quota;
-  const flagConc = concQ != null && ag.valoreAggiudicato >= 10_000_000 && concQ > 0.5;
+  const flagConc = ag != null && concQ != null && ag.valoreAggiudicato >= 10_000_000 && concQ > 0.5;
   const fornRows = (ag?.topFornitori || [])
     .slice(0, 5)
     .map((f) => `<tr><td>${esc(f.den)}</td><td class="num">${euroCompact(f.valore)}</td><td class="num">${numeroIt(f.n)}</td></tr>`)

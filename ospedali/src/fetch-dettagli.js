@@ -6,6 +6,7 @@
 //
 // Изход: data/contratti/<codice>.json (масив договори, подредени по сума).
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, writeFile, mkdir, rm, readdir, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
@@ -24,11 +25,14 @@ const execFileAsync = promisify(execFile);
 const ANAC_DIR = join(RAW_DIR, 'anac');
 const OUT_DIR = join(DATA_DIR, 'contratti');
 
+/** @param {string|undefined} s @returns {string} */
 const unq = (s) => (s ? s.replace(/^"/, '').replace(/"$/, '').trim() : '');
+/** @param {string} cf @returns {boolean} */
 const isAzienda = (cf) => /^[0-9]{11}$/.test(cf);
 // GDPR: 11-цифрен P.IVA НЕ гарантира юр. лице (ditte individuali/S.n.c./S.a.s. също
 // имат P.IVA + лично име в наименованието). Профилираме/назоваваме САМО società di
 // capitali — eSocietaDiCapitali проверява правната форма (както coi.js/cordate.js).
+/** @param {string} cf @param {string} den @returns {boolean} */
 const forniProfilabile = (cf, den) => isAzienda(cf) && eSocietaDiCapitali(den);
 
 // GDPR (одит на Правния Разбирач): дословният публичен ANAC `oggetto` понякога
@@ -55,6 +59,7 @@ const RE_OGG_DI =
 // контекст: „AVV. (nominativo omesso)". Само главни имена → не режем текст.
 const RE_OGG_TITOLO =
   /\b((?:AVV|NOT|GEOM|RAG|ARCH|ING|DOTT\.?SSA|DOTT|PROF\.?SSA|PROF|SIG\.?RA|SIG\.?NA|SIG)\.?)\s+[A-ZÀ-Ù][A-ZÀ-Ù'’]+(?:\s+[A-ZÀ-Ù][A-ZÀ-Ù'’]+){0,2}/g;
+/** @param {string|null|undefined} txt @returns {string} */
 export function sanitizzaOggetto(txt) {
   return String(txt || '')
     .replace(RE_OGG_DITTA, '(operatore non nominato)')
@@ -71,12 +76,13 @@ async function main() {
   const appalti = await readJson(join(DATA_DIR, 'appalti.json'));
   const { byCf } = matchAutoritaEnti(
     enti.map((e) => ({ codice: e.codice, denominazione: e.denominazione, regione: e.regione })),
-    appalti.autorita.map((a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
+    appalti.autorita.map((/** @type {any} */ a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
   );
   const targetCf = new Set(byCf.keys());
   console.log(`Свързани болници: ${targetCf.size}. Извличам договорите им…`);
 
   // 2) Договорите на тези възложители (per cig, дедуп) от месечните CIG файлове
+  /** @type {Map<string, any>} */
   const perCig = new Map(); // cig → запис
   for (const anno of anni) {
     for (let m = 1; m <= 12; m++) {
@@ -132,25 +138,28 @@ async function main() {
   // 4) Групиране по болница и запис
   await rm(OUT_DIR, { recursive: true, force: true });
   await mkdir(OUT_DIR, { recursive: true });
+  /** @type {Map<string, any[]>} */
   const perCodice = new Map();
   for (const rec of perCig.values()) {
     if (!perCodice.has(rec.codice)) perCodice.set(rec.codice, []);
     const { codice, ...row } = rec;
     void codice;
-    perCodice.get(rec.codice).push(row);
+    perCodice.get(rec.codice)?.push(row);
   }
   let totRighe = 0;
+  /** @type {Record<string, { contratti: number, valore: number }>} */
   const indice = {};
   for (const [codice, list] of perCodice) {
-    list.sort((a, b) => b.importo - a.importo);
+    list.sort((/** @type {any} */ a, /** @type {any} */ b) => b.importo - a.importo);
     await writeJson(join(OUT_DIR, `${codice}.json`), list);
-    indice[codice] = { contratti: list.length, valore: list.reduce((s, r) => s + r.importo, 0) };
+    indice[codice] = { contratti: list.length, valore: list.reduce((/** @type {number} */ s, /** @type {any} */ r) => s + r.importo, 0) };
     totRighe += list.length;
   }
   await writeJson(join(DATA_DIR, 'contratti-indice.json'), { generatoIl: new Date().toISOString(), anni, totali: totRighe, perBolnica: perCodice.size, indice });
   console.log(`Готово: ${totRighe} договора за ${perCodice.size} болници → ${OUT_DIR}/`);
 }
 
+/** @param {string} zipPath @param {(cols: string[]) => void} onRow @returns {Promise<void>} */
 function streamZip(zipPath, onRow) {
   return new Promise((resolve, reject) => {
     const child = spawn('unzip', ['-p', zipPath]);
@@ -158,11 +167,12 @@ function streamZip(zipPath, onRow) {
     const rl = createInterface({ input: child.stdout, crlfDelay: Infinity });
     let first = true;
     let closed = false;
+    /** @type {number|null} */
     let code = null;
     const done = () => {
-      if (closed && code !== null) (code === 0 ? resolve() : reject(new Error(`unzip ${zipPath} код ${code}`)));
+      if (closed && code !== null) (code === 0 ? resolve(undefined) : reject(new Error(`unzip ${zipPath} код ${code}`)));
     };
-    rl.on('line', (line) => {
+    rl.on('line', (/** @type {string} */ line) => {
       if (first) {
         first = false;
         return;

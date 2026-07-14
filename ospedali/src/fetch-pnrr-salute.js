@@ -28,6 +28,7 @@
 //
 // Изход: data/pnrr-salute.json. Суровите CSV се трият след обработка (диск).
 
+// @ts-check
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { rm } from 'node:fs/promises';
@@ -45,7 +46,9 @@ const OUT_FILE = join(DATA_DIR, 'pnrr-salute.json');
 // Провинциалните кодове НЕ са непрекъснати по региони → изрична таблица (по-сигурно
 // от „първите две цифри"). Обхваща 107-те провинции + отменените сардински кодове.
 const PROV_REGIONE = (() => {
+  /** @type {Record<string, string>} */
   const m = {};
+  /** @param {string} reg @param {...string} provs */
   const set = (reg, ...provs) => provs.forEach((p) => (m[p] = reg));
   set('01', '001', '002', '003', '004', '005', '006', '096', '103'); // Piemonte
   set('02', '007'); // Valle d'Aosta
@@ -71,6 +74,7 @@ const PROV_REGIONE = (() => {
 })();
 
 /** ISTAT регион (2 цифри) → нашия ключ ('010'..'200', Трентино='taa'). */
+/** @param {string} n2 @returns {string|null} */
 export function regKeyFromIstat2(n2) {
   const n = parseInt(n2, 10);
   if (!Number.isInteger(n) || n < 1 || n > 20) return null;
@@ -79,6 +83,7 @@ export function regKeyFromIstat2(n2) {
 }
 
 /** Извежда нашия регионален ключ от един ред територия ({ tipologia, istat_id }). */
+/** @param {{ tipologia?: string, istat_id?: string }} t @returns {string|null} */
 export function regKeyDaTerritorio({ tipologia, istat_id }) {
   const t = (tipologia || '').trim().toUpperCase();
   const id = (istat_id || '').trim();
@@ -92,7 +97,9 @@ export function regKeyDaTerritorio({ tipologia, istat_id }) {
 
 /** Регионален ключ за цял проект от неговите територии; null ако е много-регионален
  *  или национален (тогава се брои само национално). */
+/** @param {any[]|undefined} territori @returns {string|null} */
 export function risolviRegione(territori) {
+  /** @type {Set<string>} */
   const keys = new Set();
   for (const terr of territori || []) {
     const k = regKeyDaTerritorio(terr);
@@ -102,6 +109,7 @@ export function risolviRegione(territori) {
 }
 
 /** Под-компонент на мярката: 'M6C1' / 'M6C2' (или 'M6' при липса на C). */
+/** @param {string|undefined} codiceMisura @returns {string} */
 function subMisura(codiceMisura) {
   const m = /^(M6C\d)/.exec(codiceMisura || '');
   return m ? m[1] : 'M6';
@@ -113,8 +121,11 @@ function subMisura(codiceMisura) {
  * е Map<progetto_id, Array<{ tipologia, istat_id }>>.
  * Изход: { nazionale:{ nProgetti, finanziamentoPnrr, perMisura }, perRegione }.
  */
+/** @param {any[]} progetti @param {any} territoriByProgetto */
 export function aggrega(progetti, territoriByProgetto) {
+  /** @type {{ nProgetti: number, finanziamentoPnrr: number, perMisura: Record<string, { n: number, importo: number }> }} */
   const nazionale = { nProgetti: 0, finanziamentoPnrr: 0, perMisura: {} };
+  /** @type {Record<string, { nProgetti: number, finanziamentoPnrr: number }>} */
   const perRegione = {};
   for (const p of progetti) {
     if (!/^M6/.test(p.codice_misura || '')) continue; // само Missione 6 „Salute"
@@ -145,6 +156,7 @@ export function aggrega(progetti, territoriByProgetto) {
  * фиксирани и без запетаи; progetto_id е първото поле. codice_misura се търси
  * като токен след котвата. Връща { progetto_id, codice_misura, finanziamento_pnrr }.
  */
+/** @param {string} line */
 export function parseProgettoLine(line) {
   const parts = line.split(',');
   let r = -1;
@@ -171,11 +183,12 @@ export function parseProgettoLine(line) {
 }
 
 /** Прочита файл ред по ред и вика `onRow(line)` (без заглавния ред). */
+/** @param {string} filePath @param {(line: string) => void} onRow @returns {Promise<void>} */
 function streamLines(filePath, onRow) {
   return new Promise((resolve, reject) => {
     const rl = createInterface({ input: createReadStream(filePath, 'utf8'), crlfDelay: Infinity });
     let first = true;
-    rl.on('line', (line) => {
+    rl.on('line', (/** @type {string} */ line) => {
       if (first) {
         first = false;
         return;
@@ -195,7 +208,9 @@ async function main() {
   console.log(`  progetti_territori.csv ${s2 ? 'свален' : 'от кеша'}`);
 
   // 1) Първи проход: събираме само M6 проектите + техните id-та.
+  /** @type {any[]} */
   const progetti = [];
+  /** @type {Set<string>} */
   const m6Ids = new Set();
   await streamLines(RAW_PROGETTI, (line) => {
     if (line.indexOf('M6C') === -1) return; // евтин предфилтър
@@ -209,6 +224,7 @@ async function main() {
   // 2) Втори проход: територии само за M6 проектите. Устойчиво от ляво:
   //    id_terr_prg, progetto_id(1), cup, codice_locale, territorio_id, istat_id(5)
   //    … denominazione (може със запетаи) … tipologia (последно поле).
+  /** @type {Map<string, any[]>} */
   const territoriByProgetto = new Map();
   await streamLines(RAW_TERRITORI, (line) => {
     const parts = line.split(',');
@@ -239,7 +255,7 @@ async function main() {
   await rm(RAW_TERRITORI, { force: true });
 
   const nReg = Object.keys(perRegione).length;
-  const eur = (v) => (v / 1e9).toLocaleString('it-IT', { maximumFractionDigits: 2 });
+  const eur = (/** @type {number} */ v) => (v / 1e9).toLocaleString('it-IT', { maximumFractionDigits: 2 });
   console.log('---');
   console.log(`Общо M6: ${nazionale.nProgetti} проекта · ${eur(nazionale.finanziamentoPnrr)} mld € PNRR`);
   for (const [k, v] of Object.entries(nazionale.perMisura)) {

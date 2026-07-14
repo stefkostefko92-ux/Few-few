@@ -25,6 +25,7 @@
 //    (проверено: с тях Lazio 2024 = 24,7 mld вместо реалните ~6 mld) — точно както
 //    CE изключва GSA сметките 000/999. UN (università) НЕ са болници.
 
+// @ts-check
 import { join } from 'node:path';
 import { rm } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -41,6 +42,7 @@ const ANNO = 2025;
 // 2-цифрен код на региона от SIOPE (reg<NN> в името на пакета) → нашия ключ на
 // регион (както REGIONI в build-site.js). reg04 = Trentino-Alto Adige
 // (Bolzano+Trento заедно) → „taa".
+/** @type {Record<string, string>} */
 const REG2KEY = {
   '01': '010', '02': '020', '03': '030', '04': 'taa', '05': '050',
   '06': '060', '07': '070', '08': '080', '09': '090', '10': '100',
@@ -52,6 +54,7 @@ const REG2KEY = {
 const HEALTH_TIPI = new Set(['AS', 'AO', 'IR', 'IZ']);
 
 /** Здравна ли е структурата по код на типа (Codice Tipologia Ente BDAP)? */
+/** @param {string|undefined} codiceTipo @returns {boolean} */
 export function eSanitario(codiceTipo) {
   return HEALTH_TIPI.has(String(codiceTipo || '').trim());
 }
@@ -66,6 +69,7 @@ export function eSanitario(codiceTipo) {
  *  - Personale      U1xxx Competenze, ritenute e contributi del personale
  *  - Altro          останалото (utenze, tributi/IVA/IRAP, trasferimenti, investimenti…)
  */
+/** @param {string|undefined} codice @returns {string} */
 export function macroDi(codice) {
   const c = String(codice || '').trim().slice(0, 5);
   if (c === 'U2101' || c === 'U3106') return 'Farmaci';
@@ -96,16 +100,22 @@ function macroZero() {
  * серия (ente × код) и после сумирано. „dicSuMedia" = декемврийски поток / среден
  * месечен поток — индикатор за декемврийско натрупване по каса.
  */
+/** @param {Record<string, Record<string, string>[]>} rowsPerRegione */
 export function aggrega(rowsPerRegione) {
+  /** @type {Record<string, any>} */
   const perRegione = {};
   const nazMesi = new Array(12).fill(0);
+  /** @type {Record<string, number>} */
   const nazMacro = macroZero();
+  /** @type {string[]} */
   const incompleti = []; // региони с отрязана/непълна година (изключени от тотала)
   let spesaNaz = 0;
+  /** @type {number|null} */
   let anno = null;
 
   for (const [key, rows] of Object.entries(rowsPerRegione)) {
     // серия = ente|код → кумулативните 12 стойности (null = неотчетен месец)
+    /** @type {Map<string, { arr: number[], code: string }>} */
     const series = new Map();
     for (const r of rows) {
       const am = String(r['Anno/Mese calendario'] ?? r.annoMese ?? '');
@@ -121,7 +131,7 @@ export function aggrega(rowsPerRegione) {
       const sk = `${ente}${code}`;
       let s = series.get(sk);
       if (!s) {
-        s = { arr: new Array(12).fill(null), code };
+        s = { arr: /** @type {number[]} */ (new Array(12).fill(null)), code };
         series.set(sk, s);
       }
       // при дубликат за същия месец: пазим по-голямата кумулативна стойност
@@ -129,6 +139,7 @@ export function aggrega(rowsPerRegione) {
     }
 
     const mesi = new Array(12).fill(0);
+    /** @type {Record<string, number>} */
     const macro = macroZero();
     let spesa = 0;
     for (const { arr, code } of series.values()) {
@@ -186,7 +197,9 @@ export function aggrega(rowsPerRegione) {
 // ---------- ETL (само при директно стартиране) ----------
 
 /** Quote-aware разделяне на един CSV ред (маха ограждащите кавички, „" → "). */
+/** @param {string} line @param {string} [sep] @returns {string[]} */
 function splitCsvLine(line, sep = ';') {
+  /** @type {string[]} */
   const out = [];
   let cur = '';
   let q = false;
@@ -208,6 +221,7 @@ function splitCsvLine(line, sep = ';') {
 }
 
 /** Индекси на нужните колони по име (никога по позиция — вж. капаните в CLAUDE.md). */
+/** @param {string[]} header */
 function indici(header) {
   return {
     tipo: header.indexOf('Codice Tipologia Ente BDAP'),
@@ -222,12 +236,15 @@ function indici(header) {
  * Поточно чете dump-а (latin1), задържа само редовете на здравните структури и
  * връща минимални обекти за `aggrega`. Стриймва ред по ред → без 110 MB в паметта.
  */
+/** @param {string} filePath @returns {Promise<Record<string, string>[]>} */
 async function leggiRigheSanita(filePath) {
   const rl = createInterface({
     input: createReadStream(filePath, { encoding: 'latin1' }),
     crlfDelay: Infinity,
   });
+  /** @type {{ tipo: number, mese: number, ente: number, cg: number, imp: number }|null} */
   let idx = null;
+  /** @type {Record<string, string>[]} */
   const rows = [];
   for await (const line of rl) {
     if (!line) continue;
@@ -246,7 +263,9 @@ async function leggiRigheSanita(filePath) {
 }
 
 /** Пагинира package_search?q=siope и връща Spesa пакетите за годината (по регион). */
+/** @param {number} anno */
 async function catalogoSpesa(anno) {
+  /** @type {any[]} */
   const packs = [];
   for (let start = 0; ; start += 200) {
     const j = await fetchJson(`${CKAN}/package_search?q=siope&rows=200&start=${start}`, { timeoutMs: 120_000 });
@@ -254,6 +273,7 @@ async function catalogoSpesa(anno) {
     packs.push(...res);
     if (res.length < 200) break;
   }
+  /** @type {Array<{ key: string, title: string, url: string }>} */
   const out = [];
   for (const p of packs) {
     if (!/SIOPE Movimenti cumulati mensili di Spesa$/.test(p.title || '')) continue;
@@ -264,12 +284,13 @@ async function catalogoSpesa(anno) {
     const key = REG2KEY[rm[1].padStart(2, '0')];
     if (!key) continue;
     const dump = (p.resources || []).find(
-      (r) => (r.format || '').toLowerCase() === 'csv' && /\/datastore\/dump\//.test(r.url || '')
+      (/** @type {any} */ r) => (r.format || '').toLowerCase() === 'csv' && /\/datastore\/dump\//.test(r.url || '')
     );
     if (!dump) continue;
     out.push({ key, title: p.title, url: dump.url.replace(/^http:/, 'https:') });
   }
   // при повторни ключове (регионът се среща веднъж) пазим първия
+  /** @type {Set<string>} */
   const seen = new Set();
   return out.filter((p) => (seen.has(p.key) ? false : seen.add(p.key)));
 }
@@ -279,7 +300,9 @@ async function main() {
   const pkgs = await catalogoSpesa(ANNO);
   console.log(`  ${pkgs.length}/20 региона в каталога за ${ANNO}`);
 
+  /** @type {Record<string, Record<string, string>[]>} */
   const rowsPerRegione = {};
+  /** @type {string[]} */
   const mancanti = [];
   for (const p of pkgs) {
     const file = join(RAW_DIR, 'siope', `${p.key}-${ANNO}.csv`);
@@ -290,7 +313,7 @@ async function main() {
       rowsPerRegione[p.key] = rows;
       console.log(`  ✓ ${p.key} (${p.title.slice(0, 40)}…): ${rows.length} здравни реда ${fresh ? '' : '(кеш)'}`);
     } catch (err) {
-      console.warn(`  ✗ ${p.key} (${p.title}): ${err.message}`);
+      console.warn(`  ✗ ${p.key} (${p.title}): ${err instanceof Error ? err.message : String(err)}`);
       mancanti.push(p.key);
       await rm(file, { force: true }).catch(() => {});
     }
@@ -300,10 +323,9 @@ async function main() {
     if (!(key in rowsPerRegione) && !mancanti.includes(key)) mancanti.push(key);
   }
 
-  const agg = aggrega(rowsPerRegione);
+  const { incompleti: _incompleti, ...agg } = aggrega(rowsPerRegione);
   // региони с непълна година (отрязано сваляне) се третират като липсващи
-  const tuttiMancanti = [...new Set([...mancanti, ...(agg.incompleti || [])])];
-  delete agg.incompleti;
+  const tuttiMancanti = [...new Set([...mancanti, ...(_incompleti || [])])];
 
   await writeJson(join(DATA_DIR, 'siope.json'), {
     generatoIl: new Date().toISOString(),

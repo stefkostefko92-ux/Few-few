@@ -15,6 +15,7 @@
 //
 // Изход: data/consulenze.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, rm } from 'node:fs/promises';
 import { parseCsv, parseItalianNumber } from './lib/csv.js';
@@ -32,11 +33,13 @@ const URL_BASE =
 // fetch-appalti.js и storico.js). Замразени launch данни — не пипай регексите.
 
 /** Нормализирано име на структурата: trim + сгъване на интервалите + UPPERCASE. */
+/** @param {string|null|undefined} nome @returns {string} */
 function normalizza(nome) {
   return String(nome || '').trim().replace(/\s+/g, ' ').toUpperCase();
 }
 
 /** Число от полетата за пари: махаме „€“ и интервали, после италиански парсер. */
+/** @param {string|number|null|undefined} value @returns {number|null} */
 function parseEuro(value) {
   return parseItalianNumber(String(value ?? '').replace(/[€\s]/g, ''));
 }
@@ -52,10 +55,14 @@ function parseEuro(value) {
  * „importo“ = сума на „Ammontare Erogato“; ако е 0/празно → пада на „Compenso Lordo“.
  * НИКОГА не чете „Soggetto Percettore“ → изходът НЕ съдържа имена на лица.
  */
+/** @param {Array<{ anno: number, rows: Record<string, string>[] }>} rowsPerAnno */
 export function aggrega(rowsPerAnno) {
+  /** @type {Record<string, { nIncarichi: number, importo: number, nEnti: number }>} */
   const perAnno = {};
+  /** @type {Record<string, { nIncarichi: number, importo: number, anni: number[] }>} */
   const perEnte = {};
   for (const { anno, rows } of rowsPerAnno) {
+    /** @type {Set<string>} */
     const entiAnno = new Set();
     let nIncarichi = 0;
     let importo = 0;
@@ -81,6 +88,7 @@ export function aggrega(rowsPerAnno) {
 }
 
 async function main() {
+  /** @type {Array<{ anno: number, rows: Record<string, string>[] }>} */
   const rowsPerAnno = [];
   for (const anno of ANNI) {
     const file = join(RAW_DIR, `perlapa-${anno}.csv`);
@@ -90,14 +98,14 @@ async function main() {
       const fresh = await curlDownloadToFile(url, file, { timeoutSec: 360 });
       console.log(`${anno}: ${fresh ? 'изтеглено' : 'от кеша'}`);
     } catch (err) {
-      console.warn(`  пропускам ${anno} (сваляне): ${err.message}`);
+      console.warn(`  пропускам ${anno} (сваляне): ${err instanceof Error ? err.message : String(err)}`);
       continue;
     }
     let rows;
     try {
       rows = parseCsv(await readFile(file, 'utf8'), { separator: ';' });
     } catch (err) {
-      console.warn(`  пропускам ${anno} (парсване): ${err.message}`);
+      console.warn(`  пропускам ${anno} (парсване): ${err instanceof Error ? err.message : String(err)}`);
       continue;
     }
     // GDPR: махаме имената на физическите лица веднага след парсване.

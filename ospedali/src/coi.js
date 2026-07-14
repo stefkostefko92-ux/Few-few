@@ -16,6 +16,7 @@
 //
 // Изход: data/coi.json. Формулировките са „indicatore, non prova".
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
 import { readJson, writeJson } from './lib/http.js';
@@ -49,6 +50,11 @@ export const RE_CONVENZIONE = /ADESION\w*[\s\S]{0,40}CONVENZION|CONVENZION\w*\s+
 // дружества (allowlist), никога субекти с лични имена по конструкция.
 const RE_FORMA_PERSONALE = /\bS\.?\s?N\.?\s?C\b|\bS\.?\s?A\.?\s?S\b|DITTA\s+INDIVIDUALE|AZIENDA\s+AGRICOLA|IMPRESA\s+INDIVIDUALE/i;
 const RE_FORMA_CAPITALE = /\bS\.?\s?P\.?\s?A\b|\bS\.?\s?R\.?\s?L\b|S\.?C\.?\s?A\s?R\.?\s?L|SOCIET[AÀ']{1,2}\s+(PER\s+AZIONI|A\s+RESPONSABILIT|COOPERATIVA|CONSORTILE|BENEFIT)|COOPERATIVA|CONSORZIO|\bCOOP\b|FONDAZIONE|\bGMBH\b|\bLTD\b|\bLIMITED\b|\bINC\b|\bCORP\b|\bB\.?V\b|\bN\.?V\b|\bA\.?G\b/i;
+/**
+ * Капиталово/кооперативно дружество ли е (allowlist, без лични имена).
+ * @param {string|null|undefined} nome
+ * @returns {boolean}
+ */
 export function eSocietaDiCapitali(nome) {
   const n = nome || '';
   if (!n.trim()) return false;
@@ -59,11 +65,37 @@ export function eSocietaDiCapitali(nome) {
 }
 
 /**
+ * @typedef {object} ContrattoCoi договор за анализа на двойките
+ * @property {string} codice
+ * @property {string} [fornitoreCf]
+ * @property {string} [fornitore]
+ * @property {number} importo
+ * @property {string} [categoria]
+ * @property {string} [oggetto]
+ */
+/**
+ * @typedef {object} CoppiaAgg агрегат за двойка болница↔доставчик
+ * @property {string} codice
+ * @property {string} cf
+ * @property {string} [fornitore]
+ * @property {number} n
+ * @property {number} valore
+ * @property {number} senzaGaraN
+ * @property {number} diretti
+ * @property {number} valoreDiretti
+ */
+
+/**
  * Чист, тестваем анализ: списък договори (с полета codice, fornitoreCf,
  * fornitore, importo, categoria, oggetto) → двойки с флагове.
+ * @param {ContrattoCoi[]} contratti
+ * @param {typeof SOGLIE_COI} [soglie]
+ * @returns {Array<CoppiaAgg & { quotaFornitore: number, quotaSenzaGaraN: number, totFornitore: number, flags: string[], gravita: string }>}
  */
 export function analizzaCoppie(contratti, soglie = SOGLIE_COI) {
+  /** @type {Map<string, CoppiaAgg>} */
   const coppie = new Map(); // codice|cf → агрегат
+  /** @type {Map<string, number>} */
   const perForn = new Map(); // cf → общ приход на доставчика (за dipendenza)
   for (const c of contratti) {
     if (!c.fornitoreCf) continue; // изключва личните CF (16 знака) по конструкция
@@ -86,11 +118,13 @@ export function analizzaCoppie(contratti, soglie = SOGLIE_COI) {
     }
     perForn.set(c.fornitoreCf, (perForn.get(c.fornitoreCf) || 0) + c.importo);
   }
+  /** @type {Array<CoppiaAgg & { quotaFornitore: number, quotaSenzaGaraN: number, totFornitore: number, flags: string[], gravita: string }>} */
   const out = [];
   for (const g of coppie.values()) {
     const totForn = perForn.get(g.cf) || g.valore;
     const quotaFornitore = totForn > 0 ? g.valore / totForn : 0;
     const quotaSenzaGaraN = g.n > 0 ? g.senzaGaraN / g.n : 0;
+    /** @type {string[]} */
     const flags = [];
     if (g.diretti >= soglie.rotazioneDiretti && g.valoreDiretti >= soglie.rotazioneValore) flags.push('rotazione');
     if (totForn >= soglie.dipendenzaValoreForn && quotaFornitore >= soglie.dipendenzaQuota && quotaSenzaGaraN >= soglie.dipendenzaSenzaGara) flags.push('dipendenza');

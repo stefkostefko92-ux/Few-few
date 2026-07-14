@@ -5,9 +5,14 @@
 // доказателство за картел. Има законни обяснения (специализация, клинично
 // предпочитание към марка, тесен пазар). Само юридически лица (P.IVA).
 
+// @ts-check
 import { page, kpi } from './lib/site-ui.js';
 import { euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
 
+/**
+ * @param {{ cordate: { cordate?: any[], totaleCordate?: number, vincitori?: any[], fonte?: string, soglie: { insieme: number, minVittorie: number, maxPartecipanti: number } }, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderCordate({ cordate, jsonld }) {
   const c = cordate.cordate || [];
   const tot = cordate.totaleCordate || c.length;

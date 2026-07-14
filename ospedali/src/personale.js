@@ -10,6 +10,7 @@
 // Ente), flessibile-storico.csv (комparto-ниво, по години).
 // Изход: data/personale.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { parseCsv } from './lib/csv.js';
@@ -23,13 +24,28 @@ const OCC_ANNO = 2023;
 const OCC_URL = 'https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/21f79855-dbca-4a52-9833-d55986543724.csv';
 const FLESS_URL = 'https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/a647f1cb-4857-41ab-a923-f5971d4f3ea3.csv';
 
+/** @param {string|number|undefined} v @returns {number} */
 const num = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 };
 
-/** Агрегира редовете на occupazione (само SANITA') per Codice Ente BDAP. */
+/**
+ * @typedef {object} OccEnte агрегат за ведомство
+ * @property {string} bdap
+ * @property {string} denominazione
+ * @property {number} totale
+ * @property {number} medici
+ * @property {number} flessibili
+ */
+
+/**
+ * Агрегира редовете на occupazione (само SANITA') per Codice Ente BDAP.
+ * @param {Record<string, string>[]} rows
+ * @returns {Map<string, OccEnte>}
+ */
 export function aggregaOccupazione(rows) {
+  /** @type {Map<string, OccEnte>} */
   const perBdap = new Map();
   for (const r of rows) {
     if (!/SANITA/i.test(r['Descrizione Comparto'] || '')) continue;
@@ -68,6 +84,7 @@ async function main() {
 
   // 1) карта Codice Ente BDAP → наш 6-цифрен код (от суровия CE)
   const ce = parseCsv(await readFile(join(RAW_DIR, 'bdap', `ce-${anno}.csv`), 'utf8'), { separator: ';' });
+  /** @type {Map<string, string>} */
   const bdap2cod = new Map();
   for (const r of ce) {
     const bdap = r['Codice Ente BDAP'] || '';
@@ -78,6 +95,7 @@ async function main() {
   // 2) occupazione per ente
   const occ = parseCsv(await readFile(occFile, 'utf8'), { separator: ';' });
   const perBdap = aggregaOccupazione(occ);
+  /** @type {Record<string, { totale: number, medici: number, flessibili: number, quotaFlessibili: number }>} */
   const perEnte = {};
   let nazionale = { totale: 0, medici: 0, flessibili: 0, enti: 0 };
   for (const g of perBdap.values()) {

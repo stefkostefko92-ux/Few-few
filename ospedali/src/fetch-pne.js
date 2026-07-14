@@ -20,6 +20,7 @@
 //
 // Изход: data/pne.json — производни агрегати, провенанс и покритие.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, stat } from 'node:fs/promises';
 import { writeJson } from './lib/http.js';
@@ -37,6 +38,7 @@ const UA =
 // 2-цифрен ISTAT код (водещите 2 цифри на 8-цифрения „codice" на структурата,
 // който е SDO кодът) → нашия ключ на регион (както в build-site REGIONI и SDO).
 // Внимание: 04 = Trentino-Alto Adige (Bolzano + Trento заедно) → „taa".
+/** @type {Record<string, string>} */
 const ISTAT2KEY = {
   '01': '010', '02': '020', '03': '030', '04': 'taa', '05': '050',
   '06': '060', '07': '070', '08': '080', '09': '090', '10': '100',
@@ -94,9 +96,10 @@ const SELEZIONE = [
   },
 ];
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sleep = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Число от клетка на API-то (толерира италианска запетая и низ). */
+/** @param {unknown} v @returns {number|null} */
 export function toNum(v) {
   if (v == null || v === '') return null;
   if (typeof v === 'number') return Number.isFinite(v) ? v : null;
@@ -109,6 +112,7 @@ export function toNum(v) {
  * (HTML вместо JSON, което Azure връща при паднал backend). Хвърля при провал
  * след `tentativi` опита.
  */
+/** @param {string} url @param {{ tentativi?: number }} [opts] */
 async function fetchPneJson(url, { tentativi = 5 } = {}) {
   let ultimo;
   for (let i = 0; i < tentativi; i++) {
@@ -130,7 +134,7 @@ async function fetchPneJson(url, { tentativi = 5 } = {}) {
       ultimo = err;
       if (i === tentativi - 1) break;
       const wait = 3000 * 2 ** i; // 3s, 6s, 12s, 24s
-      console.warn(`  опит ${i + 1}/${tentativi} неуспешен (${err.message}); чакам ${wait}ms`);
+      console.warn(`  опит ${i + 1}/${tentativi} неуспешен (${err instanceof Error ? err.message : String(err)}); чакам ${wait}ms`);
       await sleep(wait);
     }
   }
@@ -138,6 +142,7 @@ async function fetchPneJson(url, { tentativi = 5 } = {}) {
 }
 
 /** Съдържанието на страничен или unpaged отговор като масив. */
+/** @param {any} j @returns {any[]} */
 function comeArray(j) {
   if (Array.isArray(j)) return j;
   if (j && Array.isArray(j.content)) return j.content;
@@ -145,6 +150,7 @@ function comeArray(j) {
 }
 
 /** Малък речник с кеш на диска (идемпотентно). */
+/** @param {string} nome @param {string} url */
 async function getDizionario(nome, url) {
   const file = join(RAW_PNE, `${nome}.json`);
   try {
@@ -159,6 +165,7 @@ async function getDizionario(nome, url) {
 }
 
 /** Една страница /valori с кеш на диска. Връща { data, cached }. */
+/** @param {number} pagina */
 async function getPaginaValori(pagina) {
   const file = join(RAW_PNE, `page-${pagina}.json`);
   try {
@@ -185,10 +192,13 @@ async function getPaginaValori(pagina) {
  * (при липсващо n — проста средна). Пропуска редове без регион или без стойност.
  * Връща per регион { valore, nStrutture, volume } + национална средна и мета.
  */
+/** @param {any[]} valori @param {any} strutturaRegione @param {any} indicatoreScelto */
 export function aggregaRegione(valori, strutturaRegione, indicatoreScelto) {
+  /** @param {any} id */
   const reg = (id) =>
     typeof strutturaRegione?.get === 'function' ? strutturaRegione.get(id) : strutturaRegione?.[id];
 
+  /** @type {Record<string, any>} */
   const acc = {}; // key → { num, den, nStrutture, volume }
   let nNum = 0;
   let nDen = 0;
@@ -218,6 +228,7 @@ export function aggregaRegione(valori, strutturaRegione, indicatoreScelto) {
     nVol += n != null && n > 0 ? n : 0;
   }
 
+  /** @type {Record<string, any>} */
   const perRegione = {};
   for (const [key, g] of Object.entries(acc)) {
     perRegione[key] = {
@@ -239,10 +250,12 @@ export function aggregaRegione(valori, strutturaRegione, indicatoreScelto) {
 }
 
 /** Съпоставя SELEZIONE спрямо речника с индикатори; връща избраните (мета + id). */
+/** @param {any[]} indicatori */
 export function scegliIndicatori(indicatori) {
+  /** @type {any[]} */
   const scelti = [];
   for (const sel of SELEZIONE) {
-    const cand = indicatori.find((ind) => {
+    const cand = indicatori.find((/** @type {any} */ ind) => {
       const cod = String(ind.codice ?? '').trim();
       const descr = String(ind.descr ?? '');
       if (sel.codiceHint.includes(cod) && sel.re.test(descr)) return true;
@@ -276,6 +289,7 @@ async function main() {
   console.log(`  индикатори: ${indicatori.length}, структури: ${strutture.length}`);
 
   // струкtura.id (UUID) → ключ на регион (през 8-цифрения codice → ISTAT2)
+  /** @type {Map<any, string>} */
   const strutturaRegione = new Map();
   let mappate = 0;
   for (const s of strutture) {
@@ -297,10 +311,13 @@ async function main() {
   // ---- Бавна пагинация на /valori, филтрирана до подбраните индикатори ----
   // Пазим САМО редовете на подбраните индикатори (шепа хиляди) → нищожна памет
   // и никаква препубликация на суровата таблица.
+  /** @type {any[]} */
   const valoriScelti = [];
   let pagineLette = 0;
   let pagineFallite = 0;
+  /** @type {number|null} */
   let totalElements = null;
+  /** @type {number|null} */
   let totalPages = null;
 
   // Първа страница: учи totalPages/totalElements.
@@ -312,7 +329,7 @@ async function main() {
     pagineLette++;
     if (!cached) await sleep(1800);
   } catch (err) {
-    console.error(`  ⚠️ страница 0 не се зареди (${err.message}) — не мога да науча обема; спирам пагинацията`);
+    console.error(`  ⚠️ страница 0 не се зареди (${err instanceof Error ? err.message : String(err)}) — не мога да науча обема; спирам пагинацията`);
     pagineFallite++;
   }
 
@@ -327,7 +344,7 @@ async function main() {
         if (!cached) await sleep(1800);
       } catch (err) {
         // упорит 5xx → пропускаме страницата (graceful degradation)
-        console.warn(`    ⚠️ пропускам страница ${p}: ${err.message}`);
+        console.warn(`    ⚠️ пропускам страница ${p}: ${err instanceof Error ? err.message : String(err)}`);
         pagineFallite++;
         await sleep(1800);
       }
@@ -335,8 +352,11 @@ async function main() {
   }
 
   // ---- Агрегация per индикатор ----
+  /** @type {Record<string, any>} */
   const perRegione = {};
+  /** @type {Record<string, any>} */
   const nazionale = {};
+  /** @type {any[]} */
   const indicatoriOut = [];
   for (const ind of scelti) {
     const agg = aggregaRegione(valoriScelti, strutturaRegione, ind);

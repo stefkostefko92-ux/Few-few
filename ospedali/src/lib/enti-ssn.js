@@ -1,3 +1,4 @@
+// @ts-check
 // Единствен източник за филтъра „здравни възложители“ (SSN) — денонимационни
 // regex-и, споделени от fetch-appalti.js, storico.js и fetch-perlapa.js.
 //
@@ -18,6 +19,8 @@ export const NOT_HEALTH = /ACQUE|SPORT E SALUTE|ISTITUTO SUPERIORE DI SANIT|\bMI
  * Здравна структура ли е даден възложител? Общата логика на трите пайплайна:
  * име → UPPERCASE → HEALTH матчва И NOT_HEALTH не матчва.
  * Regex-ите нямат флаг `g` → `.test()` е без състояние, безопасно е да се споделят.
+ * @param {string|null|undefined} nome
+ * @returns {boolean}
  */
 export function eEnteSanitario(nome) {
   const u = String(nome || '').toUpperCase();

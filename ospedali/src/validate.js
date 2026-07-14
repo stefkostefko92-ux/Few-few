@@ -8,6 +8,7 @@
 //
 // Изход: data/validazione.json (+ отчет на конзолата).
 
+// @ts-check
 import { join } from 'node:path';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -18,9 +19,16 @@ import { matchAutoritaEnti } from './lib/match.js';
 import { readJson, writeJson } from './lib/http.js';
 import { RAW_DIR, DATA_DIR, ANAGRAFICA_FILE } from './lib/paths.js';
 
+/** @typedef {import('./lib/dataset.js').SerieAnno} SerieAnno */
+
+/** @param {number} v @returns {number} */
 const TOLL = (v) => Math.max(1000, Math.abs(v) * 0.001); // толеранс: 1000€ или 0.1%
 
-/** Проверка на тъждествата на CE модела за една година. */
+/**
+ * Проверка на тъждествата на CE модела за една година.
+ * @param {SerieAnno} y
+ * @returns {boolean|null}
+ */
 function ceIdentita(y) {
   if (y.valoreProduzione == null || y.costiProduzione == null) return null;
   const checks = [];
@@ -36,6 +44,10 @@ function ceIdentita(y) {
   return checks.every(Boolean);
 }
 
+/**
+ * @param {string} path
+ * @returns {Promise<{ bytes: number, sha256: string, righe: number }>}
+ */
 async function fileProvenance(path) {
   const st = await stat(path);
   const hash = createHash('sha256');
@@ -58,6 +70,7 @@ async function main() {
   // 1) Счетоводна консистентност на CE
   let ceTot = 0;
   let cePass = 0;
+  /** @type {Array<{ codice: string, anno: number }>} */
   const ceFail = [];
   for (const e of enti) {
     for (const [anno, y] of e.serie) {
@@ -90,7 +103,7 @@ async function main() {
   if (appalti) {
     const { byCodice } = matchAutoritaEnti(
       enti.map((e) => ({ codice: e.codice, denominazione: e.denominazione, regione: e.regione })),
-      appalti.autorita.map((a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
+      appalti.autorita.map((/** @type {{ cf: string, den: string, reg: string }} */ a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
     );
     matchCov = byCodice;
   }
@@ -100,6 +113,7 @@ async function main() {
     conSP: enti.filter((e) => [...e.serie.values()].some((y) => y.patrimonioNetto != null)).length,
     conAnagrafe: enti.filter((e) => aziendeByCod.has(e.codice) || struttureByCod.has(e.codice)).length,
     conAppaltiANAC: matchCov ? matchCov.size : 0,
+    /** @type {number|null} */
     conAggiudicatari: null,
   };
   // conAggiudicatari: колко свързани болници имат и данни за изпълнители
@@ -110,6 +124,7 @@ async function main() {
   }
 
   // 4) Провенанс на входните файлове
+  /** @type {Array<{ file: string, bytes: number, sha256: string, righe: number|null }>} */
   const provenance = [];
   const bdapDir = join(RAW_DIR, 'bdap');
   for (const f of (await readdir(bdapDir).catch(() => [])).filter((f) => f.endsWith('.csv')).sort()) {

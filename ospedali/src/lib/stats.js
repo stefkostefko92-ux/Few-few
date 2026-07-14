@@ -1,3 +1,4 @@
+// @ts-check
 // Споделени статистически помощници за анализните двигатели.
 //
 // Тук живее ЕДИНСТВЕНАТА реализация на median/percentile/robustZ, за да не се
@@ -5,7 +6,11 @@
 // изнасянето (byte-for-byte резултат) — това е чист DRY рефактор, без промяна на
 // нито едно число.
 
-/** Медиана на масив от числа (празен → null). */
+/**
+ * Медиана на масив от числа (празен → null).
+ * @param {number[]} arr
+ * @returns {number|null}
+ */
 export function median(arr) {
   if (arr.length === 0) return null;
   const s = [...arr].sort((a, b) => a - b);
@@ -23,7 +28,12 @@ export function median(arr) {
 // искаме. Затова НЕ е bug: това е документиран и тестван консервативен избор.
 // (Ако някога потрябва класически персентил за друга цел — добави отделна функция,
 // не пипай тази.)
-/** Консервативен персентил (nearest-rank, горен вариант) — виж бележката горе. */
+/**
+ * Консервативен персентил (nearest-rank, горен вариант) — виж бележката горе.
+ * @param {number[]} arr
+ * @param {number} p процент (0–100)
+ * @returns {number|null}
+ */
 export function percentile(arr, p) {
   if (arr.length === 0) return null;
   const s = [...arr].sort((a, b) => a - b);
@@ -31,7 +41,13 @@ export function percentile(arr, p) {
   return s[i];
 }
 
-/** Robust z-score чрез медиана и MAD (устойчив на екстремни стойности). */
+/**
+ * Robust z-score чрез медиана и MAD (устойчив на екстремни стойности).
+ * @param {number|null|undefined} v
+ * @param {number|null|undefined} med
+ * @param {number|null|undefined} mad
+ * @returns {number|null}
+ */
 export function robustZ(v, med, mad) {
   if (v == null || med == null || !mad) return null;
   return (v - med) / (1.4826 * mad);

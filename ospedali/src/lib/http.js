@@ -1,3 +1,4 @@
+// @ts-check
 // HTTP помощници: изтегляне с повторни опити, експоненциално изчакване и кеш на диска.
 // Всички източници са официални open data портали — не изискват ключове.
 
@@ -7,6 +8,15 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * Съобщението на грешка — без промяна на изхода за същинските `Error`.
+ * @param {unknown} err
+ * @returns {string}
+ */
+function errMsg(err) {
+  return err instanceof Error ? err.message : String(err);
+}
 
 // ZIP magic bytes: локален файлов хедър (PK\x03\x04), празен архив / край на
 // централната директория (PK\x05\x06), разделен архив (PK\x07\x08).
@@ -20,6 +30,8 @@ const ZIP_MAGICS = [
  * Чете само първите 4 байта на файл и проверява дали са валиден ZIP подпис.
  * Защита срещу отровен кеш: прекъснато/повредено сваляне отпреди, HTML грешка
  * от WAF, или изтрит наполовина файл — да не трови следващите пускания.
+ * @param {string} filePath
+ * @returns {Promise<boolean>}
  */
 export async function eZipValido(filePath) {
   let fh;
@@ -39,7 +51,12 @@ export async function eZipValido(filePath) {
 const USER_AGENT =
   'ospedali-trasparenti/0.1 (open data ETL; https://carbonstealth.eu)';
 
-/** Изтегля URL с до `retries` повторни опита при мрежова грешка или 5xx. */
+/**
+ * Изтегля URL с до `retries` повторни опита при мрежова грешка или 5xx.
+ * @param {string} url
+ * @param {{ retries?: number, timeoutMs?: number, headers?: Record<string, string> }} [opts]
+ * @returns {Promise<Response>}
+ */
 export async function fetchWithRetry(url, { retries = 4, timeoutMs = 120_000, headers = {} } = {}) {
   let lastErr;
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -55,7 +72,7 @@ export async function fetchWithRetry(url, { retries = 4, timeoutMs = 120_000, he
       lastErr = err;
       if (attempt === retries) break;
       const waitMs = 2000 * 2 ** attempt;
-      console.warn(`  повторен опит ${attempt + 1}/${retries} след ${waitMs}ms: ${err.message}`);
+      console.warn(`  повторен опит ${attempt + 1}/${retries} след ${waitMs}ms: ${errMsg(err)}`);
       await new Promise((r) => setTimeout(r, waitMs));
     }
   }
@@ -66,6 +83,10 @@ export async function fetchWithRetry(url, { retries = 4, timeoutMs = 120_000, he
  * Изтегля URL във файл, ако файлът още не съществува (идемпотентно кеширане).
  * Пише първо във временен файл, за да не остават половинчати сваляния.
  * Връща true, ако е свалено сега; false, ако е взето от кеша.
+ * @param {string} url
+ * @param {string} filePath
+ * @param {{ retries?: number, timeoutMs?: number, headers?: Record<string, string> }} [opts]
+ * @returns {Promise<boolean>}
  */
 export async function downloadToFile(url, filePath, opts = {}) {
   try {
@@ -89,6 +110,9 @@ export async function downloadToFile(url, filePath, opts = {}) {
  * GET през системния curl. WAF-ът на dati.salute.gov.it отхвърля Node fetch
  * по TLS фингърпринт (503), но пропуска curl — затова за този портал
  * минаваме през него. Връща tекста на отговора.
+ * @param {string} url
+ * @param {{ retries?: number, timeoutSec?: number, headers?: Record<string, string> }} [opts]
+ * @returns {Promise<string>}
  */
 export async function curlText(url, { retries = 4, timeoutSec = 90, headers = {} } = {}) {
   const args = ['-sS', '-L', '--fail', '--max-time', String(timeoutSec), '-A', 'Mozilla/5.0 (X11; Linux x86_64)'];
@@ -110,7 +134,13 @@ export async function curlText(url, { retries = 4, timeoutSec = 90, headers = {}
   throw lastErr;
 }
 
-/** Сваля URL във файл през системния curl (идемпотентно, байтово точно чрез -o). */
+/**
+ * Сваля URL във файл през системния curl (идемпотентно, байтово точно чрез -o).
+ * @param {string} url
+ * @param {string} filePath
+ * @param {{ retries?: number, timeoutSec?: number, headers?: Record<string, string>, expectZip?: boolean }} [opts]
+ * @returns {Promise<boolean>}
+ */
 export async function curlDownloadToFile(url, filePath, { retries = 4, timeoutSec = 180, headers = {}, expectZip = false } = {}) {
   try {
     const st = await stat(filePath);
@@ -152,26 +182,48 @@ export async function curlDownloadToFile(url, filePath, { retries = 4, timeoutSe
   throw lastErr;
 }
 
-/** GET, който връща JSON (с повторни опити). */
+/**
+ * GET, който връща JSON (с повторни опити).
+ * @param {string} url
+ * @param {{ retries?: number, timeoutMs?: number, headers?: Record<string, string> }} [opts]
+ * @returns {Promise<any>}
+ */
 export async function fetchJson(url, opts = {}) {
   const res = await fetchWithRetry(url, opts);
   if (!res.ok) throw new Error(`HTTP ${res.status} за ${url}`);
   return res.json();
 }
 
-/** Чете JSON файл от диска. */
+/**
+ * Чете JSON файл от диска.
+ * @param {string} filePath
+ * @returns {Promise<any>}
+ */
 export async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
-/** Записва JSON файл (с директориите по пътя). */
+/**
+ * Записва JSON файл (с директориите по пътя).
+ * @param {string} filePath
+ * @param {unknown} data
+ * @returns {Promise<void>}
+ */
 export async function writeJson(filePath, data) {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, JSON.stringify(data, null, 2) + '\n');
 }
 
-/** Изпълнява задачи с ограничен паралелизъм. */
+/**
+ * Изпълнява задачи с ограничен паралелизъм.
+ * @template T, R
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T, index: number) => Promise<R>} fn
+ * @returns {Promise<R[]>}
+ */
 export async function mapLimit(items, limit, fn) {
+  /** @type {R[]} */
   const results = new Array(items.length);
   let next = 0;
   async function worker() {

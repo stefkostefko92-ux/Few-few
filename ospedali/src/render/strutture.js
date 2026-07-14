@@ -1,3 +1,4 @@
+// @ts-check
 // Страница „Tutte le strutture" (списък с филтър/търсене) + детайлната страница
 // на всяка структура (SVG графики + финанси + сигнали + приложения).
 // Изнесени дословно от build-site.js — само местене.
@@ -8,7 +9,29 @@ import { tipoEnte, postiLettoEnte, ricoveriEnte, CE_INDICATORS, SP_INDICATORS, C
 import { ultimoCe, briciole, FOR_LABEL, isDetailLine, isTopLevelSp } from '../lib/site-shared.js';
 import { appaltiBlock, contrattiBlock } from './appalti.js';
 
+/** @typedef {import('../lib/dataset.js').Ente} Ente */
+/** @typedef {import('../lib/dataset.js').Anagrafica} Anagrafica */
+/** @typedef {import('../lib/dataset.js').StrutturaAnag} StrutturaAnag */
+/** @typedef {import('../lib/dataset.js').SerieAnno} SerieAnno */
+/** @typedef {import('../lib/models.js').SegnEnte} SegnEnte */
+/** @typedef {import('../lib/models.js').ForenseEnte} ForenseEnte */
+/** @typedef {import('../lib/models.js').Autorita} Autorita */
+/** @typedef {import('../lib/models.js').AppMatch} AppMatch */
+/** @typedef {import('../lib/models.js').RegCtx} RegCtx */
+/** @typedef {import('./appalti.js').Contratto} Contratto */
+
+/** @typedef {(ente: Ente) => { anno: number|null, y: SerieAnno }} UltimoCe */
+
 // ---------- STRUTTURE (con filtro) ----------
+/**
+ * @param {object} p
+ * @param {Ente[]} p.enti
+ * @param {number} p.ultimoAnnoCe
+ * @param {(cod: string) => string} p.href
+ * @param {Map<string, SegnEnte>} p.segnByCod
+ * @param {UltimoCe} p.ultimoCe
+ * @returns {string}
+ */
 export function renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }) {
   const regioni = [...new Set(enti.map((e) => e.regione))].sort();
   const rows = enti
@@ -83,10 +106,26 @@ Cerca per nome, filtra per regione o per gravità delle segnalazioni. Valori del
 }
 
 // ---------- DETTAGLIO STRUTTURA ----------
+/**
+ * @param {object} p
+ * @param {Ente} p.ente
+ * @param {Map<string, StrutturaAnag>} p.struttureByCod
+ * @param {Anagrafica} p.anagrafica
+ * @param {SegnEnte} [p.seg]
+ * @param {ForenseEnte} [p.forse]
+ * @param {Autorita} [p.app]
+ * @param {Contratto[]|null} p.contratti
+ * @param {AppMatch|null} p.appMatch
+ * @param {number} p.ultimoAnnoCe
+ * @param {{ cplMed?: number|null, cprMed?: number|null }} [p.bench]
+ * @param {RegCtx|null} [p.reg]
+ * @returns {string}
+ */
 export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe, bench = {}, reg = null }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
-  const val = (k) => anni.map((a) => [a, ente.serie.get(a)[k]]).filter(([, v]) => v != null);
+  /** @param {string} k @returns {number[][]} */
+  const val = (k) => /** @type {number[][]} */ (anni.map((a) => [a, ente.serie.get(a)?.[k]]).filter(([, v]) => v != null));
   const { anno: annoUlt, y: yUlt } = ultimoCe(ente);
 
   const chartCR = lineChart(
@@ -111,9 +150,15 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
   const lettiB = postiLettoEnte(ente, anagrafica);
   const ricB = ricoveriEnte(ente, anagrafica);
   let benchBlk = '';
-  if (yUlt.costiProduzione && (lettiB > 0 || ricB > 0) && (bench.cplMed || bench.cprMed)) {
-    const cpl = lettiB > 0 ? yUlt.costiProduzione / lettiB : null;
-    const cpr = ricB > 0 ? yUlt.costiProduzione / ricB : null;
+  if (yUlt.costiProduzione && (lettiB != null || ricB != null) && (bench.cplMed || bench.cprMed)) {
+    const cpl = lettiB != null ? yUlt.costiProduzione / lettiB : null;
+    const cpr = ricB != null ? yUlt.costiProduzione / ricB : null;
+    /**
+     * @param {number|null} v
+     * @param {number|null|undefined} med
+     * @param {string} lab
+     * @returns {string}
+     */
     const cella = (v, med, lab) =>
       v && med
         ? kpi(lab, `${euroCompact(v)} <span class="small muted">(mediana ${euroCompact(med)})</span>`, v > med * 1.5 ? 'neg' : '')
@@ -130,7 +175,14 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
   // не съвпадат, затова тук е регионалният контекст, не собствената дотация).
   let regBlk = '';
   if (reg && reg.href) {
+    /** @param {number|null} x */
     const f1 = (x) => (x == null ? null : x.toLocaleString('it-IT', { maximumFractionDigits: 1 }));
+    /**
+     * @param {string} href
+     * @param {string} lab
+     * @param {string|null} val
+     * @returns {string}
+     */
     const cardReg = (href, lab, val) =>
       val == null ? '' : `<a class="seg media" href="${href}" style="text-decoration:none"><div class="t">${lab}</div><div class="d"><strong>${val}</strong></div></a>`;
     const celle = [
@@ -175,7 +227,7 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
         const y = ente.serie.get(a);
         return `<tr><td>${a}</td>${indicators
           .map((i) => {
-            const v = y[i.key];
+            const v = y?.[i.key];
             const cls = i.key === 'risultatoEsercizio' && v != null ? (v < 0 ? 'neg' : 'pos') : '';
             return `<td class="num ${cls}">${euroIt(v)}</td>`;
           })
@@ -187,13 +239,14 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
   let soldiBlock = '';
   if (forse && forse.cat && Object.keys(forse.cat).length) {
     const flaggedCats = new Set(forse.flags.map((f) => f.categoria));
-    const items = CE_FORENSICS.map((c) => forse.cat[c.key] && ({
-      label: FOR_LABEL[c.key],
-      valore: forse.cat[c.key].valore,
-      quota: forse.cat[c.key].quotaCosti,
-      flag: flaggedCats.has(c.key),
-    }))
-      .filter(Boolean)
+    const items = /** @type {import('../lib/site-ui.js').HbarItem[]} */ (
+      CE_FORENSICS.map((c) => forse.cat[c.key] && ({
+        label: FOR_LABEL[c.key],
+        valore: forse.cat[c.key].valore,
+        quota: forse.cat[c.key].quotaCosti,
+        flag: flaggedCats.has(c.key),
+      })).filter(Boolean)
+    )
       .sort((a, b) => b.quota - a.quota);
     const flagList = forse.flags.length
       ? `<h3>Segnali «follow the money» <span class="small muted">(${forse.flags.length})</span></h3>` +

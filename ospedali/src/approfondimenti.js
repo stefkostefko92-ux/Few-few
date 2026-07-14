@@ -5,6 +5,7 @@
 // build-site.js. Никакви нови твърдения: всичко е от вече публикуваните данни,
 // с рамката „indicatore, non prova".
 
+// @ts-check
 import { page, kpi, lineChart, hbars } from './lib/site-ui.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
 
@@ -12,11 +13,13 @@ import { euroIt, euroCompact, numeroIt, percentualeIt, esc } from './lib/format.
 // прозата (напр. брой свързани болници). Задават се веднъж преди рендер, по същия
 // модел като setDataSnapshot — така разказните функции четат живата стойност.
 let CTX = { nAbbinate: 113 };
-/** Задава изчислените стойности (напр. `nAbbinate`) преди рендер на approfondimenti. */
+/** Задава изчислените стойности (напр. `nAbbinate`) преди рендер на approfondimenti.
+ * @param {Partial<typeof CTX>} c @returns {void} */
 export function setApprofondimentiCtx(c) { CTX = { ...CTX, ...c }; }
 
 // ---------- Класификация на CPV описания в макрокатегории ----------
 // Евристика по ключови думи върху descrizione_cpv (ANAC). Ред = приоритет.
+/** @type {Array<[string, RegExp]>} */
 const CPV_REGOLE = [
   ['farmaci', /MEDICINAL|FARMAC|VACCIN|EMODERIVAT|SOLUZIONI PER INFUSION/i],
   ['dispositivi', /DISPOSITIVI|PROTESI|IMPIANT|CATETER|SIRINGHE|SUTURA|STENT|DEFIBRILLATOR|PACEMAKER|MEDICAZION|GUANTI|REAGENT|DIAGNOSTIC/i],
@@ -36,6 +39,7 @@ const CPV_REGOLE = [
   ['rifiuti', /RIFIUTI|SMALTIMENTO/i],
   ['assicurazioni', /ASSICURATIV|ASSICURAZION|BROKERAGGIO|SERVIZI FINANZIARI|TESORERIA/i],
 ];
+/** @type {Record<string, string>} */
 export const CPV_LABELS = {
   farmaci: 'Farmaci ed emoderivati',
   dispositivi: 'Dispositivi medici e diagnostica',
@@ -56,6 +60,7 @@ export const CPV_LABELS = {
   assicurazioni: 'Assicurazioni e servizi finanziari',
   altro: 'Altro / non classificato',
 };
+/** @param {string|null|undefined} desc @returns {string} */
 export function classificaCpv(desc) {
   const d = desc || '';
   if (!d.trim()) return 'altro';
@@ -64,11 +69,16 @@ export function classificaCpv(desc) {
 }
 
 // ---------- 1. Tendenze 2012–2024 ----------
+/**
+ * @param {{ perAnno: Record<string, any>, regioniCrescita: any[], ultimoAnnoCe: number }} p
+ * @returns {string}
+ */
 export function renderTendenze({ perAnno, regioniCrescita, ultimoAnnoCe }) {
   const anni = Object.keys(perAnno).map(Number).sort((a, b) => a - b);
+  /** @param {string} k */
   const serie = (k) => anni.map((a) => [a, perAnno[a][k]]).filter(([, v]) => v != null);
   const primo = perAnno[anni[0]];
-  const ultimo = perAnno[anni.at(-1)];
+  const ultimo = perAnno[anni[anni.length - 1]];
   const crescitaCosti = ultimo.costi / primo.costi - 1;
   const crescitaPers = ultimo.personale / primo.personale - 1;
   const quotaPersPrimo = primo.personale / primo.costi;
@@ -135,6 +145,10 @@ Fonte: BDAP — RGS/MEF, modelli CE (consuntivo).</p>
 }
 
 // ---------- 2. Топ 100 договора ----------
+/**
+ * @param {{ top: any[], aziendeIdx: Record<string, [string, string]>, href: (cod: string) => string }} p
+ * @returns {string}
+ */
 export function renderTopContratti({ top, aziendeIdx, href }) {
   const rows = top
     .map((c, i) => {
@@ -173,6 +187,10 @@ anni 2023–2025, perimetro: le aziende sanitarie collegate. Persone fisiche non
 }
 
 // ---------- 3. Разходни категории (CPV) ----------
+/**
+ * @param {{ cats: Record<string, any>, totImporto: number }} p
+ * @returns {string}
+ */
 export function renderCategorie({ cats, totImporto }) {
   const ordinate = Object.entries(cats)
     .map(([k, v]) => ({ k, ...v, forn: [...v.forn.values()].sort((a, b) => b.importo - a.importo).slice(0, 5) }))
@@ -188,7 +206,7 @@ export function renderCategorie({ cats, totImporto }) {
     .map((c) => {
       const sg = c.n ? c.senzaGara / c.n : 0;
       const fornRows = c.forn
-        .map((f) => `<tr><td>${f.cf ? `<a href="fornitore/${esc(f.cf)}.html">${esc(f.den)}</a>` : esc(f.den)}</td><td class="num">${euroCompact(f.importo)}</td></tr>`)
+        .map((/** @type {any} */ f) => `<tr><td>${f.cf ? `<a href="fornitore/${esc(f.cf)}.html">${esc(f.den)}</a>` : esc(f.den)}</td><td class="num">${euroCompact(f.importo)}</td></tr>`)
         .join('');
       return `<h3>${esc(CPV_LABELS[c.k])}</h3>
 <p class="small muted">${numeroIt(c.n)} contratti · ${euroCompact(c.importo)} · ${percentualeIt(sg)} senza gara (per numero)</p>
@@ -219,6 +237,10 @@ ${sezioni}
 }
 
 // ---------- 5. Trova la tua ASL ----------
+/**
+ * @param {{ righe: any[] }} p
+ * @returns {string}
+ */
 export function renderDove({ righe }) {
   const rows = righe
     .map(
@@ -391,6 +413,10 @@ solide sono quelle che citano atti, non impressioni.</div>
 }
 
 // ---------- 11. PNRR ----------
+/**
+ * @param {{ regionale: any[], href: (cod: string) => string }} p
+ * @returns {string}
+ */
 export function renderPnrr({ regionale, href }) {
   const conPnrr = regionale.filter((r) => r.pnrrImporto > 0).sort((a, b) => b.pnrrImporto - a.pnrrImporto);
   const totale = conPnrr.reduce((s, r) => s + r.pnrrImporto, 0);
@@ -556,6 +582,7 @@ legittime. <strong>Indicatori, non prove.</strong> Per segnalare errori o fornir
     body,
   });
 }
+/** @param {any} s @returns {string} */
 export function renderStoria(s) {
   const body = `
 <p class="small muted"><a href="../storie.html">← Tutte le storie</a></p>
@@ -575,6 +602,7 @@ ${s.corpo.replaceAll('href="', 'href="../').replaceAll('href="../http', 'href="h
 }
 
 // ---------- 14. Aggiornamenti ----------
+/** @param {{ date: Record<string, any> }} p @returns {string} */
 export function renderAggiornamenti({ date }) {
   const body = `
 <h1>Aggiornamenti del sito</h1>
@@ -629,8 +657,12 @@ verifiche</a> (con impronta SHA-256 delle fonti). Segnalazioni e correzioni: <a 
 }
 
 // ---------- Hub „Approfondimenti" ----------
+/**
+ * @param {{ nTop: number, totCategorie: number, nStrutture: number, conNuovi?: Record<string, boolean> }} p
+ * @returns {string}
+ */
 export function renderApprofondimenti({ nTop, totCategorie, nStrutture, conNuovi = {} }) {
-  const card = (href, titolo, descr) => `<div class="seg media"><div class="t"><a href="${href}">${titolo}</a></div><div class="d">${descr}</div></div>`;
+  const card = (/** @type {string} */ href, /** @type {string} */ titolo, /** @type {string} */ descr) => `<div class="seg media"><div class="t"><a href="${href}">${titolo}</a></div><div class="d">${descr}</div></div>`;
   const body = `
 <h1>Approfondimenti</h1>
 <p class="lead">Oltre i numeri delle singole aziende: tendenze di lungo periodo, classifiche nazionali, guide pratiche
@@ -675,13 +707,14 @@ ${card('aggiornamenti.html', 'Aggiornamenti', 'Cosa è stato caricato, cosa è c
 }
 
 // ---------- 8. Tempi di pagamento (RGS/PCC — национална серия) ----------
+/** @param {{ tp: any }} p @returns {string} */
 export function renderPagamenti({ tp }) {
   const anni = tp.perAnno;
   const ultimo = anni.at(-1);
   const primo = anni[0];
   const rows = anni
     .map(
-      (a) => `<tr><td>${a.anno}</td><td class="num">${numeroIt(a.fattureMgl)} mila</td>
+      (/** @type {any} */ a) => `<tr><td>${a.anno}</td><td class="num">${numeroIt(a.fattureMgl)} mila</td>
       <td class="num">${euroCompact(a.importoFatture * 1e6)}</td>
       <td class="num">${a.tempoMedioPagamento} gg</td>
       <td class="num ${a.tempoMedioRitardo < 0 ? 'pos' : 'neg'}">${a.tempoMedioRitardo} gg</td>
@@ -696,7 +729,7 @@ medio di pagamento è sceso a <strong>${ultimo.tempoMedioPagamento} giorni</stro
 con un anticipo medio di ${Math.abs(ultimo.tempoMedioRitardo)} giorni sul termine.</p>
 ${lineChart(
     [
-      { label: 'Tempo medio di pagamento (giorni)', color: 'var(--brand)', points: anni.map((a) => [a.anno, a.tempoMedioPagamento]) },
+      { label: 'Tempo medio di pagamento (giorni)', color: 'var(--brand)', points: anni.map((/** @type {any} */ a) => [a.anno, a.tempoMedioPagamento]) },
     ],
     { caption: 'Tempo medio di pagamento delle fatture — enti del SSN (fonte: PCC/RGS-MEF)' }
   )}
@@ -731,6 +764,10 @@ Termine legale: ${esc(tp.termineLegale)}.</p>
 }
 
 // ---------- 9. Personale (Conto Annuale) ----------
+/**
+ * @param {{ pers: any, aziendeNomi: Map<string, string>, href: (cod: string) => string }} p
+ * @returns {string}
+ */
 export function renderPersonale({ pers, aziendeNomi, href }) {
   const n = pers.nazionale;
   const st = pers.flessibileStorico;
@@ -761,8 +798,8 @@ con personale precario — l’anticamera dei «medici a gettone».</p>
 <h2>Il lavoro precario nel tempo</h2>
 ${lineChart(
     [
-      { label: 'Tempo determinato', color: 'var(--brand)', points: st.map((r) => [r.anno, r.determinato]) },
-      { label: 'Interinale (agenzia)', color: 'var(--neg)', points: st.map((r) => [r.anno, r.interinale]) },
+      { label: 'Tempo determinato', color: 'var(--brand)', points: st.map((/** @type {any} */ r) => [r.anno, r.determinato]) },
+      { label: 'Interinale (agenzia)', color: 'var(--neg)', points: st.map((/** @type {any} */ r) => [r.anno, r.interinale]) },
     ],
     { caption: 'Dipendenti con contratto flessibile nel comparto sanità (teste, fonte: Conto Annuale)' }
   )}
@@ -790,11 +827,15 @@ esternalizzati). Una quota flessibile alta è un indicatore di fragilità dell�
 }
 
 // ---------- 12. Mobilità sanitaria ----------
+/**
+ * @param {{ mob: any, regKeyByNome: (n: string) => string|null }} p
+ * @returns {string}
+ */
 export function renderMobilita({ mob, regKeyByNome }) {
   const u = mob.perAnno[mob.ultimoAnno];
   const anni = Object.keys(mob.perAnno).map(Number).sort();
   const rows = u.regioni
-    .map((r) => {
+    .map((/** @type {any} */ r) => {
       const key = regKeyByNome(r.regione);
       const nome = key ? `<a href="regione/${key}.html">${esc(r.regione)}</a>` : esc(r.regione);
       return `<tr><td>${nome}</td>
@@ -813,8 +854,8 @@ misura più concreta della disuguaglianza sanitaria: chi può, parte; la sua reg
 paga il paziente).</p>
 <div class="grid kpis">
   ${kpi(`Spesa fuori regione (${mob.ultimoAnno})`, euroCompact(u.totPassiva), 'neg')}
-  ${kpi('Verso strutture pubbliche', euroCompact(u.regioni.reduce((s, r) => s + r.passivaPubblico, 0)))}
-  ${kpi('Verso strutture private', euroCompact(u.regioni.reduce((s, r) => s + r.passivaPrivato, 0)))}
+  ${kpi('Verso strutture pubbliche', euroCompact(u.regioni.reduce((/** @type {number} */ s, /** @type {any} */ r) => s + r.passivaPubblico, 0)))}
+  ${kpi('Verso strutture private', euroCompact(u.regioni.reduce((/** @type {number} */ s, /** @type {any} */ r) => s + r.passivaPrivato, 0)))}
 </div>
 <h2>Regione per regione</h2>
 <p class="muted small">Quanto spende ogni regione per prestazioni erogate fuori dal proprio territorio (canale
@@ -844,6 +885,7 @@ in senso opposto.</div>
 }
 
 // ---------- Декемврийска треска (bunching di fine anno) ----------
+/** @param {{ mesi: number[], perEnteRighe: any[] }} p @returns {string} */
 export function renderFineAnno({ mesi, perEnteRighe }) {
   const MESI_IT = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
   const tot = mesi.reduce((s, v) => s + v, 0);
@@ -893,6 +935,7 @@ perimetro: aziende collegate. Le adesioni a convenzioni riconoscibili non sono e
 }
 
 // ---------- Confronta due aziende ----------
+/** @param {{ datiJson: string }} p @returns {string} */
 export function renderConfronta({ datiJson }) {
   const body = `
 <h1>Confronta due aziende</h1>
@@ -955,9 +998,10 @@ var DATI=${datiJson.replace(/</g, '\\u003c')};
 }
 
 // ---------- API документация ----------
+/** @param {{ su: string }} p @returns {string} */
 export function renderApi({ su }) {
   const base = su || '';
-  const ep = (path, descr) => `<tr><td><code>${esc(path)}</code></td><td>${descr}</td></tr>`;
+  const ep = (/** @type {string} */ path, /** @type {string} */ descr) => `<tr><td><code>${esc(path)}</code></td><td>${descr}</td></tr>`;
   const body = `
 <h1>API e dati riutilizzabili</h1>
 <p class="lead">Tutti i dati del sito sono file statici JSON/CSV con URL stabili: puoi usarli come una API in sola
@@ -1034,14 +1078,15 @@ Contatto nelle <a href="note-legali.html">note legali</a>.</p>
 }
 
 // ---------- COVID ретроспекция (2019–2023 + бележка за прекъсването 2024) ----------
+/** @param {{ st: any }} p @returns {string} */
 export function renderStorico({ st }) {
   // Сравнимата серия: годините преди прекъсването (D.Lgs 36/2023 + PCP от 01.2024).
   const anni = Object.keys(st.perAnno).map(Number).sort();
   const anniComp = anni.filter((a) => st.perAnno[a].comparabile !== false);
-  const serie = (k) => anniComp.map((a) => [a, st.perAnno[a][k]]).filter(([, v]) => v != null);
+  const serie = (/** @type {string} */ k) => anniComp.map((/** @type {number} */ a) => [a, st.perAnno[a][k]]).filter(([, v]) => v != null);
   const a2019 = st.perAnno[2019];
   const a2020 = st.perAnno[2020];
-  const ultimo = st.perAnno[anniComp.at(-1)];
+  const ultimo = st.perAnno[anniComp[anniComp.length - 1]];
   const rotti = anni.filter((a) => st.perAnno[a].comparabile === false);
   const a2024 = rotti.length ? st.perAnno[rotti[0]] : null;
   const body = `

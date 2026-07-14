@@ -1,10 +1,31 @@
+// @ts-check
 // Начална страница на сайта: национални KPI + топ сигнали.
 // Изнесена дословно от build-site.js — само местене.
 
 import { esc, numeroIt, euroCompact } from '../lib/format.js';
 import { page, kpi, badge, siteUrl } from '../lib/site-ui.js';
 
+/** @typedef {import('../lib/dataset.js').Ente} Ente */
+/** @typedef {import('../lib/models.js').SegnData} SegnData */
+/** @typedef {import('../lib/models.js').SegnEnte} SegnEnte */
+/** @typedef {import('../lib/models.js').ForenseData} ForenseData */
+
 // ---------- HOME ----------
+/**
+ * @param {object} p
+ * @param {Ente[]} p.enti
+ * @param {SegnData} p.segn
+ * @param {ForenseData} p.forense
+ * @param {number} p.ultimoAnnoCe
+ * @param {number} p.totRicavi
+ * @param {number} p.totCosti
+ * @param {number} p.totRisultato
+ * @param {number} p.inPerdita
+ * @param {number} p.conDati
+ * @param {(cod: string) => string} p.href
+ * @param {Map<string, SegnEnte>} p.segnByCod
+ * @returns {string}
+ */
 export function renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }) {
   const sis = forense.sistema.perAnno[ultimoAnnoCe];
   const top = segn.enti.slice(0, 12);

@@ -1,15 +1,24 @@
+// @ts-check
 // Форматиране и slugify — споделено между отчета и сайта.
 
 const eurIt = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 const numIt = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
 const pctIt = new Intl.NumberFormat('it-IT', { style: 'percent', maximumFractionDigits: 1 });
 
-/** Италиански формат на евро (за сайта). */
+/**
+ * Италиански формат на евро (за сайта).
+ * @param {number|null|undefined} v
+ * @returns {string}
+ */
 export function euroIt(v) {
   return v == null ? '—' : eurIt.format(Math.round(v));
 }
 
-/** Компактно евро: 1,2 mld / 345 mln / 12 mila. */
+/**
+ * Компактно евро: 1,2 mld / 345 mln / 12 mila.
+ * @param {number|null|undefined} v
+ * @returns {string}
+ */
 export function euroCompact(v) {
   if (v == null) return '—';
   const a = Math.abs(v);
@@ -20,18 +29,35 @@ export function euroCompact(v) {
   return `${sign}${numIt.format(Math.round(a))} €`;
 }
 
+/**
+ * @param {number|null|undefined} v
+ * @returns {string}
+ */
 export function numeroIt(v) {
   return v == null ? '—' : numIt.format(v);
 }
 
+/**
+ * @param {number|null|undefined} v
+ * @returns {string}
+ */
 export function percentualeIt(v) {
   return v == null ? '—' : pctIt.format(v);
 }
 
+/**
+ * @param {number} n
+ * @returns {number}
+ */
 function round1(n) {
   return Math.round(n * 10) / 10;
 }
 
+/**
+ * Превръща име в URL slug (до 60 знака).
+ * @param {string} name
+ * @returns {string}
+ */
 export function slugify(name) {
   return String(name)
     .toLowerCase()
@@ -42,7 +68,11 @@ export function slugify(name) {
     .slice(0, 60);
 }
 
-/** Екранира текст за безопасно вмъкване в HTML. */
+/**
+ * Екранира текст за безопасно вмъкване в HTML.
+ * @param {unknown} s
+ * @returns {string}
+ */
 export function esc(s) {
   return String(s ?? '')
     .replaceAll('&', '&amp;')

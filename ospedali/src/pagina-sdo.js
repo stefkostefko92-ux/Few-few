@@ -8,14 +8,22 @@
 //   popolazione = обектът от data/popolazione.json (.regioni[key], .italia)
 //   nomeReg     = (key) → четимо име на региона (при липса покажи ключа)
 
+// @ts-check
 import { page, kpi, hbars } from './lib/site-ui.js';
 import { numeroIt, esc } from './lib/format.js';
 
+/**
+ * @param {{ sdo: { perRegione: Record<string, any>, perStruttura: Record<string, any>, nazionale: { dimissioni: number, strutture: number }, anno: number, url: string }, popolazione: { regioni?: Record<string, number>, italia?: number }, nomeReg: ((k: string) => string)|unknown, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderSdo({ sdo, popolazione, nomeReg, jsonld }) {
+  /** @type {Record<string, number>} */
   const pop = popolazione && popolazione.regioni ? popolazione.regioni : {};
-  const nome = typeof nomeReg === 'function' ? nomeReg : (k) => k;
+  /** @type {(k: string) => string} */
+  const nome = typeof nomeReg === 'function' ? /** @type {(k: string) => string} */ (nomeReg) : (k) => k;
 
   // изписвания на 1.000 жители (обем / население × 1000)
+  /** @param {number} dim @param {string} key @returns {number|null} */
   const per1000 = (dim, key) => {
     const p = pop[key];
     return p ? (dim / p) * 1000 : null;

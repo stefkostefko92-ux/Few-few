@@ -5,6 +5,7 @@
 //
 // Изход: data/popolazione.json  { generatoIl, fonte, anno, regioni: { key: n } }.
 
+// @ts-check
 import { join } from 'node:path';
 import { curlText, writeJson } from './lib/http.js';
 import { parseCsv } from './lib/csv.js';
@@ -14,6 +15,7 @@ import { writeFile, mkdir, readFile, stat } from 'node:fs/promises';
 // ISTAT ITTER107 (NUTS-стил) → нашите ключове на региони (codice_regione, като в
 // build-site REGIONI). ITDA = цял Trentino-Alto Adige (ITD1 Bolzano + ITD2 Trento)
 // → нашият обединен ключ „taa".
+/** @type {Record<string, string>} */
 const ITTER2KEY = {
   ITC1: '010', ITC2: '020', ITC4: '030', ITDA: 'taa', ITD3: '050',
   ITD4: '060', ITC3: '070', ITD5: '080', ITE1: '090', ITE2: '100',
@@ -31,6 +33,7 @@ const ACCEPT = 'application/vnd.sdmx.data+csv;version=1.0.0;labels=both';
 const RAW = join(RAW_DIR, 'istat-popolazione-regioni.csv');
 
 /** Кодът ITTER107 стои като „ITC1: Piemonte" (labels=both) — вземаме само кода. */
+/** @param {string} cell @returns {string} */
 function refAreaCode(cell) {
   return String(cell || '').split(':')[0].trim();
 }
@@ -38,14 +41,16 @@ function refAreaCode(cell) {
 /**
  * SDMX-CSV с labels=both слага суфикс към ИМЕТО на колоната („REF_AREA: Territory")
  * и към стойността („ITC1: Piemonte"). Нормализираме ключовете по кода преди „:".
- */
+ * @param {Record<string, string>} r @returns {Record<string, string>} */
 function normalizza(r) {
+  /** @type {Record<string, string>} */
   const o = {};
   for (const [k, v] of Object.entries(r)) o[k.split(':')[0].trim()] = v;
   return o;
 }
 
 /** Свежда SDMX-CSV редовете до { key: население } за най-скорошната година. */
+/** @param {Record<string, string>[]} rawRows */
 export function riduci(rawRows) {
   const rows = rawRows.map(normalizza);
   let annoMax = 0;
@@ -53,7 +58,9 @@ export function riduci(rawRows) {
     const a = Number(r.TIME_PERIOD);
     if (Number.isFinite(a) && a > annoMax) annoMax = a;
   }
+  /** @type {Record<string, number>} */
   const regioni = {};
+  /** @type {number|null} */
   let italia = null;
   for (const r of rows) {
     if (Number(r.TIME_PERIOD) !== annoMax) continue;

@@ -2,6 +2,7 @@
 // за структурите от SSN от BDAP Open Data, според каталога и config.json.
 // Файловете се кешират идемпотентно в data/raw/bdap/.
 
+// @ts-check
 import { join } from 'node:path';
 import { downloadToFile, readJson } from './lib/http.js';
 import { RAW_DIR, CATALOG_FILE, ROOT } from './lib/paths.js';
@@ -13,7 +14,7 @@ async function main() {
   });
 
   const wanted = datasets.filter(
-    (d) =>
+    (/** @type {any} */ d) =>
       ['CE', 'SP'].includes(d.kind) &&
       d.anno >= config.anni.da &&
       d.anno <= config.anni.a &&

@@ -14,6 +14,7 @@
 // Филтрира по health-cig-cf.tsv (същите здравни CIG като останалата част на сайта).
 // Изход: data/segnali-gare.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, writeFile, rm, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -31,10 +32,16 @@ const ANNI = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 // Праг за ЕС-публикация (forniture/servizi, обикновени сектори) по двугодишни линии
 // (Reg. 2017/2365: 2018-19=221k; 2019/1828: 2020-21=214k; 2021/1952: 2022-23=215k;
 // 2023/2495: 2024-25=221k).
+/** @param {number} anno @returns {number} */
 export function sogliaUE(anno) {
   return anno >= 2024 ? 221_000 : anno >= 2022 ? 215_000 : anno >= 2020 ? 214_000 : 221_000;
 }
 // „Точно под прага" = в лентата [-8%, праг); за сравнение и лентата [праг, +8%).
+/**
+ * @param {number} importo
+ * @param {number} anno
+ * @returns {'sotto'|'sopra'|null}
+ */
 export function bandaSottoSoglia(importo, anno) {
   const s = sogliaUE(anno);
   if (importo >= s * 0.92 && importo < s) return 'sotto';
@@ -42,6 +49,7 @@ export function bandaSottoSoglia(importo, anno) {
   return null;
 }
 // Кратък срок за оферти (дни между публикация и краен срок).
+/** @param {number} giorni @returns {boolean} */
 export function termineBreve(giorni) {
   return Number.isFinite(giorni) && giorni >= 0 && giorni <= 10;
 }
@@ -50,6 +58,9 @@ export function termineBreve(giorni) {
  * Клъстери на раздробяване: за подадени преки възлагания (един възложител, един
  * CPV-раздел), сортирани по дата — плъзгащ прозорец от `window` дни с ≥3 възлагания
  * и обща сума над `soglia` (всяко поотделно под прага). Връща брой клъстери и сума.
+ * @param {Array<{ t: number, importo: number }>} diretti
+ * @param {{ window?: number, soglia?: number }} [opts]
+ * @returns {{ cluster: number, valore: number }}
  */
 export function clusterFrazionamento(diretti, { window = 30, soglia = 40_000 } = {}) {
   const arr = diretti.filter((d) => d.importo > 0 && d.importo < soglia).sort((a, b) => a.t - b.t);
@@ -75,14 +86,25 @@ export function clusterFrazionamento(diretti, { window = 30, soglia = 40_000 } =
   return { cluster, valore: Math.round(valore) };
 }
 
+/**
+ * Динамичен акумулатор за възложител (расте с Object.assign при aggiudicazioni).
+ * @param {string} den
+ * @returns {Record<string, any>}
+ */
 function emptyAuth(den) {
   return { den, competN: 0, termineBreveN: 0, sottoN: 0, sopraN: 0, direttiN: 0, frazCluster: 0, frazValore: 0 };
 }
 
+/**
+ * @param {Map<string, string>} cigCat
+ */
 async function processaCig(cigCat) {
+  /** @type {Map<string, Record<string, any>>} */
   const perAuth = new Map(); // cf → auth agg
   const naz = { competN: 0, termineBreveN: 0, sottoN: 0, sopraN: 0 };
+  /** @type {Map<string, Array<{ t: number, importo: number }>>} */
   const direttiPer = new Map(); // `${cf}|${cpv2}` → [{t, importo}]
+  /** @type {Map<string, string>} */
   const cfDen = new Map();
 
   for (const anno of ANNI) {
@@ -100,7 +122,7 @@ async function processaCig(cigCat) {
           const cf = (r.cf_amministrazione_appaltante || '').trim();
           if (!cfDen.has(cf)) cfDen.set(cf, r.denominazione_amministrazione_appaltante || cf);
           let a = perAuth.get(cf);
-          if (!a) { a = emptyAuth(cfDen.get(cf)); perAuth.set(cf, a); }
+          if (!a) { a = emptyAuth(cfDen.get(cf) ?? cf); perAuth.set(cf, a); }
           const unLotto = (r.n_lotti_componenti || '').trim() === '1';
           const importo = Number(r.importo_lotto || (unLotto ? r.importo_complessivo_gara : 0)) || 0;
 
@@ -152,12 +174,15 @@ async function processaCig(cigCat) {
 }
 
 // ---------- aggiudicazioni: ribasso zero, invitati ma unico, subappalto ----------
+/** @param {string} file @returns {AsyncGenerator<string>} */
 async function* righe(file) {
   const rl = createInterface({ input: createReadStream(file, 'utf8'), crlfDelay: Infinity });
   let first = true;
   for await (const line of rl) { if (first) { first = false; continue; } if (line) yield line; }
 }
+/** @param {string} line @returns {string[]} */
 function splitQ(line) {
+  /** @type {string[]} */
   const out = []; let cell = '', q = false;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
@@ -169,6 +194,11 @@ function splitQ(line) {
   out.push(cell); return out;
 }
 
+/**
+ * @param {Map<string, string>} cigCat
+ * @param {Map<string, Record<string, any>>} perAuth
+ * @param {Map<string, string>} cigAuthCf
+ */
 async function processaAggiudicazioni(cigCat, perAuth, cigAuthCf) {
   const file = join(ANAC2, 'aggiudicazioni_csv.csv');
   if (!(await stat(file).catch(() => null))) return null;
@@ -205,13 +235,15 @@ async function processaAggiudicazioni(cigCat, perAuth, cigAuthCf) {
 async function main() {
   const tsv = join(ANAC_DIR, 'health-cig-cf.tsv');
   await stat(tsv).catch(() => { throw new Error('няма health-cig-cf.tsv — пусни `npm run fetch:appalti`'); });
+  /** @type {Map<string, string>} */
   const cigCat = new Map();
+  /** @type {Map<string, string>} */
   const cigAuthCf = new Map();
   for (const line of (await readFile(tsv, 'utf8')).split('\n')) {
     if (!line) continue;
     const [cig, cf, cat] = line.split('\t');
-    cigCat.set(cig, cat);
-    cigAuthCf.set(cig, cf);
+    cigCat.set(cig, cat ?? '');
+    cigAuthCf.set(cig, cf ?? '');
   }
   console.log(`Здравни CIG: ${cigCat.size.toLocaleString('it-IT')}`);
 
@@ -223,6 +255,11 @@ async function main() {
 
   // топ възложители per сигнал (с достатъчна база)
   const auths = [...perAuth.values()];
+  /**
+   * @param {(a: Record<string, any>) => { n: number, quota: number }} fn
+   * @param {number} minBase
+   * @param {string} keyBase
+   */
   const topBy = (fn, minBase, keyBase) =>
     auths.filter((a) => a[keyBase] >= minBase).map((a) => ({ den: a.den, ...fn(a) }))
       .filter((x) => x.quota > 0).sort((a, b) => b.quota - a.quota).slice(0, 12);

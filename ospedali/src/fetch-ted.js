@@ -22,6 +22,7 @@
 //
 // Изход: data/ted.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { writeJson } from './lib/http.js';
 import { DATA_DIR } from './lib/paths.js';
@@ -48,9 +49,11 @@ const CODICE_OFFERTE = 'tenders';
  * подравнените записи с код `tenders` и положителна стойност (0 = нула оферти,
  * т.е. пуст търг — не е „един кандидат", затова се изключва).
  */
+/** @param {any} notice @returns {number[]} */
 function offertePerLotto(notice) {
   const codes = notice['received-submissions-type-code'] || [];
   const vals = notice['received-submissions-type-val'] || [];
+  /** @type {number[]} */
   const out = [];
   for (let i = 0; i < codes.length; i++) {
     if (codes[i] !== CODICE_OFFERTE) continue;
@@ -61,12 +64,15 @@ function offertePerLotto(notice) {
 }
 
 /** Категоризира брой оферти в кофите на разпределението. */
+/** @param {number} n @returns {string} */
 function bucket(n) {
   return n >= 4 ? '4+' : String(n);
 }
 
 /** Пресмята агрегатите за подаден списък notices (чист, тестваем). */
+/** @param {any[]} notices */
 function aggregaGruppo(notices) {
+  /** @type {Record<string, number>} */
   const distribuzione = { 1: 0, 2: 0, 3: 0, '4+': 0 };
   let nLotti = 0;
   let unOfferente = 0;
@@ -97,18 +103,22 @@ function aggregaGruppo(notices) {
 }
 
 /** Дали notice принадлежи на CPV фамилия (2-цифрен префикс). */
+/** @param {any} notice @param {string} fam @returns {boolean} */
 function inFamiglia(notice, fam) {
   const cpv = notice['classification-cpv'] || [];
-  return cpv.some((c) => String(c).startsWith(fam));
+  return cpv.some((/** @type {any} */ c) => String(c).startsWith(fam));
 }
 
 /**
  * Основната агрегация. Приема (дедупнати) notices и връща националните агрегати
  * плюс разбивка по CPV фамилия. Чиста функция — цялата логика е тестваема.
  */
+/** @param {any[]} notices */
 export function aggrega(notices) {
   // Период: обхваща само notices, които реално са допринесли лотове.
+  /** @type {string|null} */
   let da = null;
+  /** @type {string|null} */
   let a = null;
   for (const nt of notices) {
     if (offertePerLotto(nt).length === 0) continue;
@@ -117,9 +127,10 @@ export function aggrega(notices) {
     if (da === null || d < da) da = d;
     if (a === null || d > a) a = d;
   }
+  /** @type {Record<string, any>} */
   const perCpv = {};
   for (const fam of CPV_FAMIGLIE) {
-    perCpv[fam] = aggregaGruppo(notices.filter((nt) => inFamiglia(nt, fam)));
+    perCpv[fam] = aggregaGruppo(notices.filter((/** @type {any} */ nt) => inFamiglia(nt, fam)));
   }
   return {
     periodo: { da, a },
@@ -129,6 +140,7 @@ export function aggrega(notices) {
 }
 
 /** POST към TED API с повторни опити и експоненциално изчакване при 5xx/мрежа. */
+/** @param {any} body @param {{ retries?: number, timeoutMs?: number }} [opts] */
 async function postJson(body, { retries = 4, timeoutMs = 120_000 } = {}) {
   let lastErr;
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -146,7 +158,7 @@ async function postJson(body, { retries = 4, timeoutMs = 120_000 } = {}) {
       lastErr = err;
       if (attempt === retries) break;
       const waitMs = 1500 * 2 ** attempt;
-      console.warn(`  повторен опит ${attempt + 1}/${retries} след ${waitMs}ms: ${err.message}`);
+      console.warn(`  повторен опит ${attempt + 1}/${retries} след ${waitMs}ms: ${err instanceof Error ? err.message : String(err)}`);
       await new Promise((r) => setTimeout(r, waitMs));
     }
   }
@@ -154,13 +166,17 @@ async function postJson(body, { retries = 4, timeoutMs = 120_000 } = {}) {
 }
 
 /** Пагинира изцяло една CPV фамилия през ITERATION режима. */
+/** @param {string} fam */
 async function scaricaFamiglia(fam) {
   const query =
     `classification-cpv IN (${fam}*) AND buyer-country IN (ITA) AND ` +
     `notice-type IN (can-standard) AND received-submissions-type-val > 0 AND ` +
     `publication-date >= ${DA_DATA}`;
+  /** @type {any[]} */
   const notices = [];
+  /** @type {string|null} */
   let token = null;
+  /** @type {number|null} */
   let totale = null;
   for (let pagina = 1; ; pagina++) {
     const body = {

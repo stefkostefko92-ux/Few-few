@@ -2,13 +2,14 @@
 // Показва САМО агрегати от data/consulenze.json — никога имена на физически лица.
 // Рамкиране: „indicatore, non prova“.
 
+// @ts-check
 import { page, kpi, hbars, lineChart } from './lib/site-ui.js';
 import { euroIt, euroCompact, numeroIt, esc } from './lib/format.js';
 
 /**
- * @param {Object}   p
- * @param {Object}   p.cons         — съдържанието на data/consulenze.json
- * @param {Function} [p.nomePerCod] — по избор: код→име (не се ползва, join-ът е по име)
+ * @param {{ cons: any, nomePerCod?: unknown, jsonld: Record<string, unknown>|null }} p
+ *   cons = съдържанието на data/consulenze.json; nomePerCod не се ползва (join по име).
+ * @returns {string}
  */
 export function renderConsulenze({ cons, nomePerCod, jsonld }) {
   void nomePerCod; // join-ът е по ИМЕ на структурата, не по код
@@ -17,7 +18,7 @@ export function renderConsulenze({ cons, nomePerCod, jsonld }) {
   const totImporto = anni.reduce((s, a) => s + cons.perAnno[a].importo, 0);
   const totIncarichi = anni.reduce((s, a) => s + cons.perAnno[a].nIncarichi, 0);
   const nEnti = Object.keys(cons.perEnte).length;
-  const ultimo = anni.at(-1);
+  const ultimo = anni[anni.length - 1];
   const primo = anni[0];
 
   // Топ 15 структури по обща сума (по нормализирано име — показваме го както е).

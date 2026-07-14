@@ -1,3 +1,4 @@
+// @ts-check
 // Споделено зареждане на финансовия модел от свалените BDAP CSV файлове.
 // Ползва се от build-report.js, analyze.js и build-site.js — един източник на истина.
 
@@ -7,10 +8,84 @@ import { parseCsv } from './csv.js';
 import { readJson } from './http.js';
 import { RAW_DIR, ANAGRAFICA_FILE } from './paths.js';
 
+/**
+ * @typedef {object} Indicatore дефиниция на счетоводен показател
+ * @property {string} key вътрешен ключ
+ * @property {string} [label] италиански етикет
+ * @property {string} [labelBg] български етикет
+ * @property {string[]} codes кодове на позицията в CE/SP
+ * @property {RegExp} re резервно разпознаване по описание
+ */
+/**
+ * @typedef {object} ForensicCat форензик разходна категория
+ * @property {string} key
+ * @property {string} label
+ * @property {string[]} codes
+ */
+/**
+ * Годишна серия показатели — стойности по ключ на показателя (в евро).
+ * Ключовете идват от CE_INDICATORS/SP_INDICATORS/CE_FORENSICS/CE_RECON;
+ * липсващ показател → `undefined` при достъп (пази се от кода с `!= null`).
+ * @typedef {Record<string, number>} SerieAnno
+ */
+/**
+ * @typedef {object} VoceRiga подробен ред от CE/SP
+ * @property {string} code код на позицията
+ * @property {string} desc описание
+ * @property {number} importo сума
+ */
+/**
+ * Анаграфичен запис за болнично предприятие (полетата зависят от източника).
+ * @typedef {object} AziendaAnag
+ * @property {string} codice
+ * @property {string} [tipo]
+ * @property {string} [comune]
+ * @property {string} [provincia]
+ * @property {string} [indirizzo]
+ */
+/**
+ * Анаграфичен запис за физическа структура (болница/президиум).
+ * @typedef {object} StrutturaAnag
+ * @property {string} codice
+ * @property {string} [codiceRegione]
+ * @property {string} [codiceAsl]
+ * @property {string} [denominazione]
+ * @property {string} [comune]
+ * @property {string} [provincia]
+ * @property {string} [tipo]
+ * @property {string} [asl]
+ * @property {number} [anno]
+ * @property {number} [postiLetto]
+ * @property {number} [ricoveri]
+ * @property {number} [personale]
+ * @property {number} [medici]
+ * @property {number} [giornateDegenza]
+ */
+/**
+ * @typedef {object} Anagrafica анаграфика от министерството
+ * @property {AziendaAnag[]} aziende предприятия по код
+ * @property {StrutturaAnag[]} strutture физически структури
+ */
+/**
+ * @typedef {object} Ente болнична структура (SSN) с финансовите ѝ серии
+ * @property {string} codice ключ = codice_regione(3) + codice_ente_SSN(3)
+ * @property {string} codReg код на региона
+ * @property {string} codEnte код на структурата
+ * @property {string} regione име на региона
+ * @property {string} denominazione име на структурата
+ * @property {Map<number, SerieAnno>} serie серии по година
+ * @property {VoceRiga[]} ceUltimo подробни CE редове (последна година)
+ * @property {number} ceUltimoAnno последна година с CE
+ * @property {VoceRiga[]} spUltimo подробни SP редове (последна година)
+ * @property {number} spUltimoAnno последна година със SP
+ * @property {AziendaAnag|null} [anag] прикачена анаграфика (ако има)
+ */
+
 const BDAP_DIR = join(RAW_DIR, 'bdap');
 
 // Показатели от CE — по код на счетоводната позиция, с резервно
 // разпознаване по описание (кодовете се менят между версиите на модела).
+/** @type {Indicatore[]} */
 export const CE_INDICATORS = [
   { key: 'contributi', label: 'Contributi in c/esercizio (A.1)', labelBg: 'Вноски за дейността (A.1)', codes: ['AA0010'], re: /^a\.1\)\s*contributi in c\/esercizio/i },
   { key: 'valoreProduzione', label: 'Valore della produzione (A)', labelBg: 'Общо приходи от дейността (A)', codes: ['AZ9999'], re: /^totale valore della produzione/i },
@@ -21,6 +96,7 @@ export const CE_INDICATORS = [
 ];
 
 // Показатели от SP (баланса).
+/** @type {Indicatore[]} */
 export const SP_INDICATORS = [
   { key: 'totaleAttivo', label: 'Totale attivo', labelBg: 'Общо актив', codes: ['AZZ999'], re: /totale attivo/i },
   { key: 'patrimonioNetto', label: 'Patrimonio netto', labelBg: 'Нетно имущество', codes: ['PAZ999'], re: /^a\) patrimonio netto/i },
@@ -30,6 +106,7 @@ export const SP_INDICATORS = [
 // Разходни категории за форензик анализ („следвай парите“) — векторите, където
 // в италианското здравеопазване се концентрират разхищение и корупция.
 // Някои категории събират няколко кода (сумират се, не се презаписват).
+/** @type {ForensicCat[]} */
 export const CE_FORENSICS = [
   { key: 'beni', label: 'Acquisti di beni', codes: ['BA0010'] },
   { key: 'serviziTot', label: 'Acquisti di servizi (totale)', codes: ['BA0390'] },
@@ -45,6 +122,7 @@ export const CE_FORENSICS = [
 ];
 // Редове за проверка на счетоводната консистентност на CE (не се показват в
 // отчетите): позволяват да проверим тъждеството на модела за резултата.
+/** @type {{ key: string, codes: string[] }[]} */
 export const CE_RECON = [
   { key: '_provOneriFin', codes: ['CZ9999'] }, // C) proventi e oneri finanziari
   { key: '_rettifiche', codes: ['DZ9999'] }, // D) rettifiche di valore att. fin.
@@ -52,21 +130,29 @@ export const CE_RECON = [
   { key: '_risPrimaImposte', codes: ['XA0000'] }, // risultato prima delle imposte
   { key: '_imposte', codes: ['YZ9999'] }, // Y) totale imposte
 ];
+/** @type {Map<string, string>} */
 const RECON_CODE_TO_KEY = new Map();
 for (const c of CE_RECON) for (const code of c.codes) RECON_CODE_TO_KEY.set(code, c.key);
 
+/** @type {Map<string, string>} */
 const FORENSIC_CODE_TO_KEY = new Map();
 for (const c of CE_FORENSICS) for (const code of c.codes) FORENSIC_CODE_TO_KEY.set(code, c.key);
 
 // Компоненти на актива — много структури не подават реда „D) TOTALE ATTIVO“
 // и тогава той се изчислява като A + B + C (без задбалансовите conti d'ordine).
+/** @type {Indicatore[]} */
 const SP_ATTIVO_COMPONENTS = [
   { key: '_immobilizzazioni', codes: ['AAZ999'], re: /^a\) immobilizzazioni/i },
   { key: '_attivoCircolante', codes: ['ABZ999'], re: /^b\) attivo circolante/i },
   { key: '_rateiAttivi', codes: ['ACZ999'], re: /^c\) ratei e risconti attivi/i },
 ];
 
-/** Чете една CSV колона независимо от вариациите в имената на заглавията. */
+/**
+ * Чете една CSV колона независимо от вариациите в имената на заглавията.
+ * @param {Record<string, string>} row
+ * @param {...string} names
+ * @returns {string|undefined}
+ */
 function col(row, ...names) {
   for (const n of names) {
     if (row[n] !== undefined) return row[n];
@@ -74,6 +160,12 @@ function col(row, ...names) {
   return undefined;
 }
 
+/**
+ * @param {Indicatore[]} indicators
+ * @param {string} code
+ * @param {string} desc
+ * @returns {string|null}
+ */
 function matchIndicator(indicators, code, desc) {
   for (const ind of indicators) {
     if (ind.codes.includes(code) || ind.re.test(desc)) return ind.key;
@@ -81,6 +173,10 @@ function matchIndicator(indicators, code, desc) {
   return null;
 }
 
+/**
+ * @param {string} file
+ * @returns {Promise<Record<string, string>[]>}
+ */
 async function loadBdapCsv(file) {
   const text = await readFile(join(BDAP_DIR, file), 'utf8');
   return parseCsv(text, { separator: ';' });
@@ -90,20 +186,22 @@ async function loadBdapCsv(file) {
  * Зарежда всички структури (enti) с техните годишни серии от показатели, плюс
  * подробните редове CE/SP от последната налична година и анаграфиката.
  * Връща: { enti: Ente[], anagrafica, ultimoAnnoCe }.
+ * @returns {Promise<{ enti: Ente[], anagrafica: Anagrafica, ultimoAnnoCe: number }>}
  */
 export async function loadDataset() {
-  const anagrafica = await readJson(ANAGRAFICA_FILE);
+  const anagrafica = /** @type {Anagrafica} */ (await readJson(ANAGRAFICA_FILE));
   const aziendeByCod = new Map(anagrafica.aziende.map((a) => [a.codice, a]));
 
   const files = (await readdir(BDAP_DIR)).filter((f) => /^(ce|sp)-\d{4}\.csv$/.test(f)).sort();
   if (files.length === 0) throw new Error('няма свалени CE/SP файлове — пусни `npm run fetch:finanze`');
 
+  /** @type {Map<string, Ente>} */
   const enti = new Map();
   let ultimoAnnoCe = 0;
 
   for (const file of files) {
     const kind = file.startsWith('ce') ? 'CE' : 'SP';
-    const anno = Number(file.match(/(\d{4})/)[1]);
+    const anno = Number(file.match(/(\d{4})/)?.[1]);
     if (kind === 'CE') ultimoAnnoCe = Math.max(ultimoAnnoCe, anno);
     const rows = await loadBdapCsv(file);
     for (const r of rows) {
@@ -191,7 +289,12 @@ export async function loadDataset() {
   };
 }
 
-/** Тип структура според кода на ente в SSN. */
+/**
+ * Тип структура според кода на ente в SSN.
+ * @param {string} codEnte
+ * @param {AziendaAnag|null} [anag]
+ * @returns {string}
+ */
 export function tipoEnte(codEnte, anag) {
   if (anag) return anag.tipo || 'Azienda ospedaliera (AO/AOU/IRCCS)';
   const n = Number(codEnte);
@@ -199,7 +302,11 @@ export function tipoEnte(codEnte, anag) {
   return 'Azienda Sanitaria Locale (ASL) con presìdi ospedalieri';
 }
 
-/** Годините с реални CE данни за структурата, сортирани. */
+/**
+ * Годините с реални CE данни за структурата, сортирани.
+ * @param {Ente} ente
+ * @returns {number[]}
+ */
 export function anniConCe(ente) {
   return [...ente.serie.entries()]
     .filter(([, y]) => y.valoreProduzione != null)
@@ -207,7 +314,12 @@ export function anniConCe(ente) {
     .sort((a, b) => a - b);
 }
 
-/** Болничните структури (HSP), които съответстват на този ente (за нормализация). */
+/**
+ * Болничните структури (HSP), които съответстват на този ente (за нормализация).
+ * @param {Ente} ente
+ * @param {Anagrafica} anagrafica
+ * @returns {StrutturaAnag[]}
+ */
 export function struttureDiEnte(ente, anagrafica) {
   const own = anagrafica.strutture.filter((s) => s.codice === ente.codice);
   if (own.length) return own;
@@ -216,13 +328,23 @@ export function struttureDiEnte(ente, anagrafica) {
   );
 }
 
-/** Сума на леглата за ente (0 → null, за да не делим на нула). */
+/**
+ * Сума на леглата за ente (0 → null, за да не делим на нула).
+ * @param {Ente} ente
+ * @param {Anagrafica} anagrafica
+ * @returns {number|null}
+ */
 export function postiLettoEnte(ente, anagrafica) {
   const s = struttureDiEnte(ente, anagrafica).reduce((n, x) => n + (x.postiLetto || 0), 0);
   return s > 0 ? s : null;
 }
 
-/** Сума на приемите за ente. */
+/**
+ * Сума на приемите за ente.
+ * @param {Ente} ente
+ * @param {Anagrafica} anagrafica
+ * @returns {number|null}
+ */
 export function ricoveriEnte(ente, anagrafica) {
   const s = struttureDiEnte(ente, anagrafica).reduce((n, x) => n + (x.ricoveri || 0), 0);
   return s > 0 ? s : null;

@@ -6,6 +6,7 @@
 //  site/struttura/<cod>.html — детайл за структура (SVG графики + финанси + сигнали)
 // Нула зависимости, нула външни ресурси.
 
+// @ts-check
 import { join } from 'node:path';
 import { mkdir, writeFile, rm, readFile, stat, copyFile } from 'node:fs/promises';
 import { SITE_DIR, ROOT } from './lib/paths.js';
@@ -49,6 +50,23 @@ import { renderPne } from './pagina-pne.js';
 import { renderCordate } from './pagina-cordate.js';
 import { renderSegnaliGare } from './pagina-segnali-gare.js';
 
+/** @typedef {import('./lib/models.js').SegnData} SegnData */
+/** @typedef {import('./lib/models.js').SegnEnte} SegnEnte */
+/** @typedef {import('./lib/models.js').ForenseData} ForenseData */
+/** @typedef {import('./lib/models.js').ForenseEnte} ForenseEnte */
+/** @typedef {import('./lib/models.js').AppaltiData} AppaltiData */
+/** @typedef {import('./lib/models.js').Autorita} Autorita */
+/** @typedef {import('./lib/models.js').AppMatch} AppMatch */
+/** @typedef {import('./lib/models.js').CoiData} CoiData */
+/** @typedef {import('./lib/models.js').CoiCoppia} CoiCoppia */
+/** @typedef {import('./lib/models.js').AggiudicatariData} AggiudicatariData */
+/** @typedef {import('./lib/models.js').Validazione} Validazione */
+/** @typedef {import('./lib/models.js').DatasetInfo} DatasetInfo */
+/** @typedef {import('./lib/models.js').RegioniDataRow} RegioniDataRow */
+/** @typedef {import('./lib/models.js').RegAgg} RegAgg */
+/** @typedef {import('./render/appalti.js').Contratto} Contratto */
+/** @typedef {import('./render/fornitori.js').FornitoreProfile} FornitoreProfile */
+
 const FORENSICS_FILE = pjoin(DATA_DIR, 'forensics.json');
 const APPALTI_FILE = pjoin(DATA_DIR, 'appalti.json');
 const AGGIU_FILE = pjoin(DATA_DIR, 'aggiudicatari.json');
@@ -60,27 +78,32 @@ async function main() {
   setSiteUrl(config.siteUrl || '');
   const { enti, anagrafica, ultimoAnnoCe } = await loadDataset();
   const struttureByCod = new Map(anagrafica.strutture.map((s) => [s.codice, s]));
-  const segn = await readJson(SEGNALAZIONI_FILE).catch(() => {
+  const segn = /** @type {SegnData} */ (await readJson(SEGNALAZIONI_FILE).catch(() => {
     throw new Error('няма segnalazioni.json — пусни първо `npm run analyze`');
-  });
+  }));
+  /** @type {Map<string, SegnEnte>} */
   const segnByCod = new Map(segn.enti.map((e) => [e.codice, e]));
-  const forense = await readJson(FORENSICS_FILE).catch(() => {
+  const forense = /** @type {ForenseData} */ (await readJson(FORENSICS_FILE).catch(() => {
     throw new Error('няма forensics.json — пусни първо `npm run forensics`');
-  });
+  }));
+  /** @type {Map<string, ForenseEnte>} */
   const forByCod = new Map(forense.enti.map((e) => [e.codice, e]));
 
   // ANAC поръчки (по избор — ако липсват, разделите просто не се показват)
-  const appalti = await readJson(APPALTI_FILE).catch(() => null);
+  const appalti = /** @type {AppaltiData|null} */ (await readJson(APPALTI_FILE).catch(() => null));
+  /** @type {Map<string, Autorita>} */
   let appByCod = new Map();
+  /** @type {AppMatch|null} */
   let appMatch = null;
   if (appalti) {
     const { byCf, byCodice } = matchAutoritaEnti(
       enti.map((e) => ({ codice: e.codice, denominazione: e.denominazione, regione: e.regione })),
       appalti.autorita.map((a) => ({ cf: a.cf, den: a.den, reg: a.reg }))
     );
+    /** @type {Map<string, Autorita>} */
     const autByCf = new Map(appalti.autorita.map((a) => [a.cf, a]));
     // изпълнители/участници (по избор)
-    const aggiu = await readJson(AGGIU_FILE).catch(() => null);
+    const aggiu = /** @type {AggiudicatariData|null} */ (await readJson(AGGIU_FILE).catch(() => null));
     const aggPerCf = aggiu ? aggiu.perCf : {};
     for (const [codice, cf] of byCodice) {
       const a = autByCf.get(cf);
@@ -88,7 +111,7 @@ async function main() {
     }
     appMatch = { abbinate: byCodice.size, totali: enti.length, aggiu, autByCf };
     // национална медиана на дела „senza gara“ по БРОЙ сред свързаните болници (за флаг)
-    const quote = [...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null).sort((a, b) => a - b);
+    const quote = /** @type {number[]} */ ([...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null)).sort((a, b) => a - b);
     appMatch.medianaSenzaGaraNum = quote.length ? quote[Math.floor(quote.length / 2)] : null;
     // Подай живия брой свързани болници на approfondimenti прозата (вместо твърдо число).
     setApprofondimentiCtx({ nAbbinate: appMatch.abbinate });
@@ -96,11 +119,12 @@ async function main() {
   }
 
   // индикатори „конфликт на интереси" (по избор — генерира се от `npm run coi`)
-  const coi = await readJson(pjoin(DATA_DIR, 'coi.json')).catch(() => null);
+  const coi = /** @type {CoiData|null} */ (await readJson(pjoin(DATA_DIR, 'coi.json')).catch(() => null));
+  /** @type {Map<string, CoiCoppia[]>} */
   const coiByCf = new Map();
   if (coi) for (const p of coi.coppie) {
     if (!coiByCf.has(p.cf)) coiByCf.set(p.cf, []);
-    coiByCf.get(p.cf).push(p);
+    coiByCf.get(p.cf)?.push(p);
   }
 
   await rm(SITE_DIR, { recursive: true, force: true });
@@ -109,6 +133,7 @@ async function main() {
 
   // Общ индекс за клиентско филтриране + връзки
   const slugByCod = new Map(enti.map((e) => [e.codice, slugify(e.denominazione)]));
+  /** @param {string} cod */
   const href = (cod) => `struttura/${cod}-${slugByCod.get(cod)}.html`;
 
   // ---- Национални агрегати за последната година ----
@@ -142,45 +167,63 @@ async function main() {
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
   await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali({ titolare: config.titolare || {} }));
   await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ titolare: config.titolare || {}, hosting: config.hosting || {} }));
-  const validaz = await readJson(VALIDAZIONE_FILE).catch(() => null);
+  const validaz = /** @type {Validazione|null} */ (await readJson(VALIDAZIONE_FILE).catch(() => null));
   setDataSnapshot(validaz && validaz.generatoIl ? validaz.generatoIl.slice(0, 10) : '');
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   let conContratti = 0;
+  /** @type {Record<string, string>} */
   const catCode = { competitiva: 'c', quadro: 'q', diretto: 'd', negoziataSenza: 'n', negoziata: 'g', altro: 'a' };
+  /** @type {any[][]} */
   const tuttiContratti = []; // глобален индекс за търсачката
+  /** @type {Map<string, { n: number, importo: number, senzaGara: number, forn: Map<string, { cf: string, den: string, importo: number }> }>} */
   const catAgg = new Map(); // CPV макрокатегория → агрегат (за „Dove vanno i soldi")
+  /** @type {any[]} */
   const topCand = []; // кандидати за „i 100 contratti più grandi" (пълни полета)
+  /** @type {{ nazionale: number[], perEnte: Map<string, number[]> }} */
   const mesiAgg = { nazionale: new Array(12).fill(0), perEnte: new Map() }; // преки възлагания по месец (bunching di fine anno)
 
   // Benchmark €/легло и €/приемане: национални медиани (пре-пас преди рендера)
+  /** @type {number[]} */
   const cplTutti = [];
+  /** @type {number[]} */
   const cprTutti = [];
   for (const e of enti) {
     const y = ultimoCe(e).y;
     if (!y.costiProduzione) continue;
     const letti = postiLettoEnte(e, anagrafica);
     const ric = ricoveriEnte(e, anagrafica);
-    if (letti > 0) cplTutti.push(y.costiProduzione / letti);
-    if (ric > 0) cprTutti.push(y.costiProduzione / ric);
+    if (letti != null) cplTutti.push(y.costiProduzione / letti);
+    if (ric != null) cprTutti.push(y.costiProduzione / ric);
   }
+  /** @param {number[]} a @returns {number|null} */
   const mediana = (a) => (a.length ? a.sort((x, y) => x - y)[Math.floor(a.length / 2)] : null);
   const bench = { cplMed: mediana(cplTutti), cprMed: mediana(cprTutti) };
+  /** @type {Record<string, [string, string]>} */
   const aziendeIdx = {}; // codice → [nome, regione]
+  /** @type {Map<string, FornitoreProfile>} */
   const fornAgg = new Map(); // cf → профил на изпълнителя (през всички болници)
 
   // Нови източници (all-11) — зареждат се тук (преди цикъла за структурите), за да
   // захранят и панела „La tua regione" във всеки профил. Всеки по избор.
+  /** @type {any} */
   const popolazione = await readJson(pjoin(DATA_DIR, 'popolazione.json')).catch(() => ({ regioni: {}, italia: 0, anno: null }));
+  /** @param {string} k */
   const nomeReg = (k) => (REGIONI[k] ? REGIONI[k].nome : k);
+  /** @param {string} k */
   const regHref = (k) => (REGIONI[k] ? `regione/${k}.html` : null);
+  /** @type {any} */
   const apparecchiature = await readJson(pjoin(DATA_DIR, 'apparecchiature.json')).catch(() => null);
+  /** @type {any} */
   const sdo = await readJson(pjoin(DATA_DIR, 'sdo.json')).catch(() => null);
+  /** @type {any} */
   const siope = await readJson(pjoin(DATA_DIR, 'siope.json')).catch(() => null);
+  /** @type {any} */
   const pnrrSalute = await readJson(pjoin(DATA_DIR, 'pnrr-salute.json')).catch(() => null);
 
   // Регионален контекст per ключ (за панела в профила на болницата) — 100% надежден
   // join (регион), за разлика от кодовете на отделните структури.
+  /** @type {Record<string, import('./lib/models.js').RegCtx>} */
   const regCtx = {};
   for (const key of Object.keys(REGIONI)) {
     const pop = popolazione.regioni[key] || 0;
@@ -277,11 +320,13 @@ async function main() {
 
   // Профили на изпълнителите („segui il fornitore“)
   let paginaForn = 0;
+  /** @type {string[]} */
   const fornituraCfs = [];
   if (fornAgg.size) {
     await mkdir(join(SITE_DIR, 'fornitore'), { recursive: true });
     const fornList = [...fornAgg.values()].sort((a, b) => b.valore - a.valore);
     // индекс (всички фирми) + профил-страници за материалните
+    /** @type {Array<[string, string, number, number, number, number]>} */
     const idxRows = [];
     for (const f of fornList) {
       const materiale = f.valore >= 500_000 || f.n >= 3;
@@ -291,11 +336,11 @@ async function main() {
         // ditta individuale/società di persone (лични имена по конструкция):
         // без рискови флагове, noindex, извън sitemap (правен одит)
         const societa = eSocietaDiCapitali(f.den);
-        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, societa, coppie: societa ? coiByCf.get(f.cf) || [] : [], strutturaHref: (cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
+        await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, societa, coppie: societa ? coiByCf.get(f.cf) || [] : [], strutturaHref: (/** @type {string} */ cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
         if (societa) fornituraCfs.push(f.cf);
         paginaForn++;
       }
-      idxRows.push([f.cf, f.den, f.valore, f.n, f.perOsp.size, haPagina ? 1 : 0]);
+      idxRows.push(/** @type {[string, string, number, number, number, number]} */ ([f.cf, f.den, f.valore, f.n, f.perOsp.size, haPagina ? 1 : 0]));
     }
     await writeFile(join(SITE_DIR, 'fornitori.html'), renderFornitoriIndex({ righe: idxRows, totali: fornList.length }));
     paginaForn++;
@@ -303,6 +348,7 @@ async function main() {
 
   // Регионални страници + географска карта на Италия (истински choropleth)
   const appRegByName = new Map((appalti ? appalti.regionale : []).map((r) => [r.reg, r]));
+  /** @type {Map<string, RegAgg>} */
   const regAgg = new Map(); // regKey → агрегат
   for (const ente of enti) {
     const key = REG_KEY[ente.codice.slice(0, 3)];
@@ -324,11 +370,12 @@ async function main() {
     g.enti.push(ente);
   }
   await mkdir(join(SITE_DIR, 'regione'), { recursive: true });
+  /** @type {RegioniDataRow[]} */
   const regioniData = [];
   for (const [key, meta] of Object.entries(REGIONI)) {
     const g = regAgg.get(key);
     if (!g) continue;
-    const appReg = mergeAppRows(meta.anac.map((n) => appRegByName.get(n)).filter(Boolean));
+    const appReg = mergeAppRows(/** @type {import('./lib/models.js').RegionaleRow[]} */ (meta.anac.map((n) => appRegByName.get(n)).filter(Boolean)));
     const senzaGaraPct = appReg && appReg.n ? (appReg.cat.diretto.n + appReg.cat.negoziataSenza.n) / appReg.n : null;
     await writeFile(
       join(SITE_DIR, 'regione', `${key}.html`),
@@ -340,6 +387,7 @@ async function main() {
 
   // ---------- Approfondimenti: тенденции, топ 100, категории, dove, PNRR, storie… ----------
   // 1) Тенденции: национални суми по година + растеж на разходите по регион
+  /** @type {Record<string, { valore: number, costi: number, personale: number, risultato: number }>} */
   const perAnno = {};
   for (const ente of enti) {
     for (const [anno, y] of ente.serie) {
@@ -352,6 +400,7 @@ async function main() {
     }
   }
   const anniTutti = Object.keys(perAnno).map(Number).sort((a, b) => a - b);
+  /** @type {Map<string, { prima: number, dopo: number }>} */
   const regCosti = new Map(); // key → {prima, dopo}
   for (const ente of enti) {
     const key = REG_KEY[ente.codice.slice(0, 3)];
@@ -379,10 +428,11 @@ async function main() {
   await writeFile(join(SITE_DIR, 'categorie.html'), renderCategorie({ cats: Object.fromEntries(catAgg), totImporto: totCategorie }));
 
   // 5) Trova la tua struttura: комуна → структура → болница (последната година per структура)
+  /** @type {Map<string, import('./lib/dataset.js').StrutturaAnag>} */
   const perStruttura = new Map();
   for (const s of anagrafica.strutture) {
     const prev = perStruttura.get(s.codice);
-    if (!prev || s.anno > prev.anno) perStruttura.set(s.codice, s);
+    if (!prev || (s.anno ?? 0) > (prev.anno ?? 0)) perStruttura.set(s.codice, s);
   }
   const byCodEnte = new Map(enti.map((e) => [e.codice, e]));
   const doveRighe = [...perStruttura.values()]
@@ -390,7 +440,7 @@ async function main() {
     .map((s) => {
       const ente = byCodEnte.get(s.codice) || byCodEnte.get(`${s.codiceRegione}${s.codiceAsl}`);
       return {
-        comune: s.comune,
+        comune: s.comune || '',
         provincia: s.provincia || '',
         nome: s.denominazione,
         tipo: s.tipo || '',
@@ -410,7 +460,7 @@ async function main() {
   if (appalti) {
     const pnrrRighe = Object.entries(REGIONI)
       .map(([key, meta]) => {
-        const appReg = mergeAppRows(meta.anac.map((n) => appRegByName.get(n)).filter(Boolean));
+        const appReg = mergeAppRows(/** @type {import('./lib/models.js').RegionaleRow[]} */ (meta.anac.map((n) => appRegByName.get(n)).filter(Boolean)));
         return appReg ? { key, nome: meta.nome, importo: appReg.importo, pnrrImporto: appReg.pnrrImporto || 0 } : null;
       })
       .filter(Boolean);
@@ -434,7 +484,7 @@ async function main() {
   const mob = await readJson(pjoin(DATA_DIR, 'mobilita.json')).catch(() => null);
   if (mob) {
     const nome2key = new Map(enti.map((e) => [e.regione, REG_KEY[e.codice.slice(0, 3)]]));
-    await writeFile(join(SITE_DIR, 'mobilita.html'), renderMobilita({ mob, regKeyByNome: (n) => nome2key.get(n) || null }));
+    await writeFile(join(SITE_DIR, 'mobilita.html'), renderMobilita({ mob, regKeyByNome: (/** @type {string} */ n) => nome2key.get(n) || null }));
   }
 
   // --- Нови източници (all-11) — данните са заредени по-горе; тук само страниците ---
@@ -462,6 +512,7 @@ async function main() {
   // PNE (esiti clinici) — разход на глава per регион за кръстоската „soldi vs esiti"
   const pne = await readJson(pjoin(DATA_DIR, 'pne.json')).catch(() => null);
   if (pne) {
+    /** @type {Record<string, number>} */
     const costiPerAbitante = {};
     for (const [key, g] of regCosti) {
       const popReg = popolazione.regioni && popolazione.regioni[key];
@@ -518,11 +569,14 @@ async function main() {
   // RSS: глобален фийд (storie + aggiornamenti) + per-болница (сигналите ѝ)
   const su0 = siteUrl();
   if (su0) {
+    /** @param {string|number} d */
     const rfc = (d) => new Date(d).toUTCString();
     const buildDate = rfc(segn.generatoIl || Date.now());
+    /** @param {string} t @param {string} link @param {string} desc @param {string} date */
     const item = (t, link, desc, date) =>
       `<item><title>${esc(t)}</title><link>${esc(link)}</link><guid>${esc(link)}</guid><pubDate>${date}</pubDate><description>${esc(desc)}</description></item>`;
     const globItems = STORIE.map((st) => item(st.titolo, `${su0}/storia/${st.slug}.html`, st.sommario, buildDate)).join('\n');
+    /** @param {string} title @param {string} link @param {string} items */
     const feed = (title, link, items) =>
       `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>${esc(title)}</title><link>${esc(link)}</link><description>Ospedali Trasparenti — dati e indicatori sulla sanità pubblica italiana</description><language>it</language><lastBuildDate>${buildDate}</lastBuildDate>\n${items}\n</channel></rss>\n`;
     await writeFile(join(SITE_DIR, 'feed.xml'), feed('Ospedali Trasparenti — storie e aggiornamenti', `${su0}/`, globItems));
@@ -649,6 +703,7 @@ async function main() {
       ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
       ...fornituraCfs.map((cf) => `fornitore/${cf}.html`),
     ];
+    /** @param {string} p */
     const prio = (p) => (p === 'index.html' ? '1.0' : p.includes('/') ? '0.6' : '0.8');
     // lastmod = датата на снапшота на ДАННИТЕ (не на билда) — иначе всеки билд
     // „подновява" 4400 адреса и lastmod губи доверие (SEO одит)

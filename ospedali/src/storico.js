@@ -6,6 +6,7 @@
 //
 // Изход: data/storico.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, rm, stat } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
@@ -25,9 +26,14 @@ const IMPORTO_MAX = 1_000_000_000;
 // същите правила, за да е storico сравнимо с appalti.
 
 async function main() {
+  /** @type {Record<string, any>} */
   const perAnno = {};
   for (const anno of ANNI) {
+    // Хетерогенен акумулатор (числови броячи + quota/comparabile), записва се
+    // директно в JSON → типизиран широко умишлено.
+    /** @type {Record<string, any>} */
     const agg = { anno, n: 0, importo: 0, senzaGaraN: 0, urgenzaN: 0, diretto: 0, negoziataSenza: 0, competitiva: 0, quadro: 0 };
+    /** @type {Set<string>} */
     const seen = new Set();
     for (let m = 1; m <= 12; m++) {
       const mm = String(m).padStart(2, '0');

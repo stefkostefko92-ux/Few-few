@@ -18,6 +18,7 @@
 // Изход: data/sdo.json  { generatoIl, fonte, url, anno, nazionale, perRegione,
 //                         perStruttura }.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { parseCsv, parseItalianNumber } from './lib/csv.js';
@@ -32,6 +33,7 @@ const RAW = join(RAW_DIR, 'sdo.csv');
 // 2-цифрен код на региона по ISTAT (водещите 2 цифри на Codice Istituto) →
 // нашия ключ на регион (както в build-site REGIONI / popolazione.json).
 // Внимание: 04 = Trentino-Alto Adige (Bolzano + Trento заедно) → „taa".
+/** @type {Record<string, string>} */
 const ISTAT2KEY = {
   '01': '010', '02': '020', '03': '030', '04': 'taa', '05': '050',
   '06': '060', '07': '070', '08': '080', '09': '090', '10': '100',
@@ -40,7 +42,7 @@ const ISTAT2KEY = {
 };
 
 /** Число от клетка на SDO (италиански формат; „***"/празно → 0). */
-function num(v) {
+function num(/** @type {string|undefined} */ v) {
   return parseItalianNumber(v) || 0;
 }
 
@@ -50,6 +52,7 @@ function num(v) {
  * махаме водещата/крайната кавичка и превръщаме „"" → "“, после подаваме на
  * quote-aware parseCsv (разделител „;“).
  */
+/** @param {string} raw @returns {Record<string, string>[]} */
 export function parseSdoCsv(raw) {
   const q = '"';
   const pre = raw
@@ -74,11 +77,15 @@ export function parseSdoCsv(raw) {
  *     perRegione: { key: { dimissioni, strutture, decessi } },
  *     perStruttura: { codice8: { denominazione, dimissioni } } }
  */
+/** @param {Record<string, string>[]} rows */
 export function aggrega(rows) {
+  /** @type {Record<string, { dimissioni: number, strutture: number, decessi: number }>} */
   const perRegione = {};
+  /** @type {Record<string, { denominazione: string, dimissioni: number }>} */
   const perStruttura = {};
   let dimissioniTot = 0;
   let strutture = 0;
+  /** @type {number|null} */
   let anno = null;
 
   for (const r of rows) {

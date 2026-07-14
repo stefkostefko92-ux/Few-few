@@ -10,6 +10,7 @@
 //
 // Изход: data/aggiudicatari.json.
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, writeFile, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
@@ -21,12 +22,15 @@ const OUT_FILE = join(DATA_DIR, 'aggiudicatari.json');
 const GARA_CATS = new Set(['competitiva', 'negoziata', 'negoziataSenza']);
 
 // Тези датасети ограждат всяко поле в кавички — махаме ги.
+/** @param {string|undefined} s @returns {string} */
 const unq = (s) => (s ? s.replace(/^"/, '').replace(/"$/, '').trim() : '');
 
 // GDPR: юридическо лице има 11-цифрен CF/P.IVA; личен codice fiscale е 16 буквено-
 // цифрен → физическо лице. Имената на физически лица НЕ се назовават публично.
+/** @param {string} cf @returns {boolean} */
 const isAzienda = (cf) => /^[0-9]{11}$/.test(cf);
 const OPERATORE_ANONIMO = 'Operatore individuale (persona fisica)';
+/** @param {string} cf @param {string} den @returns {string} */
 function nomePubblico(cf, den) {
   return isAzienda(cf) ? den : OPERATORE_ANONIMO;
 }
@@ -34,6 +38,7 @@ function nomePubblico(cf, den) {
 /** Поточно чете zip със system unzip -p и подава редовете (split по ';').
  *  Reject-ва при ненулев изход на unzip (повреден/орязан/липсващ архив) — иначе
  *  тихо празни/частични данни биха дали подвеждащи числа. */
+/** @param {string} zipPath @param {(cols: string[]) => void} onRow @returns {Promise<void>} */
 function streamZip(zipPath, onRow) {
   return new Promise((resolve, reject) => {
     const child = spawn('unzip', ['-p', zipPath]);
@@ -41,20 +46,21 @@ function streamZip(zipPath, onRow) {
     const rl = createInterface({ input: child.stdout, crlfDelay: Infinity });
     let first = true;
     let closed = false;
+    /** @type {number|null} */
     let code = null;
     const done = () => {
       if (closed && code !== null) {
-        code === 0 ? resolve() : reject(new Error(`unzip ${zipPath} излезе с код ${code}`));
+        code === 0 ? resolve(undefined) : reject(new Error(`unzip ${zipPath} излезе с код ${code}`));
       }
     };
-    rl.on('line', (line) => {
+    rl.on('line', (/** @type {string} */ line) => {
       if (first) {
         first = false;
         return;
       } // заглавен ред
       onRow(line.split(';'));
     });
-    child.on('close', (c) => {
+    child.on('close', (/** @type {number|null} */ c) => {
       code = c;
       done();
     });
@@ -72,17 +78,21 @@ async function main() {
   await stat(tsvPath).catch(() => {
     throw new Error('няма health-cig-cf.tsv — пусни първо `npm run fetch:appalti`');
   });
+  /** @type {Map<string, { cf: string, cat: string, importo: number }>} */
   const cigInfo = new Map();
   for (const line of (await readFile(tsvPath, 'utf8')).split('\n')) {
     if (!line) continue;
     const [cig, cf, cat, importo] = line.split('\t');
-    cigInfo.set(cig, { cf, cat, importo: Number(importo) || 0 });
+    cigInfo.set(cig, { cf: cf ?? '', cat: cat ?? '', importo: Number(importo) || 0 });
   }
   console.log(`Заредени ${cigInfo.size} здравни CIG-а.`);
 
   // 2) aggiudicatari → изпълнители по възложител (стойност веднъж на CIG)
+  /** @type {Map<string, { forn: Map<string, { den: string, valore: number, n: number, azienda: boolean }>, valore: number }>} */
   const perAuth = new Map(); // cf_auth → { forn: Map(cfForn→{den,valore,n}), valore }
+  /** @type {Map<string, { den: string, valore: number, n: number, azienda: boolean }>} */
   const fornNaz = new Map(); // cf_forn → { den, valore, n } (национално)
+  /** @type {Set<string>} */
   const seenWinnerCig = new Set();
   let aggRighe = 0;
   await streamZip(join(ANAC_DIR, 'aggiudicatari.zip'), (c) => {
@@ -119,6 +129,7 @@ async function main() {
   console.log(`Aggiudicatari: ${aggRighe} връзки, ${perAuth.size} възложителя с изпълнители.`);
 
   // 3) partecipanti → брой различни кандидати на CIG (само за „гара“ категориите)
+  /** @type {Map<string, { firstCf: string, multi: boolean }>} */
   const cigPart = new Map(); // cig → { firstCf, multi }
   await streamZip(join(ANAC_DIR, 'partecipanti.zip'), (c) => {
     const cig = unq(c[0]);
@@ -134,6 +145,7 @@ async function main() {
     }
   });
   // единствен оферент на възложител
+  /** @type {Map<string, { gare: number, unico: number }>} */
   const singleByAuth = new Map(); // cf_auth → { gare, unico }
   for (const [cig, p] of cigPart) {
     const info = cigInfo.get(cig);
@@ -149,6 +161,7 @@ async function main() {
   console.log(`Partecipanti: ${cigPart.size} гари с кандидати.`);
 
   // 4) сглобяване per възложител
+  /** @type {Record<string, any>} */
   const perCf = {};
   for (const [cf, a] of perAuth) {
     const forn = [...a.forn.entries()]
@@ -190,7 +203,7 @@ async function main() {
   console.log(`Готово: изпълнители за ${Object.keys(perCf).length} възложителя → ${OUT_FILE}`);
 }
 
-main().catch((err) => {
+main().catch((/** @type {unknown} */ err) => {
   console.error('Грешка:', err);
   process.exitCode = 1;
 });

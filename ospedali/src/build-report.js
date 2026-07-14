@@ -4,18 +4,25 @@
 //  – оперативен профил от анаграфиката на Министерството на здравеопазването.
 // Изход: reports/<регион>/<код>-<име>.md + reports/index.md + reports/dati-chiave.csv.
 
+// @ts-check
 import { join } from 'node:path';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { REPORTS_DIR } from './lib/paths.js';
 import { loadDataset, tipoEnte, anniConCe, CE_INDICATORS, SP_INDICATORS } from './lib/dataset.js';
 import { slugify } from './lib/format.js';
 
+/** @typedef {import('./lib/dataset.js').Ente} Ente */
+/** @typedef {import('./lib/dataset.js').Anagrafica} Anagrafica */
+/** @typedef {import('./lib/dataset.js').StrutturaAnag} StrutturaAnag */
+
 const fmtEuro = new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 0 });
 const fmtNum = new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 0 });
 
+/** @param {number|null|undefined} v @returns {string} */
 function euro(v) {
   return v == null ? '—' : `${fmtEuro.format(Math.round(v))} €`;
 }
+/** @param {number|null|undefined} v @returns {string} */
 function num(v) {
   return v == null ? '—' : fmtNum.format(v);
 }
@@ -33,10 +40,11 @@ async function main() {
       [...CE_INDICATORS, ...SP_INDICATORS].map((i) => i.key).join(';'),
   ];
 
+  /** @type {Map<string, Ente[]>} */
   const byRegion = new Map();
   for (const ente of enti) {
     if (!byRegion.has(ente.regione)) byRegion.set(ente.regione, []);
-    byRegion.get(ente.regione).push(ente);
+    byRegion.get(ente.regione)?.push(ente);
     for (const [anno, y] of [...ente.serie.entries()].sort((a, b) => a[0] - b[0])) {
       csvLines.push(
         [
@@ -72,9 +80,9 @@ async function main() {
     for (const ente of lista) {
       const fileName = `${ente.codice}-${slugify(ente.denominazione)}.md`;
       const anni = anniConCe(ente);
-      const last = anni.length > 0 ? ente.serie.get(anni.at(-1)) : {};
+      const last = anni.length > 0 ? ente.serie.get(anni[anni.length - 1]) : undefined;
       indexLines.push(
-        `| ${ente.denominazione} | ${tipoEnte(ente.codEnte, ente.anag)} | ${euro(last.valoreProduzione)} | ${euro(last.risultatoEsercizio)} | [${ente.codice}](${regSlug}/${fileName}) |`
+        `| ${ente.denominazione} | ${tipoEnte(ente.codEnte, ente.anag)} | ${euro(last?.valoreProduzione)} | ${euro(last?.risultatoEsercizio)} | [${ente.codice}](${regSlug}/${fileName}) |`
       );
       await writeFile(join(REPORTS_DIR, regSlug, fileName), renderEnte(ente, struttureByCod, anagrafica));
       written++;
@@ -87,9 +95,16 @@ async function main() {
   console.log(`Готово: ${written} отчета + index.md + dati-chiave.csv → ${REPORTS_DIR}`);
 }
 
-/** Markdown отчет за една структура. */
+/**
+ * Markdown отчет за една структура.
+ * @param {Ente} ente
+ * @param {Map<string, StrutturaAnag>} struttureByCod
+ * @param {Anagrafica} anagrafica
+ * @returns {string}
+ */
 function renderEnte(ente, struttureByCod, anagrafica) {
   const anag = ente.anag;
+  /** @type {string[]} */
   const L = [];
   L.push(`# ${ente.denominazione}`, '');
   L.push(`- **Код (регион + структура):** \`${ente.codice}\``);
@@ -127,7 +142,7 @@ function renderEnte(ente, struttureByCod, anagrafica) {
   L.push('|---' + '|---:'.repeat(CE_INDICATORS.length + SP_INDICATORS.length) + '|');
   for (const anno of anni) {
     const y = ente.serie.get(anno);
-    L.push(`| ${anno} | ` + [...CE_INDICATORS, ...SP_INDICATORS].map((i) => euro(y[i.key])).join(' | ') + ' |');
+    L.push(`| ${anno} | ` + [...CE_INDICATORS, ...SP_INDICATORS].map((i) => euro(y?.[i.key])).join(' | ') + ' |');
   }
   L.push('');
 
@@ -161,7 +176,7 @@ function renderEnte(ente, struttureByCod, anagrafica) {
   return L.join('\n');
 }
 
-/** Ред до второ ниво („A.1)“, „B.2.A)“) или обобщаващ ред. */
+/** Ред до второ ниво („A.1)“, „B.2.A)“) или обобщаващ ред. @param {string} desc @returns {boolean} */
 function isDetailLine(desc) {
   const d = desc.trim();
   if (/^[A-Z]\)(\s|$)/.test(d)) return true;
@@ -172,7 +187,7 @@ function isDetailLine(desc) {
   return false;
 }
 
-/** Топ ниво на баланса: „A) …“ раздели и тотали. */
+/** Топ ниво на баланса: „A) …“ раздели и тотали. @param {string} desc @returns {boolean} */
 function isTopLevelSp(desc) {
   const d = desc.trim();
   return /^[A-G]\)\s/.test(d) || /totale/i.test(d);

@@ -12,6 +12,7 @@
 //
 // Изход: data/mobilita.json (per регион: passivaPubblico/Privato/Tot + attivaParziale).
 
+// @ts-check
 import { join } from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
 import { parseCsv } from './lib/csv.js';
@@ -28,15 +29,34 @@ const RE_PRIVATO = /da privato/i;
 // обратната посока. НЕ е „наши граждани навън" → изключва се от пасивата.
 const RE_NON_RESIDENTI = /non residenti|mobilita'?\s*attiva/i;
 
-/** Листов ли е кодът? Родител е, ако друго съвпаднало описание продължава номера му. */
+/**
+ * Листов ли е кодът? Родител е, ако друго съвпаднало описание продължава номера му.
+ * @param {string} descr
+ * @param {string[]} tutteDescr
+ * @returns {boolean}
+ */
 function eFoglia(descr, tutteDescr) {
   const num = (descr.match(/^([A-Z](?:\.\d+)*(?:\.[A-Z])?(?:\.\d+)*)\)/) || [])[1];
   if (!num) return true;
   return !tutteDescr.some((d) => d !== descr && d.startsWith(num + '.'));
 }
 
+/**
+ * @typedef {object} MobRegione агрегат за регион
+ * @property {string} codReg
+ * @property {string} regione
+ * @property {number} passivaPubblico
+ * @property {number} passivaPrivato
+ * @property {number} attivaParziale
+ */
+
+/**
+ * @param {Record<string, string>[]} rows
+ * @returns {{ regioni: Array<MobRegione & { passivaTot: number }>, totPassiva: number, totAttivaParziale: number, codiciPassiva: string[] }}
+ */
 export function analizzaMobilita(rows) {
   // пасивните листови кодове, разделени по канал
+  /** @type {Map<string, string>} */
   const descrPerCod = new Map();
   for (const r of rows) {
     const cod = r['Codice Voce Contabile'] || '';
@@ -47,6 +67,7 @@ export function analizzaMobilita(rows) {
   const descrizioni = [...descrPerCod.values()];
   const foglie = new Map([...descrPerCod.entries()].filter(([, d]) => eFoglia(d, descrizioni)));
 
+  /** @type {Map<string, MobRegione>} */
   const perRegione = new Map();
   for (const r of rows) {
     const codEnte = (r['Codice Ente SSN'] || '').padStart(3, '0');
@@ -64,7 +85,7 @@ export function analizzaMobilita(rows) {
       perRegione.set(codReg, g);
     }
     if (attiva) g.attivaParziale += imp;
-    else if (RE_PRIVATO.test(foglie.get(cod))) g.passivaPrivato += imp;
+    else if (RE_PRIVATO.test(foglie.get(cod) ?? '')) g.passivaPrivato += imp;
     else g.passivaPubblico += imp;
   }
   const regioni = [...perRegione.values()]
@@ -80,16 +101,19 @@ export function analizzaMobilita(rows) {
 
 async function main() {
   const files = (await readdir(BDAP_DIR)).filter((f) => /^ce-\d{4}\.csv$/.test(f)).sort();
+  /** @type {Record<string, { regioni: unknown[], totPassiva: number, totAttivaParziale: number }>} */
   const perAnno = {};
+  /** @type {{ anno: number, regioni: unknown[], codiciPassiva: string[] } | null} */
   let ultimo = null;
   for (const file of files.slice(-3)) {
-    const anno = Number(file.match(/(\d{4})/)[1]);
+    const anno = Number(file.match(/(\d{4})/)?.[1]);
     const rows = parseCsv(await readFile(join(BDAP_DIR, file), 'utf8'), { separator: ';' });
     const res = analizzaMobilita(rows);
     perAnno[anno] = { regioni: res.regioni, totPassiva: res.totPassiva, totAttivaParziale: res.totAttivaParziale };
     ultimo = { anno, ...res };
     console.log(`${anno}: разходи навън ${(res.totPassiva / 1e9).toFixed(2)} млрд (pubblico+privato), актива (частична) ${(res.totAttivaParziale / 1e9).toFixed(2)} млрд`);
   }
+  if (!ultimo) throw new Error('няма свалени CE файлове');
   await writeJson(join(DATA_DIR, 'mobilita.json'), {
     generatoIl: new Date().toISOString(),
     nota: 'Passiva = somma delle voci di costo CE foglia con «Extraregione» (canali: da pubblico / da privato), su aziende + GSA (999 escluso) — ben definita. L’attiva (AA0450, ricavi da soggetti pubblici Extraregione) è PARZIALE: parte dei flussi compensativi transita dalla GSA sotto altre voci; per questo non pubblichiamo un «saldo».',

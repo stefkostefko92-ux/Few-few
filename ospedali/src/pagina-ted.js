@@ -6,10 +6,11 @@
 // Изнесена като отделен модул (не пипаме approfondimenti.js). Стилът следва
 // renderPagamenti: класове grid kpis / tablewrap / note / small muted.
 
+// @ts-check
 import { page, kpi, barChart } from './lib/site-ui.js';
 import { euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
 
-/** Ред за таблицата на сравнение 33* vs 85*. */
+/** Ред за таблицата на сравнение 33* vs 85*. @param {string} etichetta @param {any} g @returns {string} */
 function rigaCpv(etichetta, g) {
   return `<tr><td>${esc(etichetta)}</td>
     <td class="num">${numeroIt(g.nLotti)}</td>
@@ -18,6 +19,10 @@ function rigaCpv(etichetta, g) {
     <td class="num">${euroCompact(g.valore)}</td></tr>`;
 }
 
+/**
+ * @param {{ ted: any, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderTed({ ted, jsonld }) {
   const n = ted.nazionale;
   const c33 = ted.perCpv['33'];
@@ -29,6 +34,7 @@ export function renderTed({ ted, jsonld }) {
   // Разпределение на броя оферти (1 / 2 / 3 / 4+). barChart оцветява <0 в
   // червено, >0 в зелено — тук всички са положителни, затова показваме дела на
   // „un offerente" отделно в KPI/лентата, а стълбовете държим неутрални по брой.
+  /** @type {any} */
   const distPoints = [
     ['1', d['1']],
     ['2', d['2']],

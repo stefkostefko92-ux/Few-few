@@ -2,6 +2,7 @@
 // апаратура per регион, нормализирана на населението. НЕ е за възраст (източникът
 // няма година), а за наличност: колко TAC/РМН/ПЕТ/ускорители/роботи на милион души.
 
+// @ts-check
 import { page, kpi, hbars } from './lib/site-ui.js';
 import { numeroIt, esc } from './lib/format.js';
 
@@ -14,14 +15,22 @@ const GRUPPI = [
   { key: 'ROB', label: 'Robot chirurgici', tipi: ['ROB'] },
 ];
 
+/** @param {number} n @param {number} pop @returns {number} */
 const perMilione = (n, pop) => (pop > 0 ? (n / pop) * 1e6 : 0);
+/** @param {number} x @returns {string} */
 const f1 = (x) => x.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
+/** @param {Record<string, number>} cat @param {string[]} tipi @returns {number} */
 function sommaGruppo(cat, tipi) {
   return tipi.reduce((s, t) => s + (cat[t] || 0), 0);
 }
 
+/**
+ * @param {{ app: { nazionale: Record<string, number>, perRegione: Record<string, any>, url: string }, popolazione: { regioni?: Record<string, number>, italia?: number, anno?: number }, nomeReg: (k: string) => string, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderApparecchiature({ app, popolazione, nomeReg, jsonld }) {
+  /** @type {Record<string, number>} */
   const pop = popolazione.regioni || {};
   const naz = app.nazionale;
   const totNaz = Object.values(naz).reduce((a, b) => a + b, 0);

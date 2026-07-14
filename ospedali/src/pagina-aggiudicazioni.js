@@ -2,9 +2,11 @@
 // реален брой оференти (offerente unico по-точно), ribasso при конкурентните
 // процедури, критерий за възлагане, и закъснения от stati-avanzamento.
 
+// @ts-check
 import { page, kpi, barChart } from './lib/site-ui.js';
 import { numeroIt, percentualeIt, esc } from './lib/format.js';
 
+/** @type {Record<string, string>} */
 const CAT_LABEL = {
   competitiva: 'Procedure competitive (aperta/ristretta)',
   negoziata: 'Negoziata con gara',
@@ -13,8 +15,13 @@ const CAT_LABEL = {
   diretto: 'Affidamento diretto',
   altro: 'Altro',
 };
+/** @param {number|null|undefined} x @returns {string} */
 const f1 = (x) => (x == null ? '—' : x.toLocaleString('it-IT', { maximumFractionDigits: 1 }));
 
+/**
+ * @param {{ agg: any, jsonld: Record<string, unknown>|null }} p
+ * @returns {string}
+ */
 export function renderAggiudicazioni({ agg, jsonld }) {
   const a = agg.aggiudicazioni;
   const comp = a.perCategoria.competitiva || { n: 0, conOfferenti: 0, quotaUnOfferente: null };
@@ -33,6 +40,7 @@ export function renderAggiudicazioni({ agg, jsonld }) {
     )
     .join('');
 
+  /** @type {any} */
   const barPts = [
     ['1 offerta', d[1]],
     ['2', d[2]],

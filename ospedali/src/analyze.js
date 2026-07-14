@@ -8,6 +8,7 @@
 //
 // Изход: data/segnalazioni.json.
 
+// @ts-check
 import { loadDataset, tipoEnte, anniConCe } from './lib/dataset.js';
 import { writeJson } from './lib/http.js';
 import { SEGNALAZIONI_FILE } from './lib/paths.js';
@@ -15,6 +16,31 @@ import { SEGNALAZIONI_FILE } from './lib/paths.js';
 // съвместимост с тестовете, които ги вземат оттук.
 import { median, percentile } from './lib/stats.js';
 export { median, percentile };
+
+/** @typedef {import('./lib/dataset.js').Ente} Ente */
+/** @typedef {import('./lib/dataset.js').SerieAnno} SerieAnno */
+/**
+ * @typedef {object} Derivati производни коефициенти за една година
+ * @property {number} [deficitRatio]
+ * @property {number} [coperturaCosti]
+ * @property {number} [personaleRatio]
+ * @property {number} [debitiSuAttivo]
+ */
+/**
+ * @typedef {object} Segnalazione единичен сигнал
+ * @property {string} regola
+ * @property {string} gravita
+ * @property {number} peso
+ * @property {string} titolo
+ * @property {string} dettaglio
+ * @property {number|null} [anno]
+ */
+/**
+ * @typedef {object} AnalyzeCtx контекст с националните прагове
+ * @property {number} ultimoAnnoCe
+ * @property {number|null} personaleP90
+ * @property {number|null} personaleMediano
+ */
 
 // Прагове (обосновани, консервативни — да не се вдига шум).
 export const SOGLIE = {
@@ -26,21 +52,36 @@ export const SOGLIE = {
   arrotondamento: 100_000, // резултат — точно кратно на това → възможен корекционен запис
 };
 
+/** @type {Record<string, number>} */
 const PESO = { alta: 100, media: 30, bassa: 8 };
 
 const fmtEur = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 const fmtPct = new Intl.NumberFormat('it-IT', { style: 'percent', maximumFractionDigits: 1 });
+/**
+ * @param {number|null|undefined} v
+ * @returns {string}
+ */
 function eur(v) {
   return v == null ? '—' : fmtEur.format(Math.round(v));
 }
+/**
+ * @param {number|null|undefined} v
+ * @param {boolean} [segno]
+ * @returns {string}
+ */
 function pct(v, segno = false) {
   if (v == null) return '—';
   const s = fmtPct.format(v);
   return segno && v > 0 ? `+${s}` : s;
 }
 
-/** Производни коефициенти за една година. */
+/**
+ * Производни коефициенти за една година.
+ * @param {SerieAnno} y
+ * @returns {Derivati}
+ */
 export function derivati(y) {
+  /** @type {Derivati} */
   const d = {};
   if (y.risultatoEsercizio != null && y.valoreProduzione > 0)
     d.deficitRatio = y.risultatoEsercizio / y.valoreProduzione;
@@ -54,11 +95,21 @@ export function derivati(y) {
 
 /**
  * Прилага всички правила върху една структура и връща сортиран списък сигнали.
- * ctx: { ultimoAnnoCe, personaleP90, personaleMediano }.
+ * @param {Ente} ente
+ * @param {AnalyzeCtx} ctx
+ * @returns {Segnalazione[]}
  */
 export function analizzaEnte(ente, ctx) {
   const { ultimoAnnoCe, personaleP90, personaleMediano } = ctx;
+  /** @type {Segnalazione[]} */
   const seg = [];
+  /**
+   * @param {string} regola
+   * @param {string} gravita
+   * @param {string} titolo
+   * @param {string} dettaglio
+   * @param {number|null} [anno]
+   */
   const push = (regola, gravita, titolo, dettaglio, anno) =>
     seg.push({ regola, gravita, peso: PESO[gravita] ?? 1, titolo, dettaglio, anno });
 
@@ -76,7 +127,7 @@ export function analizzaEnte(ente, ctx) {
       'alta',
       'Disavanzo grave nell’ultimo esercizio',
       `Nel ${ultimo} il risultato d’esercizio è pari al ${pct(dUlt.deficitRatio)} del valore della produzione ` +
-        `(${eur(yUlt.risultatoEsercizio)} su ${eur(yUlt.valoreProduzione)}).`,
+        `(${eur(yUlt?.risultatoEsercizio)} su ${eur(yUlt?.valoreProduzione)}).`,
       ultimo
     );
   }
@@ -115,19 +166,19 @@ export function analizzaEnte(ente, ctx) {
 
   // 4) Задължения над целия актив
   if (dUlt.debitiSuAttivo != null && dUlt.debitiSuAttivo > 1) {
-    const ySp = ente.serie.get(spUlt?.[0]) || yUlt;
+    const ySp = (spUlt ? ente.serie.get(spUlt[0]) : undefined) || yUlt;
     push(
       'debiti_oltre_attivo',
       'alta',
       'Debiti superiori al totale attivo',
-      `I debiti (${eur(ySp.debiti)}) superano il totale attivo (${eur(ySp.totaleAttivo)}).`,
+      `I debiti (${eur(ySp?.debiti)}) superano il totale attivo (${eur(ySp?.totaleAttivo)}).`,
       spUlt?.[0] ?? ultimo
     );
   }
 
   // 5) Структурен дисбаланс: разходите надвишават приходите ≥3 г.
   const squilibrio = anniRecenti.filter((a) => {
-    const d = derivati(ente.serie.get(a));
+    const d = derivati(ente.serie.get(a) ?? {});
     return d.coperturaCosti != null && d.coperturaCosti > 1;
   });
   if (squilibrio.length >= 3) {
@@ -147,6 +198,7 @@ export function analizzaEnte(ente, ctx) {
     const a1 = anniCe[i];
     const y0 = ente.serie.get(a0);
     const y1 = ente.serie.get(a1);
+    if (!y0 || !y1) continue; // невъзможно — a0/a1 са ключове от серията
     if (y0.valoreProduzione > 0 && y1.valoreProduzione != null) {
       const g = (y1.valoreProduzione - y0.valoreProduzione) / y0.valoreProduzione;
       if (Math.abs(g) > SOGLIE.saltoRicavi) {
@@ -188,10 +240,12 @@ export function analizzaEnte(ente, ctx) {
   }
 
   // 8) Силен ръст на задълженията през периода
-  const debitiSerie = anni.map((a) => [a, ente.serie.get(a).debiti]).filter(([, v]) => v != null && v > 0);
+  const debitiSerie = /** @type {[number, number][]} */ (
+    anni.map((a) => [a, ente.serie.get(a)?.debiti]).filter(([, v]) => v != null && v > 0)
+  );
   if (debitiSerie.length >= 2) {
     const [a0, v0] = debitiSerie[0];
-    const [a1, v1] = debitiSerie.at(-1);
+    const [a1, v1] = debitiSerie[debitiSerie.length - 1];
     const g = (v1 - v0) / v0;
     if (g > SOGLIE.crescitaDebiti) {
       push(
@@ -206,8 +260,9 @@ export function analizzaEnte(ente, ctx) {
 
   // 9) Дупка в рилевацията (липсваща година в средата на серията)
   if (anniCe.length >= 2) {
+    /** @type {number[]} */
     const mancanti = [];
-    for (let a = anniCe[0]; a < anniCe.at(-1); a++) {
+    for (let a = anniCe[0]; a < anniCe[anniCe.length - 1]; a++) {
       if (!anniCe.includes(a)) mancanti.push(a);
     }
     if (mancanti.length > 0) {
@@ -278,7 +333,9 @@ async function main() {
 
   perEnte.sort((a, b) => b.pesoTotale - a.pesoTotale || a.codice.localeCompare(b.codice));
 
+  /** @type {Record<string, number>} */
   const perRegola = {};
+  /** @type {Record<string, number>} */
   const perGravita = { alta: 0, media: 0, bassa: 0 };
   for (const s of tutte) {
     perRegola[s.regola] = (perRegola[s.regola] || 0) + 1;

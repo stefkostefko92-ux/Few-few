@@ -1,3 +1,4 @@
+// @ts-check
 // Общи пътища за данните и отчетите на продукта.
 
 import { fileURLToPath } from 'node:url';

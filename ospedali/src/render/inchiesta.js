@@ -1,3 +1,4 @@
+// @ts-check
 // Разследващите страници: „Relazioni ricorrenti" (индикатори за конфликт на
 // интереси), „Inchiesta" (deficit на системата) и „Classifiche" (follow the
 // money). Изнесени дословно от build-site.js — само местене.
@@ -6,18 +7,33 @@ import { esc, euroCompact, percentualeIt, numeroIt, euroIt } from '../lib/format
 import { page, kpi, lineChart } from '../lib/site-ui.js';
 import { rigaAggiornamento, rangeAnni, articleLd } from '../lib/site-shared.js';
 
+/** @typedef {import('../lib/models.js').CoiData} CoiData */
+/** @typedef {import('../lib/models.js').ForenseData} ForenseData */
+/** @typedef {import('../lib/models.js').ForenseSistemaAnno} ForenseSistemaAnno */
+/** @typedef {import('../lib/models.js').AppaltiData} AppaltiData */
+/** @typedef {import('../lib/models.js').AppMatch} AppMatch */
+/** @typedef {import('../lib/models.js').ClassificaRow} ClassificaRow */
+
 // ---------- RELAZIONI RICORRENTI (индикатори „конфликт на интереси") ----------
 // Периметърът (брой болници с опис) идва от данните — не се хардкодва.
+/**
+ * @param {number} perimetro
+ * @returns {Record<string, [string, string]>}
+ */
 const coiFlagLabel = (perimetro) => ({
   rotazione: ['Rotazione', 'Affidamenti diretti ripetuti allo stesso fornitore: per gli affidamenti sotto soglia il principio di rotazione (art. 49, d.lgs. 36/2023) li limita espressamente.'],
   dipendenza: ['Dipendenza', `Il fornitore incassa quasi tutto il suo fatturato tracciato (nel perimetro delle ${perimetro} aziende collegate) da una sola azienda, con rapporti prevalentemente senza gara.`],
   esclusiva: ['Esclusiva', 'Relazione stabile senza concorrenza: molti contratti, quasi tutti senza gara.'],
 });
 
+/**
+ * @param {{ coi: CoiData, href: (cod: string) => string }} p
+ * @returns {string}
+ */
 export function renderConflitti({ coi, href }) {
   const MAX_RIGHE = 200;
   const st = coi.statistiche;
-  const perimetro = coi.perimetroAziende || Object.keys(coi.coppie.reduce((a, p) => ((a[p.codice] = 1), a), {})).length;
+  const perimetro = coi.perimetroAziende || Object.keys(coi.coppie.reduce((/** @type {Record<string, number>} */ a, p) => ((a[p.codice] = 1), a), {})).length;
   const FLAG_LABEL = coiFlagLabel(perimetro);
   const rows = coi.coppie
     .slice(0, MAX_RIGHE)
@@ -131,8 +147,19 @@ una rettifica</a> — le richieste motivate sono valutate tempestivamente.</p>
 }
 
 // ---------- INCHIESTA ----------
+/**
+ * @param {object} p
+ * @param {ForenseData} p.forense
+ * @param {AppaltiData|null} p.appalti
+ * @param {AppMatch|null} p.appMatch
+ * @param {(cod: string) => string} p.href
+ * @param {boolean} p.conCordate
+ * @param {boolean} p.conSegGare
+ * @returns {string}
+ */
 export function renderInchiesta({ forense, appalti, appMatch, href, conCordate, conSegGare }) {
   const anni = Object.keys(forense.sistema.perAnno).map(Number).sort((a, b) => a - b);
+  /** @param {keyof ForenseSistemaAnno} k */
   const S = (k) => anni.map((a) => [a, forense.sistema.perAnno[a][k]]);
   const chart = lineChart(
     [
@@ -142,7 +169,7 @@ export function renderInchiesta({ forense, appalti, appMatch, href, conCordate, 
     ],
     { caption: 'Risultato d’esercizio aggregato per anno (€): il rosso delle aziende è in gran parte coperto dalla GSA regionale' }
   );
-  const ultimo = anni.at(-1);
+  const ultimo = anni[anni.length - 1];
   const s = forense.sistema.perAnno[ultimo];
 
   const rows = anni
@@ -236,9 +263,23 @@ Sono <em>piste</em>, quelle che la Corte dei conti e l’ANAC seguono per prime 
 }
 
 // ---------- CLASSIFICHE ----------
+/**
+ * @param {{ forense: ForenseData, href: (cod: string) => string }} p
+ * @returns {string}
+ */
 export function renderClassifiche({ forense, href }) {
   const C = forense.classifiche;
+  /** @param {string} cod */
   const codToHref = (cod) => href(cod);
+  /**
+   * @param {string} titolo
+   * @param {string} descr
+   * @param {ClassificaRow[]} list
+   * @param {(x: ClassificaRow) => string} valFmt
+   * @param {(x: ClassificaRow) => string} extraFmt
+   * @param {string} extraHead
+   * @returns {string}
+   */
   const tavola = (titolo, descr, list, valFmt, extraFmt, extraHead) => `
 <h2>${esc(titolo)}</h2>
 <p class="muted small">${esc(descr)}</p>

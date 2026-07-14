@@ -1,3 +1,4 @@
+// @ts-check
 // Страница „Segnalazioni" — всички сигнали с филтри (vanilla JS).
 // Изнесена дословно от build-site.js — само местене.
 
@@ -5,7 +6,13 @@ import { esc, numeroIt } from '../lib/format.js';
 import { page, kpi, badge } from '../lib/site-ui.js';
 import { REGOLE_LABEL } from '../lib/site-shared.js';
 
+/** @typedef {import('../lib/models.js').SegnData} SegnData */
+
 // ---------- SEGNALAZIONI ----------
+/**
+ * @param {{ segn: SegnData, href: (cod: string) => string }} p
+ * @returns {string}
+ */
 export function renderSegnalazioni({ segn, href }) {
   const regoleOpts = Object.entries(segn.perRegola)
     .sort((a, b) => b[1] - a[1])

@@ -1,6 +1,20 @@
+// @ts-check
 // Свързване на болничните структури (BDAP enti) с възложителите в ANAC по име.
 // За разследващ инструмент точността е по-важна от покритието: приемаме само
 // уверени, еднозначни съвпадения (ядро на името + регион + уникалност).
+
+/**
+ * @typedef {object} EnteMatch болнична структура за свързване
+ * @property {string} codice ключ на структурата (regione+ente)
+ * @property {string} denominazione име
+ * @property {string} regione регион
+ */
+/**
+ * @typedef {object} AutoritaMatch възложител от ANAC за свързване
+ * @property {string} cf данъчен код (CF/P.IVA)
+ * @property {string} den денонимация
+ * @property {string} reg регион (sezione_regionale)
+ */
 
 const TYPE_WORDS = new Set(
   ('AZIENDA AZIENZA SANITARIA SANITARIO SANITARIE LOCALE OSPEDALIERA OSPEDALIERO ' +
@@ -12,7 +26,11 @@ const TYPE_WORDS = new Set(
 );
 const STOP = new Set('DI DELLA DEL DELLE DEI E LA IL LO GLI PER DA IN CON A NORD SUD EST OVEST CITTA'.split(' '));
 
-/** Отличителни токени от името (без типовата фраза и стоп-думите). */
+/**
+ * Отличителни токени от името (без типовата фраза и стоп-думите).
+ * @param {string} name
+ * @returns {Set<string>}
+ */
 export function coreTokens(name) {
   let s = String(name)
     .toUpperCase()
@@ -36,7 +54,11 @@ export function coreTokens(name) {
   return toks;
 }
 
-/** Каноничен ключ на регион (за сравнение BDAP ↔ ANAC sezione_regionale). */
+/**
+ * Каноничен ключ на регион (за сравнение BDAP ↔ ANAC sezione_regionale).
+ * @param {string} r
+ * @returns {string}
+ */
 export function normReg(r) {
   return String(r)
     .toUpperCase()
@@ -46,6 +68,12 @@ export function normReg(r) {
     .slice(0, 6);
 }
 
+/**
+ * Жакардова прилика между два комплекта токени.
+ * @param {Set<string>} a
+ * @param {Set<string>} b
+ * @returns {number}
+ */
 function jaccard(a, b) {
   if (!a.size && !b.size) return 0;
   let inter = 0;
@@ -58,6 +86,10 @@ function jaccard(a, b) {
  * Връща { byCf: Map<cf,codice>, byCodice: Map<codice,cf>, coverage }.
  * Приема само еднозначни съвпадения: най-добрият Jaccard ≥ soglia и ясно
  * по-добър от втория (разлика ≥ 0.15), при съвпадащ регион.
+ * @param {EnteMatch[]} enti
+ * @param {AutoritaMatch[]} autorita
+ * @param {{ soglia?: number, margine?: number }} [opts]
+ * @returns {{ byCf: Map<string, string>, byCodice: Map<string, string>, coverage: { enti: number, abbinate: number } }}
  */
 export function matchAutoritaEnti(enti, autorita, { soglia = 0.6, margine = 0.15 } = {}) {
   const E = enti.map((e) => ({ ...e, core: coreTokens(e.denominazione), rk: normReg(e.regione) }));

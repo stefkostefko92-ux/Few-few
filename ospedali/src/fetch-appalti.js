@@ -21,6 +21,22 @@ import { curlDownloadToFile, writeJson, readJson } from './lib/http.js';
 import { RAW_DIR, DATA_DIR, ROOT } from './lib/paths.js';
 import { HEALTH, NOT_HEALTH } from './lib/enti-ssn.js';
 
+// @ts-check
+/**
+ * @typedef {object} Agg агрегат на поръчки (регион/възложител)
+ * @property {number} n
+ * @property {number} importo
+ * @property {Record<string, { n: number, importo: number }>} cat
+ * @property {number} urgenzaN
+ * @property {number} pnrrImporto
+ * @property {number} band40
+ * @property {number} band140
+ * @property {number} prorogaN
+ */
+
+/** @param {unknown} err @returns {string} */
+const errMsg = (err) => (err instanceof Error ? err.message : String(err));
+
 const execFileAsync = promisify(execFile);
 const ANAC_DIR = join(RAW_DIR, 'anac');
 const APPALTI_FILE = join(DATA_DIR, 'appalti.json');
@@ -30,7 +46,8 @@ const UA = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 C
 // HEALTH/NOT_HEALTH regex-ите живеят в src/lib/enti-ssn.js (споделени с
 // storico.js и fetch-perlapa.js). Тук са ЗАМРАЗЕНИ launch данни — не пипай.
 
-/** Категория на процедурата: конкурентна / рамково / пряко / договаряне без обявление. */
+/** Категория на процедурата: конкурентна / рамково / пряко / договаряне без обявление.
+ * @param {string|null|undefined} t @returns {string} */
 export function catProc(t) {
   const u = (t || '').toUpperCase();
   if (u.includes('ADESIONE AD ACCORDO QUADRO') || u.includes('CONVENZIONE')) return 'quadro';
@@ -46,7 +63,9 @@ export function catProc(t) {
 }
 const CATS = ['competitiva', 'quadro', 'diretto', 'negoziataSenza', 'negoziata', 'altro'];
 
+/** @returns {Agg} */
 function emptyAgg() {
+  /** @type {Record<string, { n: number, importo: number }>} */
   const cat = {};
   for (const c of CATS) cat[c] = { n: 0, importo: 0 };
   // band40/band140 = преки възлагания точно под праговете (frazionamento);
@@ -54,6 +73,10 @@ function emptyAgg() {
   return { n: 0, importo: 0, cat, urgenzaN: 0, pnrrImporto: 0, band40: 0, band140: 0, prorogaN: 0 };
 }
 const PROROGA = /\bPROROG|\bRINNOV|\bPROSECUZION|\bESTENSION/i;
+/**
+ * @param {Agg} agg @param {string} categoria @param {number} importo
+ * @param {boolean} urgenza @param {boolean} pnrr @param {string|undefined} oggetto
+ */
 function addTo(agg, categoria, importo, urgenza, pnrr, oggetto) {
   agg.n++;
   agg.importo += importo;
@@ -67,12 +90,14 @@ function addTo(agg, categoria, importo, urgenza, pnrr, oggetto) {
   }
   if (oggetto && PROROGA.test(oggetto)) agg.prorogaN++;
 }
-/** Дял на СТОЙНОСТТА без реална конкуренция (пряко + договаряне без обявление). */
+/** Дял на СТОЙНОСТТА без реална конкуренция (пряко + договаряне без обявление).
+ * @param {Agg} agg @returns {number|null} */
 function quotaSenzaGara(agg) {
   if (agg.importo <= 0) return null;
   return (agg.cat.diretto.importo + agg.cat.negoziataSenza.importo) / agg.importo;
 }
-/** Дял по БРОЙ договори (устойчив на аномални суми — основен показател). */
+/** Дял по БРОЙ договори (устойчив на аномални суми — основен показател).
+ * @param {Agg} agg @returns {number|null} */
 function quotaSenzaGaraNum(agg) {
   if (agg.n <= 0) return null;
   return (agg.cat.diretto.n + agg.cat.negoziataSenza.n) / agg.n;
@@ -82,6 +107,12 @@ function quotaSenzaGaraNum(agg) {
 // източника и се изхвърлят, за да не изкривяват стойностните агрегати.
 const IMPORTO_MAX_VALIDO = 1_000_000_000;
 
+/**
+ * @param {number} anno @param {number} mese
+ * @param {Record<string, Agg>} regionale @param {Record<string, any>} autorita
+ * @param {Set<string>} seenCig @param {Map<string, string>} cigCf
+ * @returns {Promise<number>}
+ */
 async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
   const mm = String(mese).padStart(2, '0');
   const zipName = `cig_csv_${anno}_${mm}.zip`;
@@ -91,7 +122,7 @@ async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
   try {
     fresh = await curlDownloadToFile(url, zipPath, { headers: UA, timeoutSec: 240, expectZip: true });
   } catch (err) {
-    console.warn(`  пропускам ${anno}-${mm} (сваляне): ${err.message}`);
+    console.warn(`  пропускам ${anno}-${mm} (сваляне): ${errMsg(err)}`);
     return -1; // провал → брои се, за да не мине за тих 0
   }
   // Разархивирането може да гръмне при повреден/отрязан ZIP → не проваляй целия
@@ -99,7 +130,7 @@ async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
   try {
     await execFileAsync('unzip', ['-o', zipPath, '-d', ANAC_DIR]);
   } catch (err) {
-    console.warn(`  пропускам ${anno}-${mm} (разархивиране): ${err.message}`);
+    console.warn(`  пропускам ${anno}-${mm} (разархивиране): ${errMsg(err)}`);
     await rm(zipPath, { force: true });
     return -1;
   }
@@ -151,7 +182,7 @@ async function processMonth(anno, mese, regionale, autorita, seenCig, cigCf) {
           cpv: r.descrizione_cpv || '',
           data: r.data_pubblicazione || `${anno}-${mm}`,
         });
-        a.top.sort((x, y) => y.importo - x.importo);
+        a.top.sort((/** @type {any} */ x, /** @type {any} */ y) => y.importo - x.importo);
         if (a.top.length > 10) a.top.length = 10;
       }
       righe++;
@@ -168,9 +199,13 @@ async function main() {
   const anni = config.anacAnni || [2023, 2024];
   await mkdir(ANAC_DIR, { recursive: true });
 
+  /** @type {Record<string, Agg>} */
   const regionale = {};
+  /** @type {Record<string, any>} */
   const autorita = {};
+  /** @type {Set<string>} */
   const seenCig = new Set();
+  /** @type {Map<string, string>} */
   const cigCf = new Map(); // cig → cf на здравния възложител (за aggiudicatari/partecipanti)
   let totale = 0;
   let falliti = 0; // месеци, които не се свалиха/разархивираха (частичен агрегат)
@@ -184,6 +219,7 @@ async function main() {
   }
 
   // Записваме картата CIG→CF/категория/сума за следващата стъпка (изпълнители/участници)
+  /** @type {string[]} */
   const cigCfLines = [];
   for (const [cig, rest] of cigCf) cigCfLines.push(`${cig}\t${rest}`);
   await writeFile(join(ANAC_DIR, 'health-cig-cf.tsv'), cigCfLines.join('\n') + '\n');
@@ -227,7 +263,7 @@ async function main() {
   const nz = summary(nazionale);
   console.log(
     `Готово: ${totale} здравни поръчки, ${autList.length} възложителя, ` +
-      `${(nz.importo / 1e9).toFixed(1)} mld €; senza gara ${(nz.quotaSenzaGara * 100).toFixed(1)}% → ${APPALTI_FILE}`
+      `${(nz.importo / 1e9).toFixed(1)} mld €; senza gara ${((nz.quotaSenzaGara ?? 0) * 100).toFixed(1)}% → ${APPALTI_FILE}`
   );
   if (falliti > 0) {
     console.warn(
@@ -237,7 +273,9 @@ async function main() {
   }
 }
 
+/** @param {Agg} a */
 function summary(a) {
+  /** @type {Record<string, { n: number, importo: number }>} */
   const cat = {};
   for (const c of CATS) cat[c] = { n: a.cat[c].n, importo: Math.round(a.cat[c].importo) };
   return {
