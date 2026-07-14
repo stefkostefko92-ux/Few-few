@@ -196,7 +196,7 @@ async function main() {
 
   await writeFile(join(DATA_DIR, 'cordate.json'), JSON.stringify({
     generatoIl: new Date().toISOString(),
-    fonte: 'ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), gare sanitarie competitive 2023–2024',
+    fonte: 'ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), gare sanitarie competitive 2023–2025',
     nota: 'Coppie di imprese che concorrono spesso insieme dove una vince e l’altra non vince mai: indicatore di possibile cover bidding, NON prova. Solo persone giuridiche (P.IVA). Verifica: AGCM/Antitrust, Registro Imprese.',
     soglie: { insieme: SOGLIA_INSIEME, minVittorie: MIN_VITTORIE, maxPartecipanti: MAX_PART },
     totaleCordate: cordate.length,

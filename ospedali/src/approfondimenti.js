@@ -144,7 +144,7 @@ export function renderTopContratti({ top, aziendeIdx, href }) {
   const totale = top.reduce((s, c) => s + c.importo, 0);
   const body = `
 <h1>I 100 contratti più grandi della sanità</h1>
-<p class="lead">I contratti di maggior valore aggiudicati dalle aziende sanitarie collegate nel 2023–2024:
+<p class="lead">I contratti di maggior valore aggiudicati dalle aziende sanitarie collegate nel 2023–2025:
 insieme valgono <strong>${euroCompact(totale)}</strong>. Ogni riga è verificabile su ANAC tramite il CIG.</p>
 <div class="note">L’importo è il valore <em>messo a gara</em> (non necessariamente speso); i maxi-importi spesso
 coprono più anni o interi accordi quadro. «Senza gara» = affidamento diretto o negoziata senza pubblicazione:
@@ -154,11 +154,11 @@ per farmaci esclusivi e monopoli tecnici può essere pienamente legittimo. <stro
   <tbody>${rows}</tbody>
 </table></div>
 <p class="small muted">Fonte: ANAC — Banca Dati Nazionale dei Contratti Pubblici (CC BY 4.0), gare &gt; 40.000 €,
-anni 2023–2024, perimetro: le aziende sanitarie collegate. Persone fisiche non nominate.</p>
+anni 2023–2025, perimetro: le aziende sanitarie collegate. Persone fisiche non nominate.</p>
 `;
   return page({
     title: 'I 100 contratti più grandi della sanità — Ospedali Trasparenti',
-    description: 'La classifica dei contratti pubblici di maggior valore delle aziende sanitarie italiane 2023–2024, con fornitore, procedura e CIG verificabile.',
+    description: 'La classifica dei contratti pubblici di maggior valore delle aziende sanitarie italiane 2023–2025, con fornitore, procedura e CIG verificabile.',
     active: 'approfondimenti.html',
     canonical: 'top-contratti.html',
     body,
@@ -190,7 +190,7 @@ ${fornRows ? `<div class="tablewrap"><table><thead><tr><th scope="col">Primi for
     .join('\n');
   const body = `
 <h1>Dove vanno i soldi: le categorie di spesa</h1>
-<p class="lead">Tutti i contratti 2023–2024 delle aziende collegate (${euroCompact(totImporto)}), classificati per
+<p class="lead">Tutti i contratti 2023–2025 delle aziende collegate (${euroCompact(totImporto)}), classificati per
 categoria merceologica a partire dalla descrizione CPV: quanto va in farmaci, quanto in pulizie, quanto in energia —
 e chi sono i primi fornitori di ciascuna categoria.</p>
 ${barre}
@@ -299,7 +299,7 @@ azienda.`],
 questo sito supera i <strong>240 miliardi di euro</strong>, e i costi della produzione sono dello stesso ordine (fonte:
 BDAP — RGS/MEF, modelli CE consuntivi). Circa un terzo dei costi è personale; il resto è acquisto di beni e servizi —
 farmaci, dispositivi, servizi esternalizzati — cioè la spesa che passa per i contratti pubblici tracciati qui.`],
-  ['Chi sono i fornitori delle ASL?', `Nel 2023–2024, le 113 aziende sanitarie collegate su questo sito hanno aggiudicato
+  ['Chi sono i fornitori delle ASL?', `Nel 2023–2025, le 113 aziende sanitarie collegate su questo sito hanno aggiudicato
 contratti a migliaia di imprese: dalle multinazionali del farmaco e dei dispositivi (i valori maggiori) alle cooperative
 locali di servizi. La pagina <a href="fornitori.html">Fornitori</a> elenca le imprese con valore aggiudicato, numero di
 contratti e aziende servite; ogni impresa rilevante ha una scheda con i suoi contratti principali.`],
@@ -397,7 +397,7 @@ export function renderPnrr({ regionale, href }) {
     .join('');
   const body = `
 <h1>Il PNRR nella sanità: chi spende i fondi</h1>
-<p class="lead">Nei contratti sanitari 2023–2024 tracciati da ANAC, <strong>${euroCompact(totale)}</strong> sono
+<p class="lead">Nei contratti sanitari 2023–2025 tracciati da ANAC, <strong>${euroCompact(totale)}</strong> sono
 marcati come finanziati (in tutto o in parte) dal <strong>PNRR/PNC</strong> — la Missione 6 «Salute» del Piano
 Nazionale di Ripresa e Resilienza: case e ospedali di comunità, digitalizzazione, grandi apparecchiature.</p>
 <div class="grid kpis">
@@ -411,14 +411,14 @@ Nazionale di Ripresa e Resilienza: case e ospedali di comunità, digitalizzazion
   <tbody>${rows}</tbody>
 </table></div>
 <div class="note"><strong>Limiti del dato.</strong> È la parte del PNRR sanità che passa per gare sopra i 40.000 €
-registrate con il flag PNRR/PNC nel 2023–2024: non è l’intera Missione 6 (che include anche trasferimenti e spese
+registrate con il flag PNRR/PNC nel 2023–2025: non è l’intera Missione 6 (che include anche trasferimenti e spese
 fuori perimetro). Il flag è dichiarato dalle stazioni appaltanti e può essere incompleto. Fonte: ANAC (CC BY 4.0).</div>
 <p class="small muted">Per il quadro ufficiale della Missione 6: <a href="https://www.pnrr.salute.gov.it/" target="_blank" rel="noopener">pnrr.salute.gov.it</a>
 e <a href="https://www.italiadomani.gov.it/" target="_blank" rel="noopener">italiadomani.gov.it</a>.</p>
 `;
   return page({
     title: 'Il PNRR nella sanità: appalti Missione 6 per regione — Ospedali Trasparenti',
-    description: 'Quanto valgono gli appalti sanitari finanziati dal PNRR (Missione 6 Salute) e in quali regioni si concentrano. Dati ANAC 2023–2024.',
+    description: 'Quanto valgono gli appalti sanitari finanziati dal PNRR (Missione 6 Salute) e in quali regioni si concentrano. Dati ANAC 2023–2025.',
     active: 'approfondimenti.html',
     canonical: 'pnrr.html',
     body,
@@ -436,7 +436,7 @@ export const STORIE = [
 affidamenti con oggetto «VEICOLI A NOLEGGIO» allo stesso operatore, <strong>Leasys Italia S.p.A.</strong> (gruppo
 Stellantis): 43,0 + 27,1 + 25,2 + 19,7 milioni di euro — oltre <strong>115 milioni</strong> in un solo giorno,
 registrati come <em>affidamento diretto</em>.</p>
-<p>Nel perimetro tracciato da questo sito (2023–2024, 113 aziende collegate), il 95% del fatturato registrato di
+<p>Nel perimetro tracciato da questo sito (2023–2025, 113 aziende collegate), il 95% del fatturato registrato di
 Leasys verso la sanità proviene da questa sola azienda; l’86% dei contratti della coppia risulta senza confronto
 competitivo registrato.</p>
 <h2>Le spiegazioni possibili</h2>
@@ -460,7 +460,7 @@ pubblicheremo il contesto.</div>`,
     titolo: 'Un miliardo in 49 contratti: il caso dei farmaci a Catanzaro',
     sommario: 'L’ASP di Catanzaro concentra oltre un miliardo di euro in 49 contratti con un solo fornitore farmaceutico, quasi tutti senza gara. Legittimo? Probabile. Da capire? Sì.',
     corpo: `
-<p>Nei dati ANAC 2023–2024, l’<strong>Azienda Sanitaria Provinciale di Catanzaro</strong> risulta aver aggiudicato
+<p>Nei dati ANAC 2023–2025, l’<strong>Azienda Sanitaria Provinciale di Catanzaro</strong> risulta aver aggiudicato
 a <strong>Novartis Farma S.p.A.</strong> 49 contratti per oltre <strong>1 miliardo di euro</strong> — il 98% senza
 confronto competitivo registrato. È la coppia azienda-fornitore di maggior valore dell’intero dataset.</p>
 <h2>Perché può essere legittimo</h2>
@@ -476,7 +476,7 @@ riservati (i prezzi reali dei farmaci sono spesso segretati negli accordi AIFA).
 <div class="note"><strong>Pista, non prova.</strong> Nessuna irregolarità è contestata: brevetti ed esclusive rendono
 plausibile la procedura. I CIG sono verificabili dalla <a href="struttura/180203-azienda-sanitaria-provinciale-di-catanzaro.html">scheda
 dell’azienda</a>. Rettifiche e contesto: <a href="note-legali.html#rettifiche">scrivici</a>.</div>`,
-    dati: '2023–2024 · ASP Catanzaro · Novartis Farma S.p.A. · 49 CIG · >1 mld €',
+    dati: '2023–2025 · ASP Catanzaro · Novartis Farma S.p.A. · 49 CIG · >1 mld €',
   },
   {
     slug: 'radiologia-su-misura-romagna',
@@ -523,7 +523,7 @@ conflitto dei dirigenti — il percorso \u00e8 nella <a href="guida-verifica.htm
 <div class="note"><strong>Pista, non prova.</strong> Le convenzioni con le cooperative sociali sono uno strumento
 legale e spesso virtuoso. Le coppie segnalate sono nella pagina <a href="conflitti.html">relazioni ricorrenti</a>;
 nessun addebito \u00e8 mosso a nessuno. Contesto e rettifiche: <a href="note-legali.html#rettifiche">scrivici</a>.</div>`,
-    dati: '2023–2024 · AUSL Modena / AUSL Bologna · cooperative sociali con dipendenza 100%',
+    dati: '2023–2025 · AUSL Modena / AUSL Bologna · cooperative sociali con dipendenza 100%',
   },
 ];
 export function renderStorie() {
@@ -576,7 +576,7 @@ versione di tutte le pagine. Qui teniamo il registro di cosa è cambiato.</p>
 <h2>Luglio 2026 — prima pubblicazione</h2>
 <ul>
   <li>Bilanci CE/SP 2012–2024 di tutte le aziende del SSN (BDAP — RGS/MEF).</li>
-  <li>Appalti ANAC 2023–2024: ${date.contratti ? esc(date.contratti) : '214.026'} contratti collegati, fornitori, indicatori.</li>
+  <li>Appalti ANAC 2023–2025: ${date.contratti ? esc(date.contratti) : '214.026'} contratti collegati, fornitori, indicatori.</li>
   <li>Indicatori automatici: segnalazioni contabili, anomalie di spesa, relazioni ricorrenti.</li>
   <li>Carta delle regioni, profili dei fornitori, ricerca su tutti i contratti, dati aperti.</li>
 </ul>
@@ -631,7 +631,7 @@ e storie documentate — tutto dagli stessi dati ufficiali, tutto verificabile.<
 <h2>Analisi</h2>
 ${card('tendenze.html', 'Il decennio della sanità (2012–2024)', 'Tredici anni di ricavi, costi, personale e risultati: dove sta andando la spesa.')}
 ${card('categorie.html', 'Dove vanno i soldi: le categorie di spesa', `Farmaci, pulizie, energia, informatica: ${euroCompact(totCategorie)} classificati per categoria, con i primi fornitori di ciascuna.`)}
-${card('top-contratti.html', 'I 100 contratti più grandi', `I maxi-contratti 2023–2024 delle aziende sanitarie: chi, cosa, quanto e con quale procedura.`)}
+${card('top-contratti.html', 'I 100 contratti più grandi', `I maxi-contratti 2023–2025 delle aziende sanitarie: chi, cosa, quanto e con quale procedura.`)}
 ${card('pnrr.html', 'Il PNRR nella sanità', 'Gli appalti finanziati dalla Missione 6 «Salute», regione per regione.')}
 ${conNuovi.mobilita ? card('mobilita.html', 'Curarsi fuori regione', 'La mobilità sanitaria: quanto spende ogni regione per curare i propri cittadini altrove.') : ''}
 ${conNuovi.personale ? card('personale.html', 'Il personale della sanità', 'Dipendenti, medici e lavoro precario per azienda — la strada verso i «medici a gettone».') : ''}
@@ -857,7 +857,7 @@ export function renderFineAnno({ mesi, perEnteRighe }) {
   const body = `
 <h1>La febbre di dicembre: gli affidamenti di fine anno</h1>
 <p class="lead">I bilanci pubblici scadono il 31 dicembre — e i fondi non spesi spesso si perdono. Il risultato è un
-classico della finanza pubblica: la corsa a impegnare i soldi a fine anno. Nei dati 2023–2024, a dicembre gli
+classico della finanza pubblica: la corsa a impegnare i soldi a fine anno. Nei dati 2023–2025, a dicembre gli
 affidamenti diretti sono <strong>${rapporto.toFixed(1)} volte</strong> la media mensile.</p>
 ${barre}
 <div class="note"><strong>Perché conta (e i limiti).</strong> La concentrazione di spesa a fine anno è un indicatore
@@ -872,7 +872,7 @@ sempre: <strong>indicatore, non prova</strong>.</div>
   <th class="num" scope="col">di cui a dicembre</th><th class="num" scope="col">Dicembre vs media</th></tr></thead>
   <tbody>${rows}</tbody>
 </table></div>
-<p class="small muted">Fonte: ANAC (CC BY 4.0), mese di pubblicazione del CIG, affidamenti diretti 2023–2024,
+<p class="small muted">Fonte: ANAC (CC BY 4.0), mese di pubblicazione del CIG, affidamenti diretti 2023–2025,
 perimetro: aziende collegate. Le adesioni a convenzioni riconoscibili non sono escluse da questo conteggio
 (il mese resta informativo anche per esse).</p>
 `;
@@ -900,7 +900,7 @@ fianco a fianco. I numeri sono gli stessi delle schede — solo affiancati.</p>
   <tbody id="rows"></tbody>
 </table></div>
 <p class="small muted">Valore/costi/risultato: ultimo consuntivo disponibile. «Senza gara»: quota per numero di
-contratti 2023–2024 (solo aziende abbinate ad ANAC). I link portano alle schede complete.</p>
+contratti 2023–2025 (solo aziende abbinate ad ANAC). I link portano alle schede complete.</p>
 <script>
 var DATI=${datiJson};
 (function(){
@@ -1076,7 +1076,7 @@ che misura il cambio di modulistica, non un’epidemia di urgenze).</p>
 <p>Per questo il ${rotti[0]} — ${numeroIt(a2024.n)} contratti registrati, «senza gara» al
 ${percentualeIt(a2024.quotaSenzaGara)} — <strong>non è confrontabile</strong> con gli anni precedenti e lo mostriamo
 separatamente invece di attaccarlo alle curve qui sopra: sarebbe un confronto tra mele e pere.
-Le analisi correnti del sito (finestra 2023–2024) usano criteri omogenei e non sono toccate
+Le analisi correnti del sito (finestra 2023–2025) usano criteri omogenei e non sono toccate
 da questa avvertenza.</p>` : ''}
 <p class="small muted">Fonte: ANAC — BDNCP (CC BY 4.0), stessi criteri del resto del sito (committenti sanitari,
 dedup per CIG, importi validi). Le adesioni a convenzioni non sono escluse da questa serie storica: la definizione è

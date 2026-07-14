@@ -1,7 +1,7 @@
 {
-  "generatoIl": "2026-07-14T06:14:04.201Z",
+  "generatoIl": "2026-07-14T10:35:37.835Z",
   "fonte": "ANAC — BDNCP, месечни CIG датасети (CC BY 4.0), здравни възложители",
-  "nota": "Годишни национални агрегати със същите правила като appalti.json (HEALTH филтър, дедуп по CIG, валиден importo). Прозорецът на останалата част от сайта остава 2023–2024.",
+  "nota": "Годишни национални агрегати със същите правила като appalti.json (HEALTH филтър, дедуп по CIG, валиден importo). Прозорецът на останалата част от сайта е 2023–2025.",
   "rotturaSerie": "От 01.2024 (D.Lgs 36/2023 + PCP) серията е несравнима: включени микро-покупки, по-висок праг за affidamento diretto, друга семантика на FLAG_URGENZA. Годините с comparabile=false се показват отделно.",
   "perAnno": {
     "2019": {
@@ -86,6 +86,20 @@
       "quadro": 54380,
       "quotaSenzaGara": 0.6690604999174751,
       "quotaUrgenza": 0.3489005850098113,
+      "comparabile": false
+    },
+    "2025": {
+      "anno": 2025,
+      "n": 343166,
+      "importo": 89746562130.37682,
+      "senzaGaraN": 288610,
+      "urgenzaN": 118565,
+      "diretto": 265096,
+      "negoziataSenza": 23514,
+      "competitiva": 40524,
+      "quadro": 10755,
+      "quotaSenzaGara": 0.8410215464235967,
+      "quotaUrgenza": 0.3455033424057162,
       "comparabile": false
     }
   }

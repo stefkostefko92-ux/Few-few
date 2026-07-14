@@ -123,6 +123,12 @@ function ultimoCe(ente) {
 let DATA_SNAPSHOT = '';
 
 // Article JSON-LD за разследващите страници (E-E-A-T: автор, дата, източници)
+// Етикет за диапазон години: [2023,2024,2025] → „2023–2025" (не join на всички).
+function rangeAnni(a) {
+  if (!a || !a.length) return '';
+  return a.length === 1 ? String(a[0]) : `${a[0]}–${a[a.length - 1]}`;
+}
+
 function articleLd(titolo, descrizione, percorso) {
   const su = siteUrl();
   if (!su) return null;
@@ -1133,7 +1139,7 @@ servizi non sanitari (pulizia, mensa, riscaldamento, rifiuti), manutenzioni este
 </ul>
 ${appalti ? `<h3>Gli appalti (ANAC)</h3>
 <p>Incrociamo i bilanci con la <strong>Banca Dati Nazionale dei Contratti Pubblici</strong> (ANAC), gare sopra
-40.000 € pubblicate negli anni ${appalti.anni.join('–')}. Isoliamo gli enti sanitari e calcoliamo la
+40.000 € pubblicate negli anni ${rangeAnni(appalti.anni)}. Isoliamo gli enti sanitari e calcoliamo la
 <strong>quota di valore affidata senza gara</strong> (affidamento diretto + negoziata senza pubblicazione),
 escludendo gli acquisti in adesione ad accordi quadro/convenzioni, già messi a gara a monte.</p>
 <ul class="small">
@@ -1856,7 +1862,7 @@ però un <strong>obbligo di legge</strong> (art. 49, d.lgs. 36/2023): le eccezio
 ${Object.entries(FLAG_LABEL).map(([k, [lab, spieg]]) => `<div class="seg ${k === 'rotazione' ? 'alta' : 'media'}"><div class="t"><span class="badge ${k === 'rotazione' ? 'alta' : 'media'}">${lab}</span></div><div class="d">${spieg}</div></div>`).join('')}
 <p class="small muted">Soglie: rotazione = ≥${coi.soglie.rotazioneDiretti} affidamenti diretti e ≥${euroCompact(coi.soglie.rotazioneValore)} alla stessa coppia;
 dipendenza = fornitore ≥${euroCompact(coi.soglie.dipendenzaValoreForn)} con ≥${Math.round(coi.soglie.dipendenzaQuota * 100)}% del fatturato da una sola azienda e ≥${Math.round(coi.soglie.dipendenzaSenzaGara * 100)}% senza gara;
-esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.soglie.esclusivaSenzaGara * 100)}% senza gara. Anni: ${coi.anni.join('–')}.
+esclusiva = ≥${coi.soglie.esclusivaN} contratti di cui ≥${Math.round(coi.soglie.esclusivaSenzaGara * 100)}% senza gara. Anni: ${rangeAnni(coi.anni)}.
 Il principio di rotazione (art. 49) vincola gli affidamenti <strong>sotto soglia</strong>; sopra soglia si valutano
 esclusive, infungibilità e accordi quadro. Le adesioni a convenzioni/accordi quadro riconoscibili dall’oggetto
 (Consip, soggetti aggregatori regionali, appalti specifici) sono <strong>escluse</strong> dal conteggio «senza gara».
@@ -2146,7 +2152,7 @@ function renderAppalti({ appalti, appByCod, appMatch, enti, href }) {
     const a = appByCod.get(e.codice);
     if (a) codByCf.set(a.cf, e.codice);
   }
-  const anniTxt = appalti.anni.join('–');
+  const anniTxt = rangeAnni(appalti.anni);
 
   // Регионална таблица, подредена по дял „senza gara“
   // праг: изключваме региони/секции с малко данни, за да не подвеждат класацията
@@ -2204,6 +2210,12 @@ come «senza gara».</div>
 del lotto)</strong>, non la spesa effettivamente pagata: gli accordi quadro hanno massimali molto superiori alla spesa
 reale. Sono quindi utili per <strong>confrontare</strong> enti e regioni, non come misura della spesa sostenuta. Per
 questo il segnale principale è la <strong>quota (in %), non il valore assoluto</strong>.</div>
+<div class="note"><strong>Attenzione alla serie storica.</strong> Dal 2024 il nuovo Codice dei contratti
+(D.Lgs. 36/2023) e le piattaforme di e-procurement certificate fanno confluire nella banca dati anche i
+<strong>micro-acquisti</strong> (prima registrati separatamente) e alzano la soglia dell’affidamento diretto:
+la quota «senza gara» del 2024–2025 risulta perciò <strong>molto più alta e non confrontabile</strong> con gli anni
+precedenti. Il confronto utile resta quello <strong>tra enti e regioni nello stesso periodo</strong>, non nel tempo.
+→ <a href="storico.html">Come è cambiata la serie</a></div>
 
 <h2>Le regioni a confronto</h2>
 <p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
@@ -2283,7 +2295,7 @@ function renderFornitori(appMatch) {
     )
     .join('');
   return `<h2>I maggiori fornitori del SSN per valore aggiudicato</h2>
-<p class="muted small">Operatori economici con più valore aggiudicato dalle aziende sanitarie (2023–2024).
+<p class="muted small">Operatori economici con più valore aggiudicato dalle aziende sanitarie (2023–2025).
 Valore attribuito una volta per contratto all’aggiudicatario principale.</p>
 <div class="note">Figurare tra i maggiori fornitori è pienamente legittimo e riflette il volume di forniture aggiudicate
 con regolare procedura: <strong>non costituisce di per sé indice di anomalia</strong>. Le denominazioni delle imprese
@@ -2330,7 +2342,7 @@ function renderFornitore({ f, aziendeIdx, societa = true, coppie = [], struttura
   ${kpi('Quota senza gara', percentualeIt(quotaSg), flagSg ? 'neg' : '')}
 </div>
 <div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
-<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2024); non implicano alcuna irregolarità.
+<em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2025); non implicano alcuna irregolarità.
 Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
 ${flagSg ? `<div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Quota elevata di affidamenti senza gara</span></div><div class="d">Il ${percentualeIt(quotaSg)} dei suoi contratti è stato affidato senza confronto competitivo. Indicatore da verificare, non prova.</div></div>` : ''}
 ${flagConc ? `<div class="seg media"><div class="t"><span class="badge media">i</span> <span>Concentrato su poche aziende</span></div><div class="d">Oltre il 60% del valore proviene da una sola azienda (${esc(osp[0].nome)}).</div></div>` : ''}
@@ -2379,7 +2391,7 @@ function renderFornitoriIndex({ righe, totali }) {
   const body = `
 <h1>I fornitori del SSN</h1>
 <p class="lead">Chi riceve i soldi delle aziende sanitarie: <strong>${numeroIt(totali)} imprese</strong> con contratti
-2023–2024. Cerca un’azienda per vedere quanto ha incassato, da quali strutture e con quali procedure. Gli operatori
+2023–2025. Cerca un’azienda per vedere quanto ha incassato, da quali strutture e con quali procedure. Gli operatori
 persone fisiche non sono elencati.</p>
 <div class="controls"><input type="search" id="q" placeholder="Cerca fornitore…" aria-label="Cerca fornitore" style="flex:1"></div>
 <p class="small muted" id="count"></p>
@@ -2701,7 +2713,7 @@ nazionale. <a href="classifiche.html">Vedi le classifiche per categoria →</a><
 ${flagCards}
 
 ${appalti ? `<h2>Segui gli appalti</h2>
-<p class="muted small">Abbiamo incrociato i bilanci con la banca dati ANAC degli appalti pubblici (${appalti.anni.join('–')}).
+<p class="muted small">Abbiamo incrociato i bilanci con la banca dati ANAC degli appalti pubblici (${rangeAnni(appalti.anni)}).
 A livello nazionale <strong>${percentualeIt(appalti.nazionale.quotaSenzaGaraNum)} dei contratti</strong> sanitari
 (il ${percentualeIt(appalti.nazionale.quotaSenzaGara)} del valore) è affidato <strong>senza gara</strong>
 — affidamento diretto o negoziata senza bando.

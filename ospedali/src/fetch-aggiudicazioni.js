@@ -169,7 +169,7 @@ async function main() {
     generatoIl: new Date().toISOString(),
     fonte: 'ANAC — BDNCP: aggiudicazioni, fine-contratto, stati-avanzamento (CC BY-SA 4.0)',
     url: 'https://dati.anticorruzione.it/opendata',
-    nota: 'Обогатяване на здравните CIG (2023–2024) с брой оференти, ribasso, критерий и закъснения. „Un offerente" не е доказателство за нередност.',
+    nota: 'Обогатяване на здравните CIG (2023–2025) с брой оференти, ribasso, критерий и закъснения. „Un offerente" не е доказателство за нередност.',
     aggiudicazioni: {
       nAgg: naz.nAgg,
       conOfferenti: naz.conOfferenti,

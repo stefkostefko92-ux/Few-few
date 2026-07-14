@@ -1,47 +1,42 @@
 {
-  "generatoIl": "2026-07-14T06:17:29.319Z",
-  "fonte": "ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2024",
+  "generatoIl": "2026-07-14T10:41:23.260Z",
+  "fonte": "ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2025",
   "nota": "Indicatori di rischio sulle procedure di gara. Ogni segnale è un INDICATORE, non una prova: possono esistere spiegazioni lecite (urgenza reale, mercati di nicchia, esigenze cliniche).",
   "nazionale": {
     "termineBreve": {
-      "n": 9935,
-      "base": 77221,
-      "quota": 0.128656712552285
+      "n": 15352,
+      "base": 118046,
+      "quota": 0.13005099706893922
     },
     "sottoSoglia": {
-      "sotto": 5397,
-      "sopra": 3054,
-      "rapporto": 1.7671905697445973
+      "sotto": 8279,
+      "sopra": 4902,
+      "rapporto": 1.6889024887800899
     },
     "frazionamento": {
-      "cluster": 3810,
-      "valore": 1077802426
+      "cluster": 8414,
+      "valore": 2702242857
     },
     "ribassoZero": {
-      "n": 3569,
-      "base": 11750,
-      "quota": 0.3037446808510638
+      "n": 3909,
+      "base": 13286,
+      "quota": 0.294219479150986
     },
     "invitatiUnico": {
       "n": 372,
       "base": 372
     },
     "subappalto": {
-      "n": 4759,
-      "base": 269687,
-      "quota": 0.017646382658415127
+      "n": 4808,
+      "base": 550220,
+      "quota": 0.008738322852677111
     }
   },
   "topTermineBreve": [
     {
-      "den": "AZIENDA SANITARIA LOCALE VCO",
-      "n": 108,
-      "quota": 0.864
-    },
-    {
       "den": "AZIENDA SANITARIA LOCALE SALERNO",
-      "n": 1433,
-      "quota": 0.7255696202531645
+      "n": 3045,
+      "quota": 0.7954545454545454
     },
     {
       "den": "AGENZIA DI TUTELA DELLA SALUTE DI BERGAMO",
@@ -49,173 +44,178 @@
       "quota": 0.6341463414634146
     },
     {
-      "den": "AZIENDA SOCIO SANITARIA LOCALE N.1 DI SASSARI",
-      "n": 41,
-      "quota": 0.6029411764705882
+      "den": "AZIENDA SANITARIA LOCALE VCO",
+      "n": 108,
+      "quota": 0.5934065934065934
     },
     {
-      "den": "AZIENDA OSPEDALIERA SANT ANDREA",
-      "n": 472,
-      "quota": 0.5819975339087546
-    },
-    {
-      "den": "AZIENDA PROVINCIALE PER I SERVIZI SANITARI",
-      "n": 267,
-      "quota": 0.565677966101695
+      "den": "AZIENDA SANITARIA LOCALE BR",
+      "n": 501,
+      "quota": 0.5535911602209945
     },
     {
       "den": "AZIENDA SANITARIA REGIONALE DEL MOLISE",
-      "n": 411,
-      "quota": 0.548
-    },
-    {
-      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) DELLA VALLE OLONA",
-      "n": 54,
-      "quota": 0.47368421052631576
+      "n": 600,
+      "quota": 0.49059689288634506
     },
     {
       "den": "AZ.OSPEDALIERO UNIVERSITARIA DI BOLOGNA - POLICLINICO S.ORSOLA MALPIGHI",
-      "n": 41,
-      "quota": 0.44565217391304346
+      "n": 58,
+      "quota": 0.4793388429752066
     },
     {
-      "den": "AZIENDA ULSS N. 7 PEDEMONTANA",
-      "n": 75,
-      "quota": 0.4437869822485207
-    },
-    {
-      "den": "AZIENDA SANITARIA PROVINCIALE DI REGGIO CALABRIA",
-      "n": 72,
-      "quota": 0.43636363636363634
+      "den": "AZIENDA OSPEDALIERA SANT ANDREA",
+      "n": 533,
+      "quota": 0.45555555555555555
     },
     {
       "den": "ASST CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI/CTO",
-      "n": 50,
-      "quota": 0.43103448275862066
+      "n": 73,
+      "quota": 0.453416149068323
+    },
+    {
+      "den": "AZIENDA OSPEDALIERO UNIVERSITARIA DI FERRARA",
+      "n": 108,
+      "quota": 0.4235294117647059
+    },
+    {
+      "den": "AZIENDA UNITA SANITARIA LOCALE 4 CHIAVARESE",
+      "n": 15,
+      "quota": 0.40540540540540543
+    },
+    {
+      "den": "AZIENDA ULSS N. 7 PEDEMONTANA",
+      "n": 76,
+      "quota": 0.4
+    },
+    {
+      "den": "AZIENDA PROVINCIALE PER I SERVIZI SANITARI",
+      "n": 272,
+      "quota": 0.3919308357348703
     }
   ],
   "topSottoSoglia": [
     {
-      "den": "AZIENDA USL DELLA ROMAGNA",
-      "n": 100,
-      "quota": 100
-    },
-    {
-      "den": "AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA ISTITUTI OSPITALIERI DI VERONA",
-      "n": 96,
-      "quota": 96
-    },
-    {
-      "den": "AZIENDA SANITARIA REGIONALE DEL MOLISE",
-      "n": 94,
-      "quota": 94
-    },
-    {
       "den": "ESTAR (ENTE DI SUPPORTO TECNICO AMMINISTRATIVO REGIONALE)",
-      "n": 84,
-      "quota": 84
+      "n": 163,
+      "quota": 163
     },
     {
-      "den": "AZIENDA SANITARIA PROVINCIALE DI CATANZARO",
-      "n": 79,
-      "quota": 79
-    },
-    {
-      "den": "AZIENDA SANITARIA LOCALE TERAMO",
-      "n": 78,
-      "quota": 78
+      "den": "AZIENDA USL DELLA ROMAGNA",
+      "n": 140,
+      "quota": 140
     },
     {
       "den": "AZIENDA USL DI BOLOGNA",
-      "n": 77,
-      "quota": 77
+      "n": 116,
+      "quota": 116
     },
     {
-      "den": "AZIENDA SANITARIA PROVINCIALE DI VIBO VALENTIA",
-      "n": 67,
-      "quota": 67
+      "den": "AZIENDA OSPEDALIERA UNIVERSITARIA INTEGRATA ISTITUTI OSPITALIERI DI VERONA",
+      "n": 113,
+      "quota": 113
     },
     {
-      "den": "AZIENDA OSPEDALIERA DI PADOVA",
-      "n": 66,
-      "quota": 66
+      "den": "AZIENDA SANITARIA PROVINCIALE DI CATANZARO",
+      "n": 112,
+      "quota": 112
+    },
+    {
+      "den": "AZIENDA SANITARIA REGIONALE DEL MOLISE",
+      "n": 109,
+      "quota": 109
+    },
+    {
+      "den": "AZIENDA SANITARIA LOCALE BA",
+      "n": 108,
+      "quota": 108
     },
     {
       "den": "AZIENDA REGIONALE DELLA SALUTE REGIONE SARDEGNA",
-      "n": 64,
-      "quota": 64
+      "n": 106,
+      "quota": 106
+    },
+    {
+      "den": "AZIENDA SOCIO-SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA",
+      "n": 105,
+      "quota": 105
+    },
+    {
+      "den": "AZIENDA OSPEDALIERA SAN CAMILLO FORLANINI",
+      "n": 102,
+      "quota": 102
     },
     {
       "den": "AZIENDA OSPEDALIERA CITTA DELLA SALUTE E DELLA SCIENZA DI TORINO",
-      "n": 64,
-      "quota": 64
+      "n": 95,
+      "quota": 95
     },
     {
-      "den": "AZIENDA OSPEDALIERO-UNIVERSITARIA MAGGIORE DELLA CARITA",
-      "n": 59,
-      "quota": 59
+      "den": "AZIENDA SANITARIA LOCALE TERAMO",
+      "n": 90,
+      "quota": 90
     }
   ],
   "topFrazionamento": [
     {
       "den": "SANITAETSBETRIEB DER AUTONOMEN PROVINZ BOZEN",
-      "cluster": 80,
-      "valore": 13709279
+      "cluster": 179,
+      "valore": 31576747
     },
     {
       "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) GRANDE OSPEDALE METROPOLITANO NIGUARDA",
-      "cluster": 65,
-      "valore": 16080674
+      "cluster": 152,
+      "valore": 50159032
     },
     {
       "den": "AZIENDA USL TOSCANA NORD OVEST",
-      "cluster": 55,
-      "valore": 6725872
+      "cluster": 137,
+      "valore": 17245767
     },
     {
       "den": "AZIENDA SANITARIA LOCALE SALERNO",
-      "cluster": 54,
-      "valore": 23433994
+      "cluster": 130,
+      "valore": 55396665
     },
     {
       "den": "AZIENDA SANITARIA LOCALE BA",
-      "cluster": 53,
-      "valore": 11948719
+      "cluster": 123,
+      "valore": 28480759
     },
     {
       "den": "AZIENDA SANITARIA UNIVERSITARIA FRIULI CENTRALE",
-      "cluster": 49,
-      "valore": 10833013
+      "cluster": 109,
+      "valore": 23890568
     },
     {
-      "den": "AZIENDA UNITA SANITARIA LOCALE TOSCANA SUD-EST",
-      "cluster": 45,
-      "valore": 4374962
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE PAPA GIOVANNI XXIII",
+      "cluster": 92,
+      "valore": 37084127
     },
     {
       "den": "AZIENDA USL DELLA ROMAGNA",
-      "cluster": 43,
-      "valore": 12792494
+      "cluster": 91,
+      "valore": 28653825
+    },
+    {
+      "den": "AZIENDA UNITA SANITARIA LOCALE TOSCANA SUD-EST",
+      "cluster": 89,
+      "valore": 8389560
     },
     {
       "den": "AZ.OSPEDALIERO UNIVERSITARIA DI BOLOGNA - POLICLINICO S.ORSOLA MALPIGHI",
-      "cluster": 41,
-      "valore": 16938158
-    },
-    {
-      "den": "FONDAZIONE IRCCS CA GRANDA OSPEDALE MAGGIORE POLICLINICO",
-      "cluster": 40,
-      "valore": 9812832
+      "cluster": 84,
+      "valore": 36052212
     },
     {
       "den": "AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI",
-      "cluster": 39,
-      "valore": 80993032
+      "cluster": 84,
+      "valore": 149995218
     },
     {
       "den": "AZIENDA UNITA' SANITARIA LOCALE TOSCANA CENTRO",
-      "cluster": 39,
-      "valore": 4405175
+      "cluster": 83,
+      "valore": 10626074
     }
   ],
   "topRibassoZero": [
@@ -230,19 +230,14 @@
       "quota": 0.96875
     },
     {
-      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) GRANDE OSPEDALE METROPOLITANO NIGUARDA",
-      "n": 38,
-      "quota": 0.95
-    },
-    {
       "den": "ASST CENTRO SPECIALISTICO ORTOPEDICO TRAUMATOLOGICO GAETANO PINI/CTO",
       "n": 17,
       "quota": 0.9444444444444444
     },
     {
       "den": "AZIENDA SOCIO-SANITARIA TERRITORIALE DEGLI SPEDALI CIVILI DI BRESCIA",
-      "n": 346,
-      "quota": 0.9376693766937669
+      "n": 349,
+      "quota": 0.935656836461126
     },
     {
       "den": "AZIENDA UNITA' SANITARIA LOCALE FROSINONE",
@@ -250,14 +245,24 @@
       "quota": 0.9078947368421053
     },
     {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) GRANDE OSPEDALE METROPOLITANO NIGUARDA",
+      "n": 38,
+      "quota": 0.9047619047619048
+    },
+    {
       "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) LARIANA",
-      "n": 31,
-      "quota": 0.8378378378378378
+      "n": 32,
+      "quota": 0.8421052631578947
+    },
+    {
+      "den": "AZIENDA SOCIO SANITARIA TERRITORIALE DI BERGAMO OVEST",
+      "n": 88,
+      "quota": 0.8148148148148148
     },
     {
       "den": "FONDAZIONE IRCCS POLICLINICO S.MATTEO",
-      "n": 87,
-      "quota": 0.8207547169811321
+      "n": 89,
+      "quota": 0.8018018018018018
     },
     {
       "den": "AZIENDA OSPEDALIERA G BROTZU",
@@ -273,11 +278,6 @@
       "den": "AZIENDA USL RMF",
       "n": 166,
       "quota": 0.7685185185185185
-    },
-    {
-      "den": "FONDAZIONE IRCCS SAN GERARDO DEI TINTORI",
-      "n": 24,
-      "quota": 0.75
     }
   ]
 }

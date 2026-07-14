@@ -73,7 +73,7 @@ aggiudicazioni (${numeroIt(a.conOfferenti)} su ${numeroIt(a.nAgg)}): il dato di 
 una prova di irregolarità: può dipendere da mercati di nicchia, requisiti stringenti o tempi troppo corti. La lettura
 onesta è comparativa: dove l’offerente unico è sistematico, vale la pena guardare più da vicino.</div>
 <p class="small muted">Fonte: <a href="${esc(agg.url)}" target="_blank" rel="noopener">ANAC — BDNCP</a>: dataset
-<em>aggiudicazioni</em> e <em>stati-avanzamento</em>, incrociati con i CIG sanitari 2023–2024 (CC BY-SA 4.0).</p>
+<em>aggiudicazioni</em> e <em>stati-avanzamento</em>, incrociati con i CIG sanitari 2023–2025 (CC BY-SA 4.0).</p>
 `;
   return page({
     title: 'Quanti partecipano davvero alle gare della sanità — Ospedali Trasparenti',
