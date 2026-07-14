@@ -1726,6 +1726,72 @@ const FALLBACK = {
       ]
     },
     {
+      "id": "kachestveniyat",
+      "name": "Качествения",
+      "title": "Маниак по качеството на кода",
+      "emoji": "💎",
+      "accent": "#7c6cf0",
+      "tagline": "Прави кода лесен за четене и промяна — поведение-запазващи рефактори, нула шум.",
+      "file": ".claude/agents/kachestveniyat.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash"
+      ],
+      "mission": "Вдига качеството на кода (поддръжаемост, четимост, простота) без да сменя поведението: дублиране/DRY-граници, цикломатична и когнитивна сложност, единствена отговорност и размер, connascence/coupling, мъртъв код, форма на грешките, качество на тестовете (поведение, не coverage театър) и техническия дълг.",
+      "capabilities": [
+        "Diff-фокусиран преглед за качество спрямо CLAUDE.md (match surrounding style)",
+        "Каталог на рефакторите на Fowler — минимални, поведение-запазващи стъпки",
+        "Каталог на code smells → конкретен рефактор (не смътно „пренапиши“)",
+        "Метрики: цикломатична (McCabe ~10) и когнитивна сложност (SonarSource)",
+        "Connascence/SOLID/DRY-граници (rule-of-three, wrong-abstraction)",
+        "Качество на тестовете: поведение не имплементация; мутационен тест за строгост",
+        "Hotspot приоритизиране (churn × сложност) — най-голяма възвръщаемост",
+        "Инструментиран: продуктовите гейтове остават зелени + tools/code/scan.sh",
+        "Граница с Кодаджията: качество без поведение, предаване през гейт"
+      ],
+      "knowledge": {
+        "sources": 14,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Martin Fowler, „Refactoring“ 2-ро изд. — каталог на рефакторите + code smells",
+          "Kent Beck, „Tidy First?“ + четирите правила за прост дизайн",
+          "McCabe (цикломатична) + SonarSource Cognitive Complexity (когнитивна)",
+          "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
+          "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-14",
+          "event": "Раждане",
+          "detail": "Създаден по искане на собственика: маниак по качеството на кода, различен от Кодаджията (той лови бъгове/уязвимости) — Качествения вдига поддръжаемостта без да сменя поведението."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-14",
+          "event": "Засят на ниво mastery",
+          "detail": "Натъпкан с установения канон за качество (Fowler, Beck, Martin, McCabe, SonarSource, Page-Jones, Google eng-practices) — 14 проверени поуки, операционен договор v1→v10, инструментиран изпълнител (продуктови гейтове + tools/code/scan.sh mutation), граница/предаване с Кодаджията."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/kachestveniyat.md."
+        },
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Засят с 14 проверени поуки от канона за качество на кода (Fowler/Beck/McCabe/SonarSource/Page-Jones/Metz) — DRY-граници, сложност, connascence, качество на тестове (+13 още)."
+        }
+      ]
+    },
+    {
       "id": "geymara",
       "name": "Геймъра",
       "title": "Разработчик на FiveM скриптове",
