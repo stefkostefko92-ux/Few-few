@@ -270,6 +270,37 @@ async function main() {
   const bench = { cplMed: mediana(cplTutti), cprMed: mediana(cprTutti) };
   const aziendeIdx = {}; // codice → [nome, regione]
   const fornAgg = new Map(); // cf → профил на изпълнителя (през всички болници)
+
+  // Нови източници (all-11) — зареждат се тук (преди цикъла за структурите), за да
+  // захранят и панела „La tua regione" във всеки профил. Всеки по избор.
+  const popolazione = await readJson(pjoin(DATA_DIR, 'popolazione.json')).catch(() => ({ regioni: {}, italia: 0, anno: null }));
+  const nomeReg = (k) => (REGIONI[k] ? REGIONI[k].nome : k);
+  const regHref = (k) => (REGIONI[k] ? `regione/${k}.html` : null);
+  const apparecchiature = await readJson(pjoin(DATA_DIR, 'apparecchiature.json')).catch(() => null);
+  const sdo = await readJson(pjoin(DATA_DIR, 'sdo.json')).catch(() => null);
+  const siope = await readJson(pjoin(DATA_DIR, 'siope.json')).catch(() => null);
+  const pnrrSalute = await readJson(pjoin(DATA_DIR, 'pnrr-salute.json')).catch(() => null);
+
+  // Регионален контекст per ключ (за панела в профила на болницата) — 100% надежден
+  // join (регион), за разлика от кодовете на отделните структури.
+  const regCtx = {};
+  for (const key of Object.keys(REGIONI)) {
+    const pop = popolazione.regioni[key] || 0;
+    const a = apparecchiature && apparecchiature.perRegione[key];
+    const s = sdo && sdo.perRegione[key];
+    const si = siope && siope.perRegione[key];
+    const pn = pnrrSalute && pnrrSalute.perRegione[key];
+    regCtx[key] = {
+      nome: nomeReg(key),
+      href: regHref(key),
+      tacPerMln: a && pop ? (a.cat.TAC || 0) / pop * 1e6 : null,
+      robot: a ? a.cat.ROB || 0 : null,
+      ricoveriPer1000: s && pop ? s.dimissioni / pop * 1000 : null,
+      siopeDic: si ? si.dicSuMedia : null,
+      pnrrProCapite: pn && pop ? pn.finanziamentoPnrr / pop : null,
+    };
+  }
+
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
     // Пълен опис на договорите (ако е наличен): CSV + inline данни
@@ -331,7 +362,7 @@ async function main() {
     }
     await writeFile(
       join(SITE_DIR, 'struttura', `${fileCod}.html`),
-      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe, bench })
+      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe, bench, reg: regCtx[REG_KEY[ente.codice.slice(0, 3)]] })
     );
   }
   // Глобален индекс + страница за търсене през всички договори
@@ -508,15 +539,8 @@ async function main() {
     await writeFile(join(SITE_DIR, 'mobilita.html'), renderMobilita({ mob, regKeyByNome: (n) => nome2key.get(n) || null }));
   }
 
-  // --- Нови източници (all-11) — всеки по избор (страницата се пропуска без данните) ---
-  const popolazione = await readJson(pjoin(DATA_DIR, 'popolazione.json')).catch(() => ({ regioni: {}, italia: 0, anno: null }));
-  const nomeReg = (k) => (REGIONI[k] ? REGIONI[k].nome : k);
-  const regHref = (k) => (REGIONI[k] ? `regione/${k}.html` : null);
-
-  const apparecchiature = await readJson(pjoin(DATA_DIR, 'apparecchiature.json')).catch(() => null);
+  // --- Нови източници (all-11) — данните са заредени по-горе; тук само страниците ---
   if (apparecchiature) await writeFile(join(SITE_DIR, 'apparecchiature.html'), renderApparecchiature({ app: apparecchiature, popolazione, nomeReg }));
-
-  const sdo = await readJson(pjoin(DATA_DIR, 'sdo.json')).catch(() => null);
   if (sdo) await writeFile(join(SITE_DIR, 'sdo.html'), renderSdo({ sdo, popolazione, nomeReg }));
 
   const aggiu = await readJson(pjoin(DATA_DIR, 'aggiudicazioni.json')).catch(() => null);
@@ -528,10 +552,7 @@ async function main() {
   const cons = await readJson(pjoin(DATA_DIR, 'consulenze.json')).catch(() => null);
   if (cons) await writeFile(join(SITE_DIR, 'consulenze.html'), renderConsulenze({ cons }));
 
-  const pnrrSalute = await readJson(pjoin(DATA_DIR, 'pnrr-salute.json')).catch(() => null);
   if (pnrrSalute) await writeFile(join(SITE_DIR, 'pnrr-salute.html'), renderPnrrSalute({ pnrr: pnrrSalute, popolazione, nomeReg, href: regHref }));
-
-  const siope = await readJson(pjoin(DATA_DIR, 'siope.json')).catch(() => null);
   if (siope) await writeFile(join(SITE_DIR, 'siope.html'), renderSiope({ siope, nomeReg }));
 
   // PNE (esiti clinici) — разход на глава per регион за кръстоската „soldi vs esiti"
@@ -1135,7 +1156,7 @@ competenti (Corte dei conti, ANAC).</p>
 }
 
 // ---------- DETTAGLIO STRUTTURA ----------
-function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe, bench = {} }) {
+function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe, bench = {}, reg = null }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
   const val = (k) => anni.map((a) => [a, ente.serie.get(a)[k]]).filter(([, v]) => v != null);
@@ -1175,6 +1196,27 @@ function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, co
   <p class="small muted">Costi della produzione (${annoUlt}) rapportati a posti letto e ricoveri dell'anagrafe ospedaliera,
   confrontati con la mediana nazionale. Le ASL territoriali spendono anche fuori dagli ospedali (territorio, farmaceutica
   convenzionata): il confronto è indicativo, più solido tra aziende dello stesso tipo.</p>`;
+  }
+
+  // Панел „La tua regione" — свързва болницата с регионалните анализи (100% надежден
+  // регионален join; кодовете на отделните структури между министерските датасети
+  // не съвпадат, затова тук е регионалният контекст, не собствената дотация).
+  let regBlk = '';
+  if (reg && reg.href) {
+    const f1 = (x) => (x == null ? null : x.toLocaleString('it-IT', { maximumFractionDigits: 1 }));
+    const cardReg = (href, lab, val) =>
+      val == null ? '' : `<a class="seg media" href="${href}" style="text-decoration:none"><div class="t">${lab}</div><div class="d"><strong>${val}</strong></div></a>`;
+    const celle = [
+      cardReg('apparecchiature.html', 'Dotazione tecnologica', reg.tacPerMln != null ? `${f1(reg.tacPerMln)} TC/mln${reg.robot ? ` · ${reg.robot} robot` : ''}` : null),
+      cardReg('sdo.html', 'Volumi di ricovero', reg.ricoveriPer1000 != null ? `${f1(reg.ricoveriPer1000)} ric./1.000 ab.` : null),
+      cardReg('siope.html', 'Cassa di dicembre', reg.siopeDic != null ? `${reg.siopeDic.toLocaleString('it-IT', { maximumFractionDigits: 2 })}× il mese medio` : null),
+      cardReg('pnrr-salute.html', 'PNRR Missione 6', reg.pnrrProCapite != null ? `${euroIt(Math.round(reg.pnrrProCapite))}/ab.` : null),
+    ].filter(Boolean).join('');
+    if (celle) {
+      regBlk = `<h2>La regione: ${esc(reg.nome)}</h2>
+  <p class="small muted">Indicatori della regione a cui appartiene questa azienda (dato regionale, non della singola struttura). Approfondisci in <a href="${reg.href}">${esc(reg.nome)}</a>.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">${celle}</div>`;
+    }
   }
 
   // Оперативен профил
@@ -1302,6 +1344,7 @@ ${soldiBlock}
 ${appaltiBlock(app, appMatch)}
 ${contrattiBlock(ente, contratti)}
 ${opTable}
+${regBlk}
 ${finTable}
 ${ceBlock}
 ${spBlock}
