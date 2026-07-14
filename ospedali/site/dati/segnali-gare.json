@@ -1,5 +1,5 @@
 {
-  "generatoIl": "2026-07-14T05:22:21.430Z",
+  "generatoIl": "2026-07-14T05:39:58.337Z",
   "fonte": "ANAC — BDNCP: CIG mensili + aggiudicazioni (CC BY / CC BY-SA 4.0), committenti sanitari 2019–2024",
   "nota": "Indicatori di rischio sulle procedure di gara. Ogni segnale è un INDICATORE, non una prova: possono esistere spiegazioni lecite (urgenza reale, mercati di nicchia, esigenze cliniche).",
   "nazionale": {
@@ -14,8 +14,8 @@
       "rapporto": 1.775049115913556
     },
     "frazionamento": {
-      "cluster": 12689,
-      "valore": 7386215353
+      "cluster": 3823,
+      "valore": 1078637288
     },
     "ribassoZero": {
       "n": 3569,
@@ -159,63 +159,63 @@
   "topFrazionamento": [
     {
       "den": "SANITAETSBETRIEB DER AUTONOMEN PROVINZ BOZEN",
-      "cluster": 262,
-      "valore": 97846137
-    },
-    {
-      "den": "AZIENDA SANITARIA LOCALE SALERNO",
-      "cluster": 206,
-      "valore": 234201233
-    },
-    {
-      "den": "AZIENDA SANITARIA LOCALE BA",
-      "cluster": 191,
-      "valore": 91319853
+      "cluster": 80,
+      "valore": 13709279
     },
     {
       "den": "AZIENDA SOCIO SANITARIA TERRITORIALE (ASST) GRANDE OSPEDALE METROPOLITANO NIGUARDA",
-      "cluster": 168,
-      "valore": 121586760
+      "cluster": 65,
+      "valore": 16080674
     },
     {
       "den": "AZIENDA USL TOSCANA NORD OVEST",
-      "cluster": 161,
-      "valore": 30596272
+      "cluster": 55,
+      "valore": 6725872
     },
     {
-      "den": "AZ.OSPEDALIERO UNIVERSITARIA DI BOLOGNA - POLICLINICO S.ORSOLA MALPIGHI",
-      "cluster": 152,
-      "valore": 122550596
+      "den": "AZIENDA SANITARIA LOCALE SALERNO",
+      "cluster": 54,
+      "valore": 23433994
     },
     {
-      "den": "ISTITUTO ORTOPEDICO RIZZOLI",
-      "cluster": 148,
-      "valore": 166768813
+      "den": "AZIENDA SANITARIA LOCALE BA",
+      "cluster": 53,
+      "valore": 11948719
+    },
+    {
+      "den": "AZIENDA SANITARIA UNIVERSITARIA FRIULI CENTRALE",
+      "cluster": 49,
+      "valore": 10833013
+    },
+    {
+      "den": "AZIENDA UNITA SANITARIA LOCALE TOSCANA SUD-EST",
+      "cluster": 45,
+      "valore": 4374962
     },
     {
       "den": "AZIENDA USL DELLA ROMAGNA",
-      "cluster": 140,
-      "valore": 98385988
+      "cluster": 43,
+      "valore": 12792494
+    },
+    {
+      "den": "AZ.OSPEDALIERO UNIVERSITARIA DI BOLOGNA - POLICLINICO S.ORSOLA MALPIGHI",
+      "cluster": 41,
+      "valore": 16938158
+    },
+    {
+      "den": "FONDAZIONE IRCCS CA GRANDA OSPEDALE MAGGIORE POLICLINICO",
+      "cluster": 40,
+      "valore": 9812832
     },
     {
       "den": "AZIENDA SOCIO SANITARIA TERRITORIALE DEI SETTE LAGHI",
-      "cluster": 137,
-      "valore": 668095004
+      "cluster": 39,
+      "valore": 80993032
     },
     {
-      "den": "AZIENDA SANITARIA LOCALE DI CASERTA",
-      "cluster": 135,
-      "valore": 137184359
-    },
-    {
-      "den": "AZIENDA USL DI BOLOGNA",
-      "cluster": 133,
-      "valore": 88425042
-    },
-    {
-      "den": "ASL NAPOLI 2 NORD",
-      "cluster": 129,
-      "valore": 145832010
+      "den": "AZIENDA UNITA' SANITARIA LOCALE TOSCANA CENTRO",
+      "cluster": 39,
+      "valore": 4405175
     }
   ],
   "topRibassoZero": [

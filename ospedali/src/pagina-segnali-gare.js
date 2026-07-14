@@ -52,7 +52,8 @@ ${tabella(seg.topSottoSoglia, [
 
 <h2>3 · Possibile frazionamento artificiale</h2>
 <p class="small muted">Tre o più affidamenti diretti per lo stesso settore (CPV) allo stesso committente entro 30 giorni,
-ciascuno sotto la soglia dei 40.000 € ma insieme oltre: possibile spacchettamento per evitare la gara. Nazionale:
+ciascuno sotto una soglia prudenziale di 40.000 € (soglia scelta come segnale conservativo, non come limite di legge)
+ma insieme oltre: possibile spacchettamento per evitare la gara. Nazionale:
 ${fr ? `${numeroIt(fr.cluster)} cluster, ${euroCompact(fr.valore)}` : '—'}.</p>
 ${tabella(seg.topFrazionamento, [
     { t: 'Committente', f: (r) => esc(r.den) },
@@ -73,7 +74,8 @@ ${tabella(seg.topRibassoZero, [
 Ciascuno può avere spiegazioni legittime: un termine breve per un’urgenza reale, un importo vicino alla soglia per
 coincidenza, affidamenti ravvicinati per esigenze diverse, un ribasso basso su un prezzo già calmierato. Sono
 <strong>segnali per una verifica</strong> — dal CIG alla determina, fino all’accesso civico — non conclusioni.
-Le soglie sono scelte prudenti e dichiarate; i numeri per singola gara sono tutti tracciabili.</div>
+Le soglie sono scelte prudenti e dichiarate; i numeri per singola gara sono tutti tracciabili. Ritieni un dato
+inesatto? <a href="note-legali.html#rettifiche">Richiedi una rettifica</a>.</div>
 <p class="small muted">Fonte: ${esc(seg.fonte)}. Dati grezzi: <a href="dati.html">open data</a> (segnali-gare.json).</p>
 `;
   return page({

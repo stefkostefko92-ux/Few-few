@@ -2005,12 +2005,16 @@ accuratezza</strong>: chi li riutilizza è tenuto a verificarli sulle fonti uffi
 
 <h2>Natura dei contenuti</h2>
 <p>Il sito rielabora <strong>dati ufficiali in formato aperto</strong> e ne deriva indicatori automatici. Le
-«segnalazioni», gli indicatori di spesa e gli indicatori sugli appalti (quota senza gara, offerente unico registrato,
-concentrazione, frazionamento) sono <strong>elaborazioni statistiche automatiche</strong> e vanno intesi come
-<strong>piste da verificare, non come prove di irregolarità o illecito</strong>. Nessun addebito è mosso alle strutture,
-alle aziende o agli operatori economici citati. Un’alta quota senza gara, un solo offerente o un’elevata concentrazione
-possono avere spiegazioni pienamente legittime (mercati ristretti, esclusive, brevetti, infungibilità tecnica, urgenze,
-fusioni, ripiani regionali).</p>
+«segnalazioni», gli indicatori di spesa e gli indicatori sugli appalti — quota senza gara, offerente unico registrato,
+concentrazione, frazionamento, le <em>«cordate»</em> di offerenti (possibile cover bidding, coppie di operatori) e gli
+indicatori procedurali sulle gare (termini brevi, importi sotto soglia, ribassi nulli, inviti a vuoto, subappalto) —
+sono <strong>elaborazioni statistiche automatiche</strong> e vanno intesi come <strong>piste da verificare, non come
+prove di irregolarità o illecito</strong>. In particolare, <strong>l’accostamento di due imprese</strong> negli
+indicatori sulle gare <strong>non implica alcun accordo tra loro né alcuna condotta illecita</strong>. Nessun addebito è
+mosso alle strutture, alle aziende o agli operatori economici citati (tutti <strong>persone giuridiche</strong>: mai
+persone fisiche). Un’alta quota senza gara, un solo offerente o un’elevata concentrazione possono avere spiegazioni
+pienamente legittime (mercati ristretti, esclusive, brevetti, infungibilità tecnica, urgenze, fusioni, ripiani
+regionali). Per ogni dato è disponibile il diritto di <a href="#rettifiche">rettifica</a>.</p>
 
 <h2>Fonti e licenze</h2>
 <ul>

@@ -28,9 +28,11 @@ const ANAC_DIR = join(RAW_DIR, 'anac');
 const ANAC2 = join(RAW_DIR, 'anac2');
 const ANNI = [2019, 2020, 2021, 2022, 2023, 2024];
 
-// Праг за ЕС-публикация (forniture/servizi, обикновени сектори) по година.
+// Праг за ЕС-публикация (forniture/servizi, обикновени сектори) по двугодишни линии
+// (Reg. 2017/2365: 2018-19=221k; 2019/1828: 2020-21=214k; 2021/1952: 2022-23=215k;
+// 2023/2495: 2024-25=221k).
 export function sogliaUE(anno) {
-  return anno >= 2024 ? 221_000 : anno >= 2022 ? 215_000 : 214_000;
+  return anno >= 2024 ? 221_000 : anno >= 2022 ? 215_000 : anno >= 2020 ? 214_000 : 221_000;
 }
 // „Точно под прага" = в лентата [-8%, праг); за сравнение и лентата [праг, +8%).
 export function bandaSottoSoglia(importo, anno) {
@@ -51,16 +53,15 @@ export function termineBreve(giorni) {
  */
 export function clusterFrazionamento(diretti, { window = 30, soglia = 40_000 } = {}) {
   const arr = diretti.filter((d) => d.importo > 0 && d.importo < soglia).sort((a, b) => a.t - b.t);
-  let cluster = 0, valore = 0, i = 0;
-  const usati = new Set();
+  let cluster = 0, valore = 0, i = 0, ultimoFine = -1;
   for (let j = 0; j < arr.length; j++) {
     while (arr[j].t - arr[i].t > window * 86400000) i++;
     const n = j - i + 1;
-    if (n >= 3) {
+    if (n >= 3 && i > ultimoFine) {
       let s = 0;
       for (let k = i; k <= j; k++) s += arr[k].importo;
-      if (s > soglia && !usati.has(i)) {
-        cluster++; valore += s; usati.add(i);
+      if (s > soglia) {
+        cluster++; valore += s; ultimoFine = j; // непокриващи се клъстери (без двойно броене)
       }
     }
   }

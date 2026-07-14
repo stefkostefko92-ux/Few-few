@@ -38,6 +38,16 @@ test('clusterFrazionamento: разпръснати във времето не с
   assert.equal(r.cluster, 0);
 });
 
+test('clusterFrazionamento: застъпени прозорци НЕ броят двойно (непокриващи се клъстери)', () => {
+  // равномерен поток от 6 преки по 20k на всеки 14 дни (window 30) — един affidamento
+  // не бива да влиза в няколко клъстера. Очаквани: 2 непокриващи се клъстера, не 4.
+  const d = (day, importo) => ({ t: Date.parse(`2024-01-01`) + day * 86400000, importo });
+  const arr = [d(0, 20000), d(14, 20000), d(28, 20000), d(42, 20000), d(56, 20000), d(70, 20000)];
+  const r = clusterFrazionamento(arr, { window: 30, soglia: 40_000 });
+  assert.equal(r.cluster, 2);
+  assert.equal(r.valore, 120_000); // общата стойност на 6-те, не преброена многократно
+});
+
 test('clusterFrazionamento: над прага поотделно се изключват (не е раздробяване)', () => {
   const d = (day, importo) => ({ t: Date.parse(`2024-01-${String(day).padStart(2, '0')}`), importo });
   const r = clusterFrazionamento([d(1, 50_000), d(2, 50_000), d(3, 50_000)], { window: 30, soglia: 40_000 });

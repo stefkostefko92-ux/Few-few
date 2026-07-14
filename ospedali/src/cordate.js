@@ -18,6 +18,7 @@ import { readFile, writeFile, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { RAW_DIR, DATA_DIR } from './lib/paths.js';
+import { eSocietaDiCapitali } from './coi.js';
 
 const ANAC_DIR = join(RAW_DIR, 'anac');
 const GARA_CATS = new Set(['competitiva', 'negoziata']); // само реални състезателни гари
@@ -166,11 +167,19 @@ async function main() {
   });
   console.log(`Участници събрани за ${partByCig.size.toLocaleString('it-IT')} гари.`);
 
-  // 3) сглобяване на гарите за анализа
+  // GDPR: назоваваме и формираме двойки САМО за società di capitali (SPA/SRL/coop/
+  // consorzio…). 11-цифрен P.IVA НЕ гарантира юр. лице — ditte individuali го имат и
+  // денонимацията им често е ИМЕ НА ФИЗИЧЕСКО ЛИЦЕ. eSocietaDiCapitali (от coi.js)
+  // проверява правната форма по денонимация → изключва ditte individuali/SNC/SAS.
+  const societa = new Set();
+  for (const [cf, den] of cfDen) if (eSocietaDiCapitali(den)) societa.add(cf);
+
+  // 3) сглобяване на гарите за анализа (участници = само società di capitali;
+  // победителите остават пълни, за да е коректно „кой е спечелил")
   const gare = [];
   for (const [cig, parts] of partByCig) {
     const info = cigInfo.get(cig);
-    gare.push({ winners: winnersByCig.get(cig), parts: [...parts], importo: info.importo, auth: info.auth });
+    gare.push({ winners: winnersByCig.get(cig), parts: [...parts].filter((cf) => societa.has(cf)), importo: info.importo, auth: info.auth });
   }
   const cordate = analizzaCordate(gare);
   // обогатяване с имена + примери (за топ 60)
