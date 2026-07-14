@@ -65,7 +65,8 @@ function authed(req) {
 
 // ── Админ маршрути ────────────────────────────────────────────────────────────
 async function handleAdmin(req, res, url) {
-  const ip = clientIp(req);
+  // throttle по РЕАЛНИЯ TCP-peer (не по подправимия X-Forwarded-For) — defense-in-depth
+  const ip = req.socket.remoteAddress || clientIp(req);
 
   if (req.method === 'POST' && url.pathname === '/admin/api/login') {
     if (throttled(ip)) return json(res, 429, { error: 'too_many' });
@@ -112,7 +113,8 @@ async function handleAdmin(req, res, url) {
 // ── Статичен сайт + броене ────────────────────────────────────────────────────
 async function serveStatic(req, res, url) {
   // Защита срещу path traversal
-  let rel = decodeURIComponent(url.pathname);
+  let rel;
+  try { rel = decodeURIComponent(url.pathname); } catch { return serveNotFound(res); }
   if (rel.endsWith('/')) rel += 'index.html';
   let abs = normalize(join(cfg.siteDir, rel));
   if (abs !== cfg.siteDir && !abs.startsWith(cfg.siteDir + sep)) return send(res, 403, 'Forbidden');

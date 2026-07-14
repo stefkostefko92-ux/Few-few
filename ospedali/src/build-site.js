@@ -2103,8 +2103,8 @@ del servizio (base giuridica art. 6.1.f GDPR). Il nominativo del fornitore e l�
 extra-UE saranno indicati in questa pagina al momento della pubblicazione definitiva.</p>`;
   const body = `
 <h1>Informativa sulla privacy</h1>
-<p class="lead">Questo sito è statico e <strong>non usa cookie né strumenti di tracciamento</strong>; non raccoglie
-dati di navigazione tramite script propri.</p>
+<p class="lead">Questo sito <strong>non usa cookie né strumenti di tracciamento e non profila i visitatori</strong>;
+le visite sono conteggiate solo in forma <strong>aggregata e anonima</strong> (vedi sotto).</p>
 
 <h2>Titolare del trattamento</h2>
 <p><strong>${esc(titolare.nome || 'Carbon Stealth VCC')}</strong>${sede}. Contatto: ${contattoHtml}.</p>
@@ -2122,6 +2122,17 @@ un’etichetta generica, così da non essere mai mostrati né indicizzati. Il tr
 <strong>trasparenza e interesse pubblico</strong> e a fini statistici (art. 6.1.f e artt. 85–89 GDPR; D.Lgs. 196/2003
 come modificato dal D.Lgs. 101/2018). I dati rielaborati vengono aggiornati a ogni rigenerazione del sito; le fonti
 primarie restano pubbliche presso i rispettivi titolari (ANAC, BDAP/MEF, Ministero della Salute).</p>
+
+<h2>Statistiche di visita (aggregate)</h2>
+<p>Il server registra un <strong>conteggio aggregato e anonimo</strong> delle visite (pagine viste e visitatori per
+giorno e per pagina) a fini statistici e di funzionamento (base giuridica art. 6.1.f GDPR — interesse legittimo alla
+misurazione dell’audience). <strong>Non usa cookie né altri identificatori memorizzati sul dispositivo</strong>
+(art. 5.3 Direttiva ePrivacy; art. 122 D.Lgs. 196/2003). Il conteggio dei visitatori unici è ottenuto con un valore
+calcolato al momento (hash a senso unico di indirizzo IP e user-agent con un <strong>sale casuale giornaliero
+conservato solo in memoria e mai salvato</strong>): su disco vengono scritti esclusivamente <strong>totali
+numerici</strong>, senza indirizzi IP né dati che permettano di identificare o ricontattare i visitatori. Il pannello
+di amministrazione usa un solo cookie tecnico di sessione (<code>ost_admin</code>, HttpOnly), <strong>strettamente
+necessario</strong> per l’accesso riservato e perciò esente da consenso.</p>
 
 <h2>Diritti</h2>
 <p>È possibile esercitare i diritti di <strong>accesso, rettifica, limitazione, opposizione e cancellazione</strong>
@@ -2195,8 +2206,8 @@ misuriamo la <strong>quota di spesa affidata senza gara</strong> — affidamenti
 il primo indicatore di opacità che guardano ANAC e Corte dei conti.</p>
 
 <div class="grid kpis">
-  ${kpi(`Contratti senza gara (${anniTxt})`, percentualeIt(nz.quotaSenzaGaraNum), (nz.quotaSenzaGaraNum || 0) > 0.4 ? 'neg' : '')}
-  ${kpi('Senza gara sul valore', percentualeIt(nz.quotaSenzaGara), (nz.quotaSenzaGara || 0) > 0.4 ? 'neg' : '')}
+  ${kpi(`Spesa senza gara (${anniTxt})`, percentualeIt(nz.quotaSenzaGara), (nz.quotaSenzaGara || 0) > 0.4 ? 'neg' : '')}
+  ${kpi('Contratti senza gara (sul numero)', percentualeIt(nz.quotaSenzaGaraNum), (nz.quotaSenzaGaraNum || 0) > 0.4 ? 'neg' : '')}
   ${kpi('Valore messo a gara', euroCompact(nz.importo))}
   ${kpi('Contratti (lotti)', numeroIt(nz.n))}
 </div>
