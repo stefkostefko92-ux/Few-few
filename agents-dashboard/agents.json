@@ -1320,9 +1320,20 @@
           "date": "2026-07-14",
           "event": "v12.5 — учене",
           "detail": "Научи: ospedali/ ETL: fetch-appalti.js:101 и fetch-dettagli.js:86 викат `unzip` ИЗВЪН try/catc… (+2 още)"
+        },
+        {
+          "version": "12.6.0",
+          "date": "2026-07-14",
+          "event": "v12.6 — учене",
+          "detail": "Научи: ospedali/ НЯМА CI workflow — .github/workflows/ съдържа android/cspos/eternaltouch/mast… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: „ospedali/ НЯМА CI workflow — .github/workflows/ съдържа android/cspos/eternaltouch/mast…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-14",
           "type": "learning",
