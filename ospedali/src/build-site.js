@@ -756,7 +756,7 @@ async function main() {
   // Логото (прозрачен PNG, фонът махнат) — марка в хедъра на всяка страница
   await copyFile(pjoin(ROOT, 'assets', 'logo.png'), join(SITE_DIR, 'logo.png')).catch(() => {});
   // Favicon-и (иконата от логото) — .ico + PNG размери + apple-touch
-  for (const f of ['favicon.ico', 'favicon-32.png', 'favicon-16.png', 'apple-touch-icon.png']) {
+  for (const f of ['favicon.ico', 'favicon-32.png', 'favicon-16.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png']) {
     await copyFile(pjoin(ROOT, 'assets', f), join(SITE_DIR, f)).catch(() => {});
   }
   // Web App Manifest (икона на началния екран + theme/name). Реферира съществуващите
@@ -774,7 +774,9 @@ async function main() {
       background_color: '#f3f5f8',
       icons: [
         { src: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
-        { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
+        { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+        { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
       ],
     }, null, 2) + '\n'
   );
