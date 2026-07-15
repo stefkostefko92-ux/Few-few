@@ -18,6 +18,28 @@ let CTX = { nAbbinate: 113 };
  * @param {Partial<typeof CTX>} c @returns {void} */
 export function setApprofondimentiCtx(c) { CTX = { ...CTX, ...c }; }
 
+/**
+ * Обвивка за подстраниците на „Approfondimenti": слага суфикса
+ * „— Ospedali Trasparenti", подразбиращ се `active` и извежда JSON-LD от
+ * title/description/canonical, без да ги дублира. Специалните страници подават
+ * готов `jsonld`, друг `active` или `rel`.
+ * @param {object} o
+ * @param {string} o.title кратко заглавие (без суфикса)
+ * @param {string} o.description
+ * @param {string} [o.canonical] релативен път (по подр. = active)
+ * @param {string} [o.ldTitolo] заглавие за pagLd; ако липсва и няма подаден jsonld → без LD
+ * @param {string} [o.ldNome] име за трошката (по подр. = ldTitolo)
+ * @param {Record<string, unknown>|null} [o.jsonld] готов JSON-LD (заменя изведения)
+ * @param {string} [o.active] по подр. 'approfondimenti.html'
+ * @param {string} [o.rel] префикс за връзки (напр. '../')
+ * @param {string} o.body
+ * @returns {string}
+ */
+function metaApprofondimento({ title, description, canonical, ldTitolo, ldNome, jsonld, active = 'approfondimenti.html', rel = '', body }) {
+  const ld = jsonld !== undefined ? jsonld : (ldTitolo ? pagLd(ldTitolo, description, canonical || active, ldNome || ldTitolo) : null);
+  return page({ title: `${title} — Ospedali Trasparenti`, description, active, rel, canonical: canonical ?? null, jsonld: ld, body });
+}
+
 // ---------- Класификация на CPV описания в макрокатегории ----------
 // Евристика по ключови думи върху descrizione_cpv (ANAC). Ред = приоритет.
 /** @type {Array<[string, RegExp]>} */
@@ -136,17 +158,12 @@ ${lineChart([{ label: 'Risultato d’esercizio (somma aziende)', color: 'var(--p
 anche cambi di perimetro (fusioni, riforme regionali): vanno lette come ordine di grandezza, non al centesimo.
 Fonte: BDAP — RGS/MEF, modelli CE (consuntivo).</p>
 `;
-  return page({
-    title: `Il decennio della sanità ${anni[0]}–${anni.at(-1)} — tendenze — Ospedali Trasparenti`,
+  return metaApprofondimento({
+    title: `Il decennio della sanità ${anni[0]}–${anni.at(-1)} — tendenze`,
     description: `Come sono cambiati ricavi, costi, personale e risultati delle aziende sanitarie italiane dal ${anni[0]} al ${anni.at(-1)}. Dati ufficiali BDAP/MEF.`,
-    active: 'approfondimenti.html',
     canonical: 'tendenze.html',
-    jsonld: pagLd(
-      `Il decennio della sanità ${anni[0]}–${anni.at(-1)}`,
-      `Come sono cambiati ricavi, costi, personale e risultati delle aziende sanitarie italiane dal ${anni[0]} al ${anni.at(-1)}. Dati ufficiali BDAP/MEF.`,
-      'tendenze.html',
-      'Il decennio della sanità'
-    ),
+    ldTitolo: `Il decennio della sanità ${anni[0]}–${anni.at(-1)}`,
+    ldNome: 'Il decennio della sanità',
     body,
   });
 }
@@ -184,17 +201,12 @@ per farmaci esclusivi e monopoli tecnici può essere pienamente legittimo. <stro
 <p class="small muted">Fonte: ANAC — Banca Dati Nazionale dei Contratti Pubblici (CC BY 4.0), gare &gt; 40.000 €,
 anni 2023–2025, perimetro: le aziende sanitarie collegate. Persone fisiche non nominate.</p>
 `;
-  return page({
-    title: 'I 100 contratti più grandi della sanità — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'I 100 contratti più grandi della sanità',
     description: 'La classifica dei contratti pubblici di maggior valore delle aziende sanitarie italiane 2023–2025, con fornitore, procedura e CIG verificabile.',
-    active: 'approfondimenti.html',
     canonical: 'top-contratti.html',
-    jsonld: pagLd(
-      'I 100 contratti più grandi della sanità',
-      'La classifica dei contratti pubblici di maggior valore delle aziende sanitarie italiane 2023–2025, con fornitore, procedura e CIG verificabile.',
-      'top-contratti.html',
-      'I 100 contratti più grandi'
-    ),
+    ldTitolo: 'I 100 contratti più grandi della sanità',
+    ldNome: 'I 100 contratti più grandi',
     body,
   });
 }
@@ -240,17 +252,12 @@ legittimo</strong> — indica solo dove guardare.</div>
 ${sezioni}
 <p class="small muted">Fonte: ANAC (CC BY 4.0), elaborazione propria. Persone fisiche non nominate.</p>
 `;
-  return page({
-    title: 'Dove vanno i soldi: categorie di spesa — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Dove vanno i soldi: categorie di spesa',
     description: 'La spesa contrattuale delle aziende sanitarie per categoria: farmaci, dispositivi, pulizie, energia, informatica — con i primi fornitori di ciascuna.',
-    active: 'approfondimenti.html',
     canonical: 'categorie.html',
-    jsonld: pagLd(
-      'Dove vanno i soldi: le categorie di spesa',
-      'La spesa contrattuale delle aziende sanitarie per categoria: farmaci, dispositivi, pulizie, energia, informatica — con i primi fornitori di ciascuna.',
-      'categorie.html',
-      'Categorie di spesa'
-    ),
+    ldTitolo: 'Dove vanno i soldi: le categorie di spesa',
+    ldNome: 'Categorie di spesa',
     body,
   });
 }
@@ -293,17 +300,11 @@ sono nel bilancio della loro ASL. Mostra i primi 400 risultati della ricerca.</p
 })();
 </script>
 `;
-  return page({
-    title: 'Trova la tua struttura — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Trova la tua struttura',
     description: 'Cerca per comune gli ospedali pubblici del tuo territorio e l’azienda sanitaria che ne gestisce i conti.',
-    active: 'approfondimenti.html',
     canonical: 'dove.html',
-    jsonld: pagLd(
-      'Trova la tua struttura',
-      'Cerca per comune gli ospedali pubblici del tuo territorio e l’azienda sanitaria che ne gestisce i conti.',
-      'dove.html',
-      'Trova la tua struttura'
-    ),
+    ldTitolo: 'Trova la tua struttura',
     body,
   });
 }
@@ -377,10 +378,9 @@ ${blocchi}
 <p class="small muted">Le definizioni sono divulgative, non pareri legali. Riferimenti normativi: d.lgs. 36/2023
 (Codice dei contratti), d.lgs. 118/2011 (bilanci SSN), d.lgs. 33/2013 (trasparenza).</p>
 `;
-  return page({
-    title: 'Glossario della sanità pubblica: appalti, CIG, GSA, bilanci — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Glossario della sanità pubblica: appalti, CIG, GSA, bilanci',
     description: 'Cos’è un affidamento diretto? Cos’è il CIG? Quanto spende la sanità pubblica italiana? Le risposte, semplici e verificabili.',
-    active: 'approfondimenti.html',
     canonical: 'glossario.html',
     jsonld,
     body,
@@ -428,17 +428,12 @@ entro 30 giorni. In caso di diniego si può ricorrere al difensore civico o al T
 il quadro: leggi la determina, verifica se c’era una convenzione, un’esclusiva, un’urgenza documentata. Le segnalazioni
 solide sono quelle che citano atti, non impressioni.</div>
 `;
-  return page({
-    title: 'Come verificare un appalto della sanità in 5 minuti — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Come verificare un appalto della sanità in 5 minuti',
     description: 'Guida pratica: dal CIG alla determina, dall’Amministrazione Trasparente all’accesso civico FOIA. Come controllare un contratto pubblico, passo per passo.',
-    active: 'approfondimenti.html',
     canonical: 'guida-verifica.html',
-    jsonld: pagLd(
-      'Come verificare un appalto della sanità in 5 minuti',
-      'Guida pratica: dal CIG alla determina, dall’Amministrazione Trasparente all’accesso civico FOIA. Come controllare un contratto pubblico, passo per passo.',
-      'guida-verifica.html',
-      'Come verificare un appalto'
-    ),
+    ldTitolo: 'Come verificare un appalto della sanità in 5 minuti',
+    ldNome: 'Come verificare un appalto',
     body,
   });
 }
@@ -480,17 +475,12 @@ fuori perimetro). Il flag è dichiarato dalle stazioni appaltanti e può essere 
 <p class="small muted">Per il quadro ufficiale della Missione 6: <a href="https://www.pnrr.salute.gov.it/" target="_blank" rel="noopener">pnrr.salute.gov.it</a>
 e <a href="https://www.italiadomani.gov.it/" target="_blank" rel="noopener">italiadomani.gov.it</a>.</p>
 `;
-  return page({
-    title: 'Il PNRR nella sanità: appalti Missione 6 per regione — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Il PNRR nella sanità: appalti Missione 6 per regione',
     description: 'Quanto valgono gli appalti sanitari finanziati dal PNRR (Missione 6 Salute) e in quali regioni si concentrano. Dati ANAC 2023–2025.',
-    active: 'approfondimenti.html',
     canonical: 'pnrr.html',
-    jsonld: pagLd(
-      'Il PNRR nella sanità: appalti Missione 6 per regione',
-      'Quanto valgono gli appalti sanitari finanziati dal PNRR (Missione 6 Salute) e in quali regioni si concentrano. Dati ANAC 2023–2025.',
-      'pnrr.html',
-      'Il PNRR nella sanità'
-    ),
+    ldTitolo: 'Il PNRR nella sanità: appalti Missione 6 per regione',
+    ldNome: 'Il PNRR nella sanità',
     body,
   });
 }
@@ -611,17 +601,11 @@ ${cards}
 legittime. <strong>Indicatori, non prove.</strong> Per segnalare errori o fornire contesto:
 <a href="note-legali.html#rettifiche">rettifiche</a>.</div>
 `;
-  return page({
-    title: 'Le storie nei dati — casi da verificare — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Le storie nei dati — casi da verificare',
     description: 'Casi concreti dagli appalti della sanità: maxi-affidamenti, concentrazioni anomale, relazioni ricorrenti — raccontati con i dati ufficiali e le spiegazioni possibili.',
-    active: 'approfondimenti.html',
     canonical: 'storie.html',
-    jsonld: pagLd(
-      'Le storie nei dati',
-      'Casi concreti dagli appalti della sanità: maxi-affidamenti, concentrazioni anomale, relazioni ricorrenti — raccontati con i dati ufficiali e le spiegazioni possibili.',
-      'storie.html',
-      'Le storie nei dati'
-    ),
+    ldTitolo: 'Le storie nei dati',
     body,
   });
 }
@@ -690,10 +674,9 @@ versione di tutte le pagine. Qui teniamo il registro di cosa è cambiato.</p>
 <p class="small muted">Le date di generazione dei dataset correnti sono nella pagina <a href="verifiche.html">Dati e
 verifiche</a> (con impronta SHA-256 delle fonti). Segnalazioni e correzioni: <a href="note-legali.html#rettifiche">rettifiche</a>.</p>
 `;
-  return page({
-    title: 'Aggiornamenti — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Aggiornamenti',
     description: 'Il registro degli aggiornamenti del sito: quali dati sono stati caricati, cosa è cambiato e cosa è in preparazione.',
-    active: 'approfondimenti.html',
     canonical: 'aggiornamenti.html',
     body,
   });
@@ -741,10 +724,9 @@ ${card('guida-verifica.html', 'Come verificare un appalto in 5 minuti', 'Dal CIG
 ${conNuovi.api ? card('api.html', 'API e dati riutilizzabili', 'Endpoint JSON/CSV stabili, senza chiavi: costruisci sopra i nostri dati.') : ''}
 ${card('aggiornamenti.html', 'Aggiornamenti', 'Cosa è stato caricato, cosa è cambiato e cosa è in preparazione (tempi di pagamento, liste d’attesa, personale).')}
 `;
-  return page({
-    title: 'Approfondimenti — analisi, storie e guide — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Approfondimenti — analisi, storie e guide',
     description: 'Tendenze della spesa sanitaria 2012–2024, i 100 contratti più grandi, le categorie di spesa, il PNRR, le storie nei dati e le guide per verificare.',
-    active: 'approfondimenti.html',
     body,
   });
 }
@@ -797,17 +779,12 @@ sanità in netto progresso. Il dato è nazionale: i tempi delle singole aziende 
 pagamento</a> (dati PCC), tabella «Enti del SSN». Estrazione manuale dal PDF ufficiale, verificabile 1:1.
 Termine legale: ${esc(tp.termineLegale)}.</p>
 `;
-  return page({
-    title: 'Tempi di pagamento della sanità: quanto in fretta pagano gli ospedali — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Tempi di pagamento della sanità: quanto in fretta pagano gli ospedali',
     description: `Il tempo medio di pagamento delle aziende sanitarie è sceso a ${ultimo.tempoMedioPagamento} giorni. La serie ufficiale PCC/MEF ${primo.anno}–${ultimo.anno}, spiegata.`,
-    active: 'approfondimenti.html',
     canonical: 'pagamenti.html',
-    jsonld: pagLd(
-      'Tempi di pagamento della sanità',
-      `Il tempo medio di pagamento delle aziende sanitarie è sceso a ${ultimo.tempoMedioPagamento} giorni. La serie ufficiale PCC/MEF ${primo.anno}–${ultimo.anno}, spiegata.`,
-      'pagamenti.html',
-      'Tempi di pagamento'
-    ),
+    ldTitolo: 'Tempi di pagamento della sanità',
+    ldNome: 'Tempi di pagamento',
     body,
   });
 }
@@ -866,17 +843,12 @@ esternalizzati). Una quota flessibile alta è un indicatore di fragilità dell�
 <p class="small muted">Fonte: Conto Annuale (RGS/MEF) via BDAP open data — ${pers.anno}, ultima rilevazione completa
 (la raccolta ${pers.anno + 1} è ancora parziale alla fonte). ${numeroIt(n.collegati)} aziende collegate alle schede del sito.</p>
 `;
-  return page({
-    title: 'Il personale della sanità: medici, precari e «gettonisti» — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Il personale della sanità: medici, precari e «gettonisti»',
     description: `${numeroIt(n.totale)} dipendenti, ${numeroIt(n.medici)} medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.`,
-    active: 'approfondimenti.html',
     canonical: 'personale.html',
-    jsonld: pagLd(
-      'Il personale della sanità pubblica',
-      `${numeroIt(n.totale)} dipendenti, ${numeroIt(n.medici)} medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.`,
-      'personale.html',
-      'Il personale della sanità'
-    ),
+    ldTitolo: 'Il personale della sanità pubblica',
+    ldNome: 'Il personale della sanità',
     body,
   });
 }
@@ -930,17 +902,12 @@ in senso opposto.</div>
 <p class="small muted">Fonte: BDAP — RGS/MEF, modelli CE (consuntivo), voci Extraregione. Elenco delle voci usate nei
 <a href="dati.html">dati aperti</a> (mobilita.json).</p>
 `;
-  return page({
-    title: 'Mobilità sanitaria: quanto spendono le regioni per curarsi altrove — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Mobilità sanitaria: quanto spendono le regioni per curarsi altrove',
     description: `${euroCompact(u.totPassiva)} spesi nel ${mob.ultimoAnno} per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.`,
-    active: 'approfondimenti.html',
     canonical: 'mobilita.html',
-    jsonld: pagLd(
-      'Mobilità sanitaria: curarsi fuori regione',
-      `${euroCompact(u.totPassiva)} spesi nel ${mob.ultimoAnno} per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.`,
-      'mobilita.html',
-      'Mobilità sanitaria'
-    ),
+    ldTitolo: 'Mobilità sanitaria: curarsi fuori regione',
+    ldNome: 'Mobilità sanitaria',
     body,
   });
 }
@@ -986,17 +953,12 @@ sempre: <strong>indicatore, non prova</strong>.</div>
 perimetro: aziende collegate. Le adesioni a convenzioni riconoscibili non sono escluse da questo conteggio
 (il mese resta informativo anche per esse).</p>
 `;
-  return page({
-    title: 'La febbre di dicembre: gli affidamenti di fine anno — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'La febbre di dicembre: gli affidamenti di fine anno',
     description: `A dicembre gli affidamenti diretti della sanità sono ${rapporto.toFixed(1)} volte la media mensile: la classica corsa a spendere i fondi prima della scadenza del bilancio.`,
-    active: 'approfondimenti.html',
     canonical: 'fine-anno.html',
-    jsonld: pagLd(
-      'La febbre di dicembre: gli affidamenti di fine anno',
-      `A dicembre gli affidamenti diretti della sanità sono ${rapporto.toFixed(1)} volte la media mensile: la classica corsa a spendere i fondi prima della scadenza del bilancio.`,
-      'fine-anno.html',
-      'La febbre di dicembre'
-    ),
+    ldTitolo: 'La febbre di dicembre: gli affidamenti di fine anno',
+    ldNome: 'La febbre di dicembre',
     body,
   });
 }
@@ -1055,17 +1017,12 @@ var DATI=${datiJson.replace(/</g, '\\u003c')};
 })();
 </script>
 `;
-  return page({
-    title: 'Confronta due aziende sanitarie — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Confronta due aziende sanitarie',
     description: 'Metti a confronto bilanci, personale, appalti e segnalazioni di due aziende sanitarie italiane, fianco a fianco.',
-    active: 'approfondimenti.html',
     canonical: 'confronta.html',
-    jsonld: pagLd(
-      'Confronta due aziende sanitarie',
-      'Metti a confronto bilanci, personale, appalti e segnalazioni di due aziende sanitarie italiane, fianco a fianco.',
-      'confronta.html',
-      'Confronta due aziende'
-    ),
+    ldTitolo: 'Confronta due aziende sanitarie',
+    ldNome: 'Confronta due aziende',
     body,
   });
 }
@@ -1107,17 +1064,12 @@ chiave). Gli indicatori sono <strong>piste, non prove</strong> — chi li ripubb
 <p class="small muted">Gli URL sono stabili tra le rigenerazioni; i campi possono estendersi (mai rimossi senza
 avviso in <a href="aggiornamenti.html">aggiornamenti</a>).</p>
 `;
-  return page({
-    title: 'API e dati riutilizzabili — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'API e dati riutilizzabili',
     description: 'Endpoint JSON/CSV stabili e senza chiavi: segnalazioni, appalti, fornitori, mobilità, personale. Open data riutilizzabili con citazione.',
-    active: 'approfondimenti.html',
     canonical: 'api.html',
-    jsonld: pagLd(
-      'API e dati riutilizzabili',
-      'Endpoint JSON/CSV stabili e senza chiavi: segnalazioni, appalti, fornitori, mobilità, personale. Open data riutilizzabili con citazione.',
-      'api.html',
-      'API e dati'
-    ),
+    ldTitolo: 'API e dati riutilizzabili',
+    ldNome: 'API e dati',
     body,
   });
 }
@@ -1147,8 +1099,8 @@ e con lo European Accessibility Act.</p>
 Contatto nelle <a href="note-legali.html">note legali</a>.</p>
 <p class="small muted">Dichiarazione volontaria (soggetto privato). Ultimo riesame: luglio 2026.</p>
 `;
-  return page({
-    title: 'Accessibilità — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Accessibilità',
     description: 'La dichiarazione di accessibilità del sito: conformità WCAG 2.1 AA, limiti noti e come segnalare barriere.',
     active: '',
     canonical: 'accessibilita.html',
@@ -1218,17 +1170,12 @@ da questa avvertenza.</p>` : ''}
 dedup per CIG, importi validi). Le adesioni a convenzioni non sono escluse da questa serie storica: la definizione è
 volutamente identica in tutti gli anni per rendere il confronto omogeneo.</p>
 `;
-  return page({
-    title: 'Prima, durante e dopo il COVID: sei anni di appalti sanitari — Ospedali Trasparenti',
+  return metaApprofondimento({
+    title: 'Prima, durante e dopo il COVID: sei anni di appalti sanitari',
     description: 'Come la pandemia ha cambiato gli acquisti della sanità: urgenze, affidamenti senza gara e volumi 2019–2024 — e se il mercato è tornato normale.',
-    active: 'approfondimenti.html',
     canonical: 'storico.html',
-    jsonld: pagLd(
-      'Prima, durante e dopo il COVID: sei anni di appalti sanitari',
-      'Come la pandemia ha cambiato gli acquisti della sanità: urgenze, affidamenti senza gara e volumi 2019–2024 — e se il mercato è tornato normale.',
-      'storico.html',
-      'Prima e dopo il COVID'
-    ),
+    ldTitolo: 'Prima, durante e dopo il COVID: sei anni di appalti sanitari',
+    ldNome: 'Prima e dopo il COVID',
     body,
   });
 }
