@@ -1207,9 +1207,20 @@
           "date": "2026-07-15",
           "event": "v11.9 — учене",
           "detail": "Научи: adblock (MV3) filters.json канал: sanitizeConfig в background.js е единствената бариера… (+2 още)"
+        },
+        {
+          "version": "12.0.0",
+          "date": "2026-07-15",
+          "event": "v12.0 — учене",
+          "detail": "Научи: ReDoS guard-ове тип blacklist regex (adblock/content.js:144 `/(\\\\)[*+]|\\\\)\\\\{\\\\d)/`) хв… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Научи: „ReDoS guard-ове тип blacklist regex (adblock/content.js:144 `/(\\\\)[*+]|\\\\)\\\\{\\\\d)/`) хв…\" (+2 още)"
+        },
         {
           "date": "2026-07-15",
           "type": "learning",
