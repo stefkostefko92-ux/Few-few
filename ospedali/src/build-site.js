@@ -16,6 +16,7 @@ import { SEGNALAZIONI_FILE, DATA_DIR } from './lib/paths.js';
 import { join as pjoin } from 'node:path';
 import { matchAutoritaEnti } from './lib/match.js';
 import { numeroIt, slugify, esc } from './lib/format.js';
+import { percentile } from './lib/stats.js';
 import { page, setSiteUrl, siteUrl } from './lib/site-ui.js';
 import {
   pIvaValida, REGIONI, REG_KEY, ultimoCe, setDataSnapshot, pagLd,
@@ -110,9 +111,11 @@ async function main() {
       if (a) appByCod.set(codice, { ...a, aggiu: aggPerCf[cf] || null });
     }
     appMatch = { abbinate: byCodice.size, totali: enti.length, aggiu, autByCf };
-    // национална медиана на дела „senza gara“ по БРОЙ сред свързаните болници (за флаг)
-    const quote = /** @type {number[]} */ ([...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null)).sort((a, b) => a - b);
-    appMatch.medianaSenzaGaraNum = quote.length ? quote[Math.floor(quote.length / 2)] : null;
+    // национална медиана на дела „senza gara“ по БРОЙ сред свързаните болници (за флаг).
+    // percentile(…,50) = горна-средна стойност (nearest-rank) — идентична на предишния
+    // inline израз quote[floor(n/2)], но през единствения източник в stats.js.
+    const quote = /** @type {number[]} */ ([...appByCod.values()].map((a) => a.quotaSenzaGaraNum).filter((v) => v != null));
+    appMatch.medianaSenzaGaraNum = percentile(quote, 50);
     // Подай живия брой свързани болници на approfondimenti прозата (вместо твърдо число).
     setApprofondimentiCtx({ nAbbinate: appMatch.abbinate });
     void byCf;
@@ -198,9 +201,9 @@ async function main() {
     if (letti != null) cplTutti.push(y.costiProduzione / letti);
     if (ric != null) cprTutti.push(y.costiProduzione / ric);
   }
-  /** @param {number[]} a @returns {number|null} */
-  const mediana = (a) => (a.length ? a.sort((x, y) => x - y)[Math.floor(a.length / 2)] : null);
-  const bench = { cplMed: mediana(cplTutti), cprMed: mediana(cprTutti) };
+  // percentile(…,50) = nearest-rank горна-средна стойност — идентична на предишния
+  // inline mediana(), но без дублиране на статистиката (единствен източник stats.js).
+  const bench = { cplMed: percentile(cplTutti, 50), cprMed: percentile(cprTutti, 50) };
   /** @type {Record<string, [string, string]>} */
   const aziendeIdx = {}; // codice → [nome, regione]
   /** @type {Map<string, FornitoreProfile>} */
