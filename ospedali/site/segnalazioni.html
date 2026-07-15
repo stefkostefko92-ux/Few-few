@@ -125,12 +125,17 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
   :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
   :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
 }
-/* desktop: далеч вдясно, вертикално центриран. theme носи margin-left:auto и е
-   последен (order:2) → auto-полето го изтласква до десния ръб; навигацията (order:1)
-   се свива и пренася вътрешно, вместо да избута бутона на нов ред. */
+/* desktop: двуетажен masthead. Ред 1: лого вляво + theme бутон в десния ръб
+   (margin-left:auto; DOM редът brand→theme→nav вече е правилният визуален ред).
+   Ред 2: навигацията на цял ред (flex-basis:100%) с тънка разделителна линия —
+   при 13 линка тя така или иначе не се побира до логото, затова редът е
+   умишлен, а не счупен fallback (преди: theme висеше сам на трети ред). */
 @media(min-width:901px){
-  nav.main{order:1;margin-left:0}
-  .theme-toggle{order:2;margin-left:auto}
+  header.site .wrap{padding-top:8px;row-gap:4px}
+  .theme-toggle{margin-left:auto}
+  nav.main{flex-basis:100%;margin-left:0;justify-content:center;
+    font-size:13.5px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 8px}
 }
 @media(max-width:900px){
   header.site{position:static;border-top-width:3px}
