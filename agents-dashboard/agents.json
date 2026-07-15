@@ -8745,6 +8745,11 @@
       "activity": [
         {
           "date": "2026-07-15",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „ospedali/ ръчен theme toggle: смени `@media(prefers-color-scheme:dark){:root{}}` на `:r…\" (+2)"
+        },
+        {
+          "date": "2026-07-15",
           "type": "learning",
           "summary": "Научи: „ospedali/ site-ui.js page() е ЕДИНСТВЕНИЯТ header/nav източник за всички статични стран…\" (+1 още) · 1 в карантина"
         },
