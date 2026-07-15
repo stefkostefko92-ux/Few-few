@@ -337,8 +337,11 @@ ${body}
  * @param {string} [cls]
  * @returns {string}
  */
-export function kpi(label, value, cls = '') {
-  return `<div class="card kpi"><div class="n ${cls}">${esc(value)}</div><div class="l">${esc(label)}</div></div>`;
+export function kpi(label, value, cls = '', sub = '') {
+  // `sub` = незадължителен приглушен под-текст до стойността. Екранира се (не подавай
+  // готов HTML в value/sub — kpi() ги екранира, иначе маркъпът излиза като текст).
+  const subHtml = sub ? ` <span class="small muted">${esc(sub)}</span>` : '';
+  return `<div class="card kpi"><div class="n ${cls}">${esc(value)}${subHtml}</div><div class="l">${esc(label)}</div></div>`;
 }
 
 /**

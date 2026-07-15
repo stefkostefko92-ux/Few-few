@@ -174,7 +174,7 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
      */
     const cella = (v, med, lab) =>
       v && med
-        ? kpi(lab, `${euroCompact(v)} <span class="small muted">(mediana ${euroCompact(med)})</span>`, v > med * 1.5 ? 'neg' : '')
+        ? kpi(lab, euroCompact(v), v > med * 1.5 ? 'neg' : '', `(mediana ${euroCompact(med)})`)
         : '';
     benchBlk = `<h2>Quanto costa, in proporzione</h2>
   <div class="grid kpis">${cella(cpl, bench.cplMed, 'Costi per posto letto')}${cella(cpr, bench.cprMed, 'Costi per ricovero')}</div>
