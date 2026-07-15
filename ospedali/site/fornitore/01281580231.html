@@ -25,6 +25,9 @@
 <meta name="twitter:title" content="STUDIO PROTECNO SRL — fornitore del SSN — Ospedali Trasparenti">
 <meta name="twitter:description" content="Contratti pubblici di STUDIO PROTECNO SRL con le aziende sanitarie italiane: valore, aziende, procedure.">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ospedalitrasparenti.it/"},{"@type":"ListItem","position":2,"name":"Fornitori","item":"https://ospedalitrasparenti.it/fornitori.html"},{"@type":"ListItem","position":3,"name":"STUDIO PROTECNO SRL","item":"https://ospedalitrasparenti.it/fornitore/01281580231.html"}]},{"@type":"Organization","name":"STUDIO PROTECNO SRL","vatID":"01281580231","address":{"@type":"PostalAddress","addressCountry":"IT"},"url":"https://ospedalitrasparenti.it/fornitore/01281580231.html"}]}</script>
+<script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
+мигане на грешната тема. Единственият blocking script в head — само за темата. */
+try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')document.documentElement.dataset.theme=_t;}catch(e){}</script>
 <style>
 :root{
   /* палитра — светла тема (институционална, сдържана) */
@@ -44,14 +47,25 @@
   --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 }
+/* Тъмни променливи — блокът е един и същ за двата случая:
+   1) изричен ръчен избор :root[data-theme="dark"] (печели винаги);
+   2) авто по системата, но САМО без ръчен избор :root:not([data-theme]).
+   Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
+:root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+  --line:#26323f; --line-2:#202b37;
+  --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+  --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+  /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
+     държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
 @media (prefers-color-scheme:dark){
-  :root{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
     --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
     --line:#26323f; --line-2:#202b37;
     --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
     --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
-    /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
-       държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
     --shadow-sm:0 1px 2px rgba(0,0,0,.35);
     --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
 }
@@ -71,9 +85,11 @@ header.site .wrap{display:flex;align-items:center;gap:8px 24px;min-height:58px;f
 .brand{display:inline-flex;align-items:center;line-height:0}
 .brand-logo{height:36px;width:auto;display:block}
 /* тъмна тема: тъмносиният надпис не се чете на тъмния хедър → лека светла
-   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата */
+   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата
+   (важи и при ръчен избор, и при авто — виж бележката при променливите) */
+:root[data-theme="dark"] .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
 @media (prefers-color-scheme:dark){
-  .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+  :root:not([data-theme]) .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
 }
 nav.main{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
 nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px;
@@ -92,15 +108,42 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
 .nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
 .nav-toggle[aria-expanded="true"] .ico-open{display:none}
 .nav-toggle[aria-expanded="true"] .ico-close{display:block}
+/* Превключвател светла/тъмна тема — видим на ВСИЧКИ ширини (за разлика от
+   hamburger-а). Иконата (слънце/луна) следва ЕФЕКТИВНАТА тема през CSS,
+   независимо от JS-тайминга → без грешна икона при първия paint. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
+/* по подр. (светло/авто-светло) → луна („премини на тъмно"); тъмно → слънце */
+.theme-toggle .ico-sun{display:none}
+.theme-toggle .ico-moon{display:block}
+:root[data-theme="dark"] .theme-toggle .ico-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .ico-sun{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
+  :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
+}
+/* desktop: далеч вдясно, вертикално центриран. theme носи margin-left:auto и е
+   последен (order:2) → auto-полето го изтласква до десния ръб; навигацията (order:1)
+   се свива и пренася вътрешно, вместо да избута бутона на нов ред. */
+@media(min-width:901px){
+  nav.main{order:1;margin-left:0}
+  .theme-toggle{order:2;margin-left:auto}
+}
 @media(max-width:900px){
   header.site{position:static;border-top-width:3px}
-  /* Ред 1: лого вляво + бутон вдясно; менюто е на нов ред (flex-basis:100%),
-     скрито до отваряне. Без хоризонтален скрол, всяка връзка е достъпна. */
+  /* Ред 1: лого вляво + тема + hamburger вдясно; менюто е на нов ред
+     (flex-basis:100%), скрито до отваряне. Без хоризонтален скрол. */
   header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
     padding-top:8px;padding-bottom:8px}
   .brand{margin-right:auto;margin-bottom:0}
   .brand-logo{height:32px}
-  .nav-toggle{display:inline-flex}
+  /* само brand носи auto-полето → тема и hamburger са слепени вдясно с малък луфт */
+  .theme-toggle{margin-left:0}
+  .nav-toggle{display:inline-flex;margin-left:8px}
   nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
     flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
     border-top:1px solid var(--line);padding-top:5px}
@@ -239,6 +282,10 @@ footer.site a:hover{color:var(--brand)}
 <a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="../logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
+  <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambia tema chiaro o scuro" title="Tema chiaro / scuro">
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></svg>
+  </button>
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
     <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
@@ -330,6 +377,22 @@ Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#r
     if(b.contains(e.target)||n.contains(e.target))return;
     chiudi();
   });
+})();
+/* Тема: 2-състоен превключвател светла⇄тъмна. Записът в localStorage печели над
+   системата; без запис = авто (prefers-color-scheme). aria-pressed=„тъмна активна". */
+(function(){
+  var t=document.querySelector('.theme-toggle');
+  if(!t)return;
+  var mq=window.matchMedia('(prefers-color-scheme:dark)');
+  function effettivo(){var d=document.documentElement.dataset.theme;return d?d:(mq.matches?'dark':'light');}
+  function aggiorna(){t.setAttribute('aria-pressed',effettivo()==='dark'?'true':'false');}
+  t.addEventListener('click',function(){
+    var nuovo=effettivo()==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=nuovo;
+    try{localStorage.setItem('ost-theme',nuovo);}catch(e){}
+    aggiorna();
+  });
+  aggiorna();
 })();
 </script>
 </body>
