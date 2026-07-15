@@ -220,9 +220,13 @@ test('page — JSON-LD breakout: </script> в jsonld се екранира', () 
   // всяко „<" от полезния товар става < → няма пробив
   assert.ok(h.includes('\\u003c/script>'));
   assert.ok(!h.includes('<script>alert(1)'));
-  // единственият истински </script> е затварящият таг на ld+json блока
+  // таговете са балансирани → payload-ът не е пробил (отваряния = затваряния);
+  // страницата има фиксирани скриптове (ld+json + мобилното меню), но нито един
+  // допълнителен от товара
+  const opens = h.match(/<script[\s>]/g) || [];
   const closes = h.match(/<\/script>/g) || [];
-  assert.equal(closes.length, 1);
+  assert.equal(opens.length, closes.length);
+  assert.ok(!h.includes('<script>alert'));
 });
 
 test('page — без jsonld няма ld+json блок', () => {

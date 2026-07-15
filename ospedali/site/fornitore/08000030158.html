@@ -80,17 +80,33 @@ nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px
   line-height:1.2;white-space:nowrap;transition:background-color .15s,color .15s}
 nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decoration:none}
 nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
+/* Бутон-хамбургер — само за тесни екрани (виж @media по-долу); на desktop скрит.
+   44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-left:auto;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
+.nav-toggle .ico-close{display:none}
+.nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle[aria-expanded="true"] .ico-open{display:none}
+.nav-toggle[aria-expanded="true"] .ico-close{display:block}
 @media(max-width:900px){
   header.site{position:static;border-top-width:3px}
-  /* nowrap е ключово: при многолинеен column flex редът се разпъва до
-     най-широкото дете (934px) и nav-скролът не се задейства → хор. scroll */
-  header.site .wrap{flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;padding-top:10px}
-  .brand{align-self:flex-start;margin-bottom:8px}
+  /* Ред 1: лого вляво + бутон вдясно; менюто е на нов ред (flex-basis:100%),
+     скрито до отваряне. Без хоризонтален скрол, всяка връзка е достъпна. */
+  header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
+    padding-top:8px;padding-bottom:8px}
+  .brand{margin-right:auto;margin-bottom:0}
   .brand-logo{height:32px}
-  nav.main{margin-left:0;flex-wrap:nowrap;overflow-x:auto;gap:2px;max-width:100%;min-width:0;
-    border-top:1px solid var(--line);padding:7px 0;
-    scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
-  nav.main::-webkit-scrollbar{display:none}
+  .nav-toggle{display:inline-flex}
+  nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
+    flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
+    border-top:1px solid var(--line);padding-top:5px}
+  nav.main.open{display:flex}
+  nav.main a{display:flex;align-items:center;min-height:44px;
+    padding:11px 12px;border-radius:8px;white-space:normal}
 }
 main{padding:var(--s7) 0 var(--s6)}
 
@@ -205,6 +221,13 @@ footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset
 footer.site a:hover{color:var(--brand)}
 .backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
 
+/* ---------- Мобилно: touch таргети ≥44px ---------- */
+@media(max-width:640px){
+  .controls input,.controls select,.controls button{min-height:44px}
+  .chip{padding:9px 14px}
+  .backlink{padding:6px 0;display:inline-flex;align-items:center;min-height:44px}
+}
+
 /* ---------- Достъпност: намалено движение ---------- */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
@@ -216,7 +239,11 @@ footer.site a:hover{color:var(--brand)}
 <a href="#contenuto" class="skip">Salta al contenuto</a>
 <header class="site"><div class="wrap">
   <a class="brand" href="../index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="../logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
-  <nav class="main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html" aria-current="page">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
+    <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html" aria-current="page">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main id="contenuto"><div class="wrap">
 
@@ -284,5 +311,26 @@ Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#r
   <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a> ·
   <a href="../accessibilita.html">Accessibilità</a> · <a href="../feed.xml">RSS</a></p>
 </div></footer>
+<script>
+/* Мобилна навигация: hamburger отваря/затваря менюто. Достъпно —
+   aria-expanded, Escape връща фокуса на бутона, клик навън затваря.
+   На desktop бутонът е display:none, менюто винаги видимо → скриптът е инертен. */
+(function(){
+  var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
+  if(!b||!n)return;
+  function aperto(){return b.getAttribute('aria-expanded')==='true';}
+  function apri(){b.setAttribute('aria-expanded','true');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');n.classList.remove('open');}
+  b.addEventListener('click',function(){aperto()?chiudi():apri();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
+  });
+  document.addEventListener('click',function(e){
+    if(!aperto())return;
+    if(b.contains(e.target)||n.contains(e.target))return;
+    chiudi();
+  });
+})();
+</script>
 </body>
 </html>
