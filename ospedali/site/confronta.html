@@ -367,8 +367,8 @@ var DATI=[{"n":"AZIENDA SANITARIA LOCALE TO 1","r":"Piemonte","h":"struttura/010
   var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
   if(!b||!n)return;
   function aperto(){return b.getAttribute('aria-expanded')==='true';}
-  function apri(){b.setAttribute('aria-expanded','true');n.classList.add('open');}
-  function chiudi(){b.setAttribute('aria-expanded','false');n.classList.remove('open');}
+  function apri(){b.setAttribute('aria-expanded','true');b.setAttribute('aria-label','Chiudi il menu');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Apri il menu di navigazione');n.classList.remove('open');}
   b.addEventListener('click',function(){aperto()?chiudi():apri();});
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
@@ -394,6 +394,8 @@ var DATI=[{"n":"AZIENDA SANITARIA LOCALE TO 1","r":"Piemonte","h":"struttura/010
     aggiorna();
   });
   aggiorna();
+  // Смяна на системната тема на живо (без ръчен избор) → обнови aria-pressed.
+  mq.addEventListener('change',function(){if(!document.documentElement.dataset.theme)aggiorna();});
 })();
 </script>
 </body>

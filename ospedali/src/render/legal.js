@@ -301,8 +301,11 @@ primarie restano pubbliche presso i rispettivi titolari (ANAC, BDAP/MEF, Ministe
 <h2>Statistiche di visita (aggregate)</h2>
 <p>Il server registra un <strong>conteggio aggregato e anonimo</strong> delle visite (pagine viste e visitatori per
 giorno e per pagina) a fini statistici e di funzionamento (base giuridica art. 6.1.f GDPR — interesse legittimo alla
-misurazione dell’audience). <strong>Non usa cookie né altri identificatori memorizzati sul dispositivo</strong>
-(art. 5.3 Direttiva ePrivacy; art. 122 D.Lgs. 196/2003). Il conteggio dei visitatori unici è ottenuto con un valore
+misurazione dell’audience). <strong>Non usa cookie di tracciamento né profila i visitatori</strong>
+(art. 5.3 Direttiva ePrivacy; art. 122 D.Lgs. 196/2003). L’unico dato salvato sul tuo dispositivo è una
+<strong>preferenza tecnica</strong> (<code>ost-theme</code>: tema chiaro o scuro), impostata solo su tua richiesta ed
+<strong>esente da consenso</strong> perché strettamente necessaria alla funzione (EDPB Guidelines 2/2023): non è un
+identificatore e non contiene dati personali. Il conteggio dei visitatori unici è ottenuto con un valore
 calcolato al momento (hash a senso unico di indirizzo IP e user-agent con un <strong>sale casuale giornaliero
 conservato solo in memoria e mai salvato</strong>): su disco vengono scritti esclusivamente <strong>totali
 numerici</strong>, senza indirizzi IP né dati che permettano di identificare o ricontattare i visitatori. Il pannello
