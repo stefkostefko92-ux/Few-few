@@ -75,6 +75,26 @@ const norm = (s) => s.toLowerCase().replace(/[`'"„“”]/g, "").replace(/\s+/
 const SECRET_RE = /\b(?:sk|rk|pk)_(?:live|test|prod)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/;
 const looksSecret = (s) => SECRET_RE.test(String(s));
 
+// Анти устойчива-инжекция (persistent prompt injection): паметта се ИНЖЕКТИРА в
+// контекста на всеки бъдещ старт (memory-preload) → зловреден сайт, който убеди агент
+// да „научи" инструкция, я закотвя завинаги. Твърд дроп на поуки-инструкции:
+// императиви за изпращане/изпълнение, смяна на роля/правила, exfil URL-и, скрити знаци.
+const INJECTION_RE = new RegExp(
+  [
+    /(?:ignore|disregard|forget)\s+(?:all\s+)?(?:previous|prior|earlier|above)\s+(?:instructions?|rules?|context)/.source,
+    /(?:игнорирай|забрави|пренебрегни)\s+(?:всички\s+)?(?:предишн[\p{L}]*|горн[\p{L}]*|досегашн[\p{L}]*|тези|тукашн[\p{L}]*)\s+(?:инструкц[\p{L}]*|правил[\p{L}]*|указан[\p{L}]*)/u.source,
+    /you\s+are\s+(?:now|no\s+longer)\s/.source,
+    /(?:ти\s+(?:вече\s+)?си|отсега\s+си)\s+(?:друг|нов)\s+(?:агент|асистент)/.source,
+    /(?:винаги|always)\s+(?:изпращай|изпрати|прати|send|post|forward|exfiltrate)\b/.source,
+    /(?:изпращай|изпрати|прати|send|post|upload|forward)\b[^\n]{0,80}\b(?:към|to)\s+https?:\/\//.source,
+    /curl\s+[^\n]*\|\s*(?:ba)?sh/.source,
+    /(?:\.env|тайн[\p{L}]*|секрет[\p{L}]*|secrets?|credentials?|парол[\p{L}]*|токен[\p{L}]*|tokens?)[^\n]{0,60}\bhttps?:\/\//u.source,
+    /[​-‏‪-‮⁦-⁩]/.source, // нулево-широки/bidi контролни знаци
+  ].join("|"),
+  "iu",
+);
+const looksInjection = (s) => INJECTION_RE.test(String(s));
+
 // „Verified" иска РЕАЛЕН източник (URL / file:line / познат инструмент/eval); иначе → карантина.
 const sourceIsReal = (src) =>
   /https?:\/\/\S+|[\w./-]+\.\w+:\d+|\b(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|docs\.|registry\.npmjs|github\.com|developer\.|caniuse)\b/i.test(String(src));
@@ -215,10 +235,7 @@ function gitCommitLocal(agentId) {
       { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
     try { execSync("git diff --cached --quiet", { cwd: PROJECT_DIR, stdio: "ignore" }); return; } // нищо staged → нищо за commit
     catch { /* има staged промени → commit */ }
-    // Committer = Claude <noreply@anthropic.com> — иначе stop-hook-ът за
-    // Verified commits флагва всеки auto-commit (носи и SubagentStop контекст:
-    // авторството личи от commit съобщението, не от имейла).
-    execSync(`git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
+    execSync(`git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
       { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
   } catch { /* никога не блокирай агента заради git */ }
 }
@@ -254,6 +271,7 @@ function main() {
   for (const les of parsed.lessons) {
     if (!les.text || !les.source) continue; // източник или нищо
     if (looksSecret(les.text) || looksSecret(les.source)) continue; // тайна → НЕ записвай (твърд дроп)
+    if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // инжекция-инструкция → твърд дроп (анти persistent injection)
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).
     let confidence = String(les.confidence || "").toLowerCase();
     if (confidence === "verified" && !sourceIsReal(les.source)) confidence = "unverified";
