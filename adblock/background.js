@@ -283,10 +283,17 @@ const UNSAFE_SELECTORS = new Set([
 // Селектор, чийто subject е форм-контрол (input/button/form...), дори с атрибут
 // (напр. input[type=password]) — никога не крием такива от remote config.
 const FORM_TARGET = /(^|[\s>+~,(])(input|button|select|textarea|form|label|fieldset|option)([\s>+~,.:\[)#]|$)/i;
+// Атрибутен пласт: селектор, таргетиращ форм-семантично поле (парола/логин/…)
+// без изричен таг (напр. [type=password]) — иначе FORM_TARGET го пропуска.
+const FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder)\s*[*^$|~]?=\s*["']?(password|email|tel|current-password|new-password|username|user|login|otp|card|cvc|cvv)/i;
+// Универсален субект (* след начало/комбинатор) или водещ псевдо (:not/:has…) →
+// селектор без реален субект-елемент = мач върху (почти) цялата страница.
+const UNIVERSAL = /(^|[\s>+~,(])\*(?![=\]])/;
 const safeSelector = (s) => {
   s = s.trim();
   if (s.length < 3 || s.length > 400 || UNSAFE_SELECTORS.has(s.toLowerCase())) return false;
-  if (FORM_TARGET.test(s)) return false;
+  if (FORM_TARGET.test(s) || FORM_ATTR.test(s)) return false;
+  if (UNIVERSAL.test(s) || s.startsWith(":")) return false;
   return true;
 };
 const selArr = (x, cap) => strArr(x, cap).filter(safeSelector);
@@ -385,6 +392,13 @@ async function fetchLiveConfig(force) {
     return { ok: false, reason: "network" };
   }
   const cfg = sanitizeConfig(raw);
+  // Anti-rollback: подписът доказва автентичност, не свежест. Отхвърляме стар
+  // (валидно подписан) config — компрометиран сървър да не може да replay-не
+  // остаряла версия. version-ът трябва да е монотонен.
+  const { liveConfig: prev } = await chrome.storage.local.get("liveConfig");
+  if (prev && Number.isFinite(prev.version) && cfg.version < prev.version) {
+    return { ok: false, reason: "stale version" };
+  }
   await chrome.storage.local.set({ liveConfig: cfg, liveUpdated: Date.now() });
   await syncLiveRules(cfg.blockDomains);
   return { ok: true, version: cfg.version, domains: cfg.blockDomains.length };
@@ -724,14 +738,36 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "importSettings": {
-      // Only accept known setting keys from the imported file. liveConfig и
-      // liveUpdated са СЪРВЪРНО управлявани (минават през sanitizeConfig при
-      // fetch) — не ги приемаме от импорт, иначе заобикалят санитизацията.
+      // Импортираме само познати ключове, с ВАЛИДАЦИЯ на тип/shape (грешен тип
+      // би счупил разширението) и САНИТИЗАЦИЯ на селекторите — иначе подлъган
+      // потребител може да импортира файл с :remove()/ReDoS върху форм-полета.
+      // liveConfig/liveUpdated са сървърно управлявани и не се приемат от импорт.
       const SKIP_IMPORT = new Set(["liveConfig", "liveUpdated"]);
+      const d = (msg.data && typeof msg.data === "object") ? msg.data : {};
       const clean = {};
       for (const k of Object.keys(DEFAULTS)) {
-        if (SKIP_IMPORT.has(k)) continue;
-        if (msg.data && k in msg.data) clean[k] = msg.data[k];
+        if (SKIP_IMPORT.has(k) || !(k in d)) continue;
+        const v = d[k];
+        if (k === "allowlist") {
+          if (Array.isArray(v)) clean[k] = v.filter((x) => typeof x === "string").slice(0, 5000);
+        } else if (k === "userFilters") {
+          if (typeof v === "string") clean[k] = v.slice(0, 100000);
+        } else if (k === "features") {
+          if (v && typeof v === "object" && !Array.isArray(v)) clean[k] = v;
+        } else if (k === "customHidden") {
+          // { host: [selector,...] } — санитизираме селекторите като live канала
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            const m = {};
+            for (const host of Object.keys(v)) {
+              if (typeof host !== "string" || !Array.isArray(v[host])) continue;
+              const sels = v[host].filter((x) => typeof x === "string" && safeSelector(x)).slice(0, 500);
+              if (sels.length) m[host] = sels;
+            }
+            clean[k] = m;
+          }
+        } else if (typeof v === typeof DEFAULTS[k]) {
+          clean[k] = v; // прости скаларни ключове само при съвпадащ тип
+        }
       }
       chrome.storage.local.set(clean, async () => {
         await applyState();

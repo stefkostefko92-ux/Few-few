@@ -139,9 +139,11 @@
   const toRegex = (s) => {
     const m = /^\/(.+)\/(i?)$/.exec(s);
     if (!m) return null;
-    // ReDoS guard: капваме дължината и отхвърляме вложени квантори
-    // (напр. (.*a){30}), които дават catastrophic backtracking.
-    if (m[1].length > 200 || /(\)[*+]|\)\{\d)/.test(m[1])) return null;
+    // ReDoS guard: капваме дължината И броя квантори (*, +, {n}). Един квантор
+    // е линеен; два+ подредени (напр. [a-z]*[a-z]*x) дават полиномиален/
+    // катастрофичен backtracking, който замразява таба.
+    const q = (m[1].match(/[*+]|\{\d/g) || []).length;
+    if (m[1].length > 200 || q > 1) return null;
     try {
       return new RegExp(m[1], m[2]);
     } catch {

@@ -45,6 +45,12 @@
     const s = document.createElement("script");
     s.src = chrome.runtime.getURL("youtube_main.js");
     s.onload = () => s.remove();
+    // Ако зареждането се провали (напр. бъдеща WAR/CSP регресия при
+    // use_dynamic_url), логваме за диагностика — иначе тихо няма ад-блокиране.
+    s.onerror = () => {
+      s.remove();
+      try { console.warn("Supreme AdBlock: youtube_main injection failed"); } catch {}
+    };
     (document.head || document.documentElement).appendChild(s);
   }
 
