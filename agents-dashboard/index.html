@@ -10379,7 +10379,7 @@ const FALLBACK = {
         "Цена: токен-осъзнатост, избор на по-евтин модел (flash/mini/haiku) за прости задачи"
       ],
       "knowledge": {
-        "sources": 0,
+        "sources": 18,
         "researchToolUses": 0,
         "priorArt": [
           "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
@@ -10399,6 +10399,12 @@ const FALLBACK = {
           "date": "2026-07-14",
           "event": "Обучен",
           "detail": "Засят с 6 проверени поуки от Gemini интеграцията на mastilko: депрекация на фиксиран модел (404→-latest алиас), thinking бюджет реже отговора, free-tier/ЕИП квота, формат на ключ, runtime env, устойчив proxy route."
+        },
+        {
+          "version": "2.4.0",
+          "date": "2026-07-15",
+          "event": "Засят до силна основа",
+          "detail": "Обучен до ниво близко на другите: +18 проверени поуки от каноните/доковете (Anthropic Messages/caching/tool-use/thinking, OpenAI structured-outputs/reasoning/rate-limits/streaming, RAG/OWASP LLM01-02, cost/batch, embeddings, AI Act чл.50). Домейнът е покрит; ще задълбочава през цикъла."
         }
       ],
       "activity": [
@@ -10411,6 +10417,11 @@ const FALLBACK = {
           "date": "2026-07-14",
           "type": "learning",
           "summary": "Научи: gemini-2.5-flash спира за нови проекти (404) → ползвай gemini-flash-latest алиас; thinkingBudget:0 за пълен отговор. (+4 още)"
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Обучен: +18 проверени поуки (Anthropic/OpenAI/Gemini интеграция, structured output, streaming, cost, RAG сигурност) (+17 още)"
         }
       ]
     }
