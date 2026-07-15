@@ -41,6 +41,10 @@ MemoryDenyWriteExecute=false
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources
+# Node ≥20 (libuv) пробва io_uring syscalls, които не са в @system-service на по-стар
+# systemd → seccomp ги убива със SIGSYS (status=31). EPERM връща грешка вместо да убива;
+# libuv пада обратно на epoll. (Без това сервизът crash-loop-ва при старт.)
+SystemCallErrorNumber=EPERM
 CapabilityBoundingSet=
 AmbientCapabilities=
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX

@@ -50,10 +50,26 @@ sudo chmod 600 /opt/ospedali/server/.env
 sudo grep OSPEDALI_ADMIN_PASSWORD /opt/ospedali/server/.env   # запиши паролата в password manager
 ```
 
-Ако `.env` липсва, сервизът пак тръгва, но генерира **случайна** админ парола
-(печата се веднъж в `journalctl -u ospedali`) и **случаен** сесиен секрет (сесиите
-на `/admin` няма да оцеляват рестарт). За продукция задай двете изрично.
-`OSPEDALI_PORT`/`OSPEDALI_HOST` са по избор (по подр. `127.0.0.1:8788`).
+В **продукция** `OSPEDALI_ADMIN_PASSWORD` е **задължителна** — без нея сервизът
+отказва старт (не работим с непозната случайна парола). Случайното генериране е само
+за локална разработка (`OSPEDALI_INSECURE_COOKIES=1`). `OSPEDALI_PORT`/`OSPEDALI_HOST`
+са по избор (по подр. `127.0.0.1:8788`).
+
+Тайните се четат и от systemd (`EnvironmentFile`, като root) — затова `.env` може да е
+`root:root 600`; приложението толерира нечетим `.env` (best-effort). Ако все пак искаш
+приложението да го чете директно, дай го на `www-data` (както горе).
+
+### Отстраняване на проблеми (наблюдавани при първи деплой)
+
+- **`status=31/SYS` / SIGSYS crash-loop** — seccomp убива Node (io_uring syscalls извън
+  `@system-service` на по-стар systemd). Поправено в unit-а с `SystemCallErrorNumber=EPERM`
+  (libuv пада на epoll). Ако все пак се появи на друг хост: `sudo systemctl edit ospedali`
+  → добави `[Service]\nSystemCallErrorNumber=EPERM`.
+- **`EACCES … open '.env'`** — `.env` е нечетим за `www-data`. Поправено (приложението
+  толерира нечетим `.env`, тайните идват от systemd). Стар билд: `sudo chown www-data:www-data
+  /opt/ospedali/server/.env`.
+- **`nginx -t` пада с липсващ TLS сертификат** — vhost-ът има `443 ssl` блок, а сертификатът
+  още не е издаден. Издай го първо с временен HTTP-only vhost (§3), после върни пълния.
 
 ### 3) Nginx vhost + TLS
 

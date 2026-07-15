@@ -36,7 +36,12 @@ const ROOT = dirname(SERVER_DIR);
 function loadDotEnv() {
   const f = join(SERVER_DIR, '.env');
   if (!existsSync(f)) return;
-  for (const line of readFileSync(f, 'utf8').split('\n')) {
+  let testo;
+  // .env може да е root-owned (mode 600) под systemd — тайните идват от
+  // EnvironmentFile (чете се от systemd като root). Тогава www-data не може да
+  // отвори файла: best-effort, не спираме сервиза заради EACCES.
+  try { testo = readFileSync(f, 'utf8'); } catch { return; }
+  for (const line of testo.split('\n')) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
     if (m && process.env[m[1]] === undefined) {
       process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
