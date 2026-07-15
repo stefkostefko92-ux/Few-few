@@ -1,4 +1,4 @@
-Contact: mailto:contact@carbonstealth.eu
+Contact: mailto:info@carbonstealth.eu
 Expires: 2027-07-15T00:00:00.000Z
 Preferred-Languages: en, bg
 Canonical: https://adblock.carbonstealth.eu/.well-known/security.txt
