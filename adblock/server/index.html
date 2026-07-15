@@ -86,7 +86,7 @@
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);
     mix-blend-mode:multiply;}
 
-  /* thunder flash + intro veil */
+  /* lightning flash + intro veil (visual only) */
   #flash{position:fixed;inset:0;z-index:60;pointer-events:none;background:#eaffff;opacity:0;mix-blend-mode:screen;}
   #bolts{position:fixed;inset:0;z-index:61;pointer-events:none;}
   #veil{position:fixed;inset:0;z-index:59;background:#010102;animation:veilout .7s .15s ease forwards}
@@ -673,7 +673,6 @@
     var mag=11*power;
     document.body.style.transform="translate("+((Math.random()-0.5)*mag)+"px,"+((Math.random()-0.5)*mag*0.7)+"px)";
     setTimeout(function(){ document.body.style.transform=""; },80);
-    thunder(power);
   }
   function loop(){
     ctx.clearRect(0,0,W,H);
@@ -694,23 +693,6 @@
   }
   loop();
 
-  // procedural thunder (WebAudio) — best-effort; unlocked on first gesture if blocked
-  var AC=window.AudioContext||window.webkitAudioContext, ac=null;
-  function ctxReady(){ if(!AC) return null; if(!ac){ try{ac=new AC();}catch(e){return null;} } return ac; }
-  function thunder(power){
-    var a=ctxReady(); if(!a||a.state==="suspended") return;
-    var dur=1.1+power*0.6, N=Math.floor(a.sampleRate*dur), buf=a.createBuffer(1,N,a.sampleRate), d=buf.getChannelData(0);
-    for(var i=0;i<N;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/N,2); }
-    var src=a.createBufferSource(); src.buffer=buf;
-    var lp=a.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=200+power*160;
-    var g=a.createGain(); g.gain.setValueAtTime(0.0001,a.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.5*power,a.currentTime+0.05);
-    g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+dur);
-    src.connect(lp); lp.connect(g); g.connect(a.destination); src.start();
-  }
-  function unlock(){ var a=ctxReady(); if(a&&a.state==="suspended") a.resume(); removeEventListener("pointerdown",unlock); removeEventListener("keydown",unlock); }
-  addEventListener("pointerdown",unlock); addEventListener("keydown",unlock);
-
   function reveal(){
     var els=document.querySelectorAll(".reveal");
     if(!("IntersectionObserver" in window)){ [].forEach.call(els,function(e){e.classList.add("in")}); return; }
@@ -720,8 +702,7 @@
 
   if(reduce){ document.body.classList.add("lit"); reveal(); return; }
 
-  // intro storm — ~2s
-  try{ ctxReady(); if(ac&&ac.state==="suspended") ac.resume(); }catch(e){}
+  // intro storm — ~2s (visual only, no audio)
   // WCAG 2.3.1: най-много 3 проблясъка в който и да е 1-сек прозорец. Разстоянията
   // тук (150/560/1000/1550/2050) държат ≤3/сек; flash opacity е снижен допълнително.
   document.body.classList.add("lit");
