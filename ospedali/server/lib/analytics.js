@@ -20,9 +20,25 @@ import { dirname } from 'node:path';
  * @typedef {Object} StatoAnalytics
  * @property {string} since
  * @property {number} totalViews
+ * @property {number} botViews
  * @property {Record<string, GiornoStat>} byDay
  * @property {Record<string, number>} byPath
  */
+
+// Разпознаване на ботове/краулери по User-Agent — само за КЛАСИФИКАЦИЯ на брояча
+// (не блокираме никого; ботовете са добре дошли за SEO). След IndexNow подаване
+// краулерите изтеглят хиляди страници и без този филтър „посещенията" в админа
+// са предимно машини, не хора. Приблизително е (UA се подправя лесно), но
+// разделя честно органичния трафик от обхождането. Липсващ UA = скрипт.
+const BOT_RE = /bot|crawl|spider|slurp|preview|scan|monitor|probe|archive|index|curl|wget|python|httpx|aiohttp|axios|okhttp|java\/|libwww|go-http|node-fetch|headless|phantom|lighthouse|pingdom|uptime|facebookexternalhit|embedly|quora|whatsapp|telegram|skype|discord|slack|mastodon/i;
+/**
+ * @param {string|undefined|null} userAgent
+ * @returns {boolean}
+ */
+export function eBot(userAgent) {
+  if (!userAgent) return true;
+  return BOT_RE.test(userAgent);
+}
 
 /**
  * Дата „YYYY-MM-DD" (Europe/Rome не е критично за агрегати — ползваме UTC-ден).
@@ -46,11 +62,17 @@ export function hashVisitatore(salt, ip, userAgent) {
 
 /**
  * Чиста агрегация: вписва едно посещение в състоянието (за unit тест).
+ * Бот → само отделният брояч botViews; не влиза във views/visitors/byPath,
+ * за да показва админът органичен (човешки) трафик.
  * @param {StatoAnalytics} stato
- * @param {{ path: string, giorno: string, nuovoVisitatore: boolean }} vista
+ * @param {{ path: string, giorno: string, nuovoVisitatore: boolean, bot?: boolean }} vista
  * @returns {StatoAnalytics}
  */
-export function applicaVista(stato, { path, giorno, nuovoVisitatore }) {
+export function applicaVista(stato, { path, giorno, nuovoVisitatore, bot = false }) {
+  if (bot) {
+    stato.botViews = (stato.botViews || 0) + 1;
+    return stato;
+  }
   stato.totalViews = (stato.totalViews || 0) + 1;
   stato.byDay ||= {};
   const d = (stato.byDay[giorno] ||= { views: 0, visitors: 0 });
@@ -62,7 +84,7 @@ export function applicaVista(stato, { path, giorno, nuovoVisitatore }) {
 }
 
 /** @returns {StatoAnalytics} */
-const statoVuoto = () => ({ since: giornoDi(), totalViews: 0, byDay: {}, byPath: {} });
+const statoVuoto = () => ({ since: giornoDi(), totalViews: 0, botViews: 0, byDay: {}, byPath: {} });
 
 export class Contatore {
   /** @param {string} file */
@@ -106,6 +128,12 @@ export class Contatore {
    */
   registra(path, ip, userAgent) {
     this._rotaGiorno();
+    // Бот/краулер → отделен брояч, без дневен хеш (не е „посетител").
+    if (eBot(userAgent)) {
+      applicaVista(this.stato, { path, giorno: this._giorno, nuovoVisitatore: false, bot: true });
+      this._pianificaSalva();
+      return;
+    }
     const h = hashVisitatore(this._salt, ip, userAgent);
     const nuovo = !this._giornoSet.has(h);
     if (nuovo) this._giornoSet.add(h);
@@ -137,7 +165,7 @@ export class Contatore {
 
   /**
    * Резюме за админ таблото.
-   * @returns {{ since: string, totalViews: number, oggi: GiornoStat, viste7: number,
+   * @returns {{ since: string, totalViews: number, botViews: number, oggi: GiornoStat, viste7: number,
    *   serie: Array<GiornoStat & { giorno: string }>, topPagine: Array<{ path: string, views: number }> }}
    */
   riepilogo() {
@@ -153,6 +181,7 @@ export class Contatore {
     return {
       since: this.stato.since,
       totalViews: this.stato.totalViews || 0,
+      botViews: this.stato.botViews || 0,
       oggi: this.stato.byDay[oggi] || { views: 0, visitors: 0 },
       viste7,
       serie: ultimi14,

@@ -19,7 +19,7 @@ header .b span{color:var(--brand)}
 .btn{font:inherit;font-weight:650;padding:9px 16px;border-radius:8px;border:1px solid var(--brand);
   background:var(--brand);color:#fff;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--brand)}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:26px}
 @media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
 .kpi .n{font-size:26px;font-weight:800;color:var(--brand);line-height:1.1}
@@ -140,13 +140,14 @@ async function load(){
     kpi(euro(s.totalViews),'Visite totali')+
     kpi(euro(s.oggi.visitors),'Visitatori oggi')+
     kpi(euro(s.oggi.views),'Visite oggi')+
-    kpi(euro(s.viste7),'Visite (7 giorni)');
+    kpi(euro(s.viste7),'Visite (7 giorni)')+
+    kpi(euro(s.botViews||0),'Bot esclusi (totale)');
   document.getElementById('chart').innerHTML=chart(s.serie);
   document.getElementById('top').querySelector('tbody').innerHTML=
     '<tr><th>Pagina</th><th class="num">Visite</th></tr>'+
     (s.topPagine.length?s.topPagine.map(p=>'<tr><td>'+p.path.replace(/[<>&]/g,'')+'</td><td class="num">'+euro(p.views)+'</td></tr>').join(''):'<tr><td class="muted" colspan="2">—</td></tr>');
   const el=document.querySelectorAll('.wrap p.muted.small');
-  el[el.length-1].innerHTML='Conteggio anonimo e aggregato: nessun indirizzo IP, nessun cookie di tracciamento. Dati dal '+s.since+'.';
+  el[el.length-1].innerHTML='Conteggio anonimo e aggregato: nessun indirizzo IP, nessun cookie di tracciamento. Dati dal '+s.since+'. Le richieste di bot e crawler (riconosciute dallo User-Agent) sono contate a parte ed escluse da visite e visitatori.';
 }
 async function loadPages(){
   const {pages,hidden}=await j('/admin/api/pages');

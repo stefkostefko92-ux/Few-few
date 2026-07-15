@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applicaVista, hashVisitatore, giornoDi } from '../server/lib/analytics.js';
+import { applicaVista, hashVisitatore, giornoDi, eBot } from '../server/lib/analytics.js';
 import { hashPassword, verifyPassword, signSession, verifySession, parseCookies } from '../server/lib/auth.js';
 import { hideCss, iniettaHideCss, nomePagina, isHidden } from '../server/lib/visibility.js';
 
@@ -17,6 +17,33 @@ test('applicaVista агрегира по ден, път и уникални', ()
   assert.equal(s.byDay['2026-07-14'].visitors, 2);
   assert.equal(s.byPath['/a.html'], 2);
   assert.equal(s.byPath['/b.html'], 1);
+});
+
+test('applicaVista: бот → само botViews, без views/visitors/byPath', () => {
+  const s = { byDay: {}, byPath: {} };
+  applicaVista(s, { path: '/a.html', giorno: '2026-07-15', nuovoVisitatore: false, bot: true });
+  applicaVista(s, { path: '/a.html', giorno: '2026-07-15', nuovoVisitatore: true });
+  assert.equal(s.botViews, 1);
+  assert.equal(s.totalViews, 1); // само човешкото посещение
+  assert.equal(s.byDay['2026-07-15'].views, 1);
+  assert.equal(s.byDay['2026-07-15'].visitors, 1);
+  assert.equal(s.byPath['/a.html'], 1);
+});
+
+test('eBot разпознава краулери и скриптове, пуска браузъри', () => {
+  // ботове/краулери/скриптове
+  assert.equal(eBot('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'), true);
+  assert.equal(eBot('Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)'), true);
+  assert.equal(eBot('Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)'), true);
+  assert.equal(eBot('curl/8.5.0'), true);
+  assert.equal(eBot('python-requests/2.31.0'), true);
+  assert.equal(eBot('facebookexternalhit/1.1'), true);
+  assert.equal(eBot(''), true); // липсващ UA = скрипт
+  assert.equal(eBot(null), true);
+  // истински браузъри
+  assert.equal(eBot('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'), false);
+  assert.equal(eBot('Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'), false);
+  assert.equal(eBot('Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0'), false);
 });
 
 test('hashVisitatore е детерминиран и не съдържа суровия IP', () => {
