@@ -138,12 +138,18 @@
 
   const toRegex = (s) => {
     const m = /^\/(.+)\/(i?)$/.exec(s);
+    if (!m) return null;
+    // ReDoS guard: капваме дължината и отхвърляме вложени квантори
+    // (напр. (.*a){30}), които дават catastrophic backtracking.
+    if (m[1].length > 200 || /(\)[*+]|\)\{\d)/.test(m[1])) return null;
     try {
-      return m ? new RegExp(m[1], m[2]) : null;
+      return new RegExp(m[1], m[2]);
     } catch {
       return null;
     }
   };
+  // Капваме тествания текст, за да ограничим backtracking върху дълъг textContent.
+  const textOf = (el) => (el.textContent || "").slice(0, 20000);
 
   function xpathAll(expr, ctx) {
     const out = [];
@@ -177,7 +183,7 @@
       const { op, arg } = p.ops[k];
       if (op === "has-text") {
         const re = toRegex(arg);
-        els = els.filter((el) => (re ? re.test(el.textContent) : el.textContent.includes(arg)));
+        els = els.filter((el) => (re ? re.test(textOf(el)) : textOf(el).includes(arg)));
       } else if (op === "min-text-length") {
         const n = parseInt(arg, 10) || 0;
         els = els.filter((el) => el.textContent.length >= n);

@@ -33,18 +33,33 @@ const LIVE_RULE_MAX = 3000;
 // ъпдейтите се приемат както досега; после SIG_REQUIRED става true в релийз.
 const SIG_URL = CONFIG_URL + ".sig";
 const SIG_PUBKEY_B64 = "dHNcuMuLraQ8w1sse7rk6Dnzzh5wzbLc4/KofD5QWMQ="; // raw Ed25519 публичен ключ
-const SIG_REQUIRED = false;
 
-async function verifySignature(bytes, sigB64) {
-  if (!SIG_PUBKEY_B64) return null; // ключ още не е конфигуриран
+// Политика: щом ключ е конфигуриран И платформата може да верифицира Ed25519
+// (Chrome 137+), изискваме ВАЛИДЕН подпис — липсващ или невалиден .sig отхвърля
+// ъпдейта (спира downgrade при компрометиран сървър). На стар браузър, който не
+// поддържа Ed25519, приемаме best-effort, за да не спрем live ъпдейтите (121-136).
+let ed25519Supported = null;
+async function canVerifyEd25519() {
+  if (ed25519Supported !== null) return ed25519Supported;
+  if (!SIG_PUBKEY_B64) { ed25519Supported = false; return false; }
   try {
     const raw = Uint8Array.from(atob(SIG_PUBKEY_B64), (c) => c.charCodeAt(0));
-    const sig = Uint8Array.from(atob(sigB64.trim()), (c) => c.charCodeAt(0));
+    await crypto.subtle.importKey("raw", raw, { name: "Ed25519" }, false, ["verify"]);
+    ed25519Supported = true;
+  } catch {
+    ed25519Supported = false; // Chrome < 137
+  }
+  return ed25519Supported;
+}
+
+async function verifySignature(bytes, sigB64) {
+  try {
+    const raw = Uint8Array.from(atob(SIG_PUBKEY_B64), (c) => c.charCodeAt(0));
+    const sig = Uint8Array.from(atob((sigB64 || "").trim()), (c) => c.charCodeAt(0));
     const key = await crypto.subtle.importKey("raw", raw, { name: "Ed25519" }, false, ["verify"]);
     return await crypto.subtle.verify("Ed25519", key, sig, bytes);
   } catch {
-    // Chrome < 137 няма Ed25519 в WebCrypto — тогава не може да проверим.
-    return SIG_REQUIRED ? false : null;
+    return false; // не можем да потвърдим валиден подпис → третираме като невалиден
   }
 }
 
@@ -260,10 +275,19 @@ const strArr = (x, cap) =>
 const UNSAFE_SELECTORS = new Set([
   "*", "html", "body", ":root", "head", "div", "span", "a", "img",
   "main", "section", "article", "video", "iframe",
+  // структурни/форм-критични тагове — скриване на тях глобално е UI DoS
+  "form", "input", "button", "label", "select", "textarea", "fieldset", "option",
+  "nav", "header", "footer", "ul", "ol", "li", "p", "table", "tr", "td", "th",
+  "h1", "h2", "h3", "h4", "h5", "h6",
 ]);
+// Селектор, чийто subject е форм-контрол (input/button/form...), дори с атрибут
+// (напр. input[type=password]) — никога не крием такива от remote config.
+const FORM_TARGET = /(^|[\s>+~,(])(input|button|select|textarea|form|label|fieldset|option)([\s>+~,.:\[)#]|$)/i;
 const safeSelector = (s) => {
   s = s.trim();
-  return s.length >= 3 && !UNSAFE_SELECTORS.has(s.toLowerCase());
+  if (s.length < 3 || s.length > 400 || UNSAFE_SELECTORS.has(s.toLowerCase())) return false;
+  if (FORM_TARGET.test(s)) return false;
+  return true;
 };
 const selArr = (x, cap) => strArr(x, cap).filter(safeSelector);
 
@@ -341,20 +365,20 @@ async function fetchLiveConfig(force) {
     if (!res.ok) return { ok: false, reason: "http " + res.status };
     const text = await res.text();
 
-    // Подпис: проверяваме байтовете на filters.json срещу filters.json.sig.
-    // Невалиден подпис = отхвърляме и оставаме на последната добра конфигурация.
-    let sigOk = null;
-    try {
-      const sres = await fetch(SIG_URL, { cache: "no-cache" });
-      if (sres.ok) {
-        sigOk = await verifySignature(new TextEncoder().encode(text), await sres.text());
-      } else if (SIG_REQUIRED) {
-        return { ok: false, reason: "no signature" };
-      }
-    } catch {
-      if (SIG_REQUIRED) return { ok: false, reason: "no signature" };
+    // Подпис: щом ключ е конфигуриран И платформата поддържа Ed25519,
+    // ИЗИСКВАМЕ валиден подпис — липсващ (.sig 404 / мрежа) или невалиден
+    // отхвърля ъпдейта (спира downgrade при компрометиран сървър). На стар
+    // браузър без Ed25519 приемаме best-effort, за да не спрем live ъпдейтите.
+    if (SIG_PUBKEY_B64 && (await canVerifyEd25519())) {
+      let sigText = null;
+      try {
+        const sres = await fetch(SIG_URL, { cache: "no-cache" });
+        if (sres.ok) sigText = await sres.text();
+      } catch {}
+      if (sigText === null) return { ok: false, reason: "no signature" };
+      const ok = await verifySignature(new TextEncoder().encode(text), sigText);
+      if (!ok) return { ok: false, reason: "bad signature" };
     }
-    if (sigOk === false) return { ok: false, reason: "bad signature" };
 
     raw = JSON.parse(text);
   } catch (e) {
@@ -581,6 +605,9 @@ function savedStats(bytes, count) {
 
 // messages from popup / options / content
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Приемаме съобщения само от собствените ни скриптове (defense-in-depth;
+  // няма externally_connectable, така че уеб страници и без това не достигат тук).
+  if (sender.id !== chrome.runtime.id) return;
   switch (msg.type) {
     case "toggle":
       // A manual toggle cancels any active timed pause.
@@ -697,9 +724,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "importSettings": {
-      // Only accept known setting keys from the imported file.
+      // Only accept known setting keys from the imported file. liveConfig и
+      // liveUpdated са СЪРВЪРНО управлявани (минават през sanitizeConfig при
+      // fetch) — не ги приемаме от импорт, иначе заобикалят санитизацията.
+      const SKIP_IMPORT = new Set(["liveConfig", "liveUpdated"]);
       const clean = {};
       for (const k of Object.keys(DEFAULTS)) {
+        if (SKIP_IMPORT.has(k)) continue;
         if (msg.data && k in msg.data) clean[k] = msg.data[k];
       }
       chrome.storage.local.set(clean, async () => {
