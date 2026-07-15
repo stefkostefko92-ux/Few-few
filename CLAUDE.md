@@ -91,6 +91,10 @@ Invoke via the Agent tool (*„пусни Кодаджията върху про
 parallel. **Full roster, the loop, per-agent `tools/<area>/`, the dashboard and
 authoring rules → [`.claude/agents/README.md`](.claude/agents/README.md).** Keep
 that file **and** `agents-dashboard/agents.json` in sync when you change an agent.
+**AI-джията is the lead („president") agent** — it oversees fleet health with
+`node tools/agents/oversee.mjs` (integrity def↔memory↔`agents.json`↔`settings.json`,
+uncited lessons, near-dups, dashboard/doctrine sync; fail-closed) and orchestrates by
+Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
 **Communication style (caveman):** terse, fragment prose; every technical token
 (code, commands, `file:line`, error strings) exact; drop filler; **never**

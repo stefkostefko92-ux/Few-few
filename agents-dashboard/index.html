@@ -10349,10 +10349,10 @@ const FALLBACK = {
     {
       "id": "ai-djiyata",
       "name": "AI-джията",
-      "title": "Интеграция на LLM/AI в продукти",
+      "title": "Президент на агентите · LLM/AI интеграция",
       "emoji": "🤖",
       "accent": "#7c5cff",
-      "tagline": "Свързва продуктите с Gemini/OpenAI/Claude — надеждно, евтино, сигурно, законно.",
+      "tagline": "Води и следи целия екип агенти (oversee); свързва продуктите с Gemini/OpenAI/Claude.",
       "file": ".claude/agents/ai-djiyata.md",
       "model": "opus",
       "status": "active",
@@ -10376,10 +10376,14 @@ const FALLBACK = {
         "Формати: streaming (SSE), структуриран изход/JSON, function/tool calling, мултимодал, embeddings",
         "Prompt инженерство: роли, few-shot, локализация (BG изход), защита от prompt injection",
         "Сигурност & GDPR: ключ само на сървъра (mode 600), разкриване на трансфера, „не въвеждай лични данни“",
-        "Цена: токен-осъзнатост, избор на по-евтин модел (flash/mini/haiku) за прости задачи"
+        "Цена: токен-осъзнатост, избор на по-евтин модел (flash/mini/haiku) за прости задачи",
+        "Президент/водещ агент: следи здравето на целия екип през tools/agents/oversee.mjs (цялост дефиниция↔памет↔agents.json↔settings, източници, дубли, синхрон на таблото)",
+        "Инженерство на агенти (канон на Anthropic): workflow vs agent, патърни (routing/parallelization/orchestrator-workers/evaluator-optimizer), автономен цикъл, ACI/дизайн на инструменти",
+        "Multi-agent оркестрация: lead+subagents, кога помага (breadth-first), ~15x токени, режими на провал, делегиране с явна цел/формат/граници",
+        "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval"
       ],
       "knowledge": {
-        "sources": 101,
+        "sources": 130,
         "researchToolUses": 0,
         "priorArt": [
           "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
@@ -10390,7 +10394,11 @@ const FALLBACK = {
           "jihoo-kim/awesome-production-llm — production tooling таксономия (vLLM/Langfuse/NeMo-Guardrails)",
           "vercel/ai, 567-labs/instructor, guardrails-ai/guardrails — TS/структуриран изход/guardrails",
           "protectai/rebuff, promptfoo/promptfoo — prompt-injection defense + eval/red-team",
-          "google-gemini/cookbook, openai/openai-cookbook, run-llama/llama_index, explodinggradients/ragas"
+          "google-gemini/cookbook, openai/openai-cookbook, run-llama/llama_index, explodinggradients/ragas",
+          "Anthropic Engineering — Building effective agents (workflow патърни, ACI)",
+          "Anthropic Engineering — How we built our multi-agent research system (lead+subagents, ~15x токени)",
+          "Anthropic Engineering — Effective context engineering + Writing tools for agents",
+          "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ]
       },
       "evolution": [
@@ -10423,6 +10431,12 @@ const FALLBACK = {
           "date": "2026-07-15",
           "event": "Мастъри v10 + курация (дедуп)",
           "detail": "Обучен до ниво mastery (v10) от GitHub канон, после курация: 101 проверени поуки (слети 3 семантични дубъла — caching/structured-output/embeddings; поправен фалшив източник), всяка с реален източник (официални SDK/cookbook-и + docs: Anthropic, OpenAI, Gemini, Vercel AI SDK, Instructor, Guardrails, Rebuff, promptfoo, LlamaIndex/RAGAS). Домейнът LLM/AI интеграция е покрит из основи."
+        },
+        {
+          "version": "13.0.0",
+          "date": "2026-07-15",
+          "event": "Издигнат в президент + обучен на канона за агенти",
+          "detail": "Назначен за водещ/координатор на екипа: следи другите агенти през нов инструмент tools/agents/oversee.mjs (цялост, източници, дубли, синхрон). Обучен на канона на Anthropic за изграждане на агенти (+29 проверени поуки от официалните engineering постове и Agent SDK докове: workflow патърни, multi-agent оркестрация, context engineering, дизайн на инструменти, agent loop). Общо 130 проверени поуки → v13.0."
         }
       ],
       "activity": [
@@ -10450,6 +10464,11 @@ const FALLBACK = {
           "date": "2026-07-15",
           "type": "learning",
           "summary": "Курация след mastery: слети 3 семантични дубъла, поправен източник → 101 проверени поуки (v10.1)"
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Издигнат в президент на агентите + обучен на канона на Anthropic за агенти (+29 поуки → 130 общо, v13.0); нов надзорен инструмент tools/agents/oversee.mjs"
         }
       ]
     },
