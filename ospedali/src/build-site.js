@@ -312,7 +312,8 @@ async function main() {
     tuttiContratti.sort((a, b) => b[3] - a[3]); // по сума, за да е топ-N смислен
     await writeFile(
       join(SITE_DIR, 'contratti-tutti.json'),
-      JSON.stringify({ generatoIl: new Date().toISOString().slice(0, 10), aziende: aziendeIdx, righe: tuttiContratti })
+      // Дата = снапшот на данните (както sitemap/dati), не датата на билда → детерминизъм.
+      JSON.stringify({ generatoIl: (validaz && validaz.generatoIl ? validaz.generatoIl : new Date().toISOString()).slice(0, 10), aziende: aziendeIdx, righe: tuttiContratti })
     );
     await writeFile(join(SITE_DIR, 'cerca.html'), renderCerca({ n: tuttiContratti.length, aziende: Object.keys(aziendeIdx).length }));
     paginaCerca = 1;

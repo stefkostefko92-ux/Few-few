@@ -318,7 +318,7 @@ ${body}
   <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
   elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
   <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
-  Progetto di trasparenza civica senza scopo di lucro — Carbon Stealth VCC. Non è una testata giornalistica.
+  Progetto di trasparenza civica senza scopo di lucro — <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.
   <a href="${rel}verifiche.html">Dati e verifiche</a> · <a href="${rel}metodologia.html">Metodologia</a> ·
   <a href="${rel}note-legali.html">Note legali</a> · <a href="${rel}privacy.html">Privacy</a> ·
   <a href="${rel}accessibilita.html">Accessibilità</a> · <a href="${rel}feed.xml">RSS</a></p>
