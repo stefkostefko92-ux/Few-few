@@ -6,7 +6,7 @@
 import { esc, euroIt, euroCompact, numeroIt, slugify } from '../lib/format.js';
 import { page, kpi, badge, lineChart, barChart, hbars, siteUrl } from '../lib/site-ui.js';
 import { tipoEnte, postiLettoEnte, ricoveriEnte, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from '../lib/dataset.js';
-import { ultimoCe, briciole, FOR_LABEL, isDetailLine, isTopLevelSp } from '../lib/site-shared.js';
+import { ultimoCe, briciole, collezioneLd, FOR_LABEL, isDetailLine, isTopLevelSp } from '../lib/site-shared.js';
 import { appaltiBlock, contrattiBlock } from './appalti.js';
 
 /** @typedef {import('../lib/dataset.js').Ente} Ente */
@@ -97,10 +97,23 @@ Cerca per nome, filtra per regione o per gravità delle segnalazioni. Valori del
 })();
 </script>
 `;
+  // Топ структури по стойност на продукцията → ItemList в графа (по избор, по задание).
+  const topStrutture = [...enti]
+    .map((e) => ({ e, v: ultimoCe(e).y.valoreProduzione ?? 0 }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 15)
+    .map(({ e }) => ({ nome: e.denominazione, url: href(e.codice) }));
   return page({
     title: 'Tutte le strutture — Ospedali Trasparenti',
     description: 'Elenco filtrabile delle aziende sanitarie e ospedaliere pubbliche italiane con valore della produzione e risultato d’esercizio.',
     active: 'strutture.html',
+    jsonld: collezioneLd(
+      'Strutture',
+      'strutture.html',
+      'Elenco filtrabile delle aziende sanitarie e ospedaliere pubbliche italiane con valore della produzione e risultato d’esercizio.',
+      'Aziende sanitarie e ospedaliere pubbliche italiane',
+      topStrutture
+    ),
     body,
   });
 }

@@ -8,6 +8,7 @@
 // @ts-check
 import { page, kpi, lineChart, hbars } from './lib/site-ui.js';
 import { euroIt, euroCompact, numeroIt, percentualeIt, esc } from './lib/format.js';
+import { pagLd, articleLd } from './lib/site-shared.js';
 
 // Изчислени от build-site стойности, за да не застаряват твърдо закодирани числа в
 // прозата (напр. брой свързани болници). Задават се веднъж преди рендер, по същия
@@ -140,6 +141,12 @@ Fonte: BDAP — RGS/MEF, modelli CE (consuntivo).</p>
     description: `Come sono cambiati ricavi, costi, personale e risultati delle aziende sanitarie italiane dal ${anni[0]} al ${anni.at(-1)}. Dati ufficiali BDAP/MEF.`,
     active: 'approfondimenti.html',
     canonical: 'tendenze.html',
+    jsonld: pagLd(
+      `Il decennio della sanità ${anni[0]}–${anni.at(-1)}`,
+      `Come sono cambiati ricavi, costi, personale e risultati delle aziende sanitarie italiane dal ${anni[0]} al ${anni.at(-1)}. Dati ufficiali BDAP/MEF.`,
+      'tendenze.html',
+      'Il decennio della sanità'
+    ),
     body,
   });
 }
@@ -182,6 +189,12 @@ anni 2023–2025, perimetro: le aziende sanitarie collegate. Persone fisiche non
     description: 'La classifica dei contratti pubblici di maggior valore delle aziende sanitarie italiane 2023–2025, con fornitore, procedura e CIG verificabile.',
     active: 'approfondimenti.html',
     canonical: 'top-contratti.html',
+    jsonld: pagLd(
+      'I 100 contratti più grandi della sanità',
+      'La classifica dei contratti pubblici di maggior valore delle aziende sanitarie italiane 2023–2025, con fornitore, procedura e CIG verificabile.',
+      'top-contratti.html',
+      'I 100 contratti più grandi'
+    ),
     body,
   });
 }
@@ -232,6 +245,12 @@ ${sezioni}
     description: 'La spesa contrattuale delle aziende sanitarie per categoria: farmaci, dispositivi, pulizie, energia, informatica — con i primi fornitori di ciascuna.',
     active: 'approfondimenti.html',
     canonical: 'categorie.html',
+    jsonld: pagLd(
+      'Dove vanno i soldi: le categorie di spesa',
+      'La spesa contrattuale delle aziende sanitarie per categoria: farmaci, dispositivi, pulizie, energia, informatica — con i primi fornitori di ciascuna.',
+      'categorie.html',
+      'Categorie di spesa'
+    ),
     body,
   });
 }
@@ -279,6 +298,12 @@ sono nel bilancio della loro ASL. Mostra i primi 400 risultati della ricerca.</p
     description: 'Cerca per comune gli ospedali pubblici del tuo territorio e l’azienda sanitaria che ne gestisce i conti.',
     active: 'approfondimenti.html',
     canonical: 'dove.html',
+    jsonld: pagLd(
+      'Trova la tua struttura',
+      'Cerca per comune gli ospedali pubblici del tuo territorio e l’azienda sanitaria che ne gestisce i conti.',
+      'dove.html',
+      'Trova la tua struttura'
+    ),
     body,
   });
 }
@@ -408,6 +433,12 @@ solide sono quelle che citano atti, non impressioni.</div>
     description: 'Guida pratica: dal CIG alla determina, dall’Amministrazione Trasparente all’accesso civico FOIA. Come controllare un contratto pubblico, passo per passo.',
     active: 'approfondimenti.html',
     canonical: 'guida-verifica.html',
+    jsonld: pagLd(
+      'Come verificare un appalto della sanità in 5 minuti',
+      'Guida pratica: dal CIG alla determina, dall’Amministrazione Trasparente all’accesso civico FOIA. Come controllare un contratto pubblico, passo per passo.',
+      'guida-verifica.html',
+      'Come verificare un appalto'
+    ),
     body,
   });
 }
@@ -454,6 +485,12 @@ e <a href="https://www.italiadomani.gov.it/" target="_blank" rel="noopener">ital
     description: 'Quanto valgono gli appalti sanitari finanziati dal PNRR (Missione 6 Salute) e in quali regioni si concentrano. Dati ANAC 2023–2025.',
     active: 'approfondimenti.html',
     canonical: 'pnrr.html',
+    jsonld: pagLd(
+      'Il PNRR nella sanità: appalti Missione 6 per regione',
+      'Quanto valgono gli appalti sanitari finanziati dal PNRR (Missione 6 Salute) e in quali regioni si concentrano. Dati ANAC 2023–2025.',
+      'pnrr.html',
+      'Il PNRR nella sanità'
+    ),
     body,
   });
 }
@@ -579,6 +616,12 @@ legittime. <strong>Indicatori, non prove.</strong> Per segnalare errori o fornir
     description: 'Casi concreti dagli appalti della sanità: maxi-affidamenti, concentrazioni anomale, relazioni ricorrenti — raccontati con i dati ufficiali e le spiegazioni possibili.',
     active: 'approfondimenti.html',
     canonical: 'storie.html',
+    jsonld: pagLd(
+      'Le storie nei dati',
+      'Casi concreti dagli appalti della sanità: maxi-affidamenti, concentrazioni anomale, relazioni ricorrenti — raccontati con i dati ufficiali e le spiegazioni possibili.',
+      'storie.html',
+      'Le storie nei dati'
+    ),
     body,
   });
 }
@@ -759,6 +802,12 @@ Termine legale: ${esc(tp.termineLegale)}.</p>
     description: `Il tempo medio di pagamento delle aziende sanitarie è sceso a ${ultimo.tempoMedioPagamento} giorni. La serie ufficiale PCC/MEF ${primo.anno}–${ultimo.anno}, spiegata.`,
     active: 'approfondimenti.html',
     canonical: 'pagamenti.html',
+    jsonld: pagLd(
+      'Tempi di pagamento della sanità',
+      `Il tempo medio di pagamento delle aziende sanitarie è sceso a ${ultimo.tempoMedioPagamento} giorni. La serie ufficiale PCC/MEF ${primo.anno}–${ultimo.anno}, spiegata.`,
+      'pagamenti.html',
+      'Tempi di pagamento'
+    ),
     body,
   });
 }
@@ -822,6 +871,12 @@ esternalizzati). Una quota flessibile alta è un indicatore di fragilità dell�
     description: `${numeroIt(n.totale)} dipendenti, ${numeroIt(n.medici)} medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.`,
     active: 'approfondimenti.html',
     canonical: 'personale.html',
+    jsonld: pagLd(
+      'Il personale della sanità pubblica',
+      `${numeroIt(n.totale)} dipendenti, ${numeroIt(n.medici)} medici: il personale della sanità pubblica e dove il lavoro precario pesa di più. Dati Conto Annuale RGS.`,
+      'personale.html',
+      'Il personale della sanità'
+    ),
     body,
   });
 }
@@ -880,6 +935,12 @@ in senso opposto.</div>
     description: `${euroCompact(u.totPassiva)} spesi nel ${mob.ultimoAnno} per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.`,
     active: 'approfondimenti.html',
     canonical: 'mobilita.html',
+    jsonld: pagLd(
+      'Mobilità sanitaria: curarsi fuori regione',
+      `${euroCompact(u.totPassiva)} spesi nel ${mob.ultimoAnno} per curarsi fuori regione: la classifica regionale della mobilità sanitaria passiva, dai bilanci ufficiali.`,
+      'mobilita.html',
+      'Mobilità sanitaria'
+    ),
     body,
   });
 }
@@ -930,6 +991,12 @@ perimetro: aziende collegate. Le adesioni a convenzioni riconoscibili non sono e
     description: `A dicembre gli affidamenti diretti della sanità sono ${rapporto.toFixed(1)} volte la media mensile: la classica corsa a spendere i fondi prima della scadenza del bilancio.`,
     active: 'approfondimenti.html',
     canonical: 'fine-anno.html',
+    jsonld: pagLd(
+      'La febbre di dicembre: gli affidamenti di fine anno',
+      `A dicembre gli affidamenti diretti della sanità sono ${rapporto.toFixed(1)} volte la media mensile: la classica corsa a spendere i fondi prima della scadenza del bilancio.`,
+      'fine-anno.html',
+      'La febbre di dicembre'
+    ),
     body,
   });
 }
@@ -993,6 +1060,12 @@ var DATI=${datiJson.replace(/</g, '\\u003c')};
     description: 'Metti a confronto bilanci, personale, appalti e segnalazioni di due aziende sanitarie italiane, fianco a fianco.',
     active: 'approfondimenti.html',
     canonical: 'confronta.html',
+    jsonld: pagLd(
+      'Confronta due aziende sanitarie',
+      'Metti a confronto bilanci, personale, appalti e segnalazioni di due aziende sanitarie italiane, fianco a fianco.',
+      'confronta.html',
+      'Confronta due aziende'
+    ),
     body,
   });
 }
@@ -1039,6 +1112,12 @@ avviso in <a href="aggiornamenti.html">aggiornamenti</a>).</p>
     description: 'Endpoint JSON/CSV stabili e senza chiavi: segnalazioni, appalti, fornitori, mobilità, personale. Open data riutilizzabili con citazione.',
     active: 'approfondimenti.html',
     canonical: 'api.html',
+    jsonld: pagLd(
+      'API e dati riutilizzabili',
+      'Endpoint JSON/CSV stabili e senza chiavi: segnalazioni, appalti, fornitori, mobilità, personale. Open data riutilizzabili con citazione.',
+      'api.html',
+      'API e dati'
+    ),
     body,
   });
 }
@@ -1073,6 +1152,11 @@ Contatto nelle <a href="note-legali.html">note legali</a>.</p>
     description: 'La dichiarazione di accessibilità del sito: conformità WCAG 2.1 AA, limiti noti e come segnalare barriere.',
     active: '',
     canonical: 'accessibilita.html',
+    jsonld: articleLd(
+      'Accessibilità — Ospedali Trasparenti',
+      'La dichiarazione di accessibilità del sito: conformità WCAG 2.1 AA, limiti noti e come segnalare barriere.',
+      'accessibilita.html'
+    ),
     body,
   });
 }
@@ -1139,6 +1223,12 @@ volutamente identica in tutti gli anni per rendere il confronto omogeneo.</p>
     description: 'Come la pandemia ha cambiato gli acquisti della sanità: urgenze, affidamenti senza gara e volumi 2019–2024 — e se il mercato è tornato normale.',
     active: 'approfondimenti.html',
     canonical: 'storico.html',
+    jsonld: pagLd(
+      'Prima, durante e dopo il COVID: sei anni di appalti sanitari',
+      'Come la pandemia ha cambiato gli acquisti della sanità: urgenze, affidamenti senza gara e volumi 2019–2024 — e se il mercato è tornato normale.',
+      'storico.html',
+      'Prima e dopo il COVID'
+    ),
     body,
   });
 }

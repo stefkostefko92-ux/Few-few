@@ -189,6 +189,47 @@ export function briciole(items) {
   };
 }
 
+// Граф за листинг/хъб страница (strutture/fornitori/regioni): BreadcrumbList +
+// CollectionPage. Тези страници са указатели, не Article — CollectionPage е
+// правилният тип за SEO покритие. `about` = темата (Thing); `elementi` (по избор)
+// добавя ItemList на водещите елементи (напр. топ структурите). Чете module-scope
+// siteUrl() като останалите helpers → вика се по време на рендера (след setSiteUrl).
+/**
+ * @param {string} nome име за трошката/страницата (напр. „Strutture")
+ * @param {string} percorso релативен път (напр. „strutture.html")
+ * @param {string} descrizione
+ * @param {string} about тема на колекцията
+ * @param {Array<{ nome: string, url: string }>} [elementi] водещи елементи за ItemList
+ * @returns {Record<string, unknown>|null}
+ */
+export function collezioneLd(nome, percorso, descrizione, about, elementi) {
+  const su = siteUrl();
+  if (!su) return null;
+  /** @type {Record<string, unknown>} */
+  const collection = {
+    '@type': 'CollectionPage',
+    name: nome,
+    description: descrizione,
+    inLanguage: 'it',
+    url: `${su}/${percorso}`,
+    isPartOf: { '@id': `${su}/#website` },
+    about: { '@type': 'Thing', name: about },
+  };
+  if (elementi && elementi.length) {
+    collection.mainEntity = {
+      '@type': 'ItemList',
+      numberOfItems: elementi.length,
+      itemListElement: elementi.map((e, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.nome,
+        url: /^https?:/.test(e.url) ? e.url : `${su}/${e.url}`,
+      })),
+    };
+  }
+  return { '@context': 'https://schema.org', '@graph': [briciole([['Home', '/'], [nome, percorso]]), collection] };
+}
+
 export const FOR_LABEL = Object.fromEntries(CE_FORENSICS.map((c) => [c.key, c.label]));
 
 /**

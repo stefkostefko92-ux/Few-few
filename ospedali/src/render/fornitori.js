@@ -4,7 +4,7 @@
 
 import { esc, euroCompact, numeroIt, percentualeIt } from '../lib/format.js';
 import { page, kpi, siteUrl } from '../lib/site-ui.js';
-import { briciole } from '../lib/site-shared.js';
+import { briciole, collezioneLd } from '../lib/site-shared.js';
 
 /** @typedef {import('../lib/models.js').AppMatch} AppMatch */
 /** @typedef {import('../lib/models.js').CoiCoppia} CoiCoppia */
@@ -122,8 +122,22 @@ ${coppie.length ? `<div class="seg ${coppie.some((p) => p.gravita === 'alta') ? 
 Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#rettifiche">Richiedi una rettifica</a>.</p>
 `;
   const suF = siteUrl();
+  // Само за юридически лица/валидни P.IVA (societa === true): физическите лица не се
+  // профилират (GDPR), затова тук няма Organization с лично име. vatID = CF/P.IVA.
   const jsonldForn = suF && societa
-    ? { '@context': 'https://schema.org', '@graph': [briciole([['Home', '/'], ['Fornitori', 'fornitori.html'], [f.den, `fornitore/${f.cf}.html`]])] }
+    ? {
+        '@context': 'https://schema.org',
+        '@graph': [
+          briciole([['Home', '/'], ['Fornitori', 'fornitori.html'], [f.den, `fornitore/${f.cf}.html`]]),
+          {
+            '@type': 'Organization',
+            name: f.den,
+            vatID: f.cf,
+            address: { '@type': 'PostalAddress', addressCountry: 'IT' },
+            url: `${suF}/fornitore/${f.cf}.html`,
+          },
+        ],
+      }
     : null;
   return page({
     title: `${f.den} — fornitore del SSN — Ospedali Trasparenti`,
@@ -175,6 +189,12 @@ q.addEventListener('input',a);a();})();
     title: 'I fornitori del SSN — Ospedali Trasparenti',
     description: 'Elenco delle imprese fornitrici delle aziende sanitarie italiane con valore aggiudicato, numero di contratti e aziende servite.',
     active: 'fornitori.html',
+    jsonld: collezioneLd(
+      'Fornitori',
+      'fornitori.html',
+      'Elenco delle imprese fornitrici delle aziende sanitarie italiane con valore aggiudicato, numero di contratti e aziende servite.',
+      'Fornitori delle aziende sanitarie pubbliche italiane'
+    ),
     body,
   });
 }

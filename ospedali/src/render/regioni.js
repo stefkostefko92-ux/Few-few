@@ -4,7 +4,7 @@
 
 import { esc, numeroIt, percentualeIt, euroCompact } from '../lib/format.js';
 import { page, kpi, badge, siteUrl } from '../lib/site-ui.js';
-import { REGIONI, PIANO_RIENTRO, ultimoCe, briciole } from '../lib/site-shared.js';
+import { REGIONI, PIANO_RIENTRO, ultimoCe, briciole, collezioneLd } from '../lib/site-shared.js';
 import { VIEWBOX, REGIONI_GEO } from '../lib/italia-geo.js';
 
 /** @typedef {import('../lib/models.js').RegioneMeta} RegioneMeta */
@@ -228,6 +228,13 @@ Molise commissariate) — il contesto è indicato nelle rispettive schede. <a hr
     title: 'Regioni a confronto — Ospedali Trasparenti',
     description: 'Carta schematica dell’Italia e classifica regionale della quota di appalti senza gara nella sanità pubblica. Dati ANAC.',
     active: 'regioni.html',
+    jsonld: collezioneLd(
+      'Regioni',
+      'regioni.html',
+      'Carta dell’Italia e classifica regionale della quota di appalti senza gara nella sanità pubblica. Dati ANAC.',
+      'Sanità pubblica delle regioni italiane',
+      ordinate.map((r) => ({ nome: r.nome, url: `regione/${r.key}.html` }))
+    ),
     body,
   });
 }
