@@ -5456,9 +5456,20 @@
           "date": "2026-07-06",
           "event": "v11.0 — учене",
           "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
+        },
+        {
+          "version": "11.2.0",
+          "date": "2026-07-15",
+          "event": "v11.2 — учене",
+          "detail": "Научи: QuickSurface официален FAQ изисква Intel i5+, 16GB RAM, 256GB диск, Windows 10 64-bit, … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface официален FAQ изисква Intel i5+, 16GB RAM, 256GB диск, Windows 10 64-bit, …\" (+2 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
