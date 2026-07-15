@@ -155,6 +155,10 @@ async function main() {
     }
   }
 
+  // Датата на снапшота трябва да е зададена ПРЕДИ първия рендер, който вика articleLd()
+  // (иначе datePublished/dateModified излизат празни → нула freshness сигнал за AI/Google).
+  const validaz = /** @type {Validazione|null} */ (await readJson(VALIDAZIONE_FILE).catch(() => null));
+  setDataSnapshot(validaz && validaz.generatoIl ? validaz.generatoIl.slice(0, 10) : '');
   await writeFile(join(SITE_DIR, 'index.html'), renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCosti, totRisultato, inPerdita, conDati, href, segnByCod }));
   const conCordate = !!(await readJson(pjoin(DATA_DIR, 'cordate.json')).catch(() => null));
   const conSegGare = !!(await readJson(pjoin(DATA_DIR, 'segnali-gare.json')).catch(() => null));
@@ -167,8 +171,6 @@ async function main() {
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
   await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali({ titolare: config.titolare || {} }));
   await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ titolare: config.titolare || {}, hosting: config.hosting || {} }));
-  const validaz = /** @type {Validazione|null} */ (await readJson(VALIDAZIONE_FILE).catch(() => null));
-  setDataSnapshot(validaz && validaz.generatoIl ? validaz.generatoIl.slice(0, 10) : '');
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   let conContratti = 0;
@@ -711,7 +713,8 @@ async function main() {
     const lastmod = (validaz && validaz.generatoIl ? validaz.generatoIl : new Date().toISOString()).slice(0, 10);
     void oggi;
     const urls = paths
-      .map((p) => `<url><loc>${esc(`${su}/${p}`)}</loc><lastmod>${lastmod}</lastmod><priority>${prio(p)}</priority></url>`)
+      // home → каноничен корен `/` (не `/index.html`) — иначе sitemap се разминава с canonical.
+      .map((p) => `<url><loc>${esc(`${su}/${p === 'index.html' ? '' : p}`)}</loc><lastmod>${lastmod}</lastmod><priority>${prio(p)}</priority></url>`)
       .join('\n');
     await writeFile(
       join(SITE_DIR, 'sitemap.xml'),
@@ -756,6 +759,25 @@ async function main() {
   for (const f of ['favicon.ico', 'favicon-32.png', 'favicon-16.png', 'apple-touch-icon.png']) {
     await copyFile(pjoin(ROOT, 'assets', f), join(SITE_DIR, f)).catch(() => {});
   }
+  // Web App Manifest (икона на началния екран + theme/name). Реферира съществуващите
+  // икони с реалните им размери; за пълен maskable 192/512 набор трябва квадратен мастер.
+  await writeFile(
+    join(SITE_DIR, 'site.webmanifest'),
+    JSON.stringify({
+      name: 'Ospedali Trasparenti',
+      short_name: 'Ospedali Trasparenti',
+      description: 'I conti e gli appalti della sanità pubblica italiana, da open data ufficiali.',
+      lang: 'it',
+      start_url: '/',
+      display: 'standalone',
+      theme_color: '#0d131a',
+      background_color: '#f3f5f8',
+      icons: [
+        { src: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+        { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
+      ],
+    }, null, 2) + '\n'
+  );
 
   // 404 — за несъществуващи адреси и за страници, скрити от админ панела
   await writeFile(

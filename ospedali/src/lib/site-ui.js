@@ -294,7 +294,10 @@ export function page({ title, active, rel = '', body, description = '', canonica
 <link rel="icon" href="${rel}favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="32x32" href="${rel}favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="${rel}favicon-16.png">
-<link rel="apple-touch-icon" href="${rel}apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="${rel}apple-touch-icon.png">
+<link rel="manifest" href="${rel}site.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 ${meta}
