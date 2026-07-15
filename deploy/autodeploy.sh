@@ -471,9 +471,15 @@ deploy_adblock() {
   # 1) Обслужвани файлове → www root. Копираме избрани файлове (без README/конфиг),
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
-  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt og.png; do
+  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt \
+           og.png favicon.svg favicon-48.png apple-touch-icon.png icon-512.png; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
   done
+  # .well-known/ (security.txt и др.)
+  if [ -d "$d/.well-known" ]; then
+    mkdir -p "$ADBLOCK_WWW/.well-known"
+    rsync -a "$d/.well-known/" "$ADBLOCK_WWW/.well-known/"
+  fi
   # IndexNow ключ: материализираме <key>.txt в www root от indexnow_key.txt.
   if [ -f "$d/indexnow_key.txt" ]; then
     INKEY=$(tr -d '[:space:]' < "$d/indexnow_key.txt")
