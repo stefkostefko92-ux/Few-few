@@ -10240,7 +10240,7 @@
         "Цена: токен-осъзнатост, избор на по-евтин модел (flash/mini/haiku) за прости задачи"
       ],
       "knowledge": {
-        "sources": 98,
+        "sources": 101,
         "researchToolUses": 0,
         "priorArt": [
           "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
@@ -10280,10 +10280,10 @@
           "detail": "+12 проверени поуки от авторитетни репозитории (LiteLLM router/fallback/cost/observability/cosign, Anthropic cookbook sub-agents/RAG/evals/moderation, awesome-production-llm таксономия, vLLM, NeMo-Guardrails, MCP). Съдържанието третирано като недоверено (доктрина); източникът е репото."
         },
         {
-          "version": "10.4.0",
+          "version": "10.1.0",
           "date": "2026-07-15",
-          "event": "Мастъри: обучен до v10 от GitHub канон",
-          "detail": "Обучен до ниво mastery (v10) от GitHub канон: общо 104 проверени поуки, всяка с реален източник (официални SDK/cookbook-и + docs: Anthropic, OpenAI, Gemini, Vercel AI SDK, Instructor, Guardrails, Rebuff, promptfoo, LlamaIndex/RAGAS). Домейнът LLM/AI интеграция е покрит из основи."
+          "event": "Мастъри v10 + курация (дедуп)",
+          "detail": "Обучен до ниво mastery (v10) от GitHub канон, после курация: 101 проверени поуки (слети 3 семантични дубъла — caching/structured-output/embeddings; поправен фалшив източник), всяка с реален източник (официални SDK/cookbook-и + docs: Anthropic, OpenAI, Gemini, Vercel AI SDK, Instructor, Guardrails, Rebuff, promptfoo, LlamaIndex/RAGAS). Домейнът LLM/AI интеграция е покрит из основи."
         }
       ],
       "activity": [
@@ -10310,7 +10310,7 @@
         {
           "date": "2026-07-15",
           "type": "learning",
-          "summary": "Обучен до v10.4 (mastery) от GitHub репа/докове: 104 проверени поуки върху целия домейн LLM/AI интеграция"
+          "summary": "Курация след mastery: слети 3 семантични дубъла, поправен източник → 101 проверени поуки (v10.1)"
         }
       ]
     }
