@@ -64,7 +64,7 @@ hooks, rules).
 
 ## Custom agents — `.claude/agents/`
 
-18 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+19 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also gets a **hook-injected
