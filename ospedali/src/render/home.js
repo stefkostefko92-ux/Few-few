@@ -43,10 +43,11 @@ export function renderHome({ enti, segn, forense, ultimoAnnoCe, totRicavi, totCo
 
   const body = `
 <h1>I conti degli ospedali pubblici italiani, in chiaro</h1>
-<p class="lead">Quanto incassano e quanto spendono le aziende sanitarie e ospedaliere del
-Servizio Sanitario Nazionale — struttura per struttura, anno per anno — con l’evidenza automatica
-delle situazioni contabili che meritano un approfondimento. Dati ufficiali <em>open data</em> di RGS/MEF
-e Ministero della Salute.</p>
+<p class="lead">Le <strong>${numeroIt(conDati)} aziende</strong> del Servizio Sanitario Nazionale valgono circa
+<strong>${euroCompact(totRicavi)}</strong> di produzione (${ultimoAnnoCe}), con un risultato d’esercizio aggregato di
+<strong>${euroCompact(totRisultato)}</strong> e <strong>${numeroIt(inPerdita)} strutture in perdita</strong>. Questo sito
+ricostruisce — struttura per struttura, anno per anno — quanto incassano e spendono, con l’evidenza automatica delle
+anomalie contabili e degli appalti. Dati ufficiali <em>open data</em> di RGS/MEF e Ministero della Salute.</p>
 
 <div class="grid kpis" style="margin-top:22px">
   ${kpi(`Strutture con bilancio (${ultimoAnnoCe})`, numeroIt(conDati))}

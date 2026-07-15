@@ -78,10 +78,11 @@ export function renderAppalti({ appalti, appByCod, appMatch, enti, href }) {
 
   const body = `
 <h1>Appalti pubblici della sanità</h1>
-<p class="lead">Chi compra, come e con quanta concorrenza. Dai dati ANAC (Banca Dati Nazionale dei Contratti
-Pubblici, gare sopra 40.000 € pubblicate negli anni ${anniTxt}), isoliamo gli appalti delle aziende sanitarie e
-misuriamo la <strong>quota di spesa affidata senza gara</strong> — affidamenti diretti e negoziate senza bando —
-il primo indicatore di opacità che guardano ANAC e Corte dei conti.</p>
+<p class="lead">Il <strong>${percentualeIt(nz.quotaSenzaGaraNum)}</strong> degli appalti sanitari italiani (per numero di
+contratti, ${anniTxt}) è aggiudicato <strong>senza gara</strong> — affidamento diretto o negoziata senza bando; il
+${percentualeIt(nz.quotaSenzaGara)} in valore. Dai dati ANAC (gare sopra 40.000 €) isoliamo gli appalti delle aziende
+sanitarie e misuriamo la quota assegnata senza confronto competitivo, il primo indicatore di opacità che guardano
+ANAC e Corte dei conti.</p>
 
 <div class="grid kpis">
   ${kpi(`Spesa senza gara (${anniTxt})`, percentualeIt(nz.quotaSenzaGara), (nz.quotaSenzaGara || 0) > 0.4 ? 'neg' : '')}
