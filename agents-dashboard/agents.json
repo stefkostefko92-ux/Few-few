@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-14",
+    "updated": "2026-07-15",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -2824,6 +2824,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-15",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Ospedali Trasparenti articleLd() дава ПРАЗНИ datePublished/dateModified на всички разсл…\" (+2)"
+        },
         {
           "date": "2026-07-14",
           "type": "learning",
