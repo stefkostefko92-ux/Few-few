@@ -99,6 +99,11 @@ src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидац
   JSON-LD, `sitemap.xml`, `robots.txt` (празен siteUrl → всичко се пропуска, само
   релативни адреси). `page()` приема `canonical`/`jsonld`; подстраниците
   (struttura/regione/fornitore) подават свой `canonical`. `setSiteUrl()` в `site-ui.js`.
+- **IndexNow:** `config.indexNowKey` → `build-site` генерира `site/<key>.txt`;
+  `src/indexnow.js` (`npm run indexnow`) чете `sitemap.xml` и POST-ва URL-ите към
+  `api.indexnow.org` (Bing/Yandex/Seznam). Вградено в `deploy_ospedali` — тича ВИНАГИ
+  след деплой. Google не поддържа IndexNow → пасивно (sitemap+robots) + еднократна
+  верификация в Search Console от собственика (виж `deploy/DEPLOY.md`).
 - Профили на изпълнителите: `pIvaValida` (11 цифри, не всички еднакви, контролна
   цифра) пази от боклучави CF; физически лица (16 знака) НЕ се профилират (GDPR).
 - Регионите: `REGIONI` в `build-site.js` (ключ=файл; `istat`=код за картата;

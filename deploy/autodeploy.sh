@@ -301,6 +301,11 @@ deploy_ospedali() {
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
     ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
     [ -f "$OSPEDALI_DIR/server/.env" ] || warn "Няма $OSPEDALI_DIR/server/.env — сайтът работи, но админ паролата е случайна (виж journalctl -u ospedali). За продукция задай OSPEDALI_ADMIN_PASSWORD + OSPEDALI_SESSION_SECRET (виж ospedali/deploy/DEPLOY.md)."
+    # IndexNow — активно уведоми търсачките (Bing/Yandex) за URL-ите. ВИНАГИ след
+    # успешен деплой. Best-effort: иска сайтът да е жив зад публичния домейн+TLS, за
+    # да се верифицира ключът; при първия деплой (преди DNS/certbot) може да падне —
+    # не е фатално, при следващия деплой минава.
+    ( cd "$OSPEDALI_DIR" && node src/indexnow.js ) || warn "IndexNow подаване пропадна (сайтът може още да не е достъпен на публичния домейн) — не е фатално, минава при следващия деплой."
   else
     deploy_failed=1
     warn "ospedali health провал — връщам предишния код."

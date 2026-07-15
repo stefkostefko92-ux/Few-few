@@ -723,6 +723,11 @@ async function main() {
       join(SITE_DIR, 'robots.txt'),
       `# Ospedali Trasparenti — dati aperti sulla sanità pubblica italiana.\n# L'accesso è consentito a tutti i crawler, inclusi i bot AI (ricerca e training):\n# la finalità civica del progetto è massimizzare la diffusione dei dati.\nUser-agent: *\nAllow: /\n\nSitemap: ${su}/sitemap.xml\n`
     );
+    // IndexNow ключов файл (за верификация от Bing/Yandex при push на нови URL-и).
+    // Съдържанието Е самият ключ; сервира се на https://<host>/<key>.txt.
+    if (config.indexNowKey && /^[a-f0-9]{8,128}$/i.test(config.indexNowKey)) {
+      await writeFile(join(SITE_DIR, `${config.indexNowKey}.txt`), `${config.indexNowKey}\n`);
+    }
     // llms.txt — карта за AI асистентите (Claude/Perplexity я четат)
     await writeFile(
       join(SITE_DIR, 'llms.txt'),

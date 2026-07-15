@@ -84,6 +84,23 @@ curl -s localhost:8788/healthz          # {"ok":true}
 curl -sI https://ospedalitrasparenti.it # 200 + валиден TLS
 ```
 
+## Търсачки (откриваемост)
+
+**Автоматично (вградено).** След всеки успешен деплой `deploy_ospedali` подава
+**IndexNow** (`node src/indexnow.js`) — активно уведомява **Bing, Yandex, Seznam** за
+всички URL-и от `sitemap.xml`. Ключът е `config.indexNowKey`; `build-site` генерира
+`site/<key>.txt` за верификация. Best-effort: при първия деплой (преди DNS/TLS) може да
+падне — минава при следващия. Ръчно: `npm run indexnow`.
+
+**Пасивно (винаги активно).** `robots.txt` (allow-all + `Sitemap:`) + `sitemap.xml`
+(5288 URL) + canonical/OG/JSON-LD → всеки crawler открива сайта сам.
+
+**Google — еднократна ръчна стъпка (Google не поддържа IndexNow).** След пускането:
+[Google Search Console](https://search.google.com/search-console) → добави имота
+`ospedalitrasparenti.it` → верифицирай (DNS TXT запис, най-чисто) → подай
+`https://ospedalitrasparenti.it/sitemap.xml`. Същото по избор в
+[Bing Webmaster Tools](https://www.bing.com/webmasters) (IndexNow вече покрива Bing).
+
 ## Приватност (GDPR)
 
 Броячът е **анонимен и агрегатен** (без IP, без проследяващи бисквитки — HMAC на

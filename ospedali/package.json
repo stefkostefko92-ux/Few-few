@@ -26,6 +26,7 @@
     "all": "npm run fetch:all && npm run build",
     "test": "node --test test/*.test.js",
     "serve": "node server/server.js",
+    "indexnow": "node src/indexnow.js",
     "lint": "sh -c 'for f in src/*.js src/lib/*.js server/*.js server/lib/*.js test/*.js; do node --check \"$f\" || exit 1; done'",
     "mobilita": "node --max-old-space-size=4096 src/mobilita.js",
     "personale": "node --max-old-space-size=4096 src/personale.js",

@@ -51,6 +51,13 @@ model: opus
   бекъп и потвърждение; обясни какво ще се случи преди да го направиш.
 - При диагностика гледай: `docker compose ps/logs`, `systemctl status medqr`,
   `journalctl -u medqr`, Nginx логове, `ufw status`, дисково място, валидност на TLS.
+- **ospedali + IndexNow (винаги):** след ВСЕКИ успешен деплой на ospedali се подава
+  IndexNow (`node src/indexnow.js`) — вече е вградено в `deploy_ospedali` (best-effort
+  след health check). Не го махай и не го прескачай. Първият деплой преди DNS/TLS може
+  да върне грешка (ключът не е достъпен на публичния домейн) — нормално, минава при
+  следващия. IndexNow покрива Bing/Yandex/Seznam; **Google не го поддържа** → за Google
+  откриваемостта е пасивна (sitemap.xml + robots.txt) + еднократна верификация в
+  Search Console от собственика (не се автоматизира). Ключът е в `config.indexNowKey`.
 
 ## Процес при заявка
 1. Установи състоянието (кои сервиси текат, версии, здраве, място на диска, TLS срок).
