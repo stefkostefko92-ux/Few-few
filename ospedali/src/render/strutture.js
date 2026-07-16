@@ -222,7 +222,10 @@ Ai sensi di legge, la richiesta non necessita di motivazione e la risposta è
 dovuta entro 30 giorni.
 
 Luogo e data: ________________
-Nome, cognome e recapito: ________________`;
+Nome, cognome e recapito: ________________
+
+(In caso di accesso generalizzato, la richiesta può essere inviata anche
+all'ufficio che detiene il documento o all'URP.)`;
   const kitVerifica = `<details class="note" style="margin-top:10px">
   <summary style="cursor:pointer;font-weight:650">Verifica tu stesso: contratti, atti, accesso civico</summary>
   <p style="margin:10px 0 6px">Tre passi, tutti gratuiti e legali (il percorso completo è nella

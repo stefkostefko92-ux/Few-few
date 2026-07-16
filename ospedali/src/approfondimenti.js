@@ -486,8 +486,9 @@ chiedere conto direttamente. Se contatti un giornalista, porta il fascicolo: CIG
 il punto di partenza, ogni numero è tracciabile alla fonte.</p>
 
 <div class="note"><strong>Attenzione.</strong> Una segnalazione infondata o temeraria può avere conseguenze anche per
-chi la presenta. Segnala ciò che hai <strong>verificato sui documenti</strong>, non ciò che sospetti: gli indicatori di
-questo sito, da soli, non bastano. Se invece l’errore è nei <em>nostri</em> dati,
+chi la presenta: in particolare, accusare qualcuno di un reato sapendolo innocente può integrare il delitto di
+calunnia (art. 368 c.p.). Segnala ciò che hai <strong>verificato sui documenti</strong>, non ciò che sospetti: gli
+indicatori di questo sito, da soli, non bastano. Se invece l’errore è nei <em>nostri</em> dati,
 <a href="note-legali.html#rettifiche">chiedici una rettifica</a> — correggiamo.</div>
 
 <p class="small muted"><strong>Continua:</strong> <a href="guida-verifica.html">come verificare un appalto</a> ·
