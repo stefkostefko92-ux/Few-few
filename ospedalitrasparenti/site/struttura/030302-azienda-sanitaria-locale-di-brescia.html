@@ -1,0 +1,2091 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
+<title>AZIENDA SANITARIA LOCALE DI BRESCIA — Ospedali Trasparenti</title>
+<meta name="description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA SANITARIA LOCALE DI BRESCIA (Lombardia).">
+<link rel="canonical" href="https://ospedalitrasparenti.it/struttura/030302-azienda-sanitaria-locale-di-brescia.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ospedali Trasparenti">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="AZIENDA SANITARIA LOCALE DI BRESCIA — Ospedali Trasparenti">
+<meta property="og:description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA SANITARIA LOCALE DI BRESCIA (Lombardia).">
+<meta property="og:url" content="https://ospedalitrasparenti.it/struttura/030302-azienda-sanitaria-locale-di-brescia.html">
+<meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AZIENDA SANITARIA LOCALE DI BRESCIA — Ospedali Trasparenti">
+<meta name="twitter:description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA SANITARIA LOCALE DI BRESCIA (Lombardia).">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ospedalitrasparenti.it/"},{"@type":"ListItem","position":2,"name":"Strutture","item":"https://ospedalitrasparenti.it/strutture.html"},{"@type":"ListItem","position":3,"name":"AZIENDA SANITARIA LOCALE DI BRESCIA","item":"https://ospedalitrasparenti.it/struttura/030302-azienda-sanitaria-locale-di-brescia.html"}]},{"@type":"GovernmentOrganization","name":"AZIENDA SANITARIA LOCALE DI BRESCIA","address":{"@type":"PostalAddress","addressRegion":"Lombardia","addressCountry":"IT"},"subjectOf":{"@type":"Dataset","name":"Bilancio e appalti — AZIENDA SANITARIA LOCALE DI BRESCIA","description":"Bilanci ufficiali (modelli CE/SP inviati al MEF), indicatori contabili, segnalazioni automatiche e contratti pubblici ANAC di AZIENDA SANITARIA LOCALE DI BRESCIA (Lombardia), anno per anno. Elaborazione da open data ufficiali.","creator":{"@type":"Organization","name":"Carbon Stealth VCC","url":"https://carbonstealth.eu"},"temporalCoverage":"2012/2024","license":"https://creativecommons.org/licenses/by/4.0/","url":"https://ospedalitrasparenti.it/struttura/030302-azienda-sanitaria-locale-di-brescia.html"}}]}</script>
+<script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
+мигане на грешната тема. Единственият blocking script в head — само за темата. */
+try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')document.documentElement.dataset.theme=_t;}catch(e){}</script>
+<style>
+:root{
+  /* палитра — светла тема (институционална, сдържана) */
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
+  --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
+  --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
+  --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  /* скала на разстоянията (4-точкова база) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* радиуси и релеф */
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(16,32,48,.06);
+  --shadow:0 1px 3px rgba(16,32,48,.07),0 10px 28px rgba(16,32,48,.05);
+  --maxw:1120px; --measure:70ch;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+/* Тъмни променливи — блокът е един и същ за двата случая:
+   1) изричен ръчен избор :root[data-theme="dark"] (печели винаги);
+   2) авто по системата, но САМО без ръчен избор :root:not([data-theme]).
+   Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
+:root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+  --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+  --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+  /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
+     държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+    --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+    --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:3px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* ---------- Masthead / навигация ---------- */
+header.site{background:var(--surface);border-top:3px solid var(--brand);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:8px 24px;min-height:58px;flex-wrap:wrap}
+.brand{display:inline-flex;align-items:center;line-height:0}
+.brand-logo{height:36px;width:auto;display:block}
+/* тъмна тема: тъмносиният надпис не се чете на тъмния хедър → лека светла
+   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата
+   (важи и при ръчен избор, и при авто — виж бележката при променливите) */
+:root[data-theme="dark"] .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+}
+nav.main{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
+nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px;
+  line-height:1.2;white-space:nowrap;transition:background-color .15s,color .15s}
+nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decoration:none}
+nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
+/* Бутон-хамбургер — само за тесни екрани (виж @media по-долу); на desktop скрит.
+   44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-left:auto;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
+.nav-toggle .ico-close{display:none}
+.nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle[aria-expanded="true"] .ico-open{display:none}
+.nav-toggle[aria-expanded="true"] .ico-close{display:block}
+/* Превключвател светла/тъмна тема — видим на ВСИЧКИ ширини (за разлика от
+   hamburger-а). Иконата (слънце/луна) следва ЕФЕКТИВНАТА тема през CSS,
+   независимо от JS-тайминга → без грешна икона при първия paint. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
+/* по подр. (светло/авто-светло) → луна („премини на тъмно"); тъмно → слънце */
+.theme-toggle .ico-sun{display:none}
+.theme-toggle .ico-moon{display:block}
+:root[data-theme="dark"] .theme-toggle .ico-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .ico-sun{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
+  :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
+}
+/* desktop: двуетажен masthead. Ред 1: лого вляво + theme бутон в десния ръб
+   (margin-left:auto; DOM редът brand→theme→nav вече е правилният визуален ред).
+   Ред 2: навигацията на цял ред (flex-basis:100%) с тънка разделителна линия —
+   при 13 линка тя така или иначе не се побира до логото, затова редът е
+   умишлен, а не счупен fallback (преди: theme висеше сам на трети ред). */
+@media(min-width:901px){
+  header.site .wrap{padding-top:8px;row-gap:4px}
+  .theme-toggle{margin-left:auto}
+  nav.main{flex-basis:100%;margin-left:0;justify-content:center;
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
+}
+@media(max-width:900px){
+  header.site{position:static;border-top-width:3px}
+  /* Ред 1: лого вляво + тема + hamburger вдясно; менюто е на нов ред
+     (flex-basis:100%), скрито до отваряне. Без хоризонтален скрол. */
+  header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
+    padding-top:8px;padding-bottom:8px}
+  .brand{margin-right:auto;margin-bottom:0}
+  .brand-logo{height:32px}
+  /* само brand носи auto-полето → тема и hamburger са слепени вдясно с малък луфт */
+  .theme-toggle{margin-left:0}
+  .nav-toggle{display:inline-flex;margin-left:8px}
+  nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
+    flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
+    border-top:1px solid var(--line);padding-top:5px}
+  nav.main.open{display:flex}
+  nav.main a{display:flex;align-items:center;min-height:44px;
+    padding:11px 12px;border-radius:8px;white-space:normal}
+}
+main{padding:var(--s7) 0 var(--s6)}
+
+/* ---------- Типографска скала ---------- */
+h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
+  margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
+h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
+h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
+p{max-width:var(--measure)}
+.lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
+  max-width:66ch;margin:0 0 var(--s3)}
+main>.wrap>h1:first-child + .lead{font-size:clamp(17px,1rem + .4vw,20px)}
+
+/* ---------- Карти / решетка ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:var(--s5)}
+.grid{display:grid;gap:var(--s4)}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;
+  border-left:3px solid var(--line-2)}
+.kpi .n{font-size:clamp(24px,1.4rem + .7vw,30px);font-weight:700;letter-spacing:-.02em;
+  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+.kpi:has(.n.neg){border-left-color:var(--neg)} .kpi:has(.n.pos){border-left-color:var(--pos)}
+
+/* ---------- Таблици ---------- */
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow-sm)}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+th{background:var(--surface-2);font-size:11.5px;font-weight:650;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
+tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+
+/* ---------- Значки и чипове ---------- */
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;
+  line-height:1.5;color:#fff;white-space:nowrap;letter-spacing:.01em}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;
+  font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface);
+  transition:border-color .15s,background-color .15s}
+.chip:hover{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-ink);text-decoration:none}
+
+/* ---------- Сигнали ---------- */
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:var(--radius-sm);
+  background:var(--surface);padding:13px 16px;margin:var(--s3) 0;box-shadow:var(--shadow-sm)}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:5px;max-width:var(--measure)}
+
+/* ---------- Форма / контроли ---------- */
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand-tint)}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:10px 18px;border:1px solid var(--brand);border-radius:var(--radius-sm);
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:650;transition:filter .15s}
+.controls button:hover{filter:brightness(1.08)}
+
+/* ---------- Карта на Италия ---------- */
+.mapfig{margin:var(--s6) 0}
+.mapfig svg.italia{display:block;width:100%;max-width:660px;height:auto;margin:0 auto}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a path{transition:stroke-width .12s}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.mapfig svg a:hover path{stroke:var(--ink);stroke-width:1.6}
+.mapfig svg a:focus{outline:none}
+.mapfig svg a:focus path{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:var(--s3) 0;justify-content:center}
+
+/* ---------- Помощни / бележки ---------- */
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 9%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 32%);
+  border-radius:var(--radius-sm);padding:13px 16px;font-size:14.5px;color:var(--ink);
+  max-width:var(--measure)}
+.note strong{color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:9px 16px;border-radius:0 0 8px 0;z-index:20;font-weight:600}
+.skip:focus{left:0}
+
+/* ---------- Графики ---------- */
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.4;max-width:var(--measure)}
+.hbars{display:flex;flex-direction:column;gap:9px;margin:var(--s2) 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:650}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+/* САМО за графиките (.chart) — глобален selector би презаписал атрибутите
+   на етикетите върху картата на Италия (CSS бие SVG presentation атрибути) */
+.chart svg .grid-line{stroke:var(--line)} .chart svg text{fill:var(--muted);font-size:11px}
+
+/* ---------- Footer ---------- */
+footer.site{border-top:1px solid var(--line);background:var(--surface-2);
+  color:var(--muted);font-size:13.5px;padding:var(--s6) 0 var(--s7);margin-top:var(--s6)}
+footer.site .wrap>p{max-width:82ch;margin:0 0 var(--s3)}
+footer.site strong{color:var(--ink-2)}
+footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+footer.site a:hover{color:var(--brand)}
+.backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
+
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
+/* ---------- Мобилно: touch таргети ≥44px ---------- */
+@media(max-width:640px){
+  .controls input,.controls select,.controls button{min-height:44px}
+  .chip{padding:9px 14px}
+  .backlink{padding:6px 0;display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* ---------- Достъпност: намалено движение ---------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="../logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
+  <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambia tema chiaro o scuro" title="Tema chiaro / scuro">
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></svg>
+  </button>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
+    <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../glossario.html">Glossario</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../strutture.html">← Tutte le strutture</a>
+<h1>AZIENDA SANITARIA LOCALE DI BRESCIA</h1>
+<p><span class="chip">Lombardia</span> <span class="chip">Azienda Sanitaria Locale (ASL) con presìdi ospedalieri</span> <span class="chip">codice 030302</span></p>
+
+<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
+  <span class="semitem" role="listitem" title="nessuna segnalazione contabile automatica"><span class="dot verde"></span>Bilanci</span>
+  <span class="semitem" role="listitem" title="1 voce di spesa molto sopra le aziende simili"><span class="dot giallo"></span>Spesa anomala</span>
+  <span class="semitem" role="listitem" title="52% dei contratti senza gara (mediana nazionale 68%)"><span class="dot verde"></span>Senza gara</span>
+  <span class="semitem" role="listitem" title="96% delle gare con un solo offerente (su dati parziali)"><span class="dot rosso"></span>Concorrenza</span>
+  <span class="semitem" role="listitem" title="7 affidamenti appena sotto le soglie di legge (1.5% dei contratti)"><span class="dot verde"></span>Sotto soglia</span>
+  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
+  
+</div>
+<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
+  AZIENDA SANITARIA LOCALE DI BRESCIA è una struttura pubblica del SSN della regione Lombardia — Azienda Sanitaria Locale (ASL) con presìdi ospedalieri. Nell’ultimo esercizio disponibile (2015) ha registrato un valore della produzione di 2 mld €. I controlli automatici sui bilanci non hanno rilevato anomalie sui dati disponibili. Sul fronte degli appalti, il 52,3% dei suoi 478 contratti tracciati da ANAC è stato affidato senza gara (affidamento diretto o negoziata senza bando).
+  Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>
+<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">Questa pagina riunisce tre fonti ufficiali: i bilanci CE/SP trasmessi al MEF (BDAP),
+  l’anagrafe ospedaliera del Ministero della Salute e i contratti pubblici dell’ANAC. I costi «per posto letto» e
+  «per ricovero» sono confrontati con la <strong>mediana nazionale</strong>, mentre la sezione «Dove vanno i soldi»
+  confronta ogni voce di spesa con la mediana delle <strong>aziende simili (peer)</strong>: uno scostamento marcato
+  genera un segnale, che è un indicatore da verificare, non una prova. Negli appalti, «senza gara» significa
+  affidamento diretto o procedura negoziata senza pubblicazione; le adesioni ad accordi quadro e convenzioni
+  (es. Consip) <strong>non</strong> contano come «senza gara», perché la concorrenza c’è già stata a monte.
+  Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
+  pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
+  Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
+<details class="note" style="margin-top:10px">
+  <summary style="cursor:pointer;font-weight:650">Verifica tu stesso: contratti, atti, accesso civico</summary>
+  <p style="margin:10px 0 6px">Tre passi, tutti gratuiti e legali (il percorso completo è nella
+  <a href="../guida-verifica.html">guida in 5 minuti</a>):</p>
+  <ol style="margin:0 0 10px;padding-left:22px">
+    <li><strong>I contratti alla fonte.</strong> Scarica <a href="../contratti/030302.csv" download>l’elenco completo dei contratti di questa struttura (CSV)</a> e verifica ogni CIG sulla <a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">Banca Dati ANAC</a>.</li>
+    <li><strong>Gli atti.</strong> Cerca la sezione <a href="https://www.google.com/search?q=%22AZIENDA%20SANITARIA%20LOCALE%20DI%20BRESCIA%22%20amministrazione%20trasparente" target="_blank" rel="noopener">«Amministrazione Trasparente» di questa azienda</a>: determine, bandi, incarichi dirigenziali. L’indirizzo PEC ufficiale è su <a href="https://indicepa.gov.it/" target="_blank" rel="noopener">IndicePA</a>.</li>
+    <li><strong>Se un documento manca</strong>, chiedilo con l’accesso civico — copia il modello qui sotto, completalo e invialo via PEC (risposta dovuta entro 30 giorni):</li>
+  </ol>
+  <pre class="small" style="white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;user-select:all">Al Responsabile della prevenzione della corruzione e della trasparenza
+AZIENDA SANITARIA LOCALE DI BRESCIA
+
+Oggetto: richiesta di accesso civico ai sensi dell&#39;art. 5 del d.lgs. 33/2013
+
+Il/La sottoscritto/a ________________________, ai sensi dell&#39;art. 5 del d.lgs.
+14 marzo 2013, n. 33, chiede l&#39;accesso al seguente documento/dato:
+
+  [descrivere il documento: es. determina di affidamento del contratto CIG ________]
+
+Chiede che il documento sia trasmesso all&#39;indirizzo indicato in calce.
+Ai sensi di legge, la richiesta non necessita di motivazione e la risposta è
+dovuta entro 30 giorni.
+
+Luogo e data: ________________
+Nome, cognome e recapito: ________________
+
+(In caso di accesso generalizzato, la richiesta può essere inviata anche
+all&#39;ufficio che detiene il documento o all&#39;URP.)</pre>
+  <p class="small muted" style="margin:8px 0 0">Hai trovato qualcosa che non torna? <a href="../segnalare.html">A chi segnalarlo →</a></p>
+</details>
+
+<div class="grid kpis">
+    <div class="card kpi"><div class="n ">1.685.784.000 €</div><div class="l">Valore produzione (2015)</div></div>
+    <div class="card kpi"><div class="n ">1.684.437.000 €</div><div class="l">Costi produzione</div></div>
+    <div class="card kpi"><div class="n ">—</div><div class="l">Risultato d’esercizio</div></div>
+    <div class="card kpi"><div class="n ">79.810.000 €</div><div class="l">Costo del personale</div></div>
+  </div>
+
+<h2>Segnalazioni</h2><p class="note">Nessuna anomalia rilevata dai controlli automatici sui dati disponibili.</p>
+
+<h2>Come sono cambiati ricavi, costi e risultato</h2>
+<div class="grid" style="grid-template-columns:1fr">
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Ricavi e costi della produzione per anno (€)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="154.7" x2="666" y2="154.7"/><text x="50" y="157.7" text-anchor="end">500 mln</text><line class="grid-line" x1="56" y1="95.4" x2="666" y2="95.4"/><text x="50" y="98.4" text-anchor="end">1 mld</text><line class="grid-line" x1="56" y1="36.0" x2="666" y2="36.0"/><text x="50" y="39.0" text-anchor="end">1,5 mld</text><text x="56.0" y="232" text-anchor="middle">2012</text><text x="259.3" y="232" text-anchor="middle">2013</text><text x="462.7" y="232" text-anchor="middle">2014</text><text x="666.0" y="232" text-anchor="middle">2015</text><path d="M56.0,18.8 L259.3,17.8 L462.7,17.1 L666.0,14.0" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="18.8" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="17.8" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="17.1" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="14.0" r="2.5" fill="var(--brand)"/><path d="M56.0,19.4 L259.3,18.3 L462.7,17.5 L666.0,14.2" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="19.4" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="18.3" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="17.5" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="14.2" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Valore della produzione</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Costi della produzione</text></g></g></svg><figcaption>Ricavi e costi della produzione per anno (€)</figcaption></figure></div>
+  <div class="card"></div>
+</div>
+
+<h2>Dove vanno i soldi <span class="small muted">(2015, quota dei costi della produzione · confronto con aziende simili (territoriale, &gt;1G))</span></h2>
+      <p class="small muted">Le categorie di spesa dove i numeri si discostano molto dalle aziende simili: dove vale
+      la pena guardare i contratti. Indicatori, non prove.</p>
+      <div class="card"><div class="hbars" role="group" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">2 mld €<span class="muted small"> · 91,8%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Acquisto di prestazioni sanitarie da privati <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:21.9%;background:var(--neg)"></div></div>
+        <div class="hbar-v">339 mln €<span class="muted small"> · 20,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di beni</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:2.8%;background:var(--brand)"></div></div>
+        <div class="hbar-v">44 mln €<span class="muted small"> · 2,6%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">10 mln €<span class="muted small"> · 0,6%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">2 mln €<span class="muted small"> · 0,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">2 mln €<span class="muted small"> · 0,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">1 mln €<span class="muted small"> · 0,1%</span></div>
+      </div></div></div>
+      <h3>Segnali «follow the money» <span class="small muted">(1)</span></h3><div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Forte dipendenza da erogatori privati</span></div>
+            <div class="d">Acquisto di prestazioni sanitarie da privati per 338.539.000 € = 20,1% dei costi (oltre il 90° percentile nazionale).</div></div>
+<h2>Appalti pubblici <span class="small muted">(ANAC, LOMBARDIA)</span></h2>
+    <div class="grid kpis">
+      <div class="card kpi"><div class="n ">52,3%</div><div class="l">Contratti senza gara</div></div>
+      <div class="card kpi"><div class="n neg">50,6%</div><div class="l">Senza gara sul valore</div></div>
+      <div class="card kpi"><div class="n ">121 mln €</div><div class="l">Valore appalti</div></div>
+      <div class="card kpi"><div class="n ">478</div><div class="l">Contratti (lotti)</div></div>
+    </div>
+    
+    <div class="card" style="margin-top:12px"><div class="hbars" role="group" aria-label="Appalti per tipo di procedura"><div class="hbar-row flag">
+        <div class="hbar-l">Affidamento diretto (senza gara) <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--neg)"></div></div>
+        <div class="hbar-v">57 mln €<span class="muted small"> · 47,1%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Negoziata senza pubblicazione <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:7.4%;background:var(--neg)"></div></div>
+        <div class="hbar-v">4 mln €<span class="muted small"> · 3,5%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Accordo quadro / convenzione (pre-competuto)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:20.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">11 mln €<span class="muted small"> · 9,4%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Procedura competitiva (gara aperta/ristretta)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:78.8%;background:var(--brand)"></div></div>
+        <div class="hbar-v">45 mln €<span class="muted small"> · 37,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Negoziata con bando</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:5.9%;background:var(--brand)"></div></div>
+        <div class="hbar-v">3 mln €<span class="muted small"> · 2,8%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Altro / non determinato</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">9 mila €<span class="muted small"> · 0%</span></div>
+      </div></div></div>
+    <div class="grid kpis" style="margin-top:12px">
+        <div class="card kpi"><div class="n neg">96,1%</div><div class="l">Gare a offerente unico</div></div>
+        <div class="card kpi"><div class="n ">32,1%</div><div class="l">Concentrazione (1° fornitore)</div></div>
+        <div class="card kpi"><div class="n ">202</div><div class="l">Fornitori distinti</div></div>
+      </div>
+      <div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Gare con un solo offerente registrato</span></div><div class="d">Sui dati (parziali) dei partecipanti, il 96,1% delle gare (98/102) risulta con una sola offerta. Indicatore da verificare — può derivare da mercati ristretti, esclusive o urgenze; non è prova di irregolarità.</div></div>
+      
+      <h3>Principali fornitori</h3><div class="tablewrap"><table><thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead><tbody><tr><td>A2A ENERGIA S.P.A.</td><td class="num">31 mln €</td><td class="num">5</td></tr><tr><td>AMTRUST ASSICURAZIONI S.P.A.</td><td class="num">17 mln €</td><td class="num">7</td></tr><tr><td>SHAM</td><td class="num">11 mln €</td><td class="num">3</td></tr><tr><td>360 WELFARE S.R.L.</td><td class="num">3 mln €</td><td class="num">1</td></tr><tr><td>Operatore individuale (persona fisica)</td><td class="num">2 mln €</td><td class="num">2</td></tr></tbody></table></div><p class="small muted">Essere fornitore rilevante è legittimo; le persone fisiche non sono nominate.</p>
+    
+    <h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th scope="col">Oggetto</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>ENERGIA ELETTRICA<div class="small muted">EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">30 mln €</td></tr><tr><td>CONTRATTO SUBLOCAZIONE TEMPORANEA<div class="small muted">Cpv prevalente non disponibile</div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">11 mln €</td></tr><tr><td>POLIZZA RCT/O ATS CITTÀ METROPOLITANA DI MILANO<div class="small muted">SERVIZI ASSICURATIVI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">6 mln €</td></tr><tr><td>POLIZZA RCT/O ATS BRESCIA<div class="small muted">SERVIZI ASSICURATIVI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">5 mln €</td></tr><tr><td>ESTERNALIZZAZIONE DEL MAGAZZINO PER FARMACI E DISPOSITIVI MEDICI ASST GARDA NEI LOCALI DI ASST<div class="small muted">SERVIZI DI MAGAZZINAGGIO</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">4 mln €</td></tr><tr><td>POLIZZA RCT/O ATS INSUBRIA<div class="small muted">SERVIZI ASSICURATIVI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">4 mln €</td></tr><tr><td>POLIZZA RCT/O ATS VAL PADANA<div class="small muted">SERVIZI ASSICURATIVI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">4 mln €</td></tr><tr><td>ESTERNALIZZAZIONE DEL MAGAZZINO PER MATERIALE NON SANITARIO ASST GARDA<div class="small muted">SERVIZI DI MAGAZZINAGGIO</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">3 mln €</td></tr></tbody></table></div>
+    <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(478 contratti ANAC, 121 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il <abbr title="Codice Identificativo di Gara: codice di 10 caratteri rilasciato dall’ANAC che identifica in modo univoco ogni procedura di affidamento pubblico">CIG</abbr>
+è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/030302.csv" download>⬇ Scarica l’elenco completo (CSV, 478 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="energia elettrica a2a energia s.p.a.">
+      <td class="small">2024-06-21</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B2338E0791 · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">30 mln €</td></tr><tr data-t="contratto sublocazione temporanea ">
+      <td class="small">2024-03-13</td>
+      <td>CONTRATTO SUBLOCAZIONE TEMPORANEA<div class="small muted">CIG B0CA7EDD7F · Cpv prevalente non disponibile</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">11 mln €</td></tr><tr data-t="polizza rct/o ats città metropolitana di milano amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A027500208 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">6 mln €</td></tr><tr data-t="polizza rct/o ats brescia operatore individuale (persona fisica)">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS BRESCIA<div class="small muted">CIG A0274E6C90 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="esternalizzazione del magazzino per farmaci e dispositivi medici asst garda nei locali di asst ">
+      <td class="small">2025-06-13</td>
+      <td>ESTERNALIZZAZIONE DEL MAGAZZINO PER FARMACI E DISPOSITIVI MEDICI ASST GARDA NEI LOCALI DI ASST<div class="small muted">CIG B73CC13204 · SERVIZI DI MAGAZZINAGGIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="polizza rct/o ats insubria operatore individuale (persona fisica)">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS INSUBRIA<div class="small muted">CIG A0275120E3 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="polizza rct/o ats val padana amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS VAL PADANA<div class="small muted">CIG A02750AA46 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="esternalizzazione del magazzino per materiale non sanitario asst garda ">
+      <td class="small">2025-06-13</td>
+      <td>ESTERNALIZZAZIONE DEL MAGAZZINO PER MATERIALE NON SANITARIO ASST GARDA<div class="small muted">CIG B73CC142D7 · SERVIZI DI MAGAZZINAGGIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="servizio di mensa diffusa: rinnovo del contratto stipulato con la ditta blube srl per il periodo 01/07/2023 - 30/06/2026 360 welfare s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>SERVIZIO DI MENSA DIFFUSA: RINNOVO DEL CONTRATTO STIPULATO CON LA DITTA BLUBE SRL PER IL PERIODO 01/07/2023 - 30/06/2026<div class="small muted">CIG 9950135727 · SERVIZI DI GESTIONE MENSA</div></td>
+      <td>360 WELFARE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="polizza rct/o ats brianza amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS BRIANZA<div class="small muted">CIG A0274EF400 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lavori di ristrutturazione edificio 10 presso la sede legale di viale duca degli abruzzi 15, brescia aflutec s.r.l.">
+      <td class="small">2023-03-31</td>
+      <td>LAVORI DI RISTRUTTURAZIONE EDIFICIO 10 PRESSO LA SEDE LEGALE DI VIALE DUCA DEGLI ABRUZZI 15, BRESCIA<div class="small muted">CIG 973870271F · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>AFLUTEC S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats brescia 31.12.2023 - 31.12.2026 operatore individuale (persona fisica)">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA RCT/O ATS BRESCIA 31.12.2023 - 31.12.2026<div class="small muted">CIG A04464343C · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats bergamo amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS BERGAMO<div class="small muted">CIG A02750ED92 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats pavia amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS PAVIA<div class="small muted">CIG A02751A77B · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="facility management renovit public solutions s.p.a.">
+      <td class="small">2025-06-06</td>
+      <td>FACILITY MANAGEMENT<div class="small muted">CIG B72E1F0AC7 · SERVIZI DI RIPARAZIONE E MANUTENZIONE</div></td>
+      <td>RENOVIT PUBLIC SOLUTIONS S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="polizza rct/o ats montagna berkshire hathaway international insurance limited">
+      <td class="small">2023-11-20</td>
+      <td>POLIZZA RCT/O ATS MONTAGNA<div class="small muted">CIG A0274F2679 · SERVIZI ASSICURATIVI</div></td>
+      <td>BERKSHIRE HATHAWAY INTERNATIONAL INSURANCE LIMITED</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="aria_2025_055 sangue occulto dasit spa">
+      <td class="small">2025-12-22</td>
+      <td>ARIA_2025_055 SANGUE OCCULTO<div class="small muted">CIG B9BD817D1F · SISTEMI DIAGNOSTICI</div></td>
+      <td>DASIT SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio di abbattimento di circa 17.604 suini e carico carcasse per conto dell&#39;ats di pavia operatore individuale (persona fisica)">
+      <td class="small">2023-09-11</td>
+      <td>SERVIZIO DI ABBATTIMENTO DI CIRCA 17.604 SUINI E CARICO CARCASSE PER CONTO DELL&#39;ATS DI PAVIA<div class="small muted">CIG A01DFB8131 · SERVIZI ZOOLOGICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="convenzione aria_2023_052 lotto 1 recapito posta massiva poste italiane spa">
+      <td class="small">2024-02-22</td>
+      <td>CONVENZIONE ARIA_2023_052 LOTTO 1 RECAPITO POSTA MASSIVA<div class="small muted">CIG B0828F1AFA · Cpv prevalente non disponibile</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">924 mila €</td></tr><tr data-t="aria_2023_048 (lotto7) vivenda s.p.a.">
+      <td class="small">2025-02-20</td>
+      <td>ARIA_2023_048 (LOTTO7)<div class="small muted">CIG B5B9E73AEE · SERVIZI DI PREPARAZIONE PASTI</div></td>
+      <td>VIVENDA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">808 mila €</td></tr><tr data-t="lotto 10 polizza libro matricola rcauto ats della città metropolitana di milano aspevi milano s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 10 POLIZZA LIBRO MATRICOLA RCAUTO ATS DELLA CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A02160A4C8 · SERVIZI ASSICURATIVI</div></td>
+      <td>ASPEVI MILANO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">780 mila €</td></tr><tr data-t="lotto 5 - vestiario o.pi.vi. s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 5 - VESTIARIO<div class="small muted">CIG 9866712C4F · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">726 mila €</td></tr><tr data-t="servizio di abbattimento di suini e carico carcasse a contenimento della psa per conto dell&#39;ats di pavia operatore individuale (persona fisica)">
+      <td class="small">2023-09-01</td>
+      <td>SERVIZIO DI ABBATTIMENTO DI SUINI E CARICO CARCASSE A CONTENIMENTO DELLA PSA PER CONTO DELL&#39;ATS DI PAVIA<div class="small muted">CIG A00B4E4763 · SERVIZI ZOOLOGICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">645 mila €</td></tr><tr data-t="adesione all&#39;accordo quadro consip &#39;sanità digitale - sistemi informativi gestionali&#39; lotto 1, id sigef 2366- 2024-2027 ">
+      <td class="small">2024-01-11</td>
+      <td>ADESIONE ALL&#39;ACCORDO QUADRO CONSIP &#39;SANITÀ DIGITALE - SISTEMI INFORMATIVI GESTIONALI&#39; LOTTO 1, ID SIGEF 2366- 2024-2027<div class="small muted">CIG A0493331E4 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">619 mila €</td></tr><tr data-t="global service manutenzioni laboratorio di prevenzione ats brescia - dal 01.06.24 al 31.05.27 h.c. hospital consulting societa&#39; per azioni chiamata anche h.c. spa oppure hospital consulting spa">
+      <td class="small">2024-06-01</td>
+      <td>GLOBAL SERVICE MANUTENZIONI LABORATORIO DI PREVENZIONE ATS BRESCIA - DAL 01.06.24 AL 31.05.27<div class="small muted">CIG A05C589DC2 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI APPARECCHIATURE DI MISURAZIONE, COLLAUDO E PROVA</div></td>
+      <td>H.C. HOSPITAL CONSULTING SOCIETA&#39; PER AZIONI CHIAMATA ANCHE H.C. SPA OPPURE HOSPITAL CONSULTING SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">538 mila €</td></tr><tr data-t="fornitura di carburante per autotrazione operatore individuale (persona fisica)">
+      <td class="small">2024-11-08</td>
+      <td>FORNITURA DI CARBURANTE PER AUTOTRAZIONE<div class="small muted">CIG B431085ABB · BENZINA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia diusa rendering s.r.l.">
+      <td class="small">2023-09-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A029453B82 · SERVIZI ZOOLOGICI</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">478 mila €</td></tr><tr data-t="adesione accordo quadro sanità digitale 3 operatore individuale (persona fisica)">
+      <td class="small">2024-03-11</td>
+      <td>ADESIONE ACCORDO QUADRO SANITÀ DIGITALE 3<div class="small muted">CIG B0C118A321 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">469 mila €</td></tr><tr data-t="adesione accordo quadro sd3 - gestione documentale operatore individuale (persona fisica)">
+      <td class="small">2024-04-02</td>
+      <td>ADESIONE ACCORDO QUADRO SD3 - GESTIONE DOCUMENTALE<div class="small muted">CIG B10F87499C · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">469 mila €</td></tr><tr data-t="lotto 13 - tosatrici e materiale vario o.pi.vi. s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 13 - TOSATRICI E MATERIALE VARIO<div class="small muted">CIG 9872218C01 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">467 mila €</td></tr><tr data-t="servizio lavanolo psal adapta processi industriali per l&#39;igiene e la sterilizzazione spa">
+      <td class="small">2025-11-12</td>
+      <td>SERVIZIO LAVANOLO PSAL<div class="small muted">CIG B911F60A7A · SERVIZI DI LAVANDERIA E DI LAVAGGIO A SECCO</div></td>
+      <td>ADAPTA PROCESSI INDUSTRIALI PER L&#39;IGIENE E LA STERILIZZAZIONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">456 mila €</td></tr><tr data-t="servizi di sicurezza da remoto, di compliance e controllo accenture s.p.a.">
+      <td class="small">2025-08-04</td>
+      <td>SERVIZI DI SICUREZZA DA REMOTO, DI COMPLIANCE E CONTROLLO<div class="small muted">CIG B7E1EFE345 · SERVIZI DI CONSULENZA E ASSISTENZA INFORMATICA</div></td>
+      <td>ACCENTURE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">430 mila €</td></tr><tr data-t="adesione a accordo quadro -servizi applicativi sanità digitale - lotto 3 diotta gpi (rti) gpi s.p.a.">
+      <td class="small">2023-11-01</td>
+      <td>ADESIONE A ACCORDO QUADRO -SERVIZI APPLICATIVI SANITÀ DIGITALE - LOTTO 3 DIOTTA GPI (RTI)<div class="small muted">CIG A026EE25B9 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">428 mila €</td></tr><tr data-t="adesione a gara aria_2019_149r lotto 81 gpi 2023-2026 gpi s.p.a.">
+      <td class="small">2023-03-27</td>
+      <td>ADESIONE A GARA ARIA_2019_149R LOTTO 81 GPI 2023-2026<div class="small muted">CIG 9736921964 · PACCHETTI SOFTWARE IT</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">426 mila €</td></tr><tr data-t="lotto 11 - fili di sutura elemed s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 11 - FILI DI SUTURA<div class="small muted">CIG 9871295255 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>ELEMED S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">393 mila €</td></tr><tr data-t="noleggio veicoli in adesione a accordo quadro noleggio veicoli 2 lotto 3 ald automotive italia s.r.l.">
+      <td class="small">2023-01-25</td>
+      <td>NOLEGGIO VEICOLI IN ADESIONE A ACCORDO QUADRO NOLEGGIO VEICOLI 2 LOTTO 3<div class="small muted">CIG 9620689BB5 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>ALD AUTOMOTIVE ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">351 mila €</td></tr><tr data-t="adesione postuma alla procedura aperta sopra soglia comunitaria, per l&#39;acquisizione di un applicativo web per la gestione informatizzata delle attività di controllo delle prestazioni sanitarie e annessi servizi, in unione di acquisto con l&#39;ats della città metropolitana di milano capofila e l&#39;ats di  ">
+      <td class="small">2024-01-01</td>
+      <td>ADESIONE POSTUMA ALLA PROCEDURA APERTA SOPRA SOGLIA COMUNITARIA, PER L&#39;ACQUISIZIONE DI UN APPLICATIVO WEB PER LA GESTIONE INFORMATIZZATA DELLE ATTIVITÀ DI CONTROLLO DELLE PRESTAZIONI SANITARIE E ANNESSI SERVIZI, IN UNIONE DI ACQUISTO CON L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO CAPOFILA E L&#39;ATS DI <div class="small muted">CIG A0412BDF7D · PACCHETTI SOFTWARE DI SVILUPPO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">350 mila €</td></tr><tr data-t="energia elettrica a2a energia s.p.a.">
+      <td class="small">2025-06-04</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B7219B3CDC · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">350 mila €</td></tr><tr data-t="energia elettrica a2a energia s.p.a.">
+      <td class="small">2025-06-04</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B72231C0D8 · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">350 mila €</td></tr><tr data-t="convenzione aria_2023_052 lotto 2 recapito posta non massiva postel spa">
+      <td class="small">2024-02-22</td>
+      <td>CONVENZIONE ARIA_2023_052 LOTTO 2 RECAPITO POSTA NON MASSIVA<div class="small muted">CIG B08232FA98 · Cpv prevalente non disponibile</div></td>
+      <td>POSTEL SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">343 mila €</td></tr><tr data-t="lotto 7 - sacchetti antimanomissione laboindustria s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 7 - SACCHETTI ANTIMANOMISSIONE<div class="small muted">CIG 9866826A63 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">342 mila €</td></tr><tr data-t="reattivi e solventi lotto 3 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 3<div class="small muted">CIG B5463A66AE · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">341 mila €</td></tr><tr data-t="lotto 8 - aghi, provette e tamponi laboindustria s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 8 - AGHI, PROVETTE E TAMPONI<div class="small muted">CIG 98668638EC · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">331 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia diusa rendering s.r.l.">
+      <td class="small">2023-11-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A02849C3A2 · SERVIZI ZOOLOGICI</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">326 mila €</td></tr><tr data-t="noleggio di autoveicoli per ats brescia - 2025-2030 società leasys spa">
+      <td class="small">2025-05-08</td>
+      <td>NOLEGGIO DI AUTOVEICOLI PER ATS BRESCIA - 2025-2030<div class="small muted">CIG B6C5D0E622 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>Società Leasys Spa</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">324 mila €</td></tr><tr data-t="proroga polizza di responsabilità civile sanitaria al 31.12.2023 amtrust assicurazioni s.p.a.">
+      <td class="small">2023-06-19</td>
+      <td>PROROGA POLIZZA DI RESPONSABILITÀ CIVILE SANITARIA AL 31.12.2023<div class="small muted">CIG 9950386649 · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">312 mila €</td></tr><tr data-t="energia elettrica a2a energia s.p.a.">
+      <td class="small">2024-07-03</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B25206BCDB · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">300 mila €</td></tr><tr data-t="polizza infortuni ats val padana axa assicurazioni spa">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS VAL PADANA<div class="small muted">CIG 97975688E1 · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">293 mila €</td></tr><tr data-t="polizza infortuni ats brescia axa assicurazioni spa">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS BRESCIA<div class="small muted">CIG 9797419DEA · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">293 mila €</td></tr><tr data-t="noleggio di autoveicoli per ats brescia - 2025-20230 società leasys spa">
+      <td class="small">2025-02-27</td>
+      <td>NOLEGGIO DI AUTOVEICOLI PER ATS BRESCIA - 2025-20230<div class="small muted">CIG B5D601034A · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>Società Leasys Spa</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">283 mila €</td></tr><tr data-t="noleggio n. 9 jeep renegade - 60 mesi 75.000 km accordo quadro consip veicoli a noleggio 2 ">
+      <td class="small">2024-02-27</td>
+      <td>NOLEGGIO N. 9 JEEP RENEGADE - 60 MESI 75.000 KM ACCORDO QUADRO CONSIP VEICOLI A NOLEGGIO 2<div class="small muted">CIG A051172060 · AUTOVEICOLI DELLA POLIZIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">265 mila €</td></tr><tr data-t="atti giudiziari ats brescia presa d&#39;atto risultanze gara ats milano 2025 poste italiane spa">
+      <td class="small">2025-05-05</td>
+      <td>ATTI GIUDIZIARI ATS BRESCIA PRESA D&#39;ATTO RISULTANZE GARA ATS MILANO 2025<div class="small muted">CIG B6B523F8B6 · SERVIZI GIUDIZIARI</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">239 mila €</td></tr><tr data-t="polizza libro matricola rcauto ats brianza hdi assicurazioni s.p.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA LIBRO MATRICOLA RCAUTO ATS BRIANZA<div class="small muted">CIG 979752121A · SERVIZI ASSICURATIVI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">228 mila €</td></tr><tr data-t="abbattimento taccchini aviaria cooperativa agricola del bidente - soc.coop.">
+      <td class="small">2024-12-13</td>
+      <td>ABBATTIMENTO TACCCHINI AVIARIA<div class="small muted">CIG B4D2D95A98 · SERVIZI ZOOLOGICI</div></td>
+      <td>COOPERATIVA AGRICOLA DEL BIDENTE - SOC.COOP.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">225 mila €</td></tr><tr data-t="lotto 3 polizza libro matricola rcauto ats brescia vittoria assicurazioni spa">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 3 POLIZZA LIBRO MATRICOLA RCAUTO ATS BRESCIA<div class="small muted">CIG A0215867D9 · SERVIZI ASSICURATIVI</div></td>
+      <td>VITTORIA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">221 mila €</td></tr><tr data-t="fornitura di un laser diretto ad infrarossi agilent technologies italia  s.p.a.">
+      <td class="small">2023-03-14</td>
+      <td>FORNITURA DI UN LASER DIRETTO AD INFRAROSSI<div class="small muted">CIG 9680413186 · LASER</div></td>
+      <td>AGILENT TECHNOLOGIES ITALIA  S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">213 mila €</td></tr><tr data-t="aria_2023_038 servizio lavanolo operatore individuale (persona fisica)">
+      <td class="small">2024-12-04</td>
+      <td>ARIA_2023_038 SERVIZIO LAVANOLO<div class="small muted">CIG B49AC7A9FE · SERVIZI DI LAVANDERIA E DI LAVAGGIO A SECCO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">212 mila €</td></tr><tr data-t="affidamento servizio tesoreria e servizi bancari intesa sanpaolo spa">
+      <td class="small">2023-03-09</td>
+      <td>AFFIDAMENTO SERVIZIO TESORERIA E SERVIZI BANCARI<div class="small muted">CIG 96783624FB · SERVIZI DI TESORERIA</div></td>
+      <td>INTESA SANPAOLO SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">210 mila €</td></tr><tr data-t="servizio di fleet mangement per autovetture di proprietà ats brescia - 2023-2025 operatore individuale (persona fisica)">
+      <td class="small">2023-11-28</td>
+      <td>SERVIZIO DI FLEET MANGEMENT PER AUTOVETTURE DI PROPRIETÀ ATS BRESCIA - 2023-2025<div class="small muted">CIG A01FEF0465 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="polizza kasko ats brescia operatore individuale (persona fisica)">
+      <td class="small">2023-11-13</td>
+      <td>POLIZZA KASKO ATS BRESCIA<div class="small muted">CIG A0215759D1 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">195 mila €</td></tr><tr data-t="polizza rc patrimoniale ats brescia operatore individuale (persona fisica)">
+      <td class="small">2023-11-13</td>
+      <td>POLIZZA RC PATRIMONIALE ATS BRESCIA<div class="small muted">CIG A021563AF6 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">195 mila €</td></tr><tr data-t="servizi di direzione lavori e cse relativi alla ristrutturazione dell&#39;edificio 10 presso la sede legale dell&#39;ats di brescia via duca degli abruzzi 15 mate societa&#39; cooperativa">
+      <td class="small">2023-07-21</td>
+      <td>SERVIZI DI DIREZIONE LAVORI E CSE RELATIVI ALLA RISTRUTTURAZIONE DELL&#39;EDIFICIO 10 PRESSO LA SEDE LEGALE DELL&#39;ATS DI BRESCIA VIA DUCA DEGLI ABRUZZI 15<div class="small muted">CIG 9977833046 · SERVIZI ARCHITETTONICI, DI INGEGNERIA E PIANIFICAZIONE</div></td>
+      <td>MATE SOCIETA&#39; COOPERATIVA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">194 mila €</td></tr><tr data-t="aria_2023_062 servizio di ritiro, trasporto e smaltimento rifiuti zanetti arturo &amp; c. s.r.l.">
+      <td class="small">2025-12-16</td>
+      <td>ARIA_2023_062 SERVIZIO DI RITIRO, TRASPORTO E SMALTIMENTO RIFIUTI<div class="small muted">CIG B9A41411D6 · SERVIZI CONNESSI AI RIFIUTI MEDICI</div></td>
+      <td>ZANETTI ARTURO &amp; C. S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">190 mila €</td></tr><tr data-t="lotto 3 - sacchi e sacchetti kaltek s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 3 - SACCHI E SACCHETTI<div class="small muted">CIG 9866538CB8 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>KALTEK S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">190 mila €</td></tr><tr data-t="acquisto applicativo web per la gestione informatizzata delle attività di controllo sul personale operante delle farmacie e pafarmacie. gara aggregata ats brescia e insubria data solution provider s.r.l.  siglabile dsp s.r.l.">
+      <td class="small">2023-03-13</td>
+      <td>ACQUISTO APPLICATIVO WEB PER LA GESTIONE INFORMATIZZATA DELLE ATTIVITÀ DI CONTROLLO SUL PERSONALE OPERANTE DELLE FARMACIE E PAFARMACIE. GARA AGGREGATA ATS BRESCIA E INSUBRIA<div class="small muted">CIG 96234924D3 · SISTEMI DI BASE DATI</div></td>
+      <td>DATA SOLUTION PROVIDER S.R.L.  SIGLABILE DSP S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">187 mila €</td></tr><tr data-t="rinnovo servizio di notifica degli atti giudiziari in aggregazione con ats milano ( ente capofila) poste italiane spa">
+      <td class="small">2023-08-11</td>
+      <td>RINNOVO SERVIZIO DI NOTIFICA DEGLI ATTI GIUDIZIARI IN AGGREGAZIONE CON ATS MILANO ( ENTE CAPOFILA)<div class="small muted">CIG A0036281C2 · SERVIZI DI CONSEGNA POSTALE</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">184 mila €</td></tr><tr data-t="servizio di posta elettronica o365 tim s.p.a.">
+      <td class="small">2024-05-27</td>
+      <td>SERVIZIO DI POSTA ELETTRONICA O365<div class="small muted">CIG B1D916AC07 · Cpv prevalente non disponibile</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">179 mila €</td></tr><tr data-t="portale web e intranet operatore individuale (persona fisica)">
+      <td class="small">2024-05-22</td>
+      <td>PORTALE WEB E INTRANET<div class="small muted">CIG B1C8C1A7B5 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">175 mila €</td></tr><tr data-t="reattivi e solventi lotto 13 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 13<div class="small muted">CIG B5463B0EEC · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">174 mila €</td></tr><tr data-t="fornitura di gascromatografo massa con pirolisi sra instruments s.p.a.">
+      <td class="small">2023-03-23</td>
+      <td>FORNITURA DI GASCROMATOGRAFO MASSA CON PIROLISI<div class="small muted">CIG 9709978F51 · MACCHINE E APPARECCHI DI PROVA E MISURAZIONE</div></td>
+      <td>SRA INSTRUMENTS S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">172 mila €</td></tr><tr data-t="affidamento del servizio di noleggio full risk di icp - ms spettrometro di massa a quadruplo con sorgente di ioni al plasma thermo fisher scientific s.p.a.">
+      <td class="small">2023-01-01</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI NOLEGGIO FULL RISK DI ICP - MS SPETTROMETRO DI MASSA A QUADRUPLO CON SORGENTE DI IONI AL PLASMA<div class="small muted">CIG 93717450A2 · SPETTROMETRI DI MASSA</div></td>
+      <td>THERMO FISHER SCIENTIFIC S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">169 mila €</td></tr><tr data-t="lotto 6 - scatole portaprovette effegi di fantoni giambattista srl">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 6 - SCATOLE PORTAPROVETTE<div class="small muted">CIG 98667782C9 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>EFFEGI DI FANTONI GIAMBATTISTA SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">167 mila €</td></tr><tr data-t="reattivi e solventi lotto 28 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 28<div class="small muted">CIG B5463BFB4E · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">165 mila €</td></tr><tr data-t="lotto 14 - materiale chirurgico o.pi.vi. s.r.l.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 14 - MATERIALE CHIRURGICO<div class="small muted">CIG 987222629E · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">165 mila €</td></tr><tr data-t="polizza rc patrimoniale ats brescia ">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA RC PATRIMONIALE ATS BRESCIA<div class="small muted">CIG 9797455BA0 · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">163 mila €</td></tr><tr data-t="lotto 9 polizza kasko ats della città metropolitana di milano operatore individuale (persona fisica)">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 9 POLIZZA KASKO ATS DELLA CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A0215F96C0 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">163 mila €</td></tr><tr data-t="dedalus- acquisto manutenzione software anni 2023-202e - adesione gara aria _2019_149r dedalus italia s.p.a.">
+      <td class="small">2023-01-30</td>
+      <td>DEDALUS- ACQUISTO MANUTENZIONE SOFTWARE ANNI 2023-202E - ADESIONE GARA ARIA _2019_149R<div class="small muted">CIG 9630402B21 · PACCHETTI SOFTWARE IT</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">158 mila €</td></tr><tr data-t="affidamento del servizio di assistenza e manutenzione evolutiva/straordinaria - ditta tesi elettronica e sistemi informativi s.p.a. tesi - elettronica e sistemi informativi - s.p.a. - societa&#39; bene fit, abbreviabile in tesi s.p.a. s.b.">
+      <td class="small">2023-07-12</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI ASSISTENZA E MANUTENZIONE EVOLUTIVA/STRAORDINARIA - DITTA TESI ELETTRONICA E SISTEMI INFORMATIVI S.P.A.<div class="small muted">CIG 9947920348 · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>TESI - ELETTRONICA E SISTEMI INFORMATIVI - S.P.A. - SOCIETA&#39; BENE FIT, ABBREVIABILE IN TESI S.P.A. S.B.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">153 mila €</td></tr><tr data-t="trasporto e smaltimento carcasse animali diusa rendering s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>TRASPORTO E SMALTIMENTO CARCASSE ANIMALI<div class="small muted">CIG B418ED3191 · CARNE DI MONTONE</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">153 mila €</td></tr><tr data-t="analisi acque balneazione ats brescia 2025 idexx laboratories italia s.r.l.">
+      <td class="small">2025-02-12</td>
+      <td>ANALISI ACQUE BALNEAZIONE ATS BRESCIA 2025<div class="small muted">CIG B59AE37982 · REATTIVI CHIMICI</div></td>
+      <td>IDEXX LABORATORIES ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">145 mila €</td></tr><tr data-t="reattivi e solventi lotto 5 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 5<div class="small muted">CIG B5463A8854 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">142 mila €</td></tr><tr data-t="adesione a convenzione aria licenze e software invisible farm invisiblefarm srl">
+      <td class="small">2023-01-31</td>
+      <td>ADESIONE A CONVENZIONE ARIA LICENZE E SOFTWARE INVISIBLE FARM<div class="small muted">CIG 96329734CB · PACCHETTI SOFTWARE IT</div></td>
+      <td>INVISIBLEFARM SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">141 mila €</td></tr><tr data-t="proroga dasit al 31.12.2025 dasit spa">
+      <td class="small">2025-05-14</td>
+      <td>PROROGA DASIT AL 31.12.2025<div class="small muted">CIG B6D4459499 · SISTEMI DIAGNOSTICI</div></td>
+      <td>DASIT SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">140 mila €</td></tr><tr data-t="fornitura gas calore per efici esterni ats a2a energia s.p.a.">
+      <td class="small">2025-11-03</td>
+      <td>FORNITURA GAS CALORE PER EFICI ESTERNI ATS<div class="small muted">CIG B8E79B5FC5 · GAS NATURALE</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">140 mila €</td></tr><tr data-t="fornitura di un gascromatografo con sistema gc/ms con purge &amp; trap finanziata con fondi pnc agilent technologies italia  s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>FORNITURA DI UN GASCROMATOGRAFO CON SISTEMA GC/MS CON PURGE &amp; TRAP FINANZIATA CON FONDI PNC<div class="small muted">CIG A0176E3E95 · SPETTROMETRI DI MASSA</div></td>
+      <td>AGILENT TECHNOLOGIES ITALIA  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">136 mila €</td></tr><tr data-t="reattivi e solventi lotto 9 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 9<div class="small muted">CIG B5463ACBA0 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">135 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali ">
+      <td class="small">2025-08-06</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI<div class="small muted">CIG B7E92ADA55 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">135 mila €</td></tr><tr data-t="servizio posta ibrida: postalizzazione e recapito screening hcv poste italiane spa">
+      <td class="small">2023-08-28</td>
+      <td>SERVIZIO POSTA IBRIDA: POSTALIZZAZIONE E RECAPITO SCREENING HCV<div class="small muted">CIG A0082CD185 · SERVIZI POSTALI PER LA CORRISPONDENZA</div></td>
+      <td>POSTE ITALIANE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">133 mila €</td></tr><tr data-t="polizza rc patrimoniale ats brianza operatore individuale (persona fisica)">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA RC PATRIMONIALE ATS BRIANZA<div class="small muted">CIG 9797496D75 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="lotto 7 polizza rc patrimoniale ats bergamo ">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 7 POLIZZA RC PATRIMONIALE ATS BERGAMO<div class="small muted">CIG A0215DCECF · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="lotto 11 polizza infortuni ats pavia amtrust assicurazioni s.p.a.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 11 POLIZZA INFORTUNI ATS PAVIA<div class="small muted">CIG A021616EAC · SERVIZI ASSICURATIVI</div></td>
+      <td>AMTRUST ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">130 mila €</td></tr><tr data-t="gascromatografo fondi pnc ">
+      <td class="small">2024-11-21</td>
+      <td>GASCROMATOGRAFO FONDI PNC<div class="small muted">CIG B465368324 · MACCHINE E APPARECCHI DI PROVA E MISURAZIONE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">126 mila €</td></tr><tr data-t="lotto 6 polizza libro matricola rcauto ats montagna aspevi milano s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 6 POLIZZA LIBRO MATRICOLA RCAUTO ATS MONTAGNA<div class="small muted">CIG A0215C295C · SERVIZI ASSICURATIVI</div></td>
+      <td>ASPEVI MILANO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">124 mila €</td></tr><tr data-t="noleggio veicoli in adesione a accordo quadro noleggio veicoli 2 lotto 1 leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>NOLEGGIO VEICOLI IN ADESIONE A ACCORDO QUADRO NOLEGGIO VEICOLI 2 LOTTO 1<div class="small muted">CIG 9621001D2D · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">123 mila €</td></tr><tr data-t="fornitura in opera di pensiline dotate di pannelli fotovoltaici complete di batterie di accumulo aventi potenza almeno pari a 25 kwh tedoldi ermanno s.r.l.">
+      <td class="small">2023-03-13</td>
+      <td>FORNITURA IN OPERA DI PENSILINE DOTATE DI PANNELLI FOTOVOLTAICI COMPLETE DI BATTERIE DI ACCUMULO AVENTI POTENZA ALMENO PARI A 25 KWH<div class="small muted">CIG 9680913E1F · PARTI DI APPARECCHIATURE PER LA DISTRIBUZIONE E IL CONTROLLO DELL&#39;ENERGIA ELETTRICA</div></td>
+      <td>TEDOLDI ERMANNO S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">123 mila €</td></tr><tr data-t="lotto 1 - siringhe tubercolina ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 1 - SIRINGHE TUBERCOLINA<div class="small muted">CIG 986641680C · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">122 mila €</td></tr><tr data-t="lotto 2 ditta liofilchem procedura aperta soprasoglia per l&#39;affidamento della fornitura di terreni di coltura, in unione di acquisto tra l&#39;ats della città metropolitana di milano, le ast di brescia, valpadana, bergamo, brianza e montagna,per 36 mesi ">
+      <td class="small">2024-07-22</td>
+      <td>LOTTO 2 DITTA LIOFILCHEM PROCEDURA APERTA SOPRASOGLIA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI TERRENI DI COLTURA, IN UNIONE DI ACQUISTO TRA L&#39;ATS DELLA CITTÀ METROPOLITANA DI MILANO, LE AST DI BRESCIA, VALPADANA, BERGAMO, BRIANZA E MONTAGNA,PER 36 MESI<div class="small muted">CIG A05EF53A08 · MATERIALE DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">121 mila €</td></tr><tr data-t="fornitura in opera di scaffalature compatibili per l&#39;archiviazione cartacea, presso la sede legale dell&#39;ats di brescia operatore individuale (persona fisica)">
+      <td class="small">2023-10-10</td>
+      <td>FORNITURA IN OPERA DI SCAFFALATURE COMPATIBILI PER L&#39;ARCHIVIAZIONE CARTACEA, PRESSO LA SEDE LEGALE DELL&#39;ATS DI BRESCIA<div class="small muted">CIG A01B7DEE38 · SISTEMI DI ARCHIVIAZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">120 mila €</td></tr><tr data-t="lotto 8 polizza infortuni ats della città metropolitana di milano s.a.g. soluzioni assicurative globali s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 8 POLIZZA INFORTUNI ATS DELLA CITTÀ METROPOLITANA DI MILANO<div class="small muted">CIG A0215E998B · SERVIZI ASSICURATIVI</div></td>
+      <td>S.A.G. SOLUZIONI ASSICURATIVE GLOBALI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">117 mila €</td></tr><tr data-t="proroga contratto quadro opa spc2 al 31.12.2024 vodafone spa">
+      <td class="small">2024-01-01</td>
+      <td>PROROGA CONTRATTO QUADRO OPA SPC2 AL 31.12.2024<div class="small muted">CIG A02AB4AF02 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">116 mila €</td></tr><tr data-t="lotto 2 congelatori, frigoriferi, incubatori tecno - lab  s.r.l.">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 2 CONGELATORI, FRIGORIFERI, INCUBATORI<div class="small muted">CIG 9722485070 · STRUMENTI E APPARECCHI DI REGOLAZIONE E CONTROLLO</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">111 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia in.pro.ma. - industria produzione mangimi s.r.l. siglabile in.pro.ma s.r.l.">
+      <td class="small">2023-09-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A0294DCC90 · SERVIZI ZOOLOGICI</div></td>
+      <td>IN.PRO.MA. - INDUSTRIA PRODUZIONE MANGIMI S.R.L. SIGLABILE IN.PRO.MA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">111 mila €</td></tr><tr data-t="polizza infortuni ats brescia axa assicurazioni spa">
+      <td class="small">2023-06-29</td>
+      <td>POLIZZA INFORTUNI ATS BRESCIA<div class="small muted">CIG 9923809A3F · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">111 mila €</td></tr><tr data-t="polizza rc patrimoniale ats insubria operatore individuale (persona fisica)">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA RC PATRIMONIALE ATS INSUBRIA<div class="small muted">CIG 9797543441 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">111 mila €</td></tr><tr data-t="servizio di digitalizzazione dei procdimenti amministrativi e contabili alla società enterprise service italia s.r.l. ">
+      <td class="small">2023-10-06</td>
+      <td>SERVIZIO DI DIGITALIZZAZIONE DEI PROCDIMENTI AMMINISTRATIVI E CONTABILI ALLA SOCIETÀ ENTERPRISE SERVICE ITALIA S.R.L.<div class="small muted">CIG A01A84E687 · SISTEMI OPERATIVI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">110 mila €</td></tr><tr data-t="nuova adesione convenzione arca_2019_120 lotto n. 3 per n. 3 assistenti tecnici gi group s.p.a.">
+      <td class="small">2023-08-22</td>
+      <td>NUOVA ADESIONE CONVENZIONE ARCA_2019_120 LOTTO N. 3 PER N. 3 ASSISTENTI TECNICI<div class="small muted">CIG A002BAA931 · SERVIZI DI FORNITURA DI PERSONALE, COMPRESO PERSONALE TEMPORANEO</div></td>
+      <td>GI GROUP S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">110 mila €</td></tr><tr data-t="esternalizzazione del magazzino per materiale non sanitario ats brescia ">
+      <td class="small">2025-06-13</td>
+      <td>ESTERNALIZZAZIONE DEL MAGAZZINO PER MATERIALE NON SANITARIO ATS BRESCIA<div class="small muted">CIG B73CC12131 · SERVIZI DI MAGAZZINAGGIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">106 mila €</td></tr><tr data-t="adesione alla proroga convenzione disposta da consip s.p.a. con fastweb s.p.a. per servizi di telefonia fissa dal 03.10.23 al 31.12.2024 fastweb spa">
+      <td class="small">2023-10-03</td>
+      <td>ADESIONE ALLA PROROGA CONVENZIONE DISPOSTA DA CONSIP S.P.A. CON FASTWEB S.P.A. PER SERVIZI DI TELEFONIA FISSA DAL 03.10.23 AL 31.12.2024<div class="small muted">CIG A00F8BE591 · RETE DI TELECOMUNICAZIONI</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">105 mila €</td></tr><tr data-t="affidamento del servizio di assistenza e manutenzione evolutiva/straordinaria - ditta tekne - 2023-2026 tekne s.r.l.">
+      <td class="small">2023-03-14</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI ASSISTENZA E MANUTENZIONE EVOLUTIVA/STRAORDINARIA - DITTA TEKNE - 2023-2026<div class="small muted">CIG 9710758302 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>TEKNE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">104 mila €</td></tr><tr data-t="adesione a accordo quadro &#39;servizi di gestione e manutenzione di sistemi ip e postazioni di lavoro per le pubblica amministrazioni - lotto 2&#39; maticmind s.p.a.">
+      <td class="small">2023-08-11</td>
+      <td>ADESIONE A ACCORDO QUADRO &#39;SERVIZI DI GESTIONE E MANUTENZIONE DI SISTEMI IP E POSTAZIONI DI LAVORO PER LE PUBBLICA AMMINISTRAZIONI - LOTTO 2&#39;<div class="small muted">CIG A0037A7DCE · MANUTENZIONE E RIPARAZIONE DI ATTREZZATURA INFORMATICA</div></td>
+      <td>MATICMIND S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">102 mila €</td></tr><tr data-t="materiale lal test operatore individuale (persona fisica)">
+      <td class="small">2025-01-10</td>
+      <td>MATERIALE LAL TEST<div class="small muted">CIG B51FFEF918 · REATTIVI PER LABORATORIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">101 mila €</td></tr><tr data-t="screening mammografico dedalus italia s.p.a.">
+      <td class="small">2025-12-18</td>
+      <td>SCREENING MAMMOGRAFICO<div class="small muted">CIG B9AC448265 · PACCHETTI SOFTWARE E SISTEMI DI INFORMAZIONE</div></td>
+      <td>DEDALUS ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">100 mila €</td></tr><tr data-t="conservazione digitale aruba posta elettronica certificata s.p.a. in sigla  aruba pec s.p.a.">
+      <td class="small">2024-09-17</td>
+      <td>CONSERVAZIONE DIGITALE<div class="small muted">CIG B31200F928 · SERVIZI DI GESTIONE DOCUMENTI</div></td>
+      <td>ARUBA POSTA ELETTRONICA CERTIFICATA S.P.A. IN SIGLA  ARUBA PEC S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">98 mila €</td></tr><tr data-t="polizza kasko ats insubria operatore individuale (persona fisica)">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA KASKO ATS INSUBRIA<div class="small muted">CIG 9797554D52 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">98 mila €</td></tr><tr data-t="polizza infortuni ats brianza ">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS BRIANZA<div class="small muted">CIG 9797480045 · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">98 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia in.pro.ma. - industria produzione mangimi s.r.l. siglabile in.pro.ma s.r.l.">
+      <td class="small">2023-09-01</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A0293DDA22 · SERVIZI ZOOLOGICI</div></td>
+      <td>IN.PRO.MA. - INDUSTRIA PRODUZIONE MANGIMI S.R.L. SIGLABILE IN.PRO.MA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">95 mila €</td></tr><tr data-t="membrane microporose sartorius italy s.r.l.">
+      <td class="small">2024-05-21</td>
+      <td>MEMBRANE MICROPOROSE<div class="small muted">CIG B1C513D461 · Cpv prevalente non disponibile</div></td>
+      <td>SARTORIUS ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">91 mila €</td></tr><tr data-t="servizio idrico anno 2023 a2a a2a ciclo idrico spa">
+      <td class="small">2023-02-03</td>
+      <td>SERVIZIO IDRICO ANNO 2023 A2A<div class="small muted">CIG 96383688E2 · EROGAZIONE DI ACQUA</div></td>
+      <td>A2A CICLO IDRICO SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">90 mila €</td></tr><tr data-t="giornate manutenzione software ditta invisible 2023-2025 invisiblefarm srl">
+      <td class="small">2023-02-03</td>
+      <td>GIORNATE MANUTENZIONE SOFTWARE DITTA INVISIBLE 2023-2025<div class="small muted">CIG 964026130B · SERVIZI DI ASSISTENZA INFORMATICA PER COMPUTER</div></td>
+      <td>INVISIBLEFARM SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">90 mila €</td></tr><tr data-t="aria_2023_056 girardi 22 mesi randstad italia s.p.a.">
+      <td class="small">2025-01-22</td>
+      <td>ARIA_2023_056 GIRARDI 22 MESI<div class="small muted">CIG B54FA7BF20 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">90 mila €</td></tr><tr data-t="accordo quadro sterilizzazione gatti di colonia 2025-2027 ">
+      <td class="small">2025-06-19</td>
+      <td>ACCORDO QUADRO STERILIZZAZIONE GATTI DI COLONIA 2025-2027<div class="small muted">CIG B7562FDDCE · SERVIZI VETERINARI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">90 mila €</td></tr><tr data-t="reattivi e solventi lotto 6 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 6<div class="small muted">CIG B5463A9927 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">85 mila €</td></tr><tr data-t="polizza kasko ats brianza operatore individuale (persona fisica)">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA KASKO ATS BRIANZA<div class="small muted">CIG 9797510904 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">85 mila €</td></tr><tr data-t="acquisto di quattro autovetture elettriche con fondi pnc fratelli lombatti societa&#39; per azioni (brevemente f.lli lombatti s.p.a.)">
+      <td class="small">2023-03-14</td>
+      <td>ACQUISTO DI QUATTRO AUTOVETTURE ELETTRICHE CON FONDI PNC<div class="small muted">CIG 96871010A3 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>FRATELLI LOMBATTI SOCIETA&#39; PER AZIONI (BREVEMENTE F.LLI LOMBATTI S.P.A.)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">82 mila €</td></tr><tr data-t="polizza rc patrimoniale 31.12.2023 - 31.12.2026 operatore individuale (persona fisica)">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA RC PATRIMONIALE 31.12.2023 - 31.12.2026<div class="small muted">CIG A040FF2178 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">82 mila €</td></tr><tr data-t="acquisizione di un applicativo web per la gestione informatizzata delle attività di controllo sul personale operante delle farmacie e parafarmacie ats brescia data solution provider s.r.l.  siglabile dsp s.r.l.">
+      <td class="small">2023-09-01</td>
+      <td>ACQUISIZIONE DI UN APPLICATIVO WEB PER LA GESTIONE INFORMATIZZATA DELLE ATTIVITÀ DI CONTROLLO SUL PERSONALE OPERANTE DELLE FARMACIE E PARAFARMACIE ATS BRESCIA<div class="small muted">CIG 989270131F · SISTEMI DI BASE DATI</div></td>
+      <td>DATA SOLUTION PROVIDER S.R.L.  SIGLABILE DSP S.R.L.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">81 mila €</td></tr><tr data-t="abbattimento tacchini cooperativa agricola del bidente - soc.coop.">
+      <td class="small">2025-12-04</td>
+      <td>ABBATTIMENTO TACCHINI<div class="small muted">CIG B96FA6E999 · SERVIZI ZOOLOGICI</div></td>
+      <td>COOPERATIVA AGRICOLA DEL BIDENTE - SOC.COOP.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">78 mila €</td></tr><tr data-t="lotto 4 polizza infortuni ats brianza leonardo assicurazioni s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 4 POLIZZA INFORTUNI ATS BRIANZA<div class="small muted">CIG A0215A1E1F · SERVIZI ASSICURATIVI</div></td>
+      <td>LEONARDO ASSICURAZIONI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">78 mila €</td></tr><tr data-t="lotto 12 polizza libro matricola rcauto ats pavia aspevi milano s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 12 POLIZZA LIBRO MATRICOLA RCAUTO ATS PAVIA<div class="small muted">CIG A02162E27E · SERVIZI ASSICURATIVI</div></td>
+      <td>ASPEVI MILANO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">78 mila €</td></tr><tr data-t="telefonia fissa fastweb spa">
+      <td class="small">2024-12-11</td>
+      <td>TELEFONIA FISSA<div class="small muted">CIG B4C1829B09 · RETE DI TELECOMUNICAZIONI</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">78 mila €</td></tr><tr data-t="lotto 9 - bottiglie sterili con visore laboindustria s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 9 - BOTTIGLIE STERILI CON VISORE<div class="small muted">CIG 98668985CF · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>LABOINDUSTRIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">76 mila €</td></tr><tr data-t="noleggio veicoli in adesione a accordo quadro noleggio veicoli 2 lotto 4 leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2023-01-26</td>
+      <td>NOLEGGIO VEICOLI IN ADESIONE A ACCORDO QUADRO NOLEGGIO VEICOLI 2 LOTTO 4<div class="small muted">CIG 9621425B13 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">76 mila €</td></tr><tr data-t="adesione al contratto quadro opa -spc2, stipulato tra consip spa e rti vodafone omnitel nv - ericsson spa relativo ai servizi di connettività e sicurezza nell&#39;ambito del sistema pubblico di connettività, per il periodo 25.05.2017 - 24.05.2023. proroga al 31.12.2023 ericsson telecomunicazioni spa">
+      <td class="small">2023-04-28</td>
+      <td>ADESIONE AL CONTRATTO QUADRO OPA -SPC2, STIPULATO TRA CONSIP SPA E RTI VODAFONE OMNITEL NV - ERICSSON SPA RELATIVO AI SERVIZI DI CONNETTIVITÀ E SICUREZZA NELL&#39;AMBITO DEL SISTEMA PUBBLICO DI CONNETTIVITÀ, PER IL PERIODO 25.05.2017 - 24.05.2023. PROROGA AL 31.12.2023<div class="small muted">CIG 97979460D3 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>ERICSSON TELECOMUNICAZIONI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">75 mila €</td></tr><tr data-t="servizi di connettività vodafone italia s.p.a.">
+      <td class="small">2024-11-27</td>
+      <td>SERVIZI DI CONNETTIVITÀ<div class="small muted">CIG B47A2ABDCF · SERVIZI DI TELECOMUNICAZIONE</div></td>
+      <td>VODAFONE ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">75 mila €</td></tr><tr data-t="adesione a rinnovo convenzione aria_159r ditta pgmd p.g.m.d. consulting s.r.l.">
+      <td class="small">2023-04-05</td>
+      <td>ADESIONE A RINNOVO CONVENZIONE ARIA_159R DITTA PGMD<div class="small muted">CIG 976208468F · PACCHETTI SOFTWARE IT</div></td>
+      <td>P.G.M.D. CONSULTING S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">75 mila €</td></tr><tr data-t="esternalizzazione del magazzino dei dispositivi ad uso sanitario ats brescia ">
+      <td class="small">2025-06-13</td>
+      <td>ESTERNALIZZAZIONE DEL MAGAZZINO DEI DISPOSITIVI AD USO SANITARIO ATS BRESCIA<div class="small muted">CIG B73CC1105E · SERVIZI DI MAGAZZINAGGIO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">74 mila €</td></tr><tr data-t="giornate di manutenzione evolutiva ditta gpi anni 2023-2024-2025 gpi s.p.a.">
+      <td class="small">2023-05-11</td>
+      <td>GIORNATE DI MANUTENZIONE EVOLUTIVA DITTA GPI ANNI 2023-2024-2025<div class="small muted">CIG 97958807E6 · SERVIZI DI ASSISTENZA INFORMATICA PER COMPUTER</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">74 mila €</td></tr><tr data-t="nuovo cluster di firewall tim s.p.a.">
+      <td class="small">2024-09-27</td>
+      <td>NUOVO CLUSTER DI FIREWALL<div class="small muted">CIG B336657CA8 · APPARECCHIATURE DI RETE</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">71 mila €</td></tr><tr data-t="polizza rcauto 31.12.2023 - 31.12.2026 vittoria assicurazioni spa">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA RCAUTO 31.12.2023 - 31.12.2026<div class="small muted">CIG A04100839F · SERVIZI ASSICURATIVI</div></td>
+      <td>VITTORIA ASSICURAZIONI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">71 mila €</td></tr><tr data-t="reattivi e solventi lotto 11 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 11<div class="small muted">CIG B5463AED46 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">71 mila €</td></tr><tr data-t="noleggeggio n. 8 veicoli fiat panda- accordo quadro veicoli a noleggio 2 leasys italia s.p.a. o brevemente leasys s.p.a.">
+      <td class="small">2024-01-01</td>
+      <td>NOLEGGEGGIO N. 8 VEICOLI FIAT PANDA- ACCORDO QUADRO VEICOLI A NOLEGGIO 2<div class="small muted">CIG A011CADCD0 · AUTOVETTURE PER TRASPORTO PASSEGGERI</div></td>
+      <td>LEASYS ITALIA S.P.A. O BREVEMENTE LEASYS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">71 mila €</td></tr><tr data-t="avv (nominativo omesso) coopservice cassazione ">
+      <td class="small">2025-11-27</td>
+      <td>AVV (nominativo omesso) COOPSERVICE CASSAZIONE<div class="small muted">CIG B9492342E3 · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">70 mila €</td></tr><tr data-t="assistenza e manutenzione servizio sistema winlab 2025 tesi - elettronica e sistemi informativi - s.p.a. - societa&#39; bene fit, abbreviabile in tesi s.p.a. s.b.">
+      <td class="small">2025-01-31</td>
+      <td>ASSISTENZA E MANUTENZIONE SERVIZIO SISTEMA WINLAB 2025<div class="small muted">CIG B523DB9686 · PROGRAMMAZIONE DI SOFTWARE E SERVIZI DI CONSULENZA</div></td>
+      <td>TESI - ELETTRONICA E SISTEMI INFORMATIVI - S.P.A. - SOCIETA&#39; BENE FIT, ABBREVIABILE IN TESI S.P.A. S.B.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">69 mila €</td></tr><tr data-t="reattivi e solventi lotto 29 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 29<div class="small muted">CIG B5463C0C21 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="reattivi e solventi lotto 8 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 8<div class="small muted">CIG B5463ABACD · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">68 mila €</td></tr><tr data-t="arca_2019_120, lot. 3, proroga due interinali per 10 mesi randstad italia spa">
+      <td class="small">2024-10-03</td>
+      <td>ARCA_2019_120, LOT. 3, PROROGA DUE INTERINALI PER 10 MESI<div class="small muted">CIG B34D44CBF7 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">68 mila €</td></tr><tr data-t="polizza kasko 31.12.2023 - 31.12.2026 operatore individuale (persona fisica)">
+      <td class="small">2023-12-29</td>
+      <td>POLIZZA KASKO 31.12.2023 - 31.12.2026<div class="small muted">CIG A041000D02 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">67 mila €</td></tr><tr data-t="adesione a convenzione aria_2020_147 servizi postali selecta industrial operations s.p.a.">
+      <td class="small">2023-12-15</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2020_147 SERVIZI POSTALI<div class="small muted">CIG A02DDEC799 · SERVIZI CONNESSI ALLA STAMPA</div></td>
+      <td>SELECTA INDUSTRIAL OPERATIONS S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">67 mila €</td></tr><tr data-t="polizza libro matricola rcauto ats insubria hdi assicurazioni s.p.a.">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA LIBRO MATRICOLA RCAUTO ATS INSUBRIA<div class="small muted">CIG 9797560249 · SERVIZI ASSICURATIVI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">65 mila €</td></tr><tr data-t="servizio lavanolo contratto ponte ">
+      <td class="small">2025-07-15</td>
+      <td>SERVIZIO LAVANOLO CONTRATTO PONTE<div class="small muted">CIG B7A5659978 · SERVIZI DI LAVANDERIA E DI LAVAGGIO A SECCO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">65 mila €</td></tr><tr data-t="affidamento diretto servizi postali operatore individuale (persona fisica)">
+      <td class="small">2023-01-26</td>
+      <td>AFFIDAMENTO DIRETTO SERVIZI POSTALI<div class="small muted">CIG 9622473BE9 · SERVIZI POSTALI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">62 mila €</td></tr><tr data-t="reattivi e solventi lotto 19 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 19<div class="small muted">CIG B5463B63E3 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">62 mila €</td></tr><tr data-t="vestiario - lotto 5 o.pi.vi. s.r.l.">
+      <td class="small">2024-02-12</td>
+      <td>VESTIARIO - LOTTO 5<div class="small muted">CIG A05180B22E · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>O.PI.VI. S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">61 mila €</td></tr><tr data-t="servizi di stampa, editoria, tipografia di prodotti di cartotecnica, stampati e modulistica satip s.r.l.">
+      <td class="small">2023-02-16</td>
+      <td>SERVIZI DI STAMPA, EDITORIA, TIPOGRAFIA DI PRODOTTI DI CARTOTECNICA, STAMPATI E MODULISTICA<div class="small muted">CIG 965199456B · SERVIZI DI STAMPA</div></td>
+      <td>SATIP S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">60 mila €</td></tr><tr data-t="realizzazione corsi formazione psal dgr 438/23 aifos service - societa&#39; cooperativa">
+      <td class="small">2024-10-03</td>
+      <td>REALIZZAZIONE CORSI FORMAZIONE PSAL DGR 438/23<div class="small muted">CIG B34AF03730 · SERVIZI DI FORNITURA DI LAVORATORI PER IL COMMERCIO O L&#39;INDUSTRIA</div></td>
+      <td>AIFOS SERVICE - SOCIETA&#39; COOPERATIVA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">60 mila €</td></tr><tr data-t="lotto 4 - contenitori aptaca s.p.a.">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 4 - CONTENITORI<div class="small muted">CIG 98666812BD · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>APTACA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">59 mila €</td></tr><tr data-t="programma educazione tra pari fondazione poliambulanza">
+      <td class="small">2024-10-21</td>
+      <td>PROGRAMMA EDUCAZIONE TRA PARI<div class="small muted">CIG B3EB45E6C1 · SERVIZI SANITARI E DI ASSISTENZA SOCIALE</div></td>
+      <td>FONDAZIONE POLIAMBULANZA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">58 mila €</td></tr><tr data-t="trasporto e smaltimento carcasse gastoldi e ferri diusa rendering s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>TRASPORTO E SMALTIMENTO CARCASSE GASTOLDI E FERRI<div class="small muted">CIG B419D08AE7 · CARNE DI MONTONE</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">55 mila €</td></tr><tr data-t="adesione a convenzione aria licenze e software studiosoft studiosoft informatica s.r.l.">
+      <td class="small">2023-01-31</td>
+      <td>ADESIONE A CONVENZIONE ARIA LICENZE E SOFTWARE STUDIOSOFT<div class="small muted">CIG 9633136B4C · PACCHETTI SOFTWARE IT</div></td>
+      <td>STUDIOSOFT INFORMATICA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">54 mila €</td></tr><tr data-t="fornitura in opera di n. 2 colonnine di ricarica ">
+      <td class="small">2023-03-13</td>
+      <td>FORNITURA IN OPERA DI N. 2 COLONNINE DI RICARICA<div class="small muted">CIG 9677907D7E · PARTI DI APPARECCHIATURE PER LA DISTRIBUZIONE E IL CONTROLLO DELL&#39;ENERGIA ELETTRICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">53 mila €</td></tr><tr data-t="fornitura, installazione e realizzazione colonnine finanziata con pnc sagredo engineering s.r.l.">
+      <td class="small">2023-05-25</td>
+      <td>FORNITURA, INSTALLAZIONE E REALIZZAZIONE COLONNINE FINANZIATA CON PNC<div class="small muted">CIG 9825538276 · APPARECCHI ED ACCESSORI ELETTRICI</div></td>
+      <td>SAGREDO ENGINEERING S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">53 mila €</td></tr><tr data-t="reattivi e solventi lotto 1 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 1<div class="small muted">CIG B5463A4508 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">53 mila €</td></tr><tr data-t="gas tecnici societa&#39; italiana acetilene e derivati s.i.a.d. s.p.a. in breve s.i.a.d. s.p.a.">
+      <td class="small">2025-01-21</td>
+      <td>GAS TECNICI<div class="small muted">CIG B5446C3024 · GAS MEDICI</div></td>
+      <td>SOCIETA&#39; ITALIANA ACETILENE E DERIVATI S.I.A.D. S.P.A. IN BREVE S.I.A.D. S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">51 mila €</td></tr><tr data-t="fornitura di gas tecnici ">
+      <td class="small">2024-09-05</td>
+      <td>FORNITURA DI GAS TECNICI<div class="small muted">CIG B2F2A975EF · GAS MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">50 mila €</td></tr><tr data-t="shopper operatore individuale (persona fisica)">
+      <td class="small">2025-01-31</td>
+      <td>SHOPPER<div class="small muted">CIG B56AEC1557 · REGALI E PREMI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">50 mila €</td></tr><tr data-t="autoclave per laboratorio pnc steel &amp; power s.r.l.">
+      <td class="small">2024-11-05</td>
+      <td>AUTOCLAVE PER LABORATORIO PNC<div class="small muted">CIG B420EE6241 · MACCHINE E APPARECCHI DI PROVA E MISURAZIONE</div></td>
+      <td>STEEL &amp; POWER S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">49 mila €</td></tr><tr data-t="lotto 5 polizza infortuni ats montagna s.a.g. soluzioni assicurative globali s.r.l.">
+      <td class="small">2023-11-13</td>
+      <td>LOTTO 5 POLIZZA INFORTUNI ATS MONTAGNA<div class="small muted">CIG A0215B3CFA · SERVIZI ASSICURATIVI</div></td>
+      <td>S.A.G. SOLUZIONI ASSICURATIVE GLOBALI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">49 mila €</td></tr><tr data-t="reattivi e solventi lotto 12 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 12<div class="small muted">CIG B5463AFE19 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">48 mila €</td></tr><tr data-t="smaltimento uova e carcasse tacchini gastoldi e ferri s.r.l.">
+      <td class="small">2025-12-04</td>
+      <td>SMALTIMENTO UOVA E CARCASSE TACCHINI<div class="small muted">CIG B96E20224B · SERVIZI ZOOLOGICI</div></td>
+      <td>GASTOLDI E FERRI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">46 mila €</td></tr><tr data-t="gap decimo affidamento lotto 6 il calabrone - societa&#39; cooperativa sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 6<div class="small muted">CIG B784CF5598 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>IL CALABRONE - SOCIETA&#39; COOPERATIVA SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">45 mila €</td></tr><tr data-t="aria_2023_056 proroga vannini randstad italia spa">
+      <td class="small">2025-09-23</td>
+      <td>ARIA_2023_056 PROROGA VANNINI<div class="small muted">CIG B856E754F8 · SERVIZI GOVERNATIVI</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">45 mila €</td></tr><tr data-t="aria_2023_056 assitente tecnico per 12 mesi randstad italia s.p.a.">
+      <td class="small">2025-03-07</td>
+      <td>ARIA_2023_056 ASSITENTE TECNICO PER 12 MESI<div class="small muted">CIG B5F2A7F300 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">45 mila €</td></tr><tr data-t="smaltimento uova e carcasse tacchini diusa rendering s.r.l.">
+      <td class="small">2025-12-04</td>
+      <td>SMALTIMENTO UOVA E CARCASSE TACCHINI<div class="small muted">CIG B96E2502A9 · SERVIZI ZOOLOGICI</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">45 mila €</td></tr><tr data-t="sanità sigitale - sistemi informativi - oslo 01/04/23- 31/10/23 oslo s.r.l.">
+      <td class="small">2023-11-01</td>
+      <td>SANITÀ SIGITALE - SISTEMI INFORMATIVI - OSLO 01/04/23- 31/10/23<div class="small muted">CIG A03291E534 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>OSLO S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">44 mila €</td></tr><tr data-t="adesione a convenzione aria_2021_012 lotto 1 - carta in risme valsecchi cancelleria s.r.l.">
+      <td class="small">2023-11-24</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2021_012 LOTTO 1 - CARTA IN RISME<div class="small muted">CIG A02D706640 · CARTA PER FOTOCOPIE</div></td>
+      <td>VALSECCHI CANCELLERIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">44 mila €</td></tr><tr data-t="reattivi e solventi lotto 7 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 7<div class="small muted">CIG B5463AA9FA · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">43 mila €</td></tr><tr data-t="adesione a convenzione aria_2021_012 lotto 3 - cancelleria tradizionale ed ecologica errebian s.p.a.">
+      <td class="small">2023-11-24</td>
+      <td>ADESIONE A CONVENZIONE ARIA_2021_012 LOTTO 3 - CANCELLERIA TRADIZIONALE ED ECOLOGICA<div class="small muted">CIG A02D7141CF · ARTICOLI DI CANCELLERIA ED ALTRI ARTICOLI DI CARTA</div></td>
+      <td>ERREBIAN S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">40 mila €</td></tr><tr data-t="incarico avv. (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-01-09</td>
+      <td>INCARICO AVV. (nominativo omesso) 2025<div class="small muted">CIG B51E26ACDB · SERVIZI DI RAPPRESENTANZA LEGALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">40 mila €</td></tr><tr data-t="incarico avv. (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-02-11</td>
+      <td>INCARICO AVV. (nominativo omesso) 2025<div class="small muted">CIG B598AE53D2 · SERVIZI GIURIDICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">40 mila €</td></tr><tr data-t="trenitalia spa 2025 trenitalia spa">
+      <td class="small">2025-02-24</td>
+      <td>TRENITALIA SPA 2025<div class="small muted">CIG B5BEE39FB1 · SERVIZI RELATIVI ALL&#39;ORGANIZZAZIONE DI VIAGGI</div></td>
+      <td>TRENITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">40 mila €</td></tr><tr data-t="avv. (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-02-03</td>
+      <td>AVV. (nominativo omesso) 2025<div class="small muted">CIG B57823B96D · SERVIZI DI CONSULENZA GIURIDICA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">40 mila €</td></tr><tr data-t="incarico avv. (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-02-11</td>
+      <td>INCARICO AVV. (nominativo omesso) 2025<div class="small muted">CIG B598FF72F7 · SERVIZI GIURIDICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">40 mila €</td></tr><tr data-t="incarico avv. (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-02-05</td>
+      <td>INCARICO AVV. (nominativo omesso) 2025<div class="small muted">CIG B581277016 · SERVIZI DI CONSULENZA GIURIDICA E DI RAPPRESENTANZA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">40 mila €</td></tr><tr data-t="avv. (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-02-04</td>
+      <td>AVV. (nominativo omesso) 2025<div class="small muted">CIG B57B2B8CF4 · SERVIZI DI CONSULENZA GIURIDICA E DI RAPPRESENTANZA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">40 mila €</td></tr><tr data-t="acquisto vaccini blue tongue virbac s.r.l.">
+      <td class="small">2025-03-04</td>
+      <td>ACQUISTO VACCINI BLUE TONGUE<div class="small muted">CIG B5E411439D · MEDICINALI VARI</div></td>
+      <td>VIRBAC S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">40 mila €</td></tr><tr data-t="gap decimo affidamento lotto 5 gli acrobati societa&#39; cooperativa  sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 5<div class="small muted">CIG B784CF44C5 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>GLI ACROBATI SOCIETA&#39; COOPERATIVA  SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">38 mila €</td></tr><tr data-t="fornitura di uno spettrofotometro uv e di un mineralizzatore a microonde ">
+      <td class="small">2023-03-23</td>
+      <td>FORNITURA DI UNO SPETTROFOTOMETRO UV E DI UN MINERALIZZATORE A MICROONDE<div class="small muted">CIG 9705957917 · STRUMENTI DI MISURA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">37 mila €</td></tr><tr data-t="fornitura di uno spettrofotometro uv e di un mineralizzatore a microonde fkv s.r.l.">
+      <td class="small">2023-05-23</td>
+      <td>FORNITURA DI UNO SPETTROFOTOMETRO UV E DI UN MINERALIZZATORE A MICROONDE<div class="small muted">CIG 9825569C08 · STRUMENTI DI MISURA</div></td>
+      <td>FKV S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">37 mila €</td></tr><tr data-t="servizio dpo per 36 mesi lta s.r.l.">
+      <td class="small">2024-06-12</td>
+      <td>SERVIZIO DPO PER 36 MESI<div class="small muted">CIG B2114D3386 · SERVIZI DI CONSULENZA PER LO SVILUPPO COMMERCIALE</div></td>
+      <td>LTA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">36 mila €</td></tr><tr data-t="fornitura di una piattaforma gis comprendente tre postazioni software e una licenza server finanziata con fondi pnc one team  s.p.a.">
+      <td class="small">2023-06-29</td>
+      <td>FORNITURA DI UNA PIATTAFORMA GIS COMPRENDENTE TRE POSTAZIONI SOFTWARE E UNA LICENZA SERVER FINANZIATA CON FONDI PNC<div class="small muted">CIG 9908318AAB · PACCHETTI SOFTWARE DI CARTOGRAFIA</div></td>
+      <td>ONE TEAM  S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">36 mila €</td></tr><tr data-t="servizio di brokeraggio assicurativo aon spa">
+      <td class="small">2024-06-19</td>
+      <td>SERVIZIO DI BROKERAGGIO ASSICURATIVO<div class="small muted">CIG B2296781F9 · SERVIZI DI INTERMEDIAZIONE ASSICURATIVA</div></td>
+      <td>AON SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">36 mila €</td></tr><tr data-t="avv. (nominativo omesso) grado dott. (nominativo omesso) ">
+      <td class="small">2025-10-02</td>
+      <td>AVV. (nominativo omesso) GRADO DOTT. (nominativo omesso)<div class="small muted">CIG B879B356CB · SERVIZI GIURIDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">35 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - autoriparazioni taglietti operatore individuale (persona fisica)">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTORIPARAZIONI TAGLIETTI<div class="small muted">CIG B85AD91951 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">35 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - autoriparazioni badia operatore individuale (persona fisica)">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTORIPARAZIONI BADIA<div class="small muted">CIG B85ACE8DD9 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">35 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - autoriparazioni taglietti operatore individuale (persona fisica)">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTORIPARAZIONI TAGLIETTI<div class="small muted">CIG B85B0CD49C · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">35 mila €</td></tr><tr data-t="adesione aria_2023_056 coadiutore amm.vo senior randstad italia spa">
+      <td class="small">2024-10-28</td>
+      <td>ADESIONE ARIA_2023_056 COADIUTORE AMM.VO SENIOR<div class="small muted">CIG B406EEBB17 · SERVIZI GOVERNATIVI</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">34 mila €</td></tr><tr data-t="adesione gara aggregata ats milano bottiglie campionam. lab. lotto 2 2025-26 operatore individuale (persona fisica)">
+      <td class="small">2024-11-18</td>
+      <td>ADESIONE GARA AGGREGATA ATS MILANO BOTTIGLIE CAMPIONAM. LAB. LOTTO 2 2025-26<div class="small muted">CIG B45395A0DE · ARTICOLI DI VETRO PER USO FARMACEUTICO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">33 mila €</td></tr><tr data-t="adesione alla convenzione aria_2022_014 per la realizzazione di un video afferente alle attività della sc psal ab comunicazioni s.r.l.">
+      <td class="small">2024-08-02</td>
+      <td>ADESIONE ALLA CONVENZIONE ARIA_2022_014 PER LA REALIZZAZIONE DI UN VIDEO AFFERENTE ALLE ATTIVITÀ DELLA SC PSAL<div class="small muted">CIG B2AFA91C86 · SERVIZI DI ORGANIZZAZIONE DI EVENTI</div></td>
+      <td>AB COMUNICAZIONI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">32 mila €</td></tr><tr data-t="avv. (nominativo omesso) 2025 incarico dott. (nominativo omesso) ">
+      <td class="small">2025-09-29</td>
+      <td>AVV. (nominativo omesso) 2025 INCARICO DOTT. (nominativo omesso)<div class="small muted">CIG B86DABB09C · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">31 mila €</td></tr><tr data-t="gap decimo affidamento lotto 18 area societa&#39; cooperativa sociale ets">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 18<div class="small muted">CIG B784D01F7C · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>AREA SOCIETA&#39; COOPERATIVA SOCIALE ETS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 16 gli acrobati societa&#39; cooperativa  sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 16<div class="small muted">CIG B784CFFDD6 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>GLI ACROBATI SOCIETA&#39; COOPERATIVA  SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 12 comunita&#39; fraternita&#39; - societa&#39; cooperativa sociale onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 12<div class="small muted">CIG B784CFBA8A · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>COMUNITA&#39; FRATERNITA&#39; - SOCIETA&#39; COOPERATIVA SOCIALE ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 9 il mago di oz - societa&#39; cooperativa sociale onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 9<div class="small muted">CIG B784CF8811 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>IL MAGO DI OZ - SOCIETA&#39; COOPERATIVA SOCIALE ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 7 gli acrobati societa&#39; cooperativa  sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 7<div class="small muted">CIG B784CF666B · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>GLI ACROBATI SOCIETA&#39; COOPERATIVA  SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 8 cooperativa di bessimo, cooperativa sociale a responsabilita&#39; limitata onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 8<div class="small muted">CIG B784CF773E · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>COOPERATIVA DI BESSIMO, COOPERATIVA SOCIALE A RESPONSABILITA&#39; LIMITATA ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 10 civitas s.r.l.">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 10<div class="small muted">CIG B784CF98E4 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>CIVITAS S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 14 cooperativa di bessimo, cooperativa sociale a responsabilita&#39; limitata onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 14<div class="small muted">CIG B784CFDC30 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>COOPERATIVA DI BESSIMO, COOPERATIVA SOCIALE A RESPONSABILITA&#39; LIMITATA ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 13 il calabrone - societa&#39; cooperativa sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 13<div class="small muted">CIG B784CFCB5D · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>IL CALABRONE - SOCIETA&#39; COOPERATIVA SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 15 il mago di oz - societa&#39; cooperativa sociale onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 15<div class="small muted">CIG B784CFED03 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>IL MAGO DI OZ - SOCIETA&#39; COOPERATIVA SOCIALE ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 17 gli acrobati societa&#39; cooperativa  sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 17<div class="small muted">CIG B784D00EA9 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>GLI ACROBATI SOCIETA&#39; COOPERATIVA  SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="gap decimo affidamento lotto 11 il calabrone - societa&#39; cooperativa sociale - onlus">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 11<div class="small muted">CIG B784CFA9B7 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>IL CALABRONE - SOCIETA&#39; COOPERATIVA SOCIALE - ONLUS</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="lotto disabili sensoriali ats brescia ">
+      <td class="small">2023-11-30</td>
+      <td>LOTTO DISABILI SENSORIALI ATS BRESCIA<div class="small muted">CIG A035808C29 · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">30 mila €</td></tr><tr data-t="lotto disabili sensoriali ats montagna ">
+      <td class="small">2023-11-30</td>
+      <td>LOTTO DISABILI SENSORIALI ATS MONTAGNA<div class="small muted">CIG A03581788B · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">30 mila €</td></tr><tr data-t="reattivi e solventi lotto 4 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 4<div class="small muted">CIG B5463A7781 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">30 mila €</td></tr><tr data-t="reattivi e solventi lotto 20 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 20<div class="small muted">CIG B5463B74B6 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">30 mila €</td></tr><tr data-t="disabili sensoriali ats montagna ">
+      <td class="small">2025-02-03</td>
+      <td>DISABILI SENSORIALI ATS MONTAGNA<div class="small muted">CIG B575B62A8D · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="disabili sensoriali ats bergamo ">
+      <td class="small">2025-02-03</td>
+      <td>DISABILI SENSORIALI ATS BERGAMO<div class="small muted">CIG B575B619BA · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="disabili sensoriali ats brescia operatore individuale (persona fisica)">
+      <td class="small">2025-02-03</td>
+      <td>DISABILI SENSORIALI ATS BRESCIA<div class="small muted">CIG B575B608E7 · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="disabili sensoriali lotto 1 ats brescia operatore individuale (persona fisica)">
+      <td class="small">2025-03-31</td>
+      <td>DISABILI SENSORIALI LOTTO 1 ATS BRESCIA<div class="small muted">CIG B6454466E1 · SERVIZI DI FORMAZIONE SPECIALISTICA</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">30 mila €</td></tr><tr data-t="rinnovo adesione arca_2016_109 sevizio gestione informatizzata risorse umane ">
+      <td class="small">2023-06-13</td>
+      <td>RINNOVO ADESIONE ARCA_2016_109 SEVIZIO GESTIONE INFORMATIZZATA RISORSE UMANE<div class="small muted">CIG 9833532750 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE APPLICATIVI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">30 mila €</td></tr><tr data-t="reattivi e solventi lotto 2 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 2<div class="small muted">CIG B5463A55DB · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">29 mila €</td></tr><tr data-t="incarico appello plv avv (nominativo omesso) 2025 operatore individuale (persona fisica)">
+      <td class="small">2025-06-26</td>
+      <td>INCARICO APPELLO PLV AVV (nominativo omesso) 2025<div class="small muted">CIG B76DDDB47F · SERVIZI DI LABORATORIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">28 mila €</td></tr><tr data-t="programma regionale life skills training ">
+      <td class="small">2024-10-21</td>
+      <td>PROGRAMMA REGIONALE LIFE SKILLS TRAINING<div class="small muted">CIG B3EB45D5EE · SERVIZI SANITARI E DI ASSISTENZA SOCIALE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">28 mila €</td></tr><tr data-t="reattivi e solventi lotto 22 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 22<div class="small muted">CIG B5463B965C · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">28 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - autoriparazioni cremona operatore individuale (persona fisica)">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTORIPARAZIONI CREMONA<div class="small muted">CIG B85B0815E4 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">27 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - autoriparazioni cremona operatore individuale (persona fisica)">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTORIPARAZIONI CREMONA<div class="small muted">CIG B85AE58D88 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">27 mila €</td></tr><tr data-t="gara reattivi 2024 lotto 0006 quantanalitica s.r.l.">
+      <td class="small">2025-11-10</td>
+      <td>GARA REATTIVI 2024 LOTTO 0006<div class="small muted">CIG B90735A52D · PRODOTTI CHIMICI FINI E VARI</div></td>
+      <td>QUANTANALITICA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">27 mila €</td></tr><tr data-t="allaccio teleriscaldamento teleraffreddamento ed.10_rev_03 operatore individuale (persona fisica)">
+      <td class="small">2025-05-19</td>
+      <td>ALLACCIO TELERISCALDAMENTO TELERAFFREDDAMENTO ED.10_REV_03<div class="small muted">CIG B6E5B3C99C · TUBAZIONI PER TELERISCALDAMENTO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">27 mila €</td></tr><tr data-t="tosatrici e materiale vario - lotto 13 ">
+      <td class="small">2024-02-12</td>
+      <td>TOSATRICI E MATERIALE VARIO - LOTTO 13<div class="small muted">CIG A0518748D2 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">27 mila €</td></tr><tr data-t="igienizzazione bagni ats brescia tabby&#39;s s.r.l.">
+      <td class="small">2024-07-11</td>
+      <td>IGIENIZZAZIONE BAGNI ATS BRESCIA<div class="small muted">CIG B0BFC38B09 · Cpv prevalente non disponibile</div></td>
+      <td>TABBY&#39;S S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">26 mila €</td></tr><tr data-t="cablaggio sala venturini operatore individuale (persona fisica)">
+      <td class="small">2025-01-14</td>
+      <td>CABLAGGIO SALA VENTURINI<div class="small muted">CIG B529B8E548 · CABLAGGIO DI RETE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="cablaggio sala venturini operatore individuale (persona fisica)">
+      <td class="small">2025-03-21</td>
+      <td>CABLAGGIO SALA VENTURINI<div class="small muted">CIG B621A4CAD5 · CABLAGGIO DI RETE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="secondo affidamento realizzazione di video notiziario editoriale bresciana s.p.a.">
+      <td class="small">2025-09-22</td>
+      <td>SECONDO AFFIDAMENTO REALIZZAZIONE DI VIDEO NOTIZIARIO<div class="small muted">CIG B8513E15A0 · SERVIZI DI TELEVISIONE A CIRCUITO CHIUSO</div></td>
+      <td>EDITORIALE BRESCIANA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="sacchi e sacchetti - lotto 3 ">
+      <td class="small">2024-02-12</td>
+      <td>SACCHI E SACCHETTI - LOTTO 3<div class="small muted">CIG A051364B53 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">25 mila €</td></tr><tr data-t="polizza infortuni ats insubria axa assicurazioni spa">
+      <td class="small">2023-05-05</td>
+      <td>POLIZZA INFORTUNI ATS INSUBRIA<div class="small muted">CIG 9797535DA4 · SERVIZI ASSICURATIVI</div></td>
+      <td>AXA ASSICURAZIONI SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">25 mila €</td></tr><tr data-t="progetto rilancio corsi di laurea assistenza sanitaria e tecnico prevenzione 2025 ipsos s.r.l.">
+      <td class="small">2025-06-03</td>
+      <td>PROGETTO RILANCIO CORSI DI LAUREA ASSISTENZA SANITARIA E TECNICO PREVENZIONE 2025<div class="small muted">CIG B7196E4A84 · SERVIZI DI CONSULENZA PER LA GESTIONE DI PROGETTI</div></td>
+      <td>IPSOS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="gap decimo affidamento lotto 1 associazione comuni bresciani servizi s.r.l. (con sigla a.c.b. servizi s.r.l.)">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 1<div class="small muted">CIG B784CF0179 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>ASSOCIAZIONE COMUNI BRESCIANI SERVIZI S.R.L. (CON SIGLA A.C.B. SERVIZI S.R.L.)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">25 mila €</td></tr><tr data-t="sostituzione bombole edificio a farco s.r.l.">
+      <td class="small">2025-07-09</td>
+      <td>SOSTITUZIONE BOMBOLE EDIFICIO A<div class="small muted">CIG B790199759 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI IMPIANTI ANTINCENDIO</div></td>
+      <td>FARCO S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">25 mila €</td></tr><tr data-t="lotto 10 - materiale vario veterinario ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 10 - MATERIALE VARIO VETERINARIO<div class="small muted">CIG 9866947E3C · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">25 mila €</td></tr><tr data-t="allestimento sale multimediali sangio sound srl">
+      <td class="small">2025-12-24</td>
+      <td>ALLESTIMENTO SALE MULTIMEDIALI<div class="small muted">CIG B9C9AF5C5A · ATTREZZATURE MULTIMEDIALI</div></td>
+      <td>SANGIO SOUND SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">24 mila €</td></tr><tr data-t="servizi fiscali e tributari per 36 mesi operatore individuale (persona fisica)">
+      <td class="small">2025-08-04</td>
+      <td>SERVIZI FISCALI E TRIBUTARI PER 36 MESI<div class="small muted">CIG B7DBD9C661 · SERVIZI FISCALI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">24 mila €</td></tr><tr data-t="gap decimo affidamento lotto 2 operatore individuale (persona fisica)">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 2<div class="small muted">CIG B784CF124C · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">24 mila €</td></tr><tr data-t="reattivi e solventi lotto 27 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 27<div class="small muted">CIG B5463BEA7B · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">23 mila €</td></tr><tr data-t="servizi professionali per la verifica dei fornitori per un periodo di anni tre guida monaci s.r.l.">
+      <td class="small">2025-03-31</td>
+      <td>SERVIZI PROFESSIONALI PER LA VERIFICA DEI FORNITORI PER UN PERIODO DI ANNI TRE<div class="small muted">CIG B642B7F05A · SERVIZI DI BANCHE DATI</div></td>
+      <td>GUIDA MONACI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">23 mila €</td></tr><tr data-t="materiale di consumo per laboratorio biomerieux italia spa">
+      <td class="small">2025-06-09</td>
+      <td>MATERIALE DI CONSUMO PER LABORATORIO<div class="small muted">CIG B72C130417 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BIOMERIEUX ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">23 mila €</td></tr><tr data-t="attività informazione gap anziani la nuvola nel sacco - societa&#39; cooperativa sociale">
+      <td class="small">2024-10-21</td>
+      <td>ATTIVITÀ INFORMAZIONE GAP ANZIANI<div class="small muted">CIG B3EB45C51B · SERVIZI SANITARI E DI ASSISTENZA SOCIALE</div></td>
+      <td>LA NUVOLA NEL SACCO - SOCIETA&#39; COOPERATIVA SOCIALE</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">22 mila €</td></tr><tr data-t="fornitura dpi gara ats milano 2025 lotto 1 eurofor s.r.l.">
+      <td class="small">2025-06-12</td>
+      <td>FORNITURA DPI GARA ATS MILANO 2025 LOTTO 1<div class="small muted">CIG B73F40CE8A · INDUMENTI AD USO PROFESSIONALE, INDUMENTI SPECIALI DA LAVORO E ACCESSORI</div></td>
+      <td>EUROFOR S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">22 mila €</td></tr><tr data-t="fornitura dpi gara ats milano 2025 lotto 7 volta professional s.r.l.">
+      <td class="small">2025-06-12</td>
+      <td>FORNITURA DPI GARA ATS MILANO 2025 LOTTO 7<div class="small muted">CIG B740477AF8 · INDUMENTI AD USO PROFESSIONALE, INDUMENTI SPECIALI DA LAVORO E ACCESSORI</div></td>
+      <td>VOLTA PROFESSIONAL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">22 mila €</td></tr><tr data-t="materiale consumo per laboratorio: fibre, colonna, direct straight liner ">
+      <td class="small">2025-07-28</td>
+      <td>MATERIALE CONSUMO PER LABORATORIO: FIBRE, COLONNA, DIRECT STRAIGHT LINER<div class="small muted">CIG B7CC225274 · REATTIVI PER LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">22 mila €</td></tr><tr data-t="mat consumo icp ms 24 operatore individuale (persona fisica)">
+      <td class="small">2024-05-29</td>
+      <td>MAT CONSUMO ICP MS 24<div class="small muted">CIG B1E08DF048 · APPARECCHI PER ANALISI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">21 mila €</td></tr><tr data-t="cancelleria e varie effegi di fantoni giambattista srl">
+      <td class="small">2025-02-14</td>
+      <td>CANCELLERIA E VARIE<div class="small muted">CIG B5A3643E7A · ARTICOLI DI CANCELLERIA ED ALTRI ARTICOLI DI CARTA</div></td>
+      <td>EFFEGI DI FANTONI GIAMBATTISTA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">21 mila €</td></tr><tr data-t="smaltimento uova contaminate salmonella diusa rendering s.r.l.">
+      <td class="small">2025-10-22</td>
+      <td>SMALTIMENTO UOVA CONTAMINATE SALMONELLA<div class="small muted">CIG B8BE3E49D8 · CARNE DI MONTONE</div></td>
+      <td>DIUSA RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">21 mila €</td></tr><tr data-t="aghi, provette e tamponi - lotto 8 ">
+      <td class="small">2024-02-12</td>
+      <td>AGHI, PROVETTE E TAMPONI - LOTTO 8<div class="small muted">CIG A05184E976 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">20 mila €</td></tr><tr data-t="adesione convenz.aria_2023_051 lot 1) servizio di stampa infolio societa&#39; consortile a responsabilita&#39; limitata">
+      <td class="small">2024-12-05</td>
+      <td>ADESIONE CONVENZ.ARIA_2023_051 LOT 1) SERVIZIO DI STAMPA<div class="small muted">CIG B4A54F0EB0 · SERVIZI DI COMPOSIZIONE TIPOGRAFICA</div></td>
+      <td>INFOLIO SOCIETA&#39; CONSORTILE A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="fornitura di nuovi switch per centro stella vodafone spa">
+      <td class="small">2024-08-13</td>
+      <td>FORNITURA DI NUOVI SWITCH PER CENTRO STELLA<div class="small muted">CIG B2C819ADC8 · RETE DI TELECOMUNICAZIONI</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="allestimento area stand alata e pacchetto gold operatore individuale (persona fisica)">
+      <td class="small">2025-01-31</td>
+      <td>ALLESTIMENTO AREA STAND ALATA E PACCHETTO GOLD<div class="small muted">CIG B4D2AEC89E · SERVIZI DI ORGANIZZAZIONE DI MOSTRE, FIERE E CONGRESSI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="rassegna stampa sifa s.r.l.">
+      <td class="small">2025-01-15</td>
+      <td>RASSEGNA STAMPA<div class="small muted">CIG B53501B40F · QUOTIDIANI, RIVISTE SPECIALIZZATE, PERIODICI E SETTIMANALI</div></td>
+      <td>SIFA S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">20 mila €</td></tr><tr data-t="gap decimo affidamento lotto 3 associazione comuni bresciani servizi s.r.l. (con sigla a.c.b. servizi s.r.l.)">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 3<div class="small muted">CIG B784CF231F · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>ASSOCIAZIONE COMUNI BRESCIANI SERVIZI S.R.L. (CON SIGLA A.C.B. SERVIZI S.R.L.)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">20 mila €</td></tr><tr data-t="realizzazione notiziario ats e videoclip api seervizi srl">
+      <td class="small">2025-08-01</td>
+      <td>REALIZZAZIONE NOTIZIARIO ATS E VIDEOCLIP<div class="small muted">CIG B76AC28126 · SERVIZI RADIOTELEVISIVI</div></td>
+      <td>API SEERVIZI SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="installazione colonnine idriche (2anni) ovdamatic s.p.a.">
+      <td class="small">2025-08-04</td>
+      <td>INSTALLAZIONE COLONNINE IDRICHE (2ANNI)<div class="small muted">CIG B7DA5BB1C7 · EROGAZIONE DI ACQUA POTABILE</div></td>
+      <td>OVDAMATIC S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - auto leali srl operatore individuale (persona fisica)">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTO LEALI SRL<div class="small muted">CIG B85A9C89AC · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - auto leali srl global car srl">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTO LEALI SRL<div class="small muted">CIG B85AB59498 · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>GLOBAL CAR SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">20 mila €</td></tr><tr data-t="scatole portaprovette - lotto 6 ">
+      <td class="small">2024-02-12</td>
+      <td>SCATOLE PORTAPROVETTE - LOTTO 6<div class="small muted">CIG A05183225D · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">20 mila €</td></tr><tr data-t="consolidamento e centralizzazione piani terapeutici on line p.g.m.d. consulting s.r.l.">
+      <td class="small">2024-06-27</td>
+      <td>CONSOLIDAMENTO E CENTRALIZZAZIONE PIANI TERAPEUTICI ON LINE<div class="small muted">CIG B175B9B86F · Cpv prevalente non disponibile</div></td>
+      <td>P.G.M.D. CONSULTING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="incarico avv. (nominativo omesso) ">
+      <td class="small">2025-07-16</td>
+      <td>INCARICO AVV. (nominativo omesso)<div class="small muted">CIG B7AA3F5511 · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">19 mila €</td></tr><tr data-t="trasporto e smaltimento carcasse eco rendering eco rendering s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>TRASPORTO E SMALTIMENTO CARCASSE ECO RENDERING<div class="small muted">CIG B419A4A799 · CARNE DI MONTONE</div></td>
+      <td>ECO RENDERING S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="fornitura quadrifoglio next modulo noca praezision srl">
+      <td class="small">2025-04-07</td>
+      <td>FORNITURA QUADRIFOGLIO NEXT MODULO NOCA<div class="small muted">CIG B65C9C5EDD · PACCHETTI SOFTWARE E SISTEMI INFORMATICI VARI</div></td>
+      <td>PRAEZISION SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="arca_2019_120, lot. 3 proroga interinale 03.10.24-02.04.25 randstad italia spa">
+      <td class="small">2024-09-04</td>
+      <td>ARCA_2019_120, LOT. 3 PROROGA INTERINALE 03.10.24-02.04.25<div class="small muted">CIG B2EE7E6CD7 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">19 mila €</td></tr><tr data-t="fornitura strumentazioni per aule formazione - pnrr c2 s.r.l.">
+      <td class="small">2025-01-30</td>
+      <td>FORNITURA STRUMENTAZIONI PER AULE FORMAZIONE - PNRR<div class="small muted">CIG B50A7B260C · MONITOR</div></td>
+      <td>C2 S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">18 mila €</td></tr><tr data-t="radiologico ">
+      <td class="small">2024-12-12</td>
+      <td>RADIOLOGICO<div class="small muted">CIG B4C57EC934 · IMMAGINOGRAFIA AD USO MEDICO, DENTISTICO E VETERINARIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">18 mila €</td></tr><tr data-t="incarico avv. (nominativo omesso) ">
+      <td class="small">2025-07-09</td>
+      <td>INCARICO AVV. (nominativo omesso)<div class="small muted">CIG B7964E7A3E · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">18 mila €</td></tr><tr data-t="avv (nominativo omesso) dalla vecchia ">
+      <td class="small">2025-11-18</td>
+      <td>AVV (nominativo omesso) DALLA VECCHIA<div class="small muted">CIG B929C4C33C · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">18 mila €</td></tr><tr data-t="servizi di manutenzione e riparazione dei mezzi aziendali - auto leali srl auto leali srl">
+      <td class="small">2025-09-23</td>
+      <td>SERVIZI DI MANUTENZIONE E RIPARAZIONE DEI MEZZI AZIENDALI - AUTO LEALI SRL<div class="small muted">CIG B85A7E7CBC · GESTIONE DEL PARCO MACCHINE, SERVIZI DI RIPARAZIONE E DI MANUTENZIONE</div></td>
+      <td>AUTO LEALI SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">18 mila €</td></tr><tr data-t="reattivi e solventi lotto 33 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 33<div class="small muted">CIG B5463C4F6D · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">17 mila €</td></tr><tr data-t="gap decimo affidamento lotto 4 associazione comuni bresciani servizi s.r.l. (con sigla a.c.b. servizi s.r.l.)">
+      <td class="small">2025-07-03</td>
+      <td>GAP DECIMO AFFIDAMENTO LOTTO 4<div class="small muted">CIG B784CF33F2 · SERVIZI PRESTATI DA ORGANIZZAZIONI ASSOCIATIVE DI CARATTERE SOCIALE</div></td>
+      <td>ASSOCIAZIONE COMUNI BRESCIANI SERVIZI S.R.L. (CON SIGLA A.C.B. SERVIZI S.R.L.)</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">17 mila €</td></tr><tr data-t="smaltimento carcasse contenimento psa per conto ats di pavia solar srl">
+      <td class="small">2023-09-08</td>
+      <td>SMALTIMENTO CARCASSE CONTENIMENTO PSA PER CONTO ATS DI PAVIA<div class="small muted">CIG A0295A5272 · SERVIZI ZOOLOGICI</div></td>
+      <td>SOLAR SRL</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">16 mila €</td></tr><tr data-t="gestione informatizzata risorse umane ats brescia gpi s.p.a.">
+      <td class="small">2025-06-23</td>
+      <td>GESTIONE INFORMATIZZATA RISORSE UMANE ATS BRESCIA<div class="small muted">CIG B75D91B700 · SERVIZI DI REVISIONE DEI REQUISITI DELLE TECNOLOGIE DELL&#39;INFORMAZIONE</div></td>
+      <td>GPI S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">16 mila €</td></tr><tr data-t="convenzione arca_2019_120, lot. 3 proroga interinale 11.09.24-31.01.25 randstad italia spa">
+      <td class="small">2024-08-19</td>
+      <td>CONVENZIONE ARCA_2019_120, LOT. 3 PROROGA INTERINALE 11.09.24-31.01.25<div class="small muted">CIG B2CADA3491 · SERVIZI GENERALI DI PERSONALE PER LA PUBBLICA AMMINISTRAZIONE</div></td>
+      <td>RANDSTAD ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">16 mila €</td></tr><tr data-t="reattivi e solventi lotto 25 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 25<div class="small muted">CIG B5463BC8D5 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">16 mila €</td></tr><tr data-t="aria_2022_014 n. 3 video pillole sc psal ab comunicazioni s.r.l.">
+      <td class="small">2025-08-07</td>
+      <td>ARIA_2022_014 N. 3 VIDEO PILLOLE SC PSAL<div class="small muted">CIG B7EBF77063 · SERVIZI DI PRODUZIONE DI FILM E VIDEO</div></td>
+      <td>AB COMUNICAZIONI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="lotto 12 - spugnette campionamento ">
+      <td class="small">2023-06-30</td>
+      <td>LOTTO 12 - SPUGNETTE CAMPIONAMENTO<div class="small muted">CIG 9872194834 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mila €</td></tr><tr data-t="servizi legali avv. (nominativo omesso)_ottobre 2024 operatore individuale (persona fisica)">
+      <td class="small">2024-11-04</td>
+      <td>SERVIZI LEGALI AVV. (nominativo omesso)_OTTOBRE 2024<div class="small muted">CIG B413D4EBE9 · SERVIZI DI RAPPRESENTANZA LEGALE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="reattivi e solventi lotto 10 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 10<div class="small muted">CIG B5463ADC73 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mila €</td></tr><tr data-t="reattivi e solventi lotto 23 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 23<div class="small muted">CIG B5463BA72F · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mila €</td></tr><tr data-t="analisi gestione servizi energetici 2025 e-fase s.r.l.">
+      <td class="small">2025-02-06</td>
+      <td>ANALISI GESTIONE SERVIZI ENERGETICI 2025<div class="small muted">CIG B581C95969 · SERVIZI DI CONSULENZA COMMERCIALE E DI GESTIONE E SERVIZI CONNESSI</div></td>
+      <td>E-FASE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="antiparassitari ">
+      <td class="small">2025-09-10</td>
+      <td>ANTIPARASSITARI<div class="small muted">CIG B8325CCAE5 · PRODOTTI FARMACEUTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">15 mila €</td></tr><tr data-t="avv (nominativo omesso) dalla vecchia ">
+      <td class="small">2025-11-18</td>
+      <td>AVV (nominativo omesso) DALLA VECCHIA<div class="small muted">CIG B92988553D · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">15 mila €</td></tr><tr data-t="lotto 1 servizio di pulizia solidarieta&#39; manerbiese - societa&#39; cooperativa sociale - onlus">
+      <td class="small">2025-02-06</td>
+      <td>LOTTO 1 SERVIZIO DI PULIZIA<div class="small muted">CIG B526BDA79E · TRATTAMENTO E SMALTIMENTO DEI RIFIUTI</div></td>
+      <td>SOLIDARIETA&#39; MANERBIESE - SOCIETA&#39; COOPERATIVA SOCIALE - ONLUS</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="affidamento incarico collaudatore tecnico-amministrativo in corso d&#39;opera ed.10 operatore individuale (persona fisica)">
+      <td class="small">2024-12-31</td>
+      <td>AFFIDAMENTO INCARICO COLLAUDATORE TECNICO-AMMINISTRATIVO IN CORSO D&#39;OPERA ED.10<div class="small muted">CIG B48199A37B · SERVIZI DI COLLAUDO TECNICO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">15 mila €</td></tr><tr data-t="servizio lavanolo dal 01.04.2024 al 31.12.2024 operatore individuale (persona fisica)">
+      <td class="small">2024-04-09</td>
+      <td>SERVIZIO LAVANOLO DAL 01.04.2024 AL 31.12.2024<div class="small muted">CIG B11F1D7686 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">14 mila €</td></tr><tr data-t="fili di sutura - lotto 11 ">
+      <td class="small">2024-02-12</td>
+      <td>FILI DI SUTURA - LOTTO 11<div class="small muted">CIG A05186A094 · PRODOTTI ANIMALI E PRODOTTI AFFINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">14 mila €</td></tr><tr data-t="reattivi e solventi lotto 21 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 21<div class="small muted">CIG B5463B8589 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">13 mila €</td></tr><tr data-t="fornitura dpi gara ats milano 2025 lotto 3 audes group s.r.l.">
+      <td class="small">2025-06-12</td>
+      <td>FORNITURA DPI GARA ATS MILANO 2025 LOTTO 3<div class="small muted">CIG B73F61B173 · INDUMENTI AD USO PROFESSIONALE, INDUMENTI SPECIALI DA LAVORO E ACCESSORI</div></td>
+      <td>AUDES GROUP S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">13 mila €</td></tr><tr data-t="avv. (nominativo omesso) la croce ">
+      <td class="small">2025-09-11</td>
+      <td>AVV. (nominativo omesso) LA CROCE<div class="small muted">CIG B83508A088 · SERVIZI DI LABORATORIO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">13 mila €</td></tr><tr data-t="medicinali vari ">
+      <td class="small">2025-09-10</td>
+      <td>MEDICINALI VARI<div class="small muted">CIG B8325CFD5E · PRODOTTI FARMACEUTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">13 mila €</td></tr><tr data-t="lotto 1 lavavetrerie per laboratorio smeg spa">
+      <td class="small">2023-03-22</td>
+      <td>LOTTO 1 LAVAVETRERIE PER LABORATORIO<div class="small muted">CIG 9722468268 · APPARECCHI PER ANALISI E RIVELAZIONE</div></td>
+      <td>SMEG SPA</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">12 mila €</td></tr><tr data-t="prodotti lal test operatore individuale (persona fisica)">
+      <td class="small">2024-06-07</td>
+      <td>PRODOTTI LAL TEST<div class="small muted">CIG B200E183A4 · REATTIVI PER LABORATORIO</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">12 mila €</td></tr><tr data-t="realizzazione video notiziario operatore individuale (persona fisica)">
+      <td class="small">2025-01-21</td>
+      <td>REALIZZAZIONE VIDEO NOTIZIARIO<div class="small muted">CIG B3B98D46DB · SERVIZI PUBBLICITARI E DI MARKETING</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">12 mila €</td></tr><tr data-t="reattivi e solventi lotto 24 ">
+      <td class="small">2025-01-22</td>
+      <td>REATTIVI E SOLVENTI LOTTO 24<div class="small muted">CIG B5463BB802 · PRODOTTI CHIMICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">12 mila €</td></tr><tr data-t="misuratore densità acqua laboratorio microbiologia tecno - lab  s.r.l.">
+      <td class="small">2025-07-09</td>
+      <td>MISURATORE DENSITÀ ACQUA LABORATORIO MICROBIOLOGIA<div class="small muted">CIG B78FF41836 · IGROMETRI</div></td>
+      <td>TECNO - LAB  S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">12 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 478. L’elenco completo è nel <a href="../contratti/030302.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
+
+<h2>La regione: Lombardia</h2>
+  <p class="small muted">Indicatori della regione a cui appartiene questa azienda (dato regionale, non della singola struttura). Approfondisci in <a href="regione/030.html">Lombardia</a>.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"><a class="seg media" href="apparecchiature.html" style="text-decoration:none"><div class="t">Dotazione tecnologica</div><div class="d"><strong>29,1 TC/mln · 72 robot</strong></div></a><a class="seg media" href="sdo.html" style="text-decoration:none"><div class="t">Volumi di ricovero</div><div class="d"><strong>129,2 ric./1.000 ab.</strong></div></a><a class="seg media" href="pnrr-salute.html" style="text-decoration:none"><div class="t">PNRR Missione 6</div><div class="d"><strong>205 €/ab.</strong></div></a></div>
+<h2>Indicatori per anno</h2>
+    <p class="muted small">Ogni riga è un anno di bilancio (modelli CE/SP inviati al MEF). In rosso i risultati in
+    perdita, in verde quelli in utile.</p>
+    <div class="tablewrap"><table>
+    <thead><tr><th scope="col">Anno</th><th class="num" scope="col">Contributi in c/esercizio (A.1)</th><th class="num" scope="col">Valore della produzione (A)</th><th class="num" scope="col">Costi della produzione (B)</th><th class="num" scope="col">Costo del personale</th><th class="num" scope="col">Ammortamenti</th><th class="num" scope="col">Risultato di esercizio</th><th class="num" scope="col">Totale attivo</th><th class="num" scope="col">Patrimonio netto</th><th class="num" scope="col">Debiti</th></tr></thead>
+    <tbody><tr><td>2012</td><td class="num ">1.631.633.000 €</td><td class="num ">1.645.507.000 €</td><td class="num ">1.640.476.000 €</td><td class="num ">83.135.000 €</td><td class="num ">3.290.000 €</td><td class="num ">—</td><td class="num ">839.262.000 €</td><td class="num ">25.632.000 €</td><td class="num ">783.962.000 €</td></tr><tr><td>2013</td><td class="num ">1.634.781.000 €</td><td class="num ">1.653.692.000 €</td><td class="num ">1.649.454.000 €</td><td class="num ">81.723.000 €</td><td class="num ">3.470.000 €</td><td class="num ">—</td><td class="num ">400.629.000 €</td><td class="num ">27.665.000 €</td><td class="num ">338.673.000 €</td></tr><tr><td>2014</td><td class="num ">1.637.732.000 €</td><td class="num ">1.659.337.000 €</td><td class="num ">1.655.862.000 €</td><td class="num ">81.094.000 €</td><td class="num ">3.055.000 €</td><td class="num ">—</td><td class="num ">418.619.000 €</td><td class="num ">30.736.000 €</td><td class="num ">351.227.000 €</td></tr><tr><td>2015</td><td class="num ">1.662.231.000 €</td><td class="num ">1.685.784.000 €</td><td class="num ">1.684.437.000 €</td><td class="num ">79.810.000 €</td><td class="num ">3.422.000 €</td><td class="num ">—</td><td class="num ">247.634.000 €</td><td class="num ">29.738.000 €</td><td class="num ">192.385.000 €</td></tr></tbody></table></div>
+<h2>Conto economico dettagliato <span class="small muted">(2015)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>A.1)  Contributi in c/esercizio</td><td class="num">1.662.231.000 €</td></tr><tr><td>A.1.A)  Contributi da Regione o Prov. Aut. per quota F.S. regionale</td><td class="num">1.659.957.000 €</td></tr><tr><td>A.1.B)  Contributi c/esercizio (extra fondo)</td><td class="num">1.944.000 €</td></tr><tr><td>A.1.D)  Contributi c/esercizio da privati</td><td class="num">330.000 €</td></tr><tr><td>A.2)  Rettifica contributi c/esercizio per destinazione ad investimenti</td><td class="num">-132.000 €</td></tr><tr><td>A.2.B)  Rettifica contributi in c/esercizio per destinazione ad investimenti - altri contributi</td><td class="num">-132.000 €</td></tr><tr><td>A.3) Utilizzo fondi per quote inutilizzate contributi vincolati di esercizi precedenti</td><td class="num">9.504.000 €</td></tr><tr><td>A.3.A)  Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da Regione o Prov. Aut. per quota F.S. regionale vincolato</td><td class="num">7.030.000 €</td></tr><tr><td>A.3.B) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da soggetti pubblici (extra fondo) vincolati</td><td class="num">2.327.000 €</td></tr><tr><td>A.3.D) Utilizzo fondi per quote inutilizzate contributi vincolati di esercizi precedenti da privati</td><td class="num">147.000 €</td></tr><tr><td>A.4)  Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria</td><td class="num">9.161.000 €</td></tr><tr><td>A.4.A)  Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a soggetti pubblici</td><td class="num">826.000 €</td></tr><tr><td>A.4.C)  Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a privati</td><td class="num">7.586.000 €</td></tr><tr><td>A.4.D)  Ricavi per prestazioni sanitarie erogate in regime di intramoenia</td><td class="num">749.000 €</td></tr><tr><td>A.5) Concorsi, recuperi e rimborsi</td><td class="num">1.682.000 €</td></tr><tr><td>A.5.A) Rimborsi assicurativi</td><td class="num">26.000 €</td></tr><tr><td>A.5.C) Concorsi, recuperi e rimborsi da Aziende sanitarie pubbliche della Regione</td><td class="num">609.000 €</td></tr><tr><td>A.5.D) Concorsi, recuperi e rimborsi da altri soggetti pubblici</td><td class="num">650.000 €</td></tr><tr><td>A.5.E) Concorsi, recuperi e rimborsi da privati</td><td class="num">397.000 €</td></tr><tr><td>A.6)  Compartecipazione alla spesa per prestazioni sanitarie (Ticket)</td><td class="num">141.000 €</td></tr><tr><td>A.6.A)  Compartecipazione alla spesa per prestazioni sanitarie - Ticket sulle prestazioni di specialistica ambulatoriale</td><td class="num">141.000 €</td></tr><tr><td>A.7)  Quota contributi c/capitale imputata all&#39;esercizio</td><td class="num">2.564.000 €</td></tr><tr><td>A.7.B)  Quota imputata all&#39;esercizio dei finanziamenti per investimenti da Regione</td><td class="num">470.000 €</td></tr><tr><td>A.7.C)  Quota imputata all&#39;esercizio dei finanziamenti per beni di prima dotazione</td><td class="num">701.000 €</td></tr><tr><td>A.7.D) Quota imputata all&#39;esercizio dei contributi in c/ esercizio FSR destinati ad investimenti</td><td class="num">1.226.000 €</td></tr><tr><td>A.7.E) Quota imputata all&#39;esercizio degli altri contributi in c/ esercizio destinati ad investimenti</td><td class="num">112.000 €</td></tr><tr><td>A.7.F) Quota imputata all&#39;esercizio di altre poste del patrimonio netto</td><td class="num">55.000 €</td></tr><tr><td>A.8)  Incrementi delle immobilizzazioni per lavori interni</td><td class="num">11.000 €</td></tr><tr><td>A.9) Altri ricavi e proventi</td><td class="num">622.000 €</td></tr><tr><td>A.9.A) Ricavi per prestazioni non sanitarie</td><td class="num">338.000 €</td></tr><tr><td>A.9.B) Fitti attivi ed altri proventi da attivita&#39; immobiliari</td><td class="num">147.000 €</td></tr><tr><td>A.9.C) Altri proventi diversi</td><td class="num">137.000 €</td></tr><tr><td>Totale valore della produzione (A)</td><td class="num">1.685.784.000 €</td></tr><tr><td>B.1)  Acquisti di beni</td><td class="num">44.023.000 €</td></tr><tr><td>B.1.A)  Acquisti di beni sanitari</td><td class="num">43.412.000 €</td></tr><tr><td>B.1.B)  Acquisti di beni non sanitari</td><td class="num">611.000 €</td></tr><tr><td>B.2)  Acquisti di servizi</td><td class="num">1.546.716.000 €</td></tr><tr><td>B.2.A)   Acquisti servizi sanitari</td><td class="num">1.537.068.000 €</td></tr><tr><td>B.2.B) Acquisti di servizi non sanitari</td><td class="num">9.648.000 €</td></tr><tr><td>B.3)  Manutenzione e riparazione (ordinaria esternalizzata)</td><td class="num">2.284.000 €</td></tr><tr><td>B.3.A)  Manutenzione e riparazione ai fabbricati e loro pertinenze</td><td class="num">967.000 €</td></tr><tr><td>B.3.C)  Manutenzione e riparazione alle attrezzature sanitarie e scientifiche</td><td class="num">184.000 €</td></tr><tr><td>B.3.D)  Manutenzione e riparazione ai mobili e arredi</td><td class="num">2000 €</td></tr><tr><td>B.3.E)  Manutenzione e riparazione agli automezzi</td><td class="num">50.000 €</td></tr><tr><td>B.3.F)  Altre manutenzioni e riparazioni</td><td class="num">1.081.000 €</td></tr><tr><td>B.4)   Godimento di beni di terzi</td><td class="num">2.042.000 €</td></tr><tr><td>B.4.A)  Fitti passivi</td><td class="num">318.000 €</td></tr><tr><td>B.4.B)  Canoni di noleggio</td><td class="num">1.724.000 €</td></tr><tr><td>Totale Costo del personale</td><td class="num">79.810.000 €</td></tr><tr><td>B.5)   Personale del ruolo sanitario</td><td class="num">56.272.000 €</td></tr><tr><td>B.5.A) Costo del personale dirigente ruolo sanitario</td><td class="num">35.553.000 €</td></tr><tr><td>B.5.B) Costo del personale comparto ruolo sanitario</td><td class="num">20.719.000 €</td></tr><tr><td>B.6)   Personale del ruolo professionale</td><td class="num">1.199.000 €</td></tr><tr><td>B.6.A) Costo del personale dirigente ruolo professionale</td><td class="num">1.199.000 €</td></tr><tr><td>B.7)   Personale del ruolo tecnico</td><td class="num">7.571.000 €</td></tr><tr><td>B.7.A) Costo del personale dirigente ruolo tecnico</td><td class="num">155.000 €</td></tr><tr><td>B.7.B) Costo del personale comparto ruolo tecnico</td><td class="num">7.416.000 €</td></tr><tr><td>B.8)   Personale del ruolo amministrativo</td><td class="num">14.768.000 €</td></tr><tr><td>B.8.A) Costo del personale dirigente ruolo amministrativo</td><td class="num">1.288.000 €</td></tr><tr><td>B.8.B) Costo del personale comparto ruolo amministrativo</td><td class="num">13.480.000 €</td></tr><tr><td>B.9)   Oneri diversi di gestione</td><td class="num">3.551.000 €</td></tr><tr><td>B.9.A)  Imposte e tasse (escluso IRAP e IRES)</td><td class="num">173.000 €</td></tr><tr><td>B.9.C) Altri oneri diversi di gestione</td><td class="num">3.378.000 €</td></tr><tr><td>Totale Ammortamenti</td><td class="num">3.422.000 €</td></tr><tr><td>B.10) Ammortamenti delle immobilizzazioni immateriali</td><td class="num">279.000 €</td></tr><tr><td>B.11) Ammortamenti delle immobilizzazioni materiali</td><td class="num">3.143.000 €</td></tr><tr><td>B.12) Ammortamento dei fabbricati</td><td class="num">1.844.000 €</td></tr><tr><td>B.12.B) Ammortamenti fabbricati strumentali (indisponibili)</td><td class="num">1.844.000 €</td></tr><tr><td>B.13) Ammortamenti delle altre immobilizzazioni materiali</td><td class="num">1.299.000 €</td></tr><tr><td>B.14) Svalutazione delle immobilizzazioni e dei crediti</td><td class="num">46.000 €</td></tr><tr><td>B.14.B) Svalutazione dei crediti</td><td class="num">46.000 €</td></tr><tr><td>B.15) Variazione delle rimanenze</td><td class="num">1.625.000 €</td></tr><tr><td>B.15.A) Variazione rimanenze sanitarie</td><td class="num">1.596.000 €</td></tr><tr><td>B.15.B) Variazione rimanenze non sanitarie</td><td class="num">29.000 €</td></tr><tr><td>B.16) Accantonamenti dell  esercizio</td><td class="num">918.000 €</td></tr><tr><td>B.16.A) Accantonamenti per rischi</td><td class="num">60.000 €</td></tr><tr><td>B.16.C) Accantonamenti per quote inutilizzate di contributi vincolati</td><td class="num">448.000 €</td></tr><tr><td>B.16.D) Altri accantonamenti</td><td class="num">410.000 €</td></tr><tr><td>Totale costi della produzione (B)</td><td class="num">1.684.437.000 €</td></tr><tr><td>C.1) Interessi attivi</td><td class="num">35.000 €</td></tr><tr><td>C.1.C) Altri interessi attivi</td><td class="num">35.000 €</td></tr><tr><td>C.3)  Interessi passivi</td><td class="num">1000 €</td></tr><tr><td>C.3.A) Interessi passivi su anticipazioni di cassa</td><td class="num">1000 €</td></tr><tr><td>Totale proventi e oneri finanziari (C)</td><td class="num">34.000 €</td></tr><tr><td>E.1) Proventi straordinari</td><td class="num">7.775.000 €</td></tr><tr><td>E.1.B) Altri proventi straordinari</td><td class="num">7.775.000 €</td></tr><tr><td>E.2) Oneri straordinari</td><td class="num">4.625.000 €</td></tr><tr><td>E.2.A) Minusvalenze</td><td class="num">33.000 €</td></tr><tr><td>E.2.B) Altri oneri straordinari</td><td class="num">4.592.000 €</td></tr><tr><td>Totale proventi e oneri straordinari (E)</td><td class="num">3.150.000 €</td></tr><tr><td>Risultato prima delle imposte (A - B +/- C +/- D +/- E)</td><td class="num">4.531.000 €</td></tr><tr><td>Y.1) IRAP</td><td class="num">4.424.000 €</td></tr><tr><td>Y.1.A) IRAP relativa a personale dipendente</td><td class="num">4.066.000 €</td></tr><tr><td>Y.1.B) IRAP relativa a collaboratori e personale assimilato a lavoro dipendente</td><td class="num">202.000 €</td></tr><tr><td>Y.1.C) IRAP relativa ad attivita&#39; di libera professione (intramoenia)</td><td class="num">57.000 €</td></tr><tr><td>Y.1.D) IRAP relativa ad attivita&#39; commerciale</td><td class="num">99.000 €</td></tr><tr><td>Y.2) IRES</td><td class="num">107.000 €</td></tr><tr><td>Y.2.A) IRES su attivita&#39; istituzionale</td><td class="num">107.000 €</td></tr><tr><td>Totale imposte e tasse</td><td class="num">4.531.000 €</td></tr></tbody></table></div>
+<h2>Stato patrimoniale <span class="small muted">(2015)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>A) IMMOBILIZZAZIONI</td><td class="num">37.054.000 €</td></tr><tr><td>B)  ATTIVO CIRCOLANTE</td><td class="num">209.912.000 €</td></tr><tr><td>C)  RATEI E RISCONTI ATTIVI</td><td class="num">668.000 €</td></tr><tr><td>D)  CONTI D&#39;ORDINE</td><td class="num">6.758.000 €</td></tr><tr><td>A)  PATRIMONIO NETTO</td><td class="num">29.738.000 €</td></tr><tr><td>B)  FONDI PER RISCHI E ONERI</td><td class="num">25.264.000 €</td></tr><tr><td>C)  TRATTAMENTO FINE RAPPORTO</td><td class="num">181.000 €</td></tr><tr><td>D)  DEBITI</td><td class="num">192.385.000 €</td></tr><tr><td>E)  RATEI E RISCONTI PASSIVI</td><td class="num">66.000 €</td></tr><tr><td>F)  CONTI D&#39;ORDINE</td><td class="num">6.758.000 €</td></tr></tbody></table></div>
+
+<p class="small muted" style="margin-top:26px">Fonte: <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>
+(modelli CE/SP del SSN) e <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a>. Importi in euro dai consuntivi.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a> ·
+  <a href="../accessibilita.html">Accessibilità</a> · <a href="../feed.xml">RSS</a></p>
+</div></footer>
+<script>
+/* Мобилна навигация: hamburger отваря/затваря менюто. Достъпно —
+   aria-expanded, Escape връща фокуса на бутона, клик навън затваря.
+   На desktop бутонът е display:none, менюто винаги видимо → скриптът е инертен. */
+(function(){
+  var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
+  if(!b||!n)return;
+  function aperto(){return b.getAttribute('aria-expanded')==='true';}
+  function apri(){b.setAttribute('aria-expanded','true');b.setAttribute('aria-label','Chiudi il menu');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Apri il menu di navigazione');n.classList.remove('open');}
+  b.addEventListener('click',function(){aperto()?chiudi():apri();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
+  });
+  document.addEventListener('click',function(e){
+    if(!aperto())return;
+    if(b.contains(e.target)||n.contains(e.target))return;
+    chiudi();
+  });
+})();
+/* Тема: 2-състоен превключвател светла⇄тъмна. Записът в localStorage печели над
+   системата; без запис = авто (prefers-color-scheme). aria-pressed=„тъмна активна". */
+(function(){
+  var t=document.querySelector('.theme-toggle');
+  if(!t)return;
+  var mq=window.matchMedia('(prefers-color-scheme:dark)');
+  function effettivo(){var d=document.documentElement.dataset.theme;return d?d:(mq.matches?'dark':'light');}
+  function aggiorna(){t.setAttribute('aria-pressed',effettivo()==='dark'?'true':'false');}
+  t.addEventListener('click',function(){
+    var nuovo=effettivo()==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=nuovo;
+    try{localStorage.setItem('ost-theme',nuovo);}catch(e){}
+    aggiorna();
+  });
+  aggiorna();
+  // Смяна на системната тема на живо (без ръчен избор) → обнови aria-pressed.
+  mq.addEventListener('change',function(){if(!document.documentElement.dataset.theme)aggiorna();});
+})();
+</script>
+</body>
+</html>

@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -36,6 +36,15 @@ MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
 VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:3100/}"
+
+# ospedali (Ospedali Trasparenti — systemd модел, като medqr/vizitka, НО без npm
+# ci/build: лек Node сервиз с нула зависимости обслужва предбилднатия статичен сайт
+# от site/. Деплоят е само копиране на файлове + рестарт. Тайните
+# (OSPEDALI_ADMIN_PASSWORD, OSPEDALI_SESSION_SECRET) и рънтайм състоянието
+# (server/.state/) живеят на сървъра и се пренасят при всеки деплой.
+OSPEDALI_DIR="${OSPEDALI_DIR:-/opt/ospedali}"
+OSPEDALI_SERVICE="${OSPEDALI_SERVICE:-ospedali}"
+OSPEDALI_HEALTH_URL="${OSPEDALI_HEALTH_URL:-http://127.0.0.1:8788/healthz}"
 
 # Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
 # behind nginx/Caddy. State (server/data + server/.env) lives outside
@@ -133,7 +142,7 @@ else
   SRC="$REL"
 fi
 shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || die "Архивът не прилича на това репо ($SRC)."
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedalitrasparenti" ] || [ -d "$SRC/ospedali" ] || die "Архивът не прилича на това репо ($SRC)."
 ok "Разопаковано в $SRC"
 
 deploy_failed=0
@@ -252,6 +261,65 @@ deploy_vizitka() {
       chown -R vizitka:vizitka "$VIZITKA_DIR"
     fi
     systemctl restart "$VIZITKA_SERVICE"
+  fi
+}
+
+# ── 3b'') ospedali — systemd, БЕЗ npm ci/build (нула зависимости) ─────────────
+# За разлика от medqr/vizitka: сервизът няма зависимости и обслужва предбилднатия
+# статичен сайт от site/ (вече в git) → само rsync на файловете + рестарт. Тайните
+# (server/.env) и рънтайм състоянието (server/.state/ — брояч + видимост + хеш на
+# админ паролата) се ИЗКЛЮЧВАТ от rsync → оцеляват между версиите. Health + rollback.
+deploy_ospedali() {
+  # Папката в репото е ospedalitrasparenti/ (преименувана); старото име ospedali/
+  # се приема като fallback, за да работят и по-стари архиви. Деплой ключът,
+  # systemd услугата и /opt/ospedali на сървъра НЕ се променят.
+  local d="$SRC/ospedalitrasparenti"
+  [ -d "$d" ] || d="$SRC/ospedali"
+  [ -d "$d" ] || { warn "Няма ospedalitrasparenti/ (нито ospedali/) в архива — пропускам."; return; }
+  log "Разгръщам ospedali (systemd, нула зависимости, без билд)…"
+  command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  # Сервизът върви като www-data (споделен уеб потребител, виж ospedali.service).
+  id www-data >/dev/null 2>&1 || die "Липсва системен потребител www-data."
+  # Бекъп на текущия код (server/.env и server/.state/ се пазят — excludes долу).
+  [ -d "$OSPEDALI_DIR" ] && cp -a "$OSPEDALI_DIR" "${OSPEDALI_DIR}.bak-$TS"
+  mkdir -p "$OSPEDALI_DIR"
+  # Изключваме тайните, рънтайм състоянието и суровите ETL данни (не се сервират).
+  rsync -a --delete \
+    --exclude server/.env --exclude server/.state/ \
+    --exclude node_modules/ --exclude data/raw/ --exclude data/contratti/ \
+    "$d"/ "$OSPEDALI_DIR"/
+  chown -R www-data:www-data "$OSPEDALI_DIR"
+  # .state/ трябва да съществува ПРЕДИ старт: ProtectSystem=strict прави всичко
+  # извън ReadWritePaths само за четене, а config.js прави mkdir на .state само ако
+  # родителят е записваем. Създаваме го тук (идемпотентно).
+  install -d -o www-data -g www-data -m 700 "$OSPEDALI_DIR/server/.state"
+  # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
+  install -m 644 "$OSPEDALI_DIR/deploy/systemd/ospedali.service" /etc/systemd/system/ospedali.service
+  systemctl daemon-reload
+  systemctl enable "$OSPEDALI_SERVICE" >/dev/null 2>&1 || true
+  systemctl restart "$OSPEDALI_SERVICE"
+  sleep 2
+  if health "$OSPEDALI_HEALTH_URL" "ospedali"; then
+    rm -rf "${OSPEDALI_DIR}.bak-$TS"
+    # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
+    ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    [ -f "$OSPEDALI_DIR/server/.env" ] || warn "Няма $OSPEDALI_DIR/server/.env — сайтът работи, но админ паролата е случайна (виж journalctl -u ospedali). За продукция задай OSPEDALI_ADMIN_PASSWORD + OSPEDALI_SESSION_SECRET (виж ospedalitrasparenti/deploy/DEPLOY.md)."
+    # IndexNow — активно уведоми търсачките (Bing/Yandex) за URL-ите. ВИНАГИ след
+    # успешен деплой. Best-effort: иска сайтът да е жив зад публичния домейн+TLS, за
+    # да се верифицира ключът; при първия деплой (преди DNS/certbot) може да падне —
+    # не е фатално, при следващия деплой минава.
+    ( cd "$OSPEDALI_DIR" && node src/indexnow.js ) || warn "IndexNow подаване пропадна (сайтът може още да не е достъпен на публичния домейн) — не е фатално, минава при следващия деплой."
+  else
+    deploy_failed=1
+    warn "ospedali health провал — връщам предишния код."
+    systemctl stop "$OSPEDALI_SERVICE" || true
+    if [ -d "${OSPEDALI_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude server/.env --exclude server/.state/ \
+        "${OSPEDALI_DIR}.bak-$TS"/ "$OSPEDALI_DIR"/
+      chown -R www-data:www-data "$OSPEDALI_DIR"
+      systemctl restart "$OSPEDALI_SERVICE"
+    fi
   fi
 }
 
@@ -620,6 +688,7 @@ for p in $PROJECTS; do
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
     vizitka)    deploy_vizitka ;;
+    ospedali)   deploy_ospedali ;;
     nexus)      deploy_nexus ;;
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
