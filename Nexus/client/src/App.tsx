@@ -61,6 +61,7 @@ const CombatDemo = React.lazy(() => import('./pages/CombatDemo'));
 // не е за реални играчи в продукция (mock данни, window.__combatDemo хук).
 const demoEnabled = import.meta.env.DEV || new URLSearchParams(window.location.search).has('debug');
 import LevelUpOverlay from './components/LevelUpOverlay';
+import BanScreen from './components/BanScreen';
 import CooldownTicker from './components/CooldownTicker';
 import PageBackdrop from './components/PageBackdrop';
 import OnboardingTour from './components/OnboardingTour';
@@ -200,6 +201,7 @@ export default function App(): React.ReactElement {
     <BrowserRouter>
       <Bootstrapper>
         <CookieBanner />
+        <BanScreen />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />

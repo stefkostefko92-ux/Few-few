@@ -31,26 +31,37 @@ interface Region {
   color: string;
   /** Pin medallion stamp letter. */
   stamp: string;
+  /** English name/lore — used as the i18n defaultValue so a pin never
+   *  renders a raw key even if a locale is missing the entry. */
+  name: string;
+  lore: string;
 }
 
-/* Region names + lore live in the i18n catalogue under
- * `world.regions.<slug>.{name,lore}` — the slug stays the stable key. */
+/* The slugs MUST match the regions the backend actually serves for hunting
+ * (server/src/routes/hunting.ts REGION_ORDER + seed/monsters REGION_BANDS)
+ * — a pin deep-links to /app/hunting?region=<slug>, which Hunting.tsx reads
+ * from the URL. The previous map advertised 15 fictional slugs (frostspire,
+ * drowned_coast, voidmaw, …) that no region matched, so every pin opened an
+ * empty hunt. Names/lore are localised via `world.regions.<slug>.{name,lore}`
+ * with the English text below as the fallback. Level bands follow the
+ * hunting region gates. */
 const REGIONS: Region[] = [
-  { slug: 'whispering_woods',  level: '1-5',     minLevel: 1,    x: 0.16, y: 0.78, color: '#6ad8a4', stamp: 'I'    },
-  { slug: 'mistmoor_hills',    level: '6-10',    minLevel: 6,    x: 0.27, y: 0.62, color: '#9ad9ff', stamp: 'II'   },
-  { slug: 'crystal_caverns',   level: '11-15',   minLevel: 11,   x: 0.41, y: 0.74, color: '#6aa7ff', stamp: 'III'  },
-  { slug: 'ashen_wastes',      level: '17-22',   minLevel: 17,   x: 0.55, y: 0.56, color: '#ff7c4d', stamp: 'IV'   },
-  { slug: 'shadowfell',        level: '25',      minLevel: 25,   x: 0.66, y: 0.74, color: '#c294ff', stamp: 'V'    },
-  { slug: 'emberreach',        level: '26-59',   minLevel: 26,   x: 0.78, y: 0.58, color: '#ff7c4d', stamp: 'VI'   },
-  { slug: 'frostspire',        level: '60-94',   minLevel: 60,   x: 0.86, y: 0.36, color: '#a8e6ff', stamp: 'VII'  },
-  { slug: 'drowned_coast',     level: '95-129',  minLevel: 95,   x: 0.20, y: 0.42, color: '#5dd4d0', stamp: 'VIII' },
-  { slug: 'stormpeaks',        level: '130-164', minLevel: 130,  x: 0.36, y: 0.30, color: '#b9d8ff', stamp: 'IX'   },
-  { slug: 'blighted_expanse',  level: '165-199', minLevel: 165,  x: 0.50, y: 0.34, color: '#86c46a', stamp: 'X'    },
-  { slug: 'obsidian_dominion', level: '200-234', minLevel: 200,  x: 0.62, y: 0.22, color: '#d6a13d', stamp: 'XI'   },
-  { slug: 'astral_rift',       level: '235-269', minLevel: 235,  x: 0.74, y: 0.18, color: '#c294ff', stamp: 'XII'  },
-  { slug: 'voidmaw',           level: '270-304', minLevel: 270,  x: 0.50, y: 0.86, color: '#8b6cff', stamp: 'XIII' },
-  { slug: 'dragon_roost',      level: '305-339', minLevel: 305,  x: 0.34, y: 0.90, color: '#ff5a4d', stamp: 'XIV'  },
-  { slug: 'eternal_throne',    level: '340-350', minLevel: 340,  x: 0.86, y: 0.86, color: '#ffd34d', stamp: 'XV'   },
+  { slug: 'whispering_woods', level: '1-5',     minLevel: 1,   x: 0.14, y: 0.80, color: '#6ad8a4', stamp: 'I',    name: 'Whispering Woods', lore: 'A green wood near Oaken Hollow — every hero’s first road.' },
+  { slug: 'mistmoor_hills',   level: '6-9',     minLevel: 6,   x: 0.24, y: 0.64, color: '#9ad9ff', stamp: 'II',   name: 'Mistmoor Hills',   lore: 'Fog-laced highlands where orcs ride the high passes.' },
+  { slug: 'crystal_caverns',  level: '10-14',   minLevel: 10,  x: 0.38, y: 0.76, color: '#6aa7ff', stamp: 'III',  name: 'Crystal Caverns',  lore: 'A labyrinth of glittering ore beneath the mountains.' },
+  { slug: 'ashen_wastes',     level: '15-23',   minLevel: 15,  x: 0.52, y: 0.60, color: '#ff7c4d', stamp: 'IV',   name: 'Ashen Wastes',     lore: 'Burned plains where revenants drift and drakes wheel above.' },
+  { slug: 'shadowfell',       level: '24-25',   minLevel: 24,  x: 0.63, y: 0.76, color: '#c294ff', stamp: 'V',    name: 'The Shadowfell',   lore: 'The Shadow Lord’s domain. Bring everything.' },
+  { slug: 'emberreach',       level: '26-49',   minLevel: 26,  x: 0.76, y: 0.62, color: '#ff7c4d', stamp: 'VI',   name: 'Emberreach',       lore: 'Smouldering canyons where dragonkind nest.' },
+  { slug: 'hammerhand_pass',  level: '50-74',   minLevel: 50,  x: 0.87, y: 0.47, color: '#d6a13d', stamp: 'VII',  name: 'Hammerhand Pass',  lore: 'A dwarf-cut mountain road guarding the ore caravans.' },
+  { slug: 'conclave_aedric',  level: '75-104',  minLevel: 75,  x: 0.71, y: 0.39, color: '#b9a6ff', stamp: 'VIII', name: 'Conclave of Aedric', lore: 'A cloistered city of mages and their unquiet apprentices.' },
+  { slug: 'saltmarsh',        level: '105-139', minLevel: 105, x: 0.17, y: 0.46, color: '#5dd4d0', stamp: 'IX',   name: 'Saltmarsh',        lore: 'Sunken cities along a haunted, brackish shoreline.' },
+  { slug: 'frostvale',        level: '140-174', minLevel: 140, x: 0.30, y: 0.33, color: '#a8e6ff', stamp: 'X',    name: 'Frostvale',        lore: 'Glacial valleys under a sky of perpetual aurora.' },
+  { slug: 'black_spire',      level: '175-200', minLevel: 175, x: 0.45, y: 0.42, color: '#e0863d', stamp: 'XI',   name: 'Black Spire',      lore: 'A volcanic fortress-tower ruled by a fallen king.' },
+  { slug: 'stormpeaks',       level: '201-230', minLevel: 201, x: 0.58, y: 0.30, color: '#b9d8ff', stamp: 'XII',  name: 'The Stormpeaks',   lore: 'Lightning-wracked summits ruled by storm giants.' },
+  { slug: 'voidshade_hollow', level: '231-260', minLevel: 231, x: 0.71, y: 0.22, color: '#8b6cff', stamp: 'XIII', name: 'Voidshade Hollow', lore: 'A bottomless chasm that devours its own gravity.' },
+  { slug: 'mooncradle',       level: '261-290', minLevel: 261, x: 0.40, y: 0.18, color: '#c294ff', stamp: 'XIV',  name: 'Mooncradle',       lore: 'A tear in reality where stars bleed into the sky.' },
+  { slug: 'worldspine',       level: '291-320', minLevel: 291, x: 0.24, y: 0.23, color: '#ff5a4d', stamp: 'XV',   name: 'The Worldspine',   lore: 'The wyrm-king’s mountain throne, spine of the known world.' },
+  { slug: 'eternal_throne',   level: '321-350', minLevel: 321, x: 0.86, y: 0.82, color: '#ffd34d', stamp: 'XVI',  name: 'The Eternal Throne', lore: 'Where the Last Sovereign waits at the end of all roads.' },
 ];
 
 export default function World(): React.ReactElement {
@@ -82,33 +93,41 @@ export default function World(): React.ReactElement {
         {/* Compass rose — Cantino windrose (c.1502). */}
         <img className="realm-compass" src="/assets/map/compass.jpg" alt="" aria-hidden />
 
-        {/* Region pins. */}
+        {/* Region pins. The whole medallion is a real anchor so every pin
+            is tappable on touch and reachable by keyboard; the card is a
+            hover/focus tooltip. A pin always deep-links to its own region. */}
         {REGIONS.map((r) => {
-          const locked = char ? char.level < r.minLevel - 1 : false;
+          // Match the hunting unlock gate exactly (gate === minLevel) so a
+          // pin never invites you into a region the hunt won't yet open.
+          const locked = char ? char.level < r.minLevel : false;
+          const name = t(`world.regions.${r.slug}.name`, { defaultValue: r.name });
+          const lore = t(`world.regions.${r.slug}.lore`, { defaultValue: r.lore });
           return (
-            <div
+            <Link
               key={r.slug}
+              to={`/app/hunting?region=${r.slug}`}
               className={`realm-pin ${locked ? 'locked' : ''}`}
               style={{
                 left: `${r.x * 100}%`,
                 top: `${r.y * 100}%`,
                 ['--pin-color' as any]: r.color,
               }}
+              aria-label={locked
+                ? `${name} (${t('common.lv')} ${r.level}) — ${t('world.requiresLv', { level: r.minLevel })}`
+                : `${name} (${t('common.lv')} ${r.level})`}
             >
               <div className="realm-pin-seal" aria-hidden>
                 <span className="realm-pin-stamp">{r.stamp}</span>
               </div>
-              <div className="realm-pin-card">
-                <strong className="realm-pin-name">{t(`world.regions.${r.slug}.name`)}</strong>
+              <div className="realm-pin-card" role="presentation">
+                <strong className="realm-pin-name">{name}</strong>
                 <div className="realm-pin-meta">{t('common.lv')} {r.level}</div>
-                <div className="realm-pin-lore">{t(`world.regions.${r.slug}.lore`)}</div>
-                {!locked ? (
-                  <Link to={`/app/hunting?region=${r.slug}`} className="btn btn-sm btn-primary realm-pin-cta">{t('world.enter')}</Link>
-                ) : (
-                  <div className="realm-pin-cta locked">{t('world.requiresLv', { level: r.minLevel })}</div>
-                )}
+                <div className="realm-pin-lore">{lore}</div>
+                <div className={`realm-pin-cta ${locked ? 'locked' : ''}`}>
+                  {locked ? t('world.requiresLv', { level: r.minLevel }) : `${t('world.enter')} ▸`}
+                </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

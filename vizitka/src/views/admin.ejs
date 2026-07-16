@@ -21,7 +21,7 @@
       <input type="url" name="link_url" maxlength="500" placeholder="https://…">
     </label>
     <label>Alt текст (за достъпност)
-      <input type="text" name="alt" maxlength="200" placeholder="Кратко описание на рекламата">
+      <input type="text" name="alt" maxlength="200" required placeholder="Кратко описание на рекламата">
     </label>
     <button type="submit" class="btn">Добави банер</button>
   </form>
@@ -78,7 +78,7 @@
                 <input type="url" name="link_url" maxlength="500" value="<%= b.link_url %>" placeholder="https://…">
               </label>
               <label>Alt текст
-                <input type="text" name="alt" maxlength="200" value="<%= b.alt %>">
+                <input type="text" name="alt" maxlength="200" required value="<%= b.alt %>">
               </label>
               <label class="check">
                 <input type="checkbox" name="is_active" value="1" <%= b.is_active ? 'checked' : '' %>>

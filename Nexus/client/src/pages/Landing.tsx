@@ -421,7 +421,7 @@ export default function Landing(): React.ReactElement {
             <h4>{t('landing.footerStudio')}</h4>
             <Link to="/terms">{t('footer.terms')}</Link>
             <Link to="/privacy">{t('footer.privacy')}</Link>
-            <a href="mailto:support@carbonstealth.eu">{t('footer.contactSupport')}</a>
+            <a href="mailto:info@carbonstealth.eu">{t('footer.contactSupport')}</a>
             {/* GDPR Art. 7(3) + ePrivacy Art. 7 — withdrawal must be as easy
                 as granting consent. Re-opens the cookie banner with the
                 current state so the user can flip categories or reject all. */}

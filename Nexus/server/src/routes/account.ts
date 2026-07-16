@@ -167,6 +167,10 @@ router.post('/delete-account', async (req, res) => {
          WHERE seller_id IN (SELECT id FROM characters WHERE user_id = ?)
            AND status = 'active'`,
     ).run(uid);
+    // event_log lives outside the FK cascade and holds user_id + ip +
+    // (hashed) identifiers in meta — clear it here so the right-to-erasure
+    // (GDPR Art. 17) actually removes the user's audit trail too.
+    db.prepare('DELETE FROM event_log WHERE user_id = ?').run(uid);
     db.prepare('DELETE FROM users WHERE id = ?').run(uid); // cascades through characters/* (schema.ts:54)
   });
   tx(userId);

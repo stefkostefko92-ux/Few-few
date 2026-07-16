@@ -62,13 +62,20 @@ export const MEMBER_SLOTS_BY_LEVEL: Record<number, number> = {
 };
 
 export function computeBuffs(lv: GuildLevels): GuildBuffs {
+  // Balance: these multipliers stack MULTIPLICATIVELY on every member and,
+  // pre-tuning, a maxed guild handed out gold ×3.0 · xp ×3.0 · attr ×1.5 ·
+  // power ×1.5 · defence ×2.0. Layered on the reward faucets that fix
+  // followed, this printed ~1M gold/xp per hour and was a gem-funded
+  // pay-to-win ramp. The gold/xp lines are pulled to a max of +75% and
+  // defence to +50%; a hard cap guards against a track climbing past tier.
+  const cap = (n: number) => Math.min(100, Math.max(0, n));
   return {
     member_slots:        MEMBER_SLOTS_BY_LEVEL[Math.min(5, Math.max(1, lv.member_slots_level))],
-    attr_multiplier:     1 + lv.attr * 0.005,
-    power_multiplier:    1 + lv.power * 0.005,
-    defence_multiplier:  1 + lv.defence * 0.010,
-    exp_multiplier:      1 + lv.exp_bonus * 0.02,
-    gold_multiplier:     1 + lv.gold_bonus * 0.02,
+    attr_multiplier:     1 + cap(lv.attr) * 0.005,        // max ×1.5
+    power_multiplier:    1 + cap(lv.power) * 0.005,       // max ×1.5
+    defence_multiplier:  1 + cap(lv.defence) * 0.005,     // max ×1.5 (was ×2.0)
+    exp_multiplier:      1 + cap(lv.exp_bonus) * 0.0075,  // max ×1.75 (was ×3.0)
+    gold_multiplier:     1 + cap(lv.gold_bonus) * 0.0075, // max ×1.75 (was ×3.0)
     protected_gold:      lv.gold_protected * 500,
   };
 }

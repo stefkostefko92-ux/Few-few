@@ -32,6 +32,7 @@ export default function Privacy(): React.ReactElement {
           <li><strong>Gameplay</strong>: character name, class, level, combat history, inventory, guild membership.</li>
           <li><strong>Technical</strong>: IP address (truncated for analytics if you opt in), country code, browser type, request logs (retained 30 days).</li>
           <li><strong>Payment</strong>: Stripe customer id, purchase metadata, billing country, VAT amount. Card details never touch our servers.</li>
+          <li><strong>Safety &amp; moderation</strong>: a random device identifier (stored in your browser and sent with requests), content reports you submit, and moderation actions taken. Where an account is suspended for fraud (for example a payment chargeback), the associated IP address and device identifier are retained to enforce the suspension and prevent evasion.</li>
         </ul>
 
         <h2>3. Why we collect it (legal basis)</h2>
@@ -82,7 +83,7 @@ export default function Privacy(): React.ReactElement {
 
         <h2>7. Cookies and tracking</h2>
         <p>
-          We use one essential session token (HTTP-only cookie) for authentication. Analytics is opt-in and disabled by default; the cookie banner exposes per-category controls (Necessary / Preferences / Analytics / Marketing). You can withdraw consent any time via the "Cookie settings" link in the footer.
+          We use one essential session token (a JWT held in your browser's localStorage, not a third-party cookie) for authentication, and one random device identifier (also in localStorage) used for account-security and abuse prevention. Neither is a third-party tracking cookie. Analytics is opt-in and disabled by default; the cookie banner exposes per-category controls (Necessary / Preferences / Analytics / Marketing). You can withdraw consent any time via the "Cookie settings" link in the footer.
         </p>
 
         <h2>8. Children</h2>

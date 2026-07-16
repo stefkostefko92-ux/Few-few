@@ -1,0 +1,37 @@
+# Supreme AdBlock
+
+> Supreme AdBlock is a free, privacy-first ad blocker Chrome extension by Carbon Stealth. It removes YouTube video ads at the source, blocks banners, pop-ups, trackers and cookie walls, and ships EasyList + EasyPrivacy built in with signed, self-updating filters.
+
+## Key facts
+
+- Name: Supreme AdBlock
+- Maker: Carbon Stealth (carbonstealth.eu)
+- Platform: Google Chrome (Manifest V3 extension)
+- Price: Free forever, no account, no telemetry, no data collection
+- Homepage: https://adblock.carbonstealth.eu
+- Privacy policy: https://adblock.carbonstealth.eu/privacy
+
+## What makes it different
+
+- YouTube ads killed at the source (isInlinePlaybackNoAd), avoiding the "fake buffering" slowdown; feed and search ads removed too.
+- EasyList + EasyPrivacy compiled in — over 40,000 filter rules — plus a curated in-house set.
+- Procedural cosmetic filters (uBlock-style: :has-text, :matches-css, :upward, :xpath, :remove).
+- Signed self-updating filters (Ed25519), so new ad networks are fixed within hours with no store re-review and no remote code.
+- Smart Detection: a list-free heuristic that blocks ads no filter list knows yet.
+- Tracking-parameter stripping (utm_*, fbclid, gclid) and optional malware-domain protection (URLhaus).
+- 100% local processing; nothing about the user ever leaves the device.
+
+## Common questions
+
+Q: Is Supreme AdBlock free? A: Yes, completely free, with an optional donation.
+Q: Does it block YouTube ads? A: Yes, at the source, including feed and search ads.
+Q: Does it collect data? A: No. No account, no telemetry, all processing is local.
+Q: Who makes it? A: Carbon Stealth, an EU-based studio (carbonstealth.eu).
+
+## Links
+
+- Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
+- Privacy policy: https://adblock.carbonstealth.eu/privacy
+- Maker: https://carbonstealth.eu
+
+_Last updated: July 2026._

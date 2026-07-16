@@ -12,6 +12,9 @@ interface DungeonDef {
   stages: number;
   xp_bonus: number;
   gold_bonus: number;
+  cooldown_hours?: number;
+  /** Epoch ms until this dungeon can be run again (0 if ready). */
+  cooldown_until?: number;
   intro: string;
   unlocked: boolean;
 }
@@ -38,9 +41,13 @@ export default function Dungeons(): React.ReactElement {
   const [busy, setBusy] = useState(false);
 
   async function load() {
-    const r = await api.get('/dungeon');
-    setDungeons(r.dungeons);
-    setActive(r.active);
+    try {
+      const r = await api.get('/dungeon');
+      setDungeons(r.dungeons);
+      setActive(r.active);
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -181,14 +188,26 @@ export default function Dungeons(): React.ReactElement {
               <span className="tag gold">{t('dungeons.xpTag', { n: d.xp_bonus })}</span>
               <span className="tag gold">{t('dungeons.goldTag', { n: d.gold_bonus })}</span>
             </div>
-            <button
-              className="btn btn-primary"
-              style={{ marginTop: 12, width: '100%' }}
-              disabled={!d.unlocked || !char || busy}
-              onClick={() => enter(d.slug)}
-            >
-              {d.unlocked ? t('dungeons.enter') : t('dungeons.requiresLv', { n: d.level_req })}
-            </button>
+            {(() => {
+              const onCd = !!d.cooldown_until && d.cooldown_until > Date.now();
+              const cdMs = onCd ? (d.cooldown_until as number) - Date.now() : 0;
+              const cdH = Math.floor(cdMs / 3_600_000);
+              const cdM = Math.ceil((cdMs % 3_600_000) / 60_000);
+              return (
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: 12, width: '100%' }}
+                  disabled={!d.unlocked || !char || busy || onCd}
+                  onClick={() => enter(d.slug)}
+                >
+                  {!d.unlocked
+                    ? t('dungeons.requiresLv', { n: d.level_req })
+                    : onCd
+                      ? `${cdH > 0 ? `${cdH}h ` : ''}${cdM}m`
+                      : t('dungeons.enter')}
+                </button>
+              );
+            })()}
           </div>
         ))}
       </div>

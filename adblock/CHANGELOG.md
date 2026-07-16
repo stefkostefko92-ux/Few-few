@@ -1,5 +1,58 @@
 # Changelog
 
+## 4.0.4
+
+Затваряне на остатъчните security дупки (повторен одит — Кодаджията + Хромаджията):
+- **ReDoS guard затворен докрай.** Подредени квантори (`[a-z]*[a-z]*x`), които
+  заобикаляха предишния guard и замразяваха таб (доказано ~39 сек), вече се
+  отхвърлят — максимум 1 квантор в regex тяло.
+- **Санитизацията вече покрива и атрибутни форм-селектори:** `[type=password]`,
+  `[name=login]`, `[autocomplete=current-password]` и универсални/водещ-псевдо
+  селектори (`html *`, `body > *`, `:not(#x)`) не могат да крият/махат форм-полета
+  или цялата страница от remote config.
+- **Anti-rollback:** стар (валидно подписан) `filters.json` вече се отхвърля —
+  `version` трябва да е монотонен (спира replay при компрометиран сървър).
+- **Import с валидация на shape + санитизация на селекторите** — импортиран
+  файл не може да инжектира `:remove()`/ReDoS в customHidden или да счупи
+  разширението с грешен тип.
+- YouTube loader: `onerror` fallback при провалена WAR инжекция (диагностика).
+
+## 4.0.3
+
+Security hardening (одит с Кодаджията + Хромаджията — 0 critical/high намерени):
+- **Подписаните ъпдейти вече не могат да се downgrade-нат.** При браузър с
+  Ed25519 (Chrome 137+) валиден `.sig` е ЗАДЪЛЖИТЕЛЕН — липсващ/невалиден подпис
+  отхвърля ъпдейта. По-стари браузъри приемат best-effort, за да не спрат live
+  ъпдейтите. (Спира зловреден filters.json при компрометиран сървър.)
+- **Строга санитизация на remote селектори:** форм-контроли (input/button/form…)
+  и структурни тагове не могат да се крият от filters.json (UI DoS защита).
+- **ReDoS guard:** процедурните `:has-text(/regex/)` от config се капват по
+  дължина/сложност и тестват ограничен текст.
+- **Import вече не заобикаля санитизацията:** `liveConfig`/`liveUpdated` не се
+  приемат от импортиран файл.
+- **Message handler-ите приемат само собствени съобщения** (`sender.id` проверка).
+- **web_accessible_resources: `use_dynamic_url`** — по-малко fingerprinting.
+
+## 4.0.2
+
+Over-blocking / false-positive поправки след одит (Хромаджията + Кодаджията):
+- **Навигация вече не се блокира по грешка.** ABP `$~type` филтрите се
+  конвертираха към DNR excludedResourceTypes, който в Chromium ЗАПАЗВА
+  main_frame → 106 правила блокираха навигация (yandex /clck/, sourceforge
+  /tracker/, страници с /ads/ в URL се чупеха). Сега main_frame е изрично
+  изключен от block правилата — 0 правила достигат навигацията.
+- **Marketplace/обяви сайтове вече не се над-скриват.** Махнати широките
+  substring селектори ([class^='ad-'], [id^='ad-'], [id*='-ad-'], [class$='-ad']
+  и др.), които скриваха легитимни обяви (ad-title/ad-price/id=ad-12345) на
+  bazos/ss.lv/olx-подобни. Точните ad-контейнер селектори остават.
+- **EasyList $generichide се спазва.** На 183 хоста (accounts.google.com,
+  Facebook Ads Manager и др.), които EasyList изрично изключва, вече НЕ
+  прилагаме генеричната козметика (спираше легитимен UI/бутони).
+- **Sticky ленти вече не се крият по грешка.** Махнати токените banner/promo
+  от sticky ad-сигнала (скриваха promo-bar/top-banner/hero-banner ленти).
+- Guard срещу колабсиране на lazy-load контейнери; domain-scope safety при
+  паднали ~edu/~gov изключения (не разширяваме block обхвата).
+
 ## 4.0.1
 
 - Filter updates are now cryptographically verified: the Ed25519 public key is

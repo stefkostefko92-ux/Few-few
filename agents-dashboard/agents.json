@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-11",
+    "updated": "2026-07-15",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -413,31 +413,9 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: При native Discord монетизация Discord Inc. е merchant of record за покупката (обработв…"
-        },
-        {
-          "version": "10.6.0",
-          "date": "2026-07-11",
-          "event": "v10.6 — учене",
-          "detail": "Научи: Chrome Web Store 'collection' = предаване на данни ИЗВЪН устройството. Локално-само обр…"
-        },
-        {
-          "version": "10.7.0",
-          "date": "2026-07-11",
-          "event": "v10.7 — учене",
-          "detail": "Научи: Абсолютни маркетингови твърдения ('никакви данни', 'пароли никога', '100% локално') на … (+1 още)"
         }
       ],
       "activity": [
-        {
-          "date": "2026-07-11",
-          "type": "learning",
-          "summary": "Научи: „Абсолютни маркетингови твърдения ('никакви данни', 'пароли никога', '100% локално') на …\" (+1 още)"
-        },
-        {
-          "date": "2026-07-11",
-          "type": "learning",
-          "summary": "Научи: „Chrome Web Store 'collection' = предаване на данни ИЗВЪН устройството. Локално-само обр…\" · 2 в карантина"
-        },
         {
           "date": "2026-07-10",
           "type": "learning",
@@ -1208,27 +1186,60 @@
         },
         {
           "version": "11.6.0",
-          "date": "2026-07-11",
+          "date": "2026-07-12",
           "event": "v11.6 — учене",
-          "detail": "Научи: Déjà (Chrome MV3) search в background.js групира страници само от `scored.slice(0, TOP_… (+1 още)"
+          "detail": "Научи: Supreme AdBlock cosmetic_generic.css (EasyList generic) НЕ съдържа broad bare селектори… (+3 още)"
         },
         {
           "version": "11.7.0",
-          "date": "2026-07-11",
+          "date": "2026-07-12",
           "event": "v11.7 — учене",
-          "detail": "Научи: Déjà background.js устойчива опашка: mutatePending прави пресен прочит, НО drainPending… (+1 още)"
+          "detail": "Научи: Chrome DNR RuleCondition: block правило БЕЗ resourceTypes И БЕЗ excludedResourceTypes м… (+1 още)"
+        },
+        {
+          "version": "11.8.0",
+          "date": "2026-07-12",
+          "event": "v11.8 — учене",
+          "detail": "Научи: Supreme AdBlock v4.0.2 (commit 988b2b22) main_frame фикс потвърден коректен: conditionF… (+2 още)"
+        },
+        {
+          "version": "11.9.0",
+          "date": "2026-07-15",
+          "event": "v11.9 — учене",
+          "detail": "Научи: adblock (MV3) filters.json канал: sanitizeConfig в background.js е единствената бариера… (+2 още)"
+        },
+        {
+          "version": "12.0.0",
+          "date": "2026-07-15",
+          "event": "v12.0 — учене",
+          "detail": "Научи: ReDoS guard-ове тип blacklist regex (adblock/content.js:144 `/(\\\\)[*+]|\\\\)\\\\{\\\\d)/`) хв… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-07-11",
+          "date": "2026-07-15",
           "type": "learning",
-          "summary": "Научи: „Déjà background.js устойчива опашка: mutatePending прави пресен прочит, НО drainPending…\" (+1 още)"
+          "summary": "Научи: „ReDoS guard-ове тип blacklist regex (adblock/content.js:144 `/(\\\\)[*+]|\\\\)\\\\{\\\\d)/`) хв…\" (+2 още)"
         },
         {
-          "date": "2026-07-11",
+          "date": "2026-07-15",
           "type": "learning",
-          "summary": "Научи: „Déjà (Chrome MV3) search в background.js групира страници само от `scored.slice(0, TOP_…\" (+1 още)"
+          "summary": "Научи: „adblock (MV3) filters.json канал: sanitizeConfig в background.js е единствената бариера…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-12",
+          "type": "learning",
+          "summary": "Научи: „Supreme AdBlock v4.0.2 (commit 988b2b22) main_frame фикс потвърден коректен: conditionF…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-12",
+          "type": "learning",
+          "summary": "Научи: „Chrome DNR RuleCondition: block правило БЕЗ resourceTypes И БЕЗ excludedResourceTypes м…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-12",
+          "type": "learning",
+          "summary": "Научи: „Supreme AdBlock cosmetic_generic.css (EasyList generic) НЕ съдържа broad bare селектори…\" (+3 още)"
         },
         {
           "date": "2026-07-10",
@@ -1594,6 +1605,72 @@
           "date": "2026-07-06",
           "type": "learning",
           "summary": "Научи: „panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta…\" (+1 още)"
+        }
+      ]
+    },
+    {
+      "id": "kachestveniyat",
+      "name": "Качествения",
+      "title": "Маниак по качеството на кода",
+      "emoji": "💎",
+      "accent": "#7c6cf0",
+      "tagline": "Прави кода лесен за четене и промяна — поведение-запазващи рефактори, нула шум.",
+      "file": ".claude/agents/kachestveniyat.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash"
+      ],
+      "mission": "Вдига качеството на кода (поддръжаемост, четимост, простота) без да сменя поведението: дублиране/DRY-граници, цикломатична и когнитивна сложност, единствена отговорност и размер, connascence/coupling, мъртъв код, форма на грешките, качество на тестовете (поведение, не coverage театър) и техническия дълг.",
+      "capabilities": [
+        "Diff-фокусиран преглед за качество спрямо CLAUDE.md (match surrounding style)",
+        "Каталог на рефакторите на Fowler — минимални, поведение-запазващи стъпки",
+        "Каталог на code smells → конкретен рефактор (не смътно „пренапиши“)",
+        "Метрики: цикломатична (McCabe ~10) и когнитивна сложност (SonarSource)",
+        "Connascence/SOLID/DRY-граници (rule-of-three, wrong-abstraction)",
+        "Качество на тестовете: поведение не имплементация; мутационен тест за строгост",
+        "Hotspot приоритизиране (churn × сложност) — най-голяма възвръщаемост",
+        "Инструментиран: продуктовите гейтове остават зелени + tools/code/scan.sh",
+        "Граница с Кодаджията: качество без поведение, предаване през гейт"
+      ],
+      "knowledge": {
+        "sources": 14,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Martin Fowler, „Refactoring“ 2-ро изд. — каталог на рефакторите + code smells",
+          "Kent Beck, „Tidy First?“ + четирите правила за прост дизайн",
+          "McCabe (цикломатична) + SonarSource Cognitive Complexity (когнитивна)",
+          "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
+          "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-14",
+          "event": "Раждане",
+          "detail": "Създаден по искане на собственика: маниак по качеството на кода, различен от Кодаджията (той лови бъгове/уязвимости) — Качествения вдига поддръжаемостта без да сменя поведението."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-14",
+          "event": "Засят на ниво mastery",
+          "detail": "Натъпкан с установения канон за качество (Fowler, Beck, Martin, McCabe, SonarSource, Page-Jones, Google eng-practices) — 14 проверени поуки, операционен договор v1→v10, инструментиран изпълнител (продуктови гейтове + tools/code/scan.sh mutation), граница/предаване с Кодаджията."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/kachestveniyat.md."
+        },
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Засят с 14 проверени поуки от канона за качество на кода (Fowler/Beck/McCabe/SonarSource/Page-Jones/Metz) — DRY-граници, сложност, connascence, качество на тестове (+13 още)."
         }
       ]
     },
@@ -2633,20 +2710,9 @@
           "date": "2026-07-09",
           "event": "v10.4 — учене",
           "detail": "Научи: Supreme Bot prerender landingSnapshot() (scripts/prerender.mjs:110-113 tier()) рендира … (+2 още)"
-        },
-        {
-          "version": "10.5.0",
-          "date": "2026-07-11",
-          "event": "v10.5 — учене",
-          "detail": "Научи: Déjà landing (server/index.html) при одит: нула OG/Twitter/canonical/JSON-LD, H1 е мета…"
         }
       ],
       "activity": [
-        {
-          "date": "2026-07-11",
-          "type": "learning",
-          "summary": "Научи: „Déjà landing (server/index.html) при одит: нула OG/Twitter/canonical/JSON-LD, H1 е мета…\" · 2 в карантина"
-        },
         {
           "date": "2026-07-09",
           "type": "learning",
@@ -3333,25 +3399,9 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…"
-        },
-        {
-          "version": "10.6.0",
-          "date": "2026-07-11",
-          "event": "v10.6 — учене",
-          "detail": "Научи: Брандовият глас на deja е топъл неформален — IT ползва tu (tuo/hai letto/Comandi tu), Н…"
         }
       ],
       "activity": [
-        {
-          "date": "2026-07-11",
-          "type": "learning",
-          "summary": "Научи: „Брандовият глас на deja е топъл неформален — IT ползва tu (tuo/hai letto/Comandi tu), Н…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-07-11",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „deja (Chrome MV3) i18n живее в _locales/{bg,en,it}/messages.json (34 ключа, пълен парит…\" (+1)"
-        },
         {
           "date": "2026-07-10",
           "type": "learning",
@@ -8516,11 +8566,6 @@
       ],
       "activity": [
         {
-          "date": "2026-07-11",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Déjà (Chrome MV3 семантична памет) е локален лек инструмент за всекидневна употреба — п…\" (+1)"
-        },
-        {
           "date": "2026-07-09",
           "type": "learning",
           "summary": "Научи: „iOS Safari има само PARTIAL support за background-attachment:fixed през ВСИЧКИ версии 1…\" (+3 още)"
@@ -9148,21 +9193,32 @@
         },
         {
           "version": "10.5.0",
-          "date": "2026-07-11",
+          "date": "2026-07-12",
           "event": "v10.5 — учене",
-          "detail": "Научи: Offscreen документ с reason различен от AUDIO_PLAYBACK няма lifetime лимит — стои отвор… (+2 още)"
+          "detail": "Научи: DNR: block правило с САМО excludedResourceTypes (без resourceTypes) ЗАПАЗВА main_frame … (+1 още)"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-15",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Ed25519 в WebCrypto (crypto.subtle importKey/verify {name:'Ed25519'}) е enabled-by-defa… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-07-11",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „MV3 offscreen GC по таймер (idle threshold от lastEmbedAt, писан само в НАЧАЛОТО на опе…\" (+1)"
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Научи: „Ed25519 в WebCrypto (crypto.subtle importKey/verify {name:'Ed25519'}) е enabled-by-defa…\" (+2 още) · 1 в карантина"
         },
         {
-          "date": "2026-07-11",
+          "date": "2026-07-15",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Ed25519 в Chrome WebCrypto (crypto.subtle importKey/verify {name:'Ed25519'}) е enabled-…\" (+2)"
+        },
+        {
+          "date": "2026-07-12",
           "type": "learning",
-          "summary": "Научи: „Offscreen документ с reason различен от AUDIO_PLAYBACK няма lifetime лимит — стои отвор…\" (+2 още)"
+          "summary": "Научи: „DNR: block правило с САМО excludedResourceTypes (без resourceTypes) ЗАПАЗВА main_frame …\" (+1 още) · 1 в карантина"
         },
         {
           "date": "2026-07-10",
@@ -10148,6 +10204,203 @@
           "date": "2026-07-01",
           "type": "learning",
           "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“."
+        }
+      ]
+    },
+    {
+      "id": "ai-djiyata",
+      "name": "AI-джията",
+      "title": "Президент на агентите · LLM/AI интеграция",
+      "emoji": "🤖",
+      "accent": "#7c5cff",
+      "tagline": "Води и следи целия екип агенти (oversee); свързва продуктите с Gemini/OpenAI/Claude.",
+      "file": ".claude/agents/ai-djiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Интегрира LLM/AI доставчици (Google Gemini, OpenAI, Anthropic Claude) в продуктите надеждно, евтино, сигурно и законно: избор и жизнен цикъл на модел (депрекации, „-latest“ алиаси), generation config (thinking/reasoning бюджети, maxOutputTokens), автентикация (формат на ключ, хедъри), rate limits и квоти (безплатен vs платен tier, ЕИП), streaming, структуриран изход/function calling, prompt инженерство, устойчивост и цена. Ключът само на сървъра; входът на потребителя се разкрива (GDPR).",
+      "capabilities": [
+        "Жизнен цикъл на модел (депрекации, фиксирана версия vs „-latest“ алиас, 404 непознат модел)",
+        "Generation config: thinking/reasoning бюджети (thinkingBudget:0), maxOutputTokens, temperature",
+        "Автентикация: формат на ключ (AIza… vs OAuth), x-goog-api-key / Authorization Bearer",
+        "Rate limits & квоти: безплатен vs платен tier, 429 RESOURCE_EXHAUSTED, backoff, регионални/ЕИП ограничения",
+        "Устойчив сървърен proxy route: таймаут, обработка по код (401/404/429/5xx), Zod валидация, изящна деградация",
+        "Формати: streaming (SSE), структуриран изход/JSON, function/tool calling, мултимодал, embeddings",
+        "Prompt инженерство: роли, few-shot, локализация (BG изход), защита от prompt injection",
+        "Сигурност & GDPR: ключ само на сървъра (mode 600), разкриване на трансфера, „не въвеждай лични данни“",
+        "Цена: токен-осъзнатост, избор на по-евтин модел (flash/mini/haiku) за прости задачи",
+        "Президент/водещ агент: следи здравето на целия екип през tools/agents/oversee.mjs (цялост дефиниция↔памет↔agents.json↔settings, източници, дубли, синхрон на таблото)",
+        "Инженерство на агенти (канон на Anthropic): workflow vs agent, патърни (routing/parallelization/orchestrator-workers/evaluator-optimizer), автономен цикъл, ACI/дизайн на инструменти",
+        "Multi-agent оркестрация: lead+subagents, кога помага (breadth-first), ~15x токени, режими на провал, делегиране с явна цел/формат/граници",
+        "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval"
+      ],
+      "knowledge": {
+        "sources": 130,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
+          "OpenAI / Anthropic API конвенции (Bearer auth, streaming, tool calling)",
+          "Роден от реалната Gemini интеграция на mastilko (src/app/api/ai/route.ts) + живо отстраняване на грешки",
+          "BerriAI/litellm — multi-provider gateway, router fallback, cost DB, cosign supply-chain",
+          "anthropics/anthropic-cookbook — sub-agent orchestration, RAG, evals, moderation, prompt caching",
+          "jihoo-kim/awesome-production-llm — production tooling таксономия (vLLM/Langfuse/NeMo-Guardrails)",
+          "vercel/ai, 567-labs/instructor, guardrails-ai/guardrails — TS/структуриран изход/guardrails",
+          "protectai/rebuff, promptfoo/promptfoo — prompt-injection defense + eval/red-team",
+          "google-gemini/cookbook, openai/openai-cookbook, run-llama/llama_index, explodinggradients/ragas",
+          "Anthropic Engineering — Building effective agents (workflow патърни, ACI)",
+          "Anthropic Engineering — How we built our multi-agent research system (lead+subagents, ~15x токени)",
+          "Anthropic Engineering — Effective context engineering + Writing tools for agents",
+          "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-14",
+          "event": "Раждане",
+          "detail": "Създаден заради липсващо покритие на LLM/AI интеграцията (mastilko ползва Gemini Flash, без агент-собственик). Домейн: избор на модел, generation config, авт., квоти, сигурност/GDPR."
+        },
+        {
+          "version": "0.7.0",
+          "date": "2026-07-14",
+          "event": "Обучен",
+          "detail": "Засят с 6 проверени поуки от Gemini интеграцията на mastilko: депрекация на фиксиран модел (404→-latest алиас), thinking бюджет реже отговора, free-tier/ЕИП квота, формат на ключ, runtime env, устойчив proxy route."
+        },
+        {
+          "version": "2.4.0",
+          "date": "2026-07-15",
+          "event": "Засят до силна основа",
+          "detail": "Обучен до ниво близко на другите: +18 проверени поуки от каноните/доковете (Anthropic Messages/caching/tool-use/thinking, OpenAI structured-outputs/reasoning/rate-limits/streaming, RAG/OWASP LLM01-02, cost/batch, embeddings, AI Act чл.50). Домейнът е покрит; ще задълбочава през цикъла."
+        },
+        {
+          "version": "3.6.0",
+          "date": "2026-07-15",
+          "event": "Обучен от GitHub репа",
+          "detail": "+12 проверени поуки от авторитетни репозитории (LiteLLM router/fallback/cost/observability/cosign, Anthropic cookbook sub-agents/RAG/evals/moderation, awesome-production-llm таксономия, vLLM, NeMo-Guardrails, MCP). Съдържанието третирано като недоверено (доктрина); източникът е репото."
+        },
+        {
+          "version": "10.1.0",
+          "date": "2026-07-15",
+          "event": "Мастъри v10 + курация (дедуп)",
+          "detail": "Обучен до ниво mastery (v10) от GitHub канон, после курация: 101 проверени поуки (слети 3 семантични дубъла — caching/structured-output/embeddings; поправен фалшив източник), всяка с реален източник (официални SDK/cookbook-и + docs: Anthropic, OpenAI, Gemini, Vercel AI SDK, Instructor, Guardrails, Rebuff, promptfoo, LlamaIndex/RAGAS). Домейнът LLM/AI интеграция е покрит из основи."
+        },
+        {
+          "version": "13.0.0",
+          "date": "2026-07-15",
+          "event": "Издигнат в президент + обучен на канона за агенти",
+          "detail": "Назначен за водещ/координатор на екипа: следи другите агенти през нов инструмент tools/agents/oversee.mjs (цялост, източници, дубли, синхрон). Обучен на канона на Anthropic за изграждане на агенти (+29 проверени поуки от официалните engineering постове и Agent SDK докове: workflow патърни, multi-agent оркестрация, context engineering, дизайн на инструменти, agent loop). Общо 130 проверени поуки → v13.0."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-14",
+          "type": "birth",
+          "summary": "Роден: покрива LLM/AI интеграцията (Gemini/OpenAI/Claude) — модели, config, авт., квоти, сигурност."
+        },
+        {
+          "date": "2026-07-14",
+          "type": "learning",
+          "summary": "Научи: gemini-2.5-flash спира за нови проекти (404) → ползвай gemini-flash-latest алиас; thinkingBudget:0 за пълен отговор. (+4 още)"
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Обучен: +18 проверени поуки (Anthropic/OpenAI/Gemini интеграция, structured output, streaming, cost, RAG сигурност) (+17 още)"
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Обучен от GitHub репа: +12 проверени поуки (LiteLLM, Anthropic cookbook, awesome-production-llm, vLLM, NeMo-Guardrails) (+11 още)"
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Курация след mastery: слети 3 семантични дубъла, поправен източник → 101 проверени поуки (v10.1)"
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Издигнат в президент на агентите + обучен на канона на Anthropic за агенти (+29 поуки → 130 общо, v13.0); нов надзорен инструмент tools/agents/oversee.mjs"
+        }
+      ]
+    },
+    {
+      "id": "kasadjiyata",
+      "name": "Касаджията",
+      "title": "Каса + българска фискализация (Н-18/СУПТО/евро)",
+      "emoji": "🧾",
+      "accent": "#0d9488",
+      "tagline": "Каса за хранителен магазин по правилата: int пари, фискален-бон-първо, нищо не се трие.",
+      "file": ".claude/agents/kasadjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Пише и ревюира касов (POS) и фискален код за продукта CSPos (Electron .exe десктоп каса, Next.js 15 + SQLite offline-first) с пълна българска нормативна изрядност: Наредба Н-18 (реквизити чл. 26, данъчни групи А/Б/В/Г чл. 27, сторно чл. 31, Z/X отчети), СУПТО (Прил. № 29 — УНП, забрана за изтриване, одиторски дневник, НАП експорт), еврото (ЗВЕРБ — курс 1.95583, двойно обозначаване, двувалутен бон, Регламент 1103/97), ЗДДС/ЗЗП/GDPR/ЗСч. Инженерно: int пари (евроценти) без float, драйвери за ФУ и ПОС терминали зад общ интерфейс, сървърна остойностка, склад в транзакция, Electron опаковане.",
+      "capabilities": [
+        "Наредба Н-18: реквизити на бон (чл. 26), данъчни групи А/Б/В/Г (чл. 27, В↔Г капан), сторно (чл. 31 — 3 причини + срок), Z/X отчети",
+        "СУПТО (Прил. № 29): УНП формат ФУ-оператор-пореден, забрана за изтриване, append-only одиторски дневник, НАП експорт, статут (доброволен) — следи риска от задължителен НАП-софтуер",
+        "Евро (ЗВЕРБ): фиксиран курс 1.95583, превалутиране по Регламент 1103/97 (делене, трети знак), двойно обозначаване 08.08.2025–08.08.2026, двувалутен фискален бон + курс",
+        "Int пари (евроценти) и количества (хилядни) — нула float в парична аритметика; BGN само информативен",
+        "Фискален-бон-първо: продажба без успешен бон не се записва; карта → бон → транзакция+склад в една транзакция; refund при отказ на ФУ",
+        "Драйвери за ФУ (erpnet/tremol/datecs) и ПОС терминали (myPOS/SumUp/Borica) зад общ интерфейс",
+        "Сървърна остойностка + промоции (bestPromotion), тегловни/ценови баркодове (маски 28/29, EAN контрола), FEFO срок на годност",
+        "Роли CASHIER<MANAGER<ADMIN, склад само през StockMovement, каса/смени (Z-отчет + сверка), материална отговорност на касиера (МОЛ)",
+        "Electron десктоп (.exe): офлайн-first, локална периферия (ФУ/терминал/везна/чекмедже), тайни на машината не в архива",
+        "Граница: дълбок правен одит → Правния Разбирач; онлайн Stripe → Продавача; всеки правен изход завършва с „не е правен съвет“"
+      ],
+      "knowledge": {
+        "sources": 18,
+        "researchToolUses": 0,
+        "priorArt": [
+          "CSPos/docs/COMPLIANCE.md — правно проучване (Правния Разбирач + евро-проучване): Н-18, СУПТО, евро, ЗДДС, ЗЗП, GDPR, ЗСч, КТ",
+          "CSPos/CLAUDE.md — твърди правила на домейна + архитектура (пари/групи/сторно/УНП/драйвери)",
+          "Наредба Н-18 (чл. 26/27/31/52а + Прил. 18а/29), ЗВЕРБ (чл. 13/16/20), Регламент (ЕО) 1103/97 (чл. 4–5)",
+          "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
+          "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-15",
+          "event": "Раждане",
+          "detail": "Създаден по искане на собственика за продукта CSPos (Касата): специалист по касови системи за хранителни магазини + българска фискализация (Н-18/СУПТО/евро). Различен от Продавача (онлайн Stripe) и Правния Разбирач (дълбок правен одит)."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-15",
+          "event": "Засят на ниво mastery",
+          "detail": "Засят с установената нормативна и инженерна база от CSPos/docs/COMPLIANCE.md + CSPos/CLAUDE.md + консолидираните закони — 18 проверени поуки (всяка с реален източник: член от наредба/закон или файл:ред), операционен договор с безгрешност, самообучаващ се цикъл (hooks), граница/предаване с Правния Разбирач и Продавача."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-15",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/kasadjiyata.md; продукт CSPos."
+        },
+        {
+          "date": "2026-07-15",
+          "type": "learning",
+          "summary": "Засят с 18 проверени поуки за българска фискализация (Н-18/СУПТО/евро/ЗДДС/GDPR/ЗСч) + POS инженерство (int пари, драйвери за ФУ, сървърна остойностка) от CSPos/docs/COMPLIANCE.md + кода (+17 още)."
         }
       ]
     }

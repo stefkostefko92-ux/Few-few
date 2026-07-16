@@ -138,8 +138,12 @@ router.post('/claim', (req, res) => {
     res.status(400).json({ error: `Still ${Math.ceil((task.ends_at - Date.now()) / 60000)} minutes remaining.` });
     return;
   }
+  // Gate the claim on an atomic delete so the reward is granted at most
+  // once — two concurrent /claim calls can't both pass and double-pay.
+  const claimed = db.prepare('DELETE FROM character_task WHERE character_id = ? AND ends_at <= ?').run(char.id, Date.now());
+  if (claimed.changes !== 1) { res.status(400).json({ error: 'No task ready to claim.' }); return; }
   const def = CAMP_TASKS.find((t) => t.slug === task.slug);
-  if (!def) { db.prepare('DELETE FROM character_task WHERE character_id = ?').run(char.id); res.json({ ok: true }); return; }
+  if (!def) { res.json({ ok: true }); return; }
   const hours = task.duration_hr as number;
   // Skill scaling: charisma adds a small payout bump (max +20% at CHA 20)
   const chaBonus = Math.min(0.2, (char.charisma || 5) * 0.01);
@@ -172,9 +176,8 @@ router.post('/claim', (req, res) => {
   }
   const lvlRes = applyXp(char, xpGain);
   db.prepare(
-    `UPDATE characters SET gold = gold + ?, xp = ?, level = ?, hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?`,
-  ).run(goldGain, char.xp, char.level, char.hp_max, char.mp_max, goldGain, xpGain, char.id);
-  db.prepare('DELETE FROM character_task WHERE character_id = ?').run(char.id);
+    `UPDATE characters SET gold = gold + ?, xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?`,
+  ).run(goldGain, char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, goldGain, xpGain, char.id);
 
   trackBattlePass(char.id, 'camp_claim', 1);
 

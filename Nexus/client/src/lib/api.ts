@@ -7,6 +7,28 @@ try {
   /* no-op */
 }
 
+/**
+ * Стабилен идентификатор на устройството (браузър „HWID"). Пази се в
+ * localStorage и се праща като `x-device-id` — сървърът го ползва за
+ * ban по устройство (chargeback → permanent ban). Не е истински хардуерен
+ * идентификатор (браузърът не дава такъв) и се нулира при чистене на
+ * storage — затова сървърът банва И по IP едновременно.
+ */
+const DEVICE_KEY = 'nexus-dominion.device';
+function deviceId(): string {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = (globalThis.crypto?.randomUUID?.()
+        || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return '';
+  }
+}
+
 export function setToken(t: string | null): void {
   token = t;
   try {
@@ -21,9 +43,19 @@ export function getToken(): string | null {
   return token;
 }
 
+// Глобален бан хендлър — при 403 { error:'banned' } сървърът е спрял
+// достъпа (акаунт/IP/устройство). Регистрира се от store-а, за да
+// покаже пълноекранен ban screen вместо генерична грешка.
+let bannedHandler: ((reason: string, until: number) => void) | null = null;
+export function setBannedHandler(fn: ((reason: string, until: number) => void) | null): void {
+  bannedHandler = fn;
+}
+
 async function request<T = any>(method: string, path: string, body?: any): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
+  const dev = deviceId();
+  if (dev) headers['x-device-id'] = dev;
   const res = await fetch(BASE + path, {
     method,
     headers,
@@ -32,6 +64,10 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
   if (!res.ok) {
+    // Бан → глобален екран (акаунт/IP/устройство спрян от сървъра).
+    if (res.status === 403 && data?.error === 'banned') {
+      bannedHandler?.(data.reason || 'Access has been suspended.', Number(data.until) || 0);
+    }
     // Zod's `.flatten()` ships back `{ formErrors, fieldErrors }` and most
     // route handlers either wrap it as `data.error` or echo a plain string.
     // The old ternary chained `||` with `?:` at the wrong precedence, so a

@@ -1,0 +1,60 @@
+name: security
+
+# Репо-широк слой за сигурност (defense-in-depth), налаган на всеки PR и push към main.
+# „Непробиваемо" няма — целта е много слоя, всеки от които фейлва ЗАТВОРЕНО (блокира),
+# а не отворено. Твърдият гейт е самостоятелният secret-scan (нула зависимости, винаги
+# работи). Останалите слоеве (gitleaks по историята, dependency-review) допълват.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: Тайни (secret-scan + gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      # Забележка (state-level follow-up): пинвай action-ите към пълен commit SHA (не @vX),
+      # за да не може tag-hijack да вкара supply-chain код в CI-то.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # пълна история — за gitleaks
+          persist-credentials: false # не оставяй GITHUB_TOKEN в git config (по-малка exfil повърхност)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # ТВЪРД ГЕЙТ: вграденият скенер (нула външни зависимости → нула supply-chain риск).
+      # Той е задължителният слой; всичко останало е допълнение.
+      - name: secret-scan (built-in, hard gate)
+        run: node tools/security/secret-scan.mjs
+      # ДОПЪЛНИТЕЛЕН СЛОЙ: gitleaks по цялата история. best-effort — сваля се непроверен
+      # бинар, затова НЕ го правим твърда зависимост (иначе самото CI става вектор);
+      # ако намери нещо, стъпката се проваля видимо, но твърдият гейт горе вече е минал.
+      - name: gitleaks (история, best-effort)
+        continue-on-error: true
+        run: |
+          ver="8.21.2"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${ver}/gitleaks_${ver}_linux_x64.tar.gz" \
+            | tar -xz gitleaks && sudo mv gitleaks /usr/local/bin/ || { echo "gitleaks недостъпен — пропускам"; exit 0; }
+          gitleaks git --no-banner --redact --exit-code 1
+
+  dependencies:
+    name: Уязвими зависимости (dependency-review)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # GitHub официален — блокира PR, който добавя зависимост с висока/критична CVE.
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

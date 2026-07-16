@@ -172,6 +172,7 @@ export function applySchema(db: Database.Database): void {
       created_at   INTEGER NOT NULL,
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
+    CREATE INDEX IF NOT EXISTS idx_mail_char ON mail(character_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS achievements (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -220,6 +221,18 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
 
+    -- Per-dungeon cooldown lock. Each dungeon defines its own cooldown_hours
+    -- (24/8/12/16/20) — the intended "daily-ish" gate. Previously that field
+    -- was dead and dungeons re-ran on the shared 7-10min action cooldown,
+    -- which turned the endgame dungeon into an XP/gold printing press.
+    CREATE TABLE IF NOT EXISTS dungeon_cooldowns (
+      character_id      INTEGER NOT NULL,
+      slug              TEXT NOT NULL,
+      next_available_at INTEGER NOT NULL,
+      PRIMARY KEY (character_id, slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS title_state (
       character_id    INTEGER PRIMARY KEY,
       current_title   TEXT NOT NULL DEFAULT '',
@@ -262,6 +275,41 @@ export function applySchema(db: Database.Database): void {
   // token_version drives JWT invalidation: bump on password change /
   // reset and existing JWTs immediately fail authRequired (audit #6).
   if (!userHave.has('token_version')) db.exec(`ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`);
+  // ===== Ban infrastructure (chargeback → permanent IP+HWID ban;
+  // admin moderation). `last_hwid` е клиентски device-id (браузър няма
+  // истински HWID → стабилен fingerprint от localStorage, х-device-id). =====
+  if (!userHave.has('banned')) db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0`);
+  if (!userHave.has('banned_reason')) db.exec(`ALTER TABLE users ADD COLUMN banned_reason TEXT NOT NULL DEFAULT ''`);
+  if (!userHave.has('banned_at')) db.exec(`ALTER TABLE users ADD COLUMN banned_at INTEGER NOT NULL DEFAULT 0`);
+  // banned_until: 0 = ПОСТОЯНЕН (докато banned=1); >0 = временен, изтича на
+  // тази епоха. Проверките третират изтекъл бан като не-банат.
+  if (!userHave.has('banned_until')) db.exec(`ALTER TABLE users ADD COLUMN banned_until INTEGER NOT NULL DEFAULT 0`);
+  if (!userHave.has('last_hwid')) db.exec(`ALTER TABLE users ADD COLUMN last_hwid TEXT NOT NULL DEFAULT ''`);
+
+  // Ban списъци по IP и по устройство (device-id). Използват се и за
+  // спиране на ban-евейжън чрез нов акаунт (проверка при login/register).
+  // expires_at: 0 = постоянен; >0 = изтича на тази епоха.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS banned_ips (
+      ip         TEXT PRIMARY KEY,
+      reason     TEXT NOT NULL DEFAULT '',
+      user_id    INTEGER,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS banned_devices (
+      hwid       TEXT PRIMARY KEY,
+      reason     TEXT NOT NULL DEFAULT '',
+      user_id    INTEGER,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+  // Forward-миграция за вече-съществуващи ban таблици (добави expires_at).
+  const ipCols = new Set((db.prepare(`PRAGMA table_info(banned_ips)`).all() as { name: string }[]).map((c) => c.name));
+  if (!ipCols.has('expires_at')) db.exec(`ALTER TABLE banned_ips ADD COLUMN expires_at INTEGER NOT NULL DEFAULT 0`);
+  const devCols = new Set((db.prepare(`PRAGMA table_info(banned_devices)`).all() as { name: string }[]).map((c) => c.name));
+  if (!devCols.has('expires_at')) db.exec(`ALTER TABLE banned_devices ADD COLUMN expires_at INTEGER NOT NULL DEFAULT 0`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (

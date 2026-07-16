@@ -128,16 +128,19 @@ health check на `http://127.0.0.1:3100/` с автоматичен rollback п
 
 ## 6. Следпускови стъпки (SEO индексиране)
 
-След като домейнът е жив на HTTPS:
+**Bing (и Yandex/Seznam) — напълно автоматично, нищо ръчно.** С генерирания
+`INDEXNOW_KEY` приложението подава към IndexNow: **при всеки старт** (целия публичен
+набор — начална, правни страници и всички публикувани визитки), **веднъж дневно** и
+**при всяко публикуване/редакция** на визитка. Не е нужна регистрация или ръчно
+подаване на sitemap в Bing Webmaster Tools (по избор, само за аналитика).
+
+Остава само **Google** (не поддържа IndexNow):
 
 1. **Google Search Console** (https://search.google.com/search-console) — добави
    ресурса `https://vizitka-bg.com`, потвърди собствеността (DNS TXT или HTML
    таг/файл), после **Sitemaps → подай** `https://vizitka-bg.com/sitemap.xml`.
-2. **Bing Webmaster Tools** (https://www.bing.com/webmasters) — добави сайта
-   (може импорт от Search Console), подай същия `sitemap.xml`. `INDEXNOW_KEY`
-   уведомява Bing автоматично при промяна на визитка.
-3. Провери `https://vizitka-bg.com/robots.txt` и `/sitemap.xml`, че се сервират
-   и сочат правилния публичен домейн.
+2. Провери `https://vizitka-bg.com/robots.txt`, `/sitemap.xml` и
+   `/<INDEXNOW_KEY>.txt`, че се сервират и сочат правилния публичен домейн.
 
 ## 7. Портфейли (Apple Wallet + Google Wallet)
 

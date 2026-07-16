@@ -1,0 +1,49 @@
+# Supreme AdBlock — Carbon Stealth
+User-agent: *
+Allow: /
+Disallow: /filters.json
+Disallow: /filters.json.sig
+
+User-agent: Googlebot
+Allow: /
+Disallow: /filters.json
+
+User-agent: Bingbot
+Allow: /
+Disallow: /filters.json
+
+User-agent: YandexBot
+Allow: /
+Disallow: /filters.json
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /filters.json
+
+User-agent: Applebot
+Allow: /
+Disallow: /filters.json
+
+# AI / answer engines
+User-agent: GPTBot
+Allow: /
+Disallow: /filters.json
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: CCBot
+Allow: /
+Disallow: /filters.json
+
+Sitemap: https://adblock.carbonstealth.eu/sitemap.xml

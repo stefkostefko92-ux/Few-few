@@ -3,6 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Avatar from '../components/Avatar';
+import ReportModal, { type ReportTarget } from '../components/ReportModal';
 import CombatScene from '../combat/CombatScene';
 import Sprite, { spriteForItem } from '../components/Sprite';
 import type { InventoryItem } from '../lib/types';
@@ -394,6 +395,7 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
   const toast = useStore((s) => s.toast);
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState('');
+  const [report, setReport] = useState<ReportTarget | null>(null);
   const lastIdRef = useRef(0);
   const streamRef = useRef<HTMLDivElement>(null);
 
@@ -437,9 +439,19 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
               <div className="msg">{m.message}</div>
             </div>
             <div className="when">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            {m.character_id !== myCharId && (
+              <button
+                className="chat-report"
+                title={t('guild.chat.report', { defaultValue: 'Report message' })}
+                aria-label={t('guild.chat.report', { defaultValue: 'Report message' })}
+                onClick={() => setReport({ contentKind: 'chat', contentRef: `chat:${m.id}`, label: `Message from ${m.name}` })}
+                style={{ background: 'none', border: 'none', color: 'var(--text-3, #7a7f8c)', cursor: 'pointer', fontSize: 13, padding: 4, alignSelf: 'center' }}
+              >⚑</button>
+            )}
           </div>
         ))}
       </div>
+      {report && <ReportModal target={report} onClose={() => setReport(null)} />}
       <div className="chat-input">
         <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('guild.chat.placeholder')} maxLength={280} />
         <button className="btn btn-primary" disabled={!text.trim()} onClick={send}>{t('guild.chat.send')}</button>
