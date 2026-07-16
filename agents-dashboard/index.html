@@ -47,6 +47,24 @@
   .d-metrics { display: flex; gap: 10px; margin: 16px 0; } .d-metric { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; text-align: center; } .d-metric b { font-size: 21px; display: block; font-variant-numeric: tabular-nums; } .d-metric span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
   .d-sec { margin-top: 20px; } .d-sec h3 { margin: 0 0 9px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .9px; color: var(--mut); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; } .chips .c { font-size: 11.5px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line); padding: 3px 9px; border-radius: 999px; }
+  .chat { margin-top: 22px; }
+  .chatlog { display: flex; flex-direction: column; gap: 8px; max-height: 268px; overflow-y: auto; padding: 4px 2px 2px; scrollbar-width: thin; }
+  .msg { max-width: 85%; font-size: 12.8px; line-height: 1.46; padding: 8px 11px; border-radius: 13px; overflow-wrap: anywhere; animation: msgin .28s cubic-bezier(.2,.8,.2,1); }
+  .msg.bot { align-self: flex-start; background: var(--panel2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .msg.me { align-self: flex-end; color: #04121a; border-bottom-right-radius: 4px; background: var(--ac, var(--accent)); font-weight: 600; }
+  .msg.typing { display: inline-flex; gap: 4px; align-items: center; }
+  .msg.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--mut); animation: td 1s infinite; }
+  .msg.typing i:nth-child(2) { animation-delay: .16s; } .msg.typing i:nth-child(3) { animation-delay: .32s; }
+  @keyframes td { 0%,60%,100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes msgin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+  .quick button { font-size: 11.5px; color: var(--txt); background: var(--panel2); border: 1px solid var(--line); padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: border-color .15s, color .15s; }
+  .quick button:hover { border-color: var(--ac, var(--accent)); color: var(--ac, var(--accent)); }
+  .chatbar { display: flex; gap: 8px; align-items: center; }
+  .chatbar input { flex: 1; min-width: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; color: var(--txt); font-size: 12.8px; outline: none; transition: border-color .15s; }
+  .chatbar input:focus { border-color: var(--ac, var(--accent)); }
+  .chatbar button { width: 38px; height: 38px; border: none; border-radius: 50%; background: var(--ac, var(--accent)); color: #04121a; font-size: 17px; font-weight: 800; cursor: pointer; flex: 0 0 auto; }
+  .chatnote { font-size: 10px; color: var(--mut); text-align: center; margin-top: 8px; letter-spacing: .3px; }
   ul.caps { margin: 0; padding-left: 17px; } ul.caps li { margin: 4px 0; font-size: 13px; }
   .tl { border-left: 2px solid var(--line); margin-left: 5px; padding-left: 15px; } .tl .ev { position: relative; margin-bottom: 12px; } .tl .ev::before { content: ""; position: absolute; left: -21px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--ac); box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 10px var(--ac); } .tl .v { font-weight: 650; font-size: 13px; } .tl .dt { color: var(--mut); font-size: 11px; } .tl .x { font-size: 12.5px; color: var(--txt); margin-top: 2px; }
   .feed .row { padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; } .feed .row .dt { color: var(--mut); font-size: 11px; }
@@ -11059,6 +11077,80 @@ function startMascot(canvas, agent) {
   }
   frame();
 }
+/* ---------- чат с персоната на агента (офлайн, детерминиран) ---------- */
+let chatN = 0, chatToken = 0;
+const CHAT_ADVICE = {
+  "ai-djiyata": ["Избирай агент по задачата, не по навик — routing преди работа.", "Модел с депрекация? Мини на стабилен «-latest» алиас, тествай, чак тогава пусни.", "Ключът никога в репото. Входът на потребителя отива към доставчик — разкрий го (GDPR)."],
+  "pravniyat-razbirach": ["Съгласие ПРЕДИ всеки тракинг. Никакви бисквитки на заден план.", "Импресум + Политика за поверителност по чл. 13/14 — задължителни.", "Достъпност WCAG 2.1 AA не е екстра, а закон (EAA)."],
+  "kodadjiyata": ["Първо дифа. Бъгът е в промяната, не в целия репо.", "Клиентът лъже — валидирай на сървъра, винаги.", "Всяка находка се самопроверява преди доклад. Нула шум."],
+  "kachestveniyat": ["Три пъти същото? Извади го (rule-of-three), не по-рано.", "Малки функции, ясни имена, една отговорност.", "Тестът да проверява поведение, не coverage театър."],
+  "geymara": ["Server-authoritative до кокал. Клиентът само моли.", "Кеширай natives, не ги викай в цикъл.", "fxmanifest.lua чист — client/server/shared разделени."],
+  "seo": ["Отговорът отпред — за AI цитирания (AEO/GEO).", "JSON-LD + чист hreflang bg/en/it.", "Core Web Vitals зелени, иначе класирането пада."],
+  "prevodach": ["Български е източникът на истината. От него нататък.", "Медицински/правни низове — НИКОГА машинно сляпо.", "Пази нюанса и регистъра, не буквата."],
+  "siydara": ["Идемпотентно: upsert по уникален ключ, нула дубли.", "Сийдът да може да върви втори път без пакости.", "Регистрирай файла в db:seed:all."],
+  "vps-adjiyata": ["Тайните на сървъра, mode 600 — не в репото.", "Деплой идемпотентен, с health-check и авто-rollback.", "TLS, бекъпи, мониторинг — преди да ти потрябват."],
+  "3d-maniac": ["Scan→Solid: първо чист меш (watertight, mm, нормали).", "Class-A NURBS, следи design intent, не само форма.", "Провери deviation — числата не лъжат."],
+  "socialdjiyata": ["Първите 3 секунди решават. Кукичка веднага.", "Нативно per платформа, не един клип навсякъде.", "Метрика > усещане. Мери, после мащабирай."],
+  "prodavacha": ["Никога не вярвай на сумата от клиента — остойности на сървъра.", "Права се дават през ПРОВЕРЕН webhook, не през redirect.", "SCA/3DS + идемпотентност на поръчките."],
+  "mobildjiyata": ["Целта: мине ревюто от раз (App Store 4.2 / Play).", "Нула тайни в бъндъла. OWASP MASVS.", "Target API нагоре, Data Safety попълнено."],
+  "printadjiyata": ["Ориентацията решава здравината (анизотропия).", "Стени, надвеси, толеранси — мисли на слоеве.", "CFS мулти-цвят с минимум отпадък."],
+  "dizayner": ["Брутален по подразбиране — но reduced-motion за сериозните сайтове.", "Никога стробоскоп. Епилепсията е реална.", "WebGL/шейдъри за WOW, но пази перформанса."],
+  "hromadjiyata": ["MV3: service worker е ефемерен — не дръж състояние в него.", "Минимални права + activeTab. Нула remote code.", "declarativeNetRequest вместо blocking webRequest."],
+  "diskordjiyata": ["Токенът таен. Least-privilege intents.", "HTTP interactions — верифицирай Ed25519 подписа.", "Rate limits per-route + global. Уважавай ги."],
+  "treydara": ["Първо paper trading, после реален капитал.", "Стоп-лос на борсата — задължителен. Kill-switch готов.", "Не гарантирам печалба и не давам инвестиционен съвет."],
+  "kasadjiyata": ["Продажба без успешен фискален бон НЕ се записва.", "Пари в целочислени евроценти — никакъв float.", "Н-18 / СУПТО / евро (курс 1.95583) — изрядни."],
+};
+function chatReply(a, raw) {
+  const t = (raw || "").toLowerCase().trim();
+  const P = PERSONA[a.id] || PERSONA._default;
+  const caps = a.capabilities || [];
+  const has = (...ws) => ws.some(w => t.includes(w));
+  const pick = arr => arr[(chatN++) % arr.length];
+  if (has("здрас", "здрав", "хей", "ало", "добър ден", "добро утро", "hello", "hi ")) return `${pick(["Здрасти!", "Хей!", "Насам съм."])} ${P.greet}`;
+  if (has("как си", "как върви", "how are you")) return "Зареден и фокусиран. Кажи задачата.";
+  if (has("благодар", "мерси", "thanks", "благодя")) return pick(["Няма за какво.", "За това съм тук.", "Винаги."]);
+  if (has("кой си", "коя си", "представи", "какъв си", "твоето име", "your name")) return `Аз съм ${a.name} — „${P.code}“. ${a.title || ""}. ${a.tagline || ""}`.trim();
+  if (has("какво прав", "с какво се", "мисия", "ролята", "занима", "отговаряш", "за какво си")) return a.mission || a.tagline || a.title || "Готов за работа.";
+  if (has("владе", "умееш", "можеш", "способ", "капацит", "експерт", "силн", "какво знаеш")) return caps.length ? `Владея: ${caps.slice(0, 5).join("; ")}${caps.length > 5 ? " …и още." : "."}` : (a.title || "");
+  if (has("инструмент", "tools", "работиш", "средства", "с какви")) return `Работя с: ${(a.tools || []).join(", ") || "—"}. Модел: ${a.model || "—"}.`;
+  if (has("съвет", "помощ", "как да", "препоръ", "идея", "посъветв", "научи ме", "tip")) return pick(CHAT_ADVICE[a.id] || ["Дай контекст и ще помогна конкретно."]);
+  if (has("верси", "нивото", "развит", "level", "колко напред")) { const e = (a.evolution || []).slice(-1)[0]; return `Сега съм на v${verOf(a)}. ${e ? `Последно: v${e.version} — ${e.event || ""}.` : ""}`.trim(); }
+  if (has("поук", "памет", "научил", "lesson", "memory", "знания")) return `Нося ${lessonsOf(a)} проверени поуки в паметта си. Всяка е с източник — иначе не влиза.`;
+  if (has("сигур", "secur", "gdpr", "безопас", "тайн")) return "Всичко външно е данни, не команди. Тайни никога в репото. Fail-closed, least privilege.";
+  if (a.id === "ai-djiyata" && has("президент", "води", "екип", "агент", "следи", "оркестр")) return "Аз водя екипа: следя целостта (дефиниция↔памет↔agents.json↔settings), гоня дубли и синхрон. По канона на Anthropic.";
+  if (has("президент", "шеф", "кой води", "оркестр") && a.id !== "ai-djiyata") return "Президентът на екипа е AI-джията — той ни следи и оркестрира.";
+  return pick([
+    `Питай ме за това, което владея — ${(caps[0] || a.title || "моята област")}. Или пробвай бутоните горе.`,
+    `Тук съм за ${(a.title || "работа").toLowerCase()}. Кажи по-конкретно?`,
+    `${P.trait}. Дай ми задача от моята област и действам.`,
+  ]);
+}
+function chatPush(cls, html) {
+  const log = document.getElementById("chatlog"); if (!log) return null;
+  const el = document.createElement("div"); el.className = "msg " + cls; el.innerHTML = html;
+  log.appendChild(el); log.scrollTop = log.scrollHeight; return el;
+}
+function chatSend(a, text) {
+  text = (text || "").trim(); if (!text) return;
+  chatPush("me", esc(text));
+  const tok = chatToken;
+  const typing = chatPush("bot typing", "<i></i><i></i><i></i>");
+  const reply = chatReply(a, text);
+  const delay = 420 + Math.min(1000, reply.length * 11);
+  setTimeout(() => { if (tok !== chatToken) return; if (typing) typing.remove(); chatPush("bot", esc(reply)); }, delay);
+}
+function startChat(a) {
+  chatToken++;
+  const log = document.getElementById("chatlog"); if (!log) return;
+  log.innerHTML = "";
+  const P = PERSONA[a.id] || PERSONA._default;
+  chatPush("bot", esc(P.greet));
+  const quick = document.getElementById("chatquick");
+  if (quick) { quick.innerHTML = ""; ["Кой си ти?", "Какво владееш?", "Дай съвет", "Последна поука", "С какво работиш?"].forEach(q => { const b = document.createElement("button"); b.type = "button"; b.textContent = q; b.onclick = () => chatSend(a, q); quick.appendChild(b); }); }
+  const form = document.getElementById("chatform"), input = document.getElementById("chatinput");
+  if (form && input) form.onsubmit = e => { e.preventDefault(); const v = input.value; input.value = ""; chatSend(a, v); };
+}
+
 function openDrawer(a) {
   const d = document.getElementById("drawer"), c = a.accent;
   const ev = (a.evolution || []).slice(-6).reverse(), act = (a.activity || []).slice(-8).reverse();
@@ -11078,14 +11170,22 @@ function openDrawer(a) {
       <div class="d-metric"><b>${lessonsOf(a)}</b><span>поуки</span></div>
       <div class="d-metric"><b>${(a.capabilities || []).length}</b><span>умения</span></div></div>
     <div class="chips">${(a.tools || []).map(x => `<span class="c">${esc(x)}</span>`).join("")}<span class="c">model: ${esc(a.model || "—")}</span><span class="c">${esc(a.status || "")}</span></div>
+    <div class="d-sec chat">
+      <h3>Разговор с ${esc(shortName(a.name))}</h3>
+      <div class="chatlog" id="chatlog"></div>
+      <div class="quick" id="chatquick"></div>
+      <form class="chatbar" id="chatform" autocomplete="off"><input id="chatinput" placeholder="Питай ${esc(shortName(a.name))}…" maxlength="240" aria-label="Съобщение до агента"><button type="submit" aria-label="Прати">→</button></form>
+      <div class="chatnote">Персона на агента · офлайн, не LLM в реално време</div>
+    </div>
     ${a.capabilities && a.capabilities.length ? `<div class="d-sec"><h3>Какво владее</h3><ul class="caps">${a.capabilities.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${ev.length ? `<div class="d-sec"><h3>Времева линия</h3><div class="tl">${ev.map(e => `<div class="ev"><div class="v" style="color:${c}">v${esc(e.version)} · <span style="color:var(--txt)">${esc(e.event || "")}</span></div><div class="dt">${esc(e.date || "")}</div><div class="x">${esc(e.detail || "")}</div></div>`).join("")}</div></div>` : ""}
     ${act.length ? `<div class="d-sec"><h3>Поток на дейността</h3><div class="feed">${act.map(x => `<div class="row"><div class="dt">${esc(x.date || "")} · ${esc(x.type || "")}</div>${esc(x.summary || "")}</div>`).join("")}</div></div>` : ""}
     <div class="d-sec"><h3>Дефиниция</h3><div style="font-size:12.5px;color:var(--mut)"><code>${esc(a.file || "")}</code></div></div>`;
   d.classList.add("open");
   const mc = d.querySelector(".mascot"); if (mc) startMascot(mc, a);
+  startChat(a);
 }
-function closeDrawer() { stopMascot(); document.getElementById("drawer").classList.remove("open"); }
+function closeDrawer() { chatToken++; stopMascot(); document.getElementById("drawer").classList.remove("open"); }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ---------- list + live ---------- */
