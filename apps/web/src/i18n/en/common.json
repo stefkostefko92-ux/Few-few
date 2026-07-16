@@ -456,7 +456,15 @@
     "flip": "Flip",
     "battle": "WAR",
     "cards": "Cards: {{n}}",
-    "tookPile": "{{name}} takes {{n}} cards"
+    "tookPile": "{{name}} takes {{n}} cards",
+    "warPhase": "WAR!",
+    "bounty": "Stake: {{n}}",
+    "fight": "Charge (3 cards)",
+    "skirmish": "Cautious (1 card)",
+    "fightHint": "Bury deep for a big haul — or play cautious to protect your deck.",
+    "streak": "Streak ×{{n}}",
+    "raid": "RAID!",
+    "raided": "{{name}} raids a card on a streak!"
   },
   "rummy": {
     "stock": "Stock",

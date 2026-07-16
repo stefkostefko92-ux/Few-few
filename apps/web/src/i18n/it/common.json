@@ -456,7 +456,15 @@
     "flip": "Gira",
     "battle": "GUERRA",
     "cards": "Carte: {{n}}",
-    "tookPile": "{{name}} prende {{n}} carte"
+    "tookPile": "{{name}} prende {{n}} carte",
+    "warPhase": "GUERRA!",
+    "bounty": "Posta: {{n}}",
+    "fight": "Carica (3 carte)",
+    "skirmish": "Prudente (1 carta)",
+    "fightHint": "Scommetti in profondità per un grande bottino — o gioca prudente per proteggere il mazzo.",
+    "streak": "Serie ×{{n}}",
+    "raid": "RAZZIA!",
+    "raided": "{{name}} razzia una carta in serie!"
   },
   "rummy": {
     "stock": "Mazzo",
