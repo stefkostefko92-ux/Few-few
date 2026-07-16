@@ -4,157 +4,116 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Лаборатория на агентите · Carbon Stealth</title>
-<meta name="description" content="Живо съзвездие на персонализираните Claude Code агенти на Carbon Stealth — интерактивно, дишащо, самообучаващо се. Ключова дума: Carbon Stealth." />
-<meta name="keywords" content="Carbon Stealth, Claude Code агенти, AI агенти табло, съзвездие на агенти, интерактивна визуализация, самообучаващи се агенти" />
+<meta name="description" content="Галактика от персонализираните Claude Code агенти на Carbon Stealth — интерактивна, професионална, самообучаваща се. Ключова дума: Carbon Stealth." />
+<meta name="keywords" content="Carbon Stealth, Claude Code агенти, AI агенти табло, галактика от агенти, интерактивна визуализация, самообучаващи се агенти" />
 <style>
   :root {
-    --bg: #000004; --panel: #0a0d12; --panel2: #10151c; --line: #1b2732;
-    --txt: #e9f1f6; --mut: #8492a0; --accent: #00e5ff;
+    --bg: #00020a; --panel: #080b12; --panel2: #0e131c; --line: #1a2634;
+    --txt: #e9f1f6; --mut: #8493a2; --accent: #00e5ff;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    margin: 0; background: #000004; color: var(--txt); overflow: hidden;
-    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; background: #00020a; color: var(--txt); overflow: hidden;
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased;
   }
   a { color: var(--accent); text-decoration: none; }
   #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
-  #sky.grabbing { cursor: grabbing; }
-  #sky.pointer { cursor: pointer; }
+  #sky.grabbing { cursor: grabbing; } #sky.pointer { cursor: pointer; }
+  svg { display: block; }
 
-  /* HUD */
   .hud { position: fixed; inset: 0 0 auto 0; padding: 18px 22px; pointer-events: none;
          display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; z-index: 5; }
   .hud > * { pointer-events: auto; }
-  .brand h1 { margin: 0; font-size: 19px; letter-spacing: .3px; font-weight: 650;
-              text-shadow: 0 0 22px rgba(0,229,255,.35); }
+  .brand h1 { margin: 0; font-size: 19px; letter-spacing: .3px; font-weight: 650; text-shadow: 0 0 24px rgba(0,229,255,.4); }
   .brand p { margin: 3px 0 0; color: var(--mut); font-size: 12.5px; max-width: 42ch; }
   .tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-  .search { display: flex; align-items: center; gap: 8px; background: rgba(10,14,20,.72); backdrop-filter: blur(9px);
-            border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; }
-  .search input { background: none; border: 0; color: var(--txt); font-size: 13px; width: 150px; outline: none; }
+  .search { display: flex; align-items: center; gap: 8px; background: rgba(9,13,20,.74); backdrop-filter: blur(9px);
+            border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; color: var(--mut); }
+  .search input { background: none; border: 0; color: var(--txt); font-size: 13px; width: 148px; outline: none; }
   .search input::placeholder { color: var(--mut); }
-  .seg { display: flex; background: rgba(10,14,20,.72); backdrop-filter: blur(9px); border: 1px solid var(--line);
-         border-radius: 999px; padding: 3px; }
-  .seg button { background: none; border: 0; color: var(--mut); font: inherit; font-size: 12.5px; padding: 5px 13px;
-                border-radius: 999px; cursor: pointer; transition: .18s; }
+  .seg { display: flex; background: rgba(9,13,20,.74); backdrop-filter: blur(9px); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+  .seg button { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; color: var(--mut); font: inherit;
+                font-size: 12.5px; padding: 5px 13px; border-radius: 999px; cursor: pointer; transition: .18s; }
+  .seg button svg { width: 15px; height: 15px; }
   .seg button.on { background: var(--accent); color: #04121a; font-weight: 600; }
 
-  /* live stat chips bottom-left */
   .live { position: fixed; left: 22px; bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; z-index: 5; }
-  .chip { background: rgba(10,14,20,.72); backdrop-filter: blur(9px); border: 1px solid var(--line); border-radius: 12px;
-          padding: 9px 13px; min-width: 78px; }
-  .chip b { display: block; font-size: 19px; line-height: 1.1; }
-  .chip span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px; }
-  .hint { position: fixed; right: 22px; bottom: 20px; z-index: 5; color: var(--mut); font-size: 11.5px;
-          background: rgba(10,14,20,.6); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; max-width: 240px; }
+  .chip { background: rgba(9,13,20,.74); backdrop-filter: blur(9px); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; min-width: 78px; }
+  .chip b { display: block; font-size: 19px; line-height: 1.1; font-variant-numeric: tabular-nums; } .chip span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px; }
+  .hint { position: fixed; right: 22px; bottom: 20px; z-index: 5; color: var(--mut); font-size: 11.5px; background: rgba(9,13,20,.6); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; max-width: 250px; }
 
-  /* tooltip */
   #tip { position: fixed; z-index: 8; pointer-events: none; transform: translate(-50%, calc(-100% - 16px));
-         background: rgba(8,12,18,.92); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 11px;
-         padding: 9px 12px; min-width: 150px; opacity: 0; transition: opacity .12s; box-shadow: 0 12px 40px rgba(0,0,0,.55); }
-  #tip .t-n { font-weight: 650; font-size: 13.5px; display: flex; align-items: center; gap: 7px; }
-  #tip .t-r { color: var(--mut); font-size: 11.5px; margin-top: 1px; }
-  #tip .t-m { margin-top: 6px; display: flex; gap: 12px; }
-  #tip .t-m b { font-size: 13px; } #tip .t-m span { color: var(--mut); font-size: 10px; display: block; }
+         background: rgba(7,11,17,.94); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 11px; padding: 9px 12px; min-width: 152px; opacity: 0; transition: opacity .12s; box-shadow: 0 12px 40px rgba(0,0,0,.6); }
+  #tip .t-n { font-weight: 650; font-size: 13.5px; } #tip .t-r { color: var(--mut); font-size: 11.5px; margin-top: 1px; }
+  #tip .t-m { margin-top: 6px; display: flex; gap: 12px; } #tip .t-m b { font-size: 13px; } #tip .t-m span { color: var(--mut); font-size: 10px; display: block; }
 
-  /* drawer */
   #drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(440px, 92vw); z-index: 20;
-            background: linear-gradient(180deg, var(--panel) 0%, #05070b 100%); border-left: 1px solid var(--line);
-            box-shadow: -30px 0 80px rgba(0,0,0,.6); transform: translateX(102%); transition: transform .42s cubic-bezier(.2,.8,.2,1);
-            overflow-y: auto; padding: 0 22px 40px; }
+            background: linear-gradient(180deg, var(--panel) 0%, #04060b 100%); border-left: 1px solid var(--line);
+            box-shadow: -30px 0 80px rgba(0,0,0,.65); transform: translateX(102%); transition: transform .42s cubic-bezier(.2,.8,.2,1); overflow-y: auto; padding: 0 22px 40px; }
   #drawer.open { transform: none; }
-  .d-top { position: sticky; top: 0; background: linear-gradient(180deg, var(--panel), rgba(10,13,18,.6) 80%, transparent);
-           padding: 20px 22px 12px; margin: 0 -22px 6px; backdrop-filter: blur(4px); }
-  .d-close { position: absolute; top: 16px; right: 18px; background: var(--panel2); border: 1px solid var(--line);
-             color: var(--mut); width: 32px; height: 32px; border-radius: 9px; cursor: pointer; font-size: 16px; }
+  .d-top { position: sticky; top: 0; background: linear-gradient(180deg, var(--panel), rgba(9,12,18,.6) 80%, transparent); padding: 20px 22px 12px; margin: 0 -22px 6px; backdrop-filter: blur(4px); }
+  .d-close { position: absolute; top: 16px; right: 18px; background: var(--panel2); border: 1px solid var(--line); color: var(--mut); width: 32px; height: 32px; border-radius: 9px; cursor: pointer; display: grid; place-items: center; }
+  .d-close svg { width: 15px; height: 15px; }
   .d-head { display: flex; align-items: center; gap: 14px; }
-  .d-ava { width: 56px; height: 56px; border-radius: 15px; display: grid; place-items: center; font-size: 30px; flex: none; }
-  .d-head h2 { margin: 0; font-size: 20px; }
-  .d-head .role { color: var(--mut); font-size: 12.5px; margin-top: 2px; }
+  .d-ava { width: 56px; height: 56px; border-radius: 15px; display: grid; place-items: center; flex: none; }
+  .d-ava svg { width: 30px; height: 30px; }
+  .d-head h2 { margin: 0; font-size: 20px; } .d-head .role { color: var(--mut); font-size: 12.5px; margin-top: 2px; }
   .d-tag { color: var(--txt); font-size: 13.5px; margin: 12px 0 4px; }
   .d-metrics { display: flex; gap: 10px; margin: 16px 0; }
   .d-metric { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; text-align: center; }
-  .d-metric b { font-size: 21px; display: block; } .d-metric span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
-  .d-sec { margin-top: 20px; }
-  .d-sec h3 { margin: 0 0 9px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .9px; color: var(--mut); }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chips .c { font-size: 11.5px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line); padding: 3px 9px; border-radius: 999px; }
+  .d-metric b { font-size: 21px; display: block; font-variant-numeric: tabular-nums; } .d-metric span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
+  .d-sec { margin-top: 20px; } .d-sec h3 { margin: 0 0 9px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .9px; color: var(--mut); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; } .chips .c { font-size: 11.5px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line); padding: 3px 9px; border-radius: 999px; }
   ul.caps { margin: 0; padding-left: 17px; } ul.caps li { margin: 4px 0; font-size: 13px; }
   .tl { border-left: 2px solid var(--line); margin-left: 5px; padding-left: 15px; }
-  .tl .ev { position: relative; margin-bottom: 12px; }
-  .tl .ev::before { content: ""; position: absolute; left: -21px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--ac); box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 10px var(--ac); }
-  .tl .v { font-weight: 650; font-size: 13px; } .tl .dt { color: var(--mut); font-size: 11px; }
-  .tl .x { font-size: 12.5px; color: var(--txt); margin-top: 2px; }
-  .feed .row { padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
-  .feed .row .dt { color: var(--mut); font-size: 11px; }
+  .tl .ev { position: relative; margin-bottom: 12px; } .tl .ev::before { content: ""; position: absolute; left: -21px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--ac); box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 10px var(--ac); }
+  .tl .v { font-weight: 650; font-size: 13px; } .tl .dt { color: var(--mut); font-size: 11px; } .tl .x { font-size: 12.5px; color: var(--txt); margin-top: 2px; }
+  .feed .row { padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; } .feed .row .dt { color: var(--mut); font-size: 11px; }
 
-  /* list view */
   #list { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 90px; display: none; }
   #list.show { display: block; }
   .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 16px; }
   @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
   @media (min-width: 1080px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
-  .card { background: linear-gradient(180deg, var(--panel), #05080b); border: 1px solid var(--line); border-radius: 15px;
-          padding: 18px; position: relative; overflow: hidden; cursor: pointer; transition: .2s; }
-  .card:hover { border-color: var(--ac); transform: translateY(-3px); }
-  .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ac); }
-  .card .ch { display: flex; align-items: center; gap: 11px; }
-  .card .a { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 21px; }
+  .card { background: linear-gradient(180deg, var(--panel), #04070b); border: 1px solid var(--line); border-radius: 15px; padding: 18px; position: relative; overflow: hidden; cursor: pointer; transition: .2s; }
+  .card:hover { border-color: var(--ac); transform: translateY(-3px); } .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ac); }
+  .card .ch { display: flex; align-items: center; gap: 11px; } .card .a { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; } .card .a svg { width: 22px; height: 22px; }
   .card h2 { margin: 0; font-size: 16px; } .card .r { color: var(--mut); font-size: 12px; }
-  .card .tg { font-size: 12.5px; margin: 11px 0; color: var(--txt); }
-  .card .mm { display: flex; gap: 14px; color: var(--mut); font-size: 11.5px; }
-  .card .mm b { color: var(--txt); font-size: 14px; }
+  .card .tg { font-size: 12.5px; margin: 11px 0; color: var(--txt); } .card .mm { display: flex; gap: 14px; color: var(--mut); font-size: 11.5px; } .card .mm b { color: var(--txt); font-size: 14px; }
 
-  /* docs */
-  #docs { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 60px; display: none; }
-  #docs.show { display: block; }
-  #docs .inner { max-width: 900px; margin: 0 auto; }
+  #docs { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 60px; display: none; } #docs.show { display: block; } #docs .inner { max-width: 900px; margin: 0 auto; }
   .doctabs { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0 14px; }
-  .doctabs button { background: var(--panel2); border: 1px solid var(--line); color: var(--mut); font: inherit; font-size: 12.5px;
-                    padding: 6px 12px; border-radius: 8px; cursor: pointer; }
-  .doctabs button.on { background: var(--accent); color: #04121a; }
-  .md-doc { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; }
-  .md-doc h1,.md-doc h2,.md-doc h3 { line-height: 1.3; } .md-doc code { background: var(--panel2); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+  .doctabs button { background: var(--panel2); border: 1px solid var(--line); color: var(--mut); font: inherit; font-size: 12.5px; padding: 6px 12px; border-radius: 8px; cursor: pointer; } .doctabs button.on { background: var(--accent); color: #04121a; }
+  .md-doc { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; } .md-doc code { background: var(--panel2); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
   .md-doc table.md-table { border-collapse: collapse; width: 100%; font-size: 12.5px; } .md-doc .md-table td,.md-doc .md-table th { border: 1px solid var(--line); padding: 6px 9px; text-align: left; }
 
-  @media (max-width: 640px) {
-    .brand p { display: none; } .hint { display: none; } .search input { width: 108px; }
-    .hud { padding: 12px; } .live { left: 12px; bottom: 12px; }
-  }
+  @media (max-width: 640px) { .brand p { display: none; } .hint { display: none; } .search input { width: 104px; } .hud { padding: 12px; } .live { left: 12px; bottom: 12px; } }
   @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
 </style>
 </head>
 <body>
-<canvas id="sky" aria-label="Интерактивно съзвездие на агентите. Използвай изгледа „Списък“ за достъпна текстова версия."></canvas>
+<canvas id="sky" aria-label="Интерактивна галактика от агентите. Използвай изгледа „Списък“ за достъпна текстова версия."></canvas>
 
 <div class="hud">
-  <div class="brand">
-    <h1 id="title">Лаборатория на агентите</h1>
-    <p id="subtitle"></p>
-  </div>
+  <div class="brand"><h1 id="title">Лаборатория на агентите</h1><p id="subtitle"></p></div>
   <div class="tools">
-    <label class="search">🔎<input id="q" type="search" placeholder="търси агент…" autocomplete="off" /></label>
+    <label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.5-4.5"/></svg><input id="q" type="search" placeholder="търси агент…" autocomplete="off" /></label>
     <div class="seg" id="seg">
-      <button data-v="sky" class="on">✦ Съзвездие</button>
-      <button data-v="list">▤ Списък</button>
-      <button data-v="docs">📖 Docs</button>
+      <button data-v="sky" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 7 12M12 20a8 8 0 0 1-7-12"/></svg>Галактика</button>
+      <button data-v="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Списък</button>
+      <button data-v="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 4h6v16H6a2 2 0 0 1-2-2zM12 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/></svg>Docs</button>
     </div>
   </div>
 </div>
 
 <div class="live" id="live"></div>
-<div class="hint">Кликни агент за детайли · влачи да завъртиш · колело за мащаб · 👑 = президентът</div>
+<div class="hint">Кликни звезда за профил · влачи, за да завъртиш галактиката · колело за мащаб</div>
 
 <div id="tip"></div>
 <div id="drawer"></div>
 <div id="list"><div class="grid" id="grid"></div></div>
-<div id="docs"><div class="inner">
-  <div class="doctabs" id="docstabs"></div>
-  <div style="color:var(--mut);font-size:12px;margin-bottom:10px">генерирано: <span id="docsgen">—</span> · източник: живите <code>CLAUDE.md</code> файлове</div>
-  <div class="md-doc" id="docsbody"></div>
-</div></div>
+<div id="docs"><div class="inner"><div class="doctabs" id="docstabs"></div><div style="color:var(--mut);font-size:12px;margin-bottom:10px">генерирано: <span id="docsgen">—</span> · източник: живите <code>CLAUDE.md</code> файлове</div><div class="md-doc" id="docsbody"></div></div></div>
 
 <script>
 // Вграден снимков фалбек — работи и при отваряне като файл (file://) или като Artifact.
@@ -10568,32 +10527,67 @@ const FALLBACK = {
   ]
 };
 
+/* ---------- професионални икони (SVG, без емоджита) ---------- */
+const ICON = {
+  "ai-djiyata": '<path d="M3.5 9l4 4L12 6l4.5 7 4-4-1.7 9.5H5.2z"/>',
+  "pravniyat-razbirach": '<path d="M3 9l9-5 9 5"/><path d="M4.5 9.5v8.5M19.5 9.5v8.5M9 9.5v8.5M15 9.5v8.5"/><path d="M3 19.5h18"/>',
+  "kodadjiyata": '<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>',
+  "kachestveniyat": '<path d="M6 3.5h12l3 5.5-9 11.5L3 9z"/><path d="M3 9h18M9 3.5 6.2 9M15 3.5 17.8 9"/>',
+  "geymara": '<rect x="3" y="8" width="18" height="9" rx="4.5"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="12" r=".7" fill="#eef6ff" stroke="none"/><circle cx="18" cy="14" r=".7" fill="#eef6ff" stroke="none"/>',
+  "seo": '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/>',
+  "prevodach": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  "siydara": '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.6 3 3 7 3s7-1.4 7-3V6"/><path d="M5 12c0 1.6 3 3 7 3s7-1.4 7-3"/>',
+  "vps-adjiyata": '<rect x="3" y="4" width="18" height="7" rx="1.6"/><rect x="3" y="13" width="18" height="7" rx="1.6"/><circle cx="7" cy="7.5" r=".8" fill="#eef6ff" stroke="none"/><circle cx="7" cy="16.5" r=".8" fill="#eef6ff" stroke="none"/>',
+  "3d-maniac": '<path d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5z"/><path d="M12 12l8.5-4.75M12 12v9.5M12 12L3.5 7.25"/>',
+  "socialdjiyata": '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.9l7.6-3.7M8.2 13.1l7.6 3.7"/>',
+  "prodavacha": '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19M6 15h4"/>',
+  "mobildjiyata": '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>',
+  "printadjiyata": '<path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5"/>',
+  "dizayner": '<circle cx="7" cy="8" r="3.5"/><rect x="12.5" y="4.5" width="7" height="7" rx="1"/><path d="M7.5 14l4.5 6.5h-9z"/>',
+  "hromadjiyata": '<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>',
+  "diskordjiyata": '<path d="M4 5h16v11H9l-4 4v-4H4z"/><circle cx="9" cy="10.5" r=".8" fill="#eef6ff" stroke="none"/><circle cx="12" cy="10.5" r=".8" fill="#eef6ff" stroke="none"/><circle cx="15" cy="10.5" r=".8" fill="#eef6ff" stroke="none"/>',
+  "treydara": '<path d="M3 17l6-6 4 4 8-8"/><path d="M16 7h5v5"/>',
+  "kasadjiyata": '<path d="M6 3h12v18l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  "_default": '<circle cx="12" cy="12" r="8"/>',
+};
+function iconInner(id) { return ICON[id] || ICON._default; }
+function iconSVG(id, stroke, sw) { return `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw || 1.9}" stroke-linecap="round" stroke-linejoin="round">${iconInner(id)}</svg>`; }
+const iconCache = {};
+function getIcon(id) {
+  if (!iconCache[id]) { const im = new Image(); im.src = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eef6ff" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">${iconInner(id)}</svg>`); iconCache[id] = im; }
+  return iconCache[id];
+}
+
 /* ---------- зареждане ---------- */
 let DATA = FALLBACK;
-fetch("./agents.json").then(r => { if (!r.ok) throw 0; return r.json(); })
-  .then(d => { DATA = d; boot(); })
-  .catch(() => boot());
+fetch("./agents.json").then(r => { if (!r.ok) throw 0; return r.json(); }).then(d => { DATA = d; boot(); }).catch(() => boot());
 
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const cv = document.getElementById("sky"), ctx = cv.getContext("2d");
 let W = 0, H = 0, DPR = 1, nodes = [], stars = [], particles = [];
-let rot = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false;
+let gal = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false;
 let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
+const ARMS = 3, TWIST = 2.6;
 
-function resize() {
-  DPR = Math.min(2, window.devicePixelRatio || 1);
-  W = cv.clientWidth; H = cv.clientHeight;
-  cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  buildStars();
-}
+function resize() { DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); buildStars(); }
 window.addEventListener("resize", resize);
 
+// цвят на звезда по радиус: ядро бяло-циан → циан → тюркоаз → индиго
+function galColor(f) {
+  const stops = [[0, [233, 247, 255]], [.28, [120, 235, 255]], [.55, [0, 205, 210]], [.8, [60, 130, 210]], [1, [95, 96, 200]]];
+  for (let i = 1; i < stops.length; i++) if (f <= stops[i][0]) { const a = stops[i - 1], b = stops[i], k = (f - a[0]) / (b[0] - a[0]); return [0, 1, 2].map(j => Math.round(a[1][j] + (b[1][j] - a[1][j]) * k)); }
+  return [95, 96, 200];
+}
 function buildStars() {
-  const n = Math.round(Math.min(160, (W * H) / 9000));
-  stars = Array.from({ length: n }, () => ({
-    x: Math.random() * W, y: Math.random() * H, z: Math.random() * .8 + .2,
-    tw: Math.random() * 6.28, sp: 0.05 + Math.random() * 0.12,
-  }));
+  const n = Math.round(Math.min(2400, (W * H) / 620));
+  stars = Array.from({ length: n }, () => {
+    const f = Math.pow(Math.random(), 0.62);
+    const arm = Math.floor(Math.random() * ARMS);
+    const scatter = (Math.random() - 0.5) * (0.5 * (1 - f) + 0.09) * 2;
+    const ang0 = arm / ARMS * Math.PI * 2 + f * TWIST + scatter;
+    const [r, g, b] = galColor(f);
+    return { f, ang0, r, g, b, size: (Math.random() < 0.06 ? 1.9 : 1) * (0.7 + (1 - f) * 0.8), tw: Math.random() * 6.28, sp: 0.4 + Math.random() * 1.2, ba: 0.18 + (1 - f) * 0.5 };
+  });
 }
 
 const isPrez = a => a.id === "ai-djiyata";
@@ -10612,87 +10606,73 @@ function buildNodes() {
   const others = DATA.agents.filter(a => !isPrez(a)).slice().sort((a, b) => lessonsOf(b) - lessonsOf(a));
   const prez = DATA.agents.find(isPrez) || DATA.agents[0];
   const maxL = Math.max(1, ...DATA.agents.map(lessonsOf));
-  nodes = [];
-  nodes.push({ a: prez, prez: true, ring: 0, baseA: 0, orbit: 0, speed: 0, phase: 0,
-               x: 0, y: 0, r: 40, hovT: 0, dim: 1, spark: Math.random() * 5, sc: b => b });
-  const inner = others.slice(0, 9), outer = others.slice(9);
-  const place = (arr, ringIdx) => arr.forEach((a, i) => {
-    const baseA = (i / arr.length) * Math.PI * 2 + (ringIdx === 2 ? Math.PI / arr.length : 0);
+  nodes = [{ a: prez, prez: true, f: 0, armBase: 0, x: 0, y: 0, r: 42, hovT: 0, dim: 1, spark: Math.random() * 5 }];
+  const per = Math.ceil(others.length / ARMS);
+  others.forEach((a, i) => {
+    const arm = i % ARMS, rank = Math.floor(i / ARMS);
+    const f = 0.32 + (rank / Math.max(1, per - 1)) * 0.62;
     const lr = lessonsOf(a) / maxL;
-    nodes.push({ a, prez: false, ring: ringIdx, baseA, orbit: ringIdx, speed: (ringIdx === 1 ? 1 : 0.62),
-                 phase: Math.random() * 6.28, x: 0, y: 0, r: 13 + Math.sqrt(lr) * 16, hovT: 0, dim: 1,
-                 spark: Math.random() * 5, sc: b => b });
+    nodes.push({ a, prez: false, f, armBase: arm / ARMS * Math.PI * 2, x: 0, y: 0, r: 12 + Math.sqrt(lr) * 15, hovT: 0, dim: 1, spark: Math.random() * 5 });
   });
-  place(inner, 1); place(outer, 2);
 }
-
 function nodePos(nd, cx, cy, R) {
-  if (nd.prez) return [cx, cy];
-  const rr = (nd.orbit === 1 ? R * 0.52 : R * 0.9) * zoom;
-  const bob = RM ? 0 : Math.sin(t * 0.8 + nd.phase) * 6;
-  const ang = nd.baseA + (RM ? 0 : rot * nd.speed);
-  return [cx + Math.cos(ang) * (rr + bob), cy + Math.sin(ang) * (rr + bob)];
+  if (nd.prez) return [cx + (RM ? 0 : Math.sin(t * 0.5) * 2), cy + (RM ? 0 : Math.cos(t * 0.4) * 2)];
+  const rad = nd.f * R * zoom, bob = RM ? 0 : Math.sin(t * 0.7 + nd.f * 9) * 5;
+  const ang = nd.armBase + nd.f * TWIST + (RM ? 0 : gal);
+  return [cx + Math.cos(ang) * (rad + bob), cy + Math.sin(ang) * (rad + bob)];
 }
 
 function loop() {
   requestAnimationFrame(loop);
-  if (document.hidden) return;              // агентска поука: спри rAF в скрит таб
+  if (document.hidden) return;
   if (view !== "sky") { ctx.clearRect(0, 0, W, H); return; }
-  t += 0.016;
-  if (!RM) { rot += 0.0016 + spin; spin *= 0.94; if (Math.abs(spin) < 1e-5) spin = 0; }
-
+  t += 0.016; if (!RM) { gal += 0.0009 + spin; spin *= 0.95; if (Math.abs(spin) < 1e-6) spin = 0; }
   ctx.clearRect(0, 0, W, H);
-  const g = ctx.createRadialGradient(W * 0.5, H * 0.46, 40, W * 0.5, H * 0.46, Math.max(W, H) * 0.7);
-  g.addColorStop(0, "rgba(10,30,44,.55)"); g.addColorStop(1, "rgba(0,0,4,0)");
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.46;
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.5);
+  core.addColorStop(0, "rgba(150,240,255,.5)"); core.addColorStop(.25, "rgba(0,190,220,.16)"); core.addColorStop(1, "rgba(0,4,10,0)");
+  ctx.fillStyle = core; ctx.fillRect(0, 0, W, H);
+  for (const nb of [[cx - R * .3, cy + R * .2, "80,120,220"], [cx + R * .35, cy - R * .25, "0,180,190"]]) {
+    const gg = ctx.createRadialGradient(nb[0], nb[1], 0, nb[0], nb[1], R * .6);
+    gg.addColorStop(0, `rgba(${nb[2]},.10)`); gg.addColorStop(1, `rgba(${nb[2]},0)`); ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H);
+  }
   for (const s of stars) {
     if (!RM) s.tw += s.sp * 0.04;
-    ctx.globalAlpha = (0.35 + Math.sin(s.tw) * 0.35) * s.z; ctx.fillStyle = "#bfe9ff";
-    ctx.fillRect(s.x, s.y, s.z * 1.7, s.z * 1.7);
+    const ang = s.ang0 + (RM ? 0 : gal), rad = s.f * R * zoom;
+    const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
+    ctx.globalAlpha = s.ba * (0.55 + Math.sin(s.tw) * 0.45); ctx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
+    ctx.fillRect(x, y, s.size, s.size);
   }
   ctx.globalAlpha = 1;
 
-  const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.42;
   for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R); nd.x = x; nd.y = y; }
   const prez = nodes[0];
 
   ctx.lineCap = "round";
   for (let i = 1; i < nodes.length; i++) {
-    const nd = nodes[i]; const dim = nd.dim * (hovered && hovered !== nd && hovered !== prez ? 0.5 : 1);
-    const c = nd.a.accent, lg = ctx.createLinearGradient(prez.x, prez.y, nd.x, nd.y);
-    lg.addColorStop(0, hex(prez.a.accent, 0.5 * dim)); lg.addColorStop(1, hex(c, 0.12 * dim));
-    ctx.strokeStyle = lg; ctx.lineWidth = (hovered === nd ? 2.1 : 1);
+    const nd = nodes[i], on = hovered === nd, dim = nd.dim * (hovered && !on && hovered !== prez ? 0.35 : 1);
+    ctx.strokeStyle = hex(nd.a.accent, (on ? 0.5 : 0.09) * dim); ctx.lineWidth = on ? 1.8 : 0.8;
     ctx.beginPath(); ctx.moveTo(prez.x, prez.y); ctx.lineTo(nd.x, nd.y); ctx.stroke();
-    if (!RM) {
-      const p = ((t * 0.14 + i * 0.13) % 1);
-      const px = prez.x + (nd.x - prez.x) * p, py = prez.y + (nd.y - prez.y) * p;
-      ctx.globalAlpha = (1 - p) * dim; ctx.fillStyle = hex(c, 1); ctx.shadowColor = c; ctx.shadowBlur = 10;
-      ctx.beginPath(); ctx.arc(px, py, 2.1, 0, 6.28); ctx.fill(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-    }
+    if (!RM && on) { const p = (t * 0.3) % 1, px = prez.x + (nd.x - prez.x) * p, py = prez.y + (nd.y - prez.y) * p; ctx.globalAlpha = 1 - p; ctx.fillStyle = hex(nd.a.accent, 1); ctx.shadowColor = nd.a.accent; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(px, py, 2.2, 0, 6.28); ctx.fill(); ctx.shadowBlur = 0; ctx.globalAlpha = 1; }
   }
 
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.02; p.vx *= 0.98; p.vy *= 0.98;
     if (p.life <= 0) { particles.splice(i, 1); continue; }
-    ctx.globalAlpha = p.life * 0.9; ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 8;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 6.28); ctx.fill();
+    ctx.globalAlpha = p.life * 0.9; ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 6.28); ctx.fill();
   }
   ctx.shadowBlur = 0; ctx.globalAlpha = 1;
 
   hovered = null;
-  if (!dragging) for (const nd of nodes) {
-    const dx = mx - nd.x, dy = my - nd.y, hit = nd.r * 1.2 + 6;
-    if (dx * dx + dy * dy < hit * hit) hovered = nd;
-  }
+  if (!dragging) for (const nd of nodes) { const dx = mx - nd.x, dy = my - nd.y, hit = nd.r * 1.2 + 6; if (dx * dx + dy * dy < hit * hit) hovered = nd; }
   for (const nd of nodes) drawNode(nd);
 
   cv.classList.toggle("pointer", !!hovered && !dragging);
   const tip = document.getElementById("tip");
   if (hovered) {
-    const a = hovered.a;
-    tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.2) + "px";
-    tip.innerHTML = `<div class="t-n">${hovered.prez ? "👑 " : ""}${esc(a.name)}</div><div class="t-r">${esc(a.title || "")}</div>
-      <div class="t-m"><div><b>v${majOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
+    const a = hovered.a; tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.2) + "px";
+    tip.innerHTML = `<div class="t-n">${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div><div class="t-m"><div><b>v${majOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
     tip.style.opacity = 1;
   } else tip.style.opacity = 0;
 }
@@ -10700,71 +10680,47 @@ function loop() {
 function drawNode(nd) {
   if (!RM) { nd.spark -= 0.016; if (nd.spark <= 0) { emit(nd); nd.spark = 4 + Math.random() * 6; } }
   const hoverT = nd.hovT = lerp(nd.hovT || 0, hovered === nd ? 1 : 0, 0.2);
-  const dimTarget = (!query || match(nd.a)) ? 1 : 0.14;
-  nd.dim = lerp(nd.dim, dimTarget, 0.12);
-  const c = nd.a.accent, r = nd.r * (1 + hoverT * 0.28) * (nd.prez ? (1 + Math.sin(t * 1.6) * (RM ? 0 : 0.04)) : 1);
+  nd.dim = lerp(nd.dim, (!query || match(nd.a)) ? 1 : 0.12, 0.12);
+  const c = nd.a.accent, r = nd.r * (1 + hoverT * 0.26) * (nd.prez ? (1 + (RM ? 0 : Math.sin(t * 1.6) * 0.045)) : 1);
   ctx.globalAlpha = nd.dim;
 
-  const aura = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, r * (nd.prez ? 3.6 : 2.5));
-  aura.addColorStop(0, hex(c, (nd.prez ? 0.45 : 0.32) * nd.dim)); aura.addColorStop(1, hex(c, 0));
-  ctx.fillStyle = aura; ctx.beginPath(); ctx.arc(nd.x, nd.y, r * (nd.prez ? 3.6 : 2.5), 0, 6.28); ctx.fill();
+  const aura = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, r * (nd.prez ? 3.8 : 2.6));
+  aura.addColorStop(0, hex(c, (nd.prez ? 0.5 : 0.34) * nd.dim)); aura.addColorStop(1, hex(c, 0));
+  ctx.fillStyle = aura; ctx.beginPath(); ctx.arc(nd.x, nd.y, r * (nd.prez ? 3.8 : 2.6), 0, 6.28); ctx.fill();
 
-  if (nd.prez) {
-    for (let k = 0; k < 3; k++) {
-      ctx.globalAlpha = (0.5 - k * 0.12) * nd.dim; ctx.strokeStyle = hex(c, 1); ctx.lineWidth = 1.4;
-      const rr = r * (1.7 + k * 0.55), a0 = (RM ? 0 : t * (0.4 - k * 0.1) * (k % 2 ? -1 : 1));
-      ctx.beginPath(); ctx.arc(nd.x, nd.y, rr, a0, a0 + 4.6); ctx.stroke();
-    }
-    ctx.globalAlpha = nd.dim;
-  }
+  if (nd.prez) for (let k = 0; k < 3; k++) { ctx.globalAlpha = (0.5 - k * 0.12) * nd.dim; ctx.strokeStyle = hex(c, 1); ctx.lineWidth = 1.4; const rr = r * (1.7 + k * 0.55), a0 = (RM ? 0 : t * (0.4 - k * 0.1) * (k % 2 ? -1 : 1)); ctx.beginPath(); ctx.arc(nd.x, nd.y, rr, a0, a0 + 4.6); ctx.stroke(); }
+  ctx.globalAlpha = nd.dim;
 
-  const core = ctx.createRadialGradient(nd.x - r * 0.3, nd.y - r * 0.3, r * 0.1, nd.x, nd.y, r);
-  core.addColorStop(0, hex(lighten(c, 60), 1)); core.addColorStop(1, hex(c, 1));
-  ctx.fillStyle = core; ctx.shadowColor = c; ctx.shadowBlur = hovered === nd ? 26 : (nd.prez ? 24 : 12);
+  const g = ctx.createRadialGradient(nd.x - r * 0.3, nd.y - r * 0.3, r * 0.1, nd.x, nd.y, r);
+  g.addColorStop(0, hex(lighten(c, 70), 1)); g.addColorStop(1, hex(c, 1));
+  ctx.fillStyle = g; ctx.shadowColor = c; ctx.shadowBlur = hovered === nd ? 26 : (nd.prez ? 24 : 12);
   ctx.beginPath(); ctx.arc(nd.x, nd.y, r, 0, 6.28); ctx.fill(); ctx.shadowBlur = 0;
-  ctx.strokeStyle = hex(lighten(c, 90), 0.9); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(nd.x, nd.y, r, 0, 6.28); ctx.stroke();
-
-  ctx.globalAlpha = nd.dim; ctx.font = (r * 1.05) + "px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillText(nd.a.emoji || "🤖", nd.x, nd.y + 1);
-  if (nd.prez) { ctx.font = (r * 0.7) + "px system-ui"; ctx.fillText("👑", nd.x, nd.y - r - r * 0.35); }
+  ctx.strokeStyle = hex(lighten(c, 95), 0.85); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(nd.x, nd.y, r, 0, 6.28); ctx.stroke();
+  ctx.fillStyle = "rgba(3,6,11,.55)"; ctx.beginPath(); ctx.arc(nd.x, nd.y, r * 0.74, 0, 6.28); ctx.fill();
+  const im = getIcon(nd.a.id); if (im.complete && im.naturalWidth) { const s = r * (nd.prez ? 1.15 : 1.2); ctx.drawImage(im, nd.x - s / 2, nd.y - s / 2, s, s); }
 
   if (nd.prez || hovered === nd || (nd.dim > 0.5 && r > 15)) {
-    ctx.font = (nd.prez ? 13 : 11) + "px system-ui"; ctx.fillStyle = hex(lighten(c, 70), Math.min(1, nd.dim + hoverT));
-    ctx.shadowColor = "#000"; ctx.shadowBlur = 6;
+    ctx.font = (nd.prez ? 13 : 11) + "px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = hex(lighten(c, 75), Math.min(1, nd.dim + hoverT)); ctx.shadowColor = "#000"; ctx.shadowBlur = 6;
     ctx.fillText(shortName(nd.a.name), nd.x, nd.y + r + (nd.prez ? 20 : 13)); ctx.shadowBlur = 0;
   }
   ctx.globalAlpha = 1;
 }
-
 function emit(nd) {
   const c = nd.a.accent, n = 3 + (Math.random() * 3 | 0);
-  for (let i = 0; i < n; i++) {
-    const a = Math.random() * 6.28, sp = 0.4 + Math.random() * 1.1;
-    particles.push({ x: nd.x, y: nd.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, r: 1.5 + Math.random() * 1.8, c: hex(lighten(c, 40), 1) });
-  }
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, sp = 0.4 + Math.random() * 1.1; particles.push({ x: nd.x, y: nd.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, r: 1.5 + Math.random() * 1.7, c: hex(lighten(c, 40), 1) }); }
   if (particles.length > 240) particles.splice(0, particles.length - 240);
 }
 
 /* ---------- интеракция ---------- */
 cv.addEventListener("pointerdown", e => { dragging = true; dragMoved = false; lastX = e.clientX; lastY = e.clientY; cv.classList.add("grabbing"); cv.setPointerCapture(e.pointerId); });
-cv.addEventListener("pointermove", e => {
-  const rect = cv.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top;
-  if (dragging) { const dxx = e.clientX - lastX; if (Math.abs(dxx) + Math.abs(e.clientY - lastY) > 3) dragMoved = true; if (!RM) rot += dxx * 0.004; spin = RM ? 0 : dxx * 0.0006; lastX = e.clientX; lastY = e.clientY; }
-});
+cv.addEventListener("pointermove", e => { const rect = cv.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; if (dragging) { const dxx = e.clientX - lastX; if (Math.abs(dxx) + Math.abs(e.clientY - lastY) > 3) dragMoved = true; if (!RM) gal += dxx * 0.004; spin = RM ? 0 : dxx * 0.0006; lastX = e.clientX; lastY = e.clientY; } });
 cv.addEventListener("pointerup", () => { dragging = false; cv.classList.remove("grabbing"); if (!dragMoved && hovered) openDrawer(hovered.a); });
 cv.addEventListener("pointerleave", () => { mx = my = -1e5; });
 cv.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.max(0.55, Math.min(2.2, zoom * (e.deltaY < 0 ? 1.08 : 0.93))); }, { passive: false });
-
 document.getElementById("q").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); filterList(); });
-function match(a) { const q = query; if (!q) return true; return (a.name + " " + (a.title || "") + " " + (a.tagline || "") + " " + a.id).toLowerCase().includes(q); }
-
-document.getElementById("seg").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return; view = b.dataset.v;
-  [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b));
-  document.getElementById("list").classList.toggle("show", view === "list");
-  document.getElementById("docs").classList.toggle("show", view === "docs");
-  if (view === "docs") renderDocs();
-});
+function match(a) { if (!query) return true; return (a.name + " " + (a.title || "") + " " + (a.tagline || "") + " " + a.id).toLowerCase().includes(query); }
+document.getElementById("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; view = b.dataset.v; [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b)); document.getElementById("list").classList.toggle("show", view === "list"); document.getElementById("docs").classList.toggle("show", view === "docs"); if (view === "docs") renderDocs(); });
 
 /* ---------- drawer ---------- */
 function openDrawer(a) {
@@ -10772,19 +10728,14 @@ function openDrawer(a) {
   const ev = (a.evolution || []).slice(-6).reverse(), act = (a.activity || []).slice(-8).reverse();
   d.style.setProperty("--ac", c);
   d.innerHTML = `
-    <div class="d-top">
-      <button class="d-close" onclick="closeDrawer()">✕</button>
-      <div class="d-head">
-        <div class="d-ava" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${a.emoji || "🤖"}</div>
-        <div><h2>${isPrez(a) ? "👑 " : ""}${esc(a.name)}</h2><div class="role">${esc(a.title || "")}</div></div>
-      </div>
-      <div class="d-tag">${esc(a.tagline || a.mission || "")}</div>
-    </div>
+    <div class="d-top"><button class="d-close" onclick="closeDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="d-head"><div class="d-ava" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${iconSVG(a.id, c, 1.9)}</div>
+        <div><h2>${esc(a.name)}${isPrez(a) ? " · президент" : ""}</h2><div class="role">${esc(a.title || "")}</div></div></div>
+      <div class="d-tag">${esc(a.tagline || a.mission || "")}</div></div>
     <div class="d-metrics">
       <div class="d-metric" style="border-color:${hex(c,.35)}"><b style="color:${c}">v${majOf(a)}</b><span>версия</span></div>
       <div class="d-metric"><b>${lessonsOf(a)}</b><span>поуки</span></div>
-      <div class="d-metric"><b>${(a.capabilities || []).length}</b><span>умения</span></div>
-    </div>
+      <div class="d-metric"><b>${(a.capabilities || []).length}</b><span>умения</span></div></div>
     <div class="chips">${(a.tools || []).map(x => `<span class="c">${esc(x)}</span>`).join("")}<span class="c">model: ${esc(a.model || "—")}</span><span class="c">${esc(a.status || "")}</span></div>
     ${a.capabilities && a.capabilities.length ? `<div class="d-sec"><h3>Какво владее</h3><ul class="caps">${a.capabilities.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${ev.length ? `<div class="d-sec"><h3>Времева линия</h3><div class="tl">${ev.map(e => `<div class="ev"><div class="v" style="color:${c}">v${esc(e.version)} · <span style="color:var(--txt)">${esc(e.event || "")}</span></div><div class="dt">${esc(e.date || "")}</div><div class="x">${esc(e.detail || "")}</div></div>`).join("")}</div></div>` : ""}
@@ -10797,34 +10748,22 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(
 
 /* ---------- list + live ---------- */
 function buildLive() {
-  const total = DATA.agents.reduce((s, a) => s + lessonsOf(a), 0);
-  const avg = (DATA.agents.reduce((s, a) => s + majOf(a), 0) / DATA.agents.length).toFixed(1);
-  document.getElementById("live").innerHTML =
-    `<div class="chip"><b>${DATA.agents.length}</b><span>агенти</span></div>
-     <div class="chip"><b>${total}</b><span>поуки</span></div>
-     <div class="chip"><b>v${avg}</b><span>ср. ниво</span></div>
-     <div class="chip"><b style="color:var(--accent)">1</b><span>президент</span></div>`;
+  const total = DATA.agents.reduce((s, a) => s + lessonsOf(a), 0), avg = (DATA.agents.reduce((s, a) => s + majOf(a), 0) / DATA.agents.length).toFixed(1);
+  document.getElementById("live").innerHTML = `<div class="chip"><b>${DATA.agents.length}</b><span>агенти</span></div><div class="chip"><b>${total}</b><span>поуки</span></div><div class="chip"><b>v${avg}</b><span>ср. ниво</span></div><div class="chip"><b style="color:var(--accent)">1</b><span>президент</span></div>`;
 }
 function buildList() {
   const grid = document.getElementById("grid");
   const ordered = DATA.agents.slice().sort((a, b) => (isPrez(b) ? 1 : 0) - (isPrez(a) ? 1 : 0) || lessonsOf(b) - lessonsOf(a));
   grid.innerHTML = "";
   for (const a of ordered) {
-    const c = a.accent, card = document.createElement("div");
-    card.className = "card"; card.style.setProperty("--ac", c); card.dataset.id = a.id;
-    card.innerHTML = `<div class="ch"><div class="a" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${a.emoji || "🤖"}</div>
-      <div><h2>${isPrez(a) ? "👑 " : ""}${esc(a.name)}</h2><div class="r">${esc(a.title || "")}</div></div></div>
-      <div class="tg">${esc(a.tagline || "")}</div>
-      <div class="mm"><div><b>v${majOf(a)}</b> версия</div><div><b>${lessonsOf(a)}</b> поуки</div><div><b>${(a.capabilities || []).length}</b> умения</div></div>`;
-    card.addEventListener("click", () => openDrawer(a));
-    grid.appendChild(card);
+    const c = a.accent, card = document.createElement("div"); card.className = "card"; card.style.setProperty("--ac", c); card.dataset.id = a.id;
+    card.innerHTML = `<div class="ch"><div class="a" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${iconSVG(a.id, c, 1.9)}</div>
+      <div><h2>${esc(a.name)}${isPrez(a) ? " · президент" : ""}</h2><div class="r">${esc(a.title || "")}</div></div></div>
+      <div class="tg">${esc(a.tagline || "")}</div><div class="mm"><div><b>v${majOf(a)}</b> версия</div><div><b>${lessonsOf(a)}</b> поуки</div><div><b>${(a.capabilities || []).length}</b> умения</div></div>`;
+    card.addEventListener("click", () => openDrawer(a)); grid.appendChild(card);
   }
 }
-function filterList() {
-  [...document.querySelectorAll("#grid .card")].forEach(c => {
-    const a = DATA.agents.find(x => x.id === c.dataset.id); c.style.display = match(a) ? "" : "none";
-  });
-}
+function filterList() { [...document.querySelectorAll("#grid .card")].forEach(c => { const a = DATA.agents.find(x => x.id === c.dataset.id); c.style.display = match(a) ? "" : "none"; }); }
 
 /* ---------- helpers ---------- */
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m])); }
