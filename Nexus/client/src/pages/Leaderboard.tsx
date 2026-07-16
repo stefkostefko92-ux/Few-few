@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 
@@ -36,7 +37,9 @@ export default function Leaderboard(): React.ReactElement {
                 </span>
               </Td>
               <Td>
-                <strong style={{ color: 'var(--text-1)' }}>{r.name}</strong>
+                <Link to={`/app/player/${encodeURIComponent(r.name)}`} style={{ color: 'var(--text-1)', textDecoration: 'none' }}>
+                  <strong style={{ color: 'var(--text-1)' }}>{r.name}</strong>
+                </Link>
                 {r.is_npc ? <span className="tag" style={{ marginLeft: 8 }}>{t('leaderboard.npc')}</span> : null}
               </Td>
               <Td style={{ textTransform: 'capitalize' }}>{t(`common.class.${r.class}`, { defaultValue: r.class })}</Td>

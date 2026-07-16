@@ -100,6 +100,41 @@ export function isSafeWebhookUrl(raw: string): boolean {
   return true;
 }
 
+/** true, ако IP литерал е loopback/private/link-local/multicast. */
+function isPrivateIp(ip: string): boolean {
+  const m = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const a = Number(m[1]), b = Number(m[2]);
+    if (a === 10 || a === 127 || a === 0) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a >= 224) return true;
+    return false;
+  }
+  const v6 = ip.toLowerCase();
+  return v6 === '::1' || v6.startsWith('fc') || v6.startsWith('fd')
+    || v6.startsWith('fe8') || v6.startsWith('fe9') || v6.startsWith('fea') || v6.startsWith('feb');
+}
+
+/**
+ * Анти-DNS-rebinding: резолвва hostname-а при ВСЯКА доставка и отказва, ако
+ * сочи към частен адрес. `isSafeWebhookUrl` пази само литералите/имената при
+ * регистрация — публичен домейн, който резолвва към 127.0.0.1/RFC1918
+ * (rebinding), минаваше. Fail-closed: неуспешен resolve → отказ.
+ */
+async function hostResolvesPrivate(hostname: string): Promise<boolean> {
+  // Литерален IP вече е валидиран от isSafeWebhookUrl — не резолвваме.
+  if (/^[\d.]+$/.test(hostname) || hostname.startsWith('[')) return false;
+  try {
+    const { promises: dns } = await import('node:dns');
+    const addrs = await dns.lookup(hostname, { all: true });
+    return addrs.some((a) => isPrivateIp(a.address));
+  } catch {
+    return true; // не може да се резолвне → fail closed
+  }
+}
+
 /** Discord webhook routes expect a content + embeds payload rather than
  *  a raw JSON envelope. Detect by hostname and re-shape the body before
  *  delivery so admins can paste a Discord webhook URL straight in and
@@ -153,14 +188,18 @@ function formatDiscordPayload(payload: any): any {
 }
 
 async function deliver(endpoint: { url: string; secret?: string; id?: number }, payload: any): Promise<void> {
-  if (!isSafeWebhookUrl(endpoint.url)) {
+  const markUnsafe = () => {
     if (endpoint.id) {
       getDb()
         .prepare('UPDATE webhook_endpoints SET last_called_at = ?, last_status = ?, failures = failures + 1 WHERE id = ?')
         .run(Date.now(), -2, endpoint.id);
     }
-    return;
-  }
+  };
+  if (!isSafeWebhookUrl(endpoint.url)) { markUnsafe(); return; }
+  // Анти-DNS-rebinding: провери резолвнатия IP при доставката.
+  let host = '';
+  try { host = new URL(endpoint.url).hostname; } catch { markUnsafe(); return; }
+  if (await hostResolvesPrivate(host)) { markUnsafe(); return; }
   const discordMode = isDiscordWebhook(endpoint.url);
   const finalPayload = discordMode ? formatDiscordPayload(payload) : payload;
   const body = JSON.stringify(finalPayload);

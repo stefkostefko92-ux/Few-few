@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3';
 import { ACHIEVEMENTS } from './achievements';
+import { trackWeeklyKill } from '../routes/weekly';
 
 export interface CombatOutcome {
   characterId: number;
@@ -55,6 +56,12 @@ export function applyCombatEvent(db: Database.Database, out: CombatOutcome): Unl
   if (updates.length) {
     params.push(out.characterId);
     db.prepare(`UPDATE characters SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+  }
+
+  // Тик на седмичното предизвикателство (Realm Trial) при победа над
+  // чудовище — централизирано тук, за да ловят всички бойни маршрути.
+  if (out.victory && out.monsterSlug) {
+    try { trackWeeklyKill(out.characterId); } catch { /* weekly table mid-migration */ }
   }
 
   // 2. Bestiary.
