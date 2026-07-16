@@ -64,7 +64,7 @@ export function detectAnomalies(
         metric,
         z: Math.round(z * 100) / 100,
         value: today[metric],
-        baseline: median(history.map((h) => h[metric])),
+        baseline: Math.round((median(history.map((h) => h[metric])) ?? 0) * 100) / 100,
         direction: z > 0 ? 'скок' : 'срив',
       });
     }

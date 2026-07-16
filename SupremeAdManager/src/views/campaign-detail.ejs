@@ -89,7 +89,7 @@
     <thead><tr><th>Дата</th><th>Импресии</th><th>Кликове</th><th>Разход</th><th>Конверсии</th><th>Стойност</th><th>Честота</th></tr></thead>
     <tbody>
       <% for (const m of metrics) { %>
-      <tr><td><%= m.date %></td><td><%= m.impressions %></td><td><%= m.clicks %></td><td><%= m.spend.toFixed(2) %></td><td><%= m.conversions %></td><td><%= m.conversion_value.toFixed(2) %></td><td><%= m.frequency ?? '—' %></td></tr>
+      <tr><td><%= m.date %></td><td><%= m.impressions %></td><td><%= m.clicks %></td><td><%= m.spend.toFixed(2) %></td><td><%= m.conversions.toFixed(2) %></td><td><%= m.conversion_value.toFixed(2) %></td><td><%= m.frequency ?? '—' %></td></tr>
       <% } %>
       <% if (!metrics.length) { %><tr><td colspan="7">Няма метрики още — публикувай, активирай и синхронизирай.</td></tr><% } %>
     </tbody>
