@@ -10432,10 +10432,11 @@ const FALLBACK = {
         "Президент/водещ агент: следи здравето на целия екип през tools/agents/oversee.mjs (цялост дефиниция↔памет↔agents.json↔settings, източници, дубли, синхрон на таблото)",
         "Инженерство на агенти (канон на Anthropic): workflow vs agent, патърни (routing/parallelization/orchestrator-workers/evaluator-optimizer), автономен цикъл, ACI/дизайн на инструменти",
         "Multi-agent оркестрация: lead+subagents, кога помага (breadth-first), ~15x токени, режими на провал, делегиране с явна цел/формат/граници",
-        "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval"
+        "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval",
+        "Онбординг и надзор на растящ екип (20 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна"
       ],
       "knowledge": {
-        "sources": 130,
+        "sources": 150,
         "researchToolUses": 0,
         "priorArt": [
           "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
@@ -10489,6 +10490,12 @@ const FALLBACK = {
           "date": "2026-07-15",
           "event": "Издигнат в президент + обучен на канона за агенти",
           "detail": "Назначен за водещ/координатор на екипа: следи другите агенти през нов инструмент tools/agents/oversee.mjs (цялост, източници, дубли, синхрон). Обучен на канона на Anthropic за изграждане на агенти (+29 проверени поуки от официалните engineering постове и Agent SDK докове: workflow патърни, multi-agent оркестрация, context engineering, дизайн на инструменти, agent loop). Общо 130 проверени поуки → v13.0."
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до v15 + онбординг на Тайния агент",
+          "detail": "Ръководи включването на 20-ия агент „Тайният агент“ (изрядност пред Apple/Google/Meta) в екипа с пълен 4-синхрон и зелен oversee. Задълбочен на канона за изграждане на агенти: +20 проверени поуки (дизайн на инструменти/ACI, context engineering just-in-time, evaluator-optimizer/routing патърни, prompt caching, model routing по роля, reasoning бюджети, agent loop gather→act→verify, guardrails/lethal-trifecta, evals преди смяна на модел, версия като сигнал за зрялост, надзорна каденция) → 150 проверени поуки, v15.0."
         }
       ],
       "activity": [
@@ -10521,6 +10528,11 @@ const FALLBACK = {
           "date": "2026-07-15",
           "type": "learning",
           "summary": "Издигнат в президент на агентите + обучен на канона на Anthropic за агенти (+29 поуки → 130 общо, v13.0); нов надзорен инструмент tools/agents/oversee.mjs"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Издигнат до v15.0: онбордира 20-ия агент (Тайният агент) с пълен синхрон и зелен oversee + задълбочен на канона за агенти (+20 поуки → 150 общо)."
         }
       ]
     },
@@ -10594,6 +10606,93 @@ const FALLBACK = {
           "summary": "Засят с 18 проверени поуки за българска фискализация (Н-18/СУПТО/евро/ЗДДС/GDPR/ЗСч) + POS инженерство (int пари, драйвери за ФУ, сървърна остойностка) от CSPos/docs/COMPLIANCE.md + кода (+17 още)."
         }
       ]
+    },
+    {
+      "id": "tayniyat-agent",
+      "name": "Тайният агент",
+      "title": "Одобрение и съответствие пред Apple · Google · Meta",
+      "emoji": "🕵️",
+      "accent": "#dc2626",
+      "tagline": "Знае как Apple, Google и Meta проверяват софтуер — и ги прави изрядни, за да минат ревюто от първия път.",
+      "file": ".claude/agents/tayniyat-agent.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Прекарва софтуер и продукти през проверките на големите платформи от първия път: Apple (App Review Guidelines, App Privacy nutrition labels, Privacy Manifest/required-reason API, ATT, notarization/Gatekeeper за macOS, TestFlight, export compliance), Google (Play Developer Program Policies, Data Safety, target API, затворен тест, Play Integrity, App Signing, OAuth app verification + CASA за restricted scopes, Chrome Web Store MV3 ревю, Play Protect) и Meta (App Review за Graph permissions/features, Business Verification, Data Use Checkup, Advanced vs Standard Access, Data Deletion callback, ad review). Никога не заобикаля ревюто (cloaking = перманентен бан); минимални права с обосновка и демонстрация; поверителността е първокласна.",
+      "capabilities": [
+        "Apple App Review: чести откази (2.1 completeness, 2.3/2.3.1 metadata+анти-cloaking, 3.1.1 IAP, 4.2 minimum functionality, 4.3 spam, 5.1.1 privacy) и как да ги преодолееш",
+        "Apple поверителност: App Privacy nutrition labels + Privacy Manifest (PrivacyInfo.xcprivacy) + required-reason API + ATT + third-party SDK manifest",
+        "Apple: notarization/Hardened Runtime (macOS Gatekeeper), export compliance, Sign in with Apple, account/data deletion, Kids Category, TestFlight beta review",
+        "Google Play: Developer Program Policies, задължителна Data Safety форма (вкл. SDK-та), target API, AAB + Play App Signing, закрит тест (12 тестъра/14 дни за нови лични акаунти)",
+        "Google Play: чувствителни разрешения + декларации, Play Integrity (сървърни verdict-и), Pre-launch report, Play Protect (пост-публикационни сканирания), IARC рейтинг",
+        "Google OAuth app verification + restricted scopes → годишен CASA (App Defense Alliance, OWASP ASVS); минимален scope принцип",
+        "Chrome Web Store: MV3-only ревю, single purpose, минимални permissions/host_permissions, нула remote code, Limited Use политика",
+        "Meta App Review: permission/feature ревю със screencast, Standard vs Advanced Access, Business Verification, Data Use Checkup (годишно), Data Deletion callback",
+        "Meta Ads: Advertising Standards, personal-attributes политика, Conversions API, Limited Data Use (CCPA)",
+        "Крос-платформено: анти-cloaking (бан-ниво), минимални права с обосновка+демонстрация, точни privacy лейбъли вкл. SDK-та, EU DSA trader статус",
+        "Реакция на отказ: разчитане на правилото зад отказа, конкретен апел с доказателства, пакет за одобрение (permissions/scopes justification, demo, screencast, privacy mapping)",
+        "Инструмент tools/approval/review-check.mjs: статичен CI-скан за cloaking, тънка обвивка (4.2), широки Chrome permissions, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Apple App Store Review Guidelines + App Privacy details + Privacy Manifest / required-reason API docs",
+          "Apple notarization (notarytool/Hardened Runtime) + App Store Connect help",
+          "Google Play Developer Program Policies + Data Safety + target API + Play Integrity + App Signing docs",
+          "Google OAuth app verification + restricted-scope verification + App Defense Alliance CASA",
+          "Chrome Web Store review process + program policies (MV3, Limited Use, permissions)",
+          "Meta App Review + access levels + Business Verification + Data Use Checkup + Data Deletion callback",
+          "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
+          "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден заради липсващо покритие на изрядността пред ревютата на платформите — Мобилджията прави билда, Хромаджията MV3 строежа, но никой не притежаваше домейна „как Apple/Google/Meta проверяват и как минаваш от раз“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор (източник-или-мълчание), три неприкосновени правила (не заобикаляй ревюто; минимум права с обосновка+демонстрация; поверителността е първокласна), инструмент tools/approval/review-check.mjs, екипна оркестрация, памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (официални docs на Apple/Google/Meta/Chrome + App Defense Alliance/OWASP): App Review откази, privacy labels/manifest/ATT, notarization, Play policies/Data Safety/target API/закрит тест/Play Integrity, OAuth verification+CASA, Chrome MV3/Limited Use, Meta App Review/Business Verification/Data Use Checkup/Data Deletion/ad standards, крос-платформена регулация (EU DSA trader, деца/COPPA). Домейнът е покрит из основи."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: покрива изрядността пред Apple, Google и Meta — как проверяват софтуер/продукти и как минаваш ревюто от първия път."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от официалните политики (App Review, Play, Meta App Review, Chrome, OAuth/CASA) → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/approval/review-check.mjs: CI-скан за cloaking, тънка обвивка (4.2), широки Chrome права, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла."
+        }
+      ]
     }
   ]
 };
@@ -10622,6 +10721,7 @@ const ICON = {
   "diskordjiyata": '<path d="M4 5h16v11H9l-4 4v-4H4z"/><circle cx="9" cy="10.5" r=".8" fill="#eef6ff" stroke="none"/><circle cx="12" cy="10.5" r=".8" fill="#eef6ff" stroke="none"/><circle cx="15" cy="10.5" r=".8" fill="#eef6ff" stroke="none"/>',
   "treydara": '<path d="M3 17l6-6 4 4 8-8"/><path d="M16 7h5v5"/>',
   "kasadjiyata": '<path d="M6 3h12v18l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  "tayniyat-agent": '<path d="M3.5 10.5h17"/><path d="M6 10.5c0-3.2 2.4-5.5 6-5.5s6 2.3 6 5.5"/><circle cx="8.6" cy="15" r="2.3"/><circle cx="15.4" cy="15" r="2.3"/><path d="M10.9 14.7q1.1-.6 2.2 0"/>',
   "_default": '<circle cx="12" cy="12" r="8"/>',
 };
 function iconInner(id) { return ICON[id] || ICON._default; }
@@ -10979,12 +11079,13 @@ const PERSONA = {
   "diskordjiyata": { code: "Свързочникът", trait: "Ed25519 верен", greet: "Бот, webhook или slash команда? Токенът остава таен." },
   "treydara": { code: "Стратегът", trait: "Риск-първо, не съветник", greet: "Първо paper trading, после капитал. Стоп-лос на борсата — задължителен." },
   "kasadjiyata": { code: "Фискалният", trait: "Нищо не трие", greet: "Продажба без бон не се записва. Н-18 и еврото — изрядни." },
+  "tayniyat-agent": { code: "Незабележимият", trait: "Мисли като ревюър", greet: "Коя платформа гоним — Apple, Google или Meta? Ще те направя изряден да минеш от раз." },
   "_default": { code: "Агент", trait: "Готов за работа", greet: "Здрасти. Какво строим днес?" },
 };
 function darken(c, amt) { const p = parse(c), f = x => Math.max(0, x - amt); return `#${[f(p.r), f(p.g), f(p.b)].map(x => x.toString(16).padStart(2, "0")).join("")}`; }
 
 // лека вариация на силуета per агент (по-яйцевиден/по-объл)
-const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.1, "siydara": 0.96, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "_default": 1.03 };
+const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.1, "siydara": 0.96, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "tayniyat-agent": 1.0, "_default": 1.03 };
 
 // аксесоар по областта на агента (рисуван върху гела)
 function accessory(ctx, id, cx, CY, R, c, tt) {
@@ -11145,6 +11246,15 @@ function accessory(ctx, id, cx, CY, R, c, tt) {
       ctx.strokeStyle = "#aab4bd"; S(1.2); for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(rx - rw * .32, ry - rh * .3 + i * R * .1); ctx.lineTo(rx + rw * .32, ry - rh * .3 + i * R * .1); ctx.stroke(); }
       ctx.strokeStyle = hex(c, .7); S(1.4); ctx.beginPath(); ctx.moveTo(rx - rw * .32, ry + rh * .18); ctx.lineTo(rx + rw * .32, ry + rh * .18); ctx.stroke(); break;
     }
+    case "tayniyat-agent": {
+      // таен агент: тъмни очила + слушалка с кабел
+      for (const s of [-1, 1]) lens(cx + s * R * .36, eY, R * .46, R * .3, R * .08, c, true);
+      ctx.strokeStyle = "#0a0f14"; S(R * .05); ctx.beginPath(); ctx.moveTo(cx - R * .13, eY - R * .02); ctx.quadraticCurveTo(cx, eY - R * .07, cx + R * .13, eY - R * .02); ctx.stroke();
+      for (const s of [-1, 1]) { ctx.strokeStyle = "#0a0f14"; S(R * .05); ctx.beginPath(); ctx.moveTo(cx + s * R * .59, eY - R * .04); ctx.lineTo(cx + s * R * .8, eY - R * .1); ctx.stroke(); }
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; for (const s of [-1, 1]) { ctx.fillStyle = "rgba(210,225,240,.5)"; ctx.beginPath(); ctx.ellipse(cx + s * R * .44, eY - R * .07, R * .09, R * .045, -.6, 0, 6.28); ctx.fill(); } ctx.restore();
+      sh(() => { ctx.strokeStyle = "#12181f"; S(R * .05); ctx.beginPath(); ctx.moveTo(cx + R * .66, eY + R * .04); ctx.quadraticCurveTo(cx + R * .84, eY + R * .32, cx + R * .7, CY + R * .5); ctx.stroke(); });
+      ctx.fillStyle = SILVER(cx + R * .6, eY - R * .1, cx + R * .72, eY + R * .12); ctx.beginPath(); ctx.arc(cx + R * .66, eY + R * .04, R * .07, 0, 6.28); ctx.fill(); ctx.strokeStyle = "#59646f"; S(1); ctx.stroke(); glint(cx + R * .63, eY, R * .05); break;
+    }
   }
   ctx.restore(); ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
 }
@@ -11157,7 +11267,7 @@ function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
   const SY = SHAPE[agent.id] || 1.03;
-  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
+  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 }, "tayniyat-agent": { lean: .03, sway: .022, bob: .76 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
   const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
   let excited = 0, jumpT = -9, winkT = -9, burst = [], sq = 1, sqv = 0, tilt = 0, R0 = 60;
@@ -11356,6 +11466,7 @@ const CHAT_ADVICE = {
   "diskordjiyata": ["Токенът таен. Least-privilege intents.", "HTTP interactions — верифицирай Ed25519 подписа.", "Rate limits per-route + global. Уважавай ги."],
   "treydara": ["Първо paper trading, после реален капитал.", "Стоп-лос на борсата — задължителен. Kill-switch готов.", "Не гарантирам печалба и не давам инвестиционен съвет."],
   "kasadjiyata": ["Продажба без успешен фискален бон НЕ се записва.", "Пари в целочислени евроценти — никакъв float.", "Н-18 / СУПТО / евро (курс 1.95583) — изрядни."],
+  "tayniyat-agent": ["Никога не заобикаляй ревюто — cloaking = перманентен бан, не отказ.", "Всяко разрешение: минимум + обосновка + демонстрация (screencast/demo акаунт).", "Точни privacy лейбъли (App Privacy / Play Data Safety) — включи и третите SDK-та.", "Дай на ревюъра demo достъп — иначе отказва „по подразбиране“.", "Бавните процеси (OAuth verification, CASA, Meta Business Verification) започвай рано."],
 };
 function chatReply(a, raw) {
   const t = (raw || "").toLowerCase().trim();

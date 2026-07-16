@@ -10268,10 +10268,11 @@
         "Президент/водещ агент: следи здравето на целия екип през tools/agents/oversee.mjs (цялост дефиниция↔памет↔agents.json↔settings, източници, дубли, синхрон на таблото)",
         "Инженерство на агенти (канон на Anthropic): workflow vs agent, патърни (routing/parallelization/orchestrator-workers/evaluator-optimizer), автономен цикъл, ACI/дизайн на инструменти",
         "Multi-agent оркестрация: lead+subagents, кога помага (breadth-first), ~15x токени, режими на провал, делегиране с явна цел/формат/граници",
-        "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval"
+        "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval",
+        "Онбординг и надзор на растящ екип (20 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна"
       ],
       "knowledge": {
-        "sources": 130,
+        "sources": 150,
         "researchToolUses": 0,
         "priorArt": [
           "Google Gemini API docs (models, generationConfig, thinkingConfig, rate limits)",
@@ -10325,6 +10326,12 @@
           "date": "2026-07-15",
           "event": "Издигнат в президент + обучен на канона за агенти",
           "detail": "Назначен за водещ/координатор на екипа: следи другите агенти през нов инструмент tools/agents/oversee.mjs (цялост, източници, дубли, синхрон). Обучен на канона на Anthropic за изграждане на агенти (+29 проверени поуки от официалните engineering постове и Agent SDK докове: workflow патърни, multi-agent оркестрация, context engineering, дизайн на инструменти, agent loop). Общо 130 проверени поуки → v13.0."
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до v15 + онбординг на Тайния агент",
+          "detail": "Ръководи включването на 20-ия агент „Тайният агент“ (изрядност пред Apple/Google/Meta) в екипа с пълен 4-синхрон и зелен oversee. Задълбочен на канона за изграждане на агенти: +20 проверени поуки (дизайн на инструменти/ACI, context engineering just-in-time, evaluator-optimizer/routing патърни, prompt caching, model routing по роля, reasoning бюджети, agent loop gather→act→verify, guardrails/lethal-trifecta, evals преди смяна на модел, версия като сигнал за зрялост, надзорна каденция) → 150 проверени поуки, v15.0."
         }
       ],
       "activity": [
@@ -10357,6 +10364,11 @@
           "date": "2026-07-15",
           "type": "learning",
           "summary": "Издигнат в президент на агентите + обучен на канона на Anthropic за агенти (+29 поуки → 130 общо, v13.0); нов надзорен инструмент tools/agents/oversee.mjs"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Издигнат до v15.0: онбордира 20-ия агент (Тайният агент) с пълен синхрон и зелен oversee + задълбочен на канона за агенти (+20 поуки → 150 общо)."
         }
       ]
     },
@@ -10428,6 +10440,93 @@
           "date": "2026-07-15",
           "type": "learning",
           "summary": "Засят с 18 проверени поуки за българска фискализация (Н-18/СУПТО/евро/ЗДДС/GDPR/ЗСч) + POS инженерство (int пари, драйвери за ФУ, сървърна остойностка) от CSPos/docs/COMPLIANCE.md + кода (+17 още)."
+        }
+      ]
+    },
+    {
+      "id": "tayniyat-agent",
+      "name": "Тайният агент",
+      "title": "Одобрение и съответствие пред Apple · Google · Meta",
+      "emoji": "🕵️",
+      "accent": "#dc2626",
+      "tagline": "Знае как Apple, Google и Meta проверяват софтуер — и ги прави изрядни, за да минат ревюто от първия път.",
+      "file": ".claude/agents/tayniyat-agent.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Прекарва софтуер и продукти през проверките на големите платформи от първия път: Apple (App Review Guidelines, App Privacy nutrition labels, Privacy Manifest/required-reason API, ATT, notarization/Gatekeeper за macOS, TestFlight, export compliance), Google (Play Developer Program Policies, Data Safety, target API, затворен тест, Play Integrity, App Signing, OAuth app verification + CASA за restricted scopes, Chrome Web Store MV3 ревю, Play Protect) и Meta (App Review за Graph permissions/features, Business Verification, Data Use Checkup, Advanced vs Standard Access, Data Deletion callback, ad review). Никога не заобикаля ревюто (cloaking = перманентен бан); минимални права с обосновка и демонстрация; поверителността е първокласна.",
+      "capabilities": [
+        "Apple App Review: чести откази (2.1 completeness, 2.3/2.3.1 metadata+анти-cloaking, 3.1.1 IAP, 4.2 minimum functionality, 4.3 spam, 5.1.1 privacy) и как да ги преодолееш",
+        "Apple поверителност: App Privacy nutrition labels + Privacy Manifest (PrivacyInfo.xcprivacy) + required-reason API + ATT + third-party SDK manifest",
+        "Apple: notarization/Hardened Runtime (macOS Gatekeeper), export compliance, Sign in with Apple, account/data deletion, Kids Category, TestFlight beta review",
+        "Google Play: Developer Program Policies, задължителна Data Safety форма (вкл. SDK-та), target API, AAB + Play App Signing, закрит тест (12 тестъра/14 дни за нови лични акаунти)",
+        "Google Play: чувствителни разрешения + декларации, Play Integrity (сървърни verdict-и), Pre-launch report, Play Protect (пост-публикационни сканирания), IARC рейтинг",
+        "Google OAuth app verification + restricted scopes → годишен CASA (App Defense Alliance, OWASP ASVS); минимален scope принцип",
+        "Chrome Web Store: MV3-only ревю, single purpose, минимални permissions/host_permissions, нула remote code, Limited Use политика",
+        "Meta App Review: permission/feature ревю със screencast, Standard vs Advanced Access, Business Verification, Data Use Checkup (годишно), Data Deletion callback",
+        "Meta Ads: Advertising Standards, personal-attributes политика, Conversions API, Limited Data Use (CCPA)",
+        "Крос-платформено: анти-cloaking (бан-ниво), минимални права с обосновка+демонстрация, точни privacy лейбъли вкл. SDK-та, EU DSA trader статус",
+        "Реакция на отказ: разчитане на правилото зад отказа, конкретен апел с доказателства, пакет за одобрение (permissions/scopes justification, demo, screencast, privacy mapping)",
+        "Инструмент tools/approval/review-check.mjs: статичен CI-скан за cloaking, тънка обвивка (4.2), широки Chrome permissions, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Apple App Store Review Guidelines + App Privacy details + Privacy Manifest / required-reason API docs",
+          "Apple notarization (notarytool/Hardened Runtime) + App Store Connect help",
+          "Google Play Developer Program Policies + Data Safety + target API + Play Integrity + App Signing docs",
+          "Google OAuth app verification + restricted-scope verification + App Defense Alliance CASA",
+          "Chrome Web Store review process + program policies (MV3, Limited Use, permissions)",
+          "Meta App Review + access levels + Business Verification + Data Use Checkup + Data Deletion callback",
+          "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
+          "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден заради липсващо покритие на изрядността пред ревютата на платформите — Мобилджията прави билда, Хромаджията MV3 строежа, но никой не притежаваше домейна „как Apple/Google/Meta проверяват и как минаваш от раз“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор (източник-или-мълчание), три неприкосновени правила (не заобикаляй ревюто; минимум права с обосновка+демонстрация; поверителността е първокласна), инструмент tools/approval/review-check.mjs, екипна оркестрация, памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (официални docs на Apple/Google/Meta/Chrome + App Defense Alliance/OWASP): App Review откази, privacy labels/manifest/ATT, notarization, Play policies/Data Safety/target API/закрит тест/Play Integrity, OAuth verification+CASA, Chrome MV3/Limited Use, Meta App Review/Business Verification/Data Use Checkup/Data Deletion/ad standards, крос-платформена регулация (EU DSA trader, деца/COPPA). Домейнът е покрит из основи."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: покрива изрядността пред Apple, Google и Meta — как проверяват софтуер/продукти и как минаваш ревюто от първия път."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от официалните политики (App Review, Play, Meta App Review, Chrome, OAuth/CASA) → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/approval/review-check.mjs: CI-скан за cloaking, тънка обвивка (4.2), широки Chrome права, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла."
         }
       ]
     }
