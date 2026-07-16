@@ -6,6 +6,7 @@ import { getDb } from '../db';
 import { signToken } from '../middleware/auth';
 import { logFromRequest } from '../lib/logger';
 import { clientIp, clientHwid, isBanEvasion } from '../lib/bans';
+import { sendPasswordResetEmail, emailConfigured } from '../lib/email';
 
 const router = Router();
 
@@ -178,11 +179,11 @@ router.post('/login', async (req, res) => {
 
 /* =========================================================================
    Password reset — token-based flow.
-   No email service is configured; the token is returned in the response
-   so an admin / support workflow can deliver it out-of-band, OR the
-   front-end can paste it directly into the reset form. When SMTP gets
-   wired up later, swap the response to { sent: true } and email the
-   token instead.
+   The reset link is delivered by email (SMTP через Register.it, see
+   lib/email.ts). The token is NEVER returned in the response — доставя се
+   само по имейл (иначе всеки, който знае потребителско име, може да поеме
+   акаунта). Само в dev, ако SMTP не е конфигуриран, връщаме devToken за
+   локално тестване.
    ========================================================================= */
 const forgotSchema = z.object({ identifier: z.string().min(1) });
 
@@ -205,10 +206,18 @@ router.post('/forgot', async (req, res) => {
   db.prepare('INSERT INTO password_resets (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)')
     .run(token, user.id, expires, Date.now());
   logFromRequest(req, { category: 'auth', action: 'forgot', user_id: user.id, message: `password reset requested ${user.username}` });
-  // Audit #4: never leak the reset token in the HTTP response in
-  // production. In dev we still return `devToken` for local testing.
+
+  // Доставка по имейл — best-effort (записът в password_resets вече е там).
+  // sendPasswordResetEmail никога не хвърля.
+  if (user.email) {
+    void sendPasswordResetEmail(user.email, user.username, token);
+  }
+
+  // Токенът НИКОГА не излиза в отговора. Единственото изключение: dev БЕЗ
+  // конфигуриран SMTP — за да може локалният поток да се тества без пощенски
+  // сървър. В продукция това е недостижимо (emailConfigured() е задължителен).
   const body: any = { ok: true };
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && !emailConfigured()) {
     body.devToken = token;
     body.expiresAt = expires;
   }

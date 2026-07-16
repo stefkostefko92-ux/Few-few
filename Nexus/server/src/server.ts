@@ -278,6 +278,11 @@ import { initObservability, installProcessGuards } from './lib/observability';
 initObservability();
 installProcessGuards();
 
+// Незадължителна SMTP проверка при старт — само логва дали пощата е готова
+// (не блокира; ако не е конфигурирана, forgot-flow пада към записа в БД).
+import { verifyEmailConfig, emailConfigured } from './lib/email';
+if (emailConfigured()) { void verifyEmailConfig(); }
+
 app.listen(PORT, () => {
   console.log(`[Nexus Dominion] Server listening on port ${PORT}`);
 });

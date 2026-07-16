@@ -16,6 +16,8 @@ import CookieBanner from './components/CookieBanner';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Forgot from './pages/Forgot';
+import Reset from './pages/Reset';
 import CharacterCreate from './pages/CharacterCreate';
 import NotFound from './pages/NotFound';
 
@@ -190,7 +192,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
   const authed = !!token;
   const path = location.pathname;
-  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/terms' || path === '/privacy' || path.startsWith('/demo/');
+  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/forgot' || path === '/reset' || path === '/terms' || path === '/privacy' || path.startsWith('/demo/');
   const isCreateRoute = path === '/create';
   const isAdminRoute = path.startsWith('/admin');
 
@@ -217,6 +219,8 @@ export default function App(): React.ReactElement {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot" element={<Forgot />} />
+          <Route path="/reset" element={<Reset />} />
           <Route path="/create" element={<CharacterCreate />} />
           <Route path="/terms" element={<Suspense fallback={<LazyFallback />}><Terms /></Suspense>} />
           <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><Privacy /></Suspense>} />
