@@ -1,7 +1,7 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { isGameKey, type GameKey } from "@aso/shared";
+import { buyInFor, isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { useAuthStore, useMatchStore } from "../../lib/store";
 import { GAME_CATALOG } from "../lobby/games";
@@ -101,11 +101,6 @@ function renderGame(gameKey: GameKey, title: string) {
   }
 }
 
-/** Chip-wagering games and the chips needed to sit down (§11.4 virtual only). */
-const CHIP_BUYIN: Partial<Record<GameKey, number>> = {
-  SVARA: 200,
-};
-
 /** Dispatches to a bespoke per-game view, wrapped in the cinematic stage. */
 export function GameView() {
   const { game } = useParams<{ game: string }>();
@@ -137,7 +132,7 @@ export function GameView() {
   const key = gameKey as GameKey;
 
   // Gate betting tables: don't seat a player who can't cover the buy-in.
-  const buyIn = CHIP_BUYIN[key];
+  const buyIn = buyInFor(key);
   if (buyIn !== undefined && user && Number(user.chips) < buyIn) {
     return <OutOfChips minBuyIn={buyIn} chips={Number(user.chips)} />;
   }

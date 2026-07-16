@@ -50,7 +50,12 @@ export class GameRoom {
   private readonly rng: SeededRng;
   private state: unknown;
   private done = false;
-  private lastOver: { matchId: string; score: SeatScore[]; ratingDeltas: Record<number, number> } | null = null;
+  private lastOver: {
+    matchId: string;
+    score: SeatScore[];
+    ratingDeltas: Record<number, number>;
+    rewards: Record<number, { chips: number; xp: number }>;
+  } | null = null;
   private botLoopRunning = false;
 
   // Live-play resilience (§8.3): per-turn clock + disconnect tracking.
@@ -378,6 +383,7 @@ export class GameRoom {
 
     let ratingDeltas: Record<number, number> = {};
     let newRatings: Record<number, number> = {};
+    let rewards: Record<number, { chips: number; xp: number }> = {};
     try {
       const result = await finalizeMatch({
         matchId: this.matchId,
@@ -387,13 +393,14 @@ export class GameRoom {
       });
       ratingDeltas = result.deltas;
       newRatings = result.newRatings;
+      rewards = result.rewards;
     } catch (err) {
       logger.error({ err, matchId: this.matchId }, "failed to finalize match");
     }
 
     const resultBySeat = new Map(score.map((s) => [s.seat, s.result]));
 
-    this.lastOver = { matchId: this.matchId, score, ratingDeltas };
+    this.lastOver = { matchId: this.matchId, score, ratingDeltas, rewards };
     for (const s of this.seats) {
       if (!s.userId) continue;
       this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.GAME_OVER, this.lastOver);

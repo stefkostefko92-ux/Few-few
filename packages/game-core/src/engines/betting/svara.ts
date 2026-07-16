@@ -66,7 +66,9 @@ export function svaraPoints(cards: readonly Card[]): number {
   for (const r of new Set(ranks)) {
     const same = cards.filter((c) => rankOf(c) === r);
     if (same.length < 2) continue;
-    let sum = same.reduce((a, c) => a + cardPoints(c), 0);
+    // Автентична особеност: ДВЕ седмици = 23 (бият дори чифт аса = 22); три
+    // седмици вече са обработени по-горе (34). Всеки друг чифт е сума по номинал.
+    let sum = r === "7" && same.length === 2 ? 23 : same.reduce((a, c) => a + cardPoints(c), 0);
     if (wild && r !== "7") sum += 11;
     best = Math.max(best, sum);
   }

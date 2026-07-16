@@ -9,6 +9,7 @@ export const SOCKET_EVENTS = {
   GAME_ACTION: "game:action",
   GAME_RESYNC: "game:resync",
   GAME_RECLAIM: "game:reclaim",
+  GAME_RESIGN: "game:resign",
   CHAT_SEND: "chat:send",
   INVITE_SEND: "invite:send",
   INVITE_ACCEPT: "invite:accept",
@@ -120,10 +121,19 @@ export interface GameScoreLine {
   points?: number;
 }
 
+/** What a seat actually earned this match — surfaced on the game-over card so
+ *  the win/loss is legible (chips + XP; betting games settle a stake here). */
+export interface SeatReward {
+  chips: number;
+  xp: number;
+}
+
 export interface GameOverMsg {
   matchId: string;
   score: GameScoreLine[];
   ratingDeltas: Record<number, number>; // seat -> mmr delta
+  /** seat -> chips/xp credited (or debited) this match. */
+  rewards?: Record<number, SeatReward>;
 }
 
 export interface SocketErrorMsg {

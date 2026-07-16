@@ -68,6 +68,7 @@ interface InterServerEvents {
   "op:action": (d: { matchId: string; userId: string; action: unknown }) => void;
   "op:resync": (d: { matchId: string; userId: string }) => void;
   "op:reclaim": (d: { matchId: string; userId: string }) => void;
+  "op:resign": (d: { matchId: string; userId: string }) => void;
   "op:presence": (d: { userId: string; connected: boolean }) => void;
   "op:chat": (d: { matchId: string; userId: string; text: string; ts: number }) => void;
 }
@@ -200,6 +201,7 @@ async function main(): Promise<void> {
   io.on("op:action", (d) => matchmaker.getRoom(d.matchId)?.handleAction(d.userId, d.action));
   io.on("op:resync", (d) => matchmaker.getRoom(d.matchId)?.resync(d.userId));
   io.on("op:reclaim", (d) => matchmaker.getRoom(d.matchId)?.reclaim(d.userId));
+  io.on("op:resign", (d) => matchmaker.getRoom(d.matchId)?.resign(d.userId));
   io.on("op:presence", (d) =>
     matchmaker.activeRoomForUser(d.userId)?.setConnected(d.userId, d.connected),
   );
@@ -240,11 +242,24 @@ async function main(): Promise<void> {
       // moved on — resign that seat so the old table ends cleanly instead of
       // auto-playing forever (its states would also keep streaming to this user).
       matchmaker.activeRoomForUser(userId)?.resign(userId);
+      const game = parsed.data.game;
+      const mode = parsed.data.mode;
+      // Server-authoritative buy-in gate for wagering tables (defence in depth
+      // over the client's OutOfChips screen).
       void matchmaker
-        .joinQueue(userId, parsed.data.game, parsed.data.mode)
+        .affordsBuyIn(userId, game)
         .then((ok) => {
-          if (ok) socket.emit(SOCKET_EVENTS.QUEUE_WAITING, { game: parsed.data.game });
-          else socket.emit(SOCKET_EVENTS.ERROR, { code: "no_engine", message: "Game unavailable" });
+          if (!ok) {
+            socket.emit(SOCKET_EVENTS.ERROR, {
+              code: "insufficient_chips",
+              message: "Нямаш достатъчно чипове за тази маса",
+            });
+            return;
+          }
+          return matchmaker.joinQueue(userId, game, mode).then((joined) => {
+            if (joined) socket.emit(SOCKET_EVENTS.QUEUE_WAITING, { game });
+            else socket.emit(SOCKET_EVENTS.ERROR, { code: "no_engine", message: "Game unavailable" });
+          });
         })
         .catch((err) => logger.error({ err }, "joinQueue failed"));
     });
@@ -283,6 +298,9 @@ async function main(): Promise<void> {
             matchId: match.id,
             score: match.players.map((p) => ({ seat: p.seat, result: p.result ?? "draw" })),
             ratingDeltas: Object.fromEntries(match.players.map((p) => [p.seat, p.mmrDelta])),
+            rewards: Object.fromEntries(
+              match.players.map((p) => [p.seat, { chips: Number(p.chipsDelta), xp: 0 }]),
+            ),
           });
         })
         .catch((err) => logger.warn({ err }, "resync DB fallback failed"));
@@ -294,6 +312,16 @@ async function main(): Promise<void> {
       const room = matchmaker.getRoom(parsed.data.matchId);
       if (room) room.reclaim(userId);
       else io.serverSideEmit("op:reclaim", { matchId: parsed.data.matchId, userId });
+    });
+
+    // Explicit forfeit (player left the table): end the seat as a loss now, so
+    // a bot substitute can't win ranked MMR/chips on the deserter's behalf.
+    socket.on(SOCKET_EVENTS.GAME_RESIGN, (payload: unknown) => {
+      const parsed = resyncSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const room = matchmaker.getRoom(parsed.data.matchId);
+      if (room) room.resign(userId);
+      else io.serverSideEmit("op:resign", { matchId: parsed.data.matchId, userId });
     });
 
     // ── Lobby (pre-game room) ────────────────────────────────────────────────

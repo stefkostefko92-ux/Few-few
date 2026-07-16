@@ -305,6 +305,14 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
 
   isTerminal: (s) => s.done,
 
+  /** Heuristic bot: HCP-based auction (never runaway-bids to slam without the
+   *  points) and sensible follow-suit play (win cheaply, don't overtake a
+   *  partner, discard low). Replaces uniform-random, which bid to 7NT. */
+  bot(state, seat): BridgeAction | null {
+    if (state.done || seat !== state.turn) return null;
+    return state.phase === "AUCTION" ? bidBot(state, seat) : playBot(state, seat);
+  },
+
   score(state): SeatScore[] {
     const winTeam = state.winningTeam ?? (state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1);
     return [0, 1, 2, 3].map((seat) => ({
@@ -405,4 +413,101 @@ function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): 
   state.doubled = 0;
   state.tricksWon = [0, 0];
   state.dealNo += 1;
+}
+
+// ── Bot heuristics ──────────────────────────────────────────────────────────
+const HCP: Record<string, number> = { A: 4, K: 3, Q: 2, J: 1 };
+const handHcp = (hand: Card[]): number => hand.reduce((a, c) => a + (HCP[rankOf(c)] ?? 0), 0);
+
+function suitLengths(hand: Card[]): Record<Suit, number> {
+  const l: Record<string, number> = { C: 0, D: 0, H: 0, S: 0 };
+  for (const c of hand) l[suitOf(c)] = (l[suitOf(c)] ?? 0) + 1;
+  return l as Record<Suit, number>;
+}
+
+/** Longest suit, ties broken toward the higher-ranking (S>H>D>C). */
+function longestSuit(hand: Card[]): Suit {
+  const l = suitLengths(hand);
+  let best: Suit = "C";
+  for (const s of ["C", "D", "H", "S"] as Suit[]) if (l[s] >= l[best]) best = s;
+  return best;
+}
+
+/** Longest biddable suit with ≥ minLen cards (prefer higher-ranking), or null. */
+function bestBiddableSuit(hand: Card[], minLen = 4): Suit | null {
+  const l = suitLengths(hand);
+  let best: Suit | null = null;
+  for (const s of ["C", "D", "H", "S"] as Suit[]) {
+    if (l[s] >= minLen && (best === null || l[s] >= l[best])) best = s;
+  }
+  return best;
+}
+
+const strengthOf = (c: Card): number => STRENGTH[rankOf(c)] ?? 0;
+const highest = (cards: Card[]): Card => cards.reduce((m, c) => (strengthOf(c) > strengthOf(m) ? c : m), cards[0]!);
+const lowest = (cards: Card[]): Card => cards.reduce((m, c) => (strengthOf(c) < strengthOf(m) ? c : m), cards[0]!);
+
+function bidBot(state: BridgeState, seat: Seat): BridgeAction {
+  const hand = state.hands[seat]!;
+  const hcp = handHcp(hand);
+  const lengths = suitLengths(hand);
+  const legal = bridgeEngine.legalActions(state, seat) as BridgeAction[];
+  const canBid = (level: number, strain: Strain): boolean =>
+    legal.some((a) => a.type === "BID" && a.level === level && a.strain === strain);
+  // Points-based ceiling: bots never bid past what their hand can hold up. This
+  // is what stops the old random policy from bidding 7NT on a bust.
+  const maxLevel = hcp >= 22 ? 6 : hcp >= 19 ? 4 : hcp >= 15 ? 3 : hcp >= 11 ? 2 : 1;
+
+  if (state.bidLevel === 0) {
+    if (hcp < 12) return { type: "PASS" };
+    const lens = Object.values(lengths);
+    const balanced = !lens.includes(0) && lens.filter((v) => v <= 2).length <= 1 && !lens.some((v) => v >= 6);
+    if (balanced && hcp >= 15 && hcp <= 17 && canBid(1, "NT")) return { type: "BID", level: 1, strain: "NT" };
+    const suit = bestBiddableSuit(hand);
+    if (suit && canBid(1, suit)) return { type: "BID", level: 1, strain: suit };
+    return { type: "PASS" };
+  }
+
+  const partnerBid = team(state.declarer!) === team(seat);
+  if (partnerBid) {
+    // Raise partner one level only with extra values and headroom.
+    if (hcp >= 11 && canBid(state.bidLevel + 1, state.bidStrain!) && state.bidLevel + 1 <= maxLevel) {
+      return { type: "BID", level: state.bidLevel + 1, strain: state.bidStrain! };
+    }
+    return { type: "PASS" };
+  }
+
+  // Opponents hold the contract: penalty-double a high one, or overcall a good suit.
+  if (hcp >= 16 && legal.some((a) => a.type === "DOUBLE")) return { type: "DOUBLE" };
+  const overcall = bestBiddableSuit(hand, 5);
+  if (overcall && hcp >= 10) {
+    for (let lvl = 1; lvl <= maxLevel; lvl++) if (canBid(lvl, overcall)) return { type: "BID", level: lvl, strain: overcall };
+  }
+  return { type: "PASS" };
+}
+
+/** The seat currently winning the in-progress trick. */
+function trickWinner(trick: Play[], trump: Suit | null): Play {
+  return trick.reduce((best, p) => (beats(p.card, best.card, trump) ? p : best), trick[0]!);
+}
+
+function playBot(state: BridgeState, seat: Seat): BridgeAction {
+  const legal = bridgeEngine.legalActions(state, seat) as Extract<BridgeAction, { type: "PLAY" }>[];
+  const cards = legal.map((a) => a.card);
+  if (cards.length === 0) return { type: "PASS" };
+  const trump = state.trump;
+
+  if (state.trick.length === 0) {
+    // Lead a high card from the longest suit.
+    const suit = longestSuit(state.hands[seat]!);
+    const inSuit = cards.filter((c) => suitOf(c) === suit);
+    return { type: "PLAY", card: highest(inSuit.length ? inSuit : cards) };
+  }
+
+  const winner = trickWinner(state.trick, trump);
+  if (team(winner.seat) === team(seat)) {
+    return { type: "PLAY", card: lowest(cards) }; // partner is winning — don't waste
+  }
+  const canBeat = cards.filter((c) => beats(c, winner.card, trump));
+  return { type: "PLAY", card: canBeat.length ? lowest(canBeat) : lowest(cards) };
 }

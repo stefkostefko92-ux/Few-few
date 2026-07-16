@@ -343,4 +343,35 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
   redact(state) {
     return state;
   },
+
+  /** Heuristic bot: roll when asked; otherwise pick the move that (in priority)
+   *  bears off, enters from the bar, hits an enemy blot, makes a safe point, and
+   *  otherwise advances the rearmost checker. Beats uniform-random by a mile. */
+  bot(state, seat) {
+    if (backgammonEngine.isTerminal(state) || seat !== state.turn) return null;
+    if (state.phase === "ROLL") return { type: "ROLL" };
+    const actions = backgammonEngine.legalActions(state, seat) as BackgammonAction[];
+    const moves = actions.filter((a): a is Extract<BackgammonAction, { type: "MOVE" }> => a.type === "MOVE");
+    if (moves.length === 0) return { type: "PASS" };
+    const opp = (1 - seat) as 0 | 1;
+    let best = moves[0]!;
+    let bestScore = -Infinity;
+    for (const m of moves) {
+      const dest = m.from === "BAR" ? barEntry(seat as 0 | 1, m.die) : destOf(seat as 0 | 1, m.from, m.die);
+      let s = 0;
+      if (dest === "OFF") s += 120;
+      else {
+        if (ownCount(state, dest, opp) === 1) s += 60; // hit an enemy blot
+        if (ownCount(state, dest, seat) >= 1) s += 25; // land safe on own point
+        if (ownCount(state, dest, seat) === 0 && ownCount(state, dest, opp) === 0) s -= 8; // leaves a blot
+      }
+      if (m.from === "BAR") s += 40; // entering is urgent
+      else s += (seat === WHITE ? m.from : 23 - m.from) * 0.5; // advance rear checkers
+      if (s > bestScore) {
+        bestScore = s;
+        best = m;
+      }
+    }
+    return best;
+  },
 };

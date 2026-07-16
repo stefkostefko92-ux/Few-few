@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
+import { getSocket } from "../../../lib/socket";
 import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import { WinConfetti } from "./WinConfetti";
 import { PlayingCard } from "../cards/PlayingCard";
-import type { GameOverMsg, MatchFoundMsg } from "@aso/shared";
+import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
 
 type Phase = "searching" | "playing" | "over";
@@ -33,6 +34,12 @@ export function SceneHeader({ title }: { title: string }) {
           if (live && !armed) {
             setArmed(true);
             return;
+          }
+          // Leaving mid-match is a real forfeit: tell the server to resign this
+          // seat NOW so a bot substitute can't finish (and win) in our place.
+          const { matchId, phase } = useMatchStore.getState();
+          if (matchId && phase === "playing") {
+            getSocket().emit(SOCKET_EVENTS.GAME_RESIGN, { matchId });
           }
           navigate("/");
         }}
@@ -68,6 +75,7 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   const navigate = useNavigate();
   const mine = result.score.find((s) => s.seat === seat)?.result;
   const delta = result.ratingDeltas[seat] ?? 0;
+  const reward = result.rewards?.[seat];
   const won = mine === "win";
   // A regrouped party room for THIS game waits (an unrelated parked lobby must
   // not swallow the "play again" button).
@@ -95,6 +103,17 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
           MMR {delta >= 0 ? "+" : ""}
           {delta}
         </p>
+        {reward && (reward.chips !== 0 || reward.xp > 0) ? (
+          <p className="cine-over__reward tnum" aria-live="polite">
+            {reward.chips !== 0 ? (
+              <span className={reward.chips > 0 ? "text-brass-300" : "text-loss"}>
+                {reward.chips > 0 ? "+" : ""}
+                {reward.chips.toLocaleString("bg-BG")} {t("wallet.chips")}
+              </span>
+            ) : null}
+            {reward.xp > 0 ? <span className="text-cyan-300"> · +{reward.xp} XP</span> : null}
+          </p>
+        ) : null}
         {lobbyWaiting ? (
           <Button className="mt-6 w-full" onClick={() => navigate("/rooms")}>
             {t("game.backToRoom")}

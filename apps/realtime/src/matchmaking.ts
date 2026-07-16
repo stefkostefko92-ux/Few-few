@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
-import { MAGNAT_PRESETS, STARTING_MMR, isGameKey, seatsFor } from "@aso/shared";
+import { MAGNAT_PRESETS, STARTING_MMR, buyInFor, isGameKey, seatsFor } from "@aso/shared";
 import { GameRoom, type RoomSeat } from "./room.js";
 import type { Lobby, LobbyReturnInfo } from "./lobby.js";
 import { RandomBot } from "./bot.js";
@@ -154,6 +154,16 @@ export class Matchmaker {
     await redis.hset(JOINED_HASH, joinedField(q, userId), Date.now().toString());
     await redis.sadd(ACTIVE_SET, queueKey(q));
     return true;
+  }
+
+  /** Server-authoritative buy-in gate: can this user cover the wallet stake for
+   *  a betting game (§11.4)? Non-betting games are always affordable. The client
+   *  gates too, but a crafted client must not sit at a table it can't pay for. */
+  async affordsBuyIn(userId: string, game: GameKey): Promise<boolean> {
+    const buyIn = buyInFor(game);
+    if (buyIn === undefined) return true;
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { chips: true } });
+    return Number(u?.chips ?? 0n) >= buyIn;
   }
 
   /** True if the user currently sits in any matchmaking queue. */
