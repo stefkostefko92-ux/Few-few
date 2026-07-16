@@ -246,8 +246,12 @@ getDb();
 
 // GDPR retention: prune event_log to the declared window on boot, then daily.
 import { pruneEventLog } from './lib/logger';
-pruneEventLog();
-setInterval(() => { pruneEventLog(); }, 24 * 60 * 60 * 1000).unref();
+// 30 дни — изравнено с декларираното в Privacy Policy („request logs
+// retained 30 days"). event_log държи IP → по-къс срок = по-добра
+// минимизация (GDPR чл. 5(1)(e)); банът ползва users.last_ip, не този лог.
+const EVENT_LOG_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+pruneEventLog(EVENT_LOG_RETENTION_MS);
+setInterval(() => { pruneEventLog(EVENT_LOG_RETENTION_MS); }, 24 * 60 * 60 * 1000).unref();
 
 // Изчиства изтекли временни банове на всеки час (хигиена — проверките и
 // без това третират изтеклите като не-банати).
