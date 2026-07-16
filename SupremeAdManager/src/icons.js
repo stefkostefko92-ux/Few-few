@@ -1,5 +1,6 @@
-// Inline SVG икони (Lucide, ISC лиценз — public/icons/LICENSE). Четат се веднъж при старт;
-// инжектират се inline, за да наследяват currentColor. Само наши файлове — доверено съдържание.
+// Inline SVG икони — авторска изработка на Carbon Stealth VCC (public/icons/LICENSE).
+// Четат се веднъж при старт; инжектират се inline, за да наследяват currentColor.
+// Само наши файлове — доверено съдържание.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
