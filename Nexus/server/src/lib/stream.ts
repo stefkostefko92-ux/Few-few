@@ -41,6 +41,14 @@ export function pushToChars(characterIds: number[], event: string, data: unknown
   }
 }
 
+/** Push към ВСИЧКИ свързани (напр. глобален чат). */
+export function pushToAll(event: string, data: unknown): void {
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const c of conns) {
+    try { c.res.write(payload); } catch { /* ще се почисти при close */ }
+  }
+}
+
 /** Heartbeat към всички връзки (държи проксита/браузъри живи). */
 export function heartbeatAll(): void {
   for (const c of conns) {

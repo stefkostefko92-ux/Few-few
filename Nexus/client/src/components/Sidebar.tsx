@@ -81,6 +81,7 @@ const SECTIONS: SectionDef[] = [
     items: [
       { to: '/app/guild', labelKey: 'sidebar.guild', icon: IconCrown },
       { to: '/app/social', labelKey: 'sidebar.friends', icon: IconUser },
+      { to: '/app/chat', labelKey: 'sidebar.chat', icon: IconMail },
       { to: '/app/mail', labelKey: 'sidebar.mail', icon: IconMail, badgeKey: 'mail' },
       { to: '/app/leaderboard', labelKey: 'sidebar.leaderboard', icon: IconCrown },
     ],

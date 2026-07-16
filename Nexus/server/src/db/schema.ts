@@ -817,5 +817,33 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_trade_parties ON trade_offers(from_id, to_id, status);
+
+    /* ===== Чат: глобален/регионален канал + лични съобщения (DM) ===== */
+    -- Публичен чат по канал: 'global' или slug на регион (whispering_woods…).
+    CREATE TABLE IF NOT EXISTS global_chat (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel      TEXT NOT NULL DEFAULT 'global',
+      character_id INTEGER NOT NULL,
+      message      TEXT NOT NULL,
+      created_at   INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_global_chat_channel ON global_chat(channel, id);
+
+    -- Лични съобщения между приятели. thread_key = "min-max" за бърза извадка
+    -- на разговор в двете посоки.
+    CREATE TABLE IF NOT EXISTS direct_messages (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_key  TEXT NOT NULL,          -- "loId-hiId"
+      from_id     INTEGER NOT NULL,
+      to_id       INTEGER NOT NULL,
+      message     TEXT NOT NULL,
+      read_at     INTEGER NOT NULL DEFAULT 0,
+      created_at  INTEGER NOT NULL,
+      FOREIGN KEY (from_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_dm_thread ON direct_messages(thread_key, id);
+    CREATE INDEX IF NOT EXISTS idx_dm_to_unread ON direct_messages(to_id, read_at);
   `);
 }

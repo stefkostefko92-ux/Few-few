@@ -34,6 +34,7 @@ const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 const PlayerView = React.lazy(() => import('./pages/PlayerView'));
 const Social = React.lazy(() => import('./pages/Social'));
 const Trade = React.lazy(() => import('./pages/Trade'));
+const Chat = React.lazy(() => import('./pages/Chat'));
 const Mail = React.lazy(() => import('./pages/Mail'));
 const History = React.lazy(() => import('./pages/History'));
 const Settings = React.lazy(() => import('./pages/Settings'));
@@ -248,6 +249,7 @@ export default function App(): React.ReactElement {
             <Route path="player/:name" element={<PlayerView />} />
             <Route path="social" element={<Social />} />
             <Route path="trade" element={<Trade />} />
+            <Route path="chat" element={<Chat />} />
             <Route path="mail" element={<Mail />} />
             <Route path="history" element={<History />} />
             <Route path="settings" element={<Settings />} />
