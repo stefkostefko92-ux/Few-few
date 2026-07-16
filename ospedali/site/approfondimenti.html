@@ -290,6 +290,20 @@ footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset
 footer.site a:hover{color:var(--brand)}
 .backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
 
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
 /* ---------- Мобилно: touch таргети ≥44px ---------- */
 @media(max-width:640px){
   .controls input,.controls select,.controls button{min-height:44px}
@@ -350,6 +364,7 @@ e storie documentate — tutto dagli stessi dati ufficiali, tutto verificabile.<
 <div class="seg media"><div class="t"><a href="dove.html">Trova la tua struttura</a></div><div class="d">Cerca il tuo comune tra 508 strutture di ricovero pubbliche e trova i conti della tua azienda sanitaria.</div></div>
 <div class="seg media"><div class="t"><a href="glossario.html">Glossario e domande frequenti</a></div><div class="d">Affidamento diretto, CIG, GSA, accordi quadro: le parole chiave spiegate in modo semplice.</div></div>
 <div class="seg media"><div class="t"><a href="guida-verifica.html">Come verificare un appalto in 5 minuti</a></div><div class="d">Dal CIG alla determina, fino all’accesso civico (FOIA): la guida pratica completa.</div></div>
+<div class="seg media"><div class="t"><a href="segnalare.html">A chi segnalare cosa hai trovato</a></div><div class="d">ANAC, Corte dei conti, GdF, AGCM: quale autorità è competente per cosa, e come presentare una segnalazione documentata.</div></div>
 <h2>Il progetto</h2>
 <div class="seg media"><div class="t"><a href="api.html">API e dati riutilizzabili</a></div><div class="d">Endpoint JSON/CSV stabili, senza chiavi: costruisci sopra i nostri dati.</div></div>
 <div class="seg media"><div class="t"><a href="aggiornamenti.html">Aggiornamenti</a></div><div class="d">Cosa è stato caricato, cosa è cambiato e cosa è in preparazione (tempi di pagamento, liste d’attesa, personale).</div></div>

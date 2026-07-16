@@ -291,6 +291,20 @@ footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset
 footer.site a:hover{color:var(--brand)}
 .backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
 
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
 /* ---------- Мобилно: touch таргети ≥44px ---------- */
 @media(max-width:640px){
   .controls input,.controls select,.controls button{min-height:44px}
@@ -468,6 +482,9 @@ A livello nazionale <strong>66,5% dei contratti</strong> sanitari
 
 <p class="muted small">Altri indicatori sulle gare, da verificare:
 <a href="segnali-gare.html">frazionamento, soglie UE e tempi troppo brevi</a> · <a href="cordate.html">chi si presenta sempre insieme alle gare</a>.</p>
+
+<p style="margin-top:18px"><a class="chip" href="pagella.html">La pagella: tutte le spie, struttura per struttura →</a>
+<a class="chip" href="segnalare.html">Hai trovato qualcosa? A chi segnalarlo →</a></p>
 
 <div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
 Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.

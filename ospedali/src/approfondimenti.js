@@ -438,6 +438,71 @@ solide sono quelle che citano atti, non impressioni.</div>
   });
 }
 
+// ---------- 7-bis. „A chi segnalare" — къде подаваш сигнал, ако намериш нещо ----------
+/** @returns {string} */
+export function renderSegnalare() {
+  const body = `
+<h1>Hai trovato qualcosa? A chi segnalarlo</h1>
+<p class="lead">Questo sito mostra <strong>indicatori, non prove</strong>. Ma se hai verificato — determina alla mano —
+e qualcosa continua a non tornare, l’Italia ha canali ufficiali, gratuiti e alla portata di chiunque. Ecco quale
+autorità è competente per cosa, e come presentare una segnalazione che venga presa sul serio.</p>
+
+<h2>Prima di segnalare: costruisci il fascicolo</h2>
+<p>Le segnalazioni efficaci citano <strong>atti, non impressioni</strong>. Segui la
+<a href="guida-verifica.html">guida alla verifica in 5 minuti</a>: CIG, determina, motivazione della procedura,
+eventuale convenzione o esclusiva. Conserva i documenti (o i link) — li allegherai.</p>
+
+<h2>A chi rivolgersi, per materia</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Cosa hai trovato</th><th scope="col">Autorità competente</th><th scope="col">Come</th></tr></thead>
+  <tbody>
+    <tr><td>Procedura di gara anomala, affidamenti ripetuti senza motivazione, conflitti negli appalti</td>
+      <td><strong>ANAC</strong> — Autorità Nazionale Anticorruzione</td>
+      <td><a href="https://www.anticorruzione.it/-/segnalazione" target="_blank" rel="noopener">Modulo di segnalazione ANAC</a> (anche da privati cittadini)</td></tr>
+    <tr><td>Spreco di denaro pubblico, danno alle casse dell’azienda sanitaria</td>
+      <td><strong>Corte dei conti</strong> — procura regionale</td>
+      <td><a href="https://www.corteconti.it/" target="_blank" rel="noopener">corteconti.it</a> → procura della tua regione (esposto via PEC)</td></tr>
+    <tr><td>Sospetta ipotesi di reato (corruzione, turbativa d’asta, falso)</td>
+      <td><strong>Procura della Repubblica / Guardia di Finanza</strong></td>
+      <td>Esposto alla procura o al numero di pubblica utilità <strong>117</strong> della GdF</td></tr>
+    <tr><td>Possibile intesa tra imprese (offerte coordinate, spartizione delle gare)</td>
+      <td><strong>AGCM</strong> — Autorità Garante della Concorrenza</td>
+      <td><a href="https://www.agcm.it/" target="_blank" rel="noopener">agcm.it</a> → segnalazioni</td></tr>
+    <tr><td>Documenti non pubblicati dove la legge lo impone</td>
+      <td>L’azienda stessa (poi difensore civico)</td>
+      <td>Accesso civico, art. 5 d.lgs. 33/2013 — <a href="guida-verifica.html">come si fa</a></td></tr>
+  </tbody>
+</table></div>
+
+<h2>Se lavori dentro la sanità</h2>
+<p>I dipendenti pubblici (e i collaboratori dei fornitori) che segnalano illeciti sono protetti dalla legge sul
+<strong>whistleblowing</strong> (d.lgs. 24/2023): la segnalazione può passare dal canale interno dell’ente o dalla
+<a href="https://www.anticorruzione.it/-/whistleblowing" target="_blank" rel="noopener">piattaforma riservata dell’ANAC</a>,
+con tutela dell’identità e divieto di ritorsioni.</p>
+
+<h2>E la stampa?</h2>
+<p>Il giornalismo d’inchiesta resta uno dei canali più efficaci: le redazioni locali conoscono il territorio e possono
+chiedere conto direttamente. Se contatti un giornalista, porta il fascicolo: CIG, atti, date — questo sito può essere
+il punto di partenza, ogni numero è tracciabile alla fonte.</p>
+
+<div class="note"><strong>Attenzione.</strong> Una segnalazione infondata o temeraria può avere conseguenze anche per
+chi la presenta. Segnala ciò che hai <strong>verificato sui documenti</strong>, non ciò che sospetti: gli indicatori di
+questo sito, da soli, non bastano. Se invece l’errore è nei <em>nostri</em> dati,
+<a href="note-legali.html#rettifiche">chiedici una rettifica</a> — correggiamo.</div>
+
+<p class="small muted"><strong>Continua:</strong> <a href="guida-verifica.html">come verificare un appalto</a> ·
+<a href="pagella.html">la pagella delle strutture</a> · <a href="segnalazioni.html">le segnalazioni contabili</a>.</p>
+`;
+  return metaApprofondimento({
+    title: 'A chi segnalare un problema nella sanità pubblica',
+    description: 'ANAC, Corte dei conti, Guardia di Finanza, AGCM, accesso civico: quale autorità è competente per cosa, e come presentare una segnalazione documentata. Guida pratica per cittadini.',
+    canonical: 'segnalare.html',
+    ldTitolo: 'A chi segnalare un problema nella sanità pubblica',
+    ldNome: 'A chi segnalare',
+    body,
+  });
+}
+
 // ---------- 11. PNRR ----------
 /**
  * @param {{ regionale: any[], href: (cod: string) => string }} p
@@ -720,6 +785,7 @@ ${conNuovi.confronta ? card('confronta.html', 'Confronta due aziende', 'Bilanci,
 ${card('dove.html', 'Trova la tua struttura', `Cerca il tuo comune tra ${numeroIt(nStrutture)} strutture di ricovero pubbliche e trova i conti della tua azienda sanitaria.`)}
 ${card('glossario.html', 'Glossario e domande frequenti', 'Affidamento diretto, CIG, GSA, accordi quadro: le parole chiave spiegate in modo semplice.')}
 ${card('guida-verifica.html', 'Come verificare un appalto in 5 minuti', 'Dal CIG alla determina, fino all’accesso civico (FOIA): la guida pratica completa.')}
+${card('segnalare.html', 'A chi segnalare cosa hai trovato', 'ANAC, Corte dei conti, GdF, AGCM: quale autorità è competente per cosa, e come presentare una segnalazione documentata.')}
 <h2>Il progetto</h2>
 ${conNuovi.api ? card('api.html', 'API e dati riutilizzabili', 'Endpoint JSON/CSV stabili, senza chiavi: costruisci sopra i nostri dati.') : ''}
 ${card('aggiornamenti.html', 'Aggiornamenti', 'Cosa è stato caricato, cosa è cambiato e cosa è in preparazione (tempi di pagamento, liste d’attesa, personale).')}

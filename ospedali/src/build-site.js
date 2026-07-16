@@ -19,10 +19,12 @@ import { numeroIt, slugify, esc } from './lib/format.js';
 import { percentile } from './lib/stats.js';
 import { page, setSiteUrl, siteUrl } from './lib/site-ui.js';
 import {
-  pIvaValida, REGIONI, REG_KEY, ultimoCe, setDataSnapshot, pagLd,
+  pIvaValida, REGIONI, REG_KEY, ultimoCe, setDataSnapshot, pagLd, articleLd,
 } from './lib/site-shared.js';
 import { renderHome } from './render/home.js';
 import { renderStrutture, renderStruttura } from './render/strutture.js';
+import { semaforoStruttura, contaSpie, quotaSottoSoglia } from './lib/pagella.js';
+import { renderPagella } from './pagina-pagella.js';
 import { renderSegnalazioni } from './render/segnalazioni.js';
 import { renderMetodologia } from './render/metodologia.js';
 import { renderVerifiche, renderDati, renderNoteLegali, renderPrivacy } from './render/legal.js';
@@ -33,7 +35,7 @@ import { renderConflitti, renderInchiesta, renderClassifiche } from './render/in
 import { eSocietaDiCapitali } from './coi.js';
 import {
   classificaCpv, CPV_LABELS, renderTendenze, renderTopContratti, renderCategorie, renderDove,
-  renderGlossario, renderGuida, renderPnrr, renderStorie, renderStoria, STORIE,
+  renderGlossario, renderGuida, renderSegnalare, renderPnrr, renderStorie, renderStoria, STORIE,
   renderAggiornamenti, renderApprofondimenti,
   renderPagamenti, renderPersonale, renderMobilita,
   renderFineAnno, renderConfronta, renderApi, renderAccessibilita, renderStorico,
@@ -247,6 +249,13 @@ async function main() {
     };
   }
 
+  // ---- Pagella: медиана на дела „sotto soglia" сред свързаните възложители
+  //      (същият праг n≥50 като спиите — малките извадки не участват в нормата)
+  const quoteSS = /** @type {number[]} */ ([...appByCod.values()].filter((a) => a.n >= 50).map(quotaSottoSoglia).filter((v) => v != null));
+  const medianaSottoSoglia = percentile(quoteSS, 50);
+  /** @type {import('./pagina-pagella.js').RigaPagella[]} */
+  const righePagella = [];
+
   for (const ente of enti) {
     const fileCod = `${ente.codice}-${slugByCod.get(ente.codice)}`;
     // Пълен опис на договорите (ако е наличен): CSV + inline данни
@@ -306,9 +315,19 @@ async function main() {
       }
       conContratti++;
     }
+    // 5-те спии на структурата (pagella) — и за профила, и за общата страница
+    const segE = segnByCod.get(ente.codice) || null;
+    const spie = semaforoStruttura({
+      seg: segE,
+      forse: forByCod.get(ente.codice) || null,
+      app: appByCod.get(ente.codice) || null,
+      medianaSenzaGara: appMatch ? appMatch.medianaSenzaGaraNum : null,
+      medianaSottoSoglia,
+    });
+    righePagella.push({ codice: ente.codice, denominazione: ente.denominazione, regione: ente.regione, spie, conti: contaSpie(spie) });
     await writeFile(
       join(SITE_DIR, 'struttura', `${fileCod}.html`),
-      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe, bench, reg: regCtx[REG_KEY[ente.codice.slice(0, 3)]] })
+      renderStruttura({ ente, struttureByCod, anagrafica, seg: segnByCod.get(ente.codice), forse: forByCod.get(ente.codice), app: appByCod.get(ente.codice), contratti, appMatch, ultimoAnnoCe, bench, reg: regCtx[REG_KEY[ente.codice.slice(0, 3)]], spie, conFeed: !!(segE && segE.segnalazioni.length && siteUrl()) })
     );
   }
   // Глобален индекс + страница за търсене през всички договори
@@ -458,9 +477,16 @@ async function main() {
     .sort((a, b) => a.comune.localeCompare(b.comune, 'it'));
   await writeFile(join(SITE_DIR, 'dove.html'), renderDove({ righe: doveRighe }));
 
-  // 6+7) Глосар/FAQ + гражданско ръководство
+  // 6+7) Глосар/FAQ + гражданско ръководство + „a chi segnalare"
   await writeFile(join(SITE_DIR, 'glossario.html'), renderGlossario());
   await writeFile(join(SITE_DIR, 'guida-verifica.html'), renderGuida());
+  await writeFile(join(SITE_DIR, 'segnalare.html'), renderSegnalare());
+
+  // Pagella — 5-те спии на всяка структура, на една страница
+  await writeFile(
+    join(SITE_DIR, 'pagella.html'),
+    renderPagella({ righe: righePagella, href, jsonld: articleLd('La pagella delle strutture: tutte le spie in un colpo d’occhio', 'Cinque indicatori per ogni azienda sanitaria italiana, con soglie dichiarate. Indicatori da verificare, non accuse.', 'pagella.html') })
+  );
 
   // 11) PNRR по региони (от ANAC флага, ако има appalti)
   if (appalti) {
@@ -683,6 +709,8 @@ async function main() {
       'dove.html',
       'glossario.html',
       'guida-verifica.html',
+      'segnalare.html',
+      'pagella.html',
       ...(appalti ? ['pnrr.html'] : []),
       'storie.html',
       'aggiornamenti.html',

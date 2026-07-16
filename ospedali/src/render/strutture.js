@@ -132,9 +132,11 @@ Cerca per nome, filtra per regione o per gravità delle segnalazioni. Valori del
  * @param {number} p.ultimoAnnoCe
  * @param {{ cplMed?: number|null, cprMed?: number|null }} [p.bench]
  * @param {RegCtx|null} [p.reg]
+ * @param {import('../lib/pagella.js').Spia[]} [p.spie] 5-те спии от pagella-та
+ * @param {boolean} [p.conFeed] има ли per-структура RSS feed (feed/<codice>.xml)
  * @returns {string}
  */
-export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe, bench = {}, reg = null }) {
+export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, app, contratti, appMatch, ultimoAnnoCe, bench = {}, reg = null, spie = [], conFeed = false }) {
   const anag = ente.anag;
   const anni = [...ente.serie.keys()].sort((a, b) => a - b);
   /** @param {string} k @returns {number[][]} */
@@ -188,6 +190,51 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
   const sintesi = `<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
   ${esc(ente.denominazione)} è una struttura pubblica del SSN della regione ${esc(ente.regione)} — ${esc(tipoEnte(ente.codEnte, anag))}.${fraseFin}${fraseSeg}${fraseApp}
   Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>`;
+
+  // ---- Pagella: редът с 5-те спии (детайлът е в title; легендата на pagella.html)
+  const semRow = spie.length
+    ? `<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
+  ${spie
+    .map(
+      (s) => `<span class="semitem" role="listitem" title="${esc(s.dettaglio)}"><span class="dot ${s.stato}"></span>${esc(s.label)}${s.stato === 'nd' ? ' <span class="small">(n.d.)</span>' : ''}</span>`
+    )
+    .join('\n  ')}
+  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
+  ${conFeed ? `<a class="small" href="../feed/${esc(ente.codice)}.xml">🔔 Segui (RSS)</a>` : ''}
+</div>`
+    : '';
+
+  // ---- „Verifica tu stesso" — кит за граждански контрол: ANAC, Amministrazione
+  //      Trasparente, PEC (IndicePA) и готово писмо за accesso civico (d.lgs. 33/2013).
+  const q = encodeURIComponent(`"${ente.denominazione}" amministrazione trasparente`);
+  const lettera = `Al Responsabile della prevenzione della corruzione e della trasparenza
+${ente.denominazione}
+
+Oggetto: richiesta di accesso civico ai sensi dell'art. 5 del d.lgs. 33/2013
+
+Il/La sottoscritto/a ________________________, ai sensi dell'art. 5 del d.lgs.
+14 marzo 2013, n. 33, chiede l'accesso al seguente documento/dato:
+
+  [descrivere il documento: es. determina di affidamento del contratto CIG ________]
+
+Chiede che il documento sia trasmesso all'indirizzo indicato in calce.
+Ai sensi di legge, la richiesta non necessita di motivazione e la risposta è
+dovuta entro 30 giorni.
+
+Luogo e data: ________________
+Nome, cognome e recapito: ________________`;
+  const kitVerifica = `<details class="note" style="margin-top:10px">
+  <summary style="cursor:pointer;font-weight:650">Verifica tu stesso: contratti, atti, accesso civico</summary>
+  <p style="margin:10px 0 6px">Tre passi, tutti gratuiti e legali (il percorso completo è nella
+  <a href="../guida-verifica.html">guida in 5 minuti</a>):</p>
+  <ol style="margin:0 0 10px;padding-left:22px">
+    <li><strong>I contratti alla fonte.</strong> ${contratti && contratti.length ? `Scarica <a href="../contratti/${esc(ente.codice)}.csv" download>l’elenco completo dei contratti di questa struttura (CSV)</a> e verifica ogni CIG sulla ` : 'Verifica i contratti sulla '}<a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">Banca Dati ANAC</a>.</li>
+    <li><strong>Gli atti.</strong> Cerca la sezione <a href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">«Amministrazione Trasparente» di questa azienda</a>: determine, bandi, incarichi dirigenziali. L’indirizzo PEC ufficiale è su <a href="https://indicepa.gov.it/" target="_blank" rel="noopener">IndicePA</a>.</li>
+    <li><strong>Se un documento manca</strong>, chiedilo con l’accesso civico — copia il modello qui sotto, completalo e invialo via PEC (risposta dovuta entro 30 giorni):</li>
+  </ol>
+  <pre class="small" style="white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;user-select:all">${esc(lettera)}</pre>
+  <p class="small muted" style="margin:8px 0 0">Hai trovato qualcosa che non torna? <a href="../segnalare.html">A chi segnalarlo →</a></p>
+</details>`;
 
   // ---- „Come leggere" — сгъваемо обяснение на източниците и дефинициите
   //      (всяко твърдение отговаря на реалната логика: медиана/peer/senza gara/base d'asta)
@@ -372,8 +419,10 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
 <h1>${esc(ente.denominazione)}</h1>
 <p>${meta}</p>
 ${anag && anag.indirizzo ? `<p class="muted small">${esc(anag.indirizzo)}${anag.comune ? ', ' + esc(anag.comune) : ''}</p>` : ''}
+${semRow}
 ${sintesi}
 ${comeLeggere}
+${kitVerifica}
 
 ${kpis}
 ${benchBlk}

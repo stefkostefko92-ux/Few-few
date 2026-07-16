@@ -291,6 +291,20 @@ footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset
 footer.site a:hover{color:var(--brand)}
 .backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
 
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
 /* ---------- Мобилно: touch таргети ≥44px ---------- */
 @media(max-width:640px){
   .controls input,.controls select,.controls button{min-height:44px}
@@ -325,6 +339,15 @@ footer.site a:hover{color:var(--brand)}
 <h1>AZIENDA UNITA&#39; SANITARIA LOCALE DI PARMA</h1>
 <p><span class="chip">Emilia Romagna</span> <span class="chip">Azienda Sanitaria Locale (ASL) con presìdi ospedalieri</span> <span class="chip">codice 080102</span></p>
 
+<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
+  <span class="semitem" role="listitem" title="nessuna segnalazione contabile automatica"><span class="dot verde"></span>Bilanci</span>
+  <span class="semitem" role="listitem" title="nessuna voce di spesa fuori scala rispetto alle aziende simili"><span class="dot verde"></span>Spesa anomala</span>
+  <span class="semitem" role="listitem" title="dati ANAC non abbinati o campione troppo piccolo"><span class="dot nd"></span>Senza gara <span class="small">(n.d.)</span></span>
+  <span class="semitem" role="listitem" title="dati sui partecipanti insufficienti"><span class="dot nd"></span>Concorrenza <span class="small">(n.d.)</span></span>
+  <span class="semitem" role="listitem" title="dati ANAC non abbinati o campione troppo piccolo"><span class="dot nd"></span>Sotto soglia <span class="small">(n.d.)</span></span>
+  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
+  
+</div>
 <div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
   AZIENDA UNITA&#39; SANITARIA LOCALE DI PARMA è una struttura pubblica del SSN della regione Emilia Romagna — Azienda Sanitaria Locale (ASL) con presìdi ospedalieri. Nell’ultimo esercizio disponibile (2024) ha registrato un valore della produzione di 986 mln € e ha chiuso in perdita per 14 mln €. I controlli automatici sui bilanci non hanno rilevato anomalie sui dati disponibili.
   Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>
@@ -340,6 +363,33 @@ footer.site a:hover{color:var(--brand)}
   Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
   pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
   Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
+<details class="note" style="margin-top:10px">
+  <summary style="cursor:pointer;font-weight:650">Verifica tu stesso: contratti, atti, accesso civico</summary>
+  <p style="margin:10px 0 6px">Tre passi, tutti gratuiti e legali (il percorso completo è nella
+  <a href="../guida-verifica.html">guida in 5 minuti</a>):</p>
+  <ol style="margin:0 0 10px;padding-left:22px">
+    <li><strong>I contratti alla fonte.</strong> Verifica i contratti sulla <a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">Banca Dati ANAC</a>.</li>
+    <li><strong>Gli atti.</strong> Cerca la sezione <a href="https://www.google.com/search?q=%22AZIENDA%20UNITA'%20SANITARIA%20LOCALE%20DI%20PARMA%22%20amministrazione%20trasparente" target="_blank" rel="noopener">«Amministrazione Trasparente» di questa azienda</a>: determine, bandi, incarichi dirigenziali. L’indirizzo PEC ufficiale è su <a href="https://indicepa.gov.it/" target="_blank" rel="noopener">IndicePA</a>.</li>
+    <li><strong>Se un documento manca</strong>, chiedilo con l’accesso civico — copia il modello qui sotto, completalo e invialo via PEC (risposta dovuta entro 30 giorni):</li>
+  </ol>
+  <pre class="small" style="white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;user-select:all">Al Responsabile della prevenzione della corruzione e della trasparenza
+AZIENDA UNITA&#39; SANITARIA LOCALE DI PARMA
+
+Oggetto: richiesta di accesso civico ai sensi dell&#39;art. 5 del d.lgs. 33/2013
+
+Il/La sottoscritto/a ________________________, ai sensi dell&#39;art. 5 del d.lgs.
+14 marzo 2013, n. 33, chiede l&#39;accesso al seguente documento/dato:
+
+  [descrivere il documento: es. determina di affidamento del contratto CIG ________]
+
+Chiede che il documento sia trasmesso all&#39;indirizzo indicato in calce.
+Ai sensi di legge, la richiesta non necessita di motivazione e la risposta è
+dovuta entro 30 giorni.
+
+Luogo e data: ________________
+Nome, cognome e recapito: ________________</pre>
+  <p class="small muted" style="margin:8px 0 0">Hai trovato qualcosa che non torna? <a href="../segnalare.html">A chi segnalarlo →</a></p>
 </details>
 
 <div class="grid kpis">

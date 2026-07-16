@@ -248,6 +248,9 @@ A livello nazionale <strong>${percentualeIt(appalti.nazionale.quotaSenzaGaraNum)
 ${conCordate || conSegGare ? `<p class="muted small">Altri indicatori sulle gare, da verificare:
 ${conSegGare ? '<a href="segnali-gare.html">frazionamento, soglie UE e tempi troppo brevi</a>' : ''}${conCordate && conSegGare ? ' · ' : ''}${conCordate ? '<a href="cordate.html">chi si presenta sempre insieme alle gare</a>' : ''}.</p>` : ''}
 
+<p style="margin-top:18px"><a class="chip" href="pagella.html">La pagella: tutte le spie, struttura per struttura →</a>
+<a class="chip" href="segnalare.html">Hai trovato qualcosa? A chi segnalarlo →</a></p>
+
 <div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
 Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.
 Sono <em>piste</em>, quelle che la Corte dei conti e l’ANAC seguono per prime — non verdetti.</div>
