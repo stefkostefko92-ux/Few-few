@@ -52,13 +52,13 @@
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
 - **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
   `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
-  статичен сайт от `site/` (вече в git). `rsync ospedali/ → /opt/ospedali` (изключва
+  статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва
   `server/.env`, `server/.state/` — тайни + рънтайм състояние оцеляват), самоинсталиращ
-  се systemd unit (`ospedali/deploy/systemd/ospedali.service`, порт `127.0.0.1:8788`,
+  се systemd unit (`ospedalitrasparenti/deploy/systemd/ospedali.service`, порт `127.0.0.1:8788`,
   User=`www-data`), `systemctl restart ospedali`; при провал — автоматичен rollback.
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
-  `ospedali/deploy/DEPLOY.md`.
+  `ospedalitrasparenti/deploy/DEPLOY.md`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация

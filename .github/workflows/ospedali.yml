@@ -3,11 +3,11 @@ name: ospedali
 on:
   push:
     paths:
-      - 'ospedali/**'
+      - 'ospedalitrasparenti/**'
       - '.github/workflows/ospedali.yml'
   pull_request:
     paths:
-      - 'ospedali/**'
+      - 'ospedalitrasparenti/**'
       - '.github/workflows/ospedali.yml'
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         node: [20, 22]
     defaults:
       run:
-        working-directory: ospedali
+        working-directory: ospedalitrasparenti
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

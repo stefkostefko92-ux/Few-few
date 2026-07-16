@@ -1,4 +1,4 @@
-# CLAUDE.md — ospedali/
+# CLAUDE.md — ospedalitrasparenti/
 
 Ospedali Trasparenti — ETL за финансите на публичните болници в Италия.
 Извлича официални open data (BDAP/MEF CKAN + dati.salute.gov.it) и генерира

@@ -142,7 +142,7 @@ else
   SRC="$REL"
 fi
 shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedali" ] || die "Архивът не прилича на това репо ($SRC)."
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedalitrasparenti" ] || [ -d "$SRC/ospedali" ] || die "Архивът не прилича на това репо ($SRC)."
 ok "Разопаковано в $SRC"
 
 deploy_failed=0
@@ -270,8 +270,12 @@ deploy_vizitka() {
 # (server/.env) и рънтайм състоянието (server/.state/ — брояч + видимост + хеш на
 # админ паролата) се ИЗКЛЮЧВАТ от rsync → оцеляват между версиите. Health + rollback.
 deploy_ospedali() {
-  local d="$SRC/ospedali"
-  [ -d "$d" ] || { warn "Няма ospedali/ в архива — пропускам."; return; }
+  # Папката в репото е ospedalitrasparenti/ (преименувана); старото име ospedali/
+  # се приема като fallback, за да работят и по-стари архиви. Деплой ключът,
+  # systemd услугата и /opt/ospedali на сървъра НЕ се променят.
+  local d="$SRC/ospedalitrasparenti"
+  [ -d "$d" ] || d="$SRC/ospedali"
+  [ -d "$d" ] || { warn "Няма ospedalitrasparenti/ (нито ospedali/) в архива — пропускам."; return; }
   log "Разгръщам ospedali (systemd, нула зависимости, без билд)…"
   command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
@@ -300,7 +304,7 @@ deploy_ospedali() {
     rm -rf "${OSPEDALI_DIR}.bak-$TS"
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
     ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
-    [ -f "$OSPEDALI_DIR/server/.env" ] || warn "Няма $OSPEDALI_DIR/server/.env — сайтът работи, но админ паролата е случайна (виж journalctl -u ospedali). За продукция задай OSPEDALI_ADMIN_PASSWORD + OSPEDALI_SESSION_SECRET (виж ospedali/deploy/DEPLOY.md)."
+    [ -f "$OSPEDALI_DIR/server/.env" ] || warn "Няма $OSPEDALI_DIR/server/.env — сайтът работи, но админ паролата е случайна (виж journalctl -u ospedali). За продукция задай OSPEDALI_ADMIN_PASSWORD + OSPEDALI_SESSION_SECRET (виж ospedalitrasparenti/deploy/DEPLOY.md)."
     # IndexNow — активно уведоми търсачките (Bing/Yandex) за URL-ите. ВИНАГИ след
     # успешен деплой. Best-effort: иска сайтът да е жив зад публичния домейн+TLS, за
     # да се верифицира ключът; при първия деплой (преди DNS/certbot) може да падне —
