@@ -1,9 +1,9 @@
 <%- include('_head') %>
-<h1>Одитна следа</h1>
-<p class="hint">Всяко действие към платформа — човешко или автоматично — се записва. Това е доказателството за отчетност (GDPR чл. 5(2)) и дневникът на автоматизацията.</p>
+<h1><%= t('audit.title') %></h1>
+<p class="hint"><%= t('audit.intro') %></p>
 <section class="card">
   <table>
-    <thead><tr><th>Кога</th><th>Кой</th><th>Действие</th><th>Кампания</th><th>Детайли</th></tr></thead>
+    <thead><tr><th><%= t('audit.thWhen') %></th><th><%= t('audit.thWho') %></th><th><%= t('audit.thAction') %></th><th><%= t('audit.thCampaign') %></th><th><%= t('audit.thDetails') %></th></tr></thead>
     <tbody>
       <% for (const r of rows) { %>
       <tr>
@@ -14,7 +14,7 @@
         <td><code class="small"><%= r.detail_json %></code></td>
       </tr>
       <% } %>
-      <% if (!rows.length) { %><tr><td colspan="5">Няма записи.</td></tr><% } %>
+      <% if (!rows.length) { %><tr><td colspan="5"><%= t('audit.empty') %></td></tr><% } %>
     </tbody>
   </table>
 </section>

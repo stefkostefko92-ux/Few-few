@@ -1,10 +1,10 @@
 <%- include('_head') %>
-<h1>Връзки с рекламни акаунти</h1>
+<h1><%= t('conn.title') %></h1>
 <% if (error) { %><p class="error"><%= error %></p><% } %>
 
 <section class="card">
   <table>
-    <thead><tr><th>Платформа</th><th>Име</th><th>Акаунт</th><th>Валута</th><th>Статус</th><th></th></tr></thead>
+    <thead><tr><th><%= t('conn.thPlatform') %></th><th><%= t('conn.thName') %></th><th><%= t('conn.thAccount') %></th><th><%= t('conn.thCurrency') %></th><th><%= t('conn.thStatus') %></th><th></th></tr></thead>
     <tbody>
       <% for (const c of connections) { %>
       <tr>
@@ -16,34 +16,34 @@
         <td>
           <form method="post" action="/connections/<%= c.id %>/revoke" class="inline">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="ghost danger">Отмени</button>
+            <button class="ghost danger"><%= t('conn.revoke') %></button>
           </form>
         </td>
       </tr>
       <% } %>
-      <% if (!connections.length) { %><tr><td colspan="6">Няма връзки — добави първата по-долу (или работи в dry-run).</td></tr><% } %>
+      <% if (!connections.length) { %><tr><td colspan="6"><%= t('conn.empty') %></td></tr><% } %>
     </tbody>
   </table>
 </section>
 
 <section class="card">
-  <h2>Нова връзка</h2>
+  <h2><%= t('conn.newTitle') %></h2>
   <form method="post" action="/connections" class="grid2">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <label>Платформа
+    <label><%= t('conn.platform') %>
       <select name="platform" required>
-        <option value="google">Google Ads (customer ID, без тирета)</option>
-        <option value="meta">Meta (act_&lt;id&gt;)</option>
+        <option value="google"><%= t('conn.google') %></option>
+        <option value="meta"><%= t('conn.meta') %></option>
       </select>
     </label>
-    <label>Име (за теб) <input name="label" required placeholder="напр. Linketto основен"></label>
-    <label>ID на акаунта <input name="account_id" required placeholder="1234567890 или act_123…"></label>
-    <label>Валута <input name="currency" value="EUR" maxlength="3"></label>
-    <label class="span2">Токен (Google: OAuth refresh token · Meta: System User token)
-      <input name="token" type="password" placeholder="пази се криптиран (AES-256-GCM); празно = dry-run">
+    <label><%= t('conn.label') %> <input name="label" required placeholder="<%= t('conn.labelPh') %>"></label>
+    <label><%= t('conn.accountId') %> <input name="account_id" required placeholder="1234567890 / act_123…"></label>
+    <label><%= t('conn.currency') %> <input name="currency" value="EUR" maxlength="3"></label>
+    <label class="span2"><%= t('conn.token') %>
+      <input name="token" type="password" placeholder="<%= t('conn.tokenPh') %>">
     </label>
-    <button class="primary span2">Запази връзката</button>
+    <button class="primary span2"><%= t('conn.save') %></button>
   </form>
-  <p class="hint">Как се вадят креденшъли: виж <code>README.md → Свързване</code>. Токените се пазят само криптирани; ключът е в средата, не в базата.</p>
+  <p class="hint"><%= t('conn.howTo') %></p>
 </section>
 <%- include('_foot') %>

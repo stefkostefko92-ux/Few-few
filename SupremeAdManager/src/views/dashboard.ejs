@@ -1,50 +1,51 @@
 <%- include('_head') %>
-<h1>Дашборд</h1>
+<h1><%= t('dash.title') %></h1>
 
 <section class="stats">
-  <div class="stat"><span class="label">Разход (7 дни)</span><span class="value"><%= totals.spend.toFixed(2) %></span></div>
-  <div class="stat"><span class="label">Кликове</span><span class="value"><%= totals.clicks %></span></div>
-  <div class="stat"><span class="label">Конверсии</span><span class="value"><%= totals.conversions.toFixed(1) %></span></div>
+  <div class="stat"><span class="label"><%= t('dash.spend7') %></span><span class="value"><%= totals.spend.toFixed(2) %></span></div>
+  <div class="stat"><span class="label"><%= t('dash.clicks') %></span><span class="value"><%= totals.clicks %></span></div>
+  <div class="stat"><span class="label"><%= t('dash.conversions') %></span><span class="value"><%= totals.conversions.toFixed(1) %></span></div>
   <div class="stat"><span class="label">ROAS</span><span class="value"><%= totals.spend > 0 ? (totals.value / totals.spend).toFixed(2) : '—' %></span></div>
 </section>
 
 <% if (pacing) { %>
 <section class="card">
   <div class="row-between">
-    <h2>Месечен pacing</h2>
-    <a href="/optimizer" class="hint"><%- icon('trending-up') %> Оптимизатор</a>
+    <h2><%= t('dash.pacingTitle') %></h2>
+    <a href="/optimizer" class="hint"><%- icon('trending-up') %> <%= t('nav.optimizer') %></a>
   </div>
+  <% const pacingParams = { spent: pacing.spent.toFixed(2), target: pacing.targetToDate.toFixed(2), dev: pacing.deviationPct, daily: pacing.dailyTargetRemaining.toFixed(2), days: pacing.remainingDays }; %>
   <% if (pacing.over) { %>
-    <p class="alert">Похарчено <%= pacing.spent.toFixed(2) %> при цел <%= pacing.targetToDate.toFixed(2) %> към днес (+<%= pacing.deviationPct %>%). Дневен таргет за остатъка: <%= pacing.dailyTargetRemaining.toFixed(2) %>.</p>
+    <p class="alert"><%= t('dash.pacingOver', pacingParams) %></p>
   <% } else { %>
-    <p class="hint">Похарчено <%= pacing.spent.toFixed(2) %> / цел към днес <%= pacing.targetToDate.toFixed(2) %> (<%= pacing.deviationPct > 0 ? '+' : '' %><%= pacing.deviationPct %>%). Дневен таргет за остатъка: <%= pacing.dailyTargetRemaining.toFixed(2) %> (<%= pacing.remainingDays %> дни).</p>
+    <p class="hint"><%= t('dash.pacingOk', { ...pacingParams, dev: (pacing.deviationPct > 0 ? '+' : '') + pacing.deviationPct }) %></p>
   <% } %>
 </section>
 <% } %>
 
 <section class="card">
-  <h2>Разход и конверсии — последните 14 дни</h2>
+  <h2><%= t('dash.chartTitle') %></h2>
   <%- include('_chart', {
     series: [
-      { label: 'Разход', values: series.map((d) => ({ date: d.date, value: d.spend })) },
-      { label: 'Конверсии', values: series.map((d) => ({ date: d.date, value: d.conversions })), cls: 'alt' },
+      { label: t('chart.spend'), values: series.map((d) => ({ date: d.date, value: d.spend })) },
+      { label: t('chart.conversions'), values: series.map((d) => ({ date: d.date, value: d.conversions })), cls: 'alt' },
     ],
   }) %>
 </section>
 
 <section class="card">
   <div class="row-between">
-    <h2>Кампании</h2>
+    <h2><%= t('dash.campaigns') %></h2>
     <form method="post" action="/scheduler/tick" class="inline">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <button class="ghost" title="Синхронизирай метрики + изпълни правилата"><%- icon('refresh-cw') %> Синхронизирай сега</button>
+      <button class="ghost" title="<%= t('dash.syncTitle') %>"><%- icon('refresh-cw') %> <%= t('dash.syncNow') %></button>
     </form>
   </div>
   <% if (!campaigns.length) { %>
-    <p>Няма кампании още. <a href="/campaigns/new">Създай първата</a> — тръгва като чернова, публикува се ПАУЗИРАНА, активираш я само ти.</p>
+    <p><%= t('dash.empty') %> <a href="/campaigns/new"><%= t('dash.emptyCta') %></a> <%= t('dash.emptyTail') %></p>
   <% } else { %>
   <table>
-    <thead><tr><th>Кампания</th><th>Платформа</th><th>Статус</th><th>Бюджет/ден</th><th>Разход 7д</th><th>CPA</th><th>ROAS</th><th>CTR</th></tr></thead>
+    <thead><tr><th><%= t('dash.thCampaign') %></th><th><%= t('dash.thPlatform') %></th><th><%= t('dash.thStatus') %></th><th><%= t('dash.thBudget') %></th><th><%= t('dash.thSpend7') %></th><th>CPA</th><th>ROAS</th><th>CTR</th></tr></thead>
     <tbody>
       <% for (const c of campaigns) { %>
       <tr>
@@ -53,7 +54,7 @@
         <td>
           <span class="badge s-<%= c.status %>"><%= c.status %></span>
           <% const p = c.policy_json ? JSON.parse(c.policy_json) : null; %>
-          <% if (p && p.status === 'ISSUES') { %><span class="badge s-issues" title="<%= p.issues.join(' · ') %>">проблем</span><% } %>
+          <% if (p && p.status === 'ISSUES') { %><span class="badge s-issues" title="<%= p.issues.join(' · ') %>"><%= t('common.problem') %></span><% } %>
         </td>
         <td><%= c.daily_budget.toFixed(2) %> <%= c.currency %></td>
         <td><%= c.agg.spend.toFixed(2) %></td>
@@ -68,12 +69,12 @@
 </section>
 
 <section class="card">
-  <h2>Последна активност</h2>
+  <h2><%= t('dash.activity') %></h2>
   <ul class="feed">
     <% for (const a of recentAudit) { %>
     <li><time><%= a.at %></time> <strong><%= a.actor %></strong> · <%= a.action %><% if (a.dry_run) { %> <%- icon('flask-conical') %><% } %></li>
     <% } %>
-    <% if (!recentAudit.length) { %><li>Няма записи.</li><% } %>
+    <% if (!recentAudit.length) { %><li><%= t('dash.noRecords') %></li><% } %>
   </ul>
 </section>
 <%- include('_foot') %>

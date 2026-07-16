@@ -1,12 +1,12 @@
 <%- include('_head', { hideNav: true }) %>
 <section class="card narrow">
-  <h1>Вход в Supreme AdManager</h1>
+  <h1><%= t('login.heading') %></h1>
   <% if (error) { %><p class="error"><%= error %></p><% } %>
   <form method="post" action="/login">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <label>Имейл <input type="email" name="email" required autocomplete="username"></label>
-    <label>Парола <input type="password" name="password" required autocomplete="current-password"></label>
-    <button class="primary">Влез</button>
+    <label><%= t('login.email') %> <input type="email" name="email" required autocomplete="username"></label>
+    <label><%= t('login.password') %> <input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="primary"><%= t('login.submit') %></button>
   </form>
 </section>
 <%- include('_foot') %>

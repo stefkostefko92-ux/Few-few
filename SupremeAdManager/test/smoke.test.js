@@ -578,7 +578,7 @@ test('optimizer: recommendBudgets — печелившата нагоре, гу�
   db.prepare(`UPDATE campaigns SET status='paused' WHERE id=?`).run(bad.id);
   const alone = recommendBudgets({ rng: mulberry32(1) });
   assert.equal(alone.rows.length, 0);
-  assert.ok(alone.reason);
+  assert.ok(alone.reasonKey);
   db.prepare(`UPDATE campaigns SET status='paused' WHERE id=?`).run(good.id);
 });
 
@@ -697,6 +697,70 @@ test('HTTP: прилагане на бюджет от оптимизатора �
       .get(c.id).n;
     assert.equal(audited, 1);
     db.prepare(`UPDATE campaigns SET status='paused' WHERE id=?`).run(c.id);
+  } finally {
+    server.close();
+  }
+});
+
+// --- Многоезичие (i18n: bg/en/it/de/es) ---
+
+const { t: tr, LOCALES, messageKeys, DEFAULT_LOCALE } = await import('../src/i18n.js');
+
+test('i18n: 5 локала, идентичен набор ключове, без празни стойности', () => {
+  assert.deepEqual(LOCALES, ['bg', 'en', 'it', 'de', 'es']);
+  const bgKeys = messageKeys('bg');
+  assert.ok(bgKeys.length > 200, 'bg е източникът на истината');
+  for (const loc of LOCALES) {
+    const keys = messageKeys(loc);
+    assert.deepEqual(
+      [...keys].sort(),
+      [...bgKeys].sort(),
+      `${loc} трябва да има същите ключове като bg`
+    );
+    for (const k of keys) {
+      const v = tr(loc, k);
+      assert.ok(typeof v === 'string' && v.length > 0, `${loc}:${k} е празен`);
+    }
+  }
+});
+
+test('i18n: интерполация и fallback към bg', () => {
+  assert.match(tr('en', 'dig.campaignRef', { id: 7 }), /#7/);
+  assert.equal(tr('bg', 'няма.такъв.ключ'), 'няма.такъв.ключ'); // ключът се връща като маркер
+  assert.equal(DEFAULT_LOCALE, 'bg');
+});
+
+test('i18n: плейсхолдърите са запазени във всички преводи', () => {
+  const ph = (s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+  for (const k of messageKeys('bg')) {
+    const expected = ph(tr('bg', k));
+    if (!expected.length) continue;
+    for (const loc of LOCALES) {
+      assert.deepEqual(ph(tr(loc, k)), expected, `${loc}:${k} губи плейсхолдър`);
+    }
+  }
+});
+
+test('HTTP: ?lang=en сменя езика и оставя бисквитка; Accept-Language се уважава', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r1 = await fetch(`${base}/login?lang=en`);
+    const html1 = await r1.text();
+    assert.match(html1, /<html lang="en"/);
+    assert.match(html1, /Sign in|Log in/i);
+    const langCookie = r1.headers.getSetCookie().find((c) => c.startsWith('sam_lang='));
+    assert.ok(langCookie, 'бисквитката sam_lang се записва');
+
+    const r2 = await fetch(`${base}/login`, { headers: { cookie: langCookie.split(';')[0] } });
+    assert.match(await r2.text(), /<html lang="en"/);
+
+    const r3 = await fetch(`${base}/login`, { headers: { 'accept-language': 'de-DE,de;q=0.9' } });
+    assert.match(await r3.text(), /<html lang="de"/);
+
+    const r4 = await fetch(`${base}/login`);
+    assert.match(await r4.text(), /<html lang="bg"/);
   } finally {
     server.close();
   }

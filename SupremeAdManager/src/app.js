@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { config, isDryRun } from './config.js';
 import { csrfMiddleware } from './csrf.js';
 import { icon } from './icons.js';
+import { localeMiddleware } from './i18n.js';
 import { router } from './routes/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -61,18 +62,19 @@ export function createApp() {
     res.locals.icon = icon;
     next();
   });
+  app.use(localeMiddleware);
   app.use(csrfMiddleware);
   app.use('/', router);
 
   app.use((req, res) =>
-    res.status(404).render('error', { title: '404', message: 'Страницата не е намерена.' })
+    res.status(404).render('error', { title: '404', message: req.t('error.notFound') })
   );
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).render('error', {
-      title: 'Грешка',
-      message: config.env === 'production' ? 'Вътрешна грешка.' : String(err.message),
+      title: req.t('error.title'),
+      message: config.env === 'production' ? req.t('error.internal') : String(err.message),
     });
   });
 

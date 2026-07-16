@@ -22,14 +22,16 @@ router.get('/data-deletion', (req, res) =>
 );
 
 // ---------- Вход/изход ----------
-router.get('/login', (req, res) => res.render('login', { title: 'Вход', error: null }));
+router.get('/login', (req, res) =>
+  res.render('login', { title: req.t('login.title'), error: null })
+);
 
 router.post('/login', (req, res) => {
   if (verifyLogin(req.body.email || '', req.body.password || '')) {
     createSession(res);
     return res.redirect('/');
   }
-  res.status(401).render('login', { title: 'Вход', error: 'Грешен имейл или парола.' });
+  res.status(401).render('login', { title: req.t('login.title'), error: req.t('login.bad') });
 });
 
 router.post('/logout', (req, res) => {
@@ -54,7 +56,7 @@ router.get('/', (req, res) => {
   );
   const recentAudit = db.prepare(`SELECT * FROM audit_log ORDER BY id DESC LIMIT 12`).all();
   res.render('dashboard', {
-    title: 'Дашборд',
+    title: req.t('dash.title'),
     campaigns: enriched,
     totals,
     recentAudit,
@@ -70,20 +72,20 @@ router.get('/connections', (req, res) => {
       `SELECT id, platform, label, external_account_id, currency, status, created_at FROM connections ORDER BY id`
     )
     .all();
-  res.render('connections', { title: 'Връзки', connections, error: null });
+  res.render('connections', { title: req.t('conn.title'), connections, error: null });
 });
 
 router.post('/connections', (req, res) => {
   const { platform, label, account_id, currency, token } = req.body;
   if (!['google', 'meta'].includes(platform) || !label || !account_id) {
     return res.status(400).render('connections', {
-      title: 'Връзки',
+      title: req.t('conn.title'),
       connections: db
         .prepare(
           `SELECT id, platform, label, external_account_id, currency, status, created_at FROM connections ORDER BY id`
         )
         .all(),
-      error: 'Платформа, име и ID на акаунт са задължителни.',
+      error: req.t('conn.required'),
     });
   }
   db.prepare(
@@ -115,7 +117,7 @@ router.get('/campaigns/new', (req, res) => {
     .prepare(`SELECT * FROM connections WHERE status='active' ORDER BY id`)
     .all();
   res.render('campaign-new', {
-    title: 'Нова кампания',
+    title: req.t('new.title'),
     connections,
     error: null,
     guards: config.guards,
@@ -130,14 +132,14 @@ router.post('/campaigns', (req, res) => {
     .all();
   const fail = (msg) =>
     res.status(400).render('campaign-new', {
-      title: 'Нова кампания',
+      title: req.t('new.title'),
       connections,
       error: msg,
       guards: config.guards,
     });
 
-  if (!connection) return fail('Избери валидна връзка (акаунт).');
-  if (!b.name?.trim()) return fail('Името е задължително.');
+  if (!connection) return fail(req.t('new.pickConnection'));
+  if (!b.name?.trim()) return fail(req.t('new.nameRequired'));
 
   const spec = {
     final_url: b.final_url?.trim() || '',
@@ -296,7 +298,7 @@ router.post('/campaigns', (req, res) => {
 router.get('/campaigns/:id', (req, res) => {
   const campaign = db.prepare(`SELECT * FROM campaigns WHERE id=?`).get(req.params.id);
   if (!campaign)
-    return res.status(404).render('error', { title: '404', message: 'Няма такава кампания.' });
+    return res.status(404).render('error', { title: '404', message: req.t('error.noCampaign') });
   const metrics = db
     .prepare(`SELECT * FROM metrics_daily WHERE campaign_id=? ORDER BY date DESC LIMIT 30`)
     .all(campaign.id);
@@ -346,7 +348,7 @@ router.post('/campaigns/:id/publish', async (req, res, next) => {
     if (err instanceof GuardError) {
       return res
         .status(400)
-        .render('error', { title: 'Спряно от предпазителите', message: err.message });
+        .render('error', { title: req.t('error.guardStopped'), message: err.message });
     }
     db.prepare(`UPDATE campaigns SET status='error', last_error=? WHERE id=?`).run(
       String(err.message),
@@ -385,7 +387,7 @@ router.post('/campaigns/:id/status', async (req, res, next) => {
     if (err instanceof GuardError) {
       return res
         .status(400)
-        .render('error', { title: 'Спряно от предпазителите', message: err.message });
+        .render('error', { title: req.t('error.guardStopped'), message: err.message });
     }
     next(err);
   }
@@ -401,7 +403,7 @@ router.get('/optimizer', (req, res) => {
     .map((c) => ({ ...c, forecast: forecastSpend(c.id, 7) }))
     .filter((c) => c.forecast);
   res.render('optimizer', {
-    title: 'Оптимизатор',
+    title: req.t('opt.title'),
     recommendations,
     forecasts,
     pacing: monthlyPacing(config.guards.monthlyBudget),
@@ -437,7 +439,7 @@ router.post('/campaigns/:id/budget', async (req, res, next) => {
     if (err instanceof GuardError) {
       return res
         .status(400)
-        .render('error', { title: 'Спряно от предпазителите', message: err.message });
+        .render('error', { title: req.t('error.guardStopped'), message: err.message });
     }
     next(err);
   }
@@ -445,7 +447,7 @@ router.post('/campaigns/:id/budget', async (req, res, next) => {
 
 // ---------- Седмичен дайджест ----------
 router.get('/digest', (req, res) => {
-  res.render('digest', { title: 'Седмичен дайджест', digest: weeklyDigest() });
+  res.render('digest', { title: req.t('dig.title'), digest: weeklyDigest() });
 });
 
 // ---------- Правила ----------
@@ -458,7 +460,12 @@ router.get('/rules', (req, res) => {
   const campaigns = db
     .prepare(`SELECT id, name FROM campaigns WHERE status != 'archived' ORDER BY name`)
     .all();
-  res.render('rules', { title: 'Правила', rules, campaigns, recommended: RECOMMENDED_RULES });
+  res.render('rules', {
+    title: req.t('rules.title'),
+    rules,
+    campaigns,
+    recommended: RECOMMENDED_RULES,
+  });
 });
 
 const ALLOWED_RULE_METRICS = new Set([
@@ -477,9 +484,8 @@ router.post('/rules', (req, res) => {
   const b = req.body;
   if (!ALLOWED_RULE_METRICS.has(b.metric) || !ALLOWED_RULE_ACTIONS.has(b.action)) {
     return res.status(400).render('error', {
-      title: 'Невалидно правило',
-      message:
-        'Непозната метрика или действие. Авто-активиране не съществува — кампания активира само човек.',
+      title: req.t('error.invalidRuleTitle'),
+      message: req.t('error.invalidRule'),
     });
   }
   db.prepare(
@@ -525,5 +531,5 @@ router.post('/scheduler/tick', async (req, res, next) => {
 // ---------- Одитна следа ----------
 router.get('/audit', (req, res) => {
   const rows = db.prepare(`SELECT * FROM audit_log ORDER BY id DESC LIMIT 200`).all();
-  res.render('audit', { title: 'Одитна следа', rows });
+  res.render('audit', { title: req.t('audit.title'), rows });
 });

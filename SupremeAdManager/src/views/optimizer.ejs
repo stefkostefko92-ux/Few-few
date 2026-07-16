@@ -1,45 +1,41 @@
 <%- include('_head') %>
-<h1><%- icon('trending-up') %> Оптимизатор</h1>
-<p class="hint">
-  Байесов бюджетен съветник (Thompson sampling върху конверсиите, 30 дни история).
-  Всичко тук е <strong>само препоръка</strong> — прилагаш я ти, кампания по кампания,
-  и всяка промяна минава през предпазителите (±20% на стъпка, тавани).
-</p>
+<h1><%- icon('trending-up') %> <%= t('opt.title') %></h1>
+<p class="hint"><%= t('opt.intro') %></p>
 
 <% if (pacing) { %>
 <section class="card">
-  <h2>Месечен pacing</h2>
+  <h2><%= t('opt.pacingTitle') %></h2>
   <div class="stats">
-    <div class="stat"><span class="label">Месечен бюджет</span><span class="value"><%= pacing.monthlyBudget.toFixed(2) %></span></div>
-    <div class="stat"><span class="label">Похарчено</span><span class="value"><%= pacing.spent.toFixed(2) %></span></div>
-    <div class="stat"><span class="label">Цел към днес</span><span class="value"><%= pacing.targetToDate.toFixed(2) %></span></div>
-    <div class="stat"><span class="label">Дневен таргет (остатък)</span><span class="value"><%= pacing.dailyTargetRemaining.toFixed(2) %></span></div>
+    <div class="stat"><span class="label"><%= t('opt.monthlyBudget') %></span><span class="value"><%= pacing.monthlyBudget.toFixed(2) %></span></div>
+    <div class="stat"><span class="label"><%= t('opt.spent') %></span><span class="value"><%= pacing.spent.toFixed(2) %></span></div>
+    <div class="stat"><span class="label"><%= t('opt.targetToDate') %></span><span class="value"><%= pacing.targetToDate.toFixed(2) %></span></div>
+    <div class="stat"><span class="label"><%= t('opt.dailyTarget') %></span><span class="value"><%= pacing.dailyTargetRemaining.toFixed(2) %></span></div>
   </div>
   <% if (pacing.over) { %>
-    <p class="alert"><%- icon('trending-up') %> Изпреварваме плана с <%= pacing.deviationPct %>% — при това темпо бюджетът свършва преди края на месеца.</p>
+    <p class="alert"><%- icon('trending-up') %> <%= t('opt.pacingOver', { dev: pacing.deviationPct }) %></p>
   <% } else if (pacing.under) { %>
-    <p class="hint"><%- icon('trending-down') %> Изоставаме с <%= Math.abs(pacing.deviationPct) %>% — има неизползван бюджет (<%= pacing.remainingDays %> дни остават).</p>
+    <p class="hint"><%- icon('trending-down') %> <%= t('opt.pacingUnder', { dev: Math.abs(pacing.deviationPct), days: pacing.remainingDays }) %></p>
   <% } else { %>
-    <p class="hint"><%- icon('check') %> Темпото е в норма (отклонение <%= pacing.deviationPct %>%, праг ±15%).</p>
+    <p class="hint"><%- icon('check') %> <%= t('opt.pacingOk', { dev: pacing.deviationPct }) %></p>
   <% } %>
 </section>
 <% } else { %>
 <section class="card">
-  <h2>Месечен pacing</h2>
-  <p class="hint">Изключен — задай <code>GUARD_MONTHLY_BUDGET</code> в средата, за да следим месечното темпо на харчене.</p>
+  <h2><%= t('opt.pacingTitle') %></h2>
+  <p class="hint"><%= t('opt.pacingOff') %></p>
 </section>
 <% } %>
 
 <section class="card">
-  <h2>Препоръчано преразпределение на бюджета</h2>
+  <h2><%= t('opt.recoTitle') %></h2>
   <% if (!recommendations.rows.length) { %>
-    <p class="hint"><%= recommendations.reason || 'Няма достатъчно данни.' %>
-      <% if (recommendations.skipped.length) { %><br>Пропуснати: <% for (const s of recommendations.skipped) { %><%= s.name %> (<%= s.reason %>) <% } %><% } %>
+    <p class="hint"><%= t(recommendations.reasonKey || 'opt.noData') %>
+      <% if (recommendations.skipped.length) { %><br><%= t('opt.skipped') %> <% for (const s of recommendations.skipped) { %><%= s.name %> (<%= t(s.reasonKey) %>) <% } %><% } %>
     </p>
   <% } else { %>
-  <p class="hint">Общ дневен пул: <strong><%= recommendations.pool.toFixed(2) %></strong> · <%= recommendations.draws %> симулации · последните <%= recommendations.lookbackDays %> дни. „Шанс за победа“ = колко често кампанията е най-ефективната в симулациите.</p>
+  <p class="hint"><%= t('opt.poolLine', { pool: recommendations.pool.toFixed(2), draws: recommendations.draws, days: recommendations.lookbackDays }) %></p>
   <table>
-    <thead><tr><th>Кампания</th><th>Шанс за победа</th><th>ROAS 30д</th><th>Сега</th><th>Препоръка</th><th>Δ</th><th></th></tr></thead>
+    <thead><tr><th><%= t('opt.thCampaign') %></th><th><%= t('opt.thWinProb') %></th><th><%= t('opt.thRoas30') %></th><th><%= t('opt.thCurrent') %></th><th><%= t('opt.thReco') %></th><th>Δ</th><th></th></tr></thead>
     <tbody>
       <% for (const r of recommendations.rows) { %>
       <tr>
@@ -54,27 +50,27 @@
           <form method="post" action="/campaigns/<%= r.id %>/budget" class="inline">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="new_budget" value="<%= r.recommended %>">
-            <button class="ghost" title="Прилага се през предпазителите (±20%, тавани)"><%- icon('check') %> Приложи</button>
+            <button class="ghost" title="<%= t('opt.applyTitle') %>"><%- icon('check') %> <%= t('opt.apply') %></button>
           </form>
-          <% } else { %><span class="hint">оптимално</span><% } %>
+          <% } else { %><span class="hint"><%= t('opt.optimal') %></span><% } %>
         </td>
       </tr>
       <% } %>
     </tbody>
   </table>
   <% if (recommendations.skipped.length) { %>
-    <p class="hint">Извън модела: <% for (const s of recommendations.skipped) { %><%= s.name %> (<%= s.reason %>) <% } %></p>
+    <p class="hint"><%= t('opt.outOfModel') %> <% for (const s of recommendations.skipped) { %><%= s.name %> (<%= t(s.reasonKey) %>) <% } %></p>
   <% } %>
   <% } %>
 </section>
 
 <section class="card">
-  <h2>Прогноза за разход — следващите 7 дни</h2>
+  <h2><%= t('opt.forecastTitle') %></h2>
   <% if (!forecasts.length) { %>
-    <p class="hint">Нужна е поне седмица история на активна кампания.</p>
+    <p class="hint"><%= t('opt.forecastEmpty') %></p>
   <% } else { %>
   <table>
-    <thead><tr><th>Кампания</th><th>Прогноза 7 дни</th><th>Бюджет 7 дни</th><th>Разлика</th></tr></thead>
+    <thead><tr><th><%= t('opt.thCampaign') %></th><th><%= t('opt.thForecast7') %></th><th><%= t('opt.thBudget7') %></th><th><%= t('opt.thDiff') %></th></tr></thead>
     <tbody>
       <% for (const f of forecasts) { %>
       <% const weekBudget = f.daily_budget * 7; const diff = f.forecast.total - weekBudget; %>
@@ -87,7 +83,7 @@
       <% } %>
     </tbody>
   </table>
-  <p class="hint">EWMA (α=0.3) + сезонност по ден от седмицата върху последните 28 дни. Платформите легално харчат до 2× дневния бюджет в отделен ден.</p>
+  <p class="hint"><%= t('opt.forecastNote') %></p>
   <% } %>
 </section>
 <%- include('_foot') %>

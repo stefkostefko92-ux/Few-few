@@ -1,91 +1,91 @@
 <%- include('_head') %>
-<h1>Нова кампания</h1>
-<p class="hint">Създава се като <strong>чернова</strong> → публикува се <strong>ПАУЗИРАНА</strong> в платформата → активираш я съзнателно. Таван на дневен бюджет: <%= guards.maxDailyBudget %> · общ таван: <%= guards.maxTotalDailyBudget %>.</p>
+<h1><%= t('new.title') %></h1>
+<p class="hint"><%= t('new.intro', { max: guards.maxDailyBudget, maxTotal: guards.maxTotalDailyBudget }) %></p>
 <% if (error) { %><p class="error"><%= error %></p><% } %>
 
 <form method="post" action="/campaigns" class="card grid2">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-  <label>Акаунт (връзка)
+  <label><%= t('new.account') %>
     <select name="connection_id" required>
       <% for (const c of connections) { %>
       <option value="<%= c.id %>"><%= c.platform === 'google' ? 'Google' : 'Meta' %> · <%= c.label %></option>
       <% } %>
     </select>
   </label>
-  <label>Име на кампанията <input name="name" required placeholder="напр. Linketto · Search BG · юли"></label>
+  <label><%= t('new.name') %> <input name="name" required placeholder="<%= t('new.namePh') %>"></label>
 
-  <label>Цел (objective)
+  <label><%= t('new.objective') %>
     <select name="objective" required>
       <optgroup label="Google">
-        <option value="SEARCH">Search — търсене (висок intent)</option>
-        <option value="PERFORMANCE_MAX">Performance Max — всички канали</option>
-        <option value="DEMAND_GEN">Demand Gen — YouTube/Discover/Gmail</option>
-        <option value="VIDEO">YouTube видео (през Demand Gen)</option>
-        <option value="DISPLAY">Display — банери</option>
+        <option value="SEARCH"><%= t('new.objSearch') %></option>
+        <option value="PERFORMANCE_MAX"><%= t('new.objPmax') %></option>
+        <option value="DEMAND_GEN"><%= t('new.objDemandGen') %></option>
+        <option value="VIDEO"><%= t('new.objVideo') %></option>
+        <option value="DISPLAY"><%= t('new.objDisplay') %></option>
       </optgroup>
       <optgroup label="Meta (ODAX)">
-        <option value="OUTCOME_SALES">Продажби</option>
-        <option value="OUTCOME_LEADS">Лийдове</option>
-        <option value="OUTCOME_TRAFFIC">Трафик</option>
-        <option value="OUTCOME_ENGAGEMENT">Ангажираност</option>
-        <option value="OUTCOME_AWARENESS">Разпознаваемост</option>
-        <option value="OUTCOME_APP_PROMOTION">Промотиране на приложение</option>
+        <option value="OUTCOME_SALES"><%= t('new.objSales') %></option>
+        <option value="OUTCOME_LEADS"><%= t('new.objLeads') %></option>
+        <option value="OUTCOME_TRAFFIC"><%= t('new.objTraffic') %></option>
+        <option value="OUTCOME_ENGAGEMENT"><%= t('new.objEngagement') %></option>
+        <option value="OUTCOME_AWARENESS"><%= t('new.objAwareness') %></option>
+        <option value="OUTCOME_APP_PROMOTION"><%= t('new.objApp') %></option>
       </optgroup>
     </select>
   </label>
-  <label>Дневен бюджет <input name="daily_budget" type="number" step="0.01" min="1" required placeholder="10.00"></label>
+  <label><%= t('new.dailyBudget') %> <input name="daily_budget" type="number" step="0.01" min="1" required placeholder="10.00"></label>
 
-  <label>Наддаване
+  <label><%= t('new.bidding') %>
     <select name="bidding">
-      <option value="">Автоматично (Maximize Conversions)</option>
-      <option value="tCPA">Целеви CPA</option>
-      <option value="tROAS">Целеви ROAS</option>
-      <option value="MAX_CLICKS">Максимум кликове</option>
+      <option value=""><%= t('new.bidAuto') %></option>
+      <option value="tCPA"><%= t('new.bidTCpa') %></option>
+      <option value="tROAS"><%= t('new.bidTRoas') %></option>
+      <option value="MAX_CLICKS"><%= t('new.bidMaxClicks') %></option>
     </select>
   </label>
-  <label>Целева стойност (CPA/ROAS) <input name="bidding_target" type="number" step="0.01" placeholder="напр. 10 (CPA) или 3 (ROAS)"></label>
+  <label><%= t('new.biddingTarget') %> <input name="bidding_target" type="number" step="0.01" placeholder="<%= t('new.biddingTargetPh') %>"></label>
 
-  <label>Целеви URL <input name="final_url" type="url" placeholder="https://…"></label>
-  <label>Гео (ISO кодове, запетая) <input name="geo" value="BG"></label>
+  <label><%= t('new.finalUrl') %> <input name="final_url" type="url" placeholder="https://…"></label>
+  <label><%= t('new.geo') %> <input name="geo" value="BG"></label>
 
-  <label>Мин. възраст (под 18 е забранено — DSA чл. 28) <input name="age_min" type="number" value="18" min="18" max="65"></label>
-  <label>Макс. възраст <input name="age_max" type="number" min="18" max="65" placeholder="без лимит"></label>
+  <label><%= t('new.ageMin') %> <input name="age_min" type="number" value="18" min="18" max="65"></label>
+  <label><%= t('new.ageMax') %> <input name="age_max" type="number" min="18" max="65" placeholder="<%= t('new.noLimit') %>"></label>
 
   <fieldset class="span2">
-    <legend>Meta placements (празно = Advantage+ автоматични — препоръчано)</legend>
+    <legend><%= t('new.placementsLegend') %></legend>
     <label class="check"><input type="checkbox" name="placements" value="facebook"> Facebook</label>
     <label class="check"><input type="checkbox" name="placements" value="instagram"> Instagram</label>
-    <label class="check"><input type="checkbox" name="placements" value="threads"> Threads (изисква Instagram)</label>
+    <label class="check"><input type="checkbox" name="placements" value="threads"> <%= t('new.threadsNote') %></label>
     <label class="check"><input type="checkbox" name="placements" value="messenger"> Messenger</label>
-    <label class="check"><input type="checkbox" name="whatsapp"> <%- icon('message-circle') %> Click-to-WhatsApp (изисква Page със свързан WhatsApp номер)</label>
+    <label class="check"><input type="checkbox" name="whatsapp"> <%- icon('message-circle') %> <%= t('new.ctwa') %></label>
   </fieldset>
 
-  <label>Meta Page ID <input name="page_id" placeholder="за Meta кампании с креатив"></label>
-  <label>Meta Pixel ID <input name="pixel_id" placeholder="за OUTCOME_SALES"></label>
+  <label><%= t('new.pageId') %> <input name="page_id" placeholder="<%= t('new.pageIdPh') %>"></label>
+  <label><%= t('new.pixelId') %> <input name="pixel_id" placeholder="<%= t('new.pixelIdPh') %>"></label>
 
-  <label class="span2">Заглавие (headline) <input name="headline" maxlength="255" placeholder="видими ~40 знака"></label>
-  <label class="span2">Основен текст <textarea name="primary_text" rows="3" maxlength="500" placeholder="видими ~125 знака преди „Виж повече“ — hook отпред!"></textarea></label>
+  <label class="span2"><%= t('new.headline') %> <input name="headline" maxlength="255" placeholder="<%= t('new.headlinePh') %>"></label>
+  <label class="span2"><%= t('new.primaryText') %> <textarea name="primary_text" rows="3" maxlength="500" placeholder="<%= t('new.primaryTextPh') %>"></textarea></label>
 
-  <label>DSA платец (payor) <input name="dsa_payor" placeholder="юридическо име — задължително за ЕС (Meta)"></label>
-  <label>DSA бенефициент <input name="dsa_beneficiary" placeholder="празно = платецът"></label>
+  <label><%= t('new.dsaPayor') %> <input name="dsa_payor" placeholder="<%= t('new.dsaPayorPh') %>"></label>
+  <label><%= t('new.dsaBeneficiary') %> <input name="dsa_beneficiary" placeholder="<%= t('new.dsaBeneficiaryPh') %>"></label>
 
   <fieldset class="span2">
-    <legend>Специални категории (Meta) — декларирай честно, иначе платформата отхвърля/банва</legend>
-    <label class="check"><input type="checkbox" name="special_ad_categories" value="HOUSING"> Жилища</label>
-    <label class="check"><input type="checkbox" name="special_ad_categories" value="EMPLOYMENT"> Работа</label>
-    <label class="check"><input type="checkbox" name="special_ad_categories" value="CREDIT"> Кредити</label>
-    <label class="check"><input type="checkbox" name="special_ad_categories" value="FINANCIAL_PRODUCTS_SERVICES"> Финансови продукти</label>
+    <legend><%= t('new.specialLegend') %></legend>
+    <label class="check"><input type="checkbox" name="special_ad_categories" value="HOUSING"> <%= t('new.housing') %></label>
+    <label class="check"><input type="checkbox" name="special_ad_categories" value="EMPLOYMENT"> <%= t('new.employment') %></label>
+    <label class="check"><input type="checkbox" name="special_ad_categories" value="CREDIT"> <%= t('new.credit') %></label>
+    <label class="check"><input type="checkbox" name="special_ad_categories" value="FINANCIAL_PRODUCTS_SERVICES"> <%= t('new.financial') %></label>
   </fieldset>
 
   <fieldset class="span2">
-    <legend>Съответствие (задължително за публикуване)</legend>
-    <label class="check"><input type="checkbox" name="consent_confirmed"> <%- icon('check') %> Сайтът има CMP + Consent Mode v2 / Meta consent сигнали за EEA трафик</label>
-    <label class="check"><input type="checkbox" name="ai_generated_creative"> <%- icon('bot') %> Креативът е AI-генериран</label>
-    <label class="check"><input type="checkbox" name="ai_disclosure_confirmed"> <%- icon('check') %> AI креативът носи разкриване + машинно-четима маркировка (AI Act чл. 50)</label>
-    <label class="check"><input type="checkbox" name="add_recommended_rules" checked> <%- icon('shield-check') %> Добави препоръчаните авто-правила (пауза при изгорял CPA, скалиране +20%, умора на креатива, дневен спирачен праг)</label>
+    <legend><%= t('new.complianceLegend') %></legend>
+    <label class="check"><input type="checkbox" name="consent_confirmed"> <%- icon('check') %> <%= t('new.consent') %></label>
+    <label class="check"><input type="checkbox" name="ai_generated_creative"> <%- icon('bot') %> <%= t('new.aiCreative') %></label>
+    <label class="check"><input type="checkbox" name="ai_disclosure_confirmed"> <%- icon('check') %> <%= t('new.aiDisclosure') %></label>
+    <label class="check"><input type="checkbox" name="add_recommended_rules" checked> <%- icon('shield-check') %> <%= t('new.recommendedRules') %></label>
   </fieldset>
 
-  <button class="primary span2">Създай чернова</button>
+  <button class="primary span2"><%= t('new.submit') %></button>
 </form>
 <%- include('_foot') %>

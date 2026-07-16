@@ -68,12 +68,13 @@ export function recommendBudgets({ lookbackDays = 30, draws = 500, rng = null } 
     )
     .all(`-${lookbackDays} days`);
 
+  // Причините са i18n ключове (opt.*) — изгледът ги превежда; одитът не ги ползва.
   const eligible = campaigns.filter((c) => c.clicks >= 10 && c.spend > 0);
   const skipped = campaigns
     .filter((c) => !(c.clicks >= 10 && c.spend > 0))
-    .map((c) => ({ id: c.id, name: c.name, reason: 'под 10 клика или без разход — няма база' }));
+    .map((c) => ({ id: c.id, name: c.name, reasonKey: 'opt.skipNoBase' }));
   if (eligible.length < 2) {
-    return { rows: [], skipped, lookbackDays, draws, reason: 'нужни са ≥2 кампании с данни' };
+    return { rows: [], skipped, lookbackDays, draws, reasonKey: 'opt.needTwo' };
   }
 
   // Акаунтен prior: CVR от всички кампании, с тегло ~20 псевдо-клика.

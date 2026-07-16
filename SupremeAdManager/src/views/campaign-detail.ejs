@@ -3,111 +3,107 @@
 <p>
   <span class="badge s-<%= campaign.status %>"><%= campaign.status %></span>
   · <%= campaign.platform === 'google' ? 'Google' : 'Meta' %> · <%= campaign.objective %>
-  · <%= campaign.daily_budget.toFixed(2) %> <%= campaign.currency %>/ден
-  <% if (campaign.external_id) { %> · външен ID: <code><%= campaign.external_id %></code><% } %>
+  · <%= campaign.daily_budget.toFixed(2) %> <%= campaign.currency %><%= t('common.perDay') %>
+  <% if (campaign.external_id) { %> · <%= t('camp.externalId') %> <code><%= campaign.external_id %></code><% } %>
 </p>
 <% const policy = campaign.policy_json ? JSON.parse(campaign.policy_json) : null; %>
 <% if (policy && policy.status === 'ISSUES') { %>
-<p class="error"><%- icon('bell') %> Проблем с доставката/одобрението: <%= policy.issues.join(' · ') %> <span class="hint">(проверено <%= policy.checked_at %>)</span></p>
+<p class="error"><%- icon('bell') %> <%= t('camp.deliveryProblem') %> <%= policy.issues.join(' · ') %> <span class="hint"><%= t('camp.checkedAt', { at: policy.checked_at }) %></span></p>
 <% } %>
-<% if (campaign.last_error) { %><p class="error">Последна грешка: <%= campaign.last_error %></p><% } %>
+<% if (campaign.last_error) { %><p class="error"><%= t('camp.lastError') %> <%= campaign.last_error %></p><% } %>
 
 <section class="actions">
   <% if (campaign.status === 'draft') { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/publish" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <button class="primary"><%- icon('upload') %> Публикувай (ПАУЗИРАНА)</button>
+    <button class="primary"><%- icon('upload') %> <%= t('camp.publish') %></button>
   </form>
   <% } %>
   <% if (['published','paused'].includes(campaign.status)) { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="to" value="active">
-    <button class="primary"><%- icon('play') %> Активирай (започва да харчи!)</button>
+    <button class="primary"><%- icon('play') %> <%= t('camp.activate') %></button>
   </form>
   <% } %>
   <% if (campaign.status === 'active') { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="to" value="paused">
-    <button class="warn"><%- icon('pause') %> Паузирай</button>
+    <button class="warn"><%- icon('pause') %> <%= t('camp.pause') %></button>
   </form>
   <% } %>
   <% if (campaign.status !== 'archived') { %>
   <form method="post" action="/campaigns/<%= campaign.id %>/status" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="to" value="archived">
-    <button class="ghost danger"><%- icon('archive') %> Архивирай</button>
+    <button class="ghost danger"><%- icon('archive') %> <%= t('camp.archive') %></button>
   </form>
   <% } %>
 </section>
 
 <section class="stats">
-  <div class="stat"><span class="label">Разход (7д)</span><span class="value"><%= agg.spend.toFixed(2) %></span></div>
+  <div class="stat"><span class="label"><%= t('camp.spend7') %></span><span class="value"><%= agg.spend.toFixed(2) %></span></div>
   <div class="stat"><span class="label">CPA</span><span class="value"><%= agg.cpa ? agg.cpa.toFixed(2) : '—' %></span></div>
   <div class="stat"><span class="label">ROAS</span><span class="value"><%= agg.roas ? agg.roas.toFixed(2) : '—' %></span></div>
   <div class="stat"><span class="label">CTR</span><span class="value"><%= agg.ctr ? (agg.ctr * 100).toFixed(2) + '%' : '—' %></span></div>
-  <div class="stat"><span class="label">Честота</span><span class="value"><%= agg.frequency ? agg.frequency.toFixed(2) : '—' %></span></div>
+  <div class="stat"><span class="label"><%= t('camp.frequency') %></span><span class="value"><%= agg.frequency ? agg.frequency.toFixed(2) : '—' %></span></div>
 </section>
 
 <% if (anomalies.length || overdelivery.length || forecast) { %>
 <section class="card">
-  <h2>Сигнали от интелигентния слой</h2>
+  <h2><%= t('camp.signalsTitle') %></h2>
   <% for (const a of anomalies) { %>
   <p class="<%= a.direction === 'срив' ? 'alert' : 'hint' %>">
     <%- icon(a.direction === 'скок' ? 'trending-up' : 'trending-down') %>
-    Аномалия вчера: <strong><%= a.metric %></strong> — <%= a.direction %> до <%= a.value %>
-    при типично <%= a.baseline %> за този ден от седмицата (z=<%= a.z %>).
+    <%= t('camp.anomaly', { metric: a.metric, direction: t(a.direction === 'скок' ? 'camp.spike' : 'camp.crash'), value: a.value, baseline: a.baseline, z: a.z }) %>
   </p>
   <% } %>
   <% if (overdelivery.length) { %>
-  <p class="hint"><%- icon('bell') %> Свръхдоставка (разход > 2× дневния бюджет):
-    <% for (const o of overdelivery) { %><%= o.date %> (<%= o.spend.toFixed(2) %>) <% } %>—
-    легално за платформите, но следи седмичната сума.</p>
+  <p class="hint"><%- icon('bell') %> <%= t('camp.overdelivery') %>
+    <% for (const o of overdelivery) { %><%= o.date %> (<%= o.spend.toFixed(2) %>) <% } %><%= t('camp.overdeliveryTail') %></p>
   <% } %>
   <% if (forecast) { %>
-  <p class="hint"><%- icon('chart-column') %> Прогноза за следващите 7 дни:
-    <strong><%= forecast.total.toFixed(2) %> <%= campaign.currency %></strong>
-    (бюджетът за 7 дни е <%= (campaign.daily_budget * 7).toFixed(2) %>).</p>
+  <p class="hint"><%- icon('chart-column') %> <%= t('camp.forecast', { total: forecast.total.toFixed(2), currency: campaign.currency, budget: (campaign.daily_budget * 7).toFixed(2) }) %></p>
   <% } %>
 </section>
 <% } %>
 
 <section class="card">
-  <h2>Последните 14 дни</h2>
+  <h2><%= t('camp.last14') %></h2>
   <%- include('_chart', {
     series: [
-      { label: 'Разход', values: series.map((d) => ({ date: d.date, value: d.spend })) },
-      { label: 'Конверсии', values: series.map((d) => ({ date: d.date, value: d.conversions })), cls: 'alt' },
+      { label: t('chart.spend'), values: series.map((d) => ({ date: d.date, value: d.spend })) },
+      { label: t('chart.conversions'), values: series.map((d) => ({ date: d.date, value: d.conversions })), cls: 'alt' },
     ],
   }) %>
 </section>
 
 <section class="card">
-  <h2>Метрики по дни</h2>
+  <h2><%= t('camp.dailyMetrics') %></h2>
   <table>
-    <thead><tr><th>Дата</th><th>Импресии</th><th>Кликове</th><th>Разход</th><th>Конверсии</th><th>Стойност</th><th>Честота</th></tr></thead>
+    <thead><tr><th><%= t('camp.thDate') %></th><th><%= t('camp.thImpressions') %></th><th><%= t('camp.thClicks') %></th><th><%= t('chart.spend') %></th><th><%= t('chart.conversions') %></th><th><%= t('camp.thValue') %></th><th><%= t('camp.frequency') %></th></tr></thead>
     <tbody>
       <% for (const m of metrics) { %>
       <tr><td><%= m.date %></td><td><%= m.impressions %></td><td><%= m.clicks %></td><td><%= m.spend.toFixed(2) %></td><td><%= m.conversions.toFixed(2) %></td><td><%= m.conversion_value.toFixed(2) %></td><td><%= m.frequency ?? '—' %></td></tr>
       <% } %>
-      <% if (!metrics.length) { %><tr><td colspan="7">Няма метрики още — публикувай, активирай и синхронизирай.</td></tr><% } %>
+      <% if (!metrics.length) { %><tr><td colspan="7"><%= t('camp.noMetrics') %></td></tr><% } %>
     </tbody>
   </table>
 </section>
 
 <section class="card">
-  <h2>Правила за тази кампания</h2>
+  <h2><%= t('camp.rulesTitle') %></h2>
   <ul>
     <% for (const r of rules) { %>
-    <li><strong><%= r.name %></strong>: <%= r.metric %> <%= r.operator %> <%= r.threshold %> (<%= r.lookback_days %>д, мин. разход <%= r.min_spend %>) → <%= r.action %><%= r.action_value ? ' ' + r.action_value + '%' : '' %> · cooldown <%= r.cooldown_hours %>ч <span class="dot <%= r.enabled ? 'on' : 'off' %>"></span></li>
+    <li><strong><%= r.name %></strong>: <%= r.metric %> <%= r.operator %> <%= r.threshold %> (<%= r.lookback_days %><%= t('common.days') %>, <%= t('camp.minSpend') %> <%= r.min_spend %>) → <%= r.action %><%= r.action_value ? ' ' + r.action_value + '%' : '' %> · cooldown <%= r.cooldown_hours %><%= t('common.hours') %> <span class="dot <%= r.enabled ? 'on' : 'off' %>"></span></li>
     <% } %>
-    <% if (!rules.length) { %><li>Няма правила — <a href="/rules">добави</a>.</li><% } %>
+    <% if (!rules.length) { %><li><%= t('camp.noRules') %> <a href="/rules"><%= t('camp.addRule') %></a>.</li><% } %>
   </ul>
 </section>
 
 <section class="card">
-  <h2>Одитна следа</h2>
+  <h2><%= t('camp.auditTitle') %></h2>
   <ul class="feed">
     <% for (const a of auditRows) { %>
     <li><time><%= a.at %></time> <strong><%= a.actor %></strong> · <%= a.action %><% if (a.dry_run) { %> <%- icon('flask-conical') %><% } %></li>

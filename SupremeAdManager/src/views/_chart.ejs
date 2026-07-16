@@ -10,7 +10,7 @@
   const group = (W - pad * 2) / n;
   const barW = Math.max(1, (group - 1) / series.length);
 %>
-<svg class="chart" viewBox="0 0 <%= W %> <%= H %>" role="img" aria-label="<%= series.map((s) => s.label).join(' и ') %> по дни">
+<svg class="chart" viewBox="0 0 <%= W %> <%= H %>" role="img" aria-label="<%= series.map((s) => s.label).join(' · ') %> <%= t('chart.byDays') %>">
   <line class="axis" x1="<%= pad %>" y1="<%= H - 8 %>" x2="<%= W - pad %>" y2="<%= H - 8 %>" />
   <% series.forEach((s, si) => { %>
     <% s.values.forEach((v, i) => {

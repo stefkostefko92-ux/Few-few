@@ -1,32 +1,28 @@
 <%- include('_head') %>
-<h1><%- icon('chart-column') %> Седмичен дайджест</h1>
-<p class="hint">
-  Последните 7 пълни дни срещу предходните 7 — същите дни от седмицата, така че
-  сезонността се съкращава сама. Метриките са унифицираният петорен стандарт
-  (разход · импресии · кликове · конверсии · стойност) и важат общо за двете платформи.
-</p>
+<h1><%- icon('chart-column') %> <%= t('dig.title') %></h1>
+<p class="hint"><%= t('dig.intro') %></p>
 
 <section class="stats">
   <% for (const m of digest.metrics) { %>
   <div class="stat">
-    <span class="label"><%= m.label %></span>
+    <span class="label"><%= t('dig.m.' + m.key) %></span>
     <span class="value"><%= m.current %></span>
     <% if (m.changePct != null) { %>
-    <span class="badge <%= m.changePct >= 0 ? 's-active' : 's-error' %>"><%= m.changePct > 0 ? '+' : '' %><%= m.changePct %>% спрямо мин. седмица</span>
+    <span class="badge <%= m.changePct >= 0 ? 's-active' : 's-error' %>"><%= t('dig.vsLastWeek', { pct: (m.changePct > 0 ? '+' : '') + m.changePct }) %></span>
     <% } else { %>
-    <span class="hint">няма база за сравнение</span>
+    <span class="hint"><%= t('dig.noBase') %></span>
     <% } %>
   </div>
   <% } %>
 </section>
 
 <section class="card">
-  <h2>Къде отидоха парите</h2>
+  <h2><%= t('dig.moneyTitle') %></h2>
   <% if (!digest.perCampaign.length) { %>
-    <p class="hint">Няма разход тази седмица.</p>
+    <p class="hint"><%= t('dig.noSpend') %></p>
   <% } else { %>
   <table>
-    <thead><tr><th>Кампания</th><th>Разход 7д</th><th>Конверсии</th><th>ROAS</th></tr></thead>
+    <thead><tr><th><%= t('opt.thCampaign') %></th><th><%= t('dig.thSpend7') %></th><th><%= t('dig.thConversions') %></th><th>ROAS</th></tr></thead>
     <tbody>
       <% for (const c of digest.perCampaign) { %>
       <tr>
@@ -42,15 +38,15 @@
 </section>
 
 <section class="card">
-  <h2>Промени и сигнали тази седмица</h2>
+  <h2><%= t('dig.changesTitle') %></h2>
   <% if (!digest.changes.length) { %>
-    <p class="hint">Нищо не е пипано — нито от човек, нито от правилата.</p>
+    <p class="hint"><%= t('dig.noChanges') %></p>
   <% } else { %>
   <ul class="feed">
     <% for (const ch of digest.changes) { %>
     <li>
       <time><%= ch.at %></time> <strong><%= ch.actor %></strong> · <%= ch.action %>
-      <% if (ch.campaign_id) { %> · <a href="/campaigns/<%= ch.campaign_id %>">кампания #<%= ch.campaign_id %></a><% } %>
+      <% if (ch.campaign_id) { %> · <a href="/campaigns/<%= ch.campaign_id %>"><%= t('dig.campaignRef', { id: ch.campaign_id }) %></a><% } %>
       <% const d = JSON.parse(ch.detail_json || '{}'); %>
       <% if (d.from != null && d.to != null) { %> (<%= d.from %> → <%= d.to %>)<% } %>
       <% if (d.metric) { %> (<%= d.metric %><% if (d.direction) { %>: <%= d.direction %><% } %>)<% } %>

@@ -442,3 +442,22 @@ td.up {
 td.down {
   color: #f87171;
 }
+
+/* Езиков превключвател */
+nav.langs {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: auto;
+  margin-right: 0.8rem;
+}
+nav.langs a {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  opacity: 0.6;
+}
+nav.langs a.active {
+  opacity: 1;
+  background: rgba(139, 92, 246, 0.18);
+  color: var(--accent);
+}

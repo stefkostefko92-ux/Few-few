@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="bg">
+<html lang="<%= locale %>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,21 +12,26 @@
   <div class="brand"><%- icon('megaphone') %> Supreme <span class="brand-sub">AdManager</span></div>
   <% if (typeof hideNav === 'undefined') { %>
   <nav>
-    <a href="/"><%- icon('gauge') %> Дашборд</a>
-    <a href="/campaigns/new"><%- icon('plus') %> Нова кампания</a>
-    <a href="/optimizer"><%- icon('trending-up') %> Оптимизатор</a>
-    <a href="/digest"><%- icon('chart-column') %> Дайджест</a>
-    <a href="/rules"><%- icon('bell') %> Правила</a>
-    <a href="/connections"><%- icon('link-2') %> Връзки</a>
-    <a href="/audit"><%- icon('file-clock') %> Одит</a>
+    <a href="/"><%- icon('gauge') %> <%= t('nav.dashboard') %></a>
+    <a href="/campaigns/new"><%- icon('plus') %> <%= t('nav.newCampaign') %></a>
+    <a href="/optimizer"><%- icon('trending-up') %> <%= t('nav.optimizer') %></a>
+    <a href="/digest"><%- icon('chart-column') %> <%= t('nav.digest') %></a>
+    <a href="/rules"><%- icon('bell') %> <%= t('nav.rules') %></a>
+    <a href="/connections"><%- icon('link-2') %> <%= t('nav.connections') %></a>
+    <a href="/audit"><%- icon('file-clock') %> <%= t('nav.audit') %></a>
+  </nav>
+  <nav class="langs" aria-label="Language">
+    <% for (const l of locales) { %>
+    <a href="?lang=<%= l %>" class="<%= l === locale ? 'active' : '' %>" hreflang="<%= l %>"><%= localeNames[l] %></a>
+    <% } %>
   </nav>
   <form method="post" action="/logout" class="inline">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <button class="ghost"><%- icon('log-out') %> Изход</button>
+    <button class="ghost"><%- icon('log-out') %> <%= t('nav.logout') %></button>
   </form>
   <% } %>
 </header>
 <% if (dryRun && typeof hideNav === 'undefined') { %>
-<div class="banner"><%- icon('flask-conical') %> DRY-RUN режим — няма конфигурирани API креденшъли. Всичко се симулира локално; нито стотинка не се харчи.</div>
+<div class="banner"><%- icon('flask-conical') %> <%= t('banner.dryRun') %></div>
 <% } %>
 <main>
