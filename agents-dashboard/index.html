@@ -10609,7 +10609,7 @@ let W = 0, H = 0, DPR = 1, nodes = [], particles = [];
 let gal = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false;
 let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
 const ARMS = 3, TWIST = 2.6;
-let dust = [], meteors = [], nebulae = [], meteorT = 2 + Math.random() * 3;
+let dust = [], meteors = [], nebulae = [], meteorT = 2 + Math.random() * 3, warp = null;
 function initSky() {
   dust = Array.from({ length: 320 }, () => ({ nx: Math.random() * 2 - 1, ny: Math.random() * 2 - 1, d: 0.25 + Math.random() * 0.9, r: 0.4 + Math.random() * 1.6, ph: Math.random() * 6.28, tw: 1.3 + Math.random() * 2.5, warm: Math.random() < 0.22 }));
   nebulae = [
@@ -10743,6 +10743,28 @@ function drawMeteors() {
   }
   ctx.globalCompositeOperation = "source-over";
 }
+function startWarp(agent, x, y) { if (warp) return; warp = { a: agent, x, y, t: 0, opened: false }; }
+function drawWarp() {
+  if (!warp) return;
+  warp.t += RM ? 0.5 : 0.032;
+  const t = Math.min(1, warp.t), e = t * t, fa = Math.sin(Math.min(1, t) * Math.PI);
+  const sx = warp.x, sy = warp.y, maxLen = Math.hypot(W, H), col = warp.a.accent;
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (let i = 0; i < 48; i++) {
+    const a = (i / 48) * 6.28 + i * 0.7, r0 = e * maxLen * 0.12, r1 = r0 + (0.22 + (i % 5) * 0.16) * maxLen * e;
+    const x0 = sx + Math.cos(a) * r0, y0 = sy + Math.sin(a) * r0, x1 = sx + Math.cos(a) * r1, y1 = sy + Math.sin(a) * r1;
+    const g = ctx.createLinearGradient(x0, y0, x1, y1), sc = i % 3 === 0 ? col : "#dff0ff";
+    g.addColorStop(0, hex(lighten(sc, 60), 0)); g.addColorStop(1, hex(lighten(sc, 90), 0.85 * fa));
+    ctx.strokeStyle = g; ctx.lineWidth = 1.4 + e * 2.2; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  }
+  const sr = e * maxLen * 0.55; ctx.strokeStyle = hex(lighten(col, 90), (1 - t) * 0.9); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 6.28); ctx.stroke();
+  const fr = Math.max(1, e * maxLen * 1.15), fg = ctx.createRadialGradient(sx, sy, 0, sx, sy, fr);
+  fg.addColorStop(0, `rgba(255,255,255,${fa})`); fg.addColorStop(0.5, hex(lighten(col, 80), fa * 0.55)); fg.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(sx, sy, fr, 0, 6.28); ctx.fill();
+  ctx.restore();
+  if (!warp.opened && t >= 0.5) { warp.opened = true; openDrawer(warp.a); }
+  if (t >= 1) warp = null;
+}
 function loop() {
   requestAnimationFrame(loop);
   if (document.hidden) return;
@@ -10782,11 +10804,13 @@ function loop() {
 
   cv.classList.toggle("pointer", !!hovered && !dragging);
   const tip = document.getElementById("tip");
-  if (hovered) {
+  if (hovered && !warp) {
     const a = hovered.a; tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.3) + "px";
     tip.innerHTML = `<div class="t-n">${iconSVG(a.id, a.accent, 2)}${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div><div class="t-m"><div><b>v${verOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
     tip.style.opacity = 1;
   } else tip.style.opacity = 0;
+
+  drawWarp();
 }
 
 function drawStar(nd) {
@@ -10830,7 +10854,7 @@ function emit(nd) {
 /* ---------- интеракция ---------- */
 cv.addEventListener("pointerdown", e => { dragging = true; dragMoved = false; lastX = e.clientX; lastY = e.clientY; cv.classList.add("grabbing"); cv.setPointerCapture(e.pointerId); });
 cv.addEventListener("pointermove", e => { const rect = cv.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; if (dragging) { const dxx = e.clientX - lastX; if (Math.abs(dxx) + Math.abs(e.clientY - lastY) > 3) dragMoved = true; if (!RM) gal += dxx * 0.004; spin = RM ? 0 : dxx * 0.0006; lastX = e.clientX; lastY = e.clientY; } });
-cv.addEventListener("pointerup", () => { dragging = false; cv.classList.remove("grabbing"); if (!dragMoved && hovered) openDrawer(hovered.a); });
+cv.addEventListener("pointerup", () => { dragging = false; cv.classList.remove("grabbing"); if (!dragMoved && hovered && !warp) startWarp(hovered.a, hovered.x, hovered.y); });
 cv.addEventListener("pointerleave", () => { mx = my = -1e5; });
 cv.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.max(0.6, Math.min(2.4, zoom * (e.deltaY < 0 ? 1.08 : 0.93))); }, { passive: false });
 document.getElementById("q").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); filterList(); });
