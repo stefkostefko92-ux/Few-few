@@ -224,6 +224,50 @@ $("saveFilters").addEventListener("click", () => {
   });
 });
 
+// Import a filter list URL: fetch the TEXT (data, not code) and append the lines
+// we can apply (bare domains + ##cosmetic) to "My filters". Capped; comments and
+// unsupported network options are skipped.
+$("importList").addEventListener("click", async () => {
+  const hint = $("importHint");
+  const url = ($("listUrl").value || "").trim();
+  if (!/^https:\/\/[^ ]+$/.test(url)) { hint.textContent = "Enter a valid https:// URL"; return; }
+  hint.textContent = "Fetching…";
+  try {
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error("http " + res.status);
+    const text = await res.text();
+    const keep = [];
+    for (let line of text.split("\n")) {
+      line = line.trim();
+      if (!line || line.startsWith("!") || line.startsWith("[") || line.startsWith("#")) continue;
+      if (line.includes("##")) {
+        // domain##selector или ##selector — козметика (без scriptlet/procedural-only)
+        if (line.includes("#@#") || line.includes("+js(")) continue;
+        const sel = line.slice(line.indexOf("##") + 2);
+        // Санитизация на недоверен импорт: без форм-контроли/универсални селектори.
+        if (/(^|[\s>+~,(])(input|button|select|textarea|form|label)([\s>+~,.:[)#]|$)/i.test(sel)) continue;
+        if (/\[\s*(type|name|autocomplete)\s*[*^$|~]?=\s*["']?(password|email|current-password|login)/i.test(sel)) continue;
+        if (/(^|[\s>+~,(])\*(?![=\]])/.test(sel) || sel.trim().startsWith(":")) continue;
+        keep.push(line);
+      } else if (/^(\|\|)?[a-z0-9.-]+\.[a-z]{2,}\^?$/i.test(line)) {
+        keep.push(line.replace(/[|^]/g, "")); // bare domain block
+      }
+      if (keep.length >= 5000) break;
+    }
+    if (!keep.length) { hint.textContent = "No applicable rules found"; return; }
+    const ta = $("userFilters");
+    const existing = ta.value.trim();
+    ta.value = (existing ? existing + "\n" : "") + "! imported from " + url + "\n" + keep.join("\n");
+    chrome.runtime.sendMessage({ type: "setUserFilters", text: ta.value }, () => {
+      hint.textContent = "Imported " + keep.length + " rules ✓";
+      $("listUrl").value = "";
+      setTimeout(() => (hint.textContent = ""), 4000);
+    });
+  } catch (e) {
+    hint.textContent = "Import failed (" + (e.message || "error") + ")";
+  }
+});
+
 $("resetStats").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "resetStats" }, () => {
     $("blockedTotal").textContent = "0";

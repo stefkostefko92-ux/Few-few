@@ -146,15 +146,13 @@ chrome.runtime.onStartup.addListener(async () => {
   chrome.alarms.create("config-update", { periodInMinutes: 720 });
 });
 
-// right-click entry that fires the element picker
+// right-click entries: element picker (saves) + zapper (one-off)
 function createMenus() {
   try {
     chrome.contextMenus.removeAll(() => {
-      chrome.contextMenus.create({
-        id: "tbab-pick",
-        title: "Block an element here",
-        contexts: ["page", "image", "video", "link", "frame"],
-      });
+      const contexts = ["page", "image", "video", "link", "frame"];
+      chrome.contextMenus.create({ id: "tbab-pick", title: "Block an element here", contexts });
+      chrome.contextMenus.create({ id: "tbab-zap", title: "Zap this element (once)", contexts });
     });
   } catch (e) {}
 }
@@ -233,9 +231,9 @@ chrome.alarms.onAlarm.addListener((a) => {
 });
 
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "tbab-pick" && tab?.id) {
-    chrome.tabs.sendMessage(tab.id, { type: "activatePicker" });
-  }
+  if (!tab?.id) return;
+  if (info.menuItemId === "tbab-pick") chrome.tabs.sendMessage(tab.id, { type: "activatePicker" });
+  else if (info.menuItemId === "tbab-zap") chrome.tabs.sendMessage(tab.id, { type: "activateZapper" });
 });
 
 // Enable or disable the bundled static rulesets. The YouTube ruleset also
