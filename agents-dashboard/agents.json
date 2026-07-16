@@ -8773,9 +8773,20 @@
           "date": "2026-07-15",
           "event": "v11.3 — учене",
           "detail": "Научи: ospedali/ site-ui.js page() е ЕДИНСТВЕНИЯТ header/nav източник за всички статични стран… (+1 още)"
+        },
+        {
+          "version": "11.4.0",
+          "date": "2026-07-16",
+          "event": "v11.4 — учене",
+          "detail": "Научи: ospedali/ site-ui.js CSS темата е с ДВА пътя за тъмно: :root[data-theme=dark] И @media(… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „ospedali/ site-ui.js CSS темата е с ДВА пътя за тъмно: :root[data-theme=dark] И @media(…\" (+2 още)"
+        },
         {
           "date": "2026-07-15",
           "type": "quarantine",
