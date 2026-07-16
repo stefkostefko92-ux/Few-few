@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
@@ -16,6 +16,7 @@ export default function PlayerView(): React.ReactElement {
   const { t } = useTranslation();
   const me = useStore((s) => s.character);
   const toast = useStore((s) => s.toast);
+  const nav = useNavigate();
   const [p, setP] = useState<any>(null);
   const [err, setErr] = useState('');
   const [report, setReport] = useState<ReportTarget | null>(null);
@@ -64,6 +65,12 @@ export default function PlayerView(): React.ReactElement {
                 .then(() => toast(t('social.requestSent', { defaultValue: 'Request sent' }), 'success'))
                 .catch((e: any) => toast(e.message, 'error'))}
             >+ {t('social.addFriend', { defaultValue: 'Add friend' })}</button>
+            <button
+              className="btn btn-sm"
+              onClick={() => api.post('/trade/offer', { toName: p.name })
+                .then(() => { toast(t('trade.sent', { defaultValue: 'Trade offer sent' }), 'success'); nav('/app/trade'); })
+                .catch((e: any) => toast(e.message, 'error'))}
+            >{t('trade.trade', { defaultValue: 'Trade' })}</button>
             <button
               className="btn btn-sm"
               onClick={() => api.post('/social/block', { name: p.name })
