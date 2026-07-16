@@ -24,6 +24,10 @@ export function StoreModal() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Per-SKU checkout consent (CRD art. 16(m)): gems and chip packs are one-off
+  // digital goods supplied immediately, so the buyer must confirm loss of the
+  // 14-day withdrawal right before we open Stripe.
+  const [consented, setConsented] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!open || products.length) return;
@@ -40,6 +44,7 @@ export function StoreModal() {
   }, [open, products.length, t]);
 
   async function buy(sku: string) {
+    if (!consented[sku]) return; // gated by the consent checkbox below
     setBusy(sku);
     setError(null);
     try {
@@ -96,6 +101,8 @@ export function StoreModal() {
         busy={busy}
         onBuy={buy}
         enabled={billingEnabled}
+        consented={consented}
+        onConsent={(sku, v) => setConsented((c) => ({ ...c, [sku]: v }))}
         t={t}
       />
       <Section
@@ -104,6 +111,8 @@ export function StoreModal() {
         busy={busy}
         onBuy={buy}
         enabled={billingEnabled}
+        consented={consented}
+        onConsent={(sku, v) => setConsented((c) => ({ ...c, [sku]: v }))}
         t={t}
       />
 
@@ -129,6 +138,8 @@ function Section({
   busy,
   onBuy,
   enabled,
+  consented,
+  onConsent,
   t,
 }: {
   label: string;
@@ -136,6 +147,8 @@ function Section({
   busy: string | null;
   onBuy: (sku: string) => void;
   enabled: boolean;
+  consented: Record<string, boolean>;
+  onConsent: (sku: string, value: boolean) => void;
   t: (k: string, o?: Record<string, unknown>) => string;
 }) {
   if (!items.length) return null;
@@ -146,23 +159,34 @@ function Section({
         {items.map((p) => (
           <li
             key={p.sku}
-            className="flex items-center justify-between gap-3 rounded-card border border-brass-400/15 bg-felt-800/60 px-3 py-2"
+            className="flex flex-col gap-2 rounded-card border border-brass-400/15 bg-felt-800/60 px-3 py-2"
           >
-            <div>
-              <div className="text-sm text-ink-100">{p.title}</div>
-              <div className="text-xs text-brass-300">
-                {p.grantGems ? t("shop.grantGems", { n: p.grantGems }) : null}
-                {p.grantChips ? t("shop.grantChips", { n: p.grantChips }) : null}
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm text-ink-100">{p.title}</div>
+                <div className="text-xs text-brass-300">
+                  {p.grantGems ? t("shop.grantGems", { n: p.grantGems }) : null}
+                  {p.grantChips ? t("shop.grantChips", { n: p.grantChips }) : null}
+                </div>
               </div>
+              <Button
+                loading={busy === p.sku}
+                disabled={!enabled || !(consented[p.sku] ?? false)}
+                onClick={() => onBuy(p.sku)}
+                className="shrink-0"
+              >
+                {enabled ? formatDualPrice(p.priceCents) : t("shop.soon")}
+              </Button>
             </div>
-            <Button
-              loading={busy === p.sku}
-              disabled={!enabled}
-              onClick={() => onBuy(p.sku)}
-              className="shrink-0"
-            >
-              {enabled ? formatDualPrice(p.priceCents) : t("shop.soon")}
-            </Button>
+            <label className="flex items-start gap-2 text-[0.7rem] text-ink-300">
+              <input
+                type="checkbox"
+                checked={consented[p.sku] ?? false}
+                onChange={(e) => onConsent(p.sku, e.target.checked)}
+                className="mt-0.5 size-3.5 shrink-0 accent-brass-300"
+              />
+              <span>{t("shop.consentImmediate")}</span>
+            </label>
           </li>
         ))}
       </ul>

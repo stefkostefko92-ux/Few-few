@@ -176,7 +176,11 @@
     "consentPre": "Ho 18+ e accetto i",
     "consentTerms": "Termini di servizio",
     "consentAnd": "e la",
-    "consentPrivacy": "Privacy Policy"
+    "consentPrivacy": "Privacy Policy",
+    "oauthConsent": "Continuando con Google o Facebook, dichiari di avere 18+ e accetti i",
+    "errorBanned": "Questo account è bloccato.",
+    "banReason": "Motivo: {{reason}}.",
+    "banAppeal": "Per opporti scrivi a legal@carbonstealth.eu."
   },
   "account": {
     "title": "Account",
@@ -314,8 +318,10 @@
     "grantGems": "+{{n}} gemme",
     "grantChips": "+{{n}} fiche",
     "perMonth": "al mese",
+    "consentImmediate": "Acconsento che il contenuto sia fornito immediatamente e confermo di perdere il diritto di recesso di 14 giorni.",
+    "consentSubscription": "Accetto l'abbonamento e il rinnovo automatico mensile fino alla disdetta; mantengo il diritto di recesso di 14 giorni con detrazione proporzionale.",
+    "consentRequired": "Spunta il consenso per continuare.",
     "perk": {
-      "noAds": "Niente pubblicità",
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% bonus giornaliero",
       "gems": "{{n}} 💎 al mese",

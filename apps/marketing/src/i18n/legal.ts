@@ -693,12 +693,12 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "Puoi anche presentare un reclamo alla Commissione per la protezione dei dati personali (CPDP).",
         },
-        { type: "h2", text: "6. Sicurezza" },
+        { type: "h2", text: "7. Sicurezza" },
         {
           type: "p",
           text: "Le password sono sottoposte ad hashing con argon2id; le sessioni utilizzano cookie httpOnly. Applichiamo misure tecniche e organizzative per la protezione dei dati.",
         },
-        { type: "h2", text: "7. Contatti" },
+        { type: "h2", text: "8. Contatti" },
         {
           type: "p",
           text: "Richieste sulla privacy: privacy@carbonstealth.eu.",
@@ -717,7 +717,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
       blocks: [
         {
           type: "p",
-          text: "Utilizziamo solo cookie strettamente necessari al funzionamento del servizio. Non utilizziamo cookie pubblicitari o di tracciamento di terze parti.",
+          text: "Utilizziamo solo cookie strettamente necessari al funzionamento del servizio e un cookie per la preferenza della lingua. Non utilizziamo cookie pubblicitari o di tracciamento di terze parti.",
         },
         { type: "h2", text: "Strettamente necessari" },
         {
@@ -730,6 +730,13 @@ export const LEGAL: Record<Locale, LegalDict> = {
         {
           type: "p",
           text: "Poiché questi cookie sono strettamente necessari, non richiedono il consenso. Puoi bloccarli dal tuo browser, ma in tal caso l'accesso non funzionerà.",
+        },
+        { type: "h2", text: "Preferenza della lingua" },
+        {
+          type: "ul",
+          items: [
+            "`aso_locale` — ricorda la lingua che hai scelto (fino a 12 mesi). Viene impostato solo dopo che cambi lingua e non traccia il comportamento.",
+          ],
         },
         { type: "h2", text: "Archiviazione locale" },
         {
