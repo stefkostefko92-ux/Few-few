@@ -10932,14 +10932,15 @@ function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
   const SY = SHAPE[agent.id] || 1.03;
-  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 }, "_default": { lean: 0, sway: .035, bob: 1 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
+  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
   const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
   let excited = 0, jumpT = -9, winkT = -9, burst = [], sq = 1, sqv = 0, tilt = 0, R0 = 60;
   const gelB = []; let guard = 0;
   while (gelB.length < 15 && guard < 500) { guard++; const a = Math.random() * 6.28, rr = 0.44 + Math.random() * 0.46, nx = Math.cos(a) * rr, ny = Math.sin(a) * rr; if (Math.abs(nx) < 0.5 && ny > -0.42 && ny < 0.56) continue; if (gelB.some(b => Math.hypot(b.nx - nx, b.ny - ny) < 0.22)) continue; gelB.push({ nx, ny, r: 0.045 + Math.pow(Math.random(), 1.6) * 0.09, dr: Math.random() * 6.28 }); }
   gelB.sort((a, b) => a.ny - b.ny);
-  const upB = Array.from({ length: 7 }, () => ({ x: 0.18 + Math.random() * 0.64, y: 0.4 + Math.random() * 0.7, r: 2.2 + Math.random() * 4.5, sp: 0.0006 + Math.random() * 0.0012, ph: Math.random() * 6.28, sw: 0.4 + Math.random() * 0.9 }));
+  const motes = Array.from({ length: 10 }, () => ({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.6, sp: 0.0002 + Math.random() * 0.0006, ph: Math.random() * 6.28 }));
+  const spk = [[-.18, -.5, 0], [.28, -.42, 2.1], [-.4, -.06, 4.2]];
   function fit() { Wc = canvas.clientWidth; Hc = canvas.clientHeight; canvas.width = Wc * dpr; canvas.height = Hc * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   fit();
   canvas.style.cursor = "pointer";
@@ -10947,6 +10948,7 @@ function startMascot(canvas, agent) {
   canvas.onpointerleave = () => { excited = 0; };
   canvas.onpointerdown = () => { jumpT = tt; winkT = tt; sqv -= 0.04; for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 2.6; burst.push({ x: Wc * 0.58, y: Hc * 0.5 - R0 * 0.9, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1.2, life: 1, r: 1.4 + Math.random() * 2.4 }); } };
 
+  const star = (x, y, s, a) => { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = a; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.lineWidth = Math.max(1, s * .12); for (const aa of [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4]) { const l = (aa % (Math.PI / 2)) ? s * .42 : s; ctx.beginPath(); ctx.moveTo(x - Math.cos(aa) * l, y - Math.sin(aa) * l); ctx.lineTo(x + Math.cos(aa) * l, y + Math.sin(aa) * l); ctx.stroke(); } ctx.restore(); };
   function path(cx, cy, R) { ctx.beginPath(); const n = 48; for (let i = 0; i <= n; i++) { const a = i / n * 6.283, w = 1 + 0.028 * Math.sin(a * 3 + tt * 1.6) + 0.018 * Math.sin(a * 5 - tt * 1.1), rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * SY; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
   function drop(x, y, r) { const g = ctx.createRadialGradient(x - r * .34, y - r * .4, r * .04, x, y, r); g.addColorStop(0, hex(lighten(c, 90), .26)); g.addColorStop(.62, hex(c, .03)); g.addColorStop(1, hex(cdd, .44)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill(); ctx.lineWidth = Math.max(.5, r * .1); ctx.strokeStyle = hex(lighten(c, 140), .5); ctx.beginPath(); ctx.arc(x, y, r * .92, Math.PI * .98, Math.PI * 1.86); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(x - r * .34, y - r * .36, r * .2, 0, 6.28); ctx.fill(); ctx.fillStyle = hex(lighten(c, 120), .32); ctx.beginPath(); ctx.arc(x + r * .3, y + r * .32, r * .12, 0, 6.28); ctx.fill(); }
   function limb(sx, sy, hx, hy, ux, uy, hr) {
@@ -10954,7 +10956,16 @@ function startMascot(canvas, agent) {
     const hg = ctx.createRadialGradient(hx - hr * .3, hy - hr * .35, hr * .1, hx, hy, hr); hg.addColorStop(0, hex(lighten(c, 95), 1)); hg.addColorStop(.7, hex(c, 1)); hg.addColorStop(1, hex(darken(c, 30), 1)); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, hr, 0, 6.28); ctx.fill();
     ctx.strokeStyle = hex(lighten(c, 130), .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(hx, hy, hr * .88, Math.PI * .9, Math.PI * 1.9); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.65)"; ctx.beginPath(); ctx.arc(hx - hr * .3, hy - hr * .3, hr * .24, 0, 6.28); ctx.fill();
   }
-  function platform(cx, cy, R) { ctx.save(); ctx.translate(cx, cy); ctx.scale(1, .24); const g = ctx.createRadialGradient(0, 0, 2, 0, 0, R * 2); g.addColorStop(0, hex(c, .5)); g.addColorStop(.5, hex(c, .12)); g.addColorStop(1, hex(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R * 2, 0, 6.28); ctx.fill(); const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, R * .9 * (2 - sq)); cg.addColorStop(0, hex(lighten(c, 130), .55)); cg.addColorStop(1, hex(c, 0)); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, R * .9 * (2 - sq), 0, 6.28); ctx.fill(); ctx.strokeStyle = hex(lighten(c, 60), .5); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.5 + Math.sin(tt * 1.2) * 3, 0, 6.28); ctx.stroke(); ctx.globalAlpha = .35; ctx.beginPath(); ctx.arc(0, 0, R * 1.14, 0, 6.28); ctx.stroke(); ctx.globalAlpha = 1; ctx.restore(); }
+  function platform(cx, cy, R) {
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(1, .26);
+    let g = ctx.createRadialGradient(0, 0, 2, 0, 0, R * 2.1); g.addColorStop(0, hex(c, .5)); g.addColorStop(.5, hex(c, .12)); g.addColorStop(1, hex(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R * 2.1, 0, 6.28); ctx.fill();
+    const cr = R * .95 * (2 - sq); g = ctx.createRadialGradient(0, 0, 0, 0, 0, cr); g.addColorStop(0, hex(lighten(c, 150), .6)); g.addColorStop(1, hex(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, cr, 0, 6.28); ctx.fill();
+    ctx.lineWidth = 1.4; ctx.strokeStyle = hex(lighten(c, 70), .55); ctx.beginPath(); ctx.arc(0, 0, R * 1.5, 0, 6.28); ctx.stroke();
+    ctx.strokeStyle = hex(lighten(c, 40), .28); ctx.beginPath(); ctx.arc(0, 0, R * 1.16, 0, 6.28); ctx.stroke();
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = hex(lighten(c, 120), .8); ctx.lineWidth = 2.4; ctx.setLineDash([R * .5, R * .95]); ctx.beginPath(); ctx.arc(0, 0, R * 1.74, tt * .7, tt * .7 + 6.28); ctx.stroke(); ctx.setLineDash([R * .18, R * 1.5]); ctx.strokeStyle = hex(lighten(c, 90), .5); ctx.beginPath(); ctx.arc(0, 0, R * 1.94, -tt * .5, -tt * .5 + 6.28); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+    ctx.strokeStyle = hex(lighten(c, 60), .45); ctx.lineWidth = 1.3; for (let i = 0; i < 24; i++) { const a = i / 24 * 6.28 + tt * .2; ctx.beginPath(); ctx.moveTo(Math.cos(a) * R * 1.56, Math.sin(a) * R * 1.56); ctx.lineTo(Math.cos(a) * R * 1.64, Math.sin(a) * R * 1.64); ctx.stroke(); }
+    ctx.restore();
+  }
   function reflection(cx, CY, R) { ctx.save(); ctx.globalAlpha = .13; ctx.translate(cx, Hc * .9); ctx.scale(1, -.44); ctx.translate(-cx, -CY); path(cx, CY, R * .94); const g = ctx.createLinearGradient(cx, CY - R, cx, CY + R); g.addColorStop(0, hex(lighten(c, 50), 1)); g.addColorStop(1, hex(c, 0)); ctx.fillStyle = g; try { ctx.filter = "blur(5px)"; } catch (e) {} ctx.fill(); ctx.filter = "none"; ctx.restore(); }
   function face(cx, cy, R, blink, wink) {
     const ex = R * .36, ey = -R * .04, er = R * .2; const rect = canvas.getBoundingClientRect(); let lx = 0, ly = 0;
@@ -10962,10 +10973,16 @@ function startMascot(canvas, agent) {
     lx += Math.sin(tt * .4) * er * .05;
     for (const s of [-1, 1]) { const x = cx + s * ex, y = cy + ey;
       if (wink && s === -1) { ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * .05; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x - er * .7, y + er * .1); ctx.quadraticCurveTo(x, y - er * .5, x + er * .7, y + er * .1); ctx.stroke(); continue; }
-      ctx.fillStyle = "#070b10"; ctx.beginPath(); if (blink) ctx.ellipse(x, y, er, er * .13, 0, 0, 6.28); else ctx.ellipse(x, y, er * .84, er, 0, 0, 6.28); ctx.fill();
-      if (!blink) { ctx.fillStyle = hex(c, .4); ctx.beginPath(); ctx.ellipse(x, y + er * .4, er * .6, er * .4, 0, 0, 6.28); ctx.fill(); ctx.fillStyle = hex(lighten(c, 150), .95); ctx.beginPath(); ctx.arc(x + lx - er * .16, y + ly - er * .3, er * .32, 0, 6.28); ctx.fill(); ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.beginPath(); ctx.arc(x + lx + er * .24, y + ly + er * .2, er * .13, 0, 6.28); ctx.fill(); }
+      ctx.fillStyle = "#060a0f"; ctx.beginPath(); if (blink) ctx.ellipse(x, y, er, er * .13, 0, 0, 6.28); else ctx.ellipse(x, y, er * .84, er, 0, 0, 6.28); ctx.fill();
+      if (!blink) {
+        const ig = ctx.createRadialGradient(x, y + er * .18, er * .08, x, y, er * .95); ig.addColorStop(0, hex(lighten(c, 60), 1)); ig.addColorStop(.55, hex(c, .8)); ig.addColorStop(1, hex(c, 0)); ctx.fillStyle = ig; ctx.beginPath(); ctx.ellipse(x, y + er * .16, er * .62, er * .72, 0, 0, 6.28); ctx.fill();
+        ctx.fillStyle = hex(lighten(c, 70), .5); ctx.beginPath(); ctx.ellipse(x, y + er * .52, er * .5, er * .32, 0, 0, 6.28); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.98)"; ctx.beginPath(); ctx.arc(x + lx - er * .2, y + ly - er * .34, er * .3, 0, 6.28); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.82)"; ctx.beginPath(); ctx.arc(x + lx + er * .26, y + ly + er * .18, er * .12, 0, 6.28); ctx.fill();
+        star(x - er * .24, y - er * .38, er * .34, .4 + .5 * ((Math.sin(tt * 2.4 + s * 2) + 1) / 2));
+      }
     }
-    const sm = excited > .5 ? .22 : .18; if (!blink) { ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * .055; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(cx, cy + R * .32, R * sm, .16 * Math.PI, .84 * Math.PI); ctx.stroke(); }
+    const smw = excited > .5 ? .22 : .18; if (!blink) { ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * .055; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(cx, cy + R * .32, R * smw, .16 * Math.PI, .84 * Math.PI); ctx.stroke(); }
     ctx.fillStyle = hex(lighten(c, 50), .42); for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * .54, cy + R * .26, R * .11, R * .065, 0, 0, 6.28); ctx.fill(); }
   }
   function drawArms(cx, CY, R, back) {
@@ -10987,36 +11004,39 @@ function startMascot(canvas, agent) {
     ctx.clearRect(0, 0, Wc, Hc);
     const cx = Wc * .58, R = Math.min(Wc, Hc) * .34; R0 = R;
     const amp = (3.2 + excited * 2.4) * POSE.bob, bob = Math.sin(tt * (1.7 + excited * .8)) * amp, CY = Hc * .5 + bob - hop;
-    // накланяне на цялото тяло
     let tT = POSE.lean + Math.sin(tt * .6) * POSE.sway;
     if (mWinX > -1e4) { const rect = canvas.getBoundingClientRect(); tT += Math.max(-.14, Math.min(.14, ((mWinX - rect.left) - cx) / Wc * .6)); }
     tilt += (tT - tilt) * .08;
-    // jelly пружина (squash & stretch с презадминаване)
     const sqDrive = 1 + jsq + Math.sin(tt * 1.7 + Math.PI) * .02;
     sqv += (sqDrive - sq) * .32 - sqv * .22; sq += sqv; sq = Math.max(.8, Math.min(1.2, sq));
 
-    platform(cx, Hc * .9, R); reflection(cx, CY, R);
-    for (const b of upB) { b.y -= b.sp; if (b.y < .08) { b.y = 1.04; b.x = .18 + Math.random() * .64; } const bx = b.x * Wc + Math.sin(tt * b.sw + b.ph) * 5, by = b.y * Hc; ctx.globalAlpha = .5; ctx.strokeStyle = hex(cl, .7); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bx, by, b.r, 0, 6.28); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.beginPath(); ctx.arc(bx - b.r * .32, by - b.r * .32, b.r * .28, 0, 6.28); ctx.fill(); } ctx.globalAlpha = 1;
+    // атмосферни прашинки
+    for (const m of motes) { m.y -= m.sp; if (m.y < -0.05) { m.y = 1.05; m.x = Math.random(); } ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = .3 + .3 * Math.sin(tt + m.ph); ctx.fillStyle = hex(lighten(c, 90), 1); ctx.beginPath(); ctx.arc((m.x * Wc + Math.sin(tt * .3 + m.ph) * 6), m.y * Hc, m.r, 0, 6.28); ctx.fill(); ctx.restore(); }
 
-    // ── герой: накланяне + jelly squash около основата ──
+    platform(cx, Hc * .9, R); reflection(cx, CY, R);
+
     const pivY = CY + R * .92;
     ctx.save(); ctx.translate(cx, pivY); ctx.rotate(tilt); ctx.scale(1 / sq, sq); ctx.translate(-cx, -pivY);
     drawArms(cx, CY, R, true);
-    ctx.save(); path(cx, CY, R * 1.02); ctx.shadowColor = cl; ctx.shadowBlur = 38; ctx.fillStyle = hex(c, .55); ctx.fill(); ctx.restore();
-    path(cx, CY, R); const g = ctx.createRadialGradient(cx, CY - R * .55, R * .12, cx, CY + R * .28, R * 1.5); g.addColorStop(0, hex(lighten(c, 155), .98)); g.addColorStop(.32, hex(lighten(c, 52), 1)); g.addColorStop(.72, hex(c, 1)); g.addColorStop(1, hex(cdd, 1)); ctx.fillStyle = g; ctx.fill();
+    ctx.save(); path(cx, CY, R * 1.03); ctx.shadowColor = cl; ctx.shadowBlur = 42; ctx.fillStyle = hex(c, .6); ctx.fill(); ctx.restore();
+    path(cx, CY, R); const g = ctx.createRadialGradient(cx, CY - R * .55, R * .12, cx, CY + R * .28, R * 1.5); g.addColorStop(0, hex(lighten(c, 160), .99)); g.addColorStop(.3, hex(lighten(c, 55), 1)); g.addColorStop(.72, hex(c, 1)); g.addColorStop(1, hex(cdd, 1)); ctx.fillStyle = g; ctx.fill();
     ctx.save(); path(cx, CY, R); ctx.clip();
-    const ic = ctx.createRadialGradient(cx - R * .1, CY - R * .32, R * .05, cx, CY - R * .05, R); ic.addColorStop(0, hex(lighten(c, 165), .5)); ic.addColorStop(1, hex(c, 0)); ctx.fillStyle = ic; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
+    const ic = ctx.createRadialGradient(cx - R * .1, CY - R * .32, R * .05, cx, CY - R * .05, R); ic.addColorStop(0, hex(lighten(c, 170), .55)); ic.addColorStop(1, hex(c, 0)); ctx.fillStyle = ic; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
     for (const b of gelB) { const bx = cx + b.nx * R * .92 + Math.sin(tt * .5 + b.dr) * R * .012, by = CY + b.ny * R * .92 + Math.cos(tt * .45 + b.dr) * R * .012; drop(bx, by, b.r * R); }
     const ao = ctx.createLinearGradient(cx, CY + R * .15, cx, CY + R * 1.05); ao.addColorStop(0, hex(cdd, 0)); ao.addColorStop(1, hex(cdd, .6)); ctx.fillStyle = ao; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
-    path(cx, CY, R); ctx.shadowColor = cl; ctx.shadowBlur = 16; ctx.lineWidth = 3; ctx.strokeStyle = hex(lighten(c, 120), .5); ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
-    ctx.save(); path(cx, CY, R); ctx.clip(); const sw = Math.sin(tt * .5) * R * .1; const gl = ctx.createRadialGradient(cx - R * .2 + sw, CY - R * .5, R * .02, cx - R * .16 + sw, CY - R * .44, R * .72); gl.addColorStop(0, "rgba(255,255,255,.9)"); gl.addColorStop(.5, "rgba(255,255,255,.22)"); gl.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(cx - R * .2 + sw, CY - R * .47, R * .5, R * .33, -.3, 0, 6.28); ctx.fill(); ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.beginPath(); ctx.ellipse(cx + R * .3 - sw, CY - R * .5, R * .08, R * .045, -.4, 0, 6.28); ctx.fill(); ctx.restore();
-    path(cx, CY, R); const rg = ctx.createLinearGradient(cx, CY - R, cx, CY + R); rg.addColorStop(0, hex(lighten(c, 175), .9)); rg.addColorStop(.45, hex(lighten(c, 40), .12)); rg.addColorStop(1, hex(cd, .6)); ctx.lineWidth = 2; ctx.strokeStyle = rg; ctx.stroke();
+    path(cx, CY, R); ctx.shadowColor = cl; ctx.shadowBlur = 18; ctx.lineWidth = 3; ctx.strokeStyle = hex(lighten(c, 130), .55); ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
+    ctx.save(); path(cx, CY, R); ctx.clip(); const sw = Math.sin(tt * .5) * R * .1; const gl = ctx.createRadialGradient(cx - R * .2 + sw, CY - R * .5, R * .02, cx - R * .16 + sw, CY - R * .44, R * .72); gl.addColorStop(0, "rgba(255,255,255,.95)"); gl.addColorStop(.5, "rgba(255,255,255,.24)"); gl.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(cx - R * .2 + sw, CY - R * .47, R * .5, R * .33, -.3, 0, 6.28); ctx.fill(); ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.beginPath(); ctx.ellipse(cx + R * .3 - sw, CY - R * .5, R * .08, R * .045, -.4, 0, 6.28); ctx.fill(); ctx.restore();
+    path(cx, CY, R); const rg = ctx.createLinearGradient(cx, CY - R, cx, CY + R); rg.addColorStop(0, hex(lighten(c, 185), .95)); rg.addColorStop(.45, hex(lighten(c, 40), .12)); rg.addColorStop(1, hex(cd, .6)); ctx.lineWidth = 2; ctx.strokeStyle = rg; ctx.stroke();
+    for (const s of spk) { const pp = (Math.sin(tt * 1.6 + s[2]) + 1) / 2; if (pp > .35) star(cx + s[0] * R, CY + s[1] * R, R * .1 * pp, pp); }
     face(cx, CY, R, blinking, wink);
     accessory(ctx, agent.id, cx, CY, R, c, tt);
     drawArms(cx, CY, R, false);
     ctx.restore();
 
-    for (let i = burst.length - 1; i >= 0; i--) { const p = burst[i]; p.x += p.vx; p.y += p.vy; p.vy += .06; p.life -= .025; if (p.life <= 0) { burst.splice(i, 1); continue; } ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = p.life; ctx.fillStyle = i % 2 ? "#fff" : hex(lighten(c, 80), 1); ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 6.28); ctx.fill(); ctx.restore(); }
+    for (let i = burst.length - 1; i >= 0; i--) { const p = burst[i]; p.x += p.vx; p.y += p.vy; p.vy += .06; p.life -= .025; if (p.life <= 0) { burst.splice(i, 1); continue; } if (p.r > 1.9 && p.life > .5) { star(p.x, p.y, p.r * 2 * p.life, p.life); } else { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = p.life; ctx.fillStyle = i % 2 ? "#fff" : hex(lighten(c, 80), 1); ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 6.28); ctx.fill(); ctx.restore(); } }
+
+    // bloom (сияние) — блуриран additive слой отгоре
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = .4; try { ctx.filter = "blur(7px)"; } catch (e) {} ctx.drawImage(canvas, 0, 0, Wc, Hc); ctx.filter = "none"; ctx.restore();
   }
   frame();
 }
