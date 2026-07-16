@@ -95,8 +95,8 @@
   .hero { position: relative; margin: 0 -22px 6px; padding: 12px 22px 18px; overflow: hidden; background: linear-gradient(180deg,#0b1016,#05070c); }
   .hero { background: radial-gradient(140% 105% at 50% -18%, color-mix(in srgb, var(--ac) 26%, transparent), transparent 66%), linear-gradient(180deg,#0a0e14,#05070c); }
   .hero .d-close { position: absolute; top: 16px; right: 18px; z-index: 4; }
-  .mascot { width: 100%; height: 178px; display: block; }
-  .bubble { position: absolute; top: 24px; left: 22px; max-width: 200px; z-index: 3; background: rgba(9,13,20,.94); border: 1px solid var(--line); border-radius: 14px; border-bottom-left-radius: 4px; padding: 9px 12px; font-size: 12.5px; line-height: 1.42; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
+  .mascot { width: 100%; height: 200px; display: block; }
+  .bubble { position: absolute; top: 18px; left: 20px; max-width: 184px; z-index: 3; background: rgba(9,13,20,.94); border: 1px solid var(--line); border-radius: 14px; border-bottom-left-radius: 4px; padding: 9px 12px; font-size: 12.5px; line-height: 1.42; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
   .bubble::after { content: ""; position: absolute; left: 16px; bottom: -7px; width: 12px; height: 12px; background: rgba(9,13,20,.94); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
   .pinfo { position: relative; z-index: 2; }
   .pcode { display: flex; align-items: center; gap: 7px; font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: color-mix(in srgb, var(--ac) 78%, #8493a2); }
@@ -10765,60 +10765,89 @@ function stopMascot() { cancelAnimationFrame(mascotReq); mascotReq = 0; }
 function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
-  const c = agent.accent;
+  const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
-  const bubbles = Array.from({ length: 8 }, () => ({ x: Math.random(), y: 0.5 + Math.random() * 0.6, r: 2 + Math.random() * 4, sp: 0.0012 + Math.random() * 0.0028, ph: Math.random() * 6.28 }));
+  // вътрешни капчици (стабилни, нормализирани в тялото)
+  const gelB = Array.from({ length: 32 }, () => { const a = Math.random() * 6.28, rr = Math.sqrt(Math.random()) * 0.84; return { nx: Math.cos(a) * rr, ny: Math.sin(a) * rr, r: 0.035 + Math.random() * 0.1, dr: Math.random() * 6.28 }; });
+  // издигащи външни мехурчета
+  const upB = Array.from({ length: 9 }, () => ({ x: 0.2 + Math.random() * 0.6, y: 0.4 + Math.random() * 0.7, r: 2 + Math.random() * 4.5, sp: 0.001 + Math.random() * 0.0026, ph: Math.random() * 6.28 }));
   function fit() { Wc = canvas.clientWidth; Hc = canvas.clientHeight; canvas.width = Wc * dpr; canvas.height = Hc * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   fit();
-  function blob(cx, cy, R, squash) {
-    ctx.save(); ctx.translate(cx, cy); ctx.scale(1 / squash, squash);
-    ctx.beginPath();
-    const n = 26;
-    for (let i = 0; i <= n; i++) { const a = i / n * 6.283, w = 1 + Math.sin(a * 3 + tt * 2) * 0.03 + Math.sin(a * 5 - tt * 1.4) * 0.022, rr = R * w; const x = Math.cos(a) * rr, y = Math.sin(a) * rr; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-    ctx.closePath();
-    const g = ctx.createRadialGradient(-R * 0.3, -R * 0.42, R * 0.1, 0, 0, R * 1.12);
-    g.addColorStop(0, hex(lighten(c, 95), 1)); g.addColorStop(0.5, hex(c, 1)); g.addColorStop(1, hex(darken(c, 55), 1));
-    ctx.shadowColor = c; ctx.shadowBlur = 34; ctx.fillStyle = g; ctx.fill(); ctx.shadowBlur = 0;
-    ctx.lineWidth = 1.4; ctx.strokeStyle = hex(lighten(c, 120), 0.5); ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,.82)"; ctx.beginPath(); ctx.ellipse(-R * 0.34, -R * 0.4, R * 0.17, R * 0.1, -0.5, 0, 6.28); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(R * 0.22, -R * 0.52, R * 0.06, 0, 6.28); ctx.fill();
+
+  function path(cx, cy, R) { ctx.beginPath(); const n = 46; for (let i = 0; i <= n; i++) { const a = i / n * 6.283; const w = 1 + 0.03 * Math.sin(a * 3 + tt * 1.7) + 0.02 * Math.sin(a * 5 - tt * 1.2); const rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * 1.03; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
+  function drop(x, y, r) {
+    const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.05, x, y, r);
+    g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.65, "rgba(255,255,255,0)"); g.addColorStop(1, hex(cdd, 0.5));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill();
+    ctx.lineWidth = Math.max(0.5, r * 0.12); ctx.strokeStyle = hex(cl, 0.5); ctx.beginPath(); ctx.arc(x, y, r * 0.92, Math.PI * 0.85, Math.PI * 1.95); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.beginPath(); ctx.arc(x - r * 0.32, y - r * 0.32, r * 0.24, 0, 6.28); ctx.fill();
+  }
+  function platform(cx, cy, R) {
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.24);
+    const g = ctx.createRadialGradient(0, 0, 2, 0, 0, R * 2); g.addColorStop(0, hex(c, 0.55)); g.addColorStop(0.55, hex(c, 0.12)); g.addColorStop(1, hex(c, 0));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R * 2, 0, 6.28); ctx.fill();
+    ctx.strokeStyle = hex(lighten(c, 50), 0.55); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.5, 0, 6.28); ctx.stroke();
+    ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(0, 0, R * 1.14, 0, 6.28); ctx.stroke(); ctx.globalAlpha = 1;
     ctx.restore();
   }
-  function eyes(cx, cy, R, blink) {
-    const ex = R * 0.36, ey = -R * 0.02, er = R * 0.19;
-    const rect = canvas.getBoundingClientRect();
-    let lx = 0, ly = 0;
-    if (mWinX > -1e4) { const dx = (mWinX - rect.left) - cx, dy = (mWinY - rect.top) - cy, d = Math.hypot(dx, dy) || 1; lx = (dx / d) * er * 0.22; ly = (dy / d) * er * 0.22; }
+  function face(cx, cy, R, blink) {
+    const ex = R * 0.36, ey = -R * 0.04, er = R * 0.2;
+    const rect = canvas.getBoundingClientRect(); let lx = 0, ly = 0;
+    if (mWinX > -1e4) { const dx = (mWinX - rect.left) - cx, dy = (mWinY - rect.top) - cy, d = Math.hypot(dx, dy) || 1; lx = (dx / d) * er * 0.24; ly = (dy / d) * er * 0.24; }
     for (const s of [-1, 1]) {
       const x = cx + s * ex, y = cy + ey;
-      ctx.fillStyle = "#080d12"; ctx.beginPath();
-      if (blink) ctx.ellipse(x, y, er, er * 0.14, 0, 0, 6.28); else ctx.ellipse(x, y, er * 0.82, er, 0, 0, 6.28);
+      ctx.fillStyle = "#070b10"; ctx.beginPath();
+      if (blink) ctx.ellipse(x, y, er, er * 0.13, 0, 0, 6.28); else ctx.ellipse(x, y, er * 0.84, er, 0, 0, 6.28);
       ctx.fill();
       if (!blink) {
-        ctx.fillStyle = hex(lighten(c, 130), 0.95); ctx.beginPath(); ctx.arc(x + lx - er * 0.18, y + ly - er * 0.3, er * 0.3, 0, 6.28); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(x + lx + er * 0.22, y + ly + er * 0.18, er * 0.12, 0, 6.28); ctx.fill();
+        ctx.fillStyle = hex(lighten(c, 140), 0.95); ctx.beginPath(); ctx.arc(x + lx - er * 0.16, y + ly - er * 0.3, er * 0.32, 0, 6.28); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(x + lx + er * 0.24, y + ly + er * 0.2, er * 0.13, 0, 6.28); ctx.fill();
       }
     }
-    if (!blink) { ctx.strokeStyle = "#080d12"; ctx.lineWidth = R * 0.055; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(cx, cy + R * 0.3, R * 0.17, 0.16 * Math.PI, 0.84 * Math.PI); ctx.stroke(); }
-    // руж
-    ctx.fillStyle = hex(lighten(c, 40), 0.35);
-    for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * 0.52, cy + R * 0.24, R * 0.1, R * 0.06, 0, 0, 6.28); ctx.fill(); }
+    if (!blink) { ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * 0.055; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(cx, cy + R * 0.32, R * 0.18, 0.16 * Math.PI, 0.84 * Math.PI); ctx.stroke(); }
+    ctx.fillStyle = hex(lighten(c, 50), 0.4); for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * 0.54, cy + R * 0.26, R * 0.11, R * 0.065, 0, 0, 6.28); ctx.fill(); }
   }
+
   function frame() {
     mascotReq = requestAnimationFrame(frame); tt += 0.016;
     if (!blinking && tt > nextBlink) { blinking = true; blinkEnd = tt + 0.13; }
-    if (blinking && tt > blinkEnd) { blinking = false; nextBlink = tt + 1.5 + Math.random() * 3.2; }
+    if (blinking && tt > blinkEnd) { blinking = false; nextBlink = tt + 1.6 + Math.random() * 3.2; }
     ctx.clearRect(0, 0, Wc, Hc);
-    const cx = Wc / 2, cyB = Hc * 0.52, R = Math.min(Wc, Hc) * 0.33;
-    const bob = Math.sin(tt * 1.9) * 4, squash = 1 + Math.sin(tt * 1.9) * 0.045;
-    // подиум-сияние
-    const gg = ctx.createRadialGradient(cx, Hc * 0.9, 2, cx, Hc * 0.9, R * 1.9); gg.addColorStop(0, hex(c, 0.55)); gg.addColorStop(1, hex(c, 0));
-    ctx.save(); ctx.translate(cx, Hc * 0.9); ctx.scale(1, 0.26); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(0, 0, R * 1.9, 0, 6.28); ctx.fill(); ctx.restore();
-    // мехурчета
-    for (const b of bubbles) { b.y -= b.sp * 60; if (b.y < 0.12) { b.y = 1.0; b.x = Math.random(); } ctx.globalAlpha = 0.5; ctx.strokeStyle = hex(lighten(c, 70), 0.85); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(b.x * Wc + Math.sin(tt + b.ph) * 4, b.y * Hc, b.r, 0, 6.28); ctx.stroke(); } ctx.globalAlpha = 1;
-    // тяло + лице
-    blob(cx, cyB + bob, R, squash);
-    eyes(cx, cyB + bob, R, blinking);
+    const cx = Wc * 0.58, R = Math.min(Wc, Hc) * 0.34, bob = Math.sin(tt * 1.7) * 3.5, CY = Hc * 0.5 + bob;
+
+    platform(cx, Hc * 0.9, R);
+    for (const b of upB) { b.y -= b.sp * 60; if (b.y < 0.1) { b.y = 1.02; b.x = 0.2 + Math.random() * 0.6; } const bx = b.x * Wc + Math.sin(tt + b.ph) * 4, by = b.y * Hc; ctx.globalAlpha = 0.45; ctx.strokeStyle = hex(cl, 0.85); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bx, by, b.r, 0, 6.28); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(bx - b.r * 0.3, by - b.r * 0.3, b.r * 0.3, 0, 6.28); ctx.fill(); } ctx.globalAlpha = 1;
+
+    // заден SSS halo
+    ctx.save(); path(cx, CY, R * 1.02); ctx.shadowColor = cl; ctx.shadowBlur = 36; ctx.fillStyle = hex(c, 0.55); ctx.fill(); ctx.restore();
+
+    // тяло — субсърфейс градиент
+    path(cx, CY, R);
+    const g = ctx.createRadialGradient(cx, CY - R * 0.55, R * 0.12, cx, CY + R * 0.28, R * 1.5);
+    g.addColorStop(0, hex(lighten(c, 150), 0.98)); g.addColorStop(0.32, hex(lighten(c, 50), 1)); g.addColorStop(0.72, hex(c, 1)); g.addColorStop(1, hex(cdd, 1));
+    ctx.fillStyle = g; ctx.fill();
+
+    // вътрешен обем (клип)
+    ctx.save(); path(cx, CY, R); ctx.clip();
+    const ic = ctx.createRadialGradient(cx - R * 0.1, CY - R * 0.32, R * 0.05, cx, CY - R * 0.05, R); ic.addColorStop(0, hex(lighten(c, 160), 0.5)); ic.addColorStop(1, hex(c, 0)); ctx.fillStyle = ic; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
+    for (const b of gelB) { const bx = cx + b.nx * R * 0.9 + Math.sin(tt * 0.6 + b.dr) * R * 0.02, by = CY + b.ny * R * 0.9 + Math.cos(tt * 0.5 + b.dr) * R * 0.02; drop(bx, by, b.r * R); }
+    const ao = ctx.createLinearGradient(cx, CY + R * 0.15, cx, CY + R * 1.05); ao.addColorStop(0, hex(cdd, 0)); ao.addColorStop(1, hex(cdd, 0.6)); ctx.fillStyle = ao; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
+    ctx.restore();
+
+    // глос-купол (клип)
+    ctx.save(); path(cx, CY, R); ctx.clip();
+    const gl = ctx.createRadialGradient(cx - R * 0.2, CY - R * 0.5, R * 0.02, cx - R * 0.18, CY - R * 0.44, R * 0.72); gl.addColorStop(0, "rgba(255,255,255,.85)"); gl.addColorStop(0.5, "rgba(255,255,255,.22)"); gl.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(cx - R * 0.2, CY - R * 0.47, R * 0.52, R * 0.34, -0.3, 0, 6.28); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.ellipse(cx + R * 0.3, CY - R * 0.5, R * 0.09, R * 0.05, -0.4, 0, 6.28); ctx.fill();
+    ctx.restore();
+
+    // стъклен ръб (rim)
+    path(cx, CY, R);
+    const rg = ctx.createLinearGradient(cx, CY - R, cx, CY + R); rg.addColorStop(0, hex(lighten(c, 170), 0.9)); rg.addColorStop(0.45, hex(lighten(c, 40), 0.15)); rg.addColorStop(1, hex(cd, 0.6));
+    ctx.lineWidth = 2; ctx.strokeStyle = rg; ctx.stroke();
+
+    // лице
+    face(cx, CY, R, blinking);
   }
   frame();
 }
