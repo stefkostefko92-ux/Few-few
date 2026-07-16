@@ -2,6 +2,8 @@
 // поединично, export/import на целия индекс. Доверието е функция.
 
 import { applyI18n, t } from '../lib/i18n.js';
+import { send } from '../lib/msg.js';
+import { el, countLabel } from '../lib/dom.js';
 
 applyI18n();
 
@@ -11,23 +13,9 @@ const exportBtn = document.getElementById('export');
 const importBtn = document.getElementById('import');
 const importFile = document.getElementById('importFile');
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text != null) node.textContent = text;
-  return node;
-}
-
-async function send(type, payload = {}) {
-  const res = await chrome.runtime.sendMessage({ type, ...payload });
-  if (!res?.ok) throw new Error(res?.error || t('errNoResponse'));
-  return res.result;
-}
-
 async function refresh() {
   const pages = await send('deja:memory:list');
-  countEl.textContent =
-    pages.length === 1 ? t('pagesInMemoryOne') : t('pagesInMemory', [String(pages.length)]);
+  countEl.textContent = countLabel(pages.length, 'pagesInMemoryOne', 'pagesInMemory');
   listEl.replaceChildren();
   if (pages.length === 0) {
     listEl.append(el('p', 'empty', t('memoryEmpty')));

@@ -1,6 +1,6 @@
 {
   "name": "deja",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "Déjà — локална семантична памет на браузъра (Chrome MV3)",
   "private": true,
   "type": "module",
@@ -9,7 +9,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "node build.mjs",
+    "build:firefox": "node build.mjs --firefox",
+    "test": "node test/e2e.mjs && node test/smoke.mjs",
     "zip": "npm run build && mkdir -p release && cd dist && zip -qr ../release/deja-$npm_package_version.zip .",
+    "zip:firefox": "npm run build:firefox && mkdir -p release && cd dist-firefox && zip -qr ../release/deja-firefox-$npm_package_version.zip .",
     "icons": "python3 tools/generate_icons.py",
     "format": "prettier --write \"src/**/*.{js,css,html}\" build.mjs manifest.json",
     "format:check": "prettier --check \"src/**/*.{js,css,html}\" build.mjs manifest.json"
@@ -19,6 +22,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
+    "playwright-core": "^1.50.0",
     "prettier": "^3.0.0"
   }
 }

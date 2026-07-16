@@ -11,14 +11,25 @@
       "strict_min_version": "128.0"
     }
   },
-  "permissions": ["storage", "unlimitedStorage", "alarms"],
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "alarms"
+  ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["content.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -44,11 +55,16 @@
   },
   "commands": {
     "open-search": {
-      "suggested_key": { "default": "Alt+Shift+D" },
+      "suggested_key": {
+        "default": "Alt+Shift+D"
+      },
       "description": "__MSG_cmdOpenSearch__"
     }
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "omnibox": {
+    "keyword": "dj"
   }
 }

@@ -1,57 +1,94 @@
 // Déjà — build: esbuild бъндъл + статични файлове + ONNX WASM в пакета.
-// Изход: dist/ — зарежда се директно като unpacked extension.
+// Изход: dist/ (Chrome) или dist-firefox/ (--firefox) — Load unpacked/Temporary Add-on.
+// Firefox: няма offscreen — embedding двигателят влиза в background event page-а
+// през firefox/embed-adapter.js (виж firefox/README.md).
 
 import * as esbuild from 'esbuild';
 import { copyFileSync, cpSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
-const dist = 'dist';
+const FIREFOX = process.argv.includes('--firefox');
+const dist = FIREFOX ? 'dist-firefox' : 'dist';
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 
-const common = { bundle: true, minify: true, target: 'chrome116', logLevel: 'info' };
+const common = {
+  bundle: true,
+  minify: true,
+  target: FIREFOX ? 'firefox128' : 'chrome116',
+  logLevel: 'info',
+};
+// Firefox: chrome.* е callback-стил — сочим към promise-базирания browser.*
+const ffBanner = FIREFOX
+  ? { js: "if(typeof globalThis.browser!=='undefined'){globalThis.chrome=globalThis.browser;}" }
+  : undefined;
 
-// extension страници + service worker — ES модули
+// extension страници — ES модули (и в двата браузъра)
+const pageEntries = {
+  search: 'src/search/search.js',
+  popup: 'src/popup/popup.js',
+  options: 'src/options/options.js',
+  welcome: 'src/welcome/welcome.js',
+  memory: 'src/memory/memory.js',
+};
+if (!FIREFOX) {
+  pageEntries.background = 'src/background.js';
+  pageEntries.offscreen = 'src/offscreen/offscreen.js';
+}
 await esbuild.build({
   ...common,
-  entryPoints: {
-    background: 'src/background.js',
-    offscreen: 'src/offscreen/offscreen.js',
-    search: 'src/search/search.js',
-    popup: 'src/popup/popup.js',
-    options: 'src/options/options.js',
-    welcome: 'src/welcome/welcome.js',
-    memory: 'src/memory/memory.js',
-  },
+  entryPoints: pageEntries,
   format: 'esm',
+  banner: ffBanner,
   outdir: dist,
 });
+
+// Firefox background: адаптерът се оценява ПРЕДИ background.js (shim-ове +
+// loopback Port); класически IIFE — type:module за event page не е гарантиран.
+if (FIREFOX) {
+  await esbuild.build({
+    ...common,
+    format: 'iife',
+    banner: ffBanner,
+    stdin: {
+      contents: "import '../firefox/embed-adapter.js';\nimport '../src/background.js';",
+      resolveDir: 'src',
+      loader: 'js',
+    },
+    outfile: `${dist}/background.js`,
+  });
+}
 
 // content script-овете НЕ са модули — класически IIFE
 await esbuild.build({
   ...common,
   entryPoints: { content: 'src/content.js' },
   format: 'iife',
+  banner: ffBanner,
   outdir: dist,
 });
 
-// статични файлове
-copyFileSync('manifest.json', `${dist}/manifest.json`);
-copyFileSync('src/offscreen/offscreen.html', `${dist}/offscreen.html`);
-copyFileSync('src/search/search.html', `${dist}/search.html`);
-copyFileSync('src/search/search.css', `${dist}/search.css`);
-copyFileSync('src/popup/popup.html', `${dist}/popup.html`);
-copyFileSync('src/popup/popup.css', `${dist}/popup.css`);
-copyFileSync('src/options/options.html', `${dist}/options.html`);
-copyFileSync('src/options/options.css', `${dist}/options.css`);
-copyFileSync('src/welcome/welcome.html', `${dist}/welcome.html`);
-copyFileSync('src/welcome/welcome.css', `${dist}/welcome.css`);
-copyFileSync('src/memory/memory.html', `${dist}/memory.html`);
-copyFileSync('src/memory/memory.css', `${dist}/memory.css`);
+// статични файлове; package.json е единственият източник на версията —
+// щампова се в манифеста на build, за да няма drift между Chrome/Firefox
+const { readFileSync, writeFileSync } = await import('node:fs');
+const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
+const manifest = JSON.parse(
+  readFileSync(FIREFOX ? 'firefox/manifest.firefox.json' : 'manifest.json', 'utf8'),
+);
+manifest.version = version;
+writeFileSync(`${dist}/manifest.json`, JSON.stringify(manifest, null, 2));
+if (!FIREFOX) copyFileSync('src/offscreen/offscreen.html', `${dist}/offscreen.html`);
+// един източник за набора от страници — entryPoints и статиката не дрейфват
+for (const page of Object.keys(pageEntries).filter(
+  (p) => p !== 'background' && p !== 'offscreen',
+)) {
+  copyFileSync(`src/${page}/${page}.html`, `${dist}/${page}.html`);
+  copyFileSync(`src/${page}/${page}.css`, `${dist}/${page}.css`);
+}
 cpSync('icons', `${dist}/icons`, { recursive: true });
 cpSync('_locales', `${dist}/_locales`, { recursive: true });
 
-// ONNX Runtime WASM — доставя се В пакета; Chrome Web Store забранява отдалечен код
+// ONNX Runtime WASM — доставя се В пакета; магазините забраняват отдалечен код
 const ortDir = 'node_modules/@huggingface/transformers/dist';
 mkdirSync(`${dist}/wasm`, { recursive: true });
 let copied = 0;
@@ -67,4 +104,8 @@ if (copied === 0) {
   );
 }
 console.log(`WASM файлове в пакета: ${copied}`);
-console.log('Готово → dist/ (chrome://extensions → Load unpacked)');
+console.log(
+  FIREFOX
+    ? 'Готово → dist-firefox/ (about:debugging → Load Temporary Add-on)'
+    : 'Готово → dist/ (chrome://extensions → Load unpacked)',
+);

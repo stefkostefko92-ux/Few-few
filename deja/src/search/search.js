@@ -2,6 +2,8 @@
 // който я embed-ва локално и подрежда парчетата по косинусова близост.
 
 import { applyI18n, t } from '../lib/i18n.js';
+import { send } from '../lib/msg.js';
+import { el, countLabel } from '../lib/dom.js';
 
 applyI18n();
 
@@ -21,13 +23,6 @@ const FILTERS = [
 ];
 let activeFilterDays = 0;
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text != null) node.textContent = text;
-  return node;
-}
-
 // „сила на спомена“: ярък ≥0.5, мъгляв ≥0.3, иначе далечен
 function recallKey(score) {
   if (score >= 0.5) return 'recallVivid';
@@ -44,14 +39,13 @@ async function loadRelated(card, urlKey) {
   const holder = card.querySelector('.related');
   holder.textContent = '…';
   try {
-    const res = await chrome.runtime.sendMessage({ type: 'deja:related', urlKey });
-    if (!res?.ok) throw new Error(res?.error);
+    const related = await send('deja:related', { urlKey });
     holder.replaceChildren();
-    if (!res.result.length) {
+    if (!related.length) {
       holder.append(el('span', 'related-none', t('relatedNone')));
       return;
     }
-    for (const r of res.result) {
+    for (const r of related) {
       const link = el('a', 'related-item', r.title);
       link.href = r.url;
       link.target = '_blank';
@@ -108,12 +102,8 @@ function renderFilters() {
 
 async function refreshStats() {
   try {
-    const res = await chrome.runtime.sendMessage({ type: 'deja:stats' });
-    if (res?.ok) {
-      const pages = res.result.pages;
-      status.textContent =
-        pages === 1 ? t('pagesInMemoryOne') : t('pagesInMemory', [String(pages)]);
-    }
+    const { pages } = await send('deja:stats');
+    status.textContent = countLabel(pages, 'pagesInMemoryOne', 'pagesInMemory');
   } catch {
     /* service worker-ът се събужда — не е фатално */
   }
@@ -125,9 +115,7 @@ async function doSearch(query) {
   status.textContent = t('statusSearching');
   try {
     const minTime = activeFilterDays ? Date.now() - activeFilterDays * DAY_MS : 0;
-    const res = await chrome.runtime.sendMessage({ type: 'deja:search', query, minTime });
-    if (!res?.ok) throw new Error(res?.error || t('errNoResponse'));
-    const results = res.result;
+    const results = await send('deja:search', { query, minTime });
     if (results.length === 0) {
       status.textContent = t('statusEmpty');
       resultsEl.replaceChildren();
