@@ -125,6 +125,18 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 - **EN/IT landing**: server/en.html + it.html + hreflang в трите + keywords
   (≥5, вкл. „Carbon Stealth“ — правило на репото) + nginx /en /it + sitemap.
 
+## v1.x (пътят до 1.2)
+
+- **1.0**: Firefox build (`npm run build:firefox` → dist-firefox/; zip:firefox),
+  тестове в репото (`npm test`, test/{lib,e2e,smoke}.mjs — иска DEJA_CHROME,
+  по избор DEJA_MODEL_MIRROR), версията се щампова от package.json в двата
+  манифеста, рефактори (lib/msg.js send, lib/dom.js el/countLabel, PAGES цикъл).
+- **1.1**: omnibox живи подсказки (title substring, Enter по подсказка отваря
+  директно), <mark> откроени думи в снипетите, badge с брой страници,
+  търсене в „Моята памет“.
+- **1.2**: топ-домейни статистика в „Моята памет“, „Подкрепи Déjà“ линк
+  в popup-а, двойни release пакети (Chrome + Firefox).
+
 ## Пътна карта (по ред)
 
 1. Качване в Chrome Web Store: деплойни `server/` на deja.carbonstealth.eu

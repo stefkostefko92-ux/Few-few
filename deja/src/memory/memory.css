@@ -99,6 +99,31 @@
   text-align: center;
 }
 
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 4px 2px 16px;
+}
+
+.stat-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.stat-bar {
+  background: var(--accent);
+  border-radius: 4px;
+  height: 7px;
+  opacity: 0.7;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-row {
     animation: none;

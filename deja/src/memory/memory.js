@@ -18,7 +18,33 @@ let allPages = [];
 
 async function refresh() {
   allPages = await send('deja:memory:list');
+  renderStats();
   renderList();
+}
+
+// Мини-статистика: топ домейни — къде живее паметта ти (изцяло локално)
+function renderStats() {
+  const statsEl = document.getElementById('stats');
+  statsEl.replaceChildren();
+  if (allPages.length < 3) return;
+  const byHost = new Map();
+  for (const p of allPages) {
+    try {
+      const host = new URL(p.urlKey).hostname;
+      byHost.set(host, (byHost.get(host) || 0) + 1);
+    } catch {
+      /* невалиден URL — прескачаме */
+    }
+  }
+  const top = [...byHost.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const max = top[0]?.[1] || 1;
+  for (const [host, count] of top) {
+    const row = el('div', 'stat-row');
+    const bar = el('div', 'stat-bar');
+    bar.style.width = `${Math.round((count / max) * 140)}px`;
+    row.append(bar, el('span', 'stat-label', `${host} · ${count}`));
+    statsEl.append(row);
+  }
 }
 
 function renderList() {
