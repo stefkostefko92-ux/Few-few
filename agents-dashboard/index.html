@@ -10890,30 +10890,49 @@ function stopMascot() { cancelAnimationFrame(mascotReq); mascotReq = 0; }
 function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
-  const SY = SHAPE[agent.id] || 1.03; const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
+  const SY = SHAPE[agent.id] || 1.03;
+  const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
-  // вътрешни капчици (стабилни, нормализирани в тялото)
-  const gelB = Array.from({ length: 32 }, () => { const a = Math.random() * 6.28, rr = Math.sqrt(Math.random()) * 0.84; return { nx: Math.cos(a) * rr, ny: Math.sin(a) * rr, r: 0.035 + Math.random() * 0.1, dr: Math.random() * 6.28 }; });
-  // издигащи външни мехурчета
-  const upB = Array.from({ length: 9 }, () => ({ x: 0.2 + Math.random() * 0.6, y: 0.4 + Math.random() * 0.7, r: 2 + Math.random() * 4.5, sp: 0.001 + Math.random() * 0.0026, ph: Math.random() * 6.28 }));
+  // вътрешни капчици — МАЛКО и само по периферията (лицето остава чисто)
+  const gelB = []; let guard = 0;
+  while (gelB.length < 15 && guard < 500) { guard++;
+    const a = Math.random() * 6.28, rr = 0.44 + Math.random() * 0.46;
+    const nx = Math.cos(a) * rr, ny = Math.sin(a) * rr;
+    if (Math.abs(nx) < 0.5 && ny > -0.42 && ny < 0.56) continue;           // изключи лицевата зона
+    if (gelB.some(b => Math.hypot(b.nx - nx, b.ny - ny) < 0.22)) continue;  // без струпване
+    gelB.push({ nx, ny, r: 0.045 + Math.pow(Math.random(), 1.6) * 0.09, dr: Math.random() * 6.28 });
+  }
+  gelB.sort((a, b) => a.ny - b.ny);
+  // външни мехурчета — БАВНИ, стъклени
+  const upB = Array.from({ length: 7 }, () => ({ x: 0.18 + Math.random() * 0.64, y: 0.4 + Math.random() * 0.7, r: 2.2 + Math.random() * 4.5, sp: 0.0006 + Math.random() * 0.0012, ph: Math.random() * 6.28, sw: 0.4 + Math.random() * 0.9 }));
   function fit() { Wc = canvas.clientWidth; Hc = canvas.clientHeight; canvas.width = Wc * dpr; canvas.height = Hc * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   fit();
 
-  function path(cx, cy, R) { ctx.beginPath(); const n = 46; for (let i = 0; i <= n; i++) { const a = i / n * 6.283; const w = 1 + 0.03 * Math.sin(a * 3 + tt * 1.7) + 0.02 * Math.sin(a * 5 - tt * 1.2); const rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * SY; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
+  function path(cx, cy, R) { ctx.beginPath(); const n = 48; for (let i = 0; i <= n; i++) { const a = i / n * 6.283; const w = 1 + 0.028 * Math.sin(a * 3 + tt * 1.6) + 0.018 * Math.sin(a * 5 - tt * 1.1); const rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * SY; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
   function drop(x, y, r) {
-    const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.05, x, y, r);
-    g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.65, "rgba(255,255,255,0)"); g.addColorStop(1, hex(cdd, 0.5));
+    const g = ctx.createRadialGradient(x - r * 0.34, y - r * 0.4, r * 0.04, x, y, r);
+    g.addColorStop(0, hex(lighten(c, 90), 0.26)); g.addColorStop(0.62, hex(c, 0.03)); g.addColorStop(1, hex(cdd, 0.44));
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill();
-    ctx.lineWidth = Math.max(0.5, r * 0.12); ctx.strokeStyle = hex(cl, 0.5); ctx.beginPath(); ctx.arc(x, y, r * 0.92, Math.PI * 0.85, Math.PI * 1.95); ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.beginPath(); ctx.arc(x - r * 0.32, y - r * 0.32, r * 0.24, 0, 6.28); ctx.fill();
+    ctx.lineWidth = Math.max(0.5, r * 0.1); ctx.strokeStyle = hex(lighten(c, 140), 0.5);
+    ctx.beginPath(); ctx.arc(x, y, r * 0.92, Math.PI * 0.98, Math.PI * 1.86); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(x - r * 0.34, y - r * 0.36, r * 0.2, 0, 6.28); ctx.fill();
+    ctx.fillStyle = hex(lighten(c, 120), 0.32); ctx.beginPath(); ctx.arc(x + r * 0.3, y + r * 0.32, r * 0.12, 0, 6.28); ctx.fill();
   }
   function platform(cx, cy, R) {
     ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.24);
-    const g = ctx.createRadialGradient(0, 0, 2, 0, 0, R * 2); g.addColorStop(0, hex(c, 0.55)); g.addColorStop(0.55, hex(c, 0.12)); g.addColorStop(1, hex(c, 0));
+    const g = ctx.createRadialGradient(0, 0, 2, 0, 0, R * 2); g.addColorStop(0, hex(c, 0.5)); g.addColorStop(0.5, hex(c, 0.12)); g.addColorStop(1, hex(c, 0));
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R * 2, 0, 6.28); ctx.fill();
-    ctx.strokeStyle = hex(lighten(c, 50), 0.55); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.5, 0, 6.28); ctx.stroke();
-    ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(0, 0, R * 1.14, 0, 6.28); ctx.stroke(); ctx.globalAlpha = 1;
+    const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.9); cg.addColorStop(0, hex(lighten(c, 130), 0.55)); cg.addColorStop(1, hex(c, 0));
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, R * 0.9, 0, 6.28); ctx.fill();
+    ctx.strokeStyle = hex(lighten(c, 60), 0.5); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.5 + Math.sin(tt * 1.2) * 3, 0, 6.28); ctx.stroke();
+    ctx.globalAlpha = 0.35; ctx.beginPath(); ctx.arc(0, 0, R * 1.14, 0, 6.28); ctx.stroke(); ctx.globalAlpha = 1;
     ctx.restore();
+  }
+  function reflection(cx, CY, R) {
+    ctx.save(); ctx.globalAlpha = 0.13; ctx.translate(cx, Hc * 0.9); ctx.scale(1, -0.44); ctx.translate(-cx, -CY);
+    path(cx, CY, R * 0.94);
+    const g = ctx.createLinearGradient(cx, CY - R, cx, CY + R); g.addColorStop(0, hex(lighten(c, 50), 1)); g.addColorStop(1, hex(c, 0));
+    ctx.fillStyle = g; try { ctx.filter = "blur(5px)"; } catch (e) {} ctx.fill(); ctx.filter = "none"; ctx.restore();
   }
   function face(cx, cy, R, blink) {
     const ex = R * 0.36, ey = -R * 0.04, er = R * 0.2;
@@ -10925,12 +10944,13 @@ function startMascot(canvas, agent) {
       if (blink) ctx.ellipse(x, y, er, er * 0.13, 0, 0, 6.28); else ctx.ellipse(x, y, er * 0.84, er, 0, 0, 6.28);
       ctx.fill();
       if (!blink) {
-        ctx.fillStyle = hex(lighten(c, 140), 0.95); ctx.beginPath(); ctx.arc(x + lx - er * 0.16, y + ly - er * 0.3, er * 0.32, 0, 6.28); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(x + lx + er * 0.24, y + ly + er * 0.2, er * 0.13, 0, 6.28); ctx.fill();
+        ctx.fillStyle = hex(c, 0.4); ctx.beginPath(); ctx.ellipse(x, y + er * 0.4, er * 0.6, er * 0.4, 0, 0, 6.28); ctx.fill(); // цветен отскок долу
+        ctx.fillStyle = hex(lighten(c, 150), 0.95); ctx.beginPath(); ctx.arc(x + lx - er * 0.16, y + ly - er * 0.3, er * 0.32, 0, 6.28); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.beginPath(); ctx.arc(x + lx + er * 0.24, y + ly + er * 0.2, er * 0.13, 0, 6.28); ctx.fill();
       }
     }
     if (!blink) { ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * 0.055; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(cx, cy + R * 0.32, R * 0.18, 0.16 * Math.PI, 0.84 * Math.PI); ctx.stroke(); }
-    ctx.fillStyle = hex(lighten(c, 50), 0.4); for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * 0.54, cy + R * 0.26, R * 0.11, R * 0.065, 0, 0, 6.28); ctx.fill(); }
+    ctx.fillStyle = hex(lighten(c, 50), 0.42); for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * 0.54, cy + R * 0.26, R * 0.11, R * 0.065, 0, 0, 6.28); ctx.fill(); }
   }
 
   function frame() {
@@ -10941,37 +10961,44 @@ function startMascot(canvas, agent) {
     const cx = Wc * 0.58, R = Math.min(Wc, Hc) * 0.34, bob = Math.sin(tt * 1.7) * 3.5, CY = Hc * 0.5 + bob;
 
     platform(cx, Hc * 0.9, R);
-    for (const b of upB) { b.y -= b.sp * 60; if (b.y < 0.1) { b.y = 1.02; b.x = 0.2 + Math.random() * 0.6; } const bx = b.x * Wc + Math.sin(tt + b.ph) * 4, by = b.y * Hc; ctx.globalAlpha = 0.45; ctx.strokeStyle = hex(cl, 0.85); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bx, by, b.r, 0, 6.28); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(bx - b.r * 0.3, by - b.r * 0.3, b.r * 0.3, 0, 6.28); ctx.fill(); } ctx.globalAlpha = 1;
+    reflection(cx, CY, R);
+    // бавни стъклени мехурчета
+    for (const b of upB) { b.y -= b.sp; if (b.y < 0.08) { b.y = 1.04; b.x = 0.18 + Math.random() * 0.64; } const bx = b.x * Wc + Math.sin(tt * b.sw + b.ph) * 5, by = b.y * Hc;
+      ctx.globalAlpha = 0.5; ctx.strokeStyle = hex(cl, 0.7); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bx, by, b.r, 0, 6.28); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.beginPath(); ctx.arc(bx - b.r * 0.32, by - b.r * 0.32, b.r * 0.28, 0, 6.28); ctx.fill();
+      ctx.fillStyle = hex(cl, 0.4); ctx.beginPath(); ctx.arc(bx + b.r * 0.3, by + b.r * 0.3, b.r * 0.16, 0, 6.28); ctx.fill(); } ctx.globalAlpha = 1;
 
     // заден SSS halo
-    ctx.save(); path(cx, CY, R * 1.02); ctx.shadowColor = cl; ctx.shadowBlur = 36; ctx.fillStyle = hex(c, 0.55); ctx.fill(); ctx.restore();
+    ctx.save(); path(cx, CY, R * 1.02); ctx.shadowColor = cl; ctx.shadowBlur = 38; ctx.fillStyle = hex(c, 0.55); ctx.fill(); ctx.restore();
 
-    // тяло — субсърфейс градиент
+    // тяло — субсърфейс
     path(cx, CY, R);
     const g = ctx.createRadialGradient(cx, CY - R * 0.55, R * 0.12, cx, CY + R * 0.28, R * 1.5);
-    g.addColorStop(0, hex(lighten(c, 150), 0.98)); g.addColorStop(0.32, hex(lighten(c, 50), 1)); g.addColorStop(0.72, hex(c, 1)); g.addColorStop(1, hex(cdd, 1));
+    g.addColorStop(0, hex(lighten(c, 155), 0.98)); g.addColorStop(0.32, hex(lighten(c, 52), 1)); g.addColorStop(0.72, hex(c, 1)); g.addColorStop(1, hex(cdd, 1));
     ctx.fillStyle = g; ctx.fill();
 
-    // вътрешен обем (клип)
+    // вътрешен обем + капчици + френел (клип)
     ctx.save(); path(cx, CY, R); ctx.clip();
-    const ic = ctx.createRadialGradient(cx - R * 0.1, CY - R * 0.32, R * 0.05, cx, CY - R * 0.05, R); ic.addColorStop(0, hex(lighten(c, 160), 0.5)); ic.addColorStop(1, hex(c, 0)); ctx.fillStyle = ic; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
-    for (const b of gelB) { const bx = cx + b.nx * R * 0.9 + Math.sin(tt * 0.6 + b.dr) * R * 0.02, by = CY + b.ny * R * 0.9 + Math.cos(tt * 0.5 + b.dr) * R * 0.02; drop(bx, by, b.r * R); }
+    const ic = ctx.createRadialGradient(cx - R * 0.1, CY - R * 0.32, R * 0.05, cx, CY - R * 0.05, R); ic.addColorStop(0, hex(lighten(c, 165), 0.5)); ic.addColorStop(1, hex(c, 0)); ctx.fillStyle = ic; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
+    for (const b of gelB) { const bx = cx + b.nx * R * 0.92 + Math.sin(tt * 0.5 + b.dr) * R * 0.012, by = CY + b.ny * R * 0.92 + Math.cos(tt * 0.45 + b.dr) * R * 0.012; drop(bx, by, b.r * R); }
     const ao = ctx.createLinearGradient(cx, CY + R * 0.15, cx, CY + R * 1.05); ao.addColorStop(0, hex(cdd, 0)); ao.addColorStop(1, hex(cdd, 0.6)); ctx.fillStyle = ao; ctx.fillRect(cx - R * 1.6, CY - R * 1.6, R * 3.2, R * 3.2);
+    // френел — вътрешно светещ ръб
+    path(cx, CY, R); ctx.shadowColor = cl; ctx.shadowBlur = 16; ctx.lineWidth = 3; ctx.strokeStyle = hex(lighten(c, 120), 0.5); ctx.stroke(); ctx.shadowBlur = 0;
     ctx.restore();
 
-    // глос-купол (клип)
+    // движещ се гланц-купол (клип)
     ctx.save(); path(cx, CY, R); ctx.clip();
-    const gl = ctx.createRadialGradient(cx - R * 0.2, CY - R * 0.5, R * 0.02, cx - R * 0.18, CY - R * 0.44, R * 0.72); gl.addColorStop(0, "rgba(255,255,255,.85)"); gl.addColorStop(0.5, "rgba(255,255,255,.22)"); gl.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(cx - R * 0.2, CY - R * 0.47, R * 0.52, R * 0.34, -0.3, 0, 6.28); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.ellipse(cx + R * 0.3, CY - R * 0.5, R * 0.09, R * 0.05, -0.4, 0, 6.28); ctx.fill();
+    const sw = Math.sin(tt * 0.5) * R * 0.1;
+    const gl = ctx.createRadialGradient(cx - R * 0.2 + sw, CY - R * 0.5, R * 0.02, cx - R * 0.16 + sw, CY - R * 0.44, R * 0.72); gl.addColorStop(0, "rgba(255,255,255,.9)"); gl.addColorStop(0.5, "rgba(255,255,255,.22)"); gl.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(cx - R * 0.2 + sw, CY - R * 0.47, R * 0.5, R * 0.33, -0.3, 0, 6.28); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.beginPath(); ctx.ellipse(cx + R * 0.3 - sw, CY - R * 0.5, R * 0.08, R * 0.045, -0.4, 0, 6.28); ctx.fill();
     ctx.restore();
 
-    // стъклен ръб (rim)
+    // стъклен ръб
     path(cx, CY, R);
-    const rg = ctx.createLinearGradient(cx, CY - R, cx, CY + R); rg.addColorStop(0, hex(lighten(c, 170), 0.9)); rg.addColorStop(0.45, hex(lighten(c, 40), 0.15)); rg.addColorStop(1, hex(cd, 0.6));
+    const rg = ctx.createLinearGradient(cx, CY - R, cx, CY + R); rg.addColorStop(0, hex(lighten(c, 175), 0.9)); rg.addColorStop(0.45, hex(lighten(c, 40), 0.12)); rg.addColorStop(1, hex(cd, 0.6));
     ctx.lineWidth = 2; ctx.strokeStyle = rg; ctx.stroke();
 
-    // лице
     face(cx, CY, R, blinking);
     accessory(ctx, agent.id, cx, CY, R, c, tt);
   }
