@@ -378,7 +378,8 @@
     "privacy": "Privatezza",
     "terms": "Termini",
     "contact": "info@carbonstealth.eu",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "manageConsent": "Immaniġġja l-cookies"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingwi: il-links tiegħek kollha, b'kull lingwa",
@@ -451,5 +452,12 @@
     "payoutsTitle": "Talbiet ta' ħlas — pendenti ({count})",
     "payoutsEmpty": "L-ebda talbiet pendenti.",
     "payoutMarkPaid": "Immarka bħala mħallas"
+  },
+  "consent": {
+    "title": "Cookies tar-reklamar.",
+    "body": "Linketto jaħdem mingħajr cookies ta’ traċċar. Biss bil-kunsens tiegħek intellgħu t-tags tar-reklamar ta’ Google u Meta li jgħinuna nkejlu r-reklamar tagħna. Iċ-ċaħda ma tbiddel xejn fis-servizz.",
+    "accept": "Naċċetta",
+    "decline": "Nirrifjuta",
+    "moreInfo": "Kun af aktar"
   }
 }

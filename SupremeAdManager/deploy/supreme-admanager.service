@@ -1,0 +1,27 @@
+[Unit]
+Description=Supreme AdManager — автоматизирана платена реклама (Carbon Stealth VCC)
+After=network.target
+
+[Service]
+Type=simple
+User=admanager
+Group=admanager
+WorkingDirectory=/opt/supreme-admanager
+# .env: mode 600, собственик admanager — държи ENCRYPTION_KEY/SESSION_SECRET/ADMIN_*
+EnvironmentFile=/opt/supreme-admanager/.env
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=3
+
+# Хардънинг (цел: systemd-analyze security < 5)
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/opt/supreme-admanager/data
+CapabilityBoundingSet=
+SystemCallFilter=@system-service ~@mount
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

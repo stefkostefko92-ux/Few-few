@@ -1,0 +1,429 @@
+/* Supreme AdManager — premium тъмна палитра: кралско виолетово + небесносин акцент */
+:root {
+  --bg: #0b0d14;
+  --panel: #131624;
+  --panel-2: #1a1e30;
+  --text: #eceef8;
+  --muted: #98a0bd;
+  --accent: #8b5cf6;
+  --accent-2: #38bdf8;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #fb7185;
+  --border: #262b44;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+a {
+  color: var(--accent-2);
+}
+h1 {
+  font-size: 1.6rem;
+  margin: 0.5rem 0 1rem;
+}
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.8rem;
+}
+code {
+  background: var(--panel-2);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+code.small {
+  font-size: 0.75em;
+  word-break: break-all;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.7rem 1.2rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(139, 92, 246, 0.35);
+}
+.brand {
+  font-weight: 700;
+  color: var(--accent);
+}
+.topbar nav {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.topbar nav a {
+  color: var(--text);
+  text-decoration: none;
+}
+.topbar nav a:hover {
+  color: var(--accent-2);
+}
+
+.banner {
+  background: #2b2413;
+  color: var(--warn);
+  padding: 0.5rem 1.2rem;
+  border-bottom: 1px solid #4b3d16;
+  font-size: 0.9rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin: 0 0 1.2rem;
+}
+.card.narrow {
+  max-width: 420px;
+  margin: 3rem auto;
+}
+
+.stats {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.2rem;
+}
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 1.1rem;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+}
+.stat .label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.stat .value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.badge.s-active {
+  background: #12362a;
+  color: var(--ok);
+}
+.badge.s-paused,
+.badge.s-published {
+  background: #38300f;
+  color: var(--warn);
+}
+.badge.s-draft {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.badge.s-error {
+  background: #3a1717;
+  color: var(--danger);
+}
+.badge.s-archived {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.badge.s-revoked {
+  background: #3a1717;
+  color: var(--danger);
+}
+
+form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+form input,
+form select,
+form textarea {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+}
+form input:focus,
+form select:focus,
+form textarea:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 0 0 0.8rem;
+}
+legend {
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0 0.4rem;
+}
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+}
+
+button {
+  font: inherit;
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  background: var(--panel-2);
+  color: var(--text);
+}
+button.primary {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+button.primary:hover {
+  background: #a78bfa;
+}
+button.warn {
+  background: var(--warn);
+  color: #14100d;
+  font-weight: 700;
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+button.ghost:hover {
+  color: var(--text);
+}
+button.ghost.danger {
+  color: var(--danger);
+  border-color: #4b2323;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.2rem;
+}
+.grid2 .span2,
+.grid2 button.span2,
+.grid2 fieldset {
+  grid-column: span 2;
+}
+@media (max-width: 700px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .grid2 .span2,
+  .grid2 fieldset {
+    grid-column: span 1;
+  }
+}
+
+.inline {
+  display: inline;
+}
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.2rem;
+}
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error {
+  background: #3a1717;
+  color: var(--danger);
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+}
+.hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.feed li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.feed time {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-right: 0.5rem;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* --- Икони (Lucide, ISC — public/icons/LICENSE) --- */
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  stroke-width: 2;
+}
+.brand .icon {
+  color: var(--accent);
+  width: 1.3em;
+  height: 1.3em;
+}
+.banner .icon {
+  color: var(--warn);
+}
+.topbar nav a .icon {
+  opacity: 0.65;
+  margin-right: 0.15em;
+}
+button .icon {
+  margin-right: 0.25em;
+}
+
+/* Статус точки (замяна на emoji индикаторите) */
+.dot {
+  display: inline-block;
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+  background: var(--border);
+  vertical-align: baseline;
+}
+.dot.on {
+  background: var(--ok);
+  box-shadow: 0 0 6px rgba(62, 207, 142, 0.6);
+}
+.dot.off {
+  background: var(--border);
+}
+
+/* --- SVG бар-графики (server-rendered, нула JS) --- */
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 0.4rem;
+}
+.chart .bar {
+  fill: var(--accent);
+  opacity: 0.85;
+}
+.chart .bar.alt {
+  fill: var(--accent-2);
+}
+.chart .axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.chart text {
+  fill: var(--muted);
+  font-size: 5px;
+  font-family: inherit;
+}
+.chart-legend {
+  color: var(--muted);
+  font-size: 0.8rem;
+  display: flex;
+  gap: 1rem;
+}
+.chart-legend .swatch {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 2px;
+  vertical-align: baseline;
+  margin-right: 0.3em;
+}
+
+/* Полиш */
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.badge.s-issues {
+  background: #3a2a17;
+  color: var(--warn);
+}
+
+/* Бранд типография: Supreme (bold) + AdManager (акцентен градиент) */
+.brand {
+  letter-spacing: 0.01em;
+}
+.brand .brand-sub {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}

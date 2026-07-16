@@ -1,0 +1,63 @@
+<%- include('_head', { hideNav: true }) %>
+<section class="card" style="max-width: 760px; margin: 2rem auto">
+  <h1>Политика за поверителност · Privacy Policy</h1>
+  <p class="hint">Supreme AdManager · последна актуализация: 16.07.2026</p>
+
+  <h2>Български</h2>
+  <p>
+    <strong>Оператор:</strong> Carbon Stealth VCC, ЕИК BG208725180, ул. „Самуил“ 3, 2670
+    Бобов дол, България · info@carbonstealth.eu
+  </p>
+  <p>
+    Supreme AdManager е <strong>вътрешен (in-house) инструмент</strong> на Carbon Stealth VCC
+    за управление на собствените рекламни акаунти на компанията чрез Google Ads API и Meta
+    Marketing API. Приложението не се предлага на трети лица и <strong>не обработва лични
+    данни на крайни потребители</strong>.
+  </p>
+  <p><strong>Какви данни съхранява:</strong></p>
+  <ul>
+    <li>OAuth токени за достъп до собствените ни рекламни акаунти (Google Ads refresh token,
+      Meta System User token) — съхранявани само криптирани (AES-256-GCM), с ключ извън базата;</li>
+    <li>агрегирани рекламни метрики (разход, импресии, кликове, конверсии) на кампанийно ниво —
+      без данни за отделни лица;</li>
+    <li>одитна следа на действията в инструмента (кой, кога, какво) — без токени и без лични данни.</li>
+  </ul>
+  <p>
+    <strong>OAuth scopes:</strong> Google — <code>https://www.googleapis.com/auth/adwords</code>;
+    Meta — <code>ads_management</code>, <code>ads_read</code>, <code>business_management</code>.
+    Използват се единствено за управление на собствените рекламни акаунти на Carbon Stealth VCC.
+  </p>
+  <p>
+    <strong>Съхранение и изтриване:</strong> токените се пазят докато връзката с рекламния акаунт е
+    активна; отмяната ѝ (бутон „Отмени“ в инструмента) незабавно ги заличава. Метрики: до 25 месеца;
+    одитна следа: до 24 месеца — после се изтриват автоматично. Заявки: info@carbonstealth.eu
+    (виж и <a href="/data-deletion">инструкциите за изтриване</a>).
+  </p>
+  <p><strong>Не продаваме данни</strong> и не споделяме нищо с трети лица извън самите Google/Meta API.</p>
+
+  <h2>English</h2>
+  <p>
+    <strong>Operator:</strong> Carbon Stealth VCC, company ID BG208725180, 3 Samuil St, 2670
+    Bobov Dol, Bulgaria · info@carbonstealth.eu
+  </p>
+  <p>
+    Supreme AdManager is an <strong>in-house internal tool</strong> used by Carbon Stealth VCC to
+    manage the company's own advertising accounts via the Google Ads API and the Meta Marketing
+    API. The application is not offered to third parties and <strong>does not process end-user
+    personal data</strong>.
+  </p>
+  <p><strong>Data stored:</strong> OAuth tokens for our own ad accounts (encrypted at rest with
+    AES-256-GCM, key kept outside the database); aggregated campaign-level advertising metrics
+    (spend, impressions, clicks, conversions) with no individual-level data; and an audit trail of
+    actions taken in the tool (no tokens, no personal data).</p>
+  <p><strong>OAuth scopes:</strong> Google — <code>adwords</code>; Meta —
+    <code>ads_management</code>, <code>ads_read</code>, <code>business_management</code> — used
+    solely to manage Carbon Stealth VCC's own ad accounts.</p>
+  <p><strong>Retention &amp; deletion:</strong> tokens live only while an ad-account connection is
+    active — revoking it deletes them immediately. Metrics: up to 25 months; audit trail: up to 24
+    months, then deleted automatically. Requests: info@carbonstealth.eu (see also the
+    <a href="/data-deletion">data deletion instructions</a>).</p>
+  <p><strong>We never sell data</strong> and share nothing with third parties beyond the Google/Meta
+    APIs themselves.</p>
+</section>
+<%- include('_foot') %>

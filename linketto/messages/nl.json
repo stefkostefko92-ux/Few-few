@@ -378,7 +378,8 @@
     "privacy": "Privacy",
     "terms": "Voorwaarden",
     "contact": "info@carbonstealth.eu",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "manageConsent": "Cookies beheren"
   },
   "seo": {
     "metaTitle": "Linketto — meertalige link in bio: al je links, in elke taal",
@@ -451,5 +452,12 @@
     "payoutsTitle": "Uitbetalingsverzoeken — in behandeling ({count})",
     "payoutsEmpty": "Geen openstaande verzoeken.",
     "payoutMarkPaid": "Als betaald markeren"
+  },
+  "consent": {
+    "title": "Advertentiecookies.",
+    "body": "Linketto werkt zonder trackingcookies. Alleen met jouw toestemming laden we advertentietags van Google en Meta die ons helpen onze advertenties te meten. Weigeren verandert niets aan de dienst.",
+    "accept": "Accepteren",
+    "decline": "Weigeren",
+    "moreInfo": "Meer informatie"
   }
 }

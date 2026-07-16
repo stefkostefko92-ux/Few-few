@@ -378,7 +378,8 @@
     "privacy": "Privacy",
     "terms": "Condizion",
     "contact": "info@carbonstealth.eu",
-    "cookies": "Cookie"
+    "cookies": "Cookie",
+    "manageConsent": "Gestiss i cookie"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilengua: tucc i tò link, in ogni lengua",
@@ -451,5 +452,12 @@
     "payoutsTitle": "Domand de pagament — in atesa ({count})",
     "payoutsEmpty": "Nissuna domanda in atesa.",
     "payoutMarkPaid": "Segna come pagaa"
+  },
+  "consent": {
+    "title": "Cookie pubblicitari.",
+    "body": "Linketto el funziona senza cookie de tracciament. Domà cont el to consens carigarem i tag pubblicitari de Google e Meta che ne juten a misurà la nostra publicità. El refud el cambia nagott in del servizi.",
+    "accept": "Accetti",
+    "decline": "Refudi",
+    "moreInfo": "Sav depü"
   }
 }

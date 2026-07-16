@@ -378,7 +378,8 @@
     "privacy": "Soukromí",
     "terms": "Podmínky",
     "contact": "info@carbonstealth.eu",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "manageConsent": "Správa cookies"
   },
   "seo": {
     "metaTitle": "Linketto — vícejazyčný link in bio: všechny odkazy, v každém jazyce",
@@ -451,5 +452,12 @@
     "payoutsTitle": "Žádosti o výplatu — čekající ({count})",
     "payoutsEmpty": "Žádné čekající žádosti.",
     "payoutMarkPaid": "Označit jako vyplaceno"
+  },
+  "consent": {
+    "title": "Reklamní cookies.",
+    "body": "Linketto funguje bez sledovacích cookies. Reklamní značky Google a Meta, které nám pomáhají měřit naši reklamu, načteme jen s vaším souhlasem. Odmítnutí na službě nic nemění.",
+    "accept": "Přijmout",
+    "decline": "Odmítnout",
+    "moreInfo": "Zjistit více"
   }
 }

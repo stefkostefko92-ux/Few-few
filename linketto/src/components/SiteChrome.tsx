@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { ManageConsentButton } from '@/components/ConsentBanner';
 import { getTranslations } from 'next-intl/server';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
@@ -120,6 +121,7 @@ export async function SiteFooter({
           >
             {t('cookies')}
           </Link>
+          <ManageConsentButton label={t('manageConsent')} />
           <a
             href="mailto:info@carbonstealth.eu"
             className="transition hover:text-white"

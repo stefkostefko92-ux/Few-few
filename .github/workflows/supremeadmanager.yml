@@ -1,0 +1,37 @@
+name: supremeadmanager
+
+on:
+  push:
+    paths:
+      - 'SupremeAdManager/**'
+      - 'tools/ads/**'
+      - '.github/workflows/supremeadmanager.yml'
+  pull_request:
+    paths:
+      - 'SupremeAdManager/**'
+      - 'tools/ads/**'
+      - '.github/workflows/supremeadmanager.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: SupremeAdManager
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: SupremeAdManager/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      # ads-lint: детекторът на рекламни анти-шарки пази собствения си продукт (exit 1 при HIGH).
+      # Изричен път: default-ът е относителен спрямо cwd (тук SupremeAdManager/).
+      - run: node ../tools/ads/ads-lint.mjs src

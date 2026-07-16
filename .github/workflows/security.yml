@@ -49,7 +49,12 @@ jobs:
   dependencies:
     name: Уязвими зависимости (dependency-review)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # Само на ПУБЛИЧНО репо (или с активиран GHAS): на частно без GHAS action-ът
+    # фейлва инфраструктурно на всеки PR („Dependency graph… Advanced Security"),
+    # не по уязвимост — затова job-ът се прескача изцяло (никакво червено X).
+    # Активираш GHAS (Settings → Security analysis) → махни втората половина от
+    # условието и гейтът пак става твърд. Локален еквивалент: npm audit по продуктите.
+    if: github.event_name == 'pull_request' && !github.event.repository.private
     steps:
       - uses: actions/checkout@v4
         with:

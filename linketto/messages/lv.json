@@ -378,7 +378,8 @@
     "privacy": "Privātums",
     "terms": "Noteikumi",
     "contact": "info@carbonstealth.eu",
-    "cookies": "Sīkdatnes"
+    "cookies": "Sīkdatnes",
+    "manageConsent": "Pārvaldīt sīkdatnes"
   },
   "seo": {
     "metaTitle": "Linketto — daudzvalodu link in bio: visas tavas saites jebkurā valodā",
@@ -451,5 +452,12 @@
     "payoutsTitle": "Izmaksas pieprasījumi — gaida ({count})",
     "payoutsEmpty": "Nav gaidošu pieprasījumu.",
     "payoutMarkPaid": "Atzīmēt kā samaksātu"
+  },
+  "consent": {
+    "title": "Reklāmas sīkdatnes.",
+    "body": "Linketto darbojas bez izsekošanas sīkdatnēm. Tikai ar tavu piekrišanu ielādēsim Google un Meta reklāmas tagus, kas palīdz mums novērtēt mūsu reklāmu. Atteikums neko nemaina pakalpojumā.",
+    "accept": "Piekrītu",
+    "decline": "Noraidu",
+    "moreInfo": "Uzzināt vairāk"
   }
 }

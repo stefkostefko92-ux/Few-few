@@ -4,8 +4,23 @@ import { fontVariables } from '@/app/fonts';
 import { SITE_URL } from '@/lib/seo';
 
 // Без metadataBase относителните hreflang/OG URL падат към localhost.
+// Domain verification (Meta Business Manager + Google Search Console): включва се
+// само при зададени env кодове — нужни за Meta business verification/AEM и за
+// Google Ads dev token доверието. Кодовете идват от съответните конзоли (човек).
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  verification: {
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.NEXT_PUBLIC_META_DOMAIN_VERIFICATION
+      ? {
+          other: {
+            'facebook-domain-verification': [process.env.NEXT_PUBLIC_META_DOMAIN_VERIFICATION],
+          },
+        }
+      : {}),
+  },
 };
 
 // Root layout за публичните профили (/u/...). Езикът на конкретния профил

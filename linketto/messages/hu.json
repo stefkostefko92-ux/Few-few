@@ -378,7 +378,8 @@
     "privacy": "Adatvédelem",
     "terms": "Feltételek",
     "contact": "info@carbonstealth.eu",
-    "cookies": "Sütik"
+    "cookies": "Sütik",
+    "manageConsent": "Sütik kezelése"
   },
   "seo": {
     "metaTitle": "Linketto — többnyelvű link in bio: minden linked, minden nyelven",
@@ -451,5 +452,12 @@
     "payoutsTitle": "Kifizetési kérelmek — függőben ({count})",
     "payoutsEmpty": "Nincsenek függőben lévő kérelmek.",
     "payoutMarkPaid": "Megjelölés kifizetettként"
+  },
+  "consent": {
+    "title": "Hirdetési sütik.",
+    "body": "A Linketto követő sütik nélkül működik. A Google és a Meta hirdetési címkéit, amelyek segítenek mérni a hirdetéseinket, csak a hozzájárulásoddal töltjük be. Az elutasítás semmit sem változtat a szolgáltatáson.",
+    "accept": "Elfogadom",
+    "decline": "Elutasítom",
+    "moreInfo": "További információ"
   }
 }

@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock supreme-admanager}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -55,6 +55,15 @@ FORCE_SEED="${FORCE_SEED:-0}"
 MASTILKO_DIR="${MASTILKO_DIR:-/opt/mastilko}"
 MASTILKO_SERVICE="${MASTILKO_SERVICE:-mastilko}"
 MASTILKO_HEALTH_URL="${MASTILKO_HEALTH_URL:-http://127.0.0.1:3200/}"
+
+# supreme-admanager (Supreme AdManager — systemd модел, като vizitka) — порт 3060,
+# слуша само на 127.0.0.1, зад Nginx (admanager.carbonstealth.eu). Тайните живеят в
+# /opt/supreme-admanager/.env (mode 600): ENCRYPTION_KEY (лениво валидиран — health
+# НЕ го лови, верифицирай ръчно!), SESSION_SECRET (fail-fast), ADMIN_EMAIL/…_HASH.
+# Health: / връща 302 → /login (auth-gated) — curl -f минава (302 < 400).
+ADMANAGER_DIR="${ADMANAGER_DIR:-/opt/supreme-admanager}"
+ADMANAGER_SERVICE="${ADMANAGER_SERVICE:-supreme-admanager}"
+ADMANAGER_HEALTH_URL="${ADMANAGER_HEALTH_URL:-http://127.0.0.1:3060/}"
 
 # supreme (Supreme Bot — Docker Compose модел) — frontend nginx е единственият
 # публикуван порт (127.0.0.1:8080), останалите services са вътрешни. backend
@@ -208,6 +217,64 @@ deploy_medqr() {
       chown -R medqr:medqr "$MEDQR_DIR"
     fi
     systemctl restart "$MEDQR_SERVICE"
+  fi
+}
+
+# ── 3b'') supreme-admanager — systemd (огледално на vizitka, самосъздаващ юзър) ─
+deploy_admanager() {
+  local d="$SRC/SupremeAdManager"
+  [ -d "$d" ] || { warn "Няма SupremeAdManager/ в архива — пропускам."; return; }
+  log "Разгръщам Supreme AdManager (systemd)…"
+  # Самосъздаващ се системен юзър (моделът на mastilko).
+  id admanager >/dev/null 2>&1 || useradd --system --create-home \
+    --home-dir "$ADMANAGER_DIR" --shell /usr/sbin/nologin admanager
+  # Бекъп на текущия код (data/ остава непокътната — извън rsync).
+  [ -d "$ADMANAGER_DIR" ] && cp -a "$ADMANAGER_DIR" "${ADMANAGER_DIR}.bak-$TS"
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  mkdir -p "$ADMANAGER_DIR"
+  rsync -a --delete \
+    --exclude data/ --exclude node_modules/ --exclude .env \
+    "$d"/ "$ADMANAGER_DIR"/
+  chown -R admanager:admanager "$ADMANAGER_DIR"
+  ( cd "$ADMANAGER_DIR" && sudo -u admanager npm ci --omit=dev )
+  # Тайните: .env (mode 600) трябва да съществува с ENCRYPTION_KEY/SESSION_SECRET/ADMIN_*.
+  # ENCRYPTION_KEY се валидира ЛЕНИВО (не при boot) → health check НЕ го лови; провери ръчно.
+  if [ ! -f "$ADMANAGER_DIR/.env" ]; then
+    warn "Липсва $ADMANAGER_DIR/.env — приложението ще тръгне в DRY-RUN (без креденшъли)."
+  fi
+  # Снимка на базата ПРЕДИ рестарт (WAL-безопасно с .backup).
+  local db="$ADMANAGER_DIR/data/admanager.db"
+  local dbbak="${db}.pre-$TS"
+  if [ -f "$db" ]; then
+    sudo -u admanager sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
+    log "Снимка на базата преди рестарт: $dbbak"
+  fi
+  # Самоинсталиращ се systemd unit (идва в архива).
+  if [ -f "$ADMANAGER_DIR/deploy/supreme-admanager.service" ]; then
+    install -m 644 "$ADMANAGER_DIR/deploy/supreme-admanager.service" \
+      /etc/systemd/system/supreme-admanager.service
+    systemctl daemon-reload
+    systemctl enable "$ADMANAGER_SERVICE" >/dev/null 2>&1 || true
+  fi
+  systemctl restart "$ADMANAGER_SERVICE"
+  sleep 2
+  if health "$ADMANAGER_HEALTH_URL" "supreme-admanager"; then
+    rm -rf "${ADMANAGER_DIR}.bak-$TS"
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+  else
+    deploy_failed=1
+    warn "supreme-admanager health провал — връщам предишния код и базата."
+    systemctl stop "$ADMANAGER_SERVICE" || true
+    if [ -f "$dbbak" ]; then
+      cp -a "$dbbak" "$db"
+      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+      chown admanager:admanager "$db"
+    fi
+    if [ -d "${ADMANAGER_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude data/ "${ADMANAGER_DIR}.bak-$TS"/ "$ADMANAGER_DIR"/
+      chown -R admanager:admanager "$ADMANAGER_DIR"
+    fi
+    systemctl restart "$ADMANAGER_SERVICE"
   fi
 }
 
@@ -625,6 +692,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     adblock)    deploy_adblock ;;
+    supreme-admanager)    deploy_admanager ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
