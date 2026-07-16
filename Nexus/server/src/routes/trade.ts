@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { notify } from '../lib/notify';
 import { blockedIdSet } from './social';
+import { executeTrade, ITEM_GUARD } from '../lib/tradeExec';
 
 /**
  * P2P размяна с escrow. КРИТИЧНО: изпълнението е в ЕДНА транзакция с
@@ -19,7 +20,8 @@ function getChar(uid: number): { id: number; name: string; gold: number } | unde
   return getDb().prepare('SELECT id, name, gold FROM characters WHERE user_id = ?').get(uid) as any;
 }
 
-const ITEM_GUARD = 'equipped = 0 AND soul_bound = 0 AND listed = 0 AND vaulted_guild_id = 0';
+// ITEM_GUARD се дели с lib/tradeExec.ts (единствен източник на истина за
+// „търгуем ли е предметът").
 
 /** Активната ми размяна (като подател или получател) + двете escrow страни. */
 router.get('/active', (req, res) => {
@@ -106,31 +108,9 @@ router.post('/:id/ready', (req, res) => {
   if (!(fresh.from_ready === 1 && fresh.to_ready === 1)) { res.json({ ok: true, executed: false }); return; }
 
   // ——— Изпълнение: една транзакция, CAS на всеки item + всяко злато ———
-  const fromItems: number[] = JSON.parse(fresh.from_items);
-  const toItems: number[] = JSON.parse(fresh.to_items);
-  const exec = db.transaction(() => {
-    // 1) Claim на самата размяна (pending→completed при все още двойно ready).
-    const claim = db.prepare(`UPDATE trade_offers SET status = 'completed', updated_at = ? WHERE id = ? AND status = 'pending' AND from_ready = 1 AND to_ready = 1`).run(Date.now(), fresh.id);
-    if (claim.changes !== 1) throw new Error('Trade state changed — try again.');
-    // 2) Прехвърли items (giver→receiver) с пълен guard.
-    const move = (invId: number, giver: number, receiver: number) => {
-      const r = db.prepare(`UPDATE inventory SET character_id = ?, equipped = 0, slot = '' WHERE id = ? AND character_id = ? AND ${ITEM_GUARD}`).run(receiver, invId, giver);
-      if (r.changes !== 1) throw new Error('An item is no longer tradable.');
-    };
-    for (const id of fromItems) move(id, fresh.from_id, fresh.to_id);
-    for (const id of toItems) move(id, fresh.to_id, fresh.from_id);
-    // 3) Злато (CAS: достатъчно наличност).
-    const pay = (giver: number, receiver: number, amount: number) => {
-      if (amount <= 0) return;
-      const d = db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?').run(amount, giver, amount);
-      if (d.changes !== 1) throw new Error('Not enough gold.');
-      db.prepare('UPDATE characters SET gold = gold + ? WHERE id = ?').run(amount, receiver);
-    };
-    pay(fresh.from_id, fresh.to_id, fresh.from_gold);
-    pay(fresh.to_id, fresh.from_id, fresh.to_gold);
-  });
+  // (изнесено в lib/tradeExec.ts за директно тестване на анти-дупликацията).
   try {
-    exec();
+    executeTrade(db, fresh);
   } catch (e: any) {
     // Остави размяната pending, но нулирай ready, за да я преразгледат.
     db.prepare(`UPDATE trade_offers SET from_ready = 0, to_ready = 0 WHERE id = ? AND status = 'pending'`).run(fresh.id);
