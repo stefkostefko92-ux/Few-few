@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.1.0
+
+uBlock-стил surrogate redirects (Спринт 1 от uBO паритет):
+- Известни ad/tracker скриптове — Google Publisher Tag, AdSense (adsbygoogle),
+  Google Analytics/gtag/GTM, Amazon apstag — вече се **пренасочват към вградени
+  неутрализирани стъбове** вместо просто да се блокират. Сайтове, които чакат
+  тези скриптове да съществуват, вече НЕ се чупят, а тракерите са обезвредени.
+- Вградени noop ресурси (noop.js, 1x1 tracking пиксел) за бъдещи правила.
+- DNR redirect към пакетиран web_accessible_resource (priority над block) —
+  напълно Web Store compliant, стъбовете са clean-room минимални (не копие на
+  uBO GPL кода).
+
 ## 4.0.4
 
 Затваряне на остатъчните security дупки (повторен одит — Кодаджията + Хромаджията):

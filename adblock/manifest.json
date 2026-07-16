@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Supreme AdBlock",
-  "version": "4.0.4",
+  "version": "4.1.0",
   "description": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
   "author": "Carbon Stealth",
   "homepage_url": "https://carbonstealth.eu",
@@ -151,6 +151,14 @@
         "*://*.youtube-nocookie.com/*"
       ],
       "use_dynamic_url": true
+    },
+    {
+      "resources": [
+        "resources/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "declarative_net_request": {
@@ -184,6 +192,11 @@
         "id": "urlhaus",
         "enabled": false,
         "path": "rules/urlhaus.json"
+      },
+      {
+        "id": "surrogates",
+        "enabled": true,
+        "path": "rules/surrogates.json"
       }
     ]
   }

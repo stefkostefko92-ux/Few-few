@@ -1,0 +1,178 @@
+[
+ {
+  "id": 1,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/gpt.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||googletagservices.com/tag/js/gpt.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 2,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/gpt.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||securepubads.g.doubleclick.net/tag/js/gpt.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 3,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/gpt.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||www.googletagservices.com/tag/js/gpt.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 4,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/adsbygoogle.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 5,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ga.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||google-analytics.com/analytics.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 6,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ga.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||google-analytics.com/ga.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 7,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ga.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||ssl.google-analytics.com/ga.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 8,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ga.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||google-analytics.com/gtm/js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 9,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ga.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||googletagmanager.com/gtag/js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 10,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ga.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||googletagmanager.com/gtm.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 11,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/apstag.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||amazon-adsystem.com/aax2/apstag.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ }
+]
