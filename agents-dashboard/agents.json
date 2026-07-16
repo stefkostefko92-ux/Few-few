@@ -5061,9 +5061,20 @@
           "date": "2026-07-09",
           "event": "v10.7 — учене",
           "detail": "Научи: Под set -euo pipefail редът VAR=\"$(grep '^KEY=' file | cut -d= -f2)\" убива скрипта ТИХО…"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-16",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Register.it SMTP (authsmtp.register.it) канонична конфигурация за всеки нов продукт: (1… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „Register.it SMTP (authsmtp.register.it) канонична конфигурация за всеки нов продукт: (1…\" (+1 още)"
+        },
         {
           "date": "2026-07-14",
           "type": "quarantine",
