@@ -18,7 +18,9 @@
 
   .hud { position: fixed; inset: 0 0 auto 0; padding: 18px 22px; pointer-events: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; z-index: 5; }
   .hud > * { pointer-events: auto; }
-  .brand h1 { margin: 0; font-size: 19px; letter-spacing: .3px; font-weight: 650; text-shadow: 0 0 24px rgba(0,229,255,.4), 0 2px 8px #000; }
+  .brand h1 { margin: 0; font-size: 19px; letter-spacing: .3px; font-weight: 650; background: linear-gradient(100deg,#e9f1f6 0%,#00e5ff 26%,#a98bff 50%,#00e5ff 74%,#e9f1f6 100%); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 18px rgba(0,229,255,.35)) drop-shadow(0 2px 8px rgba(0,0,0,.85)); animation: aurora 9s linear infinite; }
+  @keyframes aurora { to { background-position: 220% center; } }
+  @media (prefers-reduced-motion: reduce) { .brand h1 { animation: none; } }
   .brand p { margin: 3px 0 0; color: var(--mut); font-size: 12.5px; max-width: 42ch; text-shadow: 0 1px 6px #000; }
   .tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
   .search { display: flex; align-items: center; gap: 8px; background: rgba(9,13,20,.78); backdrop-filter: blur(9px); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; color: var(--mut); }
@@ -10607,6 +10609,19 @@ let W = 0, H = 0, DPR = 1, nodes = [], particles = [];
 let gal = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false;
 let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
 const ARMS = 3, TWIST = 2.6;
+let dust = [], meteors = [], nebulae = [], meteorT = 2 + Math.random() * 3;
+function initSky() {
+  dust = Array.from({ length: 320 }, () => ({ nx: Math.random() * 2 - 1, ny: Math.random() * 2 - 1, d: 0.25 + Math.random() * 0.9, r: 0.4 + Math.random() * 1.6, ph: Math.random() * 6.28, tw: 1.3 + Math.random() * 2.5, warm: Math.random() < 0.22 }));
+  nebulae = [
+    { nx: -.42, ny: -.30, r: .52, c: "#3a2b6e", ph: 0 },
+    { nx: .48, ny: .10, r: .60, c: "#0e3b52", ph: 1.7 },
+    { nx: .06, ny: .46, r: .46, c: "#5a2450", ph: 3.3 },
+    { nx: -.30, ny: .36, r: .42, c: "#123f39", ph: 4.9 },
+  ];
+  meteors = [];
+}
+function gxN() { return mx < -1e4 ? 0 : (mx - W / 2) / (W / 2); }
+function gyN() { return my < -1e4 ? 0 : (my - H / 2) / (H / 2); }
 
 function resize() { DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
 window.addEventListener("resize", resize);
@@ -10620,6 +10635,7 @@ function boot() {
   document.getElementById("title").textContent = (DATA.meta && DATA.meta.title) || "Лаборатория на агентите";
   document.getElementById("subtitle").textContent = (DATA.meta && DATA.meta.subtitle) || "";
   resize(); buildNodes(); buildLive(); buildList();
+  if (!dust.length) initSky();
   if (!booted) { booted = true; requestAnimationFrame(loop); }
 }
 function buildNodes() {
@@ -10647,7 +10663,7 @@ function drawGalaxy(cx, cy, R) {
   if (galReady) {
     const iw = galaxyImg.naturalWidth, ih = galaxyImg.naturalHeight, diag = Math.hypot(W, H);
     const scale = Math.max(diag / iw, diag / ih) * 1.02 * zoom, dw = iw * scale, dh = ih * scale;
-    ctx.save(); ctx.translate(cx, cy); if (!RM) ctx.rotate(gal * 0.9); ctx.drawImage(galaxyImg, -dw / 2, -dh / 2, dw, dh); ctx.restore();
+    ctx.save(); ctx.translate(cx - gxN() * R * 0.045, cy - gyN() * R * 0.045); if (!RM) ctx.rotate(gal * 0.9); ctx.drawImage(galaxyImg, -dw / 2, -dh / 2, dw, dh); ctx.restore();
   }
   ctx.fillStyle = "rgba(0,2,10,.32)"; ctx.fillRect(0, 0, W, H);
   const v = ctx.createRadialGradient(cx, cy, R * 0.14, cx, cy, Math.max(W, H) * 0.72);
@@ -10660,6 +10676,73 @@ function spike(x, y, len, ang, col, a) {
   ctx.strokeStyle = g; ctx.lineWidth = 1.25; ctx.beginPath(); ctx.moveTo(x - dx * len, y - dy * len); ctx.lineTo(x + dx * len, y + dy * len); ctx.stroke();
 }
 
+function drawNebulae(cx, cy, R) {
+  ctx.globalCompositeOperation = "lighter";
+  for (const n of nebulae) {
+    const x = cx + n.nx * R * 1.3 + (RM ? 0 : Math.sin(t * 0.12 + n.ph) * R * 0.05);
+    const y = cy + n.ny * R * 1.3 + (RM ? 0 : Math.cos(t * 0.10 + n.ph) * R * 0.04);
+    const rr = n.r * R * (1 + (RM ? 0 : Math.sin(t * 0.18 + n.ph) * 0.06));
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
+    g.addColorStop(0, hex(n.c, 0.20)); g.addColorStop(0.5, hex(n.c, 0.08)); g.addColorStop(1, hex(n.c, 0));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.28); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
+function drawArms(cx, cy, R) {
+  ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  for (let k = 0; k < ARMS; k++) {
+    const base = k / ARMS * Math.PI * 2;
+    ctx.beginPath();
+    for (let s = 0; s <= 44; s++) {
+      const f = 0.15 + (s / 44) * 0.9, ang = base + f * TWIST + (RM ? 0 : gal), rad = f * R * zoom;
+      const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
+      s ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.strokeStyle = "rgba(150,180,255,0.055)"; ctx.lineWidth = 9; ctx.stroke();
+    ctx.strokeStyle = "rgba(195,218,255,0.11)"; ctx.lineWidth = 1.8; ctx.stroke();
+    if (!RM) {
+      const f = 0.15 + ((t * 0.055 + k / ARMS) % 1) * 0.9, ang = base + f * TWIST + gal, rad = f * R * zoom;
+      const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 10);
+      g.addColorStop(0, "rgba(225,238,255,0.85)"); g.addColorStop(1, "rgba(225,238,255,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 10, 0, 6.28); ctx.fill();
+    }
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
+function drawDust(cx, cy, R) {
+  const gx = gxN(), gy = gyN();
+  ctx.globalCompositeOperation = "lighter";
+  for (const s of dust) {
+    const px = cx + s.nx * R * 1.5 + gx * s.d * 28 + (RM ? 0 : Math.sin(t * 0.05 * s.d + s.ph) * 3);
+    const py = cy + s.ny * R * 1.5 + gy * s.d * 28;
+    const tw = RM ? 0.8 : (0.5 + 0.5 * Math.sin(t * s.tw + s.ph));
+    const a = (0.22 + 0.62 * tw) * (0.4 + s.d * 0.6);
+    ctx.fillStyle = s.warm ? `rgba(255,226,180,${a})` : `rgba(202,226,255,${a})`;
+    ctx.beginPath(); ctx.arc(px, py, s.r * (0.7 + tw * 0.5), 0, 6.28); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
+function spawnMeteor() {
+  const sp = 7 + Math.random() * 6, dir = (Math.random() < 0.5 ? 0.34 : 0.66) * Math.PI + (Math.random() - .5) * 0.28;
+  meteors.push({ x: Math.random() * W, y: -20 - Math.random() * H * 0.15, vx: Math.cos(dir) * sp, vy: Math.abs(Math.sin(dir)) * sp + 3, life: 1, len: 8 + Math.random() * 9 });
+}
+function drawMeteors() {
+  if (!RM) { meteorT -= 0.016; if (meteorT <= 0) { spawnMeteor(); meteorT = 2.4 + Math.random() * 4; } }
+  ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    const m = meteors[i]; m.x += m.vx; m.y += m.vy; m.life -= 0.014;
+    if (m.life <= 0 || m.y > H + 60 || m.x < -60 || m.x > W + 60) { meteors.splice(i, 1); continue; }
+    const tx = m.x - m.vx * m.len, ty = m.y - m.vy * m.len, al = Math.min(1, m.life * 1.4);
+    const g = ctx.createLinearGradient(tx, ty, m.x, m.y);
+    g.addColorStop(0, "rgba(220,240,255,0)"); g.addColorStop(1, `rgba(225,242,255,${al})`);
+    ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(m.x, m.y); ctx.stroke();
+    const hg = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, 6);
+    hg.addColorStop(0, `rgba(255,255,255,${al})`); hg.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(m.x, m.y, 6, 0, 6.28); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
 function loop() {
   requestAnimationFrame(loop);
   if (document.hidden) return;
@@ -10667,6 +10750,10 @@ function loop() {
   t += 0.016; if (!RM) { gal += 0.0006 + spin; spin *= 0.95; if (Math.abs(spin) < 1e-6) spin = 0; }
   const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.46;
   drawGalaxy(cx, cy, R);
+  drawNebulae(cx, cy, R);
+  drawArms(cx, cy, R);
+  drawDust(cx, cy, R);
+  drawMeteors();
 
   for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R); nd.x = x; nd.y = y; }
   const prez = nodes[0];
