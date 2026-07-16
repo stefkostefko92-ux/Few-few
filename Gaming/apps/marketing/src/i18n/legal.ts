@@ -304,7 +304,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
         },
         {
           type: "p",
-          text: "**Service imprint.** Operator: {org}. Registered seat and address: [Адрес на управление: попълни]. Company / register ID: [ЕИК: попълни]. VAT No.: [ДДС №: попълни]. Contact email: legal@carbonstealth.eu.",
+          text: "**Service imprint.** Operator: {org}. Registered seat and address: [registered address — to be completed]. Company / register ID: [company ID — to be completed]. VAT No.: [VAT number — to be completed]. Contact email: legal@carbonstealth.eu.",
         },
         {
           type: "p",
@@ -555,7 +555,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
         },
         {
           type: "p",
-          text: "**Dati identificativi (impressum).** Operatore: {org}. Sede legale e indirizzo: [Адрес на управление: попълни]. Codice azienda / registro: [ЕИК: попълни]. P. IVA: [ДДС №: попълни]. Email di contatto: legal@carbonstealth.eu.",
+          text: "**Dati identificativi (impressum).** Operatore: {org}. Sede legale e indirizzo: [indirizzo della sede — da completare]. Codice azienda / registro: [codice azienda — da completare]. P. IVA: [partita IVA — da completare]. Email di contatto: legal@carbonstealth.eu.",
         },
         {
           type: "p",
