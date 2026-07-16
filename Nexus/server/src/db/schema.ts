@@ -757,5 +757,65 @@ export function applySchema(db: Database.Database): void {
       PRIMARY KEY (character_id, dungeon_slug),
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
+
+    /* ===== Social: приятели, block/mute ===== */
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      from_id    INTEGER NOT NULL,
+      to_id      INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (from_id, to_id),
+      FOREIGN KEY (from_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
+    );
+    -- канонично a_id < b_id, за да е една двойка = един ред
+    CREATE TABLE IF NOT EXISTS friends (
+      a_id       INTEGER NOT NULL,
+      b_id       INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (a_id, b_id),
+      FOREIGN KEY (a_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (b_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS blocks (
+      blocker_id INTEGER NOT NULL,
+      blocked_id INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (blocker_id, blocked_id),
+      FOREIGN KEY (blocker_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (blocked_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    /* ===== Нотификации (in-app feed) ===== */
+    CREATE TABLE IF NOT EXISTS notifications (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      character_id INTEGER NOT NULL,
+      kind         TEXT NOT NULL,           -- friend_request | friend_accept | guild_invite | trade | system
+      message      TEXT NOT NULL,
+      ref          TEXT NOT NULL DEFAULT '', -- напр. "char:42" / "trade:7"
+      read_at      INTEGER NOT NULL DEFAULT 0,
+      created_at   INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_notif_char ON notifications(character_id, created_at DESC);
+
+    /* ===== P2P trade (escrow) ===== */
+    CREATE TABLE IF NOT EXISTS trade_offers (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_id       INTEGER NOT NULL,
+      to_id         INTEGER NOT NULL,
+      -- escrow: JSON масив от inventory_id + злато от всяка страна
+      from_items    TEXT NOT NULL DEFAULT '[]',
+      to_items      TEXT NOT NULL DEFAULT '[]',
+      from_gold     INTEGER NOT NULL DEFAULT 0,
+      to_gold       INTEGER NOT NULL DEFAULT 0,
+      from_ready    INTEGER NOT NULL DEFAULT 0,
+      to_ready      INTEGER NOT NULL DEFAULT 0,
+      status        TEXT NOT NULL DEFAULT 'pending', -- pending | completed | cancelled | declined
+      created_at    INTEGER NOT NULL,
+      updated_at    INTEGER NOT NULL,
+      FOREIGN KEY (from_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_trade_parties ON trade_offers(from_id, to_id, status);
   `);
 }
