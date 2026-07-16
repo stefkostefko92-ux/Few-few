@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
+import { sfx } from '../lib/audio';
 
 export default function Settings(): React.ReactElement {
   const { t } = useTranslation();
@@ -21,6 +22,8 @@ export default function Settings(): React.ReactElement {
 
   const [deleteText, setDeleteText] = useState('');
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [soundOn, setSoundOn] = useState(sfx.getSettings().enabled);
+  const [vol, setVol] = useState(sfx.getSettings().volume);
 
   useEffect(() => {
     api.get('/account/me').then((r) => setAcct(r.user)).catch(() => {});
@@ -118,6 +121,30 @@ export default function Settings(): React.ReactElement {
             {pwBusy ? t('settings.updating') : t('settings.updatePw')}
           </button>
         </form>
+      </div>
+
+      <div className="panel">
+        <div className="panel-header">
+          <h2 className="panel-title">{t('settings.sound', { defaultValue: 'Sound' })}</h2>
+        </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 12 }}>
+          <input
+            type="checkbox"
+            checked={soundOn}
+            onChange={(e) => { const on = e.target.checked; setSoundOn(on); sfx.setEnabled(on); if (on) sfx.play('click'); }}
+          />
+          <span>{t('settings.soundEnabled', { defaultValue: 'Sound effects' })}</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: soundOn ? 1 : 0.5 }}>
+          <span style={{ minWidth: 60 }}>{t('settings.volume', { defaultValue: 'Volume' })}</span>
+          <input
+            type="range" min={0} max={1} step={0.05} value={vol} disabled={!soundOn}
+            onChange={(e) => { const v = Number(e.target.value); setVol(v); sfx.setVolume(v); }}
+            onMouseUp={() => soundOn && sfx.play('click')}
+            style={{ flex: 1, maxWidth: 240 }}
+          />
+          <span style={{ minWidth: 40, textAlign: 'right' }} className="muted">{Math.round(vol * 100)}%</span>
+        </label>
       </div>
 
       <div className="panel">

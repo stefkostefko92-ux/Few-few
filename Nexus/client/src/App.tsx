@@ -28,6 +28,7 @@ const Realm = React.lazy(() => import('./pages/Realm'));
 const Shop = React.lazy(() => import('./pages/Shop'));
 const Arena = React.lazy(() => import('./pages/Arena'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
+const PlayerView = React.lazy(() => import('./pages/PlayerView'));
 const Mail = React.lazy(() => import('./pages/Mail'));
 const History = React.lazy(() => import('./pages/History'));
 const Settings = React.lazy(() => import('./pages/Settings'));
@@ -230,6 +231,7 @@ export default function App(): React.ReactElement {
             <Route path="arena" element={<Arena />} />
             <Route path="world" element={<Realm />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route path="player/:name" element={<PlayerView />} />
             <Route path="mail" element={<Mail />} />
             <Route path="history" element={<History />} />
             <Route path="settings" element={<Settings />} />
