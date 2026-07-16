@@ -53,7 +53,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
         },
         {
           type: "p",
-          text: "**Импресум.** Оператор: {org}. Седалище и адрес на управление: [Адрес на управление: попълни]. ЕИК/рег. номер: [ЕИК: попълни]. ДДС №: [ДДС №: попълни]. Имейл за контакт: legal@carbonstealth.eu.",
+          text: "**Импресум.** Оператор: {org}. Седалище и адрес на управление: ул. Самуил 3, 2670 Бобов дол, България. Вписано в Търговския регистър при Агенцията по вписванията, ЕИК 208725180. ДДС №: BG208725180. Имейл за контакт: legal@carbonstealth.eu.",
         },
         {
           type: "p",
@@ -304,7 +304,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
         },
         {
           type: "p",
-          text: "**Service imprint.** Operator: {org}. Registered seat and address: [registered address — to be completed]. Company / register ID: [company ID — to be completed]. VAT No.: [VAT number — to be completed]. Contact email: legal@carbonstealth.eu.",
+          text: "**Service imprint.** Operator: {org}. Registered seat and address: 3 Samuil St., 2670 Bobov Dol, Bulgaria. Entered in the Commercial Register at the Registry Agency, UIC 208725180. VAT No.: BG208725180. Contact email: legal@carbonstealth.eu.",
         },
         {
           type: "p",
@@ -555,7 +555,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
         },
         {
           type: "p",
-          text: "**Dati identificativi (impressum).** Operatore: {org}. Sede legale e indirizzo: [indirizzo della sede — da completare]. Codice azienda / registro: [codice azienda — da completare]. P. IVA: [partita IVA — da completare]. Email di contatto: legal@carbonstealth.eu.",
+          text: "**Dati identificativi (impressum).** Operatore: {org}. Sede legale e indirizzo: Via Samuil 3, 2670 Bobov Dol, Bulgaria. Iscritta nel Registro delle Imprese presso l'Agenzia del Registro, codice UIC 208725180. P. IVA: BG208725180. Email di contatto: legal@carbonstealth.eu.",
         },
         {
           type: "p",
