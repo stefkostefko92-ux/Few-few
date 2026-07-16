@@ -51,17 +51,47 @@
   .tl { border-left: 2px solid var(--line); margin-left: 5px; padding-left: 15px; } .tl .ev { position: relative; margin-bottom: 12px; } .tl .ev::before { content: ""; position: absolute; left: -21px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--ac); box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 10px var(--ac); } .tl .v { font-weight: 650; font-size: 13px; } .tl .dt { color: var(--mut); font-size: 11px; } .tl .x { font-size: 12.5px; color: var(--txt); margin-top: 2px; }
   .feed .row { padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; } .feed .row .dt { color: var(--mut); font-size: 11px; }
 
-  #list { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 90px; display: none; background: rgba(0,2,10,.72); } #list.show { display: block; }
-  .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 16px; }
-  @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } } @media (min-width: 1080px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
-  .card { background: linear-gradient(180deg, var(--panel), #04070b); border: 1px solid var(--line); border-radius: 15px; padding: 18px; position: relative; overflow: hidden; cursor: pointer; transition: .2s; } .card:hover { border-color: var(--ac); transform: translateY(-3px); } .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ac); }
-  .card .ch { display: flex; align-items: center; gap: 11px; } .card .a { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; } .card .a svg { width: 22px; height: 22px; }
-  .card h2 { margin: 0; font-size: 16px; } .card .r { color: var(--mut); font-size: 12px; } .card .tg { font-size: 12.5px; margin: 11px 0; color: var(--txt); } .card .mm { display: flex; gap: 14px; color: var(--mut); font-size: 11.5px; } .card .mm b { color: var(--txt); font-size: 14px; }
+  /* ---- БРУТАЛЕН АГЕНТСКИ РЕГИСТЪР (list) ---- */
+  #list { position: fixed; inset: 0; z-index: 4; overflow-y: auto; display: none; background: #000208; }
+  #list.show { display: block; }
+  #list::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9; background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.22) 2px 3px); opacity: .45; }
+  .reg { max-width: 1340px; margin: 0 auto; padding: 80px 20px 100px; position: relative; z-index: 2; }
+  .reg-h { border-top: 4px solid var(--txt); border-bottom: 4px solid var(--txt); padding: 16px 4px 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .reg-h h2 { margin: 0; font: 800 clamp(32px,6.5vw,76px)/.88 system-ui; letter-spacing: -.035em; text-transform: uppercase; }
+  .reg-h h2 em { font-style: normal; color: var(--accent); }
+  .reg-h .mono { font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size: 11.5px; color: var(--mut); text-transform: uppercase; letter-spacing: .18em; text-align: right; line-height: 1.9; }
+  .reg-h .mono b { color: var(--accent); }
+  .mk { overflow: hidden; border-bottom: 2px solid #1c2836; white-space: nowrap; }
+  .mk div { display: inline-block; padding: 8px 0; font-family: ui-monospace,monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: #66788a; animation: mkscroll 46s linear infinite; }
+  .mk b { color: var(--accent); font-weight: 700; } .mk s { color: #2a3a4a; text-decoration: none; margin: 0 16px; }
+  @keyframes mkscroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .rec { position: relative; display: grid; grid-template-columns: 88px 56px 1fr auto; align-items: center; gap: 18px; border-bottom: 1px solid #16212e; padding: 20px 10px 20px 18px; cursor: pointer; overflow: hidden; isolation: isolate; }
+  .rec::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--ac); z-index: 3; transition: width .16s ease; }
+  .rec::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--ac), transparent 62%); opacity: 0; transition: opacity .18s; }
+  .rec:hover::after { opacity: .13; } .rec:hover::before { width: 13px; }
+  .rec:hover .idx { color: transparent; -webkit-text-stroke-color: var(--ac); }
+  .rec:hover .ver { animation: glitch .42s steps(2,end) 1; }
+  @keyframes glitch { 0% { text-shadow: -2.5px 0 #ff2d6b, 2.5px 0 #17e0ff; } 45% { text-shadow: 2px 0 #ff2d6b, -2px 0 #17e0ff; } 100% { text-shadow: none; } }
+  .idx { font: 800 clamp(32px,4vw,50px)/1 ui-monospace,monospace; letter-spacing: -.05em; color: #131f2b; -webkit-text-stroke: 1.6px #26384a; font-variant-numeric: tabular-nums; transition: color .16s, -webkit-text-stroke-color .16s; }
+  .recico { width: 52px; height: 52px; border: 2px solid var(--ac); display: grid; place-items: center; box-shadow: 0 0 22px -6px var(--ac) inset; } .recico svg { width: 27px; height: 27px; }
+  .recmain { min-width: 0; }
+  .recmain h3 { margin: 0; font: 700 clamp(18px,2.5vw,27px)/1.04 system-ui; letter-spacing: -.012em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .recmain .ptag { font: 700 9.5px/1 ui-monospace,monospace; letter-spacing: .16em; text-transform: uppercase; color: #04121a; background: var(--ac); padding: 4px 7px; }
+  .recmain .role { color: var(--mut); font-family: ui-monospace,monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .13em; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recmain .st { margin-top: 10px; font-family: ui-monospace,monospace; font-size: 11.5px; color: #647686; letter-spacing: .05em; display: flex; flex-wrap: wrap; align-items: center; }
+  .recmain .st b { color: var(--txt); } .recmain .st i { color: #2a3a4a; font-style: normal; padding: 0 10px; }
+  .recver { text-align: right; padding-left: 14px; }
+  .recver .lab { font-family: ui-monospace,monospace; font-size: 10px; letter-spacing: .32em; color: var(--mut); text-transform: uppercase; }
+  .recver .ver { font: 800 clamp(26px,4vw,44px)/1 ui-monospace,monospace; color: var(--ac); font-variant-numeric: tabular-nums; letter-spacing: -.03em; margin-top: 2px; }
+  @media (max-width: 720px) { .rec { grid-template-columns: 52px 1fr; gap: 12px 14px; } .rec .idx { display: none; } .recver { grid-column: 1 / -1; text-align: left; padding-left: 0; margin-top: 4px; } .recmain .role { white-space: normal; } .recmain .st { flex-wrap: wrap; } }
+  @media (prefers-reduced-motion: reduce) { .mk div { animation: none; } .rec:hover .ver { animation: none; } }
 
   #docs { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 60px; display: none; background: rgba(0,2,10,.72); } #docs.show { display: block; } #docs .inner { max-width: 900px; margin: 0 auto; }
   .doctabs { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0 14px; } .doctabs button { background: var(--panel2); border: 1px solid var(--line); color: var(--mut); font: inherit; font-size: 12.5px; padding: 6px 12px; border-radius: 8px; cursor: pointer; } .doctabs button.on { background: var(--accent); color: #04121a; }
   .md-doc { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; } .md-doc code { background: var(--panel2); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; } .md-doc table.md-table { border-collapse: collapse; width: 100%; font-size: 12.5px; } .md-doc .md-table td,.md-doc .md-table th { border: 1px solid var(--line); padding: 6px 9px; text-align: left; }
 
+  body.altview .brand, body.altview .live, body.altview .hint, body.altview .credit { display: none; }
   @media (max-width: 640px) { .brand p { display: none; } .hint { display: none; } .search input { width: 104px; } .hud { padding: 12px; } .live { left: 12px; bottom: 14px; } .credit { font-size: 9.5px; } }
   @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
 </style>
@@ -10632,7 +10662,7 @@ function loop() {
   const tip = document.getElementById("tip");
   if (hovered) {
     const a = hovered.a; tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.3) + "px";
-    tip.innerHTML = `<div class="t-n">${iconSVG(a.id, a.accent, 2)}${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div><div class="t-m"><div><b>v${majOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
+    tip.innerHTML = `<div class="t-n">${iconSVG(a.id, a.accent, 2)}${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div><div class="t-m"><div><b>v${verOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
     tip.style.opacity = 1;
   } else tip.style.opacity = 0;
 }
@@ -10683,7 +10713,7 @@ cv.addEventListener("pointerleave", () => { mx = my = -1e5; });
 cv.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.max(0.6, Math.min(2.4, zoom * (e.deltaY < 0 ? 1.08 : 0.93))); }, { passive: false });
 document.getElementById("q").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); filterList(); });
 function match(a) { if (!query) return true; return (a.name + " " + (a.title || "") + " " + (a.tagline || "") + " " + a.id).toLowerCase().includes(query); }
-document.getElementById("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; view = b.dataset.v; [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b)); document.getElementById("list").classList.toggle("show", view === "list"); document.getElementById("docs").classList.toggle("show", view === "docs"); if (view === "docs") renderDocs(); });
+document.getElementById("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; view = b.dataset.v; [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b)); document.body.classList.toggle("altview", view !== "sky"); document.getElementById("list").classList.toggle("show", view === "list"); document.getElementById("docs").classList.toggle("show", view === "docs"); if (view === "docs") renderDocs(); });
 
 /* ---------- drawer ---------- */
 function openDrawer(a) {
@@ -10696,7 +10726,7 @@ function openDrawer(a) {
         <div><h2>${esc(a.name)}${isPrez(a) ? " · президент" : ""}</h2><div class="role">${esc(a.title || "")}</div></div></div>
       <div class="d-tag">${esc(a.tagline || a.mission || "")}</div></div>
     <div class="d-metrics">
-      <div class="d-metric" style="border-color:${hex(c,.35)}"><b style="color:${c}">v${majOf(a)}</b><span>версия</span></div>
+      <div class="d-metric" style="border-color:${hex(c,.35)}"><b style="color:${c}">v${verOf(a)}</b><span>версия</span></div>
       <div class="d-metric"><b>${lessonsOf(a)}</b><span>поуки</span></div>
       <div class="d-metric"><b>${(a.capabilities || []).length}</b><span>умения</span></div></div>
     <div class="chips">${(a.tools || []).map(x => `<span class="c">${esc(x)}</span>`).join("")}<span class="c">model: ${esc(a.model || "—")}</span><span class="c">${esc(a.status || "")}</span></div>
@@ -10715,18 +10745,31 @@ function buildLive() {
   document.getElementById("live").innerHTML = `<div class="chip"><b>${DATA.agents.length}</b><span>агенти</span></div><div class="chip"><b>${total}</b><span>поуки</span></div><div class="chip"><b>v${avg}</b><span>ср. ниво</span></div><div class="chip"><b style="color:var(--accent)">1</b><span>президент</span></div>`;
 }
 function buildList() {
-  const grid = document.getElementById("grid");
+  const wrap = document.getElementById("list");
   const ordered = DATA.agents.slice().sort((a, b) => (isPrez(b) ? 1 : 0) - (isPrez(a) ? 1 : 0) || lessonsOf(b) - lessonsOf(a));
-  grid.innerHTML = "";
-  for (const a of ordered) {
-    const c = a.accent, card = document.createElement("div"); card.className = "card"; card.style.setProperty("--ac", c); card.dataset.id = a.id;
-    card.innerHTML = `<div class="ch"><div class="a" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${iconSVG(a.id, c, 1.9)}</div>
-      <div><h2>${esc(a.name)}${isPrez(a) ? " · президент" : ""}</h2><div class="r">${esc(a.title || "")}</div></div></div>
-      <div class="tg">${esc(a.tagline || "")}</div><div class="mm"><div><b>v${majOf(a)}</b> версия</div><div><b>${lessonsOf(a)}</b> поуки</div><div><b>${(a.capabilities || []).length}</b> умения</div></div>`;
-    card.addEventListener("click", () => openDrawer(a)); grid.appendChild(card);
-  }
+  const total = DATA.agents.reduce((s, a) => s + lessonsOf(a), 0);
+  const ticker = ordered.map(a => `${esc(a.name.toUpperCase())} <b>v${esc(verOf(a))}</b>`).join("<s>//</s>");
+  const rows = ordered.map((a, i) => {
+    const c = a.accent;
+    return `<div class="rec" style="--ac:${c}" data-id="${a.id}">
+      <div class="idx">${String(i + 1).padStart(2, "0")}</div>
+      <div class="recico" style="border-color:${c};box-shadow:0 0 22px -6px ${hex(c,.9)} inset">${iconSVG(a.id, c, 1.9)}</div>
+      <div class="recmain">
+        <h3>${esc(a.name)}${isPrez(a) ? ` <span class="ptag" style="background:${c}">Президент</span>` : ""}</h3>
+        <div class="role">${esc(a.title || "")}</div>
+        <div class="st"><span>ПОУКИ&nbsp;<b>${lessonsOf(a)}</b></span><i>/</i><span>УМЕНИЯ&nbsp;<b>${(a.capabilities || []).length}</b></span><i>/</i><span>MODEL&nbsp;<b>${esc(a.model || "—")}</b></span><i>/</i><span>STATUS&nbsp;<b>${esc((a.status || "").toUpperCase())}</b></span></div>
+      </div>
+      <div class="recver"><div class="lab">Версия</div><div class="ver" style="color:${c}">${esc(verOf(a))}</div></div>
+    </div>`;
+  }).join("");
+  wrap.innerHTML = `<div class="reg">
+    <div class="reg-h"><h2>Агентски<br><em>регистър</em></h2><div class="mono">Carbon Stealth VCC<br><b>${DATA.agents.length}</b> UNITS&nbsp;·&nbsp;Σ&nbsp;<b>${total}</b> ПОУКИ<br>PRESIDENT&nbsp;›&nbsp;<b>AI-ДЖИЯТА</b></div></div>
+    <div class="mk"><div>${ticker}<s>//</s>${ticker}</div></div>
+    ${rows}
+  </div>`;
+  [...wrap.querySelectorAll(".rec")].forEach(r => r.addEventListener("click", () => openDrawer(DATA.agents.find(x => x.id === r.dataset.id))));
 }
-function filterList() { [...document.querySelectorAll("#grid .card")].forEach(c => { const a = DATA.agents.find(x => x.id === c.dataset.id); c.style.display = match(a) ? "" : "none"; }); }
+function filterList() { [...document.querySelectorAll("#list .rec")].forEach(r => { const a = DATA.agents.find(x => x.id === r.dataset.id); r.style.display = match(a) ? "" : "none"; }); }
 
 /* ---------- helpers ---------- */
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m])); }
