@@ -230,7 +230,7 @@ const cssSafe = (s) =>
   s.length >= 3 && s.length < 400 && !/[{}@]/.test(s) && !BROAD.has(s.toLowerCase());
 
 // Процедурни оператори, които content.js engine-ът разбира.
-const PROC_OK = /:(has-text|matches-css|upward|xpath|min-text-length|remove)\(/;
+const PROC_OK = /:(has-text|matches-css|matches-attr|matches-path|upward|xpath|min-text-length|remove-attr|remove-class|remove|style)\(/;
 
 function convertCosmetic(text) {
   const generic = new Set();

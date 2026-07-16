@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.1.1
+
+Още процедурни козметични оператори (uBO паритет спринт 2):
+- **`:matches-attr(name=value)`** — селекция по атрибут, специално срещу
+  **рандомизирани class/id/attr имена** (модерна анти-козметична тактика);
+  името и стойността могат да са /regex/.
+- **`:matches-path(text|/regex/)`** — стеснява козметиката по URL path/query.
+- **`:style(declarations)`** — action: инжектира CSS на елемента (маха overlay/
+  scroll-lock, връща display).
+- **`:remove-attr(name)` / `:remove-class(name)`** — action: маха атрибут/клас
+  (разбива scroll-lock/blur без да трие елемента); name може да е /regex/.
+Работят в „My filters", подписания live канал и bundle-натата EasyList козметика.
+Тествано в реален Chromium.
+
 ## 4.1.0
 
 uBlock-стил surrogate redirects (Спринт 1 от uBO паритет):

@@ -93,7 +93,11 @@
   ];
 
   // ---- Procedural selectors (uBlock-style, data-driven) ----
-  const PROC_RE = /:(has-text|matches-css|upward|xpath|min-text-length|remove)\(/;
+  // Действия (модифицират елемента) — стоят само на края на веригата.
+  const ACTION_OPS = new Set(["remove", "style", "remove-attr", "remove-class"]);
+  const OPS = "has-text|matches-css|matches-attr|matches-path|min-text-length|upward|xpath|remove-attr|remove-class|remove|style";
+  const PROC_RE = new RegExp(":(" + OPS + ")\\(");
+  const OP_HEAD = new RegExp("^:(" + OPS + ")\\(");
 
   // "css:op(arg):op(arg)" -> { css, ops } or null when it's plain CSS.
   function parseProcedural(raw) {
@@ -103,7 +107,7 @@
     let buf = "";
     let i = 0;
     while (i < raw.length) {
-      const m = /^:(has-text|matches-css|upward|xpath|min-text-length|remove)\(/.exec(raw.slice(i));
+      const m = OP_HEAD.exec(raw.slice(i));
       if (!m) {
         buf += raw[i++];
         continue;
@@ -129,8 +133,8 @@
       i = j + 1;
     }
     if (buf.trim() || !ops.length) return null;
-    // :remove() е действие и стои само в края
-    if (ops.slice(0, -1).some((o) => o.op === "remove")) return null;
+    // Действие (remove/style/remove-attr/remove-class) стои само на края.
+    if (ops.slice(0, -1).some((o) => ACTION_OPS.has(o.op))) return null;
     // Изискваме CSS основа (перф), освен когато веригата тръгва от :xpath().
     if (!css && ops[0].op !== "xpath") return null;
     return { css, ops };
@@ -180,12 +184,33 @@
       }
     }
     if (els.length > 1000) els = els.slice(0, 1000);
-    let remove = false;
+    let action = null;
     for (let k = start; k < p.ops.length && els.length; k++) {
       const { op, arg } = p.ops[k];
       if (op === "has-text") {
         const re = toRegex(arg);
         els = els.filter((el) => (re ? re.test(textOf(el)) : textOf(el).includes(arg)));
+      } else if (op === "matches-attr") {
+        // name  |  name="value"  |  name  и стойност могат да са /regex/
+        const eq = arg.indexOf("=");
+        const nameSpec = (eq === -1 ? arg : arg.slice(0, eq)).trim();
+        const valSpec = eq === -1 ? null : arg.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+        const nameRe = toRegex(nameSpec);
+        const valRe = valSpec != null ? toRegex(valSpec) : null;
+        const nameLc = nameSpec.toLowerCase();
+        els = els.filter((el) => {
+          const names = el.getAttributeNames ? el.getAttributeNames() : [];
+          return names.some((a) => {
+            if (nameRe ? !nameRe.test(a) : a !== nameLc) return false;
+            if (valSpec == null) return true;
+            const v = el.getAttribute(a) || "";
+            return valRe ? valRe.test(v) : v === valSpec;
+          });
+        });
+      } else if (op === "matches-path") {
+        const re = toRegex(arg);
+        const path = location.pathname + location.search;
+        if (!(re ? re.test(path) : path.includes(arg))) els = [];
       } else if (op === "min-text-length") {
         const n = parseInt(arg, 10) || 0;
         els = els.filter((el) => el.textContent.length >= n);
@@ -223,12 +248,27 @@
         }
         els = [...new Set(els.filter((el) => el && el !== document.documentElement && el !== document.body))];
       } else if (op === "remove") {
-        remove = true;
+        action = { op: "remove" };
+      } else if (op === "style" || op === "remove-attr" || op === "remove-class") {
+        action = { op, arg };
       } else {
-        return { els: [], remove: false }; // :xpath() извън първа позиция и т.н.
+        return { els: [], action: null }; // :xpath() извън първа позиция и т.н.
       }
     }
-    return { els, remove };
+    return { els, action };
+  }
+
+  // Прилага CSS декларации от :style(...) на елемент (напр. "display: block !important").
+  function applyStyle(el, decl) {
+    for (const part of decl.split(";")) {
+      const ci = part.indexOf(":");
+      if (ci < 1) continue;
+      let prop = part.slice(0, ci).trim();
+      let val = part.slice(ci + 1).trim();
+      let prio = "";
+      if (/!important$/i.test(val)) { val = val.replace(/!important$/i, "").trim(); prio = "important"; }
+      if (/^[a-z-]+$/i.test(prop)) { try { el.style.setProperty(prop, val, prio); } catch {} }
+    }
   }
 
   // EasyList #@# exceptions за този домейн: маркираме елементите, така hide()
@@ -268,13 +308,23 @@
       for (const el of nodes) hideEl(el);
     }
     for (const p of procSelectors) {
-      const { els, remove } = evalProcedural(p, root);
+      const { els, action } = evalProcedural(p, root);
       for (const el of els) {
         if (el === document.documentElement || el === document.body) continue;
-        if (remove) {
-          if (!el.dataset.tbabUnhide) el.remove();
-        } else {
+        if (!action) {
           hideEl(el);
+        } else if (action.op === "remove") {
+          if (!el.dataset.tbabUnhide) el.remove();
+        } else if (action.op === "style") {
+          applyStyle(el, action.arg);
+        } else if (action.op === "remove-attr") {
+          const re = toRegex(action.arg);
+          for (const a of (el.getAttributeNames ? el.getAttributeNames() : []))
+            if (re ? re.test(a) : a === action.arg.toLowerCase()) { try { el.removeAttribute(a); } catch {} }
+        } else if (action.op === "remove-class") {
+          const re = toRegex(action.arg);
+          for (const c of [...el.classList])
+            if (re ? re.test(c) : c === action.arg) el.classList.remove(c);
         }
       }
     }
