@@ -140,3 +140,4 @@
 
 ## Карантина (непроверено — не се чете като факт)
 _(празно)_
+- **2026-07-16:** FALLBACK регенерация в agents-dashboard/index.html: lazy regex `\{.*?\};` е капан — JSON-ът съдържа „};" ВЪТРЕ в низ (evolution detail на Хромаджията: „{resources, matches};") и рязането спира там → корумпиран HTML. Правилният път: намери `const FALLBACK = `, брекет-съвпадение с отчитане на низове/ескейпи до depth 0, `json.loads` на СТАРИЯ блок като доказателство за точния срез, чак тогава замяна + повторна валидация. _(dashboard/fallback-regen; verified; agents-dashboard/index.html + сесия 2026-07-16 — JSONDecodeError „Unterminated string" при char 289209, поправено с брекет-мачър)_

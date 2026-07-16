@@ -1,0 +1,93 @@
+<%- include('_head') %>
+<h1><%- icon('trending-up') %> Оптимизатор</h1>
+<p class="hint">
+  Байесов бюджетен съветник (Thompson sampling върху конверсиите, 30 дни история).
+  Всичко тук е <strong>само препоръка</strong> — прилагаш я ти, кампания по кампания,
+  и всяка промяна минава през предпазителите (±20% на стъпка, тавани).
+</p>
+
+<% if (pacing) { %>
+<section class="card">
+  <h2>Месечен pacing</h2>
+  <div class="stats">
+    <div class="stat"><span class="label">Месечен бюджет</span><span class="value"><%= pacing.monthlyBudget.toFixed(2) %></span></div>
+    <div class="stat"><span class="label">Похарчено</span><span class="value"><%= pacing.spent.toFixed(2) %></span></div>
+    <div class="stat"><span class="label">Цел към днес</span><span class="value"><%= pacing.targetToDate.toFixed(2) %></span></div>
+    <div class="stat"><span class="label">Дневен таргет (остатък)</span><span class="value"><%= pacing.dailyTargetRemaining.toFixed(2) %></span></div>
+  </div>
+  <% if (pacing.over) { %>
+    <p class="alert"><%- icon('trending-up') %> Изпреварваме плана с <%= pacing.deviationPct %>% — при това темпо бюджетът свършва преди края на месеца.</p>
+  <% } else if (pacing.under) { %>
+    <p class="hint"><%- icon('trending-down') %> Изоставаме с <%= Math.abs(pacing.deviationPct) %>% — има неизползван бюджет (<%= pacing.remainingDays %> дни остават).</p>
+  <% } else { %>
+    <p class="hint"><%- icon('check') %> Темпото е в норма (отклонение <%= pacing.deviationPct %>%, праг ±15%).</p>
+  <% } %>
+</section>
+<% } else { %>
+<section class="card">
+  <h2>Месечен pacing</h2>
+  <p class="hint">Изключен — задай <code>GUARD_MONTHLY_BUDGET</code> в средата, за да следим месечното темпо на харчене.</p>
+</section>
+<% } %>
+
+<section class="card">
+  <h2>Препоръчано преразпределение на бюджета</h2>
+  <% if (!recommendations.rows.length) { %>
+    <p class="hint"><%= recommendations.reason || 'Няма достатъчно данни.' %>
+      <% if (recommendations.skipped.length) { %><br>Пропуснати: <% for (const s of recommendations.skipped) { %><%= s.name %> (<%= s.reason %>) <% } %><% } %>
+    </p>
+  <% } else { %>
+  <p class="hint">Общ дневен пул: <strong><%= recommendations.pool.toFixed(2) %></strong> · <%= recommendations.draws %> симулации · последните <%= recommendations.lookbackDays %> дни. „Шанс за победа“ = колко често кампанията е най-ефективната в симулациите.</p>
+  <table>
+    <thead><tr><th>Кампания</th><th>Шанс за победа</th><th>ROAS 30д</th><th>Сега</th><th>Препоръка</th><th>Δ</th><th></th></tr></thead>
+    <tbody>
+      <% for (const r of recommendations.rows) { %>
+      <tr>
+        <td><a href="/campaigns/<%= r.id %>"><%= r.name %></a></td>
+        <td><%= r.winProb %>%</td>
+        <td><%= r.roas != null ? r.roas.toFixed(2) : '—' %></td>
+        <td><%= r.current.toFixed(2) %> <%= r.currency %></td>
+        <td><strong><%= r.recommended.toFixed(2) %></strong> <%= r.currency %></td>
+        <td class="<%= r.deltaPct > 0 ? 'up' : r.deltaPct < 0 ? 'down' : '' %>"><%= r.deltaPct > 0 ? '+' : '' %><%= r.deltaPct %>%</td>
+        <td>
+          <% if (Math.abs(r.recommended - r.current) >= 0.01) { %>
+          <form method="post" action="/campaigns/<%= r.id %>/budget" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="new_budget" value="<%= r.recommended %>">
+            <button class="ghost" title="Прилага се през предпазителите (±20%, тавани)"><%- icon('check') %> Приложи</button>
+          </form>
+          <% } else { %><span class="hint">оптимално</span><% } %>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% if (recommendations.skipped.length) { %>
+    <p class="hint">Извън модела: <% for (const s of recommendations.skipped) { %><%= s.name %> (<%= s.reason %>) <% } %></p>
+  <% } %>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Прогноза за разход — следващите 7 дни</h2>
+  <% if (!forecasts.length) { %>
+    <p class="hint">Нужна е поне седмица история на активна кампания.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Кампания</th><th>Прогноза 7 дни</th><th>Бюджет 7 дни</th><th>Разлика</th></tr></thead>
+    <tbody>
+      <% for (const f of forecasts) { %>
+      <% const weekBudget = f.daily_budget * 7; const diff = f.forecast.total - weekBudget; %>
+      <tr>
+        <td><a href="/campaigns/<%= f.id %>"><%= f.name %></a></td>
+        <td><%= f.forecast.total.toFixed(2) %> <%= f.currency %></td>
+        <td><%= weekBudget.toFixed(2) %></td>
+        <td class="<%= diff > 0 ? 'up' : 'down' %>"><%= diff > 0 ? '+' : '' %><%= diff.toFixed(2) %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <p class="hint">EWMA (α=0.3) + сезонност по ден от седмицата върху последните 28 дни. Платформите легално харчат до 2× дневния бюджет в отделен ден.</p>
+  <% } %>
+</section>
+<%- include('_foot') %>

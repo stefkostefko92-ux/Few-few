@@ -36,6 +36,69 @@ export function dailySeries(campaignId, days = 14) {
   return out;
 }
 
+// Седмичен дайджест: 5-те унифицирани метрики (dbt_ad_reporting стандарта:
+// spend/clicks/impressions/conversions/conversion_value) за последните 7 пълни дни
+// срещу предходните 7 (същите дни от седмицата — сезонността се съкращава сама),
+// + „какво се промени“ от одитната следа (change attribution, без магия).
+export function weeklyDigest() {
+  const win = (fromDays, toDays) =>
+    db
+      .prepare(
+        `SELECT COALESCE(SUM(spend),0) spend, COALESCE(SUM(clicks),0) clicks,
+                COALESCE(SUM(impressions),0) impressions, COALESCE(SUM(conversions),0) conversions,
+                COALESCE(SUM(conversion_value),0) conversion_value
+         FROM metrics_daily WHERE date >= date('now', ?) AND date < date('now', ?)`
+      )
+      .get(`-${fromDays} days`, `-${toDays} days`);
+  const cur = win(7, 0);
+  const prev = win(14, 7);
+
+  const metric = (key, label, decimals = 2) => {
+    const c = cur[key];
+    const p = prev[key];
+    return {
+      key,
+      label,
+      current: Math.round(c * 10 ** decimals) / 10 ** decimals,
+      previous: Math.round(p * 10 ** decimals) / 10 ** decimals,
+      changePct: p > 0 ? Math.round((c / p - 1) * 1000) / 10 : null,
+    };
+  };
+  const metrics = [
+    metric('spend', 'Разход'),
+    metric('impressions', 'Импресии', 0),
+    metric('clicks', 'Кликове', 0),
+    metric('conversions', 'Конверсии', 1),
+    metric('conversion_value', 'Стойност'),
+  ];
+
+  // Топ/дъно кампании по разход за периода — къде отидоха парите.
+  const perCampaign = db
+    .prepare(
+      `SELECT c.id, c.name, COALESCE(SUM(m.spend),0) spend, COALESCE(SUM(m.conversion_value),0) value,
+              COALESCE(SUM(m.conversions),0) conversions
+       FROM campaigns c JOIN metrics_daily m ON m.campaign_id = c.id
+       WHERE m.date >= date('now', '-7 days') AND m.date < date('now')
+       GROUP BY c.id HAVING spend > 0 ORDER BY spend DESC LIMIT 10`
+    )
+    .all()
+    .map((r) => ({ ...r, roas: r.spend > 0 ? Math.round((r.value / r.spend) * 100) / 100 : null }));
+
+  // „Промени и ефект“: какво направиха човекът/правилата/интелигентният слой тази седмица.
+  const changes = db
+    .prepare(
+      `SELECT at, actor, campaign_id, action, detail_json FROM audit_log
+       WHERE at >= datetime('now', '-7 days')
+         AND action IN ('auto_pause','scale_budget','shrink_budget','budget_applied',
+                        'campaign_active','campaign_paused','campaign_archived',
+                        'anomaly','pacing_alert','policy_issue','notify')
+       ORDER BY id DESC LIMIT 30`
+    )
+    .all();
+
+  return { metrics, perCampaign, changes };
+}
+
 export async function syncMetrics() {
   const campaigns = db
     .prepare(

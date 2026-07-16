@@ -50,6 +50,29 @@
   <div class="stat"><span class="label">Честота</span><span class="value"><%= agg.frequency ? agg.frequency.toFixed(2) : '—' %></span></div>
 </section>
 
+<% if (anomalies.length || overdelivery.length || forecast) { %>
+<section class="card">
+  <h2>Сигнали от интелигентния слой</h2>
+  <% for (const a of anomalies) { %>
+  <p class="<%= a.direction === 'срив' ? 'alert' : 'hint' %>">
+    <%- icon(a.direction === 'скок' ? 'trending-up' : 'trending-down') %>
+    Аномалия вчера: <strong><%= a.metric %></strong> — <%= a.direction %> до <%= a.value %>
+    при типично <%= a.baseline %> за този ден от седмицата (z=<%= a.z %>).
+  </p>
+  <% } %>
+  <% if (overdelivery.length) { %>
+  <p class="hint"><%- icon('bell') %> Свръхдоставка (разход > 2× дневния бюджет):
+    <% for (const o of overdelivery) { %><%= o.date %> (<%= o.spend.toFixed(2) %>) <% } %>—
+    легално за платформите, но следи седмичната сума.</p>
+  <% } %>
+  <% if (forecast) { %>
+  <p class="hint"><%- icon('chart-column') %> Прогноза за следващите 7 дни:
+    <strong><%= forecast.total.toFixed(2) %> <%= campaign.currency %></strong>
+    (бюджетът за 7 дни е <%= (campaign.daily_budget * 7).toFixed(2) %>).</p>
+  <% } %>
+</section>
+<% } %>
+
 <section class="card">
   <h2>Последните 14 дни</h2>
   <%- include('_chart', {

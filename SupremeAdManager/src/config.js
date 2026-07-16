@@ -54,6 +54,8 @@ export const config = {
     maxDailyBudget: Number(process.env.GUARD_MAX_DAILY_BUDGET || 500),
     // Максимален общ дневен бюджет през всички активни кампании.
     maxTotalDailyBudget: Number(process.env.GUARD_MAX_TOTAL_DAILY_BUDGET || 1500),
+    // Месечен таван за pacing алармата (intel.js). 0 = изключено (няма месечен бюджет).
+    monthlyBudget: Number(process.env.GUARD_MONTHLY_BUDGET || 0),
   },
 };
 

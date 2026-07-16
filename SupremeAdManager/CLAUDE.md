@@ -42,7 +42,9 @@ npm run lint && npm run format:check && npm test
 | `src/connectors/googleAds.js` | Google Ads REST (v24): бюджет = отделен ресурс, GAQL отчети                                    |
 | `src/connectors/metaAds.js`   | Meta Graph API (v25.0): ODAX, placements (вкл. `threads`), CTWA, `dsa_payor`/`dsa_beneficiary` |
 | `src/rules.js`                | двигател на авто-правилата + `RECOMMENDED_RULES` (прагове от проучването)                      |
-| `src/scheduler.js`            | цикъл sync+rules; `tick()` е идемпотентен и не се препокрива                                   |
+| `src/intel.js`                | аномалии (robust z, същия ден от седмицата) · месечен pacing · прогноза (EWMA+сезонност)       |
+| `src/optimizer.js`            | Thompson sampling бюджетни ПРЕПОРЪКИ — прилага само човек, през `checkBudgetChange`            |
+| `src/scheduler.js`            | цикъл sync+rules+intel; `tick()` е идемпотентен и не се препокрива                             |
 | `RESEARCH.md`                 | пълното проучване с източници — четвъртичният мозък на продукта                                |
 
 ## Тестове

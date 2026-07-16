@@ -3,10 +3,12 @@ import { db, audit } from '../db.js';
 import { config } from '../config.js';
 import { encrypt } from '../crypto.js';
 import { createSession, destroySession, requireAuth, verifyLogin } from '../auth.js';
-import { checkCampaign, GuardError } from '../guard.js';
+import { checkCampaign, checkBudgetChange, GuardError } from '../guard.js';
 import { resolveConnector } from '../connectors/base.js';
 import { aggregateMetrics, RECOMMENDED_RULES } from '../rules.js';
-import { dailySeries } from '../insights.js';
+import { dailySeries, weeklyDigest } from '../insights.js';
+import { detectAnomalies, monthlyPacing, overdeliveryDays, forecastSpend } from '../intel.js';
+import { recommendBudgets } from '../optimizer.js';
 import { tick } from '../scheduler.js';
 
 export const router = express.Router();
@@ -57,6 +59,7 @@ router.get('/', (req, res) => {
     totals,
     recentAudit,
     series: dailySeries(null, 14),
+    pacing: monthlyPacing(config.guards.monthlyBudget),
   });
 });
 
@@ -301,6 +304,7 @@ router.get('/campaigns/:id', (req, res) => {
   const auditRows = db
     .prepare(`SELECT * FROM audit_log WHERE campaign_id=? ORDER BY id DESC LIMIT 20`)
     .all(campaign.id);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
   res.render('campaign-detail', {
     title: campaign.name,
     campaign,
@@ -310,6 +314,9 @@ router.get('/campaigns/:id', (req, res) => {
     rules,
     auditRows,
     series: dailySeries(campaign.id, 14),
+    anomalies: detectAnomalies(campaign.id, yesterday),
+    forecast: forecastSpend(campaign.id, 7),
+    overdelivery: overdeliveryDays(campaign.id, campaign.daily_budget, 7),
   });
 });
 
@@ -382,6 +389,63 @@ router.post('/campaigns/:id/status', async (req, res, next) => {
     }
     next(err);
   }
+});
+
+// ---------- Оптимизатор (Thompson sampling — САМО препоръки) ----------
+router.get('/optimizer', (req, res) => {
+  const recommendations = recommendBudgets();
+  const active = db
+    .prepare(`SELECT id, name, daily_budget, currency FROM campaigns WHERE status='active'`)
+    .all();
+  const forecasts = active
+    .map((c) => ({ ...c, forecast: forecastSpend(c.id, 7) }))
+    .filter((c) => c.forecast);
+  res.render('optimizer', {
+    title: 'Оптимизатор',
+    recommendations,
+    forecasts,
+    pacing: monthlyPacing(config.guards.monthlyBudget),
+    guards: config.guards,
+  });
+});
+
+// Прилагане на препоръчан бюджет — човешко действие, през СЪЩИЯ предпазител като
+// авто-правилата (±20%/стъпка + тавани). Никакво „приложи всички“ — по една кампания.
+router.post('/campaigns/:id/budget', async (req, res, next) => {
+  try {
+    const campaign = db.prepare(`SELECT * FROM campaigns WHERE id=?`).get(req.params.id);
+    const newBudget = Math.round(Number(req.body.new_budget) * 100) / 100;
+    if (!campaign || !Number.isFinite(newBudget) || newBudget <= 0)
+      return res.redirect('/optimizer');
+    const violations = checkBudgetChange(campaign, newBudget);
+    if (violations.length) throw new GuardError(violations);
+    if (campaign.external_id) {
+      const conn = db.prepare(`SELECT * FROM connections WHERE id=?`).get(campaign.connection_id);
+      const connector = await resolveConnector(campaign.platform, conn);
+      await connector.updateBudget(campaign, newBudget);
+    }
+    db.prepare(`UPDATE campaigns SET daily_budget=?, updated_at=datetime('now') WHERE id=?`).run(
+      newBudget,
+      campaign.id
+    );
+    audit('admin', 'budget_applied', {
+      campaignId: campaign.id,
+      detail: { from: campaign.daily_budget, to: newBudget, source: 'optimizer' },
+    });
+    res.redirect('/optimizer');
+  } catch (err) {
+    if (err instanceof GuardError) {
+      return res
+        .status(400)
+        .render('error', { title: 'Спряно от предпазителите', message: err.message });
+    }
+    next(err);
+  }
+});
+
+// ---------- Седмичен дайджест ----------
+router.get('/digest', (req, res) => {
+  res.render('digest', { title: 'Седмичен дайджест', digest: weeklyDigest() });
 });
 
 // ---------- Правила ----------

@@ -8,6 +8,20 @@
   <div class="stat"><span class="label">ROAS</span><span class="value"><%= totals.spend > 0 ? (totals.value / totals.spend).toFixed(2) : '—' %></span></div>
 </section>
 
+<% if (pacing) { %>
+<section class="card">
+  <div class="row-between">
+    <h2>Месечен pacing</h2>
+    <a href="/optimizer" class="hint"><%- icon('trending-up') %> Оптимизатор</a>
+  </div>
+  <% if (pacing.over) { %>
+    <p class="alert">Похарчено <%= pacing.spent.toFixed(2) %> при цел <%= pacing.targetToDate.toFixed(2) %> към днес (+<%= pacing.deviationPct %>%). Дневен таргет за остатъка: <%= pacing.dailyTargetRemaining.toFixed(2) %>.</p>
+  <% } else { %>
+    <p class="hint">Похарчено <%= pacing.spent.toFixed(2) %> / цел към днес <%= pacing.targetToDate.toFixed(2) %> (<%= pacing.deviationPct > 0 ? '+' : '' %><%= pacing.deviationPct %>%). Дневен таргет за остатъка: <%= pacing.dailyTargetRemaining.toFixed(2) %> (<%= pacing.remainingDays %> дни).</p>
+  <% } %>
+</section>
+<% } %>
+
 <section class="card">
   <h2>Разход и конверсии — последните 14 дни</h2>
   <%- include('_chart', {

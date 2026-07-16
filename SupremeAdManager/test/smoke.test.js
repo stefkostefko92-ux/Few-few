@@ -441,3 +441,263 @@ test('HTTP: /privacy и /data-deletion са публични (без логин)
     server.close();
   }
 });
+
+// --- Интелигентен слой (intel.js + optimizer.js) — от GitHub проучването ---
+
+const { robustZ, detectAnomalies, monthlyPacing, overdeliveryDays, forecastSpend } =
+  await import('../src/intel.js');
+const { mulberry32, randBeta, recommendBudgets } = await import('../src/optimizer.js');
+const { weeklyDigest } = await import('../src/insights.js');
+const { intelligenceSweep } = await import('../src/scheduler.js');
+
+function isoDaysAgo(days) {
+  return new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+}
+
+function insertMetric(campaignId, date, m = {}) {
+  db.prepare(
+    `INSERT INTO metrics_daily (campaign_id, date, impressions, clicks, spend, conversions, conversion_value)
+     VALUES (?,?,?,?,?,?,?)
+     ON CONFLICT(campaign_id, date) DO UPDATE SET impressions=excluded.impressions,
+       clicks=excluded.clicks, spend=excluded.spend, conversions=excluded.conversions,
+       conversion_value=excluded.conversion_value`
+  ).run(
+    campaignId,
+    date,
+    m.impressions ?? 1000,
+    m.clicks ?? 20,
+    m.spend ?? 10,
+    m.conversions ?? 1,
+    m.conversion_value ?? 30
+  );
+}
+
+test('intel: robustZ — стабилен спрямо единичен минал скок, 0 при медианата', () => {
+  const history = [10, 10, 10, 12, 10, 200]; // единичен минал скок не отравя базлайна
+  assert.ok(robustZ(100, history) > 3.5, 'реален скок дава голямо z');
+  assert.equal(robustZ(10, [10, 10, 10, 12, 10]), 0);
+  assert.equal(robustZ(5, []), null);
+});
+
+test('intel: detectAnomalies лови скок срещу същия ден от седмицата', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'paused' });
+  const target = isoDaysAgo(1);
+  for (let w = 1; w <= 8; w++) insertMetric(c.id, isoDaysAgo(1 + 7 * w), { spend: 10 });
+  insertMetric(c.id, target, { spend: 300 });
+  const found = detectAnomalies(c.id, target);
+  assert.ok(
+    found.some((a) => a.metric === 'spend' && a.direction === 'скок'),
+    'скок в spend трябва да е аномалия'
+  );
+
+  // Под пода за обем (median impressions < 100) → мълчание, не шум.
+  const c2 = seedCampaign(connId, { status: 'paused' });
+  for (let w = 1; w <= 8; w++)
+    insertMetric(c2.id, isoDaysAgo(1 + 7 * w), { impressions: 10, spend: 10 });
+  insertMetric(c2.id, target, { impressions: 10, spend: 300 });
+  assert.deepEqual(detectAnomalies(c2.id, target), []);
+});
+
+test('intel: monthlyPacing — over/under спрямо целта към днес', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'paused' });
+  // Изолиран месец в бъдещето — сумата по date LIKE не се влияе от другите тестове.
+  insertMetric(c.id, '2030-01-05', { spend: 100 });
+  const lastDay = new Date(Date.UTC(2030, 0, 31, 12));
+  const under = monthlyPacing(1000, lastDay); // цел 1000, похарчени 100 → −90%
+  assert.ok(under.under && !under.over);
+  assert.equal(under.spent, 100);
+  assert.equal(under.targetToDate, 1000);
+  const over = monthlyPacing(50, lastDay); // цел 50, похарчени 100 → +100%
+  assert.ok(over.over && !over.under);
+  assert.equal(monthlyPacing(0), null, '0 = изключено');
+});
+
+test('intel: forecastSpend — плоска история дава ~плоска прогноза; <7 дни → null', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'paused' });
+  for (let d = 1; d <= 28; d++) insertMetric(c.id, isoDaysAgo(d), { spend: 10 });
+  const f = forecastSpend(c.id, 7);
+  assert.equal(f.forecast.length, 7);
+  assert.ok(Math.abs(f.total - 70) < 5, `очакваме ~70, получихме ${f.total}`);
+
+  const c2 = seedCampaign(connId, { status: 'paused' });
+  insertMetric(c2.id, isoDaysAgo(1), { spend: 10 });
+  assert.equal(forecastSpend(c2.id), null);
+});
+
+test('intel: overdeliveryDays — ден със spend > 2× бюджета', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'paused', daily_budget: 10 });
+  insertMetric(c.id, isoDaysAgo(2), { spend: 25 });
+  insertMetric(c.id, isoDaysAgo(3), { spend: 15 });
+  const days = overdeliveryDays(c.id, 10, 7);
+  assert.equal(days.length, 1);
+  assert.equal(days[0].spend, 25);
+});
+
+test('optimizer: mulberry32 е детерминистичен; randBeta ∈ (0,1)', () => {
+  const a = mulberry32(42);
+  const b = mulberry32(42);
+  for (let i = 0; i < 5; i++) assert.equal(a(), b());
+  const rng = mulberry32(7);
+  for (let i = 0; i < 50; i++) {
+    const v = randBeta(2, 5, rng);
+    assert.ok(v > 0 && v < 1);
+  }
+});
+
+test('optimizer: recommendBudgets — печелившата нагоре, губещата надолу, клампове ±20%', () => {
+  db.prepare(`UPDATE campaigns SET status='paused' WHERE status='active'`).run(); // изолация
+  const connId = seedConnection();
+  const good = seedCampaign(connId, { status: 'active', daily_budget: 10, name: 'Печеливша' });
+  const bad = seedCampaign(connId, { status: 'active', daily_budget: 10, name: 'Губеща' });
+  insertMetric(good.id, isoDaysAgo(2), {
+    clicks: 1000,
+    conversions: 100,
+    spend: 100,
+    conversion_value: 5000,
+  });
+  insertMetric(bad.id, isoDaysAgo(2), {
+    clicks: 1000,
+    conversions: 5,
+    spend: 100,
+    conversion_value: 100,
+  });
+  const rec = recommendBudgets({ rng: mulberry32(1234) });
+  assert.equal(rec.rows.length, 2);
+  const g = rec.rows.find((r) => r.id === good.id);
+  const b = rec.rows.find((r) => r.id === bad.id);
+  assert.ok(g.winProb > b.winProb, 'печелившата има по-висок шанс за победа');
+  assert.ok(g.recommended >= g.current, 'печелившата не пада');
+  assert.ok(b.recommended <= b.current, 'губещата не расте');
+  for (const r of rec.rows) assert.ok(Math.abs(r.deltaPct) <= 20.01, 'клампът ±20% е закон');
+
+  // Под 2 кампании с данни → само причина, нула препоръки.
+  db.prepare(`UPDATE campaigns SET status='paused' WHERE id=?`).run(bad.id);
+  const alone = recommendBudgets({ rng: mulberry32(1) });
+  assert.equal(alone.rows.length, 0);
+  assert.ok(alone.reason);
+  db.prepare(`UPDATE campaigns SET status='paused' WHERE id=?`).run(good.id);
+});
+
+test('intel: intelligenceSweep пише одитен запис за аномалия и дедупликира', () => {
+  const connId = seedConnection();
+  const c = seedCampaign(connId, { status: 'paused' });
+  const target = isoDaysAgo(1);
+  for (let w = 1; w <= 8; w++) insertMetric(c.id, isoDaysAgo(1 + 7 * w), { spend: 10 });
+  insertMetric(c.id, target, { spend: 300 });
+  const first = intelligenceSweep();
+  assert.ok(first.anomalies >= 1, 'първият суип записва аномалията');
+  const countAfterFirst = db
+    .prepare(`SELECT COUNT(*) n FROM audit_log WHERE action='anomaly' AND campaign_id=?`)
+    .get(c.id).n;
+  intelligenceSweep();
+  const countAfterSecond = db
+    .prepare(`SELECT COUNT(*) n FROM audit_log WHERE action='anomaly' AND campaign_id=?`)
+    .get(c.id).n;
+  assert.equal(countAfterSecond, countAfterFirst, 'вторият суип не дублира записа');
+});
+
+test('insights: weeklyDigest — 5-те унифицирани метрики + промени', () => {
+  const d = weeklyDigest();
+  assert.deepEqual(
+    d.metrics.map((m) => m.key),
+    ['spend', 'impressions', 'clicks', 'conversions', 'conversion_value']
+  );
+  assert.ok(Array.isArray(d.perCampaign));
+  assert.ok(Array.isArray(d.changes));
+});
+
+test('HTTP: /optimizer и /digest рендират (със сесия)', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r1 = await fetch(`${base}/login`);
+    const cookies = r1.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const csrf = (await r1.text()).match(/name="_csrf" value="([^"]+)"/)[1];
+    const r2 = await fetch(`${base}/login`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { cookie: cookies, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ _csrf: csrf, email: 'admin@localhost', password: 'admin' }),
+    });
+    const session = r2.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const jar = `${cookies}; ${session}`;
+    for (const path of ['/optimizer', '/digest']) {
+      const r = await fetch(`${base}${path}`, { headers: { cookie: jar } });
+      assert.equal(r.status, 200, `${path} трябва да е 200`);
+    }
+  } finally {
+    server.close();
+  }
+});
+
+test('HTTP: прилагане на бюджет от оптимизатора минава през checkBudgetChange', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r1 = await fetch(`${base}/login`);
+    const cookies = r1.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const csrf = (await r1.text()).match(/name="_csrf" value="([^"]+)"/)[1];
+    const r2 = await fetch(`${base}/login`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { cookie: cookies, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ _csrf: csrf, email: 'admin@localhost', password: 'admin' }),
+    });
+    const session = r2.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const jar = `${cookies}; ${session}`;
+
+    const connId = seedConnection();
+    const c = seedCampaign(connId, { status: 'active', daily_budget: 10 });
+
+    // +50% на стъпка → предпазителят спира (400).
+    const rBad = await fetch(`${base}/campaigns/${c.id}/budget`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { cookie: jar, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ _csrf: csrf, new_budget: '15' }),
+    });
+    assert.equal(rBad.status, 400, 'скок +50% трябва да е спрян');
+    assert.equal(
+      db.prepare(`SELECT daily_budget FROM campaigns WHERE id=?`).get(c.id).daily_budget,
+      10
+    );
+
+    // +20% → минава и се записва в одита.
+    const rOk = await fetch(`${base}/campaigns/${c.id}/budget`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { cookie: jar, 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ _csrf: csrf, new_budget: '12' }),
+    });
+    assert.equal(rOk.status, 302);
+    assert.equal(
+      db.prepare(`SELECT daily_budget FROM campaigns WHERE id=?`).get(c.id).daily_budget,
+      12
+    );
+    const audited = db
+      .prepare(`SELECT COUNT(*) n FROM audit_log WHERE action='budget_applied' AND campaign_id=?`)
+      .get(c.id).n;
+    assert.equal(audited, 1);
+    db.prepare(`UPDATE campaigns SET status='paused' WHERE id=?`).run(c.id);
+  } finally {
+    server.close();
+  }
+});

@@ -1,0 +1,62 @@
+<%- include('_head') %>
+<h1><%- icon('chart-column') %> Седмичен дайджест</h1>
+<p class="hint">
+  Последните 7 пълни дни срещу предходните 7 — същите дни от седмицата, така че
+  сезонността се съкращава сама. Метриките са унифицираният петорен стандарт
+  (разход · импресии · кликове · конверсии · стойност) и важат общо за двете платформи.
+</p>
+
+<section class="stats">
+  <% for (const m of digest.metrics) { %>
+  <div class="stat">
+    <span class="label"><%= m.label %></span>
+    <span class="value"><%= m.current %></span>
+    <% if (m.changePct != null) { %>
+    <span class="badge <%= m.changePct >= 0 ? 's-active' : 's-error' %>"><%= m.changePct > 0 ? '+' : '' %><%= m.changePct %>% спрямо мин. седмица</span>
+    <% } else { %>
+    <span class="hint">няма база за сравнение</span>
+    <% } %>
+  </div>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Къде отидоха парите</h2>
+  <% if (!digest.perCampaign.length) { %>
+    <p class="hint">Няма разход тази седмица.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Кампания</th><th>Разход 7д</th><th>Конверсии</th><th>ROAS</th></tr></thead>
+    <tbody>
+      <% for (const c of digest.perCampaign) { %>
+      <tr>
+        <td><a href="/campaigns/<%= c.id %>"><%= c.name %></a></td>
+        <td><%= c.spend.toFixed(2) %></td>
+        <td><%= c.conversions.toFixed(1) %></td>
+        <td><%= c.roas != null ? c.roas.toFixed(2) : '—' %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Промени и сигнали тази седмица</h2>
+  <% if (!digest.changes.length) { %>
+    <p class="hint">Нищо не е пипано — нито от човек, нито от правилата.</p>
+  <% } else { %>
+  <ul class="feed">
+    <% for (const ch of digest.changes) { %>
+    <li>
+      <time><%= ch.at %></time> <strong><%= ch.actor %></strong> · <%= ch.action %>
+      <% if (ch.campaign_id) { %> · <a href="/campaigns/<%= ch.campaign_id %>">кампания #<%= ch.campaign_id %></a><% } %>
+      <% const d = JSON.parse(ch.detail_json || '{}'); %>
+      <% if (d.from != null && d.to != null) { %> (<%= d.from %> → <%= d.to %>)<% } %>
+      <% if (d.metric) { %> (<%= d.metric %><% if (d.direction) { %>: <%= d.direction %><% } %>)<% } %>
+    </li>
+    <% } %>
+  </ul>
+  <% } %>
+</section>
+<%- include('_foot') %>

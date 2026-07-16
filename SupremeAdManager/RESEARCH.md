@@ -159,3 +159,25 @@ by default, `--dry-run`, env бюджетен таван, JSONL одит; [meta-
 - [stape-io/unique-event-id-variable](https://github.com/stape-io/unique-event-id-variable): каноничният pixel↔CAPI dedup pattern (едно `event_id`, генерирано веднъж).
 - [fivetran/dbt_ad_reporting](https://github.com/fivetran/dbt_ad_reporting): schema-еталон за нормализиране на метрики между платформи.
 - Официален [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) (731★) — агентът може да чете акаунти директно през MCP.
+
+## 7. Интелигентен слой (проверено 2026-07-16) — вградено в `intel.js` / `optimizer.js` / `insights.js`
+
+Второ GitHub проучване (оптимизационни алгоритми + креативен/insights слой). Всичко
+по-долу е **имплементирано от нулата по идеите/формулите** — код не е копиран (част от
+източниците са GPL: само идеи, никога код).
+
+| Какво                                                                                                                                         | Източник (лиценз)                                                                                                                                             | Къде при нас                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Robust z-score аномалии: z = 0.6745·(x−med)/MAD, праг 3.5 (Iglewicz–Hoaglin), базлайн „същият ден от седмицата“, под за обем                  | [ads-monitor](https://github.com/google-marketing-solutions/ads-monitor) (Apache-2.0) + класическата статистика                                               | `intel.js detectAnomalies` → одит `anomaly` (дедупликиран)                        |
+| Месечен pacing: target_to_date = B·elapsed/total, аларма при ±15%, самокоригиращ дневен таргет                                                | LinkedIn KDD'14 „Budget Pacing for Targeted Online Advertisements“ + ads-monitor праг                                                                         | `intel.js monthlyPacing` (env `GUARD_MONTHLY_BUDGET`) → одит `pacing_alert`       |
+| Свръхдоставка: платформите харчат легално до 2× дневния бюджет в отделен ден                                                                  | Google/Meta документация за overdelivery                                                                                                                      | `intel.js overdeliveryDays`                                                       |
+| EWMA прогноза (α=0.3) + адитивна сезонност по ден от седмицата                                                                                | Holt-Winters семейството (обществено достояние)                                                                                                               | `intel.js forecastSpend`                                                          |
+| Thompson sampling (Beta-Bernoulli) за бюджетна алокация: informative prior от акаунтния CVR (~20 псевдо-клика), препоръки-only, клампове ±20% | Академичната литература + OSS bandit имплементации (идеи)                                                                                                     | `optimizer.js recommendBudgets`; прилагане само от човек през `checkBudgetChange` |
+| Унифициран петорен метрик-стандарт: spend/impressions/clicks/conversions/conversion_value                                                     | [dbt_ad_reporting](https://github.com/fivetran/dbt_ad_reporting) (Apache-2.0)                                                                                 | `insights.js weeklyDigest` + `/digest`                                            |
+| Седмичен дайджест: PoP срещу същите дни от седмицата + „какво се промени“ от одитната следа                                                   | [meta-ads-kit](https://github.com/TheMattBerman/meta-ads-kit) (брифинг патърн), [NotFair](https://github.com/nowork-studio/NotFair) (change attribution идея) | `insights.js weeklyDigest`                                                        |
+| Гама/Бета семплиране: Marsaglia–Tsang (2000) + mulberry32 PRNG (инжектируем за тестове)                                                       | Публикуваният алгоритъм; mulberry32 е public domain                                                                                                           | `optimizer.js`                                                                    |
+
+Отложено за v2.0 (`_proposals/v2.0.md`): пер-креативна умора (иска ad-level метрики,
+каквито не съхраняваме) и „асистент за рекламни текстове“ по двустъпковия
+[copycat](https://github.com/google-marketing-solutions/copycat) (Apache-2.0) патърн
+Style Guide → few-shot (Gemini ключ като опционален env, както в mastilko/linketto).
