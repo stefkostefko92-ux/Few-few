@@ -10758,6 +10758,131 @@ const PERSONA = {
 };
 function darken(c, amt) { const p = parse(c), f = x => Math.max(0, x - amt); return `#${[f(p.r), f(p.g), f(p.b)].map(x => x.toString(16).padStart(2, "0")).join("")}`; }
 
+// лека вариация на силуета per агент (по-яйцевиден/по-объл)
+const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.02, "siydara": 1.1, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "_default": 1.03 };
+
+// аксесоар по областта на агента (рисуван върху гела)
+function accessory(ctx, id, cx, CY, R, c, tt) {
+  if (R < 6) return;
+  const OL = "#0a0f14", ht = CY - R * 0.98, eY = CY - R * 0.04, eL = cx - R * 0.36, eR = cx + R * 0.36;
+  const S = w => { ctx.lineWidth = w; ctx.lineCap = "round"; ctx.lineJoin = "round"; };
+  const spark = (x, y, s) => { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = hex(lighten(c, 130), 1); S(2); for (const a of [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4]) { const l = (a % (Math.PI / 2)) ? s * 0.5 : s; ctx.beginPath(); ctx.moveTo(x - Math.cos(a) * l, y - Math.sin(a) * l); ctx.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); ctx.stroke(); } ctx.restore(); };
+  const cube = (x, y, s) => { ctx.strokeStyle = OL; ctx.fillStyle = hex(c, .85); S(2); ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s, y - s * .5); ctx.lineTo(x + s, y + s * .5); ctx.lineTo(x, y + s); ctx.lineTo(x - s, y + s * .5); ctx.lineTo(x - s, y - s * .5); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x, y); ctx.lineTo(x + s, y + s * .5); ctx.moveTo(x, y); ctx.lineTo(x - s, y + s * .5); ctx.stroke(); };
+  const chat = (x, y, tx) => { ctx.fillStyle = hex(lighten(c, 30), 1); ctx.strokeStyle = OL; S(1.6); ctx.beginPath(); ctx.roundRect(x - R * .19, y - R * .16, R * .38, R * .3, R * .08); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#04121a"; ctx.font = "700 " + (R * .2) + "px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(tx, x, y); };
+  ctx.save();
+  switch (id) {
+    case "ai-djiyata": { // корона
+      const cw = R * .84, x0 = cx - cw / 2, yc = ht + R * .06;
+      ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x0 + cw * .2, yc - R * .3); ctx.lineTo(x0 + cw * .35, yc - R * .06); ctx.lineTo(x0 + cw * .5, yc - R * .4); ctx.lineTo(x0 + cw * .65, yc - R * .06); ctx.lineTo(x0 + cw * .8, yc - R * .3); ctx.lineTo(x0 + cw, yc); ctx.closePath();
+      ctx.fillStyle = "#ffd45a"; ctx.strokeStyle = OL; S(2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = hex(c, 1); for (const p of [.2, .5, .8]) { ctx.beginPath(); ctx.arc(x0 + cw * p, yc - R * .02, R * .04, 0, 6.28); ctx.fill(); } break;
+    }
+    case "pravniyat-razbirach": { // везна на справедливостта
+      const by = ht - R * .02; ctx.strokeStyle = OL; S(2.4);
+      ctx.beginPath(); ctx.moveTo(cx, by - R * .3); ctx.lineTo(cx, by); ctx.moveTo(cx - R * .4, by); ctx.lineTo(cx + R * .4, by); ctx.stroke();
+      for (const s of [-1, 1]) { const px = cx + s * R * .4; ctx.beginPath(); ctx.arc(px, by + R * .18, R * .14, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.moveTo(px, by); ctx.lineTo(px - R * .14, by + R * .18); ctx.moveTo(px, by); ctx.lineTo(px + R * .14, by + R * .18); ctx.stroke(); }
+      ctx.fillStyle = "#ffd45a"; ctx.beginPath(); ctx.arc(cx, by - R * .3, R * .05, 0, 6.28); ctx.fill(); ctx.stroke(); break;
+    }
+    case "kodadjiyata": { // очила + </>
+      ctx.strokeStyle = OL; ctx.fillStyle = "rgba(10,15,20,.22)"; S(2.6);
+      for (const s of [-1, 1]) { const gx = cx + s * R * .36; ctx.beginPath(); ctx.roundRect(gx - R * .21, eY - R * .17, R * .42, R * .34, R * .08); ctx.fill(); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(cx - R * .15, eY - R * .02); ctx.lineTo(cx + R * .15, eY - R * .02); ctx.stroke();
+      ctx.fillStyle = hex(lighten(c, 60), 1); ctx.font = "700 " + (R * .32) + "px ui-monospace,monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("</>", cx, ht - R * .05); break;
+    }
+    case "kachestveniyat": { // монокъл + искра
+      ctx.strokeStyle = OL; S(2.6); ctx.beginPath(); ctx.arc(eR, eY, R * .24, 0, 6.28); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(eR + R * .22, eY + R * .16); ctx.quadraticCurveTo(eR + R * .4, eY + R * .55, eR - R * .05, eY + R * .7); ctx.stroke();
+      spark(cx + R * .5, ht + R * .08, R * .13); break;
+    }
+    case "dizayner": { // барета + четка
+      ctx.save(); ctx.translate(cx - R * .04, ht + R * .04); ctx.rotate(-.28); ctx.fillStyle = hex(c, 1); ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.ellipse(0, 0, R * .5, R * .24, 0, 0, 6.28); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = hex(darken(c, 40), 1); ctx.beginPath(); ctx.arc(R * .4, -R * .06, R * .06, 0, 6.28); ctx.fill(); ctx.restore();
+      const bx = cx + R * .95, by = CY + R * .35; ctx.strokeStyle = "#7a5230"; S(R * .09); ctx.beginPath(); ctx.moveTo(bx + R * .3, by + R * .3); ctx.lineTo(bx - R * .1, by - R * .1); ctx.stroke();
+      ctx.fillStyle = hex(c, 1); ctx.beginPath(); ctx.moveTo(bx - R * .1, by - R * .1); ctx.lineTo(bx - R * .28, by - R * .12); ctx.lineTo(bx - R * .12, by - R * .28); ctx.closePath(); ctx.fill(); break;
+    }
+    case "geymara": { // геймпад долу + LED лента над очите
+      const px = cx, py = CY + R * .62; ctx.fillStyle = "#20262f"; ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.roundRect(px - R * .4, py - R * .12, R * .8, R * .24, R * .12); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "#cfd8e0"; S(2); ctx.beginPath(); ctx.moveTo(px - R * .26, py - R * .04); ctx.lineTo(px - R * .26, py + R * .04); ctx.moveTo(px - R * .3, py); ctx.lineTo(px - R * .22, py); ctx.stroke();
+      ctx.fillStyle = hex(lighten(c, 60), 1); ctx.beginPath(); ctx.arc(px + R * .24, py - R * .02, R * .03, 0, 6.28); ctx.arc(px + R * .3, py + R * .04, R * .03, 0, 6.28); ctx.fill();
+      ctx.fillStyle = hex(lighten(c, 80), 1); for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.arc(cx + i * R * .16, ht + R * .34, R * .022, 0, 6.28); ctx.fill(); } break;
+    }
+    case "seo": { // лупа отдясно
+      const mx = cx + R * .98, my = CY + R * .12, mr = R * .32; ctx.strokeStyle = OL; S(3.4); ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.28); ctx.stroke();
+      ctx.fillStyle = "rgba(150,220,255,.16)"; ctx.beginPath(); ctx.arc(mx, my, mr - 2, 0, 6.28); ctx.fill();
+      ctx.strokeStyle = OL; S(5.5); ctx.beginPath(); ctx.moveTo(mx + mr * .72, my + mr * .72); ctx.lineTo(mx + mr * 1.5, my + mr * 1.5); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(mx - mr * .3, my - mr * .3, mr * .22, 0, 6.28); ctx.fill(); break;
+    }
+    case "prevodach": { chat(cx - R * .38, ht + R * .02, "A"); chat(cx + R * .34, ht - R * .06, "文"); break; }
+    case "siydara": { // кълн
+      ctx.strokeStyle = "#37c866"; S(3); ctx.beginPath(); ctx.moveTo(cx, ht + R * .14); ctx.lineTo(cx, ht - R * .3); ctx.stroke();
+      ctx.fillStyle = "#37c866"; ctx.strokeStyle = "#1f8f45"; S(1.4);
+      for (const s of [-1, 1]) { ctx.save(); ctx.translate(cx, ht - R * .18 + (s < 0 ? R * .1 : 0)); ctx.rotate(s * .8); ctx.beginPath(); ctx.ellipse(s * R * .12, 0, R * .14, R * .07, 0, 0, 6.28); ctx.fill(); ctx.stroke(); ctx.restore(); } break;
+    }
+    case "vps-adjiyata": { // строителна каска
+      ctx.fillStyle = "#ffcf3a"; ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.arc(cx, ht + R * .18, R * .5, Math.PI, 2 * Math.PI); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cx, ht + R * .18, R * .64, R * .1, 0, 0, 6.28); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, ht - R * .32); ctx.lineTo(cx, ht + R * .18); ctx.stroke(); break;
+    }
+    case "3d-maniac": { // предпазни очила на челото + куб
+      ctx.strokeStyle = OL; ctx.fillStyle = hex(c, .3); S(2.4);
+      for (const s of [-1, 1]) { const gx = cx + s * R * .26, gy = ht + R * .3; ctx.beginPath(); ctx.arc(gx, gy, R * .16, 0, 6.28); ctx.fill(); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(cx - R * .1, ht + R * .3); ctx.lineTo(cx + R * .1, ht + R * .3); ctx.moveTo(cx - R * .42, ht + R * .3); ctx.lineTo(cx - R * .62, ht + R * .36); ctx.moveTo(cx + R * .42, ht + R * .3); ctx.lineTo(cx + R * .62, ht + R * .36); ctx.stroke();
+      cube(cx + R * .92, CY + R * .34, R * .2); break;
+    }
+    case "socialdjiyata": { // микрофон
+      const mx = cx + R * .92, my = CY + R * .16; ctx.fillStyle = "#252d38"; ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.roundRect(mx - R * .11, my - R * .32, R * .22, R * .36, R * .11); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = hex(lighten(c, 50), .9); S(1.4); for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(mx - R * .08, my - R * .24 + i * R * .09); ctx.lineTo(mx + R * .08, my - R * .24 + i * R * .09); ctx.stroke(); }
+      ctx.strokeStyle = OL; S(2.4); ctx.beginPath(); ctx.moveTo(mx, my + R * .04); ctx.lineTo(mx, my + R * .26); ctx.moveTo(mx - R * .13, my + R * .26); ctx.lineTo(mx + R * .13, my + R * .26); ctx.stroke(); break;
+    }
+    case "prodavacha": { // пазарска торбичка
+      const bx = cx + R * .9, by = CY + R * .22, bw = R * .5, bh = R * .5; ctx.fillStyle = hex(c, 1); ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.roundRect(bx - bw / 2, by - bh / 2, bw, bh, R * .05); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bx - bw * .22, by - bh / 2, R * .1, Math.PI, 2 * Math.PI); ctx.stroke(); ctx.beginPath(); ctx.arc(bx + bw * .22, by - bh / 2, R * .1, Math.PI, 2 * Math.PI); ctx.stroke(); break;
+    }
+    case "mobildjiyata": { // телефонче отпред
+      const px = cx + R * .3, py = CY + R * .5; ctx.save(); ctx.translate(px, py); ctx.rotate(.25); ctx.fillStyle = "#0c1218"; ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.roundRect(-R * .17, -R * .3, R * .34, R * .58, R * .06); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = hex(lighten(c, 40), .9); ctx.beginPath(); ctx.roundRect(-R * .13, -R * .24, R * .26, R * .46, R * .03); ctx.fill(); ctx.restore(); break;
+    }
+    case "printadjiyata": { // слоеве + дюза
+      for (let i = 0; i < 3; i++) { const ly = ht + R * .12 - i * R * .12; ctx.fillStyle = hex(lighten(c, i * 34), 1); ctx.strokeStyle = OL; S(1.6); ctx.beginPath(); ctx.ellipse(cx, ly, R * .4 - i * R * .07, R * .1, 0, 0, 6.28); ctx.fill(); ctx.stroke(); }
+      ctx.fillStyle = "#252d38"; ctx.strokeStyle = OL; S(1.6); ctx.beginPath(); ctx.moveTo(cx - R * .08, ht - R * .34); ctx.lineTo(cx + R * .08, ht - R * .34); ctx.lineTo(cx, ht - R * .18); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
+    }
+    case "hromadjiyata": { // пъзел парче на главата
+      const y0 = ht + R * .04, s = R * .3; ctx.fillStyle = hex(c, 1); ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.roundRect(cx - s, y0 - s * .8, s * 2, s * 1.5, R * .05); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, y0 - s * .8, s * .32, 0, 6.28); ctx.fillStyle = hex(c, 1); ctx.fill(); ctx.strokeStyle = OL; ctx.stroke();
+      ctx.fillStyle = hex(lighten(c, 40), 1); ctx.beginPath(); ctx.arc(cx + s * .5, y0, s * .3, 0, 6.28); ctx.fill(); break;
+    }
+    case "diskordjiyata": { // хедсет
+      ctx.strokeStyle = OL; S(R * .1); ctx.beginPath(); ctx.arc(cx, CY, R * .96, Math.PI * 1.16, Math.PI * 1.84); ctx.stroke();
+      ctx.fillStyle = "#252d38"; S(2); for (const s of [-1, 1]) { ctx.beginPath(); ctx.roundRect(cx + s * R * .92 - R * .1, CY - R * .14, R * .2, R * .36, R * .06); ctx.fill(); ctx.strokeStyle = OL; ctx.stroke(); }
+      ctx.strokeStyle = OL; S(2.6); ctx.beginPath(); ctx.moveTo(cx - R * .92, CY + R * .22); ctx.quadraticCurveTo(cx - R * .55, CY + R * .55, cx - R * .18, CY + R * .46); ctx.stroke();
+      ctx.fillStyle = hex(lighten(c, 50), 1); ctx.beginPath(); ctx.arc(cx - R * .18, CY + R * .46, R * .05, 0, 6.28); ctx.fill(); break;
+    }
+    case "treydara": { // слънчеви очила + зелен tick
+      ctx.fillStyle = "#0a0f14"; S(2); for (const s of [-1, 1]) { ctx.beginPath(); ctx.roundRect(cx + s * R * .36 - R * .23, eY - R * .15, R * .46, R * .28, R * .07); ctx.fill(); }
+      ctx.strokeStyle = OL; S(3); ctx.beginPath(); ctx.moveTo(cx - R * .13, eY - R * .02); ctx.lineTo(cx + R * .13, eY - R * .02); ctx.stroke();
+      ctx.fillStyle = "rgba(120,255,180,.45)"; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * .44, eY - R * .05, R * .06, R * .03, -.5, 0, 6.28); ctx.fill(); }
+      ctx.strokeStyle = "#3ad06a"; S(3); ctx.beginPath(); ctx.moveTo(cx - R * .22, ht + R * .06); ctx.lineTo(cx, ht - R * .16); ctx.lineTo(cx + R * .22, ht + R * .0); ctx.stroke(); break;
+    }
+    case "kasadjiyata": { // касиерски визьор + бон
+      ctx.fillStyle = hex(c, .55); ctx.strokeStyle = OL; S(2);
+      ctx.beginPath(); ctx.ellipse(cx, ht + R * .34, R * .6, R * .18, 0, 0, Math.PI); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(cx - R * .42, ht + R * .16, R * .84, R * .14, R * .07); ctx.fillStyle = hex(darken(c, 30), 1); ctx.fill(); ctx.strokeStyle = OL; ctx.stroke();
+      const rx = cx + R * .9, ry = CY + R * .1, rw = R * .34, rh = R * .5; ctx.fillStyle = "#f4f6f8"; ctx.strokeStyle = OL; S(1.6);
+      ctx.beginPath(); ctx.moveTo(rx - rw / 2, ry - rh / 2); ctx.lineTo(rx + rw / 2, ry - rh / 2); ctx.lineTo(rx + rw / 2, ry + rh / 2);
+      for (let i = 0; i < 4; i++) ctx.lineTo(rx + rw / 2 - (i + .5) * rw / 4, ry + rh / 2 + (i % 2 ? -R * .04 : 0)); ctx.lineTo(rx - rw / 2, ry + rh / 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "#9aa5b1"; S(1.2); for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(rx - rw * .3, ry - rh * .25 + i * R * .1); ctx.lineTo(rx + rw * .3, ry - rh * .25 + i * R * .1); ctx.stroke(); } break;
+    }
+  }
+  ctx.restore(); ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
+}
+
 let mWinX = -1e5, mWinY = -1e5;
 window.addEventListener("mousemove", e => { mWinX = e.clientX; mWinY = e.clientY; });
 let mascotReq = 0;
@@ -10765,7 +10890,7 @@ function stopMascot() { cancelAnimationFrame(mascotReq); mascotReq = 0; }
 function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
-  const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
+  const SY = SHAPE[agent.id] || 1.03; const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
   // вътрешни капчици (стабилни, нормализирани в тялото)
   const gelB = Array.from({ length: 32 }, () => { const a = Math.random() * 6.28, rr = Math.sqrt(Math.random()) * 0.84; return { nx: Math.cos(a) * rr, ny: Math.sin(a) * rr, r: 0.035 + Math.random() * 0.1, dr: Math.random() * 6.28 }; });
@@ -10774,7 +10899,7 @@ function startMascot(canvas, agent) {
   function fit() { Wc = canvas.clientWidth; Hc = canvas.clientHeight; canvas.width = Wc * dpr; canvas.height = Hc * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   fit();
 
-  function path(cx, cy, R) { ctx.beginPath(); const n = 46; for (let i = 0; i <= n; i++) { const a = i / n * 6.283; const w = 1 + 0.03 * Math.sin(a * 3 + tt * 1.7) + 0.02 * Math.sin(a * 5 - tt * 1.2); const rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * 1.03; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
+  function path(cx, cy, R) { ctx.beginPath(); const n = 46; for (let i = 0; i <= n; i++) { const a = i / n * 6.283; const w = 1 + 0.03 * Math.sin(a * 3 + tt * 1.7) + 0.02 * Math.sin(a * 5 - tt * 1.2); const rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * SY; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
   function drop(x, y, r) {
     const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.05, x, y, r);
     g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.65, "rgba(255,255,255,0)"); g.addColorStop(1, hex(cdd, 0.5));
@@ -10848,6 +10973,7 @@ function startMascot(canvas, agent) {
 
     // лице
     face(cx, CY, R, blinking);
+    accessory(ctx, agent.id, cx, CY, R, c, tt);
   }
   frame();
 }
