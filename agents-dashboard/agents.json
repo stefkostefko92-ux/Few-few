@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-15",
+    "updated": "2026-07-16",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -5456,9 +5456,20 @@
           "date": "2026-07-06",
           "event": "v11.0 — учене",
           "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
+        },
+        {
+          "version": "11.2.0",
+          "date": "2026-07-16",
+          "event": "v11.2 — учене",
+          "detail": "Научи: QuickSurface e Mesh2Surface sono entrambi sviluppati da KVS Ltd (Kostadin Vrantzaliev, … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface e Mesh2Surface sono entrambi sviluppati da KVS Ltd (Kostadin Vrantzaliev, …\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
