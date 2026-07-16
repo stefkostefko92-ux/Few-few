@@ -37,10 +37,14 @@ the settings; the extension still works with its bundled rules.
 ## Permissions
 
 - `declarativeNetRequest`, block ad/tracker network requests via rules.
+- `declarativeNetRequestFeedback`, count blocked requests per tab for the badge.
 - `storage`, save your settings locally.
 - `tabs`, show the per-tab blocked count and the current site in the popup.
 - `alarms`, schedule the daily filter update and the temporary-pause timer.
 - `contextMenus`, the right-click "Block an element here" entry.
+- `scripting`, inject a small, locally-bundled ad-neutralising script into the
+  page; it runs from the package, fetches and executes no remote code, reads no
+  personal data and sends nothing anywhere.
 - host access (`<all_urls>`), apply blocking and cosmetic filtering on the
   pages you visit. Page content is processed locally and never sent anywhere.
 

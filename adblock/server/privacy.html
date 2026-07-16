@@ -70,10 +70,12 @@
   <h2>Permissions</h2>
   <ul>
     <li><code>declarativeNetRequest</code> — block ad/tracker requests via rules.</li>
+    <li><code>declarativeNetRequestFeedback</code> — count blocked requests per tab for the badge.</li>
     <li><code>storage</code> — save your settings locally.</li>
     <li><code>tabs</code> — show the per-tab blocked count and current site in the popup.</li>
     <li><code>alarms</code> — schedule the daily filter update and the pause timer.</li>
     <li><code>contextMenus</code> — the right-click "Block an element here" entry.</li>
+    <li><code>scripting</code> — inject a small, locally-bundled ad-neutralising script into the page; it runs from the package, fetches and executes no remote code, reads no personal data and sends nothing anywhere.</li>
     <li>host access (<code>&lt;all_urls&gt;</code>) — apply blocking on the pages you
     visit. Page content is processed locally and never sent anywhere.</li>
   </ul>

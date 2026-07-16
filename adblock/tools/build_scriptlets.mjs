@@ -5,10 +5,12 @@
 // Dev-only. The engine CODE ships verbatim; only inert, strictly-validated
 // arguments are baked in. Nothing here is fetched or evaluated at runtime.
 //
-//   node tools/build_scriptlets.mjs
+//   node tools/build_scriptlets.mjs            # write the generated files
+//   node tools/build_scriptlets.mjs --check    # fail if main.js is stale (CI/pack)
 //
 // Emits: scriptlets/main.js (the registered MAIN-world script) and
-//        scriptlets/scriptlet_meta.json (counts + host list, for the loader).
+//        scriptlets/scriptlet_meta.json (dev-only info: counts + host list; NOT
+//        shipped in the package and not read at runtime).
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -128,9 +130,33 @@ function parseLine(line) {
   return { hosts, directive };
 }
 
+// Enforce the cross-file name connascence: every ALIASES canonical must have an
+// IMPL in engine.js and vice-versa, else a scriptlet silently drops (unknown
+// alias) or no-ops (missing IMPL). Turn that drift into a loud build failure.
+function assertNamesInSync(engine) {
+  const implKeys = new Set(
+    [...engine.matchAll(/^ {4}"([\w-]+)": function/gm)].map((m) => m[1])
+  );
+  const canonical = new Set(Object.values(ALIASES));
+  for (const c of canonical) {
+    if (!implKeys.has(c)) {
+      console.error("ERROR: ALIASES canonical", JSON.stringify(c), "has no IMPL in engine.js");
+      process.exit(1);
+    }
+  }
+  for (const k of implKeys) {
+    if (!canonical.has(k)) {
+      console.error("ERROR: IMPL", JSON.stringify(k), "has no alias in build_scriptlets.mjs");
+      process.exit(1);
+    }
+  }
+}
+
 function main() {
+  const check = process.argv.includes("--check");
   const engine = readFileSync(ENGINE, "utf8");
   const lines = readFileSync(LIST, "utf8").split("\n");
+  assertNamesInSync(engine);
 
   const map = {};
   let kept = 0;
@@ -158,7 +184,6 @@ function main() {
   // Function replacement: a plain-string replacement would interpret $$, $&,
   // $` and $' — and args legitimately contain "$" (regex anchors like /ads\.js$/).
   const out = header + engine.replace(MARKER, () => mapJson);
-  writeFileSync(OUT, out);
 
   const hosts = Object.keys(map).filter((h) => h !== "");
   const meta = {
@@ -168,7 +193,23 @@ function main() {
     global: (map[""] || []).length,
     hosts,
   };
-  writeFileSync(META, JSON.stringify(meta, null, 2) + "\n");
+  const metaOut = JSON.stringify(meta, null, 2) + "\n";
+
+  if (check) {
+    // Freshness guard: verify the committed main.js matches what we'd generate,
+    // without writing. Catches "edited engine.js/list.txt, forgot to rebuild".
+    let current = null;
+    try { current = readFileSync(OUT, "utf8"); } catch (e) {}
+    if (current !== out) {
+      console.error("ERROR: scriptlets/main.js is stale — run: node tools/build_scriptlets.mjs");
+      process.exit(1);
+    }
+    console.log("scriptlets: main.js is up to date");
+    return;
+  }
+
+  writeFileSync(OUT, out);
+  writeFileSync(META, metaOut);
 
   console.log(
     `scriptlets: ${kept} directive(s) baked (${meta.global} global, ${hosts.length} host-scoped), ${dropped} dropped`

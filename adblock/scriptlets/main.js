@@ -33,8 +33,10 @@
       var q = (body.match(/[*+]|\{\d/g) || []).length;
       if (body.length > 200 || q > 2) return null;
       // Reject a quantified group that also contains a quantifier — the classic
-      // catastrophic-backtracking shape like (a+)+ or (a*)* (q can be ≤2).
+      // catastrophic-backtracking shape like (a+)+ or (a*)* (q can be ≤2) — and a
+      // quantified group with an alternation, which overlaps like (a|a)+.
       if (/\([^)]*[*+][^)]*\)[*+?]/.test(body)) return null;
+      if (/\([^)]*\|[^)]*\)[*+]/.test(body)) return null;
       try {
         return new RegExp(body, m[2].replace(/[^gimsuy]/g, ""));
       } catch (e) {
@@ -123,6 +125,17 @@
       if (document.documentElement) start();
       else document.addEventListener("DOMContentLoaded", start, { once: true });
     } catch (e) {}
+  }
+
+  // Compile a uBO needle with optional leading "!" negation into a matcher.
+  // A missing/empty needle matches everything; "!" inverts the result.
+  function needleMatcher(raw) {
+    var neg = typeof raw === "string" && raw.charAt(0) === "!";
+    var re = toReg(neg ? raw.slice(1) : raw);
+    return function (str) {
+      var m = re ? re.test(str) : true;
+      return neg ? !m : m;
+    };
   }
 
   // ---- scriptlet implementations -----------------------------------------
@@ -227,18 +240,15 @@
     // source matches `search` (and, if given, whose delay equals `delay`).
     // Leading "!" on search inverts the match.
     "no-setTimeout-if": function (search, delay) {
-      var neg = typeof search === "string" && search.charAt(0) === "!";
-      var re = toReg(neg ? search.slice(1) : search);
+      var match = needleMatcher(search);
       var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
       var orig = window.setTimeout;
       if (typeof orig !== "function") return;
       window.setTimeout = function (fn, t) {
         try {
           var src = typeof fn === "function" ? fn.toString() : String(fn);
-          var mStr = re ? re.test(src) : true;
-          if (neg) mStr = !mStr;
           var mDelay = isNaN(wanted) || wanted === t;
-          if (mStr && mDelay) return 0;
+          if (match(src) && mDelay) return 0;
         } catch (e) {}
         return orig.apply(this, arguments);
       };
@@ -246,18 +256,15 @@
 
     // no-setInterval-if(search, delay): same as above for setInterval.
     "no-setInterval-if": function (search, delay) {
-      var neg = typeof search === "string" && search.charAt(0) === "!";
-      var re = toReg(neg ? search.slice(1) : search);
+      var match = needleMatcher(search);
       var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
       var orig = window.setInterval;
       if (typeof orig !== "function") return;
       window.setInterval = function (fn, t) {
         try {
           var src = typeof fn === "function" ? fn.toString() : String(fn);
-          var mStr = re ? re.test(src) : true;
-          if (neg) mStr = !mStr;
           var mDelay = isNaN(wanted) || wanted === t;
-          if (mStr && mDelay) return 0;
+          if (match(src) && mDelay) return 0;
         } catch (e) {}
         return orig.apply(this, arguments);
       };

@@ -11,6 +11,16 @@
 ! anti-adblock library neutralisation, which matches our stated "anti-adblock
 ! bypass" feature and cannot break legitimate page content. Site-specific
 ! entries must be verified on a live page before they are added here.
+!
+! REVIEW RULE (single purpose — do NOT relax without legal review):
+!   - Allowed: neutralising anti-adblock detectors (set-constant on detector
+!     globals, aopr/aopw/acs on detector properties, timer/event defusers of
+!     detector callbacks).
+!   - FORBIDDEN: circumventing paywalls or removing/altering legitimate site
+!     content (e.g. json-prune / no-fetch-if against subscription/entitlement
+!     checks). The build validator checks argument SAFETY, not intent — intent
+!     is a human review gate. Anything content-affecting needs a legal review
+!     (see adblock/CLAUDE.md invariants + docs/UBO-GAP.md).
 ! -------------------------------------------------------------------------
 
 ! --- Global: neutralise the common open-source anti-adblock detector libs ---

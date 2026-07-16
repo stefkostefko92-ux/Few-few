@@ -49,6 +49,7 @@ Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 - tabs: show the current site and per-tab blocked count in the popup.
 - alarms: schedule the daily filter update and the temporary-pause timer.
 - contextMenus: the right-click "Block an element here" entry.
+- scripting: inject a small, locally-bundled ad-neutralising script (uBlock-style scriptlet) into the page at document start; it runs from the package, fetches and executes no remote code.
 - host permissions (<all_urls>): apply blocking and cosmetic filtering on the
   pages you browse; all processing is local.
 

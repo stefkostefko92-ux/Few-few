@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-4.0.1.zip
+bash tools/package.sh      # → dist/supreme-adblock-4.4.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -72,12 +72,24 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 - **alarms** — schedule the daily filter-list update and the temporary-pause
   timer.
 - **contextMenus** — the right-click "Block an element here" entry.
+- **scripting** — register one locally-bundled MAIN-world script
+  (`scriptlets/main.js`) that neutralises anti-adblock detectors (uBlock-style
+  `##+js` scriptlets). The directive map is baked at build time; nothing is
+  fetched or `eval`-ed at runtime, no personal data is read, nothing is sent.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
+> **Reviewer note (MAIN-world scriptlets):** v4.4.0 adds a uBlock-Origin-style
+> scriptlet engine. The extension registers **one** locally-bundled MAIN-world
+> content script that neutralises anti-adblock detectors. The engine CODE ships
+> in the package (`scriptlets/engine.js` → generated `scriptlets/main.js`); the
+> per-site directive list is baked at build time from `scriptlets/list.txt`.
+> Nothing is fetched or executed from the network — same single purpose
+> (ad/tracker blocking), no remote code.
+
 ## 6. Dashboard steps
 
-1. **New item** → upload `dist/supreme-adblock-4.0.1.zip`.
+1. **New item** → upload `dist/supreme-adblock-4.4.0.zip`.
 2. Fill the listing (§3), upload the icon + 5 screenshots + promo tiles (§2).
 3. Complete the **Privacy practices** tab (§4) and paste permission
    justifications (§5).
@@ -85,7 +97,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (4.0.1)
+- [ ] `manifest.json` and `package.json` versions match (4.4.0)
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
 - [ ] A normal site loads correctly; ads are blocked

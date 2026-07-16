@@ -12,6 +12,10 @@ ver="$(node -p "require('./package.json').version" 2>/dev/null || echo dev)"
 out="dist/supreme-adblock-$ver.zip"
 rm -f "$out"
 
+# Fail early if the generated scriptlet bundle is stale (engine.js/list.txt
+# edited without a rebuild) — a set-euo pipefail abort with a clear message.
+node tools/build_scriptlets.mjs --check
+
 zip -r "$out" . \
   -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
      'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' \
