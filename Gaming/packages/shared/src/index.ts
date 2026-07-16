@@ -1,5 +1,6 @@
 export * from "./constants.js";
 export * from "./games.js";
+export * from "./betting.js";
 export * from "./auth.js";
 export * from "./socket.js";
 export * from "./economy.js";

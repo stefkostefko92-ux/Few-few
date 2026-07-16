@@ -460,6 +460,83 @@ describe("PATCH /api/admin/users/:id — ban management", () => {
   });
 });
 
+// ── Privilege-escalation & self-service guards ───────────────────────────────
+
+describe("PATCH /api/admin/users/:id — role & self guards", () => {
+  it("blocks an ADMIN from minting another ADMIN", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ role: "ADMIN" });
+    expect(res.status).toBe(403);
+    expect(users.get(target.id)!.role).toBe("PLAYER");
+  });
+
+  it("lets an OWNER promote a player to ADMIN", async () => {
+    const owner = addUser({ role: "OWNER" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(owner.id, "OWNER"))
+      .send({ role: "ADMIN" });
+    expect(res.status).toBe(200);
+    expect(users.get(target.id)!.role).toBe("ADMIN");
+  });
+
+  it("forbids changing your own role", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const res = await request(app)
+      .patch(`/api/admin/users/${admin.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ role: "MODERATOR" });
+    expect(res.status).toBe(403);
+    expect(users.get(admin.id)!.role).toBe("ADMIN");
+  });
+
+  it("forbids self-granting currency", async () => {
+    const admin = addUser({ role: "ADMIN", chips: 100n });
+    const res = await request(app)
+      .patch(`/api/admin/users/${admin.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ grantChips: 5000 });
+    expect(res.status).toBe(403);
+    expect(users.get(admin.id)!.chips).toBe(100n);
+  });
+});
+
+describe("PATCH /api/admin/users/:id — large-grant note", () => {
+  it("rejects a large grant without a note", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ grantChips: 50_000 });
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe("grant_note_required");
+  });
+
+  it("accepts a large grant when a note is supplied", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ grantChips: -50_000, note: "корекция след измама" });
+    expect(res.status).toBe(200);
+    const audit = auditRows.find((a) => a.action === "update_user" && a.targetId === target.id);
+    expect(JSON.parse(audit!.detail)).toMatchObject({ note: "корекция след измама" });
+  });
+});
+
 // ── User list: filters, pagination, lazy ban expiry ──────────────────────────
 
 describe("GET /api/admin/users", () => {

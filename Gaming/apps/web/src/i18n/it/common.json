@@ -176,7 +176,11 @@
     "consentPre": "Ho 18+ e accetto i",
     "consentTerms": "Termini di servizio",
     "consentAnd": "e la",
-    "consentPrivacy": "Privacy Policy"
+    "consentPrivacy": "Privacy Policy",
+    "oauthConsent": "Continuando con Google o Facebook, dichiari di avere 18+ e accetti i",
+    "errorBanned": "Questo account è bloccato.",
+    "banReason": "Motivo: {{reason}}.",
+    "banAppeal": "Per opporti scrivi a legal@carbonstealth.eu."
   },
   "account": {
     "title": "Account",
@@ -314,8 +318,10 @@
     "grantGems": "+{{n}} gemme",
     "grantChips": "+{{n}} fiche",
     "perMonth": "al mese",
+    "consentImmediate": "Acconsento che il contenuto sia fornito immediatamente e confermo di perdere il diritto di recesso di 14 giorni.",
+    "consentSubscription": "Accetto l'abbonamento e il rinnovo automatico mensile fino alla disdetta; mantengo il diritto di recesso di 14 giorni con detrazione proporzionale.",
+    "consentRequired": "Spunta il consenso per continuare.",
     "perk": {
-      "noAds": "Niente pubblicità",
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% bonus giornaliero",
       "gems": "{{n}} 💎 al mese",
@@ -392,6 +398,8 @@
     "empty": "Saluta il tavolo 👋",
     "mute": "Silenzia",
     "unmute": "Riattiva",
+    "report": "Segnala giocatore",
+    "reported": "Segnalato",
     "quick": {
       "hi": "Ciao! 👋",
       "gl": "Buona fortuna!",
@@ -456,7 +464,15 @@
     "flip": "Gira",
     "battle": "GUERRA",
     "cards": "Carte: {{n}}",
-    "tookPile": "{{name}} prende {{n}} carte"
+    "tookPile": "{{name}} prende {{n}} carte",
+    "warPhase": "GUERRA!",
+    "bounty": "Posta: {{n}}",
+    "fight": "Carica (3 carte)",
+    "skirmish": "Prudente (1 carta)",
+    "fightHint": "Scommetti in profondità per un grande bottino — o gioca prudente per proteggere il mazzo.",
+    "streak": "Serie ×{{n}}",
+    "raid": "RAZZIA!",
+    "raided": "{{name}} razzia una carta in serie!"
   },
   "rummy": {
     "stock": "Mazzo",

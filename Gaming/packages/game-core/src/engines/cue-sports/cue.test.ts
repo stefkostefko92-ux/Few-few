@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { ball, runShot, TABLE, type Ball } from "@aso/shared";
-import { rackNineBall, SNOOKER_SPOTS } from "./racks.js";
+import { rackEightBall, rackNineBall, SNOOKER_SPOTS } from "./racks.js";
 import {
   eightBallEngine,
   nineBallEngine,
@@ -101,6 +101,24 @@ describe.each([
 });
 
 // ── 8-ball rules ─────────────────────────────────────────────────────────────
+
+describe("EIGHTBALL rack (WPA)", () => {
+  it("places the 8 in the exact centre of the rack", () => {
+    const balls = rackEightBall();
+    const eight = balls.find((b) => b.id === 8)!;
+    const rows = balls.filter((b) => b.id !== 0);
+    const apex = rows.reduce((m, b) => (b.x < m.x ? b : m), rows[0]!);
+    // Centre ball sits on the table's mid-line, two rows back from the apex.
+    expect(eight.y).toBeCloseTo(TABLE.h / 2, 6);
+    expect(eight.x).toBeGreaterThan(apex.x);
+    // Back-row corners must split one solid (1–7) / one stripe (9–15).
+    const backX = Math.max(...rows.map((b) => b.x));
+    const back = rows.filter((b) => Math.abs(b.x - backX) < 1e-6).sort((a, b) => a.y - b.y);
+    const corners = [back[0]!.id, back[back.length - 1]!.id];
+    const solids = corners.filter((id) => id <= 7).length;
+    expect(solids).toBe(1); // exactly one solid corner, one stripe corner
+  });
+});
 
 describe("EIGHTBALL rules", () => {
   it("re-spots the 8 on the break instead of ending the game", () => {

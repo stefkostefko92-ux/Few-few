@@ -51,6 +51,14 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "„АСО“ е браузърен портал за социални игри на карти и маса, предоставян от {org} („ние“, „нас“, „Операторът“). С достъпа до или използването на услугата приемате тези Общи условия.",
         },
+        {
+          type: "p",
+          text: "**Импресум.** Оператор: {org}. Седалище и адрес на управление: [Адрес на управление: попълни]. ЕИК/рег. номер: [ЕИК: попълни]. ДДС №: [ДДС №: попълни]. Имейл за контакт: legal@carbonstealth.eu.",
+        },
+        {
+          type: "p",
+          text: "**Алтернативно решаване на спорове (АРС).** При потребителски спор можеш да се обърнеш към Комисията за защита на потребителите (КЗП) и към компетентните помирителни комисии към нея като органи за алтернативно решаване на спорове. (Европейската платформа за онлайн решаване на спорове (ОРС) е закрита през 2025 г.)",
+        },
         { type: "h2", text: "2. Възраст и допустимост" },
         {
           type: "p",
@@ -69,7 +77,15 @@ export const LEGAL: Record<Locale, LegalDict> = {
         { type: "h2", text: "5. Покупки и виртуални стоки" },
         {
           type: "p",
-          text: "Платежите се обработват от Stripe. Купуват се само виртуални стоки (камъни, чипове, козметика) и VIP абонамент — за комфорт и облик, без предимство в играта („без плати, за да печелиш“). Виртуалните стоки се предоставят веднага след потвърдено плащане и **не подлежат на връщане**, освен ако законът не изисква друго. VIP е месечен абонамент, който се подновява автоматично до отказ.",
+          text: "Плащанията се обработват от Stripe. Купуват се виртуални стоки (камъни, чипове, козметика) и VIP абонамент — за комфорт и облик, без предимство в играта („без плати, за да печелиш“).",
+        },
+        {
+          type: "p",
+          text: "**Еднократни виртуални стоки** (камъни, чипове, козметика) са цифрово съдържание, което не се доставя на материален носител. При покупка изрично се съгласяваш съдържанието да бъде предоставено незабавно и потвърждаваш, че **губиш правото си на 14-дневен отказ** по чл. 57, т. 13 ЗЗП (чл. 16, б. „м“ от Директива 2011/83/ЕС), тъй като предоставянето започва веднага. Затова тези стоки **не подлежат на връщане**, освен ако законът не изисква друго.",
+        },
+        {
+          type: "p",
+          text: "**VIP абонаментът** е цифрова услуга с месечно автоматично подновяване до отказ. За него запазваш **правото на отказ в рамките на 14 дни** (чл. 16, б. „а“ от Директива 2011/83/ЕС). Ако поискаш услугата да започне веднага и след това се откажеш, дължиш пропорционална част от цената за реално ползвания период. Може да управляваш и прекратиш абонамента по всяко време.",
         },
         { type: "h2", text: "6. Правила за поведение" },
         {
@@ -136,17 +152,32 @@ export const LEGAL: Record<Locale, LegalDict> = {
         { type: "h2", text: "3. Споделяне" },
         {
           type: "p",
-          text: "Споделяме данни само с обработващи, необходими за услугата: Stripe (плащания), доставчик на имейли (потвърждение/възстановяване), хостинг инфраструктура. Не продаваме лични данни.",
+          text: "Споделяме данни само с обработващи и получатели, необходими за услугата. Не продаваме лични данни. Получатели:",
         },
-        { type: "h2", text: "4. Съхранение" },
+        {
+          type: "ul",
+          items: [
+            "**Stripe** — обработка на плащания.",
+            "**Доставчик на имейли** — потвърждение на регистрация и възстановяване на парола.",
+            "**Хостинг инфраструктура** — предоставяне на услугата.",
+            "**Discord Inc.** — при регистрация изпращаме името на играча в служебен събитиен канал (оперативен лог). Discord е установен в САЩ; трансферът е на основание Рамката за защита на данните ЕС–САЩ (DPF) и/или стандартни договорни клаузи (СКК).",
+            "**Sentry** — технически данни за грешки (диагностика и стабилност на услугата).",
+          ],
+        },
+        { type: "h2", text: "4. Трансфери извън ЕС" },
+        {
+          type: "p",
+          text: "Когато получател е извън ЕС/ЕИП (напр. Discord, а при определени конфигурации — доставчик на грешки или хостинг), трансферът се извършва на основание решение за адекватност (вкл. Рамката ЕС–САЩ за защита на данните) или стандартни договорни клаузи, приети от Европейската комисия.",
+        },
+        { type: "h2", text: "5. Съхранение" },
         {
           type: "p",
           text: "Пазим данните на акаунта докато е активен. При изтриване анонимизираме личните данни; записите за покупки може да се запазят в анонимизиран вид за счетоводни цели за законоустановения срок.",
         },
-        { type: "h2", text: "5. Вашите права" },
+        { type: "h2", text: "6. Вашите права" },
         {
           type: "p",
-          text: "Имате право на достъп, коригиране, изтриване, преносимост и възражение. Директно от приложението можете да:",
+          text: "Имате право на достъп, коригиране, изтриване, **ограничаване на обработването** (чл. 18 GDPR), преносимост и възражение. Когато обработваме въз основа на съгласие, можете да **оттеглите съгласието си** по всяко време, без това да засяга законосъобразността на обработването преди оттеглянето. Директно от приложението можете да:",
         },
         {
           type: "ul",
@@ -159,12 +190,12 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "Можете да подадете и жалба до Комисията за защита на личните данни (КЗЛД).",
         },
-        { type: "h2", text: "6. Сигурност" },
+        { type: "h2", text: "7. Сигурност" },
         {
           type: "p",
           text: "Паролите се хешират с argon2id; сесиите използват httpOnly бисквитки. Прилагаме технически и организационни мерки за защита на данните.",
         },
-        { type: "h2", text: "7. Контакт" },
+        { type: "h2", text: "8. Контакт" },
         {
           type: "p",
           text: "Запитвания за поверителност: privacy@carbonstealth.eu.",
@@ -183,7 +214,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
       blocks: [
         {
           type: "p",
-          text: "Използваме само строго необходими бисквитки, нужни за работата на услугата. Не използваме рекламни или проследяващи бисквитки на трети страни.",
+          text: "Използваме само строго необходими бисквитки, нужни за работата на услугата, и една бисквитка за езикова преференция. Не използваме рекламни или проследяващи бисквитки на трети страни.",
         },
         { type: "h2", text: "Строго необходими" },
         {
@@ -196,6 +227,13 @@ export const LEGAL: Record<Locale, LegalDict> = {
         {
           type: "p",
           text: "Тъй като тези бисквитки са строго необходими, те не изискват съгласие. Можете да ги блокирате от браузъра си, но тогава входът няма да работи.",
+        },
+        { type: "h2", text: "Езикова преференция" },
+        {
+          type: "ul",
+          items: [
+            "`aso_locale` — запомня избрания от теб език (до 12 месеца). Задава се само след като смениш езика и не проследява поведение.",
+          ],
         },
         { type: "h2", text: "Локално съхранение" },
         {
@@ -264,6 +302,14 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "“АСО” is a browser portal for social card and table games, provided by {org} (“we”, “us”, “the Operator”). By accessing or using the service you accept these Terms of Service.",
         },
+        {
+          type: "p",
+          text: "**Service imprint.** Operator: {org}. Registered seat and address: [Адрес на управление: попълни]. Company / register ID: [ЕИК: попълни]. VAT No.: [ДДС №: попълни]. Contact email: legal@carbonstealth.eu.",
+        },
+        {
+          type: "p",
+          text: "**Alternative dispute resolution (ADR).** In a consumer dispute you may turn to the Bulgarian Commission for Consumer Protection (CCP) and its competent conciliation commissions as alternative dispute resolution bodies. (The EU Online Dispute Resolution (ODR) platform was shut down in 2025.)",
+        },
         { type: "h2", text: "2. Age and eligibility" },
         {
           type: "p",
@@ -282,7 +328,15 @@ export const LEGAL: Record<Locale, LegalDict> = {
         { type: "h2", text: "5. Purchases and virtual goods" },
         {
           type: "p",
-          text: "Payments are processed by Stripe. Only virtual goods (gems, chips, cosmetics) and the VIP subscription are sold — for comfort and appearance, with no in-game advantage (“no pay to win”). Virtual goods are delivered immediately after a confirmed payment and **are non-refundable**, unless the law requires otherwise. VIP is a monthly subscription that renews automatically until cancelled.",
+          text: "Payments are processed by Stripe. Virtual goods (gems, chips, cosmetics) and the VIP subscription are sold — for comfort and appearance, with no in-game advantage (“no pay to win”).",
+        },
+        {
+          type: "p",
+          text: "**One-off virtual goods** (gems, chips, cosmetics) are digital content not supplied on a tangible medium. On purchase you expressly consent to the content being supplied immediately and confirm that you **lose your 14-day right of withdrawal** (Art. 16(m) of Directive 2011/83/EU), because delivery begins at once. These goods are therefore **non-refundable**, unless the law requires otherwise.",
+        },
+        {
+          type: "p",
+          text: "**The VIP subscription** is a digital service with monthly automatic renewal until cancelled. For it you keep the **14-day right of withdrawal** (Art. 16(a) of Directive 2011/83/EU). If you ask the service to start immediately and then withdraw, you owe a proportionate amount for the period actually used. You can manage and cancel the subscription at any time.",
         },
         { type: "h2", text: "6. Code of conduct" },
         {
@@ -349,17 +403,32 @@ export const LEGAL: Record<Locale, LegalDict> = {
         { type: "h2", text: "3. Sharing" },
         {
           type: "p",
-          text: "We share data only with processors necessary for the service: Stripe (payments), an email provider (confirmation/recovery), hosting infrastructure. We do not sell personal data.",
+          text: "We share data only with processors and recipients necessary for the service. We do not sell personal data. Recipients:",
         },
-        { type: "h2", text: "4. Retention" },
+        {
+          type: "ul",
+          items: [
+            "**Stripe** — payment processing.",
+            "**Email provider** — registration confirmation and password recovery.",
+            "**Hosting infrastructure** — providing the service.",
+            "**Discord Inc.** — on registration we send the player name to an internal event channel (operational log). Discord is established in the USA; the transfer relies on the EU–US Data Privacy Framework (DPF) and/or standard contractual clauses (SCC).",
+            "**Sentry** — technical error data (diagnostics and service stability).",
+          ],
+        },
+        { type: "h2", text: "4. Transfers outside the EU" },
+        {
+          type: "p",
+          text: "Where a recipient is outside the EU/EEA (e.g. Discord, and in certain configurations an error-tracking or hosting provider), the transfer relies on an adequacy decision (including the EU–US Data Privacy Framework) or standard contractual clauses adopted by the European Commission.",
+        },
+        { type: "h2", text: "5. Retention" },
         {
           type: "p",
           text: "We keep account data while the account is active. Upon deletion we anonymize personal data; purchase records may be retained in anonymized form for accounting purposes for the statutory period.",
         },
-        { type: "h2", text: "5. Your rights" },
+        { type: "h2", text: "6. Your rights" },
         {
           type: "p",
-          text: "You have the right to access, rectification, erasure, portability and objection. Directly from the app you can:",
+          text: "You have the right to access, rectification, erasure, **restriction of processing** (Art. 18 GDPR), portability and objection. Where we process on the basis of consent, you may **withdraw your consent** at any time, without affecting the lawfulness of processing before withdrawal. Directly from the app you can:",
         },
         {
           type: "ul",
@@ -372,12 +441,12 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "You can also lodge a complaint with the Commission for Personal Data Protection (CPDP).",
         },
-        { type: "h2", text: "6. Security" },
+        { type: "h2", text: "7. Security" },
         {
           type: "p",
           text: "Passwords are hashed with argon2id; sessions use httpOnly cookies. We apply technical and organizational measures to protect data.",
         },
-        { type: "h2", text: "7. Contact" },
+        { type: "h2", text: "8. Contact" },
         {
           type: "p",
           text: "Privacy enquiries: privacy@carbonstealth.eu.",
@@ -396,7 +465,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
       blocks: [
         {
           type: "p",
-          text: "We use only strictly necessary cookies required for the service to work. We do not use advertising or third-party tracking cookies.",
+          text: "We use only strictly necessary cookies required for the service to work, plus one language-preference cookie. We do not use advertising or third-party tracking cookies.",
         },
         { type: "h2", text: "Strictly necessary" },
         {
@@ -409,6 +478,13 @@ export const LEGAL: Record<Locale, LegalDict> = {
         {
           type: "p",
           text: "Because these cookies are strictly necessary, they do not require consent. You can block them in your browser, but then sign-in will not work.",
+        },
+        { type: "h2", text: "Language preference" },
+        {
+          type: "ul",
+          items: [
+            "`aso_locale` — remembers the language you chose (up to 12 months). It is set only after you switch language and does not track behaviour.",
+          ],
         },
         { type: "h2", text: "Local storage" },
         {
@@ -477,6 +553,14 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "«АСО» è un portale browser per giochi sociali di carte e da tavolo, fornito da {org} («noi», «ci», «l'Operatore»). Accedendo o utilizzando il servizio accetti i presenti Termini di servizio.",
         },
+        {
+          type: "p",
+          text: "**Dati identificativi (impressum).** Operatore: {org}. Sede legale e indirizzo: [Адрес на управление: попълни]. Codice azienda / registro: [ЕИК: попълни]. P. IVA: [ДДС №: попълни]. Email di contatto: legal@carbonstealth.eu.",
+        },
+        {
+          type: "p",
+          text: "**Risoluzione alternativa delle controversie (ADR).** In caso di controversia con i consumatori puoi rivolgerti alla Commissione bulgara per la tutela dei consumatori (CCP) e alle sue commissioni di conciliazione competenti quali organismi di risoluzione alternativa delle controversie. (La piattaforma UE di risoluzione delle controversie online (ODR) è stata chiusa nel 2025.)",
+        },
         { type: "h2", text: "2. Età e ammissibilità" },
         {
           type: "p",
@@ -495,7 +579,15 @@ export const LEGAL: Record<Locale, LegalDict> = {
         { type: "h2", text: "5. Acquisti e beni virtuali" },
         {
           type: "p",
-          text: "I pagamenti sono elaborati da Stripe. Si acquistano solo beni virtuali (gemme, fiche, oggetti estetici) e l'abbonamento VIP — per comodità ed estetica, senza vantaggio nel gioco («niente pay to win»). I beni virtuali vengono forniti immediatamente dopo un pagamento confermato e **non sono rimborsabili**, salvo quanto diversamente richiesto dalla legge. Il VIP è un abbonamento mensile che si rinnova automaticamente fino alla disdetta.",
+          text: "I pagamenti sono elaborati da Stripe. Si acquistano beni virtuali (gemme, fiche, oggetti estetici) e l'abbonamento VIP — per comodità ed estetica, senza vantaggio nel gioco («niente pay to win»).",
+        },
+        {
+          type: "p",
+          text: "**I beni virtuali una tantum** (gemme, fiche, oggetti estetici) sono contenuto digitale non fornito su un supporto materiale. Con l'acquisto acconsenti espressamente a che il contenuto sia fornito immediatamente e confermi di **perdere il diritto di recesso di 14 giorni** (art. 16, lett. m, della Direttiva 2011/83/UE), poiché la fornitura inizia subito. Pertanto questi beni **non sono rimborsabili**, salvo quanto diversamente richiesto dalla legge.",
+        },
+        {
+          type: "p",
+          text: "**L'abbonamento VIP** è un servizio digitale con rinnovo automatico mensile fino alla disdetta. Per esso mantieni il **diritto di recesso di 14 giorni** (art. 16, lett. a, della Direttiva 2011/83/UE). Se richiedi che il servizio inizi immediatamente e poi recedi, devi un importo proporzionale al periodo effettivamente utilizzato. Puoi gestire e disdire l'abbonamento in qualsiasi momento.",
         },
         { type: "h2", text: "6. Regole di condotta" },
         {
@@ -563,17 +655,32 @@ export const LEGAL: Record<Locale, LegalDict> = {
         { type: "h2", text: "3. Condivisione" },
         {
           type: "p",
-          text: "Condividiamo i dati solo con i responsabili del trattamento necessari per il servizio: Stripe (pagamenti), un provider email (conferma/recupero), infrastruttura di hosting. Non vendiamo dati personali.",
+          text: "Condividiamo i dati solo con responsabili del trattamento e destinatari necessari per il servizio. Non vendiamo dati personali. Destinatari:",
         },
-        { type: "h2", text: "4. Conservazione" },
+        {
+          type: "ul",
+          items: [
+            "**Stripe** — elaborazione dei pagamenti.",
+            "**Provider email** — conferma della registrazione e recupero della password.",
+            "**Infrastruttura di hosting** — fornitura del servizio.",
+            "**Discord Inc.** — al momento della registrazione inviamo il nome del giocatore a un canale eventi interno (log operativo). Discord ha sede negli USA; il trasferimento si basa sul Data Privacy Framework UE–USA (DPF) e/o su clausole contrattuali standard (SCC).",
+            "**Sentry** — dati tecnici sugli errori (diagnostica e stabilità del servizio).",
+          ],
+        },
+        { type: "h2", text: "4. Trasferimenti fuori dall'UE" },
+        {
+          type: "p",
+          text: "Quando un destinatario è fuori dall'UE/SEE (ad es. Discord e, in alcune configurazioni, un provider di tracciamento errori o di hosting), il trasferimento si basa su una decisione di adeguatezza (incluso il Data Privacy Framework UE–USA) o su clausole contrattuali standard adottate dalla Commissione europea.",
+        },
+        { type: "h2", text: "5. Conservazione" },
         {
           type: "p",
           text: "Conserviamo i dati dell'account finché è attivo. In caso di eliminazione anonimizziamo i dati personali; le registrazioni degli acquisti possono essere conservate in forma anonimizzata a fini contabili per il periodo previsto dalla legge.",
         },
-        { type: "h2", text: "5. I tuoi diritti" },
+        { type: "h2", text: "6. I tuoi diritti" },
         {
           type: "p",
-          text: "Hai diritto di accesso, rettifica, cancellazione, portabilità e opposizione. Direttamente dall'app puoi:",
+          text: "Hai diritto di accesso, rettifica, cancellazione, **limitazione del trattamento** (art. 18 GDPR), portabilità e opposizione. Quando trattiamo sulla base del consenso, puoi **revocare il consenso** in qualsiasi momento, senza pregiudicare la liceità del trattamento precedente alla revoca. Direttamente dall'app puoi:",
         },
         {
           type: "ul",
@@ -586,12 +693,12 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "p",
           text: "Puoi anche presentare un reclamo alla Commissione per la protezione dei dati personali (CPDP).",
         },
-        { type: "h2", text: "6. Sicurezza" },
+        { type: "h2", text: "7. Sicurezza" },
         {
           type: "p",
           text: "Le password sono sottoposte ad hashing con argon2id; le sessioni utilizzano cookie httpOnly. Applichiamo misure tecniche e organizzative per la protezione dei dati.",
         },
-        { type: "h2", text: "7. Contatti" },
+        { type: "h2", text: "8. Contatti" },
         {
           type: "p",
           text: "Richieste sulla privacy: privacy@carbonstealth.eu.",
@@ -610,7 +717,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
       blocks: [
         {
           type: "p",
-          text: "Utilizziamo solo cookie strettamente necessari al funzionamento del servizio. Non utilizziamo cookie pubblicitari o di tracciamento di terze parti.",
+          text: "Utilizziamo solo cookie strettamente necessari al funzionamento del servizio e un cookie per la preferenza della lingua. Non utilizziamo cookie pubblicitari o di tracciamento di terze parti.",
         },
         { type: "h2", text: "Strettamente necessari" },
         {
@@ -623,6 +730,13 @@ export const LEGAL: Record<Locale, LegalDict> = {
         {
           type: "p",
           text: "Poiché questi cookie sono strettamente necessari, non richiedono il consenso. Puoi bloccarli dal tuo browser, ma in tal caso l'accesso non funzionerà.",
+        },
+        { type: "h2", text: "Preferenza della lingua" },
+        {
+          type: "ul",
+          items: [
+            "`aso_locale` — ricorda la lingua che hai scelto (fino a 12 mesi). Viene impostato solo dopo che cambi lingua e non traccia il comportamento.",
+          ],
         },
         { type: "h2", text: "Archiviazione locale" },
         {

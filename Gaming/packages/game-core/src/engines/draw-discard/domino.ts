@@ -8,11 +8,12 @@ import {
 import type { SeededRng } from "../../kernel/rng.js";
 
 /**
- * Домино (block dominoes) — 2–4p tile game (§4.13). Double-six set (28 tiles).
+ * Домино (DRAW dominoes) — 2–4p tile game (§4.13). Double-six set (28 tiles).
  * Each player draws 7 (2p) or fewer for more players; the rest is the boneyard.
- * On your turn play a matching tile onto either open end, or DRAW from the
- * boneyard, or PASS if you cannot play and the boneyard is empty. First to
- * empty their hand wins; if blocked, lowest pip-count wins (a pip tie is a
+ * On your turn play a matching tile onto either open end, or — if you cannot —
+ * DRAW from the boneyard until you can play, or PASS once the boneyard is empty.
+ * (This is the Draw variant, not strict Block, where there is no drawing.) First
+ * to empty their hand wins; if blocked, lowest pip-count wins (a pip tie is a
  * null round: nobody scores, redeal). Hands + boneyard are redacted.
  *
  * Българско откриване: първият кръг се открива от държащия най-голямото чифте
@@ -250,6 +251,22 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
   redact(state, seat) {
     const hands = state.hands.map((h, i) => (i === seat ? h.slice() : h.map(() => "?")));
     return { ...state, hands, boneyard: state.boneyard.map(() => "?") };
+  },
+
+  /** Heuristic bot: play the heaviest tile it can (shed pips early so a block
+   *  loses less), preferring to unload doubles; otherwise draw/pass. */
+  bot(state, seat) {
+    if (state.done || seat !== state.turn) return null;
+    const actions = dominoEngine.legalActions(state, seat) as DominoAction[];
+    const plays = actions.filter((a): a is Extract<DominoAction, { type: "PLAY" }> => a.type === "PLAY");
+    if (plays.length === 0) return actions[0] ?? null; // DRAW or PASS
+    return plays.reduce((best, p) => {
+      const [a, b] = pips(p.tile);
+      const [ba, bb] = pips(best.tile);
+      const w = tilePipSum(p.tile) + (a === b ? 1 : 0); // tie-break toward doubles
+      const bw = tilePipSum(best.tile) + (ba === bb ? 1 : 0);
+      return w > bw ? p : best;
+    }, plays[0]!);
   },
 };
 

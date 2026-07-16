@@ -176,7 +176,11 @@
     "consentPre": "I am 18+ and accept the",
     "consentTerms": "Terms of Service",
     "consentAnd": "and",
-    "consentPrivacy": "Privacy Policy"
+    "consentPrivacy": "Privacy Policy",
+    "oauthConsent": "By continuing with Google or Facebook, you declare that you are 18+ and accept the",
+    "errorBanned": "This account is blocked.",
+    "banReason": "Reason: {{reason}}.",
+    "banAppeal": "To appeal, email legal@carbonstealth.eu."
   },
   "account": {
     "title": "Account",
@@ -319,8 +323,10 @@
     "grantGems": "+{{n}} gems",
     "grantChips": "+{{n}} chips",
     "perMonth": "per month",
+    "consentImmediate": "I agree the content is supplied immediately and confirm that I lose my 14-day right of withdrawal.",
+    "consentSubscription": "I agree to the subscription and its monthly automatic renewal until cancelled; I keep my 14-day right of withdrawal with a proportional deduction.",
+    "consentRequired": "Tick the consent box to continue.",
     "perk": {
-      "noAds": "No ads",
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% daily bonus",
       "gems": "{{n}} 💎 per month",
@@ -392,6 +398,8 @@
     "empty": "Say hi to the table 👋",
     "mute": "Mute",
     "unmute": "Unmute",
+    "report": "Report player",
+    "reported": "Reported",
     "quick": {
       "hi": "Hi! 👋",
       "gl": "Good luck!",
@@ -456,7 +464,15 @@
     "flip": "Flip",
     "battle": "WAR",
     "cards": "Cards: {{n}}",
-    "tookPile": "{{name}} takes {{n}} cards"
+    "tookPile": "{{name}} takes {{n}} cards",
+    "warPhase": "WAR!",
+    "bounty": "Stake: {{n}}",
+    "fight": "Charge (3 cards)",
+    "skirmish": "Cautious (1 card)",
+    "fightHint": "Bury deep for a big haul — or play cautious to protect your deck.",
+    "streak": "Streak ×{{n}}",
+    "raid": "RAID!",
+    "raided": "{{name}} raids a card on a streak!"
   },
   "rummy": {
     "stock": "Stock",

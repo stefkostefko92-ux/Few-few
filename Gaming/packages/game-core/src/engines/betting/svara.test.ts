@@ -59,6 +59,12 @@ describe("СВАРА — точкуване на ръката (svaraPoints)", ()
     expect(svaraPoints(["8H", "8S", "AD"])).toBe(16); // чифтът бие сингъл аса
   });
 
+  it("две седмици = 23 (автентично) и бият чифт аса (22)", () => {
+    expect(svaraPoints(["7H", "7S", "KD"])).toBe(23);
+    expect(svaraPoints(["7C", "7H", "KD"])).toBe(23); // и с универсалната 7♣
+    expect(svaraPoints(["7H", "7S", "KD"])).toBeGreaterThan(svaraPoints(["AH", "AS", "8D"]));
+  });
+
   it("без комбинация важи най-високата единична карта", () => {
     expect(svaraPoints(["7H", "8S", "QD"])).toBe(10);
     expect(svaraPoints(["7H", "9S", "AD"])).toBe(11);
