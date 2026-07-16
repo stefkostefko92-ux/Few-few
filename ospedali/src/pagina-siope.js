@@ -127,7 +127,7 @@ può essere stagionalità (fatture concentrate a fine esercizio) o «spesa del b
 <em>indicatore, non una prova</em>. Il dato è aggregato a livello <strong>regionale</strong> — l’insieme di tutte le
 aziende sanitarie della regione — perché SIOPE identifica gli enti per nome e non con un codice univoco confrontabile:
 l’aggregato regionale evita abbinamenti errati. Il perimetro è quello delle aziende operative (ASL, aziende
-ospedaliere, IRCCS pubblici, IZS); sono esclusi la gestione sanitaria accentrata regionale (GSA) e i pagamenti
+ospedaliere, IRCCS pubblici, IZS — Istituti Zooprofilattici Sperimentali); sono esclusi la gestione sanitaria accentrata regionale (GSA) e i pagamenti
 centrali, che duplicherebbero le uscite delle aziende.</div>
 <p class="small muted">Fonte: <a href="${esc(siope.url)}" target="_blank" rel="noopener">RGS/MEF — SIOPE</a>
 (BDAP open data), «Movimenti cumulati mensili di Spesa», anno ${siope.anno}, licenza CC BY 3.0.

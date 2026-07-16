@@ -37,7 +37,8 @@ export function renderSegnalazioni({ segn, href }) {
 <h1>Segnalazioni</h1>
 <p class="lead">${numeroIt(segn.totaleSegnalazioni)} indicatori automatici su ${numeroIt(segn.entiConSegnalazioni)} strutture.
 Ogni segnalazione cita i numeri di bilancio da cui deriva. <strong>Sono spie, non verdetti</strong>: un’anomalia
-può avere spiegazioni legittime (fusioni, finanziamenti straordinari, cambi di perimetro).</p>
+può avere spiegazioni legittime (fusioni, finanziamenti straordinari, cambi di perimetro). Ogni tipo di
+segnalazione è definito nella <a href="metodologia.html">metodologia</a>.</p>
 <div class="grid kpis">
   ${kpi('Gravità alta', numeroIt(segn.perGravita.alta), 'neg')}
   ${kpi('Gravità media', numeroIt(segn.perGravita.media))}

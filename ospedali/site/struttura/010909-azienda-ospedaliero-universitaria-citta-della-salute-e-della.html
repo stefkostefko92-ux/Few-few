@@ -34,6 +34,11 @@ try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')docume
   --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
   --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
   --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
   --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
   --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
   --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
@@ -53,7 +58,10 @@ try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')docume
    Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
 :root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
   --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
-  --line:#26323f; --line-2:#202b37;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
   --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
   --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
   /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
@@ -63,7 +71,8 @@ try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')docume
 @media (prefers-color-scheme:dark){
   :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
     --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
-    --line:#26323f; --line-2:#202b37;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
     --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
     --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
     --shadow-sm:0 1px 2px rgba(0,0,0,.35);
@@ -100,7 +109,7 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
    44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
 .nav-toggle{display:none;align-items:center;justify-content:center;
   width:44px;height:44px;margin-left:auto;padding:0;flex:none;
-  background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
   color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
 .nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
 .nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
@@ -113,7 +122,7 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
    независимо от JS-тайминга → без грешна икона при първия paint. */
 .theme-toggle{display:inline-flex;align-items:center;justify-content:center;
   width:44px;height:44px;padding:0;flex:none;
-  background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
   color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
 .theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
 .theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
@@ -135,8 +144,8 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
   header.site .wrap{padding-top:8px;row-gap:4px}
   .theme-toggle{margin-left:auto}
   nav.main{flex-basis:100%;margin-left:0;justify-content:center;
-    font-size:13.5px;border-top:1px solid var(--line);padding:4px 0 7px}
-  nav.main a{padding:6px 8px}
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
 }
 @media(max-width:900px){
   header.site{position:static;border-top-width:3px}
@@ -161,8 +170,12 @@ main{padding:var(--s7) 0 var(--s6)}
 /* ---------- Типографска скала ---------- */
 h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
   margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
 h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
-  margin:var(--s7) 0 var(--s4);font-weight:650}
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
 h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
 p{max-width:var(--measure)}
 .lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
@@ -190,10 +203,19 @@ th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);ve
 tbody tr:last-child td{border-bottom:none}
 th{background:var(--surface-2);font-size:11.5px;font-weight:650;
   text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
-  position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--line)}
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 2.5%)}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
 tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
 .neg{color:var(--neg)} .pos{color:var(--pos)}
 
 /* ---------- Значки и чипове ---------- */
@@ -214,7 +236,7 @@ tbody tr:hover{background:var(--brand-tint)}
 
 /* ---------- Форма / контроли ---------- */
 .controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
-.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line);
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
   border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
 .controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
   box-shadow:0 0 0 3px var(--brand-tint)}
@@ -295,7 +317,7 @@ footer.site a:hover{color:var(--brand)}
     <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
   </button>
-  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../glossario.html">Glossario</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main id="contenuto"><div class="wrap">
 
@@ -303,6 +325,22 @@ footer.site a:hover{color:var(--brand)}
 <h1>AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO</h1>
 <p><span class="chip">Piemonte</span> <span class="chip">Azienda Ospedaliera integrata con l&#39;Università</span> <span class="chip">TORINO (TO)</span> <span class="chip">codice 010909</span> <span class="badge media">Media</span></p>
 <p class="muted small">CORSO LAZZARI FRANCESCO DETTO IL BRAMANT, TORINO</p>
+<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
+  AZIENDA OSPEDALIERO UNIVERSITARIA CITTA&#39; DELLA SALUTE E DELLA SCIENZA DI TORINO è una struttura pubblica del SSN della regione Piemonte — Azienda Ospedaliera integrata con l&#39;Università. Nell’ultimo esercizio disponibile (2024) ha registrato un valore della produzione di 1 mld € e ha chiuso in perdita per 51 mln €. I controlli automatici sui bilanci hanno prodotto 3 segnalazioni contabili (gravità massima: media). Sul fronte degli appalti, il 70,8% dei suoi 7417 contratti tracciati da ANAC è stato affidato senza gara (affidamento diretto o negoziata senza bando).
+  Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>
+<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">Questa pagina riunisce tre fonti ufficiali: i bilanci CE/SP trasmessi al MEF (BDAP),
+  l’anagrafe ospedaliera del Ministero della Salute e i contratti pubblici dell’ANAC. I costi «per posto letto» e
+  «per ricovero» sono confrontati con la <strong>mediana nazionale</strong>, mentre la sezione «Dove vanno i soldi»
+  confronta ogni voce di spesa con la mediana delle <strong>aziende simili (peer)</strong>: uno scostamento marcato
+  genera un segnale, che è un indicatore da verificare, non una prova. Negli appalti, «senza gara» significa
+  affidamento diretto o procedura negoziata senza pubblicazione; le adesioni ad accordi quadro e convenzioni
+  (es. Consip) <strong>non</strong> contano come «senza gara», perché la concorrenza c’è già stata a monte.
+  Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
+  pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
+  Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
 
 <div class="grid kpis">
     <div class="card kpi"><div class="n ">1.128.675.828 €</div><div class="l">Valore produzione (2024)</div></div>
@@ -320,13 +358,15 @@ footer.site a:hover{color:var(--brand)}
           <div class="d">Costi della produzione superiori al valore della produzione in 4 esercizi recenti (2020, 2022, 2023, 2024).</div></div><div class="seg bassa"><div class="t"><span class="badge bassa">Bassa</span> <span>Incidenza del personale tra le più alte</span></div>
           <div class="d">Nel 2024 il costo del personale è il 46% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.</div></div>
 
-<h2>Andamento economico</h2>
+<h2>Come sono cambiati ricavi, costi e risultato</h2>
 <div class="grid" style="grid-template-columns:1fr">
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Ricavi e costi della produzione per anno (€)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="179.7" x2="666" y2="179.7"/><text x="50" y="182.7" text-anchor="end">200 mln</text><line class="grid-line" x1="56" y1="145.5" x2="666" y2="145.5"/><text x="50" y="148.5" text-anchor="end">400 mln</text><line class="grid-line" x1="56" y1="111.2" x2="666" y2="111.2"/><text x="50" y="114.2" text-anchor="end">600 mln</text><line class="grid-line" x1="56" y1="77.0" x2="666" y2="77.0"/><text x="50" y="80.0" text-anchor="end">800 mln</text><line class="grid-line" x1="56" y1="42.7" x2="666" y2="42.7"/><text x="50" y="45.7" text-anchor="end">1 mld</text><text x="56.0" y="232" text-anchor="middle">2012</text><text x="157.7" y="232" text-anchor="middle">2014</text><text x="259.3" y="232" text-anchor="middle">2016</text><text x="361.0" y="232" text-anchor="middle">2018</text><text x="462.7" y="232" text-anchor="middle">2020</text><text x="564.3" y="232" text-anchor="middle">2022</text><text x="666.0" y="232" text-anchor="middle">2024</text><path d="M56.0,37.4 L106.8,42.3 L157.7,47.0 L208.5,40.5 L259.3,39.9 L310.2,41.3 L361.0,52.7 L411.8,45.7 L462.7,33.0 L513.5,22.4 L564.3,21.3 L615.2,17.1 L666.0,20.7" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="37.4" r="2.5" fill="var(--brand)"/><circle cx="106.8" cy="42.3" r="2.5" fill="var(--brand)"/><circle cx="157.7" cy="47.0" r="2.5" fill="var(--brand)"/><circle cx="208.5" cy="40.5" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="39.9" r="2.5" fill="var(--brand)"/><circle cx="310.2" cy="41.3" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="52.7" r="2.5" fill="var(--brand)"/><circle cx="411.8" cy="45.7" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="33.0" r="2.5" fill="var(--brand)"/><circle cx="513.5" cy="22.4" r="2.5" fill="var(--brand)"/><circle cx="564.3" cy="21.3" r="2.5" fill="var(--brand)"/><circle cx="615.2" cy="17.1" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="20.7" r="2.5" fill="var(--brand)"/><path d="M56.0,40.5 L106.8,44.6 L157.7,45.7 L208.5,43.1 L259.3,43.5 L310.2,42.5 L361.0,36.5 L411.8,32.6 L462.7,32.7 L513.5,26.4 L564.3,20.7 L615.2,14.0 L666.0,16.6" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="40.5" r="2.5" fill="var(--neg)"/><circle cx="106.8" cy="44.6" r="2.5" fill="var(--neg)"/><circle cx="157.7" cy="45.7" r="2.5" fill="var(--neg)"/><circle cx="208.5" cy="43.1" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="43.5" r="2.5" fill="var(--neg)"/><circle cx="310.2" cy="42.5" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="36.5" r="2.5" fill="var(--neg)"/><circle cx="411.8" cy="32.6" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="32.7" r="2.5" fill="var(--neg)"/><circle cx="513.5" cy="26.4" r="2.5" fill="var(--neg)"/><circle cx="564.3" cy="20.7" r="2.5" fill="var(--neg)"/><circle cx="615.2" cy="14.0" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="16.6" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Valore della produzione</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Costi della produzione</text></g></g></svg><figcaption>Ricavi e costi della produzione per anno (€)</figcaption></figure></div>
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="146.2" x2="666" y2="146.2"/><text x="50" y="149.2" text-anchor="end">-100 mln</text><line class="grid-line" x1="56" y1="80.1" x2="666" y2="80.1"/><text x="50" y="83.1" text-anchor="end">-50 mln</text><line class="grid-line" x1="56" y1="14.0" x2="666" y2="14.0"/><text x="50" y="17.0" text-anchor="end">0</text><rect x="63.0" y="14.0" width="32.8" height="22.0" fill="var(--neg)" rx="2"/><text x="79.5" y="192" text-anchor="middle">2012</text><rect x="110.0" y="14.0" width="32.8" height="16.9" fill="var(--neg)" rx="2"/><text x="126.4" y="192" text-anchor="middle">2013</text><rect x="156.9" y="14.0" width="32.8" height="40.5" fill="var(--neg)" rx="2"/><text x="173.3" y="192" text-anchor="middle">2014</text><rect x="203.8" y="14.0" width="32.8" height="19.9" fill="var(--neg)" rx="2"/><text x="220.2" y="192" text-anchor="middle">2015</text><rect x="250.7" y="14.0" width="32.8" height="14.6" fill="var(--neg)" rx="2"/><text x="267.2" y="192" text-anchor="middle">2016</text><rect x="297.7" y="14.0" width="32.8" height="23.1" fill="var(--neg)" rx="2"/><text x="314.1" y="192" text-anchor="middle">2017</text><rect x="344.6" y="14.0" width="32.8" height="160.0" fill="var(--neg)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2018</text><rect x="391.5" y="14.0" width="32.8" height="135.5" fill="var(--neg)" rx="2"/><text x="407.9" y="192" text-anchor="middle">2019</text><rect x="438.4" y="14.0" width="32.8" height="41.4" fill="var(--neg)" rx="2"/><text x="454.8" y="192" text-anchor="middle">2020</text><rect x="485.3" y="14.0" width="32.8" height="1.0" fill="var(--neg)" rx="2"/><text x="501.8" y="192" text-anchor="middle">2021</text><rect x="532.3" y="14.0" width="32.8" height="28.2" fill="var(--neg)" rx="2"/><text x="548.7" y="192" text-anchor="middle">2022</text><rect x="579.2" y="14.0" width="32.8" height="33.3" fill="var(--neg)" rx="2"/><text x="595.6" y="192" text-anchor="middle">2023</text><rect x="626.1" y="14.0" width="32.8" height="67.5" fill="var(--neg)" rx="2"/><text x="642.5" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
 </div>
 
 <h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione · confronto con aziende simili (ospedaliera, &gt;1G))</span></h2>
+      <p class="small muted">Le categorie di spesa dove i numeri si discostano molto dalle aziende simili: dove vale
+      la pena guardare i contratti. Indicatori, non prove.</p>
       <div class="card"><div class="hbars" role="group" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
         <div class="hbar-l">Acquisti di beni</div>
         <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
@@ -410,7 +450,8 @@ footer.site a:hover{color:var(--brand)}
     <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
 <h2>Registro dei contratti <span class="small muted">(7417 contratti ANAC, 2 mld € messi a gara)</span></h2>
 <p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
-Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+Il <abbr title="Codice Identificativo di Gara: codice di 10 caratteri rilasciato dall’ANAC che identifica in modo univoco ogni procedura di affidamento pubblico">CIG</abbr>
+è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
 <p><a class="chip" href="../contratti/010909.csv" download>⬇ Scarica l’elenco completo (CSV, 7417 contratti)</a></p>
 <div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
 <p class="small muted" id="ccount"></p>
@@ -1936,6 +1977,8 @@ Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara.
   <p class="small muted">Indicatori della regione a cui appartiene questa azienda (dato regionale, non della singola struttura). Approfondisci in <a href="regione/010.html">Piemonte</a>.</p>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"><a class="seg media" href="apparecchiature.html" style="text-decoration:none"><div class="t">Dotazione tecnologica</div><div class="d"><strong>28 TC/mln · 17 robot</strong></div></a><a class="seg media" href="sdo.html" style="text-decoration:none"><div class="t">Volumi di ricovero</div><div class="d"><strong>133,9 ric./1.000 ab.</strong></div></a><a class="seg media" href="siope.html" style="text-decoration:none"><div class="t">Cassa di dicembre</div><div class="d"><strong>1,2× il mese medio</strong></div></a><a class="seg media" href="pnrr-salute.html" style="text-decoration:none"><div class="t">PNRR Missione 6</div><div class="d"><strong>203 €/ab.</strong></div></a></div>
 <h2>Indicatori per anno</h2>
+    <p class="muted small">Ogni riga è un anno di bilancio (modelli CE/SP inviati al MEF). In rosso i risultati in
+    perdita, in verde quelli in utile.</p>
     <div class="tablewrap"><table>
     <thead><tr><th scope="col">Anno</th><th class="num" scope="col">Contributi in c/esercizio (A.1)</th><th class="num" scope="col">Valore della produzione (A)</th><th class="num" scope="col">Costi della produzione (B)</th><th class="num" scope="col">Costo del personale</th><th class="num" scope="col">Ammortamenti</th><th class="num" scope="col">Risultato di esercizio</th><th class="num" scope="col">Totale attivo</th><th class="num" scope="col">Patrimonio netto</th><th class="num" scope="col">Debiti</th></tr></thead>
     <tbody><tr><td>2012</td><td class="num ">392.207.000 €</td><td class="num ">1.031.039.000 €</td><td class="num ">1.013.299.000 €</td><td class="num ">495.813.000 €</td><td class="num ">36.687.000 €</td><td class="num neg">-16.641.000 €</td><td class="num ">1.113.360.000 €</td><td class="num ">310.579.000 €</td><td class="num ">747.754.000 €</td></tr><tr><td>2013</td><td class="num ">396.720.000 €</td><td class="num ">1.002.564.000 €</td><td class="num ">989.348.000 €</td><td class="num ">473.756.000 €</td><td class="num ">33.204.000 €</td><td class="num neg">-12.750.000 €</td><td class="num ">1.129.480.000 €</td><td class="num ">291.785.000 €</td><td class="num ">788.948.000 €</td></tr><tr><td>2014</td><td class="num ">376.113.000 €</td><td class="num ">975.220.000 €</td><td class="num ">982.922.000 €</td><td class="num ">473.868.000 €</td><td class="num ">31.151.000 €</td><td class="num neg">-30.647.000 €</td><td class="num ">1.180.882.000 €</td><td class="num ">275.725.000 €</td><td class="num ">861.647.000 €</td></tr><tr><td>2015</td><td class="num ">389.798.000 €</td><td class="num ">1.012.803.000 €</td><td class="num ">997.710.000 €</td><td class="num ">476.016.000 €</td><td class="num ">28.378.000 €</td><td class="num neg">-15.085.000 €</td><td class="num ">1.065.070.000 €</td><td class="num ">491.820.000 €</td><td class="num ">533.625.000 €</td></tr><tr><td>2016</td><td class="num ">402.563.000 €</td><td class="num ">1.016.326.000 €</td><td class="num ">995.768.000 €</td><td class="num ">469.122.000 €</td><td class="num ">25.570.000 €</td><td class="num neg">-11.040.000 €</td><td class="num ">902.494.000 €</td><td class="num ">482.374.000 €</td><td class="num ">381.451.000 €</td></tr><tr><td>2017</td><td class="num ">404.677.000 €</td><td class="num ">1.008.325.000 €</td><td class="num ">1.001.138.000 €</td><td class="num ">467.467.000 €</td><td class="num ">24.832.000 €</td><td class="num neg">-17.475.000 €</td><td class="num ">853.588.000 €</td><td class="num ">463.038.000 €</td><td class="num ">342.531.000 €</td></tr><tr><td>2018</td><td class="num ">326.060.000 €</td><td class="num ">941.909.000 €</td><td class="num ">1.036.399.000 €</td><td class="num ">475.758.000 €</td><td class="num ">26.808.000 €</td><td class="num neg">-121.000.000 €</td><td class="num ">724.417.000 €</td><td class="num ">356.253.000 €</td><td class="num ">314.893.000 €</td></tr><tr><td>2019</td><td class="num ">330.468.191 €</td><td class="num ">982.730.107 €</td><td class="num ">1.059.238.130 €</td><td class="num ">480.352.488 €</td><td class="num ">28.283.060 €</td><td class="num neg">-102.504.149 €</td><td class="num ">776.044.218 €</td><td class="num ">367.506.167 €</td><td class="num ">352.806.934 €</td></tr><tr><td>2020</td><td class="num ">485.379.687 €</td><td class="num ">1.056.996.026 €</td><td class="num ">1.058.386.312 €</td><td class="num ">489.775.202 €</td><td class="num ">27.869.413 €</td><td class="num neg">-31.337.846 €</td><td class="num ">954.398.150 €</td><td class="num ">582.910.914 €</td><td class="num ">301.284.630 €</td></tr><tr><td>2021</td><td class="num ">476.137.695 €</td><td class="num ">1.118.749.649 €</td><td class="num ">1.095.500.264 €</td><td class="num ">484.631.272 €</td><td class="num ">27.944.369 €</td><td class="num neg">-253.842 €</td><td class="num ">947.682.237 €</td><td class="num ">603.136.699 €</td><td class="num ">263.943.150 €</td></tr><tr><td>2022</td><td class="num ">489.680.702 €</td><td class="num ">1.124.908.281 €</td><td class="num ">1.128.422.243 €</td><td class="num ">494.345.940 €</td><td class="num ">28.697.500 €</td><td class="num neg">-21.357.262 €</td><td class="num ">994.186.296 €</td><td class="num ">625.987.648 €</td><td class="num ">277.388.940 €</td></tr><tr><td>2023</td><td class="num ">424.158.748 €</td><td class="num ">1.149.611.653 €</td><td class="num ">1.167.814.568 €</td><td class="num ">501.726.974 €</td><td class="num ">27.946.681 €</td><td class="num neg">-25.152.188 €</td><td class="num ">959.326.361 €</td><td class="num ">595.107.357 €</td><td class="num ">261.513.401 €</td></tr><tr><td>2024</td><td class="num ">411.292.384 €</td><td class="num ">1.128.675.828 €</td><td class="num ">1.152.670.744 €</td><td class="num ">519.612.811 €</td><td class="num ">27.518.278 €</td><td class="num neg">-51.037.615 €</td><td class="num ">977.368.818 €</td><td class="num ">614.997.561 €</td><td class="num ">261.017.237 €</td></tr></tbody></table></div>

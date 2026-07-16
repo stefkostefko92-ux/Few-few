@@ -3,7 +3,7 @@
 // на всяка структура (SVG графики + финанси + сигнали + приложения).
 // Изнесени дословно от build-site.js — само местене.
 
-import { esc, euroIt, euroCompact, numeroIt, slugify } from '../lib/format.js';
+import { esc, euroIt, euroCompact, numeroIt, percentualeIt, slugify } from '../lib/format.js';
 import { page, kpi, badge, lineChart, barChart, hbars, siteUrl } from '../lib/site-ui.js';
 import { tipoEnte, postiLettoEnte, ricoveriEnte, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from '../lib/dataset.js';
 import { ultimoCe, briciole, collezioneLd, FOR_LABEL, isDetailLine, isTopLevelSp } from '../lib/site-shared.js';
@@ -67,7 +67,7 @@ Cerca per nome, filtra per regione o per gravità delle segnalazioni. Valori del
 </div>
 <p class="small muted" id="count"></p>
 <div class="tablewrap"><table>
-  <thead><tr><th scope="col">Struttura</th><th class="num" scope="col">Valore produzione</th><th class="num" scope="col">Risultato</th><th scope="col">Segnalazioni</th></tr></thead>
+  <thead><tr><th scope="col">Struttura</th><th class="num" scope="col">Valore produzione</th><th class="num" scope="col" title="Risultato d'esercizio dell'ultimo bilancio disponibile (utile o perdita)">Risultato d'esercizio</th><th scope="col">Segnalazioni</th></tr></thead>
   <tbody id="rows">${rows}</tbody>
 </table></div>
 <script>
@@ -159,6 +159,52 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
     ${kpi('Costo del personale', euroIt(yUlt.costoPersonale))}
   </div>`;
 
+  // ---- „In sintesi" — авто-резюме от наличните данни; предпазлив език
+  //      (indicatore, non prova). Клоновете пазят null-ове от старите години.
+  const fraseFin =
+    annoUlt != null && yUlt.valoreProduzione != null
+      ? ` Nell’ultimo esercizio disponibile (${annoUlt}) ha registrato un valore della produzione di ${euroCompact(yUlt.valoreProduzione)}${
+          ris == null
+            ? ''
+            : ris < 0
+              ? ` e ha chiuso in perdita per ${euroCompact(Math.abs(ris))}`
+              : ris > 0
+                ? ` e ha chiuso in utile per ${euroCompact(ris)}`
+                : ' e ha chiuso in pareggio'
+        }.`
+      : '';
+  const fraseSeg =
+    seg && seg.segnalazioni.length
+      ? ` I controlli automatici sui bilanci hanno prodotto ${
+          seg.segnalazioni.length === 1
+            ? 'una segnalazione contabile'
+            : `${numeroIt(seg.segnalazioni.length)} segnalazioni contabili`
+        } (gravità massima: ${esc(seg.gravitaMax)}).`
+      : ' I controlli automatici sui bilanci non hanno rilevato anomalie sui dati disponibili.';
+  const fraseApp =
+    app && app.n >= 50 && app.quotaSenzaGaraNum != null
+      ? ` Sul fronte degli appalti, il ${percentualeIt(app.quotaSenzaGaraNum)} dei suoi ${numeroIt(app.n)} contratti tracciati da ANAC è stato affidato senza gara (affidamento diretto o negoziata senza bando).`
+      : '';
+  const sintesi = `<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
+  ${esc(ente.denominazione)} è una struttura pubblica del SSN della regione ${esc(ente.regione)} — ${esc(tipoEnte(ente.codEnte, anag))}.${fraseFin}${fraseSeg}${fraseApp}
+  Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>`;
+
+  // ---- „Come leggere" — сгъваемо обяснение на източниците и дефинициите
+  //      (всяко твърдение отговаря на реалната логика: медиана/peer/senza gara/base d'asta)
+  const comeLeggere = `<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">Questa pagina riunisce tre fonti ufficiali: i bilanci CE/SP trasmessi al MEF (BDAP),
+  l’anagrafe ospedaliera del Ministero della Salute e i contratti pubblici dell’ANAC. I costi «per posto letto» e
+  «per ricovero» sono confrontati con la <strong>mediana nazionale</strong>, mentre la sezione «Dove vanno i soldi»
+  confronta ogni voce di spesa con la mediana delle <strong>aziende simili (peer)</strong>: uno scostamento marcato
+  genera un segnale, che è un indicatore da verificare, non una prova. Negli appalti, «senza gara» significa
+  affidamento diretto o procedura negoziata senza pubblicazione; le adesioni ad accordi quadro e convenzioni
+  (es. Consip) <strong>non</strong> contano come «senza gara», perché la concorrenza c’è già stata a monte.
+  Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
+  pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
+  Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>`;
+
   // Benchmark €/легло и €/приемане срещу националната медиана (ако има анаграфика)
   const lettiB = postiLettoEnte(ente, anagrafica);
   const ricB = ricoveriEnte(ente, anagrafica);
@@ -233,6 +279,8 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
   // Таблица показатели по години
   const indicators = [...CE_INDICATORS, ...SP_INDICATORS];
   const finTable = `<h2>Indicatori per anno</h2>
+    <p class="muted small">Ogni riga è un anno di bilancio (modelli CE/SP inviati al MEF). In rosso i risultati in
+    perdita, in verde quelli in utile.</p>
     <div class="tablewrap"><table>
     <thead><tr><th scope="col">Anno</th>${indicators.map((i) => `<th class="num" scope="col">${esc(i.label)}</th>`).join('')}</tr></thead>
     <tbody>${anni
@@ -274,6 +322,8 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
       ? ` · confronto con aziende simili (${esc(forse.peer.replace('|', ', '))})`
       : '';
     soldiBlock = `<h2>Dove vanno i soldi <span class="small muted">(${forse.anno}, quota dei costi della produzione${peerTxt})</span></h2>
+      <p class="small muted">Le categorie di spesa dove i numeri si discostano molto dalle aziende simili: dove vale
+      la pena guardare i contratti. Indicatori, non prove.</p>
       <div class="card">${hbars(items, { fmt: euroCompact, maxLabel: 'Composizione della spesa per categoria' })}</div>
       ${flagList}`;
   }
@@ -322,12 +372,14 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
 <h1>${esc(ente.denominazione)}</h1>
 <p>${meta}</p>
 ${anag && anag.indirizzo ? `<p class="muted small">${esc(anag.indirizzo)}${anag.comune ? ', ' + esc(anag.comune) : ''}</p>` : ''}
+${sintesi}
+${comeLeggere}
 
 ${kpis}
 ${benchBlk}
 ${segBlock}
 
-<h2>Andamento economico</h2>
+<h2>Come sono cambiati ricavi, costi e risultato</h2>
 <div class="grid" style="grid-template-columns:1fr">
   <div class="card">${chartCR}</div>
   <div class="card">${chartRis}</div>

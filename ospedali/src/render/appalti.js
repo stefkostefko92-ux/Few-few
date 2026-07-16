@@ -107,6 +107,19 @@ la quota «senza gara» del 2024–2025 risulta perciò <strong>molto più alta 
 precedenti. Il confronto utile resta quello <strong>tra enti e regioni nello stesso periodo</strong>, non nel tempo.
 → <a href="storico.html">Come è cambiata la serie</a></div>
 
+<details class="note" style="margin-top:18px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere le tabelle</summary>
+  <p style="margin:10px 0 0">La tabella delle regioni considera solo sezioni regionali con almeno 500 contratti,
+  e la classifica delle aziende solo enti con almeno 20 milioni di euro e 100 contratti: i campioni piccoli
+  falserebbero il confronto. «Senza gara %» è calcolato sul <strong>numero</strong> di contratti, «sul valore»
+  sugli <strong>importi</strong>: molti piccoli affidamenti diretti alzano la prima quota, pochi grandi contratti
+  la seconda. «Senza gara» comprende affidamento diretto e negoziata senza pubblicazione; le adesioni ad accordi
+  quadro e convenzioni sono escluse, perché già messe a gara a monte. Gli importi sono valori messi a gara
+  (base d’asta), non spesa pagata. La quota di gare a «offerente unico» si basa su una banca dati dei partecipanti
+  <strong>parziale</strong> ed è quindi un limite superiore indicativo — un indicatore da verificare, non una prova.
+  Termini nel <a href="glossario.html">glossario</a>.</p>
+</details>
+
 <h2>Le regioni a confronto</h2>
 <p class="muted small">Ordinate per quota di contratti affidati senza gara. «Senza gara %» sul numero di contratti,
 «sul valore» sugli importi.</p>
@@ -249,7 +262,8 @@ export function contrattiBlock(ente, list) {
     .join('');
   return `<h2>Registro dei contratti <span class="small muted">(${numeroIt(list.length)} contratti ANAC, ${euroCompact(totale)} messi a gara)</span></h2>
 <p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
-Il CIG è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+Il <abbr title="Codice Identificativo di Gara: codice di 10 caratteri rilasciato dall’ANAC che identifica in modo univoco ogni procedura di affidamento pubblico">CIG</abbr>
+è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
 <p><a class="chip" href="../contratti/${ente.codice}.csv" download>⬇ Scarica l’elenco completo (CSV, ${numeroIt(list.length)} contratti)</a></p>
 <div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
 <p class="small muted" id="ccount"></p>

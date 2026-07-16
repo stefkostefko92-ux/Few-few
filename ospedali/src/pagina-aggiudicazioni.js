@@ -59,8 +59,11 @@ ma è un mercato che non fa il suo mestiere: senza confronto, il prezzo non scen
   ${kpi('Aggiudicazioni analizzate', numeroIt(a.nAgg))}
   ${kpi('Con un solo offerente (competitive)', percentualeIt(comp.quotaUnOfferente), 'neg')}
   ${kpi('Ribasso mediano (competitive)', a.ribassoCompMediano != null ? f1(a.ribassoCompMediano) + '%' : '—')}
-  ${kpi('SAL in ritardo', sal.quotaRitardo != null ? percentualeIt(sal.quotaRitardo) : '—', sal.quotaRitardo > 0.1 ? 'neg' : 'pos')}
+  ${kpi('Stati avanzamento (SAL) in ritardo', sal.quotaRitardo != null ? percentualeIt(sal.quotaRitardo) : '—', sal.quotaRitardo > 0.1 ? 'neg' : 'pos')}
 </div>
+<p class="small muted">Il <strong>ribasso</strong> è lo sconto percentuale offerto dal vincitore rispetto al prezzo
+a base d'asta: più è alto, più la concorrenza ha fatto scendere il prezzo. Un ribasso vicino a zero in una gara
+competitiva è un segnale. Termini nel <a href="glossario.html">glossario</a>.</p>
 <h2>Quante offerte arrivano, per gara</h2>
 ${barChart(barPts, { caption: `Distribuzione del numero di offerenti (${numeroIt(distrTot)} gare con dato disponibile)` })}
 <h2>Un solo offerente, per tipo di procedura</h2>
@@ -80,6 +83,8 @@ aggiudicazioni (${numeroIt(a.conOfferenti)} su ${numeroIt(a.nAgg)}): il dato di 
 <em>campione</em>, non come censimento. «Un offerente» è un <strong>indicatore</strong> di scarsa concorrenza, non
 una prova di irregolarità: può dipendere da mercati di nicchia, requisiti stringenti o tempi troppo corti. La lettura
 onesta è comparativa: dove l’offerente unico è sistematico, vale la pena guardare più da vicino.</div>
+<p class="small muted"><strong>Continua l'indagine:</strong> <a href="segnali-gare.html">i semafori delle gare</a> ·
+<a href="cordate.html">le «cordate» di imprese</a> · <a href="ted.html">l'offerente unico visto dall'Europa (TED)</a>.</p>
 <p class="small muted">Fonte: <a href="${esc(agg.url)}" target="_blank" rel="noopener">ANAC — BDNCP</a>: dataset
 <em>aggiudicazioni</em> e <em>stati-avanzamento</em>, incrociati con i CIG sanitari 2023–2025 (CC BY-SA 4.0).</p>
 `;

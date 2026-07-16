@@ -980,6 +980,9 @@ fianco a fianco. I numeri sono gli stessi delle schede — solo affiancati.</p>
 </table></div>
 <p class="small muted">Valore/costi/risultato: ultimo consuntivo disponibile. «Senza gara»: quota per numero di
 contratti 2023–2025 (solo aziende abbinate ad ANAC). I link portano alle schede complete.</p>
+<p class="small muted">Il confronto è più solido tra aziende dello stesso tipo (due ASL, due aziende ospedaliere):
+un’ASL territoriale spende anche fuori dall’ospedale. «Costi per posto letto» molto sopra la media non è di per sé
+uno spreco — può riflettere una casistica più complessa.</p>
 <script>
 var DATI=${datiJson.replace(/</g, '\\u003c')};
 (function(){

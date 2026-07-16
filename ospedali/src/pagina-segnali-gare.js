@@ -34,6 +34,9 @@ export function renderSegnaliGare({ seg, jsonld }) {
 Fazekas) individua alcuni segnali ricorrenti: tempi troppo stretti, importi appena sotto le soglie, ribassi nulli,
 inviti che restano lettera morta. Qui li misuriamo per la sanità pubblica. <strong>Ognuno è un indicatore, non una
 prova</strong>: possono avere spiegazioni lecite. Servono a sapere <em>dove guardare</em>.</p>
+<p class="small muted">Sei spie, ognuna spiegata qui sotto con numeri e cautele. Il <strong>subappalto</strong> è
+quando l'impresa vincitrice affida parte del lavoro a un'altra impresa: legittimo, ma da tracciare. Termini nel
+<a href="glossario.html">glossario</a>.</p>
 <div class="grid kpis">
   ${kpi('Termine offerte breve', tb && tb.quota != null ? percentualeIt(tb.quota) : '—', tb && tb.quota > 0.15 ? 'neg' : '')}
   ${kpi('Importi sotto soglia UE', ss ? numeroIt(ss.sotto) : '—')}
@@ -86,6 +89,8 @@ coincidenza, affidamenti ravvicinati per esigenze diverse, un ribasso basso su u
 <strong>segnali per una verifica</strong> — dal CIG alla determina, fino all’accesso civico — non conclusioni.
 Le soglie sono scelte prudenti e dichiarate; i numeri per singola gara sono tutti tracciabili. Ritieni un dato
 inesatto? <a href="note-legali.html#rettifiche">Richiedi una rettifica</a>.</div>
+<p class="small muted"><strong>Continua l'indagine:</strong> <a href="cordate.html">le «cordate» di imprese</a> ·
+<a href="aggiudicazioni.html">quanti partecipano davvero alle gare</a> · <a href="appalti.html">gli appalti senza gara</a>.</p>
 <p class="small muted">Fonte: ${esc(seg.fonte)}. Dati grezzi: <a href="dati.html">open data</a> (segnali-gare.json).</p>
 `;
   return page({

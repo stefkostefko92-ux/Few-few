@@ -170,6 +170,17 @@ export function renderFornitoriIndex({ righe, totali }) {
 <p class="lead">Chi riceve i soldi delle aziende sanitarie: <strong>${numeroIt(totali)} imprese</strong> con contratti
 2023–2025. Cerca un’azienda per vedere quanto ha incassato, da quali strutture e con quali procedure. Gli operatori
 persone fisiche non sono elencati.</p>
+<details class="note" style="margin-top:6px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">L’elenco copre i contratti 2023–2025 delle aziende sanitarie collegate ai bilanci.
+  Il «valore aggiudicato» è attribuito una volta per contratto all’aggiudicatario principale ed è l’importo
+  <strong>messo a gara</strong>, non il fatturato reale dell’impresa. «Contratti» è il numero di aggiudicazioni
+  tracciate; «Aziende» indica quante strutture sanitarie hanno affidato contratti a quel fornitore. Sono mostrate
+  le prime 4.000 imprese per valore; i nomi collegati hanno una scheda dedicata (imprese con almeno 3 contratti o
+  500.000 €). Comparire in questa lista è pienamente legittimo e non è di per sé un’anomalia; a tutela della
+  riservatezza (GDPR), le persone fisiche e le imprese con nomi di persona nella denominazione sono escluse dagli
+  indicatori di rischio.</p>
+</details>
 <div class="controls"><input type="search" id="q" placeholder="Cerca fornitore…" aria-label="Cerca fornitore" style="flex:1"></div>
 <p class="small muted" id="count"></p>
 <div class="tablewrap"><table>

@@ -76,7 +76,7 @@ almeno un lotto della gara; se in una gara vincono entrambe (lotti diversi) la c
     <th class="num" scope="col">Gare insieme</th>
     <th class="num" scope="col">Vinte dalla prima</th>
     <th class="num" scope="col">Valore</th>
-    <th class="num" scope="col">Stazioni</th>
+    <th class="num" scope="col" title="Numero di committenti pubblici diversi presso cui la coppia ricorre">Stazioni appaltanti</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table></div>
@@ -94,6 +94,8 @@ lotti tecnicamente diversi. Per questo:
 È un <strong>punto di partenza per una verifica</strong>, non un verdetto. La sede competente per gli accordi
 di gara è l’<a href="https://www.agcm.it/" target="_blank" rel="noopener">Autorità Garante della Concorrenza (AGCM)</a>;
 per la titolarità delle imprese, il Registro Imprese.</div>
+<p class="small muted"><strong>Continua l'indagine:</strong> <a href="segnali-gare.html">i semafori delle gare</a> ·
+<a href="aggiudicazioni.html">quanti partecipano davvero alle gare</a> · <a href="fornitori.html">i profili dei fornitori</a>.</p>
 <p class="small muted">Fonte: ${esc(cordate.fonte)}. Soglie: almeno ${cordate.soglie.insieme} gare insieme, la vincitrice ne
 vince almeno ${cordate.soglie.minVittorie}, l’altra nessuna; escluse le gare con più di ${cordate.soglie.maxPartecipanti}
 concorrenti. Dati grezzi: <a href="dati.html">open data</a> (cordate.json).</p>

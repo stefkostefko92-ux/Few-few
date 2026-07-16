@@ -320,6 +320,17 @@ ${PIANO_RIENTRO[key] ? `<div class="seg ${PIANO_RIENTRO[key] === 'commissariata'
 <div class="note"><strong>Nota.</strong> Il «risultato aziende» somma i soli conti economici delle aziende della regione;
 non include la Gestione Sanitaria Accentrata (GSA), che a livello regionale copre gran parte dei disavanzi. È quindi un
 dato di contesto, non il disavanzo «vero» della regione. → <a href="../inchiesta.html">L’inchiesta sul deficit</a></div>
+<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">I riquadri in alto sommano i bilanci delle <strong>sole aziende</strong> della regione:
+  come spiegato nella nota, senza la Gestione Sanitaria Accentrata (GSA) non rappresentano il disavanzo «vero»
+  regionale. La quota «senza gara» è calcolata sul numero di contratti dell’<strong>intera sezione regionale
+  ANAC</strong> (non solo delle aziende collegate ai bilanci) e comprende affidamento diretto e negoziata senza
+  pubblicazione, escluse le adesioni ad accordi quadro già messe a gara a monte. Il riquadro «sotto soglia» conta
+  gli affidamenti appena sotto i limiti di legge (35–40 mila e 130–140 mila euro): un possibile segnale di
+  frazionamento, non una prova. La tabella delle strutture è ordinata per gravità e numero delle segnalazioni
+  contabili automatiche — indicatori da verificare, non accuse. Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
 ${appaltiBlk}
 <h2>Strutture della regione</h2>
 <p class="muted small">Ordinate per gravità e numero delle segnalazioni contabili automatiche (indicatori, non accuse).</p>

@@ -34,6 +34,11 @@ try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')docume
   --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
   --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
   --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
   --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
   --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
   --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
@@ -53,7 +58,10 @@ try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')docume
    Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
 :root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
   --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
-  --line:#26323f; --line-2:#202b37;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
   --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
   --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
   /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
@@ -63,7 +71,8 @@ try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')docume
 @media (prefers-color-scheme:dark){
   :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
     --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
-    --line:#26323f; --line-2:#202b37;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
     --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
     --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
     --shadow-sm:0 1px 2px rgba(0,0,0,.35);
@@ -100,7 +109,7 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
    44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
 .nav-toggle{display:none;align-items:center;justify-content:center;
   width:44px;height:44px;margin-left:auto;padding:0;flex:none;
-  background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
   color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
 .nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
 .nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
@@ -113,7 +122,7 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
    независимо от JS-тайминга → без грешна икона при първия paint. */
 .theme-toggle{display:inline-flex;align-items:center;justify-content:center;
   width:44px;height:44px;padding:0;flex:none;
-  background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
   color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
 .theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
 .theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
@@ -135,8 +144,8 @@ nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(-
   header.site .wrap{padding-top:8px;row-gap:4px}
   .theme-toggle{margin-left:auto}
   nav.main{flex-basis:100%;margin-left:0;justify-content:center;
-    font-size:13.5px;border-top:1px solid var(--line);padding:4px 0 7px}
-  nav.main a{padding:6px 8px}
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
 }
 @media(max-width:900px){
   header.site{position:static;border-top-width:3px}
@@ -161,8 +170,12 @@ main{padding:var(--s7) 0 var(--s6)}
 /* ---------- Типографска скала ---------- */
 h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
   margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
 h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
-  margin:var(--s7) 0 var(--s4);font-weight:650}
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
 h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
 p{max-width:var(--measure)}
 .lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
@@ -190,10 +203,19 @@ th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);ve
 tbody tr:last-child td{border-bottom:none}
 th{background:var(--surface-2);font-size:11.5px;font-weight:650;
   text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
-  position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--line)}
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 2.5%)}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
 tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
 .neg{color:var(--neg)} .pos{color:var(--pos)}
 
 /* ---------- Значки и чипове ---------- */
@@ -214,7 +236,7 @@ tbody tr:hover{background:var(--brand-tint)}
 
 /* ---------- Форма / контроли ---------- */
 .controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
-.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line);
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
   border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
 .controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
   box-shadow:0 0 0 3px var(--brand-tint)}
@@ -295,7 +317,7 @@ footer.site a:hover{color:var(--brand)}
     <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
   </button>
-  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../metodologia.html">Metodologia</a></nav>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../glossario.html">Glossario</a><a href="../metodologia.html">Metodologia</a></nav>
 </div></header>
 <main id="contenuto"><div class="wrap">
 
@@ -303,6 +325,22 @@ footer.site a:hover{color:var(--brand)}
 <h1>AZIENDA OSPEDALIERA I.C.P. DI MILANO</h1>
 <p><span class="chip">Lombardia</span> <span class="chip">Azienda Ospedaliera</span> <span class="chip">MILANO (MI)</span> <span class="chip">codice 030968</span> <span class="badge bassa">Bassa</span></p>
 <p class="muted small">VIA CASTELVETRO, 22, MILANO</p>
+<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
+  AZIENDA OSPEDALIERA I.C.P. DI MILANO è una struttura pubblica del SSN della regione Lombardia — Azienda Ospedaliera. Nell’ultimo esercizio disponibile (2015) ha registrato un valore della produzione di 287 mln €. I controlli automatici sui bilanci hanno prodotto una segnalazione contabile (gravità massima: bassa).
+  Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>
+<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">Questa pagina riunisce tre fonti ufficiali: i bilanci CE/SP trasmessi al MEF (BDAP),
+  l’anagrafe ospedaliera del Ministero della Salute e i contratti pubblici dell’ANAC. I costi «per posto letto» e
+  «per ricovero» sono confrontati con la <strong>mediana nazionale</strong>, mentre la sezione «Dove vanno i soldi»
+  confronta ogni voce di spesa con la mediana delle <strong>aziende simili (peer)</strong>: uno scostamento marcato
+  genera un segnale, che è un indicatore da verificare, non una prova. Negli appalti, «senza gara» significa
+  affidamento diretto o procedura negoziata senza pubblicazione; le adesioni ad accordi quadro e convenzioni
+  (es. Consip) <strong>non</strong> contano come «senza gara», perché la concorrenza c’è già stata a monte.
+  Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
+  pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
+  Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
 
 <div class="grid kpis">
     <div class="card kpi"><div class="n ">286.680.000 €</div><div class="l">Valore produzione (2015)</div></div>
@@ -314,13 +352,15 @@ footer.site a:hover{color:var(--brand)}
 <h2>Segnalazioni <span class="small muted">(1)</span></h2><div class="seg bassa"><div class="t"><span class="badge bassa">Bassa</span> <span>Incidenza del personale tra le più alte</span></div>
           <div class="d">Nel 2015 il costo del personale è il 52,4% del valore della produzione (mediana nazionale 29,4%). Indicatore contestuale, da valutare con l’attività svolta.</div></div>
 
-<h2>Andamento economico</h2>
+<h2>Come sono cambiati ricavi, costi e risultato</h2>
 <div class="grid" style="grid-template-columns:1fr">
   <div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Ricavi e costi della produzione per anno (€)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="149.6" x2="666" y2="149.6"/><text x="50" y="152.6" text-anchor="end">100 mln</text><line class="grid-line" x1="56" y1="85.3" x2="666" y2="85.3"/><text x="50" y="88.3" text-anchor="end">200 mln</text><line class="grid-line" x1="56" y1="20.9" x2="666" y2="20.9"/><text x="50" y="23.9" text-anchor="end">300 mln</text><text x="56.0" y="232" text-anchor="middle">2012</text><text x="259.3" y="232" text-anchor="middle">2013</text><text x="462.7" y="232" text-anchor="middle">2014</text><text x="666.0" y="232" text-anchor="middle">2015</text><path d="M56.0,14.0 L259.3,21.6 L462.7,25.1 L666.0,29.5" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="14.0" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="21.6" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="25.1" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="29.5" r="2.5" fill="var(--brand)"/><path d="M56.0,21.1 L259.3,28.9 L462.7,31.8 L666.0,32.8" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="21.1" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="28.9" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="31.8" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="32.8" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Valore della produzione</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Costi della produzione</text></g></g></svg><figcaption>Ricavi e costi della produzione per anno (€)</figcaption></figure></div>
   <div class="card"></div>
 </div>
 
 <h2>Dove vanno i soldi <span class="small muted">(2015, quota dei costi della produzione · confronto con aziende simili (ospedaliera, 100-500M))</span></h2>
+      <p class="small muted">Le categorie di spesa dove i numeri si discostano molto dalle aziende simili: dove vale
+      la pena guardare i contratti. Indicatori, non prove.</p>
       <div class="card"><div class="hbars" role="group" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
         <div class="hbar-l">Acquisti di servizi (totale)</div>
         <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
@@ -358,6 +398,8 @@ footer.site a:hover{color:var(--brand)}
   <p class="small muted">Indicatori della regione a cui appartiene questa azienda (dato regionale, non della singola struttura). Approfondisci in <a href="regione/030.html">Lombardia</a>.</p>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"><a class="seg media" href="apparecchiature.html" style="text-decoration:none"><div class="t">Dotazione tecnologica</div><div class="d"><strong>29,1 TC/mln · 72 robot</strong></div></a><a class="seg media" href="sdo.html" style="text-decoration:none"><div class="t">Volumi di ricovero</div><div class="d"><strong>129,2 ric./1.000 ab.</strong></div></a><a class="seg media" href="pnrr-salute.html" style="text-decoration:none"><div class="t">PNRR Missione 6</div><div class="d"><strong>205 €/ab.</strong></div></a></div>
 <h2>Indicatori per anno</h2>
+    <p class="muted small">Ogni riga è un anno di bilancio (modelli CE/SP inviati al MEF). In rosso i risultati in
+    perdita, in verde quelli in utile.</p>
     <div class="tablewrap"><table>
     <thead><tr><th scope="col">Anno</th><th class="num" scope="col">Contributi in c/esercizio (A.1)</th><th class="num" scope="col">Valore della produzione (A)</th><th class="num" scope="col">Costi della produzione (B)</th><th class="num" scope="col">Costo del personale</th><th class="num" scope="col">Ammortamenti</th><th class="num" scope="col">Risultato di esercizio</th><th class="num" scope="col">Totale attivo</th><th class="num" scope="col">Patrimonio netto</th><th class="num" scope="col">Debiti</th></tr></thead>
     <tbody><tr><td>2012</td><td class="num ">101.511.000 €</td><td class="num ">310.765.000 €</td><td class="num ">299.722.000 €</td><td class="num ">152.715.000 €</td><td class="num ">19.441.000 €</td><td class="num ">—</td><td class="num ">242.040.000 €</td><td class="num ">94.403.000 €</td><td class="num ">124.708.000 €</td></tr><tr><td>2013</td><td class="num ">92.786.000 €</td><td class="num ">298.908.000 €</td><td class="num ">287.563.000 €</td><td class="num ">151.198.000 €</td><td class="num ">12.745.000 €</td><td class="num ">—</td><td class="num ">266.445.000 €</td><td class="num ">132.893.000 €</td><td class="num ">106.865.000 €</td></tr><tr><td>2014</td><td class="num ">87.793.000 €</td><td class="num ">293.492.000 €</td><td class="num ">283.081.000 €</td><td class="num ">149.897.000 €</td><td class="num ">11.164.000 €</td><td class="num ">—</td><td class="num ">227.130.000 €</td><td class="num ">89.071.000 €</td><td class="num ">109.811.000 €</td></tr><tr><td>2015</td><td class="num ">81.865.000 €</td><td class="num ">286.680.000 €</td><td class="num ">281.567.000 €</td><td class="num ">150.085.000 €</td><td class="num ">10.383.000 €</td><td class="num ">—</td><td class="num ">223.470.000 €</td><td class="num ">131.608.000 €</td><td class="num ">67.716.000 €</td></tr></tbody></table></div>
