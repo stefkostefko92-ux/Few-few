@@ -88,10 +88,17 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
 
 ## Предложена подредба за спринтове
 1. Scriptlet engine + топ 15 scriptlet-а (№1) — най-голям скок; генерализира YT хаковете
-2. Surrogate redirects (№2) — веднага маха счупени сайтове
+2. ✅ **Surrogate redirects (№2) — ИЗПЪЛНЕНО (v4.1.0)** — GPT/adsbygoogle/GA/apstag стъбове
 3. DNR modifyHeaders слой: `$csp` + `$permissions` + `removeheader` (№3-5, един пайплайн)
-4. Процедурни оператори: matches-attr/matches-path/style/remove-attr/remove-class (№7)
+4. ✅ **Процедурни оператори (№7) — ИЗПЪЛНЕНО (v4.1.1)** — matches-attr/matches-path/style/remove-attr/remove-class
 5. Subscribe-by-URL + zapper + per-site no-cosmetics (№8)
+
+### Остатъчно / следващо
+- **Scriptlet engine (№1)** — най-голямата останала стойност, но иска ДИЗАЙН пас
+  преди код (MAIN world injection през registerContentScripts, проблемът с per-site
+  аргументи, timing при document_start). Не се freehand-ва.
+- **DNR modifyHeaders (№3-5)** — реализуемо; иска източник на $csp/$permissions данни.
+- **UX (№8)** — subscribe-by-URL (разширява „My filters" парсера), element zapper.
 
 Източници: github.com/gorhill/uBlock/wiki (Resources-Library, Procedural-cosmetic-filters,
 Static-filter-syntax) · uBOL FAQ.
