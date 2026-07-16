@@ -18,7 +18,10 @@ cosmetic_generic.css    EasyList генерична козметика (гейт
 meta.js                 Facebook / Instagram sponsored постове
 cookies.js / .css       затваряне на cookie/consent банери (вкл. Shadow DOM)
 antiadblock.js / .css   махане на "disable adblocker" стени
-picker.js / .css        element picker (ръчно скриване)
+picker.js / .css        element picker (ръчно скриване) + zapper (еднократно)
+scriptlets/             scriptlet engine (##+js): engine.js (clean-room код) +
+                        list.txt (данни) → main.js (пече се от build_scriptlets.mjs;
+                        регистрира се в MAIN world при document_start)
 youtube_loader.js       инжектира youtube_main в MAIN world (с bypass fallback)
 youtube_main.js         MAIN world — маха рекламните полета от player отговора
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
@@ -47,6 +50,12 @@ bash tools/package.sh                         # билд + самопровер�
   `adblock.carbonstealth.eu/filters.json` (+ `.sig` — Ed25519 подпис, проверява
   се при конфигуриран ключ) — само ДАННИ (домейни, CSS селектори, YT полета),
   които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
+- **Scriptlets (`##+js`):** точно uBOL моделът — КОДЪТ (`scriptlets/engine.js`) е
+  фиксиран в пакета; per-site директивите се **пекат при билда** от `list.txt` в
+  `scriptlets/main.js`. Никакви scriptlet-и не идват от мрежата и не се eval-ват.
+  Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
+  `set-constant` стойностите — само от фиксиран речник. **След промяна на
+  engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.
 - YouTube: **не** блокираме `googlevideo.com`. Player ЗАЯВКАТА получава само
   добавени boolean флагове (isInlinePlaybackNoAd — спира доставката на реклами
   при източника); никога не пипаме съществуващи полета (подписи/timestamps) и

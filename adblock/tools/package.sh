@@ -14,6 +14,7 @@ rm -f "$out"
 
 zip -r "$out" . \
   -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
+     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
 
@@ -32,6 +33,9 @@ Object.values(m.icons || {}).forEach(f => refs.add(f));
 if (m.action?.default_popup) refs.add(m.action.default_popup);
 if (m.options_ui?.page) refs.add(m.options_ui.page);
 (m.declarative_net_request?.rule_resources || []).forEach(r => refs.add(r.path));
+// Registered dynamically via chrome.scripting (not in the manifest), so add it
+// explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
+refs.add("scriptlets/main.js");
 const zipFiles = zip.split("\n").filter(Boolean);
 const has = (f) => f.endsWith("/*")
   ? zipFiles.some(z => z.startsWith(f.slice(0, -1)) && z !== f.slice(0, -1)) // glob: поне 1 файл с този префикс

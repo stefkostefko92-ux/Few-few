@@ -1,0 +1,28 @@
+! Supreme AdBlock — curated scriptlet directives (##+js(...))
+! =========================================================================
+! Syntax (uBlock Origin compatible):   [domain[,domain2]]##+js(name, arg1, arg2)
+!   - no domain  → global (runs on every page)
+!   - domain     → runs only on that host and its subdomains
+! Only the scriptlet names in tools/build_scriptlets.mjs ALIASES are accepted;
+! arguments are validated at build time (set-constant values come from a fixed
+! dictionary). Every scriptlet fails OPEN — a bad line can never break a page.
+!
+! CONSERVATIVE BY DESIGN: this list is intentionally small and limited to
+! anti-adblock library neutralisation, which matches our stated "anti-adblock
+! bypass" feature and cannot break legitimate page content. Site-specific
+! entries must be verified on a live page before they are added here.
+! -------------------------------------------------------------------------
+
+! --- Global: neutralise the common open-source anti-adblock detector libs ---
+! These define a named global with a constant no-op so a detector script cannot
+! wire itself up. The property names are specific enough that pinning them is
+! safe on pages that don't use them.
+##+js(set-constant, FuckAdBlock, noopFunc)
+##+js(set-constant, BlockAdBlock, noopFunc)
+##+js(set-constant, fuckAdBlock, noopFunc)
+##+js(set-constant, blockAdBlock, noopFunc)
+##+js(set-constant, sadblock, noopFunc)
+##+js(set-constant, adblockDetector, noopFunc)
+##+js(set-constant, canRunAds, true)
+##+js(set-constant, canShowAds, true)
+##+js(set-constant, isAdBlockActive, false)

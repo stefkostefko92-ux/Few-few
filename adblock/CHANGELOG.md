@@ -1,5 +1,31 @@
 # Changelog
 
+## 4.4.0
+
+Scriptlet engine (`##+js(...)`) — uBO паритет спринт 1, най-голямата останала липса:
+- Нов **scriptlet engine**, инжектиран в MAIN world на страницата преди нейните
+  скриптове (`chrome.scripting.registerContentScripts` · `world:"MAIN"` ·
+  `runAt:"document_start"`) — достига там, докъдето DNR + козметиката не могат:
+  property-капани, timer/event defuser-и, JSON pruning на ad отговори.
+- 12 clean-room (MIT) scriptlet-а + uBO алиаси: `set-constant`/`set`,
+  `abort-on-property-read`/`aopr`, `abort-on-property-write`/`aopw`,
+  `abort-current-script`/`acs`, `no-setTimeout-if`/`nostif`,
+  `no-setInterval-if`/`nosiif`, `addEventListener-defuser`/`aeld`, `json-prune`,
+  `no-fetch-if`, `no-window-open-if`/`nowoif`, `remove-attr`/`ra`,
+  `remove-class`/`rc`.
+- **Compliance (точно uBOL моделът):** КОДЪТ е фиксиран в пакета; per-site
+  ДИРЕКТИВИТЕ се пекат при билда от `scriptlets/list.txt` в `scriptlets/main.js`
+  (`tools/build_scriptlets.mjs`). Нищо не се тегли или изпълнява по време на работа
+  — MV3 compliant, нула remote code.
+- **Сигурност:** билд-валидатор с allowlist на имена; всеки аргумент се проверява
+  (без `__proto__`/`constructor`/`prototype`, без `<script>` пробив, дължина);
+  `set-constant` стойността идва само от фиксиран речник. Всеки scriptlet е
+  try/catch и **fail-open** — лоша директива никога не чупи страницата.
+- Регистрацията е динамична → спазва глобалния toggle и allowlist-а
+  (`excludeMatches`); при изключено разширение engine-ът се разрегистрира.
+- Курираният списък е консервативен: само неутрализация на анти-адблок детекторни
+  библиотеки (не пипа легитимно съдържание).
+
 ## 4.3.0
 
 UX функции (uBO паритет спринт 4):

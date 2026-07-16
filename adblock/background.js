@@ -260,7 +260,67 @@ async function applyState() {
   } catch (e) {
     console.warn("ruleset toggle failed", e);
   }
+  await syncScriptlets(on);
   chrome.action.setBadgeBackgroundColor({ color: on ? "#00838f" : "#5a5a5a" });
+}
+
+// ---- Scriptlet engine (##+js) ----
+// Registers scriptlets/main.js as a MAIN-world, document_start content script
+// (built from scriptlets/list.txt by tools/build_scriptlets.mjs). The CODE
+// ships in the package; the per-site directive MAP is baked at build time —
+// nothing is fetched or evaluated at runtime (MV3 compliant). We register it
+// dynamically (not in the manifest) so we can honour the global on/off toggle
+// and skip allowlisted sites. `world:"MAIN"` needs Chrome 111+ (min is 121).
+const SCRIPTLET_SCRIPT_ID = "sa-scriptlets";
+
+// Serialise register/unregister so a fast on/off/on burst (alarm + message
+// racing through applyState) can't interleave the awaits and leave the engine
+// registered while disabled, or vice versa. Same pattern as smartChain below.
+let scriptletChain = Promise.resolve();
+function syncScriptlets(on) {
+  scriptletChain = scriptletChain.then(() => doSyncScriptlets(on)).catch(() => {});
+  return scriptletChain;
+}
+
+async function doSyncScriptlets(on) {
+  if (!chrome.scripting?.registerContentScripts) return;
+  if (on === undefined) {
+    const { enabled } = await chrome.storage.local.get("enabled");
+    on = enabled !== false;
+  }
+  // Always clear first so a re-register can't throw "already registered".
+  try {
+    const existing = await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPTLET_SCRIPT_ID] });
+    if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: [SCRIPTLET_SCRIPT_ID] });
+  } catch (e) {}
+  if (!on) return;
+
+  const { allowlist = [] } = await chrome.storage.local.get("allowlist");
+  const excludeMatches = [];
+  for (const d of allowlist) {
+    if (typeof d !== "string" || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)) continue;
+    excludeMatches.push(`*://${d}/*`, `*://*.${d}/*`);
+  }
+
+  const script = {
+    id: SCRIPTLET_SCRIPT_ID,
+    matches: ["<all_urls>"],
+    js: ["scriptlets/main.js"],
+    runAt: "document_start",
+    allFrames: true,
+    world: "MAIN",
+    // Explicit: Chrome auto-restores the registration on restart before
+    // onStartup runs; onStartup then clears + re-registers to refresh
+    // excludeMatches. We rely on injection without a live service worker.
+    persistAcrossSessions: true,
+  };
+  if (excludeMatches.length) script.excludeMatches = excludeMatches;
+
+  try {
+    await chrome.scripting.registerContentScripts([script]);
+  } catch (e) {
+    console.warn("scriptlet registration failed", e);
+  }
 }
 
 // ---- Live filter update (remote DATA, never code) ----
@@ -703,6 +763,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
         await chrome.storage.local.set({ allowlist: list });
         await syncAllowRules();
+        await syncScriptlets(); // refresh excludeMatches for the new allowlist
         sendResponse({ ok: true, allowlist: list });
       });
       return true;

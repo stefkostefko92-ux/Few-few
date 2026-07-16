@@ -87,18 +87,39 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
 ---
 
 ## Предложена подредба за спринтове
-1. Scriptlet engine + топ 15 scriptlet-а (№1) — най-голям скок; генерализира YT хаковете
+1. ✅ **Scriptlet engine (№1) — ИЗПЪЛНЕНО (v4.4.0)** — 12 scriptlet-а в MAIN world
 2. ✅ **Surrogate redirects (№2) — ИЗПЪЛНЕНО (v4.1.0)** — GPT/adsbygoogle/GA/apstag стъбове
-3. DNR modifyHeaders слой: `$csp` + `$permissions` + `removeheader` (№3-5, един пайплайн)
+3. ✅ **DNR modifyHeaders (№3-5) — ИЗПЪЛНЕНО (v4.2.0)** — Topics/FLoC/Protected-Audience Permissions-Policy
 4. ✅ **Процедурни оператори (№7) — ИЗПЪЛНЕНО (v4.1.1)** — matches-attr/matches-path/style/remove-attr/remove-class
-5. Subscribe-by-URL + zapper + per-site no-cosmetics (№8)
+5. ✅ **Subscribe-by-URL + zapper (№8) — ИЗПЪЛНЕНО (v4.3.0)**
+
+### Scriptlet engine — как е реализиран (v4.4.0)
+Точно uBOL моделът: КОДЪТ е в пакета, per-site ДАННИТЕ се пекат при билда.
+- `scriptlets/engine.js` — clean-room (MIT) имплементации на 12 scriptlet-а +
+  bootstrap. Шаблон с `/*__SCRIPTLET_MAP__*/` инжекционна точка.
+- `scriptlets/list.txt` — курирани `##+js(...)` директиви (данни). Консервативен:
+  само неутрализация на анти-адблок детектори (не чупи легитимно съдържание).
+- `tools/build_scriptlets.mjs` — компилатор: валидира всяко име (ALIASES allowlist),
+  всеки аргумент (без `__proto__/constructor/prototype`, без markup, дължина),
+  set-constant стойност само от фиксиран речник → пече `scriptlets/main.js`.
+- `background.js::syncScriptlets()` — регистрира `main.js` през
+  `chrome.scripting.registerContentScripts({ world:"MAIN", runAt:"document_start" })`
+  динамично (спазва глобалния toggle + allowlist чрез `excludeMatches`).
+- Реализирани: `set-constant`, `abort-on-property-read/-write`, `abort-current-script`,
+  `no-setTimeout-if`, `no-setInterval-if`, `addEventListener-defuser`, `json-prune`,
+  `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class` (+ uBO алиаси).
 
 ### Остатъчно / следващо
-- **Scriptlet engine (№1)** — най-голямата останала стойност, но иска ДИЗАЙН пас
-  преди код (MAIN world injection през registerContentScripts, проблемът с per-site
-  аргументи, timing при document_start). Не се freehand-ва.
-- **DNR modifyHeaders (№3-5)** — реализуемо; иска източник на $csp/$permissions данни.
-- **UX (№8)** — subscribe-by-URL (разширява „My filters" парсера), element zapper.
+- **Scriptlet engine — live channel** — v4.4.0 пече само курирания списък при билда.
+  Live scriptlet-и от `filters.json` (Level 2 „shim-then-configure") са бъдеща стъпка;
+  изискват отделен под-канал и жив timing-тест преди пускане.
+- **`trusted-*` варианти** — само от нашия Ed25519-подписан канал; не в v1.
+- Липсващи scriptlet-и: `abort-on-stack-trace`, `remove-node-text`, `href-sanitizer`,
+  `set-cookie`/`remove-cookie`, `nowebrtc` — добавят се в engine.js при нужда.
+
+> ⚠️ **Преди Web Store submission:** курираните site-specific директиви (ако се добавят
+> към глобалните анти-адблок) трябва да минат жив тест на реална страница —
+> особено `set-constant` timing при document_start срещу реален анти-адблок сайт.
 
 Източници: github.com/gorhill/uBlock/wiki (Resources-Library, Procedural-cosmetic-filters,
 Static-filter-syntax) · uBOL FAQ.
