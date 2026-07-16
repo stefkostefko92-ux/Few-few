@@ -72,12 +72,43 @@ function parseLearn(block) {
 const norm = (s) => s.toLowerCase().replace(/[`'"„“”]/g, "").replace(/\s+/g, " ").replace(/[.;,]+$/, "").trim();
 
 // Guardrail (flawlessness #10): НИКОГА тайна/ключ/токен в паметта — твърд гейт, не съвет.
-const SECRET_RE = /\b(?:sk|rk|pk)_(?:live|test|prod)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/;
+const SECRET_RE = /\b(?:sk|rk|pk)_(?:live|test|prod)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{35}|\b(?:ya29|AQ)\.[0-9A-Za-z_-]{20,}|(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqp):\/\/[^\s:@/]+:[^\s:@/]+@|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/;
 const looksSecret = (s) => SECRET_RE.test(String(s));
 
-// „Verified" иска РЕАЛЕН източник (URL / file:line / познат инструмент/eval); иначе → карантина.
+// Анти устойчива-инжекция (persistent prompt injection): паметта се ИНЖЕКТИРА в
+// контекста на всеки бъдещ старт (memory-preload) → зловреден сайт, който убеди агент
+// да „научи" инструкция, я закотвя завинаги. Твърд дроп на поуки-инструкции:
+// императиви за изпращане/изпълнение, смяна на роля/правила, exfil URL-и, скрити знаци.
+const INJECTION_RE = new RegExp(
+  [
+    /(?:ignore|disregard|forget)\s+(?:all\s+)?(?:previous|prior|earlier|above)\s+(?:instructions?|rules?|context)/.source,
+    /(?:игнорирай|забрави|пренебрегни)\s+(?:всички\s+)?(?:предишн[\p{L}]*|горн[\p{L}]*|досегашн[\p{L}]*|тези|тукашн[\p{L}]*)\s+(?:инструкц[\p{L}]*|правил[\p{L}]*|указан[\p{L}]*)/u.source,
+    /you\s+are\s+(?:now|no\s+longer)\s/.source,
+    /(?:ти\s+(?:вече\s+)?си|отсега\s+си)\s+(?:друг|нов)\s+(?:агент|асистент)/.source,
+    /(?:винаги|always)\s+(?:изпращай|изпрати|прати|send|post|forward|exfiltrate)\b/.source,
+    /(?:изпращай|изпрати|прати|send|post|upload|forward)\b[^\n]{0,80}\b(?:към|to)\s+https?:\/\//.source,
+    /curl\s+[^\n]*\|\s*(?:ba)?sh/.source,
+    /(?:\.env|тайн[\p{L}]*|секрет[\p{L}]*|secrets?|credentials?|парол[\p{L}]*|токен[\p{L}]*|tokens?)[^\n]{0,60}\bhttps?:\/\//u.source,
+    // Многоезично (продуктите са IT/DE/ES/BG/EN): игнорирай-правила + exfil към URL.
+    /(?:ignora|dimentica|trascura)\s+(?:tutte\s+)?le\s+(?:istruzioni|regole)/u.source, // IT
+    /(?:ignoriere|vergiss|missachte)\s+(?:alle\s+)?(?:vorherigen|obigen|bisherigen)\s+(?:anweisungen|regeln|befehle)/u.source, // DE
+    /(?:ignora|olvida)\s+(?:todas\s+las\s+)?(?:instrucciones|reglas)\s+(?:anteriores|previas)/u.source, // ES
+    /(?:sei\s+(?:ora|adesso)|du\s+bist\s+(?:jetzt|nun)|ahora\s+eres)\s/u.source, // IT/DE/ES смяна на роля
+    /(?:invia|manda|inoltra|sende|schicke|leite|env[ií]a)\b[^\n]{0,80}\b(?:a|an|zu)\s+https?:\/\//u.source, // IT/DE/ES exfil→URL
+    /[​-‏‪-‮⁦-⁩]/.source, // нулево-широки/bidi контролни знаци
+  ].join("|"),
+  "iu",
+);
+const looksInjection = (s) => INJECTION_RE.test(String(s));
+
+// „Verified" иска РЕАЛЕН източник. Втвърдено: URL трябва да има истински ХОСТ (с точка,
+// напр. docs.anthropic.com) — отхвърля малформирани като https://zabobovdol/… (repo-path,
+// залепен на https://); ИЛИ реален file:line (път.разширение:ред); ИЛИ познат инструмент/eval.
+// Синтактична проверка (не семантична — hook-ът не отваря URL-а); curate + човек до push.
 const sourceIsReal = (src) =>
-  /https?:\/\/\S+|[\w./-]+\.\w+:\d+|\b(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|docs\.|registry\.npmjs|github\.com|developer\.|caniuse)\b/i.test(String(src));
+  /https?:\/\/[^/\s]*\.[^/\s.][^/\s]*\//i.test(String(src)) ||           // URL с хост-с-точка + път
+  /[\w./-]+\.[a-z]{1,5}:\d+/i.test(String(src)) ||                         // file.ext:line
+  /\b(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)\b/i.test(String(src));
 
 function ensureSections(txt) {
   if (!/##\s*Проверени поуки/.test(txt)) txt += `\n## Проверени поуки (verified)\n`;
@@ -215,17 +246,22 @@ function gitCommitLocal(agentId) {
       { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
     try { execSync("git diff --cached --quiet", { cwd: PROJECT_DIR, stdio: "ignore" }); return; } // нищо staged → нищо за commit
     catch { /* има staged промени → commit */ }
-    // Committer = Claude <noreply@anthropic.com> — иначе stop-hook-ът за
-    // Verified commits флагва всеки auto-commit (носи и SubagentStop контекст:
-    // авторството личи от commit съобщението, не от имейла).
-    execSync(`git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
+    execSync(`git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
       { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
   } catch { /* никога не блокирай агента заради git */ }
 }
 
 // Push във ФОН (detached) — не блокира hook-а; при non-fast-forward прави rebase и пробва пак.
+// ГЕЙТ (сигурност): verified-гейтът е синтактичен → лоша/полу-отровена поука може да мине.
+// Затова НЕ пушваме автономно към КАНОНА (main/master) — там влиза само през човек/CI/PR.
+// На работни клонове (PR) авто-push е ОК (там има ревю преди merge). Override за спешност:
+// AGENT_MEMORY_PUSH_MAIN=1. Локалният commit винаги става — просто не лети сам в main.
 function bgPush() {
   try {
+    let branch = "";
+    try { branch = execSync("git rev-parse --abbrev-ref HEAD", { cwd: PROJECT_DIR }).toString().trim(); } catch { /* detached/грешка */ }
+    const isCanon = branch === "main" || branch === "master";
+    if (isCanon && process.env.AGENT_MEMORY_PUSH_MAIN !== "1") return; // commit-нато локално; човек/CI пушва
     const child = spawn("sh", ["-c", "git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)"],
       { cwd: PROJECT_DIR, detached: true, stdio: "ignore" });
     child.unref();
@@ -254,6 +290,7 @@ function main() {
   for (const les of parsed.lessons) {
     if (!les.text || !les.source) continue; // източник или нищо
     if (looksSecret(les.text) || looksSecret(les.source)) continue; // тайна → НЕ записвай (твърд дроп)
+    if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // инжекция-инструкция → твърд дроп (анти persistent injection)
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).
     let confidence = String(les.confidence || "").toLowerCase();
     if (confidence === "verified" && !sourceIsReal(les.source)) confidence = "unverified";

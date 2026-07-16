@@ -17,6 +17,7 @@
   let customSelectors = [];
   let procSelectors = [];
   let unhideSelectors = [];
+  let genericHideHost = false; // EasyList $generichide за този хост
 
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
@@ -40,10 +41,6 @@
     "[id^='google_ads_']",
     "[id^='div-gpt-ad']",
     "[id^='gpt-']",
-    "[id*='-ad-']",
-    "[id*='_ad_']",
-    "[id^='ad-']",
-    "[id$='-ad']",
     "[id*='banner-ad']",
     "[id*='adsense']",
     "[id*='dfp-']",
@@ -58,10 +55,6 @@
     "[class*='sponsored']",
     "[class*='-sponsor']",
     "[class*='adsbygoogle']",
-    "[class^='ad-']",
-    "[class$='-ad']",
-    "[class$='-ads']",
-    "[class*=' ad ']",
     "[class*='dfp-']",
     "[class*='gpt-ad']",
     "[class*='outbrain']",
@@ -145,12 +138,20 @@
 
   const toRegex = (s) => {
     const m = /^\/(.+)\/(i?)$/.exec(s);
+    if (!m) return null;
+    // ReDoS guard: капваме дължината И броя квантори (*, +, {n}). Един квантор
+    // е линеен; два+ подредени (напр. [a-z]*[a-z]*x) дават полиномиален/
+    // катастрофичен backtracking, който замразява таба.
+    const q = (m[1].match(/[*+]|\{\d/g) || []).length;
+    if (m[1].length > 200 || q > 1) return null;
     try {
-      return m ? new RegExp(m[1], m[2]) : null;
+      return new RegExp(m[1], m[2]);
     } catch {
       return null;
     }
   };
+  // Капваме тествания текст, за да ограничим backtracking върху дълъг textContent.
+  const textOf = (el) => (el.textContent || "").slice(0, 20000);
 
   function xpathAll(expr, ctx) {
     const out = [];
@@ -184,7 +185,7 @@
       const { op, arg } = p.ops[k];
       if (op === "has-text") {
         const re = toRegex(arg);
-        els = els.filter((el) => (re ? re.test(el.textContent) : el.textContent.includes(arg)));
+        els = els.filter((el) => (re ? re.test(textOf(el)) : textOf(el).includes(arg)));
       } else if (op === "min-text-length") {
         const n = parseInt(arg, 10) || 0;
         els = els.filter((el) => el.textContent.length >= n);
@@ -284,9 +285,13 @@
     if (!enabled) return;
     document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
       const p = el.parentElement;
-      if (p && p.children.length === 1 && p.offsetHeight < 5) {
-        p.style.setProperty("display", "none", "important");
-      }
+      if (!p || p.children.length !== 1 || p.offsetHeight >= 5) return;
+      // Не колабсирай контейнер, който тепърва ще lazy-load-не съдържание.
+      if (
+        p.hasAttribute("data-lazy") || p.hasAttribute("data-src") ||
+        /\blazy\b/i.test(p.className || "") || p.querySelector("[loading='lazy']")
+      ) return;
+      p.style.setProperty("display", "none", "important");
     });
   }
 
@@ -300,8 +305,11 @@
   const nearSize = (w, h) =>
     IAB_SIZES.some(([aw, ah]) => Math.abs(w - aw) <= 2 && Math.abs(h - ah) <= 2);
 
+  // Токени за sticky ad-сигнал. "banner"/"promo" НЕ са тук — те са прекалено
+  // чести за легитимни sticky ленти (promo-bar, top-banner, hero-banner) и
+  // даваха false positives; истинските ad-ленти носят по-специфичен маркер.
   const AD_TOKENS =
-    /(^|[^a-z])(ads?|advert|sponsor|promo|banner|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
+    /(^|[^a-z])(ads?|advert|sponsor|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
 
   function isThirdParty(src) {
     try {
@@ -437,6 +445,10 @@
             if (!res) return;
             bundleCosmetic = Array.isArray(res.hide) ? res.hide : [];
             unhideSelectors = Array.isArray(res.unhide) ? res.unhide : [];
+            // EasyList $generichide за този хост → не прилагай генеричния CSS
+            // (иначе скриваме легитимен UI, напр. Google sign-in, Ads Manager).
+            genericHideHost = !!res.genericHide;
+            if (genericHideHost) gate(false);
             rebuildSelectors();
             hide();
           });
@@ -454,7 +466,9 @@
       // генеричната козметика на allowlist-нат сайт.
       chrome.storage.local.get("allowlist", (d) => {
         const allowed = ((d && d.allowlist) || []).some(hostMatches);
-        gate(enabled && !allowed);
+        // Гейтът зачита и $generichide хоста, за да не върне генеричния CSS
+        // при повторно включване без reload.
+        gate(enabled && !allowed && !genericHideHost);
         if (enabled && !allowed) {
           start();
           hide();

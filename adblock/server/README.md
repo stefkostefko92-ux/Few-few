@@ -83,8 +83,12 @@ openssl pkeyutl -sign -inkey /etc/caddy/adblock-signing.key -rawin \
   -in /var/www/adblock/filters.json | base64 -w0 > /var/www/adblock/filters.json.sig
 ```
 
-Once the key is set and a release ships with `SIG_PUBKEY_B64` filled in, flip
-`SIG_REQUIRED = true` in the next release to make signatures mandatory.
+The signature policy is automatic: once `SIG_PUBKEY_B64` is set (it is), any
+browser that supports Ed25519 in WebCrypto (Chrome 137+) **requires** a valid
+`.sig` — a missing or bad signature is rejected and the last good config stays.
+Older browsers accept best-effort so live updates keep working. Because of this,
+always keep `filters.json.sig` deployed next to `filters.json` (the deploy signs
+it automatically when the key file exists).
 
 ## SEO / GEO / AEO
 

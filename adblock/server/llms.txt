@@ -27,3 +27,11 @@ Q: Is Supreme AdBlock free? A: Yes, completely free, with an optional donation.
 Q: Does it block YouTube ads? A: Yes, at the source, including feed and search ads.
 Q: Does it collect data? A: No. No account, no telemetry, all processing is local.
 Q: Who makes it? A: Carbon Stealth, an EU-based studio (carbonstealth.eu).
+
+## Links
+
+- Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
+- Privacy policy: https://adblock.carbonstealth.eu/privacy
+- Maker: https://carbonstealth.eu
+
+_Last updated: July 2026._

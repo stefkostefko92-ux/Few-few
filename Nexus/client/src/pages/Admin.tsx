@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
-import { IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog, IconBolt, IconTrash, IconCrown, IconStar } from '../lib/icons';
+import { IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog, IconBolt, IconTrash, IconCrown, IconStar, IconShield } from '../lib/icons';
 import '../styles/admin.css';
 
 /* ===== Layout ===== */
@@ -56,6 +56,9 @@ export function AdminLayout(): React.ReactElement {
         <NavLink to="/admin/broadcast" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconMail size={16} /> <span>Broadcast</span>
         </NavLink>
+        <NavLink to="/admin/moderation" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconShield size={16} /> <span>Moderation</span>
+        </NavLink>
         <NavLink to="/admin/server" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconCog size={16} /> <span>Server</span>
         </NavLink>
@@ -86,6 +89,7 @@ export default function Admin(): React.ReactElement {
         <Route path="logs" element={<EventLogs />} />
         <Route path="webhooks" element={<Webhooks />} />
         <Route path="broadcast" element={<Broadcast />} />
+        <Route path="moderation" element={<Moderation />} />
         <Route path="server" element={<Server />} />
       </Route>
     </Routes>
@@ -1195,6 +1199,146 @@ function TrialCacheAdmin(): React.ReactElement {
           ))}
         </tbody>
       </table>
+    </>
+  );
+}
+
+/* ===== Moderation (DSA чл. 16(6)/17 + bans) ===== */
+function Moderation(): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [notices, setNotices] = useState<any[]>([]);
+  const [bans, setBans] = useState<{ users: any[]; ips: any[]; devices: any[] }>({ users: [], ips: [], devices: [] });
+  const [td, setTd] = useState({ kind: 'character_name', targetId: '', reason: '', noticeId: '' });
+  const [banForm, setBanForm] = useState({ userId: '', reason: '', durationMs: 0 });
+  const DURATIONS: Array<{ label: string; ms: number }> = [
+    { label: 'Permanent', ms: 0 },
+    { label: '1 hour', ms: 3_600_000 },
+    { label: '24 hours', ms: 86_400_000 },
+    { label: '7 days', ms: 604_800_000 },
+    { label: '30 days', ms: 2_592_000_000 },
+  ];
+
+  const loadNotices = async () => { try { setNotices((await api.get('/admin/moderation/notices?status=open')).notices); } catch (e: any) { toast(e.message, 'error'); } };
+  const loadBans = async () => { try { setBans(await api.get('/admin/moderation/bans')); } catch (e: any) { toast(e.message, 'error'); } };
+  useEffect(() => { loadNotices(); loadBans(); }, []);
+
+  const takedown = async () => {
+    try {
+      await api.post('/admin/moderation/takedown', {
+        kind: td.kind,
+        targetId: Number(td.targetId),
+        reason: td.reason,
+        noticeId: td.noticeId ? Number(td.noticeId) : undefined,
+      });
+      toast('Content removed + author notified.', 'success');
+      setTd({ kind: 'character_name', targetId: '', reason: '', noticeId: '' });
+      loadNotices();
+    } catch (e: any) { toast(e.message, 'error'); }
+  };
+  // „Action…" на сигнал → префилва takedown формата: мапва вида и вади
+  // числов id от content_ref (напр. "chat:42" → 42), ако има.
+  const startAction = (n: any) => {
+    const kindMap: Record<string, string> = { chat: 'chat_message', character_name: 'character_name', guild_name: 'guild_name' };
+    const kind = kindMap[n.content_kind] || td.kind;
+    const m = String(n.content_ref || '').match(/(\d+)/);
+    setTd({ kind, targetId: m ? m[1] : '', reason: `Reported: ${n.reason}`, noticeId: String(n.id) });
+  };
+  const rejectNotice = async (id: number) => {
+    const decision = prompt('Reason for rejecting this notice (visible in the record):') || '';
+    if (decision.length < 3) return;
+    try { await api.post(`/admin/moderation/dsa/${id}/reject`, { decision }); toast('Notice rejected.', 'success'); loadNotices(); }
+    catch (e: any) { toast(e.message, 'error'); }
+  };
+  const doBan = async () => {
+    try {
+      await api.post('/admin/moderation/ban', { userId: Number(banForm.userId), reason: banForm.reason, durationMs: banForm.durationMs || undefined });
+      toast(banForm.durationMs ? 'User temporarily banned (IP + device).' : 'User permanently banned (IP + device).', 'success');
+      setBanForm({ userId: '', reason: '', durationMs: 0 }); loadBans();
+    } catch (e: any) { toast(e.message, 'error'); }
+  };
+  const unban = async (userId: number) => {
+    try { await api.post('/admin/moderation/unban', { userId }); toast('User unbanned.', 'success'); loadBans(); }
+    catch (e: any) { toast(e.message, 'error'); }
+  };
+
+  const inp: React.CSSProperties = { padding: '6px 8px', background: 'var(--surface-2, #14171f)', border: '1px solid var(--border, #2a2f3a)', borderRadius: 6, color: 'var(--text-1, #e8eaf0)' };
+
+  return (
+    <>
+      <h2>Moderation <span className="muted">(DSA Art. 16 / 17)</span></h2>
+
+      {/* Open DSA notices */}
+      <h3>Open reports <span className="muted">({notices.length})</span></h3>
+      <table className="data-table">
+        <thead><tr><th>#</th><th>Kind</th><th>Reference</th><th>Reason</th><th>Description</th><th>When</th><th></th></tr></thead>
+        <tbody>
+          {notices.map((n) => (
+            <tr key={n.id}>
+              <td>{n.id}</td>
+              <td>{n.content_kind}</td>
+              <td className="muted" style={{ fontFamily: 'var(--font-mono)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.content_ref}</td>
+              <td>{n.reason}</td>
+              <td className="muted" style={{ maxWidth: 260, whiteSpace: 'normal' }}>{n.description}</td>
+              <td className="muted">{new Date(n.created_at).toLocaleDateString()}</td>
+              <td style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-sm" onClick={() => startAction(n)}>Action…</button>
+                <button className="btn btn-sm btn-danger" onClick={() => rejectNotice(n.id)}>Reject</button>
+              </td>
+            </tr>
+          ))}
+          {notices.length === 0 && <tr><td colSpan={7} className="muted">No open reports.</td></tr>}
+        </tbody>
+      </table>
+
+      {/* Targeted takedown */}
+      <h3 style={{ marginTop: 24 }}>Takedown</h3>
+      <p className="muted" style={{ marginTop: -6 }}>Resets/removes the content and mails a statement of reasons to the affected player.</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <select style={inp} value={td.kind} onChange={(e) => setTd({ ...td, kind: e.target.value })}>
+          <option value="character_name">Character name</option>
+          <option value="bio">Character bio</option>
+          <option value="guild_name">Guild name</option>
+          <option value="guild_tag">Guild tag</option>
+          <option value="guild_motto">Guild motto</option>
+          <option value="chat_message">Chat message</option>
+        </select>
+        <input style={inp} placeholder="Target id" value={td.targetId} onChange={(e) => setTd({ ...td, targetId: e.target.value })} />
+        <input style={{ ...inp, minWidth: 220 }} placeholder="Reason (shown to the user)" value={td.reason} onChange={(e) => setTd({ ...td, reason: e.target.value })} />
+        <input style={{ ...inp, width: 110 }} placeholder="Notice # (opt)" value={td.noticeId} onChange={(e) => setTd({ ...td, noticeId: e.target.value })} />
+        <button className="btn btn-primary" disabled={!td.targetId || td.reason.length < 3} onClick={takedown}>Remove</button>
+      </div>
+
+      {/* Manual ban */}
+      <h3 style={{ marginTop: 24 }}>Ban a user</h3>
+      <p className="muted" style={{ marginTop: -6 }}>Bans the account + its last known IP and device (chargebacks ban automatically).</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input style={inp} placeholder="User id" value={banForm.userId} onChange={(e) => setBanForm({ ...banForm, userId: e.target.value })} />
+        <input style={{ ...inp, minWidth: 220 }} placeholder="Reason" value={banForm.reason} onChange={(e) => setBanForm({ ...banForm, reason: e.target.value })} />
+        <select style={inp} value={banForm.durationMs} onChange={(e) => setBanForm({ ...banForm, durationMs: Number(e.target.value) })}>
+          {DURATIONS.map((d) => <option key={d.ms} value={d.ms}>{d.label}</option>)}
+        </select>
+        <button className="btn btn-danger" disabled={!banForm.userId || banForm.reason.length < 3} onClick={doBan}>Ban</button>
+      </div>
+
+      {/* Active bans */}
+      <h3 style={{ marginTop: 24 }}>Banned users <span className="muted">({bans.users.length})</span></h3>
+      <table className="data-table">
+        <thead><tr><th>User</th><th>Username</th><th>Reason</th><th>Since</th><th>Expires</th><th></th></tr></thead>
+        <tbody>
+          {bans.users.map((u) => (
+            <tr key={u.id}>
+              <td>{u.id}</td>
+              <td>{u.username}</td>
+              <td className="muted">{u.banned_reason}</td>
+              <td className="muted">{u.banned_at ? new Date(u.banned_at).toLocaleDateString() : '—'}</td>
+              <td className="muted">{u.banned_until ? new Date(u.banned_until).toLocaleString() : 'Permanent'}</td>
+              <td><button className="btn btn-sm" onClick={() => unban(u.id)}>Unban</button></td>
+            </tr>
+          ))}
+          {bans.users.length === 0 && <tr><td colSpan={6} className="muted">No banned users.</td></tr>}
+        </tbody>
+      </table>
+      <p className="muted" style={{ fontSize: 12 }}>Banned IPs: {bans.ips.length} · Banned devices: {bans.devices.length}</p>
     </>
   );
 }

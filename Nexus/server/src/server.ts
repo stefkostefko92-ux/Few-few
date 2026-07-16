@@ -249,6 +249,12 @@ import { pruneEventLog } from './lib/logger';
 pruneEventLog();
 setInterval(() => { pruneEventLog(); }, 24 * 60 * 60 * 1000).unref();
 
+// Изчиства изтекли временни банове на всеки час (хигиена — проверките и
+// без това третират изтеклите като не-банати).
+import { pruneExpiredBans } from './lib/bans';
+pruneExpiredBans();
+setInterval(() => { pruneExpiredBans(); }, 60 * 60 * 1000).unref();
+
 import { initObservability, installProcessGuards } from './lib/observability';
 initObservability();
 installProcessGuards();

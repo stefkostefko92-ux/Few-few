@@ -1,0 +1,16 @@
+#!/bin/sh
+# Локален предпазител срещу изтичане на тайни (defense-in-depth, слой „преди git").
+# Активирай веднъж за това репо:  git config core.hooksPath .githooks
+# Блокира commit, ако staged файл съдържа висок-сигнал тайна (същият скенер като в CI).
+
+files=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$files" ] && exit 0
+
+# shellcheck disable=SC2086
+if ! node tools/security/secret-scan.mjs $files; then
+  echo "" >&2
+  echo "✘ pre-commit блокиран: възможна тайна в staged файловете (виж горе)." >&2
+  echo "  Премести тайната в .env (извън git) или коригирай. За заобикаляне (не се препоръчва): git commit --no-verify" >&2
+  exit 1
+fi
+exit 0
