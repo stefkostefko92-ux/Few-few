@@ -2813,6 +2813,39 @@ export default function App(){
       <section id="products" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("prod_tag")}</div>
         <ProximityText text={t("prod_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#C9D1D6",fontWeight:700}}/>
+
+        {/* ── LATEST — most recent shipped products ── */}
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:C}}>{lang==="it"?"// ULTIMI RILASCI · 2026":lang==="bg"?"// НАЙ-НОВИ · 2026":"// LATEST RELEASES · 2026"}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:2,marginBottom:2}}>
+          {[
+            {name:"За Бобов дол",url:"https://zabobovdol.carbonstealth.eu",tag:"CIVIC · BG",desc:{it:"Portale civico per la città di Bobov Dol: servizi, segnalazioni, trasparenza e informazioni per i cittadini.",en:"Civic portal for the town of Bobov Dol: services, citizen reports, transparency and local information.",bg:"Граждански портал за град Бобов дол: услуги, сигнали, прозрачност и информация за жителите."}},
+            {name:"Ospedali Trasparenti",url:"https://ospedalitrasparenti.it",tag:"CIVIC · IT",desc:{it:"Portale civico per la trasparenza degli ospedali italiani: dati pubblici, accessibili e confrontabili per i cittadini.",en:"Civic portal for the transparency of Italian hospitals: public, comparable data made accessible to citizens.",bg:"Граждански портал за прозрачност на италианските болници: публични и сравними данни, достъпни за гражданите."}},
+            {name:"Supreme AdBlock",url:"https://adblock.carbonstealth.eu",tag:"PRIVACY · CHROME",desc:{it:"Estensione Chrome (MV3) che blocca ogni pubblicità — annunci video YouTube, sponsorizzati FB/IG, tracker e muri anti-adblock. Nessuna telemetria.",en:"Chrome extension (MV3) that blocks every ad — YouTube video ads, FB/IG sponsored posts, trackers and anti-adblock walls. Zero telemetry.",bg:"Chrome разширение (MV3), което блокира всяка реклама — вкл. видео реклами в YouTube, спонсорирани във FB/IG, тракери и anti-adblock стени. Без телеметрия."}},
+            {name:"Мастилко",url:"https://mastilko-bg.com",tag:"PRINT · TOOLS",desc:{it:"Etichette, biglietti da visita e CV gratuiti, pronti per la stampa. Anteprima dal vivo su un vero foglio A4, senza registrazione.",en:"Free labels, business cards and CVs, print-ready. Live preview on a real A4 sheet, no signup.",bg:"Безплатни етикети, визитки и CV, готови за печат. Преглед на живо върху истински А4 лист, без регистрация."}},
+            {name:"Vizitka",url:"https://vizitka-bg.com",tag:"QR · PROFILE",desc:{it:"Biglietto da visita digitale con QR permanente. Cambi lavoro o numero — tutti i biglietti già distribuiti si aggiornano da soli.",en:"Digital business card with a permanent QR. Change your job or number — every card you already handed out updates itself.",bg:"Дигитална визитка с постоянен QR код. Смениш ли телефон или длъжност — всички вече раздадени визитки се обновяват сами."}},
+          ].map(function(p,i){
+            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba("+CR+",.14)",padding:"22px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.015)"}}>
+              <div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,gap:8}}>
+                  <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".25em",color:INK2}}>{p.tag}</span>
+                  <span style={{fontFamily:MONO,fontSize:7,letterSpacing:".2em",color:C,border:"1px solid rgba("+CR+",.35)",padding:"2px 6px"}}>NEW</span>
+                </div>
+                <div style={{fontFamily:HEAD,fontWeight:600,fontSize:"1.15rem",letterSpacing:"-.02em",marginBottom:8,color:INK}}>{p.name}</div>
+                <div style={{fontSize:10,color:INK2,lineHeight:1.85}}>{p.desc[lang]||p.desc.en}</div>
+              </div>
+              <div style={{fontFamily:MONO,fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba("+CR+",.1)"}}>{p.url.replace("https://","")} {"→"}</div>
+            </a>
+          })}
+        </div>
+
+        {/* ── The live platforms ── */}
+        <div style={{display:"flex",alignItems:"center",gap:12,margin:"34px 0 18px"}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:INK2}}>{lang==="it"?"// PIATTAFORME LIVE":lang==="bg"?"// ЖИВИ ПЛАТФОРМИ":"// LIVE PLATFORMS"}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
           {[
             {name:"Nexus Dominion",desc:"MMO browser game dark fantasy medievale. Gilde, dungeon, battaglie PvP ed economia gestita dai giocatori.",url:"https://nexus.carbonstealth.eu",tag:"GAMING"},
