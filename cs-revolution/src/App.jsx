@@ -15,24 +15,24 @@ var LANGS = {
   nav_contact: { it: "CONTATTI", en: "CONTACT", bg: "\u041A\u041E\u041D\u0422\u0410\u041A\u0422\u0418" },
   // ── HERO ──
   hero_eyebrow: {
-    it: "AGENZIA DIGITALE \u2014 BOBOV DOL, BULGARIA",
-    en: "DIGITAL AGENCY \u2014 BOBOV DOL, BULGARIA",
-    bg: "\u0414\u0418\u0413\u0418\u0422\u0410\u041B\u041D\u0410 \u0410\u0413\u0415\u041D\u0426\u0418\u042F \u2014 \u0411\u041E\u0411\u041E\u0412 \u0414\u041E\u041B, \u0411\u042A\u041B\u0413\u0410\u0420\u0418\u042F"
+    it: "AGENZIA WEB & SOFTWARE — ITALIA · BULGARIA",
+    en: "WEB & SOFTWARE AGENCY — ITALY · BULGARIA",
+    bg: "УЕБ & СОФТУЕР АГЕНЦИЯ — БЪЛГАРИЯ · ИТАЛИЯ"
   },
   hero_title: {
-    it: "SOLUZIONI DIGITALI OLTRE OGNI LIMITE",
-    en: "DIGITAL SOLUTIONS BEYOND ALL LIMITS",
-    bg: "\u0414\u0418\u0413\u0418\u0422\u0410\u041B\u041D\u0418 \u0420\u0415\u0428\u0415\u041D\u0418\u042F \u041E\u0422\u0412\u042A\u0414 \u0412\u0421\u042F\u041A\u0410 \u0413\u0420\u0410\u041D\u0418\u0426\u0410"
+    it: "Siti Web, E-commerce & Software ERP",
+    en: "Web Development, E-commerce & ERP Software",
+    bg: "Изработка на Сайтове, Онлайн Магазини & ERP Софтуер"
   },
   hero_sub: {
-    it: "REVERSE ENGINEERING \u00B7 SOFTWARE \u00B7 ERP \u00B7 STAMPA 3D \u00B7 \u00B10.02MM",
-    en: "REVERSE ENGINEERING \u00B7 SOFTWARE \u00B7 ERP \u00B7 3D PRINTING \u00B7 \u00B10.02MM",
-    bg: "REVERSE ENGINEERING \u00B7 \u0421\u041E\u0424\u0422\u0423\u0415\u0420 \u00B7 ERP \u00B7 3D \u041F\u0415\u0427\u0410\u0422 \u00B7 \u00B10.02MM"
+    it: "SITI WEB · E-COMMERCE · APP · ERP · SEO/AEO · REVERSE ENGINEERING",
+    en: "WEB · E-COMMERCE · APPS · ERP · SEO/AEO · REVERSE ENGINEERING",
+    bg: "УЕБ САЙТОВЕ · E-COMMERCE · ПРИЛОЖЕНИЯ · ERP · SEO/AEO · REVERSE ENGINEERING"
   },
   hero_desc: {
-    it: "Misuriamo il fisico nel digitale \u2014 e ritorno. Reverse engineering, software, ERP e stampa 3D, eseguiti con la precisione di un'officina meccanica. A tolleranza.",
-    en: "We measure the physical into the digital \u2014 and back. Reverse engineering, software, ERP and 3D printing, executed with the precision of a machine shop. To tolerance.",
-    bg: "\u0418\u0437\u043C\u0435\u0440\u0432\u0430\u043C\u0435 \u0444\u0438\u0437\u0438\u0447\u043D\u043E\u0442\u043E \u0432 \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u043E\u0442\u043E \u2014 \u0438 \u043E\u0431\u0440\u0430\u0442\u043D\u043E. Reverse engineering, \u0441\u043E\u0444\u0442\u0443\u0435\u0440, ERP \u0438 3D \u043F\u0435\u0447\u0430\u0442, \u0438\u0437\u043F\u044A\u043B\u043D\u0435\u043D\u0438 \u0441 \u043F\u0440\u0435\u0446\u0438\u0437\u043D\u043E\u0441\u0442\u0442\u0430 \u043D\u0430 \u043C\u0430\u0448\u0438\u043D\u0435\u043D \u0446\u0435\u0445. \u0414\u043E \u0434\u043E\u043F\u0443\u0441\u043A."
+    it: "Progettiamo e sviluppiamo siti web, e-commerce, app e sistemi ERP su misura — con la precisione di un'officina di ingegneria. Da Milano alla Bulgaria. Preventivo gratuito in 24 ore.",
+    en: "We design and build custom websites, e-commerce, apps and ERP systems — with the precision of an engineering shop. From Milan to Bulgaria. Free quote in 24 hours.",
+    bg: "Проектираме и разработваме сайтове, онлайн магазини, приложения и ERP системи по поръчка — с прецизността на инженерен цех. От София до Милано. Безплатна оферта до 24 часа."
   },
   // ── ABOUT ──
   about_tag: { it: "// CHI SIAMO", en: "// ABOUT US", bg: "// \u0417\u0410 \u041D\u0410\u0421" },
@@ -2341,7 +2341,9 @@ export default function App(){
     if(!loaded) return;
     try{ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches) return; }catch(e){}
     if(!("IntersectionObserver" in window)) return;
-    var secs=document.querySelectorAll("#main section");
+    // Skip the hero: it is above the fold and holds the LCP element (H1) —
+    // hiding it until the observer fires would delay LCP. It paints instantly.
+    var secs=[].slice.call(document.querySelectorAll("#main section")).filter(function(s){return s.id!=="hero";});
     secs.forEach(function(s){s.classList.add("cs-prep");});
     var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("cs-seen");io.unobserve(en.target);}});},{threshold:0.12,rootMargin:"0px 0px -8% 0px"});
     secs.forEach(function(s){io.observe(s);});
@@ -2696,11 +2698,6 @@ export default function App(){
       </div>
 
       <main id="main">
-      {/* Accessible document heading (visually hidden; ProximityText below is decorative) */}
-      <h1 style={{position:"absolute",width:1,height:1,padding:0,margin:-1,overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>
-        Carbon Stealth VCC — {t("hero_title")}
-      </h1>
-
       {/* ═══════════════════════════════════════════
           HERO — Viewport-spanning typography + 3D
           ═══════════════════════════════════════════ */}
@@ -2718,10 +2715,10 @@ export default function App(){
             <span style={{width:24,height:1,background:C}}/>{t("hero_eyebrow")}
           </div>
 
-          {/* Type is the hero - oversized neo-grotesque, few words */}
-          <h2 style={{fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.6rem,8vw,7.2rem)",lineHeight:.92,letterSpacing:"-.035em",color:INK,margin:0,maxWidth:"14ch"}}>
+          {/* Type is the hero - the single H1, keyword-forward, few words */}
+          <h1 style={{fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,7vw,6.4rem)",lineHeight:.98,letterSpacing:"-.03em",color:INK,margin:0,maxWidth:"18ch"}}>
             {t("hero_title")}
-          </h2>
+          </h1>
 
           {/* Mono spec line - the instruments */}
           <div style={{fontFamily:MONO,fontSize:11,letterSpacing:".2em",color:INK2,marginTop:24,textTransform:"uppercase"}}>{t("hero_sub")}</div>
