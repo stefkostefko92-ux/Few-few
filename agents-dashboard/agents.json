@@ -419,9 +419,20 @@
           "date": "2026-07-16",
           "event": "v10.6 — учене",
           "detail": "Научи: Chrome разширение, добавящо scriptlet engine (uBO ##+js модел) в MAIN world на <all_url… (+1 още)"
+        },
+        {
+          "version": "10.7.0",
+          "date": "2026-07-16",
+          "event": "v10.7 — учене",
+          "detail": "Научи: OAuth бутони, рендирани и на login екрана, създават нови акаунти през callback-а със за… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „OAuth бутони, рендирани и на login екрана, създават нови акаунти през callback-а със за…\" (+6 още)"
+        },
         {
           "date": "2026-07-16",
           "type": "learning",
@@ -1236,9 +1247,20 @@
           "date": "2026-07-16",
           "event": "v12.2 — учене",
           "detail": "Научи: Хеуристика срещу ReDoS чрез квантор-в-група (/\\\\([^)]*[*+][^)]*\\\\)[*+?]/) НЕ хваща evil… (+2 още)"
+        },
+        {
+          "version": "12.3.0",
+          "date": "2026-07-16",
+          "event": "v12.3 — учене",
+          "detail": "Научи: АСО портал — ChatReport моделът, admin queue (GET/PATCH /admin/reports) и целият AdminR… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „АСО портал — ChatReport моделът, admin queue (GET/PATCH /admin/reports) и целият AdminR…\" (+3 още)"
+        },
         {
           "date": "2026-07-16",
           "type": "learning",
@@ -2072,9 +2094,20 @@
           "date": "2026-07-06",
           "event": "v10.8 — учене",
           "detail": "Научи: ox_lib lib.callback: default timeout е ConVar ox:callbackTimeout = 300000ms (5 мин). Вт… (+3 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-16",
+          "event": "v10.9 — учене",
+          "detail": "Научи: АСО: SVARA buy-in (200 чипа) се проверява само клиентски — CHIP_BUYIN и гейтът са в app… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „АСО: SVARA buy-in (200 чипа) се проверява само клиентски — CHIP_BUYIN и гейтът са в app…\" (+5 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
