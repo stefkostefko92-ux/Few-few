@@ -413,9 +413,20 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: При native Discord монетизация Discord Inc. е merchant of record за покупката (обработв…"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-16",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Chrome разширение, добавящо scriptlet engine (uBO ##+js модел) в MAIN world на <all_url… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „Chrome разширение, добавящо scriptlet engine (uBO ##+js модел) в MAIN world на <all_url…\" (+1 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
