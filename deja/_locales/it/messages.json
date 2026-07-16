@@ -62,6 +62,23 @@
   "optModelHostHelp": {
     "message": "Vuoto = huggingface.co. Imposta un tuo server per ambienti offline/aziendali."
   },
+  "filterAll": { "message": "tutti" },
+  "filterWeek": { "message": "ultima settimana" },
+  "filterMonth": { "message": "ultimo mese" },
+  "filterYear": { "message": "ultimo anno" },
+  "relatedLink": { "message": "ricordi collegati" },
+  "relatedNone": { "message": "nessun ricordo vicino" },
+  "omniboxDefault": { "message": "Chiedi alla tua memoria — Déjà cerca per significato" },
+  "popupMemory": { "message": "La mia memoria" },
+  "memoryTitle": { "message": "La mia memoria" },
+  "memoryEmpty": { "message": "La memoria è vuota — visita qualche pagina e torna qui." },
+  "memoryForget": { "message": "Dimentica" },
+  "memoryExport": { "message": "Scarica archivio" },
+  "memoryImport": { "message": "Ripristina da archivio" },
+  "memoryImportConfirm": {
+    "message": "Ripristinare dall'archivio? Le pagine corrispondenti verranno sovrascritte."
+  },
+
   "optSave": { "message": "Salva" },
   "optSaved": { "message": "Salvato ✓" },
   "optModelHostInvalid": { "message": "Il mirror deve essere un indirizzo https://" },

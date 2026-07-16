@@ -3,14 +3,17 @@
   "name": "__MSG_extName__",
   "short_name": "Déjà",
   "description": "__MSG_extDesc__",
-  "version": "0.5.0",
+  "version": "0.4.0",
   "default_locale": "en",
-  "omnibox": { "keyword": "dj" },
-  "minimum_chrome_version": "116",
-  "permissions": ["storage", "offscreen", "unlimitedStorage", "alarms"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "deja@carbonstealth.eu",
+      "strict_min_version": "128.0"
+    }
+  },
+  "permissions": ["storage", "unlimitedStorage", "alarms"],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "scripts": ["background.js"]
   },
   "content_scripts": [
     {

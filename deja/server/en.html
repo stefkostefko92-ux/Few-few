@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="bg">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Déjà — вторият мозък на браузъра ти | семантично търсене в прочетеното</title>
+    <title>Déjà — your browser's second brain | semantic search across what you've read</title>
     <meta
       name="description"
-      content="Déjà помни не къде си бил, а какво си научил. Семантично търсене в прочетеното — обработката е 100% локална, данните са 100% твои."
+      content="Déjà remembers not where you've been, but what you've learned. Semantic search across what you've read — 100% local processing, 100% your data."
     />
     <link rel="icon" type="image/png" href="icon.png" />
-    <link rel="canonical" href="https://deja.carbonstealth.eu/" />
+    <link rel="canonical" href="https://deja.carbonstealth.eu/en" />
     <link rel="alternate" hreflang="bg" href="https://deja.carbonstealth.eu/" />
     <link rel="alternate" hreflang="en" href="https://deja.carbonstealth.eu/en" />
     <link rel="alternate" hreflang="it" href="https://deja.carbonstealth.eu/it" />
@@ -18,28 +18,28 @@
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta
       name="keywords"
-      content="семантично търсене, история на браузъра, chrome разширение, локален AI, втори мозък, поверителност, Carbon Stealth"
+      content="semantic search, browser history, chrome extension, local AI, second brain, privacy, Carbon Stealth"
     />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Déjà" />
-    <meta property="og:locale" content="bg_BG" />
-    <meta property="og:url" content="https://deja.carbonstealth.eu/" />
-    <meta property="og:title" content="Déjà — семантично търсене в прочетеното, изцяло на твоето устройство" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://deja.carbonstealth.eu/en" />
+    <meta property="og:title" content="Déjà — semantic search across what you've read, entirely on your device" />
     <meta
       property="og:description"
-      content="Chrome разширение, което помни не къде си бил, а какво си научил. Търси в историята на браузъра си на човешки език — без cloud, без телеметрия."
+      content="A Chrome extension that remembers not where you've been, but what you've learned. Search your browser history in plain language — no cloud, no telemetry."
     />
     <meta property="og:image" content="https://deja.carbonstealth.eu/og-cover.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Déjà намира стара статия по смисъла ѝ, а не по ключова дума." />
+    <meta property="og:image:alt" content="Déjà finds an old article by its meaning, not by a keyword." />
 
     <!-- Twitter/X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Déjà — семантично търсене в прочетеното, изцяло на твоето устройство" />
-    <meta name="twitter:description" content="Търси в историята на браузъра си на човешки език. Локална обработка, 0% cloud." />
+    <meta name="twitter:title" content="Déjà — semantic search across what you've read, entirely on your device" />
+    <meta name="twitter:description" content="Search your browser history in plain language. Local processing, 0% cloud." />
     <meta name="twitter:image" content="https://deja.carbonstealth.eu/og-cover.png" />
 
     <script type="application/ld+json">
@@ -56,25 +56,25 @@
           {
             "@type": "WebSite",
             "@id": "https://deja.carbonstealth.eu/#website",
-            "url": "https://deja.carbonstealth.eu/",
+            "url": "https://deja.carbonstealth.eu/en",
             "name": "Déjà",
-            "inLanguage": "bg",
+            "inLanguage": "en",
             "publisher": { "@id": "https://deja.carbonstealth.eu/#org" }
           },
           {
             "@type": "SoftwareApplication",
             "@id": "https://deja.carbonstealth.eu/#app",
             "name": "Déjà",
-            "url": "https://deja.carbonstealth.eu/",
+            "url": "https://deja.carbonstealth.eu/en",
             "applicationCategory": "BrowserApplication",
             "operatingSystem": "Chrome, Brave, Edge, Chromium",
-            "inLanguage": "bg",
-            "description": "Chrome разширение за семантично търсене в историята на браузъра. Индексира текста на прочетените страници локално и позволява търсене на човешки език. Обработката е изцяло на устройството — прочетеното не напуска браузъра.",
+            "inLanguage": "en",
+            "description": "A Chrome extension for semantic search across your browser history. It indexes the text of the pages you read locally and lets you search in plain language. All processing happens on your device — what you read never leaves the browser.",
             "featureList": [
-              "Семантично търсене по смисъл, не по ключова дума",
-              "Локална обработка, без cloud и телеметрия",
-              "Многоезично търсене (50+ езика)",
-              "Автоматично забравяне и списък за изключени сайтове"
+              "Semantic search by meaning, not by keyword",
+              "Local processing, no cloud and no telemetry",
+              "Multilingual search (50+ languages)",
+              "Automatic forgetting and an exclusion list for sites"
             ],
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
             "screenshot": "https://deja.carbonstealth.eu/demo.png",
@@ -281,7 +281,7 @@
         margin-bottom: 8px;
       }
 
-      /* линейни икони — stroke в акцента, нула външни ресурси */
+      /* linear icons — accent stroke, zero external resources */
       .ic {
         fill: none;
         flex: none;
@@ -305,7 +305,7 @@
         font-size: 14.5px;
       }
 
-      /* пример-диалог */
+      /* example dialogue */
       .example {
         background: var(--panel);
         border: 1px solid var(--border);
@@ -363,7 +363,7 @@
         font-size: 14.5px;
       }
 
-      /* стъпки */
+      /* steps */
       .steps {
         counter-reset: step;
         display: grid;
@@ -429,7 +429,7 @@
         color: var(--muted);
       }
 
-      /* изплуване при скрол */
+      /* surface on scroll */
       .surface {
         opacity: 0;
         transform: translateY(16px);
@@ -473,31 +473,31 @@
       <header>
         <div class="brand"><img src="icon.png" alt="" />Déjà<span class="dot">.</span></div>
         <nav>
-          <a href="#how-it-works">Как работи</a>
-          <a href="#privacy">Сигурност</a>
-          <a class="cta-mini" href="#cta">Инсталирай в Chrome</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#privacy">Privacy</a>
+          <a class="cta-mini" href="#cta">Add to Chrome</a>
         </nav>
       </header>
 
       <!-- Hero -->
       <section class="hero">
-        <h1>Вашият втори мозък, който помни не къде сте били, а <em>какво сте научили</em>.</h1>
+        <h1>Your second brain, which remembers not where you've been, but <em>what you've learned</em>.</h1>
         <p class="sub">
-          Спрете да губите време в безкрайно търсене на статии отпреди месеци. Déjà разбира
-          смисъла на прочетеното и го намира по ваши думи.
+          Stop wasting time endlessly hunting for articles from months ago. Déjà understands the
+          meaning of what you've read and finds it in your own words.
         </p>
-        <p class="local">100% локално. 100% лично.</p>
-        <!-- TODO: замени href с реалния Web Store линк след публикация -->
-        <a class="btn" href="https://chrome.google.com/webstore">Добави в Chrome — безплатно</a>
-        <p class="note">Работи изцяло на твоето устройство. Прочетеното от теб не напуска браузъра — никога.*</p>
+        <p class="local">100% local. 100% private.</p>
+        <!-- TODO: replace href with the real Web Store link after publishing -->
+        <a class="btn" href="https://chrome.google.com/webstore">Add to Chrome — free</a>
+        <p class="note">Runs entirely on your device. What you read never leaves the browser — ever.*</p>
         <p class="note" style="font-size: 12px; margin-top: 6px">
-          * Единственото изключение: AI моделът се тегли <b>еднократно</b> от Hugging Face (вижда
-          се само твоят IP, не прочетеното). <a href="/privacy" style="color: var(--soft)">Подробно</a>.
+          * The only exception: the AI model is downloaded <b>once</b> from Hugging Face (only your
+          IP is visible, not what you read). <a href="/privacy" style="color: var(--soft)">Details</a>.
         </p>
         <img
           class="demo surface"
           src="demo.png"
-          alt="Déjà намира статията за домати на балкона по заявка „как се гледат чери домати в саксия“"
+          alt="Déjà finds the article about balcony tomatoes for the query “how to grow cherry tomatoes in a pot”"
           width="1280"
           height="800"
           loading="lazy"
@@ -505,43 +505,43 @@
         />
       </section>
 
-      <!-- Кратко определение за хора и AI (answer-first) -->
+      <!-- Short definition for humans and AI (answer-first) -->
       <section class="surface">
-        <h2>Какво е Déjà?</h2>
+        <h2>What is Déjà?</h2>
         <p class="lead">
-          <b>Déjà е безплатно разширение за Chrome (и Brave, Edge, всеки Chromium браузър), което
-          превръща историята на браузъра ти в търсачка по смисъл.</b> Докато четеш, Déjà индексира
-          текста на страниците локално и после ги намира по това, което помниш — на човешки език,
-          а не по точно заглавие или URL. Целият анализ се случва на твоето устройство: никакъв
-          сървър, никаква телеметрия, никакъв cloud. Работи на 50+ езика — питаш на български,
-          дори статията да е била на английски.
+          <b>Déjà is a free extension for Chrome (and Brave, Edge, any Chromium browser) that turns
+          your browser history into a search engine by meaning.</b> As you read, Déjà indexes the
+          text of pages locally and then finds them by what you remember — in plain language,
+          not by an exact title or URL. All analysis happens on your device: no server, no
+          telemetry, no cloud. It works in 50+ languages — you ask in English even if the article
+          was in another language.
         </p>
       </section>
 
       <!-- The Problem -->
       <section class="surface">
-        <h2>Историята на браузъра ви е „черна дупка“.</h2>
+        <h2>Your browser history is a “black hole”.</h2>
         <p class="lead">
-          Повечето хора имат стотици запазени отметки и хиляди страници в историята, които никога
-          не откриват отново. Защо?
+          Most people have hundreds of saved bookmarks and thousands of pages in their history that
+          they never find again. Why?
         </p>
         <div class="cards">
           <div class="card">
-            <h3>Традиционното търсене е ограничено</h3>
-            <p>Трябва да помните точното заглавие или URL адрес.</p>
+            <h3>Traditional search is limited</h3>
+            <p>You have to remember the exact title or URL.</p>
           </div>
           <div class="card">
-            <h3>Смисълът се губи</h3>
+            <h3>The meaning gets lost</h3>
             <p>
-              Помните, че сте чели за „нова технология за батерии“, но не помните дали беше в
-              Wired, Medium или личен блог.
+              You remember reading about “new battery technology”, but you don't recall whether it
+              was on Wired, Medium or a personal blog.
             </p>
           </div>
           <div class="card">
-            <h3>Резултатът</h3>
+            <h3>The result</h3>
             <p>
-              Знаете, че информацията е някъде там, но я търсите отново в Google от нулата.
-              Валидирана болка: „Запазих 500 статии и не мога да намеря нищо.“
+              You know the information is out there somewhere, but you search for it again on Google
+              from scratch. A validated pain: “I saved 500 articles and I can't find a thing.”
             </p>
           </div>
         </div>
@@ -549,61 +549,61 @@
 
       <!-- The Solution -->
       <section class="surface">
-        <h2>Търсете така, както мислите.</h2>
+        <h2>Search the way you think.</h2>
         <p class="lead">
-          С Déjà не е нужно да помните ключови думи. Просто напишете това, което си спомняте, на
-          човешки език.
+          With Déjà you don't need to remember keywords. Just type what you recall, in plain
+          language.
         </p>
         <div class="example">
-          <p class="you">Вие пишете: <b>„статия за евтина алтернатива на литиевите акумулатори“</b></p>
+          <p class="you">You type: <b>“article about a cheap alternative to lithium batteries”</b></p>
           <div class="found">
-            Déjà намира: <b>„Натриевите батерии: революцията в съхранението на енергия“</b>
+            Déjà finds: <b>“Sodium batteries: the revolution in energy storage”</b>
           </div>
           <p class="fine">
-            В текста никъде не се срещат думите „евтина“ или „алтернатива“ — но Déjà разбира
-            контекста. Работи на 50+ езика: търсете на български, дори статията да е била на
-            английски.
+            The words “cheap” or “alternative” appear nowhere in the text — but Déjà understands the
+            context. It works in 50+ languages: search in English even if the article was in
+            another language.
           </p>
         </div>
         <div class="recall">
           <div class="row">
             <div class="bar" style="width: 120px; opacity: 1"></div>
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.9 15.5a2 2 0 0 0-1.4-1.4L2.4 12.5a.5.5 0 0 1 0-1L8.5 9.9a2 2 0 0 0 1.4-1.4l1.6-6.1a.5.5 0 0 1 1 0l1.6 6.1a2 2 0 0 0 1.4 1.4l6.1 1.6a.5.5 0 0 1 0 1l-6.1 1.6a2 2 0 0 0-1.4 1.4l-1.6 6.1a.5.5 0 0 1-1 0z"/></svg>
-            <span>Ярък спомен — точно съвпадение по смисъл</span>
+            <span>Vivid memory — exact match by meaning</span>
           </div>
           <div class="row">
             <div class="bar" style="width: 70px; opacity: 0.55"></div>
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 15H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M16 18H7"/><path d="M13 21H9"/></svg>
-            <span>Мъгляв спомен — близък контекст</span>
+            <span>Hazy memory — nearby context</span>
           </div>
           <div class="row">
             <div class="bar" style="width: 34px; opacity: 0.3"></div>
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-            <span>Далечен спомен — свързана тема</span>
+            <span>Distant memory — related topic</span>
           </div>
         </div>
       </section>
 
       <!-- How it works -->
       <section id="how-it-works" class="surface">
-        <h2>Интелигентен, но дискретен.</h2>
-        <p class="lead">Докато разглеждате, разширението работи тихо в задния план:</p>
+        <h2>Smart, but discreet.</h2>
+        <p class="lead">As you browse, the extension works quietly in the background:</p>
         <div class="steps">
           <div class="step">
-            <h3>Извличане</h3>
-            <p>Déjà извлича чистия текст от страницата.</p>
+            <h3>Extract</h3>
+            <p>Déjà extracts the clean text from the page.</p>
           </div>
           <div class="step">
-            <h3>Векторизиране</h3>
-            <p>AI модел превръща текста в „числови отпечатъци на смисъла“ (вектори).</p>
+            <h3>Vectorise</h3>
+            <p>An AI model turns the text into “numeric fingerprints of meaning” (vectors).</p>
           </div>
           <div class="step">
-            <h3>Локално съхранение</h3>
-            <p>Тези отпечатъци се пазят само във вашия браузър.</p>
+            <h3>Local storage</h3>
+            <p>These fingerprints are kept only in your browser.</p>
           </div>
           <div class="step">
-            <h3>Семантично търсене</h3>
-            <p>Заявката ви се сравнява с отпечатъците математически — печели най-близкото значение.</p>
+            <h3>Semantic search</h3>
+            <p>Your query is compared with the fingerprints mathematically — the closest meaning wins.</p>
           </div>
         </div>
       </section>
@@ -612,27 +612,27 @@
       <section id="privacy" class="surface">
         <h2>
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
-          Козът: 100% private. 0% cloud.
+          The trump card: 100% private. 0% cloud.
         </h2>
-        <p class="lead">В ерата на масовото следене и скандали като Honey, Déjà е вашата крепост.</p>
+        <p class="lead">In an era of mass tracking and scandals like Honey, Déjà is your fortress.</p>
         <div class="cards">
           <div class="card">
             <h3>Offline AI</h3>
-            <p>Моделът се тегли еднократно. След това всичко работи офлайн.</p>
+            <p>The model is downloaded once. After that, everything works offline.</p>
           </div>
           <div class="card">
-            <h3>Никакви сървъри</h3>
-            <p>Нищо, което четете, не напуска устройството ви. Никога.</p>
+            <h3>No servers</h3>
+            <p>Nothing you read leaves your device. Ever.</p>
           </div>
           <div class="card">
-            <h3>GDPR мечта</h3>
-            <p>Вие притежавате данните си на 100%. Няма телеметрия, няма облачно съхранение.</p>
+            <h3>A GDPR dream</h3>
+            <p>You own your data 100%. No telemetry, no cloud storage.</p>
           </div>
           <div class="card">
-            <h3>Интелигентни филтри</h3>
+            <h3>Smart filters</h3>
             <p>
-              Страниците за вход, поща, чат, банкиране и плащания се пропускат автоматично
-              (вграден списък по адрес). Можеш да добавиш и свои.
+              Login, mail, chat, banking and payment pages are skipped automatically
+              (a built-in list by address). You can add your own too.
             </p>
           </div>
         </div>
@@ -640,67 +640,67 @@
 
       <!-- Control -->
       <section class="surface">
-        <h2>Вие държите ключа към паметта си.</h2>
+        <h2>You hold the key to your memory.</h2>
         <div class="cards">
           <div class="card">
             <h3>
               <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-              Пауза с един клик
+              One-click pause
             </h3>
-            <p>Спрете индексирането моментално.</p>
+            <p>Stop indexing instantly.</p>
           </div>
           <div class="card">
             <h3>
               <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Автоматично забравяне
+              Automatic forgetting
             </h3>
-            <p>Настройте изтриване на данните след N месеца.</p>
+            <p>Set data to be deleted after N months.</p>
           </div>
           <div class="card">
             <h3>
               <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              Изчисти паметта
+              Clear memory
             </h3>
-            <p>Пълно изтриване на локалната база с един бутон.</p>
+            <p>Full deletion of the local database with one button.</p>
           </div>
           <div class="card">
             <h3>
               <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
-              Собствен списък
+              Your own list
             </h3>
-            <p>Адреси, които Déjà никога няма да запомни.</p>
+            <p>Addresses that Déjà will never remember.</p>
           </div>
         </div>
       </section>
 
-      <!-- FAQ (текстът е дословно същият като FAQPage схемата по-долу) -->
+      <!-- FAQ (the text is word-for-word the same as the FAQPage schema below) -->
       <section class="surface">
-        <h2>Често задавани въпроси</h2>
+        <h2>Frequently asked questions</h2>
         <div class="cards">
           <div class="card">
-            <h3>Как да търся в историята си по смисъл?</h3>
+            <h3>How do I search my history by meaning?</h3>
             <p>
-              Отваряш Déjà и пишеш каквото помниш с думи прости — напр. „статия за евтина
-              алтернатива на литиевите батерии“. Déjà сравнява заявката с прочетеното по значение
-              и връща най-близката страница, дори тези думи да не се срещат в нея.
+              You open Déjà and type whatever you remember in plain words — e.g. “article about a
+              cheap alternative to lithium batteries”. Déjà compares the query with what you've read
+              by meaning and returns the closest page, even if those exact words don't appear in it.
             </p>
           </div>
           <div class="card">
-            <h3>Déjà изпраща ли данните ми в облак?</h3>
+            <h3>Does Déjà send my data to the cloud?</h3>
             <p>
-              Не. Целият текст, индексът и търсенето живеят само в твоя браузър. Няма сървър, няма
-              телеметрия. AI моделът се тегли еднократно и после работи офлайн.
+              No. All the text, the index and the search live only in your browser. No server, no
+              telemetry. The AI model is downloaded once and then works offline.
             </p>
           </div>
           <div class="card">
-            <h3>Безплатно ли е и на кои браузъри работи?</h3>
-            <p>Напълно безплатно. Работи на Chrome, Brave, Edge и всеки Chromium-базиран браузър.</p>
+            <h3>Is it free, and which browsers does it work on?</h3>
+            <p>Completely free. It works on Chrome, Brave, Edge and every Chromium-based browser.</p>
           </div>
           <div class="card">
-            <h3>На какви езици работи търсенето?</h3>
+            <h3>Which languages does the search work in?</h3>
             <p>
-              На 50+ езика. Можеш да търсиш на български статия, която си чел на английски — Déjà
-              разбира смисъла между езиците.
+              In 50+ languages. You can search in English for an article you read in another
+              language — Déjà understands the meaning across languages.
             </p>
           </div>
         </div>
@@ -708,23 +708,23 @@
 
       <!-- Final CTA -->
       <section id="cta" class="final surface">
-        <h2>Спрете да търсите. Започнете да намирате.</h2>
+        <h2>Stop searching. Start finding.</h2>
         <p class="big">
-          Присъединете се към хората, които вече не се страхуват да затворят таб в браузъра си.
+          Join the people who are no longer afraid to close a tab in their browser.
         </p>
-        <!-- TODO: замени href с реалния Web Store линк след публикация -->
-        <a class="btn" href="https://chrome.google.com/webstore">Добави Déjà в Chrome — безплатно</a>
+        <!-- TODO: replace href with the real Web Store link after publishing -->
+        <a class="btn" href="https://chrome.google.com/webstore">Add Déjà to Chrome — free</a>
         <p class="note" style="color: var(--muted); font-size: 13px; margin-top: 12px">
-          Поддържа Chrome, Brave, Edge и други Chromium-базирани браузъри.
+          Supports Chrome, Brave, Edge and other Chromium-based browsers.
         </p>
       </section>
 
       <footer>
-        © 2026 Déjà · Личната ви информация си остава ваша. ·
-        <a href="/privacy-bg">Политика за поверителност</a> · <a href="/privacy">Privacy (EN)</a><br />
-        Издател: <b>Carbon Stealth VCC</b>, ЕИК 208725180, ул. „Самуил“ 3, 2670 Бобов дол, България ·
+        © 2026 Déjà · Your personal information stays yours. ·
+        <a href="/privacy">Privacy Policy</a><br />
+        Publisher: <b>Carbon Stealth VCC</b>, UIC 208725180, 3 Samuil St, 2670 Bobov dol, Bulgaria ·
         <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a><br />
-        Създаден от <a href="https://carbonstealth.eu">Carbon Stealth VCC</a>
+        Built by <a href="https://carbonstealth.eu">Carbon Stealth VCC</a>
       </footer>
     </div>
 
@@ -735,41 +735,41 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Как да търся в историята си по смисъл?",
+            "name": "How do I search my history by meaning?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Отваряш Déjà и пишеш каквото помниш с думи прости — напр. „статия за евтина алтернатива на литиевите батерии“. Déjà сравнява заявката с прочетеното по значение и връща най-близката страница, дори тези думи да не се срещат в нея."
+              "text": "You open Déjà and type whatever you remember in plain words — e.g. “article about a cheap alternative to lithium batteries”. Déjà compares the query with what you've read by meaning and returns the closest page, even if those exact words don't appear in it."
             }
           },
           {
             "@type": "Question",
-            "name": "Déjà изпраща ли данните ми в облак?",
+            "name": "Does Déjà send my data to the cloud?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Не. Целият текст, индексът и търсенето живеят само в твоя браузър. Няма сървър, няма телеметрия. AI моделът се тегли еднократно и после работи офлайн."
+              "text": "No. All the text, the index and the search live only in your browser. No server, no telemetry. The AI model is downloaded once and then works offline."
             }
           },
           {
             "@type": "Question",
-            "name": "Безплатно ли е и на кои браузъри работи?",
+            "name": "Is it free, and which browsers does it work on?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Напълно безплатно. Работи на Chrome, Brave, Edge и всеки Chromium-базиран браузър."
+              "text": "Completely free. It works on Chrome, Brave, Edge and every Chromium-based browser."
             }
           },
           {
             "@type": "Question",
-            "name": "На какви езици работи търсенето?",
+            "name": "Which languages does the search work in?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "На 50+ езика. Можеш да търсиш на български статия, която си чел на английски — Déjà разбира смисъла между езиците."
+              "text": "In 50+ languages. You can search in English for an article you read in another language — Déjà understands the meaning across languages."
             }
           }
         ]
       }
     </script>
     <script>
-      // „изплуване“ при скрол — уважава prefers-reduced-motion (CSS-ът го изключва)
+      // "surface" on scroll — respects prefers-reduced-motion (the CSS disables it)
       const io = new IntersectionObserver(
         (entries) => {
           for (const e of entries) {

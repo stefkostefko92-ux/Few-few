@@ -106,6 +106,69 @@ body {
   min-height: 20px;
 }
 
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.chip {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.chip.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.related-toggle {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.related-toggle:hover {
+  text-decoration: underline;
+}
+
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.related-item {
+  color: var(--soft);
+  font-size: 13.5px;
+  text-decoration: none;
+}
+
+.related-item::before {
+  color: var(--accent);
+  content: '↳ ';
+}
+
+.related-item:hover {
+  color: var(--accent);
+}
+
+.related-none {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .results {
   display: flex;
   flex-direction: column;

@@ -7,6 +7,18 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://deja.carbonstealth.eu/en</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://deja.carbonstealth.eu/it</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
     <loc>https://deja.carbonstealth.eu/privacy</loc>
     <lastmod>2026-07-11</lastmod>
     <changefreq>yearly</changefreq>

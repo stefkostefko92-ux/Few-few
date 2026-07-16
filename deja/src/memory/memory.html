@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="memoryTitle">Déjà — моята памет</title>
+    <link rel="stylesheet" href="search.css" />
+    <link rel="stylesheet" href="memory.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="head">
+        <h1 class="logo">Déjà<span class="dot">.</span></h1>
+        <p class="tagline" data-i18n="memoryTitle">Моята памет</p>
+      </header>
+
+      <div class="toolbar">
+        <p id="count" class="status"></p>
+        <div class="actions">
+          <button id="export" class="tool" data-i18n="memoryExport">Изтегли архив</button>
+          <button id="import" class="tool" data-i18n="memoryImport">Възстанови от архив</button>
+          <input id="importFile" type="file" accept="application/json" hidden />
+        </div>
+      </div>
+
+      <section id="list" class="results" aria-live="polite"></section>
+    </main>
+    <script type="module" src="memory.js"></script>
+  </body>
+</html>

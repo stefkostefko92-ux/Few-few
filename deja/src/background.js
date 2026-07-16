@@ -9,6 +9,7 @@ import { getSettings, isDenied } from './lib/settings.js';
 
 const EMBED_BATCH = 8; // парчета на една заявка към offscreen — пази паметта
 const TOP_PAGES = 10; // колко резултата връщаме
+const RELATED_COUNT = 3; // „свързани спомени“ на страница
 const MAX_INDEX_TRIES = 3; // опити на страница, преди да я зарежем (отровен запис)
 const OFFSCREEN_IDLE_MIN = 10; // минути без embed → затваряме offscreen (~120MB RAM)
 const RETENTION_ALARM = 'deja-retention';
@@ -114,21 +115,14 @@ async function indexPage({ url, title, text, lang }) {
     vectors.push(...(await embed(batch)));
   }
 
-  await db.replaceChunks(
-    urlKey,
-    chunks.map((chunkTextValue, i) => ({
-      urlKey,
-      title,
-      text: chunkTextValue,
-      vec: vectors[i],
-    })),
-  );
+  const now = Date.now();
+  await db.replacePage(urlKey, now, chunks, vectors);
   await db.putPage({
     urlKey,
     title,
     hash,
     lang,
-    time: Date.now(),
+    time: now,
     chunkCount: chunks.length,
     dim: vectors[0]?.length || 0,
   });
@@ -206,40 +200,92 @@ drainPending();
 
 // --- търсене ---
 
-async function search(query) {
+// Кратък дословен цитат от парчето → text fragment (#:~:text=) скача и
+// маркира точния абзац в страницата.
+function makeQuote(text) {
+  const words = text.split(' ').filter(Boolean);
+  return words.slice(0, 8).join(' ');
+}
+
+// dot product на заявката срещу всички редове на пакетиран страничен запис;
+// връща най-добрия ред. Векторите са нормализирани → dot == косинус.
+function bestRow(qvec, pv) {
+  const { data, dim, count } = pv;
+  let best = -Infinity;
+  let bestPos = 0;
+  for (let row = 0; row < count; row++) {
+    const off = row * dim;
+    let dot = 0;
+    for (let i = 0; i < dim; i++) dot += data[off + i] * qvec[i];
+    if (dot > best) {
+      best = dot;
+      bestPos = row;
+    }
+  }
+  return { score: best, pos: bestPos };
+}
+
+async function search(query, minTime = 0) {
   const [qvec] = await embed([query]);
 
-  // Векторите са нормализирани → dot product == косинусова близост.
-  // Пазим само нужното за ранкинга, не референции към целите chunk обекти —
-  // иначе при 20k+ парчета държим всички вектори в паметта едновременно.
+  // Един IDB запис на страница (пакетирани вектори) — групирането по
+  // страница идва безплатно, а четенията са ~20× по-малко от чете-всяко-парче.
   const scored = [];
-  await db.forEachChunk((chunk) => {
-    const v = chunk.vec;
-    if (!v || v.length !== qvec.length) return; // друг модел/размерност — прескачаме
-    let dot = 0;
-    for (let i = 0; i < v.length; i++) dot += v[i] * qvec[i];
-    scored.push({ score: dot, urlKey: chunk.urlKey, title: chunk.title, text: chunk.text });
+  await db.forEachPageVec((pv) => {
+    if (!pv.data || pv.dim !== qvec.length) return; // друг модел/размерност
+    if (minTime && pv.time && pv.time < minTime) return; // датов филтър
+    const { score, pos } = bestRow(qvec, pv);
+    scored.push({ urlKey: pv.urlKey, score, pos });
   });
   scored.sort((a, b) => b.score - a.score);
 
-  // Групираме по страница по ЦЕЛИЯ сортиран списък — най-доброто парче
-  // представя страницата. (Рязане на топ-N парчета преди групирането води до
-  // 1-2 резултата, когато една дълга страница доминира върха.)
-  const byPage = new Map();
-  for (const s of scored) {
-    if (!byPage.has(s.urlKey)) {
-      byPage.set(s.urlKey, s);
-      if (byPage.size >= TOP_PAGES) break;
-    }
+  const results = [];
+  for (const s of scored.slice(0, TOP_PAGES)) {
+    const [page, text] = await Promise.all([
+      db.getPage(s.urlKey),
+      db.getChunkText(s.urlKey, s.pos),
+    ]);
+    results.push({
+      url: s.urlKey,
+      title: page?.title || s.urlKey,
+      snippet: text.slice(0, 260),
+      quote: makeQuote(text),
+      score: Math.round(s.score * 100) / 100,
+      time: page?.time || null,
+    });
   }
+  return results;
+}
+
+// „Свързани спомени“: центроидът на страницата срещу всички други страници.
+async function related(urlKey) {
+  const pv = await db.getPageVec(urlKey);
+  if (!pv || !pv.count) return [];
+  const { data, dim, count } = pv;
+  const centroid = new Float32Array(dim);
+  for (let row = 0; row < count; row++) {
+    const off = row * dim;
+    for (let i = 0; i < dim; i++) centroid[i] += data[off + i];
+  }
+  let norm = 0;
+  for (let i = 0; i < dim; i++) norm += centroid[i] * centroid[i];
+  norm = Math.sqrt(norm) || 1;
+  for (let i = 0; i < dim; i++) centroid[i] /= norm;
+
+  const scored = [];
+  await db.forEachPageVec((other) => {
+    if (other.urlKey === urlKey || other.dim !== dim) return;
+    const { score } = bestRow(centroid, other);
+    scored.push({ urlKey: other.urlKey, score });
+  });
+  scored.sort((a, b) => b.score - a.score);
 
   const results = [];
-  for (const [urlKey, s] of byPage) {
-    const page = await db.getPage(urlKey);
+  for (const s of scored.slice(0, RELATED_COUNT)) {
+    const page = await db.getPage(s.urlKey);
     results.push({
-      url: urlKey,
-      title: s.title || urlKey,
-      snippet: s.text.slice(0, 260),
+      url: s.urlKey,
+      title: page?.title || s.urlKey,
       score: Math.round(s.score * 100) / 100,
       time: page?.time || null,
     });
@@ -249,6 +295,26 @@ async function search(query) {
 
 // --- съобщения ---
 
+const handlers = {
+  'deja:search': (msg) => search(msg.query, msg.minTime || 0),
+  'deja:related': (msg) => related(msg.urlKey),
+  'deja:stats': async () => ({ pages: await db.countPages() }),
+  'deja:clear': () => db.clearAll(),
+  'deja:memory:list': async () => {
+    const pages = await db.getAllPages();
+    pages.sort((a, b) => (b.time || 0) - (a.time || 0));
+    return pages.map(({ urlKey, title, time, chunkCount }) => ({
+      urlKey,
+      title,
+      time,
+      chunkCount,
+    }));
+  },
+  'deja:memory:delete': (msg) => db.deletePage(msg.urlKey),
+  'deja:memory:export': () => db.exportAll(),
+  'deja:memory:import': (msg) => db.importAll(msg.dump),
+};
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg) return;
 
@@ -257,21 +323,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ ok: true });
     return;
   }
-  if (msg.type === 'deja:search') {
-    search(msg.query)
-      .then((results) => sendResponse({ ok: true, results }))
-      .catch((err) => sendResponse({ ok: false, error: String(err?.message || err) }));
-    return true;
-  }
-  if (msg.type === 'deja:stats') {
-    db.countPages()
-      .then((pages) => sendResponse({ ok: true, pages }))
-      .catch((err) => sendResponse({ ok: false, error: String(err?.message || err) }));
-    return true;
-  }
-  if (msg.type === 'deja:clear') {
-    db.clearAll()
-      .then(() => sendResponse({ ok: true }))
+  const handler = handlers[msg.type];
+  if (handler) {
+    handler(msg)
+      .then((result) => sendResponse({ ok: true, result }))
       .catch((err) => sendResponse({ ok: false, error: String(err?.message || err) }));
     return true;
   }
@@ -281,6 +336,16 @@ chrome.commands.onCommand.addListener((command) => {
   if (command === 'open-search') {
     chrome.tabs.create({ url: chrome.runtime.getURL('search.html') });
   }
+});
+
+// --- omnibox: „dj как се гледат домати“ директно от адресната лента ---
+
+chrome.omnibox.setDefaultSuggestion({
+  description: chrome.i18n.getMessage('omniboxDefault') || 'Déjà',
+});
+chrome.omnibox.onInputEntered.addListener((text) => {
+  const url = chrome.runtime.getURL('search.html') + '?q=' + encodeURIComponent(text.trim());
+  chrome.tabs.create({ url });
 });
 
 // --- alarms: retention (дневно) + offscreen GC (на 5 мин) ---

@@ -66,15 +66,19 @@ button {
   margin: 14px 2px 2px;
 }
 
-.options-link {
-  color: #8f8fa3;
-  display: block;
-  font-size: 13px;
+.links {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
   margin-top: 12px;
-  text-align: center;
+}
+
+.links a {
+  color: #8f8fa3;
+  font-size: 13px;
   text-decoration: none;
 }
 
-.options-link:hover {
+.links a:hover {
   color: #8b7cf6;
 }

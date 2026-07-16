@@ -1,4 +1,4 @@
-// Déjà — popup: статус, пауза, изчистване, път към настройките.
+// Déjà — popup: статус, пауза, изчистване, пътища към паметта и настройките.
 
 import { getSettings, patchSettings } from '../lib/settings.js';
 import { applyI18n, t } from '../lib/i18n.js';
@@ -9,15 +9,16 @@ const stats = document.getElementById('stats');
 const openBtn = document.getElementById('open');
 const pausedBox = document.getElementById('paused');
 const clearBtn = document.getElementById('clear');
+const memoryLink = document.getElementById('memory');
 const optionsLink = document.getElementById('options');
 
 async function refresh() {
   try {
     const res = await chrome.runtime.sendMessage({ type: 'deja:stats' });
     stats.textContent = res?.ok
-      ? res.pages === 1
+      ? res.result.pages === 1
         ? t('popupPagesOne')
-        : t('popupPages', [String(res.pages)])
+        : t('popupPages', [String(res.result.pages)])
       : t('popupSleeping');
   } catch {
     stats.textContent = t('popupWaking');
@@ -38,6 +39,11 @@ clearBtn.addEventListener('click', async () => {
   if (!confirm(t('popupClearConfirm'))) return;
   await chrome.runtime.sendMessage({ type: 'deja:clear' });
   refresh();
+});
+
+memoryLink.addEventListener('click', (event) => {
+  event.preventDefault();
+  chrome.tabs.create({ url: chrome.runtime.getURL('memory.html') });
 });
 
 optionsLink.addEventListener('click', (event) => {

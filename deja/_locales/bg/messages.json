@@ -64,6 +64,23 @@
   "optModelHostHelp": {
     "message": "Празно = huggingface.co. Задай собствен сървър за офлайн/фирмени среди."
   },
+  "filterAll": { "message": "всички" },
+  "filterWeek": { "message": "последната седмица" },
+  "filterMonth": { "message": "последния месец" },
+  "filterYear": { "message": "последната година" },
+  "relatedLink": { "message": "свързани спомени" },
+  "relatedNone": { "message": "няма близки спомени" },
+  "omniboxDefault": { "message": "Питай паметта си — Déjà търси по смисъл" },
+  "popupMemory": { "message": "Моята памет" },
+  "memoryTitle": { "message": "Моята памет" },
+  "memoryEmpty": { "message": "Паметта е празна — разгледай няколко страници и се върни." },
+  "memoryForget": { "message": "Забрави" },
+  "memoryExport": { "message": "Изтегли архив" },
+  "memoryImport": { "message": "Възстанови от архив" },
+  "memoryImportConfirm": {
+    "message": "Възстановяване от архив? Съвпадащите страници ще бъдат презаписани."
+  },
+
   "optSave": { "message": "Запази" },
   "optSaved": { "message": "Запазено ✓" },
   "optModelHostInvalid": { "message": "Огледалото трябва да е https:// адрес" },

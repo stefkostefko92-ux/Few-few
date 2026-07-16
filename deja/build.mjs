@@ -21,6 +21,7 @@ await esbuild.build({
     popup: 'src/popup/popup.js',
     options: 'src/options/options.js',
     welcome: 'src/welcome/welcome.js',
+    memory: 'src/memory/memory.js',
   },
   format: 'esm',
   outdir: dist,
@@ -45,6 +46,8 @@ copyFileSync('src/options/options.html', `${dist}/options.html`);
 copyFileSync('src/options/options.css', `${dist}/options.css`);
 copyFileSync('src/welcome/welcome.html', `${dist}/welcome.html`);
 copyFileSync('src/welcome/welcome.css', `${dist}/welcome.css`);
+copyFileSync('src/memory/memory.html', `${dist}/memory.html`);
+copyFileSync('src/memory/memory.css', `${dist}/memory.css`);
 cpSync('icons', `${dist}/icons`, { recursive: true });
 cpSync('_locales', `${dist}/_locales`, { recursive: true });
 

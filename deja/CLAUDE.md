@@ -104,14 +104,31 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 - Дизайн: „изплуващи“ резултати, --recall сила на спомена, дълбочинен фон,
   дишащо търсене — ванилен CSS, prefers-reduced-motion уважен.
 
+## Направено във v0.5.0 (10-те подобрения)
+
+- **Omnibox**: `dj <заявка>` в адресната лента → search.html?q= (авто-търсене).
+- **Скок до абзаца**: резултатите линкват с `#:~:text=` цитат от парчето.
+- **Датови филтри**: chips всички/седмица/месец/година → `minTime` в search.
+- **„Моята памет“** (memory.html): списък, „Забрави“ поединично, export/import
+  на целия индекс (`deja:memory:*` съобщения; формат `deja-memory` v2).
+- **По-умен extractor** (content.js): кандидат-скоринг по дължина × линкова
+  гъстота, шумочистене и вътре в article, блоково сглобяване на текста.
+- **Свързани спомени**: центроид на страницата срещу останалите (on-demand).
+- **DB v2 — пакетирани вектори по страница** (`pagevecs`, един Float32Array
+  на страница): ~20× по-малко IDB четения при търсене, мащаб към 50k+ парчета;
+  миграция v1→v2 в onupgradeneeded. Отговорите на съобщенията са
+  униформени: `{ok, result}`.
+- **Firefox порт кит**: `firefox/` (manifest + embed-adapter loopback Port +
+  README интеграция + AMO бележки). Building не е вързан още.
+- **Pro tier спецификация**: `docs/PRO.md` (E2E-криптиран sync като Pro котва;
+  privacy контролите ВИНАГИ безплатни; Stripe Checkout + webhook лиценз).
+- **EN/IT landing**: server/en.html + it.html + hreflang в трите + keywords
+  (≥5, вкл. „Carbon Stealth“ — правило на репото) + nginx /en /it + sitemap.
+
 ## Пътна карта (по ред)
 
-1. Страница „моята памет“: списък на страниците, изтриване поединично,
-   export/import на индекса (Хромаджията M2 — доверие + GDPR хигиена).
-2. HNSW/IVF индекс при >50k парчета (сега: brute-force cursor, ОК до ~20k).
-3. Качване в Chrome Web Store: деплойни `server/` на deja.carbonstealth.eu
-   (nginx конфигът е готов; /privacy маршрутът е CWS privacy URL-ът), попълни
-   импресума (адрес+имейл, TODO маркери в privacy.html и PRIVACY.md), Data
-   Disclosure „No collection“ + трите сертификации (виж store/LISTING.md).
-   EN версия на политиката — преди международно промотиране.
-4. Firefox порт.
+1. Качване в Chrome Web Store: деплойни `server/` на deja.carbonstealth.eu
+   (/privacy е CWS privacy URL-ът) + формуляра от store/LISTING.md.
+2. Firefox build интеграция (--firefox → dist-firefox/, по firefox/README.md).
+3. Pro v1 (по docs/PRO.md, след решение на собственика).
+4. HNSW при >100k парчета (пакетираните вектори стигат до ~50k).
