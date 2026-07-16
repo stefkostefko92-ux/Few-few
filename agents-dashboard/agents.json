@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-15",
+    "updated": "2026-07-16",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -2843,9 +2843,20 @@
           "date": "2026-07-14",
           "event": "v10.6 — учене",
           "detail": "Научи: Ospedali Trasparenti: деветте нови страници (cordate/segnali-gare/apparecchiature/sdo/s… (+1 още)"
+        },
+        {
+          "version": "10.7.0",
+          "date": "2026-07-16",
+          "event": "v10.7 — учене",
+          "detail": "Научи: Ospedali Trasparenti: glossario.html НЕ е в главния NAV (src/lib/site-ui.js:293-307) — … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „Ospedali Trasparenti: glossario.html НЕ е в главния NAV (src/lib/site-ui.js:293-307) — …\" (+1 още)"
+        },
         {
           "date": "2026-07-15",
           "type": "quarantine",
