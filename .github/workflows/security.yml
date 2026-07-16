@@ -50,11 +50,17 @@ jobs:
     name: Уязвими зависимости (dependency-review)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    # Private репо без GitHub Advanced Security: Dependency graph API-то не е
+    # налично и action-ът гърми с „not supported on this repository“ — затова
+    # стъпката е незадължителна. Включи ли се GHAS някой ден, махни
+    # continue-on-error, за да стане отново твърд гейт.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       # GitHub официален — блокира PR, който добавя зависимост с висока/критична CVE.
       - uses: actions/dependency-review-action@v4
+        continue-on-error: true
         with:
           fail-on-severity: high
