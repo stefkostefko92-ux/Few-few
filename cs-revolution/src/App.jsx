@@ -3014,13 +3014,15 @@ export default function App(){
           <div>
             <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_azienda")}</div>
             {({it:[
-              ["Chi Siamo","about"],["Portfolio","portfolio"],["Blog & Risorse","faq"],["Case Study","portfolio"],["Carriere","contact"],["Contatti","contact"]
+              ["Chi Siamo","about"],["Portfolio","portfolio"],["Blog & Risorse","/blog/"],["Aree Servite","/geo/"],["Carriere","contact"],["Contatti","contact"]
             ],en:[
-              ["About Us","about"],["Portfolio","portfolio"],["Blog & Resources","faq"],["Case Studies","portfolio"],["Careers","contact"],["Contact","contact"]
+              ["About Us","about"],["Portfolio","portfolio"],["Blog & Resources","/en/blog/"],["Service Areas","/en/geo/"],["Careers","contact"],["Contact","contact"]
             ],bg:[
-              ["\u0417\u0430 \u041D\u0430\u0441","about"],["\u041F\u043E\u0440\u0442\u0444\u043E\u043B\u0438\u043E","portfolio"],["\u0411\u043B\u043E\u0433 \u0438 \u0420\u0435\u0441\u0443\u0440\u0441\u0438","faq"],["\u041F\u0440\u0438\u043C\u0435\u0440\u043D\u0438 \u041F\u0440\u043E\u0435\u043A\u0442\u0438","portfolio"],["\u041A\u0430\u0440\u0438\u0435\u0440\u0438","contact"],["\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u0438","contact"]
+              ["\u0417\u0430 \u041D\u0430\u0441","about"],["\u041F\u043E\u0440\u0442\u0444\u043E\u043B\u0438\u043E","portfolio"],["\u0411\u043B\u043E\u0433 \u0438 \u0420\u0435\u0441\u0443\u0440\u0441\u0438","/bg/blog/"],["\u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043D\u0438 \u0420\u0430\u0439\u043E\u043D\u0438","/bg/geo/"],["\u041A\u0430\u0440\u0438\u0435\u0440\u0438","contact"],["\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u0438","contact"]
             ]}[lang]||[]).map(function(s){
-              return <div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
+              return s[1].charAt(0)==="/"
+                ? <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>
+                : <div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
             })}
           </div>
 
@@ -3039,6 +3041,34 @@ export default function App(){
             <div style={{marginTop:16,display:"flex",gap:12}}>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>SSL {lang==="it"?"PROTETTO":lang==="bg"?"\u0417\u0410\u0429\u0418\u0422\u0415\u041D":"SECURED"}</span>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>99.9% UPTIME</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SERVICE AREAS + RESOURCES — internal link equity to geo + blog */}
+        <div style={{padding:"24px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,maxWidth:1100,margin:"0 auto",width:"100%"}} className="cs-lab-grid">
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"AREE SERVITE":lang==="bg"?"ОБСЛУЖВАНИ РАЙОНИ":"SERVICE AREAS"}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px"}}>
+              {(lang==="bg"
+                ? [["София","/bg/geo/sofia/"],["Пловдив","/bg/geo/plovdiv/"],["Варна","/bg/geo/varna/"],["Бургас","/bg/geo/burgas/"],["Русе","/bg/geo/ruse/"],["Милано","/bg/geo/milano/"],["Рим","/bg/geo/roma/"]]
+                : lang==="en"
+                ? [["Milan","/en/geo/milano/"],["Rome","/en/geo/roma/"],["Turin","/en/geo/torino/"],["Florence","/en/geo/firenze/"],["Sofia","/en/geo/sofia/"],["Plovdiv","/en/geo/plovdiv/"],["Varna","/en/geo/varna/"]]
+                : [["Milano","/geo/milano/"],["Roma","/geo/roma/"],["Torino","/geo/torino/"],["Firenze","/geo/firenze/"],["Napoli","/geo/napoli/"],["Bologna","/geo/bologna/"],["Sofia","/geo/sofia/"]]
+              ).map(function(c){return <a key={c[0]} href={c[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none"}}>{c[0]}</a>})}
+              <a href={lang==="it"?"/geo/":lang==="en"?"/en/geo/":"/bg/geo/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none"}}>{lang==="it"?"tutte →":lang==="bg"?"всички →":"all →"}</a>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"DAL BLOG":lang==="bg"?"ОТ БЛОГА":"FROM THE BLOG"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {(function(){var b=lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/";return (lang==="it"
+                ? [["Quanto costa un sito web nel 2026","quanto-costa-sito-web"],["WooCommerce vs Shopify","woocommerce-vs-shopify"],["Cos'è un ERP e come funziona","cos-e-un-erp"],["SEO per piccole imprese","seo-per-piccole-imprese"]]
+                : lang==="en"
+                ? [["How much does a website cost in 2026","quanto-costa-sito-web"],["WooCommerce vs Shopify","woocommerce-vs-shopify"],["What is an ERP and how it works","cos-e-un-erp"],["SEO for small businesses","seo-per-piccole-imprese"]]
+                : [["Колко струва изработката на сайт","quanto-costa-sito-web"],["WooCommerce срещу Shopify","woocommerce-vs-shopify"],["Какво е ERP система","cos-e-un-erp"],["SEO за малкия бизнес","seo-per-piccole-imprese"]]
+              ).map(function(a){return <a key={a[1]} href={b+a[1]+"/"} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {a[0]}</a>})})()}
+              <a href={lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none",marginTop:2}}>{lang==="it"?"tutti gli articoli →":lang==="bg"?"всички статии →":"all articles →"}</a>
             </div>
           </div>
         </div>
