@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Déjà — Privacy Policy</title>
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="canonical" href="https://deja.carbonstealth.eu/privacy" />
+    <style>
+      :root {
+        --bg: #0e0e14;
+        --panel: #17171f;
+        --border: #2a2a38;
+        --text: #eaeaf2;
+        --muted: #8f8fa3;
+        --soft: #c6c6d4;
+        --accent: #8b7cf6;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        line-height: 1.65;
+      }
+
+      .wrap {
+        margin: 0 auto;
+        max-width: 720px;
+        padding: 40px 20px 80px;
+      }
+
+      .brand {
+        align-items: center;
+        display: flex;
+        font-size: 22px;
+        font-weight: 700;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+
+      .brand img {
+        height: 34px;
+        width: 34px;
+      }
+
+      .dot {
+        color: var(--accent);
+      }
+
+      .brand a {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        margin-left: auto;
+        text-decoration: none;
+      }
+
+      h1 {
+        font-size: 30px;
+        margin-bottom: 6px;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-bottom: 26px;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin: 30px 0 10px;
+      }
+
+      p,
+      li {
+        color: var(--soft);
+      }
+
+      ul {
+        padding-left: 22px;
+      }
+
+      strong {
+        color: var(--text);
+      }
+
+      .tldr {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 12px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        padding: 14px 18px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand">
+        <img src="icon.png" alt="" />Déjà<span class="dot">.</span>
+        <a href="/">← back to site</a>
+      </div>
+
+      <h1>Privacy Policy</h1>
+      <p class="meta">Last updated: 11 July 2026 · version 1.1</p>
+
+      <p class="tldr">The short version: your data never leaves your device.</p>
+
+      <h2>What Déjà collects</h2>
+      <p>
+        Déjà extracts the text of the web pages you read so that you can later search them by
+        meaning. That text, and the vectors computed from it, are stored
+        <strong>exclusively locally</strong>, in your browser's IndexedDB.
+      </p>
+
+      <h2>What Déjà does NOT do</h2>
+      <ul>
+        <li>
+          It does not send page content, URLs, search queries or any other data to servers — ours
+          or anyone else's. There is no backend. No telemetry. No analytics.
+        </li>
+        <li>
+          It does not index mail, chats, login pages, payments or banking (a built-in denylist).
+          <strong>Important:</strong> the denylist matches by address, not by topic — a page with
+          sensitive content (e.g. a health article) on an ordinary site will be memorised locally.
+          For such cases use the pause switch or add your own patterns in the settings.
+        </li>
+        <li>It does not sell or share anything with anyone — there is nothing to share: your data never reaches us.</li>
+      </ul>
+
+      <h2>The only network request</h2>
+      <p>
+        On first run (and when the model is changed), Déjà downloads the embedding model files from
+        Hugging Face. As with any network request, Hugging Face and its CDN see your
+        <strong>IP address</strong>, an approximate IP-based location and standard HTTP headers —
+        this is technically unavoidable when downloading a file. The request does
+        <strong>not</strong> contain the content you read, your URLs, your searches or any indexed
+        data. Hugging Face is a company based in the USA. If you do not want any external request
+        at all, point the extension at your own mirror in Settings → “Custom model mirror” and
+        Déjà will never contact Hugging Face. The model is cached locally and is not downloaded
+        again.
+      </p>
+
+      <h2>Your controls</h2>
+      <ul>
+        <li><strong>Pause</strong> — from the popup, stops indexing instantly.</li>
+        <li><strong>Clear memory</strong> — irreversibly deletes everything memorised.</li>
+        <li>
+          <strong>Automatic forgetting</strong> — optionally, Déjà deletes pages older than
+          3/6/12/24 months.
+        </li>
+        <li><strong>Removing the extension</strong> — deletes the database along with it.</li>
+      </ul>
+
+      <h2>Publisher and contact</h2>
+      <p>
+        <strong>Publisher:</strong> Carbon Stealth VCC, company reg. no. (ЕИК) 208725180,
+        3 Samuil St., 2670 Bobov Dol, Bulgaria<br />
+        <strong>Privacy contact:</strong>
+        <a href="mailto:privacy@carbonstealth.eu">privacy@carbonstealth.eu</a> ·
+        <strong>General enquiries:</strong>
+        <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> ·
+        <a href="https://carbonstealth.eu">carbonstealth.eu</a>
+      </p>
+      <p>
+        No Data Protection Officer has been appointed — we do not process personal data on our
+        servers.
+      </p>
+      <p><a href="/privacy-bg">Прочети тази политика на български →</a></p>
+    </div>
+  </body>
+</html>

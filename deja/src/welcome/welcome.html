@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Déjà</title>
+    <link rel="stylesheet" href="search.css" />
+    <link rel="stylesheet" href="welcome.css" />
+  </head>
+  <body>
+    <main class="wrap welcome">
+      <header class="head">
+        <h1 class="logo">Déjà<span class="dot">.</span></h1>
+        <p class="tagline" data-i18n="tagline">Виждал си го. Déjà го намира.</p>
+      </header>
+
+      <h2 class="hello" data-i18n="welcomeHeading">Здравей. Аз съм паметта на браузъра ти.</h2>
+      <p class="intro" data-i18n="welcomeIntro">
+        От този момент запомням какво четеш, за да го намираш после по смисъл — със свои думи, не с
+        точното заглавие.
+      </p>
+
+      <ul class="points">
+        <li data-i18n="welcomePoint1">
+          Всичко се случва на твоето устройство. Без сървъри, без облак, без изпращане на данни —
+          никъде, никога.
+        </li>
+        <li data-i18n="welcomePoint2">
+          Поща, чатове, вход и банкиране никога не се запомнят. Внимавай: страници на чувствителни
+          теми не мога да разпозная по адрес — за тях ползвай пауза или свой списък в настройките.
+        </li>
+        <li data-i18n="welcomePoint3">
+          Ти командваш: пауза с един клик, „Изчисти паметта“ трие всичко, а по избор забравям
+          автоматично след няколко месеца.
+        </li>
+      </ul>
+
+      <div class="cta">
+        <button id="open" data-i18n="welcomeCta">Отвори търсенето</button>
+        <a id="options" href="#" data-i18n="welcomeOptions">Настройки</a>
+      </div>
+    </main>
+    <script type="module" src="welcome.js"></script>
+  </body>
+</html>

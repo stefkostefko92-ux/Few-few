@@ -1,0 +1,63 @@
+.welcome .hello {
+  font-size: 24px;
+  margin: 8px 0 12px;
+  text-align: center;
+}
+
+.welcome .intro {
+  color: #c6c6d4;
+  line-height: 1.6;
+  margin: 0 auto 26px;
+  max-width: 520px;
+  text-align: center;
+}
+
+.welcome .points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+}
+
+.welcome .points li {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  color: #c6c6d4;
+  line-height: 1.55;
+  padding: 14px 16px;
+}
+
+.welcome .cta {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+}
+
+.welcome .cta button {
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 13px 30px;
+}
+
+.welcome .cta button:hover {
+  filter: brightness(1.1);
+}
+
+.welcome .cta a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.welcome .cta a:hover {
+  color: var(--accent);
+}

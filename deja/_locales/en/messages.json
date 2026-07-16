@@ -1,0 +1,232 @@
+{
+  "extName": {
+    "message": "Déjà — your browser's memory"
+  },
+  "extDesc": {
+    "message": "Semantic search across the pages you have read. Everything happens locally — nothing ever leaves your device."
+  },
+  "cmdOpenSearch": {
+    "message": "Open Déjà search"
+  },
+  "searchTitle": {
+    "message": "Déjà — search what you've read"
+  },
+  "tagline": {
+    "message": "You've seen it. Déjà finds it."
+  },
+  "searchPlaceholder": {
+    "message": "Describe what you remember… e.g. \"article about sodium-based batteries\""
+  },
+  "searchButton": {
+    "message": "Search"
+  },
+  "statusSearching": {
+    "message": "Digging through memory… (the first search loads the model, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nothing surfaced. Either you never read it, or Déjà hasn't memorised it yet."
+  },
+  "statusResults": {
+    "message": "$COUNT$ memories:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 memory:"
+  },
+  "errNoResponse": {
+    "message": "memory didn't answer — try again"
+  },
+  "recallVivid": {
+    "message": "vivid memory"
+  },
+  "recallHazy": {
+    "message": "hazy memory"
+  },
+  "recallFaint": {
+    "message": "distant memory"
+  },
+  "statusError": {
+    "message": "Search failed: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "In memory: $COUNT$ pages.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "In memory: 1 page."
+  },
+  "similarity": {
+    "message": "similarity $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "read on $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ pages in memory",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 page in memory"
+  },
+  "popupSleeping": {
+    "message": "memory is asleep"
+  },
+  "popupWaking": {
+    "message": "memory is waking up…"
+  },
+  "popupOpenSearch": {
+    "message": "Open search"
+  },
+  "popupPause": {
+    "message": "Pause memorising"
+  },
+  "popupClear": {
+    "message": "Clear memory"
+  },
+  "popupClearConfirm": {
+    "message": "Delete everything memorised? No going back."
+  },
+  "popupOptions": {
+    "message": "Settings"
+  },
+  "optionsTitle": {
+    "message": "Déjà — settings"
+  },
+  "optRetentionLabel": {
+    "message": "Remember pages"
+  },
+  "optRetentionForever": {
+    "message": "forever"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ months",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Older pages are deleted automatically once a day."
+  },
+  "optDenylistLabel": {
+    "message": "Never memorise addresses containing"
+  },
+  "optDenylistHelp": {
+    "message": "One pattern per line. Matches part of the address, e.g. \"example.com\" or \"/private\"."
+  },
+  "optBuiltinLabel": {
+    "message": "Built-in protection (always active)"
+  },
+  "optModelHostLabel": {
+    "message": "Custom model mirror (advanced)"
+  },
+  "optModelHostHelp": {
+    "message": "Empty = huggingface.co. Set your own server for offline/corporate environments."
+  },
+  "filterAll": {
+    "message": "all"
+  },
+  "filterWeek": {
+    "message": "past week"
+  },
+  "filterMonth": {
+    "message": "past month"
+  },
+  "filterYear": {
+    "message": "past year"
+  },
+  "relatedLink": {
+    "message": "related memories"
+  },
+  "relatedNone": {
+    "message": "no nearby memories"
+  },
+  "omniboxDefault": {
+    "message": "Ask your memory — Déjà searches by meaning"
+  },
+  "popupMemory": {
+    "message": "My memory"
+  },
+  "memoryTitle": {
+    "message": "My memory"
+  },
+  "memoryEmpty": {
+    "message": "Memory is empty — browse a few pages and come back."
+  },
+  "memoryForget": {
+    "message": "Forget"
+  },
+  "memoryExport": {
+    "message": "Download archive"
+  },
+  "memoryImport": {
+    "message": "Restore from archive"
+  },
+  "memoryImportConfirm": {
+    "message": "Restore from archive? Matching pages will be overwritten."
+  },
+  "optSave": {
+    "message": "Save"
+  },
+  "optSaved": {
+    "message": "Saved ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "The mirror must be an https:// address"
+  },
+  "welcomeHeading": {
+    "message": "Hi. I'm your browser's memory."
+  },
+  "welcomeIntro": {
+    "message": "From this moment I remember what you read, so you can find it later by meaning — in your own words, not the exact title."
+  },
+  "welcomePoint1": {
+    "message": "Everything happens on your device. No servers, no cloud, no data sent — anywhere, ever."
+  },
+  "welcomePoint2": {
+    "message": "Mail, chats, logins and banking are never memorised. Heads up: I can't recognise sensitive topics by address — for those, use pause or your own list in settings."
+  },
+  "welcomePoint3": {
+    "message": "You're in charge: pause with one click, \"Clear memory\" deletes everything, and optionally I forget automatically after a few months."
+  },
+  "welcomeCta": {
+    "message": "Open search"
+  },
+  "welcomeOptions": {
+    "message": "Settings"
+  },
+  "memoryFilter": {
+    "message": "Search your memory…"
+  },
+  "supportLink": {
+    "message": "Support Déjà"
+  }
+}
