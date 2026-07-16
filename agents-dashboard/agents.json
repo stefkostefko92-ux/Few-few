@@ -3414,6 +3414,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-16",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „SupremeAdManager i18n lives in src/locales/*.json (bg source of truth) driven by src/i1…\" (+2)"
+        },
+        {
           "date": "2026-07-10",
           "type": "learning",
           "summary": "Научи: „linketto messages/*.json — секцията 'pricing' завършва с ключа 'referralPercentNote' (р…\" · 2 в карантина"
