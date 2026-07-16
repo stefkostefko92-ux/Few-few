@@ -99,15 +99,21 @@ shopRouter.post(
         client_reference_id: userId,
         metadata: { userId, sku },
         ...(isSubscription ? { subscription_data: { metadata: { userId, sku } } } : {}),
-        // CRD art. 16: collect the buyer's consent on the hosted page too. The
-        // ToS checkbox is required (needs a Terms URL set in Stripe Dashboard);
-        // custom_text carries the immediate-supply / withdrawal-right notice and
-        // is always visible next to the pay button.
-        consent_collection: { terms_of_service: "required" },
-        custom_text: {
-          terms_of_service_acceptance: { message: consent },
-          submit: { message: consent },
-        },
+        // CRD art. 16: show the immediate-supply / withdrawal-right notice above
+        // the pay button on every session (`submit`, no Dashboard config needed).
+        // The stronger ToS *checkbox* (consent_collection + its acceptance text)
+        // requires a Terms URL in the Stripe Dashboard, so it is layered on only
+        // when STRIPE_TOS_CONFIGURED is set — otherwise Stripe would reject the
+        // session. The in-app checkbox remains the primary, guaranteed gate.
+        ...(env.STRIPE_TOS_CONFIGURED
+          ? {
+              consent_collection: { terms_of_service: "required" as const },
+              custom_text: {
+                terms_of_service_acceptance: { message: consent },
+                submit: { message: consent },
+              },
+            }
+          : { custom_text: { submit: { message: consent } } }),
         line_items: [
           {
             quantity: 1,
