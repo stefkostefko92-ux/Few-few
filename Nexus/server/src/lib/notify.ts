@@ -16,5 +16,10 @@ export function notify(db: Database.Database, characterId: number, kind: NotifKi
     // Live push (SSE) — клиентът презарежда камбанката веднага. Polling-ът
     // остава fallback, ако връзката не е активна.
     pushToChar(characterId, 'notification', { kind, message });
-  } catch { /* notifications table added by forward migration */ }
+  } catch (e) {
+    // Best-effort: нотификацията е страничен ефект, не бива да вали заявката.
+    // Но не гълтай безшумно — иначе реални INSERT грешки изчезват без следа.
+    // eslint-disable-next-line no-console
+    console.warn('[notify] failed:', (e as any)?.message || e);
+  }
 }

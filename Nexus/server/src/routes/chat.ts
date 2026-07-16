@@ -23,6 +23,27 @@ const CHANNELS = new Set(['global', ...REGION_CHANNELS]);
 const CHAT_MIN_INTERVAL_MS = 1500; // анти-флуд: 1 съобщение / 1.5s
 const lastChatAt = new Map<number, number>();
 
+// Периодично чисти стари throttle записи — иначе Map расте с всеки герой,
+// който някога е писал (бавен memory leak).
+setInterval(() => {
+  const cutoff = Date.now() - CHAT_MIN_INTERVAL_MS * 4;
+  for (const [id, ts] of lastChatAt) if (ts < cutoff) lastChatAt.delete(id);
+}, 5 * 60_000).unref();
+
+/**
+ * GDPR retention (чл. 5(1)(д)): изтрий чат/DM/нотификации по-стари от прозореца.
+ * Извиква се периодично от server.ts. Каскадите покриват изтриване на акаунт;
+ * това ограничава съхранението, докато акаунтът още живее.
+ */
+export function pruneMessages(retentionMs: number): number {
+  const db = getDb();
+  const cutoff = Date.now() - retentionMs;
+  const a = db.prepare('DELETE FROM global_chat WHERE created_at < ?').run(cutoff);
+  const b = db.prepare('DELETE FROM direct_messages WHERE created_at < ?').run(cutoff);
+  const c = db.prepare('DELETE FROM notifications WHERE created_at < ?').run(cutoff);
+  return (a.changes || 0) + (b.changes || 0) + (c.changes || 0);
+}
+
 function getChar(uid: number): { id: number; name: string } | undefined {
   return getDb().prepare('SELECT id, name FROM characters WHERE user_id = ?').get(uid) as
     | { id: number; name: string } | undefined;

@@ -13,11 +13,29 @@ import type { Response } from 'express';
 interface Conn { res: Response; characterId: number; }
 const conns = new Set<Conn>();
 
-/** Регистрира SSE връзка. Връща cleanup функция за close. */
+// Таван на едновременните SSE връзки на герой — спира DoS с изтощаване на
+// ресурси (скрипт, който сече билети и трупа отворени потоци). При надвишаване
+// отхвърляме новата (клиентът пада към polling).
+const MAX_PER_CHAR = 5;
+
+/** Регистрира SSE връзка. Връща cleanup функция за close (no-op при отказ). */
 export function addConnection(res: Response, characterId: number): () => void {
+  let n = 0;
+  for (const c of conns) if (c.characterId === characterId) n++;
+  if (n >= MAX_PER_CHAR) { try { res.end(); } catch { /* ignore */ } return () => {}; }
   const conn: Conn = { res, characterId };
   conns.add(conn);
   return () => { conns.delete(conn); };
+}
+
+/** Затваря всички активни SSE връзки на герой (при ban/token-bump). */
+export function closeForChar(characterId: number): void {
+  for (const c of conns) {
+    if (c.characterId === characterId) {
+      try { c.res.end(); } catch { /* ignore */ }
+      conns.delete(c);
+    }
+  }
 }
 
 /** Push към конкретен герой (ако е свързан). */

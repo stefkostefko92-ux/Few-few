@@ -44,7 +44,8 @@ export default function Terms(): React.ReactElement {
           Cheating, exploiting bugs, harassment, hate speech, sexual content involving minors,
           impersonation of staff or other players, spam or scams, and using third-party tools to
           automate gameplay are prohibited. Public free-text you create — character names, guild
-          names, tags and mottos, profile bios, and guild chat — is checked automatically before it
+          names, tags and mottos, profile bios, guild chat, global and regional chat, and private messages
+          (DM) — is checked automatically before it
           is published, and content that breaks these rules or applicable law is blocked or removed.
         </p>
         <p>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { onStream } from '../lib/stream';
 import { useStore } from '../lib/store';
+import ReportModal, { type ReportTarget } from '../components/ReportModal';
 import '../styles/guild.css';
 
 const REGION_CHANNELS = ['whispering_woods', 'mistmoor_hills', 'crystal_caverns', 'ashen_wastes', 'shadowfell'];
@@ -32,6 +33,7 @@ export default function Chat(): React.ReactElement {
   const [messages, setMessages] = useState<Array<PublicMsg | DmMsg>>([]);
   const [text, setText] = useState('');
   const [err, setErr] = useState('');
+  const [report, setReport] = useState<ReportTarget | null>(null);
   const lastId = useRef(0);
   const streamRef = useRef<HTMLDivElement>(null);
 
@@ -150,12 +152,23 @@ export default function Chat(): React.ReactElement {
           <div className="chat-stream" ref={streamRef} style={{ flex: 1, maxHeight: 440, overflowY: 'auto', padding: 12 }}>
             {messages.length === 0 && <div className="muted">{t('chat.empty', { defaultValue: 'No messages yet. Say hello!' })}</div>}
             {messages.map((m) => {
+              const isPublic = 'name' in m;
               const mine = 'from_id' in m ? m.from_id === myId : m.character_id === myId;
-              const who = 'name' in m ? m.name : (mine ? character.name : title);
+              const who = isPublic ? (m as PublicMsg).name : (mine ? character.name : title);
               return (
-                <div key={m.id} className={`chat-line ${mine ? 'me' : ''}`}>
-                  {!mine && 'name' in m && <span style={{ fontWeight: 600, marginRight: 6, color: 'var(--gold-1,#d6a13d)' }}>{who}</span>}
-                  <span>{m.message}</span>
+                <div key={m.id} className={`chat-line ${mine ? 'me' : ''}`} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  {!mine && isPublic && <span style={{ fontWeight: 600, color: 'var(--gold-1,#d6a13d)' }}>{who}</span>}
+                  <span style={{ flex: 1 }}>{m.message}</span>
+                  {/* DSA чл. 16: докладване на публично съобщение (⚑). DM са
+                      частна кореспонденция → без report бутон. */}
+                  {!mine && isPublic && (
+                    <button
+                      title={t('chat.report', { defaultValue: 'Report message' })}
+                      aria-label={t('chat.report', { defaultValue: 'Report message' })}
+                      onClick={() => setReport({ contentKind: 'chat', contentRef: `chat:${m.id}`, label: `Message from ${who}` })}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-3,#7a7f8c)', cursor: 'pointer', fontSize: 12, padding: 2 }}
+                    >⚑</button>
+                  )}
                 </div>
               );
             })}
@@ -174,6 +187,7 @@ export default function Chat(): React.ReactElement {
           {err && <div className="error" style={{ padding: '0 10px 10px' }}>{err}</div>}
         </div>
       </div>
+      {report && <ReportModal target={report} onClose={() => setReport(null)} />}
     </div>
   );
 }

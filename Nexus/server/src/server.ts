@@ -112,6 +112,10 @@ app.use('/api/payments/webhook', paymentsWebhookRouter);
 
 // SSE поток — монтиран ПРЕДИ apiLimiter, защото връзката е дълготрайна и
 // не бива да брои срещу rate limit-а. Auth е през краткоживущ ticket.
+// НО издаването на билет (POST /ticket) е кратко → лимитираме го отделно,
+// за да не може скрипт да сече билети и да трупа отворени SSE потоци (DoS).
+const streamTicketLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
+app.use('/api/stream/ticket', streamTicketLimiter);
 app.use('/api/stream', streamRoutes);
 
 const apiLimiter = rateLimit({
@@ -275,6 +279,14 @@ setInterval(() => { pruneExpiredBans(); }, 60 * 60 * 1000).unref();
 
 // SSE heartbeat — държи връзките/проксита живи (на 25s).
 setInterval(() => { heartbeatAll(); }, 25_000).unref();
+
+// GDPR retention за чат/DM/нотификации (изравнено с Privacy §6 — 90 дни).
+// Ограничава съхранението на комуникационни данни, докато акаунтът живее
+// (каскадите покриват изтриване на акаунт). Прун на boot, после дневно.
+import { pruneMessages } from './routes/chat';
+const MESSAGE_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+pruneMessages(MESSAGE_RETENTION_MS);
+setInterval(() => { pruneMessages(MESSAGE_RETENTION_MS); }, 24 * 60 * 60 * 1000).unref();
 
 import { initObservability, installProcessGuards } from './lib/observability';
 initObservability();
