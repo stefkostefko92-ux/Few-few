@@ -424,3 +424,20 @@ test('dailySeries: нулево-запълнена серия с точната 
   assert.equal(s.length, 14);
   assert.ok(s.every((d) => typeof d.spend === 'number' && typeof d.conversions === 'number'));
 });
+
+test('HTTP: /privacy и /data-deletion са публични (без логин) — Meta/Google ревю', async () => {
+  const app = createApp();
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    for (const path of ['/privacy', '/data-deletion']) {
+      const r = await fetch(`${base}${path}`);
+      assert.equal(r.status, 200, `${path} трябва да е 200 без сесия`);
+      const html = await r.text();
+      assert.match(html, /Carbon Stealth VCC/);
+      assert.match(html, /info@carbonstealth\.eu/);
+    }
+  } finally {
+    server.close();
+  }
+});

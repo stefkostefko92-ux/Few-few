@@ -21,6 +21,19 @@ export async function generateMetadata({
     description: tSeo('metaDescription'),
     keywords: tSeo('keywords'),
     applicationName: t('appName'),
+    // Domain verification (Meta BM + Google) — само при зададени env кодове.
+    verification: {
+      ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+        ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+        : {}),
+      ...(process.env.NEXT_PUBLIC_META_DOMAIN_VERIFICATION
+        ? {
+            other: {
+              'facebook-domain-verification': [process.env.NEXT_PUBLIC_META_DOMAIN_VERIFICATION],
+            },
+          }
+        : {}),
+    },
   };
 }
 

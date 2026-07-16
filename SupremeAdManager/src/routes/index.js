@@ -11,6 +11,14 @@ import { tick } from '../scheduler.js';
 
 export const router = express.Router();
 
+// ---------- Публични страници (ПРЕДИ auth!) ----------
+// Meta App Review + Google Ads dev token изискват публично достъпни (без логин)
+// Privacy Policy URL и Data Deletion URL — затова тези две живеят преди requireAuth.
+router.get('/privacy', (req, res) => res.render('privacy', { title: 'Политика за поверителност' }));
+router.get('/data-deletion', (req, res) =>
+  res.render('data-deletion', { title: 'Изтриване на данни' })
+);
+
 // ---------- Вход/изход ----------
 router.get('/login', (req, res) => res.render('login', { title: 'Вход', error: null }));
 
