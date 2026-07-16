@@ -306,6 +306,10 @@ adminRouter.get(
   }),
 );
 
+/** Above this absolute grant size a staff note is mandatory (server-enforced;
+ *  the panel mirrors it client-side). Applies to both chips and gems. */
+export const GRANT_NOTE_THRESHOLD = 10_000;
+
 const updateUserSchema = z.object({
   role: z.enum(ROLES).optional(),
   vipTier: z.enum(VIP_TIERS).optional(),
@@ -328,10 +332,39 @@ adminRouter.patch(
     const input = updateUserSchema.parse(req.body);
     const actorRole = req.user!.role;
     const actorName = await resolveActorName(req.user!.sub);
+    const isSelf = id === req.user!.sub;
+    const rank = (r: string) => ROLES.indexOf(r as (typeof ROLES)[number]);
 
-    // Only an OWNER may mint another OWNER.
-    if (input.role === "OWNER" && actorRole !== "OWNER") {
-      throw forbidden("Само OWNER може да дава OWNER роля");
+    // Role assignment guard: an actor may never grant a role at or above their
+    // own rank (an ADMIN must not be able to mint another ADMIN). Only an OWNER
+    // may mint another OWNER — the sole role at OWNER rank they're allowed to set.
+    if (input.role) {
+      if (input.role === "OWNER") {
+        if (actorRole !== "OWNER") throw forbidden("Само OWNER може да дава OWNER роля");
+      } else if (rank(input.role) >= rank(actorRole)) {
+        throw forbidden("Не може да присвоиш роля с равен или по-висок ранг от твоя");
+      }
+    }
+
+    // A large grant must always carry a note (audit trail / abuse deterrent);
+    // the client mirrors this threshold but the server is authoritative.
+    const bigGrant =
+      Math.abs(input.grantChips ?? 0) > GRANT_NOTE_THRESHOLD ||
+      Math.abs(input.grantGems ?? 0) > GRANT_NOTE_THRESHOLD;
+    if (bigGrant && (!input.note || input.note.trim().length < 3)) {
+      throw badRequest("grant_note_required", "При голяма сума бележката (причина) е задължителна");
+    }
+
+    // Self-service abuse guard: staff may not grant themselves currency or change
+    // their own role (privilege escalation / self-enrichment). VIP tweaks and
+    // the like remain allowed.
+    if (isSelf) {
+      if (input.role && input.role !== actorRole) {
+        throw forbidden("Не можеш да променяш собствената си роля");
+      }
+      if ((input.grantChips ?? 0) !== 0 || (input.grantGems ?? 0) !== 0) {
+        throw forbidden("Не можеш да си начисляваш валута");
+      }
     }
 
     const target = await prisma.user.findUnique({ where: { id } });
@@ -339,9 +372,8 @@ adminRouter.patch(
 
     // No staff member may ban/demote/modify an account of equal-or-higher rank
     // (prevents an ADMIN from decapitating the OWNER or another ADMIN). Self-edit
-    // is allowed (the OWNER-mint guard above still applies).
-    const rank = (r: string) => ROLES.indexOf(r as (typeof ROLES)[number]);
-    if (id !== req.user!.sub && rank(target.role) >= rank(actorRole)) {
+    // is allowed (the guards above still constrain role/currency self-changes).
+    if (!isSelf && rank(target.role) >= rank(actorRole)) {
       throw forbidden("Не може да променяш акаунт с равен или по-висок ранг");
     }
 
@@ -410,18 +442,24 @@ function toAdminUser(u: {
 
 // ── Collusion flags (MODERATOR+) ────────────────────────────────────────────
 
-/** GET /api/admin/flags?status=OPEN — collusion flags for review (§13.5). */
+/** GET /api/admin/flags?status=OPEN&take=&cursor= — collusion flags for review
+ *  (§13.5), cursor-paginated like the other queues. */
 adminRouter.get(
   "/flags",
   asyncHandler(async (req, res) => {
     const status = String(req.query.status ?? "OPEN").toUpperCase();
     const valid = ["OPEN", "REVIEWING", "DISMISSED", "CONFIRMED"];
-    const flags = await prisma.collusionFlag.findMany({
+    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
+    const rows = await prisma.collusionFlag.findMany({
       where: valid.includes(status) ? { status: status as "OPEN" } : {},
-      orderBy: [{ score: "desc" }, { createdAt: "desc" }],
-      take: 100,
+      orderBy: [{ score: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
-    res.json({ flags });
+    const hasMore = rows.length > take;
+    const flags = hasMore ? rows.slice(0, take) : rows;
+    res.json({ flags, nextCursor: hasMore ? (flags[flags.length - 1]?.id ?? null) : null });
   }),
 );
 
@@ -552,12 +590,28 @@ adminRouter.get(
   }),
 );
 
-/** GET /api/admin/discord — full webhook config (editable in the admin panel). */
+/** Mask a webhook URL so its secret token can't be read: keep the host and the
+ *  last 4 characters, redact the rest. Empty stays empty. */
+function maskWebhook(url: string): string {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    return `${u.protocol}//${u.host}/•••${url.slice(-4)}`;
+  } catch {
+    return "•••";
+  }
+}
+
+/** GET /api/admin/discord — webhook config. ADMIN/OWNER see the full URL (they
+ *  edit it); MODERATOR/SUPPORT get a masked URL so the secret token doesn't leak
+ *  to lower-privileged staff who only need the connection status. */
 adminRouter.get(
   "/discord",
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
     const cfg = await getDiscordConfig(true);
-    res.json(cfg);
+    const role = req.user!.role;
+    const canSeeSecret = role === "ADMIN" || role === "OWNER";
+    res.json(canSeeSecret ? cfg : { ...cfg, webhookUrl: maskWebhook(cfg.webhookUrl), masked: true });
   }),
 );
 

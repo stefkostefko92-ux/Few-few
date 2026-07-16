@@ -11,6 +11,7 @@ export const SOCKET_EVENTS = {
   GAME_RECLAIM: "game:reclaim",
   GAME_RESIGN: "game:resign",
   CHAT_SEND: "chat:send",
+  CHAT_REPORT: "chat:report",
   INVITE_SEND: "invite:send",
   INVITE_ACCEPT: "invite:accept",
   // lobby (pre-game room): client -> server
@@ -145,6 +146,15 @@ export interface SocketErrorMsg {
 export interface ChatSendPayload {
   matchId: string;
   text: string;
+}
+
+/** Client -> server: report an opponent for abusive chat/behaviour in the
+ *  player's current match. Reports target a seat (a player), not a single line —
+ *  the ChatReport model is per-opponent. `reason` is an optional free-text note. */
+export interface ChatReportPayload {
+  matchId: string;
+  targetSeat: number;
+  reason?: string;
 }
 
 /** Server -> client: a chat line, broadcast to every seat in the match.

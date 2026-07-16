@@ -28,6 +28,11 @@ const resyncSchema = z.object({ matchId: z.string() });
 const reclaimSchema = z.object({ matchId: z.string() });
 // Accept a little slack over the cap; sanitizeChat truncates to CHAT_MAX_LEN.
 const chatSendSchema = z.object({ matchId: z.string(), text: z.string().min(1).max(CHAT_MAX_LEN * 4) });
+const chatReportSchema = z.object({
+  matchId: z.string().min(1).max(64),
+  targetSeat: z.number().int().min(0).max(15),
+  reason: z.string().trim().max(300).optional(),
+});
 const inviteSendSchema = z.object({ toUserId: z.string().min(1).max(64), game: z.string() });
 const inviteAcceptSchema = z.object({ fromUserId: z.string().min(1).max(64), game: z.string() });
 const lobbyCreateSchema = z.object({
@@ -71,6 +76,7 @@ interface InterServerEvents {
   "op:resign": (d: { matchId: string; userId: string }) => void;
   "op:presence": (d: { userId: string; connected: boolean }) => void;
   "op:chat": (d: { matchId: string; userId: string; text: string; ts: number }) => void;
+  "op:report": (d: { matchId: string; userId: string; targetSeat: number; reason?: string }) => void;
 }
 
 /** True when the two users are accepted friends (either direction). */
@@ -197,6 +203,37 @@ async function main(): Promise<void> {
     }
   };
 
+  /** Persist a player-submitted chat report (§14, DSA art.16). Runs on the node
+   *  that owns the room — the only place seat membership is authoritative during
+   *  a live match (MatchPlayer rows are written only at match end). Validates
+   *  that the reporter is seated, the target is a different, human (non-bot)
+   *  seat, and de-dupes against an existing OPEN report for the same pairing so
+   *  the moderation queue can't be flooded. */
+  const handleReport = async (
+    room: GameRoom,
+    reporterId: string,
+    targetSeat: number,
+    reason: string | undefined,
+  ): Promise<void> => {
+    const reporter = room.seats.find((s) => s.userId === reporterId);
+    if (!reporter || reporter.seat === targetSeat) return; // not seated / self-report
+    const target = room.seats.find((s) => s.seat === targetSeat);
+    if (!target || target.isBot || !target.userId) return; // unknown seat / bot
+    const existing = await prisma.chatReport.findFirst({
+      where: { matchId: room.matchId, fromUserId: reporterId, targetSeat, status: "OPEN" },
+      select: { id: true },
+    });
+    if (existing) return; // one open report per opponent per match
+    await prisma.chatReport.create({
+      data: {
+        matchId: room.matchId,
+        fromUserId: reporterId,
+        targetSeat,
+        text: reason && reason.length > 0 ? reason : "Докладван играч (без бележка)",
+      },
+    });
+  };
+
   // Apply forwarded ops only if THIS node owns the room/match; otherwise no-op.
   io.on("op:action", (d) => matchmaker.getRoom(d.matchId)?.handleAction(d.userId, d.action));
   io.on("op:resync", (d) => matchmaker.getRoom(d.matchId)?.resync(d.userId));
@@ -209,6 +246,10 @@ async function main(): Promise<void> {
     const room = matchmaker.getRoom(d.matchId);
     const seat = room?.seats.find((s) => s.userId === d.userId);
     if (room && seat) broadcastChat(room, seat.seat, seat.displayName, d.text, d.ts);
+  });
+  io.on("op:report", (d) => {
+    const room = matchmaker.getRoom(d.matchId);
+    if (room) void handleReport(room, d.userId, d.targetSeat, d.reason).catch((err) => logger.error({ err }, "chat report failed"));
   });
 
   /** Resume/forfeit a user's match presence whether the room is local or on a
@@ -417,6 +458,21 @@ async function main(): Promise<void> {
         if (seat) broadcastChat(room, seat.seat, seat.displayName, text, Date.now());
       } else {
         io.serverSideEmit("op:chat", { matchId: parsed.data.matchId, userId, text, ts: Date.now() });
+      }
+    });
+
+    // Report an opponent for abusive chat/behaviour → the moderation queue.
+    socket.on(SOCKET_EVENTS.CHAT_REPORT, (payload: unknown) => {
+      if (claims.role === "GUEST") return; // guests can't report (they can't chat)
+      if (!socketRateOk(socket, "report", 5, 60_000)) return;
+      const parsed = chatReportSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const { matchId, targetSeat, reason } = parsed.data;
+      const room = matchmaker.getRoom(matchId);
+      if (room) {
+        void handleReport(room, userId, targetSeat, reason).catch((err) => logger.error({ err }, "chat report failed"));
+      } else {
+        io.serverSideEmit("op:report", { matchId, userId, targetSeat, reason });
       }
     });
 

@@ -194,8 +194,10 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(patch),
     }),
-  adminFlags: (status: string) =>
-    request<{ flags: AdminFlag[] }>(`/admin/flags?status=${status}`),
+  adminFlags: (status: string, cursor?: string) =>
+    request<{ flags: AdminFlag[]; nextCursor: string | null }>(
+      `/admin/flags?status=${status}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+    ),
   adminReviewFlag: (id: string, status: string) =>
     request<{ flag: AdminFlag }>(`/admin/flags/${id}`, {
       method: "PATCH",
