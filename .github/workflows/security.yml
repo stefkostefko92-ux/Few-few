@@ -50,6 +50,12 @@ jobs:
     name: Уязвими зависимости (dependency-review)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    # Best-effort: на ЧАСТНО репо dependency-review изисква Dependency graph +
+    # GitHub Advanced Security (иначе фейлва инфраструктурно на всеки PR, не по
+    # уязвимост). Твърдият гейт остава secret-scan; това става блокиращо отново,
+    # щом собственикът активира GHAS (Settings → Security analysis) — тогава
+    # махни continue-on-error. Локален еквивалент: npm audit в CI на продуктите.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
