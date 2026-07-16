@@ -11134,6 +11134,7 @@ function startMascot(canvas, agent) {
   const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
   let excited = 0, jumpT = -9, winkT = -9, burst = [], sq = 1, sqv = 0, tilt = 0, R0 = 60;
+  let nextManic = 4 + Math.random() * 7, manicT = -9, curManic = 0;
   const gelB = []; let guard = 0;
   while (gelB.length < 15 && guard < 500) { guard++; const a = Math.random() * 6.28, rr = 0.44 + Math.random() * 0.46, nx = Math.cos(a) * rr, ny = Math.sin(a) * rr; if (Math.abs(nx) < 0.5 && ny > -0.42 && ny < 0.56) continue; if (gelB.some(b => Math.hypot(b.nx - nx, b.ny - ny) < 0.22)) continue; gelB.push({ nx, ny, r: 0.045 + Math.pow(Math.random(), 1.6) * 0.09, dr: Math.random() * 6.28 }); }
   gelB.sort((a, b) => a.ny - b.ny);
@@ -11148,10 +11149,10 @@ function startMascot(canvas, agent) {
   canvas.style.cursor = "pointer";
   canvas.onpointerenter = () => { excited = 1; };
   canvas.onpointerleave = () => { excited = 0; };
-  canvas.onpointerdown = () => { jumpT = tt; winkT = tt; sqv -= 0.04; for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 2.6; burst.push({ x: Wc * 0.58, y: Hc * 0.46 - R0 * 0.9, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1.2, life: 1, r: 1.4 + Math.random() * 2.4 }); } };
+  canvas.onpointerdown = () => { jumpT = tt; winkT = tt; sqv -= 0.04; if (!RM && Math.random() < 0.45) manicT = tt; for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 2.6; burst.push({ x: Wc * 0.58, y: Hc * 0.46 - R0 * 0.9, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1.2, life: 1, r: 1.4 + Math.random() * 2.4 }); } };
 
   const star = (x, y, s, a) => { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = a; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.lineWidth = Math.max(1, s * .12); for (const aa of [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4]) { const l = (aa % (Math.PI / 2)) ? s * .42 : s; ctx.beginPath(); ctx.moveTo(x - Math.cos(aa) * l, y - Math.sin(aa) * l); ctx.lineTo(x + Math.cos(aa) * l, y + Math.sin(aa) * l); ctx.stroke(); } ctx.restore(); };
-  function path(cx, cy, R) { ctx.beginPath(); const n = 48; for (let i = 0; i <= n; i++) { const a = i / n * 6.283, w = 1 + 0.028 * Math.sin(a * 3 + tt * 1.6) + 0.018 * Math.sin(a * 5 - tt * 1.1), rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * SY; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
+  function path(cx, cy, R) { ctx.beginPath(); const n = 48; for (let i = 0; i <= n; i++) { const a = i / n * 6.283, w = 1 + 0.028 * Math.sin(a * 3 + tt * 1.6) + 0.018 * Math.sin(a * 5 - tt * 1.1) + curManic * (0.06 * Math.sin(a * 6 + tt * 20) + 0.045 * Math.sin(a * 11 - tt * 24)), rr = R * w; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * SY; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
   function drop(x, y, r) { const g = ctx.createRadialGradient(x - r * .34, y - r * .4, r * .04, x, y, r); g.addColorStop(0, hex(lighten(c, 90), .26)); g.addColorStop(.62, hex(c, .03)); g.addColorStop(1, hex(cdd, .44)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill(); ctx.lineWidth = Math.max(.5, r * .1); ctx.strokeStyle = hex(lighten(c, 140), .5); ctx.beginPath(); ctx.arc(x, y, r * .92, Math.PI * .98, Math.PI * 1.86); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(x - r * .34, y - r * .36, r * .2, 0, 6.28); ctx.fill(); ctx.fillStyle = hex(lighten(c, 120), .32); ctx.beginPath(); ctx.arc(x + r * .3, y + r * .32, r * .12, 0, 6.28); ctx.fill(); }
   function limb(sx, sy, hx, hy, ux, uy, hr) {
     ctx.save(); ctx.shadowColor = "rgba(0,0,0,.3)"; ctx.shadowBlur = hr * .8; ctx.shadowOffsetY = hr * .4; ctx.strokeStyle = hex(c, 1); ctx.lineWidth = hr * 1.15; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(ux, uy, hx, hy); ctx.stroke(); ctx.restore();
@@ -11195,6 +11196,20 @@ function startMascot(canvas, agent) {
     }
     const smw = excited > .5 ? .22 : .18; if (!blink) { ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * .055; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(cx, cy + R * .32, R * smw, .16 * Math.PI, .84 * Math.PI); ctx.stroke(); }
     ctx.fillStyle = hex(lighten(c, 50), .42); for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * R * .54, cy + R * .26, R * .11, R * .065, 0, 0, 6.28); ctx.fill(); }
+    if (curManic > .04 && !blink) {
+      const m = curManic; ctx.save(); ctx.lineCap = "round";
+      for (const s of [-1, 1]) { const x = cx + s * ex, y = cy + ey;
+        ctx.globalAlpha = m * .9; ctx.strokeStyle = "#fff"; ctx.lineWidth = R * .02; ctx.beginPath();
+        for (let k = 0; k < 32; k++) { const aa = k * .5 + tt * 6 * s, rr = er * .12 + k * er * .021, px = x + Math.cos(aa) * rr, py = y + Math.sin(aa) * rr; k ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+        ctx.stroke();
+        const dpx = x + Math.sin(tt * 13 + s * 3) * er * .38, dpy = y + Math.cos(tt * 11 + s * 5) * er * .38;
+        ctx.globalAlpha = m; ctx.fillStyle = "#050a10"; ctx.beginPath(); ctx.arc(dpx, dpy, er * .26, 0, 6.28); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(dpx - er * .08, dpy - er * .08, er * .09, 0, 6.28); ctx.fill();
+      }
+      ctx.globalAlpha = m; ctx.strokeStyle = "#070b10"; ctx.lineWidth = R * .05; ctx.beginPath(); const mw = R * .34; ctx.moveTo(cx - mw, cy + R * .28);
+      for (let k = 0; k <= 6; k++) { const px = cx - mw + 2 * mw * (k / 6), py = cy + R * .28 + Math.sin(k / 6 * Math.PI) * R * .2 + (k % 2 ? R * .03 : 0); ctx.lineTo(px, py); }
+      ctx.stroke(); ctx.restore();
+    }
   }
   function drawArms(cx, CY, R, back) {
     const hr = R * .15, sway = Math.sin(tt * 2.4) * R * .06, wav = Math.sin(tt * (excited > .5 ? 7 : 4)) * R * .12;
@@ -11210,6 +11225,8 @@ function startMascot(canvas, agent) {
     if (!blinking && tt > nextBlink) { blinking = true; blinkEnd = tt + .13; }
     if (blinking && tt > blinkEnd) { blinking = false; nextBlink = tt + 1.6 + Math.random() * 3.2; }
     const wink = (tt - winkT) < .32;
+    if (!RM && tt > nextManic) { manicT = tt; nextManic = tt + 7 + Math.random() * 9; sqv -= .05; for (let i = 0; i < 16; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 3; burst.push({ x: Wc * .58, y: Hc * .42, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1, life: 1, r: 1.2 + Math.random() * 2.4 }); } }
+    const md = tt - manicT; curManic = (md >= 0 && md < 1.15) ? Math.sin(md / 1.15 * Math.PI) : 0;
     const jd = tt - jumpT; let hop = 0, jsq = 0;
     if (jd >= 0 && jd < .78) { if (jd < .13) jsq = -.16 * (jd / .13); else { const u = (jd - .13) / .65; hop = Math.sin(u * Math.PI) * R0 * .42; jsq = .12 * Math.sin(u * Math.PI); if (u > .82) jsq -= .26 * ((u - .82) / .18); } }
     const intro = Math.min(1, tt / .5), eB = 1 - Math.pow(1 - intro, 3), iScale = 0.72 + 0.28 * eB + Math.sin(Math.min(intro, 1) * Math.PI) * .06;
@@ -11256,7 +11273,8 @@ function startMascot(canvas, agent) {
     for (const o of orbs) drawOrb(o, false);                 // орбитални звезди — зад героя
 
     ctx.save(); ctx.globalAlpha = .35 + .65 * eB; const pivY = CY + R * .92;
-    ctx.translate(cx, pivY); ctx.rotate(tilt); ctx.scale(iScale / sq, iScale * sq); ctx.translate(-cx, -pivY);
+    const mjx = curManic * Math.sin(tt * 21) * R * .04, mjy = curManic * Math.cos(tt * 18) * R * .035, mrot = curManic * Math.sin(tt * 16) * .09;
+    ctx.translate(cx + mjx, pivY + mjy); ctx.rotate(tilt + mrot); ctx.scale(iScale / sq, iScale * sq); ctx.translate(-cx, -pivY);
     drawArms(cx, CY, R, true);
     ctx.save(); path(cx, CY, R * 1.03); ctx.shadowColor = cl; ctx.shadowBlur = 42; ctx.fillStyle = hex(c, .6); ctx.fill(); ctx.restore();
     path(cx, CY, R); const g = ctx.createRadialGradient(cx, CY - R * .55, R * .12, cx, CY + R * .28, R * 1.5); g.addColorStop(0, hex(lighten(c, 160), .99)); g.addColorStop(.3, hex(lighten(c, 55), 1)); g.addColorStop(.72, hex(c, 1)); g.addColorStop(1, hex(cdd, 1)); ctx.fillStyle = g; ctx.fill();
@@ -11285,6 +11303,7 @@ function startMascot(canvas, agent) {
     for (let i = burst.length - 1; i >= 0; i--) { const p = burst[i]; p.x += p.vx; p.y += p.vy; p.vy += .06; p.life -= .025; if (p.life <= 0) { burst.splice(i, 1); continue; } if (p.r > 1.9 && p.life > .5) star(p.x, p.y, p.r * 2 * p.life, p.life); else { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = p.life; ctx.fillStyle = i % 2 ? "#fff" : hex(lighten(c, 80), 1); ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 6.28); ctx.fill(); ctx.restore(); } }
 
     ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = .4 + (1 - eB) * .5; try { ctx.filter = "blur(7px)"; } catch (e) {} ctx.drawImage(canvas, 0, 0, Wc, Hc); ctx.filter = "none"; ctx.restore();
+    if (curManic > .04) { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = .5 * curManic; const off = 3 + curManic * 6; try { ctx.filter = "hue-rotate(70deg)"; } catch (e) {} ctx.drawImage(canvas, -off, 0, Wc, Hc); try { ctx.filter = "hue-rotate(-70deg)"; } catch (e) {} ctx.drawImage(canvas, off, 0, Wc, Hc); ctx.filter = "none"; ctx.restore(); }
   }
   frame();
 }
