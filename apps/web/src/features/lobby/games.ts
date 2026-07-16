@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { GAME_ENGINE, type GameKey } from "@aso/shared";
 
 export interface GameCard {
@@ -38,3 +39,15 @@ export const GAME_CATALOG: GameCard[] = [
 ];
 
 export const engineOf = (key: GameKey) => GAME_ENGINE[key];
+
+/**
+ * Localized display title for a game. Game/card terms are not machine-translated
+ * (§16), but the descriptive Bulgarian catalog names have established
+ * international titles (Ludo, Go Fish, War…); those live under `games.<KEY>` in
+ * the i18n bundles. Falls back to the canonical Bulgarian title when no
+ * translation is present. `fallback` defaults to the catalog's canonical title.
+ */
+export function gameTitle(t: TFunction, key: GameKey, fallback?: string): string {
+  const canonical = fallback ?? GAME_CATALOG.find((g) => g.key === key)?.title ?? key;
+  return t(`games.${key}`, { defaultValue: canonical });
+}

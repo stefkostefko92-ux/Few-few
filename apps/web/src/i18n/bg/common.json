@@ -445,6 +445,8 @@
     "newHand": "Ръка {{n}}"
   },
   "bridge": {
+    "dummyHand": "Ръка на дъми",
+    "playFromDummy": "Твой ред — изиграй карта от дъми",
     "auction": "Анонс",
     "contract": "Договор",
     "yourBid": "Твоят анонс",
@@ -514,7 +516,15 @@
     "backgammon": "Капия!",
     "openingRoll": "Начално хвърляне",
     "white": "белите",
-    "black": "черните"
+    "black": "черните",
+    "cube": "Куб",
+    "double": "Удвои",
+    "take": "Приемам",
+    "drop": "Отказвам",
+    "waitingDouble": "Изчакване на отговор за удвояване",
+    "doubleOffered": "Удвояване до ×{{value}}",
+    "doubleTaken": "Удвояването е прието",
+    "doubleDropped": "Удвояването е отказано"
   },
   "battleship": {
     "enemy": "Съперник: {{name}}",
@@ -574,7 +584,9 @@
     "pickToken": "Избери пионка",
     "noMove": "Няма ход — пропускаш",
     "noMoveRetry": "Няма ход — хвърли отново",
-    "noMoveOther": "{{name}} няма ход"
+    "noMoveOther": "{{name}} няма ход",
+    "safeSquare": "Защитено поле",
+    "blockade": "Блокада"
   },
   "domino": {
     "empty": "Постави първото домино",
@@ -621,7 +633,8 @@
       "multiColour": "Фал: повече от една цветна.",
       "wrongPot": "Фал: грешна топка в джоба.",
       "cleared": "Масата е изчистена!",
-      "respotBlack": "Равенство — черната се връща на спота."
+      "respotBlack": "Равенство — черната се връща на спота.",
+      "threeFoul": "Три поредни фала — губиш рака."
     },
     "pushOut": "Push-out",
     "pushPass": "Върни удара",
@@ -655,7 +668,12 @@
     "correct": "вярно ✓",
     "wrong": "напразно ✗",
     "callStop": "Стоп Кент!",
-    "roundWon": "Кръг за {{team}}"
+    "roundWon": "Кръг за {{team}}",
+    "center": "Борса (централни карти)",
+    "deckLeft": "Тесте",
+    "pass": "Пас",
+    "pickHandCard": "Избери своя карта за смяна",
+    "pickCenterCard": "Избери централна карта"
   },
   "chess": {
     "check": "Шах!",
@@ -830,5 +848,94 @@
     "illegal_action": "Невалиден ход",
     "chat_rate": "Твърде бързо. Изчакай малко.",
     "rate_limited": "Твърде много опити — изчакай."
+  },
+  "games": {
+    "CHESS": "Шах",
+    "BACKGAMMON": "Табла",
+    "BELOTE": "Белот",
+    "SANTASE": "Сантасе (66)",
+    "SVARA": "Свара",
+    "WAR": "Война",
+    "GOFISH": "Бръкни в морето",
+    "KENT": "Кент Купе",
+    "DRAUGHTS": "Дама",
+    "LUDO": "Не се сърди човече",
+    "RUMMY": "Реми",
+    "DOMINO": "Домино",
+    "BRIDGE": "Бридж",
+    "BATTLESHIP": "Морски бой",
+    "DICE": "Покер на зарове",
+    "BINGO": "Бинго",
+    "WORDS": "Думи",
+    "EIGHTBALL": "Билярд (8 топки)",
+    "NINEBALL": "Билярд (9 топки)",
+    "SNOOKER": "Снукър",
+    "MAGNAT": "Магнат"
+  },
+  "achv": {
+    "first_win": {
+      "title": "Първа победа",
+      "description": "Спечели първия си мач."
+    },
+    "wins_10": {
+      "title": "Десетка",
+      "description": "Спечели 10 мача."
+    },
+    "wins_50": {
+      "title": "Ветеран",
+      "description": "Спечели 50 мача."
+    },
+    "wins_100": {
+      "title": "Шампион",
+      "description": "Спечели 100 мача."
+    },
+    "games_10": {
+      "title": "Начинаещ",
+      "description": "Изиграй 10 мача."
+    },
+    "games_50": {
+      "title": "Редовен играч",
+      "description": "Изиграй 50 мача."
+    },
+    "games_100": {
+      "title": "Постоянен играч",
+      "description": "Изиграй 100 мача."
+    },
+    "streak_3": {
+      "title": "Серия от 3",
+      "description": "Спечели 3 поредни мача."
+    },
+    "streak_5": {
+      "title": "Серия от 5",
+      "description": "Спечели 5 поредни мача."
+    },
+    "streak_10": {
+      "title": "Непобедим",
+      "description": "Спечели 10 поредни мача."
+    },
+    "level_5": {
+      "title": "Ниво 5",
+      "description": "Достигни ниво 5."
+    },
+    "level_10": {
+      "title": "Ниво 10",
+      "description": "Достигни ниво 10."
+    },
+    "level_25": {
+      "title": "Ниво 25",
+      "description": "Достигни ниво 25."
+    },
+    "chess_master": {
+      "title": "Майстор на шах",
+      "description": "Спечели 10 мача на Шах."
+    },
+    "belote_master": {
+      "title": "Майстор на белот",
+      "description": "Спечели 10 мача на Белот."
+    },
+    "winGame": {
+      "title": "Победа: {{game}}",
+      "description": "Спечели мач на {{game}}."
+    }
   }
 }

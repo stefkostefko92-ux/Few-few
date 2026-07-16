@@ -445,6 +445,8 @@
     "newHand": "Hand {{n}}"
   },
   "bridge": {
+    "dummyHand": "Dummy's hand",
+    "playFromDummy": "Your turn — play a card from dummy",
     "auction": "Auction",
     "contract": "Contract",
     "yourBid": "Your bid",
@@ -514,7 +516,15 @@
     "backgammon": "Backgammon!",
     "openingRoll": "Opening roll",
     "white": "White",
-    "black": "Black"
+    "black": "Black",
+    "cube": "Cube",
+    "double": "Double",
+    "take": "Take",
+    "drop": "Drop",
+    "waitingDouble": "Waiting for the double response",
+    "doubleOffered": "Double to ×{{value}}",
+    "doubleTaken": "The double was taken",
+    "doubleDropped": "The double was dropped"
   },
   "battleship": {
     "enemy": "Opponent: {{name}}",
@@ -574,7 +584,9 @@
     "pickToken": "Pick a token",
     "noMove": "No move — turn passes",
     "noMoveRetry": "No move — roll again",
-    "noMoveOther": "{{name}} has no move"
+    "noMoveOther": "{{name}} has no move",
+    "safeSquare": "Safe square",
+    "blockade": "Blockade"
   },
   "domino": {
     "empty": "Place the first domino",
@@ -621,7 +633,8 @@
       "multiColour": "Foul: more than one colour potted.",
       "wrongPot": "Foul: wrong ball potted.",
       "cleared": "Table cleared!",
-      "respotBlack": "Tie — the black is re-spotted."
+      "respotBlack": "Tie — the black is re-spotted.",
+      "threeFoul": "Three consecutive fouls — loss of rack."
     },
     "pushOut": "Push-out",
     "pushPass": "Pass back",
@@ -655,7 +668,12 @@
     "correct": "correct ✓",
     "wrong": "false ✗",
     "callStop": "Stop Kent!",
-    "roundWon": "Round for {{team}}"
+    "roundWon": "Round for {{team}}",
+    "center": "Exchange (centre cards)",
+    "deckLeft": "Stock",
+    "pass": "Pass",
+    "pickHandCard": "Pick your card to swap",
+    "pickCenterCard": "Pick a centre card"
   },
   "chess": {
     "check": "Check!",
@@ -830,5 +848,94 @@
     "illegal_action": "Illegal move",
     "chat_rate": "Too fast. Wait a moment.",
     "rate_limited": "Too many attempts — wait."
+  },
+  "games": {
+    "CHESS": "Chess",
+    "BACKGAMMON": "Backgammon",
+    "BELOTE": "Belote",
+    "SANTASE": "Sixty-Six (66)",
+    "SVARA": "Svara",
+    "WAR": "War",
+    "GOFISH": "Go Fish",
+    "KENT": "Kent",
+    "DRAUGHTS": "Draughts",
+    "LUDO": "Ludo",
+    "RUMMY": "Rummy",
+    "DOMINO": "Domino",
+    "BRIDGE": "Bridge",
+    "BATTLESHIP": "Battleship",
+    "DICE": "Yahtzee",
+    "BINGO": "Bingo",
+    "WORDS": "Word Chain",
+    "EIGHTBALL": "8-Ball",
+    "NINEBALL": "9-Ball",
+    "SNOOKER": "Snooker",
+    "MAGNAT": "Magnat"
+  },
+  "achv": {
+    "first_win": {
+      "title": "First win",
+      "description": "Win your first match."
+    },
+    "wins_10": {
+      "title": "Ten",
+      "description": "Win 10 matches."
+    },
+    "wins_50": {
+      "title": "Veteran",
+      "description": "Win 50 matches."
+    },
+    "wins_100": {
+      "title": "Champion",
+      "description": "Win 100 matches."
+    },
+    "games_10": {
+      "title": "Beginner",
+      "description": "Play 10 matches."
+    },
+    "games_50": {
+      "title": "Regular",
+      "description": "Play 50 matches."
+    },
+    "games_100": {
+      "title": "Dedicated",
+      "description": "Play 100 matches."
+    },
+    "streak_3": {
+      "title": "Streak of 3",
+      "description": "Win 3 matches in a row."
+    },
+    "streak_5": {
+      "title": "Streak of 5",
+      "description": "Win 5 matches in a row."
+    },
+    "streak_10": {
+      "title": "Unbeatable",
+      "description": "Win 10 matches in a row."
+    },
+    "level_5": {
+      "title": "Level 5",
+      "description": "Reach level 5."
+    },
+    "level_10": {
+      "title": "Level 10",
+      "description": "Reach level 10."
+    },
+    "level_25": {
+      "title": "Level 25",
+      "description": "Reach level 25."
+    },
+    "chess_master": {
+      "title": "Chess Master",
+      "description": "Win 10 matches of Chess."
+    },
+    "belote_master": {
+      "title": "Belote Master",
+      "description": "Win 10 matches of Belote."
+    },
+    "winGame": {
+      "title": "Win: {{game}}",
+      "description": "Win a match of {{game}}."
+    }
   }
 }

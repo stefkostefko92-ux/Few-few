@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { buyInFor, isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { useAuthStore, useMatchStore } from "../../lib/store";
-import { GAME_CATALOG } from "../lobby/games";
+import { GAME_CATALOG, gameTitle } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
@@ -119,7 +119,7 @@ export function GameView() {
     return (
       <div className="mx-auto max-w-md text-center">
         <Panel>
-          <h1 className="mb-2 text-2xl text-brass-300">{meta?.title ?? game}</h1>
+          <h1 className="mb-2 text-2xl text-brass-300">{meta ? gameTitle(t, meta.key, meta.title) : game}</h1>
           <p className="text-ink-300">{t("lobby.comingSoon")}</p>
           <Button variant="felt" className="mt-6" onClick={() => navigate("/")}>
             {t("game.backToLobby")}
@@ -146,7 +146,7 @@ export function GameView() {
           </p>
         }
       >
-        {renderGame(key, meta.title)}
+        {renderGame(key, gameTitle(t, key, meta.title))}
       </Suspense>
       <MatchStatus />
       <ReclaimBanner />
