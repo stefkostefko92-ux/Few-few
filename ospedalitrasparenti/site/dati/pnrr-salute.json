@@ -1,0 +1,101 @@
+{
+  "generatoIl": "2026-07-13T20:43:34.360Z",
+  "fonte": "OpenPNRR (Openpolis) su dati ReGiS — Missione 6 Salute (ODbL 1.0)",
+  "url": "https://openpnrr.it/",
+  "nazionale": {
+    "nProgetti": 10100,
+    "finanziamentoPnrr": 14511674731.869995,
+    "perMisura": {
+      "M6C2": {
+        "n": 7308,
+        "importo": 7551607973.690023
+      },
+      "M6C1": {
+        "n": 2792,
+        "importo": 6960066758.179999
+      }
+    }
+  },
+  "perRegione": {
+    "100": {
+      "nProgetti": 167,
+      "finanziamentoPnrr": 195214042.45000002
+    },
+    "110": {
+      "nProgetti": 217,
+      "finanziamentoPnrr": 318352095.98
+    },
+    "120": {
+      "nProgetti": 1038,
+      "finanziamentoPnrr": 1364460890.8200011
+    },
+    "130": {
+      "nProgetti": 289,
+      "finanziamentoPnrr": 339949562.27000004
+    },
+    "140": {
+      "nProgetti": 90,
+      "finanziamentoPnrr": 82048392.19
+    },
+    "150": {
+      "nProgetti": 1211,
+      "finanziamentoPnrr": 1538204461.9799993
+    },
+    "160": {
+      "nProgetti": 862,
+      "finanziamentoPnrr": 1073038368.0899994
+    },
+    "170": {
+      "nProgetti": 125,
+      "finanziamentoPnrr": 131086410.21999995
+    },
+    "180": {
+      "nProgetti": 535,
+      "finanziamentoPnrr": 509488648.82
+    },
+    "190": {
+      "nProgetti": 915,
+      "finanziamentoPnrr": 1261624027.0099988
+    },
+    "200": {
+      "nProgetti": 287,
+      "finanziamentoPnrr": 449275987
+    },
+    "080": {
+      "nProgetti": 670,
+      "finanziamentoPnrr": 775156966.5499997
+    },
+    "060": {
+      "nProgetti": 160,
+      "finanziamentoPnrr": 241124694.46000004
+    },
+    "010": {
+      "nProgetti": 532,
+      "finanziamentoPnrr": 861757251.5399996
+    },
+    "030": {
+      "nProgetti": 1362,
+      "finanziamentoPnrr": 2067950692.0699987
+    },
+    "070": {
+      "nProgetti": 208,
+      "finanziamentoPnrr": 314673341.63000005
+    },
+    "050": {
+      "nProgetti": 546,
+      "finanziamentoPnrr": 930882238.1500002
+    },
+    "090": {
+      "nProgetti": 446,
+      "finanziamentoPnrr": 667863735.3799996
+    },
+    "taa": {
+      "nProgetti": 185,
+      "finanziamentoPnrr": 218373684.10000002
+    },
+    "020": {
+      "nProgetti": 30,
+      "finanziamentoPnrr": 26205136.629999995
+    }
+  }
+}
