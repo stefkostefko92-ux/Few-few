@@ -184,6 +184,9 @@ export const api = {
   notifications: () => request<NotificationsResponse>("/notifications"),
   notificationsRead: () => request<{ ok: true }>("/notifications/read", { method: "POST" }),
 
+  // In-app announcements (player-facing banner)
+  announcements: () => request<{ items: AnnouncementItem[] }>("/announcements"),
+
   // Admin (staff only)
   adminStats: () => request<AdminStats>("/admin/stats"),
   adminUsers: (q: string) =>
@@ -264,6 +267,12 @@ export interface NotificationItem {
 export interface NotificationsResponse {
   items: NotificationItem[];
   unread: number;
+}
+export interface AnnouncementItem {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
 }
 
 // ── Admin DTOs ───────────────────────────────────────────────────────────────

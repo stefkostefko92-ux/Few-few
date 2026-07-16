@@ -27,6 +27,25 @@ export interface RoomSeat {
   bot?: RandomBot;
 }
 
+/** Seat metadata in an admin live-tables snapshot (no hidden game state). */
+export interface RoomSnapshotSeat {
+  seat: number;
+  displayName: string;
+  isBot: boolean;
+  connected: boolean;
+  substituted: boolean;
+}
+
+/** One live match as seen by the admin live-tables view (§14). */
+export interface RoomSnapshot {
+  matchId: string;
+  game: GameKey;
+  ply: number;
+  ageMs: number;
+  turn: number | null;
+  seats: RoomSnapshotSeat[];
+}
+
 const userRoom = (userId: string): string => `u:${userId}`;
 
 /** Stable, key-order-independent serialization for action equality. */
@@ -50,6 +69,10 @@ export class GameRoom {
   private readonly rng: SeededRng;
   private state: unknown;
   private done = false;
+  /** Wall-clock start (for the admin live-tables age column). */
+  readonly createdAt = Date.now();
+  /** Applied-move counter (each successful reduce), surfaced to the admin view. */
+  private ply = 0;
   private lastOver: {
     matchId: string;
     score: SeatScore[];
@@ -308,6 +331,7 @@ export class GameRoom {
     }
     const { state, events } = result;
     this.state = state;
+    this.ply++;
     for (const s of this.seats) {
       if (s.userId) {
         // Per-seat event redaction (e.g. Кент's secret SIGNAL reaches only the
@@ -419,6 +443,26 @@ export class GameRoom {
 
   get isDone(): boolean {
     return this.done;
+  }
+
+  /** Read-only snapshot for the admin live-tables view (§14). Never exposes
+   *  hidden game state — only seat metadata, move count and age. */
+  snapshot(): RoomSnapshot {
+    return {
+      matchId: this.matchId,
+      game: this.game,
+      ply: this.ply,
+      ageMs: Date.now() - this.createdAt,
+      turn: this.currentSeat()?.seat ?? null,
+      seats: this.seats.map((s) => ({
+        seat: s.seat,
+        displayName: s.displayName,
+        isBot: s.isBot,
+        // Human seats are "connected" unless flagged offline / covered by a bot.
+        connected: s.isBot ? false : !this.disconnected.has(s.seat),
+        substituted: this.substituted.has(s.seat),
+      })),
+    };
   }
 
   /** Cleanly end an in-flight match on server shutdown (rolling deploy): finalize

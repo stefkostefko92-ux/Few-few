@@ -5,6 +5,7 @@ import { Footer } from "./Footer";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useConnectionStore } from "../lib/store";
 import { VerifyBanner } from "../features/auth/VerifyBanner";
+import { AnnouncementBanner } from "../features/social/AnnouncementBanner";
 import { StoreModal } from "../features/shop/StoreModal";
 import { CosmeticsModal } from "../features/shop/CosmeticsModal";
 import { InviteWatcher } from "../features/social/InviteWatcher";
@@ -29,6 +30,7 @@ export function Layout() {
         </div>
       ) : null}
       <VerifyBanner />
+      <AnnouncementBanner />
       <Header />
       <main id="main" className="flex-1 px-4 py-8 sm:px-8">
         <ErrorBoundary>

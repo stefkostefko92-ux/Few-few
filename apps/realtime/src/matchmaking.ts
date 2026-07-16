@@ -3,7 +3,7 @@ import type { Server } from "socket.io";
 import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
 import { MAGNAT_PRESETS, STARTING_MMR, buyInFor, isGameKey, seatsFor } from "@aso/shared";
-import { GameRoom, type RoomSeat } from "./room.js";
+import { GameRoom, type RoomSeat, type RoomSnapshot } from "./room.js";
 import type { Lobby, LobbyReturnInfo } from "./lobby.js";
 import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
@@ -88,6 +88,19 @@ export class Matchmaker {
     let n = 0;
     for (const r of this.rooms.values()) if (!r.isDone) n++;
     return n;
+  }
+
+  /**
+   * Snapshot every live match owned by THIS node, for the admin live-tables view
+   * (§14). Multi-node caveat: game state lives in the owning node's memory, so a
+   * single node only sees its own rooms — the admin endpoint aggregates by
+   * querying each realtime node (or, single-node, this is the full picture).
+   */
+  listActiveRooms(): RoomSnapshot[] {
+    const out: RoomSnapshot[] = [];
+    for (const r of this.rooms.values()) if (!r.isDone) out.push(r.snapshot());
+    // Longest-running first — that's what staff scan for (stuck / abandoned tables).
+    return out.sort((a, b) => b.ageMs - a.ageMs);
   }
 
   /** The active (unfinished) room a user is seated in ON THIS NODE, if any. */

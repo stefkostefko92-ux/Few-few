@@ -64,8 +64,11 @@ const envSchema = z.object({
   SENTRY_DSN: z.string().optional().default(""),
   SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
 
-  // Shared secret for internal service-to-service calls (realtime -> api).
+  // Shared secret for internal service-to-service calls (realtime <-> api).
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
+  // Internal base URL of the realtime node, used by the admin live-tables view
+  // to read its in-memory room list (§14). Single-node by default.
+  REALTIME_INTERNAL_URL: z.string().url().default("http://localhost:4501"),
 });
 
 const DEV_INTERNAL_SECRET = "dev-internal-secret-change-me";
