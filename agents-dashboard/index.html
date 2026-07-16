@@ -13,6 +13,7 @@
   body { margin: 0; background: #00020a; color: var(--txt); overflow: hidden; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: var(--accent); text-decoration: none; }
   #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  #neb { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 1; mix-blend-mode: screen; opacity: .5; transition: opacity .3s; }
   #sky.grabbing { cursor: grabbing; } #sky.pointer { cursor: pointer; }
   svg { display: block; }
 
@@ -135,6 +136,7 @@
 </head>
 <body>
 <canvas id="sky" aria-label="Интерактивна галактика от агентите — всеки агент е звезда. Използвай изгледа „Списък“ за достъпна текстова версия."></canvas>
+<canvas id="neb" aria-hidden="true"></canvas>
 
 <div class="hud">
   <div class="brand"><h1 id="title">Лаборатория на агентите</h1><p id="subtitle"></p></div>
@@ -10605,6 +10607,34 @@ fetch("./agents.json").then(r => { if (!r.ok) throw 0; return r.json(); }).then(
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const cv = document.getElementById("sky"), ctx = cv.getContext("2d");
 const galaxyImg = new Image(); let galReady = false; galaxyImg.onload = () => { galReady = true; }; galaxyImg.src = GALAXY_SRC;
+// WebGL мъглявина overlay (FBM domain-warp; screen blend; деградира тихо без WebGL)
+const nebCv = document.getElementById("neb"); let nebGL = null, nebU = {}, nebOK = false;
+(function initNeb() {
+  try {
+    const gl = nebCv.getContext("webgl", { alpha: true, premultipliedAlpha: false, antialias: false, depth: false });
+    if (!gl) return;
+    const vs = "attribute vec2 p; void main(){ gl_Position = vec4(p,0.,1.); }";
+    const fs = "precision highp float; uniform vec2 uRes; uniform float uT;" +
+      "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }" +
+      "float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f); float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1)); return mix(mix(a,b,f.x),mix(c,d,f.x),f.y); }" +
+      "float fbm(vec2 p){ float v=0.,a=.5; for(int i=0;i<5;i++){ v+=a*noise(p); p=p*2.02+vec2(1.7,9.2); a*=.5;} return v; }" +
+      "void main(){ vec2 uv=gl_FragCoord.xy/uRes.xy; vec2 p=uv*3.0; p.x*=uRes.x/uRes.y; float t=uT*0.015;" +
+      "vec2 q=vec2(fbm(p+vec2(0.,t)), fbm(p+vec2(5.2,1.3)-t)); float f=fbm(p+q*2.2+t*0.4);" +
+      "vec3 col=mix(vec3(0.02,0.03,0.10), vec3(0.30,0.10,0.48), smoothstep(0.15,0.85,f));" +
+      "col=mix(col, vec3(0.0,0.42,0.55), pow(f,3.0)*0.7); col+=vec3(0.32,0.12,0.42)*pow(f,4.0);" +
+      "float a=smoothstep(0.28,0.9,f)*0.9; gl_FragColor=vec4(col,a); }";
+    const mk = (ty, s) => { const sh = gl.createShader(ty); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+    const prog = gl.createProgram(); gl.attachShader(prog, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
+    const bf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const lc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(lc); gl.vertexAttribPointer(lc, 2, gl.FLOAT, false, 0, 0);
+    nebU.res = gl.getUniformLocation(prog, "uRes"); nebU.t = gl.getUniformLocation(prog, "uT");
+    nebGL = gl; nebOK = true; nebResize();
+  } catch (e) { nebOK = false; }
+})();
+function nebResize() { if (!nebOK) return; const d = Math.min(2, window.devicePixelRatio || 1), w = Math.round(nebCv.clientWidth * d), h = Math.round(nebCv.clientHeight * d); if (w < 1 || h < 1) return; nebCv.width = w; nebCv.height = h; nebGL.viewport(0, 0, w, h); }
+function drawNeb(time) { if (!nebOK) return; nebGL.uniform2f(nebU.res, nebCv.width, nebCv.height); nebGL.uniform1f(nebU.t, time); nebGL.drawArrays(nebGL.TRIANGLES, 0, 3); }
 let W = 0, H = 0, DPR = 1, nodes = [], particles = [];
 let gal = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false;
 let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
@@ -10623,7 +10653,7 @@ function initSky() {
 function gxN() { return mx < -1e4 ? 0 : (mx - W / 2) / (W / 2); }
 function gyN() { return my < -1e4 ? 0 : (my - H / 2) / (H / 2); }
 
-function resize() { DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+function resize() { DPR = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); nebResize(); }
 window.addEventListener("resize", resize);
 
 const isPrez = a => a.id === "ai-djiyata";
@@ -10643,19 +10673,19 @@ function buildNodes() {
   const prez = DATA.agents.find(isPrez) || DATA.agents[0];
   const maxL = Math.max(1, ...DATA.agents.map(lessonsOf));
   nodes = [{ a: prez, prez: true, f: 0, armBase: 0, x: 0, y: 0, r: 34, hovT: 0, dim: 1, spark: Math.random() * 5, phase: Math.random() * 6.28 }];
-  const per = Math.ceil(others.length / ARMS);
+  const GOLD = 2.3999632;
   others.forEach((a, i) => {
-    const arm = i % ARMS, rank = Math.floor(i / ARMS);
-    const f = 0.34 + (rank / Math.max(1, per - 1)) * 0.6;
+    const fr = Math.min(0.98, 0.34 + Math.sqrt((i + 0.6) / others.length) * 0.6 + (((i * 37) % 11) / 11 - 0.5) * 0.05);
     const lr = lessonsOf(a) / maxL;
-    nodes.push({ a, prez: false, f, armBase: arm / ARMS * Math.PI * 2, x: 0, y: 0, r: 10 + Math.sqrt(lr) * 13, hovT: 0, dim: 1, spark: Math.random() * 5, phase: Math.random() * 6.28 });
+    nodes.push({ a, prez: false, f: fr, ang0: i * GOLD, osp: 0.05 + (1 - fr) * 0.13, bobph: Math.random() * 6.28, x: 0, y: 0, r: 10 + Math.sqrt(lr) * 13, hovT: 0, dim: 1, spark: Math.random() * 5, phase: Math.random() * 6.28 });
   });
 }
 function nodePos(nd, cx, cy, R) {
   if (nd.prez) return [cx + (RM ? 0 : Math.sin(t * 0.5) * 2), cy + (RM ? 0 : Math.cos(t * 0.4) * 2)];
-  const rad = nd.f * R * zoom, bob = RM ? 0 : Math.sin(t * 0.7 + nd.f * 9) * 4;
-  const ang = nd.armBase + nd.f * TWIST + (RM ? 0 : gal);
-  return [cx + Math.cos(ang) * (rad + bob), cy + Math.sin(ang) * (rad + bob)];
+  const bob = RM ? 0 : Math.sin(t * 0.7 + nd.bobph) * 4;
+  const ang = nd.ang0 + gal + (RM ? 0 : t * nd.osp);
+  const rad = nd.f * R * zoom + bob;
+  return [cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad];
 }
 
 function drawGalaxy(cx, cy, R) {
@@ -10743,6 +10773,41 @@ function drawMeteors() {
   }
   ctx.globalCompositeOperation = "source-over";
 }
+let pulses = [], pulseT = 0.4 + Math.random() * 0.8, nova = null, trail = [];
+function drawTethers(prez) {
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (let i = 1; i < nodes.length; i++) { const nd = nodes[i], hv = nd === hovered ? 1 : 0, a = (0.085 + hv * 0.4) * nd.dim; if (a < .01) continue; ctx.strokeStyle = hex(nd.a.accent, a); ctx.lineWidth = 1 + hv * 1.4; ctx.beginPath(); ctx.moveTo(prez.x, prez.y); ctx.lineTo(nd.x, nd.y); ctx.stroke(); }
+  ctx.restore();
+}
+function updatePulses(prez) {
+  if (!RM) { pulseT -= 0.016; if (pulseT <= 0) { pulseT = 0.5 + Math.random() * 1.1; const nd = nodes[1 + (Math.random() * (nodes.length - 1) | 0)]; if (nd) pulses.push({ nd, p: 0, sp: 0.012 + Math.random() * 0.01 }); } }
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = pulses.length - 1; i >= 0; i--) {
+    const pu = pulses[i]; pu.p += RM ? 0.06 : pu.sp;
+    if (pu.p >= 1) { pulses.splice(i, 1); const fg = ctx.createRadialGradient(prez.x, prez.y, 0, prez.x, prez.y, prez.r * 1.5); fg.addColorStop(0, hex(lighten(pu.nd.a.accent, 120), 0.55)); fg.addColorStop(1, hex(pu.nd.a.accent, 0)); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(prez.x, prez.y, prez.r * 1.5, 0, 6.28); ctx.fill(); continue; }
+    const e = pu.p * pu.p, px = pu.nd.x + (prez.x - pu.nd.x) * e, py = pu.nd.y + (prez.y - pu.nd.y) * e, col = lighten(pu.nd.a.accent, 90);
+    const tx = pu.nd.x + (prez.x - pu.nd.x) * Math.max(0, e - 0.07), ty = pu.nd.y + (prez.y - pu.nd.y) * Math.max(0, e - 0.07);
+    ctx.strokeStyle = hex(col, 0.5); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(px, py); ctx.stroke();
+    const g = ctx.createRadialGradient(px, py, 0, px, py, 7); g.addColorStop(0, hex(col, 0.95)); g.addColorStop(1, hex(col, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, 7, 0, 6.28); ctx.fill();
+  }
+  ctx.restore();
+}
+function startNova() { if (nova) return; nova = { t: 0, opened: false }; }
+function drawNova(cx, cy) {
+  if (!nova) return; nova.t += RM ? 0.5 : 0.02; const t2 = Math.min(1, nova.t), maxR = Math.hypot(W, H), wr = t2 * maxR * 0.72;
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let k = 0; k < 3; k++) { const tk = t2 - k * 0.12; if (tk <= 0) continue; const r = tk * maxR * 0.72, a = (1 - tk) * 0.5; ctx.strokeStyle = `rgba(205,228,255,${a})`; ctx.lineWidth = 3 + (1 - tk) * 7; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.28); ctx.stroke(); }
+  for (let i = 1; i < nodes.length; i++) { const nd = nodes[i], dd = Math.hypot(nd.x - cx, nd.y - cy), band = Math.abs(dd - wr); if (band < 55) { const bb = 1 - band / 55, rr = nd.r * 3.2 * (1 + bb), g = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, rr); g.addColorStop(0, hex(lighten(nd.a.accent, 120), 0.7 * bb)); g.addColorStop(1, hex(nd.a.accent, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(nd.x, nd.y, rr, 0, 6.28); ctx.fill(); } }
+  const fr = Math.max(1, t2 * maxR * 0.4), fa = Math.sin(Math.min(1, t2 * 1.4) * Math.PI), fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, fr); fg.addColorStop(0, `rgba(255,255,255,${fa})`); fg.addColorStop(0.5, `rgba(180,215,255,${fa * 0.5})`); fg.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(cx, cy, fr, 0, 6.28); ctx.fill();
+  ctx.restore();
+  if (!nova.opened && t2 >= 0.42) { nova.opened = true; openDrawer(nodes[0].a); }
+  if (t2 >= 1) nova = null;
+}
+function drawTrail() {
+  if (!trail.length) return; ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = trail.length - 1; i >= 0; i--) { const s = trail[i]; s.life -= 0.045; if (s.life <= 0) { trail.splice(i, 1); continue; } const r = (1.2 + s.r) * s.life * 2.4, g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r); g.addColorStop(0, `rgba(212,232,255,${0.5 * s.life})`); g.addColorStop(1, "rgba(212,232,255,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 6.28); ctx.fill(); }
+  ctx.restore();
+}
 function startWarp(agent, x, y) { if (warp) return; warp = { a: agent, x, y, t: 0, opened: false }; }
 function drawWarp() {
   if (!warp) return;
@@ -10770,15 +10835,17 @@ function loop() {
   if (document.hidden) return;
   if (view !== "sky") { ctx.clearRect(0, 0, W, H); return; }
   t += 0.016; if (!RM) { gal += 0.0006 + spin; spin *= 0.95; if (Math.abs(spin) < 1e-6) spin = 0; }
+  drawNeb(RM ? 1.0 : t);
   const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.46;
   drawGalaxy(cx, cy, R);
   drawNebulae(cx, cy, R);
-  drawArms(cx, cy, R);
   drawDust(cx, cy, R);
   drawMeteors();
 
   for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R); nd.x = x; nd.y = y; }
   const prez = nodes[0];
+  drawTethers(prez);
+  updatePulses(prez);
 
   hovered = null;
   if (!dragging) for (const nd of nodes) { const dx = mx - nd.x, dy = my - nd.y, hit = nd.r * 1.25 + 7; if (dx * dx + dy * dy < hit * hit) hovered = nd; }
@@ -10801,15 +10868,17 @@ function loop() {
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
 
   for (const nd of nodes) drawStar(nd);
+  drawTrail();
 
   cv.classList.toggle("pointer", !!hovered && !dragging);
   const tip = document.getElementById("tip");
-  if (hovered && !warp) {
+  if (hovered && !warp && !nova) {
     const a = hovered.a; tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.3) + "px";
     tip.innerHTML = `<div class="t-n">${iconSVG(a.id, a.accent, 2)}${esc(a.name)}${hovered.prez ? " · президент" : ""}</div><div class="t-r">${esc(a.title || "")}</div><div class="t-m"><div><b>v${verOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
     tip.style.opacity = 1;
   } else tip.style.opacity = 0;
 
+  drawNova(cx, cy);
   drawWarp();
 }
 
@@ -10853,13 +10922,13 @@ function emit(nd) {
 
 /* ---------- интеракция ---------- */
 cv.addEventListener("pointerdown", e => { dragging = true; dragMoved = false; lastX = e.clientX; lastY = e.clientY; cv.classList.add("grabbing"); cv.setPointerCapture(e.pointerId); });
-cv.addEventListener("pointermove", e => { const rect = cv.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; if (dragging) { const dxx = e.clientX - lastX; if (Math.abs(dxx) + Math.abs(e.clientY - lastY) > 3) dragMoved = true; if (!RM) gal += dxx * 0.004; spin = RM ? 0 : dxx * 0.0006; lastX = e.clientX; lastY = e.clientY; } });
-cv.addEventListener("pointerup", () => { dragging = false; cv.classList.remove("grabbing"); if (!dragMoved && hovered && !warp) startWarp(hovered.a, hovered.x, hovered.y); });
+cv.addEventListener("pointermove", e => { const rect = cv.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; if (!RM && view === "sky") { trail.push({ x: mx, y: my, life: 1, r: Math.random() * 1.4 }); if (trail.length > 60) trail.shift(); } if (dragging) { const dxx = e.clientX - lastX; if (Math.abs(dxx) + Math.abs(e.clientY - lastY) > 3) dragMoved = true; if (!RM) gal += dxx * 0.004; spin = RM ? 0 : dxx * 0.0006; lastX = e.clientX; lastY = e.clientY; } });
+cv.addEventListener("pointerup", () => { dragging = false; cv.classList.remove("grabbing"); if (!dragMoved && hovered && !warp && !nova) { if (hovered.prez) startNova(); else startWarp(hovered.a, hovered.x, hovered.y); } });
 cv.addEventListener("pointerleave", () => { mx = my = -1e5; });
 cv.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.max(0.6, Math.min(2.4, zoom * (e.deltaY < 0 ? 1.08 : 0.93))); }, { passive: false });
 document.getElementById("q").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); filterList(); });
 function match(a) { if (!query) return true; return (a.name + " " + (a.title || "") + " " + (a.tagline || "") + " " + a.id).toLowerCase().includes(query); }
-document.getElementById("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; view = b.dataset.v; [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b)); document.body.classList.toggle("altview", view !== "sky"); document.getElementById("list").classList.toggle("show", view === "list"); document.getElementById("docs").classList.toggle("show", view === "docs"); if (view === "docs") renderDocs(); });
+document.getElementById("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; view = b.dataset.v; [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b)); document.body.classList.toggle("altview", view !== "sky"); document.getElementById("list").classList.toggle("show", view === "list"); document.getElementById("docs").classList.toggle("show", view === "docs"); nebCv.style.opacity = view === "sky" ? "" : "0"; if (view === "docs") renderDocs(); });
 
 /* ---------- drawer ---------- */
 /* ---------- персони + маскоти (характер за всеки агент) ---------- */
