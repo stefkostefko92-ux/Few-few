@@ -62,6 +62,17 @@ export function BridgeView({ title }: { title: string }) {
   const myTeam = seat % 2;
   const myTurn = !!state && state.turn === seat && legal.length > 0;
 
+  // Dummy = declarer's partner. After the opening lead its hand is revealed to
+  // everyone (engine redact), and on the dummy's turn the DECLARER plays it —
+  // the engine offers the dummy's legal cards under the declarer's seat, so they
+  // arrive here in `playable`. This panel lets the declarer click them (the
+  // shared felt table only wires up the viewer's OWN bottom hand).
+  const dummy = state && state.declarer !== null ? (state.declarer + 2) % 4 : null;
+  const isDeclarer = !!state && state.declarer === seat;
+  const dummyTurn = !!state && state.phase === "PLAY" && dummy !== null && state.turn === dummy;
+  const showDummyPanel = isDeclarer && dummyTurn && dummy !== null;
+  const dummyCards = showDummyPanel ? state!.hands[dummy] ?? [] : [];
+
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
@@ -154,6 +165,32 @@ export function BridgeView({ title }: { title: string }) {
                     {t("belote.pass")}
                   </Button>
                 ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Dummy control: the declarer plays the dummy's hand on its turn. */}
+          {showDummyPanel ? (
+            <div className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
+              <div className="mb-2 text-center text-sm text-ink-300">{t("bridge.dummyHand")}</div>
+              <div className="mb-2 text-center text-xs text-ink-muted">{t("bridge.playFromDummy")}</div>
+              <div className="flex flex-wrap items-center justify-center gap-1">
+                {dummyCards.map((card, i) => {
+                  const a = playable.get(card);
+                  const red = card.endsWith("H") || card.endsWith("D");
+                  return (
+                    <button
+                      key={`${card}-${i}`}
+                      type="button"
+                      disabled={!a}
+                      onClick={() => a && m.send(a)}
+                      className="aso-bridge-bid"
+                      style={{ color: red ? "var(--suit-red)" : "var(--ink-100)", opacity: a ? 1 : 0.4 }}
+                    >
+                      {card}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ) : null}

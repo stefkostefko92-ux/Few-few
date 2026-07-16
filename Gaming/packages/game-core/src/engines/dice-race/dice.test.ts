@@ -80,6 +80,7 @@ function roomAccepts(state: DiceState, seat: number, action: DiceAction): boolea
 describe("dice scoring", () => {
   it("scores the combination categories", () => {
     expect(scoreCategory([2, 2, 3, 3, 3], "fullHouse")).toBe(25);
+    expect(scoreCategory([5, 5, 5, 5, 5], "fullHouse")).toBe(0); // five-of-a-kind is NOT a full house (WPA/official)
     expect(scoreCategory([1, 2, 3, 4, 6], "smallStraight")).toBe(30);
     expect(scoreCategory([2, 3, 4, 5, 6], "largeStraight")).toBe(40);
     expect(scoreCategory([4, 4, 4, 4, 4], "yahtzee")).toBe(50);

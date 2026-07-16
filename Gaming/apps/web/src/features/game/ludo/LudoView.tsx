@@ -31,6 +31,10 @@ type LudoAction = { type: "ROLL" } | { type: "MOVE"; token: number } | { type: "
 
 const key = (c: number, r: number) => `${c},${r}`;
 
+/** Absolute main-loop cells that are safe from capture (starts + star squares),
+ *  mirroring the engine's SAFE_CELLS. Two own tokens on one cell = a blockade. */
+const SAFE_ABS = [0, 10, 20, 30, 8, 18, 28, 38] as const;
+
 /** Cells that belong to the playable track / home columns (everything else is filler). */
 function buildCellTypes(): Map<string, { kind: "track" | "home" | "center"; seat?: number }> {
   const map = new Map<string, { kind: "track" | "home" | "center"; seat?: number }>();
@@ -82,6 +86,7 @@ export function LudoView({ title }: { title: string }) {
   );
 
   const cellTypes = useMemo(buildCellTypes, []);
+  const safeCells = useMemo(() => new Set(SAFE_ABS.map((a) => key(TRACK[a]![0], TRACK[a]![1]))), []);
 
   // Map every token onto a board cell so we can render pawns (and stack offsets).
   const pawns = useMemo(() => {
@@ -217,6 +222,11 @@ export function LudoView({ title }: { title: string }) {
                 const type = cellTypes.get(k);
                 const house = houseSeat(c, r);
                 const here = pawns.get(k) ?? [];
+                const isSafe = safeCells.has(k);
+                // A blockade: two or more tokens of the same seat share this cell.
+                const counts = new Map<number, number>();
+                for (const p of here) counts.set(p.seat, (counts.get(p.seat) ?? 0) + 1);
+                const blockade = [...counts.values()].some((n) => n >= 2);
                 return (
                   <div
                     key={k}
@@ -226,14 +236,33 @@ export function LudoView({ title }: { title: string }) {
                       type?.kind === "home" && "ludo-cell--home",
                       type?.kind === "center" && "ludo-cell--center",
                     )}
+                    title={isSafe ? t("ludo.safeSquare", "Защитено поле") : blockade ? t("ludo.blockade", "Блокада") : undefined}
                     style={{
                       ...(type?.kind === "home" && type.seat !== undefined
                         ? { background: tint(SEAT_COLORS[type.seat]!) }
                         : {}),
                       ...(house !== null && !type ? { background: tint(SEAT_COLORS[house]!) } : {}),
+                      // A blockade gets a bright ring so it reads as impassable.
+                      ...(blockade ? { boxShadow: "inset 0 0 0 2px #ffd54a, 0 0 6px 1px rgba(255,213,74,.55)" } : {}),
                     }}
                   >
                     {type?.kind === "center" ? <span className="ludo-goal">★</span> : null}
+                    {isSafe ? (
+                      <span
+                        aria-hidden
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          display: "grid",
+                          placeItems: "center",
+                          fontSize: "0.85em",
+                          color: "rgba(255,255,255,.4)",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        ✦
+                      </span>
+                    ) : null}
                     {here.map((p, idx) => (
                       <button
                         key={`${p.seat}-${p.token}`}

@@ -78,7 +78,7 @@ export function scoreCategory(dice: number[], cat: Category): number {
     case "sixes": return (c[6] ?? 0) * 6;
     case "threeKind": return c.some((n) => n >= 3) ? sum : 0;
     case "fourKind": return c.some((n) => n >= 4) ? sum : 0;
-    case "fullHouse": return c.includes(3) && c.includes(2) ? 25 : c.includes(5) ? 25 : 0;
+    case "fullHouse": return c.includes(3) && c.includes(2) ? 25 : 0;
     case "smallStraight": return hasStraight(c, 4) ? 30 : 0;
     case "largeStraight": return hasStraight(c, 5) ? 40 : 0;
     case "chance": return sum;

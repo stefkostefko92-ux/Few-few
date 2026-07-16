@@ -92,6 +92,48 @@ describe("МАГНАТ — building (even-build rule)", () => {
   });
 });
 
+describe("МАГНАТ — building supply limit (32 houses / 12 hotels)", () => {
+  /** Seat 0 owns the full brown group (tiles 1 & 3) in MANAGE with cash to spare. */
+  function ownBrown(houses: number[]): MagnatState {
+    const base = init(2);
+    const owner = base.owner.slice();
+    owner[1] = 0;
+    owner[3] = 0;
+    return { ...base, owner, houses, phase: "MANAGE", turn: 0, cash: [1500, 1500] };
+  }
+
+  it("cannot build a 33rd house once the bank's 32 are placed", () => {
+    const houses = new Array<number>(40).fill(0);
+    for (const i of [6, 8, 9, 11, 13, 14, 16, 18]) houses[i] = 4; // 8 × 4 = 32 houses
+    const s = ownBrown(houses);
+    expect(magnatEngine.legalActions(s, 0).some((a) => a.type === "BUILD")).toBe(false);
+    expect(() => magnatEngine.reduce(s, { type: "BUILD", tile: 1 }, new SeededRng("x"))).toThrow(
+      IllegalActionError,
+    );
+  });
+
+  it("still allows a hotel (4→5) when houses are exhausted but hotels remain", () => {
+    const houses = new Array<number>(40).fill(0);
+    houses[1] = 4;
+    houses[3] = 4; // 8 houses in the owned group
+    for (const i of [6, 8, 9, 11, 13, 14]) houses[i] = 4; // +24 → 32 houses total
+    const s = ownBrown(houses);
+    // A hotel returns its four houses to the bank, so the upgrade is legal.
+    expect(magnatEngine.legalActions(s, 0)).toContainEqual({ type: "BUILD", tile: 1 });
+    const after = magnatEngine.reduce(s, { type: "BUILD", tile: 1 }, new SeededRng("h")).state;
+    expect(after.houses[1]).toBe(5); // a hotel
+  });
+
+  it("cannot build a 13th hotel once twelve are placed", () => {
+    const houses = new Array<number>(40).fill(0);
+    houses[1] = 4;
+    houses[3] = 4; // the owned group is ready to upgrade to hotels…
+    for (const i of [6, 8, 9, 11, 13, 14, 16, 18, 19, 21, 23, 24]) houses[i] = 5; // …but 12 hotels exist
+    const s = ownBrown(houses);
+    expect(magnatEngine.legalActions(s, 0).some((a) => a.type === "BUILD")).toBe(false);
+  });
+});
+
 describe("МАГНАТ — session config", () => {
   it("honours a custom starting cash", () => {
     const s = magnatEngine.init({ seats: 3, config: { startingCash: 4000 } }, new SeededRng("c"));

@@ -4,7 +4,9 @@ import {
   CHANCE,
   CHEST,
   GROUP_TILES,
+  HOTEL_LIMIT,
   HOUSE_COST_BY_GROUP,
+  HOUSE_LIMIT,
   STATIONS,
   UTILITIES,
   isOwnable,
@@ -60,6 +62,22 @@ function countOwned(s: MagnatState, seat: Seat, tiles: number[]): number {
   return tiles.reduce((n, i) => n + (s.owner[i] === seat ? 1 : 0), 0);
 }
 
+/** Houses currently on the board (1..4 per tile; a hotel = 5 no longer counts). */
+function housesBuilt(s: MagnatState): number {
+  let n = 0;
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    const h = s.houses[i]!;
+    if (h >= 1 && h <= 4) n += h;
+  }
+  return n;
+}
+/** Hotels currently on the board (houses[i] === 5). */
+function hotelsBuilt(s: MagnatState): number {
+  let n = 0;
+  for (let i = 0; i < BOARD_SIZE; i++) if (s.houses[i]! === 5) n++;
+  return n;
+}
+
 function rentFor(s: MagnatState, i: number, diceSum: number): number {
   const owner = s.owner[i]!;
   const tl = tile(i);
@@ -99,6 +117,13 @@ function canBuild(s: MagnatState, seat: Seat, i: number): boolean {
   if (group.some((g) => s.mortgaged[g])) return false;
   if (s.houses[i]! >= 5) return false;
   if (s.cash[seat]! < houseCost(i)) return false;
+  // Bank supply: upgrading 4 → 5 builds a hotel (returning 4 houses), otherwise
+  // a plain house. Block the build when the bank has none left (Monopoly rule).
+  if (s.houses[i]! === 4) {
+    if (hotelsBuilt(s) >= HOTEL_LIMIT) return false;
+  } else if (housesBuilt(s) >= HOUSE_LIMIT) {
+    return false;
+  }
   const min = Math.min(...group.map((g) => s.houses[g]!));
   return s.houses[i]! === min; // even build
 }
