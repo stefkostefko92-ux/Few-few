@@ -2993,6 +2993,7 @@ export default function App(){
               <a href="https://wa.me/393792969699" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="WhatsApp">WA</a>
               <a href="mailto:info@carbonstealth.eu" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="Email">EM</a>
               <a href="https://www.linkedin.com/company/carbonstealth.vcc" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="LinkedIn">LI</a>
+              <a href="https://share.google/0XLOlO0r1ETbGpUkZ" target="_blank" rel="noopener" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,cursor:"none"}} title={lang==="it"?"Profilo Google — lascia una recensione":lang==="bg"?"Google профил — остави отзив":"Google Business Profile — leave a review"}>G</a>
             </div>
           </div>
 
