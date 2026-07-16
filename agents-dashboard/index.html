@@ -4,138 +4,160 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Лаборатория на агентите · Carbon Stealth</title>
+<meta name="description" content="Живо съзвездие на персонализираните Claude Code агенти на Carbon Stealth — интерактивно, дишащо, самообучаващо се. Ключова дума: Carbon Stealth." />
+<meta name="keywords" content="Carbon Stealth, Claude Code агенти, AI агенти табло, съзвездие на агенти, интерактивна визуализация, самообучаващи се агенти" />
 <style>
   :root {
-    /* Палитра от carbonstealth.eu: чисто черно + електрик циан #00e5ff */
-    --bg: #000000; --panel: #0a0d10; --panel2: #11161b; --line: #1b2730;
-    --txt: #e6edf2; --mut: #7e8a96; --accent: #00e5ff;
+    --bg: #000004; --panel: #0a0d12; --panel2: #10151c; --line: #1b2732;
+    --txt: #e9f1f6; --mut: #8492a0; --accent: #00e5ff;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
-    margin: 0; background: radial-gradient(1200px 600px at 80% -10%, #04282e 0%, var(--bg) 55%) fixed;
-    color: var(--txt); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    margin: 0; background: #000004; color: var(--txt); overflow: hidden;
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: inherit; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
-  header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: .2px; }
-  header p { margin: 0; color: var(--mut); max-width: 760px; }
-  .note {
-    margin: 18px 0 8px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line);
-    border-left: 3px solid var(--accent); border-radius: 8px; color: var(--mut); font-size: 13.5px;
-  }
-  .stats { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 26px; }
-  .stat { flex: 1 1 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
-  .stat b { display: block; font-size: 24px; }
-  .stat span { color: var(--mut); font-size: 13px; }
-  .grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
-  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
-  .card {
-    background: linear-gradient(180deg, var(--panel) 0%, #05080a 100%);
-    border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
-  }
+  a { color: var(--accent); text-decoration: none; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  #sky.grabbing { cursor: grabbing; }
+  #sky.pointer { cursor: pointer; }
+
+  /* HUD */
+  .hud { position: fixed; inset: 0 0 auto 0; padding: 18px 22px; pointer-events: none;
+         display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; z-index: 5; }
+  .hud > * { pointer-events: auto; }
+  .brand h1 { margin: 0; font-size: 19px; letter-spacing: .3px; font-weight: 650;
+              text-shadow: 0 0 22px rgba(0,229,255,.35); }
+  .brand p { margin: 3px 0 0; color: var(--mut); font-size: 12.5px; max-width: 42ch; }
+  .tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .search { display: flex; align-items: center; gap: 8px; background: rgba(10,14,20,.72); backdrop-filter: blur(9px);
+            border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; }
+  .search input { background: none; border: 0; color: var(--txt); font-size: 13px; width: 150px; outline: none; }
+  .search input::placeholder { color: var(--mut); }
+  .seg { display: flex; background: rgba(10,14,20,.72); backdrop-filter: blur(9px); border: 1px solid var(--line);
+         border-radius: 999px; padding: 3px; }
+  .seg button { background: none; border: 0; color: var(--mut); font: inherit; font-size: 12.5px; padding: 5px 13px;
+                border-radius: 999px; cursor: pointer; transition: .18s; }
+  .seg button.on { background: var(--accent); color: #04121a; font-weight: 600; }
+
+  /* live stat chips bottom-left */
+  .live { position: fixed; left: 22px; bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; z-index: 5; }
+  .chip { background: rgba(10,14,20,.72); backdrop-filter: blur(9px); border: 1px solid var(--line); border-radius: 12px;
+          padding: 9px 13px; min-width: 78px; }
+  .chip b { display: block; font-size: 19px; line-height: 1.1; }
+  .chip span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px; }
+  .hint { position: fixed; right: 22px; bottom: 20px; z-index: 5; color: var(--mut); font-size: 11.5px;
+          background: rgba(10,14,20,.6); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; max-width: 240px; }
+
+  /* tooltip */
+  #tip { position: fixed; z-index: 8; pointer-events: none; transform: translate(-50%, calc(-100% - 16px));
+         background: rgba(8,12,18,.92); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 11px;
+         padding: 9px 12px; min-width: 150px; opacity: 0; transition: opacity .12s; box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+  #tip .t-n { font-weight: 650; font-size: 13.5px; display: flex; align-items: center; gap: 7px; }
+  #tip .t-r { color: var(--mut); font-size: 11.5px; margin-top: 1px; }
+  #tip .t-m { margin-top: 6px; display: flex; gap: 12px; }
+  #tip .t-m b { font-size: 13px; } #tip .t-m span { color: var(--mut); font-size: 10px; display: block; }
+
+  /* drawer */
+  #drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(440px, 92vw); z-index: 20;
+            background: linear-gradient(180deg, var(--panel) 0%, #05070b 100%); border-left: 1px solid var(--line);
+            box-shadow: -30px 0 80px rgba(0,0,0,.6); transform: translateX(102%); transition: transform .42s cubic-bezier(.2,.8,.2,1);
+            overflow-y: auto; padding: 0 22px 40px; }
+  #drawer.open { transform: none; }
+  .d-top { position: sticky; top: 0; background: linear-gradient(180deg, var(--panel), rgba(10,13,18,.6) 80%, transparent);
+           padding: 20px 22px 12px; margin: 0 -22px 6px; backdrop-filter: blur(4px); }
+  .d-close { position: absolute; top: 16px; right: 18px; background: var(--panel2); border: 1px solid var(--line);
+             color: var(--mut); width: 32px; height: 32px; border-radius: 9px; cursor: pointer; font-size: 16px; }
+  .d-head { display: flex; align-items: center; gap: 14px; }
+  .d-ava { width: 56px; height: 56px; border-radius: 15px; display: grid; place-items: center; font-size: 30px; flex: none; }
+  .d-head h2 { margin: 0; font-size: 20px; }
+  .d-head .role { color: var(--mut); font-size: 12.5px; margin-top: 2px; }
+  .d-tag { color: var(--txt); font-size: 13.5px; margin: 12px 0 4px; }
+  .d-metrics { display: flex; gap: 10px; margin: 16px 0; }
+  .d-metric { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; text-align: center; }
+  .d-metric b { font-size: 21px; display: block; } .d-metric span { color: var(--mut); font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
+  .d-sec { margin-top: 20px; }
+  .d-sec h3 { margin: 0 0 9px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .9px; color: var(--mut); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips .c { font-size: 11.5px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line); padding: 3px 9px; border-radius: 999px; }
+  ul.caps { margin: 0; padding-left: 17px; } ul.caps li { margin: 4px 0; font-size: 13px; }
+  .tl { border-left: 2px solid var(--line); margin-left: 5px; padding-left: 15px; }
+  .tl .ev { position: relative; margin-bottom: 12px; }
+  .tl .ev::before { content: ""; position: absolute; left: -21px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--ac); box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 10px var(--ac); }
+  .tl .v { font-weight: 650; font-size: 13px; } .tl .dt { color: var(--mut); font-size: 11px; }
+  .tl .x { font-size: 12.5px; color: var(--txt); margin-top: 2px; }
+  .feed .row { padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+  .feed .row .dt { color: var(--mut); font-size: 11px; }
+
+  /* list view */
+  #list { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 90px; display: none; }
+  #list.show { display: block; }
+  .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1080px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .card { background: linear-gradient(180deg, var(--panel), #05080b); border: 1px solid var(--line); border-radius: 15px;
+          padding: 18px; position: relative; overflow: hidden; cursor: pointer; transition: .2s; }
+  .card:hover { border-color: var(--ac); transform: translateY(-3px); }
   .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ac); }
-  .chead { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-  .ava { width: 44px; height: 44px; border-radius: 11px; display: grid; place-items: center; font-size: 22px;
-         background: var(--ac15); border: 1px solid var(--ac40); }
-  .chead h2 { margin: 0; font-size: 18px; }
-  .chead .role { color: var(--mut); font-size: 12.5px; }
-  .tag { color: var(--txt); font-size: 13.5px; margin: 10px 0 14px; }
-  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .badge { font-size: 11.5px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line);
-           padding: 3px 9px; border-radius: 999px; }
-  .badge.ac { color: #0c0f14; background: var(--ac); border-color: var(--ac); font-weight: 600; }
-  .sec { margin-top: 14px; }
-  .sec h3 { margin: 0 0 7px; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--mut); }
-  ul.caps { margin: 0; padding-left: 18px; }
-  ul.caps li { margin: 2px 0; font-size: 13px; }
-  .metrics { display: flex; gap: 16px; margin: 14px 0 2px; }
-  .metric b { font-size: 18px; } .metric span { color: var(--mut); font-size: 11.5px; display: block; }
-  .timeline { border-left: 2px solid var(--line); margin-left: 4px; padding-left: 14px; }
-  .ev { position: relative; margin: 0 0 10px; }
-  .ev::before { content: ""; position: absolute; left: -20px; top: 5px; width: 9px; height: 9px; border-radius: 50%;
-                background: var(--ac); box-shadow: 0 0 0 3px var(--ac15); }
-  .ev .v { font-weight: 600; font-size: 13px; } .ev .d { color: var(--mut); font-size: 11.5px; }
-  .ev .x { font-size: 12.5px; color: var(--txt); }
-  .feed { margin-top: 8px; }
-  .feed .row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
-  .feed .row:last-child { border: 0; }
-  .feed .when { color: var(--mut); white-space: nowrap; }
-  .pill { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
-  details.actv > summary { cursor: pointer; list-style: none; font-size: 11px; text-transform: uppercase;
-    letter-spacing: .8px; color: var(--mut); user-select: none; padding: 2px 0; }
-  details.actv > summary::-webkit-details-marker { display: none; }
-  details.actv > summary::before { content: "▸ "; color: var(--ac); }
-  details.actv[open] > summary::before { content: "▾ "; }
-  details.actv[open] > summary { margin-bottom: 4px; }
-  #globalwrap > summary { cursor: pointer; list-style: none; font-size: 18px; font-weight: 600; margin: 34px 0 8px; }
-  #globalwrap > summary::-webkit-details-marker { display: none; }
-  #globalwrap > summary::before { content: "▸ "; color: var(--accent); }
-  #globalwrap[open] > summary::before { content: "▾ "; }
-  footer { margin-top: 40px; color: var(--mut); font-size: 12.5px; text-align: center; }
-  code { background: var(--panel2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
-.ava svg{ width:40px; height:40px; display:block; }
-  /* CLAUDE.md изглед */
-  #docswrap { margin-top: 34px; }
-  #docswrap > summary { cursor: pointer; list-style: none; font-size: 18px; font-weight: 600; margin: 0 0 8px; }
-  #docswrap > summary::-webkit-details-marker { display: none; }
-  #docswrap > summary::before { content: "▸ "; color: var(--accent); }
-  #docswrap[open] > summary::before { content: "▾ "; }
-  .doctabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .doctab { font: inherit; font-size: 12px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line);
-            padding: 4px 11px; border-radius: 999px; cursor: pointer; }
-  .doctab.on { color: #0c0f14; background: var(--accent); border-color: var(--accent); font-weight: 600; }
-  .docmeta { color: var(--mut); font-size: 11.5px; margin-bottom: 14px; }
-  .md-doc { font-size: 13.5px; }
-  .md-doc .md-h1 { font-size: 20px; margin: 0 0 10px; }
-  .md-doc .md-h2 { font-size: 16px; margin: 20px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 5px; }
-  .md-doc .md-h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--mut); margin: 15px 0 6px; }
-  .md-doc .md-h4, .md-doc .md-h5, .md-doc .md-h6 { font-size: 13px; margin: 12px 0 5px; }
-  .md-doc .md-p { margin: 8px 0; }
-  .md-doc .md-ul { margin: 8px 0; padding-left: 20px; } .md-doc .md-ul li { margin: 3px 0; }
-  .md-doc .md-code { background: #05080a; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
-                     overflow: auto; font-size: 12px; line-height: 1.5; white-space: pre; margin: 10px 0; }
-  .md-doc .md-table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 12.5px; display: block; overflow: auto; }
-  .md-doc .md-table th, .md-doc .md-table td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
-  .md-doc .md-table th { background: var(--panel2); color: var(--txt); white-space: nowrap; }
-  .md-doc .md-bq { border-left: 3px solid var(--accent); margin: 10px 0; padding: 6px 12px; color: var(--mut);
-                   background: var(--panel); border-radius: 6px; }
-  .md-doc .md-hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
-  .md-doc a { color: var(--accent); }
+  .card .ch { display: flex; align-items: center; gap: 11px; }
+  .card .a { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 21px; }
+  .card h2 { margin: 0; font-size: 16px; } .card .r { color: var(--mut); font-size: 12px; }
+  .card .tg { font-size: 12.5px; margin: 11px 0; color: var(--txt); }
+  .card .mm { display: flex; gap: 14px; color: var(--mut); font-size: 11.5px; }
+  .card .mm b { color: var(--txt); font-size: 14px; }
+
+  /* docs */
+  #docs { position: fixed; inset: 0; z-index: 4; overflow-y: auto; padding: 92px 22px 60px; display: none; }
+  #docs.show { display: block; }
+  #docs .inner { max-width: 900px; margin: 0 auto; }
+  .doctabs { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0 14px; }
+  .doctabs button { background: var(--panel2); border: 1px solid var(--line); color: var(--mut); font: inherit; font-size: 12.5px;
+                    padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+  .doctabs button.on { background: var(--accent); color: #04121a; }
+  .md-doc { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; }
+  .md-doc h1,.md-doc h2,.md-doc h3 { line-height: 1.3; } .md-doc code { background: var(--panel2); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+  .md-doc table.md-table { border-collapse: collapse; width: 100%; font-size: 12.5px; } .md-doc .md-table td,.md-doc .md-table th { border: 1px solid var(--line); padding: 6px 9px; text-align: left; }
+
+  @media (max-width: 640px) {
+    .brand p { display: none; } .hint { display: none; } .search input { width: 108px; }
+    .hud { padding: 12px; } .live { left: 12px; bottom: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
+<canvas id="sky" aria-label="Интерактивно съзвездие на агентите. Използвай изгледа „Списък“ за достъпна текстова версия."></canvas>
+
+<div class="hud">
+  <div class="brand">
     <h1 id="title">Лаборатория на агентите</h1>
     <p id="subtitle"></p>
-  </header>
-
-  <div class="stats" id="stats"></div>
-  <div class="grid" id="grid"></div>
-
-  <details id="docswrap">
-    <summary>📖 CLAUDE.md · инструкции за агентите</summary>
-    <div class="card" style="--ac:var(--accent);">
-      <div class="doctabs" id="docstabs"></div>
-      <div class="docmeta">генерирано: <span id="docsgen">—</span> · източник: живите <code>CLAUDE.md</code> файлове в репото (root + per-product)</div>
-      <div class="md-doc" id="docsbody"></div>
+  </div>
+  <div class="tools">
+    <label class="search">🔎<input id="q" type="search" placeholder="търси агент…" autocomplete="off" /></label>
+    <div class="seg" id="seg">
+      <button data-v="sky" class="on">✦ Съзвездие</button>
+      <button data-v="list">▤ Списък</button>
+      <button data-v="docs">📖 Docs</button>
     </div>
-  </details>
-
-  <details id="globalwrap">
-    <summary>Поток на дейността</summary>
-    <div class="card" style="--ac:var(--accent);"><div class="feed" id="globalfeed"></div></div>
-  </details>
-
-  <footer>
-    Данните идват от <code>agents-dashboard/agents.json</code>. Дефинициите на агентите са в
-    <code id="defdir">.claude/agents/</code>. · Carbon Stealth VCC
-  </footer>
+  </div>
 </div>
 
-<script src="./docs.js"></script>
+<div class="live" id="live"></div>
+<div class="hint">Кликни агент за детайли · влачи да завъртиш · колело за мащаб · 👑 = президентът</div>
+
+<div id="tip"></div>
+<div id="drawer"></div>
+<div id="list"><div class="grid" id="grid"></div></div>
+<div id="docs"><div class="inner">
+  <div class="doctabs" id="docstabs"></div>
+  <div style="color:var(--mut);font-size:12px;margin-bottom:10px">генерирано: <span id="docsgen">—</span> · източник: живите <code>CLAUDE.md</code> файлове</div>
+  <div class="md-doc" id="docsbody"></div>
+</div></div>
+
 <script>
-// Вграден снимков фалбек — за да работи и при отваряне директно като файл (file://).
+// Вграден снимков фалбек — работи и при отваряне като файл (file://) или като Artifact.
 // Каноничният източник е agents.json; ако fetch успее, той надделява.
 const FALLBACK = {
   "meta": {
@@ -10546,265 +10568,299 @@ const FALLBACK = {
   ]
 };
 
-function el(t, c, h){ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; }
-function hexA(hex, a){ const n=parseInt(hex.slice(1),16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+/* ---------- зареждане ---------- */
+let DATA = FALLBACK;
+fetch("./agents.json").then(r => { if (!r.ok) throw 0; return r.json(); })
+  .then(d => { DATA = d; boot(); })
+  .catch(() => boot());
 
-// Оригинални анимационни лица (IP-чисти, генерирани) — по едно за всеки агент.
-function avatarSVG(a){
-  const ac=a.accent;
-  const F={
-    'pravniyat-razbirach':{skin:'#f0c8a0',hair:'#3a3026',style:'judge'},
-    'kodadjiyata':{skin:'#e8b890',hair:'#241c16',style:'coder'},
-    'geymara':{skin:'#f3cba4',hair:'#2a2320',style:'gamer'},
-    'seo':{skin:'#f1c49a',hair:'#5a3b22',style:'explorer'},
-    'prevodach':{skin:'#f4cda8',hair:'#3b2a3f',style:'translator'},
-    'siydara':{skin:'#f3c9a6',hair:'#6b4a2a',style:'gardener'},
-    'vps-adjiyata':{skin:'#e9bf98',hair:'#2c2c2c',style:'sysadmin'},
-    '3d-maniac':{skin:'#f5cba6',hair:'#1f1a17',style:'maker'},
-    'socialdjiyata':{skin:'#f1c49a',hair:'#2a2320',style:'creator'},
-    'prodavacha':{skin:'#f2c8a2',hair:'#241c16',style:'merchant'},
-    'mobildjiyata':{skin:'#efc59e',hair:'#23201d',style:'mobile'},
-    'printadjiyata':{skin:'#f1c69f',hair:'#2b211a',style:'printer'},
-    'dizayner':{skin:'#f0c6a4',hair:'#1c1620',style:'designer'},
-    'hromadjiyata':{skin:'#efc59e',hair:'#241c16',style:'browser'},
-    'diskordjiyata':{skin:'#f1c69f',hair:'#2a2320',style:'discord'},
-    'treydara':{skin:'#eec39c',hair:'#20241c',style:'trader'}
-  };
-  const f=F[a.id]||{skin:'#f0c8a0',hair:'#2c2c2c',style:''};
-  const sk=f.skin, hr=f.hair, st=f.style;
-  const ears='<circle cx="13.5" cy="37" r="3.4" fill="'+sk+'"/><circle cx="50.5" cy="37" r="3.4" fill="'+sk+'"/>';
-  const head='<ellipse cx="32" cy="35" rx="19" ry="20" fill="'+sk+'" stroke="rgba(0,0,0,.12)"/>';
-  const eye=(cx)=>'<ellipse cx="'+cx+'" cy="34" rx="4.6" ry="5.4" fill="#fff"/><circle cx="'+cx+'" cy="35" r="3" fill="'+ac+'"/><circle cx="'+cx+'" cy="35.4" r="1.7" fill="#15110d"/><circle cx="'+(cx-1)+'" cy="33.6" r="0.9" fill="#fff"/>';
-  const eyes=eye(24)+eye(40);
-  const brows='<path d="M20 27 q4 -2 8 0" stroke="'+hr+'" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M36 27 q4 -2 8 0" stroke="'+hr+'" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
-  const nose='<path d="M32 36 q1.4 2 0 3.4" stroke="rgba(0,0,0,.18)" stroke-width="1.2" fill="none" stroke-linecap="round"/>';
-  const blush='<ellipse cx="20" cy="41" rx="3" ry="1.8" fill="'+ac+'" opacity=".35"/><ellipse cx="44" cy="41" rx="3" ry="1.8" fill="'+ac+'" opacity=".35"/>';
-  const mouth='<path d="M27 43 q5 5 10 0" stroke="#8a4636" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
-  let back='', hair='', gear='';
-  if(st==='judge'){
-    hair='<path d="M13 33 q1 -22 19 -22 q18 0 19 22 q-6 -10 -19 -10 q-13 0 -19 10z" fill="'+hr+'"/>';
-    gear='<g stroke="#c9a227" stroke-width="1.6" fill="none"><circle cx="24" cy="34" r="6"/><circle cx="40" cy="34" r="6"/><path d="M30 34 h4"/></g>'
-      +'<path d="M30 51 L32 57 L33.5 51 Z" fill="#fff"/><path d="M34.5 51 L35.5 57 L38 51 Z" fill="#fff"/>';
-  } else if(st==='coder'){
-    back='<path d="M8 41 q0 -31 24 -31 q24 0 24 31 q-10 -7 -24 -7 q-14 0 -24 7z" fill="'+ac+'" opacity=".92"/>';
-    hair='<path d="M18 26 q14 -10 28 0 q-6 -4 -14 -4 q-8 0 -14 4z" fill="'+hr+'"/>';
-    gear='<path d="M14 30 q18 -16 36 0" stroke="#222" stroke-width="3" fill="none"/>'
-      +'<rect x="10" y="32" width="6" height="11" rx="3" fill="#222"/><rect x="48" y="32" width="6" height="11" rx="3" fill="#222"/>'
-      +'<circle cx="13" cy="37.5" r="1.3" fill="'+ac+'"/><circle cx="51" cy="37.5" r="1.3" fill="'+ac+'"/>';
-  } else if(st==='gamer'){
-    hair='<path d="M14 31 l4 -11 3 8 4 -12 4 12 4 -8 4 11 z" fill="'+hr+'"/>';
-    gear='<path d="M13 31 q19 -15 38 0" stroke="#1e1e1e" stroke-width="3" fill="none"/>'
-      +'<rect x="9" y="32" width="6" height="11" rx="3" fill="#1e1e1e"/>'
-      +'<path d="M12 43 q-3 7 11 6.5" stroke="'+ac+'" stroke-width="2" fill="none"/><circle cx="23" cy="49.5" r="1.8" fill="'+ac+'"/>';
-  } else if(st==='explorer'){
-    hair='<path d="M16 29 q16 -8 32 0 q-6 -6 -16 -6 q-10 0 -16 6z" fill="'+hr+'"/>';
-    gear='<path d="M12 27 q20 -17 40 0 q-20 -7 -40 0z" fill="'+ac+'"/><path d="M40 25 q13 0 15 6 q-9 -2 -15 -2z" fill="'+ac+'" opacity=".85"/>'
-      +'<g><circle cx="40" cy="34" r="6.5" fill="#ffffff" fill-opacity=".22" stroke="#3a3a3a" stroke-width="2"/><path d="M45 39 l5 5" stroke="#3a3a3a" stroke-width="2.4" stroke-linecap="round"/></g>';
-  } else if(st==='translator'){
-    hair='<path d="M14 32 q2 -20 18 -20 q16 0 18 20 q-7 -9 -18 -9 q-11 0 -18 9z" fill="'+hr+'"/>';
-    gear='<g><rect x="41" y="9" width="17" height="12" rx="3" fill="'+ac+'"/><path d="M46 21 l-2 5 6 -3z" fill="'+ac+'"/><text x="49.5" y="18.5" font-size="8" fill="#fff" text-anchor="middle" font-family="Georgia,serif">«»</text></g>'
-      +'<path d="M50 34 q4 4 -2 10" stroke="#333" stroke-width="1.6" fill="none"/><circle cx="48" cy="45" r="1.7" fill="#333"/>';
-  } else if(st==='gardener'){
-    hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>';
-    back='<path d="M32 13 v-7" stroke="#3f9b4f" stroke-width="2" stroke-linecap="round"/>'
-      +'<path d="M32 7 q-7 -2 -8 -7 q7 0 8 6z" fill="#4caf50"/><path d="M32 7 q7 -2 8 -7 q-7 0 -8 6z" fill="#67c96a"/>';
-    gear='<circle cx="22" cy="39" r="0.7" fill="#a9704a"/><circle cx="25" cy="41" r="0.7" fill="#a9704a"/><circle cx="42" cy="39" r="0.7" fill="#a9704a"/><circle cx="39" cy="41" r="0.7" fill="#a9704a"/>';
-  } else if(st==='sysadmin'){
-    hair='<path d="M15 30 q3 -18 17 -18 q14 0 17 18 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
-    gear='<g stroke="#2b2b2b" stroke-width="1.4" fill="none"><rect x="17" y="30" width="13" height="8" rx="2" fill="'+ac+'" fill-opacity=".22"/><rect x="34" y="30" width="13" height="8" rx="2" fill="'+ac+'" fill-opacity=".22"/><path d="M30 34 h4"/></g>'
-      +'<text x="19" y="36.6" font-size="5" fill="#2f9e6f" font-family="monospace">&gt;_</text>';
-  } else if(st==='maker'){
-    hair='<path d="M12 28 l3 -13 4 9 5 -14 5 14 4 -9 4 13 z" fill="'+hr+'"/>';
-    gear='<g><rect x="14" y="29" width="36" height="11" rx="5" fill="'+ac+'" opacity=".88"/><rect x="14" y="29" width="36" height="4" rx="2" fill="#fff" opacity=".18"/><circle cx="24" cy="34.5" r="2" fill="#fff" opacity=".95"/><circle cx="40" cy="34.5" r="2" fill="#fff" opacity=".95"/></g>'
-      +'<path d="M14 33 h-4 M50 33 h4" stroke="'+ac+'" stroke-width="3"/>';
-  } else if(st==='creator'){
-    back='<circle cx="32" cy="34" r="24" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".45"/>';
-    hair='<path d="M14 31 q4 -20 18 -20 q14 0 18 20 q-6 -10 -18 -10 q-12 0 -18 10z" fill="'+hr+'"/>'
-      +'<path d="M40 16 q6 6 4 16" stroke="'+ac+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
-    gear='<g transform="rotate(-16 50 47)"><rect x="46" y="40" width="9" height="16" rx="2" fill="#1e1e1e"/><rect x="47.4" y="42" width="6.2" height="11" rx="1" fill="'+ac+'" opacity=".55"/></g>'
-      +'<g fill="'+ac+'"><circle cx="13" cy="20" r="1.2"/><circle cx="51" cy="15" r="1"/><path d="M11 29 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1z"/></g>';
-  } else if(st==='merchant'){
-    hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>';
-    gear='<g transform="rotate(-12 44 46)"><rect x="38" y="40" width="16" height="10" rx="2" fill="'+ac+'"/><rect x="38" y="43" width="16" height="2.4" fill="#fff" opacity=".85"/><circle cx="41" cy="48" r="1.1" fill="#fff" opacity=".9"/></g>'
-      +'<g fill="'+ac+'"><circle cx="13" cy="20" r="1.1"/><circle cx="51" cy="16" r="1"/></g>';
-  } else if(st==='mobile'){
-    hair='<path d="M15 30 q3 -19 17 -19 q14 0 17 19 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
-    gear='<g transform="rotate(14 46 44)"><rect x="42" y="36" width="11" height="18" rx="2.5" fill="#1e1e1e"/><rect x="43.2" y="38.4" width="8.6" height="11.8" rx="1" fill="'+ac+'" opacity=".7"/><circle cx="47.5" cy="52" r="1" fill="#fff" opacity=".8"/></g>'
-      +'<g stroke="'+ac+'" stroke-width="1.3" fill="none" opacity=".8"><path d="M40 31 q4 -4 8 0"/><path d="M37.5 28.5 q6.5 -6 13 0"/></g>';
-  } else if(st==='printer'){
-    hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>';
-    gear='<g><rect x="38" y="38" width="16" height="13" rx="1.5" fill="#2a2a2a"/><rect x="40" y="40.5" width="12" height="2" rx="1" fill="'+ac+'"/>'
-      +'<rect x="45" y="42.5" width="2" height="6" fill="#cfcfcf"/><rect x="44" y="48" width="4" height="2.4" rx="0.6" fill="'+ac+'"/></g>'
-      +'<g fill="'+ac+'" opacity=".9"><rect x="44.4" y="50.4" width="3.2" height="4" rx="0.5"/></g>';
-  } else if(st==='designer'){
-    back='<radialGradient id="dz'+a.id+'" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="'+ac+'" stop-opacity=".55"/><stop offset="100%" stop-color="'+ac+'" stop-opacity="0"/></radialGradient><circle cx="32" cy="34" r="26" fill="url(#dz'+a.id+')"/>';
-    hair='<path d="M13 32 q2 -21 19 -21 q17 0 19 21 q-7 -10 -19 -10 q-12 0 -19 10z" fill="'+hr+'"/>';
-    gear='<g fill="'+ac+'"><path d="M50 16 l1.4 4 4 1.4 -4 1.4 -1.4 4 -1.4 -4 -4 -1.4 4 -1.4z"/><path d="M14 13 l1 2.8 2.8 1 -2.8 1 -1 2.8 -1 -2.8 -2.8 -1 2.8 -1z"/><circle cx="52" cy="40" r="1.4"/></g>'
-      +'<path d="M11 47 q9 5 21 5 q12 0 21 -5" stroke="'+ac+'" stroke-width="1.4" fill="none" opacity=".55"/>';
-  } else if(st==='browser'){
-    back='<circle cx="32" cy="34" r="25" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".4"/>';
-    hair='<path d="M15 30 q3 -19 17 -19 q14 0 17 19 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
-    gear='<g transform="translate(40 42)"><circle cx="6" cy="6" r="7" fill="#fff" stroke="'+ac+'" stroke-width="1.4"/><circle cx="6" cy="6" r="2.6" fill="'+ac+'"/>'
-      +'<path d="M6 -1 v-3 M11 6 h3 M6 13 v3 M-1 6 h-3" stroke="'+ac+'" stroke-width="1.6" stroke-linecap="round"/></g>'
-      +'<g fill="'+ac+'" opacity=".85"><circle cx="13" cy="20" r="1.1"/><circle cx="51" cy="16" r="1"/></g>';
-  } else if(st==='discord'){
-    back='<circle cx="32" cy="34" r="25" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".4"/>';
-    hair='<path d="M15 30 q3 -19 17 -19 q14 0 17 19 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
-    gear='<g transform="translate(38 40)"><ellipse cx="7" cy="6" rx="8" ry="6" fill="'+ac+'"/><path d="M2 12 q5 2 10 0 l-1.5 -2.5 q-3.5 1.2 -7 0z" fill="'+ac+'"/>'
-      +'<ellipse cx="4.4" cy="5.5" rx="1.5" ry="2" fill="#fff"/><ellipse cx="9.6" cy="5.5" rx="1.5" ry="2" fill="#fff"/></g>'
-      +'<g fill="'+ac+'" opacity=".85"><circle cx="13" cy="20" r="1.1"/><circle cx="51" cy="16" r="1"/></g>';
-  } else { hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>'; }
-  const showEyes = (st!=='maker');
-  return '<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true">'
-    +back+ears+head+hair+(showEyes?eyes+brows+nose+blush+mouth:mouth)+gear+'</svg>';
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cv = document.getElementById("sky"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, nodes = [], stars = [], particles = [];
+let rot = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false;
+let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
+
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  buildStars();
 }
-const typeLabel = { research:"учене", born:"раждане", invoked:"извикване", upgrade:"ъпгрейд", learning:"научено", quarantine:"карантина" };
+window.addEventListener("resize", resize);
 
-function render(data){
-  document.getElementById("title").textContent = data.meta.title;
-  document.getElementById("subtitle").textContent = data.meta.subtitle;
-  document.getElementById("defdir").textContent = data.meta.definitionsDir;
+function buildStars() {
+  const n = Math.round(Math.min(160, (W * H) / 9000));
+  stars = Array.from({ length: n }, () => ({
+    x: Math.random() * W, y: Math.random() * H, z: Math.random() * .8 + .2,
+    tw: Math.random() * 6.28, sp: 0.05 + Math.random() * 0.12,
+  }));
+}
 
-  const agents = data.agents;
-  const totalSources = agents.reduce((s,a)=>s+(a.knowledge?.sources||0),0);
-  const totalCaps = agents.reduce((s,a)=>s+(a.capabilities?.length||0),0);
-  const stats = [
-    [agents.length, "агента"],
-    [totalSources, "поети източника"],
-    [totalCaps, "способности"],
-    [data.meta.updated, "обновено"]
-  ];
-  const sw = document.getElementById("stats");
-  stats.forEach(([b,s])=> sw.appendChild(el("div","stat",`<b>${b}</b><span>${s}</span>`)));
+const isPrez = a => a.id === "ai-djiyata";
+const lessonsOf = a => (a.knowledge && a.knowledge.sources) || 0;
+const verOf = a => (a.evolution && a.evolution.length ? a.evolution[a.evolution.length - 1].version : "0.0.0");
+const majOf = a => parseInt(verOf(a).split(".")[0], 10) || 0;
 
-  const grid = document.getElementById("grid");
-  agents.forEach(a=>{
-    const card = el("div","card");
-    card.style.setProperty("--ac", a.accent);
-    card.style.setProperty("--ac15", hexA(a.accent,.15));
-    card.style.setProperty("--ac40", hexA(a.accent,.40));
+function boot() {
+  document.getElementById("title").textContent = (DATA.meta && DATA.meta.title) || "Лаборатория на агентите";
+  document.getElementById("subtitle").textContent = (DATA.meta && DATA.meta.subtitle) || "";
+  resize(); buildNodes(); buildLive(); buildList();
+  if (!booted) { booted = true; requestAnimationFrame(loop); }
+}
 
-    card.appendChild(el("div","chead",
-      `<div class="ava">${avatarSVG(a)}</div><div><h2>${a.name}</h2><div class="role">${a.title}</div></div>`));
-    card.appendChild(el("div","tag", a.tagline));
+function buildNodes() {
+  const others = DATA.agents.filter(a => !isPrez(a)).slice().sort((a, b) => lessonsOf(b) - lessonsOf(a));
+  const prez = DATA.agents.find(isPrez) || DATA.agents[0];
+  const maxL = Math.max(1, ...DATA.agents.map(lessonsOf));
+  nodes = [];
+  nodes.push({ a: prez, prez: true, ring: 0, baseA: 0, orbit: 0, speed: 0, phase: 0,
+               x: 0, y: 0, r: 40, hovT: 0, dim: 1, spark: Math.random() * 5, sc: b => b });
+  const inner = others.slice(0, 9), outer = others.slice(9);
+  const place = (arr, ringIdx) => arr.forEach((a, i) => {
+    const baseA = (i / arr.length) * Math.PI * 2 + (ringIdx === 2 ? Math.PI / arr.length : 0);
+    const lr = lessonsOf(a) / maxL;
+    nodes.push({ a, prez: false, ring: ringIdx, baseA, orbit: ringIdx, speed: (ringIdx === 1 ? 1 : 0.62),
+                 phase: Math.random() * 6.28, x: 0, y: 0, r: 13 + Math.sqrt(lr) * 16, hovT: 0, dim: 1,
+                 spark: Math.random() * 5, sc: b => b });
+  });
+  place(inner, 1); place(outer, 2);
+}
 
-    const badges = el("div","badges");
-    badges.appendChild(el("span","badge ac", a.status==="active"?"● активен":a.status));
-    badges.appendChild(el("span","badge", "модел: "+a.model));
-    a.tools.forEach(t=> badges.appendChild(el("span","badge", t)));
-    card.appendChild(badges);
+function nodePos(nd, cx, cy, R) {
+  if (nd.prez) return [cx, cy];
+  const rr = (nd.orbit === 1 ? R * 0.52 : R * 0.9) * zoom;
+  const bob = RM ? 0 : Math.sin(t * 0.8 + nd.phase) * 6;
+  const ang = nd.baseA + (RM ? 0 : rot * nd.speed);
+  return [cx + Math.cos(ang) * (rr + bob), cy + Math.sin(ang) * (rr + bob)];
+}
 
-    const m = el("div","metrics");
-    m.appendChild(el("div","metric",`<b>${a.knowledge.sources}</b><span>източника</span>`));
-    m.appendChild(el("div","metric",`<b>${a.capabilities.length}</b><span>способности</span>`));
-    m.appendChild(el("div","metric",`<b>v${a.evolution[a.evolution.length-1].version}</b><span>версия</span>`));
-    card.appendChild(m);
+function loop() {
+  requestAnimationFrame(loop);
+  if (document.hidden) return;              // агентска поука: спри rAF в скрит таб
+  if (view !== "sky") { ctx.clearRect(0, 0, W, H); return; }
+  t += 0.016;
+  if (!RM) { rot += 0.0016 + spin; spin *= 0.94; if (Math.abs(spin) < 1e-5) spin = 0; }
 
-    const caps = el("div","sec"); caps.appendChild(el("h3",null,"Способности"));
-    const ul = el("ul","caps"); a.capabilities.forEach(c=> ul.appendChild(el("li",null,c))); caps.appendChild(ul);
-    card.appendChild(caps);
+  ctx.clearRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W * 0.5, H * 0.46, 40, W * 0.5, H * 0.46, Math.max(W, H) * 0.7);
+  g.addColorStop(0, "rgba(10,30,44,.55)"); g.addColorStop(1, "rgba(0,0,4,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  for (const s of stars) {
+    if (!RM) s.tw += s.sp * 0.04;
+    ctx.globalAlpha = (0.35 + Math.sin(s.tw) * 0.35) * s.z; ctx.fillStyle = "#bfe9ff";
+    ctx.fillRect(s.x, s.y, s.z * 1.7, s.z * 1.7);
+  }
+  ctx.globalAlpha = 1;
 
-    const evo = el("details","sec actv");
-    evo.innerHTML = `<summary>Развитие · версии (${a.evolution.length})</summary>`;
-    const tl = el("div","timeline");
-    a.evolution.slice().reverse().forEach(e=>{
-      tl.appendChild(el("div","ev",
-        `<div class="v">v${e.version} · ${e.event} <span class="d">— ${e.date}</span></div><div class="x">${e.detail}</div>`));
-    });
-    evo.appendChild(tl); card.appendChild(evo);
+  const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.42;
+  for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R); nd.x = x; nd.y = y; }
+  const prez = nodes[0];
 
-    // Дейност (сгъваем dropdown, без лимит) — целият поток на учене на агента.
-    const acts = a.activity || [];
-    if (acts.length) {
-      const det = el("details","sec actv");
-      det.innerHTML = `<summary>Дейност (${acts.length})</summary>`;
-      const fd = el("div","feed");
-      acts.forEach(ac=>{
-        fd.appendChild(el("div","row",
-          `<span class="when">${ac.date}</span>`+
-          `<span class="pill" style="border-color:${hexA(a.accent,.5)};color:${a.accent}">${typeLabel[ac.type]||ac.type}</span>`+
-          `<span>${ac.summary}</span>`));
-      });
-      det.appendChild(fd); card.appendChild(det);
+  ctx.lineCap = "round";
+  for (let i = 1; i < nodes.length; i++) {
+    const nd = nodes[i]; const dim = nd.dim * (hovered && hovered !== nd && hovered !== prez ? 0.5 : 1);
+    const c = nd.a.accent, lg = ctx.createLinearGradient(prez.x, prez.y, nd.x, nd.y);
+    lg.addColorStop(0, hex(prez.a.accent, 0.5 * dim)); lg.addColorStop(1, hex(c, 0.12 * dim));
+    ctx.strokeStyle = lg; ctx.lineWidth = (hovered === nd ? 2.1 : 1);
+    ctx.beginPath(); ctx.moveTo(prez.x, prez.y); ctx.lineTo(nd.x, nd.y); ctx.stroke();
+    if (!RM) {
+      const p = ((t * 0.14 + i * 0.13) % 1);
+      const px = prez.x + (nd.x - prez.x) * p, py = prez.y + (nd.y - prez.y) * p;
+      ctx.globalAlpha = (1 - p) * dim; ctx.fillStyle = hex(c, 1); ctx.shadowColor = c; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(px, py, 2.1, 0, 6.28); ctx.fill(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
     }
+  }
 
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.02; p.vx *= 0.98; p.vy *= 0.98;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    ctx.globalAlpha = p.life * 0.9; ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 6.28); ctx.fill();
+  }
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+
+  hovered = null;
+  if (!dragging) for (const nd of nodes) {
+    const dx = mx - nd.x, dy = my - nd.y, hit = nd.r * 1.2 + 6;
+    if (dx * dx + dy * dy < hit * hit) hovered = nd;
+  }
+  for (const nd of nodes) drawNode(nd);
+
+  cv.classList.toggle("pointer", !!hovered && !dragging);
+  const tip = document.getElementById("tip");
+  if (hovered) {
+    const a = hovered.a;
+    tip.style.left = hovered.x + "px"; tip.style.top = (hovered.y - hovered.r * 1.2) + "px";
+    tip.innerHTML = `<div class="t-n">${hovered.prez ? "👑 " : ""}${esc(a.name)}</div><div class="t-r">${esc(a.title || "")}</div>
+      <div class="t-m"><div><b>v${majOf(a)}</b><span>версия</span></div><div><b>${lessonsOf(a)}</b><span>поуки</span></div></div>`;
+    tip.style.opacity = 1;
+  } else tip.style.opacity = 0;
+}
+
+function drawNode(nd) {
+  if (!RM) { nd.spark -= 0.016; if (nd.spark <= 0) { emit(nd); nd.spark = 4 + Math.random() * 6; } }
+  const hoverT = nd.hovT = lerp(nd.hovT || 0, hovered === nd ? 1 : 0, 0.2);
+  const dimTarget = (!query || match(nd.a)) ? 1 : 0.14;
+  nd.dim = lerp(nd.dim, dimTarget, 0.12);
+  const c = nd.a.accent, r = nd.r * (1 + hoverT * 0.28) * (nd.prez ? (1 + Math.sin(t * 1.6) * (RM ? 0 : 0.04)) : 1);
+  ctx.globalAlpha = nd.dim;
+
+  const aura = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, r * (nd.prez ? 3.6 : 2.5));
+  aura.addColorStop(0, hex(c, (nd.prez ? 0.45 : 0.32) * nd.dim)); aura.addColorStop(1, hex(c, 0));
+  ctx.fillStyle = aura; ctx.beginPath(); ctx.arc(nd.x, nd.y, r * (nd.prez ? 3.6 : 2.5), 0, 6.28); ctx.fill();
+
+  if (nd.prez) {
+    for (let k = 0; k < 3; k++) {
+      ctx.globalAlpha = (0.5 - k * 0.12) * nd.dim; ctx.strokeStyle = hex(c, 1); ctx.lineWidth = 1.4;
+      const rr = r * (1.7 + k * 0.55), a0 = (RM ? 0 : t * (0.4 - k * 0.1) * (k % 2 ? -1 : 1));
+      ctx.beginPath(); ctx.arc(nd.x, nd.y, rr, a0, a0 + 4.6); ctx.stroke();
+    }
+    ctx.globalAlpha = nd.dim;
+  }
+
+  const core = ctx.createRadialGradient(nd.x - r * 0.3, nd.y - r * 0.3, r * 0.1, nd.x, nd.y, r);
+  core.addColorStop(0, hex(lighten(c, 60), 1)); core.addColorStop(1, hex(c, 1));
+  ctx.fillStyle = core; ctx.shadowColor = c; ctx.shadowBlur = hovered === nd ? 26 : (nd.prez ? 24 : 12);
+  ctx.beginPath(); ctx.arc(nd.x, nd.y, r, 0, 6.28); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.strokeStyle = hex(lighten(c, 90), 0.9); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(nd.x, nd.y, r, 0, 6.28); ctx.stroke();
+
+  ctx.globalAlpha = nd.dim; ctx.font = (r * 1.05) + "px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(nd.a.emoji || "🤖", nd.x, nd.y + 1);
+  if (nd.prez) { ctx.font = (r * 0.7) + "px system-ui"; ctx.fillText("👑", nd.x, nd.y - r - r * 0.35); }
+
+  if (nd.prez || hovered === nd || (nd.dim > 0.5 && r > 15)) {
+    ctx.font = (nd.prez ? 13 : 11) + "px system-ui"; ctx.fillStyle = hex(lighten(c, 70), Math.min(1, nd.dim + hoverT));
+    ctx.shadowColor = "#000"; ctx.shadowBlur = 6;
+    ctx.fillText(shortName(nd.a.name), nd.x, nd.y + r + (nd.prez ? 20 : 13)); ctx.shadowBlur = 0;
+  }
+  ctx.globalAlpha = 1;
+}
+
+function emit(nd) {
+  const c = nd.a.accent, n = 3 + (Math.random() * 3 | 0);
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.28, sp = 0.4 + Math.random() * 1.1;
+    particles.push({ x: nd.x, y: nd.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, r: 1.5 + Math.random() * 1.8, c: hex(lighten(c, 40), 1) });
+  }
+  if (particles.length > 240) particles.splice(0, particles.length - 240);
+}
+
+/* ---------- интеракция ---------- */
+cv.addEventListener("pointerdown", e => { dragging = true; dragMoved = false; lastX = e.clientX; lastY = e.clientY; cv.classList.add("grabbing"); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener("pointermove", e => {
+  const rect = cv.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top;
+  if (dragging) { const dxx = e.clientX - lastX; if (Math.abs(dxx) + Math.abs(e.clientY - lastY) > 3) dragMoved = true; if (!RM) rot += dxx * 0.004; spin = RM ? 0 : dxx * 0.0006; lastX = e.clientX; lastY = e.clientY; }
+});
+cv.addEventListener("pointerup", () => { dragging = false; cv.classList.remove("grabbing"); if (!dragMoved && hovered) openDrawer(hovered.a); });
+cv.addEventListener("pointerleave", () => { mx = my = -1e5; });
+cv.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.max(0.55, Math.min(2.2, zoom * (e.deltaY < 0 ? 1.08 : 0.93))); }, { passive: false });
+
+document.getElementById("q").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); filterList(); });
+function match(a) { const q = query; if (!q) return true; return (a.name + " " + (a.title || "") + " " + (a.tagline || "") + " " + a.id).toLowerCase().includes(q); }
+
+document.getElementById("seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; view = b.dataset.v;
+  [...document.querySelectorAll("#seg button")].forEach(x => x.classList.toggle("on", x === b));
+  document.getElementById("list").classList.toggle("show", view === "list");
+  document.getElementById("docs").classList.toggle("show", view === "docs");
+  if (view === "docs") renderDocs();
+});
+
+/* ---------- drawer ---------- */
+function openDrawer(a) {
+  const d = document.getElementById("drawer"), c = a.accent;
+  const ev = (a.evolution || []).slice(-6).reverse(), act = (a.activity || []).slice(-8).reverse();
+  d.style.setProperty("--ac", c);
+  d.innerHTML = `
+    <div class="d-top">
+      <button class="d-close" onclick="closeDrawer()">✕</button>
+      <div class="d-head">
+        <div class="d-ava" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${a.emoji || "🤖"}</div>
+        <div><h2>${isPrez(a) ? "👑 " : ""}${esc(a.name)}</h2><div class="role">${esc(a.title || "")}</div></div>
+      </div>
+      <div class="d-tag">${esc(a.tagline || a.mission || "")}</div>
+    </div>
+    <div class="d-metrics">
+      <div class="d-metric" style="border-color:${hex(c,.35)}"><b style="color:${c}">v${majOf(a)}</b><span>версия</span></div>
+      <div class="d-metric"><b>${lessonsOf(a)}</b><span>поуки</span></div>
+      <div class="d-metric"><b>${(a.capabilities || []).length}</b><span>умения</span></div>
+    </div>
+    <div class="chips">${(a.tools || []).map(x => `<span class="c">${esc(x)}</span>`).join("")}<span class="c">model: ${esc(a.model || "—")}</span><span class="c">${esc(a.status || "")}</span></div>
+    ${a.capabilities && a.capabilities.length ? `<div class="d-sec"><h3>Какво владее</h3><ul class="caps">${a.capabilities.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${ev.length ? `<div class="d-sec"><h3>Времева линия</h3><div class="tl">${ev.map(e => `<div class="ev"><div class="v" style="color:${c}">v${esc(e.version)} · <span style="color:var(--txt)">${esc(e.event || "")}</span></div><div class="dt">${esc(e.date || "")}</div><div class="x">${esc(e.detail || "")}</div></div>`).join("")}</div></div>` : ""}
+    ${act.length ? `<div class="d-sec"><h3>Поток на дейността</h3><div class="feed">${act.map(x => `<div class="row"><div class="dt">${esc(x.date || "")} · ${esc(x.type || "")}</div>${esc(x.summary || "")}</div>`).join("")}</div></div>` : ""}
+    <div class="d-sec"><h3>Дефиниция</h3><div style="font-size:12.5px;color:var(--mut)"><code>${esc(a.file || "")}</code></div></div>`;
+  d.classList.add("open");
+}
+function closeDrawer() { document.getElementById("drawer").classList.remove("open"); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+/* ---------- list + live ---------- */
+function buildLive() {
+  const total = DATA.agents.reduce((s, a) => s + lessonsOf(a), 0);
+  const avg = (DATA.agents.reduce((s, a) => s + majOf(a), 0) / DATA.agents.length).toFixed(1);
+  document.getElementById("live").innerHTML =
+    `<div class="chip"><b>${DATA.agents.length}</b><span>агенти</span></div>
+     <div class="chip"><b>${total}</b><span>поуки</span></div>
+     <div class="chip"><b>v${avg}</b><span>ср. ниво</span></div>
+     <div class="chip"><b style="color:var(--accent)">1</b><span>президент</span></div>`;
+}
+function buildList() {
+  const grid = document.getElementById("grid");
+  const ordered = DATA.agents.slice().sort((a, b) => (isPrez(b) ? 1 : 0) - (isPrez(a) ? 1 : 0) || lessonsOf(b) - lessonsOf(a));
+  grid.innerHTML = "";
+  for (const a of ordered) {
+    const c = a.accent, card = document.createElement("div");
+    card.className = "card"; card.style.setProperty("--ac", c); card.dataset.id = a.id;
+    card.innerHTML = `<div class="ch"><div class="a" style="background:${hex(c,.16)};border:1px solid ${hex(c,.5)}">${a.emoji || "🤖"}</div>
+      <div><h2>${isPrez(a) ? "👑 " : ""}${esc(a.name)}</h2><div class="r">${esc(a.title || "")}</div></div></div>
+      <div class="tg">${esc(a.tagline || "")}</div>
+      <div class="mm"><div><b>v${majOf(a)}</b> версия</div><div><b>${lessonsOf(a)}</b> поуки</div><div><b>${(a.capabilities || []).length}</b> умения</div></div>`;
+    card.addEventListener("click", () => openDrawer(a));
     grid.appendChild(card);
-  });
-
-  // Глобален поток на дейността
-  const feed = document.getElementById("globalfeed");
-  const all = [];
-  agents.forEach(a=> (a.activity||[]).forEach(ac=> all.push({...ac, who:a.name, accent:a.accent})));
-  all.sort((x,y)=> (y.date>x.date?1:-1));
-  all.forEach(ac=>{
-    const row = el("div","row");
-    row.innerHTML = `<span class="when">${ac.date}</span>
-      <span class="pill" style="border-color:${hexA(ac.accent,.5)};color:${ac.accent}">${typeLabel[ac.type]||ac.type}</span>
-      <span><b>${ac.who}</b> — ${ac.summary}</span>`;
-    feed.appendChild(row);
+  }
+}
+function filterList() {
+  [...document.querySelectorAll("#grid .card")].forEach(c => {
+    const a = DATA.agents.find(x => x.id === c.dataset.id); c.style.display = match(a) ? "" : "none";
   });
 }
 
-fetch("./agents.json").then(r=>{ if(!r.ok) throw 0; return r.json(); })
-  .then(render).catch(()=> render(FALLBACK));
+/* ---------- helpers ---------- */
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m])); }
+function shortName(n) { return n.length > 16 ? n.split(" ")[0] : n; }
+function lerp(a, b, k) { return a + (b - a) * k; }
+function hex(c, a) { const p = parse(c); return `rgba(${p.r},${p.g},${p.b},${a})`; }
+function parse(c) { c = String(c || "#888").replace("#", ""); if (c.length === 3) c = c.split("").map(x => x + x).join(""); return { r: parseInt(c.slice(0, 2), 16) || 136, g: parseInt(c.slice(2, 4), 16) || 136, b: parseInt(c.slice(4, 6), 16) || 136 }; }
+function lighten(c, amt) { const p = parse(c), f = x => Math.min(255, x + amt); return `#${[f(p.r), f(p.g), f(p.b)].map(x => x.toString(16).padStart(2, "0")).join("")}`; }
 
-// ── CLAUDE.md изглед ─────────────────────────────────────────────────────────
-function mdEsc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-function mdInline(s){
-  s = mdEsc(s);
-  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
-  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  return s;
+/* ---------- docs (по избор; degrade-ва без docs.js) ---------- */
+function renderDocs() {
+  const wrap = document.getElementById("docsbody");
+  if (typeof docs === "undefined" || !docs || !docs.files) { wrap.innerHTML = "<p style='color:var(--mut)'>Документите се зареждат от <code>docs.js</code> при деплой.</p>"; return; }
+  document.getElementById("docsgen").textContent = docs.generated || "—";
+  const tabs = document.getElementById("docstabs"); if (tabs.dataset.done) return; tabs.dataset.done = "1";
+  docs.files.forEach((f, i) => { const b = document.createElement("button"); b.textContent = f.name; if (!i) b.classList.add("on"); b.onclick = () => { [...tabs.children].forEach(x => x.classList.remove("on")); b.classList.add("on"); wrap.innerHTML = md(f.content); }; tabs.appendChild(b); });
+  if (docs.files[0]) wrap.innerHTML = md(docs.files[0].content);
 }
-function mdToHtml(src){
-  const L = src.split("\n"); let out = "", i = 0;
-  const cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
-  while (i < L.length){
+function mdInline(s) { return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>"); }
+function md(src) {
+  const L = String(src).split("\n"); let out = "", i = 0;
+  while (i < L.length) {
     const ln = L[i];
-    if (/^```/.test(ln)){ let code = ""; i++; while (i < L.length && !/^```/.test(L[i])){ code += L[i] + "\n"; i++; } i++; out += '<pre class="md-code">' + mdEsc(code.replace(/\n$/, "")) + "</pre>"; continue; }
-    if (/^\s*\|.*\|\s*$/.test(ln) && i+1 < L.length && /^\s*\|[-:| ]+\|\s*$/.test(L[i+1])){
-      out += '<table class="md-table"><thead><tr>' + cells(ln).map(c => "<th>" + mdInline(c) + "</th>").join("") + "</tr></thead><tbody>";
-      i += 2;
-      while (i < L.length && /^\s*\|.*\|\s*$/.test(L[i])){ out += "<tr>" + cells(L[i]).map(c => "<td>" + mdInline(c) + "</td>").join("") + "</tr>"; i++; }
+    if (/^\s*\|.*\|\s*$/.test(ln) && i + 1 < L.length && /^\s*\|[-:\s|]+\|\s*$/.test(L[i + 1])) {
+      const cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+      out += '<table class="md-table"><thead><tr>' + cells(ln).map(c => "<th>" + mdInline(c) + "</th>").join("") + "</tr></thead><tbody>"; i += 2;
+      while (i < L.length && /^\s*\|.*\|\s*$/.test(L[i])) { out += "<tr>" + cells(L[i]).map(c => "<td>" + mdInline(c) + "</td>").join("") + "</tr>"; i++; }
       out += "</tbody></table>"; continue;
     }
-    let m;
-    if ((m = ln.match(/^(#{1,6})\s+(.*)$/))){ const lv = m[1].length; out += "<h" + lv + ' class="md-h md-h' + lv + '">' + mdInline(m[2]) + "</h" + lv + ">"; i++; continue; }
-    if (/^\s*---+\s*$/.test(ln)){ out += '<hr class="md-hr">'; i++; continue; }
-    if (/^\s*>\s?/.test(ln)){ let q = ""; while (i < L.length && /^\s*>\s?/.test(L[i])){ q += L[i].replace(/^\s*>\s?/, "") + " "; i++; } out += '<blockquote class="md-bq">' + mdInline(q) + "</blockquote>"; continue; }
-    if (/^\s*[-*]\s+/.test(ln)){
-      out += '<ul class="md-ul">';
-      while (i < L.length){
-        if (!/^\s*[-*]\s+/.test(L[i])) break;
-        let item = L[i].replace(/^\s*[-*]\s+/, ""); i++;
-        while (i < L.length && /^\s+\S/.test(L[i]) && !/^\s*[-*]\s+/.test(L[i])){ item += " " + L[i].trim(); i++; } // сгъни пренесени редове
-        out += "<li>" + mdInline(item) + "</li>";
-      }
-      out += "</ul>"; continue;
-    }
-    if (/^\s*$/.test(ln)){ i++; continue; }
-    let p = ln; i++;
-    while (i < L.length && !/^\s*$/.test(L[i]) && !/^(#{1,6}\s|```|\s*[-*]\s|\s*>|\s*\|)/.test(L[i])){ p += " " + L[i]; i++; }
-    out += '<p class="md-p">' + mdInline(p) + "</p>";
+    if (/^#{1,3}\s/.test(ln)) { const n = ln.match(/^#+/)[0].length; out += `<h${n}>${mdInline(ln.replace(/^#+\s/, ""))}</h${n}>`; }
+    else if (ln.trim() !== "") out += `<p>${mdInline(ln)}</p>`;
+    i++;
   }
   return out;
 }
-function renderDocs(){
-  const docs = window.__DOCS__;
-  const wrap = document.getElementById("docswrap");
-  if (!docs || !docs.files || !docs.files.length){ if (wrap) wrap.style.display = "none"; return; }
-  document.getElementById("docsgen").textContent = docs.generated || "—";
-  const tabs = document.getElementById("docstabs"), body = document.getElementById("docsbody");
-  const show = f => { body.innerHTML = mdToHtml(f.content); };
-  docs.files.forEach((f, idx) => {
-    const b = el("button", "doctab" + (idx === 0 ? " on" : ""), f.path + ` · ${f.lines}р.`);
-    b.onclick = () => { [...tabs.children].forEach(c => c.classList.remove("on")); b.classList.add("on"); show(f); };
-    tabs.appendChild(b);
-  });
-  show(docs.files[0]);
-}
-renderDocs();
 </script>
+<script src="./docs.js"></script>
 </body>
 </html>
