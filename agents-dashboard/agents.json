@@ -1213,9 +1213,20 @@
           "date": "2026-07-15",
           "event": "v12.0 — учене",
           "detail": "Научи: ReDoS guard-ове тип blacklist regex (adblock/content.js:144 `/(\\\\)[*+]|\\\\)\\\\{\\\\d)/`) хв… (+2 още)"
+        },
+        {
+          "version": "12.1.0",
+          "date": "2026-07-16",
+          "event": "v12.1 — учене",
+          "detail": "Научи: String.prototype.replace(pattern, replacementString) интерпретира $$/$&/$`/$' в replace… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Научи: „String.prototype.replace(pattern, replacementString) интерпретира $$/$&/$`/$' в replace…\" (+1 още)"
+        },
         {
           "date": "2026-07-15",
           "type": "learning",
