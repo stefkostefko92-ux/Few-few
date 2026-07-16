@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from './lib/store';
 import { getToken } from './lib/api';
+import { startStream, stopStream } from './lib/stream';
 import { sfx, preloadAllSfx } from './lib/audio';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -166,6 +167,13 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
       setReady(true);
     })();
   }, [init]);
+
+  // SSE поток — активен само докато има логнат герой (push за
+  // нотификации/чат). Спира при logout/липса на герой.
+  useEffect(() => {
+    if (character) startStream();
+    else stopStream();
+  }, [character?.id]);
 
   if (!ready) {
     return (

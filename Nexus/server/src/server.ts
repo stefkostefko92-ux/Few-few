@@ -30,6 +30,8 @@ import guildRoutes from './routes/guild';
 import socialRoutes from './routes/social';
 import notificationsRoutes from './routes/notifications';
 import tradeRoutes from './routes/trade';
+import streamRoutes from './routes/stream';
+import { heartbeatAll } from './lib/stream';
 import paymentsRoutes, { webhookRouter as paymentsWebhookRouter } from './routes/payments';
 import marketRoutes from './routes/market';
 import campRoutes from './routes/camp';
@@ -106,6 +108,10 @@ if (process.env.NODE_ENV !== 'test') {
 // already captured the raw bytes into req.rawBody, which the handler
 // passes to stripe.webhooks.constructEvent.
 app.use('/api/payments/webhook', paymentsWebhookRouter);
+
+// SSE поток — монтиран ПРЕДИ apiLimiter, защото връзката е дълготрайна и
+// не бива да брои срещу rate limit-а. Auth е през краткоживущ ticket.
+app.use('/api/stream', streamRoutes);
 
 const apiLimiter = rateLimit({
   windowMs: 60_000,
@@ -264,6 +270,9 @@ setInterval(() => { pruneEventLog(EVENT_LOG_RETENTION_MS); }, 24 * 60 * 60 * 100
 import { pruneExpiredBans } from './lib/bans';
 pruneExpiredBans();
 setInterval(() => { pruneExpiredBans(); }, 60 * 60 * 1000).unref();
+
+// SSE heartbeat — държи връзките/проксита живи (на 25s).
+setInterval(() => { heartbeatAll(); }, 25_000).unref();
 
 import { initObservability, installProcessGuards } from './lib/observability';
 initObservability();

@@ -18,6 +18,7 @@ import { logFromRequest } from '../lib/logger';
 import { checkText } from '../lib/textFilter';
 import { blockedIdSet } from './social';
 import { notify } from '../lib/notify';
+import { pushToChars } from '../lib/stream';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -579,6 +580,10 @@ router.post('/chat', (req, res) => {
   lastChatAt.set(char.id, now);
   const info = getDb().prepare(`INSERT INTO guild_chat (guild_id, character_id, message, created_at) VALUES (?, ?, ?, ?)`)
     .run(g.guild.id, char.id, parse.data.message, now);
+  // Live push (SSE) към членовете на гилдията, за да презаредят чата
+  // веднага (без блокираните). Polling-ът остава fallback.
+  const members = getDb().prepare('SELECT character_id FROM guild_members WHERE guild_id = ?').all(g.guild.id) as { character_id: number }[];
+  pushToChars(members.map((m) => m.character_id).filter((id) => id !== char.id), 'chat', { guildId: g.guild.id });
   res.json({ ok: true, id: info.lastInsertRowid });
 });
 

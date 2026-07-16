@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { onStream } from '../lib/stream';
 import { useStore } from '../lib/store';
 
 interface Notif { id: number; kind: string; message: string; ref: string; read_at: number; created_at: number; }
@@ -27,8 +28,11 @@ export default function NotificationBell(): React.ReactElement | null {
   useEffect(() => {
     if (!character) return;
     load();
+    // SSE: презареди камбанката веднага при push. Polling-ът остава
+    // fallback (за случаите, в които връзката е паднала).
+    const off = onStream('notification', load);
     const id = setInterval(load, 10000);
-    return () => clearInterval(id);
+    return () => { off(); clearInterval(id); };
   }, [character?.id]);
 
   useEffect(() => {
