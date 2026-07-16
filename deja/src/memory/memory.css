@@ -10,6 +10,23 @@
   gap: 8px;
 }
 
+.memfilter {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  flex: 1;
+  font-size: 13.5px;
+  margin: 0 14px;
+  max-width: 280px;
+  padding: 8px 12px;
+}
+
+.memfilter:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
 .tool {
   background: var(--panel);
   border: 1px solid var(--border);

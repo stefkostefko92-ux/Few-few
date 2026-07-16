@@ -35,6 +35,32 @@ function deepLink(result) {
   return result.quote ? result.url + '#:~:text=' + encodeURIComponent(result.quote) : result.url;
 }
 
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Откроява думите от заявката в снипета (безопасно: text възли + <mark>)
+function highlightInto(container, text, query) {
+  const words = [
+    ...new Set(
+      query
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((w) => w.length >= 3),
+    ),
+  ];
+  if (!words.length) {
+    container.textContent = text;
+    return;
+  }
+  const re = new RegExp('(' + words.map(escapeRegExp).join('|') + ')', 'gi');
+  let last = 0;
+  for (const m of text.matchAll(re)) {
+    container.append(document.createTextNode(text.slice(last, m.index)));
+    container.append(el('mark', null, m[0]));
+    last = m.index + m[0].length;
+  }
+  container.append(document.createTextNode(text.slice(last)));
+}
+
 async function loadRelated(card, urlKey) {
   const holder = card.querySelector('.related');
   holder.textContent = '…';
@@ -57,7 +83,7 @@ async function loadRelated(card, urlKey) {
   }
 }
 
-function render(results) {
+function render(results, query) {
   resultsEl.replaceChildren();
   results.forEach((r, i) => {
     const card = el('article', 'result');
@@ -68,7 +94,9 @@ function render(results) {
     link.href = deepLink(r);
     link.target = '_blank';
     link.rel = 'noopener';
-    card.append(link, el('div', 'url', r.url), el('p', 'snippet', '…' + r.snippet + '…'));
+    const snippet = el('p', 'snippet');
+    highlightInto(snippet, '…' + r.snippet + '…', query);
+    card.append(link, el('div', 'url', r.url), snippet);
 
     const meta = el('div', 'meta');
     const parts = [t(recallKey(r.score)), t('similarity', [String(r.score)])];
@@ -122,7 +150,7 @@ async function doSearch(query) {
     } else {
       status.textContent =
         results.length === 1 ? t('statusResultsOne') : t('statusResults', [String(results.length)]);
-      render(results);
+      render(results, query);
     }
   } catch (err) {
     status.textContent = t('statusError', [String(err?.message || err)]);

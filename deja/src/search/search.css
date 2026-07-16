@@ -225,6 +225,13 @@ body {
   margin-top: 8px;
 }
 
+.result .snippet mark {
+  background: var(--accent-soft);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 0 2px;
+}
+
 .result .meta {
   color: var(--muted);
   font-size: 12px;

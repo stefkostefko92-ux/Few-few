@@ -126,6 +126,7 @@ async function indexPage({ url, title, text, lang }) {
     chunkCount: chunks.length,
     dim: vectors[0]?.length || 0,
   });
+  refreshBadge();
 }
 
 // --- устойчива опашка: чакащите страници живеят в chrome.storage.local,
@@ -299,7 +300,10 @@ const handlers = {
   'deja:search': (msg) => search(msg.query, msg.minTime || 0),
   'deja:related': (msg) => related(msg.urlKey),
   'deja:stats': async () => ({ pages: await db.countPages() }),
-  'deja:clear': () => db.clearAll(),
+  'deja:clear': async () => {
+    await db.clearAll();
+    refreshBadge();
+  },
   'deja:memory:list': async () => {
     const pages = await db.getAllPages();
     pages.sort((a, b) => (b.time || 0) - (a.time || 0));
@@ -310,9 +314,16 @@ const handlers = {
       chunkCount,
     }));
   },
-  'deja:memory:delete': (msg) => db.deletePage(msg.urlKey),
+  'deja:memory:delete': async (msg) => {
+    await db.deletePage(msg.urlKey);
+    refreshBadge();
+  },
   'deja:memory:export': () => db.exportAll(),
-  'deja:memory:import': (msg) => db.importAll(msg.dump),
+  'deja:memory:import': async (msg) => {
+    const count = await db.importAll(msg.dump);
+    refreshBadge();
+    return count;
+  },
 };
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -340,13 +351,47 @@ chrome.commands.onCommand.addListener((command) => {
 
 // --- omnibox: „dj как се гледат домати“ директно от адресната лента ---
 
+const escapeXml = (s) => s.replace(/[<>&'"]/g, (c) => `&#${c.charCodeAt(0)};`); // описанията са XML
+
 chrome.omnibox.setDefaultSuggestion({
   description: chrome.i18n.getMessage('omniboxDefault') || 'Déjà',
 });
+
+// Живи подсказки: бърз substring мач по заглавия (без embed — трябва да е
+// мигновено). Семантичното търсене остава за Enter на самата заявка.
+chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
+  const needle = text.trim().toLowerCase();
+  if (needle.length < 2) return suggest([]);
+  const pages = await db.getAllPages();
+  const hits = pages
+    .filter((p) => (p.title || '').toLowerCase().includes(needle))
+    .sort((a, b) => (b.time || 0) - (a.time || 0))
+    .slice(0, 4);
+  suggest(
+    hits.map((p) => ({
+      content: p.urlKey, // Enter върху подсказката отваря директно страницата
+      description: `${escapeXml(p.title || p.urlKey)} <dim>— ${escapeXml(p.urlKey)}</dim>`,
+    })),
+  );
+});
+
 chrome.omnibox.onInputEntered.addListener((text) => {
-  const url = chrome.runtime.getURL('search.html') + '?q=' + encodeURIComponent(text.trim());
+  const trimmed = text.trim();
+  // избрана подсказка (content = URL) → директно към страницата
+  const url = /^https?:\/\//.test(trimmed)
+    ? trimmed
+    : chrome.runtime.getURL('search.html') + '?q=' + encodeURIComponent(trimmed);
   chrome.tabs.create({ url });
 });
+
+// --- badge: колко страници помним (тихо напомняне, че паметта расте) ---
+
+async function refreshBadge() {
+  const pages = await db.countPages();
+  await chrome.action.setBadgeBackgroundColor({ color: '#8b7cf6' });
+  await chrome.action.setBadgeText({ text: pages > 0 ? String(pages) : '' });
+}
+refreshBadge();
 
 // --- alarms: retention (дневно) + offscreen GC (на 5 мин) ---
 

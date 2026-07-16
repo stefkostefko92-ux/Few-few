@@ -12,9 +12,23 @@ const listEl = document.getElementById('list');
 const exportBtn = document.getElementById('export');
 const importBtn = document.getElementById('import');
 const importFile = document.getElementById('importFile');
+const filterEl = document.getElementById('filter');
+
+let allPages = [];
 
 async function refresh() {
-  const pages = await send('deja:memory:list');
+  allPages = await send('deja:memory:list');
+  renderList();
+}
+
+function renderList() {
+  const needle = filterEl.value.trim().toLowerCase();
+  const pages = needle
+    ? allPages.filter(
+        (p) =>
+          (p.title || '').toLowerCase().includes(needle) || p.urlKey.toLowerCase().includes(needle),
+      )
+    : allPages;
   countEl.textContent = countLabel(pages.length, 'pagesInMemoryOne', 'pagesInMemory');
   listEl.replaceChildren();
   if (pages.length === 0) {
@@ -55,6 +69,8 @@ exportBtn.addEventListener('click', async () => {
   a.click();
   URL.revokeObjectURL(url);
 });
+
+filterEl.addEventListener('input', renderList);
 
 importBtn.addEventListener('click', () => importFile.click());
 
