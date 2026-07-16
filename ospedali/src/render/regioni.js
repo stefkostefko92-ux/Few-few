@@ -348,6 +348,8 @@ ${appaltiBlk}
           {
             '@type': 'Dataset',
             name: `Sanità pubblica in ${meta.nome}: conti e appalti`,
+            description: `Conti economici delle aziende sanitarie pubbliche, quota di appalti senza gara, affidamenti sotto soglia e segnalazioni contabili per la regione ${meta.nome}. Elaborazione da open data ufficiali (BDAP/MEF, ANAC, Ministero della Salute).`,
+            creator: { '@type': 'Organization', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' },
             spatialCoverage: { '@type': 'Place', name: meta.nome, address: { '@type': 'PostalAddress', addressCountry: 'IT' } },
             temporalCoverage: '2012/2024',
             license: 'https://creativecommons.org/licenses/by/4.0/',

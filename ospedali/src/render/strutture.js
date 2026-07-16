@@ -464,6 +464,8 @@ ${spBlock}
             subjectOf: {
               '@type': 'Dataset',
               name: `Bilancio e appalti — ${ente.denominazione}`,
+              description: `Bilanci ufficiali (modelli CE/SP inviati al MEF), indicatori contabili, segnalazioni automatiche e contratti pubblici ANAC di ${ente.denominazione} (${ente.regione}), anno per anno. Elaborazione da open data ufficiali.`,
+              creator: { '@type': 'Organization', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' },
               temporalCoverage: '2012/2024',
               license: 'https://creativecommons.org/licenses/by/4.0/',
               url: `${su}/${percorso}`,
