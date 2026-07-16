@@ -9,9 +9,24 @@ import { adminApi } from "./adminApi";
 import { AdminEconomy } from "./AdminEconomy";
 import { AdminReports } from "./AdminReports";
 import { AdminUsers, UserDetailModal } from "./AdminUsers";
+import { AdminRooms } from "./AdminRooms";
+import { AdminProducts } from "./AdminProducts";
+import { AdminOrders } from "./AdminOrders";
+import { AdminAnnouncements } from "./AdminAnnouncements";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
 
-type Tab = "dashboard" | "economy" | "users" | "flags" | "reports" | "discord" | "audit";
+type Tab =
+  | "dashboard"
+  | "economy"
+  | "users"
+  | "rooms"
+  | "products"
+  | "orders"
+  | "flags"
+  | "reports"
+  | "announcements"
+  | "discord"
+  | "audit";
 
 export function AdminPanel() {
   const { t } = useTranslation();
@@ -21,8 +36,12 @@ export function AdminPanel() {
     { key: "dashboard", label: t("admin.dashboard") },
     { key: "economy", label: t("admin.economy", "Икономика") },
     { key: "users", label: t("admin.users") },
+    { key: "rooms", label: t("admin.rooms", "Живи маси") },
+    { key: "products", label: t("admin.products", "Продукти") },
+    { key: "orders", label: t("admin.orders", "Поръчки") },
     { key: "flags", label: t("admin.flags") },
     { key: "reports", label: t("admin.reports", "Доклади") },
+    { key: "announcements", label: t("admin.announcements", "Обяви") },
     { key: "discord", label: "Discord" },
     { key: "audit", label: t("admin.audit") },
   ];
@@ -53,8 +72,12 @@ export function AdminPanel() {
       {tab === "dashboard" ? <Dashboard /> : null}
       {tab === "economy" ? <AdminEconomy /> : null}
       {tab === "users" ? <AdminUsers /> : null}
+      {tab === "rooms" ? <AdminRooms /> : null}
+      {tab === "products" ? <AdminProducts /> : null}
+      {tab === "orders" ? <AdminOrders /> : null}
       {tab === "flags" ? <Flags /> : null}
       {tab === "reports" ? <AdminReports /> : null}
+      {tab === "announcements" ? <AdminAnnouncements /> : null}
       {tab === "discord" ? <Discord /> : null}
       {tab === "audit" ? <Audit /> : null}
     </div>
@@ -436,6 +459,12 @@ const AUDIT_ACTIONS = [
   "resolve_report",
   "discord_config",
   "broadcast",
+  "product_create",
+  "product_update",
+  "order_refund",
+  "announcement_create",
+  "announcement_activate",
+  "announcement_deactivate",
   "bootstrap_owner",
 ];
 

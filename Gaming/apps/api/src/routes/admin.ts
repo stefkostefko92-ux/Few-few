@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
-import { ROLES, VIP_TIERS, type Role, type VipTier } from "@aso/shared";
-import { asyncHandler, badRequest, forbidden } from "../http.js";
+import { PRODUCT_KINDS, ROLES, VIP_TIERS, type Role, type VipTier } from "@aso/shared";
+import { asyncHandler, badRequest, forbidden, HttpError } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyAdminAction, notifyBroadcast, sendTest } from "../integrations/discord.js";
 import { getDiscordConfig, setDiscordConfig } from "../settings.js";
+import { getStripe, stripeEnabled } from "../economy/stripe.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
 
@@ -679,5 +680,331 @@ adminRouter.post(
     notifyBroadcast(actorName, message);
     await audit(req.user!, actorName, "broadcast", null, { message });
     res.json({ sent: discordEnabled() });
+  }),
+);
+
+// ── Live tables (staff read) ─────────────────────────────────────────────────
+
+/** One seat in a live-tables snapshot (mirrors realtime RoomSnapshotSeat). */
+interface RoomSnapshotSeat {
+  seat: number;
+  displayName: string;
+  isBot: boolean;
+  connected: boolean;
+  substituted: boolean;
+}
+interface RoomSnapshot {
+  matchId: string;
+  game: string;
+  ply: number;
+  ageMs: number;
+  turn: number | null;
+  seats: RoomSnapshotSeat[];
+}
+
+/**
+ * GET /api/admin/rooms — live (in-progress) tables (§14). Authoritative game
+ * state lives in the realtime node's memory, so the API reads it over the
+ * internal channel rather than the DB. `reachable:false` (with an empty list)
+ * when the realtime node can't be reached — the panel shows a clear notice
+ * instead of an eternal spinner.
+ *
+ * Single-node scope: the realtime endpoint returns the rooms owned by the node
+ * that answers. Behind multiple realtime nodes this reflects one node's tables;
+ * a cluster-wide aggregate would need each node polled (documented limitation).
+ */
+adminRouter.get(
+  "/rooms",
+  asyncHandler(async (_req, res) => {
+    try {
+      const r = await fetch(`${env.REALTIME_INTERNAL_URL}/internal/rooms`, {
+        headers: { "x-internal-secret": env.INTERNAL_API_SECRET },
+        signal: AbortSignal.timeout(3000),
+      });
+      if (!r.ok) {
+        logger.warn({ status: r.status }, "admin rooms: realtime returned non-200");
+        res.json({ rooms: [], reachable: false });
+        return;
+      }
+      const body = (await r.json()) as { rooms: RoomSnapshot[] };
+      res.json({ rooms: body.rooms ?? [], reachable: true });
+    } catch (err) {
+      logger.warn({ err: (err as Error).message }, "admin rooms: realtime unreachable");
+      res.json({ rooms: [], reachable: false });
+    }
+  }),
+);
+
+// ── Store products (read: staff; CRUD: ADMIN/OWNER) ──────────────────────────
+
+/** Serialize a product row for the admin store editor. */
+function toAdminProduct(p: {
+  id: string; kind: string; sku: string; priceCents: number;
+  gems: number | null; chips: number | null; cosmeticId: string | null; active: boolean;
+}) {
+  return {
+    id: p.id, kind: p.kind, sku: p.sku, priceCents: p.priceCents,
+    gems: p.gems, chips: p.chips, cosmeticId: p.cosmeticId, active: p.active,
+  };
+}
+
+/** GET /api/admin/products — the full store catalog (active + inactive). */
+adminRouter.get(
+  "/products",
+  asyncHandler(async (_req, res) => {
+    const rows = await prisma.product.findMany({ orderBy: [{ active: "desc" }, { priceCents: "asc" }] });
+    res.json({ products: rows.map(toAdminProduct) });
+  }),
+);
+
+const productCreateSchema = z.object({
+  sku: z.string().trim().min(1).max(64).regex(/^[a-z0-9_]+$/i, "SKU: букви/цифри/долна черта"),
+  kind: z.enum(PRODUCT_KINDS),
+  priceCents: z.number().int().gte(0).lte(1_000_000),
+  gems: z.number().int().gte(0).lte(1_000_000).nullish(),
+  chips: z.number().int().gte(0).lte(1_000_000_000).nullish(),
+  cosmeticId: z.string().trim().max(120).nullish(),
+  active: z.boolean().optional(),
+});
+
+/** POST /api/admin/products — add a store product (ADMIN/OWNER). */
+adminRouter.post(
+  "/products",
+  STAFF_WRITE,
+  asyncHandler(async (req, res) => {
+    const input = productCreateSchema.parse(req.body);
+    const dup = await prisma.product.findUnique({ where: { sku: input.sku } });
+    if (dup) throw badRequest("sku_taken", "Вече има продукт с това SKU");
+    const created = await prisma.product.create({
+      data: {
+        sku: input.sku,
+        kind: input.kind,
+        priceCents: input.priceCents,
+        gems: input.gems ?? null,
+        chips: input.chips ?? null,
+        cosmeticId: input.cosmeticId ?? null,
+        active: input.active ?? true,
+      },
+    });
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, "product_create", created.id, { sku: created.sku, kind: created.kind });
+    res.json({ product: toAdminProduct(created) });
+  }),
+);
+
+const productUpdateSchema = z.object({
+  priceCents: z.number().int().gte(0).lte(1_000_000).optional(),
+  gems: z.number().int().gte(0).lte(1_000_000).nullish(),
+  chips: z.number().int().gte(0).lte(1_000_000_000).nullish(),
+  cosmeticId: z.string().trim().max(120).nullish(),
+  // No hard delete: retire a product by flipping active=false (Purchase FKs stay
+  // intact for the revenue history).
+  active: z.boolean().optional(),
+});
+
+/** PATCH /api/admin/products/:id — edit price/grant/active (ADMIN/OWNER). */
+adminRouter.patch(
+  "/products/:id",
+  STAFF_WRITE,
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id ?? "");
+    const input = productUpdateSchema.parse(req.body);
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) throw badRequest("not_found", "Няма такъв продукт");
+    const data: Record<string, unknown> = {};
+    if (input.priceCents !== undefined) data.priceCents = input.priceCents;
+    if (input.gems !== undefined) data.gems = input.gems;
+    if (input.chips !== undefined) data.chips = input.chips;
+    if (input.cosmeticId !== undefined) data.cosmeticId = input.cosmeticId;
+    if (input.active !== undefined) data.active = input.active;
+    if (Object.keys(data).length === 0) throw badRequest("noop", "Няма промени");
+    const updated = await prisma.product.update({ where: { id }, data });
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, "product_update", id, { sku: updated.sku, ...input });
+    res.json({ product: toAdminProduct(updated) });
+  }),
+);
+
+// ── Orders / refunds (read: staff; refund: ADMIN/OWNER) ──────────────────────
+
+const ORDER_STATUSES = ["completed", "refunded"] as const;
+
+/** GET /api/admin/orders?status=&take=&cursor= — global purchase list with the
+ *  buyer + product joined, cursor-paginated like the other queues. */
+adminRouter.get(
+  "/orders",
+  asyncHandler(async (req, res) => {
+    const statusQ = String(req.query.status ?? "").trim();
+    const status = (ORDER_STATUSES as readonly string[]).includes(statusQ) ? statusQ : undefined;
+    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
+    const rows = await prisma.purchase.findMany({
+      where: status ? { status } : {},
+      orderBy: { createdAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: {
+        product: { select: { sku: true, kind: true, priceCents: true } },
+        user: { select: { id: true, displayName: true, email: true } },
+      },
+    });
+    const hasMore = rows.length > take;
+    const items = (hasMore ? rows.slice(0, take) : rows).map((p) => ({
+      id: p.id,
+      stripeId: p.stripeId,
+      status: p.status,
+      createdAt: p.createdAt,
+      userId: p.userId,
+      userName: p.user?.displayName ?? null,
+      userEmail: p.user?.email ?? null,
+      sku: p.product?.sku ?? null,
+      kind: p.product?.kind ?? null,
+      priceCents: p.product?.priceCents ?? 0,
+    }));
+    res.json({ items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null });
+  }),
+);
+
+const refundSchema = z.object({
+  // Optional, non-automatic clawback of the credited gems/chips. Clamped to the
+  // player's available balance — a refund never drives a balance negative.
+  clawback: z.boolean().optional(),
+});
+
+/**
+ * POST /api/admin/orders/:id/refund — refund a purchase via Stripe (ADMIN/OWNER).
+ * Returns a clear 503 when Stripe isn't configured (dev/test) instead of
+ * throwing. Virtual currency is NOT clawed back automatically (matches the
+ * webhook's charge.refunded policy); pass `clawback:true` to deduct the granted
+ * gems/chips, clamped to what the player still holds.
+ */
+adminRouter.post(
+  "/orders/:id/refund",
+  STAFF_WRITE,
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id ?? "");
+    const { clawback } = refundSchema.parse(req.body);
+    const purchase = await prisma.purchase.findUnique({ where: { id }, include: { product: true } });
+    if (!purchase) throw badRequest("not_found", "Няма такава поръчка");
+    if (purchase.status === "refunded") throw badRequest("already_refunded", "Поръчката вече е върната");
+    if (purchase.status !== "completed") throw badRequest("not_refundable", "Само завършени поръчки могат да се връщат");
+    if (!stripeEnabled()) throw new HttpError(503, "stripe_not_configured", "Stripe не е конфигуриран");
+
+    const stripe = getStripe();
+    // Purchase.stripeId is the Checkout Session id; resolve its PaymentIntent to
+    // issue the refund (subscription invoices have no session PI → not refundable
+    // here; those are managed through the Stripe dashboard / billing portal).
+    let paymentIntentId: string | null = null;
+    try {
+      const session = await stripe.checkout.sessions.retrieve(purchase.stripeId);
+      paymentIntentId = typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id ?? null;
+    } catch (err) {
+      logger.warn({ err: (err as Error).message, id }, "refund: could not retrieve checkout session");
+      throw badRequest("stripe_lookup_failed", "Плащането не може да бъде намерено в Stripe");
+    }
+    if (!paymentIntentId) throw badRequest("not_refundable", "Няма плащане за връщане (напр. абонамент)");
+
+    try {
+      await stripe.refunds.create(
+        { payment_intent: paymentIntentId },
+        { idempotencyKey: `refund:${purchase.id}` },
+      );
+    } catch (err) {
+      logger.error({ err: (err as Error).message, id }, "refund: Stripe refund failed");
+      throw badRequest("refund_failed", "Stripe отказа връщането");
+    }
+
+    // Mark refunded locally + optional clamped clawback, in one transaction.
+    let clawedGems = 0;
+    let clawedChips = 0;
+    await prisma.$transaction(async (tx) => {
+      await tx.purchase.update({ where: { id }, data: { status: "refunded" } });
+      if (clawback) {
+        const gems = purchase.product?.gems ?? 0;
+        const chips = purchase.product?.chips ?? 0;
+        if (gems > 0 || chips > 0) {
+          const u = await tx.user.findUnique({ where: { id: purchase.userId }, select: { gems: true, chips: true } });
+          if (u) {
+            clawedGems = Math.min(gems, u.gems);
+            clawedChips = Number(u.chips < BigInt(chips) ? u.chips : BigInt(chips));
+            await tx.user.update({
+              where: { id: purchase.userId },
+              data: {
+                ...(clawedGems > 0 ? { gems: { decrement: clawedGems } } : {}),
+                ...(clawedChips > 0 ? { chips: { decrement: BigInt(clawedChips) } } : {}),
+              },
+            });
+          }
+        }
+      }
+    });
+
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, "order_refund", purchase.userId, {
+      purchaseId: id,
+      sku: purchase.product?.sku ?? null,
+      clawback: Boolean(clawback),
+      clawedGems,
+      clawedChips,
+    });
+    res.json({ ok: true, clawedGems, clawedChips });
+  }),
+);
+
+// ── In-app announcements (read: staff; CRUD: ADMIN/OWNER) ────────────────────
+
+/** GET /api/admin/announcements — every announcement (active + inactive). */
+adminRouter.get(
+  "/announcements",
+  asyncHandler(async (_req, res) => {
+    const items = await prisma.announcement.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+    res.json({ items });
+  }),
+);
+
+const announcementCreateSchema = z.object({
+  title: z.string().trim().min(1).max(120),
+  body: z.string().trim().min(1).max(2000),
+  expiresAt: z.string().datetime().nullish(),
+});
+
+/** POST /api/admin/announcements — publish a player-facing announcement. */
+adminRouter.post(
+  "/announcements",
+  STAFF_WRITE,
+  asyncHandler(async (req, res) => {
+    const input = announcementCreateSchema.parse(req.body);
+    const expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
+    if (expiresAt && expiresAt.getTime() <= Date.now()) {
+      throw badRequest("expiry_past", "Срокът на обявата трябва да е в бъдещето");
+    }
+    const created = await prisma.announcement.create({
+      data: { title: input.title, body: input.body, createdBy: req.user!.sub, expiresAt },
+    });
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, "announcement_create", created.id, { title: created.title });
+    res.json({ announcement: created });
+  }),
+);
+
+const announcementPatchSchema = z.object({ active: z.boolean() });
+
+/** PATCH /api/admin/announcements/:id — activate / deactivate an announcement. */
+adminRouter.patch(
+  "/announcements/:id",
+  STAFF_WRITE,
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id ?? "");
+    const { active } = announcementPatchSchema.parse(req.body);
+    const existing = await prisma.announcement.findUnique({ where: { id } });
+    if (!existing) throw badRequest("not_found", "Няма такава обява");
+    const updated = await prisma.announcement.update({ where: { id }, data: { active } });
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, active ? "announcement_activate" : "announcement_deactivate", id, {
+      title: updated.title,
+    });
+    res.json({ announcement: updated });
   }),
 );

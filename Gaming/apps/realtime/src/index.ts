@@ -95,10 +95,27 @@ async function areFriends(a: string, b: string): Promise<boolean> {
 }
 
 async function main(): Promise<void> {
+  // Late-bound so the /internal/rooms handler (registered at server construction)
+  // can read the matchmaker created further down in main().
+  let matchmakerRef: Matchmaker | null = null;
+
   const httpServer = createServer((req, res) => {
     if (req.url === "/health") {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ status: "ok", service: "realtime" }));
+      return;
+    }
+    // Internal live-tables feed for the admin panel (§14). Service-to-service:
+    // authenticated by the shared internal secret, never a user JWT. Single-node
+    // scope — returns the rooms THIS node owns (see Matchmaker.listActiveRooms).
+    if (req.url === "/internal/rooms") {
+      if (req.headers["x-internal-secret"] !== env.INTERNAL_API_SECRET) {
+        res.writeHead(403);
+        res.end();
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ rooms: matchmakerRef?.listActiveRooms() ?? [] }));
       return;
     }
     if (req.url === "/metrics") {
@@ -176,6 +193,7 @@ async function main(): Promise<void> {
   });
 
   const matchmaker = new Matchmaker(io);
+  matchmakerRef = matchmaker;
   matchmaker.start();
 
   const displayNameOf = async (uid: string): Promise<string> => {
