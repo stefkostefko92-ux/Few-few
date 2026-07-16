@@ -6,6 +6,7 @@ import { PRINCIPALS } from "../../data/principals";
 import { OBLAST_PATHS } from "../../data/oblasti-geo";
 import { enterprisesByOblast, oblastForHq } from "../../data/geo";
 import { FINANCIALS } from "../../data/financials";
+import { CASES, STATUS } from "../../data/cases";
 
 const sectorKeys = new Set(SECTORS.map((s) => s.key));
 const principalKeys = new Set(PRINCIPALS.map((p) => p.key));
@@ -76,6 +77,23 @@ test("geo: агрегацията покрива всички предприят
   const { ranked, national } = enterprisesByOblast();
   const mapped = ranked.reduce((s, o) => s + o.count, 0);
   assert.equal(mapped + national.length, ENTERPRISES.length, "сборът трябва да е точен");
+});
+
+test("случаи: валиден статус, https източници и (ако е даден) съществуващ slug", () => {
+  const slugs = new Set(ENTERPRISES.map((e) => e.slug));
+  const statusKeys = new Set(Object.keys(STATUS));
+  for (const c of CASES) {
+    assert.ok(c.title.trim().length > 0, "случай без заглавие");
+    assert.ok(c.enterprise.trim().length > 0, `${c.title}: без предприятие`);
+    assert.ok(statusKeys.has(c.statusKey), `${c.title}: непознат статус ${c.statusKey}`);
+    assert.ok(c.sources.length > 0, `${c.title}: без източник`);
+    for (const s of c.sources) {
+      assert.match(s.url, /^https?:\/\//, `${c.title}: невалиден URL ${s.url}`);
+    }
+    if (c.slug) {
+      assert.ok(slugs.has(c.slug), `${c.title}: несъществуващ slug ${c.slug}`);
+    }
+  }
 });
 
 test("финанси: всеки запис сочи към съществуващо предприятие и има валидни редове", () => {
