@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-13",
+    "updated": "2026-07-16",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -10479,6 +10479,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Google Ads API RMF (Required Minimum Functionality) важи САМО за Standard access ниво и…\" (+2)"
+        },
         {
           "date": "2026-07-13",
           "type": "quarantine",
