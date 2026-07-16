@@ -385,7 +385,7 @@ function collectGenericHide(text) {
 }
 
 // Броим и ръчно поддържаните рулсети, за да е пълна статистиката в UI.
-for (const f of ["ad_rules", "youtube_rules", "removeparam", "surrogates"]) {
+for (const f of ["ad_rules", "youtube_rules", "removeparam", "surrogates", "headers"]) {
   const p = join(ROOT, "rules", f + ".json");
   if (existsSync(p)) counts[f] = JSON.parse(readFileSync(p, "utf-8")).length;
 }

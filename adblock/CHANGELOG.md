@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.2.0
+
+Блокиране на рекламните browser API-та (uBO паритет спринт 3 — DNR modifyHeaders):
+- Ново **„Block ad-targeting browser APIs"** — през Permissions-Policy header
+  изключва **Google Topics, FLoC (interest-cohort), Protected Audience
+  (FLEDGE), Attribution Reporting и Private Aggregation** на всеки сайт. Тези са
+  новите рекламни/tracking API-та в браузъра; изключваме ги в корена.
+- Реализирано като статично DNR modifyHeaders правило (append Permissions-Policy
+  на document отговорите) — чисти данни, нула код. Toggle в настройките (вкл. по
+  подразбиране).
+
 ## 4.1.1
 
 Още процедурни козметични оператори (uBO паритет спринт 2):

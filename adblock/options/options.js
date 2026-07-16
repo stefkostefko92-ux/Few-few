@@ -39,6 +39,7 @@ function load() {
     $("featSmart").checked = res.features.smart !== false;
     $("featRemoveparam").checked = res.features.removeparam !== false;
     $("featMalware").checked = res.features.malware === true;
+    $("featTopics").checked = res.features.topics !== false;
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString();
     $("autoUpdate").checked = res.autoUpdate !== false;
     renderUpdateStatus(res.liveVersion || 0, res.liveUpdated || 0);
@@ -165,6 +166,7 @@ function saveFeatures() {
       smart: $("featSmart").checked,
       removeparam: $("featRemoveparam").checked,
       malware: $("featMalware").checked,
+      topics: $("featTopics").checked,
     },
   });
 }
@@ -182,6 +184,7 @@ $("featYoutube").addEventListener("change", saveFeatures);
 $("featSmart").addEventListener("change", saveFeatures);
 $("featRemoveparam").addEventListener("change", saveFeatures);
 $("featMalware").addEventListener("change", saveFeatures);
+$("featTopics").addEventListener("change", saveFeatures);
 
 $("autoUpdate").addEventListener("change", () =>
   chrome.runtime.sendMessage({ type: "setAutoUpdate", on: $("autoUpdate").checked })
