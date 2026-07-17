@@ -58,8 +58,9 @@ also **appending a learning entry to that agent's activity feed in the dashboard
 the embedded FALLBACK in `index.html`, atomic write + lock) and **bumping the agent's version**
 (a `vX.Y — учене` timeline entry — verified learning level-ups the agent; quarantine and repeat lessons
 don't). **Version scheme (`bumpVersion` in `memory-capture.mjs`):** each verified lesson is +0.1 and
-**every 10 verified lessons roll into a +1 major** (6.9 → 7.0 → … → **10.0**); minor is a single digit
-0–9 and the version **caps at 10.0 = mastery** (40 verified lessons). So the agents-lab page updates
+**every 10 verified lessons roll into a +1 major** (6.9 → 7.0 → …); the version tracks verified-lesson
+count (≈ lessons ÷ 10), so **v10.0 = mastery** (≈100 verified lessons) is a *threshold, not a cap* — agents
+keep climbing past it as they learn (e.g. `ai-djiyata` is at **v15.0**, ~150 lessons). So the agents-lab page updates
 itself on every new lesson; `tools/memory/curate.mjs` then dedups, caps size, and flags contradictions for human review. The
 verify gate (only tool/eval/test/live-source-backed lessons become fact) is what keeps it flawless —
 no unverified claim contaminates memory. Hooks are registered in `.claude/settings.json`, scoped by

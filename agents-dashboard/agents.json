@@ -11295,7 +11295,7 @@
         "Инженерство на агенти (канон на Anthropic): workflow vs agent, патърни (routing/parallelization/orchestrator-workers/evaluator-optimizer), автономен цикъл, ACI/дизайн на инструменти",
         "Multi-agent оркестрация: lead+subagents, кога помага (breadth-first), ~15x токени, режими на провал, делегиране с явна цел/формат/граници",
         "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval",
-        "Онбординг и надзор на растящ екип (20 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна"
+        "Онбординг и надзор на растящ екип (25 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна"
       ],
       "knowledge": {
         "sources": 150,

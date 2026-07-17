@@ -4,7 +4,8 @@
 // „Ръката" на AI-джията като водещ/координатор: следи здравето на целия екип и
 // докладва. НЕ пипа памет (курацията е на `tools/memory/curate.mjs`, човек решава
 // сливания) — само чете и сигнализира. Fail-closed: излиза с код 1 при ТВЪРД проблем
-// (сирак, рассинхрон табло/settings, проверена поука без източник), 0 иначе.
+// (сирак, рассинхрон табло/settings, липсваща доктрина), 0 иначе. Проверена поука БЕЗ източник е
+// ПРЕДУПРЕЖДЕНИЕ (качествен сигнал), не твърд блокер — не влияе на изходния код.
 //
 // Употреба:
 //   node tools/agents/oversee.mjs           # четим отчет
@@ -107,8 +108,18 @@ const aj = JSON.parse(readFileSync(JSON_PATH, "utf8"));
 const jsonIds = new Set(aj.agents.map((a) => a.id));
 
 const settings = readFileSync(SETTINGS_PATH, "utf8");
+// Вземи matcher-ите САМО от куките за агентската памет (SubagentStart/SubagentStop). Ако вземем всеки
+// „matcher" в settings.json, добавянето на несвързана кука (напр. PreToolUse „Bash") би маркирало ВСЕКИ
+// агент като „липсва в hook matcher" → лъжлив твърд провал. Регекс fallback ако JSON не се парсне.
 const matcherIds = [];
-for (const m of settings.matchAll(/"matcher":\s*"([^"]+)"/g)) matcherIds.push(new Set(m[1].split("|")));
+try {
+  const sj = JSON.parse(settings);
+  for (const ev of ["SubagentStart", "SubagentStop"])
+    for (const h of (sj.hooks?.[ev] || []))
+      if (typeof h.matcher === "string") matcherIds.push(new Set(h.matcher.split("|")));
+} catch {
+  for (const m of settings.matchAll(/"matcher":\s*"([^"]+)"/g)) matcherIds.push(new Set(m[1].split("|")));
+}
 
 const securityDoctrine = existsSync(join(MEM_DIR, "SECURITY.md"));
 
