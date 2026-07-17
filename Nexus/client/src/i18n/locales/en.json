@@ -795,7 +795,10 @@
       "minutesAgo": "{{n}}m ago",
       "hoursAgo": "{{n}}h ago",
       "daysAgo": "{{n}}d ago"
-    }
+    },
+    "bestPrice": "best price",
+    "cheapest": "cheapest: {{n}}g",
+    "lastSold": "last sold: {{n}}g"
   },
   "auction": {
     "loading": "Loading auction…",
@@ -830,7 +833,9 @@
     "all": "All",
     "lv": "Lv {{n}}",
     "buy": "Buy",
-    "purchaseComplete": "Purchase complete."
+    "purchaseComplete": "Purchase complete.",
+    "dailyDeals": "Daily deals — 30% off",
+    "dealsExpire": "Rotates in {{hours}}h"
   },
   "mountShop": {
     "loading": "Loading…",

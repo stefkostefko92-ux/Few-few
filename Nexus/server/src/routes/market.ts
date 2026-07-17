@@ -32,10 +32,19 @@ router.get('/', (req, res) => {
     where += ' AND items.name LIKE ?';
     params.push(`%${q}%`);
   }
+  // Ценова интелигентност (анти-измама + „лов на сделки"): за всеки листинг
+  // пращаме най-евтината КОНКУРЕНТНА активна цена за същия предмет и
+  // последната реално ПРОДАДЕНА цена. Купувачът веднага вижда дали цената е
+  // изгодна или надута — пазарът се самобалансира без админ намеса.
   const rows = db
     .prepare(
       `SELECT m.id AS listing_id, m.price_gold, m.listed_at, m.seller_id,
-              items.*, s.name AS seller_name, s.class AS seller_class, s.level AS seller_level
+              items.*, s.name AS seller_name, s.class AS seller_class, s.level AS seller_level,
+              (SELECT MIN(m2.price_gold) FROM marketplace_listings m2
+                WHERE m2.item_id = m.item_id AND m2.status = 'active') AS cheapest_active,
+              (SELECT m3.price_gold FROM marketplace_listings m3
+                WHERE m3.item_id = m.item_id AND m3.status = 'sold'
+                ORDER BY m3.sold_at DESC LIMIT 1) AS last_sold_price
        FROM marketplace_listings m
        JOIN items ON items.id = m.item_id
        JOIN characters s ON s.id = m.seller_id

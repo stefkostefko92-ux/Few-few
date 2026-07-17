@@ -795,7 +795,10 @@
       "minutesAgo": "преди {{n}} мин",
       "hoursAgo": "преди {{n}} ч",
       "daysAgo": "преди {{n}} дни"
-    }
+    },
+    "bestPrice": "най-добра цена",
+    "cheapest": "най-евтино: {{n}}g",
+    "lastSold": "последно продадено: {{n}}g"
   },
   "auction": {
     "loading": "Зареждане на търга…",
@@ -830,7 +833,9 @@
     "all": "Всички",
     "lv": "Нв. {{n}}",
     "buy": "Купи",
-    "purchaseComplete": "Покупката е успешна."
+    "purchaseComplete": "Покупката е успешна.",
+    "dailyDeals": "Дневни оферти — 30% отстъпка",
+    "dealsExpire": "Сменят се след {{hours}}ч"
   },
   "mountShop": {
     "loading": "Зареждане…",

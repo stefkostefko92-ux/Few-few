@@ -795,7 +795,10 @@
       "minutesAgo": "{{n}}m fa",
       "hoursAgo": "{{n}}h fa",
       "daysAgo": "{{n}}g fa"
-    }
+    },
+    "bestPrice": "miglior prezzo",
+    "cheapest": "più economico: {{n}}g",
+    "lastSold": "ultima vendita: {{n}}g"
   },
   "auction": {
     "loading": "Caricamento asta…",
@@ -830,7 +833,9 @@
     "all": "Tutti",
     "lv": "Liv. {{n}}",
     "buy": "Compra",
-    "purchaseComplete": "Acquisto completato."
+    "purchaseComplete": "Acquisto completato.",
+    "dailyDeals": "Offerte del giorno — 30% di sconto",
+    "dealsExpire": "Cambiano tra {{hours}}h"
   },
   "mountShop": {
     "loading": "Caricamento…",
