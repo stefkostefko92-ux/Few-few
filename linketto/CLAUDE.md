@@ -87,8 +87,14 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 Насрочване: Link.showFrom/showUntil + isBlockVisible() — проверява се и при
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
-SEO: src/lib/seo.ts (SITE_URL, pageMetadata → canonical+hreflang за 6-те
-локала, siteJsonLd/faqJsonLd). Профилите: profileMetadata (OG, canonical,
+SEO: src/lib/seo.ts (SITE_URL, pageMetadata → canonical+hreflang за 24-те
+hreflang локала + x-default, siteJsonLd/faqJsonLd/breadcrumbJsonLd;
+Organization с sameAs/knowsAbout — GEO entity disambiguation). AEO:
+/[locale]/vs-linktree (сравнителна таблица + дефиниционен блок „Какво е
+link in bio" + честен параграф; низовете в vs.*; FAQPage+BreadcrumbList
+схеми). Правните страници имат собствени pageMetadata (уникален title,
+canonical/hreflang симетрични със sitemap). Диалектите nap/scn/lmo са
+robots noindex,follow (thin-content до правния преглед). Профилите: profileMetadata (OG, canonical,
 noindex при 18+ линк) + ProfilePage/Person JSON-LD. sitemap.ts (hreflang
 alternates, без 18+ профили), robots.ts (AI ботове изрично allow),
 public/llms.txt. Правно: DSA сигнали = /u/[slug]/report (модел Report,

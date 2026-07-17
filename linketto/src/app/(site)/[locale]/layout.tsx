@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { dirFor, isLocale } from '@/i18n/locales';
+import { DIALECT_LOCALES, dirFor, isLocale } from '@/i18n/locales';
 import { fontVariables } from '@/app/fonts';
 import { SITE_URL } from '@/lib/seo';
 import { ConsentBanner } from '@/components/ConsentBanner';
@@ -21,6 +21,11 @@ export async function generateMetadata({
     description: tSeo('metaDescription'),
     keywords: tSeo('keywords'),
     applicationName: t('appName'),
+    // Диалектите (nap/scn/lmo) са само за ръчен избор и падат към en до правен
+    // преглед → thin-content риск; държим ги извън индекса, но следваеми.
+    ...(DIALECT_LOCALES.includes(locale)
+      ? { robots: { index: false, follow: true } }
+      : {}),
     // Domain verification (Meta BM + Google) — само при зададени env кодове.
     verification: {
       ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION

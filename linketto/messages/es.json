@@ -47,7 +47,7 @@
     "ctaButton": "Empieza gratis en 60 segundos",
     "faqTitle": "Preguntas frecuentes",
     "faq1q": "¿Qué es Linketto?",
-    "faq1a": "Linketto es una página de link in bio: un solo enlace que reúne todos tus enlaces, productos y contactos. Lo único: tu página habla el idioma de cada visitante — la creas una vez y se muestra en 6+ idiomas.",
+    "faq1a": "Linketto es una página de link in bio: un solo enlace que reúne todos tus enlaces, productos y contactos. Lo único: tu página habla el idioma de cada visitante — la creas una vez y se muestra en 24 idiomas de la UE más 3 dialectos.",
     "faq2q": "¿En qué es mejor Linketto que Linktree?",
     "faq2a": "Cuatro cosas: tu perfil es multilingüe (Linktree solo está en inglés), está alojado en la UE con RGPD por defecto, la analítica no usa cookies ni datos personales, y las comisiones sobre ventas son 8/4/0/0% según el plan — frente al 12% y 9% de Linktree.",
     "faq3q": "¿Cuánto cuesta Linketto?",
@@ -387,7 +387,8 @@
     "terms": "Términos",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Gestionar cookies"
+    "manageConsent": "Gestionar cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingüe: todos tus enlaces, en todos los idiomas",
@@ -467,5 +468,34 @@
     "accept": "Acepto",
     "decline": "Rechazo",
     "moreInfo": "Más información"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — la comparación honesta",
+    "metaDescription": "Comisiones 8/4/0% frente a 12/9%, 24 idiomas de la UE frente a solo inglés, alojamiento en la UE con RGPD y analítica sin cookies. Mira la tabla.",
+    "title": "Linketto vs Linktree",
+    "intro": "Ambos servicios resuelven la misma tarea — una página para todos tus enlaces. Las diferencias están en el dinero, los idiomas y la privacidad. Aquí las tienes, sin adornos.",
+    "defTitle": "¿Qué es una página de link in bio?",
+    "defBody": "Una página de link in bio es una única página web pública que reúne todos tus enlaces importantes, productos y contactos en un solo lugar, accesible a través de una sola dirección. La idea viene de las redes sociales que solo permiten un enlace en el perfil: en vez de elegir entre tu tienda, tu vídeo y tu boletín, pones un solo enlace a la página, y esta lleva a todo. Las versiones modernas añaden la venta de productos digitales, estadísticas de visitas y un diseño personalizado. Lo que distingue a Linketto: tu página se muestra automáticamente en el idioma de cada visitante — 24 idiomas de la UE más 3 dialectos italianos — sin ningún trabajo extra por tu parte, y la analítica funciona sin cookies y sin datos personales. Créala una vez; habla con todo el mundo.",
+    "tableTitle": "Comparación fila por fila",
+    "thFeature": "Criterio",
+    "rowFee": "Comisión sobre ventas",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business y Founder",
+    "rowFeeLt": "12% Free · 9% en los planes de pago",
+    "rowLang": "Idiomas del perfil",
+    "rowLangL": "24 idiomas de la UE + 3 dialectos, automático según el visitante",
+    "rowLangLt": "Solo inglés",
+    "rowHost": "Alojamiento y datos",
+    "rowHostL": "Alojamiento en la UE, RGPD por defecto",
+    "rowHostLt": "Alojamiento en EE. UU.",
+    "rowAnalytics": "Analítica",
+    "rowAnalyticsL": "Sin cookies, sin direcciones IP, sin datos personales",
+    "rowAnalyticsLt": "Seguimiento clásico con cookies",
+    "rowModeration": "Moderación",
+    "rowModerationL": "Transparente, con aviso previo y derecho a recurso; sin banner público «BANEADO»",
+    "rowModerationLt": "Banner público en los perfiles bloqueados",
+    "honestTitle": "¿Cuándo es Linktree la mejor opción?",
+    "honestBody": "Con honestidad: si dependes de su larga lista de integraciones ya hechas o quieres la plataforma más popular, Linktree es una elección razonable con una larga trayectoria. Linketto gana cuando tu público habla más de un idioma, cuando vendes y cada punto de comisión cuenta, y cuando la privacidad de tus visitantes es una promesa y no una nota a pie de página.",
+    "ctaTitle": "Prueba la diferencia con un solo enlace.",
+    "ctaButton": "Crea tu Linketto gratis"
   }
 }

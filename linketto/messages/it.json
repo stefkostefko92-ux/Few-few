@@ -47,7 +47,7 @@
     "ctaButton": "Inizia gratis in 60 secondi",
     "faqTitle": "Domande frequenti",
     "faq1q": "Che cos’è Linketto?",
-    "faq1a": "Linketto è una pagina link in bio: un unico link che raccoglie tutti i tuoi link, prodotti e contatti. La parte unica: la pagina parla la lingua di ogni visitatore — la crei una volta e appare in 6+ lingue.",
+    "faq1a": "Linketto è una pagina link in bio: un unico link che raccoglie tutti i tuoi link, prodotti e contatti. La parte unica: la pagina parla la lingua di ogni visitatore — la crei una volta e appare in 24 lingue dell'UE più 3 dialetti.",
     "faq2q": "In cosa Linketto è meglio di Linktree?",
     "faq2a": "Quattro cose: il profilo è multilingue (Linktree è solo in inglese), è ospitato nell’UE con GDPR di default, le analisi sono senza cookie e senza dati personali, e le commissioni sulle vendite sono 8/4/0/0% per piano — contro il 12% e il 9% di Linktree.",
     "faq3q": "Quanto costa Linketto?",
@@ -387,7 +387,8 @@
     "terms": "Termini",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
-    "manageConsent": "Gestisci i cookie"
+    "manageConsent": "Gestisci i cookie",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingue: tutti i tuoi link, in ogni lingua",
@@ -467,5 +468,34 @@
     "accept": "Accetto",
     "decline": "Rifiuto",
     "moreInfo": "Scopri di più"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — il confronto onesto",
+    "metaDescription": "Commissioni 8/4/0% contro 12/9%, 24 lingue dell'UE contro solo inglese, hosting nell'UE con GDPR e analisi senza cookie. Guarda la tabella.",
+    "title": "Linketto vs Linktree",
+    "intro": "Entrambi i servizi risolvono lo stesso compito — una pagina per tutti i tuoi link. Le differenze sono i soldi, le lingue e la privacy. Eccole, senza giri di parole.",
+    "defTitle": "Che cos'è una pagina link in bio?",
+    "defBody": "Una pagina link in bio è un'unica pagina web pubblica che raccoglie tutti i tuoi link importanti, prodotti e contatti in un solo posto, raggiungibile con un unico indirizzo. L'idea nasce dai social network che permettono un solo link nel profilo: invece di scegliere tra il tuo negozio, il tuo video e la tua newsletter, metti un unico link alla pagina, che porta a tutto. Le versioni moderne aggiungono la vendita di prodotti digitali, le statistiche delle visite e un design personalizzato. Ciò che distingue Linketto: la tua pagina si mostra automaticamente nella lingua di ogni visitatore — 24 lingue dell'UE più 3 dialetti italiani — senza alcun lavoro extra da parte tua, e le analisi funzionano senza cookie e senza dati personali. Creala una volta; parla al mondo intero.",
+    "tableTitle": "Confronto riga per riga",
+    "thFeature": "Criterio",
+    "rowFee": "Commissione sulle vendite",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business e Founder",
+    "rowFeeLt": "12% Free · 9% sui piani a pagamento",
+    "rowLang": "Lingue del profilo",
+    "rowLangL": "24 lingue dell'UE + 3 dialetti, automatico per ogni visitatore",
+    "rowLangLt": "Solo inglese",
+    "rowHost": "Hosting e dati",
+    "rowHostL": "Hosting nell'UE, GDPR di default",
+    "rowHostLt": "Hosting negli USA",
+    "rowAnalytics": "Analisi",
+    "rowAnalyticsL": "Senza cookie, senza indirizzi IP, senza dati personali",
+    "rowAnalyticsLt": "Tracciamento classico con cookie",
+    "rowModeration": "Moderazione",
+    "rowModerationL": "Trasparente, con preavviso e ricorso; nessun banner pubblico «BANNATO»",
+    "rowModerationLt": "Banner pubblico sui profili bloccati",
+    "honestTitle": "Quando Linktree è la scelta migliore?",
+    "honestBody": "Onestamente: se ti affidi al loro lungo elenco di integrazioni già pronte o vuoi la piattaforma più diffusa, Linktree è una scelta ragionevole con una lunga storia. Linketto vince quando il tuo pubblico parla più di una lingua, quando vendi e ogni punto di commissione conta, e quando la privacy dei tuoi visitatori è una promessa e non una nota a piè di pagina.",
+    "ctaTitle": "Prova la differenza con un solo link.",
+    "ctaButton": "Crea il tuo Linketto gratis"
   }
 }

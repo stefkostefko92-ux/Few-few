@@ -1,5 +1,6 @@
-// SEO/GEO/AEO помощници: canonical + hreflang за 6-те локала, ключови думи
-// и JSON-LD структури. Единственият източник на истина за SEO метаданните.
+// SEO/GEO/AEO помощници: canonical + hreflang за всички hreflang-валидни локали
+// (24 ЕС езика; диалектите nap/scn/lmo са извън hreflang) и JSON-LD структури.
+// Единственият източник на истина за SEO метаданните.
 
 import type { Metadata } from 'next';
 import {
@@ -94,6 +95,17 @@ export function siteJsonLd(input: {
       email: ORG.email,
       logo: `${SITE_URL}/logo.png`,
       address: { '@type': 'PostalAddress', ...ORG.address },
+      // GEO: entity disambiguation — свързва „Linketto" с еднозначен субект,
+      // за да го цитират AI отговорите уверено. Само истински URL-и.
+      sameAs: ['https://vizitka-bg.com', 'https://mastilko-bg.com'],
+      knowsAbout: [
+        'link in bio pages',
+        'multilingual websites',
+        'creator monetization',
+        'cookie-free analytics',
+        'EU data protection (GDPR)',
+        'digital business cards',
+      ],
     },
     {
       '@context': 'https://schema.org',
@@ -107,6 +119,7 @@ export function siteJsonLd(input: {
     {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
+      '@id': `${SITE_URL}#app`,
       name: 'Linketto',
       url: SITE_URL,
       applicationCategory: 'WebApplication',
@@ -118,6 +131,7 @@ export function siteJsonLd(input: {
         name: plan.name,
         price: plan.priceEur.toFixed(2),
         priceCurrency: 'EUR',
+        url: `${SITE_URL}/${input.locale}#pricing`,
       })),
       publisher: { '@id': `${ORG.url}#org` },
     },
@@ -133,6 +147,26 @@ export function faqJsonLd(items: { q: string; a: string }[]) {
       '@type': 'Question',
       name: item.q,
       acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  };
+}
+
+/** JSON-LD: BreadcrumbList за вътрешните страници (структура за AI/SERP). */
+export function breadcrumbJsonLd(
+  locale: Locale,
+  items: { name: string; path: string }[],
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: 'Linketto', path: '' },
+      ...items,
+    ].map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: `${SITE_URL}/${locale}${item.path}`,
     })),
   };
 }

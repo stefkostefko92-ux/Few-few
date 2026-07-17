@@ -47,7 +47,7 @@
     "ctaButton": "Start free in 60 seconds",
     "faqTitle": "Frequently asked questions",
     "faq1q": "What is Linketto?",
-    "faq1a": "Linketto is a link in bio page: one link that gathers all your links, products and contacts. The unique part: your page speaks every visitor’s language — build it once and it shows in 6+ languages.",
+    "faq1a": "Linketto is a link in bio page: one link that gathers all your links, products and contacts. The unique part: your page speaks every visitor’s language — build it once and it shows in 24 EU languages plus 3 dialects.",
     "faq2q": "How is Linketto better than Linktree?",
     "faq2a": "Four things: your profile is multilingual (Linktree is English-only), it is hosted in the EU with GDPR by default, analytics are cookie-free with no personal data, and sales commissions are 8/4/0/0% by plan — versus 12% and 9% at Linktree.",
     "faq3q": "How much does Linketto cost?",
@@ -434,7 +434,8 @@
     "terms": "Terms",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Manage cookies"
+    "manageConsent": "Manage cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — multilingual link in bio: all your links, in every language",
@@ -516,5 +517,34 @@
     "accept": "Accept",
     "decline": "Decline",
     "moreInfo": "Learn more"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — the honest comparison",
+    "metaDescription": "Commissions 8/4/0% vs 12/9%, 24 EU languages vs English-only, EU hosting with GDPR and cookie-free analytics. See the table.",
+    "title": "Linketto vs Linktree",
+    "intro": "Both services solve the same task — one page for all your links. The differences are money, languages and privacy. Here they are, plainly.",
+    "defTitle": "What is a link in bio page?",
+    "defBody": "A link in bio page is a single public web page that gathers all your important links, products and contacts in one place, reachable through one address. The idea comes from social networks that allow only one link per profile: instead of choosing between your shop, your video and your newsletter, you put one link to the page — and it leads to everything. Modern versions add digital product sales, visit statistics and personal design. What sets Linketto apart: your page automatically shows in each visitor's language — 24 EU languages plus 3 Italian dialects — with no extra work from you, and the analytics run without cookies and without personal data. Build it once; it speaks to the whole world.",
+    "tableTitle": "Row-by-row comparison",
+    "thFeature": "Criterion",
+    "rowFee": "Sales commission",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business and Founder",
+    "rowFeeLt": "12% Free · 9% on paid plans",
+    "rowLang": "Profile languages",
+    "rowLangL": "24 EU languages + 3 dialects, automatic per visitor",
+    "rowLangLt": "English only",
+    "rowHost": "Hosting and data",
+    "rowHostL": "EU hosting, GDPR by default",
+    "rowHostLt": "US hosting",
+    "rowAnalytics": "Analytics",
+    "rowAnalyticsL": "No cookies, no IP addresses, no personal data",
+    "rowAnalyticsLt": "Classic cookie-based tracking",
+    "rowModeration": "Moderation",
+    "rowModerationL": "Transparent, with notice and appeal; no public “BANNED” banner",
+    "rowModerationLt": "Public banner on blocked profiles",
+    "honestTitle": "When is Linktree the better choice?",
+    "honestBody": "Honestly: if you rely on their long list of ready-made integrations or want the most mainstream platform, Linktree is a reasonable pick with a long track record. Linketto wins when your audience speaks more than one language, when you sell and every commission point counts, and when your visitors' privacy is a promise rather than a footnote.",
+    "ctaTitle": "Try the difference with one link.",
+    "ctaButton": "Create your Linketto for free"
   }
 }

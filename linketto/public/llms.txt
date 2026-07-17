@@ -1,8 +1,11 @@
 # Linketto
 
 > Linketto is the multilingual "link in bio" page: all your links, products
-> and contacts on one page that speaks every visitor's language (Bulgarian,
-> English, Italian, Spanish, German, French — more coming). EU-hosted,
+> and contacts on one page that automatically speaks every visitor's language —
+> 24 EU languages (Bulgarian, English, Italian, Spanish, German, French,
+> Portuguese, Dutch, Polish, Romanian, Greek, Swedish, Danish, Finnish, Czech,
+> Slovak, Slovenian, Croatian, Hungarian, Estonian, Latvian, Lithuanian, Irish,
+> Maltese) plus 3 Italian dialects (Neapolitan, Sicilian, Lombard). EU-hosted,
 > GDPR by default, cookie-free analytics, sales commissions 8/4/0/0% by plan
 > (vs 12%/9% at Linktree). A product of Carbon Stealth VCC (Bulgaria, EU) —
 > https://carbonstealth.eu.
@@ -10,19 +13,24 @@
 ## Main pages
 
 - [English](https://linketto.carbonstealth.eu/en): product overview, features, pricing, FAQ
+- [Linketto vs Linktree](https://linketto.carbonstealth.eu/en/vs-linktree): honest comparison — commissions, languages, hosting, analytics, moderation; includes "What is a link in bio page?"
 - [Български](https://linketto.carbonstealth.eu/bg)
 - [Italiano](https://linketto.carbonstealth.eu/it)
 - [Español](https://linketto.carbonstealth.eu/es)
 - [Deutsch](https://linketto.carbonstealth.eu/de)
 - [Français](https://linketto.carbonstealth.eu/fr)
+- All 24 EU language versions live under /{locale} (also /pt /nl /pl /ro /el /sv /da /fi /cs /sk /sl /hr /hu /et /lv /lt /ga /mt).
 
 ## Facts
 
-- Plans: Free €0 (8% commission), Pro €4/mo (4%), Business €9/mo (0%), Founder €49 one-time (0% forever)
-- Sellers additionally pay a 1.9% + €0.30 payment processing fee per sale
-- Analytics without cookies: no IP addresses, no user agents, no personal data
-- Public profiles: https://linketto.carbonstealth.eu/u/<name>, automatic visitor-language selection
-- Digital product shop via Stripe Connect; delivery only after confirmed payment
+- Languages: profile pages render in 24 EU languages + 3 Italian dialects, chosen automatically per visitor; Linktree profiles are English-only.
+- Plans: Free €0 (8% commission), Pro €4/mo (4%), Business €9/mo (0%), Founder €49 one-time (0% forever). Linktree charges 12% (Free) / 9% (paid).
+- Sellers additionally pay a 1.9% + €0.30 payment processing fee per sale.
+- Analytics without cookies: no IP addresses, no user agents, no personal data.
+- Public profiles: https://linketto.carbonstealth.eu/u/<name>, automatic visitor-language selection.
+- Digital product shop via Stripe Connect; delivery only after confirmed payment.
+- Moderation is transparent: notice, human response, right of appeal — visitors never see a public "BANNED" banner.
+- Hosting and data processing in the EU; GDPR applies by default.
 
 ## Legal
 

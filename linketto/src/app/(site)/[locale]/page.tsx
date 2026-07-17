@@ -147,7 +147,7 @@ export default async function HomePage({
 
   // [цел на брояча, суфикс, етикет] — скролът навива цифрата от 0 до целта
   const STATS = [
-    ['6', '+', t('statsLangsLabel')],
+    ['24', '+3', t('statsLangsLabel')],
     ['29', '', t('statsBrandsLabel')],
     ['10', '', t('statsBlocksLabel')],
     ['0', '%', t('statsFeeLabel')],

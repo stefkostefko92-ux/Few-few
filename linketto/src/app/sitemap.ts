@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     'x-default': `${base}/en${path}`,
   });
-  const staticPages: MetadataRoute.Sitemap = ['', '/privacy', '/terms', '/cookies'].map(
+  const staticPages: MetadataRoute.Sitemap = ['', '/vs-linktree', '/privacy', '/terms', '/cookies'].map(
     (path) => ({
       url: `${base}/en${path}`,
       lastModified: new Date(),

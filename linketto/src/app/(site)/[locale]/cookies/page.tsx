@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import type { Locale } from '@/i18n/locales';
-import { pageMetadata } from '@/lib/seo';
+import { breadcrumbJsonLd, pageMetadata } from '@/lib/seo';
 
 export async function generateMetadata({
   params,
@@ -29,6 +29,16 @@ export default async function CookiesPage({
     <>
       <SiteHeader locale={locale as Locale} />
       <main className="mx-auto max-w-2xl px-6 py-16">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              breadcrumbJsonLd(locale as Locale, [
+                { name: t('cookiesTitle'), path: '/cookies' },
+              ]),
+            ),
+          }}
+        />
         <h1 className="text-2xl font-bold">{t('cookiesTitle')}</h1>
         <p className="mt-6 whitespace-pre-line leading-relaxed text-slate-700">
           {t('cookiesBody')}
