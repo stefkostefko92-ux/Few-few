@@ -60,6 +60,7 @@ export function createApp() {
     res.locals.dryRun = isDryRun();
     res.locals.env = config.env;
     res.locals.icon = icon;
+    res.locals.path = req.path; // за активното състояние в навигацията
     next();
   });
   app.use(localeMiddleware);

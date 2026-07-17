@@ -11,14 +11,20 @@
 <header class="topbar">
   <div class="brand"><%- icon('megaphone') %> Supreme <span class="brand-sub">AdManager</span></div>
   <% if (typeof hideNav === 'undefined') { %>
+  <% const nav = [
+    ['/', 'gauge', 'nav.dashboard'],
+    ['/campaigns/new', 'plus', 'nav.newCampaign'],
+    ['/optimizer', 'trending-up', 'nav.optimizer'],
+    ['/digest', 'chart-column', 'nav.digest'],
+    ['/rules', 'bell', 'nav.rules'],
+    ['/connections', 'link-2', 'nav.connections'],
+    ['/audit', 'file-clock', 'nav.audit'],
+  ]; %>
   <nav>
-    <a href="/"><%- icon('gauge') %> <%= t('nav.dashboard') %></a>
-    <a href="/campaigns/new"><%- icon('plus') %> <%= t('nav.newCampaign') %></a>
-    <a href="/optimizer"><%- icon('trending-up') %> <%= t('nav.optimizer') %></a>
-    <a href="/digest"><%- icon('chart-column') %> <%= t('nav.digest') %></a>
-    <a href="/rules"><%- icon('bell') %> <%= t('nav.rules') %></a>
-    <a href="/connections"><%- icon('link-2') %> <%= t('nav.connections') %></a>
-    <a href="/audit"><%- icon('file-clock') %> <%= t('nav.audit') %></a>
+    <% for (const [href, ic, key] of nav) { %>
+    <% const active = href === '/' ? path === '/' : path.startsWith(href); %>
+    <a href="<%= href %>" class="<%= active ? 'active' : '' %>" <%- active ? 'aria-current="page"' : '' %>><%- icon(ic) %> <%= t(key) %></a>
+    <% } %>
   </nav>
   <nav class="langs" aria-label="Language">
     <% for (const l of locales) { %>

@@ -1,6 +1,11 @@
 </main>
 <footer>
-  <p><%= t('footer.tagline') %></p>
+  <p class="foot-tagline"><%= t('footer.tagline') %></p>
+  <p class="foot-credits">
+    © <%= new Date().getFullYear() %> Carbon Stealth VCC · <%= t('footer.rights') %> ·
+    <%= t('footer.productOf') %>
+    <a href="https://carbonstealth.eu" target="_blank" rel="noopener">carbonstealth.eu</a>
+  </p>
 </footer>
 </body>
 </html>

@@ -9,6 +9,8 @@
   "nav.logout": "Изход",
   "banner.dryRun": "DRY-RUN режим — няма конфигурирани API креденшъли. Всичко се симулира локално; нито стотинка не се харчи.",
   "footer.tagline": "Supreme AdManager · Carbon Stealth VCC · Google Ads + Meta Ads автоматизация · агент: „Рекламчика“ · всички действия минават през предпазители и одитна следа.",
+  "footer.rights": "Всички права запазени",
+  "footer.productOf": "Продукт на",
   "login.title": "Вход",
   "login.heading": "Вход в Supreme AdManager",
   "login.email": "Имейл",

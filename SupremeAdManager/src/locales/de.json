@@ -9,6 +9,8 @@
   "nav.logout": "Abmelden",
   "banner.dryRun": "DRY-RUN-Modus — keine API-Zugangsdaten konfiguriert. Alles wird lokal simuliert; kein Cent wird ausgegeben.",
   "footer.tagline": "Supreme AdManager · Carbon Stealth VCC · Google Ads + Meta Ads Automatisierung · Agent: „Reklamchika“ · jede Aktion durchläuft Schutzmechanismen und eine Audit-Spur.",
+  "footer.rights": "Alle Rechte vorbehalten",
+  "footer.productOf": "Ein Produkt von",
   "login.title": "Anmeldung",
   "login.heading": "Anmeldung bei Supreme AdManager",
   "login.email": "E-Mail",
