@@ -16,12 +16,23 @@ export function ChatDock() {
   const players = useMatchStore((s) => s.players);
   const phase = useMatchStore((s) => s.phase);
 
-  const { messages, send, muted, toggleMute } = useChat(matchId);
+  const { messages, send, report, muted, toggleMute } = useChat(matchId);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [unread, setUnread] = useState(0);
+  // Seats already reported this match (one report per opponent; visual feedback).
+  const [reported, setReported] = useState<Set<number>>(new Set());
   const seenRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Fresh match → forget prior reports.
+  useEffect(() => setReported(new Set()), [matchId]);
+
+  function doReport(seat: number) {
+    if (reported.has(seat)) return;
+    report(seat);
+    setReported((prev) => new Set(prev).add(seat));
+  }
 
   // Track unread while collapsed; clear when opened.
   useEffect(() => {
@@ -78,19 +89,33 @@ export function ChatDock() {
             <span className="text-sm font-semibold text-brass-300">{t("chat.title")}</span>
             <div className="flex items-center gap-2">
               {opponents.map((o) => (
-                <button
-                  key={o.seat}
-                  type="button"
-                  onClick={() => toggleMute(o.seat)}
-                  title={muted.has(o.seat) ? t("chat.unmute") : t("chat.mute")}
-                  className={`rounded px-1.5 py-0.5 text-xs ${
-                    muted.has(o.seat)
-                      ? "text-loss"
-                      : "text-ink-muted hover:text-ink-100"
-                  }`}
-                >
-                  {muted.has(o.seat) ? "🔇" : "🔊"} {o.displayName.slice(0, 8)}
-                </button>
+                <div key={o.seat} className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => toggleMute(o.seat)}
+                    title={muted.has(o.seat) ? t("chat.unmute") : t("chat.mute")}
+                    className={`rounded px-1.5 py-0.5 text-xs ${
+                      muted.has(o.seat)
+                        ? "text-loss"
+                        : "text-ink-muted hover:text-ink-100"
+                    }`}
+                  >
+                    {muted.has(o.seat) ? "🔇" : "🔊"} {o.displayName.slice(0, 8)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => doReport(o.seat)}
+                    disabled={reported.has(o.seat)}
+                    title={reported.has(o.seat) ? t("chat.reported") : t("chat.report")}
+                    className={`rounded px-1 py-0.5 text-xs ${
+                      reported.has(o.seat)
+                        ? "cursor-default text-loss"
+                        : "text-ink-muted hover:text-loss"
+                    }`}
+                  >
+                    🚩
+                  </button>
+                </div>
               ))}
               <button
                 type="button"

@@ -148,7 +148,54 @@
     "evVip": "VIP",
     "evFlag": "Flags (collusion)",
     "evAdminAction": "Admin actions",
-    "evBroadcast": "Broadcasts"
+    "evBroadcast": "Broadcasts",
+    "rooms": "Live tables",
+    "products": "Products",
+    "orders": "Orders",
+    "announcements": "Announcements",
+    "refresh": "Refresh",
+    "edit": "Edit",
+    "roomsCount": "{{n}} live tables",
+    "roomsUnreachable": "The realtime server is unreachable.",
+    "roomsEmpty": "No live tables right now.",
+    "roomAge": "Age",
+    "roomPly": "Moves",
+    "roomBot": "Bot",
+    "roomSubstituted": "Bot covering",
+    "roomTurn": "to move",
+    "productsTitle": "Products",
+    "productAdd": "New product",
+    "productEdit": "Edit product",
+    "productSku": "SKU",
+    "productKind": "Kind",
+    "productPrice": "Price (euro cents)",
+    "productPriceShort": "Price",
+    "productCosmetic": "Cosmetic ID",
+    "productGems": "Gems",
+    "productChips": "Chips",
+    "productActive": "Active",
+    "productInactive": "Inactive",
+    "productActivate": "Enable",
+    "productDeactivate": "Disable",
+    "orderAll": "All",
+    "order_completed": "Completed",
+    "order_refunded": "Refunded",
+    "ordersEmpty": "No orders.",
+    "refund": "Refund",
+    "refundClawback": "Claw back the credited gems/chips",
+    "refundConfirm": "Confirm refund",
+    "refundDone": "Refunded. Clawed back: {{gems}} gems, {{chips}} chips.",
+    "annNew": "New announcement",
+    "annTitle": "Title",
+    "annBody": "Announcement text",
+    "annExpires": "Expires (optional)",
+    "annExpiresAt": "expires",
+    "annPublish": "Publish",
+    "annEmpty": "No announcements.",
+    "annActive": "Active",
+    "annInactive": "Inactive",
+    "annActivate": "Enable",
+    "annDeactivate": "Disable"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -176,7 +223,11 @@
     "consentPre": "I am 18+ and accept the",
     "consentTerms": "Terms of Service",
     "consentAnd": "and",
-    "consentPrivacy": "Privacy Policy"
+    "consentPrivacy": "Privacy Policy",
+    "oauthConsent": "By continuing with Google or Facebook, you declare that you are 18+ and accept the",
+    "errorBanned": "This account is blocked.",
+    "banReason": "Reason: {{reason}}.",
+    "banAppeal": "To appeal, email legal@carbonstealth.eu."
   },
   "account": {
     "title": "Account",
@@ -319,8 +370,10 @@
     "grantGems": "+{{n}} gems",
     "grantChips": "+{{n}} chips",
     "perMonth": "per month",
+    "consentImmediate": "I agree the content is supplied immediately and confirm that I lose my 14-day right of withdrawal.",
+    "consentSubscription": "I agree to the subscription and its monthly automatic renewal until cancelled; I keep my 14-day right of withdrawal with a proportional deduction.",
+    "consentRequired": "Tick the consent box to continue.",
     "perk": {
-      "noAds": "No ads",
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% daily bonus",
       "gems": "{{n}} 💎 per month",
@@ -362,6 +415,10 @@
     "equipped": "Equipped",
     "vipOnly": "VIP only",
     "needGems": "Not enough gems",
+    "custom": "Custom palette",
+    "customVip": "Custom palettes are a VIP feature (Silver and up).",
+    "colorA": "Primary colour",
+    "colorB": "Secondary colour",
     "type": {
       "FELT": "Table felt",
       "CARDBACK": "Card back",
@@ -392,6 +449,8 @@
     "empty": "Say hi to the table 👋",
     "mute": "Mute",
     "unmute": "Unmute",
+    "report": "Report player",
+    "reported": "Reported",
     "quick": {
       "hi": "Hi! 👋",
       "gl": "Good luck!",
@@ -437,6 +496,8 @@
     "newHand": "Hand {{n}}"
   },
   "bridge": {
+    "dummyHand": "Dummy's hand",
+    "playFromDummy": "Your turn — play a card from dummy",
     "auction": "Auction",
     "contract": "Contract",
     "yourBid": "Your bid",
@@ -456,7 +517,15 @@
     "flip": "Flip",
     "battle": "WAR",
     "cards": "Cards: {{n}}",
-    "tookPile": "{{name}} takes {{n}} cards"
+    "tookPile": "{{name}} takes {{n}} cards",
+    "warPhase": "WAR!",
+    "bounty": "Stake: {{n}}",
+    "fight": "Charge (3 cards)",
+    "skirmish": "Cautious (1 card)",
+    "fightHint": "Bury deep for a big haul — or play cautious to protect your deck.",
+    "streak": "Streak ×{{n}}",
+    "raid": "RAID!",
+    "raided": "{{name}} raids a card on a streak!"
   },
   "rummy": {
     "stock": "Stock",
@@ -498,7 +567,15 @@
     "backgammon": "Backgammon!",
     "openingRoll": "Opening roll",
     "white": "White",
-    "black": "Black"
+    "black": "Black",
+    "cube": "Cube",
+    "double": "Double",
+    "take": "Take",
+    "drop": "Drop",
+    "waitingDouble": "Waiting for the double response",
+    "doubleOffered": "Double to ×{{value}}",
+    "doubleTaken": "The double was taken",
+    "doubleDropped": "The double was dropped"
   },
   "battleship": {
     "enemy": "Opponent: {{name}}",
@@ -558,7 +635,9 @@
     "pickToken": "Pick a token",
     "noMove": "No move — turn passes",
     "noMoveRetry": "No move — roll again",
-    "noMoveOther": "{{name}} has no move"
+    "noMoveOther": "{{name}} has no move",
+    "safeSquare": "Safe square",
+    "blockade": "Blockade"
   },
   "domino": {
     "empty": "Place the first domino",
@@ -605,7 +684,8 @@
       "multiColour": "Foul: more than one colour potted.",
       "wrongPot": "Foul: wrong ball potted.",
       "cleared": "Table cleared!",
-      "respotBlack": "Tie — the black is re-spotted."
+      "respotBlack": "Tie — the black is re-spotted.",
+      "threeFoul": "Three consecutive fouls — loss of rack."
     },
     "pushOut": "Push-out",
     "pushPass": "Pass back",
@@ -639,7 +719,12 @@
     "correct": "correct ✓",
     "wrong": "false ✗",
     "callStop": "Stop Kent!",
-    "roundWon": "Round for {{team}}"
+    "roundWon": "Round for {{team}}",
+    "center": "Exchange (centre cards)",
+    "deckLeft": "Stock",
+    "pass": "Pass",
+    "pickHandCard": "Pick your card to swap",
+    "pickCenterCard": "Pick a centre card"
   },
   "chess": {
     "check": "Check!",
@@ -814,5 +899,98 @@
     "illegal_action": "Illegal move",
     "chat_rate": "Too fast. Wait a moment.",
     "rate_limited": "Too many attempts — wait."
+  },
+  "games": {
+    "CHESS": "Chess",
+    "BACKGAMMON": "Backgammon",
+    "BELOTE": "Belote",
+    "SANTASE": "Sixty-Six (66)",
+    "SVARA": "Svara",
+    "WAR": "War",
+    "GOFISH": "Go Fish",
+    "KENT": "Kent",
+    "DRAUGHTS": "Draughts",
+    "LUDO": "Ludo",
+    "RUMMY": "Rummy",
+    "DOMINO": "Domino",
+    "BRIDGE": "Bridge",
+    "BATTLESHIP": "Battleship",
+    "DICE": "Yahtzee",
+    "BINGO": "Bingo",
+    "WORDS": "Word Chain",
+    "EIGHTBALL": "8-Ball",
+    "NINEBALL": "9-Ball",
+    "SNOOKER": "Snooker",
+    "MAGNAT": "Magnat"
+  },
+  "achv": {
+    "first_win": {
+      "title": "First win",
+      "description": "Win your first match."
+    },
+    "wins_10": {
+      "title": "Ten",
+      "description": "Win 10 matches."
+    },
+    "wins_50": {
+      "title": "Veteran",
+      "description": "Win 50 matches."
+    },
+    "wins_100": {
+      "title": "Champion",
+      "description": "Win 100 matches."
+    },
+    "games_10": {
+      "title": "Beginner",
+      "description": "Play 10 matches."
+    },
+    "games_50": {
+      "title": "Regular",
+      "description": "Play 50 matches."
+    },
+    "games_100": {
+      "title": "Dedicated",
+      "description": "Play 100 matches."
+    },
+    "streak_3": {
+      "title": "Streak of 3",
+      "description": "Win 3 matches in a row."
+    },
+    "streak_5": {
+      "title": "Streak of 5",
+      "description": "Win 5 matches in a row."
+    },
+    "streak_10": {
+      "title": "Unbeatable",
+      "description": "Win 10 matches in a row."
+    },
+    "level_5": {
+      "title": "Level 5",
+      "description": "Reach level 5."
+    },
+    "level_10": {
+      "title": "Level 10",
+      "description": "Reach level 10."
+    },
+    "level_25": {
+      "title": "Level 25",
+      "description": "Reach level 25."
+    },
+    "chess_master": {
+      "title": "Chess Master",
+      "description": "Win 10 matches of Chess."
+    },
+    "belote_master": {
+      "title": "Belote Master",
+      "description": "Win 10 matches of Belote."
+    },
+    "winGame": {
+      "title": "Win: {{game}}",
+      "description": "Win a match of {{game}}."
+    }
+  },
+  "announcements": {
+    "label": "Announcement",
+    "dismiss": "Dismiss announcement"
   }
 }

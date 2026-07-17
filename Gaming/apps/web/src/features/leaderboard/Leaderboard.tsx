@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { LeaderboardEntry } from "@aso/shared";
 import { Badge, Panel, cn } from "../../ui";
 import { api } from "../../lib/api";
-import { GAME_CATALOG } from "../lobby/games";
+import { GAME_CATALOG, gameTitle } from "../lobby/games";
 
 const READY_GAMES = GAME_CATALOG.filter((g) => g.ready);
 
@@ -37,7 +37,7 @@ export function Leaderboard() {
               g.key === game ? "bg-brass-400 text-charcoal-900" : "bg-felt-700 text-ink-300 hover:text-ink-100",
             )}
           >
-            {g.title}
+            {gameTitle(t, g.key, g.title)}
           </button>
         ))}
       </div>

@@ -11,7 +11,7 @@ import {
 import { getSocket } from "../../lib/socket";
 import { useLobbyStore } from "../../lib/store";
 import { lobbyActions } from "./lobbyActions";
-import { GAME_CATALOG } from "./games";
+import { gameTitle } from "./games";
 
 /**
  * App-wide lobby socket watcher (mounted in Layout). Mirrors LOBBY_STATE into
@@ -77,7 +77,7 @@ export function LobbyWatcher() {
   return (
     <div className="fixed bottom-4 left-4 z-[60] flex flex-col gap-2">
       {invites.map((inv) => {
-        const title = GAME_CATALOG.find((g) => g.key === inv.game)?.title ?? inv.game;
+        const title = gameTitle(t, inv.game);
         return (
           <div
             key={inv.lobbyId}

@@ -148,7 +148,54 @@
     "evVip": "VIP",
     "evFlag": "Segnalazioni (collusione)",
     "evAdminAction": "Azioni admin",
-    "evBroadcast": "Annunci"
+    "evBroadcast": "Annunci",
+    "rooms": "Tavoli attivi",
+    "products": "Prodotti",
+    "orders": "Ordini",
+    "announcements": "Annunci",
+    "refresh": "Aggiorna",
+    "edit": "Modifica",
+    "roomsCount": "{{n}} tavoli attivi",
+    "roomsUnreachable": "Il server realtime non è raggiungibile.",
+    "roomsEmpty": "Nessun tavolo attivo al momento.",
+    "roomAge": "Durata",
+    "roomPly": "Mosse",
+    "roomBot": "Bot",
+    "roomSubstituted": "Bot sostituto",
+    "roomTurn": "di turno",
+    "productsTitle": "Prodotti",
+    "productAdd": "Nuovo prodotto",
+    "productEdit": "Modifica prodotto",
+    "productSku": "SKU",
+    "productKind": "Tipo",
+    "productPrice": "Prezzo (centesimi €)",
+    "productPriceShort": "Prezzo",
+    "productCosmetic": "ID cosmetico",
+    "productGems": "Gemme",
+    "productChips": "Fiche",
+    "productActive": "Attivo",
+    "productInactive": "Inattivo",
+    "productActivate": "Attiva",
+    "productDeactivate": "Disattiva",
+    "orderAll": "Tutti",
+    "order_completed": "Completato",
+    "order_refunded": "Rimborsato",
+    "ordersEmpty": "Nessun ordine.",
+    "refund": "Rimborsa",
+    "refundClawback": "Recupera gemme/fiche accreditate",
+    "refundConfirm": "Conferma rimborso",
+    "refundDone": "Rimborsato. Recuperati: {{gems}} gemme, {{chips}} fiche.",
+    "annNew": "Nuovo annuncio",
+    "annTitle": "Titolo",
+    "annBody": "Testo dell'annuncio",
+    "annExpires": "Scadenza (facoltativa)",
+    "annExpiresAt": "scade",
+    "annPublish": "Pubblica",
+    "annEmpty": "Nessun annuncio.",
+    "annActive": "Attivo",
+    "annInactive": "Inattivo",
+    "annActivate": "Attiva",
+    "annDeactivate": "Disattiva"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -176,7 +223,11 @@
     "consentPre": "Ho 18+ e accetto i",
     "consentTerms": "Termini di servizio",
     "consentAnd": "e la",
-    "consentPrivacy": "Privacy Policy"
+    "consentPrivacy": "Privacy Policy",
+    "oauthConsent": "Continuando con Google o Facebook, dichiari di avere 18+ e accetti i",
+    "errorBanned": "Questo account è bloccato.",
+    "banReason": "Motivo: {{reason}}.",
+    "banAppeal": "Per opporti scrivi a legal@carbonstealth.eu."
   },
   "account": {
     "title": "Account",
@@ -314,8 +365,10 @@
     "grantGems": "+{{n}} gemme",
     "grantChips": "+{{n}} fiche",
     "perMonth": "al mese",
+    "consentImmediate": "Acconsento che il contenuto sia fornito immediatamente e confermo di perdere il diritto di recesso di 14 giorni.",
+    "consentSubscription": "Accetto l'abbonamento e il rinnovo automatico mensile fino alla disdetta; mantengo il diritto di recesso di 14 giorni con detrazione proporzionale.",
+    "consentRequired": "Spunta il consenso per continuare.",
     "perk": {
-      "noAds": "Niente pubblicità",
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% bonus giornaliero",
       "gems": "{{n}} 💎 al mese",
@@ -362,6 +415,10 @@
     "equipped": "Equipaggiato",
     "vipOnly": "Solo VIP",
     "needGems": "Gemme insufficienti",
+    "custom": "Tavolozza personalizzata",
+    "customVip": "Le tavolozze personalizzate sono una funzione VIP (Silver e superiori).",
+    "colorA": "Colore primario",
+    "colorB": "Colore secondario",
     "type": {
       "FELT": "Panno del tavolo",
       "CARDBACK": "Dorso delle carte",
@@ -392,6 +449,8 @@
     "empty": "Saluta il tavolo 👋",
     "mute": "Silenzia",
     "unmute": "Riattiva",
+    "report": "Segnala giocatore",
+    "reported": "Segnalato",
     "quick": {
       "hi": "Ciao! 👋",
       "gl": "Buona fortuna!",
@@ -437,6 +496,8 @@
     "newHand": "Mano {{n}}"
   },
   "bridge": {
+    "dummyHand": "Mano del morto",
+    "playFromDummy": "Tocca a te — gioca una carta dal morto",
     "auction": "Asta",
     "contract": "Contratto",
     "yourBid": "La tua dichiarazione",
@@ -456,7 +517,15 @@
     "flip": "Gira",
     "battle": "GUERRA",
     "cards": "Carte: {{n}}",
-    "tookPile": "{{name}} prende {{n}} carte"
+    "tookPile": "{{name}} prende {{n}} carte",
+    "warPhase": "GUERRA!",
+    "bounty": "Posta: {{n}}",
+    "fight": "Carica (3 carte)",
+    "skirmish": "Prudente (1 carta)",
+    "fightHint": "Scommetti in profondità per un grande bottino — o gioca prudente per proteggere il mazzo.",
+    "streak": "Serie ×{{n}}",
+    "raid": "RAZZIA!",
+    "raided": "{{name}} razzia una carta in serie!"
   },
   "rummy": {
     "stock": "Mazzo",
@@ -498,7 +567,15 @@
     "backgammon": "Backgammon!",
     "openingRoll": "Tiro d'apertura",
     "white": "Bianco",
-    "black": "Nero"
+    "black": "Nero",
+    "cube": "Cubo",
+    "double": "Raddoppia",
+    "take": "Accetto",
+    "drop": "Rifiuto",
+    "waitingDouble": "In attesa della risposta al raddoppio",
+    "doubleOffered": "Raddoppio a ×{{value}}",
+    "doubleTaken": "Il raddoppio è stato accettato",
+    "doubleDropped": "Il raddoppio è stato rifiutato"
   },
   "battleship": {
     "enemy": "Avversario: {{name}}",
@@ -558,7 +635,9 @@
     "pickToken": "Scegli una pedina",
     "noMove": "Nessuna mossa — salti il turno",
     "noMoveRetry": "Nessuna mossa — tira di nuovo",
-    "noMoveOther": "{{name}} non ha mosse"
+    "noMoveOther": "{{name}} non ha mosse",
+    "safeSquare": "Casella sicura",
+    "blockade": "Blocco"
   },
   "domino": {
     "empty": "Posiziona il primo domino",
@@ -605,7 +684,8 @@
       "multiColour": "Fallo: più di una colorata in buca.",
       "wrongPot": "Fallo: palla sbagliata in buca.",
       "cleared": "Tavolo ripulito!",
-      "respotBlack": "Parità — la nera torna sul punto."
+      "respotBlack": "Parità — la nera torna sul punto.",
+      "threeFoul": "Tre falli consecutivi — perdi il frame."
     },
     "pushOut": "Push-out",
     "pushPass": "Restituisci il tiro",
@@ -639,7 +719,12 @@
     "correct": "giusto ✓",
     "wrong": "errato ✗",
     "callStop": "Stop Kent!",
-    "roundWon": "Round per {{team}}"
+    "roundWon": "Round per {{team}}",
+    "center": "Borsa (carte centrali)",
+    "deckLeft": "Mazzo",
+    "pass": "Passo",
+    "pickHandCard": "Scegli la tua carta da scambiare",
+    "pickCenterCard": "Scegli una carta centrale"
   },
   "chess": {
     "check": "Scacco!",
@@ -814,5 +899,98 @@
     "illegal_action": "Mossa non valida",
     "chat_rate": "Troppo veloce. Attendi un momento.",
     "rate_limited": "Troppi tentativi — attendi."
+  },
+  "games": {
+    "CHESS": "Scacchi",
+    "BACKGAMMON": "Backgammon",
+    "BELOTE": "Belote",
+    "SANTASE": "Sessantasei (66)",
+    "SVARA": "Svara",
+    "WAR": "Guerra",
+    "GOFISH": "Go Fish",
+    "KENT": "Kent",
+    "DRAUGHTS": "Dama",
+    "LUDO": "Ludo",
+    "RUMMY": "Rummy",
+    "DOMINO": "Domino",
+    "BRIDGE": "Bridge",
+    "BATTLESHIP": "Battleship",
+    "DICE": "Yahtzee",
+    "BINGO": "Bingo",
+    "WORDS": "Catena di parole",
+    "EIGHTBALL": "8-Ball",
+    "NINEBALL": "9-Ball",
+    "SNOOKER": "Snooker",
+    "MAGNAT": "Magnat"
+  },
+  "achv": {
+    "first_win": {
+      "title": "Prima vittoria",
+      "description": "Vinci la tua prima partita."
+    },
+    "wins_10": {
+      "title": "Dieci",
+      "description": "Vinci 10 partite."
+    },
+    "wins_50": {
+      "title": "Veterano",
+      "description": "Vinci 50 partite."
+    },
+    "wins_100": {
+      "title": "Campione",
+      "description": "Vinci 100 partite."
+    },
+    "games_10": {
+      "title": "Principiante",
+      "description": "Gioca 10 partite."
+    },
+    "games_50": {
+      "title": "Giocatore abituale",
+      "description": "Gioca 50 partite."
+    },
+    "games_100": {
+      "title": "Giocatore costante",
+      "description": "Gioca 100 partite."
+    },
+    "streak_3": {
+      "title": "Serie di 3",
+      "description": "Vinci 3 partite di fila."
+    },
+    "streak_5": {
+      "title": "Serie di 5",
+      "description": "Vinci 5 partite di fila."
+    },
+    "streak_10": {
+      "title": "Imbattibile",
+      "description": "Vinci 10 partite di fila."
+    },
+    "level_5": {
+      "title": "Livello 5",
+      "description": "Raggiungi il livello 5."
+    },
+    "level_10": {
+      "title": "Livello 10",
+      "description": "Raggiungi il livello 10."
+    },
+    "level_25": {
+      "title": "Livello 25",
+      "description": "Raggiungi il livello 25."
+    },
+    "chess_master": {
+      "title": "Maestro di scacchi",
+      "description": "Vinci 10 partite a Scacchi."
+    },
+    "belote_master": {
+      "title": "Maestro di belote",
+      "description": "Vinci 10 partite a Belote."
+    },
+    "winGame": {
+      "title": "Vittoria: {{game}}",
+      "description": "Vinci una partita a {{game}}."
+    }
+  },
+  "announcements": {
+    "label": "Annuncio",
+    "dismiss": "Chiudi annuncio"
   }
 }

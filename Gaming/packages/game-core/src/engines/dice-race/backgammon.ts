@@ -29,17 +29,26 @@ export interface BackgammonState {
   bar: [number, number]; // checkers on the bar [white, black]
   off: [number, number]; // borne-off checkers [white, black]
   turn: Seat;
-  phase: "ROLL" | "MOVE";
+  phase: "ROLL" | "MOVE" | "DOUBLE";
   dice: number[]; // dice rolled this turn (2, or 4 on doubles)
   remaining: number[]; // dice values not yet consumed
   /** Opening roll [white die, black die] — present only during the first turn. */
   openingRoll?: [number, number];
+  /** Doubling cube value: 1 → 2 → 4 → 8 → 16 → 32 → 64. */
+  cube: number;
+  /** Seat that owns the cube (may propose the next double); null = centered. */
+  cubeOwner: Seat | null;
+  /** Set when a player wins by a dropped double (concession); null otherwise. */
+  winner: Seat | null;
 }
 
 export type BackgammonAction =
   | { type: "ROLL" }
   | { type: "MOVE"; from: number | "BAR"; die: number }
-  | { type: "PASS" };
+  | { type: "PASS" }
+  | { type: "DOUBLE" }
+  | { type: "TAKE" }
+  | { type: "DROP" };
 
 export type BackgammonEvent =
   | { type: "ROLL"; seat: Seat; dice: number[] }
@@ -47,11 +56,28 @@ export type BackgammonEvent =
   | { type: "HIT"; seat: Seat; point: number }
   | { type: "PASS"; seat: Seat }
   | { type: "BEAR_OFF"; seat: Seat; from: number }
+  /** A player offers to double the stake; `value` is the proposed new cube. */
+  | { type: "DOUBLE"; seat: Seat; value: number }
+  /** The double is accepted; `value` is the new (doubled) cube. */
+  | { type: "TAKE"; seat: Seat; value: number }
+  /** The double is declined — the offerer wins the current stake. */
+  | { type: "DROP"; seat: Seat }
   | { type: "WIN"; seat: Seat; points: number };
 
 const WHITE = 0;
 const BLACK = 1;
 const dir = (seat: Seat): 1 | -1 => (seat === WHITE ? -1 : 1); // index delta toward off
+const opponent = (seat: Seat): 0 | 1 => (seat === WHITE ? BLACK : WHITE);
+
+/** May `seat` offer a double now? Requires ownership (or a centered cube). */
+function canDouble(s: BackgammonState, seat: Seat): boolean {
+  return (
+    s.phase === "ROLL" &&
+    seat === s.turn &&
+    s.cube < 64 &&
+    (s.cubeOwner === null || s.cubeOwner === seat)
+  );
+}
 
 function startingPoints(): number[] {
   const p = new Array<number>(24).fill(0);
@@ -93,6 +119,13 @@ function allHome(s: BackgammonState, seat: 0 | 1): boolean {
 }
 
 const pipToOff = (seat: Seat, i: number): number => (seat === WHITE ? i + 1 : 24 - i);
+
+/** Total pips the seat must still travel to bear off all checkers (bar = 25). */
+function pipCount(s: BackgammonState, seat: 0 | 1): number {
+  let pip = s.bar[seat] * 25;
+  for (let i = 0; i < 24; i++) pip += ownCount(s, i, seat) * pipToOff(seat, i);
+  return pip;
+}
 
 function canBearOff(s: BackgammonState, seat: 0 | 1, from: number, die: number): boolean {
   if (!allHome(s, seat)) return false;
@@ -195,6 +228,9 @@ function clone(s: BackgammonState): BackgammonState {
     phase: s.phase,
     dice: [...s.dice],
     remaining: [...s.remaining],
+    cube: s.cube,
+    cubeOwner: s.cubeOwner,
+    winner: s.winner,
   };
   if (s.openingRoll) next.openingRoll = [s.openingRoll[0], s.openingRoll[1]];
   return next;
@@ -253,13 +289,24 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
       dice: [d1, d2],
       remaining: [d1, d2],
       openingRoll: [d1, d2],
+      cube: 1,
+      cubeOwner: null,
+      winner: null,
     };
   },
 
   legalActions(state, seat) {
     if (backgammonEngine.isTerminal(state)) return [];
+    // An offered double is answered by the OTHER player (TAKE / DROP).
+    if (state.phase === "DOUBLE") {
+      return seat === opponent(state.turn) ? [{ type: "TAKE" }, { type: "DROP" }] : [];
+    }
     if (seat !== state.turn) return [];
-    if (state.phase === "ROLL") return [{ type: "ROLL" }];
+    if (state.phase === "ROLL") {
+      const acts: BackgammonAction[] = [{ type: "ROLL" }];
+      if (canDouble(state, seat)) acts.push({ type: "DOUBLE" });
+      return acts;
+    }
     const moves = movesFor(state);
     if (moves.length === 0) return [{ type: "PASS" }];
     return moves.map((m) => ({ type: "MOVE", from: m.from, die: m.die }));
@@ -267,6 +314,34 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
 
   reduce(state, action, rng: SeededRng) {
     const seat = state.turn as 0 | 1;
+
+    if (action.type === "DOUBLE") {
+      if (!canDouble(state, seat)) throw new IllegalActionError("Cannot double now");
+      const next = clone(state);
+      next.phase = "DOUBLE";
+      return { state: next, events: [{ type: "DOUBLE", seat, value: next.cube * 2 }] };
+    }
+
+    if (action.type === "TAKE" || action.type === "DROP") {
+      if (state.phase !== "DOUBLE") throw new IllegalActionError("No double to answer");
+      const responder = opponent(seat); // the offerer is `seat` (the turn holder)
+      const next = clone(state);
+      if (action.type === "TAKE") {
+        next.cube *= 2;
+        next.cubeOwner = responder; // ownership passes to the taker
+        next.phase = "ROLL"; // the offerer still owes their roll
+        return { state: next, events: [{ type: "TAKE", seat: responder, value: next.cube }] };
+      }
+      // DROP: the offerer wins the current (un-doubled) stake outright.
+      next.winner = seat;
+      return {
+        state: next,
+        events: [
+          { type: "DROP", seat: responder },
+          { type: "WIN", seat, points: next.cube },
+        ],
+      };
+    }
 
     if (action.type === "ROLL") {
       if (state.phase !== "ROLL") throw new IllegalActionError("Not in ROLL phase");
@@ -319,7 +394,7 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
     if (idx >= 0) next.remaining.splice(idx, 1);
 
     if (next.off[seat] === 15) {
-      events.push({ type: "WIN", seat, points: winPoints(next, seat) });
+      events.push({ type: "WIN", seat, points: winPoints(next, seat) * next.cube });
     } else if (next.remaining.length === 0 || movesFor(next).length === 0) {
       endTurn(next);
     }
@@ -328,19 +403,71 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
   },
 
   isTerminal(state) {
-    return state.off[0] === 15 || state.off[1] === 15;
+    return state.off[0] === 15 || state.off[1] === 15 || state.winner !== null;
   },
 
   score(state): SeatScore[] {
-    const winner = state.off[0] === 15 ? WHITE : BLACK;
-    const loser = winner === WHITE ? BLACK : WHITE;
+    const winner = (state.winner ?? (state.off[0] === 15 ? WHITE : BLACK)) as 0 | 1;
+    const loser = opponent(winner);
+    // A bear-off win multiplies gammon/backgammon by the cube; a dropped double
+    // concedes exactly the current cube value (no gammon multiplier).
+    const points =
+      state.off[winner] === 15 ? winPoints(state, winner) * state.cube : state.cube;
     return [
-      { seat: winner, result: "win", points: winPoints(state, winner) },
+      { seat: winner, result: "win", points },
       { seat: loser, result: "loss", points: 0 },
     ];
   },
 
   redact(state) {
     return state;
+  },
+
+  /** Heuristic bot: roll when asked; otherwise pick the move that (in priority)
+   *  bears off, enters from the bar, hits an enemy blot, makes a safe point, and
+   *  otherwise advances the rearmost checker. Beats uniform-random by a mile. */
+  bot(state, seat) {
+    if (backgammonEngine.isTerminal(state)) return null;
+    // Answer an offered double: take from any reasonable position, drop only
+    // when hopelessly behind on the pip count.
+    if (state.phase === "DOUBLE") {
+      if (seat !== opponent(state.turn)) return null;
+      const me = pipCount(state, seat as 0 | 1);
+      const them = pipCount(state, opponent(seat));
+      return me <= them * 1.6 ? { type: "TAKE" } : { type: "DROP" };
+    }
+    if (seat !== state.turn) return null;
+    if (state.phase === "ROLL") {
+      // Conservative: only double from a clear pip lead and a still-low cube.
+      if (canDouble(state, seat)) {
+        const me = pipCount(state, seat as 0 | 1);
+        const them = pipCount(state, opponent(seat as 0 | 1));
+        if (state.cube <= 4 && me * 3 <= them * 2) return { type: "DOUBLE" };
+      }
+      return { type: "ROLL" };
+    }
+    const actions = backgammonEngine.legalActions(state, seat) as BackgammonAction[];
+    const moves = actions.filter((a): a is Extract<BackgammonAction, { type: "MOVE" }> => a.type === "MOVE");
+    if (moves.length === 0) return { type: "PASS" };
+    const opp = (1 - seat) as 0 | 1;
+    let best = moves[0]!;
+    let bestScore = -Infinity;
+    for (const m of moves) {
+      const dest = m.from === "BAR" ? barEntry(seat as 0 | 1, m.die) : destOf(seat as 0 | 1, m.from, m.die);
+      let s = 0;
+      if (dest === "OFF") s += 120;
+      else {
+        if (ownCount(state, dest, opp) === 1) s += 60; // hit an enemy blot
+        if (ownCount(state, dest, seat) >= 1) s += 25; // land safe on own point
+        if (ownCount(state, dest, seat) === 0 && ownCount(state, dest, opp) === 0) s -= 8; // leaves a blot
+      }
+      if (m.from === "BAR") s += 40; // entering is urgent
+      else s += (seat === WHITE ? m.from : 23 - m.from) * 0.5; // advance rear checkers
+      if (s > bestScore) {
+        bestScore = s;
+        best = m;
+      }
+    }
+    return best;
   },
 };

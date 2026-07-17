@@ -15,9 +15,12 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  *
  * Phase 1 (stock open, not closed): no obligation to follow suit; after each
  * trick the winner draws the top stock card, the loser the next. A player on
- * lead may also close the stock, exchange the trump Jack for the face-up trump,
- * or declare a marriage (K+Q same suit: 20, or 40 in trump) — marriages only
- * count once that player has taken a trick.
+ * lead may also close the stock, exchange the trump nine for the face-up trump
+ * (only AFTER having won a trick), or declare a marriage (K+Q same suit: 20, or
+ * 40 in trump). A marriage may be declared even before winning any trick (an
+ * opening marriage), but its 20/40 are CONDITIONAL: they are held pending and
+ * only score once the announcer wins at least one trick; if the announcer never
+ * takes a trick, the pending points are discarded (schwarz → opponent 3).
  * Phase 2 (stock closed or exhausted): must follow suit and head the trick when
  * able; if void of the led suit, must play a trump.
  *
@@ -46,6 +49,8 @@ export interface SantaseState {
   trick: Play[];
   points: [number, number];
   wonTrick: [boolean, boolean];
+  /** Conditional marriage points per seat, awaiting a first trick (§4.2). */
+  pendingMarriage: [number, number];
   closed: boolean;
   /** Seat that closed the talon (null if never closed). */
   closedBy: Seat | null;
@@ -119,6 +124,7 @@ function freshDeal(state: SantaseState, rng: SeededRng): void {
   state.trick = [];
   state.points = [0, 0];
   state.wonTrick = [false, false];
+  state.pendingMarriage = [0, 0];
   state.closed = false;
   state.closedBy = null;
   state.oppHadTrickAtClose = false;
@@ -200,6 +206,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       trick: [],
       points: [0, 0],
       wonTrick: [false, false],
+      pendingMarriage: [0, 0],
       closed: false,
       closedBy: null,
       oppHadTrickAtClose: false,
@@ -223,10 +230,15 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     if (onLead) {
       const canDraw = state.stock.length >= 1 && state.trumpCard !== null && !state.closed;
       if (canDraw) actions.push({ type: "CLOSE" });
-      if (canDraw && hand.includes(`9${state.trump}`)) actions.push({ type: "EXCHANGE" });
+      // Размяна на трупната 9 — само след поне една спечелена взятка (Pagat 66).
+      if (canDraw && state.wonTrick[seat] && hand.includes(`9${state.trump}`)) {
+        actions.push({ type: "EXCHANGE" });
+      }
       for (const card of hand) {
         actions.push({ type: "PLAY", card });
-        if (state.wonTrick[seat] && hasMarriagePartner(hand, card)) {
+        // Женитбата може да се обяви и без спечелена взятка (встъпителна) —
+        // точките са условни (виж reduce), но обявата е винаги позволена.
+        if (hasMarriagePartner(hand, card)) {
           actions.push({ type: "PLAY", card, marriage: true });
         }
       }
@@ -274,6 +286,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       trick: state.trick.slice(),
       points: [state.points[0], state.points[1]],
       wonTrick: [state.wonTrick[0], state.wonTrick[1]],
+      pendingMarriage: [state.pendingMarriage[0], state.pendingMarriage[1]],
       matchPoints: [state.matchPoints[0], state.matchPoints[1]],
     };
     const events: SantaseEvent[] = [];
@@ -300,13 +313,20 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     if (action.marriage) {
       const suit = suitOf(action.card);
       const value = suit === next.trump ? 40 : 20;
-      next.points[seat] = (next.points[seat] ?? 0) + value;
       events.push({ type: "MARRIAGE", seat, suit, value });
-      // Reaching 66 via a marriage in a CLOSED game must apply the closing rules
-      // (closer-failed penalty) too — mirror the trick path below.
-      if ((next.points[seat] ?? 0) >= 66) {
-        if (next.closed) return finishClosed(next, events, rng);
-        return finish(next, seat, events, rng);
+      if (next.wonTrick[seat]) {
+        // Обявяващият вече има взятка → 20/40 се зачитат веднага.
+        next.points[seat] = (next.points[seat] ?? 0) + value;
+        // Reaching 66 via a marriage in a CLOSED game must apply the closing
+        // rules (closer-failed penalty) too — mirror the trick path below.
+        if ((next.points[seat] ?? 0) >= 66) {
+          if (next.closed) return finishClosed(next, events, rng);
+          return finish(next, seat, events, rng);
+        }
+      } else {
+        // Встъпителна женитба: точките са УСЛОВНИ — реализират се едва щом
+        // обявяващият спечели взятка; анулират се ако не спечели никоя.
+        next.pendingMarriage[seat] = (next.pendingMarriage[seat] ?? 0) + value;
       }
     }
 
@@ -325,6 +345,11 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     const pts = (VALUE[rankOf(first.card)] ?? 0) + (VALUE[rankOf(second.card)] ?? 0);
     next.points[winner] = (next.points[winner] ?? 0) + pts;
     next.wonTrick[winner] = true;
+    // Първата взятка реализира натрупаните условни встъпителни женитби.
+    if ((next.pendingMarriage[winner] ?? 0) > 0) {
+      next.points[winner] = (next.points[winner] ?? 0) + (next.pendingMarriage[winner] ?? 0);
+      next.pendingMarriage[winner] = 0;
+    }
     next.lastTrickWinner = winner;
     next.trick = [];
     next.leader = winner;

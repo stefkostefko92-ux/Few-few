@@ -10,7 +10,7 @@ import {
 import { Button, Panel } from "../../ui";
 import { getSocket } from "../../lib/socket";
 import { useLobbyStore } from "../../lib/store";
-import { GAME_CATALOG } from "./games";
+import { GAME_CATALOG, gameTitle } from "./games";
 import { lobbyActions } from "./lobbyActions";
 import { RoomView } from "./RoomView";
 
@@ -39,7 +39,7 @@ export function RoomsPage() {
 
   if (lobby) return <RoomView lobby={lobby} />;
 
-  const titleOf = (k: GameKey) => GAME_CATALOG.find((g) => g.key === k)?.title ?? k;
+  const titleOf = (k: GameKey) => gameTitle(t, k);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -58,7 +58,7 @@ export function RoomsPage() {
             >
               {READY_GAMES.map((g) => (
                 <option key={g.key} value={g.key}>
-                  {g.title} ({g.players})
+                  {gameTitle(t, g.key, g.title)} ({g.players})
                 </option>
               ))}
             </select>

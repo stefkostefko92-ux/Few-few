@@ -29,6 +29,11 @@ const envSchema = z.object({
   // endpoints return 503 until configured. Secrets never leave env (§14).
   STRIPE_SECRET_KEY: z.string().optional().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
+  // Set to true ONLY once a Terms-of-Service URL is configured in the Stripe
+  // Dashboard (Settings → Public details). Enables the hosted-page ToS checkbox
+  // (consent_collection); until then Checkout relies on the always-shown
+  // custom_text notice + the in-app consent checkbox, so it never errors.
+  STRIPE_TOS_CONFIGURED: z.coerce.boolean().default(false),
   // Where Stripe redirects after Checkout / Billing Portal, and where email
   // links / OAuth success redirects send the player.
   PUBLIC_WEB_URL: z.string().url().default("http://localhost:4502"),
@@ -64,8 +69,11 @@ const envSchema = z.object({
   SENTRY_DSN: z.string().optional().default(""),
   SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
 
-  // Shared secret for internal service-to-service calls (realtime -> api).
+  // Shared secret for internal service-to-service calls (realtime <-> api).
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
+  // Internal base URL of the realtime node, used by the admin live-tables view
+  // to read its in-memory room list (§14). Single-node by default.
+  REALTIME_INTERNAL_URL: z.string().url().default("http://localhost:4501"),
 });
 
 const DEV_INTERNAL_SECRET = "dev-internal-secret-change-me";

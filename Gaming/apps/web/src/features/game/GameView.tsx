@@ -1,10 +1,10 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { isGameKey, type GameKey } from "@aso/shared";
+import { buyInFor, isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { useAuthStore, useMatchStore } from "../../lib/store";
-import { GAME_CATALOG } from "../lobby/games";
+import { GAME_CATALOG, gameTitle } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
@@ -101,11 +101,6 @@ function renderGame(gameKey: GameKey, title: string) {
   }
 }
 
-/** Chip-wagering games and the chips needed to sit down (§11.4 virtual only). */
-const CHIP_BUYIN: Partial<Record<GameKey, number>> = {
-  SVARA: 200,
-};
-
 /** Dispatches to a bespoke per-game view, wrapped in the cinematic stage. */
 export function GameView() {
   const { game } = useParams<{ game: string }>();
@@ -124,7 +119,7 @@ export function GameView() {
     return (
       <div className="mx-auto max-w-md text-center">
         <Panel>
-          <h1 className="mb-2 text-2xl text-brass-300">{meta?.title ?? game}</h1>
+          <h1 className="mb-2 text-2xl text-brass-300">{meta ? gameTitle(t, meta.key, meta.title) : game}</h1>
           <p className="text-ink-300">{t("lobby.comingSoon")}</p>
           <Button variant="felt" className="mt-6" onClick={() => navigate("/")}>
             {t("game.backToLobby")}
@@ -137,7 +132,7 @@ export function GameView() {
   const key = gameKey as GameKey;
 
   // Gate betting tables: don't seat a player who can't cover the buy-in.
-  const buyIn = CHIP_BUYIN[key];
+  const buyIn = buyInFor(key);
   if (buyIn !== undefined && user && Number(user.chips) < buyIn) {
     return <OutOfChips minBuyIn={buyIn} chips={Number(user.chips)} />;
   }
@@ -151,7 +146,7 @@ export function GameView() {
           </p>
         }
       >
-        {renderGame(key, meta.title)}
+        {renderGame(key, gameTitle(t, key, meta.title))}
       </Suspense>
       <MatchStatus />
       <ReclaimBanner />

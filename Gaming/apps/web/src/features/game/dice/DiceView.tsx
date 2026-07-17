@@ -26,6 +26,7 @@ interface DiceState {
   held: boolean[];
   rerollsLeft: number;
   scores: Array<Partial<Record<Category, number>>>;
+  bonusYahtzee?: number[];
   turn: number;
   seats: number;
   rolledThisTurn: boolean;
@@ -196,7 +197,9 @@ export function DiceView({ title }: { title: string }) {
                 <tr className="dice-total">
                   <td>{t("dice.total")}</td>
                   {state.scores.map((sc, s) => (
-                    <td key={s} className={cn(s === seat && "dice-me")}>{totalOf(sc)}</td>
+                    <td key={s} className={cn(s === seat && "dice-me")}>
+                      {totalOf(sc, state.bonusYahtzee?.[s] ?? 0)}
+                    </td>
                   ))}
                 </tr>
               </tbody>

@@ -34,6 +34,9 @@ export interface DiceState {
   held: boolean[];
   rerollsLeft: number;
   scores: Array<Partial<Record<Category, number>>>; // per seat
+  /** Accumulated Yahtzee bonus per seat: +100 for every extra Yahtzee rolled
+   *  once the 50-point Yahtzee box is already filled (official rule). */
+  bonusYahtzee: number[];
   turn: Seat;
   seats: number;
   rolledThisTurn: boolean;
@@ -48,8 +51,12 @@ export type DiceAction =
 export type DiceEvent =
   | { type: "ROLL"; seat: Seat; dice: number[]; rerollsLeft: number }
   | { type: "SCORE"; seat: Seat; category: Category; points: number }
+  | { type: "YAHTZEE_BONUS"; seat: Seat; bonus: number }
   | { type: "WIN"; seat: Seat }
   | { type: "DRAW"; seats: Seat[] };
+
+/** The official +100 bonus for each extra Yahtzee after the 50-box is filled. */
+export const YAHTZEE_BONUS = 100;
 
 const NO_HOLD: readonly boolean[] = [false, false, false, false, false];
 
@@ -71,7 +78,7 @@ export function scoreCategory(dice: number[], cat: Category): number {
     case "sixes": return (c[6] ?? 0) * 6;
     case "threeKind": return c.some((n) => n >= 3) ? sum : 0;
     case "fourKind": return c.some((n) => n >= 4) ? sum : 0;
-    case "fullHouse": return c.includes(3) && c.includes(2) ? 25 : c.includes(5) ? 25 : 0;
+    case "fullHouse": return c.includes(3) && c.includes(2) ? 25 : 0;
     case "smallStraight": return hasStraight(c, 4) ? 30 : 0;
     case "largeStraight": return hasStraight(c, 5) ? 40 : 0;
     case "chance": return sum;
@@ -92,10 +99,16 @@ function hasStraight(c: number[], len: number): boolean {
 export const upperTotal = (s: Partial<Record<Category, number>>): number =>
   UPPER_CATEGORIES.reduce((a, c) => a + (s[c] ?? 0), 0);
 
-/** Grand total for one seat's sheet, upper-section bonus included. */
-export const totalOf = (s: Partial<Record<Category, number>>): number =>
+/** Grand total for one seat's sheet, upper-section bonus included. Pass the
+ *  accumulated Yahtzee bonus to include it (the sheet alone doesn't carry it). */
+export const totalOf = (s: Partial<Record<Category, number>>, yahtzeeBonus = 0): number =>
   CATEGORIES.reduce((a, c) => a + (s[c] ?? 0), 0) +
-  (upperTotal(s) >= UPPER_BONUS_TARGET ? UPPER_BONUS : 0);
+  (upperTotal(s) >= UPPER_BONUS_TARGET ? UPPER_BONUS : 0) +
+  yahtzeeBonus;
+
+/** One seat's grand total including its Yahtzee bonus. */
+export const seatTotal = (state: DiceState, seat: number): number =>
+  totalOf(state.scores[seat] ?? {}, state.bonusYahtzee[seat] ?? 0);
 
 /** A well-formed optional hold mask: up to 5 booleans (shorter = rest false). */
 function validHold(hold: unknown): boolean {
@@ -111,6 +124,7 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
       held: NO_HOLD.slice(),
       rerollsLeft: 2,
       scores: Array.from({ length: seats }, () => ({})),
+      bonusYahtzee: new Array<number>(seats).fill(0),
       turn: 0,
       seats,
       rolledThisTurn: false,
@@ -159,6 +173,7 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
       dice: state.dice.slice(),
       held: state.held.slice(),
       scores: state.scores.map((s) => ({ ...s })),
+      bonusYahtzee: state.bonusYahtzee.slice(),
     };
     const events: DiceEvent[] = [];
 
@@ -187,6 +202,14 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
     const pts = scoreCategory(next.dice, action.category);
     next.scores[seat]![action.category] = pts;
     events.push({ type: "SCORE", seat, category: action.category, points: pts });
+
+    // Yahtzee bonus: rolling a five-of-a-kind when the 50-point Yahtzee box is
+    // ALREADY filled earns +100 (official rule), whatever category you fill now.
+    const isYahtzeeRoll = counts(next.dice).some((n) => n === 5);
+    if (isYahtzeeRoll && state.scores[seat]!.yahtzee === 50) {
+      next.bonusYahtzee[seat] = (next.bonusYahtzee[seat] ?? 0) + YAHTZEE_BONUS;
+      events.push({ type: "YAHTZEE_BONUS", seat, bonus: next.bonusYahtzee[seat]! });
+    }
 
     // Reset for the next player's turn.
     next.dice = [0, 0, 0, 0, 0];
@@ -243,7 +266,7 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const totals = state.scores.map(totalOf);
+    const totals = state.scores.map((_, seat) => seatTotal(state, seat));
     const max = Math.max(...totals);
     const tied = totals.filter((t) => t === max).length > 1;
     return totals.map((t, seat) => ({
@@ -258,7 +281,7 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
 
 /** All seats sharing the highest grand total (one seat = outright winner). */
 function topSeats(state: DiceState): Seat[] {
-  const totals = state.scores.map(totalOf);
+  const totals = state.scores.map((_, seat) => seatTotal(state, seat));
   const max = Math.max(...totals);
   return totals.flatMap((t, seat) => (t === max ? [seat] : []));
 }

@@ -162,6 +162,18 @@
 }
 .cine-over__card--win { border-color: var(--brass-300); }
 .cine-over__card--loss { border-color: rgba(194, 54, 47, 0.5); }
+/* A static brass wash pouring from the top of the winning card — reads as the
+   overhead spotlight catching the gold trim, no animation (epilepsy-safe). */
+.cine-over__card--win::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 85% at 50% -5%, rgba(231, 200, 123, 0.2), transparent 62%);
+  z-index: 0;
+}
+.cine-over__card > * { position: relative; z-index: 1; }
 
 .cine-over__kicker {
   font-size: 0.75rem;
@@ -184,6 +196,12 @@
 .cine-over__mmr {
   margin-top: 4px;
   color: var(--ink-300);
+}
+.cine-over__reward {
+  margin-top: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 /* Brass spark burst on a win. */

@@ -9,14 +9,14 @@ import {
 import { Badge, Button, Panel } from "../../ui";
 import { api, type FriendEntry } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
-import { GAME_CATALOG } from "./games";
+import { gameTitle } from "./games";
 import { lobbyActions } from "./lobbyActions";
 
 export function RoomView({ lobby }: { lobby: LobbySnapshot }) {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
   const isHost = !!me && me.id === lobby.hostUserId;
-  const title = GAME_CATALOG.find((g) => g.key === lobby.game)?.title ?? lobby.game;
+  const title = gameTitle(t, lobby.game);
   const hasTeams = lobby.teams > 1;
   const teamName = (team: number) => t("room.teamName", { num: team + 1 });
   const filled = lobby.seats.filter((s) => s.userId || s.isBot).length;

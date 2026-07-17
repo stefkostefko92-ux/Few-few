@@ -48,8 +48,43 @@ interface FakeMatchPlayer {
   match: { id: string; game: string; mode: string; seed: string; startedAt: Date; endedAt: Date | null };
 }
 
+interface FakeProduct {
+  id: string;
+  kind: string;
+  sku: string;
+  priceCents: number;
+  gems: number | null;
+  chips: number | null;
+  cosmeticId: string | null;
+  active: boolean;
+}
+
+interface FakeAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  active: boolean;
+  createdBy: string;
+  createdAt: Date;
+  expiresAt: Date | null;
+}
+
+interface FakePurchase {
+  id: string;
+  userId: string;
+  productId: string;
+  stripeId: string;
+  status: string;
+  createdAt: Date;
+  product: FakeProduct | null;
+  user: { id: string; displayName: string; email: string } | null;
+}
+
 const users = new Map<string, FakeUser>();
 const reports = new Map<string, FakeReport>();
+const products = new Map<string, FakeProduct>();
+const announcements = new Map<string, FakeAnnouncement>();
+let purchases: FakePurchase[] = [];
 let matchPlayers: FakeMatchPlayer[] = [];
 let auditRows: Array<{
   id: string;
@@ -244,6 +279,87 @@ vi.mock("@aso/db", () => {
     groupBy: vi.fn(async () => [{ game: "BELOTE", _count: { _all: 7 } }]),
   };
 
+  const product = {
+    findMany: vi.fn(async () => [...products.values()].map((p) => ({ ...p }))),
+    findUnique: vi.fn(async ({ where }: { where: Where }) => {
+      if (where.id) return products.get(where.id) ?? null;
+      if (where.sku) return [...products.values()].find((p) => p.sku === where.sku) ?? null;
+      return null;
+    }),
+    create: vi.fn(async ({ data }: { data: Where }) => {
+      const row: FakeProduct = {
+        id: `prod_${++seq}`,
+        kind: data.kind,
+        sku: data.sku,
+        priceCents: data.priceCents,
+        gems: data.gems ?? null,
+        chips: data.chips ?? null,
+        cosmeticId: data.cosmeticId ?? null,
+        active: data.active ?? true,
+      };
+      products.set(row.id, row);
+      return { ...row };
+    }),
+    update: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
+      const row = products.get(where.id);
+      if (!row) throw new Error("product not found");
+      Object.assign(row, data);
+      return { ...row };
+    }),
+  };
+
+  const announcement = {
+    findMany: vi.fn(async (args: ListArgs = {}) => {
+      const where: Where = args.where ?? {};
+      let list = [...announcements.values()];
+      if (typeof where.active === "boolean") list = list.filter((a) => a.active === where.active);
+      if (where.OR) {
+        // active + (expiresAt null OR expiresAt > now)
+        list = list.filter((a) => a.expiresAt === null || a.expiresAt.getTime() > Date.now());
+      }
+      list.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return applyCursor(list, args).map((a) => ({ ...a }));
+    }),
+    findUnique: vi.fn(async ({ where }: { where: Where }) => announcements.get(where.id) ?? null),
+    create: vi.fn(async ({ data }: { data: Where }) => {
+      const row: FakeAnnouncement = {
+        id: `ann_${++seq}`,
+        title: data.title,
+        body: data.body,
+        active: data.active ?? true,
+        createdBy: data.createdBy,
+        createdAt: new Date(),
+        expiresAt: data.expiresAt ?? null,
+      };
+      announcements.set(row.id, row);
+      return { ...row };
+    }),
+    update: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
+      const row = announcements.get(where.id);
+      if (!row) throw new Error("announcement not found");
+      Object.assign(row, data);
+      return { ...row };
+    }),
+  };
+
+  const purchase = {
+    groupBy: vi.fn(async () => []),
+    findMany: vi.fn(async (args: ListArgs = {}) => {
+      const where: Where = args.where ?? {};
+      let list = [...purchases];
+      if (where.status) list = list.filter((p) => p.status === where.status);
+      list.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return applyCursor(list, args).map((p) => ({ ...p }));
+    }),
+    findUnique: vi.fn(async ({ where }: { where: Where }) => purchases.find((p) => p.id === where.id) ?? null),
+    update: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
+      const row = purchases.find((p) => p.id === where.id);
+      if (!row) throw new Error("purchase not found");
+      Object.assign(row, data);
+      return { ...row };
+    }),
+  };
+
   const $queryRaw = vi.fn(async (strings: TemplateStringsArray) => {
     const sql = strings.join("?");
     if (sql.includes('"lastSeenAt"')) return stagedDau;
@@ -273,8 +389,9 @@ vi.mock("@aso/db", () => {
         findMany: vi.fn(async () => []),
         update: vi.fn(async () => ({})),
       },
-      purchase: { groupBy: vi.fn(async () => []) },
-      product: { findMany: vi.fn(async () => []) },
+      purchase,
+      product,
+      announcement,
       $queryRaw,
     },
     Prisma: { PrismaClientKnownRequestError: FakeKnownRequestError },
@@ -324,6 +441,9 @@ const asRole = (sub: string, role: string) => [
 beforeEach(() => {
   users.clear();
   reports.clear();
+  products.clear();
+  announcements.clear();
+  purchases = [];
   matchPlayers = [];
   auditRows = [];
   stagedDau = [];
@@ -457,6 +577,83 @@ describe("PATCH /api/admin/users/:id — ban management", () => {
     expect(res.status).toBe(200);
     const audit = auditRows.find((a) => a.action === "update_user" && a.targetId === target.id);
     expect(JSON.parse(audit!.detail)).toMatchObject({ grantGems: 5, note: "компенсация" });
+  });
+});
+
+// ── Privilege-escalation & self-service guards ───────────────────────────────
+
+describe("PATCH /api/admin/users/:id — role & self guards", () => {
+  it("blocks an ADMIN from minting another ADMIN", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ role: "ADMIN" });
+    expect(res.status).toBe(403);
+    expect(users.get(target.id)!.role).toBe("PLAYER");
+  });
+
+  it("lets an OWNER promote a player to ADMIN", async () => {
+    const owner = addUser({ role: "OWNER" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(owner.id, "OWNER"))
+      .send({ role: "ADMIN" });
+    expect(res.status).toBe(200);
+    expect(users.get(target.id)!.role).toBe("ADMIN");
+  });
+
+  it("forbids changing your own role", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const res = await request(app)
+      .patch(`/api/admin/users/${admin.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ role: "MODERATOR" });
+    expect(res.status).toBe(403);
+    expect(users.get(admin.id)!.role).toBe("ADMIN");
+  });
+
+  it("forbids self-granting currency", async () => {
+    const admin = addUser({ role: "ADMIN", chips: 100n });
+    const res = await request(app)
+      .patch(`/api/admin/users/${admin.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ grantChips: 5000 });
+    expect(res.status).toBe(403);
+    expect(users.get(admin.id)!.chips).toBe(100n);
+  });
+});
+
+describe("PATCH /api/admin/users/:id — large-grant note", () => {
+  it("rejects a large grant without a note", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ grantChips: 50_000 });
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe("grant_note_required");
+  });
+
+  it("accepts a large grant when a note is supplied", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const target = addUser();
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ grantChips: -50_000, note: "корекция след измама" });
+    expect(res.status).toBe(200);
+    const audit = auditRows.find((a) => a.action === "update_user" && a.targetId === target.id);
+    expect(JSON.parse(audit!.detail)).toMatchObject({ note: "корекция след измама" });
   });
 });
 
@@ -671,6 +868,202 @@ describe("GET /api/admin/stats/timeseries", () => {
     // Older days are zero-filled.
     expect(res.body.series[0].dau).toBe(0);
     expect(res.body.topGames).toEqual([{ game: "BELOTE", matches: 7 }]);
+  });
+});
+
+// ── Store products (read: staff; CRUD: ADMIN/OWNER) ──────────────────────────
+
+function addProduct(overrides: Partial<FakeProduct> = {}): FakeProduct {
+  const n = ++seq;
+  const p: FakeProduct = {
+    id: `prod_${n}`,
+    kind: "GEMS",
+    sku: `sku_${n}`,
+    priceCents: 199,
+    gems: 100,
+    chips: null,
+    cosmeticId: null,
+    active: true,
+    ...overrides,
+  };
+  products.set(p.id, p);
+  return p;
+}
+
+describe("admin products", () => {
+  it("lists products for staff (read)", async () => {
+    addProduct();
+    const res = await request(app).get("/api/admin/products").set("Cookie", asRole("s", "SUPPORT"));
+    expect(res.status).toBe(200);
+    expect(res.body.products).toHaveLength(1);
+  });
+
+  it("blocks product creation below ADMIN", async () => {
+    const res = await request(app)
+      .post("/api/admin/products")
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole("m", "MODERATOR"))
+      .send({ sku: "gems_x", kind: "GEMS", priceCents: 199, gems: 100 });
+    expect(res.status).toBe(403);
+  });
+
+  it("creates a product as ADMIN and audits it", async () => {
+    const admin = addUser({ role: "ADMIN", displayName: "Админ" });
+    const res = await request(app)
+      .post("/api/admin/products")
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ sku: "chips_x", kind: "CHIP_PACK", priceCents: 699, chips: 25000 });
+    expect(res.status).toBe(200);
+    expect(res.body.product).toMatchObject({ sku: "chips_x", chips: 25000, active: true });
+    expect(auditRows.some((a) => a.action === "product_create")).toBe(true);
+  });
+
+  it("rejects a duplicate SKU", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    addProduct({ sku: "dupe" });
+    const res = await request(app)
+      .post("/api/admin/products")
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ sku: "dupe", kind: "GEMS", priceCents: 199 });
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe("sku_taken");
+  });
+
+  it("deactivates a product via active=false (no hard delete)", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const p = addProduct();
+    const res = await request(app)
+      .patch(`/api/admin/products/${p.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ active: false });
+    expect(res.status).toBe(200);
+    expect(products.get(p.id)!.active).toBe(false);
+  });
+});
+
+// ── Orders / refunds ─────────────────────────────────────────────────────────
+
+function addPurchase(overrides: Partial<FakePurchase> = {}): FakePurchase {
+  const n = ++seq;
+  const row: FakePurchase = {
+    id: `pur_${n}`,
+    userId: "buyer",
+    productId: "prod_x",
+    stripeId: `cs_test_${n}`,
+    status: "completed",
+    createdAt: new Date(Date.now() - n * 1000),
+    product: { id: "prod_x", kind: "GEMS", sku: "gems_small", priceCents: 199, gems: 100, chips: null, cosmeticId: null, active: true },
+    user: { id: "buyer", displayName: "Купувач", email: "buyer@example.com" },
+    ...overrides,
+  };
+  purchases.push(row);
+  return row;
+}
+
+describe("admin orders", () => {
+  it("lists orders for staff with buyer + product joined", async () => {
+    addPurchase({ status: "completed" });
+    addPurchase({ status: "refunded" });
+    const res = await request(app)
+      .get("/api/admin/orders?status=completed")
+      .set("Cookie", asRole("s", "SUPPORT"));
+    expect(res.status).toBe(200);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0]).toMatchObject({ status: "completed", sku: "gems_small", userName: "Купувач" });
+  });
+
+  it("blocks refund below ADMIN", async () => {
+    const p = addPurchase();
+    const res = await request(app)
+      .post(`/api/admin/orders/${p.id}/refund`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole("m", "MODERATOR"))
+      .send({});
+    expect(res.status).toBe(403);
+  });
+
+  it("returns a clear 503 when Stripe is not configured", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    const p = addPurchase();
+    const res = await request(app)
+      .post(`/api/admin/orders/${p.id}/refund`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({});
+    expect(res.status).toBe(503);
+    expect(res.body.error.code).toBe("stripe_not_configured");
+  });
+});
+
+// ── In-app announcements ─────────────────────────────────────────────────────
+
+describe("admin announcements", () => {
+  it("blocks creation below ADMIN", async () => {
+    const res = await request(app)
+      .post("/api/admin/announcements")
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole("m", "MODERATOR"))
+      .send({ title: "Здравей", body: "Тест" });
+    expect(res.status).toBe(403);
+  });
+
+  it("creates an announcement as ADMIN and audits it", async () => {
+    const admin = addUser({ role: "ADMIN", displayName: "Админ" });
+    const res = await request(app)
+      .post("/api/admin/announcements")
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ title: "Поддръжка", body: "Планов престой в 02:00" });
+    expect(res.status).toBe(200);
+    expect(res.body.announcement).toMatchObject({ title: "Поддръжка", active: true });
+    expect(auditRows.some((a) => a.action === "announcement_create")).toBe(true);
+  });
+
+  it("deactivates an announcement", async () => {
+    const admin = addUser({ role: "ADMIN" });
+    announcements.set("ann_1", {
+      id: "ann_1", title: "T", body: "B", active: true, createdBy: admin.id, createdAt: new Date(), expiresAt: null,
+    });
+    const res = await request(app)
+      .patch("/api/admin/announcements/ann_1")
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(admin.id, "ADMIN"))
+      .send({ active: false });
+    expect(res.status).toBe(200);
+    expect(announcements.get("ann_1")!.active).toBe(false);
+    expect(auditRows.some((a) => a.action === "announcement_deactivate")).toBe(true);
+  });
+
+  it("serves active, unexpired announcements to a signed-in player", async () => {
+    announcements.set("ann_live", {
+      id: "ann_live", title: "Живо", body: "текст", active: true, createdBy: "s", createdAt: new Date(), expiresAt: null,
+    });
+    announcements.set("ann_off", {
+      id: "ann_off", title: "Спряно", body: "x", active: false, createdBy: "s", createdAt: new Date(), expiresAt: null,
+    });
+    const res = await request(app).get("/api/announcements").set("Cookie", asRole("player", "PLAYER"));
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((a: { id: string }) => a.id)).toEqual(["ann_live"]);
+  });
+});
+
+// ── Live tables (staff read) ─────────────────────────────────────────────────
+
+describe("admin rooms", () => {
+  it("rejects a PLAYER", async () => {
+    const res = await request(app).get("/api/admin/rooms").set("Cookie", asRole("p", "PLAYER"));
+    expect(res.status).toBe(403);
+  });
+
+  it("returns reachable:false when the realtime node is unreachable", async () => {
+    const spy = vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("ECONNREFUSED"));
+    const res = await request(app).get("/api/admin/rooms").set("Cookie", asRole("s", "SUPPORT"));
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ rooms: [], reachable: false });
+    spy.mockRestore();
   });
 });
 
