@@ -454,7 +454,7 @@ function AdminPanel(props) {
         ctx.fillStyle=isHover?"rgba(0,229,255,.9)":"rgba(0,229,255,.5)";
         ctx.fillRect(x,y,bw,bh);
         if(isHover){ctx.fillStyle="rgba(0,229,255,.15)";ctx.fillRect(x,0,bw,h)}
-        ctx.fillStyle=isHover?"#C9D1D6":"#666";ctx.font=(isHover?"bold ":"")+"7px monospace";ctx.textAlign="center";ctx.fillText(d.l||"",x+bw/2,h-2);
+        ctx.fillStyle=isHover?"#C9D1D6":"#7C868D";ctx.font=(isHover?"bold ":"")+"7px monospace";ctx.textAlign="center";ctx.fillText(d.l||"",x+bw/2,h-2);
       });
       barPositions.current=positions;
       if(hover>=0&&hover<data.length){
@@ -491,7 +491,7 @@ function AdminPanel(props) {
         React.createElement("div",{style:{width:"min(420px,92vw)",padding:"clamp(30px,6vw,48px)",border:"1px solid rgba(201,209,214,.1)",background:"linear-gradient(180deg,#14181C,#0E1114)",position:"relative",overflow:"hidden"}},
           React.createElement("div",{style:{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+CR+",.5),transparent)"}}),
           React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:26}},
-            React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:30,display:"block"}}),
+            React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:32,display:"block",border:"1px solid rgba(201,209,214,.14)",borderRadius:2}}),
             React.createElement("span",{style:{fontSize:Math.round(8*F),letterSpacing:".3em",color:C}},"// RESTRICTED")
           ),
           React.createElement("div",{style:{fontFamily:HEAD,fontWeight:600,fontSize:Math.round(24*F),letterSpacing:"-.02em",color:"#E6EBEE",marginBottom:6}},"Command Center"),
@@ -528,26 +528,26 @@ function AdminPanel(props) {
       React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:Math.round(20*F)}},
         React.createElement("div",null,
           React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(28*F),color:"#C9D1D6",marginBottom:4}},site.label),
-          React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999"}},site.name," \u00b7 ",site.tech)
+          React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#7C868D"}},site.name," \u00b7 ",site.tech)
         ),
-        React.createElement("div",{style:{padding:"8px 20px",border:"1px solid "+(on?"rgba(0,255,136,.3)":"rgba(255,51,102,.3)"),color:on?"#00ff88":"#ff3366",fontSize:Math.round(11*F),fontFamily:HEAD,fontWeight:700}},on?"ONLINE":"OFFLINE")
+        React.createElement("div",{style:{padding:"8px 20px",border:"1px solid "+(on?"rgba(0,255,136,.3)":"rgba(255,106,61,.3)"),color:on?"#00ff88":"#FF6A3D",fontSize:Math.round(11*F),fontFamily:HEAD,fontWeight:700}},on?"ONLINE":"OFFLINE")
       ),
       // Connection metrics row
       React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:Math.round(8*F),marginBottom:Math.round(20*F)}},
-        React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"LATENCY"),React.createElement("div",{style:vl(s.latency>300?"#ff3366":s.latency>150?"#ffaa00":"#00ff88")},(s.latency||0)+"ms")),
+        React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"LATENCY"),React.createElement("div",{style:vl(s.latency>300?"#FF6A3D":s.latency>150?"#ffaa00":"#00ff88")},(s.latency||0)+"ms")),
         React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"CONNECTIONS"),React.createElement("div",{style:vl()},conns)),
         React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"BANDWIDTH"),React.createElement("div",{style:vl()},bw+"MB/s")),
         React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"REQUESTS/MIN"),React.createElement("div",{style:vl()},reqs)),
-        React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"UPTIME"),React.createElement("div",{style:vl(on?"#00ff88":"#ff3366")},serverStats.uptime_pct||"..."))
+        React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"UPTIME"),React.createElement("div",{style:vl(on?"#00ff88":"#FF6A3D")},serverStats.uptime_pct||"..."))
       ),
       // Latency chart
       React.createElement("div",{style:Object.assign({},card(),{marginBottom:Math.round(16*F)})},
         React.createElement("div",{style:cardGlow()}),
         React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
           React.createElement("div",{style:lb},"LATENCY HISTORY (LAST 30 PINGS)"),
-          React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#999"}},"avg:",avgPing,"ms \u00b7 min:",minPing,"ms \u00b7 max:",maxPing,"ms")
+          React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},"avg:",avgPing,"ms \u00b7 min:",minPing,"ms \u00b7 max:",maxPing,"ms")
         ),
-        React.createElement(Spark,{data:history,w:800,h:80,lineColor:avgPing>300?"#ff3366":avgPing>150?"#ffaa00":"#00e5ff"})
+        React.createElement(Spark,{data:history,w:800,h:80,lineColor:avgPing>300?"#FF6A3D":avgPing>150?"#ffaa00":"#00e5ff"})
       ),
       // Connection details grid
       React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:Math.round(10*F)}},
@@ -555,9 +555,9 @@ function AdminPanel(props) {
           React.createElement("div",{style:cardGlow()}),
           React.createElement("div",{style:Object.assign({},lb,{marginBottom:12})},"CONNECTION DETAILS"),
           [["Protocol","HTTPS/2"],["Port","443"],["SSL Issuer",serverStats.ssl_issuer||"checking..."],["SSL Expires",(serverStats.ssl_expires||"...")+" ("+(serverStats.ssl_days||"?")+"d)"],["Server","Nginx "+(serverStats.nginx_version||"...")+" / "+(serverStats.os||"...")],["IP",serverStats.server_ip||"..."],["TLS",(serverStats.tls_version||"...")+" / "+(serverStats.tls_cipher||"...")],["Load",serverStats.load||"0"],["Memory",(serverStats.memory_used||0)+"/"+(serverStats.memory_total||0)+"MB ("+(serverStats.memory_pct||0)+"%)"],["Disk",(serverStats.disk_used||0)+"/"+(serverStats.disk_total||0)+"GB ("+(serverStats.disk_pct||0)+"%)"]].map(function(row){
-            return React.createElement("div",{key:row[0],style:{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid rgba(245,245,240,.03)",fontSize:Math.round(11*F)}},
-              React.createElement("span",{style:{color:"#666"}},row[0]),
-              React.createElement("span",{style:{color:row[0]==="SSL Expires"&&sslDays<30?"#ff3366":"#C9D1D6",fontFamily:HEAD,fontWeight:600}},row[1])
+            return React.createElement("div",{key:row[0],style:{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid rgba(201,209,214,.03)",fontSize:Math.round(11*F)}},
+              React.createElement("span",{style:{color:"#7C868D"}},row[0]),
+              React.createElement("span",{style:{color:row[0]==="SSL Expires"&&sslDays<30?"#FF6A3D":"#C9D1D6",fontFamily:HEAD,fontWeight:600}},row[1])
             )
           })
         ),
@@ -572,7 +572,7 @@ function AdminPanel(props) {
             ),
             (serverStats.referrers&&serverStats.referrers.length?serverStats.referrers:[{host:"Loading...",pct:0,count:0}]).map(function(r){
               var text=typeof r==="string"?r:r.host+" \u2014 "+r.pct+"% ("+r.count+")";
-              return React.createElement("div",{key:text,style:{display:"flex",justifyContent:"space-between",fontSize:Math.round(10*F),color:"#ccc",padding:"4px 0",borderBottom:"1px solid rgba(245,245,240,.02)"}},
+              return React.createElement("div",{key:text,style:{display:"flex",justifyContent:"space-between",fontSize:Math.round(10*F),color:"#C9D1D6",padding:"4px 0",borderBottom:"1px solid rgba(201,209,214,.02)"}},
                 React.createElement("span",null,typeof r==="string"?r:r.host),
                 React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:700}},typeof r==="string"?"":r.pct+"% ("+r.count+")")
               )
@@ -586,8 +586,8 @@ function AdminPanel(props) {
           React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"TOP VISITORS BY COUNTRY"),
           (serverStats.top_ips||[]).slice(0,5).map(function(entry){
             var geo=countries[entry.ip]||{};
-            return React.createElement("div",{key:entry.ip,style:{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:"1px solid rgba(245,245,240,.02)",fontSize:Math.round(10*F)}},
-              React.createElement("span",{style:{color:"#ccc"}},geo.country?(geo.country+(geo.city?" ("+geo.city+")":"")):(entry.ip.substring(0,12)+"...")),
+            return React.createElement("div",{key:entry.ip,style:{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:"1px solid rgba(201,209,214,.02)",fontSize:Math.round(10*F)}},
+              React.createElement("span",{style:{color:"#C9D1D6"}},geo.country?(geo.country+(geo.city?" ("+geo.city+")":"")):(entry.ip.substring(0,12)+"...")),
               React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:700}},entry.count+" req")
             )
           })
@@ -600,10 +600,10 @@ function AdminPanel(props) {
             var pct=Math.round(d[1]/total*100);
             return React.createElement("div",{key:d[0],style:{marginBottom:8}},
               React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:Math.round(10*F),marginBottom:3}},
-                React.createElement("span",{style:{color:"#ccc"}},d[0]),
+                React.createElement("span",{style:{color:"#C9D1D6"}},d[0]),
                 React.createElement("span",{style:{color:d[2],fontFamily:HEAD,fontWeight:700}},d[1]+" ("+pct+"%)")
               ),
-              React.createElement("div",{style:{height:4,background:"rgba(245,245,240,.04)",overflow:"hidden"}},
+              React.createElement("div",{style:{height:4,background:"rgba(201,209,214,.04)",overflow:"hidden"}},
                 React.createElement("div",{style:{width:pct+"%",height:"100%",background:d[2]}})
               )
             )
@@ -625,17 +625,17 @@ function AdminPanel(props) {
         // HEADER
         React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:Math.round(16*F),marginBottom:Math.round(20*F),borderBottom:"1px solid rgba("+CR+",.08)"}},
           React.createElement("div",{style:{display:"flex",alignItems:"center",gap:14}},
-            React.createElement("div",{style:{width:10,height:10,borderRadius:"50%",background:onN===sites.length?"#00ff88":"#ff3366",boxShadow:"0 0 12px "+(onN===sites.length?"rgba(0,255,136,.5)":"rgba(255,51,102,.5)"),animation:"pulse 2s infinite"}}),
-            React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:Math.round(28*F),filter:"drop-shadow(0 0 8px rgba(0,229,255,.2))"}}),
+            React.createElement("div",{style:{width:10,height:10,borderRadius:"50%",background:onN===sites.length?"#00ff88":"#FF6A3D",boxShadow:"0 0 12px "+(onN===sites.length?"rgba(0,255,136,.5)":"rgba(255,106,61,.5)"),animation:"pulse 2s infinite"}}),
+            React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:Math.round(30*F),border:"1px solid rgba(201,209,214,.14)",borderRadius:2}}),
             React.createElement("div",null,
               React.createElement("div",{style:{fontFamily:HEAD,fontWeight:600,fontSize:Math.round(17*F),letterSpacing:"-.01em",color:"#E6EBEE"}},"Command Center"),
               React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",letterSpacing:".22em"}},onN,"/",sites.length," SYSTEMS ONLINE \u00b7 v5.0")
             )
           ),
           React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
-            React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#555"}},new Date().toLocaleString()),
-            React.createElement("div",{onClick:function(){doPing()},style:btn("#00ff88")},"REFRESH"),
-            React.createElement("div",{onClick:function(){try{sessionStorage.removeItem("cs_admin_token")}catch(e){}setAuth(false)},style:btn("#ff3366")},"LOGOUT"),
+            React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},new Date().toLocaleString()),
+            React.createElement("div",{onClick:function(){doPing()},style:btn()},"REFRESH"),
+            React.createElement("div",{onClick:function(){try{sessionStorage.removeItem("cs_admin_token")}catch(e){}setAuth(false)},style:btn("#FF6A3D")},"LOGOUT"),
             React.createElement("div",{onClick:props.onClose,style:btn()},"ESC")
           )
         ),
@@ -649,8 +649,8 @@ function AdminPanel(props) {
         tab==="dashboard"&&React.createElement("div",null,
           // KPI row
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:Math.round(8*F),marginBottom:Math.round(20*F)}},
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"SITES ONLINE"),React.createElement("div",{style:vl(onN===sites.length?"#00ff88":"#ff3366")},onN,"/",sites.length)),
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("0,255,136")}),React.createElement("div",{style:lb},"AVG LATENCY"),React.createElement("div",{style:vl(avgLat>300?"#ff3366":avgLat>150?"#ffaa00":"#00ff88")},avgLat,"ms")),
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"SITES ONLINE"),React.createElement("div",{style:vl(onN===sites.length?"#00ff88":"#FF6A3D")},onN,"/",sites.length)),
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("0,255,136")}),React.createElement("div",{style:lb},"AVG LATENCY"),React.createElement("div",{style:vl(avgLat>300?"#FF6A3D":avgLat>150?"#ffaa00":"#00ff88")},avgLat,"ms")),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,170,0")}),React.createElement("div",{style:lb},"REQUESTS TODAY"),React.createElement("div",{style:vl()},serverStats.nginx_today||0)),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("170,136,255")}),React.createElement("div",{style:lb},"UNIQUE VISITORS"),React.createElement("div",{style:vl()},serverStats.unique_visitors||0)),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,204,0")}),React.createElement("div",{style:lb},"CONTACTS"),React.createElement("div",{style:vl()},contacts.length))
@@ -663,26 +663,26 @@ function AdminPanel(props) {
                 setIndexNowBusy(false);
                 if(d.ok)alert("IndexNow: submitted "+d.submitted+" URLs");else alert("IndexNow error: "+(d.error||"?"));
               }).catch(function(){setIndexNowBusy(false);alert("IndexNow request failed")});
-            },style:btn("#00ff88")},indexNowBusy?"\u23f3 SUBMITTING...":"\u26a1 INDEXNOW: SUBMIT ALL"),
+            },style:btn()},indexNowBusy?"\u23f3 SUBMITTING...":"\u26a1 INDEXNOW: SUBMIT ALL"),
             React.createElement("a",{href:"https://search.google.com/search-console",target:"_blank",rel:"noopener",style:Object.assign({},btn(),{textDecoration:"none"})},"\u2197 SEARCH CONSOLE"),
             React.createElement("a",{href:"https://www.bing.com/webmasters",target:"_blank",rel:"noopener",style:Object.assign({},btn(),{textDecoration:"none"})},"\u2197 BING WEBMASTER"),
             React.createElement("a",{href:"/sitemap.xml",target:"_blank",rel:"noopener",style:Object.assign({},btn(),{textDecoration:"none"})},"\u2197 SITEMAP"),
-            React.createElement("div",{onClick:function(){setTab("contacts")},style:btn("#ffaa00")},"\u2709 LATEST LEADS")
+            React.createElement("div",{onClick:function(){setTab("contacts")},style:btn()},"\u2709 LATEST LEADS")
           ),
           // Sites grid with sparklines
           React.createElement("div",{style:{marginBottom:Math.round(8*F)}},React.createElement("div",{style:Object.assign({},lb,{marginBottom:Math.round(10*F)})},"REAL-TIME MONITORING \u00b7 REFRESH EVERY 15s")),
           sites.map(function(site){
             var s=stats[site.name]||{};var on=s.status==="ONLINE";var lat=s.latency||0;
             var history=pingHistory[site.name]||[];
-            return React.createElement("div",{key:site.name,onClick:function(){setTab("sites");setSelSite(site)},style:{display:"grid",gridTemplateColumns:"12px 1fr 100px 120px 80px 60px",gap:10,alignItems:"center",padding:Math.round(10*F)+"px 8px",borderBottom:"1px solid rgba(245,245,240,.03)",cursor:"none",transition:"background .2s"}},
-              React.createElement("div",{style:{width:8,height:8,borderRadius:"50%",background:on?"#00ff88":loading?"#ffaa00":"#ff3366",boxShadow:"0 0 6px "+(on?"rgba(0,255,136,.4)":"rgba(255,51,102,.4)")}}),
+            return React.createElement("div",{key:site.name,onClick:function(){setTab("sites");setSelSite(site)},style:{display:"grid",gridTemplateColumns:"12px 1fr 100px 120px 80px 60px",gap:10,alignItems:"center",padding:Math.round(10*F)+"px 8px",borderBottom:"1px solid rgba(201,209,214,.03)",cursor:"none",transition:"background .2s"}},
+              React.createElement("div",{style:{width:8,height:8,borderRadius:"50%",background:on?"#00ff88":loading?"#ffaa00":"#FF6A3D",boxShadow:"0 0 6px "+(on?"rgba(0,255,136,.4)":"rgba(255,106,61,.4)")}}),
               React.createElement("div",null,
                 React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700,fontSize:Math.round(12*F)}},site.label),
-                React.createElement("span",{style:{fontSize:Math.round(8*F),color:"#555",marginLeft:8}},site.type)
+                React.createElement("span",{style:{fontSize:Math.round(8*F),color:"#7C868D",marginLeft:8}},site.type)
               ),
-              React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#666"}},site.name.split(".")[0]),
+              React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},site.name.split(".")[0]),
               React.createElement(Spark,{data:history,w:120,h:28}),
-              React.createElement("span",{style:{fontSize:Math.round(10*F),color:lat>500?"#ff3366":lat>200?"#ffaa00":"#00ff88",fontFamily:HEAD,fontWeight:700,textAlign:"right"}},lat>0?lat+"ms":loading?"...":"DOWN"),
+              React.createElement("span",{style:{fontSize:Math.round(10*F),color:lat>500?"#FF6A3D":lat>200?"#ffaa00":"#00ff88",fontFamily:HEAD,fontWeight:700,textAlign:"right"}},lat>0?lat+"ms":loading?"...":"DOWN"),
               React.createElement("span",{style:{fontSize:Math.round(8*F),color:C,textAlign:"right"}},"\u2192")
             )
           })
@@ -694,17 +694,17 @@ function AdminPanel(props) {
             sites.map(function(site){
               var s=stats[site.name]||{};var on=s.status==="ONLINE";var history=pingHistory[site.name]||[];
               var sslD=serverStats.ssl_days||0;
-              return React.createElement("div",{key:site.name,onClick:function(){setSelSite(site)},style:Object.assign({},card(on?CR:"255,51,102"),{cursor:"none"})},
-                React.createElement("div",{style:cardGlow(on?CR:"255,51,102")}),
+              return React.createElement("div",{key:site.name,onClick:function(){setSelSite(site)},style:Object.assign({},card(on?CR:"255,106,61"),{cursor:"none"})},
+                React.createElement("div",{style:cardGlow(on?CR:"255,106,61")}),
                 React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:12}},
                   React.createElement("span",{style:{fontFamily:HEAD,fontWeight:800,fontSize:Math.round(13*F)}},site.label),
-                  React.createElement("span",{style:{fontSize:Math.round(8*F),color:on?"#00ff88":"#ff3366",padding:"2px 8px",border:"1px solid"}},s.status||"...")
+                  React.createElement("span",{style:{fontSize:Math.round(8*F),color:on?"#00ff88":"#FF6A3D",padding:"2px 8px",border:"1px solid"}},s.status||"...")
                 ),
-                React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#666",marginBottom:8}},site.type," \u00b7 ",site.tech),
+                React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#7C868D",marginBottom:8}},site.type," \u00b7 ",site.tech),
                 React.createElement(Spark,{data:history,w:250,h:36}),
                 React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:Math.round(9*F)}},
-                  React.createElement("span",{style:{color:"#999"}},"Ping: ",React.createElement("span",{style:{color:on?"#00ff88":"#ff3366"}},(s.latency||0)+"ms")),
-                  React.createElement("span",{style:{color:(serverStats.ssl_days||0)<30?"#ff3366":(serverStats.ssl_days||0)<60?"#ffaa00":"#999"}},"SSL: ",(serverStats.ssl_days||"?"),"d")
+                  React.createElement("span",{style:{color:"#7C868D"}},"Ping: ",React.createElement("span",{style:{color:on?"#00ff88":"#FF6A3D"}},(s.latency||0)+"ms")),
+                  React.createElement("span",{style:{color:(serverStats.ssl_days||0)<30?"#FF6A3D":(serverStats.ssl_days||0)<60?"#ffaa00":"#7C868D"}},"SSL: ",(serverStats.ssl_days||"?"),"d")
                 )
               )
             })
@@ -716,18 +716,18 @@ function AdminPanel(props) {
           React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:Math.round(14*F)}},
             React.createElement("div",{style:lb},"FORM SUBMISSIONS (",contacts.length,")"),
             React.createElement("div",{style:{display:"flex",gap:6}},
-              React.createElement("div",{onClick:function(){exportCSV(contacts,"cs_leads")},style:btn("#00ff88")},"\u2913 EXPORT CSV"),
+              React.createElement("div",{onClick:function(){exportCSV(contacts,"cs_leads")},style:btn()},"\u2913 EXPORT CSV"),
               React.createElement("div",{onClick:function(){csAuthFetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){})},style:btn()},"\u21bb REFRESH")
             )
           ),
-          contacts.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(245,245,240,.04)",color:"#555"}},"No submissions yet"),
-          contacts.map(function(c,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(245,245,240,.04)"}},
+          contacts.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(201,209,214,.04)",color:"#7C868D"}},"No submissions yet"),
+          contacts.map(function(c,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(201,209,214,.04)"}},
             React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:6}},
               React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700,fontSize:Math.round(13*F)}},c.name||"\u2014"),
-              React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#666"}},c.date||"")
+              React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},c.date||"")
             ),
             React.createElement("div",{style:{fontSize:Math.round(10*F),color:C}},c.email||""," ",c.phone?" \u00b7 "+c.phone:""),
-            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999",marginTop:4}},c.message||"")
+            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#7C868D",marginTop:4}},c.message||"")
           )})
         ),
 
@@ -742,29 +742,29 @@ function AdminPanel(props) {
             React.createElement("div",{style:lb},"RECENT LEADS ("+analyzerLeads.length+")"),
             React.createElement("div",{onClick:function(){csAuthFetch("/api/analyze.php?action=stats").then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}})},style:btn()},"\u21bb REFRESH")
           ),
-          analyzerLeads.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(245,245,240,.04)",color:"#555"}},"No leads from /test/ yet"),
-          analyzerLeads.map(function(l,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(245,245,240,.04)",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+          analyzerLeads.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(201,209,214,.04)",color:"#7C868D"}},"No leads from /test/ yet"),
+          analyzerLeads.map(function(l,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(201,209,214,.04)",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
             React.createElement("div",null,
               React.createElement("div",{style:{fontFamily:HEAD,fontWeight:700,fontSize:Math.round(13*F),marginBottom:4}},l.name||"\u2014"),
               React.createElement("div",{style:{fontSize:Math.round(10*F),color:C}},l.email||""," ",l.phone?" \u00b7 "+l.phone:""),
-              l.message&&React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999",marginTop:4}},l.message)
+              l.message&&React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#7C868D",marginTop:4}},l.message)
             ),
             React.createElement("div",{style:{textAlign:"right"}},
-              React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#666"}},l.ts?new Date(l.ts).toLocaleString():""),
+              React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},l.ts?new Date(l.ts).toLocaleString():""),
               l.tested_url&&React.createElement("a",{href:safeHref(l.tested_url),target:"_blank",rel:"noopener",style:{fontSize:Math.round(10*F),color:"#00e5ff",textDecoration:"none",display:"block",marginTop:4,wordBreak:"break-all"}},"\u25b6 "+l.tested_url)
             )
           )}),
-          React.createElement("div",{style:{marginTop:Math.round(20*F),borderTop:"1px solid rgba(245,245,240,.04)",paddingTop:Math.round(14*F)}}),
+          React.createElement("div",{style:{marginTop:Math.round(20*F),borderTop:"1px solid rgba(201,209,214,.04)",paddingTop:Math.round(14*F)}}),
           React.createElement("div",{style:lb},"RECENT SCANS ("+analyzerScans.length+")"),
-          analyzerScans.length===0&&React.createElement("div",{style:{padding:Math.round(20*F),textAlign:"center",color:"#555",fontSize:Math.round(10*F)}},"No scans with consent yet"),
+          analyzerScans.length===0&&React.createElement("div",{style:{padding:Math.round(20*F),textAlign:"center",color:"#7C868D",fontSize:Math.round(10*F)}},"No scans with consent yet"),
           analyzerScans.slice(0,15).map(function(s,i){
             var perf=s.perf_mobile;
-            var pColor=perf>=80?"#00ff88":perf>=50?"#ffaa00":"#ff3366";
-            return React.createElement("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 80px 80px 140px",gap:10,padding:Math.round(10*F)+"px 0",borderBottom:"1px solid rgba(245,245,240,.02)",alignItems:"center"}},
-              React.createElement("a",{href:safeHref(s.url),target:"_blank",rel:"noopener",style:{color:"#ccc",textDecoration:"none",fontSize:Math.round(11*F),wordBreak:"break-all"}},s.host||s.url),
+            var pColor=perf>=80?"#00ff88":perf>=50?"#ffaa00":"#FF6A3D";
+            return React.createElement("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 80px 80px 140px",gap:10,padding:Math.round(10*F)+"px 0",borderBottom:"1px solid rgba(201,209,214,.02)",alignItems:"center"}},
+              React.createElement("a",{href:safeHref(s.url),target:"_blank",rel:"noopener",style:{color:"#C9D1D6",textDecoration:"none",fontSize:Math.round(11*F),wordBreak:"break-all"}},s.host||s.url),
               React.createElement("span",{style:{fontSize:Math.round(10*F),color:pColor,fontFamily:HEAD,fontWeight:800,textAlign:"center"}},"P: "+(perf||"?")),
-              React.createElement("span",{style:{fontSize:Math.round(10*F),color:"#999",fontFamily:HEAD,fontWeight:700,textAlign:"center"}},"S: "+(s.seo_mobile||"?")),
-              React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#666",textAlign:"right"}},s.ts?new Date(s.ts).toLocaleString():"")
+              React.createElement("span",{style:{fontSize:Math.round(10*F),color:"#7C868D",fontFamily:HEAD,fontWeight:700,textAlign:"center"}},"S: "+(s.seo_mobile||"?")),
+              React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#7C868D",textAlign:"right"}},s.ts?new Date(s.ts).toLocaleString():"")
             )
           })
         ),
@@ -789,18 +789,18 @@ function AdminPanel(props) {
             )
           ),
           React.createElement("div",{style:lb},"SUBMISSION HISTORY ("+indexNowLog.length+")"),
-          indexNowLog.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(245,245,240,.04)",color:"#555"}},"No submissions yet"),
+          indexNowLog.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(201,209,214,.04)",color:"#7C868D"}},"No submissions yet"),
           indexNowLog.map(function(s,i){
             var eps=s.results||{};
-            return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(245,245,240,.04)"}},
+            return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(201,209,214,.04)"}},
               React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:8}},
                 React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700,fontSize:Math.round(12*F)}},(s.url_count||0)+" URLs submitted"),
-                React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#666"}},s.ts?new Date(s.ts).toLocaleString():"")
+                React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},s.ts?new Date(s.ts).toLocaleString():"")
               ),
               React.createElement("div",{style:{display:"flex",gap:12,fontSize:Math.round(10*F),flexWrap:"wrap"}},
                 Object.keys(eps).map(function(host){
                   var r=eps[host];
-                  return React.createElement("span",{key:host,style:{padding:"3px 10px",border:"1px solid "+(r.success?"rgba(0,255,136,.3)":"rgba(255,51,102,.3)"),color:r.success?"#00ff88":"#ff3366",borderRadius:4}},host+" \u00b7 "+r.http_code)
+                  return React.createElement("span",{key:host,style:{padding:"3px 10px",border:"1px solid "+(r.success?"rgba(0,255,136,.3)":"rgba(255,106,61,.3)"),color:r.success?"#00ff88":"#FF6A3D",borderRadius:4}},host+" \u00b7 "+r.http_code)
                 })
               )
             )
@@ -817,17 +817,17 @@ function AdminPanel(props) {
             React.createElement("textarea",{value:campBody,onChange:function(e){setCampBody(e.target.value)},placeholder:"Body...",rows:3,style:Object.assign({},ip,{resize:"vertical"})}),
             React.createElement("div",{onClick:saveCamp,style:btn()},"CREATE")
           ),
-          campaigns.map(function(c){return React.createElement("div",{key:c.id,style:{padding:Math.round(12*F),borderBottom:"1px solid rgba(245,245,240,.04)"}},
+          campaigns.map(function(c){return React.createElement("div",{key:c.id,style:{padding:Math.round(12*F),borderBottom:"1px solid rgba(201,209,214,.04)"}},
             React.createElement("div",{style:{display:"flex",justifyContent:"space-between"}},React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700}},c.name),React.createElement("span",{style:{fontSize:Math.round(9*F),color:c.status==="SENT"?"#00ff88":"#ffaa00"}},"[",c.status,"]")),
-            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999",margin:"6px 0"}},c.subject||""),
-            React.createElement("div",{onClick:function(){delCamp(c.id)},style:btn("#ff3366")},"DELETE")
+            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#7C868D",margin:"6px 0"}},c.subject||""),
+            React.createElement("div",{onClick:function(){delCamp(c.id)},style:btn("#FF6A3D")},"DELETE")
           )})
         ),
 
         // ═══ CRM ═══
         tab==="crm"&&React.createElement("div",null,
           React.createElement("div",{style:{display:"flex",justifyContent:"flex-end",marginBottom:Math.round(10*F)}},
-            React.createElement("div",{onClick:function(){exportCSV(clients,"cs_clients")},style:btn("#00ff88")},"\u2913 EXPORT CSV")
+            React.createElement("div",{onClick:function(){exportCSV(clients,"cs_clients")},style:btn()},"\u2913 EXPORT CSV")
           ),
           React.createElement("div",{style:Object.assign({},card(),{marginBottom:Math.round(16*F)})},
             React.createElement("div",{style:cardGlow()}),
@@ -839,12 +839,12 @@ function AdminPanel(props) {
             ),
             React.createElement("div",{onClick:addClient,style:btn()},"ADD")
           ),
-          clients.map(function(c){return React.createElement("div",{key:c.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 90px 60px 40px",gap:8,padding:Math.round(8*F)+"px 0",borderBottom:"1px solid rgba(245,245,240,.03)",alignItems:"center"}},
+          clients.map(function(c){return React.createElement("div",{key:c.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 90px 60px 40px",gap:8,padding:Math.round(8*F)+"px 0",borderBottom:"1px solid rgba(201,209,214,.03)",alignItems:"center"}},
             React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700}},c.name),
-            React.createElement("span",{style:{color:"#ccc"}},c.project),
+            React.createElement("span",{style:{color:"#C9D1D6"}},c.project),
             React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:900}},"\u20ac",c.budget),
             React.createElement("span",{style:{fontSize:Math.round(8*F),color:"#00ff88"}},c.status),
-            React.createElement("span",{onClick:function(){delClient(c.id)},style:{color:"#ff3366",cursor:"none",fontSize:Math.round(9*F)}},"\u2715")
+            React.createElement("span",{onClick:function(){delClient(c.id)},style:{color:"#FF6A3D",cursor:"none",fontSize:Math.round(9*F)}},"\u2715")
           )})
         ),
 
@@ -855,8 +855,8 @@ function AdminPanel(props) {
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("0,255,136")}),React.createElement("div",{style:lb},"CLIENTS"),React.createElement("div",{style:vl()},clients.length)),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("170,136,255")}),React.createElement("div",{style:lb},"AVG PROJECT"),React.createElement("div",{style:vl()},"\u20ac",clients.length?Math.floor(totalRev/clients.length).toLocaleString():"0"))
           ),
-          clients.map(function(c){return React.createElement("div",{key:c.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 100px",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(245,245,240,.03)"}},
-            React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700}},c.name),React.createElement("span",{style:{color:"#ccc"}},c.project),React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:900}},"\u20ac",c.budget))})
+          clients.map(function(c){return React.createElement("div",{key:c.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 100px",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(201,209,214,.03)"}},
+            React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700}},c.name),React.createElement("span",{style:{color:"#C9D1D6"}},c.project),React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:900}},"\u20ac",c.budget))})
         ),
 
         // ═══ TASKS ═══
@@ -866,18 +866,18 @@ function AdminPanel(props) {
             React.createElement("select",{value:taskPri,onChange:function(e){setTaskPri(e.target.value)},style:ip},React.createElement("option",{value:"HIGH"},"HIGH"),React.createElement("option",{value:"MEDIUM"},"MED"),React.createElement("option",{value:"LOW"},"LOW")),
             React.createElement("div",{onClick:addTask,style:Object.assign({},btn(),{textAlign:"center",padding:"10px 0"})},"ADD")
           ),
-          tasks.map(function(t){var pc={HIGH:"#ff3366",MEDIUM:"#ffaa00",LOW:"#00ff88"}[t.pri];return React.createElement("div",{key:t.id,style:{display:"grid",gridTemplateColumns:"24px 1fr 50px 30px",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(245,245,240,.03)",alignItems:"center",opacity:t.done?.35:1}},
-            React.createElement("div",{onClick:function(){togTask(t.id)},style:{width:16,height:16,border:"1px solid "+(t.done?"#00ff88":"#555"),display:"flex",alignItems:"center",justifyContent:"center",cursor:"none",color:"#00ff88",fontSize:11}},t.done?"\u2713":""),
+          tasks.map(function(t){var pc={HIGH:"#FF6A3D",MEDIUM:"#ffaa00",LOW:"#00ff88"}[t.pri];return React.createElement("div",{key:t.id,style:{display:"grid",gridTemplateColumns:"24px 1fr 50px 30px",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(201,209,214,.03)",alignItems:"center",opacity:t.done?.35:1}},
+            React.createElement("div",{onClick:function(){togTask(t.id)},style:{width:16,height:16,border:"1px solid "+(t.done?"#00ff88":"#7C868D"),display:"flex",alignItems:"center",justifyContent:"center",cursor:"none",color:"#00ff88",fontSize:11}},t.done?"\u2713":""),
             React.createElement("span",{style:{textDecoration:t.done?"line-through":"none"}},t.text),
             React.createElement("span",{style:{fontSize:Math.round(8*F),color:pc}},t.pri),
-            React.createElement("span",{onClick:function(){delTask(t.id)},style:{color:"#ff3366",cursor:"none"}},"\u2715")
+            React.createElement("span",{onClick:function(){delTask(t.id)},style:{color:"#FF6A3D",cursor:"none"}},"\u2715")
           )})
         ),
 
         // ═══ LOGS ═══
         tab==="logs"&&React.createElement("div",null,
-          actLog.map(function(l,i){return React.createElement("div",{key:i,style:{display:"grid",gridTemplateColumns:"70px 80px 1fr",gap:8,padding:"7px 0",borderBottom:"1px solid rgba(245,245,240,.02)"}},
-            React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#555"}},l.t),
+          actLog.map(function(l,i){return React.createElement("div",{key:i,style:{display:"grid",gridTemplateColumns:"70px 80px 1fr",gap:8,padding:"7px 0",borderBottom:"1px solid rgba(201,209,214,.02)"}},
+            React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},l.t),
             React.createElement("span",{style:{fontSize:Math.round(8*F),color:C,padding:"2px 6px",border:"1px solid rgba("+CR+",.15)",textAlign:"center"}},l.c),
             React.createElement("span",null,l.a)
           )})
@@ -886,10 +886,10 @@ function AdminPanel(props) {
         // ═══ SYSTEM ═══
         tab==="system"&&React.createElement("div",null,
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:Math.round(8*F),marginBottom:Math.round(20*F)}},
-            [["VPS",serverStats.server_ip||"...","#00e5ff"],["PROVIDER","Hetzner NBG1","#00ff88"],["OS",serverStats.os||"...","#ffaa00"],["NGINX","Nginx "+(serverStats.nginx_version||"..."),"#aa88ff"],["PHP",serverStats.php_version||"...","#00e5ff"],["SSL",serverStats.ssl_issuer||"...","#00ff88"],["SSL EXPIRES",(serverStats.ssl_expires||"...")+" ("+(serverStats.ssl_days||"?")+"d)","#ffaa00"],["TLS",(serverStats.tls_version||"..."),"#ff3366"],["LOAD",serverStats.load||"0","#00e5ff"],["MEMORY",(serverStats.memory_pct||0)+"%","#00ff88"],["DISK",(serverStats.disk_pct||0)+"%","#ffaa00"],["PROCESSES",(serverStats.processes||0)+"","#aa88ff"]].map(function(it){
+            [["VPS",serverStats.server_ip||"...","#00e5ff"],["PROVIDER","Hetzner NBG1","#00ff88"],["OS",serverStats.os||"...","#ffaa00"],["NGINX","Nginx "+(serverStats.nginx_version||"..."),"#aa88ff"],["PHP",serverStats.php_version||"...","#00e5ff"],["SSL",serverStats.ssl_issuer||"...","#00ff88"],["SSL EXPIRES",(serverStats.ssl_expires||"...")+" ("+(serverStats.ssl_days||"?")+"d)","#ffaa00"],["TLS",(serverStats.tls_version||"..."),"#FF6A3D"],["LOAD",serverStats.load||"0","#00e5ff"],["MEMORY",(serverStats.memory_pct||0)+"%","#00ff88"],["DISK",(serverStats.disk_pct||0)+"%","#ffaa00"],["PROCESSES",(serverStats.processes||0)+"","#aa88ff"]].map(function(it){
               return React.createElement("div",{key:it[0],style:card()},
                 React.createElement("div",{style:cardGlow(it[2]?it[2].replace("#","").match(/.{2}/g).map(function(h){return parseInt(h,16)}).join(","):CR)}),
-                React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",letterSpacing:".15em",marginBottom:4}},it[0]),
+                React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",letterSpacing:".15em",marginBottom:4}},it[0]),
                 React.createElement("div",{style:{fontSize:Math.round(13*F),fontFamily:HEAD,fontWeight:700,color:it[2]||"#C9D1D6"}},it[1])
               )
             })
@@ -902,11 +902,11 @@ function AdminPanel(props) {
             React.createElement("div",{style:cardGlow()}),
             React.createElement("div",{style:Object.assign({},lb,{marginBottom:14})},"SMTP / EMAIL CONFIG"),
             React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
-              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",marginBottom:2}},"HOST"),React.createElement("input",{value:cfgSmtp.host,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{host:e.target.value}))},style:ip})),
-              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",marginBottom:2}},"PORT"),React.createElement("input",{value:cfgSmtp.port,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{port:e.target.value}))},style:ip})),
-              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",marginBottom:2}},"USERNAME"),React.createElement("input",{value:cfgSmtp.user,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{user:e.target.value}))},style:ip})),
-              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",marginBottom:2}},"PASSWORD"),React.createElement("input",{type:"password",value:cfgSmtp.pass,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{pass:e.target.value}))},placeholder:"App password...",style:ip})),
-              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",marginBottom:2}},"RECIPIENT"),React.createElement("input",{value:cfgSmtp.to,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{to:e.target.value}))},style:ip}))
+              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",marginBottom:2}},"HOST"),React.createElement("input",{value:cfgSmtp.host,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{host:e.target.value}))},style:ip})),
+              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",marginBottom:2}},"PORT"),React.createElement("input",{value:cfgSmtp.port,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{port:e.target.value}))},style:ip})),
+              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",marginBottom:2}},"USERNAME"),React.createElement("input",{value:cfgSmtp.user,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{user:e.target.value}))},style:ip})),
+              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",marginBottom:2}},"PASSWORD"),React.createElement("input",{type:"password",value:cfgSmtp.pass,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{pass:e.target.value}))},placeholder:"App password...",style:ip})),
+              React.createElement("div",null,React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",marginBottom:2}},"RECIPIENT"),React.createElement("input",{value:cfgSmtp.to,onChange:function(e){setCfgSmtp(Object.assign({},cfgSmtp,{to:e.target.value}))},style:ip}))
             ),
             React.createElement("div",{style:{display:"flex",gap:8,marginTop:12,alignItems:"center"}},
               React.createElement("div",{onClick:saveSMTP,style:btn()},"SAVE CONFIG"),
@@ -914,9 +914,9 @@ function AdminPanel(props) {
             )
           ),
           React.createElement("div",{style:card()},
-            React.createElement("div",{style:cardGlow("255,51,102")}),
+            React.createElement("div",{style:cardGlow("255,106,61")}),
             React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"ADMIN ACCESS"),
-            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999",lineHeight:1.9}},
+            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#7C868D",lineHeight:1.9}},
               "Access is controlled server-side. The admin password is the ",
               React.createElement("code",{style:{color:C}},"CS_ADMIN_TOKEN")," value in the PHP-FPM pool config:",
               React.createElement("br",null),
