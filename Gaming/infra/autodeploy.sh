@@ -121,6 +121,15 @@ FACEBOOK_APP_SECRET=
 DISCORD_WEBHOOK_URL=
 # Sentry следене на грешки.
 SENTRY_DSN=
+# ── SEO / аналитика (маркетинг сайтът — вграждат се при билд) ─────────────────
+# Plausible (cookieless, GDPR-чист): сложи домейна, за да се включи. Празно = без трекери.
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=
+NEXT_PUBLIC_PLAUSIBLE_SRC=
+# Google Analytics 4 (слага бисквитки — включи чак след consent механизъм).
+NEXT_PUBLIC_GA_ID=
+# Search Console / Bing — потвърждаване на собственост (мета таг).
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=
+NEXT_PUBLIC_BING_SITE_VERIFICATION=
 ENV
   chmod 600 .env
   ok "нов .env с уникални тайни (пази го — от него зависи достъпът до базата)"

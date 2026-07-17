@@ -38,6 +38,27 @@ export function websiteLd(): Json {
   };
 }
 
+/**
+ * The portal itself as a free, browser-based game application. Complements the
+ * per-game VideoGame nodes with a single top-level app entity — helps search
+ * and answer engines model "АСО" as a playable product, not just a website.
+ */
+export function webAppLd(): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: SITE.name,
+    url: SITE.url,
+    description: SITE.description,
+    applicationCategory: "GameApplication",
+    operatingSystem: "Any (web browser)",
+    browserRequirements: "Requires JavaScript. Modern browser.",
+    inLanguage: SITE.locales,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", availability: "https://schema.org/InStock" },
+    publisher: { "@type": "Organization", name: SITE.org.legalName, url: SITE.org.url },
+  };
+}
+
 /** ItemList of all games for the /games index (rich-result eligible). */
 export function gameListLd(games: GameContent[]): Json {
   return {
