@@ -54,7 +54,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      # GitHub официален — блокира PR, който добавя зависимост с висока/критична CVE.
-      - uses: actions/dependency-review-action@v4
+      # ДОПЪЛНИТЕЛЕН СЛОЙ (best-effort, като gitleaks по-горе): официалният
+      # GitHub action блокира PR, който добавя зависимост с висока/критична CVE
+      # — НО изисква включен Dependency graph + GitHub Advanced Security на
+      # репото. Без тях самият action фейлва („not supported on this repository")
+      # преди изобщо да оцени зависимости, което блокира всеки PR по причина,
+      # несвързана с кода. Затова е continue-on-error: ако е наличен, докладва
+      # видимо; ако не е — не проваля целия гейт. Твърдият гейт остава
+      # secret-scan (job „secrets" по-горе).
+      - name: dependency-review (best-effort — иска GHAS)
+        continue-on-error: true
+        uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
