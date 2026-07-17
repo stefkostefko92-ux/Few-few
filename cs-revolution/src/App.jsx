@@ -507,7 +507,8 @@ function AdminPanel(props) {
       barPositions.current=positions;
       if(hover>=0&&hover<data.length){
         var d=data[hover];var bp=positions[hover];
-        var ttText=d.l+"h: "+d.v+" req"+(d.visitors!==undefined?" | "+d.visitors+" visitors":"");
+        var _u=(p.unit!==undefined)?p.unit:"req",_xs=(p.xsuffix!==undefined)?p.xsuffix:"h";
+        var ttText=d.l+_xs+": "+(p.prefix||"")+d.v+(_u?(" "+_u):"")+(d.visitors!==undefined?" | "+d.visitors+" visitors":"");
         ctx.font="bold 10px monospace";var tw=ctx.measureText(ttText).width+12;
         var tx=Math.min(Math.max(bp.x+bp.w/2-tw/2,2),w-tw-2);
         var ty=Math.max(bp.y-24,2);
@@ -519,7 +520,34 @@ function AdminPanel(props) {
     useEffect(draw,[p.data,hover]);
     function onMove(e){var cv=ref.current;if(!cv)return;var rect=cv.getBoundingClientRect();var mx=(e.clientX-rect.left)*(cv.width/rect.width);var found=-1;barPositions.current.forEach(function(bp,i){if(mx>=bp.x&&mx<=bp.x+bp.w)found=i});setHover(found)}
     function onLeave(){setHover(-1)}
-    return React.createElement("canvas",{ref:ref,width:p.w||200,height:p.h||80,onMouseMove:onMove,onMouseLeave:onLeave,style:{display:"block",cursor:"none"}});
+    return React.createElement("canvas",{ref:ref,width:p.w||200,height:p.h||80,onMouseMove:onMove,onMouseLeave:onLeave,style:{display:"block",cursor:"none",width:p.fill?"100%":undefined}});
+  }
+
+  // ═══ DONUT / RING CHART ═══
+  function Donut(p){
+    var ref=useRef(null);
+    useEffect(function(){
+      var cv=ref.current;if(!cv)return;var ctx=cv.getContext("2d");
+      var w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);
+      var data=(p.data||[]).filter(function(d){return (d.v||0)>0});
+      var total=data.reduce(function(a,b){return a+(b.v||0)},0);
+      var cx=w/2,cy=h/2,thick=Math.max(9,Math.min(w,h)*0.17),r=Math.min(w,h)/2-4-thick/2;
+      // track ring
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle="rgba(201,209,214,.06)";ctx.lineWidth=thick;ctx.stroke();
+      if(total){
+        var a0=-Math.PI/2;
+        data.forEach(function(d){
+          var a1=a0+(d.v/total)*Math.PI*2;
+          ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);ctx.strokeStyle=d.c;ctx.lineWidth=thick;ctx.stroke();
+          a0=a1;
+        });
+      }
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillStyle="#E6EBEE";ctx.font="600 "+Math.round(r*0.62)+"px 'Space Grotesk',sans-serif";
+      ctx.fillText(total>=1000?(Math.round(total/100)/10)+"k":String(total),cx,cy-2);
+      ctx.fillStyle="#7C868D";ctx.font="8px 'Space Mono',monospace";ctx.fillText(p.label||"TOTAL",cx,cy+r*0.55);
+    },[p.data,tick,p.w,p.h,p.label]);
+    return React.createElement("canvas",{ref:ref,width:p.w||120,height:p.h||120,style:{display:"block",flexShrink:0}});
   }
 
   // ═══ STYLES ═══
@@ -642,20 +670,23 @@ function AdminPanel(props) {
         ),
         React.createElement("div",{style:card()},
           React.createElement("div",{style:cardGlow("255,204,0")}),
-          React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"DEVICE BREAKDOWN"),
-          [["Desktop",(serverStats.user_agents&&serverStats.user_agents.desktop)||0,"#00e5ff"],["Mobile",(serverStats.user_agents&&serverStats.user_agents.mobile)||0,"#00ff88"],["Bot/Crawler",(serverStats.user_agents&&serverStats.user_agents.bot)||0,"#ffaa00"]].map(function(d){
-            var total=(serverStats.user_agents?((serverStats.user_agents.desktop||0)+(serverStats.user_agents.mobile||0)+(serverStats.user_agents.bot||0)):0)||1;
-            var pct=Math.round(d[1]/total*100);
-            return React.createElement("div",{key:d[0],style:{marginBottom:8}},
-              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:Math.round(10*F),marginBottom:3}},
-                React.createElement("span",{style:{color:"#C9D1D6"}},d[0]),
-                React.createElement("span",{style:{color:d[2],fontFamily:HEAD,fontWeight:700}},d[1]+" ("+pct+"%)")
-              ),
-              React.createElement("div",{style:{height:4,background:"rgba(201,209,214,.04)",overflow:"hidden"}},
-                React.createElement("div",{style:{width:pct+"%",height:"100%",background:d[2]}})
-              )
-            )
-          })
+          React.createElement("div",{style:Object.assign({},lb,{marginBottom:12})},"DEVICE BREAKDOWN"),
+          (function(){
+            var ua=serverStats.user_agents||{};
+            var dd=[{k:"Desktop",v:ua.desktop||0,c:"#00e5ff"},{k:"Mobile",v:ua.mobile||0,c:"#00ff88"},{k:"Bot / Crawler",v:ua.bot||0,c:"#ffaa00"}];
+            var total=dd.reduce(function(a,b){return a+b.v},0)||1;
+            return React.createElement("div",{style:{display:"flex",alignItems:"center",gap:Math.round(22*F)}},
+              React.createElement(Donut,{data:dd.map(function(d){return {v:d.v,c:d.c}}),w:118,h:118,label:"HITS"}),
+              React.createElement("div",{style:{flex:1,minWidth:0}},dd.map(function(d){
+                var pct=Math.round(d.v/total*100);
+                return React.createElement("div",{key:d.k,style:{display:"flex",alignItems:"center",gap:10,padding:"7px 0",borderBottom:"1px solid rgba(201,209,214,.03)"}},
+                  React.createElement("span",{style:{width:9,height:9,background:d.c,flexShrink:0}}),
+                  React.createElement("span",{style:{flex:1,color:"#C9D1D6",fontSize:Math.round(11*F)}},d.k),
+                  React.createElement("span",{style:{color:d.c,fontFamily:HEAD,fontWeight:600,fontSize:Math.round(11*F)}},d.v.toLocaleString()," · ",pct,"%")
+                )
+              }))
+            );
+          })()
         )
       ),
       React.createElement("div",{style:{marginTop:Math.round(16*F)}},
@@ -902,6 +933,11 @@ function AdminPanel(props) {
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"TOTAL REVENUE"),React.createElement("div",{style:vl()},"\u20ac",totalRev.toLocaleString())),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("0,255,136")}),React.createElement("div",{style:lb},"CLIENTS"),React.createElement("div",{style:vl()},clients.length)),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("170,136,255")}),React.createElement("div",{style:lb},"AVG PROJECT"),React.createElement("div",{style:vl()},"\u20ac",clients.length?Math.floor(totalRev/clients.length).toLocaleString():"0"))
+          ),
+          React.createElement("div",{style:Object.assign({},card(),{marginBottom:Math.round(16*F)})},
+            React.createElement("div",{style:cardGlow()}),
+            React.createElement("div",{style:Object.assign({},lb,{marginBottom:12})},"REVENUE BY CLIENT (\u20ac)"),
+            React.createElement(BarChart,{w:900,h:150,fill:true,unit:"",xsuffix:"",prefix:"\u20ac",data:clients.map(function(c){return {l:(c.name||"?").slice(0,7),v:parseFloat(c.budget)||0}})})
           ),
           clients.map(function(c){return React.createElement("div",{key:c.id,style:{display:"grid",gridTemplateColumns:"1fr 1fr 100px",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(201,209,214,.03)"}},
             React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700}},c.name),React.createElement("span",{style:{color:"#C9D1D6"}},c.project),React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:900}},"\u20ac",c.budget))})
