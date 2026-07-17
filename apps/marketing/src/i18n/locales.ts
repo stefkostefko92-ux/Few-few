@@ -31,6 +31,38 @@ export function isLocale(value: string | null | undefined): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
 }
 
+/** Locales that live under a URL prefix (everything except the BG default). */
+export const NON_DEFAULT_LOCALES = LOCALES.filter((l) => l !== DEFAULT_LOCALE) as Exclude<Locale, typeof DEFAULT_LOCALE>[];
+
+/**
+ * Prefix an internal, root-relative path with its locale. BG (the default) stays
+ * at the root for URL stability + SEO; EN/IT get a `/en` `/it` prefix.
+ *   localeHref("bg", "/games/")  → "/games/"
+ *   localeHref("en", "/games/")  → "/en/games/"
+ *   localeHref("it", "/")        → "/it/"
+ */
+export function localeHref(locale: Locale, path: string): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  if (locale === DEFAULT_LOCALE) return p;
+  return p === "/" ? `/${locale}/` : `/${locale}${p}`;
+}
+
+/** Derive the active locale from a pathname (`/en/...` → "en", else BG). */
+export function localeFromPathname(pathname: string): Locale {
+  const seg = pathname.split("/")[1];
+  return isLocale(seg) && seg !== DEFAULT_LOCALE ? seg : DEFAULT_LOCALE;
+}
+
+/** Strip a leading locale segment, returning the BG-canonical path (always `/…/`). */
+export function stripLocalePrefix(pathname: string): string {
+  const parts = pathname.split("/");
+  if (isLocale(parts[1]) && parts[1] !== DEFAULT_LOCALE) {
+    const rest = `/${parts.slice(2).join("/")}`;
+    return rest === "/" ? "/" : rest;
+  }
+  return pathname || "/";
+}
+
 /** Read the persisted locale (localStorage → cookie), defaulting to BG. Safe to
  * call on the server (returns the default there). */
 export function readStoredLocale(): Locale {

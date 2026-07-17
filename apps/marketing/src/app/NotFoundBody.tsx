@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "../components/LocaleLink";
 import { useT } from "../i18n/I18nProvider";
 
 export function NotFoundBody() {

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "./LocaleLink";
 import { SITE } from "../lib/site";
 import { useLocale, useT } from "../i18n/I18nProvider";
 import type { Locale } from "../i18n/locales";

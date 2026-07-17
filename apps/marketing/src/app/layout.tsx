@@ -4,6 +4,7 @@ import { SITE } from "../lib/site";
 import { JsonLd } from "../components/JsonLd";
 import { Footer, Header } from "../components/Chrome";
 import { organizationLd, webAppLd, websiteLd } from "../lib/jsonld";
+import { alternatesFor } from "../lib/seo";
 import { I18nProvider } from "../i18n/I18nProvider";
 import { Analytics } from "../components/Analytics";
 
@@ -36,10 +37,7 @@ export const metadata: Metadata = {
   publisher: SITE.org.legalName,
   category: "games",
   formatDetection: { telephone: false, email: false, address: false },
-  alternates: {
-    canonical: "/",
-    languages: { bg: "/", "x-default": "/" },
-  },
+  alternates: alternatesFor("bg", "/"),
   openGraph: {
     type: "website",
     siteName: SITE.name,
