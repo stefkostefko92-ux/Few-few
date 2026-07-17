@@ -415,6 +415,10 @@
     "equipped": "Equipaggiato",
     "vipOnly": "Solo VIP",
     "needGems": "Gemme insufficienti",
+    "custom": "Tavolozza personalizzata",
+    "customVip": "Le tavolozze personalizzate sono una funzione VIP (Silver e superiori).",
+    "colorA": "Colore primario",
+    "colorB": "Colore secondario",
     "type": {
       "FELT": "Panno del tavolo",
       "CARDBACK": "Dorso delle carte",

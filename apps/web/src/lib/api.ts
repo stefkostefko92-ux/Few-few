@@ -168,6 +168,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ id }),
     }),
+  equipCustomCosmetic: (id: string) =>
+    request<{ equipped: string[] }>("/cosmetics/equip-custom", {
+      method: "POST",
+      body: JSON.stringify({ id }),
+    }),
   equippedCosmetics: () => request<{ equipped: string[] }>("/cosmetics/equipped"),
 
   // Friends & social

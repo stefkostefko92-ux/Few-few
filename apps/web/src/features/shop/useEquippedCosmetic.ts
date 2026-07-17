@@ -1,4 +1,4 @@
-import { cosmeticById, type Cosmetic, type CosmeticType, type GameKey } from "@aso/shared";
+import { parseCosmetic, type Cosmetic, type CosmeticType, type GameKey } from "@aso/shared";
 import { useCosmeticsStore } from "../../lib/store";
 
 /**
@@ -14,5 +14,5 @@ export function useEquippedCosmetic(
   if (!game) return undefined;
   const prefix = `${game}.${type}.`;
   const id = equipped.find((e) => e.startsWith(prefix));
-  return id ? cosmeticById(id) : undefined;
+  return id ? parseCosmetic(id) : undefined;
 }

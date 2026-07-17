@@ -4,6 +4,9 @@ import {
   cosmeticById,
   cosmeticsForGame,
   gameHasCosmetics,
+  isCustomCosmeticId,
+  makeCustomCosmeticId,
+  parseCosmetic,
   VIP_PERKS,
   VIP_RANK,
 } from "./index.js";
@@ -32,6 +35,26 @@ describe("cosmetics catalog", () => {
 
   it("offers some VIP-exclusive items", () => {
     expect(COSMETICS.some((c) => c.vipExclusive)).toBe(true);
+  });
+});
+
+describe("custom palettes", () => {
+  it("round-trips a custom id into colours (VIP perk)", () => {
+    const id = makeCustomCosmeticId("BELOTE", "FELT", "#173A63", "#0b0f24");
+    expect(id).toBe("BELOTE.FELT.custom-173a63-0b0f24");
+    expect(isCustomCosmeticId(id)).toBe(true);
+    const c = parseCosmetic(id)!;
+    expect(c.game).toBe("BELOTE");
+    expect(c.type).toBe("FELT");
+    expect(c.colors).toEqual({ a: "#173a63", b: "#0b0f24" });
+    expect(c.vipExclusive).toBe(true);
+  });
+
+  it("parseCosmetic resolves catalog ids too, and rejects junk", () => {
+    expect(parseCosmetic(COSMETICS[0]!.id)).toEqual(COSMETICS[0]);
+    expect(parseCosmetic("BELOTE.FELT.custom-zzzzzz-000000")).toBeUndefined();
+    expect(parseCosmetic("NOPE.FELT.custom-111111-222222")).toBeUndefined();
+    expect(isCustomCosmeticId("BELOTE.FELT.sapphire")).toBe(false);
   });
 });
 
