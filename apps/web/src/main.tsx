@@ -7,9 +7,13 @@ import "./styles/global.css";
 import { App } from "./app/App";
 import { installGfxPanel } from "./features/game/gl/gfxGui";
 import { registerServiceWorker } from "./pwa/pwa";
+import { applyFourColor } from "./lib/a11y";
 
 // Opt-in live graphics tuning (press ` or ?gfx=1); lil-gui loads only on demand.
 installGfxPanel();
+
+// Apply persisted accessibility preferences (four-colour deck) before first paint.
+applyFourColor();
 
 // Register the app-shell service worker (production only) for offline + installability.
 registerServiceWorker();

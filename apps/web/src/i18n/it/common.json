@@ -474,7 +474,10 @@
     "card": "carta",
     "cardNamed": "{{name}}",
     "domino": "domino {{a}}-{{b}}",
-    "dialog": "Finestra di dialogo"
+    "dialog": "Finestra di dialogo",
+    "title": "Accessibilità",
+    "fourColor": "Mazzo a quattro colori",
+    "fourColorHint": "Un colore distinto per ogni seme — aiuta col daltonismo."
   },
   "svara": {
     "pot": "Piatto",
