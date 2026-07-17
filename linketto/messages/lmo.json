@@ -47,7 +47,7 @@
     "ctaButton": "Comincia gratis in 60 second",
     "faqTitle": "Domand frequent",
     "faq1q": "Cos'è Linketto?",
-    "faq1a": "Linketto l'è ona pagina link in bio: on link sol che el mett insema tucc i tò link, prodott e contatt. La roba unica: la pagina la parla la lengua de ogni visitador — ti la fett vunna volta e la ven foeura in 6+ lengu.",
+    "faq1a": "Linketto l'è ona pagina link in bio: on link sol che el mett insema tucc i tò link, prodott e contatt. La roba unica: la pagina la parla la lengua de ogni visitador — ti la fett vunna volta e la ven foeura in 24 lengu de la UE pu 3 dialett.",
     "faq2q": "In cosa Linketto l'è mej de Linktree?",
     "faq2a": "Quatter robb: el profil l'è multilengua (Linktree l'è domà in ingles), l'è ospitaa in la UE con GDPR de default, i analisi hinn senza cookie e senza dati personal, e i commission su i vendit hinn 8/4/0/0% per pian — contra el 12% e el 9% de Linktree.",
     "faq3q": "Quant costa Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Condizion",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
-    "manageConsent": "Gestiss i cookie"
+    "manageConsent": "Gestiss i cookie",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilengua: tucc i tò link, in ogni lengua",

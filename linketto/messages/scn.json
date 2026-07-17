@@ -47,7 +47,7 @@
     "ctaButton": "Accumincia gratis nta 60 secunni",
     "faqTitle": "Dumanni frequenti",
     "faq1q": "Chi è Linketto?",
-    "faq1a": "Linketto è na pàggina link in bio: un sulu link chi arricogghi tutti li tò linki, prudutti e cuntatti. La cosa unica: la pàggina parra la lingua di ogni visitaturi — la fai na vota e cumpari nta 6+ lingui.",
+    "faq1a": "Linketto è na pàggina link in bio: un sulu link chi arricogghi tutti li tò linki, prudutti e cuntatti. La cosa unica: la pàggina parra la lingua di ogni visitaturi — la fai na vota e cumpari nta 24 lingui di l'UE cchiù 3 dialetti.",
     "faq2q": "Nta chi Linketto è megghiu di Linktree?",
     "faq2a": "Quattru cosi: lu prufilu è multilingua (Linktree è sulu 'n inglisi), è ospitatu nta l'UE cu GDPR pi default, l'analisi sunnu senza cookie e senza dati pirsunali, e li cummissioni supra li vinniti sunnu 8/4/0/0% pi pianu — cuntra lu 12% e lu 9% di Linktree.",
     "faq3q": "Quantu costa Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Cundizioni",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
-    "manageConsent": "Gjestisci li cookie"
+    "manageConsent": "Gjestisci li cookie",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingua: tutti li tò linki, nta ogni lingua",
@@ -459,5 +460,34 @@
     "accept": "Accettu",
     "decline": "Rifiutu",
     "moreInfo": "Sapiri chiossà"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — lu paraguni onestu",
+    "metaDescription": "Cummissioni 8/4/0% cuntra 12/9%, 24 lingui di l'UE cuntra sulu ngrisi, ospitatu nta l'UE cu GDPR e analisi senza cookie. Talìa la tabella.",
+    "title": "Linketto vs Linktree",
+    "intro": "Tutti dui li servizi arrisòrvinu lu stissu cumpitu — na pàggina pi tutti li tò linki. Li diffirenzi sunnu ntô dinaru, nte lingui e nta la privacy. Eccili, senza abbelluzzi.",
+    "defTitle": "Chi è na pàggina link in bio?",
+    "defBody": "Na pàggina link in bio è na sula pàggina web pùbblica ca arricogghi tutti li tò linki mpurtanti, prudutti e cuntatti nta un sulu locu, ragghiungìbbili cu un sulu indirizzu. L'idea veni di li social network ca pirmèttinu sulu un link ntô prufilu: mmeci di scègghiri ntra lu tò nigoziu, lu tò video e la tò newsletter, metti un sulu link a la pàggina, e chidda porta a tuttu. Li versioni muderni jùncinu la vìnnita di prudutti digitali, li statìstichi di li visiti e un disignu pirsunali. Zoccu distingui Linketto: la tò pàggina cumpari autumaticamenti nta la lingua di ogni visitaturi — 24 lingui di l'UE cchiù 3 dialetti taliani — senza nudda travagghiu 'n cchiù, e l'analisi funziona senza cookie e senza dati pirsunali. Falla na vota; parra cu tuttu lu munnu.",
+    "tableTitle": "Paraguni riga pi riga",
+    "thFeature": "Criteriu",
+    "rowFee": "Cummissioni supra li vìnniti",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business e Founder",
+    "rowFeeLt": "12% Free · 9% nte piani a pagamentu",
+    "rowLang": "Lingui dû prufilu",
+    "rowLangL": "24 lingui di l'UE + 3 dialetti, autumàticu pi ogni visitaturi",
+    "rowLangLt": "Sulu ngrisi",
+    "rowHost": "Ospitalità e dati",
+    "rowHostL": "Ospitatu nta l'UE, GDPR di default",
+    "rowHostLt": "Ospitatu nte USA",
+    "rowAnalytics": "Analisi",
+    "rowAnalyticsL": "Senza cookie, senza indirizzi IP, senza dati pirsunali",
+    "rowAnalyticsLt": "Tracciamentu clàssicu cu li cookie",
+    "rowModeration": "Muderazioni",
+    "rowModerationL": "Trasparenti, cu priavvisu e ricorsu; nudda banner pùbblicu «BANNATU»",
+    "rowModerationLt": "Banner pùbblicu supra li prufili bluccati",
+    "honestTitle": "Quannu Linktree è la scelta megghiu?",
+    "honestBody": "Onestamenti: si ti fidi dû sò longu elencu d'integrazioni già pronti o vò la piattaforma cchiù diffusa, Linktree è na scelta ragiunèvuli cu na longa storia. Linketto vinci quannu lu tò pùbblicu parra cchiù di na lingua, quannu vinni e ogni puntu di cummissioni cunta, e quannu la privacy di li tò visitaturi è na prumissa e no na nota a pedi di pàggina.",
+    "ctaTitle": "Prova la diffirenza cu un sulu link.",
+    "ctaButton": "Crea lu tò Linketto gratis"
   }
 }
