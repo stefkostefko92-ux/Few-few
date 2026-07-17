@@ -62,8 +62,26 @@ Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SL
 - **Nexus Dominion** — Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. URL: https://nexus.carbonstealth.eu
 - **OU Nikola Vaptsarov** — Official school website in Bobov Dol. Tech: React, Vite, PHP, multilingual. URL: https://ouvaptsarov.com
 - **ERP Ascensori** — Custom ERP for an Italian elevator manufacturer: production tracking, warehouse, invoicing, 7-level roles. URL: https://erp.carbonstealth.eu
-- **CS Anticheat v4.0** — Enterprise anti-cheat for FiveM servers: 40+ detection modules, HMAC-signed forensic reports. URL: https://ac.carbonstealth.eu
 - **Treti Mart** — Bulgarian marketplace for vehicles, real estate and services. URL: https://tretimart.carbonstealth.eu
+
+## Products
+
+- **Za Bobov Dol** — Civic portal for the town of Bobov Dol (services, transparency, citizen reports). URL: https://zabobovdol.carbonstealth.eu
+- **Ospedali Trasparenti** — Civic portal for the transparency of Italian hospitals. URL: https://ospedalitrasparenti.it
+- **Supreme AdBlock** — Chrome (MV3) extension blocking every ad, YouTube video ads, FB/IG sponsored, trackers and anti-adblock walls; zero telemetry. URL: https://adblock.carbonstealth.eu
+- **Mastilko** — Free print-ready labels, business cards and CVs, previewed live on a real A4 sheet. URL: https://mastilko-bg.com
+- **Vizitka** — Digital business card with a permanent QR code that always points to your current details. URL: https://vizitka-bg.com
+
+## Guides & Resources
+
+Answer-first content for people researching web, e-commerce and software decisions (available in Italian, English and Bulgarian):
+
+- **Blog** — practical guides (website/e-commerce/app costs, WooCommerce vs Shopify, what an ERP is, Core Web Vitals, SEO for small businesses, and more). Hub: https://carbonstealth.eu/blog/
+- **Glossary** — plain-language definitions (CMS, headless, PWA, API, SSL, DNS, hosting, CDN, framework, database, cache, UX/UI, responsive design, backend/frontend). Hub: https://carbonstealth.eu/glossario/
+- **Comparisons** — decision guides: WordPress vs Headless, Shopify vs Magento, React vs WordPress, native app vs Flutter, WordPress vs Webflow, SaaS vs custom software, shared hosting vs VPS. Hub: https://carbonstealth.eu/confronti/
+- **Solutions by industry** — web & software for restaurants, fashion, real estate, medical/dental, lawyers, gyms, hotels/tourism, workshops, manufacturing, schools, food e-commerce, professional services. Hub: https://carbonstealth.eu/settori/
+- **Local services** — e-commerce and ERP development pages for Milano, Roma, Torino, Firenze, Napoli, Bologna, Sofia, Plovdiv. Hub: https://carbonstealth.eu/servizi-locali/
+- **Free tools** — website quote calculator and a meta-tag / Open Graph / JSON-LD generator (run entirely in the browser). Hub: https://carbonstealth.eu/strumenti/
 
 ## Service Areas
 
