@@ -33,14 +33,14 @@ L = {
    contact="/contatti/", faq_h2="Domande frequenti", tag="// STRUMENTI",
    cta="RICHIEDI UN PREVENTIVO GRATUITO"),
  "en": dict(
-   prefix="/en", og="og/og-strumenti.png", locale="en_US", numloc="en-US",
+   prefix="/en", og="og/og-strumenti-en.png", locale="en_US", numloc="en-US",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/tools/">TOOLS</a><a href="/en/contact/">CONTACT</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p></div>',
    home="/en/", tools="/en/tools/", tools_name="Tools", home_name="Home",
    contact="/en/contact/", faq_h2="Frequently asked questions", tag="// TOOLS",
    cta="REQUEST A FREE QUOTE"),
  "bg": dict(
-   prefix="/bg", og="og/og-strumenti.png", locale="bg_BG", numloc="bg-BG",
+   prefix="/bg", og="og/og-strumenti-bg.png", locale="bg_BG", numloc="bg-BG",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/instrumenti/">ИНСТРУМЕНТИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p></div>',
    home="/bg/", tools="/bg/instrumenti/", tools_name="Инструменти", home_name="Начало",

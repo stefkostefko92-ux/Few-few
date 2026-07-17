@@ -35,7 +35,7 @@ L = {
    cta="RICHIEDI UN PREVENTIVO GRATUITO",
    title=lambda q: f"Cos'è {q}? Significato e Guida | Carbon Stealth"),
  "en": dict(
-   og="og/og-glossario.png", locale="en_US",
+   og="og/og-glossario-en.png", locale="en_US",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/contact/">CONTACT</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p></div>',
    home="/en/", contact="/en/contact/", glos_name="Glossary", tag="// GLOSSARY",
@@ -43,7 +43,7 @@ L = {
    cta="REQUEST A FREE QUOTE",
    title=lambda q: f"What Is {q}? Definition & Guide | Carbon Stealth"),
  "bg": dict(
-   og="og/og-glossario.png", locale="bg_BG",
+   og="og/og-glossario-bg.png", locale="bg_BG",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p></div>',
    home="/bg/", contact="/bg/kontakti/", glos_name="Речник", tag="// РЕЧНИК",

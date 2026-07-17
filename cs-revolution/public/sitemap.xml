@@ -36,4 +36,8 @@
     <loc>https://carbonstealth.eu/sitemap-casestudies.xml</loc>
     <lastmod>2026-07-17</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://carbonstealth.eu/sitemap-images.xml</loc>
+    <lastmod>2026-07-17</lastmod>
+  </sitemap>
 </sitemapindex>
