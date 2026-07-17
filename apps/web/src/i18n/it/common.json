@@ -992,5 +992,10 @@
   "announcements": {
     "label": "Annuncio",
     "dismiss": "Chiudi annuncio"
+  },
+  "pwa": {
+    "install": "Installa l'app",
+    "updateReady": "È disponibile una nuova versione.",
+    "update": "Aggiorna"
   }
 }
