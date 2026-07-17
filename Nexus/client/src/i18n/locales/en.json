@@ -1337,6 +1337,15 @@
       "depositTitle": "Deposit Item",
       "depositDesc": "Pick an unequipped, non-bound item. Consumables cannot be deposited.",
       "noItems": "No depositable items in your bag."
+    },
+    "missions": {
+      "title": "Weekly guild missions",
+      "resets": "Resets in {{days}}d",
+      "hunt_kills": "Slay monsters together",
+      "arena_wins": "Win arena duels",
+      "tower_floors": "Climb tower floors",
+      "perMember": "per member",
+      "done": "Complete ✓"
     }
   },
   "factions": {
@@ -1370,7 +1379,15 @@
       "losses": "Losses"
     },
     "npc": "NPC",
-    "empty": "The hall waits to be filled."
+    "empty": "The hall waits to be filled.",
+    "tabArena": "Arena",
+    "tabSeason": "Season",
+    "seasonTitle": "Season {{key}}",
+    "seasonMine": "Your points: {{points}} · rank #{{rank}}",
+    "seasonEnds": "Ends in {{days}} days",
+    "seasonRewards": "#1: 1000💎 +100k g + title · top 10: 200💎 · top 10%: 50💎",
+    "lastSeason": "Last season ({{key}}):",
+    "seasonEmpty": "No points yet this season. Go hunt!"
   },
   "achievements": {
     "title": "Achievements",

@@ -16,6 +16,8 @@ import { applyFactionRepFromHunt } from './faction';
 import { awardSeasonPointsFromHunt } from './events';
 import { grantDrop, DROP_RATES } from '../game/drops';
 import { applyHuntMomentum, type Momentum } from '../game/momentum';
+import { trackGuildMission } from '../game/guildMissions';
+import { addSeasonPoints } from '../game/seasons';
 import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -276,6 +278,9 @@ router.post('/hunt', (req, res) => {
   if (result.winner === 'hero') {
     trackBattlePass(char.id, 'hunt_kill', 1);
     trackWeeklyKill(char.id);
+    // Гилдийна седмична мисия + сезонни точки (1 + ниво/25).
+    trackGuildMission(db, char.id, 'hunt_kills');
+    addSeasonPoints(db, char.id, 1 + Math.floor(monster.level / 25));
     // Faction reputation — map monster family/slug to the matching
     // faction; APEX kills pay a 20x multiplier to the matching faction.
     factionRepGain = applyFactionRepFromHunt(char.id, {

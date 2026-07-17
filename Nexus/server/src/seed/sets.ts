@@ -210,6 +210,31 @@ export const ITEM_SETS: SetDef[] = [
     bonus_4: { hp_bonus: 2800, defense_bonus: 230, str_bonus: 48, atk_bonus: 86 },
     bonus_6: { hp_bonus: 5200, defense_bonus: 500, str_bonus: 110, atk_bonus: 180, crit_bonus: 0.15, dodge_bonus: 0.08 },
   },
+
+  /* ===== „Отвъд Края" сетове (tier 11-12) — мащаб ≈×1.55/tier, продължава
+     точната прогресия eldritch→divine. ===== */
+  {
+    slug: 'veilforged',
+    name: 'Veilforged Requiem',
+    tier: 11,
+    rarity: 'legendary',
+    lore: 'Armor hammered from the ash of the old world. It grieves, and it protects.',
+    pieces: ['veilforged_armor_11','veilforged_helm_11','veilforged_boots_11','veilforged_gloves_11','veilforged_shield_11','veilforged_cloak_11'],
+    bonus_2: { hp_bonus: 2200, defense_bonus: 125 },
+    bonus_4: { hp_bonus: 4400, defense_bonus: 360, str_bonus: 75, atk_bonus: 134 },
+    bonus_6: { hp_bonus: 8100, defense_bonus: 780, str_bonus: 170, atk_bonus: 280, crit_bonus: 0.18, dodge_bonus: 0.1 },
+  },
+  {
+    slug: 'primordial',
+    name: 'Primordial Genesis',
+    tier: 12,
+    rarity: 'legendary',
+    lore: 'Forged before the first dawn agreed to rise. The final argument in any war.',
+    pieces: ['primordial_armor_12','primordial_helm_12','primordial_boots_12','primordial_gloves_12','primordial_shield_12','primordial_cloak_12'],
+    bonus_2: { hp_bonus: 3400, defense_bonus: 195 },
+    bonus_4: { hp_bonus: 6800, defense_bonus: 560, str_bonus: 117, atk_bonus: 210 },
+    bonus_6: { hp_bonus: 12600, defense_bonus: 1220, str_bonus: 265, atk_bonus: 440, crit_bonus: 0.22, dodge_bonus: 0.12 },
+  },
 ];
 
 export function findSetForItem(slug: string): SetDef | undefined {

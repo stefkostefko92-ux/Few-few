@@ -10,6 +10,8 @@ import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
+import { trackGuildMission } from '../game/guildMissions';
+import { addSeasonPoints } from '../game/seasons';
 import { grantDrop, DROP_RATES } from '../game/drops';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -168,7 +170,12 @@ router.post('/challenge', (req, res) => {
     goldGained: goldGain,
   });
 
-  if (result.winner === 'hero') trackBattlePass(char.id, 'arena_win', 1);
+  if (result.winner === 'hero') {
+    trackBattlePass(char.id, 'arena_win', 1);
+    // Гилдийна мисия + сезонни точки за PvP победа.
+    trackGuildMission(db, char.id, 'arena_wins');
+    addSeasonPoints(db, char.id, 20);
+  }
 
   logFromRequest(req, {
     category: 'combat',

@@ -1337,6 +1337,15 @@
       "depositTitle": "Deposita oggetto",
       "depositDesc": "Scegli un oggetto non equipaggiato e non vincolato. I consumabili non possono essere depositati.",
       "noItems": "Nessun oggetto depositabile nella tua borsa."
+    },
+    "missions": {
+      "title": "Missioni settimanali di gilda",
+      "resets": "Si azzerano tra {{days}}g",
+      "hunt_kills": "Uccidete mostri insieme",
+      "arena_wins": "Vincete duelli in arena",
+      "tower_floors": "Scalate i piani della torre",
+      "perMember": "a membro",
+      "done": "Completata ✓"
     }
   },
   "factions": {
@@ -1370,7 +1379,15 @@
       "losses": "Sconfitte"
     },
     "npc": "PNG",
-    "empty": "La sala attende di essere riempita."
+    "empty": "La sala attende di essere riempita.",
+    "tabArena": "Arena",
+    "tabSeason": "Stagione",
+    "seasonTitle": "Stagione {{key}}",
+    "seasonMine": "I tuoi punti: {{points}} · rango #{{rank}}",
+    "seasonEnds": "Termina tra {{days}} giorni",
+    "seasonRewards": "#1: 1000💎 +100k oro + titolo · top 10: 200💎 · top 10%: 50💎",
+    "lastSeason": "Stagione scorsa ({{key}}):",
+    "seasonEmpty": "Ancora nessun punto in questa stagione. A caccia!"
   },
   "achievements": {
     "title": "Imprese",

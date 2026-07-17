@@ -19,6 +19,7 @@ import { checkText } from '../lib/textFilter';
 import { blockedIdSet } from './social';
 import { notify } from '../lib/notify';
 import { pushToChars } from '../lib/stream';
+import { missionsForGuild } from '../game/guildMissions';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -585,6 +586,15 @@ router.post('/chat', (req, res) => {
   const members = getDb().prepare('SELECT character_id FROM guild_members WHERE guild_id = ?').all(g.guild.id) as { character_id: number }[];
   pushToChars(members.map((m) => m.character_id).filter((id) => id !== char.id), 'chat', { guildId: g.guild.id });
   res.json({ ok: true, id: info.lastInsertRowid });
+});
+
+/** Седмичните кооперативни мисии на гилдията (детерминистична ротация). */
+router.get('/missions', (req, res) => {
+  const char = getCharacter(req.auth!.uid);
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const g = getCharGuild(char.id);
+  if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  res.json(missionsForGuild(getDb(), g.guild.id));
 });
 
 /* ===== Wars ===== */
