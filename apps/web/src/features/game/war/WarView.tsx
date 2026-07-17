@@ -76,8 +76,13 @@ export function WarView({ title }: { title: string }) {
           );
       }
       if (ev.type === "RAID" && typeof ev.seat === "number") {
-        playCue(ev.seat === seat ? "win" : "loss");
-        announce(t("war.raided", { name: ev.seat === seat ? t("game.you") : oppName }), ev.seat === seat ? "win" : "loss");
+        // Visualise the streak steal: a card flies from the loser's deck to the
+        // raider's — after the pile has been collected (delayMs) so it reads as
+        // a follow-up plunder, not part of the same sweep.
+        const mine = ev.seat === seat;
+        flight.flyGhost(mine ? "top" : "bottom", mine ? "bottom" : "top", { count: 1, delayMs: 560 });
+        playCue(mine ? "win" : "loss");
+        announce(t("war.raided", { name: mine ? t("game.you") : oppName }), mine ? "win" : "loss");
       }
     }
   });

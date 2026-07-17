@@ -4,8 +4,10 @@ import { Button } from "../../../ui";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { FourPlayerTrick } from "../trick/FourPlayerTrick";
+import { PlayingCard } from "../cards/PlayingCard";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { type SuitChar } from "../cards/suits";
+import "./bridge.css";
 
 interface Play {
   seat: number;
@@ -62,16 +64,19 @@ export function BridgeView({ title }: { title: string }) {
   const myTeam = seat % 2;
   const myTurn = !!state && state.turn === seat && legal.length > 0;
 
-  // Dummy = declarer's partner. After the opening lead its hand is revealed to
-  // everyone (engine redact), and on the dummy's turn the DECLARER plays it —
-  // the engine offers the dummy's legal cards under the declarer's seat, so they
-  // arrive here in `playable`. This panel lets the declarer click them (the
-  // shared felt table only wires up the viewer's OWN bottom hand).
+  // Dummy = declarer's partner. After the opening lead its hand is turned FACE-UP
+  // for EVERYONE (engine redact reveals it to all seats) — a signature bridge
+  // moment. We show that revealed hand to every viewer; only the declarer, on
+  // the dummy's turn, can click a card to play it (the engine offers the dummy's
+  // legal cards under the declarer's seat, so they arrive here in `playable`).
   const dummy = state && state.declarer !== null ? (state.declarer + 2) % 4 : null;
   const isDeclarer = !!state && state.declarer === seat;
   const dummyTurn = !!state && state.phase === "PLAY" && dummy !== null && state.turn === dummy;
-  const showDummyPanel = isDeclarer && dummyTurn && dummy !== null;
-  const dummyCards = showDummyPanel ? state!.hands[dummy] ?? [] : [];
+  const dummyHand = dummy !== null && state ? state.hands[dummy] ?? [] : [];
+  // Revealed once the opening lead is out (redact stops hiding it → no "?").
+  const dummyRevealed = !!state && state.phase === "PLAY" && dummy !== null && (dummyHand[0] ?? "?") !== "?";
+  const canPlayDummy = isDeclarer && dummyTurn;
+  const dummyName = dummy !== null ? players.find((p) => p.seat === dummy)?.displayName ?? `#${dummy}` : "";
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
@@ -169,26 +174,30 @@ export function BridgeView({ title }: { title: string }) {
             </div>
           ) : null}
 
-          {/* Dummy control: the declarer plays the dummy's hand on its turn. */}
-          {showDummyPanel ? (
-            <div className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
-              <div className="mb-2 text-center text-sm text-ink-300">{t("bridge.dummyHand")}</div>
-              <div className="mb-2 text-center text-xs text-ink-muted">{t("bridge.playFromDummy")}</div>
-              <div className="flex flex-wrap items-center justify-center gap-1">
-                {dummyCards.map((card, i) => {
-                  const a = playable.get(card);
-                  const red = card.endsWith("H") || card.endsWith("D");
+          {/* Dummy hand — face-up for everyone once the opening lead is out; the
+              declarer clicks a card to play it on the dummy's turn. `key` on the
+              wrapper is the reveal trigger: it mounts once, cascading the cards
+              in (aso-card-deal) for the face-up flourish. */}
+          {dummyRevealed ? (
+            <div key={`dummy-${state.dealNo}`} className="bridge-dummy mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
+              <div className="mb-1 text-center text-sm text-ink-300">
+                {t("bridge.dummyHand")} · {dummyName}
+              </div>
+              {canPlayDummy ? (
+                <div className="mb-2 text-center text-xs text-ink-muted">{t("bridge.playFromDummy")}</div>
+              ) : null}
+              <div className="aso-myhand flex flex-wrap items-center justify-center gap-1">
+                {dummyHand.map((card, i) => {
+                  const a = canPlayDummy ? playable.get(card) : undefined;
                   return (
-                    <button
-                      key={`${card}-${i}`}
-                      type="button"
-                      disabled={!a}
-                      onClick={() => a && m.send(a)}
-                      className="aso-bridge-bid"
-                      style={{ color: red ? "var(--suit-red)" : "var(--ink-100)", opacity: a ? 1 : 0.4 }}
-                    >
-                      {card}
-                    </button>
+                    <div key={card} style={{ marginLeft: i ? -14 : 0 }}>
+                      <PlayingCard
+                        card={card}
+                        size="sm"
+                        dimmed={canPlayDummy && !a}
+                        onClick={a ? () => m.send(a) : undefined}
+                      />
+                    </div>
                   );
                 })}
               </div>
