@@ -1317,6 +1317,671 @@ dict(slug="schema-markup-guida", section="SEO", read=8, lang=dict(
    ("Мога ли да сложа фалшиви отзиви или цени в Schema?", "Не. Структурираните данни трябва да описват това, което потребителят реално вижда на страницата. Маркирането на несъществуващи отзиви или цени нарушава указанията на Google и може да доведе до санкции вместо предимства."),
   ]),
 )),
+
+# 17 ────────────────────────────────────────────────────────────
+dict(slug="come-scegliere-agenzia-web", section="Web Development", read=8, lang=dict(
+ it=dict(
+  title="Come Scegliere un'Agenzia Web: 10 Criteri | Carbon Stealth",
+  desc="Come scegliere l'agenzia web giusta: 10 criteri concreti per valutare portfolio, prezzi, propriet&agrave; del codice, SEO e assistenza, ed evitare gli errori pi&ugrave; comuni.",
+  body="""<p>Per scegliere l'agenzia web giusta guarda tre cose prima di tutte: un <strong>portfolio reale</strong> di siti online e verificabili, la <strong>propriet&agrave; del codice</strong> (il sito deve restare tuo, senza vincoli) e <strong>prezzi trasparenti</strong> senza canoni nascosti. Il resto sono dettagli che confermano o smentiscono queste tre. Un'agenzia seria non ha problemi a mostrare lavori, spiegare cosa &egrave; incluso e mettere tutto per iscritto.</p>
+<h2>I 10 criteri per valutare un'agenzia</h2>
+<ul>
+<li><strong>1. Portfolio verificabile:</strong> siti reali che puoi aprire e provare, non solo mockup.</li>
+<li><strong>2. Propriet&agrave; del codice:</strong> a fine progetto il sito &egrave; tuo, con accesso completo.</li>
+<li><strong>3. Prezzi chiari:</strong> un preventivo dettagliato che elenca cosa &egrave; incluso e cosa no.</li>
+<li><strong>4. Nessun canone obbligatorio:</strong> diffida di chi ti lega a un abbonamento per tenere online il tuo sito.</li>
+<li><strong>5. Tecnologia adeguata:</strong> codice pulito e veloce, non template appesantiti da decine di plugin.</li>
+<li><strong>6. Attenzione alla SEO:</strong> struttura, velocit&agrave; e dati strutturati curati fin dall'inizio.</li>
+<li><strong>7. Design responsive:</strong> il sito deve funzionare bene su mobile, dove naviga la maggioranza.</li>
+<li><strong>8. Comunicazione diretta:</strong> parli con chi lavora al progetto, non solo con un commerciale.</li>
+<li><strong>9. Tempi definiti:</strong> una data di consegna concordata e messa nero su bianco.</li>
+<li><strong>10. Assistenza dopo il lancio:</strong> cosa succede se qualcosa si rompe o serve una modifica.</li>
+</ul>
+<h2>I segnali d'allarme da non ignorare</h2>
+<p>Alcune bandiere rosse sono facili da riconoscere: prezzi &laquo;troppo belli per essere veri&raquo; che nascondono template riciclati, l'impossibilit&agrave; di accedere al tuo stesso sito, un portfolio fatto solo di immagini senza link, o la promessa di essere &laquo;primi su Google&raquo; in poche settimane. Nessuno pu&ograve; garantire una posizione: la <a href="/servizi/seo/">SEO</a> &egrave; un lavoro continuo, non un interruttore.</p>
+<h2>Domande da fare prima di firmare</h2>
+<p>Chiedi sempre: il codice sar&agrave; mio? Cosa &egrave; incluso nel prezzo e cosa si paga a parte? Chi si occupa di aggiornamenti e sicurezza? Cosa succede se voglio cambiare fornitore in futuro? Le risposte a queste domande dicono pi&ugrave; di qualsiasi presentazione. Se stai anche valutando un rifacimento, leggi come <a href="/blog/migrazione-sito-senza-perdere-seo/">rifare il sito senza perdere il posizionamento</a>, e per orientarti sui costi guarda <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a>.</p>
+<p>Noi lavoriamo esattamente cos&igrave;: codice tuo, prezzi trasparenti, nessun vincolo. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> oppure <a href="/contatti/">raccontaci il tuo progetto</a> per un preventivo gratuito.</p>""",
+  faqs=[
+   ("Come capisco se un'agenzia web e affidabile?", "Guarda tre cose: un portfolio di siti reali e verificabili online, la proprieta del codice a fine progetto e prezzi trasparenti senza canoni nascosti. Un'agenzia seria mostra i lavori, spiega cosa e incluso e mette tutto per iscritto."),
+   ("Il sito realizzato sara di mia proprieta?", "Con un'agenzia seria si. Il codice, il dominio e i contenuti restano tuoi, con accesso completo. Diffida di chi ti lega a un abbonamento obbligatorio solo per tenere online il tuo stesso sito."),
+   ("Un'agenzia puo garantirmi il primo posto su Google?", "No. Nessuno puo garantire una posizione precisa: dipende da concorrenza, contenuti e centinaia di fattori. La SEO e un lavoro continuo che migliora la visibilita nel tempo, non un risultato immediato garantito."),
+   ("Meglio un'agenzia o un freelance?", "Dipende dal progetto. Un freelance puo bastare per un sito semplice; un'agenzia offre piu competenze (design, sviluppo, SEO) e continuita nel tempo. Conta soprattutto la qualita del lavoro e la chiarezza degli accordi."),
+  ]),
+ en=dict(
+  title="How to Choose a Web Agency: 10 Criteria | Carbon Stealth",
+  desc="How to choose the right web agency: 10 concrete criteria to assess portfolio, pricing, code ownership, SEO and support, and avoid the most common mistakes.",
+  body="""<p>To choose the right web agency, look at three things above all: a <strong>real portfolio</strong> of live, verifiable sites, <strong>code ownership</strong> (the site must stay yours, with no lock-in) and <strong>transparent pricing</strong> with no hidden fees. Everything else is detail that confirms or contradicts these three. A serious agency has no problem showing work, explaining what's included and putting it all in writing.</p>
+<h2>10 criteria for assessing an agency</h2>
+<ul>
+<li><strong>1. Verifiable portfolio:</strong> live sites you can open and try, not just mockups.</li>
+<li><strong>2. Code ownership:</strong> at the end, the site is yours, with full access.</li>
+<li><strong>3. Clear pricing:</strong> a detailed quote listing what's included and what isn't.</li>
+<li><strong>4. No mandatory fees:</strong> be wary of anyone tying you to a subscription just to keep your site online.</li>
+<li><strong>5. Appropriate technology:</strong> clean, fast code, not templates weighed down by dozens of plugins.</li>
+<li><strong>6. SEO attention:</strong> structure, speed and structured data handled from the start.</li>
+<li><strong>7. Responsive design:</strong> the site must work well on mobile, where most people browse.</li>
+<li><strong>8. Direct communication:</strong> you talk to whoever builds the project, not just a salesperson.</li>
+<li><strong>9. Defined timelines:</strong> an agreed delivery date, put in writing.</li>
+<li><strong>10. Post-launch support:</strong> what happens if something breaks or you need a change.</li>
+</ul>
+<h2>Red flags you shouldn't ignore</h2>
+<p>Some warning signs are easy to spot: prices &laquo;too good to be true&raquo; that hide recycled templates, being unable to access your own site, a portfolio made only of images with no links, or the promise of being &laquo;first on Google&raquo; in a few weeks. No one can guarantee a ranking: <a href="/en/services/seo/">SEO</a> is ongoing work, not a switch.</p>
+<h2>Questions to ask before you sign</h2>
+<p>Always ask: will the code be mine? What's included in the price and what costs extra? Who handles updates and security? What happens if I want to change provider later? The answers to these say more than any pitch. If you're also considering a redesign, read how to <a href="/en/blog/migrazione-sito-senza-perdere-seo/">rebuild your site without losing rankings</a>, and to get a sense of costs see <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a>.</p>
+<p>We work exactly this way: your code, transparent pricing, no lock-in. See our <a href="/en/services/web-development/">web development service</a> or <a href="/en/contact/">tell us about your project</a> for a free quote.</p>""",
+  faqs=[
+   ("How do I know if a web agency is trustworthy?", "Look at three things: a portfolio of real, verifiable live sites, code ownership at the end of the project, and transparent pricing with no hidden fees. A serious agency shows its work, explains what's included and puts it all in writing."),
+   ("Will the site they build be my property?", "With a serious agency, yes. The code, domain and content stay yours, with full access. Be wary of anyone tying you to a mandatory subscription just to keep your own site online."),
+   ("Can an agency guarantee first place on Google?", "No. No one can guarantee a specific ranking: it depends on competition, content and hundreds of factors. SEO is ongoing work that improves visibility over time, not a guaranteed instant result."),
+   ("Agency or freelancer?", "It depends on the project. A freelancer may be enough for a simple site; an agency offers more skills (design, development, SEO) and continuity over time. What matters most is the quality of the work and the clarity of the agreement."),
+  ]),
+ bg=dict(
+  title="Как да Изберете Уеб Агенция: 10 Критерия | Carbon Stealth",
+  desc="Как да изберете правилната уеб агенция: 10 конкретни критерия за оценка на портфолио, цени, собственост на кода, SEO и поддръжка, и как да избегнете грешките.",
+  body="""<p>За да изберете правилната уеб агенция, погледнете три неща преди всичко: <strong>реално портфолио</strong> от живи и проверими сайтове, <strong>собственост върху кода</strong> (сайтът трябва да остане ваш, без обвързване) и <strong>прозрачни цени</strong> без скрити такси. Останалото са детайли, които потвърждават или отхвърлят тези три. Сериозната агенция няма проблем да покаже работа, да обясни какво е включено и да сложи всичко в писмен вид.</p>
+<h2>10 критерия за оценка на агенция</h2>
+<ul>
+<li><strong>1. Проверимо портфолио:</strong> живи сайтове, които можете да отворите и изпробвате, не само макети.</li>
+<li><strong>2. Собственост върху кода:</strong> накрая сайтът е ваш, с пълен достъп.</li>
+<li><strong>3. Ясни цени:</strong> подробна оферта, която изброява какво е включено и какво не.</li>
+<li><strong>4. Без задължителни такси:</strong> внимавайте с тези, които ви обвързват с абонамент само за да е сайтът онлайн.</li>
+<li><strong>5. Подходяща технология:</strong> чист и бърз код, а не шаблони, натоварени с десетки плъгини.</li>
+<li><strong>6. Внимание към SEO:</strong> структура, скорост и структурирани данни, погрижени от самото начало.</li>
+<li><strong>7. Responsive дизайн:</strong> сайтът трябва да работи добре на мобилен, където сърфира мнозинството.</li>
+<li><strong>8. Директна комуникация:</strong> говорите с този, който изработва проекта, а не само с търговец.</li>
+<li><strong>9. Определени срокове:</strong> договорена дата за предаване, записана черно на бяло.</li>
+<li><strong>10. Поддръжка след старта:</strong> какво става, ако нещо се счупи или трябва промяна.</li>
+</ul>
+<h2>Тревожни сигнали, които да не пренебрегвате</h2>
+<p>Някои червени флагове се разпознават лесно: цени &laquo;твърде хубави, за да са истина&raquo;, зад които стоят рециклирани шаблони, невъзможност да достъпите собствения си сайт, портфолио само от снимки без връзки или обещание да сте &laquo;първи в Google&raquo; за няколко седмици. Никой не може да гарантира позиция: <a href="/bg/uslugi/seo/">SEO</a> е постоянна работа, а не ключ за включване.</p>
+<h2>Въпроси, които да зададете преди да подпишете</h2>
+<p>Винаги питайте: кодът ще бъде ли мой? Какво е включено в цената и какво се плаща допълнително? Кой поема обновленията и сигурността? Какво става, ако искам да сменя изпълнителя по-късно? Отговорите казват повече от всяка презентация. Ако обмисляте и преработка, прочетете как да <a href="/bg/blog/migrazione-sito-senza-perdere-seo/">смените сайта без загуба на позиции</a>, а за ориентир в разходите вижте <a href="/bg/blog/quanto-costa-sito-web/">колко струва изработката на сайт</a>.</p>
+<p>Ние работим точно така: вашият код, прозрачни цени, без обвързване. Вижте нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a> или <a href="/bg/kontakti/">разкажете ни за проекта си</a> за безплатна оферта.</p>""",
+  faqs=[
+   ("Как да разбера дали една уеб агенция е надеждна?", "Погледнете три неща: портфолио от реални, проверими живи сайтове, собственост върху кода в края на проекта и прозрачни цени без скрити такси. Сериозната агенция показва работата си, обяснява какво е включено и записва всичко."),
+   ("Сайтът, който изработят, ще бъде ли моя собственост?", "При сериозна агенция — да. Кодът, домейнът и съдържанието остават ваши, с пълен достъп. Внимавайте с тези, които ви обвързват със задължителен абонамент само за да е онлайн собственият ви сайт."),
+   ("Може ли агенция да ми гарантира първо място в Google?", "Не. Никой не може да гарантира конкретна позиция: зависи от конкуренцията, съдържанието и стотици фактори. SEO е постоянна работа, която подобрява видимостта с времето, а не гарантиран моментален резултат."),
+   ("Агенция или фрийлансър?", "Зависи от проекта. Фрийлансър може да стигне за прост сайт; агенцията предлага повече умения (дизайн, разработка, SEO) и приемственост във времето. Най-важни са качеството на работата и яснотата на договорката."),
+  ]),
+)),
+
+# 18 ────────────────────────────────────────────────────────────
+dict(slug="google-business-profile-guida", section="SEO", read=7, lang=dict(
+ it=dict(
+  title="Google Business Profile: Guida per Farsi Trovare in Locale | Carbon Stealth",
+  desc="Come usare Google Business Profile per farti trovare nelle ricerche locali: configurazione, recensioni, foto, post e gli errori che fanno perdere posizioni sulla mappa.",
+  body="""<p>Google Business Profile (l'ex Google My Business) &egrave; lo strumento gratuito che fa comparire la tua attivit&agrave; nelle ricerche locali e su Google Maps. Se hai un negozio, uno studio o servi una zona precisa, &egrave; probabilmente il canale con il miglior ritorno rispetto allo sforzo: una scheda completa e curata pu&ograve; portare telefonate e visite senza spendere in pubblicit&agrave;. La regola &egrave; semplice: pi&ugrave; la scheda &egrave; completa, aggiornata e ricca di recensioni, pi&ugrave; Google la mostra.</p>
+<h2>Come configurare la scheda nel modo giusto</h2>
+<ul>
+<li><strong>Dati completi e coerenti:</strong> nome, indirizzo e telefono devono essere identici a quelli sul sito.</li>
+<li><strong>Categoria corretta:</strong> scegli la categoria principale che descrive davvero cosa fai, poi aggiungi le secondarie.</li>
+<li><strong>Orari aggiornati:</strong> compresi festivi e chiusure straordinarie, per non deludere chi ti cerca.</li>
+<li><strong>Foto reali:</strong> locale, prodotti, team. Le schede con foto ricevono pi&ugrave; contatti.</li>
+<li><strong>Descrizione chiara:</strong> spiega servizi e zona servita con parole che userebbe un cliente.</li>
+</ul>
+<h2>Recensioni: il fattore che pesa di pi&ugrave;</h2>
+<p>Le recensioni sono uno dei segnali locali pi&ugrave; forti, sia per il posizionamento sia per la fiducia. Chiedile in modo naturale ai clienti soddisfatti e rispondi sempre, anche a quelle negative, con tono professionale. Non comprare mai recensioni finte: Google le individua e pu&ograve; penalizzare la scheda. La costanza vale pi&ugrave; della quantit&agrave;: poche recensioni autentiche al mese, nel tempo, contano di pi&ugrave; di un picco sospetto.</p>
+<h2>Come si collega alla SEO del sito</h2>
+<p>Google Business Profile e il sito lavorano insieme. La scheda porta traffico e chiamate, il sito conferma chi sei e approfondisce i servizi. Per rafforzare il segnale locale, cura la <a href="/blog/seo-per-piccole-imprese/">SEO per piccole imprese</a> e i <a href="/blog/schema-markup-guida/">dati strutturati</a> di tipo LocalBusiness, che aiutano Google a collegare sito e scheda. Un errore comune &egrave; avere dati diversi tra sito, scheda e social: mantienili sempre coerenti.</p>
+<p>Ottimizziamo la presenza locale come parte del nostro lavoro di <a href="/servizi/seo/">SEO</a>. Se vuoi farti trovare dai clienti della tua zona, <a href="/contatti/">scrivici</a> per un'analisi della tua scheda e del tuo sito.</p>""",
+  faqs=[
+   ("Cos'e Google Business Profile?", "E lo strumento gratuito di Google (l'ex Google My Business) che fa comparire la tua attivita nelle ricerche locali e su Google Maps. Mostra nome, orari, recensioni, foto e contatti, e porta telefonate e visite senza costi pubblicitari."),
+   ("Come miglioro la posizione sulla mappa di Google?", "Completa ogni campo della scheda, scegli la categoria giusta, aggiungi foto reali, tieni gli orari aggiornati e raccogli recensioni autentiche nel tempo. Coerenza dei dati tra sito e scheda e recensioni costanti sono i fattori che pesano di piu."),
+   ("Le recensioni contano davvero per il posizionamento locale?", "Si, molto. Sono uno dei segnali locali piu forti, sia per il ranking sia per la fiducia dei clienti. Rispondi sempre, anche alle negative, e non comprare mai recensioni finte: Google le individua e puo penalizzare la scheda."),
+   ("Google Business Profile e gratuito?", "Si, e completamente gratuito. Servono solo tempo e costanza per tenerlo aggiornato. Un professionista puo aiutarti a configurarlo bene e a integrarlo con la SEO del sito per ottenere piu risultati."),
+  ]),
+ en=dict(
+  title="Google Business Profile: Get Found Locally | Carbon Stealth",
+  desc="How to use Google Business Profile to get found in local searches: setup, reviews, photos, posts and the mistakes that cost you rankings on the map.",
+  body="""<p>Google Business Profile (formerly Google My Business) is the free tool that makes your business appear in local searches and on Google Maps. If you have a shop, a practice or serve a specific area, it's probably the channel with the best return for the effort: a complete, well-kept profile can bring calls and visits without spending on ads. The rule is simple: the more complete, up-to-date and review-rich the profile, the more Google shows it.</p>
+<h2>How to set the profile up properly</h2>
+<ul>
+<li><strong>Complete, consistent data:</strong> name, address and phone must match those on your site exactly.</li>
+<li><strong>Correct category:</strong> pick the primary category that truly describes what you do, then add secondary ones.</li>
+<li><strong>Up-to-date hours:</strong> including holidays and special closures, so you don't disappoint searchers.</li>
+<li><strong>Real photos:</strong> premises, products, team. Profiles with photos get more contacts.</li>
+<li><strong>Clear description:</strong> explain services and area served in words a customer would use.</li>
+</ul>
+<h2>Reviews: the factor that weighs most</h2>
+<p>Reviews are one of the strongest local signals, both for ranking and for trust. Ask satisfied customers naturally and always reply, even to negative ones, with a professional tone. Never buy fake reviews: Google detects them and may penalize the profile. Consistency beats volume: a few authentic reviews a month, over time, count for more than a suspicious spike.</p>
+<h2>How it connects to your site's SEO</h2>
+<p>Google Business Profile and your site work together. The profile brings traffic and calls; the site confirms who you are and details your services. To reinforce the local signal, work on <a href="/en/blog/seo-per-piccole-imprese/">SEO for small businesses</a> and LocalBusiness <a href="/en/blog/schema-markup-guida/">structured data</a>, which help Google link site and profile. A common mistake is having different data across site, profile and social: keep it consistent everywhere.</p>
+<p>We optimize local presence as part of our <a href="/en/services/seo/">SEO</a> work. If you want to be found by customers in your area, <a href="/en/contact/">get in touch</a> for an analysis of your profile and site.</p>""",
+  faqs=[
+   ("What is Google Business Profile?", "It's Google's free tool (formerly Google My Business) that makes your business appear in local searches and on Google Maps. It shows name, hours, reviews, photos and contacts, and brings calls and visits at no ad cost."),
+   ("How do I improve my position on the Google map?", "Complete every field of the profile, choose the right category, add real photos, keep hours updated and gather authentic reviews over time. Consistent data between site and profile and steady reviews are the factors that weigh most."),
+   ("Do reviews really matter for local ranking?", "Yes, a lot. They're one of the strongest local signals, both for ranking and for customer trust. Always reply, even to negative ones, and never buy fake reviews: Google detects them and may penalize the profile."),
+   ("Is Google Business Profile free?", "Yes, it's completely free. It only takes time and consistency to keep updated. A professional can help you set it up well and integrate it with your site's SEO for more results."),
+  ]),
+ bg=dict(
+  title="Google Business Profile: Как да ви Намират Локално | Carbon Stealth",
+  desc="Как да използвате Google Business Profile, за да ви намират при локални търсения: настройка, отзиви, снимки, публикации и грешките, които костват позиции на картата.",
+  body="""<p>Google Business Profile (бившият Google My Business) е безплатният инструмент, който показва бизнеса ви при локални търсения и в Google Maps. Ако имате магазин, кабинет или обслужвате конкретен район, това вероятно е каналът с най-добра възвръщаемост спрямо усилието: пълен и поддържан профил може да носи обаждания и посещения, без да харчите за реклама. Правилото е просто: колкото по-пълен, актуален и богат на отзиви е профилът, толкова повече Google го показва.</p>
+<h2>Как да настроите профила правилно</h2>
+<ul>
+<li><strong>Пълни и последователни данни:</strong> име, адрес и телефон трябва да съвпадат точно с тези на сайта.</li>
+<li><strong>Правилна категория:</strong> изберете основна категория, която реално описва дейността ви, после добавете вторични.</li>
+<li><strong>Актуално работно време:</strong> включително празници и извънредни затваряния, за да не разочаровате търсещите.</li>
+<li><strong>Реални снимки:</strong> обект, продукти, екип. Профилите със снимки получават повече контакти.</li>
+<li><strong>Ясно описание:</strong> обяснете услугите и обслужвания район с думите, които би използвал клиент.</li>
+</ul>
+<h2>Отзиви: факторът, който тежи най-много</h2>
+<p>Отзивите са един от най-силните локални сигнали — както за класирането, така и за доверието. Искайте ги естествено от доволни клиенти и винаги отговаряйте, дори на отрицателните, с професионален тон. Никога не купувайте фалшиви отзиви: Google ги разпознава и може да санкционира профила. Постоянството е по-важно от количеството: няколко истински отзива на месец във времето значат повече от подозрителен скок.</p>
+<h2>Как се свързва със SEO на сайта</h2>
+<p>Google Business Profile и сайтът работят заедно. Профилът носи трафик и обаждания, сайтът потвърждава кои сте и разгръща услугите. За да усилите локалния сигнал, погрижете се за <a href="/bg/blog/seo-per-piccole-imprese/">SEO за малкия бизнес</a> и за <a href="/bg/blog/schema-markup-guida/">структурирани данни</a> от тип LocalBusiness, които помагат на Google да свърже сайт и профил. Честа грешка е различни данни между сайт, профил и социални мрежи: поддържайте ги последователни навсякъде.</p>
+<p>Оптимизираме локалното присъствие като част от нашата <a href="/bg/uslugi/seo/">SEO</a> работа. Ако искате да ви намират клиентите във вашия район, <a href="/bg/kontakti/">пишете ни</a> за анализ на профила и сайта ви.</p>""",
+  faqs=[
+   ("Какво е Google Business Profile?", "Това е безплатният инструмент на Google (бившият Google My Business), който показва бизнеса ви при локални търсения и в Google Maps. Показва име, работно време, отзиви, снимки и контакти и носи обаждания и посещения без разход за реклама."),
+   ("Как да подобря позицията си на картата на Google?", "Попълнете всяко поле на профила, изберете правилната категория, добавете реални снимки, поддържайте актуално работно време и събирайте истински отзиви във времето. Последователните данни между сайт и профил и постоянните отзиви тежат най-много."),
+   ("Наистина ли отзивите са важни за локалното класиране?", "Да, много. Те са един от най-силните локални сигнали — за класирането и за доверието на клиентите. Винаги отговаряйте, дори на отрицателните, и никога не купувайте фалшиви отзиви: Google ги разпознава и може да санкционира профила."),
+   ("Google Business Profile безплатен ли е?", "Да, напълно безплатен е. Нужни са само време и постоянство за поддръжка. Специалист може да ви помогне да го настроите добре и да го интегрирате със SEO на сайта за повече резултати."),
+  ]),
+)),
+
+# 19 ────────────────────────────────────────────────────────────
+dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
+ it=dict(
+  title="Manutenzione Sito Web: Perch&eacute; Serve e Quanto Costa | Carbon Stealth",
+  desc="Cos'&egrave; la manutenzione di un sito web, perch&eacute; &egrave; necessaria e quanto costa: aggiornamenti, backup, sicurezza e prestazioni spiegati senza tecnicismi.",
+  body="""<p>La manutenzione di un sito web &egrave; l'insieme di attivit&agrave; che lo tengono <strong>sicuro, veloce e funzionante</strong> nel tempo: aggiornamenti, backup, controlli di sicurezza e piccole modifiche. Un sito non &egrave; un lavoro &laquo;una tantum&raquo;: come un'auto, ha bisogno di tagliandi regolari. Un piano di manutenzione parte in genere da <strong>&euro;39/mese</strong> e costa molto meno del rischio di un sito bucato, offline o penalizzato da Google.</p>
+<h2>Cosa include la manutenzione</h2>
+<div class="ctbl"><table><thead><tr><th>Attivit&agrave;</th><th>Perch&eacute; serve</th><th>Frequenza</th></tr></thead><tbody>
+<tr><td>Aggiornamenti software</td><td>Chiudono falle di sicurezza note</td><td>Mensile o pi&ugrave; spesso</td></tr>
+<tr><td>Backup</td><td>Ripristino rapido in caso di problemi</td><td>Giornaliera/settimanale</td></tr>
+<tr><td>Controlli di sicurezza</td><td>Bloccano malware e accessi indesiderati</td><td>Continua</td></tr>
+<tr><td>Monitoraggio uptime</td><td>Ti avvisa se il sito va offline</td><td>Continua</td></tr>
+<tr><td>Piccole modifiche</td><td>Testi, immagini, nuove pagine</td><td>Su richiesta</td></tr>
+</tbody></table></div>
+<h2>Perch&eacute; non puoi ignorarla</h2>
+<p>Un sito trascurato accumula rischi silenziosi: plugin non aggiornati diventano porte d'ingresso per gli attacchi, un backup mancante trasforma un piccolo guasto in una catastrofe, e prestazioni che peggiorano fanno perdere posizioni e clienti. Le basi le trovi nella nostra <a href="/blog/sicurezza-sito-web-checklist/">checklist di sicurezza</a>, mentre per la velocit&agrave; &egrave; utile la guida su <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>. Se hai un sito WordPress, molti interventi coincidono con quelli per <a href="/blog/velocizzare-wordpress/">velocizzarlo</a>.</p>
+<h2>Quanto costa e quali formule esistono</h2>
+<p>Le formule variano: piani in abbonamento a canone mensile (da circa &euro;39/mese) che includono aggiornamenti, backup e un monte ore per modifiche, oppure interventi a consumo pagati quando servono. L'abbonamento conviene se il sito &egrave; importante per il business e non vuoi sorprese; il &laquo;a consumo&raquo; va bene per siti semplici e statici. A questo si aggiunge sempre l'<a href="/servizi/hosting/">hosting</a>, che &egrave; la base su cui il sito vive.</p>
+<p>Offriamo manutenzione su tutti i siti che realizziamo e anche su siti esistenti. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> oppure <a href="/contatti/">scrivici</a> per un piano su misura per il tuo caso.</p>""",
+  faqs=[
+   ("Perche un sito web ha bisogno di manutenzione?", "Perche software non aggiornato, backup mancanti e prestazioni in calo espongono il sito a rischi di sicurezza, downtime e perdita di posizioni su Google. La manutenzione tiene il sito sicuro, veloce e funzionante nel tempo, come i tagliandi di un'auto."),
+   ("Quanto costa la manutenzione di un sito web?", "Un piano in abbonamento parte in genere da circa &euro;39/mese e include aggiornamenti, backup, controlli di sicurezza e un monte ore per piccole modifiche. In alternativa esistono interventi a consumo, pagati solo quando servono."),
+   ("Cosa succede se non faccio manutenzione?", "Aumentano i rischi: plugin vulnerabili diventano porte per gli attacchi, un guasto senza backup puo far perdere tutto e le prestazioni peggiorano danneggiando la SEO. Spesso il costo di rimettere a posto un sito trascurato supera quello della manutenzione."),
+   ("La manutenzione include anche le modifiche ai contenuti?", "Nei piani in abbonamento di solito e incluso un monte ore per piccole modifiche a testi, immagini e pagine. Interventi piu grandi, come nuove sezioni o funzionalita, si valutano a parte con un preventivo dedicato."),
+  ]),
+ en=dict(
+  title="Website Maintenance: Why It Matters and What It Costs | Carbon Stealth",
+  desc="What website maintenance is, why it's necessary and what it costs: updates, backups, security and performance explained without jargon.",
+  body="""<p>Website maintenance is the set of activities that keep a site <strong>secure, fast and working</strong> over time: updates, backups, security checks and small changes. A website isn't a one-off job: like a car, it needs regular servicing. A maintenance plan typically starts from <strong>&euro;39/month</strong> and costs far less than the risk of a hacked, offline or Google-penalized site.</p>
+<h2>What maintenance includes</h2>
+<div class="ctbl"><table><thead><tr><th>Activity</th><th>Why it matters</th><th>Frequency</th></tr></thead><tbody>
+<tr><td>Software updates</td><td>Close known security holes</td><td>Monthly or more often</td></tr>
+<tr><td>Backups</td><td>Fast recovery if something goes wrong</td><td>Daily/weekly</td></tr>
+<tr><td>Security checks</td><td>Block malware and unwanted access</td><td>Continuous</td></tr>
+<tr><td>Uptime monitoring</td><td>Alerts you if the site goes offline</td><td>Continuous</td></tr>
+<tr><td>Small changes</td><td>Text, images, new pages</td><td>On request</td></tr>
+</tbody></table></div>
+<h2>Why you can't ignore it</h2>
+<p>A neglected site accumulates silent risks: outdated plugins become entry points for attacks, a missing backup turns a small failure into a disaster, and degrading performance loses rankings and customers. The basics are in our <a href="/en/blog/sicurezza-sito-web-checklist/">security checklist</a>, and for speed our <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a> guide helps. If you run WordPress, many tasks overlap with those to <a href="/en/blog/velocizzare-wordpress/">speed it up</a>.</p>
+<h2>What it costs and which formats exist</h2>
+<p>Formats vary: monthly subscription plans (from around &euro;39/month) covering updates, backups and a block of hours for changes, or pay-as-you-go work billed when needed. A subscription makes sense if the site matters to the business and you want no surprises; pay-as-you-go suits simple, static sites. On top of this there's always <a href="/en/services/hosting/">hosting</a>, the foundation the site runs on.</p>
+<p>We offer maintenance on every site we build and on existing sites too. See our <a href="/en/services/web-development/">web development service</a> or <a href="/en/contact/">get in touch</a> for a plan tailored to your case.</p>""",
+  faqs=[
+   ("Why does a website need maintenance?", "Because outdated software, missing backups and declining performance expose the site to security risks, downtime and lost Google rankings. Maintenance keeps the site secure, fast and working over time, like servicing a car."),
+   ("How much does website maintenance cost?", "A subscription plan typically starts from around &euro;39/month and includes updates, backups, security checks and a block of hours for small changes. Alternatively, pay-as-you-go work is billed only when needed."),
+   ("What happens if I don't do maintenance?", "Risks grow: vulnerable plugins become entry points for attacks, a failure without a backup can lose everything, and performance worsens, hurting SEO. Fixing a neglected site often costs more than maintaining it would have."),
+   ("Does maintenance include content changes?", "Subscription plans usually include a block of hours for small edits to text, images and pages. Larger work, like new sections or features, is assessed separately with a dedicated quote."),
+  ]),
+ bg=dict(
+  title="Поддръжка на Сайт: Защо е Нужна и Колко Струва | Carbon Stealth",
+  desc="Какво е поддръжката на сайт, защо е необходима и колко струва: обновления, резервни копия, сигурност и производителност, обяснени без технически жаргон.",
+  body="""<p>Поддръжката на сайт е съвкупността от дейности, които го държат <strong>сигурен, бърз и работещ</strong> във времето: обновления, резервни копия, проверки за сигурност и малки промени. Сайтът не е еднократна работа: като автомобил се нуждае от редовно обслужване. Планът за поддръжка обикновено започва от <strong>&euro;39/месец</strong> и струва далеч по-малко от риска от хакнат, недостъпен или санкциониран от Google сайт.</p>
+<h2>Какво включва поддръжката</h2>
+<div class="ctbl"><table><thead><tr><th>Дейност</th><th>Защо е нужна</th><th>Честота</th></tr></thead><tbody>
+<tr><td>Обновления на софтуера</td><td>Затварят известни пробойни в сигурността</td><td>Месечно или по-често</td></tr>
+<tr><td>Резервни копия</td><td>Бързо възстановяване при проблем</td><td>Дневно/седмично</td></tr>
+<tr><td>Проверки за сигурност</td><td>Блокират зловреден код и нежелан достъп</td><td>Постоянно</td></tr>
+<tr><td>Мониторинг на достъпност</td><td>Известява ви, ако сайтът падне</td><td>Постоянно</td></tr>
+<tr><td>Малки промени</td><td>Текстове, изображения, нови страници</td><td>При заявка</td></tr>
+</tbody></table></div>
+<h2>Защо не можете да я пренебрегнете</h2>
+<p>Занемареният сайт трупа тихи рискове: необновените плъгини стават входни точки за атаки, липсващото резервно копие превръща малка повреда в катастрофа, а влошаващата се производителност губи позиции и клиенти. Основите ще намерите в нашия <a href="/bg/blog/sicurezza-sito-web-checklist/">чеклист за сигурност</a>, а за скоростта помага ръководството за <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a>. Ако имате WordPress, много от задачите съвпадат с тези за <a href="/bg/blog/velocizzare-wordpress/">ускоряването му</a>.</p>
+<h2>Колко струва и какви форми съществуват</h2>
+<p>Формите варират: абонаментни планове с месечна такса (от около &euro;39/месец), включващи обновления, резервни копия и часове за промени, или работа при нужда, платена, когато потрябва. Абонаментът е удачен, ако сайтът е важен за бизнеса и не искате изненади; при нужда е добре за прости, статични сайтове. Към това винаги се добавя <a href="/bg/uslugi/hosting/">хостингът</a> — основата, върху която сайтът живее.</p>
+<p>Предлагаме поддръжка на всички сайтове, които изработваме, както и на съществуващи. Вижте нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a> или <a href="/bg/kontakti/">пишете ни</a> за план по мярка за вашия случай.</p>""",
+  faqs=[
+   ("Защо сайтът има нужда от поддръжка?", "Защото необновеният софтуер, липсващите резервни копия и спадащата производителност излагат сайта на рискове за сигурността, недостъпност и загуба на позиции в Google. Поддръжката държи сайта сигурен, бърз и работещ във времето, като обслужването на автомобил."),
+   ("Колко струва поддръжката на сайт?", "Абонаментният план обикновено започва от около &euro;39/месец и включва обновления, резервни копия, проверки за сигурност и часове за малки промени. Като алтернатива има работа при нужда, платена само когато потрябва."),
+   ("Какво става, ако не правя поддръжка?", "Рисковете растат: уязвимите плъгини стават входни точки за атаки, повреда без резервно копие може да загуби всичко, а производителността се влошава и вреди на SEO. Оправянето на занемарен сайт често струва повече от самата поддръжка."),
+   ("Поддръжката включва ли промени по съдържанието?", "Абонаментните планове обикновено включват часове за малки промени по текстове, изображения и страници. По-голяма работа, като нови секции или функции, се оценява отделно с нарочна оферта."),
+  ]),
+)),
+
+# 20 ────────────────────────────────────────────────────────────
+dict(slug="velocizzare-wordpress", section="Web Development", read=8, lang=dict(
+ it=dict(
+  title="Come Velocizzare WordPress: Guida Pratica | Carbon Stealth",
+  desc="Come velocizzare WordPress con interventi concreti: hosting, caching, immagini, plugin e database. Guida pratica per un sito veloce e ben posizionato.",
+  body="""<p>Per velocizzare WordPress i tre interventi che fanno la differenza sono, in ordine: un <strong>hosting adeguato</strong>, una <strong>cache ben configurata</strong> e <strong>immagini ottimizzate</strong>. Insieme risolvono la maggior parte dei problemi di lentezza. Il resto &mdash; ridurre i plugin, pulire il database, usare una CDN &mdash; rifinisce il risultato. Un WordPress lento perde visitatori e posizioni su Google, quindi la velocit&agrave; non &egrave; un vezzo tecnico ma un fattore di business.</p>
+<h2>Gli interventi in ordine di impatto</h2>
+<div class="ctbl"><table><thead><tr><th>Intervento</th><th>Impatto</th><th>Difficolt&agrave;</th></tr></thead><tbody>
+<tr><td>Hosting di qualit&agrave;</td><td>Alto</td><td>Bassa</td></tr>
+<tr><td>Cache (pagina e oggetti)</td><td>Alto</td><td>Media</td></tr>
+<tr><td>Compressione immagini + WebP</td><td>Alto</td><td>Bassa</td></tr>
+<tr><td>Ridurre e scegliere bene i plugin</td><td>Medio</td><td>Media</td></tr>
+<tr><td>Pulizia del database</td><td>Medio</td><td>Media</td></tr>
+<tr><td>CDN</td><td>Medio</td><td>Media</td></tr>
+</tbody></table></div>
+<h2>Le cause pi&ugrave; comuni di lentezza</h2>
+<ul>
+<li><strong>Hosting economico e sovraffollato:</strong> il collo di bottiglia numero uno. Un <a href="/servizi/hosting/">hosting cloud</a> dedicato cambia tutto.</li>
+<li><strong>Troppi plugin:</strong> ognuno aggiunge codice; meglio pochi plugin scelti bene che decine attivi &laquo;per sicurezza&raquo;.</li>
+<li><strong>Immagini pesanti:</strong> caricare foto da diversi MB senza comprimerle affossa il tempo di caricamento.</li>
+<li><strong>Tema sovraccarico:</strong> i temi &laquo;tuttofare&raquo; pieni di funzioni inutilizzate rallentano ogni pagina.</li>
+<li><strong>Nessuna cache:</strong> senza cache il server ricostruisce ogni pagina da zero a ogni visita.</li>
+</ul>
+<h2>Perch&eacute; la velocit&agrave; conta per la SEO</h2>
+<p>Google misura l'esperienza utente con i <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>, e un sito lento parte svantaggiato sia nel posizionamento sia nella conversione. La velocit&agrave; va di pari passo con la <a href="/blog/manutenzione-sito-web/">manutenzione</a>: un sito aggiornato e curato resta veloce nel tempo. Se dopo tutti gli interventi WordPress resta pesante, a volte la soluzione &egrave; ripensare l'impianto con codice pi&ugrave; snello, come facciamo nel nostro <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a>.</p>
+<p>Analizziamo e ottimizziamo la velocit&agrave; di siti WordPress esistenti. Se il tuo sito &egrave; lento e vuoi capire perch&eacute;, <a href="/contatti/">scrivici</a> per un'analisi delle prestazioni.</p>""",
+  faqs=[
+   ("Come velocizzo un sito WordPress lento?", "Parti dai tre interventi a maggior impatto: un hosting di qualita, una cache ben configurata e immagini ottimizzate in WebP. Poi riduci i plugin, pulisci il database e valuta una CDN. Insieme risolvono la maggior parte dei problemi di lentezza."),
+   ("Quali plugin rallentano WordPress?", "Non e questione di singoli plugin, ma di quantita e qualita. Ogni plugin aggiunge codice e richieste: meglio pochi plugin ben fatti che decine attivi per abitudine. Page builder pesanti e plugin che caricano script su ogni pagina sono tra i piu impattanti."),
+   ("L'hosting influisce sulla velocita di WordPress?", "Moltissimo. Un hosting economico e sovraffollato e la causa piu comune di lentezza. Un hosting cloud dedicato, con risorse garantite e cache lato server, spesso migliora i tempi di caricamento piu di qualsiasi plugin."),
+   ("La velocita di WordPress influisce sulla SEO?", "Si. Google valuta l'esperienza utente con i Core Web Vitals e un sito lento parte svantaggiato nel posizionamento. Inoltre gli utenti abbandonano le pagine lente, riducendo conversioni e vendite."),
+  ]),
+ en=dict(
+  title="How to Speed Up WordPress: A Practical Guide | Carbon Stealth",
+  desc="How to speed up WordPress with concrete steps: hosting, caching, images, plugins and database. A practical guide to a fast, well-ranked site.",
+  body="""<p>To speed up WordPress, the three steps that make the difference are, in order: <strong>adequate hosting</strong>, a <strong>well-configured cache</strong> and <strong>optimized images</strong>. Together they solve most slowness problems. The rest &mdash; reducing plugins, cleaning the database, using a CDN &mdash; refines the result. A slow WordPress loses visitors and Google rankings, so speed isn't a technical vanity but a business factor.</p>
+<h2>Steps in order of impact</h2>
+<div class="ctbl"><table><thead><tr><th>Step</th><th>Impact</th><th>Difficulty</th></tr></thead><tbody>
+<tr><td>Quality hosting</td><td>High</td><td>Low</td></tr>
+<tr><td>Cache (page and object)</td><td>High</td><td>Medium</td></tr>
+<tr><td>Image compression + WebP</td><td>High</td><td>Low</td></tr>
+<tr><td>Fewer, well-chosen plugins</td><td>Medium</td><td>Medium</td></tr>
+<tr><td>Database cleanup</td><td>Medium</td><td>Medium</td></tr>
+<tr><td>CDN</td><td>Medium</td><td>Medium</td></tr>
+</tbody></table></div>
+<h2>The most common causes of slowness</h2>
+<ul>
+<li><strong>Cheap, overcrowded hosting:</strong> the number-one bottleneck. A dedicated <a href="/en/services/hosting/">cloud hosting</a> changes everything.</li>
+<li><strong>Too many plugins:</strong> each adds code; a few well-chosen plugins beat dozens active &laquo;just in case&raquo;.</li>
+<li><strong>Heavy images:</strong> uploading multi-MB photos without compressing them wrecks load time.</li>
+<li><strong>Bloated theme:</strong> &laquo;do-everything&raquo; themes full of unused features slow every page.</li>
+<li><strong>No cache:</strong> without a cache the server rebuilds every page from scratch on each visit.</li>
+</ul>
+<h2>Why speed matters for SEO</h2>
+<p>Google measures user experience with <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a>, and a slow site starts at a disadvantage in both ranking and conversion. Speed goes hand in hand with <a href="/en/blog/manutenzione-sito-web/">maintenance</a>: an updated, well-kept site stays fast over time. If, after all the steps, WordPress is still heavy, the answer is sometimes to rethink the build with leaner code, as we do in our <a href="/en/services/web-development/">web development</a>.</p>
+<p>We analyze and optimize the speed of existing WordPress sites. If your site is slow and you want to know why, <a href="/en/contact/">get in touch</a> for a performance analysis.</p>""",
+  faqs=[
+   ("How do I speed up a slow WordPress site?", "Start with the three highest-impact steps: quality hosting, a well-configured cache and images optimized in WebP. Then reduce plugins, clean the database and consider a CDN. Together they solve most slowness problems."),
+   ("Which plugins slow down WordPress?", "It's not about specific plugins but quantity and quality. Each plugin adds code and requests: a few well-built plugins beat dozens active out of habit. Heavy page builders and plugins that load scripts on every page are among the most impactful."),
+   ("Does hosting affect WordPress speed?", "A lot. Cheap, overcrowded hosting is the most common cause of slowness. Dedicated cloud hosting, with guaranteed resources and server-side caching, often improves load times more than any plugin."),
+   ("Does WordPress speed affect SEO?", "Yes. Google assesses user experience with Core Web Vitals, and a slow site starts at a disadvantage in ranking. Users also abandon slow pages, reducing conversions and sales."),
+  ]),
+ bg=dict(
+  title="Как да Ускорите WordPress: Практическо Ръководство | Carbon Stealth",
+  desc="Как да ускорите WordPress с конкретни стъпки: хостинг, кеширане, изображения, плъгини и база данни. Практическо ръководство за бърз и добре класиран сайт.",
+  body="""<p>За да ускорите WordPress, трите стъпки, които правят разликата, са по ред: <strong>подходящ хостинг</strong>, <strong>добре конфигуриран кеш</strong> и <strong>оптимизирани изображения</strong>. Заедно решават повечето проблеми с бавността. Останалото &mdash; намаляване на плъгините, почистване на базата данни, използване на CDN &mdash; финализира резултата. Бавният WordPress губи посетители и позиции в Google, така че скоростта не е техническа суета, а бизнес фактор.</p>
+<h2>Стъпките по ред на въздействие</h2>
+<div class="ctbl"><table><thead><tr><th>Стъпка</th><th>Въздействие</th><th>Трудност</th></tr></thead><tbody>
+<tr><td>Качествен хостинг</td><td>Високо</td><td>Ниска</td></tr>
+<tr><td>Кеш (страница и обекти)</td><td>Високо</td><td>Средна</td></tr>
+<tr><td>Компресия на изображения + WebP</td><td>Високо</td><td>Ниска</td></tr>
+<tr><td>По-малко, добре подбрани плъгини</td><td>Средно</td><td>Средна</td></tr>
+<tr><td>Почистване на базата данни</td><td>Средно</td><td>Средна</td></tr>
+<tr><td>CDN</td><td>Средно</td><td>Средна</td></tr>
+</tbody></table></div>
+<h2>Най-честите причини за бавност</h2>
+<ul>
+<li><strong>Евтин и претоварен хостинг:</strong> тясното място номер едно. Отделен <a href="/bg/uslugi/hosting/">облачен хостинг</a> променя всичко.</li>
+<li><strong>Твърде много плъгини:</strong> всеки добавя код; по-добре няколко добре подбрани, отколкото десетки активни &laquo;за всеки случай&raquo;.</li>
+<li><strong>Тежки изображения:</strong> качването на снимки от няколко MB без компресия срива времето за зареждане.</li>
+<li><strong>Претоварена тема:</strong> &laquo;всичко в едно&raquo; темите, пълни с неизползвани функции, забавят всяка страница.</li>
+<li><strong>Без кеш:</strong> без кеш сървърът изгражда всяка страница наново при всяко посещение.</li>
+</ul>
+<h2>Защо скоростта е важна за SEO</h2>
+<p>Google измерва потребителското изживяване с <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a> и бавният сайт стартира в неизгодна позиция както в класирането, така и в конверсията. Скоростта върви ръка за ръка с <a href="/bg/blog/manutenzione-sito-web/">поддръжката</a>: обновеният и поддържан сайт остава бърз във времето. Ако след всички стъпки WordPress остане тежък, понякога решението е да преосмислите основата с по-олекотен код, както правим в нашата <a href="/bg/uslugi/web-razrabotka/">изработка на сайтове</a>.</p>
+<p>Анализираме и оптимизираме скоростта на съществуващи WordPress сайтове. Ако сайтът ви е бавен и искате да разберете защо, <a href="/bg/kontakti/">пишете ни</a> за анализ на производителността.</p>""",
+  faqs=[
+   ("Как да ускоря бавен WordPress сайт?", "Започнете с трите стъпки с най-голямо въздействие: качествен хостинг, добре конфигуриран кеш и изображения, оптимизирани в WebP. После намалете плъгините, почистете базата данни и обмислете CDN. Заедно решават повечето проблеми с бавността."),
+   ("Кои плъгини забавят WordPress?", "Не е въпрос на конкретни плъгини, а на количество и качество. Всеки плъгин добавя код и заявки: по-добре няколко добре направени, отколкото десетки активни по навик. Тежките page builder-и и плъгините, зареждащи скриптове на всяка страница, са сред най-влияещите."),
+   ("Влияе ли хостингът на скоростта на WordPress?", "Много. Евтиният и претоварен хостинг е най-честата причина за бавност. Отделният облачен хостинг, с гарантирани ресурси и кеширане от страна на сървъра, често подобрява времето за зареждане повече от всеки плъгин."),
+   ("Влияе ли скоростта на WordPress на SEO?", "Да. Google оценява потребителското изживяване с Core Web Vitals и бавният сайт стартира в неизгодна позиция при класирането. Освен това потребителите изоставят бавните страници, което намалява конверсиите и продажбите."),
+  ]),
+)),
+
+# 21 ────────────────────────────────────────────────────────────
+dict(slug="gdpr-sito-web", section="Web Development", read=8, lang=dict(
+ it=dict(
+  title="GDPR e Sito Web: Cosa Serve per Essere in Regola | Carbon Stealth",
+  desc="GDPR e sito web: cosa serve davvero per essere in regola. Cookie banner, privacy policy, moduli di contatto e trattamento dati spiegati in modo pratico.",
+  body="""<p>Per essere in regola con il GDPR, un sito web ha bisogno essenzialmente di quattro cose: una <strong>privacy policy chiara</strong>, un <strong>cookie banner</strong> che raccolga il consenso prima di attivare i cookie non necessari, il <strong>consenso esplicito nei moduli</strong> che raccolgono dati e un trattamento sicuro delle informazioni. Non serve nulla di esoterico: serve trasparenza su quali dati raccogli, perch&eacute; e come. Questa non &egrave; consulenza legale, ma una guida pratica per capire da dove partire.</p>
+<h2>Le basi per la conformit&agrave;</h2>
+<ul>
+<li><strong>Privacy policy:</strong> spiega quali dati raccogli, per quali finalit&agrave; e con quali strumenti (analytics, form, newsletter).</li>
+<li><strong>Cookie banner:</strong> deve permettere di accettare, rifiutare e scegliere. I cookie non necessari si attivano solo dopo il consenso.</li>
+<li><strong>Moduli di contatto:</strong> una checkbox non pre-selezionata e un link alla privacy policy prima dell'invio.</li>
+<li><strong>Diritti dell'utente:</strong> l'utente pu&ograve; chiedere accesso, correzione o cancellazione dei propri dati.</li>
+<li><strong>Sicurezza:</strong> HTTPS ovunque e protezione dei dati raccolti, come nella nostra <a href="/blog/sicurezza-sito-web-checklist/">checklist di sicurezza</a>.</li>
+</ul>
+<h2>Gli errori pi&ugrave; comuni</h2>
+<p>Molti siti sbagliano su dettagli evitabili: cookie banner che attivano i cookie di tracciamento gi&agrave; al caricamento (prima del consenso), caselle di consenso pre-spuntate, privacy policy generiche copiate da altri siti, oppure moduli che raccolgono dati senza spiegare come vengono usati. Attenzione anche agli strumenti di terze parti: analytics, mappe, chat e pixel pubblicitari trattano dati e vanno dichiarati e gestiti nel consenso.</p>
+<h2>GDPR ed e-commerce</h2>
+<p>Se vendi online, gli obblighi aumentano: gestisci dati di pagamento, indirizzi e ordini. La buona notizia &egrave; che affidando i pagamenti a gateway come Stripe e PayPal, come spieghiamo nella guida sull'<a href="/blog/integrazione-pagamenti-online/">integrazione dei pagamenti</a>, i dati delle carte non passano dal tuo server e gran parte della conformit&agrave; &egrave; gestita da loro. Restano a tuo carico privacy policy, consenso e sicurezza del sito.</p>
+<p>Costruiamo siti conformi fin dalla base, con cookie banner e gestione del consenso corretti, come parte del nostro <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a>. Se vuoi verificare se il tuo sito &egrave; in regola, <a href="/contatti/">scrivici</a> per un controllo tecnico.</p>""",
+  faqs=[
+   ("Cosa serve per rendere un sito conforme al GDPR?", "Servono una privacy policy chiara, un cookie banner che raccolga il consenso prima di attivare i cookie non necessari, il consenso esplicito nei moduli che raccolgono dati e un trattamento sicuro delle informazioni. In sostanza: trasparenza su quali dati raccogli, perche e come."),
+   ("Il cookie banner e obbligatorio?", "Se il sito usa cookie non strettamente necessari (analytics, marketing, strumenti di terze parti), si. Il banner deve permettere di accettare, rifiutare e scegliere, e i cookie non necessari devono attivarsi solo dopo il consenso, non al caricamento della pagina."),
+   ("Un modulo di contatto deve rispettare il GDPR?", "Si. Chi raccoglie dati tramite un modulo deve informare l'utente su come verranno usati, con un link alla privacy policy e una casella di consenso non pre-spuntata. I dati vanno poi conservati e trattati in modo sicuro."),
+   ("Questa guida sostituisce una consulenza legale?", "No. E una guida pratica per capire le basi tecniche della conformita. Per situazioni complesse o dubbi specifici e sempre consigliabile rivolgersi a un consulente legale o a un DPO."),
+  ]),
+ en=dict(
+  title="GDPR and Your Website: What You Need to Be Compliant | Carbon Stealth",
+  desc="GDPR and your website: what you really need to be compliant. Cookie banner, privacy policy, contact forms and data handling explained in a practical way.",
+  body="""<p>To be GDPR-compliant, a website essentially needs four things: a <strong>clear privacy policy</strong>, a <strong>cookie banner</strong> that collects consent before activating non-essential cookies, <strong>explicit consent in forms</strong> that collect data, and secure handling of that information. Nothing esoteric is required: it takes transparency about what data you collect, why and how. This isn't legal advice, but a practical guide to where to start.</p>
+<h2>The basics of compliance</h2>
+<ul>
+<li><strong>Privacy policy:</strong> explains what data you collect, for what purposes and with which tools (analytics, forms, newsletter).</li>
+<li><strong>Cookie banner:</strong> must let users accept, reject and choose. Non-essential cookies activate only after consent.</li>
+<li><strong>Contact forms:</strong> an un-pre-ticked checkbox and a link to the privacy policy before submitting.</li>
+<li><strong>User rights:</strong> users can request access to, correction of or deletion of their data.</li>
+<li><strong>Security:</strong> HTTPS everywhere and protection of the data collected, as in our <a href="/en/blog/sicurezza-sito-web-checklist/">security checklist</a>.</li>
+</ul>
+<h2>The most common mistakes</h2>
+<p>Many sites fail on avoidable details: cookie banners that fire tracking cookies on load (before consent), pre-ticked consent boxes, generic privacy policies copied from other sites, or forms that collect data without explaining how it's used. Watch out for third-party tools too: analytics, maps, chat and ad pixels process data and must be declared and handled within consent.</p>
+<h2>GDPR and e-commerce</h2>
+<p>If you sell online, obligations grow: you handle payment data, addresses and orders. The good news is that by delegating payments to gateways like Stripe and PayPal, as we explain in our guide on <a href="/en/blog/integrazione-pagamenti-online/">payment integration</a>, card data never passes through your server and much of the compliance is handled by them. Privacy policy, consent and site security remain on you.</p>
+<p>We build compliant sites from the ground up, with correct cookie banners and consent management, as part of our <a href="/en/services/web-development/">web development</a>. If you want to check whether your site is compliant, <a href="/en/contact/">get in touch</a> for a technical review.</p>""",
+  faqs=[
+   ("What does it take to make a website GDPR-compliant?", "You need a clear privacy policy, a cookie banner that collects consent before activating non-essential cookies, explicit consent in forms that collect data, and secure handling of that information. In short: transparency about what data you collect, why and how."),
+   ("Is a cookie banner mandatory?", "If the site uses non-strictly-necessary cookies (analytics, marketing, third-party tools), yes. The banner must let users accept, reject and choose, and non-essential cookies must activate only after consent, not on page load."),
+   ("Does a contact form need to comply with GDPR?", "Yes. Anyone collecting data through a form must tell users how it will be used, with a link to the privacy policy and an un-pre-ticked consent box. The data must then be stored and handled securely."),
+   ("Does this guide replace legal advice?", "No. It's a practical guide to the technical basics of compliance. For complex situations or specific doubts, it's always advisable to consult a legal advisor or a DPO."),
+  ]),
+ bg=dict(
+  title="GDPR и Вашият Сайт: Какво е Нужно за Съответствие | Carbon Stealth",
+  desc="GDPR и вашият сайт: какво наистина е нужно за съответствие. Cookie банер, политика за поверителност, форми за контакт и обработка на данни, обяснени практично.",
+  body="""<p>За да е в съответствие с GDPR, един сайт се нуждае по същество от четири неща: <strong>ясна политика за поверителност</strong>, <strong>cookie банер</strong>, който събира съгласие, преди да активира ненужните бисквитки, <strong>изрично съгласие във формите</strong>, събиращи данни, и сигурна обработка на тази информация. Не е нужно нищо езотерично: нужна е прозрачност какви данни събирате, защо и как. Това не е правна консултация, а практическо ръководство откъде да започнете.</p>
+<h2>Основите на съответствието</h2>
+<ul>
+<li><strong>Политика за поверителност:</strong> обяснява какви данни събирате, за какви цели и с какви инструменти (analytics, форми, бюлетин).</li>
+<li><strong>Cookie банер:</strong> трябва да позволява приемане, отказ и избор. Ненужните бисквитки се активират само след съгласие.</li>
+<li><strong>Форми за контакт:</strong> непредварително отметнато поле и връзка към политиката за поверителност преди изпращане.</li>
+<li><strong>Права на потребителя:</strong> потребителят може да поиска достъп, корекция или изтриване на данните си.</li>
+<li><strong>Сигурност:</strong> HTTPS навсякъде и защита на събраните данни, както в нашия <a href="/bg/blog/sicurezza-sito-web-checklist/">чеклист за сигурност</a>.</li>
+</ul>
+<h2>Най-честите грешки</h2>
+<p>Много сайтове грешат в избежими детайли: cookie банери, които зареждат проследяващи бисквитки при отваряне (преди съгласие), предварително отметнати полета за съгласие, генерични политики за поверителност, копирани от други сайтове, или форми, събиращи данни без обяснение как се използват. Внимание и към инструментите на трети страни: analytics, карти, чат и рекламни пиксели обработват данни и трябва да са декларирани и управлявани в съгласието.</p>
+<h2>GDPR и онлайн магазини</h2>
+<p>Ако продавате онлайн, задълженията нарастват: обработвате данни за плащане, адреси и поръчки. Добрата новина е, че като поверите плащанията на оператори като Stripe и PayPal, както обясняваме в статията за <a href="/bg/blog/integrazione-pagamenti-online/">интеграция на плащания</a>, данните на картите никога не минават през вашия сървър и голяма част от съответствието се поема от тях. За ваша сметка остават политиката за поверителност, съгласието и сигурността на сайта.</p>
+<p>Изграждаме сайтове в съответствие от самата основа, с коректни cookie банери и управление на съгласието, като част от нашата <a href="/bg/uslugi/web-razrabotka/">изработка на сайтове</a>. Ако искате да проверите дали сайтът ви е изряден, <a href="/bg/kontakti/">пишете ни</a> за техническа проверка.</p>""",
+  faqs=[
+   ("Какво е нужно, за да е сайтът в съответствие с GDPR?", "Нужни са ясна политика за поверителност, cookie банер, който събира съгласие преди активиране на ненужните бисквитки, изрично съгласие във формите, събиращи данни, и сигурна обработка на информацията. Накратко: прозрачност какви данни събирате, защо и как."),
+   ("Задължителен ли е cookie банерът?", "Ако сайтът използва не строго необходими бисквитки (analytics, маркетинг, инструменти на трети страни) — да. Банерът трябва да позволява приемане, отказ и избор, а ненужните бисквитки трябва да се активират само след съгласие, а не при зареждане на страницата."),
+   ("Трябва ли формата за контакт да спазва GDPR?", "Да. Който събира данни чрез форма, трябва да информира потребителя как ще бъдат използвани, с връзка към политиката за поверителност и непредварително отметнато поле за съгласие. После данните трябва да се съхраняват и обработват сигурно."),
+   ("Това ръководство замества ли правна консултация?", "Не. То е практическо ръководство за техническите основи на съответствието. За сложни ситуации или конкретни въпроси винаги е препоръчително да се обърнете към юрист или DPO."),
+  ]),
+)),
+
+# 22 ────────────────────────────────────────────────────────────
+dict(slug="reverse-engineering-stampa-3d", section="3D Printing", read=7, lang=dict(
+ it=dict(
+  title="Reverse Engineering e Stampa 3D di Ricambi Introvabili | Carbon Stealth",
+  desc="Come il reverse engineering e la stampa 3D permettono di ricreare ricambi fuori produzione o introvabili: dal pezzo rotto al modello CAD al componente finito.",
+  body="""<p>Quando un ricambio &egrave; fuori produzione o introvabile, il <strong>reverse engineering</strong> unito alla <strong>stampa 3D</strong> permette di ricrearlo partendo dal pezzo originale, anche rotto. Il processo &egrave; lineare: si misura o si scansiona il componente, si ricostruisce un modello CAD preciso e lo si produce con la tecnologia pi&ugrave; adatta. &Egrave; la soluzione ideale per macchinari datati, elettrodomestici, pezzi automotive d'epoca e attrezzature industriali per cui nessuno vende pi&ugrave; il ricambio.</p>
+<h2>Come funziona il processo</h2>
+<ul>
+<li><strong>1. Analisi del pezzo:</strong> si studia il componente originale, la funzione e il materiale, anche se danneggiato.</li>
+<li><strong>2. Rilievo o scansione 3D:</strong> si acquisiscono misure precise con strumenti manuali o scanner 3D.</li>
+<li><strong>3. Modellazione CAD:</strong> si ricostruisce il modello digitale, correggendo usura e difetti dell'originale.</li>
+<li><strong>4. Scelta del materiale:</strong> plastiche tecniche, resine o, per pezzi metallici, stampa dedicata.</li>
+<li><strong>5. Stampa e verifica:</strong> si produce il pezzo e si controlla che monti e funzioni.</li>
+</ul>
+<h2>Quando conviene</h2>
+<div class="ctbl"><table><thead><tr><th>Situazione</th><th>Perch&eacute; il reverse engineering aiuta</th></tr></thead><tbody>
+<tr><td>Ricambio fuori produzione</td><td>Si ricrea il pezzo senza dipendere dal produttore</td></tr>
+<tr><td>Componente introvabile o raro</td><td>Si ottiene in giorni invece che attendere mesi</td></tr>
+<tr><td>Piccole serie o pezzo unico</td><td>Nessuno stampo costoso da realizzare</td></tr>
+<tr><td>Miglioramento del pezzo</td><td>Si corregge un difetto di progetto dell'originale</td></tr>
+</tbody></table></div>
+<h2>Prototipazione e produzione</h2>
+<p>Oltre ai ricambi, lo stesso approccio serve per prototipare nuovi prodotti: dal modello CAD si arriva rapidamente a un pezzo fisico da testare, iterando il design a costi contenuti prima di una produzione pi&ugrave; ampia. Il modello digitale, inoltre, resta un asset riutilizzabile: si pu&ograve; modificare, migliorare o riprodurre in qualsiasi momento. Per progetti che richiedono anche gestione dati, cataloghi o integrazione con i processi aziendali, il pezzo fisico si affianca a un <a href="/servizi/sviluppo-software/">software su misura</a> o a un <a href="/servizi/erp/">ERP</a> per la digitalizzazione della produzione.</p>
+<p>Realizziamo reverse engineering, modellazione CAD e stampa 3D di ricambi e prototipi. Se hai un pezzo introvabile o un'idea da prototipare, <a href="/contatti/">scrivici</a> con una foto e le misure: valutiamo insieme la fattibilit&agrave;. Trovi altri lavori nel nostro <a href="/portfolio/">portfolio</a>.</p>""",
+  faqs=[
+   ("Cos'e il reverse engineering di un ricambio?", "E il processo che ricostruisce un componente partendo dal pezzo originale, anche rotto: si misura o si scansiona, si crea un modello CAD preciso e lo si produce con stampa 3D o altre tecnologie. Serve quando il ricambio e fuori produzione o introvabile."),
+   ("Si puo ricreare un pezzo se ho solo quello rotto?", "Spesso si. Anche da un pezzo danneggiato si possono ricavare misure e geometrie sufficienti a ricostruire il modello CAD, correggendo l'usura e i difetti. Piu il pezzo e completo, piu preciso sara il risultato."),
+   ("Quali materiali si possono usare?", "Dipende dalla funzione del pezzo: plastiche tecniche e resine per molti ricambi e prototipi, materiali piu resistenti o metallo per componenti sotto sforzo. La scelta si fa in base a carico, temperatura e uso previsto."),
+   ("La stampa 3D e adatta anche alla prototipazione?", "Si, e uno degli usi principali. Permette di passare rapidamente dal modello CAD a un pezzo fisico da testare, iterando il design a costi contenuti prima di una produzione piu ampia, senza realizzare stampi costosi."),
+  ]),
+ en=dict(
+  title="Reverse Engineering and 3D Printing of Rare Spare Parts | Carbon Stealth",
+  desc="How reverse engineering and 3D printing let you recreate discontinued or unobtainable spare parts: from the broken part to the CAD model to the finished component.",
+  body="""<p>When a spare part is discontinued or unobtainable, <strong>reverse engineering</strong> combined with <strong>3D printing</strong> lets you recreate it starting from the original part, even a broken one. The process is straightforward: you measure or scan the component, rebuild a precise CAD model and produce it with the most suitable technology. It's the ideal solution for aging machinery, appliances, vintage automotive parts and industrial equipment for which no one sells the spare anymore.</p>
+<h2>How the process works</h2>
+<ul>
+<li><strong>1. Part analysis:</strong> the original component, its function and material are studied, even if damaged.</li>
+<li><strong>2. Measurement or 3D scanning:</strong> precise dimensions are captured with manual tools or 3D scanners.</li>
+<li><strong>3. CAD modeling:</strong> the digital model is rebuilt, correcting wear and defects in the original.</li>
+<li><strong>4. Material choice:</strong> engineering plastics, resins or, for metal parts, dedicated printing.</li>
+<li><strong>5. Printing and verification:</strong> the part is produced and checked for fit and function.</li>
+</ul>
+<h2>When it pays off</h2>
+<div class="ctbl"><table><thead><tr><th>Situation</th><th>Why reverse engineering helps</th></tr></thead><tbody>
+<tr><td>Discontinued spare part</td><td>The part is recreated without depending on the maker</td></tr>
+<tr><td>Rare or unobtainable component</td><td>Obtained in days instead of waiting months</td></tr>
+<tr><td>Small batches or one-offs</td><td>No expensive mold to produce</td></tr>
+<tr><td>Improving the part</td><td>A design flaw in the original can be fixed</td></tr>
+</tbody></table></div>
+<h2>Prototyping and production</h2>
+<p>Beyond spare parts, the same approach serves to prototype new products: from the CAD model you quickly reach a physical part to test, iterating the design at low cost before wider production. The digital model also remains a reusable asset: it can be modified, improved or reproduced at any time. For projects that also need data management, catalogs or integration with business processes, the physical part sits alongside <a href="/en/services/software-development/">custom software</a> or an <a href="/en/services/erp/">ERP</a> for digitalizing production.</p>
+<p>We do reverse engineering, CAD modeling and 3D printing of spare parts and prototypes. If you have an unobtainable part or an idea to prototype, <a href="/en/contact/">get in touch</a> with a photo and the dimensions: we'll assess feasibility together. See more work in our <a href="/en/portfolio/">portfolio</a>.</p>""",
+  faqs=[
+   ("What is reverse engineering of a spare part?", "It's the process that rebuilds a component starting from the original part, even a broken one: you measure or scan it, create a precise CAD model and produce it with 3D printing or other technologies. It's used when the spare is discontinued or unobtainable."),
+   ("Can a part be recreated if I only have the broken one?", "Often yes. Even from a damaged part you can extract enough dimensions and geometry to rebuild the CAD model, correcting wear and defects. The more complete the part, the more precise the result."),
+   ("What materials can be used?", "It depends on the part's function: engineering plastics and resins for many spares and prototypes, tougher materials or metal for components under stress. The choice is made based on load, temperature and intended use."),
+   ("Is 3D printing suitable for prototyping too?", "Yes, it's one of the main uses. It lets you move quickly from CAD model to a physical part to test, iterating the design at low cost before wider production, without making expensive molds."),
+  ]),
+ bg=dict(
+  title="Reverse Engineering и 3D Печат на Резервни Части | Carbon Stealth",
+  desc="Как reverse engineering и 3D печатът позволяват да пресъздадете спрени от производство или недостъпни резервни части: от счупената част през CAD модела до готовия детайл.",
+  body="""<p>Когато една резервна част е спряна от производство или недостъпна, <strong>reverse engineering</strong> в комбинация с <strong>3D печат</strong> позволява да я пресъздадете, започвайки от оригиналната част, дори счупена. Процесът е ясен: измервате или сканирате детайла, изграждате точен CAD модел и го произвеждате с най-подходящата технология. Това е идеалното решение за стари машини, домакински уреди, части за ретро автомобили и промишлено оборудване, за които вече никой не продава резервна част.</p>
+<h2>Как работи процесът</h2>
+<ul>
+<li><strong>1. Анализ на детайла:</strong> изучават се оригиналният компонент, функцията и материалът, дори при повреда.</li>
+<li><strong>2. Измерване или 3D сканиране:</strong> прецизни размери с ръчни инструменти или 3D скенери.</li>
+<li><strong>3. CAD моделиране:</strong> дигиталният модел се изгражда наново, коригирайки износване и дефекти на оригинала.</li>
+<li><strong>4. Избор на материал:</strong> технически пластмаси, смоли или, за метални части, специализиран печат.</li>
+<li><strong>5. Печат и проверка:</strong> детайлът се произвежда и се проверява дали пасва и работи.</li>
+</ul>
+<h2>Кога си струва</h2>
+<div class="ctbl"><table><thead><tr><th>Ситуация</th><th>Защо reverse engineering помага</th></tr></thead><tbody>
+<tr><td>Спряна от производство част</td><td>Частта се пресъздава без зависимост от производителя</td></tr>
+<tr><td>Рядък или недостъпен компонент</td><td>Получава се за дни вместо да чакате месеци</td></tr>
+<tr><td>Малки серии или единичен детайл</td><td>Няма скъпа матрица за изработка</td></tr>
+<tr><td>Подобряване на детайла</td><td>Коригира се конструктивен дефект на оригинала</td></tr>
+</tbody></table></div>
+<h2>Прототипиране и производство</h2>
+<p>Освен резервни части, същият подход служи за прототипиране на нови продукти: от CAD модела бързо стигате до физически детайл за тестване, итерирайки дизайна при ниски разходи преди по-широко производство. Дигиталният модел освен това остава многократно използваем актив: може да се променя, подобрява или възпроизвежда по всяко време. За проекти, които изискват и управление на данни, каталози или интеграция с бизнес процесите, физическият детайл се съчетава със <a href="/bg/uslugi/softuer/">софтуер по поръчка</a> или <a href="/bg/uslugi/erp/">ERP</a> за дигитализация на производството.</p>
+<p>Правим reverse engineering, CAD моделиране и 3D печат на резервни части и прототипи. Ако имате недостъпна част или идея за прототип, <a href="/bg/kontakti/">пишете ни</a> със снимка и размери: заедно ще преценим осъществимостта. Вижте други проекти в нашето <a href="/bg/portfolio/">портфолио</a>.</p>""",
+  faqs=[
+   ("Какво е reverse engineering на резервна част?", "Това е процесът, който възстановява компонент, започвайки от оригиналната част, дори счупена: измервате или сканирате, създавате точен CAD модел и го произвеждате с 3D печат или други технологии. Използва се, когато частта е спряна от производство или недостъпна."),
+   ("Може ли да се пресъздаде част, ако имам само счупената?", "Често да. Дори от повреден детайл могат да се извлекат достатъчно размери и геометрия за възстановяване на CAD модела, коригирайки износването и дефектите. Колкото по-цял е детайлът, толкова по-точен ще е резултатът."),
+   ("Какви материали могат да се използват?", "Зависи от функцията на детайла: технически пластмаси и смоли за много резервни части и прототипи, по-издръжливи материали или метал за компоненти под натоварване. Изборът се прави според натоварване, температура и предвидена употреба."),
+   ("Подходящ ли е 3D печатът и за прототипиране?", "Да, това е една от основните употреби. Позволява бързо преминаване от CAD модел към физически детайл за тестване, итерирайки дизайна при ниски разходи преди по-широко производство, без изработка на скъпи матрици."),
+  ]),
+)),
+
+# 23 ────────────────────────────────────────────────────────────
+dict(slug="email-marketing-pmi", section="Marketing", read=7, lang=dict(
+ it=dict(
+  title="Email Marketing per PMI: Come Iniziare | Carbon Stealth",
+  desc="Email marketing per PMI: come iniziare passo dopo passo. Costruire la lista, scegliere gli strumenti, scrivere email che aprono e convertono, senza sprechi.",
+  body="""<p>L'email marketing &egrave; ancora uno dei canali con il miglior ritorno per una PMI, perch&eacute; parla a persone che hanno gi&agrave; scelto di ascoltarti. Per iniziare servono tre cose: una <strong>lista costruita in modo pulito</strong> (mai comprata), uno <strong>strumento di invio</strong> adeguato e <strong>email utili</strong> che diano valore prima di chiedere qualcosa. Non serve un grande budget: servono costanza e rispetto per chi ti legge.</p>
+<h2>I primi passi concreti</h2>
+<ul>
+<li><strong>Costruisci la lista con il consenso:</strong> form sul sito, iscrizione alla newsletter, download di una risorsa utile. Mai liste comprate.</li>
+<li><strong>Scegli uno strumento:</strong> le piattaforme di email marketing gestiscono iscrizioni, invii e disiscrizioni in modo conforme al GDPR.</li>
+<li><strong>Definisci un obiettivo per email:</strong> informare, portare traffico, promuovere un'offerta. Un solo obiettivo per messaggio.</li>
+<li><strong>Scrivi un oggetto chiaro:</strong> &egrave; ci&ograve; che decide se l'email viene aperta. Onesto, specifico, senza clickbait.</li>
+<li><strong>Inserisci una call to action:</strong> una sola azione evidente, con link a una <a href="/blog/landing-page-che-converte/">landing page che converte</a>.</li>
+</ul>
+<h2>Tipi di email che funzionano</h2>
+<div class="ctbl"><table><thead><tr><th>Tipo</th><th>Obiettivo</th><th>Quando usarla</th></tr></thead><tbody>
+<tr><td>Email di benvenuto</td><td>Presentarti, dare valore subito</td><td>Alla nuova iscrizione</td></tr>
+<tr><td>Newsletter periodica</td><td>Restare in contatto, portare traffico</td><td>Con cadenza regolare</td></tr>
+<tr><td>Promozione / offerta</td><td>Generare vendite</td><td>Lanci, stagionalit&agrave;</td></tr>
+<tr><td>Recupero carrello (e-commerce)</td><td>Recuperare vendite perse</td><td>Carrello abbandonato</td></tr>
+</tbody></table></div>
+<h2>Come misurare i risultati</h2>
+<p>Guarda poche metriche che contano: tasso di apertura (l'oggetto funziona?), tasso di clic (il contenuto interessa?) e disiscrizioni (stai inviando troppo o cose poco pertinenti?). Migliora un elemento alla volta. L'email marketing funziona meglio se integrato con il resto: un sito che porta iscritti grazie alla <a href="/blog/seo-per-piccole-imprese/">SEO</a> e, per chi vende, un <a href="/servizi/ecommerce/">e-commerce</a> collegato per automatizzare benvenuti e recuperi carrello.</p>
+<p>Aiutiamo le PMI a costruire un sistema che genera contatti e li trasforma in clienti. Se vuoi partire con l'email marketing e non sai da dove cominciare, <a href="/contatti/">scrivici</a>: valutiamo insieme il percorso pi&ugrave; adatto.</p>""",
+  faqs=[
+   ("L'email marketing funziona ancora per le PMI?", "Si, e uno dei canali con il miglior ritorno, perche parla a persone che hanno gia scelto di ascoltarti. Non serve un grande budget: servono una lista costruita con il consenso, uno strumento adeguato ed email utili inviate con costanza."),
+   ("Come costruisco una lista email da zero?", "Con il consenso: form di iscrizione sul sito, newsletter, download di una risorsa utile in cambio dell'indirizzo. Mai comprare liste: sono contro il GDPR, danneggiano la reputazione e portano contatti che non ti conoscono."),
+   ("Quante email conviene inviare?", "Meglio poche email utili che tante irrilevanti. La frequenza giusta dipende dal settore e dal valore che offri: una newsletter regolare ma non invadente, piu invii mirati per offerte o novita. Tieni d'occhio le disiscrizioni per capire se stai esagerando."),
+   ("Serve uno strumento a pagamento per iniziare?", "Non subito. Molte piattaforme offrono piani gratuiti per liste piccole, sufficienti per partire. Crescendo conviene passare a un piano a pagamento per automazioni, segmentazione e statistiche piu avanzate."),
+  ]),
+ en=dict(
+  title="Email Marketing for Small Businesses: Getting Started | Carbon Stealth",
+  desc="Email marketing for small businesses: how to get started step by step. Build the list, pick the tools, write emails that open and convert, with no waste.",
+  body="""<p>Email marketing is still one of the highest-return channels for a small business, because it speaks to people who have already chosen to hear from you. To start, you need three things: a <strong>cleanly built list</strong> (never bought), a suitable <strong>sending tool</strong> and <strong>useful emails</strong> that give value before asking for anything. You don't need a big budget: you need consistency and respect for your readers.</p>
+<h2>The first concrete steps</h2>
+<ul>
+<li><strong>Build the list with consent:</strong> site forms, newsletter sign-up, download of a useful resource. Never buy lists.</li>
+<li><strong>Choose a tool:</strong> email marketing platforms handle sign-ups, sending and unsubscribes in a GDPR-compliant way.</li>
+<li><strong>Set one goal per email:</strong> inform, drive traffic, promote an offer. One goal per message.</li>
+<li><strong>Write a clear subject:</strong> it decides whether the email gets opened. Honest, specific, no clickbait.</li>
+<li><strong>Add a call to action:</strong> one obvious action, linking to a <a href="/en/blog/landing-page-che-converte/">landing page that converts</a>.</li>
+</ul>
+<h2>Types of email that work</h2>
+<div class="ctbl"><table><thead><tr><th>Type</th><th>Goal</th><th>When to use it</th></tr></thead><tbody>
+<tr><td>Welcome email</td><td>Introduce yourself, give value at once</td><td>On new sign-up</td></tr>
+<tr><td>Regular newsletter</td><td>Stay in touch, drive traffic</td><td>On a regular cadence</td></tr>
+<tr><td>Promotion / offer</td><td>Generate sales</td><td>Launches, seasonality</td></tr>
+<tr><td>Cart recovery (e-commerce)</td><td>Recover lost sales</td><td>Abandoned cart</td></tr>
+</tbody></table></div>
+<h2>How to measure results</h2>
+<p>Watch the few metrics that matter: open rate (does the subject work?), click rate (is the content interesting?) and unsubscribes (are you sending too much or too little relevance?). Improve one element at a time. Email marketing works best when integrated with everything else: a site that brings subscribers through <a href="/en/blog/seo-per-piccole-imprese/">SEO</a> and, for sellers, a connected <a href="/en/services/ecommerce/">e-commerce</a> to automate welcomes and cart recovery.</p>
+<p>We help small businesses build a system that generates leads and turns them into customers. If you want to start with email marketing and don't know where to begin, <a href="/en/contact/">get in touch</a>: we'll work out the best path together.</p>""",
+  faqs=[
+   ("Does email marketing still work for small businesses?", "Yes, it's one of the highest-return channels, because it speaks to people who have already chosen to hear from you. You don't need a big budget: you need a consent-built list, a suitable tool and useful emails sent consistently."),
+   ("How do I build an email list from scratch?", "With consent: sign-up forms on the site, a newsletter, a useful resource to download in exchange for the address. Never buy lists: they're against GDPR, damage your reputation and bring contacts who don't know you."),
+   ("How many emails should I send?", "A few useful emails beat many irrelevant ones. The right frequency depends on the sector and the value you offer: a regular but non-intrusive newsletter, plus targeted sends for offers or news. Watch unsubscribes to tell if you're overdoing it."),
+   ("Do I need a paid tool to start?", "Not right away. Many platforms offer free plans for small lists, enough to begin. As you grow, a paid plan is worth it for automations, segmentation and more advanced statistics."),
+  ]),
+ bg=dict(
+  title="Имейл Маркетинг за Малкия Бизнес: Как да Започнете | Carbon Stealth",
+  desc="Имейл маркетинг за малкия бизнес: как да започнете стъпка по стъпка. Изграждане на списък, избор на инструменти, имейли, които се отварят и конвертират, без разхищение.",
+  body="""<p>Имейл маркетингът все още е един от каналите с най-добра възвръщаемост за малкия бизнес, защото говори на хора, които вече са избрали да ви слушат. За да започнете, са нужни три неща: <strong>чисто изграден списък</strong> (никога купен), подходящ <strong>инструмент за изпращане</strong> и <strong>полезни имейли</strong>, които дават стойност, преди да поискат нещо. Не е нужен голям бюджет: нужни са постоянство и уважение към читателите.</p>
+<h2>Първите конкретни стъпки</h2>
+<ul>
+<li><strong>Изградете списъка със съгласие:</strong> форми на сайта, абонамент за бюлетин, изтегляне на полезен ресурс. Никога купени списъци.</li>
+<li><strong>Изберете инструмент:</strong> платформите за имейл маркетинг управляват абонаменти, изпращания и отписвания в съответствие с GDPR.</li>
+<li><strong>Задайте по една цел на имейл:</strong> информиране, трафик, промоция на оферта. Една цел на съобщение.</li>
+<li><strong>Напишете ясна тема:</strong> тя решава дали имейлът ще бъде отворен. Честна, конкретна, без clickbait.</li>
+<li><strong>Добавете призив за действие:</strong> едно очевидно действие с връзка към <a href="/bg/blog/landing-page-che-converte/">landing page с висока конверсия</a>.</li>
+</ul>
+<h2>Видове имейли, които работят</h2>
+<div class="ctbl"><table><thead><tr><th>Вид</th><th>Цел</th><th>Кога да се използва</th></tr></thead><tbody>
+<tr><td>Приветствен имейл</td><td>Да се представите, да дадете стойност веднага</td><td>При нов абонамент</td></tr>
+<tr><td>Периодичен бюлетин</td><td>Да поддържате контакт, да носите трафик</td><td>С редовна честота</td></tr>
+<tr><td>Промоция / оферта</td><td>Генериране на продажби</td><td>Стартове, сезонност</td></tr>
+<tr><td>Възстановяване на количка (магазин)</td><td>Връщане на изгубени продажби</td><td>Изоставена количка</td></tr>
+</tbody></table></div>
+<h2>Как да измервате резултатите</h2>
+<p>Следете малкото метрики, които значат: процент на отваряне (работи ли темата?), процент на кликване (интересно ли е съдържанието?) и отписвания (изпращате ли твърде много или нерелевантни неща?). Подобрявайте по един елемент наведнъж. Имейл маркетингът работи най-добре, интегриран с останалото: сайт, който води абонати чрез <a href="/bg/blog/seo-per-piccole-imprese/">SEO</a>, и — за продаващите — свързан <a href="/bg/uslugi/ecommerce/">онлайн магазин</a> за автоматизиране на приветствия и възстановяване на колички.</p>
+<p>Помагаме на малкия бизнес да изгради система, която генерира контакти и ги превръща в клиенти. Ако искате да започнете с имейл маркетинг и не знаете откъде, <a href="/bg/kontakti/">пишете ни</a>: заедно ще преценим най-подходящия път.</p>""",
+  faqs=[
+   ("Работи ли още имейл маркетингът за малкия бизнес?", "Да, той е един от каналите с най-добра възвръщаемост, защото говори на хора, които вече са избрали да ви слушат. Не е нужен голям бюджет: нужни са списък, изграден със съгласие, подходящ инструмент и полезни имейли, изпращани с постоянство."),
+   ("Как да изградя имейл списък от нулата?", "Със съгласие: форми за абонамент на сайта, бюлетин, полезен ресурс за изтегляне срещу адреса. Никога не купувайте списъци: те са против GDPR, вредят на репутацията и водят контакти, които не ви познават."),
+   ("Колко имейла е добре да изпращам?", "По-добре няколко полезни имейла, отколкото много нерелевантни. Правилната честота зависи от бранша и стойността, която предлагате: редовен, но ненатрапчив бюлетин плюс целеви изпращания за оферти или новини. Следете отписванията, за да разберете дали прекалявате."),
+   ("Нужен ли е платен инструмент, за да започна?", "Не веднага. Много платформи предлагат безплатни планове за малки списъци, достатъчни за старт. С растежа си струва платен план за автоматизации, сегментиране и по-разширена статистика."),
+  ]),
+)),
+
+# 24 ────────────────────────────────────────────────────────────
+dict(slug="contenuti-seo-come-scrivere", section="SEO", read=8, lang=dict(
+ it=dict(
+  title="Come Scrivere Contenuti SEO che si Posizionano | Carbon Stealth",
+  desc="Come scrivere contenuti SEO che si posizionano su Google: intento di ricerca, struttura, parole chiave e qualit&agrave;. Guida pratica per testi utili e ben indicizzati.",
+  body="""<p>Un contenuto SEO si posiziona quando risponde meglio degli altri all'<strong>intento di ricerca</strong> di chi digita una query. Non si tratta di riempire il testo di parole chiave, ma di capire cosa cerca davvero la persona e dargli la risposta pi&ugrave; chiara, completa e utile. Google premia i contenuti che soddisfano l'utente: la scrittura per i motori di ricerca e la scrittura per le persone, oggi, coincidono.</p>
+<h2>Il metodo in cinque passi</h2>
+<ul>
+<li><strong>1. Capisci l'intento:</strong> chi cerca quella query vuole informarsi, confrontare o comprare? Il contenuto cambia di conseguenza.</li>
+<li><strong>2. Rispondi subito:</strong> metti la risposta principale nelle prime righe, poi approfondisci. &Egrave; l'approccio &laquo;answer-first&raquo;.</li>
+<li><strong>3. Struttura con i titoli:</strong> h2 e h3 chiari guidano il lettore e aiutano Google a capire la pagina.</li>
+<li><strong>4. Usa le parole chiave con naturalezza:</strong> il termine principale e le sue varianti, senza forzature.</li>
+<li><strong>5. Aggiungi valore concreto:</strong> esempi, tabelle, liste e una FAQ che risponde alle domande reali.</li>
+</ul>
+<h2>Errori che affossano un contenuto</h2>
+<div class="ctbl"><table><thead><tr><th>Errore</th><th>Perch&eacute; danneggia</th></tr></thead><tbody>
+<tr><td>Keyword stuffing</td><td>Testo innaturale, penalizzato e sgradevole da leggere</td></tr>
+<tr><td>Contenuto generico</td><td>Non risponde all'intento, l'utente rimbalza</td></tr>
+<tr><td>Titoli poco chiari</td><td>Google e il lettore non capiscono la struttura</td></tr>
+<tr><td>Nessun aggiornamento</td><td>Un contenuto vecchio perde posizioni nel tempo</td></tr>
+</tbody></table></div>
+<h2>Scrivere anche per i motori di risposta</h2>
+<p>Oggi non conta solo Google: assistenti come ChatGPT e Perplexity citano i contenuti chiari e ben strutturati. Scrivere &laquo;answer-first&raquo;, con FAQ e <a href="/blog/schema-markup-guida/">dati strutturati</a>, ti rende visibile anche l&igrave;, come spieghiamo nella guida all'<a href="/blog/aeo-guida-completa/">Answer Engine Optimization</a>. I contenuti sono inoltre il motore della <a href="/blog/seo-per-piccole-imprese/">SEO per piccole imprese</a>: rispondere alle domande dei clienti &egrave; il modo pi&ugrave; sostenibile per farsi trovare senza dipendere dalla pubblicit&agrave;.</p>
+<p>Produciamo contenuti ottimizzati come parte del nostro lavoro di <a href="/servizi/seo/">SEO</a>. Se vuoi un piano editoriale che porti traffico qualificato, <a href="/contatti/">scrivici</a>: partiamo dalle domande che fanno i tuoi clienti.</p>""",
+  faqs=[
+   ("Come si scrive un contenuto che si posiziona su Google?", "Rispondendo meglio degli altri all'intento di ricerca: capisci cosa cerca davvero l'utente, dai la risposta principale subito, struttura il testo con titoli chiari, usa le parole chiave con naturalezza e aggiungi valore con esempi, tabelle e FAQ."),
+   ("Quante volte devo ripetere la parola chiave?", "Non esiste un numero magico. Usa il termine principale e le sue varianti in modo naturale, dove ha senso: titolo, introduzione, qualche h2 e nel corpo del testo. Il keyword stuffing, cioe ripeterla forzatamente, e controproducente e penalizzato."),
+   ("Quanto deve essere lungo un contenuto SEO?", "Quanto serve per rispondere bene all'intento, non una lunghezza fissa. Una risposta semplice puo bastare in poche centinaia di parole; un argomento complesso ne richiede di piu. Meglio un testo completo e utile che lungo e riempitivo."),
+   ("I contenuti SEO servono anche per le AI come ChatGPT?", "Si. Gli assistenti AI citano i contenuti chiari, ben strutturati e con risposte dirette. Scrivere answer-first, con FAQ e dati strutturati, aumenta la visibilita sia su Google sia sui motori di risposta."),
+  ]),
+ en=dict(
+  title="How to Write SEO Content That Ranks | Carbon Stealth",
+  desc="How to write SEO content that ranks on Google: search intent, structure, keywords and quality. A practical guide to useful, well-indexed text.",
+  body="""<p>SEO content ranks when it answers the <strong>search intent</strong> behind a query better than the alternatives. It's not about stuffing text with keywords, but understanding what the person really wants and giving them the clearest, most complete and useful answer. Google rewards content that satisfies the user: writing for search engines and writing for people now coincide.</p>
+<h2>The method in five steps</h2>
+<ul>
+<li><strong>1. Understand the intent:</strong> does the searcher want to learn, compare or buy? The content changes accordingly.</li>
+<li><strong>2. Answer up front:</strong> put the main answer in the first lines, then go deeper. This is the &laquo;answer-first&raquo; approach.</li>
+<li><strong>3. Structure with headings:</strong> clear h2s and h3s guide the reader and help Google understand the page.</li>
+<li><strong>4. Use keywords naturally:</strong> the main term and its variants, without forcing them.</li>
+<li><strong>5. Add concrete value:</strong> examples, tables, lists and an FAQ that answers real questions.</li>
+</ul>
+<h2>Mistakes that sink content</h2>
+<div class="ctbl"><table><thead><tr><th>Mistake</th><th>Why it hurts</th></tr></thead><tbody>
+<tr><td>Keyword stuffing</td><td>Unnatural text, penalized and unpleasant to read</td></tr>
+<tr><td>Generic content</td><td>Doesn't match intent, the user bounces</td></tr>
+<tr><td>Unclear headings</td><td>Google and the reader miss the structure</td></tr>
+<tr><td>No updates</td><td>Old content loses rankings over time</td></tr>
+</tbody></table></div>
+<h2>Writing for answer engines too</h2>
+<p>Today Google isn't the only thing that matters: assistants like ChatGPT and Perplexity cite clear, well-structured content. Writing &laquo;answer-first&raquo;, with FAQs and <a href="/en/blog/schema-markup-guida/">structured data</a>, makes you visible there too, as we explain in our guide to <a href="/en/blog/aeo-guida-completa/">Answer Engine Optimization</a>. Content is also the engine of <a href="/en/blog/seo-per-piccole-imprese/">SEO for small businesses</a>: answering customers' questions is the most sustainable way to get found without depending on ads.</p>
+<p>We produce optimized content as part of our <a href="/en/services/seo/">SEO</a> work. If you want an editorial plan that brings qualified traffic, <a href="/en/contact/">get in touch</a>: we start from the questions your customers ask.</p>""",
+  faqs=[
+   ("How do I write content that ranks on Google?", "By answering the search intent better than others: understand what the user really wants, give the main answer up front, structure the text with clear headings, use keywords naturally and add value with examples, tables and FAQs."),
+   ("How many times should I repeat the keyword?", "There's no magic number. Use the main term and its variants naturally, where it makes sense: title, intro, a few headings and the body. Keyword stuffing, i.e. repeating it forcibly, is counterproductive and penalized."),
+   ("How long should SEO content be?", "As long as it takes to answer the intent well, not a fixed length. A simple answer may fit in a few hundred words; a complex topic needs more. A complete, useful text beats a long, padded one."),
+   ("Is SEO content useful for AIs like ChatGPT too?", "Yes. AI assistants cite clear, well-structured content with direct answers. Writing answer-first, with FAQs and structured data, increases visibility on both Google and answer engines."),
+  ]),
+ bg=dict(
+  title="Как да Пишете SEO Съдържание, което Класира | Carbon Stealth",
+  desc="Как да пишете SEO съдържание, което се класира в Google: търсителско намерение, структура, ключови думи и качество. Практическо ръководство за полезен, добре индексиран текст.",
+  body="""<p>SEO съдържанието се класира, когато отговаря на <strong>търсителското намерение</strong> зад дадена заявка по-добре от алтернативите. Не става дума за натъпкване на текста с ключови думи, а за разбиране какво реално иска човекът и даване на най-ясния, пълен и полезен отговор. Google възнаграждава съдържанието, което удовлетворява потребителя: писането за търсачки и писането за хора днес съвпадат.</p>
+<h2>Методът в пет стъпки</h2>
+<ul>
+<li><strong>1. Разберете намерението:</strong> търсещият иска да се информира, да сравни или да купи? Съдържанието се променя според това.</li>
+<li><strong>2. Отговорете веднага:</strong> сложете основния отговор в първите редове, после разгърнете. Това е подходът &laquo;answer-first&raquo;.</li>
+<li><strong>3. Структурирайте със заглавия:</strong> ясни h2 и h3 водят читателя и помагат на Google да разбере страницата.</li>
+<li><strong>4. Използвайте ключовите думи естествено:</strong> основния термин и вариантите му, без насилване.</li>
+<li><strong>5. Добавете конкретна стойност:</strong> примери, таблици, списъци и FAQ, който отговаря на реални въпроси.</li>
+</ul>
+<h2>Грешки, които потапят съдържанието</h2>
+<div class="ctbl"><table><thead><tr><th>Грешка</th><th>Защо вреди</th></tr></thead><tbody>
+<tr><td>Натъпкване с ключови думи</td><td>Неестествен текст, санкциониран и неприятен за четене</td></tr>
+<tr><td>Генерично съдържание</td><td>Не отговаря на намерението, потребителят напуска</td></tr>
+<tr><td>Неясни заглавия</td><td>Google и читателят не разбират структурата</td></tr>
+<tr><td>Без обновяване</td><td>Старото съдържание губи позиции във времето</td></tr>
+</tbody></table></div>
+<h2>Писане и за отговарящите машини</h2>
+<p>Днес значение има не само Google: асистенти като ChatGPT и Perplexity цитират ясно и добре структурирано съдържание. Писането &laquo;answer-first&raquo;, с FAQ и <a href="/bg/blog/schema-markup-guida/">структурирани данни</a>, ви прави видими и там, както обясняваме в ръководството за <a href="/bg/blog/aeo-guida-completa/">Answer Engine Optimization</a>. Съдържанието освен това е двигателят на <a href="/bg/blog/seo-per-piccole-imprese/">SEO за малкия бизнес</a>: отговарянето на въпросите на клиентите е най-устойчивият начин да ви намират, без да зависите от реклама.</p>
+<p>Създаваме оптимизирано съдържание като част от нашата <a href="/bg/uslugi/seo/">SEO</a> работа. Ако искате редакционен план, който носи качествен трафик, <a href="/bg/kontakti/">пишете ни</a>: започваме от въпросите, които задават вашите клиенти.</p>""",
+  faqs=[
+   ("Как да напиша съдържание, което се класира в Google?", "Като отговорите на търсителското намерение по-добре от другите: разберете какво реално иска потребителят, дайте основния отговор веднага, структурирайте текста с ясни заглавия, използвайте ключовите думи естествено и добавете стойност с примери, таблици и FAQ."),
+   ("Колко пъти да повторя ключовата дума?", "Няма магическо число. Използвайте основния термин и вариантите му естествено, където има смисъл: заглавие, увод, няколко подзаглавия и в текста. Натъпкването с ключови думи, тоест насилственото им повтаряне, е контрапродуктивно и санкционирано."),
+   ("Колко дълго трябва да е SEO съдържанието?", "Толкова, колкото е нужно, за да отговори добре на намерението, а не фиксирана дължина. Прост отговор може да се събере в няколкостотин думи; сложна тема изисква повече. По-добре пълен и полезен текст, отколкото дълъг и запълващ."),
+   ("SEO съдържанието полезно ли е и за AI като ChatGPT?", "Да. AI асистентите цитират ясно, добре структурирано съдържание с директни отговори. Писането answer-first, с FAQ и структурирани данни, увеличава видимостта както в Google, така и в отговарящите машини."),
+  ]),
+)),
 ]
 
 # ── Rendering ────────────────────────────────────────────────────

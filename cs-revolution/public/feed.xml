@@ -1,56 +1,150 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <channel>
-    <title>Carbon Stealth VCC Blog</title>
-    <link>https://carbonstealth.eu/blog/</link>
-    <description>Web development, SEO/AEO, ERP, game dev — insights and tutorials from Carbon Stealth VCC.</description>
-    <language>it</language>
-    <lastBuildDate>Sat, 09 May 2026 10:59:31 +0000</lastBuildDate>
-    <atom:link href="https://carbonstealth.eu/feed.xml" rel="self" type="application/rss+xml"/>
-    <image>
-      <url>https://carbonstealth.eu/logo.png</url>
-      <title>Carbon Stealth VCC</title>
-      <link>https://carbonstealth.eu/</link>
-    </image>
-    <item>
-      <title>Come Ottimizzare React per SEO nel 2026</title>
-      <link>https://carbonstealth.eu/blog/react-seo-2026/</link>
-      <description>Guida pratica per rendere un sito React pienamente crawlabile e ottimizzato per Google, Bing e AI engines.</description>
-      <pubDate>Mon, 10 Mar 2026 10:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://carbonstealth.eu/blog/react-seo-2026/</guid>
-      <dc:creator>Stefan Kostadinov</dc:creator>
-    </item>
-    <item>
-      <title>AEO: Guida Completa all'Ottimizzazione</title>
-      <link>https://carbonstealth.eu/blog/aeo-guida-completa/</link>
-      <description>Answer Engine Optimization: come ottimizzare il tuo sito per ChatGPT, Perplexity, Google AI Overview e voice search.</description>
-      <pubDate>Mon, 17 Mar 2026 10:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://carbonstealth.eu/blog/aeo-guida-completa/</guid>
-      <dc:creator>Stefan Kostadinov</dc:creator>
-    </item>
-    <item>
-      <title>FiveM Anti-Cheat: Come Proteggiamo i Server</title>
-      <link>https://carbonstealth.eu/blog/fivem-anticheat-guide/</link>
-      <description>Architettura del sistema anti-cheat CS v4.0 per FiveM: 40+ moduli di rilevamento, ban system e monitoring.</description>
-      <pubDate>Mon, 24 Mar 2026 10:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://carbonstealth.eu/blog/fivem-anticheat-guide/</guid>
-      <dc:creator>Stefan Kostadinov</dc:creator>
-    </item>
-    <item>
-      <title>ERP per PMI: Quando Serve Davvero?</title>
-      <link>https://carbonstealth.eu/blog/erp-per-pmi/</link>
-      <description>Analisi costi-benefici di un sistema ERP custom vs off-the-shelf per piccole e medie imprese italiane.</description>
-      <pubDate>Mon, 31 Mar 2026 10:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://carbonstealth.eu/blog/erp-per-pmi/</guid>
-      <dc:creator>Stefan Kostadinov</dc:creator>
-    </item>
-    <item>
-      <title>Three.js per Siti Aziendali</title>
-      <link>https://carbonstealth.eu/blog/threejs-corporate-websites/</link>
-      <description>Come usare Three.js per creare esperienze 3D immersive su siti corporate senza sacrificare performance.</description>
-      <pubDate>Mon, 07 Apr 2026 10:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://carbonstealth.eu/blog/threejs-corporate-websites/</guid>
-      <dc:creator>Stefan Kostadinov</dc:creator>
-    </item>
-  </channel>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+<title>Carbon Stealth VCC — Blog</title>
+<link>https://carbonstealth.eu/blog/</link>
+<description>Guide pratiche su sviluppo web, e-commerce, software, ERP, SEO e AEO.</description>
+<language>it-IT</language>
+<atom:link href="https://carbonstealth.eu/feed.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>WooCommerce vs Shopify: Quale Scegliere nel 2026</title>
+<link>https://carbonstealth.eu/blog/woocommerce-vs-shopify/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/woocommerce-vs-shopify/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>WooCommerce o Shopify? Confronto onesto tra le due piattaforme e-commerce nel 2026: costi, controllo, manutenzione, SEO e quando conviene l&amp;#x27;una o l&amp;#x27;altra.</description>
+</item>
+<item>
+<title>Come Velocizzare WordPress: Guida Pratica</title>
+<link>https://carbonstealth.eu/blog/velocizzare-wordpress/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/velocizzare-wordpress/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Come velocizzare WordPress con interventi concreti: hosting, caching, immagini, plugin e database. Guida pratica per un sito veloce e ben posizionato.</description>
+</item>
+<item>
+<title>Sito Vetrina o E-commerce? Come Scegliere nel 2026</title>
+<link>https://carbonstealth.eu/blog/sito-vetrina-o-ecommerce/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/sito-vetrina-o-ecommerce/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Sito vetrina o e-commerce? Guida pratica per capire quale sito serve alla tua attivita, con differenze di costi, obiettivi e funzionalita.</description>
+</item>
+<item>
+<title>Sicurezza di un Sito Web: Checklist Completa 2026</title>
+<link>https://carbonstealth.eu/blog/sicurezza-sito-web-checklist/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/sicurezza-sito-web-checklist/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>La checklist completa per la sicurezza di un sito web nel 2026: HTTPS, aggiornamenti, backup, password, protezione dei form e monitoraggio. Passi concreti.</description>
+</item>
+<item>
+<title>SEO per Piccole Imprese: Guida Pratica 2026</title>
+<link>https://carbonstealth.eu/blog/seo-per-piccole-imprese/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/seo-per-piccole-imprese/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Guida SEO pratica per piccole imprese nel 2026: come farsi trovare su Google con budget contenuti, SEO locale, contenuti e passi concreti da fare subito.</description>
+</item>
+<item>
+<title>Schema Markup e Dati Strutturati: Guida Pratica</title>
+<link>https://carbonstealth.eu/blog/schema-markup-guida/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/schema-markup-guida/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Cos&amp;#x27;e lo Schema markup, a cosa servono i dati strutturati e come usarli per ottenere risultati ricchi su Google e piu visibilita su AI e motori di ricerca.</description>
+</item>
+<item>
+<title>Reverse Engineering e Stampa 3D di Ricambi Introvabili</title>
+<link>https://carbonstealth.eu/blog/reverse-engineering-stampa-3d/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/reverse-engineering-stampa-3d/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Come il reverse engineering e la stampa 3D permettono di ricreare ricambi fuori produzione o introvabili: dal pezzo rotto al modello CAD al componente finito.</description>
+</item>
+<item>
+<title>Quanto Tempo Serve per Fare un Sito Web?</title>
+<link>https://carbonstealth.eu/blog/quanto-tempo-per-un-sito/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/quanto-tempo-per-un-sito/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Quanto tempo serve per realizzare un sito web nel 2026? Tempistiche reali per sito vetrina, e-commerce e portali, cosa allunga i tempi e come accelerare.</description>
+</item>
+<item>
+<title>Quanto Costa un Sito Web nel 2026? Prezzi Reali</title>
+<link>https://carbonstealth.eu/blog/quanto-costa-sito-web/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/quanto-costa-sito-web/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Quanto costa davvero un sito web nel 2026? Prezzi reali per sito vetrina, e-commerce e portali su misura, cosa incide sul preventivo e come evitare sorprese.</description>
+</item>
+<item>
+<title>Quanto Costa un E-commerce? Guida ai Prezzi 2026</title>
+<link>https://carbonstealth.eu/blog/quanto-costa-ecommerce/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/quanto-costa-ecommerce/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Quanto costa aprire un e-commerce nel 2026? Prezzi reali, costi nascosti, differenza tra piattaforme e cosa serve davvero per vendere online.</description>
+</item>
+<item>
+<title>Quanto Costa Sviluppare un&amp;#x27;App nel 2026? Prezzi</title>
+<link>https://carbonstealth.eu/blog/quanto-costa-app-mobile/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/quanto-costa-app-mobile/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Quanto costa sviluppare un&amp;#x27;app mobile nel 2026? Prezzi reali per app native e cross-platform, cosa incide sul preventivo e come contenere i costi.</description>
+</item>
+<item>
+<title>Rifare il Sito senza Perdere il Posizionamento SEO</title>
+<link>https://carbonstealth.eu/blog/migrazione-sito-senza-perdere-seo/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/migrazione-sito-senza-perdere-seo/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Come rifare o migrare un sito senza perdere il posizionamento su Google: redirect 301, mappatura degli URL, contenuti e controlli post-lancio. Guida pratica.</description>
+</item>
+<item>
+<title>Manutenzione Sito Web: Perch&amp;amp;eacute; Serve e Quanto Costa</title>
+<link>https://carbonstealth.eu/blog/manutenzione-sito-web/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/manutenzione-sito-web/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Cos&amp;#x27;&amp;amp;egrave; la manutenzione di un sito web, perch&amp;amp;eacute; &amp;amp;egrave; necessaria e quanto costa: aggiornamenti, backup, sicurezza e prestazioni spiegati senza tecnicismi.</description>
+</item>
+<item>
+<title>Come Creare una Landing Page che Converte</title>
+<link>https://carbonstealth.eu/blog/landing-page-che-converte/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/landing-page-che-converte/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Come creare una landing page che converte: struttura, titolo, call to action, prova sociale e velocita. Gli elementi che trasformano i visitatori in clienti.</description>
+</item>
+<item>
+<title>Integrare i Pagamenti Online: Stripe, PayPal e Alternative</title>
+<link>https://carbonstealth.eu/blog/integrazione-pagamenti-online/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/integrazione-pagamenti-online/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Come integrare i pagamenti online nel tuo sito o e-commerce: Stripe, PayPal e alternative a confronto, commissioni, sicurezza e quale scegliere per il tuo caso.</description>
+</item>
+<item>
+<title>Google Business Profile: Guida per Farsi Trovare in Locale</title>
+<link>https://carbonstealth.eu/blog/google-business-profile-guida/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/google-business-profile-guida/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Come usare Google Business Profile per farti trovare nelle ricerche locali: configurazione, recensioni, foto, post e gli errori che fanno perdere posizioni sulla mappa.</description>
+</item>
+<item>
+<title>GDPR e Sito Web: Cosa Serve per Essere in Regola</title>
+<link>https://carbonstealth.eu/blog/gdpr-sito-web/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/gdpr-sito-web/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>GDPR e sito web: cosa serve davvero per essere in regola. Cookie banner, privacy policy, moduli di contatto e trattamento dati spiegati in modo pratico.</description>
+</item>
+<item>
+<title>ERP vs Gestionale: Quali Differenze e Cosa Scegliere</title>
+<link>https://carbonstealth.eu/blog/erp-vs-gestionale/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/erp-vs-gestionale/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>ERP o gestionale? Differenze reali tra un sistema ERP integrato e un semplice software gestionale, con costi, vantaggi e quando conviene passare all&amp;#x27;uno o all&amp;#x27;altro.</description>
+</item>
+<item>
+<title>Email Marketing per PMI: Come Iniziare</title>
+<link>https://carbonstealth.eu/blog/email-marketing-pmi/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/email-marketing-pmi/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Email marketing per PMI: come iniziare passo dopo passo. Costruire la lista, scegliere gli strumenti, scrivere email che aprono e convertono, senza sprechi.</description>
+</item>
+<item>
+<title>Cos&amp;#x27;e un ERP e Come Funziona: Guida Completa 2026</title>
+<link>https://carbonstealth.eu/blog/cos-e-un-erp/</link>
+<guid isPermaLink="true">https://carbonstealth.eu/blog/cos-e-un-erp/</guid>
+<pubDate>Thu, 16 Jul 2026 09:00:00 +0200</pubDate>
+<description>Cos&amp;#x27;e un sistema ERP, come funziona e a cosa serve. Guida completa 2026 con moduli, vantaggi, costi e quando conviene davvero a una PMI.</description>
+</item>
+</channel>
 </rss>
