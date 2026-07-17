@@ -1003,5 +1003,11 @@
     "title": "Come si gioca",
     "steps": "Passaggi",
     "tips": "Consigli"
+  },
+  "difficulty": {
+    "label": "Difficoltà dei bot",
+    "easy": "Facile",
+    "normal": "Normale",
+    "hard": "Difficile"
   }
 }

@@ -1003,5 +1003,11 @@
     "title": "How to play",
     "steps": "Steps",
     "tips": "Tips"
+  },
+  "difficulty": {
+    "label": "Bot difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   }
 }

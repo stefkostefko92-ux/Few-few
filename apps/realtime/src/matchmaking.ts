@@ -2,7 +2,16 @@ import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
-import { MAGNAT_PRESETS, STARTING_MMR, buyInFor, isGameKey, seatsFor } from "@aso/shared";
+import {
+  DEFAULT_BOT_DIFFICULTY,
+  MAGNAT_PRESETS,
+  STARTING_MMR,
+  buyInFor,
+  isBotDifficulty,
+  isGameKey,
+  seatsFor,
+  type BotDifficulty,
+} from "@aso/shared";
 import { GameRoom, type RoomSeat, type RoomSnapshot } from "./room.js";
 import type { Lobby, LobbyReturnInfo } from "./lobby.js";
 import { RandomBot } from "./bot.js";
@@ -26,6 +35,7 @@ const joinedField = (q: QueueDesc, userId: string): string => `${q.game}:${q.mod
 const JOINED_HASH = "mm:joined";
 // Redis-backed so any node's joins are visible to whichever node is matching.
 const ACTIVE_SET = "mm:active"; // set of active queue keys
+const DIFFICULTY_HASH = "mm:difficulty"; // userId → preferred bot difficulty (for bot-filled seats)
 const LEADER_KEY = "mm:leader"; // single-matcher lease
 const LEADER_TTL_MS = 3000;
 
@@ -152,9 +162,16 @@ export class Matchmaker {
     return GAME_ENGINES[game];
   }
 
-  async joinQueue(userId: string, game: GameKey, mode = "ranked"): Promise<boolean> {
+  async joinQueue(
+    userId: string,
+    game: GameKey,
+    mode = "ranked",
+    difficulty?: BotDifficulty,
+  ): Promise<boolean> {
     if (!this.engineFor(game)) return false;
     const q: QueueDesc = { game, mode };
+    // Remember this player's preferred bot strength for any bot-filled seats.
+    if (difficulty) await redis.hset(DIFFICULTY_HASH, userId, difficulty);
     // A user may sit in exactly ONE queue at a time. Without this a client can
     // QUEUE_JOIN repeatedly with different (game,mode) pairs and be matched into
     // several live matches at once → results/chips/XP credited multiple times.
@@ -343,6 +360,10 @@ export class Matchmaker {
       isBot: false,
       displayName: names.get(userId) ?? "Играч",
     }));
+    // Bot strength follows the first human seat's preference (bots only fill
+    // seats a human queued for); defaults to NORMAL for legacy/host paths.
+    const pref = userIds.length > 0 ? await redis.hget(DIFFICULTY_HASH, userIds[0]!) : null;
+    const difficulty: BotDifficulty = isBotDifficulty(pref) ? pref : DEFAULT_BOT_DIFFICULTY;
     for (let b = 0; b < botFill; b++) {
       const seat = userIds.length + b;
       seats.push({
@@ -350,7 +371,7 @@ export class Matchmaker {
         userId: null,
         isBot: true,
         displayName: "АСО Бот",
-        bot: new RandomBot(`${seed}:bot:${seat}`),
+        bot: new RandomBot(`${seed}:bot:${seat}`, difficulty),
       });
     }
     const config = configFor(q);
