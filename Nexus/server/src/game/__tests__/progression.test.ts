@@ -40,17 +40,19 @@ test('levelFromXp maps boundaries correctly', () => {
   assert.equal(levelFromXp(XP_TABLE[5]), 5);
 });
 
-test('applyXp grants level up rewards', () => {
+test('applyXp grants level up rewards (HP/MP only — без точки за атрибути)', () => {
   const c = baseChar();
   const r = applyXp(c, XP_TABLE[3]);
   assert.ok(r.leveled);
   assert.equal(r.toLevel, 3);
-  // Balance round 1: 3 stat points + 1 skill point per level gained.
-  assert.equal(r.statPointsGained, 6);
-  assert.equal(r.skillPointsGained, 2);
-  assert.equal(c.stat_points, 6);
-  assert.equal(c.skill_points, 2);
+  // По спецификация: level-up НЕ дава точки за атрибути/умения (0). Атрибутите
+  // се качват единствено със злато по линейната 5-10-15… крива.
+  assert.equal(r.statPointsGained, 0);
+  assert.equal(r.skillPointsGained, 0);
+  assert.equal(c.stat_points, 0);
+  assert.equal(c.skill_points, 0);
   assert.equal(c.level, 3);
+  // Нивото дава само HP/MP растеж (10 HP/ниво).
   assert.ok(c.hp_max > 80);
 });
 

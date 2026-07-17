@@ -27,6 +27,12 @@ import adminRoutes from './routes/admin';
 import setsRoutes from './routes/sets';
 import profileRoutes from './routes/profile';
 import guildRoutes from './routes/guild';
+import socialRoutes from './routes/social';
+import notificationsRoutes from './routes/notifications';
+import tradeRoutes from './routes/trade';
+import chatRoutes from './routes/chat';
+import streamRoutes from './routes/stream';
+import { heartbeatAll } from './lib/stream';
 import paymentsRoutes, { webhookRouter as paymentsWebhookRouter } from './routes/payments';
 import marketRoutes from './routes/market';
 import campRoutes from './routes/camp';
@@ -104,6 +110,14 @@ if (process.env.NODE_ENV !== 'test') {
 // passes to stripe.webhooks.constructEvent.
 app.use('/api/payments/webhook', paymentsWebhookRouter);
 
+// SSE поток — монтиран ПРЕДИ apiLimiter, защото връзката е дълготрайна и
+// не бива да брои срещу rate limit-а. Auth е през краткоживущ ticket.
+// НО издаването на билет (POST /ticket) е кратко → лимитираме го отделно,
+// за да не може скрипт да сече билети и да трупа отворени SSE потоци (DoS).
+const streamTicketLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
+app.use('/api/stream/ticket', streamTicketLimiter);
+app.use('/api/stream', streamRoutes);
+
 const apiLimiter = rateLimit({
   windowMs: 60_000,
   max: 240,
@@ -167,6 +181,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/sets', setsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/guild', guildRoutes);
+app.use('/api/social', socialRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/trade', tradeRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/camp', campRoutes);
@@ -259,9 +277,25 @@ import { pruneExpiredBans } from './lib/bans';
 pruneExpiredBans();
 setInterval(() => { pruneExpiredBans(); }, 60 * 60 * 1000).unref();
 
+// SSE heartbeat — държи връзките/проксита живи (на 25s).
+setInterval(() => { heartbeatAll(); }, 25_000).unref();
+
+// GDPR retention за чат/DM/нотификации (изравнено с Privacy §6 — 90 дни).
+// Ограничава съхранението на комуникационни данни, докато акаунтът живее
+// (каскадите покриват изтриване на акаунт). Прун на boot, после дневно.
+import { pruneMessages } from './routes/chat';
+const MESSAGE_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+pruneMessages(MESSAGE_RETENTION_MS);
+setInterval(() => { pruneMessages(MESSAGE_RETENTION_MS); }, 24 * 60 * 60 * 1000).unref();
+
 import { initObservability, installProcessGuards } from './lib/observability';
 initObservability();
 installProcessGuards();
+
+// Незадължителна SMTP проверка при старт — само логва дали пощата е готова
+// (не блокира; ако не е конфигурирана, forgot-flow пада към записа в БД).
+import { verifyEmailConfig, emailConfigured } from './lib/email';
+if (emailConfigured()) { void verifyEmailConfig(); }
 
 app.listen(PORT, () => {
   console.log(`[Nexus Dominion] Server listening on port ${PORT}`);

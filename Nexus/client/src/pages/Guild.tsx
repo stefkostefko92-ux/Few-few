@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { onStream } from '../lib/stream';
 import { useStore } from '../lib/store';
 import Avatar from '../components/Avatar';
 import ReportModal, { type ReportTarget } from '../components/ReportModal';
@@ -410,8 +411,11 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
   }
   useEffect(() => {
     load();
+    // SSE: щом друг член прати съобщение, дръпни новите веднага. Polling-ът
+    // (4s) остава fallback при паднала връзка.
+    const off = onStream('chat', load);
     const id = setInterval(load, 4000);
-    return () => clearInterval(id);
+    return () => { off(); clearInterval(id); };
   }, [guildId]);
   useEffect(() => {
     if (streamRef.current) streamRef.current.scrollTop = streamRef.current.scrollHeight;

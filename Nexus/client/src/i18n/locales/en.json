@@ -110,6 +110,8 @@
     "mythicPlus": "Mythic+ Dungeons",
     "society": "Society",
     "guild": "Guild",
+    "friends": "Friends",
+    "chat": "Chat",
     "mail": "Mail",
     "leaderboard": "Hall of Fame",
     "town": "Town",
@@ -146,7 +148,7 @@
   },
   "levelUp": {
     "title": "— Level Up —",
-    "points": "+{{statPoints}} stat · +{{skillPoints}} skill points"
+    "grew": "Your power grows."
   },
   "lootDrop": {
     "acquired": "Loot Acquired",
@@ -330,7 +332,7 @@
     "featSetsBody": "From the Wayfarer's Garb to Solar Mythwoven. Two-, four-, and six-piece bonuses reshape a build; mixing tiers is encouraged.",
     "classesEyebrow": "Pick a kit",
     "classesTitle": "Four classes, with the math written down.",
-    "classesLead": "Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact effects in combat. You re-allocate stat points every level; you re-spec the build whenever the season changes.",
+    "classesLead": "Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact effects in combat. You re-spec the build whenever the season changes.",
     "classWarriorTagline": "Eats hits, returns them with interest. Sword and shield, plate, calm under pressure.",
     "classRangerTagline": "Hits first, harder than you expected, from where you weren't looking. Bow, leather, fast hands.",
     "classMageTagline": "Slow opener, large finisher. Burns mana fast, ends fights faster. Staff, robes, library card.",
@@ -1104,7 +1106,7 @@
     "restToast": "Wounds tended.",
     "record": "{{wins}}W / {{losses}}L · Rating {{rating}}",
     "howTitle": "How upgrades work",
-    "howDesc": "Every level-up grants +3 stat points and +1 skill point for free. Beyond that, any stat can be pushed with gold — each next purchase costs more (5g, 14g, 25g, 40g, 57g…), and every stat has its own independent counter.",
+    "howDesc": "Attributes are raised with gold — each next purchase of a stat costs more on a simple 5-10-15-20-25… curve (5g, 10g, 15g, 20g, 25g…), and every stat has its own independent counter. Levelling up increases your HP and MP.",
     "attributes": "Attributes",
     "weaponSkills": "Weapon Skills",
     "upgradesCount": "({{count}} upgrades)",

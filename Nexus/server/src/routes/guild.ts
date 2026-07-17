@@ -16,6 +16,9 @@ import {
 import { trackBattlePass } from './battlepass';
 import { logFromRequest } from '../lib/logger';
 import { checkText } from '../lib/textFilter';
+import { blockedIdSet } from './social';
+import { notify } from '../lib/notify';
+import { pushToChars } from '../lib/stream';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -246,6 +249,7 @@ router.post('/invite', (req, res) => {
       .run(target.id, char.name, `Guild invitation from <${g.guild.tag}> ${g.guild.name}`,
         `${char.name} has invited you to join <${g.guild.tag}> ${g.guild.name}. Visit the Guild page to accept.`,
         Date.now());
+    notify(db, target.id, 'guild_invite', `${char.name} invited you to <${g.guild.tag}> ${g.guild.name}.`, `char:${char.name}`);
     res.json({ ok: true });
   } catch (e: any) {
     res.status(400).json({ error: 'Already invited.' });
@@ -545,8 +549,11 @@ router.get('/chat', (req, res) => {
        WHERE gc.guild_id = ? AND gc.id > ?
        ORDER BY gc.id ASC LIMIT 200`,
     )
-    .all(g.guild.id, after);
-  res.json({ messages });
+    .all(g.guild.id, after) as Array<{ character_id: number }>;
+  // Mute/block: скрий съобщенията на блокирани (или блокирали ме) играчи.
+  const blocked = blockedIdSet(char.id);
+  const visible = blocked.size ? messages.filter((m) => !blocked.has(m.character_id)) : messages;
+  res.json({ messages: visible });
 });
 
 router.post('/chat', (req, res) => {
@@ -573,6 +580,10 @@ router.post('/chat', (req, res) => {
   lastChatAt.set(char.id, now);
   const info = getDb().prepare(`INSERT INTO guild_chat (guild_id, character_id, message, created_at) VALUES (?, ?, ?, ?)`)
     .run(g.guild.id, char.id, parse.data.message, now);
+  // Live push (SSE) към членовете на гилдията, за да презаредят чата
+  // веднага (без блокираните). Polling-ът остава fallback.
+  const members = getDb().prepare('SELECT character_id FROM guild_members WHERE guild_id = ?').all(g.guild.id) as { character_id: number }[];
+  pushToChars(members.map((m) => m.character_id).filter((id) => id !== char.id), 'chat', { guildId: g.guild.id });
   res.json({ ok: true, id: info.lastInsertRowid });
 });
 

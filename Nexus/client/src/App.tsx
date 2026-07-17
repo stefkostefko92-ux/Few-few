@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from './lib/store';
 import { getToken } from './lib/api';
+import { startStream, stopStream } from './lib/stream';
 import { sfx, preloadAllSfx } from './lib/audio';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -15,6 +16,8 @@ import CookieBanner from './components/CookieBanner';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Forgot from './pages/Forgot';
+import Reset from './pages/Reset';
 import CharacterCreate from './pages/CharacterCreate';
 import NotFound from './pages/NotFound';
 
@@ -29,6 +32,9 @@ const Shop = React.lazy(() => import('./pages/Shop'));
 const Arena = React.lazy(() => import('./pages/Arena'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 const PlayerView = React.lazy(() => import('./pages/PlayerView'));
+const Social = React.lazy(() => import('./pages/Social'));
+const Trade = React.lazy(() => import('./pages/Trade'));
+const Chat = React.lazy(() => import('./pages/Chat'));
 const Mail = React.lazy(() => import('./pages/Mail'));
 const History = React.lazy(() => import('./pages/History'));
 const Settings = React.lazy(() => import('./pages/Settings'));
@@ -133,8 +139,6 @@ function AppLayout(): React.ReactElement {
       {levelUp && (
         <LevelUpOverlay
           level={levelUp.toLevel}
-          statPoints={levelUp.statPointsGained}
-          skillPoints={levelUp.skillPointsGained}
           onDone={dismissLevelUp}
         />
       )}
@@ -165,6 +169,13 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
     })();
   }, [init]);
 
+  // SSE поток — активен само докато има логнат герой (push за
+  // нотификации/чат). Спира при logout/липса на герой.
+  useEffect(() => {
+    if (character) startStream();
+    else stopStream();
+  }, [character?.id]);
+
   if (!ready) {
     return (
       <div className="auth-shell">
@@ -180,7 +191,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
   const authed = !!token;
   const path = location.pathname;
-  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/terms' || path === '/privacy' || path.startsWith('/demo/');
+  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/forgot' || path === '/reset' || path === '/terms' || path === '/privacy' || path.startsWith('/demo/');
   const isCreateRoute = path === '/create';
   const isAdminRoute = path.startsWith('/admin');
 
@@ -207,6 +218,8 @@ export default function App(): React.ReactElement {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot" element={<Forgot />} />
+          <Route path="/reset" element={<Reset />} />
           <Route path="/create" element={<CharacterCreate />} />
           <Route path="/terms" element={<Suspense fallback={<LazyFallback />}><Terms /></Suspense>} />
           <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><Privacy /></Suspense>} />
@@ -232,6 +245,9 @@ export default function App(): React.ReactElement {
             <Route path="world" element={<Realm />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="player/:name" element={<PlayerView />} />
+            <Route path="social" element={<Social />} />
+            <Route path="trade" element={<Trade />} />
+            <Route path="chat" element={<Chat />} />
             <Route path="mail" element={<Mail />} />
             <Route path="history" element={<History />} />
             <Route path="settings" element={<Settings />} />

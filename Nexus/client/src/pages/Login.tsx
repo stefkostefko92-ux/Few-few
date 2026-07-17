@@ -51,6 +51,9 @@ export default function Login(): React.ReactElement {
             {loading ? t('login.signingIn') : t('login.enterButton')}
           </button>
         </form>
+        <div className="auth-footer" style={{ marginBottom: 6 }}>
+          <Link to="/forgot">{t('login.forgotPassword', { defaultValue: 'Forgot your password?' })}</Link>
+        </div>
         <div className="auth-footer">
           {t('login.newPrompt')} <Link to="/register">{t('login.createAccount')}</Link>
         </div>

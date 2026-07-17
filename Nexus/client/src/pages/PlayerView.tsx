@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
@@ -15,6 +15,8 @@ export default function PlayerView(): React.ReactElement {
   const { name } = useParams<{ name: string }>();
   const { t } = useTranslation();
   const me = useStore((s) => s.character);
+  const toast = useStore((s) => s.toast);
+  const nav = useNavigate();
   const [p, setP] = useState<any>(null);
   const [err, setErr] = useState('');
   const [report, setReport] = useState<ReportTarget | null>(null);
@@ -56,10 +58,30 @@ export default function PlayerView(): React.ReactElement {
           )}
         </div>
         {!isSelf && !p.is_npc && (
-          <button
-            className="btn btn-sm"
-            onClick={() => setReport({ contentKind: 'character_name', contentRef: `char:${p.name}`, label: `Player ${p.name}` })}
-          >⚑ {t('common.report', { defaultValue: 'Report' })}</button>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={() => api.post('/social/friend/request', { name: p.name })
+                .then(() => toast(t('social.requestSent', { defaultValue: 'Request sent' }), 'success'))
+                .catch((e: any) => toast(e.message, 'error'))}
+            >+ {t('social.addFriend', { defaultValue: 'Add friend' })}</button>
+            <button
+              className="btn btn-sm"
+              onClick={() => api.post('/trade/offer', { toName: p.name })
+                .then(() => { toast(t('trade.sent', { defaultValue: 'Trade offer sent' }), 'success'); nav('/app/trade'); })
+                .catch((e: any) => toast(e.message, 'error'))}
+            >{t('trade.trade', { defaultValue: 'Trade' })}</button>
+            <button
+              className="btn btn-sm"
+              onClick={() => api.post('/social/block', { name: p.name })
+                .then(() => toast(t('social.blockedOk', { defaultValue: 'Player blocked' }), 'success'))
+                .catch((e: any) => toast(e.message, 'error'))}
+            >{t('social.block', { defaultValue: 'Block' })}</button>
+            <button
+              className="btn btn-sm"
+              onClick={() => setReport({ contentKind: 'character_name', contentRef: `char:${p.name}`, label: `Player ${p.name}` })}
+            >⚑ {t('common.report', { defaultValue: 'Report' })}</button>
+          </div>
         )}
       </div>
 
