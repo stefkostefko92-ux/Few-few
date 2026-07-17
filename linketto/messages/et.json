@@ -47,7 +47,7 @@
     "ctaButton": "Alusta tasuta 60 sekundiga",
     "faqTitle": "Korduma kippuvad küsimused",
     "faq1q": "Mis on Linketto?",
-    "faq1a": "Linketto on „link in bio“ leht: üks link, mis koondab kõik su lingid, tooted ja kontaktid. Erilisus: sinu leht räägib iga külastaja keelt — ehita see üks kord ja see kuvatakse 6+ keeles.",
+    "faq1a": "Linketto on „link in bio“ leht: üks link, mis koondab kõik su lingid, tooted ja kontaktid. Erilisus: sinu leht räägib iga külastaja keelt — ehita see üks kord ja see kuvatakse 24 ELi keeles pluss 3 dialektis.",
     "faq2q": "Miks on Linketto Linktree’st parem?",
     "faq2a": "Neli asja: sinu profiil on mitmekeelne (Linktree on ainult inglise keeles), see on majutatud ELis GDPR-iga vaikimisi, analüütika on küpsisteta ja isikuandmeteta ning müügivahendustasud on paketi järgi 8/4/0/0% — võrreldes Linktree 12% ja 9%-ga.",
     "faq3q": "Kui palju Linketto maksab?",
@@ -379,7 +379,8 @@
     "terms": "Tingimused",
     "contact": "info@carbonstealth.eu",
     "cookies": "Küpsised",
-    "manageConsent": "Halda küpsiseid"
+    "manageConsent": "Halda küpsiseid",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — mitmekeelne link in bio: kõik su lingid, igas keeles",
@@ -459,5 +460,34 @@
     "accept": "Nõustun",
     "decline": "Keeldun",
     "moreInfo": "Loe lähemalt"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — aus võrdlus",
+    "metaDescription": "Vahendustasud 8/4/0% versus 12/9%, 24 ELi keelt versus ainult inglise keel, EL-majutus GDPR-iga ja küpsisteta analüütika. Vaata tabelit.",
+    "title": "Linketto vs Linktree",
+    "intro": "Mõlemad teenused lahendavad sama ülesande — üks leht kõigi su linkide jaoks. Erinevused on rahas, keeltes ja privaatsuses. Siin need on, ilma ilustusteta.",
+    "defTitle": "Mis on „link in bio“ leht?",
+    "defBody": "„Link in bio“ leht on üks avalik veebileht, mis koondab kõik su tähtsad lingid, tooted ja kontaktid ühte kohta, ligipääsetav ühe ainsa aadressi kaudu. Idee pärineb sotsiaalvõrgustikest, mis lubavad profiilis vaid ühe lingi: selle asemel, et valida oma poe, video ja uudiskirja vahel, paned ühe lingi lehele, ja see viib kõige juurde. Kaasaegsed versioonid lisavad digitoodete müügi, külastusstatistika ja isikupärase kujunduse. Mis Linketto eristab: su leht kuvatakse automaatselt iga külastaja keeles — 24 ELi keelt pluss 3 itaalia dialekti — ilma igasuguse lisatööta, ja analüütika töötab ilma küpsisteta ja ilma isikuandmeteta. Ehita see üks kord; see räägib kogu maailmaga.",
+    "tableTitle": "Rea-realt võrdlus",
+    "thFeature": "Kriteerium",
+    "rowFee": "Müügi vahendustasu",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business ja Founder",
+    "rowFeeLt": "12% Free · 9% tasulistes pakettides",
+    "rowLang": "Profiili keeled",
+    "rowLangL": "24 ELi keelt + 3 dialekti, automaatselt külastaja järgi",
+    "rowLangLt": "Ainult inglise keel",
+    "rowHost": "Majutus ja andmed",
+    "rowHostL": "EL-majutus, GDPR vaikimisi",
+    "rowHostLt": "Majutus USA-s",
+    "rowAnalytics": "Analüütika",
+    "rowAnalyticsL": "Ilma küpsisteta, ilma IP-aadressideta, ilma isikuandmeteta",
+    "rowAnalyticsLt": "Klassikaline küpsisepõhine jälgimine",
+    "rowModeration": "Modereerimine",
+    "rowModerationL": "Läbipaistev, etteteatamise ja vaidlustamisõigusega; ilma avaliku „BLOKEERITUD“ ribata",
+    "rowModerationLt": "Avalik riba blokeeritud profiilidel",
+    "honestTitle": "Millal on Linktree parem valik?",
+    "honestBody": "Ausalt: kui tugined nende pikale valmisintegratsioonide nimekirjale või tahad kõige levinumat platvormi, on Linktree mõistlik valik pika ajalooga. Linketto võidab siis, kui su publik räägib rohkem kui üht keelt, kui müüd ja iga vahendustasu punkt loeb, ja kui su külastajate privaatsus on lubadus, mitte allmärkus.",
+    "ctaTitle": "Proovi erinevust ühe lingiga.",
+    "ctaButton": "Loo oma Linketto tasuta"
   }
 }

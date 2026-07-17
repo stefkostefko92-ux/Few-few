@@ -47,7 +47,7 @@
     "ctaButton": "Sāc bez maksas 60 sekundēs",
     "faqTitle": "Biežāk uzdotie jautājumi",
     "faq1q": "Kas ir Linketto?",
-    "faq1a": "Linketto ir „link in bio“ lapa: viena saite, kas apvieno visas tavas saites, produktus un kontaktus. Unikālais: tava lapa runā katra apmeklētāja valodā — izveido to vienreiz, un tā tiek rādīta 6+ valodās.",
+    "faq1a": "Linketto ir „link in bio“ lapa: viena saite, kas apvieno visas tavas saites, produktus un kontaktus. Unikālais: tava lapa runā katra apmeklētāja valodā — izveido to vienreiz, un tā tiek rādīta 24 ES valodās plus 3 dialektos.",
     "faq2q": "Ar ko Linketto ir labāks par Linktree?",
     "faq2a": "Četras lietas: tavs profils ir daudzvalodu (Linktree ir tikai angļu valodā), tas ir mitināts ES ar GDPR pēc noklusējuma, analītika ir bez sīkdatnēm un bez personas datiem, un pārdošanas komisijas ir 8/4/0/0% pēc plāna — pretstatā 12% un 9% Linktree.",
     "faq3q": "Cik maksā Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Noteikumi",
     "contact": "info@carbonstealth.eu",
     "cookies": "Sīkdatnes",
-    "manageConsent": "Pārvaldīt sīkdatnes"
+    "manageConsent": "Pārvaldīt sīkdatnes",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — daudzvalodu link in bio: visas tavas saites jebkurā valodā",
@@ -459,5 +460,34 @@
     "accept": "Piekrītu",
     "decline": "Noraidu",
     "moreInfo": "Uzzināt vairāk"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — godīgais salīdzinājums",
+    "metaDescription": "Komisijas 8/4/0% pret 12/9%, 24 ES valodas pret tikai angļu, mitināšana ES ar GDPR un analītika bez sīkdatnēm. Apskati tabulu.",
+    "title": "Linketto vs Linktree",
+    "intro": "Abi pakalpojumi risina vienu uzdevumu — vienu lapu visām tavām saitēm. Atšķirības ir naudā, valodās un privātumā. Lūk, tās bez izskaistinājumiem.",
+    "defTitle": "Kas ir „link in bio“ lapa?",
+    "defBody": "„Link in bio“ lapa ir viena publiska tīmekļa lapa, kas apvieno visas tavas svarīgās saites, produktus un kontaktus vienuviet, sasniedzama pa vienu adresi. Ideja nāk no sociālajiem tīkliem, kas profilā atļauj tikai vienu saiti: tā vietā, lai izvēlētos starp veikalu, video un jaunumu vēstuli, tu ievieto vienu saiti uz lapu, un tā ved uz visu. Mūsdienu versijas pievieno digitālo produktu pārdošanu, apmeklējumu statistiku un personisku dizainu. Kas Linketto izceļ: tava lapa automātiski parādās katra apmeklētāja valodā — 24 ES valodas plus 3 itāļu dialekti — bez papildu darba, un analītika strādā bez sīkdatnēm un bez personas datiem. Izveido to vienreiz; tā runā ar visu pasauli.",
+    "tableTitle": "Salīdzinājums rindu pa rindai",
+    "thFeature": "Kritērijs",
+    "rowFee": "Pārdošanas komisija",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business un Founder",
+    "rowFeeLt": "12% Free · 9% maksas plānos",
+    "rowLang": "Profila valodas",
+    "rowLangL": "24 ES valodas + 3 dialekti, automātiski pēc apmeklētāja",
+    "rowLangLt": "Tikai angļu",
+    "rowHost": "Mitināšana un dati",
+    "rowHostL": "Mitināšana ES, GDPR pēc noklusējuma",
+    "rowHostLt": "Mitināšana ASV",
+    "rowAnalytics": "Analītika",
+    "rowAnalyticsL": "Bez sīkdatnēm, bez IP adresēm, bez personas datiem",
+    "rowAnalyticsLt": "Klasiska izsekošana ar sīkdatnēm",
+    "rowModeration": "Moderācija",
+    "rowModerationL": "Caurskatāma, ar brīdinājumu un pārsūdzību; bez publiska „BLOĶĒTS“ karoga",
+    "rowModerationLt": "Publisks karogs bloķētos profilos",
+    "honestTitle": "Kad Linktree ir labākā izvēle?",
+    "honestBody": "Godīgi: ja paļaujies uz viņu garo gatavo integrāciju sarakstu vai vēlies visizplatītāko platformu, Linktree ir saprātīga izvēle ar ilgu vēsturi. Linketto uzvar, kad tava auditorija runā vairāk nekā vienā valodā, kad pārdod un svarīgs katrs komisijas punkts, un kad tavu apmeklētāju privātums ir solījums, nevis zemsvītras piezīme.",
+    "ctaTitle": "Izmēģini atšķirību ar vienu saiti.",
+    "ctaButton": "Izveido savu Linketto bez maksas"
   }
 }

@@ -47,7 +47,7 @@
     "ctaButton": "Kezdd el ingyen 60 másodperc alatt",
     "faqTitle": "Gyakori kérdések",
     "faq1q": "Mi az a Linketto?",
-    "faq1a": "A Linketto egy „link in bio” oldal: egyetlen link, amely összegyűjti az összes linkedet, termékedet és elérhetőségedet. Az egyedi benne: az oldalad minden látogató nyelvén beszél — egyszer építed meg, és 6+ nyelven jelenik meg.",
+    "faq1a": "A Linketto egy „link in bio” oldal: egyetlen link, amely összegyűjti az összes linkedet, termékedet és elérhetőségedet. Az egyedi benne: az oldalad minden látogató nyelvén beszél — egyszer építed meg, és 24 EU-nyelven plusz 3 nyelvjáráson jelenik meg.",
     "faq2q": "Miben jobb a Linketto a Linktree-nél?",
     "faq2a": "Négy dologban: a profilod többnyelvű (a Linktree csak angol), az EU-ban van tárolva GDPR-rel alapból, az analitika sütik és személyes adatok nélküli, az eladási jutalékok pedig csomagonként 8/4/0/0% — a Linktree 12%-a és 9%-a helyett.",
     "faq3q": "Mennyibe kerül a Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Feltételek",
     "contact": "info@carbonstealth.eu",
     "cookies": "Sütik",
-    "manageConsent": "Sütik kezelése"
+    "manageConsent": "Sütik kezelése",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — többnyelvű link in bio: minden linked, minden nyelven",
@@ -459,5 +460,34 @@
     "accept": "Elfogadom",
     "decline": "Elutasítom",
     "moreInfo": "További információ"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — az őszinte összehasonlítás",
+    "metaDescription": "Jutalékok 8/4/0% a 12/9% ellenében, 24 EU-nyelv a csak angol ellenében, EU-s tárolás GDPR-rel és sütik nélküli analitika. Nézd meg a táblázatot.",
+    "title": "Linketto vs Linktree",
+    "intro": "Mindkét szolgáltatás ugyanazt a feladatot oldja meg — egy oldal az összes linkedhez. A különbségek a pénzben, a nyelvekben és az adatvédelemben rejlenek. Íme, kertelés nélkül.",
+    "defTitle": "Mi az a „link in bio” oldal?",
+    "defBody": "A „link in bio” oldal egyetlen nyilvános weboldal, amely egy helyen gyűjti össze az összes fontos linkedet, termékedet és elérhetőségedet, egyetlen címen keresztül elérhetően. Az ötlet a közösségi hálózatokból ered, amelyek csak egy linket engedélyeznek a profilban: ahelyett, hogy választanod kellene a boltod, a videód és a hírleveled között, egyetlen linket teszel az oldalra, ami mindenhez elvezet. A modern változatok digitális termékek eladásával, látogatási statisztikákkal és egyéni dizájnnal bővülnek. Ami a Linkettót megkülönbözteti: az oldalad automatikusan minden látogató nyelvén jelenik meg — 24 EU-nyelv plusz 3 olasz nyelvjárás — minden plusz munka nélkül, az analitika pedig sütik és személyes adatok nélkül működik. Építsd meg egyszer; az egész világhoz szól.",
+    "tableTitle": "Összehasonlítás sorról sorra",
+    "thFeature": "Szempont",
+    "rowFee": "Értékesítési jutalék",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business és Founder",
+    "rowFeeLt": "12% Free · 9% a fizetős csomagokon",
+    "rowLang": "Profil nyelvei",
+    "rowLangL": "24 EU-nyelv + 3 nyelvjárás, automatikusan a látogató szerint",
+    "rowLangLt": "Csak angol",
+    "rowHost": "Tárolás és adatok",
+    "rowHostL": "EU-s tárolás, GDPR alapból",
+    "rowHostLt": "Tárolás az USA-ban",
+    "rowAnalytics": "Analitika",
+    "rowAnalyticsL": "Sütik nélkül, IP-címek nélkül, személyes adatok nélkül",
+    "rowAnalyticsLt": "Klasszikus, sütialapú követés",
+    "rowModeration": "Moderálás",
+    "rowModerationL": "Átlátható, előzetes értesítéssel és fellebbezéssel; nyilvános „TILTVA” banner nélkül",
+    "rowModerationLt": "Nyilvános banner a letiltott profilokon",
+    "honestTitle": "Mikor jobb választás a Linktree?",
+    "honestBody": "Őszintén: ha a kész integrációk hosszú listájára támaszkodsz, vagy a legelterjedtebb platformot szeretnéd, a Linktree ésszerű választás, hosszú múlttal. A Linketto akkor nyer, ha a közönséged egynél több nyelvet beszél, ha eladsz, és minden jutalékpont számít, és ha a látogatóid adatvédelme ígéret, nem pedig lábjegyzet.",
+    "ctaTitle": "Próbáld ki a különbséget egyetlen linkkel.",
+    "ctaButton": "Készítsd el a Linkettódat ingyen"
   }
 }

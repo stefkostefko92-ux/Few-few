@@ -47,7 +47,7 @@
     "ctaButton": "Aloita ilmaiseksi 60 sekunnissa",
     "faqTitle": "Usein kysytyt kysymykset",
     "faq1q": "Mikä Linketto on?",
-    "faq1a": "Linketto on link-in-bio-sivu: yksi linkki, joka kokoaa kaikki linkkisi, tuotteesi ja yhteystietosi. Ainutlaatuista: sivusi puhuu jokaisen kävijän kieltä — rakenna se kerran ja se näkyy yli 6 kielellä.",
+    "faq1a": "Linketto on link-in-bio-sivu: yksi linkki, joka kokoaa kaikki linkkisi, tuotteesi ja yhteystietosi. Ainutlaatuista: sivusi puhuu jokaisen kävijän kieltä — rakenna se kerran ja se näkyy 24 EU-kielellä plus 3 murteella.",
     "faq2q": "Miten Linketto on parempi kuin Linktree?",
     "faq2a": "Neljä asiaa: profiilisi on monikielinen (Linktree on vain englanniksi), se on isännöity EU:ssa GDPR oletuksena, analytiikka on evästeetön ja ilman henkilötietoja, ja myyntipalkkiot ovat 8/4/0/0 % paketin mukaan — Linktreessä 12 % ja 9 %.",
     "faq3q": "Paljonko Linketto maksaa?",
@@ -379,7 +379,8 @@
     "terms": "Ehdot",
     "contact": "info@carbonstealth.eu",
     "cookies": "Evästeet",
-    "manageConsent": "Hallitse evästeitä"
+    "manageConsent": "Hallitse evästeitä",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — monikielinen link in bio: kaikki linkkisi, jokaisella kielellä",
@@ -459,5 +460,34 @@
     "accept": "Hyväksy",
     "decline": "Hylkää",
     "moreInfo": "Lue lisää"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — rehellinen vertailu",
+    "metaDescription": "Palkkiot 8/4/0 % vastaan 12/9 %, 24 EU-kieltä vastaan vain englanti, EU-isännöinti GDPR:llä ja evästeetön analytiikka. Katso taulukko.",
+    "title": "Linketto vs Linktree",
+    "intro": "Molemmat palvelut ratkaisevat saman tehtävän — yhden sivun kaikille linkeillesi. Erot ovat rahassa, kielissä ja yksityisyydessä. Tässä ne ovat, ilman kaunistelua.",
+    "defTitle": "Mikä on link-in-bio-sivu?",
+    "defBody": "Link-in-bio-sivu on yksi julkinen verkkosivu, joka kokoaa kaikki tärkeät linkkisi, tuotteesi ja yhteystietosi yhteen paikkaan, saavutettavissa yhdellä osoitteella. Idea tulee sosiaalisista verkostoista, jotka sallivat vain yhden linkin profiilissa: sen sijaan, että valitsisit kaupan, videon ja uutiskirjeen välillä, laitat yhden linkin sivulle, ja se johtaa kaikkeen. Nykyaikaiset versiot lisäävät digitaalisten tuotteiden myynnin, kävijätilastot ja henkilökohtaisen ulkoasun. Mikä erottaa Linketon: sivusi näkyy automaattisesti jokaisen kävijän kielellä — 24 EU-kieltä plus 3 italialaista murretta — ilman mitään ylimääräistä työtä, ja analytiikka toimii ilman evästeitä ja ilman henkilötietoja. Rakenna se kerran; se puhuu koko maailmalle.",
+    "tableTitle": "Rivi riviltä -vertailu",
+    "thFeature": "Kriteeri",
+    "rowFee": "Myyntipalkkio",
+    "rowFeeL": "8 % Free · 4 % Pro · 0 % Business ja Founder",
+    "rowFeeLt": "12 % Free · 9 % maksullisissa paketeissa",
+    "rowLang": "Profiilin kielet",
+    "rowLangL": "24 EU-kieltä + 3 murretta, automaattisesti kävijän mukaan",
+    "rowLangLt": "Vain englanti",
+    "rowHost": "Isännöinti ja data",
+    "rowHostL": "EU-isännöinti, GDPR oletuksena",
+    "rowHostLt": "Isännöinti Yhdysvalloissa",
+    "rowAnalytics": "Analytiikka",
+    "rowAnalyticsL": "Ei evästeitä, ei IP-osoitteita, ei henkilötietoja",
+    "rowAnalyticsLt": "Klassinen evästepohjainen seuranta",
+    "rowModeration": "Moderointi",
+    "rowModerationL": "Läpinäkyvä, ennakkoilmoituksella ja valitusoikeudella; ei julkista „BANNED“-banneria",
+    "rowModerationLt": "Julkinen banneri estetyissä profiileissa",
+    "honestTitle": "Milloin Linktree on parempi valinta?",
+    "honestBody": "Rehellisesti: jos luotat heidän pitkään valmiiden integraatioiden listaansa tai haluat yleisimmän alustan, Linktree on järkevä valinta pitkällä historialla. Linketto voittaa, kun yleisösi puhuu useampaa kuin yhtä kieltä, kun myyt ja jokainen palkkiopiste ratkaisee, ja kun kävijöidesi yksityisyys on lupaus eikä alaviite.",
+    "ctaTitle": "Kokeile eroa yhdellä linkillä.",
+    "ctaButton": "Luo oma Linketto ilmaiseksi"
   }
 }

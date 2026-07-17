@@ -47,7 +47,7 @@
     "ctaButton": "Začni zdarma za 60 sekund",
     "faqTitle": "Časté dotazy",
     "faq1q": "Co je Linketto?",
-    "faq1a": "Linketto je stránka „link in bio”: jeden odkaz, který sdružuje všechny tvé odkazy, produkty a kontakty. Jedinečné je, že tvá stránka mluví jazykem každého návštěvníka — vytvoř ji jednou a zobrazí se v 6+ jazycích.",
+    "faq1a": "Linketto je stránka „link in bio”: jeden odkaz, který sdružuje všechny tvé odkazy, produkty a kontakty. Jedinečné je, že tvá stránka mluví jazykem každého návštěvníka — vytvoř ji jednou a zobrazí se ve 24 jazycích EU plus 3 dialektech.",
     "faq2q": "Čím je Linketto lepší než Linktree?",
     "faq2a": "Čtyři věci: tvůj profil je vícejazyčný (Linktree je jen anglicky), je hostovaný v EU s GDPR ve výchozím nastavení, analytika je bez cookies a bez osobních údajů a provize z prodejů jsou 8/4/0/0 % podle plánu — oproti 12 % a 9 % u Linktree.",
     "faq3q": "Kolik Linketto stojí?",
@@ -379,7 +379,8 @@
     "terms": "Podmínky",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Správa cookies"
+    "manageConsent": "Správa cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — vícejazyčný link in bio: všechny odkazy, v každém jazyce",
@@ -459,5 +460,34 @@
     "accept": "Přijmout",
     "decline": "Odmítnout",
     "moreInfo": "Zjistit více"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — poctivé srovnání",
+    "metaDescription": "Provize 8/4/0 % proti 12/9 %, 24 jazyků EU proti pouze angličtině, hosting v EU s GDPR a analytika bez cookies. Podívej se na tabulku.",
+    "title": "Linketto vs Linktree",
+    "intro": "Obě služby řeší stejný úkol — jednu stránku pro všechny tvé odkazy. Rozdíly jsou v penězích, jazycích a soukromí. Tady jsou, bez příkras.",
+    "defTitle": "Co je stránka „link in bio”?",
+    "defBody": "Stránka „link in bio” je jediná veřejná webová stránka, která shromažďuje všechny tvé důležité odkazy, produkty a kontakty na jednom místě, dostupná přes jedinou adresu. Nápad pochází ze sociálních sítí, které v profilu povolují jen jeden odkaz: místo výběru mezi obchodem, videem a newsletterem umístíš jeden odkaz na stránku, a ta vede ke všemu. Moderní verze přidávají prodej digitálních produktů, statistiky návštěv a osobní design. Čím se Linketto liší: tvá stránka se automaticky zobrazuje v jazyce každého návštěvníka — 24 jazyků EU plus 3 italské dialekty — bez jakékoli práce navíc, a analytika běží bez cookies a bez osobních údajů. Vytvoř ji jednou; mluví s celým světem.",
+    "tableTitle": "Srovnání řádek po řádku",
+    "thFeature": "Kritérium",
+    "rowFee": "Provize z prodeje",
+    "rowFeeL": "8 % Free · 4 % Pro · 0 % Business a Founder",
+    "rowFeeLt": "12 % Free · 9 % u placených plánů",
+    "rowLang": "Jazyky profilu",
+    "rowLangL": "24 jazyků EU + 3 dialekty, automaticky podle návštěvníka",
+    "rowLangLt": "Pouze angličtina",
+    "rowHost": "Hosting a data",
+    "rowHostL": "Hosting v EU, GDPR ve výchozím nastavení",
+    "rowHostLt": "Hosting v USA",
+    "rowAnalytics": "Analytika",
+    "rowAnalyticsL": "Bez cookies, bez IP adres, bez osobních údajů",
+    "rowAnalyticsLt": "Klasické sledování pomocí cookies",
+    "rowModeration": "Moderace",
+    "rowModerationL": "Transparentní, s předstihem a odvoláním; bez veřejného banneru „ZABANOVÁN”",
+    "rowModerationLt": "Veřejný banner na zablokovaných profilech",
+    "honestTitle": "Kdy je Linktree lepší volba?",
+    "honestBody": "Upřímně: pokud spoléháš na jejich dlouhý seznam hotových integrací nebo chceš nejrozšířenější platformu, Linktree je rozumná volba s dlouhou historií. Linketto vítězí, když tvé publikum mluví více než jedním jazykem, když prodáváš a záleží na každém bodu provize, a když je soukromí tvých návštěvníků slib, ne poznámka pod čarou.",
+    "ctaTitle": "Vyzkoušej rozdíl s jediným odkazem.",
+    "ctaButton": "Vytvoř si své Linketto zdarma"
   }
 }

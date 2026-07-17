@@ -47,7 +47,7 @@
     "ctaButton": "Începe gratuit în 60 de secunde",
     "faqTitle": "Întrebări frecvente",
     "faq1q": "Ce este Linketto?",
-    "faq1a": "Linketto este o pagină link in bio: un singur link care adună toate linkurile, produsele și contactele tale. Ce e unic: pagina ta vorbește limba fiecărui vizitator — o creezi o dată și apare în peste 6 limbi.",
+    "faq1a": "Linketto este o pagină link in bio: un singur link care adună toate linkurile, produsele și contactele tale. Ce e unic: pagina ta vorbește limba fiecărui vizitator — o creezi o dată și apare în 24 de limbi ale UE plus 3 dialecte.",
     "faq2q": "Prin ce este Linketto mai bun decât Linktree?",
     "faq2a": "Patru lucruri: profilul tău este multilingv (Linktree e doar în engleză), este găzduit în UE cu GDPR în mod implicit, analiza este fără cookie-uri și fără date personale, iar comisioanele la vânzări sunt 8/4/0/0% în funcție de plan — față de 12% și 9% la Linktree.",
     "faq3q": "Cât costă Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Termeni",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie-uri",
-    "manageConsent": "Gestionează cookie-urile"
+    "manageConsent": "Gestionează cookie-urile",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingv: toate linkurile tale, în orice limbă",
@@ -459,5 +460,34 @@
     "accept": "Accept",
     "decline": "Refuz",
     "moreInfo": "Află mai multe"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — comparația onestă",
+    "metaDescription": "Comisioane 8/4/0% față de 12/9%, 24 de limbi UE față de doar engleză, găzduire în UE cu GDPR și analiză fără cookie-uri. Vezi tabelul.",
+    "title": "Linketto vs Linktree",
+    "intro": "Ambele servicii rezolvă aceeași sarcină — o pagină pentru toate linkurile tale. Diferențele țin de bani, limbi și confidențialitate. Iată-le, fără ocolișuri.",
+    "defTitle": "Ce este o pagină link in bio?",
+    "defBody": "O pagină link in bio este o singură pagină web publică ce adună toate linkurile tale importante, produsele și contactele într-un singur loc, accesibilă printr-o singură adresă. Ideea vine din rețelele sociale care permit un singur link în profil: în loc să alegi între magazin, videoclip și newsletter, pui un singur link către pagină, iar aceasta duce la tot. Versiunile moderne adaugă vânzarea de produse digitale, statistici despre vizite și un design personalizat. Ce diferențiază Linketto: pagina ta apare automat în limba fiecărui vizitator — 24 de limbi ale UE plus 3 dialecte italiene — fără niciun efort suplimentar din partea ta, iar analiza funcționează fără cookie-uri și fără date personale. Creeaz-o o dată; vorbește cu întreaga lume.",
+    "tableTitle": "Comparație rând cu rând",
+    "thFeature": "Criteriu",
+    "rowFee": "Comision la vânzări",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business și Founder",
+    "rowFeeLt": "12% Free · 9% la planurile plătite",
+    "rowLang": "Limbile profilului",
+    "rowLangL": "24 de limbi UE + 3 dialecte, automat în funcție de vizitator",
+    "rowLangLt": "Doar engleză",
+    "rowHost": "Găzduire și date",
+    "rowHostL": "Găzduire în UE, GDPR implicit",
+    "rowHostLt": "Găzduire în SUA",
+    "rowAnalytics": "Analiză",
+    "rowAnalyticsL": "Fără cookie-uri, fără adrese IP, fără date personale",
+    "rowAnalyticsLt": "Urmărire clasică cu cookie-uri",
+    "rowModeration": "Moderare",
+    "rowModerationL": "Transparentă, cu preaviz și drept de contestație; fără banner public „BLOCAT”",
+    "rowModerationLt": "Banner public pe profilurile blocate",
+    "honestTitle": "Când este Linktree alegerea mai bună?",
+    "honestBody": "Sincer: dacă te bazezi pe lista lor lungă de integrări gata făcute sau vrei cea mai răspândită platformă, Linktree este o alegere rezonabilă cu un istoric îndelungat. Linketto câștigă când publicul tău vorbește mai mult de o limbă, când vinzi și fiecare punct de comision contează, și când confidențialitatea vizitatorilor tăi este o promisiune, nu o notă de subsol.",
+    "ctaTitle": "Încearcă diferența cu un singur link.",
+    "ctaButton": "Creează-ți Linketto gratuit"
   }
 }

@@ -47,7 +47,7 @@
     "ctaButton": "Pradėk nemokamai per 60 sekundžių",
     "faqTitle": "Dažnai užduodami klausimai",
     "faq1q": "Kas yra Linketto?",
-    "faq1a": "Linketto yra „link in bio“ puslapis: viena nuoroda, apjungianti visas tavo nuorodas, produktus ir kontaktus. Išskirtinumas: tavo puslapis kalba kiekvieno lankytojo kalba — sukurk jį kartą ir jis rodomas 6+ kalbomis.",
+    "faq1a": "Linketto yra „link in bio“ puslapis: viena nuoroda, apjungianti visas tavo nuorodas, produktus ir kontaktus. Išskirtinumas: tavo puslapis kalba kiekvieno lankytojo kalba — sukurk jį kartą ir jis rodomas 24 ES kalbomis plius 3 dialektais.",
     "faq2q": "Kuo Linketto geresnis už Linktree?",
     "faq2a": "Keturi dalykai: tavo profilis yra daugiakalbis (Linktree tik angliškas), jis talpinamas ES su GDPR pagal nutylėjimą, analitika be slapukų ir be asmens duomenų, o pardavimo komisiniai yra 8/4/0/0% pagal planą — palyginti su 12% ir 9% Linktree.",
     "faq3q": "Kiek kainuoja Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Sąlygos",
     "contact": "info@carbonstealth.eu",
     "cookies": "Slapukai",
-    "manageConsent": "Tvarkyti slapukus"
+    "manageConsent": "Tvarkyti slapukus",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — daugiakalbis link in bio: visos tavo nuorodos bet kuria kalba",
@@ -459,5 +460,34 @@
     "accept": "Sutinku",
     "decline": "Atsisakau",
     "moreInfo": "Sužinoti daugiau"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — sąžiningas palyginimas",
+    "metaDescription": "Komisiniai 8/4/0% prieš 12/9%, 24 ES kalbos prieš tik anglų, talpinimas ES su GDPR ir analitika be slapukų. Peržiūrėk lentelę.",
+    "title": "Linketto vs Linktree",
+    "intro": "Abi paslaugos sprendžia tą pačią užduotį — vieną puslapį visoms tavo nuorodoms. Skirtumai — pinigai, kalbos ir privatumas. Štai jie, be pagražinimų.",
+    "defTitle": "Kas yra „link in bio“ puslapis?",
+    "defBody": "„Link in bio“ puslapis yra vienas viešas tinklalapis, sujungiantis visas tavo svarbias nuorodas, produktus ir kontaktus vienoje vietoje, pasiekiamas vienu adresu. Idėja kilo iš socialinių tinklų, leidžiančių profilyje tik vieną nuorodą: užuot rinkęsis tarp parduotuvės, vaizdo įrašo ir naujienlaiškio, įdedi vieną nuorodą į puslapį, o jis veda į viską. Šiuolaikinės versijos prideda skaitmeninių produktų pardavimą, apsilankymų statistiką ir asmeninį dizainą. Kuo Linketto išsiskiria: tavo puslapis automatiškai rodomas kiekvieno lankytojo kalba — 24 ES kalbos plius 3 italų dialektai — be jokio papildomo darbo, o analitika veikia be slapukų ir be asmens duomenų. Sukurk jį kartą; jis kalba su visu pasauliu.",
+    "tableTitle": "Palyginimas eilutė po eilutės",
+    "thFeature": "Kriterijus",
+    "rowFee": "Pardavimo komisiniai",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business ir Founder",
+    "rowFeeLt": "12% Free · 9% mokamuose planuose",
+    "rowLang": "Profilio kalbos",
+    "rowLangL": "24 ES kalbos + 3 dialektai, automatiškai pagal lankytoją",
+    "rowLangLt": "Tik anglų",
+    "rowHost": "Talpinimas ir duomenys",
+    "rowHostL": "Talpinimas ES, GDPR pagal numatymą",
+    "rowHostLt": "Talpinimas JAV",
+    "rowAnalytics": "Analitika",
+    "rowAnalyticsL": "Be slapukų, be IP adresų, be asmens duomenų",
+    "rowAnalyticsLt": "Klasikinis stebėjimas slapukais",
+    "rowModeration": "Moderavimas",
+    "rowModerationL": "Skaidrus, su išankstiniu įspėjimu ir apeliacija; be viešo „UŽBLOKUOTA“ skydelio",
+    "rowModerationLt": "Viešas skydelis užblokuotuose profiliuose",
+    "honestTitle": "Kada Linktree yra geresnis pasirinkimas?",
+    "honestBody": "Sąžiningai: jei remiesi jų ilgu paruoštų integracijų sąrašu ar nori populiariausios platformos, Linktree yra pagrįstas pasirinkimas su ilga istorija. Linketto laimi, kai tavo auditorija kalba daugiau nei viena kalba, kai parduodi ir svarbus kiekvienas komisinių taškas, ir kai tavo lankytojų privatumas yra pažadas, o ne išnaša.",
+    "ctaTitle": "Išbandyk skirtumą su viena nuoroda.",
+    "ctaButton": "Sukurk savo Linketto nemokamai"
   }
 }

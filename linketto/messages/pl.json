@@ -47,7 +47,7 @@
     "ctaButton": "Zacznij za darmo w 60 sekund",
     "faqTitle": "Najczęstsze pytania",
     "faq1q": "Czym jest Linketto?",
-    "faq1a": "Linketto to strona „link in bio”: jeden link, który zbiera wszystkie Twoje linki, produkty i kontakty. To, co wyjątkowe: Twoja strona mówi językiem każdego odwiedzającego — stwórz ją raz, a wyświetla się w 6+ językach.",
+    "faq1a": "Linketto to strona „link in bio”: jeden link, który zbiera wszystkie Twoje linki, produkty i kontakty. To, co wyjątkowe: Twoja strona mówi językiem każdego odwiedzającego — stwórz ją raz, a wyświetla się w 24 językach UE plus 3 dialektach.",
     "faq2q": "Dlaczego Linketto jest lepsze od Linktree?",
     "faq2a": "Cztery rzeczy: Twój profil jest wielojęzyczny (Linktree jest tylko po angielsku), hostowany w UE z GDPR w standardzie, analityka jest bez ciasteczek i bez danych osobowych, a prowizje od sprzedaży wynoszą 8/4/0/0% zależnie od planu — wobec 12% i 9% w Linktree.",
     "faq3q": "Ile kosztuje Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Warunki",
     "contact": "info@carbonstealth.eu",
     "cookies": "Ciasteczka",
-    "manageConsent": "Zarządzaj plikami cookie"
+    "manageConsent": "Zarządzaj plikami cookie",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — wielojęzyczny link in bio: wszystkie linki, w każdym języku",
@@ -459,5 +460,34 @@
     "accept": "Akceptuję",
     "decline": "Odrzucam",
     "moreInfo": "Dowiedz się więcej"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — uczciwe porównanie",
+    "metaDescription": "Prowizje 8/4/0% wobec 12/9%, 24 języki UE wobec tylko angielskiego, hosting w UE z GDPR i analityka bez ciasteczek. Zobacz tabelę.",
+    "title": "Linketto vs Linktree",
+    "intro": "Obie usługi rozwiązują to samo zadanie — jedna strona na wszystkie Twoje linki. Różnice tkwią w pieniądzach, językach i prywatności. Oto one, bez owijania.",
+    "defTitle": "Czym jest strona „link in bio”?",
+    "defBody": "Strona „link in bio” to jedna publiczna strona internetowa, która gromadzi wszystkie Twoje ważne linki, produkty i kontakty w jednym miejscu, dostępna pod jednym adresem. Pomysł wywodzi się z sieci społecznościowych, które pozwalają na tylko jeden link w profilu: zamiast wybierać między sklepem, filmem a newsletterem, umieszczasz jeden link do strony, a ona prowadzi do wszystkiego. Nowoczesne wersje dodają sprzedaż produktów cyfrowych, statystyki odwiedzin i indywidualny wygląd. To, co wyróżnia Linketto: Twoja strona wyświetla się automatycznie w języku każdego odwiedzającego — 24 języki UE plus 3 włoskie dialekty — bez żadnej dodatkowej pracy z Twojej strony, a analityka działa bez ciasteczek i bez danych osobowych. Stwórz ją raz; mówi do całego świata.",
+    "tableTitle": "Porównanie wiersz po wierszu",
+    "thFeature": "Kryterium",
+    "rowFee": "Prowizja od sprzedaży",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business i Founder",
+    "rowFeeLt": "12% Free · 9% w planach płatnych",
+    "rowLang": "Języki profilu",
+    "rowLangL": "24 języki UE + 3 dialekty, automatycznie według odwiedzającego",
+    "rowLangLt": "Tylko angielski",
+    "rowHost": "Hosting i dane",
+    "rowHostL": "Hosting w UE, GDPR domyślnie",
+    "rowHostLt": "Hosting w USA",
+    "rowAnalytics": "Analityka",
+    "rowAnalyticsL": "Bez ciasteczek, bez adresów IP, bez danych osobowych",
+    "rowAnalyticsLt": "Klasyczne śledzenie plikami cookie",
+    "rowModeration": "Moderacja",
+    "rowModerationL": "Przejrzysta, z uprzedzeniem i prawem odwołania; bez publicznego banera „ZBANOWANY”",
+    "rowModerationLt": "Publiczny baner na zablokowanych profilach",
+    "honestTitle": "Kiedy Linktree jest lepszym wyborem?",
+    "honestBody": "Szczerze: jeśli polegasz na ich długiej liście gotowych integracji lub chcesz najpopularniejszej platformy, Linktree to rozsądny wybór z długą historią. Linketto wygrywa, gdy Twoja publiczność mówi więcej niż jednym językiem, gdy sprzedajesz i liczy się każdy punkt prowizji, oraz gdy prywatność Twoich odwiedzających jest obietnicą, a nie przypisem.",
+    "ctaTitle": "Wypróbuj różnicę jednym linkiem.",
+    "ctaButton": "Stwórz swoje Linketto za darmo"
   }
 }

@@ -47,7 +47,7 @@
     "ctaButton": "Begin gratis in 60 seconden",
     "faqTitle": "Veelgestelde vragen",
     "faq1q": "Wat is Linketto?",
-    "faq1a": "Linketto is een link-in-bio-pagina: één link die al je links, producten en contacten bundelt. Het unieke: je pagina spreekt de taal van elke bezoeker — maak hem één keer en hij verschijnt in 6+ talen.",
+    "faq1a": "Linketto is een link-in-bio-pagina: één link die al je links, producten en contacten bundelt. Het unieke: je pagina spreekt de taal van elke bezoeker — maak hem één keer en hij verschijnt in 24 EU-talen plus 3 dialecten.",
     "faq2q": "Waarom is Linketto beter dan Linktree?",
     "faq2a": "Vier dingen: je profiel is meertalig (Linktree is alleen Engels), het is gehost in de EU met GDPR standaard, de analytics zijn cookievrij zonder persoonsgegevens, en de verkoopcommissies zijn 8/4/0/0% per abonnement — tegenover 12% en 9% bij Linktree.",
     "faq3q": "Wat kost Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Voorwaarden",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Cookies beheren"
+    "manageConsent": "Cookies beheren",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — meertalige link in bio: al je links, in elke taal",
@@ -459,5 +460,34 @@
     "accept": "Accepteren",
     "decline": "Weigeren",
     "moreInfo": "Meer informatie"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — de eerlijke vergelijking",
+    "metaDescription": "Commissies 8/4/0% versus 12/9%, 24 EU-talen versus alleen Engels, EU-hosting met GDPR en analytics zonder cookies. Bekijk de tabel.",
+    "title": "Linketto vs Linktree",
+    "intro": "Beide diensten lossen dezelfde taak op — één pagina voor al je links. De verschillen zitten in geld, talen en privacy. Hier zijn ze, zonder opsmuk.",
+    "defTitle": "Wat is een link-in-bio-pagina?",
+    "defBody": "Een link-in-bio-pagina is één openbare webpagina die al je belangrijke links, producten en contacten op één plek verzamelt, bereikbaar via één enkel adres. Het idee komt van de sociale netwerken die maar één link in het profiel toestaan: in plaats van te kiezen tussen je winkel, je video en je nieuwsbrief zet je één link naar de pagina, en die leidt naar alles. Moderne versies voegen de verkoop van digitale producten, bezoekstatistieken en een persoonlijk ontwerp toe. Wat Linketto onderscheidt: je pagina verschijnt automatisch in de taal van elke bezoeker — 24 EU-talen plus 3 Italiaanse dialecten — zonder extra werk van jouw kant, en de analytics werken zonder cookies en zonder persoonsgegevens. Bouw hem één keer; hij spreekt tegen de hele wereld.",
+    "tableTitle": "Vergelijking rij voor rij",
+    "thFeature": "Criterium",
+    "rowFee": "Verkoopcommissie",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business en Founder",
+    "rowFeeLt": "12% Free · 9% op de betaalde abonnementen",
+    "rowLang": "Profieltalen",
+    "rowLangL": "24 EU-talen + 3 dialecten, automatisch per bezoeker",
+    "rowLangLt": "Alleen Engels",
+    "rowHost": "Hosting en data",
+    "rowHostL": "EU-hosting, GDPR standaard",
+    "rowHostLt": "Hosting in de VS",
+    "rowAnalytics": "Analytics",
+    "rowAnalyticsL": "Geen cookies, geen IP-adressen, geen persoonsgegevens",
+    "rowAnalyticsLt": "Klassieke tracking met cookies",
+    "rowModeration": "Moderatie",
+    "rowModerationL": "Transparant, met voorafgaande kennisgeving en bezwaar; geen openbare 'GEBAND'-banner",
+    "rowModerationLt": "Openbare banner op geblokkeerde profielen",
+    "honestTitle": "Wanneer is Linktree de betere keuze?",
+    "honestBody": "Eerlijk: als je leunt op hun lange lijst kant-en-klare integraties of de meest mainstream platform wilt, is Linktree een redelijke keuze met een lange staat van dienst. Linketto wint wanneer je publiek meer dan één taal spreekt, wanneer je verkoopt en elk commissiepunt telt, en wanneer de privacy van je bezoekers een belofte is en geen voetnoot.",
+    "ctaTitle": "Ervaar het verschil met één link.",
+    "ctaButton": "Maak je Linketto gratis aan"
   }
 }

@@ -47,7 +47,7 @@
     "ctaButton": "Começa grátis em 60 segundos",
     "faqTitle": "Perguntas frequentes",
     "faq1q": "O que é o Linketto?",
-    "faq1a": "O Linketto é uma página link in bio: um único link que reúne todos os teus links, produtos e contactos. O que o torna único: a tua página fala o idioma de cada visitante — cria-a uma vez e ela aparece em mais de 6 idiomas.",
+    "faq1a": "O Linketto é uma página link in bio: um único link que reúne todos os teus links, produtos e contactos. O que o torna único: a tua página fala o idioma de cada visitante — cria-a uma vez e ela aparece em 24 idiomas da UE mais 3 dialetos.",
     "faq2q": "Em que é que o Linketto é melhor do que o Linktree?",
     "faq2a": "Quatro coisas: o teu perfil é multilingue (o Linktree é só em inglês), é alojado na UE com GDPR por predefinição, as análises não têm cookies nem dados pessoais, e as comissões sobre vendas são de 8/4/0/0% consoante o plano — contra 12% e 9% no Linktree.",
     "faq3q": "Quanto custa o Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Termos",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Gerir cookies"
+    "manageConsent": "Gerir cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingue: todos os teus links, em todos os idiomas",
@@ -459,5 +460,34 @@
     "accept": "Aceito",
     "decline": "Recuso",
     "moreInfo": "Saber mais"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — a comparação honesta",
+    "metaDescription": "Comissões 8/4/0% contra 12/9%, 24 idiomas da UE contra apenas inglês, alojamento na UE com GDPR e análises sem cookies. Vê a tabela.",
+    "title": "Linketto vs Linktree",
+    "intro": "Ambos os serviços resolvem a mesma tarefa — uma página para todos os teus links. As diferenças estão no dinheiro, nos idiomas e na privacidade. Aqui estão, sem rodeios.",
+    "defTitle": "O que é uma página link in bio?",
+    "defBody": "Uma página link in bio é uma única página web pública que reúne todos os teus links importantes, produtos e contactos num só lugar, acessível através de um único endereço. A ideia vem das redes sociais que só permitem um link no perfil: em vez de escolher entre a tua loja, o teu vídeo e a tua newsletter, colocas um único link para a página, e ela leva a tudo. As versões modernas acrescentam a venda de produtos digitais, estatísticas de visitas e um design personalizado. O que distingue o Linketto: a tua página aparece automaticamente no idioma de cada visitante — 24 idiomas da UE mais 3 dialetos italianos — sem qualquer trabalho extra da tua parte, e as análises funcionam sem cookies e sem dados pessoais. Cria-a uma vez; fala com o mundo inteiro.",
+    "tableTitle": "Comparação linha a linha",
+    "thFeature": "Critério",
+    "rowFee": "Comissão sobre vendas",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business e Founder",
+    "rowFeeLt": "12% Free · 9% nos planos pagos",
+    "rowLang": "Idiomas do perfil",
+    "rowLangL": "24 idiomas da UE + 3 dialetos, automático por visitante",
+    "rowLangLt": "Apenas inglês",
+    "rowHost": "Alojamento e dados",
+    "rowHostL": "Alojamento na UE, GDPR por predefinição",
+    "rowHostLt": "Alojamento nos EUA",
+    "rowAnalytics": "Análises",
+    "rowAnalyticsL": "Sem cookies, sem endereços IP, sem dados pessoais",
+    "rowAnalyticsLt": "Rastreamento clássico com cookies",
+    "rowModeration": "Moderação",
+    "rowModerationL": "Transparente, com pré-aviso e recurso; sem banner público «BANIDO»",
+    "rowModerationLt": "Banner público nos perfis bloqueados",
+    "honestTitle": "Quando é o Linktree a melhor escolha?",
+    "honestBody": "Com honestidade: se dependes da longa lista de integrações já feitas ou queres a plataforma mais popular, o Linktree é uma escolha razoável com um longo historial. O Linketto vence quando o teu público fala mais do que um idioma, quando vendes e cada ponto de comissão conta, e quando a privacidade dos teus visitantes é uma promessa e não uma nota de rodapé.",
+    "ctaTitle": "Experimenta a diferença com um só link.",
+    "ctaButton": "Cria o teu Linketto gratuitamente"
   }
 }

@@ -47,7 +47,7 @@
     "ctaButton": "Začni brezplačno v 60 sekundah",
     "faqTitle": "Pogosta vprašanja",
     "faq1q": "Kaj je Linketto?",
-    "faq1a": "Linketto je stran „link in bio”: ena povezava, ki zbere vse tvoje povezave, izdelke in stike. Edinstveno je, da tvoja stran govori jezik vsakega obiskovalca — ustvari jo enkrat in prikaže se v 6+ jezikih.",
+    "faq1a": "Linketto je stran „link in bio”: ena povezava, ki zbere vse tvoje povezave, izdelke in stike. Edinstveno je, da tvoja stran govori jezik vsakega obiskovalca — ustvari jo enkrat in prikaže se v 24 jezikih EU plus 3 italijanska narečja.",
     "faq2q": "Zakaj je Linketto boljši od Linktree?",
     "faq2a": "Štiri stvari: tvoj profil je večjezičen (Linktree je samo v angleščini), gostovan je v EU z GDPR privzeto, analitika je brez piškotkov in brez osebnih podatkov, provizije od prodaje pa so 8/4/0/0 % glede na paket — v primerjavi z 12 % in 9 % pri Linktree.",
     "faq3q": "Koliko stane Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Pogoji",
     "contact": "info@carbonstealth.eu",
     "cookies": "Piškotki",
-    "manageConsent": "Upravljanje piškotkov"
+    "manageConsent": "Upravljanje piškotkov",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — večjezični link in bio: vse povezave, v vsakem jeziku",
@@ -459,5 +460,34 @@
     "accept": "Sprejmem",
     "decline": "Zavrnem",
     "moreInfo": "Več o tem"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — poštena primerjava",
+    "metaDescription": "Provizije 8/4/0 % proti 12/9 %, 24 jezikov EU proti samo angleščini, gostovanje v EU z GDPR in analitika brez piškotkov. Poglej tabelo.",
+    "title": "Linketto vs Linktree",
+    "intro": "Obe storitvi rešujeta isto nalogo — eno stran za vse tvoje povezave. Razlike so v denarju, jezikih in zasebnosti. Tukaj so, brez olepševanja.",
+    "defTitle": "Kaj je stran „link in bio”?",
+    "defBody": "Stran „link in bio” je ena sama javna spletna stran, ki zbere vse tvoje pomembne povezave, izdelke in stike na enem mestu, dosegljiva prek enega samega naslova. Ideja izvira iz družbenih omrežij, ki v profilu dovolijo le eno povezavo: namesto da bi izbiral med trgovino, videom in glasilom, postaviš eno povezavo do strani, ta pa vodi do vsega. Sodobne različice dodajo prodajo digitalnih izdelkov, statistiko obiskov in oseben videz. Kar Linketto loči od drugih: tvoja stran se samodejno prikaže v jeziku vsakega obiskovalca — 24 jezikov EU plus 3 italijanska narečja — brez dodatnega dela, analitika pa deluje brez piškotkov in brez osebnih podatkov. Ustvari jo enkrat; govori vsemu svetu.",
+    "tableTitle": "Primerjava vrstico za vrstico",
+    "thFeature": "Merilo",
+    "rowFee": "Provizija od prodaje",
+    "rowFeeL": "8 % Free · 4 % Pro · 0 % Business in Founder",
+    "rowFeeLt": "12 % Free · 9 % pri plačljivih paketih",
+    "rowLang": "Jeziki profila",
+    "rowLangL": "24 jezikov EU + 3 narečja, samodejno glede na obiskovalca",
+    "rowLangLt": "Samo angleščina",
+    "rowHost": "Gostovanje in podatki",
+    "rowHostL": "Gostovanje v EU, GDPR privzeto",
+    "rowHostLt": "Gostovanje v ZDA",
+    "rowAnalytics": "Analitika",
+    "rowAnalyticsL": "Brez piškotkov, brez naslovov IP, brez osebnih podatkov",
+    "rowAnalyticsLt": "Klasično sledenje s piškotki",
+    "rowModeration": "Moderiranje",
+    "rowModerationL": "Pregledno, z vnaprejšnjim obvestilom in pritožbo; brez javne pasice „IZKLJUČEN”",
+    "rowModerationLt": "Javna pasica na blokiranih profilih",
+    "honestTitle": "Kdaj je Linktree boljša izbira?",
+    "honestBody": "Iskreno: če se zanašaš na njihov dolg seznam že pripravljenih integracij ali želiš najbolj razširjeno platformo, je Linktree razumna izbira z dolgo zgodovino. Linketto zmaga, ko tvoje občinstvo govori več kot en jezik, ko prodajaš in šteje vsaka točka provizije, in ko je zasebnost tvojih obiskovalcev obljuba, ne opomba pod črto.",
+    "ctaTitle": "Preizkusi razliko z eno samo povezavo.",
+    "ctaButton": "Ustvari svoj Linketto brezplačno"
   }
 }
