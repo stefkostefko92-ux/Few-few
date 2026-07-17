@@ -442,7 +442,9 @@
     "footerMade": "Made with care for hero-class storytelling.",
     "iconAlt": "{{title}} icon",
     "portraitAlt": "{{name}} portrait",
-    "landscapeAlt": "{{name}} landscape"
+    "landscapeAlt": "{{name}} landscape",
+    "step3Body": "Twenty-one regions await, from Whispering Woods to The First Light at Lv 500. Each region drops gear from its tier.",
+    "regionBeyondBody": "Five realms past the world's ending — ash, fallen stars, the forge of the next dawn, the unlit court, and the first light itself. Lv 351–500."
   },
   "arena": {
     "title": "Arena of Nexus Dominion",

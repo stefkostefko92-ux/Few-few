@@ -62,6 +62,12 @@ const REGIONS: Region[] = [
   { slug: 'mooncradle',       level: '261-290', minLevel: 261, x: 0.40, y: 0.18, color: '#c294ff', stamp: 'XIV',  name: 'Mooncradle',       lore: 'A tear in reality where stars bleed into the sky.' },
   { slug: 'worldspine',       level: '291-320', minLevel: 291, x: 0.24, y: 0.23, color: '#ff5a4d', stamp: 'XV',   name: 'The Worldspine',   lore: 'The wyrm-king’s mountain throne, spine of the known world.' },
   { slug: 'eternal_throne',   level: '321-350', minLevel: 321, x: 0.86, y: 0.82, color: '#ffd34d', stamp: 'XVI',  name: 'The Eternal Throne', lore: 'Where the Last Sovereign waits at the end of all roads.' },
+  // „Отвъд Края" (351-500) — светът след падането на The Unname.
+  { slug: 'ashen_veil',       level: '351-380', minLevel: 351, x: 0.10, y: 0.12, color: '#9aa0ad', stamp: 'XVII',  name: 'The Ashen Veil',     lore: 'What remains when an ending ends. Ash, echo, and the patient dead.' },
+  { slug: 'starfall_abyss',   level: '381-410', minLevel: 381, x: 0.53, y: 0.10, color: '#6a8dff', stamp: 'XVIII', name: 'The Starfall Abyss', lore: 'The grave of fallen stars. Light goes in; something else comes out.' },
+  { slug: 'forge_of_dawn',    level: '411-440', minLevel: 411, x: 0.80, y: 0.10, color: '#ffb84d', stamp: 'XIX',   name: 'The Forge of Dawn',  lore: 'Where the next world is being hammered. The smiths do not stop for visitors.' },
+  { slug: 'crown_of_night',   level: '441-470', minLevel: 441, x: 0.93, y: 0.26, color: '#5b4dff', stamp: 'XX',    name: 'The Crown of Night', lore: 'The court of the Unlit Crown, where the dark keeps its own throne.' },
+  { slug: 'first_light',      level: '471-500', minLevel: 471, x: 0.94, y: 0.64, color: '#fff1b8', stamp: 'XXI',   name: 'The First Light',    lore: 'The beginning before everything. The last road ends where the first one starts.' },
 ];
 
 export default function World(): React.ReactElement {

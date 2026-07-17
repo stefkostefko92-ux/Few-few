@@ -18,6 +18,8 @@ import { getDb } from '../db';
 
 export function tierForEffectiveLevel(eff: number): number {
   return (
+    eff >= 440 ? 12 :
+    eff >= 380 ? 11 :
     eff >= 320 ? 10 :
     eff >= 280 ? 9  :
     eff >= 230 ? 8  :

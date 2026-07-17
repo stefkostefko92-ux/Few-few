@@ -28,9 +28,9 @@ function mkChar(): number {
   ).run(`drop_sim_${++seq}`).lastInsertRowid as number;
 }
 
-test('дроп при чудовище ≈ нивото: нула мъртви нива (1–350)', () => {
+test('дроп при чудовище ≈ нивото: нула мъртви нива (1–500)', () => {
   const dead: number[] = [];
-  for (let L = 1; L <= 350; L++) {
+  for (let L = 1; L <= 500; L++) {
     const r = grantDrop(mkChar(), L, 'warrior', L);
     if (!r.slug) dead.push(L);
   }
@@ -40,8 +40,8 @@ test('дроп при чудовище ≈ нивото: нула мъртви �
 test('дроп при бой НАД нивото (eff = ниво+30): tier fallback пази наградата', () => {
   // Преди поправката: 81 мъртви нива (1-11, 30-59, 250-259, 290-319).
   const dead: number[] = [];
-  for (let L = 1; L <= 350; L++) {
-    const r = grantDrop(mkChar(), L, 'warrior', Math.min(350, L + 30));
+  for (let L = 1; L <= 500; L++) {
+    const r = grantDrop(mkChar(), L, 'warrior', Math.min(500, L + 30));
     if (!r.slug) dead.push(L);
   }
   assert.deepEqual(dead, [], `мъртви нива при eff=ниво+30: ${dead.join(',')}`);
@@ -84,4 +84,7 @@ test('tierForEffectiveLevel: границите съвпадат с hunting ма
   assert.equal(tierForEffectiveLevel(280), 9);
   assert.equal(tierForEffectiveLevel(320), 10);
   assert.equal(tierForEffectiveLevel(350), 10);
+  assert.equal(tierForEffectiveLevel(380), 11);
+  assert.equal(tierForEffectiveLevel(440), 12);
+  assert.equal(tierForEffectiveLevel(500), 12);
 });
