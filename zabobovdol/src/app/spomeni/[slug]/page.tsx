@@ -48,7 +48,7 @@ export default async function MemoryPage({
         ]}
       />
       <article className="container-content max-w-3xl py-10">
-        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
           {m.period && <span className="badge">{m.period}</span>}
           {m.author && <span>Разказва: {m.author}</span>}
         </div>

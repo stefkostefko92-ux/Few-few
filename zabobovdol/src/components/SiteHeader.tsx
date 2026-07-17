@@ -29,7 +29,7 @@ export function SiteHeader() {
             />
             <span className="text-lg leading-tight">
               {SITE.name}
-              <span className="block text-xs font-normal text-slate-500">
+              <span className="block text-xs font-normal text-slate-600">
                 {SITE.slogan}
               </span>
             </span>
@@ -96,7 +96,7 @@ export function SiteHeader() {
                 >
                   {item.label}
                   {item.description && (
-                    <span className="block text-xs font-normal text-slate-500">
+                    <span className="block text-xs font-normal text-slate-600">
                       {item.description}
                     </span>
                   )}

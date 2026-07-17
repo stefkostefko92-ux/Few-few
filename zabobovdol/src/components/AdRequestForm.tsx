@@ -88,7 +88,7 @@ export function AdRequestForm({
       {/* Honeypot против ботове */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-600">
         Посочете поне имейл или телефон. Ще се свържем с Вас, за да подготвим
         банера.
       </p>

@@ -96,7 +96,7 @@ export default async function RidesPage({
           </div>
         )}
 
-        <p className="mt-8 max-w-3xl text-sm text-slate-500">
+        <p className="mt-8 max-w-3xl text-sm text-slate-600">
           За сигурност: уговаряйте се предварително, споделяйте плана с близък и не
           плащайте на непознати без яснота. Проектът само свързва хората и не носи
           отговорност за пътуванията.

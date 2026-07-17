@@ -130,7 +130,7 @@ export default async function TransparencyPage() {
                     <tbody className="divide-y divide-slate-100">
                       {t.topSuppliers.map((s) => (
                         <tr key={s.rank}>
-                          <td className="px-4 py-3 text-slate-500">{s.rank}</td>
+                          <td className="px-4 py-3 text-slate-600">{s.rank}</td>
                           <td className="px-4 py-3 font-medium text-slate-900">{s.name}</td>
                           <td className="px-4 py-3 text-right font-semibold text-slate-900">{s.amount}</td>
                           <td className="px-4 py-3 text-right text-slate-600">{s.contracts ?? "—"}</td>
@@ -204,7 +204,7 @@ export default async function TransparencyPage() {
               <PrintButton variant="secondary" label="Принтирай" />
             </div>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               Забелязали сте нещо нередно в харченето на общински средства? Може да
               подадете{" "}
               <a href="/signali" className="font-medium text-brand-700 hover:underline">

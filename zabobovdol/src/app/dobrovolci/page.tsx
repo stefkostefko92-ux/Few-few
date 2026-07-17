@@ -68,14 +68,14 @@ export default async function VolunteersPage() {
             {volunteers.map((v) => (
               <div key={v.id} className="card">
                 <div className="font-display text-lg font-bold text-slate-900">{v.name}</div>
-                {v.area && <div className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {v.area}</div>}
+                {v.area && <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {v.area}</div>}
                 {v.skills && <p className="mt-2 text-sm text-slate-700">Помага с: {v.skills}</p>}
                 {v.about && <p className="mt-2 text-sm text-slate-600">{v.about}</p>}
               </div>
             ))}
           </div>
         )}
-        <p className="mt-6 text-sm text-slate-500">
+        <p className="mt-6 text-sm text-slate-600">
           За връзка с доброволец пишете на нас — не публикуваме лични телефони от
           съображения за сигурност.
         </p>

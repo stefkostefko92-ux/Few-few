@@ -35,7 +35,7 @@ export default function TermsPage() {
       />
       <div className="container-content max-w-3xl py-10">
         <div className="prose-content text-slate-700">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             <strong>Последна актуализация: юни 2026 г.</strong>
           </p>
 
@@ -133,7 +133,9 @@ export default function TermsPage() {
             материали на проекта, както и в социалните мрежи. При всяко използване{" "}
             <strong>винаги</strong> се добавя кредит с името на посочения от Вас
             автор. Качвайте само снимки, върху които имате право да предоставите
-            това разрешение.
+            това разрешение. Ако на снимката се разпознават хора, с подаването
+            потвърждавате, че <strong>имате тяхното съгласие</strong> за
+            публикуването ѝ.
           </p>
 
           <h2>6. Сигнали до общината</h2>

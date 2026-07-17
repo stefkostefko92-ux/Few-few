@@ -85,7 +85,7 @@ export default function NewMemoryPage() {
 
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Споделяйте само спомени, които искате да са публични. Имате стара
             снимка? Споменете в текста и ще я добавим след връзка с вас.
           </p>

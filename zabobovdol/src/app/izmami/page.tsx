@@ -217,7 +217,7 @@ export default async function ScamProtectionPage() {
           <PrintButton variant="secondary" label="Принтирай тези съвети" />
         </div>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Имате съмнение за измама или искате да предупредите съседите? Обадете
           ни се на{" "}
           <a href={`tel:${SITE.contact.phone}`} className="font-medium text-brand-700 hover:underline">

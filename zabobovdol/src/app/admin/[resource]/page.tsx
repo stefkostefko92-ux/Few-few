@@ -137,7 +137,7 @@ export default async function ResourceListPage({
         </form>
       </div>
 
-      <div className="text-sm text-slate-500">
+      <div className="text-sm text-slate-600">
         {query ? (
           <>Намерени: <strong>{total}</strong> за „{q}“</>
         ) : (
@@ -161,7 +161,7 @@ export default async function ResourceListPage({
           <tbody className="divide-y divide-slate-100">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={cols.length + 1} className="p-6 text-center text-slate-500">
+                <td colSpan={cols.length + 1} className="p-6 text-center text-slate-600">
                   {query ? "Няма съвпадения за търсенето." : "Няма записи. Добавете първия."}
                 </td>
               </tr>
@@ -237,7 +237,7 @@ export default async function ResourceListPage({
           ) : (
             <span />
           )}
-          <span className="text-slate-500">страница {current} от {pages}</span>
+          <span className="text-slate-600">страница {current} от {pages}</span>
           {current < pages ? (
             <Link href={qs({ page: current + 1 })} className="btn-secondary">
               Следваща →

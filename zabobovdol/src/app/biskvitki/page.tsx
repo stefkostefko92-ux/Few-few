@@ -36,7 +36,7 @@ export default function CookiesPage() {
       />
       <div className="container-content max-w-3xl py-10">
         <div className="prose-content text-slate-700">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             <strong>Последна актуализация: юни 2026 г.</strong>
           </p>
 
@@ -105,6 +105,24 @@ export default function CookiesPage() {
                   <code>zbd_visitor_no</code>
                 </td>
                 <td>Пази поредния номер на посетителя за началния екран.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>zbd_chat_v2</code>
+                </td>
+                <td>
+                  Пази разговора с дигиталния помощник, докато браузърът е
+                  отворен (сесийно съхранение; изтрива се при затваряне).
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>zbd_splash_seen</code>
+                </td>
+                <td>
+                  Запомня, че началният екран е показан веднъж за сесията, за да
+                  не се показва при всяка страница.
+                </td>
               </tr>
               <tr>
                 <td>

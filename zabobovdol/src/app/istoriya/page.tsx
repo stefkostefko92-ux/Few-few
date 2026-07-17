@@ -192,7 +192,7 @@ export default function HistoryPage() {
               <strong>ОУ „Никола Йонков Вапцаров“</strong> и детската градина{" "}
               <strong>„Дружба“</strong>.
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               Контактите на училищата и читалищата ще намерите в раздела{" "}
               <Link href="/uslugi" className="text-brand-700 underline">
                 Услуги и телефони
@@ -234,7 +234,7 @@ export default function HistoryPage() {
               на община Бобов дол е <strong>адв. Елза Величкова</strong>.
               Общината обхваща град Бобов дол и редица съседни села.
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               Подробен списък на кметовете през годините не е общодостъпен онлайн.
               Ако разполагате с такива сведения, ще се радваме да допълним
               историята — пишете ни на страницата{" "}

@@ -78,14 +78,14 @@ export default async function HelpPage({
                   {labelFor(HELP_KIND_LABELS, c.kind)}
                 </span>
                 <h3 className="mt-2 text-lg font-semibold text-slate-900">{c.title}</h3>
-                {c.location && <div className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>}
+                {c.location && <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>}
                 <p className="mt-1 text-sm text-slate-600">{plainText(c.description, 120)}</p>
               </Link>
             ))}
           </div>
         )}
 
-        <p className="mt-8 max-w-3xl text-sm text-slate-500">
+        <p className="mt-8 max-w-3xl text-sm text-slate-600">
           Внимание: при дарения и помощ внимавайте с измами. Не превеждайте пари на
           непознати без проверка. Проектът не носи отговорност за договорки между
           хора.

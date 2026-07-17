@@ -125,7 +125,7 @@ export default async function NameDayPage({
                 <li key={`${d.month}-${d.day}`} className="flex gap-4 p-4">
                   <div className="w-16 shrink-0 text-center">
                     <div className="text-2xl font-bold text-brand-700">{d.day}</div>
-                    <div className="text-xs uppercase text-slate-500">{MONTHS[d.month - 1]}</div>
+                    <div className="text-xs uppercase text-slate-600">{MONTHS[d.month - 1]}</div>
                   </div>
                   <div className="min-w-0">
                     {d.feasts.length > 0 && (

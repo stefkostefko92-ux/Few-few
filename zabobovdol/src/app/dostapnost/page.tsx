@@ -316,7 +316,7 @@ export default function AccessibilityPage() {
           <PrintButton variant="secondary" label="Принтирай тази страница" />
         </div>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Имате затруднение със сайта или идея как да го направим по-достъпен?
           Пишете ни на{" "}
           <Link href="/kontakti" className="font-medium text-brand-700 underline">

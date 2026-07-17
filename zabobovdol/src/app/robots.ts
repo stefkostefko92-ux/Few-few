@@ -25,6 +25,7 @@ export default function robots(): MetadataRoute.Robots {
           "PerplexityBot",
           "Perplexity-User",
           "ClaudeBot",
+          "Claude-SearchBot",
           "Claude-Web",
           "anthropic-ai",
           "Google-Extended",

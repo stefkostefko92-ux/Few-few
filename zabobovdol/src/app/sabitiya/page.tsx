@@ -73,7 +73,7 @@ export default async function EventsPage() {
 
         {past.length > 0 && (
           <>
-            <h2 className="mb-4 mt-10 text-xl font-bold text-slate-500">
+            <h2 className="mb-4 mt-10 text-xl font-bold text-slate-600">
               Отминали
             </h2>
             <div className="grid gap-4 md:grid-cols-3">
@@ -83,7 +83,7 @@ export default async function EventsPage() {
                   href={`/sabitiya/${e.slug}`}
                   className="card opacity-75"
                 >
-                  <div className="text-sm text-slate-500">{fmt(e.startAt)}</div>
+                  <div className="text-sm text-slate-600">{fmt(e.startAt)}</div>
                   <h3 className="mt-1 font-semibold">{e.title}</h3>
                 </Link>
               ))}

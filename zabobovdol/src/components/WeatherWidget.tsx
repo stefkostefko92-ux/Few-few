@@ -63,7 +63,7 @@ export function WeatherWidget() {
           <span className="text-2xl font-bold text-slate-900">{Math.round(data.temp)}°</span>
           <span className="text-sm text-slate-600">{label}</span>
         </div>
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-slate-600">
           {SITE.geo.city}
           {typeof data.max === "number" && typeof data.min === "number" && (
             <>

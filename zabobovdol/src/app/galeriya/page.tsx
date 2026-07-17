@@ -64,7 +64,7 @@ export default async function GalleryPage() {
                   {p.title && (
                     <div className="font-medium text-slate-900">{p.title}</div>
                   )}
-                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
                     <Camera className="h-4 w-4 shrink-0" aria-hidden />
                     Снимка: {p.author || "неизвестен автор"}
                     {p.source && (
@@ -87,7 +87,7 @@ export default async function GalleryPage() {
           </div>
         )}
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Снимките са собственост на своите автори и се публикуват с тяхно съгласие.
           Ако смятате, че снимка нарушава права, пишете ни в{" "}
           <Link href="/kontakti" className="text-brand-700 underline">
