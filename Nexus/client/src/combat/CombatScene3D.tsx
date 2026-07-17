@@ -2370,6 +2370,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       if (composer) composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      // Пре-рамкиране при смяна на съотношението: обновяваме резинг
+      // дистанцията, за да останат бойците в кадър и на много широк
+      // (прод панел ~2.5:1) и на тесен/портретен viewport. Пипаме само
+      // когато не тече атака (иначе бихме се борили с камерния трак на
+      // хореографа); при idle това е доминиращият случай.
+      if (!choreoRef.current?.isPlaying()) {
+        camAnchorRef.current.z = framingZ(camera.aspect);
+      }
       // Invalidate the cached mount rect so the HUD projector re-reads it.
       mountRectDirty.flag = true;
     }
@@ -2737,7 +2745,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       idleHandheldRef.current.x = Math.sin(now * 0.00041) * 0.018 + Math.sin(now * 0.00073) * 0.010;
       idleHandheldRef.current.y = Math.sin(now * 0.00033) * 0.013 + Math.sin(now * 0.00067) * 0.008;
 
-      // Intro orbital sweep — overrides camera anchor for the first 1.4s.
+      // Intro push-in — за първите 1.4s дърпаме камерата фронтално навътре
+      // и надолу към резинг anchor-а. СТАРО поведение: широк страничен
+      // орбитален замах, който стартираше камерата на z≈2.9 отстрани и
+      // ниско → пропадаше вътре в скали/дървета при idle. НОВОТО е чисто
+      // фронтално (x=0), винаги рамкиращо и двамата бойци при всеки кадър от
+      // интрото и при всяко съотношение, така че никога не е в геометрия.
       const intro = introRef.current;
       let camTargetX = camAnchorRef.current.x;
       let camTargetY = camAnchorRef.current.y;
@@ -2747,14 +2760,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         intro.t += rawDt;
         const k = Math.min(1, intro.t / intro.dur);
         const eased = 1 - Math.pow(1 - k, 3);
-        const ang = (1 - eased) * Math.PI * 0.6 + Math.PI / 2; // 162° → 90° (front)
-        const radius = 9.5 - eased * 3.0;
-        camTargetX = Math.cos(ang) * radius * 0.4;
-        camTargetY = 4.5 - eased * 2.3;
-        camTargetZ = Math.sin(ang) * radius;
-        camTargetFov = 52 - eased * 6;
+        camTargetX = 0;
+        camTargetY = 3.2 - eased * (3.2 - camAnchorRef.current.y);   // 3.2 → anchor.y
+        camTargetZ = (camAnchorRef.current.z + 2.5) - eased * 2.5;   // anchor.z+2.5 → anchor.z
+        camTargetFov = 54 - eased * (54 - camAnchorRef.current.fov); // 54 → anchor.fov
         if (k >= 1) intro.active = false;
       }
+      // Предпазен clamp на камерната ЦЕЛ (point B): бойците са на z=0, крака
+      // на y=0; пропсовете/god-ray-ите са зад тях (z<0). Никога не пускаме
+      // целта под земята, зад бойците или прекалено настрани — така нито
+      // атака, нито intro може да вкара камерата в терен/пропс или да
+      // изхвърли бойците извън кадър.
+      camTargetX = Math.max(-4.5, Math.min(4.5, camTargetX));
+      camTargetY = Math.max(0.8, Math.min(6.0, camTargetY));
+      camTargetZ = Math.max(4.0, Math.min(12.0, camTargetZ));
 
       const cam = cameraRef.current!;
       const s = shakeRef.current;
@@ -2775,6 +2794,11 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.position.z += (camTargetZ - cam.position.z) * Math.min(1, rawDt * 4);
       // Dolly-zoom FOV lerp
       cam.fov += (camTargetFov - cam.fov) * Math.min(1, rawDt * 5);
+      // Финален твърд clamp на позицията: дори натрупан shake/handheld не
+      // може да вкара камерата под земята или зад бойците (в god-ray-ите
+      // и пропсовете зад тях).
+      cam.position.y = Math.max(0.6, cam.position.y);
+      cam.position.z = Math.max(3.5, cam.position.z);
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
       (window as any).__camDbg = { p: [cam.position.x, cam.position.y, cam.position.z], fov: cam.fov, anchor: { ...camAnchorRef.current }, introActive: introRef.current.active, playing: choreoRef.current?.isPlaying(), aspect: cam.aspect, hero: heroRigRef.current ? [heroRigRef.current.position.x, heroRigRef.current.position.y, heroRigRef.current.position.z] : null, foe: foeRigRef.current ? [foeRigRef.current.position.x, foeRigRef.current.position.y, foeRigRef.current.position.z] : null };
