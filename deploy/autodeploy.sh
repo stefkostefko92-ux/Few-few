@@ -515,6 +515,11 @@ SMTP_USER=info@eternaltouch.it
 SMTP_PASS=CHANGE_ME
 SMTP_FROM=Eternal Touch <info@eternaltouch.it>
 NOTIFY_TO=info@eternaltouch.it
+# Register.it представя *.securemail.pro / smtp.webnode.com cert на
+# authsmtp.register.it (не за connect хоста) — задай servername, за да остане
+# TLS валидацията вкл. (rejectUnauthorized). Без този ред първото пращане след
+# попълване на SMTP_PASS гърми с cert-mismatch. Стойността е от .env.example.
+SMTP_TLS_SERVERNAME=smtp.webnode.com
 EOF
     chmod 600 "$d/.env"
     warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
