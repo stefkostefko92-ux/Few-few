@@ -47,7 +47,7 @@
     "ctaButton": "Kom gratis i gang på 60 sekunder",
     "faqTitle": "Ofte stillede spørgsmål",
     "faq1q": "Hvad er Linketto?",
-    "faq1a": "Linketto er en link-in-bio-side: ét link, der samler alle dine links, produkter og kontakter. Det unikke: din side taler hver besøgendes sprog — byg den én gang, og den vises på 6+ sprog.",
+    "faq1a": "Linketto er en link-in-bio-side: ét link, der samler alle dine links, produkter og kontakter. Det unikke: din side taler hver besøgendes sprog — byg den én gang, og den vises på 24 EU-sprog plus 3 dialekter.",
     "faq2q": "Hvordan er Linketto bedre end Linktree?",
     "faq2a": "Fire ting: din profil er flersproget (Linktree er kun på engelsk), den er hostet i EU med GDPR som standard, statistikken er uden cookies og uden personoplysninger, og salgsgebyrerne er 8/4/0/0 % pr. plan — mod 12 % og 9 % hos Linktree.",
     "faq3q": "Hvad koster Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Vilkår",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Administrer cookies"
+    "manageConsent": "Administrer cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — flersproget link in bio: alle dine links, på alle sprog",
@@ -459,5 +460,34 @@
     "accept": "Accepter",
     "decline": "Afvis",
     "moreInfo": "Læs mere"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — den ærlige sammenligning",
+    "metaDescription": "Gebyrer 8/4/0 % mod 12/9 %, 24 EU-sprog mod kun engelsk, EU-hosting med GDPR og statistik uden cookies. Se tabellen.",
+    "title": "Linketto vs Linktree",
+    "intro": "Begge tjenester løser den samme opgave — én side til alle dine links. Forskellene handler om penge, sprog og privatliv. Her er de, uden omsvøb.",
+    "defTitle": "Hvad er en link-in-bio-side?",
+    "defBody": "En link-in-bio-side er en enkelt offentlig webside, der samler alle dine vigtige links, produkter og kontakter ét sted, tilgængelig via én enkelt adresse. Idéen stammer fra de sociale netværk, der kun tillader ét link i profilen: I stedet for at vælge mellem din butik, din video og dit nyhedsbrev sætter du ét link til siden, og den fører til det hele. Moderne udgaver tilføjer salg af digitale produkter, besøgsstatistik og personligt design. Det, der gør Linketto anderledes: din side vises automatisk på hver besøgendes sprog — 24 EU-sprog plus 3 italienske dialekter — uden ekstra arbejde fra din side, og statistikken kører uden cookies og uden persondata. Byg den én gang; den taler til hele verden.",
+    "tableTitle": "Sammenligning række for række",
+    "thFeature": "Kriterium",
+    "rowFee": "Salgsgebyr",
+    "rowFeeL": "8 % Free · 4 % Pro · 0 % Business og Founder",
+    "rowFeeLt": "12 % Free · 9 % på betalte planer",
+    "rowLang": "Profilsprog",
+    "rowLangL": "24 EU-sprog + 3 dialekter, automatisk efter den besøgende",
+    "rowLangLt": "Kun engelsk",
+    "rowHost": "Hosting og data",
+    "rowHostL": "EU-hosting, GDPR som standard",
+    "rowHostLt": "Hosting i USA",
+    "rowAnalytics": "Statistik",
+    "rowAnalyticsL": "Ingen cookies, ingen IP-adresser, ingen persondata",
+    "rowAnalyticsLt": "Klassisk cookiebaseret sporing",
+    "rowModeration": "Moderation",
+    "rowModerationL": "Gennemsigtig, med varsel og klageret; ingen offentlig „BANNED“-banner",
+    "rowModerationLt": "Offentlig banner på blokerede profiler",
+    "honestTitle": "Hvornår er Linktree det bedre valg?",
+    "honestBody": "Ærligt talt: Hvis du er afhængig af deres lange liste af færdige integrationer eller vil have den mest udbredte platform, er Linktree et fornuftigt valg med en lang historik. Linketto vinder, når dit publikum taler mere end ét sprog, når du sælger, og hvert gebyrpoint tæller, og når dine besøgendes privatliv er et løfte og ikke en fodnote.",
+    "ctaTitle": "Prøv forskellen med ét link.",
+    "ctaButton": "Opret din Linketto gratis"
   }
 }
