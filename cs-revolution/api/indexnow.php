@@ -105,37 +105,60 @@ if ($action === 'submit') {
 if ($action === 'bulk') {
     cs_require_admin();
 
-    // Discover every child sitemap from the index (auto-covers all clusters,
-    // present and future) instead of a hardcoded list.
+    // Read sitemaps straight from the local webroot (api/ lives in webroot/api/).
+    // This avoids a self-HTTP round-trip that can fail on loopback/SSL/DNS and
+    // is the #1 cause of "Submit All" errors. HTTP fetch is only a fallback.
+    $webroot = realpath(__DIR__ . '/..') ?: dirname(__DIR__);
+    $readLocal = function ($file) use ($webroot) {
+        $p = $webroot . '/' . ltrim($file, '/');
+        return (is_file($p) && is_readable($p)) ? (file_get_contents($p) ?: '') : '';
+    };
     $fetch = function ($url) {
         $ch = curl_init();
         curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => true]);
         $out = curl_exec($ch); curl_close($ch);
         return $out ?: '';
     };
-    $sitemapUrls = [];
-    $idx = $fetch('https://' . HOST . '/sitemap.xml');
-    if ($idx && preg_match_all('#<loc>([^<]+\.xml)</loc>#', $idx, $mi)) {
-        $sitemapUrls = $mi[1];
+
+    // 1. Read the sitemap index to discover every child sitemap file name.
+    $childFiles = [];
+    $idx = $readLocal('sitemap.xml');
+    if (!$idx) $idx = $fetch('https://' . HOST . '/sitemap.xml');
+    if ($idx && preg_match_all('#<loc>[^<]*/([^/<]+\.xml)</loc>#', $idx, $mi)) {
+        $childFiles = $mi[1];
     }
-    if (empty($sitemapUrls)) { // fallback if the index couldn't be read
-        foreach (['pages', 'blog', 'geo', 'comparisons', 'glossary', 'industries', 'servicecity', 'tools'] as $n) {
-            $sitemapUrls[] = 'https://' . HOST . '/sitemap-' . $n . '.xml';
+    if (empty($childFiles)) { // fallback: known cluster file names
+        foreach (['pages', 'blog', 'geo', 'comparisons', 'glossary', 'industries', 'servicecity', 'tools', 'casestudies', 'images'] as $n) {
+            $childFiles[] = 'sitemap-' . $n . '.xml';
         }
     }
 
+    // 2. Collect every <loc> that points at a real page (skip nested .xml links).
     $allUrls = [];
-    foreach ($sitemapUrls as $smUrl) {
-        $xml = $fetch($smUrl);
+    foreach (array_unique($childFiles) as $file) {
+        $xml = $readLocal($file);
+        if (!$xml) $xml = $fetch('https://' . HOST . '/' . $file);
         if ($xml && preg_match_all('#<loc>([^<]+)</loc>#', $xml, $m)) {
-            $allUrls = array_merge($allUrls, $m[1]);
+            foreach ($m[1] as $u) {
+                if (substr($u, -4) !== '.xml') $allUrls[] = html_entity_decode($u, ENT_QUOTES);
+            }
         }
     }
 
     $allUrls = array_values(array_unique($allUrls));
-    if (empty($allUrls)) jsonOut(['ok' => false, 'error' => 'No URLs found in sitemaps'], 500);
+    if (empty($allUrls)) {
+        jsonOut(['ok' => false, 'error' => 'No URLs found. Checked webroot: ' . $webroot . ' — is sitemap.xml deployed there?'], 500);
+    }
 
-    jsonOut(submitUrls($allUrls));
+    $res = submitUrls($allUrls);
+    // Surface a hard failure when every search engine rejected the batch.
+    $anyOk = false;
+    foreach ($res['endpoints'] ?? [] as $e) { if (!empty($e['success'])) $anyOk = true; }
+    if (!$anyOk) {
+        $res['ok'] = false;
+        $res['error'] = 'All IndexNow endpoints rejected the submission (check key file at ' . KEY_LOCATION . ').';
+    }
+    jsonOut($res);
 }
 
 // === STATUS: get submission history ===

@@ -85,17 +85,19 @@ a{color:#00e5ff;text-decoration:none}
 .scan-overlay::before{content:"";position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);box-shadow:0 0 20px rgba(0,229,255,0.8);animation:scan-line 2s linear infinite}
 
 /* ═══ NAVBAR (matches site) ═══ */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 20px;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,229,255,0.1)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 20px;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(245,245,240,.08)}
 nav .row{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
 nav .logo{display:flex;align-items:center;gap:10px;color:#ccc;text-decoration:none}
 nav .logo img{height:24px}
-nav .nav-links{display:flex;gap:18px;align-items:center}
-nav .nav-links a{color:#ccc;font-size:10px;letter-spacing:.2em;text-transform:uppercase}
-nav .nav-links a:hover{color:#00e5ff}
-nav .nav-links a.active{color:#00e5ff;border-bottom:1px solid rgba(0,229,255,.4);padding-bottom:2px}
-nav a.back{color:#999;text-decoration:none;font-size:10px;letter-spacing:.2em}
-nav a.back:hover{color:#00e5ff}
-@media(max-width:760px){nav .nav-links a:not(.active){display:none}}
+nav .nav-links{display:flex;gap:16px;align-items:center}
+nav .nav-links>a{color:#C9D1D6;font-size:9px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s ease}
+nav .nav-links>a:hover{color:#00e5ff}
+nav .nav-links a.pill{color:#00e5ff;border:1px solid rgba(0,229,255,.35);padding:5px 10px}
+nav .nav-links a.pill:hover{background:rgba(0,229,255,.08)}
+nav .nav-lang{display:inline-flex;gap:5px;align-items:center}
+nav .nav-lang a{font-size:9px;letter-spacing:.12em;padding:3px 6px;color:#7C868D;border:1px solid rgba(245,245,240,.10)}
+nav .nav-lang a.on{color:#00e5ff;border-color:rgba(0,229,255,.4)}
+@media(max-width:760px){nav .nav-links>a:not(.active){display:none}}
 
 /* ═══ HERO ═══ */
 .hero{padding:120px 24px 48px;text-align:center;position:relative;border-bottom:1px solid rgba(0,229,255,.08)}
@@ -263,11 +265,13 @@ footer a:hover{color:#00e5ff}
   <div class="row">
     <a href="/bg/" class="logo"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"><span style="font-family:'Inter Tight',sans-serif;font-weight:900;letter-spacing:-.02em;color:#f5f5f0;font-size:14px">CARBON STEALTH</span></a>
     <div class="nav-links">
-      <a href="/bg/uslugi/web-razrabotka/">Услуги</a>
-      <a href="/bg/portfolio/">Портфолио</a>
-      <a href="/bg/kontakti/">Контакти</a>
-      <a href="/bg/test/" class="active">Анализ</a>
-      <a href="/bg/" class="back">&larr; Начало</a>
+      <a href="/bg/za-nas/">ЗА НАС</a>
+      <a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a>
+      <a href="/bg/portfolio/">ПОРТФОЛИО</a>
+      <a href="/bg/">REVERSE LAB</a>
+      <a href="/bg/kontakti/">КОНТАКТИ</a>
+      <a href="/bg/test/" class="active pill">АНАЛИЗ НА САЙТ</a>
+      <span class="nav-lang"><a href="/test/">IT</a><a href="/en/test/">EN</a><a href="/bg/test/" class="on">BG</a></span>
     </div>
   </div>
 </nav>
