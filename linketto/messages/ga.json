@@ -47,7 +47,7 @@
     "ctaButton": "Tosaigh saor in aisce i 60 soicind",
     "faqTitle": "Ceisteanna coitianta",
     "faq1q": "Cad é Linketto?",
-    "faq1a": "Is leathanach „link in bio“ é Linketto: nasc amháin a bhailíonn do naisc, do tháirgí agus do theagmhálacha go léir. Is é an rud uathúil: labhraíonn do leathanach teanga gach cuairteora — déan uair amháin é agus taispeántar é i 6+ teanga.",
+    "faq1a": "Is leathanach „link in bio“ é Linketto: nasc amháin a bhailíonn do naisc, do tháirgí agus do theagmhálacha go léir. Is é an rud uathúil: labhraíonn do leathanach teanga gach cuairteora — déan uair amháin é agus taispeántar é i 24 teanga AE móide 3 chanúint.",
     "faq2q": "Cén chaoi a bhfuil Linketto níos fearr ná Linktree?",
     "faq2a": "Ceithre rud: tá do phróifíl il-teangach (níl Linktree ach i mBéarla), tá sé óstáilte san AE le GDPR mar réamhshocrú, tá an anailísíocht saor ó fhianáin gan sonraí pearsanta, agus is 8/4/0/0% de réir plean iad na coimisiúin díolacháin — i gcoinne 12% agus 9% ag Linktree.",
     "faq3q": "Cé mhéad a chosnaíonn Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Téarmaí",
     "contact": "info@carbonstealth.eu",
     "cookies": "Fianáin",
-    "manageConsent": "Bainistigh fianáin"
+    "manageConsent": "Bainistigh fianáin",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio il-teangach: do naisc go léir, i ngach teanga",
@@ -459,5 +460,34 @@
     "accept": "Glac leis",
     "decline": "Diúltaigh",
     "moreInfo": "Tuilleadh eolais"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — an chomparáid ionraic",
+    "metaDescription": "Coimisiúin 8/4/0% i gcoinne 12/9%, 24 teanga AE i gcoinne Béarla amháin, óstáil san AE le GDPR agus anailísíocht gan fianáin. Féach an tábla.",
+    "title": "Linketto vs Linktree",
+    "intro": "Réitíonn an dá sheirbhís an tasc céanna — leathanach amháin do do naisc go léir. Baineann na difríochtaí le hairgead, teangacha agus príobháideachas. Seo iad, gan mhaisiú.",
+    "defTitle": "Cad is leathanach „link in bio“ ann?",
+    "defBody": "Is leathanach gréasáin poiblí amháin é leathanach „link in bio“ a bhailíonn do naisc thábhachtacha, do tháirgí agus do theagmhálacha go léir in aon áit amháin, insroichte trí sheoladh amháin. Tagann an smaoineamh ó na líonraí sóisialta nach gceadaíonn ach nasc amháin sa phróifíl: in ionad rogha a dhéanamh idir do shiopa, do fhíseán agus do nuachtlitir, cuireann tú nasc amháin chuig an leathanach, agus treoraíonn sé chuig gach rud. Cuireann na leaganacha nua-aimseartha díol táirgí digiteacha, staitisticí cuairteanna agus dearadh pearsanta leis. An rud a fhágann Linketto ar leith: taispeántar do leathanach go huathoibríoch i dteanga gach cuairteora — 24 teanga AE móide 3 chanúint Iodálacha — gan aon obair bhreise uait, agus oibríonn an anailísíocht gan fianáin agus gan sonraí pearsanta. Cruthaigh uair amháin é; labhraíonn sé leis an domhan ar fad.",
+    "tableTitle": "Comparáid líne ar líne",
+    "thFeature": "Critéar",
+    "rowFee": "Coimisiún ar dhíolacháin",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business agus Founder",
+    "rowFeeLt": "12% Free · 9% ar na pleananna íoctha",
+    "rowLang": "Teangacha na próifíle",
+    "rowLangL": "24 teanga AE + 3 chanúint, go huathoibríoch de réir an chuairteora",
+    "rowLangLt": "Béarla amháin",
+    "rowHost": "Óstáil agus sonraí",
+    "rowHostL": "Óstáil san AE, GDPR de réir réamhshocraithe",
+    "rowHostLt": "Óstáil sna Stáit Aontaithe",
+    "rowAnalytics": "Anailísíocht",
+    "rowAnalyticsL": "Gan fianáin, gan seoltaí IP, gan sonraí pearsanta",
+    "rowAnalyticsLt": "Rianú clasaiceach le fianáin",
+    "rowModeration": "Modhnóireacht",
+    "rowModerationL": "Trédhearcach, le réamhfhógra agus achomharc; gan meirge poiblí „COISCTHE“",
+    "rowModerationLt": "Meirge poiblí ar phróifílí coiscthe",
+    "honestTitle": "Cathain is é Linktree an rogha níos fearr?",
+    "honestBody": "Go hionraic: má bhíonn tú ag brath ar a liosta fada comhtháthuithe réamhdhéanta nó más mian leat an t-ardán is coitianta, is rogha réasúnta é Linktree le stair fhada. Buann Linketto nuair a labhraíonn do lucht féachana níos mó ná teanga amháin, nuair a dhíolann tú agus nuair a chuntasann gach pointe coimisiúin, agus nuair is gealltanas seachas fonóta é príobháideachas do chuairteoirí.",
+    "ctaTitle": "Bain triail as an difríocht le nasc amháin.",
+    "ctaButton": "Cruthaigh do Linketto saor in aisce"
   }
 }

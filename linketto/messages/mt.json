@@ -47,7 +47,7 @@
     "ctaButton": "Ibda b'xejn f'60 sekonda",
     "faqTitle": "Mistoqsijiet frekwenti",
     "faq1q": "X'inhu Linketto?",
-    "faq1a": "Linketto huwa paġna „link in bio“: link wieħed li jiġbor il-links, il-prodotti u l-kuntatti tiegħek kollha. Il-parti unika: il-paġna tiegħek titkellem il-lingwa ta' kull viżitatur — ibnieha darba u tidher b'6+ lingwi.",
+    "faq1a": "Linketto huwa paġna „link in bio“: link wieħed li jiġbor il-links, il-prodotti u l-kuntatti tiegħek kollha. Il-parti unika: il-paġna tiegħek titkellem il-lingwa ta' kull viżitatur — ibnieha darba u tidher bi 24 lingwa tal-UE flimkien ma' 3 djaletti.",
     "faq2q": "Kif Linketto huwa aħjar minn Linktree?",
     "faq2a": "Erba' affarijiet: il-profil tiegħek huwa multilingwi (Linktree huwa biss bl-Ingliż), huwa ospitat fl-UE b'GDPR awtomatiku, l-analitika hija bla cookies u mingħajr dejta personali, u l-kummissjonijiet fuq il-bejgħ huma 8/4/0/0% skont il-pjan — kontra 12% u 9% ma' Linktree.",
     "faq3q": "Kemm jiswa Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Termini",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Immaniġġja l-cookies"
+    "manageConsent": "Immaniġġja l-cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingwi: il-links tiegħek kollha, b'kull lingwa",
@@ -459,5 +460,34 @@
     "accept": "Naċċetta",
     "decline": "Nirrifjuta",
     "moreInfo": "Kun af aktar"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — il-paragun onest",
+    "metaDescription": "Kummissjonijiet 8/4/0% kontra 12/9%, 24 lingwa tal-UE kontra bl-Ingliż biss, ospitar fl-UE bil-GDPR u analitika bla cookies. Ara t-tabella.",
+    "title": "Linketto vs Linktree",
+    "intro": "Iż-żewġ servizzi jsolvu l-istess kompitu — paġna waħda għal-links kollha tiegħek. Id-differenzi huma l-flus, il-lingwi u l-privatezza. Hawn huma, mingħajr tidwir.",
+    "defTitle": "X'inhi paġna „link in bio“?",
+    "defBody": "Paġna „link in bio“ hija paġna web pubblika waħda li tiġbor il-links importanti, il-prodotti u l-kuntatti kollha tiegħek f'post wieħed, aċċessibbli permezz ta' indirizz wieħed biss. L-idea ġejja mill-midja soċjali li tippermetti link wieħed biss fil-profil: minflok tagħżel bejn il-ħanut, il-video u n-newsletter tiegħek, tqiegħed link wieħed lejn il-paġna, u din twassal għal kollox. Il-verżjonijiet moderni jżidu l-bejgħ ta' prodotti diġitali, statistika taż-żjarat u disinn personali. Dak li jiddistingwi lil Linketto: il-paġna tiegħek tidher awtomatikament fil-lingwa ta' kull viżitatur — 24 lingwa tal-UE flimkien ma' 3 djaletti Taljani — mingħajr xogħol żejjed, u l-analitika taħdem mingħajr cookies u mingħajr dejta personali. Ibnieha darba; titkellem mad-dinja kollha.",
+    "tableTitle": "Paragun ringiela b'ringiela",
+    "thFeature": "Kriterju",
+    "rowFee": "Kummissjoni fuq il-bejgħ",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business u Founder",
+    "rowFeeLt": "12% Free · 9% fuq il-pjanijiet imħallsa",
+    "rowLang": "Lingwi tal-profil",
+    "rowLangL": "24 lingwa tal-UE + 3 djaletti, awtomatikament skont il-viżitatur",
+    "rowLangLt": "Bl-Ingliż biss",
+    "rowHost": "Ospitar u dejta",
+    "rowHostL": "Ospitar fl-UE, GDPR awtomatiku",
+    "rowHostLt": "Ospitar fl-Istati Uniti",
+    "rowAnalytics": "Analitika",
+    "rowAnalyticsL": "Bla cookies, bla indirizzi IP, bla dejta personali",
+    "rowAnalyticsLt": "Traċċar klassiku bil-cookies",
+    "rowModeration": "Moderazzjoni",
+    "rowModerationL": "Trasparenti, b'avviż minn qabel u dritt ta' appell; bl-ebda banner pubbliku „IPPROJBIT“",
+    "rowModerationLt": "Banner pubbliku fuq profili mblukkati",
+    "honestTitle": "Meta Linktree hija l-aħjar għażla?",
+    "honestBody": "Onestament: jekk tiddependi fuq il-lista twila tagħhom ta' integrazzjonijiet lesti jew trid l-aktar pjattaforma mifruxa, Linktree hija għażla raġonevoli b'storja twila. Linketto tirbaħ meta l-udjenza tiegħek titkellem aktar minn lingwa waħda, meta tbigħ u kull punt ta' kummissjoni jgħodd, u meta l-privatezza tal-viżitaturi tiegħek tkun wegħda u mhux nota f'qiegħ il-paġna.",
+    "ctaTitle": "Ipprova d-differenza b'link wieħed.",
+    "ctaButton": "Oħloq il-Linketto tiegħek b'xejn"
   }
 }
