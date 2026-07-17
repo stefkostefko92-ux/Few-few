@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// tools/agents/oversee.mjs — „президентският" надзор над агентския екип (v1.0).
+// tools/agents/oversee.mjs — „президентският" надзор над агентския екип (v2.0).
 //
 // „Ръката" на AI-джията като водещ/координатор: следи здравето на целия екип и
 // докладва. НЕ пипа памет (курацията е на `tools/memory/curate.mjs`, човек решава
@@ -8,21 +8,27 @@
 // ПРЕДУПРЕЖДЕНИЕ (качествен сигнал), не твърд блокер — не влияе на изходния код.
 //
 // Употреба:
-//   node tools/agents/oversee.mjs           # четим отчет
-//   node tools/agents/oversee.mjs --json     # машинен изход (за табло/CI)
+//   node tools/agents/oversee.mjs                    # четим отчет
+//   node tools/agents/oversee.mjs --json             # машинен изход (за табло/CI)
+//   node tools/agents/oversee.mjs --snapshot [път]   # запиши моментна снимка (метрики) за тренд
+//   node tools/agents/oversee.mjs --baseline <път>   # сравни с предишна снимка → регресии (тренд)
 //
 // Проверява за всеки агент:
 //  - цялост: дефиниция (.claude/agents/<id>.md) ↔ памет (_memory/<id>.md) ↔
 //    agents.json запис ↔ покритие в двата hook matcher-а (.claude/settings.json);
-//  - здраве на паметта: брой проверени поуки, карантина, версия (agents.json vs поуки),
-//    проверени поуки БЕЗ реален източник, почти-дубли (Jaccard ≥0.82), застарели
-//    време-чувствителни поуки;
-//  - екип: FALLBACK в index.html === agents.json; наличие на доктрината _memory/SECURITY.md;
-//    сираци (запис без файл / файл без запис).
+//  - здраве на паметта: брой проверени поуки, карантина (+ аларма ако надвишава проверените),
+//    версия, проверени поуки БЕЗ реален източник (с знаменател), почти-дубли (Jaccard ≥0.82),
+//    застарели време-чувствителни поуки;
+//  - екип: FALLBACK в index.html === agents.json; наличие на доктрината _memory/SECURITY.md; сираци;
+//  - тренд (по избор): регресия спрямо предишна снимка — спад на поуки, ръст на карантина, нов сирак.
 
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  STALE_DAYS, MERGE_THRESHOLD, TIME_SENSITIVE,
+  jaccard, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
+} from "./oversee-lib.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -30,80 +36,25 @@ const MEM_DIR = join(AGENTS_DIR, "_memory");
 const JSON_PATH = join(ROOT, "agents-dashboard", "agents.json");
 const HTML_PATH = join(ROOT, "agents-dashboard", "index.html");
 const SETTINGS_PATH = join(ROOT, ".claude", "settings.json");
+const DEFAULT_SNAP = join(MEM_DIR, ".oversee-snapshot.json");
 
-const JSON_OUT = process.argv.includes("--json");
-const STALE_DAYS = 45;
-const MERGE_THRESHOLD = 0.82;
-const TIME_SENSITIVE = /верси|latest|текущ|\bv?\d+\.\d+|\b20\d\d\b|API \d|stable|release/i;
+const argv = process.argv.slice(2);
+const JSON_OUT = argv.includes("--json");
+// стойност на флаг с по избор аргумент: път след флага (ако не е нов флаг), иначе true, иначе null
+const flagVal = (name) => { const i = argv.indexOf(name); return i < 0 ? null : (argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : true); };
+const snapshotArg = flagVal("--snapshot");
+const baselineArg = flagVal("--baseline");
+
+const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
+const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
 
 // „Не-агентски" файлове в директориите
 const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
 const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md"]);
 
-const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
-const norm = (s) =>
-  s.toLowerCase().replace(/\*\*/g, "").replace(/[`'"„“”]/g, "").replace(/_\(.*?\)_/g, "")
-    .replace(/\s+/g, " ").replace(/[.;,]+$/, "").trim();
-const toks = (s) => new Set(norm(s).split(" ").filter((w) => w.length > 3));
-const jaccard = (a, b) => { const A = toks(a), B = toks(b); if (!A.size || !B.size) return 0; let i = 0; for (const x of A) if (B.has(x)) i++; return i / (A.size + B.size - i); };
-const lessonDate = (b) => { const m = b.match(/\*\*(\d{4}-\d{2}-\d{2})/); return m ? m[1] : null; };
-// Забележка: детерминистично (без Date.now в тестовете); подава се „днес" отвън по желание.
-const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
-const daysSince = (d) => (Date.parse(TODAY + "T00:00:00Z") - Date.parse(d + "T00:00:00Z")) / 86400000;
-
-// Има ли поуката цитиран източник? Каноничният формат е `_(scope; verified; source)_` —
-// източникът е ПОСЛЕДНИЯТ „;"-сегмент. Броим за източник всичко непразно и смислено (URL,
-// file:line, член от закон, ИЛИ книга/автор като „Fowler, Refactoring 2nd ed."). Липсва само
-// ако няма tail изобщо, или последният сегмент е празен / е просто „verified".
-const tailHasSource = (tail) => {
-  if (!tail) return false;
-  const parts = String(tail).split(";").map((s) => s.trim()).filter(Boolean);
-  if (parts.length < 2) return false; // очакваме поне scope + източник
-  const src = parts[parts.length - 1].replace(/^["'„“”]+|["'„“”]+$/g, "").trim();
-  return src.length > 3 && !/^(un)?verified$/i.test(src);
-};
-// Приема ЦЕЛИЯ текст на поуката (блок). Освен каноничния trailing `_(…; source)_`, признава и
-// легитимните формати, които агентите ползват на практика: inline `(Източник: …)` / `(Source: …)`,
-// гол URL (`https://…`), собствено-кодово потекло (`file:line`, `tools/…`, `src/…`, `.mjs`/`.ts`/
-// `.js`). Всичките са реален източник — не са „измислени". Само поука БЕЗ нито едно от тях е „без източник".
-const hasSource = (block) => {
-  if (!block) return false;
-  const m = String(block).match(/_\((.*?)\)_\s*$/);
-  if (tailHasSource(m && m[1])) return true;
-  if (/\((?:Източник|Source)\s*:\s*[^)]{4,}\)/i.test(block)) return true; // inline цитат
-  if (/https?:\/\/\S{4,}/.test(block)) return true;                       // гол URL
-  if (/\b[\w./-]+\.(?:mjs|ts|tsx|js|jsx|json|md|prisma|ejs|html)\b/i.test(block)) return true; // репо файл
-  if (/\b(?:tools|src|prisma|app|deploy)\/[\w./-]+/.test(block)) return true; // репо път
-  if (/\b[\w./-]+:\d+\b/.test(block)) return true;                        // file:line
-  return false;
-};
-
-// Всяка поука е БЛОК: реда „- …" + всички следващи continuation редове (заглъбен текст,
-// не нов bullet, не заглавие, не празен ред). Източникът `_(…)_` често стои на continuation
-// ред — затова четем целия блок, не само първия ред (иначе многоредова поука се брои
-// фалшиво „без източник", а Jaccard сравнява само първите редове).
-function sectionBullets(md, heading) {
-  const lines = md.split("\n");
-  const start = lines.findIndex((l) => new RegExp(`^##\\s*${heading}`).test(l));
-  if (start === -1) return [];
-  const out = [];
-  let cur = null;
-  for (let i = start + 1; i < lines.length; i++) {
-    const l = lines[i];
-    if (/^##\s/.test(l)) break;
-    if (l.trim().startsWith("- ")) { if (cur !== null) out.push(cur); cur = l.trim(); }
-    else if (cur !== null) {
-      if (l.trim() === "") { out.push(cur); cur = null; }
-      else cur += " " + l.trim();
-    }
-  }
-  if (cur !== null) out.push(cur);
-  return out;
-}
-
 // --- Събери източниците на истина ---
 const defIds = new Set(readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !NOT_AGENT_DEF.has(f)).map((f) => f.replace(/\.md$/, "")));
-const memIds = new Set(readdirSync(MEM_DIR).filter((f) => f.endsWith(".md") && !NOT_AGENT_MEM.has(f)).map((f) => f.replace(/\.md$/, "")));
+const memIds = new Set(readdirSync(MEM_DIR).filter((f) => f.endsWith(".md") && !NOT_AGENT_MEM.has(f) && !f.startsWith(".")).map((f) => f.replace(/\.md$/, "")));
 const aj = JSON.parse(readFileSync(JSON_PATH, "utf8"));
 const jsonIds = new Set(aj.agents.map((a) => a.id));
 
@@ -123,16 +74,12 @@ try {
 
 const securityDoctrine = existsSync(join(MEM_DIR, "SECURITY.md"));
 
-// FALLBACK === agents.json ?
+// FALLBACK === agents.json ?  (балансираният парсер е изнесен в oversee-lib за тестваемост)
 let fallbackOk = null;
 const html = read(HTML_PATH);
 if (html) {
-  const M = "const FALLBACK = {", s = html.indexOf(M);
-  if (s !== -1) {
-    let i = s + M.length - 1, d = 0, inS = false, e = false, end = -1;
-    for (; i < html.length; i++) { const c = html[i]; if (inS) { if (e) e = false; else if (c === "\\") e = true; else if (c === '"') inS = false; } else { if (c === '"') inS = true; else if (c === "{") d++; else if (c === "}") { d--; if (d === 0) { end = i; break; } } } }
-    try { fallbackOk = JSON.stringify(JSON.parse(html.slice(s + M.length - 1, end + 1))) === JSON.stringify(aj); } catch { fallbackOk = false; }
-  }
+  const block = extractBalancedObject(html, "const FALLBACK = {");
+  if (block !== null) { try { fallbackOk = JSON.stringify(JSON.parse(block)) === JSON.stringify(aj); } catch { fallbackOk = false; } }
 }
 
 const allIds = [...new Set([...defIds, ...memIds, ...jsonIds])].sort();
@@ -154,16 +101,22 @@ for (const id of allIds) {
     r.lessons = verified.length;
     r.quarantine = quarantine.length;
     // проверени поуки без цитиран източник (качествен сигнал, не структурен срив → предупреждение)
+    // — със ЗНАМЕНАТЕЛ: „3/100" значи различно от „3/5" (без база абсолютното число подвежда).
     const unsourced = verified.filter((b) => !hasSource(b));
-    if (unsourced.length) r.warn.push(`${unsourced.length} проверени поуки без цитиран източник (закон „източник или нищо")`);
+    r.unsourced = unsourced.length;
+    if (unsourced.length) r.warn.push(`${unsourced.length}/${verified.length} проверени поуки без цитиран източник (закон „източник или нищо")`);
     // почти-дубли
     let dup = 0;
     for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccard(verified[i], verified[j]) >= MERGE_THRESHOLD) dup++;
+    r.dups = dup;
     if (dup) r.warn.push(`${dup} почти-дубли (Jaccard ≥${MERGE_THRESHOLD}) → curate --merge-dups`);
     // застарели
     let stale = 0;
-    for (const b of verified) { const d = lessonDate(b); if (d && TIME_SENSITIVE.test(b) && daysSince(d) > STALE_DAYS) stale++; }
-    if (stale) r.warn.push(`${stale} застарели време-чувствителни поуки (>${STALE_DAYS}д)`);
+    for (const b of verified) { const d = lessonDate(b); if (d && TIME_SENSITIVE.test(b) && daysSince(d, TODAY) > STALE_DAYS) stale++; }
+    r.stale = stale;
+    if (stale) r.warn.push(`${stale}/${verified.length} застарели време-чувствителни поуки (>${STALE_DAYS}д)`);
+    // карантината надвишава проверените → самообучаващият цикъл затлачва (гейтът реже повече, отколкото минава)
+    if (quarantine.length > verified.length) r.warn.push(`карантина (${quarantine.length}) надвишава проверените (${verified.length}) — цикълът затлачва`);
     // версия vs поуки (само сигнал; засетите на mastery агенти може да имат по-малко)
     if (hasJson) {
       const g = aj.agents.find((a) => a.id === id);
@@ -183,8 +136,36 @@ if (fallbackOk === false) { team.push({ level: "hard", msg: "FALLBACK в index.h
 if (fallbackOk === null) { team.push({ level: "warn", msg: "не намерих FALLBACK блок в index.html" }); warns++; }
 if (!securityDoctrine) { team.push({ level: "hard", msg: "липсва доктрината _memory/SECURITY.md (инжектира се във всеки агент)" }); hardFails++; }
 
+// --- тренд: сравни с предишна снимка (по избор) → регресии ---
+const trend = [];
+const snapshot = { today: TODAY, agents: Object.fromEntries(report.map((r) => [r.id, { lessons: r.lessons ?? null, quarantine: r.quarantine ?? null, version: r.version ?? null, hard: r.hard.length, warn: r.warn.length }])) };
+if (baselineArg) {
+  const path = typeof baselineArg === "string" ? baselineArg : DEFAULT_SNAP;
+  const prevRaw = read(path);
+  if (!prevRaw) { trend.push({ level: "warn", msg: `няма базлайн снимка (${path}) — първо пусни --snapshot` }); warns++; }
+  else {
+    let prev; try { prev = JSON.parse(prevRaw); } catch { prev = null; }
+    if (!prev?.agents) { trend.push({ level: "warn", msg: `повредена базлайн снимка (${path})` }); warns++; }
+    else {
+      for (const [id, cur] of Object.entries(snapshot.agents)) {
+        const p = prev.agents[id];
+        if (!p) { trend.push({ level: "warn", msg: `нов агент спрямо базлайна: ${id}` }); warns++; continue; }
+        if (cur.lessons != null && p.lessons != null && cur.lessons < p.lessons) { trend.push({ level: "warn", msg: `${id}: РЕГРЕСИЯ на поуки ${p.lessons}→${cur.lessons}` }); warns++; }
+        if (cur.quarantine != null && p.quarantine != null && cur.quarantine - p.quarantine >= 5) { trend.push({ level: "warn", msg: `${id}: карантина расте ${p.quarantine}→${cur.quarantine} (+${cur.quarantine - p.quarantine})` }); warns++; }
+        if (cur.hard > p.hard) { trend.push({ level: "warn", msg: `${id}: нов твърд проблем спрямо базлайна (${p.hard}→${cur.hard})` }); warns++; }
+      }
+      for (const id of Object.keys(prev.agents)) if (!snapshot.agents[id]) { trend.push({ level: "warn", msg: `изчезнал агент спрямо базлайна: ${id}` }); warns++; }
+    }
+  }
+}
+if (snapshotArg) {
+  const path = typeof snapshotArg === "string" ? snapshotArg : DEFAULT_SNAP;
+  writeFileSync(path, JSON.stringify(snapshot, null, 2) + "\n");
+  if (!JSON_OUT) console.log(`📸  снимка записана: ${path}`);
+}
+
 if (JSON_OUT) {
-  console.log(JSON.stringify({ today: TODAY, agents: report, team, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine } }, null, 2));
+  console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine } }, null, 2));
   process.exit(hardFails ? 1 : 0);
 }
 
@@ -197,6 +178,7 @@ for (const r of report) {
   r.warn.forEach((w) => console.log(`    ▲ ${w}`));
 }
 if (team.length) { console.log("\n— екип —"); team.forEach((t) => console.log(`  ${t.level === "hard" ? "✗" : "▲"} ${t.msg}`)); }
+if (trend.length) { console.log("\n— тренд —"); trend.forEach((t) => console.log(`  ▲ ${t.msg}`)); }
 console.log(`\nИтог: ${report.length} агента · ${hardFails} твърди · ${warns} предупреждения · FALLBACK ${fallbackOk ? "ok" : fallbackOk === false ? "РАЗСИНХРОН" : "?"} · доктрина ${securityDoctrine ? "ok" : "ЛИПСВА"}`);
 console.log(hardFails ? "СТАТУС: има твърди проблеми — виж ✗ по-горе." : "СТАТУС: екипът е здрав.");
 process.exit(hardFails ? 1 : 0);

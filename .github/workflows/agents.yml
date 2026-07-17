@@ -1,0 +1,50 @@
+# Гейт за агентския слой — „ръката" на Президента в CI (Конвейерът).
+# Пуска oversee.mjs (fail-closed) + unit тестовете за надзорната логика при всяка промяна по
+# .claude/agents, settings.json, hooks, таблото или tools/agents|memory. Досега надзорът беше само
+# ръчен; вече един провал (сирак, рассинхрон FALLBACK↔agents.json, липсваща доктрина) блокира PR.
+name: agents
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".claude/agents/**"
+      - ".claude/settings.json"
+      - ".claude/hooks/**"
+      - "agents-dashboard/agents.json"
+      - "agents-dashboard/index.html"
+      - "tools/agents/**"
+      - "tools/memory/**"
+      - ".github/workflows/agents.yml"
+  pull_request:
+    paths:
+      - ".claude/agents/**"
+      - ".claude/settings.json"
+      - ".claude/hooks/**"
+      - "agents-dashboard/agents.json"
+      - "agents-dashboard/index.html"
+      - "tools/agents/**"
+      - "tools/memory/**"
+      - ".github/workflows/agents.yml"
+
+# Least-privilege: гейтът само чете кода.
+permissions:
+  contents: read
+
+# Отмени предходен ран за същия ref (пести минути).
+concurrency:
+  group: agents-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  oversee:
+    runs-on: ubuntu-latest
+    steps:
+      # Пинат по SHA (не по подвижен таг) — supply-chain дисциплина. actions/checkout v4.2.2.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Node версия (зависимости няма — инструментите са zero-dep)
+        run: node --version
+      - name: Надзор над екипа (fail-closed — изход 1 при твърд проблем)
+        run: node tools/agents/oversee.mjs
+      - name: Тестове на надзорната логика
+        run: node --test $(find tools -name '*.test.mjs')
