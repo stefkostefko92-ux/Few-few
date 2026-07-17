@@ -77,17 +77,6 @@ export default function Dashboard(): React.ReactElement {
             <StatCell label={t('dashboard.stat.cha')} value={char.charisma} />
           </div>
 
-          {(char.stat_points > 0 || char.skill_points > 0) && (
-            <div className="card" style={{ borderColor: 'var(--gold-3)', background: 'rgba(214,161,61,.06)' }}>
-              <div className="flex between">
-                <div>
-                  <strong style={{ color: 'var(--gold-1)' }}>{t('dashboard.unspentTitle')}</strong>
-                  <div className="muted text-sm">{t('dashboard.unspentDetail', { stat: char.stat_points, skill: char.skill_points })}</div>
-                </div>
-                <Link to="/app/character" className="btn btn-primary btn-sm">{t('dashboard.allocate')}</Link>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

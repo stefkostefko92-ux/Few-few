@@ -53,19 +53,16 @@ export function applyXp(char: Character, xpGain: number): LevelUpResult {
     return { leveled: false, fromLevel, toLevel: fromLevel, statPointsGained: 0, skillPointsGained: 0, hpGained: 0, mpGained: 0, gemsGained: 0 };
   }
   const levelsGained = newLevel - fromLevel;
-  // Audit (balance landmine #4): stats + skills were "gold-driven only"
-  // (see /api/character/upgrade-stat), but at lv 200+ a player who blew
-  // through the broken XP curve had earned far less gold than the
-  // ~745k needed to push a single stat to +500. Restoring 3 stat
-  // points and 1 skill point per level guarantees a baseline build
-  // recovery while the gold-buy path remains for power players.
-  const statPointsGained = levelsGained * 3;
-  const skillPointsGained = levelsGained;
+  // По спецификация на собственика: вдигането на ниво НЕ дава точки за
+  // атрибути/умения. Атрибутите се вдигат ЕДИНСТВЕНО със злато по линейната
+  // 5-10-15-… крива (виж /api/character/upgrade-stat + game/upgrade.ts).
+  // Нивото дава само HP/MP растеж. Полетата *PointsGained остават в изхода
+  // (=0) за обратна съвместимост със стари клиенти.
+  const statPointsGained = 0;
+  const skillPointsGained = 0;
   const hpGained = levelsGained * 10;
   const mpGained = levelsGained * 4;
   char.level = newLevel;
-  char.stat_points = (char.stat_points || 0) + statPointsGained;
-  char.skill_points = (char.skill_points || 0) + skillPointsGained;
   char.hp_max += hpGained;
   char.mp_max += mpGained;
   char.hp = Math.min(char.hp + hpGained, char.hp_max);

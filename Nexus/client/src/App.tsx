@@ -139,8 +139,6 @@ function AppLayout(): React.ReactElement {
       {levelUp && (
         <LevelUpOverlay
           level={levelUp.toLevel}
-          statPoints={levelUp.statPointsGained}
-          skillPoints={levelUp.skillPointsGained}
           onDone={dismissLevelUp}
         />
       )}

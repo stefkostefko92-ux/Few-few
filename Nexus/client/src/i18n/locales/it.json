@@ -148,7 +148,7 @@
   },
   "levelUp": {
     "title": "— Livello superiore —",
-    "points": "+{{statPoints}} statistica · +{{skillPoints}} punti abilità"
+    "grew": "Il tuo potere cresce."
   },
   "lootDrop": {
     "acquired": "Bottino ottenuto",
@@ -332,7 +332,7 @@
     "featSetsBody": "Dal Wayfarer's Garb al Solar Mythwoven. I bonus da due, quattro e sei pezzi ridisegnano una build; mescolare i tier è incoraggiato.",
     "classesEyebrow": "Scegli il tuo kit",
     "classesTitle": "Quattro classi, con la matematica messa nero su bianco.",
-    "classesLead": "Ogni classe ha una curva di statistiche, un albero di abilità dell'arma, un tipo di danno e i propri effetti d'impatto in combattimento. Riassegni i punti statistica a ogni livello; rifai la build ogni volta che cambia la stagione.",
+    "classesLead": "Ogni classe ha una curva di statistiche, un albero di abilità dell'arma, un tipo di danno e i propri effetti d'impatto in combattimento. Rifai la build ogni volta che cambia la stagione.",
     "classWarriorTagline": "Incassa colpi e li restituisce con gli interessi. Spada e scudo, corazza, calma sotto pressione.",
     "classRangerTagline": "Colpisce per primo, più forte del previsto, da dove non stavi guardando. Arco, cuoio, mani veloci.",
     "classMageTagline": "Partenza lenta, finale enorme. Brucia mana in fretta, chiude gli scontri ancora più in fretta. Bastone, vesti, tessera della biblioteca.",
@@ -1106,7 +1106,7 @@
     "restToast": "Ferite curate.",
     "record": "{{wins}}V / {{losses}}S · Rating {{rating}}",
     "howTitle": "Come funzionano i potenziamenti",
-    "howDesc": "Ogni livello concede gratis +3 punti statistica e +1 punto abilità. In più ogni statistica può essere potenziata con l’oro — ogni acquisto successivo costa di più (5g, 14g, 25g, 40g, 57g…), con contatore indipendente per statistica.",
+    "howDesc": "Le statistiche si potenziano con l’oro — ogni acquisto successivo di una statistica costa di più su una semplice curva 5-10-15-20-25… (5g, 10g, 15g, 20g, 25g…), con contatore indipendente per statistica. Salire di livello aumenta HP e MP.",
     "attributes": "Attributi",
     "weaponSkills": "Abilità con le armi",
     "upgradesCount": "({{count}} potenziamenti)",
