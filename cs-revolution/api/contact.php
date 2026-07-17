@@ -187,6 +187,29 @@ if ($hasPM) {
     } catch (\Exception $e) { /* fallback below */ }
 }
 
+// Attempt 1.5: native SMTP client (works without PHPMailer/composer)
+if (!$sent && SMTP_PASS !== '') {
+    require_once __DIR__.'/smtp-native.php';
+    $smtpErr = '';
+    $sent = cs_smtp_send([
+        'host'=>SMTP_HOST,'port'=>SMTP_PORT,'secure'=>SMTP_SECURE,
+        'user'=>SMTP_USER,'pass'=>SMTP_PASS,'from'=>SMTP_FROM,'from_name'=>SMTP_FROM_NAME,
+        'to'=>SMTP_TO,'reply_to'=>$email,'reply_name'=>$name,
+        'subject'=>$subj,'html'=>$html,'text'=>$txt,
+    ], $smtpErr);
+    if ($sent) {
+        // Auto-reply to the visitor
+        cs_smtp_send([
+            'host'=>SMTP_HOST,'port'=>SMTP_PORT,'secure'=>SMTP_SECURE,
+            'user'=>SMTP_USER,'pass'=>SMTP_PASS,'from'=>SMTP_FROM,'from_name'=>SMTP_FROM_NAME,
+            'to'=>$email,'subject'=>$ar['sub'],
+            'html'=>nl2br(htmlspecialchars($ar['body'])),'text'=>$ar['body'],
+        ], $smtpErr2);
+    } elseif (SMTP_DEBUG) {
+        error_log('cs_smtp_send failed: '.$smtpErr);
+    }
+}
+
 // Attempt 2: PHP native mail()
 if (!$sent) {
     $hdName = cs_hdr_safe($name); $hdEmail = cs_hdr_safe($email);
