@@ -348,9 +348,15 @@ function AdminPanel(props) {
     if(!auth)return;
     doPing();
     var iv=setInterval(function(){doPing();setTick(function(t){return t+1})},15000);
+    // Instant paint from local cache, then load the durable server copy
     try{setCampaigns(JSON.parse(localStorage.getItem("cs_camp")||"[]"))}catch(e){}
     try{setTasks(JSON.parse(localStorage.getItem("cs_tasks")||"[]"))}catch(e){}
     try{setClients(JSON.parse(localStorage.getItem("cs_clients")||"[]"))}catch(e){}
+    [["campaigns","cs_camp",setCampaigns],["tasks","cs_tasks",setTasks],["clients","cs_clients",setClients]].forEach(function(m){
+      csAuthFetch("/api/admin-data.php?action=get&key="+m[0]).then(function(r){return r.json()}).then(function(d){
+        if(d&&d.ok&&Array.isArray(d.data)){m[2](d.data);try{localStorage.setItem(m[1],JSON.stringify(d.data))}catch(e){}}
+      }).catch(function(){});
+    });
     try{var sc=JSON.parse(localStorage.getItem("cs_smtp")||"{}");if(sc.host)setCfgSmtp(sc)}catch(e){}
     csAuthFetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){});
     csAuthFetch("/api/analyze.php?action=stats").then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}}).catch(function(){});
@@ -386,7 +392,13 @@ function AdminPanel(props) {
     return function(){clearInterval(iv);sseState.alive=false;if(sseState.cur){try{sseState.cur.close()}catch(e){}}if(sseState.timer)clearTimeout(sseState.timer);};
   },[auth]);
 
-  function save(key,data){try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}}
+  // Persist to localStorage (instant/offline cache) AND to the server (real, durable, shared)
+  var SRV_KEY={cs_camp:"campaigns",cs_tasks:"tasks",cs_clients:"clients"};
+  function save(key,data){
+    try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}
+    var sk=SRV_KEY[key];
+    if(sk)csAuthFetch("/api/admin-data.php?action=set&key="+sk,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)}).catch(function(){});
+  }
   function saveCamp(){if(!campName.trim())return;var u=campaigns.concat([{id:Date.now(),name:campName,subject:campSubj,body:campBody,status:"DRAFT",date:new Date().toISOString().slice(0,10)}]);setCampaigns(u);save("cs_camp",u);setCampName("");setCampSubj("");setCampBody("")}
   function delCamp(id){var u=campaigns.filter(function(c){return c.id!==id});setCampaigns(u);save("cs_camp",u)}
   function addTask(){if(!taskText.trim())return;var u=tasks.concat([{id:Date.now(),text:taskText,pri:taskPri,done:false,date:new Date().toISOString().slice(0,10)}]);setTasks(u);save("cs_tasks",u);setTaskText("")}
@@ -598,8 +610,7 @@ function AdminPanel(props) {
     var avgPing=history.length?Math.round(history.reduce(function(a,b){return a+b},0)/history.length):0;
     var minPing=history.length?Math.min.apply(null,history):0;
     var maxPing=history.length?Math.max.apply(null,history):0;
-    // Simulated connection data based on real latency
-    // Real data from /api/monitor.php
+    // Real server metrics from /api/monitor.php (server-wide totals)
     var conns=serverStats.connections||0;
     var bw=serverStats.bandwidth||"0";
     var reqs=serverStats.requests_min||0;
