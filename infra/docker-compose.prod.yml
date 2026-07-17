@@ -80,9 +80,35 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_TOS_CONFIGURED: ${STRIPE_TOS_CONFIGURED:-false}
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
+      # Absolute API base used in emails / OAuth redirects. Must be a valid URL
+      # (Zod .url()) — never leave empty.
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://gaming.carbonstealth.eu}
       WEB_BASE_PATH: ${WEB_BASE_PATH:-/app}
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?set INTERNAL_API_SECRET in .env}
+      # api → realtime internal call (admin live-rooms). In-container hostname,
+      # not localhost. Valid URL default so boot never crashes on empty.
+      REALTIME_INTERNAL_URL: ${REALTIME_INTERNAL_URL:-http://realtime:4501}
+      # ── Optional integrations (all off unless set in .env) ──
+      # Transactional email (verification / password reset). SMTP_PORT is a
+      # positive int (Zod) — keep the non-empty 587 default.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      EMAIL_FROM: ${EMAIL_FROM:-АСО <no-reply@gaming.carbonstealth.eu>}
+      # Social login (enabled only when both id+secret are set).
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      FACEBOOK_APP_ID: ${FACEBOOK_APP_ID:-}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET:-}
+      # Ops notifications + error tracking.
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      DISCORD_WEBHOOK_NAME: ${DISCORD_WEBHOOK_NAME:-АСО}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
     ports:
       - "127.0.0.1:${API_HOST_PORT:-4500}:4500"
 
