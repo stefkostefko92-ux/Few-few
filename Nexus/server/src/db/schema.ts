@@ -265,6 +265,10 @@ export function applySchema(db: Database.Database): void {
   addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
   addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
   addColumn('gems INTEGER NOT NULL DEFAULT 0');
+  // Momentum куки (game/momentum.ts): ловно комбо + първа победа за деня.
+  addColumn('hunt_streak INTEGER NOT NULL DEFAULT 0');
+  addColumn('hunt_streak_at INTEGER NOT NULL DEFAULT 0');
+  addColumn('first_win_day INTEGER NOT NULL DEFAULT 0');
 
   // ===== User IP tracking + tunable settings =====
   const userCols2 = db.prepare(`PRAGMA table_info(users)`).all() as { name: string }[];
@@ -845,5 +849,14 @@ export function applySchema(db: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_dm_thread ON direct_messages(thread_key, id);
     CREATE INDEX IF NOT EXISTS idx_dm_to_unread ON direct_messages(to_id, read_at);
+
+    /* ===== Bestiary колекции: еднократни награди за пълен регион ===== */
+    CREATE TABLE IF NOT EXISTS bestiary_region_claims (
+      character_id INTEGER NOT NULL,
+      region       TEXT NOT NULL,
+      claimed_at   INTEGER NOT NULL,
+      PRIMARY KEY (character_id, region),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
   `);
 }

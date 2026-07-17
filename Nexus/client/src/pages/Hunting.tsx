@@ -78,6 +78,21 @@ export default function Hunting(): React.ReactElement {
           region={region || undefined}
         />
         <div className="panel" style={{ padding: 16 }}>
+          {/* Momentum badges: първа победа за деня (×2) + ловно комбо. */}
+          {fight.success && (fight.firstWin || (fight.combo || 0) > 1) && (
+            <div className="flex gap-sm" style={{ marginBottom: 10, flexWrap: 'wrap' }}>
+              {fight.firstWin && (
+                <span className="tag" style={{ color: 'var(--gold-1)', borderColor: 'var(--gold-3)', fontWeight: 700 }}>
+                  ⭐ {t('hunting.firstWin', { defaultValue: 'First win of the day — ×2 XP & gold!' })}
+                </span>
+              )}
+              {(fight.combo || 0) > 1 && (
+                <span className="tag" style={{ color: 'var(--crimson-1, #e85a4f)', borderColor: 'var(--crimson-1, #e85a4f)', fontWeight: 700 }}>
+                  🔥 {t('hunting.combo', { n: fight.combo, pct: fight.comboBonusPct, defaultValue: 'Combo ×{{n}} (+{{pct}}% XP & gold)' })}
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex between">
             <div>{fight.success ? t('hunting.victoryText') : t('hunting.defeatText')}</div>
             <div className="flex gap-sm">

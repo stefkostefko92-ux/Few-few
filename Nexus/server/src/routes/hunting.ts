@@ -15,6 +15,7 @@ import { trackWeeklyKill } from './weekly';
 import { applyFactionRepFromHunt } from './faction';
 import { awardSeasonPointsFromHunt } from './events';
 import { grantDrop, DROP_RATES } from '../game/drops';
+import { applyHuntMomentum, type Momentum } from '../game/momentum';
 import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -175,6 +176,9 @@ router.post('/hunt', (req, res) => {
   let goldGain = 0;
   let itemRewardSlug = '';
   let lvlRes = null as ReturnType<typeof applyXp> | null;
+  // Momentum (комбо + първа победа за деня) — обновява състоянието и при
+  // загуба (нулира комбото), затова се вика извън victory клона.
+  const momentum: Momentum = applyHuntMomentum(db, char.id, result.winner === 'hero');
   if (result.winner === 'hero') {
     // Баланс: изглаждане на XP кривата при раздаване. Seed數ните на
     // act-1 (lv≤25) са ~10x над темпа, а на expansion (lv26+) — на темпа
@@ -190,8 +194,10 @@ router.post('/hunt', (req, res) => {
       : Math.max(Math.round(paceXp * 0.6), Math.min(Math.round(paceXp * 1.8), monster.xp_reward));
     const baseGold = Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);
-    xpGain = r.xp;
-    goldGain = r.gold;
+    // Momentum множител СЛЕД guild/клампа — умишлена награда (макс ×2.8 на
+    // първото убийство за деня с пълно комбо, после ≤×1.4).
+    xpGain = Math.round(r.xp * momentum.mult);
+    goldGain = Math.round(r.gold * momentum.mult);
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
 
@@ -297,6 +303,9 @@ router.post('/hunt', (req, res) => {
     itemReward: itemRewardSlug || null,
     factionRep: factionRepGain,
     seasonPoints: seasonPointsGain,
+    combo: momentum.combo,
+    comboBonusPct: momentum.comboBonusPct,
+    firstWin: momentum.firstWin,
     itemDrop: itemRewardSlug
       ? (db.prepare('SELECT slug, name, category, sub_type, tier, rarity, level_req, icon, atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus, description FROM items WHERE slug=?').get(itemRewardSlug) as any)
       : null,

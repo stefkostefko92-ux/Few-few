@@ -468,7 +468,9 @@
     "huntAgain": "Caccia ancora",
     "regionInfo": "Lv {{min}}–{{max}} · {{count}} nemici",
     "requiresLv": "Richiede Lv {{n}}",
-    "huntHere": "Caccia qui"
+    "huntHere": "Caccia qui",
+    "firstWin": "Prima vittoria del giorno — ×2 XP e oro!",
+    "combo": "Combo ×{{n}} (+{{pct}}% XP e oro)"
   },
   "dungeons": {
     "title": "Dungeon",
@@ -1056,7 +1058,11 @@
     "subtitle": "{{discovered}} / {{total}} creature catalogate.",
     "all": "Tutte",
     "lv": "Liv. {{n}}",
-    "kills": "Uccisioni:"
+    "kills": "Uccisioni:",
+    "claim": "Riscuoti",
+    "claimed": "Riscossa ✓",
+    "slayAll": "Sconfiggili tutti",
+    "claimedToast": "Ricompensa collezione: +{{gold}}g, +{{gems}} gemme!"
   },
   "common": {
     "loading": "Caricamento…",

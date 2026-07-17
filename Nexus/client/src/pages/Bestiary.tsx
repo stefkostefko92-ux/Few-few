@@ -1,19 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { useStore } from '../lib/store';
 import type { BestiaryEntry } from '../lib/types';
 import { spriteFor } from '../combat/sprites';
 
+interface RegionProgress {
+  region: string; total: number; killed: number;
+  complete: boolean; claimed: boolean; reward_gold: number; reward_gems: number;
+}
+
 export default function Bestiary(): React.ReactElement {
   const { t } = useTranslation();
+  const toast = useStore((s) => s.toast);
+  const refresh = useStore((s) => s.refreshCharacter);
   const [list, setList] = useState<BestiaryEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [discovered, setDiscovered] = useState(0);
+  const [regionProgress, setRegionProgress] = useState<RegionProgress[]>([]);
   const [filter, setFilter] = useState<string>('all');
 
-  useEffect(() => {
-    api.get('/bestiary').then((r) => { setList(r.bestiary); setTotal(r.total); setDiscovered(r.discovered); });
-  }, []);
+  function load() {
+    api.get('/bestiary').then((r) => {
+      setList(r.bestiary); setTotal(r.total); setDiscovered(r.discovered);
+      setRegionProgress(r.regions || []);
+    });
+  }
+  useEffect(() => { load(); }, []);
+
+  async function claim(region: string) {
+    try {
+      const r = await api.post('/bestiary/claim', { region });
+      toast(t('bestiary.claimedToast', { gold: r.gold, gems: r.gems, defaultValue: 'Collection reward: +{{gold}}g, +{{gems}} gems!' }), 'success');
+      load();
+      refresh();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
 
   const regions = Array.from(new Set(list.map((m) => m.region)));
   const filtered = filter === 'all' ? list : list.filter((m) => m.region === filter);
@@ -35,6 +57,32 @@ export default function Bestiary(): React.ReactElement {
             ))}
           </div>
         </div>
+        {/* Колекции по региони: прогрес + еднократна награда при пълен регион. */}
+        {regionProgress.length > 0 && (
+          <div className="grid-cards" style={{ marginBottom: 16 }}>
+            {regionProgress.map((rp) => (
+              <div key={rp.region} className="card" style={rp.complete && !rp.claimed ? { borderColor: 'var(--gold-3)', background: 'rgba(214,161,61,.06)' } : undefined}>
+                <div className="flex between" style={{ alignItems: 'center' }}>
+                  <strong>{prettyRegion(rp.region)}</strong>
+                  <span className="muted text-sm">{rp.killed}/{rp.total}</span>
+                </div>
+                <div className="bar" style={{ height: 8, margin: '8px 0' }}>
+                  <div className="bar-fill xp" style={{ width: `${(rp.killed / Math.max(1, rp.total)) * 100}%` }} />
+                </div>
+                <div className="flex between" style={{ alignItems: 'center' }}>
+                  <span className="muted text-sm">💰 {rp.reward_gold.toLocaleString()}g · 💎 {rp.reward_gems}</span>
+                  {rp.claimed ? (
+                    <span className="tag" style={{ color: 'var(--green-1, #6ad8a4)' }}>{t('bestiary.claimed', { defaultValue: 'Claimed ✓' })}</span>
+                  ) : rp.complete ? (
+                    <button className="btn btn-primary btn-sm" onClick={() => claim(rp.region)}>{t('bestiary.claim', { defaultValue: 'Claim' })}</button>
+                  ) : (
+                    <span className="muted text-sm">{t('bestiary.slayAll', { defaultValue: 'Slay them all' })}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="bar" style={{ height: 12, marginBottom: 16 }}>
           <div className="bar-fill xp" style={{ width: `${(discovered / Math.max(1, total)) * 100}%` }} />
         </div>
