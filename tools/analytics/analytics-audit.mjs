@@ -30,29 +30,38 @@ const files = [];
   }
 })(ROOT);
 
-// известни аналитични/пикселни доставчици
-const VENDOR = /googletagmanager\.com\/gtag|www\.google-analytics\.com|gtag\s*\(|ga\s*\(\s*['"]create|analytics\.track|posthog\.(init|capture)|plausible|umami|connect\.facebook\.net|fbq\s*\(|hotjar|clarity\.ms|mixpanel|segment\.com\/analytics|amplitude/i;
-const CONSENT = /consent|cookieConsent|cookie_consent|hasConsent|gtag\s*\(\s*['"]consent|granted|CookieConsent|Cookiebot|Осъгласие|съгласие|onConsent|allowAnalytics/i;
-// PII като параметър/property в проследяване
-const PII_TRACK = /\b(track|capture|logEvent|gtag|fbq|identify)\b[^\n;]*\b(email|имейл|e-?mail|phone|телефон|firstName|lastName|full_?name|име|address|адрес|ssn|egn|егн|iban|passport)\b/i;
+// Доставчици, ИЗИСКВАЩИ съгласие (бисквитки/PII/устройствен идентификатор — ePrivacy чл.5(3)):
+// GA/gtag, Facebook Pixel, GTM, Hotjar, Clarity, Mixpanel, Amplitude, Segment.
+const CONSENT_REQUIRED = /googletagmanager\.com\/gtag|www\.google-analytics\.com|\bgtag\s*\(|\bga\s*\(\s*['"]create|connect\.facebook\.net|\bfbq\s*\(|hotjar|clarity\.ms|mixpanel|segment\.com\/analytics|amplitude|posthog\.(init|capture)/i;
+// Доставчици БЕЗ бисквитки/PII по дизайн → съгласие-ОСВОБОДЕНИ (не искат банер, GDPR-безопасни):
+// Plausible, Umami, Cloudflare Web Analytics, GoatCounter. Не ги флагвай за липса на съгласие.
+const CONSENT_EXEMPT = /plausible|umami|cloudflareinsights|static\.cloudflareinsights|goatcounter/i;
+const CONSENT = /consent|cookieConsent|cookie_consent|hasConsent|gtag\s*\(\s*['"]consent|granted|CookieConsent|Cookiebot|osano|onetrust|съгласие|onConsent|allowAnalytics/i;
+// PII в РЕАЛНО проследяващо извикване: функция track/capture/identify/logEvent/gtag/fbq(…) + PII като
+// КЛЮЧ на свойство (email:/'email'/email=), не просто съвпадение на думи (напр. phone() + "…track…").
+const TRACK_CALL = /\b(?:gtag|fbq|logEvent|identify|track|capture|trackEvent|sendEvent)\s*\(/i;
+const PII_KEY = /['"]?\b(email|имейл|e-?mail|phone_?number|firstName|first_name|lastName|last_name|full_?name|address|street|ssn|egn|егн|iban|passport|dateOfBirth|date_of_birth)\b['"]?\s*[:=]/i;
 // hardcode-нат measurement id / ключ в клиентски файл
 const HARDCODE_ID = /\b(G-[A-Z0-9]{8,}|UA-\d{4,}-\d+|GTM-[A-Z0-9]{5,}|phc_[A-Za-z0-9]{20,})\b/;
 const IP_ANON = /anonymize_?ip|anonymizeIp|ip_?anonymization/i;
 
 for (const f of files) {
   const t = read(f);
-  const hasVendor = VENDOR.test(t);
+  const needsConsent = CONSENT_REQUIRED.test(t);
+  const exempt = CONSENT_EXEMPT.test(t);
   const hasConsent = CONSENT.test(t);
   const lines = t.split("\n");
   lines.forEach((ln, i) => {
-    if (PII_TRACK.test(ln))
-      add("warn", "pii-in-tracking", f, i + 1, "Вероятен PII в проследяване (имейл/телефон/име/адрес като параметър). Нула PII в събития/properties — минимизация и псевдонимизация (GDPR; сверявай с Правния).");
+    if (TRACK_CALL.test(ln) && PII_KEY.test(ln))
+      add("warn", "pii-in-tracking", f, i + 1, "PII като свойство в проследяващо извикване (имейл/телефон/име/адрес). Нула PII в събития/properties — минимизация и псевдонимизация (GDPR; сверявай с Правния).");
     if (HARDCODE_ID.test(ln) && /\.(html|ejs|jsx|tsx|vue|svelte)$/.test(f))
       add("info", "client-analytics-id", f, i + 1, "Analytics measurement id/ключ в клиента (G-/UA-/GTM-/phc_). Публичните measurement id-та са ОК, но провери да няма таен API/write ключ в бъндъла.");
   });
-  if (hasVendor && !hasConsent)
-    add("warn", "tracking-without-consent", f, 0, "Аналитичен доставчик се зарежда без видима проверка за СЪГЛАСИЕ. Никакво проследяване преди валидно съгласие (GDPR/ePrivacy, consent mode).");
-  if (hasVendor && /google-analytics|gtag/i.test(t) && !IP_ANON.test(t) && !hasConsent)
+  if (needsConsent && !hasConsent)
+    add("warn", "tracking-without-consent", f, 0, "Доставчик с бисквитки/PII се зарежда без видима проверка за СЪГЛАСИЕ (ePrivacy чл.5(3)). Никакво проследяване преди валидно съгласие — или мини на съгласие-освободен инструмент (Plausible/Umami).");
+  if (exempt && !needsConsent)
+    add("info", "consent-exempt-analytics", f, 0, "Съгласие-освободена аналитика (Plausible/Umami/CF — cookieless, без PII). GDPR-безопасно без банер; само потвърди, че не подаваш PII в custom properties.");
+  if (needsConsent && /google-analytics|gtag/i.test(t) && !IP_ANON.test(t) && !hasConsent)
     add("info", "no-ip-anon", f, 0, "GA без видима IP анонимизация/consent mode — анонимизирай IP и уважавай съгласието (GDPR минимизация).");
 }
 
