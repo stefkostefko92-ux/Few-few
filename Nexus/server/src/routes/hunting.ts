@@ -36,6 +36,12 @@ const APEX_DROPS: Record<string, string> = {
   'mooncradle_apex_selan':      'selan_mantle',
   'worldspine_apex_vhastar':    'vhastar_ring',
   'throne_apex_unname':         'unname_blade',
+  // „Отвъд Края" bands (lv 351-500)
+  'veil_apex_morvaen':          'morvaen_shroud',
+  'starfall_apex_ylthar':       'ylthar_eye',
+  'forge_apex_kalyndra':        'kalyndra_hammer',
+  'nightcrown_apex_sarghul':    'sarghul_crown',
+  'firstlight_apex_aurelion':   'aurelion_dawnblade',
 };
 
 const router = Router();

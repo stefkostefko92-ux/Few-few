@@ -442,7 +442,9 @@
     "footerMade": "Fatto con cura per storie degne di un eroe.",
     "iconAlt": "icona {{title}}",
     "portraitAlt": "ritratto di {{name}}",
-    "landscapeAlt": "paesaggio di {{name}}"
+    "landscapeAlt": "paesaggio di {{name}}",
+    "step3Body": "Ti aspettano ventuno regioni, dai Whispering Woods a The First Light al Lv 500. Ogni regione fa cadere equipaggiamento del proprio tier.",
+    "regionBeyondBody": "Cinque regni oltre la fine del mondo — cenere, stelle cadute, la forgia della nuova alba, la corte non illuminata e la prima luce stessa. Lv 351–500."
   },
   "arena": {
     "title": "Arena di Nexus Dominion",
