@@ -1126,8 +1126,8 @@
       "dexterity": "Critico, schivata, attacchi a distanza.",
       "constitution": "Riserva di salute.",
       "intelligence": "Potere magico, mana.",
-      "wisdom": "Mana, resistenza.",
-      "charisma": "Bonus alle ricompense delle missioni."
+      "wisdom": "Mana, difesa e schivata.",
+      "charisma": "Danno critico."
     },
     "skill": {
       "sword": "Spada",

@@ -17,6 +17,7 @@ export interface DerivedStats {
   hp_max: number;
   mp_max: number;
   crit_chance: number;
+  crit_mult: number; // множител на щетите при крит (CHA-driven, база 1.8)
   dodge_chance: number;
   speed: number;
   // Damage-type breakdown. atk_min/atk_max remain the combined "go" number
@@ -215,6 +216,10 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   let atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus + typedDmgBonus);
   let atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus + typedDmgBonus);
   def += phys_def + mag_def;
+  // Ребаланс: WIS вече не е почти-мъртъв стат (беше само мъничко MP). Дава
+  // „warding" — реален защитен принос за ВСИЧКИ класове, така че защитата не е
+  // единствено от екипировка. Прилага се преди guild defence_multiplier.
+  def += Math.round(wis * 0.5);
   // Audit (balance landmine #2): hero HP per level was `lvl * 6` —
   // a lv 350 hero with con=120 ended up at ~3.5k HP staring down a
   // 26k-HP monster that hit for ~1300, so endgame fights died inside
@@ -224,9 +229,18 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   const hp_max = 40 + con * 6 + ch.level * 15 + hp_bonus;
   const mp_max = 10 + int_ * 3 + wis * 2 + ch.level * 2 + mp_bonus;
 
-  const dodge_chance = Math.min(0.45, dex * 0.005 + ch.skill_stealth * 0.004 + dodgeBonus);
+  // Ребаланс: DEX вече не е единственият източник на dodge — WIS (осъзнатост)
+  // споделя тежестта. Така DEX не е 4-в-1 (щети+dodge+crit+speed), а dodge
+  // става реален и за защитни/WIS билдове. DEX коефициентът е леко намален
+  // (0.005→0.004), компенсиран от WIS.
+  const dodge_chance = Math.min(0.45, dex * 0.004 + wis * 0.002 + ch.skill_stealth * 0.004 + dodgeBonus);
   const crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);
   const speed = 5 + Math.round(dex * 0.4);
+  // Ребаланс: CHA вече не е мъртъв стат (сумираше се, но не влизаше в нито
+  // едно бойно число). Става стат за СИЛА НА КРИТА (crit damage) — базовите
+  // 1.8× стават до 2.4× при висок CHA. Дава реален билд-лост (crit билд иска
+  // и DEX за шанс, и CHA за сила) и слага край на „плоския" крит в endgame.
+  const crit_mult = 1.8 + Math.min(0.6, cha * 0.005);
 
   if (guildBuffs) {
     atk_min = Math.round(atk_min * guildBuffs.power_multiplier);
@@ -248,6 +262,7 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     hp_max: fin(hp_max, 1),
     mp_max: fin(mp_max),
     crit_chance: Math.min(1, fin(crit_chance)),
+    crit_mult: fin(crit_mult, 1.8),
     dodge_chance: Math.min(0.75, fin(dodge_chance)),
     speed: fin(speed),
     phys_dmg: fin(phys_dmg), phys_def: fin(phys_def),
@@ -268,6 +283,7 @@ export function buildHeroActor(ch: Character, derived: DerivedStats, currentHp: 
     defense: derived.defense,
     speed: derived.speed,
     crit_chance: derived.crit_chance,
+    crit_mult: derived.crit_mult,
     dodge_chance: derived.dodge_chance,
     sprite: ch.class,
     class: ch.class,

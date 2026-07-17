@@ -1126,8 +1126,8 @@
       "dexterity": "Crit, dodge, ranged.",
       "constitution": "Health pool.",
       "intelligence": "Spell power, mana.",
-      "wisdom": "Mana, resistance.",
-      "charisma": "Quest reward bonuses."
+      "wisdom": "Mana, warding & dodge.",
+      "charisma": "Critical damage."
     },
     "skill": {
       "sword": "Sword",
