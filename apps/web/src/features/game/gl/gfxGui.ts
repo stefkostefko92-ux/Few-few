@@ -42,6 +42,11 @@ async function openPanel(): Promise<void> {
   ao.add(p.ao, "radius", 0.05, 2, 0.01).name("Радиус").onChange(live);
   ao.add(p.ao, "intensity", 0, 3, 0.05).name("Интензитет").onChange(live);
 
+  const vig = gui.addFolder("Vignette");
+  vig.add(p.vignette, "enabled").name("Вкл.").onChange(rebuild);
+  vig.add(p.vignette, "offset", 0.6, 1.6, 0.01).name("Обхват").onChange(live);
+  vig.add(p.vignette, "darkness", 0.4, 1, 0.01).name("Затъмнение").onChange(live);
+
   const ssr = gui.addFolder("Reflections (SSR)");
   ssr.add(p.ssr, "enabled").name("Вкл.").onChange(rebuild);
 }
