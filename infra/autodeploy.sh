@@ -97,11 +97,30 @@ JWT_REFRESH_SECRET=$(openssl rand -hex 32)
 INTERNAL_API_SECRET=$(openssl rand -hex 24)
 CORS_ORIGINS=https://${DOMAIN}
 PUBLIC_WEB_URL=https://${DOMAIN}/app
+PUBLIC_API_URL=https://${DOMAIN}
 COOKIE_DOMAIN=
 BOOTSTRAP_OWNER_EMAIL=${OWNER_EMAIL}
 # Stripe — празно = магазинът показва „отваря скоро“ (Фаза 1). Попълни за Фаза 2.
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+# Сложи true САМО след като зададеш Terms-of-service URL в Stripe Dashboard.
+STRIPE_TOS_CONFIGURED=false
+# ── По желание (продукцията работи и без тях) ────────────────────────────────
+# Имейл (потвърждение/смяна на парола). Празен SMTP_HOST => имейлите се логват.
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_SECURE=false
+# Социален вход (и двете половини трябва да са зададени).
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+# Discord админ известия.
+DISCORD_WEBHOOK_URL=
+# Sentry следене на грешки.
+SENTRY_DSN=
 ENV
   chmod 600 .env
   ok "нов .env с уникални тайни (пази го — от него зависи достъпът до базата)"
