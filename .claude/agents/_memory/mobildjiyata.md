@@ -106,10 +106,6 @@
 - **2026-06-26:** Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive" (Android vitals); кадър <16ms
   за 60fps, frozen >700ms. Публикувай **AAB** (не APK); R8 (`minifyEnabled`) + `shrinkResources`.
   (Източник: developer.android.com/topic/performance/vitals.)
-- **2026-06-26:** Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive" (Android vitals); кадър <16ms
-- **2026-07-06:** Google Play target API 35 (Android 15) задължителен за нови апове И ъпдейти от 31.08.2025 (extension до 01.11.2025 при заявка); target API 36 (Android 16) става задължителен от 31.08.2026. Wear OS/Android TV изостават с едно ниво (API 34/35). Апове под изискването не се махат, но губят видимост за нови юзъри на по-нови устройства. _("Google Play, target API, TWA zabobovdol + всеки Android submit"; verified; "https://support.google.com/googleplay/android-developer/answer/11926878")_
-  за 60fps, frozen >700ms. Публикувай **AAB** (не APK); R8 (`minifyEnabled`) + `shrinkResources`.
-  (Източник: developer.android.com/topic/performance/vitals.)
 
 ## Карантина (непроверени — НЕ са факт)
 - **2026-07-06:** Bubblewrap TWA build без пинат @bubblewrap/cli е нерепродуцируем — версията определя генерирания targetSdk; пинвай версията и проверявай targetSdkVersion в app/build.gradle преди AAB. _("TWA CI, zabobovdol"; "вероятно"; ".github/workflows/android.yml:46")_

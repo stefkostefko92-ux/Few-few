@@ -78,7 +78,7 @@
 - **2026-06-26:** ox_core най-нов е v1.5.14 (29 май 2026) с поддръжка за strict statebags — подсилва server-authoritative state дисциплината. _("ox-ecosystem-security"; verified; "https://github.com/overextended/ox_core/releases")_
 - **2026-06-26:** ox_lib най-нов е v3.38.0 (17 юни 2026): нови collection types, insertion-ordered Map, radial menu подобрения. _("ox-ecosystem"; verified; "https://github.com/overextended/ox_lib/releases")_
 - **2026-06-26:** FiveM Recommended server build е около 25770 (промотиран ~началото на юни 2026); за прод ползвай Recommended, не Latest. _("fivem-artifacts"; verified; "https://xgamingserver.com/blog/fivem-server-artifacts-explained/")_
-- **2026-06-25:** Lua 5.3 е премахнат — не добавяй `lua54 'yes'`; CommunityOx е архивиран → ползвай overextended.
+- **2026-06-25:** Lua 5.3 е премахнат — не добавяй `lua54 'yes'`; CommunityOx е архивиран → ползвай overextended. _("FiveM Lua 5.4 default; overextended"; verified; "https://docs.fivem.net/docs/scripting-reference/resource-manifest/ ; https://github.com/overextended")_
 
 ## Карантина (непроверени — НЕ са факт)
 - **2026-07-06:** ox_core точен server export за player обект (Ox.GetPlayer срещу exports.ox_core:GetPlayer) и методи (setGroup/getGroup/addAccountBalance) НЕ потвърдени на живо — raw GitHub пътища (server/player/class.lua, init.lua) върнаха 404, repo структурата вероятно е пренаредена. Потвърди чрез docs.overextended.dev/ox_core или live repo tree преди цитат. _("ox_core player API — за проверка"; unverified; "raw.githubusercontent.com/overextended/ox_core/main/server/player/* върна 404 (2026-07-06)")_

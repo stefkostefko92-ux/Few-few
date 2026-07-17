@@ -50,27 +50,53 @@ const lessonDate = (b) => { const m = b.match(/\*\*(\d{4}-\d{2}-\d{2})/); return
 const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
 const daysSince = (d) => (Date.parse(TODAY + "T00:00:00Z") - Date.parse(d + "T00:00:00Z")) / 86400000;
 
-// Има ли поуката цитиран източник? Форматът е `_(scope; verified; source)_` — източникът
-// е ПОСЛЕДНИЯТ „;"-сегмент. Броим за източник всичко непразно и смислено (URL, file:line,
-// член от закон, ИЛИ книга/автор като „Fowler, Refactoring 2nd ed."). Липсва само ако няма
-// tail изобщо, или последният сегмент е празен / е просто „verified".
-const hasSource = (tail) => {
+// Има ли поуката цитиран източник? Каноничният формат е `_(scope; verified; source)_` —
+// източникът е ПОСЛЕДНИЯТ „;"-сегмент. Броим за източник всичко непразно и смислено (URL,
+// file:line, член от закон, ИЛИ книга/автор като „Fowler, Refactoring 2nd ed."). Липсва само
+// ако няма tail изобщо, или последният сегмент е празен / е просто „verified".
+const tailHasSource = (tail) => {
   if (!tail) return false;
   const parts = String(tail).split(";").map((s) => s.trim()).filter(Boolean);
   if (parts.length < 2) return false; // очакваме поне scope + източник
   const src = parts[parts.length - 1].replace(/^["'„“”]+|["'„“”]+$/g, "").trim();
   return src.length > 3 && !/^(un)?verified$/i.test(src);
 };
+// Приема ЦЕЛИЯ текст на поуката (блок). Освен каноничния trailing `_(…; source)_`, признава и
+// легитимните формати, които агентите ползват на практика: inline `(Източник: …)` / `(Source: …)`,
+// гол URL (`https://…`), собствено-кодово потекло (`file:line`, `tools/…`, `src/…`, `.mjs`/`.ts`/
+// `.js`). Всичките са реален източник — не са „измислени". Само поука БЕЗ нито едно от тях е „без източник".
+const hasSource = (block) => {
+  if (!block) return false;
+  const m = String(block).match(/_\((.*?)\)_\s*$/);
+  if (tailHasSource(m && m[1])) return true;
+  if (/\((?:Източник|Source)\s*:\s*[^)]{4,}\)/i.test(block)) return true; // inline цитат
+  if (/https?:\/\/\S{4,}/.test(block)) return true;                       // гол URL
+  if (/\b[\w./-]+\.(?:mjs|ts|tsx|js|jsx|json|md|prisma|ejs|html)\b/i.test(block)) return true; // репо файл
+  if (/\b(?:tools|src|prisma|app|deploy)\/[\w./-]+/.test(block)) return true; // репо път
+  if (/\b[\w./-]+:\d+\b/.test(block)) return true;                        // file:line
+  return false;
+};
 
+// Всяка поука е БЛОК: реда „- …" + всички следващи continuation редове (заглъбен текст,
+// не нов bullet, не заглавие, не празен ред). Източникът `_(…)_` често стои на continuation
+// ред — затова четем целия блок, не само първия ред (иначе многоредова поука се брои
+// фалшиво „без източник", а Jaccard сравнява само първите редове).
 function sectionBullets(md, heading) {
   const lines = md.split("\n");
   const start = lines.findIndex((l) => new RegExp(`^##\\s*${heading}`).test(l));
   if (start === -1) return [];
   const out = [];
+  let cur = null;
   for (let i = start + 1; i < lines.length; i++) {
-    if (/^##\s/.test(lines[i])) break;
-    if (lines[i].trim().startsWith("- ")) out.push(lines[i]);
+    const l = lines[i];
+    if (/^##\s/.test(l)) break;
+    if (l.trim().startsWith("- ")) { if (cur !== null) out.push(cur); cur = l.trim(); }
+    else if (cur !== null) {
+      if (l.trim() === "") { out.push(cur); cur = null; }
+      else cur += " " + l.trim();
+    }
   }
+  if (cur !== null) out.push(cur);
   return out;
 }
 
@@ -117,7 +143,7 @@ for (const id of allIds) {
     r.lessons = verified.length;
     r.quarantine = quarantine.length;
     // проверени поуки без цитиран източник (качествен сигнал, не структурен срив → предупреждение)
-    const unsourced = verified.filter((b) => { const m = b.match(/_\((.*?)\)_\s*$/); return !hasSource(m && m[1]); });
+    const unsourced = verified.filter((b) => !hasSource(b));
     if (unsourced.length) r.warn.push(`${unsourced.length} проверени поуки без цитиран източник (закон „източник или нищо")`);
     // почти-дубли
     let dup = 0;

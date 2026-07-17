@@ -58,7 +58,7 @@
 - **2026-06-26:** Prior art clipify (Claude Code skill) строи karaoke captions като ASS (не SRT) от Whisper word-JSON чрез build_ass.py (word-highlight стил), и верифицира тайминг при repurpose чрез audio_align.py — offset на под-клип в дълъг източник. Заемаемо за clip.sh/repurpose.sh. _("детерминистичен caption pipeline + tайминг-верификация"; verified; "https://github.com/louisedesadeleer/clipify")_
 - **2026-06-26:** Официалният c2patool (contentauth/c2pa-rs) маркира AI съдържание чрез `--create trainedAlgorithmicMedia`, който авто-добавя c2pa.created action; read-back за верификация на embed-нат манифест е `c2patool <file> -d`. _("C2PA AI-disclosure CLI за tools/social/c2pa-sign.sh"; verified; "https://github.com/contentauth/c2pa-rs/blob/main/cli/docs/usage.md")_
 - **2026-06-26:** EU AI Act чл. 50 влиза 02.08.2026; Code of Practice финализиран 10.06.2026 (C2PA Content Credentials + невидим watermark, multi-layer). _("AI-disclosure/C2PA"; verified; "https://artificialintelligenceact.eu/article/50/")_
-- **2026-06-25:** EU AI Act чл. 50: видим „AI-generated“ етикет + C2PA; платформите свалят C2PA при качване → винаги и видим етикет.
+- **2026-06-25:** EU AI Act чл. 50: видим „AI-generated“ етикет + C2PA; платформите свалят C2PA при качване → винаги и видим етикет. _("AI Act чл.50 етикетиране + C2PA"; verified; "https://artificialintelligenceact.eu/article/50/ ; https://c2pa.org/")_
 
 ## Карантина (непроверени — НЕ са факт)
 - **2026-07-06:** Instagram custom alt text е ориентировъчно ~100 знака (някои screen readers режат ~125), но не намерих актуален официален Meta/IG док с твърд лимит — третирай като хипотеза, не факт. _(accessibility/instagram-alt-text; unverified; "https://blog.hootsuite.com/instagram-alt-text/ (3rd-party)")_

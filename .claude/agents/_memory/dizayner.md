@@ -105,14 +105,31 @@
 - **2026-06-26:** Firefox 144+ ship-на View Transitions same-document по подразбиране (изключен в 143). Same-document VT вече ~88% global, широко Baseline-подобно; cross-document VT още НЕ е Baseline → progressive enhancement. _("View Transitions поддръжка"; verified; "https://caniuse.com/view-transitions (2026-06-26)")_
 - **2026-06-26:** Three.js latest = 0.185.0 (r185, ~юни 2026); GSAP 3.15.0; Pixi 8.19.0; anime.js 4.5.0; Motion 12.42.0 — пинвай тези при инсталация. _("creative front-end версии"; verified; "https://registry.npmjs.org/three/latest, /gsap/latest, /pixi.js/latest, /animejs/latest, /motion/latest (npm registry API, 2026-06-26)")_
 - **2026-06-26:** **Режимът зависи от типа сайт (директива на собственика).** Reduced-motion дисциплината
+  (gate, статичен fallback, спокойни defaults, строг CWV, „работи без JS") важи за **СЕРИОЗНИ** сайтове —
+  корпоративни/медицински/граждански/държавни/финансови (вкл. zabobovdol/medqr). За **ТВОРЧЕСКИ** (портфолио/
+  арт/бранд) → по подразбиране максимален спектакъл, reduced-motion по избор. **Универсално и в двата режима:**
+  никога >3 проблясъка/сек (WCAG 2.3.1 — епилепсия), защото е физическа безопасност, не консерватизъм.
+  Ако режимът не е ясен — питай. (Източник: директива на собственика 2026-06-26.)
 - **2026-06-26:** Носещ компромис на репото (СЕРИОЗЕН режим): zabobovdol е за **възрастни** (вестибуларна
+  чувствителност), medqr е медицински за **глухи/слабочуващи** + CSP nonce. **Спешният `/e/<token>` изглед —
+  почти без декоративна анимация** (спокойствие > спектакъл). (Източник: CLAUDE.md, medqr conventions.)
 - **2026-06-26:** `tools/design/motion-a11y.mjs` има `--creative` флаг: в творчески режим reduced-motion HIGH-овете
+  падат до INFO (не fail-ват гейта), анти-строб остава. По подразбиране = сериозен/строг. (Източник: собствен инструмент.)
 - **2026-06-26:** Винаги fallback: под reduced-motion → статичен poster; low-FPS/mobile → разруши WebGL
+  контекста (`loseContext()`) → CSS/статика. Progressive enhancement: работи без JS. (Източник: web.dev, Blenra prompt.)
 - **2026-06-26:** WebGPU е shippable 2026 (Safari 26, Firefox 141/145) **но WebGL2 fallback задължителен**
+  (Firefox Linux/Android още). Three r182, от r171 WebGPURenderer zero-config; **TSL** компилира към GLSL/WGSL.
+  (Източник: utsubo 2026, web.dev/webgpu, MDN.)
 - **2026-06-26:** **GSAP е 100% безплатен** (вкл. бивши Club плъгини, комерсиално) — Webflow купи GreenSock 2024.
+  (Източник: gsap.com/pricing, webflow.com/updates/gsap-becomes-free. Точните условия — провери license страницата.)
 - **2026-06-26:** Стек по тежест: **Three.js+GLSL** макс съвместимост; **WebGPU+TSL** ново тежко (+WebGL2 fallback);
+  **OGL/raw WebGL2** единичен лек ефект (по-малък bundle = по-добър LCP); **Pixi v8** 2D; **R3F v9** за React 19 (zabobovdol).
+  **Lenis** плавен скрол, но **изключи под reduced-motion**. (Източник: r3f docs, lenis, pixijs.)
 - **2026-06-26:** Производителност: GPU не main thread; **OffscreenCanvas + Web Worker** (`transferControlToOffscreen`);
+  rAF→`setTimeout` за paint между интеракция и тежка логика (INP); lazy-init с IntersectionObserver, teardown при изход.
+  (Източник: web.dev/offscreen-canvas, debugbear rAF/INP.)
 - **2026-06-26:** `tools/design/motion-a11y.mjs` хваща: анимация без reduced-motion, WebGL без matchMedia, autoplay
+  без контрол, inline script без nonce, вероятен строб. Тествано; zabobovdol/src вече има reduced-motion gate. (Източник: собствен инструмент.)
 
 ## Карантина (непроверено — не се чете като факт)
 - **2026-07-12:** В Tailwind тематичен ремап през класов селектор (напр. `.vivid .text-tera-dark{}`) НЕ хваща hover-варианта `.hover\\:text-tera-dark:hover` — различен клас. Затова hover с едновременно светъл фон + оригинален тъмен текст остава четим, но базови `text-tera-dark` линкове и base-фонове изискват отделни ремап правила за всяка визия. _("Tailwind dark/vivid theming, hover: варианти, контрастен одит"; unverified; "Прочетен реален код mastilko/src/app/globals.css (.dark/.vivid блокове) + tailwind.config.ts + компоненти; CSS специфичност/селектор семантика.")_
