@@ -3185,7 +3185,7 @@ export default function App(){
         </div>
 
         {/* SERVICE AREAS + RESOURCES — internal link equity to geo + blog */}
-        <div style={{padding:"24px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,maxWidth:1100,margin:"0 auto",width:"100%"}} className="cs-lab-grid">
+        <div style={{padding:"24px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:32,maxWidth:1100,margin:"0 auto",width:"100%"}} className="cs-lab-grid">
           <div>
             <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"AREE SERVITE":lang==="bg"?"ОБСЛУЖВАНИ РАЙОНИ":"SERVICE AREAS"}</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px"}}>
@@ -3208,6 +3208,17 @@ export default function App(){
                 : [["Колко струва изработката на сайт","quanto-costa-sito-web"],["WooCommerce срещу Shopify","woocommerce-vs-shopify"],["Какво е ERP система","cos-e-un-erp"],["SEO за малкия бизнес","seo-per-piccole-imprese"]]
               ).map(function(a){return <a key={a[1]} href={b+a[1]+"/"} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {a[0]}</a>})})()}
               <a href={lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none",marginTop:2}}>{lang==="it"?"tutti gli articoli →":lang==="bg"?"всички статии →":"all articles →"}</a>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"GUIDE & RISORSE":lang==="bg"?"ГИДОВЕ & РЕСУРСИ":"GUIDES & RESOURCES"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {(lang==="bg"
+                ? [["Речник (какво е…)","/bg/rechnik/"],["Сравнения (X срещу Y)","/bg/sravneniya/"],["Решения по бранш","/bg/branshove/"],["Локални услуги","/bg/uslugi-lokalni/"]]
+                : lang==="en"
+                ? [["Glossary (what is…)","/en/glossary/"],["Comparisons (X vs Y)","/en/comparisons/"],["Solutions by industry","/en/industries/"],["Local services","/en/local-services/"]]
+                : [["Glossario (cos'è…)","/glossario/"],["Confronti (X vs Y)","/confronti/"],["Soluzioni per settore","/settori/"],["Servizi locali","/servizi-locali/"]]
+              ).map(function(g){return <a key={g[1]} href={g[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {g[0]}</a>})}
             </div>
           </div>
         </div>
