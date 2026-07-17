@@ -142,6 +142,14 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile.marketing
+      # Optional analytics + search-console verification, baked in at build time
+      # (static export). Empty by default → zero trackers, no verification tags.
+      args:
+        NEXT_PUBLIC_PLAUSIBLE_DOMAIN: ${NEXT_PUBLIC_PLAUSIBLE_DOMAIN:-}
+        NEXT_PUBLIC_PLAUSIBLE_SRC: ${NEXT_PUBLIC_PLAUSIBLE_SRC:-}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION:-}
+        NEXT_PUBLIC_BING_SITE_VERIFICATION: ${NEXT_PUBLIC_BING_SITE_VERIFICATION:-}
     restart: unless-stopped
     ports:
       - "127.0.0.1:${MK_HOST_PORT:-8090}:8080"
