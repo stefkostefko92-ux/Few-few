@@ -1267,9 +1267,33 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     // разтварят към хоризонта и сцената получава дълбочина на план-слоеве.
     scene.fog = new THREE.Fog(pal.fog, 6, 18);
 
-    const camera = new THREE.PerspectiveCamera(42, mount.clientWidth / mount.clientHeight, 0.1, 100);
-    camera.position.set(0, 2.4, 8.0);
-    camera.lookAt(0, 1.4, 0);
+    const camera = new THREE.PerspectiveCamera(48, mount.clientWidth / mount.clientHeight, 0.1, 100);
+
+    /* ----- рамкиране, независимо от съотношението -----
+     * Двамата бойци стоят на x=±FIGHTER_HALF_SPAN, крака на y=0, глави
+     * ~y=1.8. Изчисляваме минималната отстояща z, при която ЦЕЛИЯТ им
+     * силует се събира и хоризонтално, и вертикално за дадено съотношение,
+     * и никога не пускаме камерата по-близо от базовата z (по-широкото
+     * съотношение → вертикалът лимитира → базовата z стига; тесен/портретен
+     * панел → хоризонталът лимитира → дърпаме камерата назад). Така бойците
+     * са в кадър при 2.5:1 (прод панел), 2.16:1 (демо) И 1.28:1 (тесен). */
+    const FRAME_FOV = 48;                 // резинг FOV (същият като anchor)
+    const FRAME_HALF_W = 3.2;             // half-span бойци + поле за HUD/оръжие
+    const FRAME_HALF_H = 1.7;             // half-height силует спрямо look-точката
+    const FRAME_BASE_Z = 6.0;             // базова (минимална) резинг дистанция
+    const framingZ = (aspect: number): number => {
+      const t = Math.tan((FRAME_FOV * Math.PI) / 180 / 2);
+      const zW = FRAME_HALF_W / (t * Math.max(0.3, aspect));
+      const zH = FRAME_HALF_H / t;
+      return Math.max(FRAME_BASE_Z, zW, zH);
+    };
+    const restZ0 = framingZ(camera.aspect);
+    camAnchorRef.current = { x: 0, y: 1.9, z: restZ0, lx: 0, ly: 1.3, lz: 0, fov: FRAME_FOV };
+    // Стартовата позиция вече е фронтално рамкираща (по-широк push-in
+    // отстъп), НЕ странично/ниско както преди — така при idle камерата
+    // никога не е вътре в скала/дърво.
+    camera.position.set(0, 3.2, restZ0 + 2.5);
+    camera.lookAt(0, 1.3, 0);
     cameraRef.current = camera;
 
     /* ----- photoreal backend (WebGPU → WebGL2 → lite) -----
@@ -2525,10 +2549,18 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- main loop ----- */
     let last = performance.now();
+    (window as any).__loopCount = ((window as any).__loopCount || 0) + 1;
+    const __loopId = (window as any).__loopCount;
     function tick(now: number) {
       const frameMs = now - last;          // real (uncapped) frame time
-      const rawDt = Math.min(0.05, frameMs / 1000);
+      // Флор при 0: rAF `now` може да е с различен произход спрямо
+      // performance.now() (записан в `last` при setup) → първи/рестартов
+      // кадър дава ОТРИЦАТЕЛЕН frameMs. Без този флор отрицателното dt
+      // прави lerp-а на камерата разходящ (пропада в геометрия / отлита) и
+      // кара intro.t да върви назад, тъй че intro никога не завършва.
+      const rawDt = Math.max(0, Math.min(0.05, frameMs / 1000));
       last = now;
+      { const w = window as any; w.__ticks = w.__ticks || {}; w.__ticks[__loopId] = (w.__ticks[__loopId] || 0) + 1; w.__lastDt = rawDt; w.__minDt = Math.min(w.__minDt ?? 999, frameMs / 1000); w.__introT = introRef.current.t; }
       adaptiveResolution(frameMs > 0 && frameMs < 1000 ? frameMs : 16);
 
       // Hit-stop freezes simulation for a few frames (camera + bloom still tick).
@@ -2745,6 +2777,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.fov += (camTargetFov - cam.fov) * Math.min(1, rawDt * 5);
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
+      (window as any).__camDbg = { p: [cam.position.x, cam.position.y, cam.position.z], fov: cam.fov, anchor: { ...camAnchorRef.current }, introActive: introRef.current.active, playing: choreoRef.current?.isPlaying(), aspect: cam.aspect, hero: heroRigRef.current ? [heroRigRef.current.position.x, heroRigRef.current.position.y, heroRigRef.current.position.z] : null, foe: foeRigRef.current ? [foeRigRef.current.position.x, foeRigRef.current.position.y, foeRigRef.current.position.z] : null };
 
       // Floating HUD projection — anchor each health bar above its rig's
       // head by projecting a world point to screen space. Runs every
