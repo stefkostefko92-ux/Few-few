@@ -3,7 +3,7 @@
   "hooks": {
     "SubagentStart": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera",
         "hooks": [
           {
             "type": "command",
@@ -15,7 +15,7 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera",
         "hooks": [
           {
             "type": "command",

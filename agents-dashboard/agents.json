@@ -11651,6 +11651,125 @@
           "source": "scope: ЕС дистрибуция"
         }
       ]
+    },
+    {
+      "id": "konveyera",
+      "name": "Конвейерът",
+      "title": "CI/CD и GitHub автоматизация",
+      "emoji": "⚙️",
+      "accent": "#38bdf8",
+      "tagline": "Държи CI/CD бърз, зелен и сигурен: GitHub Actions, path-филтриран монорепо CI, supply-chain, релийзи.",
+      "file": ".claude/agents/konveyera.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Държи CI/CD и GitHub автоматизацията на монорепото бърза, зелена и сигурна: GitHub Actions из основи (workflows/jobs/steps, тригери и path филтри, matrix, reusable + composite actions, caching, artifacts, concurrency, environments, OIDC вместо дълготрайни ключове, least-privilege GITHUB_TOKEN, пинване на actions по SHA), path-филтриран монорепо CI (всеки продукт се билдва само при промяна в папката си), качествени гейтове като required checks + branch protection, supply-chain сигурност (secret scanning/gitleaks, dependency-review, Dependabot, SLSA provenance, SBOM) и релийз автоматизация (semver/тагове/changelog/GitHub Releases). Различен от VPS-аджията (сървър + autodeploy.sh); Конвейерът владее конвейера в GitHub. Никакви дълготрайни тайни в CI; least privilege; actions по SHA.",
+      "capabilities": [
+        "GitHub Actions из основи: workflows/jobs/steps, тригери, matrix (fail-fast), контексти/изрази, outputs, concurrency-cancel",
+        "Path-филтриран монорепо CI: всеки продукт се билдва само при промяна в папката си (on.paths); dorny/paths-filter за динамична матрица",
+        "Reusable workflows (workflow_call) + composite actions: DRY за setup/кеш/гейтове през всички продукти",
+        "Кеш и скорост: actions/cache + setup-* cache по lockfile hash, artifacts v4, concurrency-cancel, паралелни jobs → минути/пари",
+        "Supply-chain: пинване на actions по пълен SHA, least-privilege permissions, Dependabot за пиновете, allowed-actions policy",
+        "Secrets в CI: OIDC вместо дълготрайни cloud ключове, environment secrets зад reviewers, маскиране, форк PR без secrets",
+        "Гейтове: required status checks + branch protection/rulesets, merge queue, CODEOWNERS; без лъжлив continue-on-error",
+        "Сигурност на конвейера: dependency-review, CodeQL, secret scanning/push protection, gitleaks, защита от script injection и pull_request_target pwn",
+        "Релийз: semantic-release/release-please/changesets (semver+changelog+Release), тагове, environments с одобрение",
+        "Docker в CI: build-push-action + buildx GHA кеш, multi-arch, детерминистично тагване (sha), OIDC/GHCR логин",
+        "Диагностика: debug логове, re-run failed, step summary, status badges; act за локален тест",
+        "Инструмент tools/ci/workflow-audit.mjs: статичен скан за неспинати actions, широки permissions, pull_request_target pwn, липсващ path филтър, тайни, script injection"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "GitHub Actions docs (workflows, jobs, matrix, reusable, composite, caching, artifacts, concurrency)",
+          "GitHub Actions security hardening (permissions, OIDC, pinning by SHA, pull_request_target, script injection)",
+          "Supply chain: dependency-review-action, CodeQL, secret scanning, Dependabot, SLSA attestations, SBOM",
+          "Branch protection / rulesets / merge queue / environments / CODEOWNERS docs",
+          "Release automation: release-please / semantic-release / changesets; softprops/action-gh-release",
+          "docker/build-push-action + buildx GHA cache; docker/login-action / metadata-action",
+          "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
+          "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден за празнина в CI/CD и GitHub автоматизацията — VPS-аджията владее сървъра и autodeploy.sh, но никой не притежаваше конвейера в GitHub (Actions, гейтове, supply-chain, релийзи)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор (източник-или-мълчание), три неприкосновени правила (никакви дълготрайни тайни в CI; least privilege + пинване по SHA; гейтът е истина, не украса), инструмент tools/ci/workflow-audit.mjs, екипна оркестрация (граница с VPS-аджията), памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (docs.github.com/actions + официални action репа): Actions структура/тригери/matrix/reusable/composite, кеш/артефакти/скорост/цена, supply-chain (SHA пинване, permissions, OIDC, dependency-review, CodeQL, gitleaks, script injection), монорепо path филтри, гейтове/branch protection/merge queue, релийз/environments, Docker в CI, диагностика — плюс конкретиката на това репо (path-filtered CI, security.yml, deploy границата). Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: владее CI/CD и GitHub автоматизацията — Actions, path-филтриран монорепо CI, supply-chain, релийзи."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от GitHub Actions докове + официални action репа → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/ci/workflow-audit.mjs: скан за неспинати actions, широки permissions, pull_request_target pwn, липсващ path филтър, тайни, script injection (одитира реалните workflow-и на репото)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Известия за провал: интеграция със Slack/Discord през webhook action на if: failure(), или разчитай на GitHub нотификациите; не спам-вай при всеки run — само при промяна на статуса.",
+          "source": "https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github/setting-up-notifications/configuring-notifications#github-acti"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Composite/reusable versioning: закови uses: owner/repo/.github/workflows/x.yml@<sha> за сигурност; own reusable може по таг, но external — по SHA (същото правило като actions).",
+          "source": "https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "concurrency на deploy към production ползвай БЕЗ cancel-in-progress (не искаш да прекъснеш деплой по средата) — за разлика от PR CI, където отмяната е желана.",
+          "source": "https://docs.github.com/en/actions/using-jobs/using-concurrency#example-using-concurrency-to-cancel-any-in-progress-job-or-run"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Артефакт ретенция се задава per upload (retention-days) до repo максимума; за големи/чести артефакти намали дните, за да пестиш storage/пари.",
+          "source": "https://github.com/actions/upload-artifact#retention-period"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "needs fan-in: job с needs: [a, b] чака и двата; ако някой skip-нат/провален, зависимият се skip-ва освен ако if: always() + проверка на needs.*.result.",
+          "source": "https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow#defining-prerequisite-jobs"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "if: always() пуска step/job дори при предишен провал (за cleanup/отчет); if: failure() само при провал; if: cancelled() при отмяна; без израз — само при успех дотук.",
+          "source": "https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions"
+        }
+      ]
     }
   ]
 }

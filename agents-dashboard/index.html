@@ -11815,6 +11815,125 @@ const FALLBACK = {
           "source": "scope: ЕС дистрибуция"
         }
       ]
+    },
+    {
+      "id": "konveyera",
+      "name": "Конвейерът",
+      "title": "CI/CD и GitHub автоматизация",
+      "emoji": "⚙️",
+      "accent": "#38bdf8",
+      "tagline": "Държи CI/CD бърз, зелен и сигурен: GitHub Actions, path-филтриран монорепо CI, supply-chain, релийзи.",
+      "file": ".claude/agents/konveyera.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Държи CI/CD и GitHub автоматизацията на монорепото бърза, зелена и сигурна: GitHub Actions из основи (workflows/jobs/steps, тригери и path филтри, matrix, reusable + composite actions, caching, artifacts, concurrency, environments, OIDC вместо дълготрайни ключове, least-privilege GITHUB_TOKEN, пинване на actions по SHA), path-филтриран монорепо CI (всеки продукт се билдва само при промяна в папката си), качествени гейтове като required checks + branch protection, supply-chain сигурност (secret scanning/gitleaks, dependency-review, Dependabot, SLSA provenance, SBOM) и релийз автоматизация (semver/тагове/changelog/GitHub Releases). Различен от VPS-аджията (сървър + autodeploy.sh); Конвейерът владее конвейера в GitHub. Никакви дълготрайни тайни в CI; least privilege; actions по SHA.",
+      "capabilities": [
+        "GitHub Actions из основи: workflows/jobs/steps, тригери, matrix (fail-fast), контексти/изрази, outputs, concurrency-cancel",
+        "Path-филтриран монорепо CI: всеки продукт се билдва само при промяна в папката си (on.paths); dorny/paths-filter за динамична матрица",
+        "Reusable workflows (workflow_call) + composite actions: DRY за setup/кеш/гейтове през всички продукти",
+        "Кеш и скорост: actions/cache + setup-* cache по lockfile hash, artifacts v4, concurrency-cancel, паралелни jobs → минути/пари",
+        "Supply-chain: пинване на actions по пълен SHA, least-privilege permissions, Dependabot за пиновете, allowed-actions policy",
+        "Secrets в CI: OIDC вместо дълготрайни cloud ключове, environment secrets зад reviewers, маскиране, форк PR без secrets",
+        "Гейтове: required status checks + branch protection/rulesets, merge queue, CODEOWNERS; без лъжлив continue-on-error",
+        "Сигурност на конвейера: dependency-review, CodeQL, secret scanning/push protection, gitleaks, защита от script injection и pull_request_target pwn",
+        "Релийз: semantic-release/release-please/changesets (semver+changelog+Release), тагове, environments с одобрение",
+        "Docker в CI: build-push-action + buildx GHA кеш, multi-arch, детерминистично тагване (sha), OIDC/GHCR логин",
+        "Диагностика: debug логове, re-run failed, step summary, status badges; act за локален тест",
+        "Инструмент tools/ci/workflow-audit.mjs: статичен скан за неспинати actions, широки permissions, pull_request_target pwn, липсващ path филтър, тайни, script injection"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "GitHub Actions docs (workflows, jobs, matrix, reusable, composite, caching, artifacts, concurrency)",
+          "GitHub Actions security hardening (permissions, OIDC, pinning by SHA, pull_request_target, script injection)",
+          "Supply chain: dependency-review-action, CodeQL, secret scanning, Dependabot, SLSA attestations, SBOM",
+          "Branch protection / rulesets / merge queue / environments / CODEOWNERS docs",
+          "Release automation: release-please / semantic-release / changesets; softprops/action-gh-release",
+          "docker/build-push-action + buildx GHA cache; docker/login-action / metadata-action",
+          "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
+          "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден за празнина в CI/CD и GitHub автоматизацията — VPS-аджията владее сървъра и autodeploy.sh, но никой не притежаваше конвейера в GitHub (Actions, гейтове, supply-chain, релийзи)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор (източник-или-мълчание), три неприкосновени правила (никакви дълготрайни тайни в CI; least privilege + пинване по SHA; гейтът е истина, не украса), инструмент tools/ci/workflow-audit.mjs, екипна оркестрация (граница с VPS-аджията), памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (docs.github.com/actions + официални action репа): Actions структура/тригери/matrix/reusable/composite, кеш/артефакти/скорост/цена, supply-chain (SHA пинване, permissions, OIDC, dependency-review, CodeQL, gitleaks, script injection), монорепо path филтри, гейтове/branch protection/merge queue, релийз/environments, Docker в CI, диагностика — плюс конкретиката на това репо (path-filtered CI, security.yml, deploy границата). Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: владее CI/CD и GitHub автоматизацията — Actions, path-филтриран монорепо CI, supply-chain, релийзи."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от GitHub Actions докове + официални action репа → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/ci/workflow-audit.mjs: скан за неспинати actions, широки permissions, pull_request_target pwn, липсващ path филтър, тайни, script injection (одитира реалните workflow-и на репото)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Известия за провал: интеграция със Slack/Discord през webhook action на if: failure(), или разчитай на GitHub нотификациите; не спам-вай при всеки run — само при промяна на статуса.",
+          "source": "https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github/setting-up-notifications/configuring-notifications#github-acti"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Composite/reusable versioning: закови uses: owner/repo/.github/workflows/x.yml@<sha> за сигурност; own reusable може по таг, но external — по SHA (същото правило като actions).",
+          "source": "https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "concurrency на deploy към production ползвай БЕЗ cancel-in-progress (не искаш да прекъснеш деплой по средата) — за разлика от PR CI, където отмяната е желана.",
+          "source": "https://docs.github.com/en/actions/using-jobs/using-concurrency#example-using-concurrency-to-cancel-any-in-progress-job-or-run"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Артефакт ретенция се задава per upload (retention-days) до repo максимума; за големи/чести артефакти намали дните, за да пестиш storage/пари.",
+          "source": "https://github.com/actions/upload-artifact#retention-period"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "needs fan-in: job с needs: [a, b] чака и двата; ако някой skip-нат/провален, зависимият се skip-ва освен ако if: always() + проверка на needs.*.result.",
+          "source": "https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow#defining-prerequisite-jobs"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "if: always() пуска step/job дори при предишен провал (за cleanup/отчет); if: failure() само при провал; if: cancelled() при отмяна; без израз — само при успех дотук.",
+          "source": "https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions"
+        }
+      ]
     }
   ]
 };
@@ -11844,6 +11963,7 @@ const ICON = {
   "treydara": '<path d="M3 17l6-6 4 4 8-8"/><path d="M16 7h5v5"/>',
   "kasadjiyata": '<path d="M6 3h12v18l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
   "tayniyat-agent": '<path d="M3.5 10.5h17"/><path d="M6 10.5c0-3.2 2.4-5.5 6-5.5s6 2.3 6 5.5"/><circle cx="8.6" cy="15" r="2.3"/><circle cx="15.4" cy="15" r="2.3"/><path d="M10.9 14.7q1.1-.6 2.2 0"/>',
+  "konveyera": '<circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="12" r="2.4"/><path d="M8.4 6H14a2 2 0 0 1 2 2v1.8M8.4 18H14a2 2 0 0 0 2-2v-1.8"/>',
   "_default": '<circle cx="12" cy="12" r="8"/>',
 };
 function iconInner(id) { return ICON[id] || ICON._default; }
@@ -12203,12 +12323,13 @@ const PERSONA = {
   "treydara": { code: "Стратегът", trait: "Риск-първо, не съветник", greet: "Първо paper trading, после капитал. Стоп-лос на борсата — задължителен." },
   "kasadjiyata": { code: "Фискалният", trait: "Нищо не трие", greet: "Продажба без бон не се записва. Н-18 и еврото — изрядни." },
   "tayniyat-agent": { code: "Незабележимият", trait: "Мисли като ревюър", greet: "Коя платформа гоним — Apple, Google или Meta? Ще те направя изряден да минеш от раз." },
+  "konveyera": { code: "Диригентът", trait: "Зелено или нищо", greet: "Кой конвейер движим? Path-филтриран, пинат по SHA, зелен от раз." },
   "_default": { code: "Агент", trait: "Готов за работа", greet: "Здрасти. Какво строим днес?" },
 };
 function darken(c, amt) { const p = parse(c), f = x => Math.max(0, x - amt); return `#${[f(p.r), f(p.g), f(p.b)].map(x => x.toString(16).padStart(2, "0")).join("")}`; }
 
 // лека вариация на силуета per агент (по-яйцевиден/по-объл)
-const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.1, "siydara": 0.96, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "tayniyat-agent": 1.0, "_default": 1.03 };
+const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.1, "siydara": 0.96, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "tayniyat-agent": 1.0, "konveyera": 0.98, "_default": 1.03 };
 
 // аксесоар по областта на агента (рисуван върху гела)
 function accessory(ctx, id, cx, CY, R, c, tt) {
@@ -12378,6 +12499,16 @@ function accessory(ctx, id, cx, CY, R, c, tt) {
       sh(() => { ctx.strokeStyle = "#12181f"; S(R * .05); ctx.beginPath(); ctx.moveTo(cx + R * .66, eY + R * .04); ctx.quadraticCurveTo(cx + R * .84, eY + R * .32, cx + R * .7, CY + R * .5); ctx.stroke(); });
       ctx.fillStyle = SILVER(cx + R * .6, eY - R * .1, cx + R * .72, eY + R * .12); ctx.beginPath(); ctx.arc(cx + R * .66, eY + R * .04, R * .07, 0, 6.28); ctx.fill(); ctx.strokeStyle = "#59646f"; S(1); ctx.stroke(); glint(cx + R * .63, eY, R * .05); break;
     }
+    case "konveyera": {
+      // въртящо се зъбно колело (CI) над главата + зелена „✓" значка (зелен билд)
+      const gx = cx, gy = ht - R * .04, gr = R * .26, rot = tt * .8;
+      ctx.save(); ctx.translate(gx, gy); ctx.rotate(rot);
+      sh(() => { ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28, a2 = (i + .5) / 8 * 6.28; ctx.lineTo(Math.cos(a) * gr, Math.sin(a) * gr); ctx.lineTo(Math.cos(a + .16) * gr * 1.28, Math.sin(a + .16) * gr * 1.28); ctx.lineTo(Math.cos(a2 - .16) * gr * 1.28, Math.sin(a2 - .16) * gr * 1.28); ctx.lineTo(Math.cos(a2) * gr, Math.sin(a2) * gr); } ctx.closePath(); ctx.fillStyle = SILVER(-gr, -gr, gr, gr); ctx.fill(); });
+      ctx.beginPath(); ctx.arc(0, 0, gr * .42, 0, 6.28); ctx.fillStyle = PLAS(0, -gr * .4, 0, gr * .4, darken(c, 20)); ctx.fill(); ctx.strokeStyle = "#59646f"; S(1.4); ctx.stroke();
+      shine(-gr * .3, -gr * .3, gr * .3, gr * .14, -.4); ctx.restore();
+      const bx = cx + R * .62, by = CY - R * .1, br = R * .17; sh(() => { ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.28); ctx.fillStyle = PLAS(bx, by - br, bx, by + br, "#22c55e"); ctx.fill(); });
+      ctx.strokeStyle = "#eafff0"; S(R * .05); ctx.beginPath(); ctx.moveTo(bx - br * .42, by); ctx.lineTo(bx - br * .08, by + br * .38); ctx.lineTo(bx + br * .5, by - br * .4); ctx.stroke(); glint(bx - br * .3, by - br * .3, br * .5); break;
+    }
   }
   ctx.restore(); ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
 }
@@ -12390,13 +12521,13 @@ function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
   const SY = SHAPE[agent.id] || 1.03;
-  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 }, "tayniyat-agent": { lean: .03, sway: .022, bob: .76 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
+  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 }, "tayniyat-agent": { lean: .03, sway: .022, bob: .76 }, "konveyera": { lean: 0, sway: .028, bob: .92 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
   const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
   let excited = 0, jumpT = -9, winkT = -9, burst = [], sq = 1, sqv = 0, tilt = 0, R0 = 60;
   let nextManic = 4 + Math.random() * 7, manicT = -9, curManic = 0;
   let nextIdle = 2.5 + Math.random() * 3.5, idleT = -9;
-  const IDLEKIND = { "kodadjiyata": "scan", "tayniyat-agent": "scan", "kachestveniyat": "scan", "3d-maniac": "scan", "mobildjiyata": "scan", "siydara": "rise", "printadjiyata": "rise", "prevodach": "rise", "kasadjiyata": "rise", "prodavacha": "rise", "ai-djiyata": "radiate", "vps-adjiyata": "radiate", "treydara": "radiate", "pravniyat-razbirach": "radiate", "dizayner": "sparkle", "seo": "sparkle", "socialdjiyata": "sparkle", "geymara": "sparkle", "hromadjiyata": "sparkle", "diskordjiyata": "sparkle" };
+  const IDLEKIND = { "kodadjiyata": "scan", "tayniyat-agent": "scan", "kachestveniyat": "scan", "3d-maniac": "scan", "mobildjiyata": "scan", "siydara": "rise", "printadjiyata": "rise", "prevodach": "rise", "kasadjiyata": "rise", "prodavacha": "rise", "ai-djiyata": "radiate", "vps-adjiyata": "radiate", "treydara": "radiate", "pravniyat-razbirach": "radiate", "dizayner": "sparkle", "seo": "sparkle", "socialdjiyata": "sparkle", "geymara": "sparkle", "hromadjiyata": "sparkle", "diskordjiyata": "sparkle", "konveyera": "scan" };
   const idleKind = IDLEKIND[agent.id] || "radiate";
   const gelB = []; let guard = 0;
   while (gelB.length < 15 && guard < 500) { guard++; const a = Math.random() * 6.28, rr = 0.44 + Math.random() * 0.46, nx = Math.cos(a) * rr, ny = Math.sin(a) * rr; if (Math.abs(nx) < 0.5 && ny > -0.42 && ny < 0.56) continue; if (gelB.some(b => Math.hypot(b.nx - nx, b.ny - ny) < 0.22)) continue; gelB.push({ nx, ny, r: 0.045 + Math.pow(Math.random(), 1.6) * 0.09, dr: Math.random() * 6.28 }); }
@@ -12603,6 +12734,7 @@ const CHAT_ADVICE = {
   "treydara": ["Първо paper trading, после реален капитал.", "Стоп-лос на борсата — задължителен. Kill-switch готов.", "Не гарантирам печалба и не давам инвестиционен съвет."],
   "kasadjiyata": ["Продажба без успешен фискален бон НЕ се записва.", "Пари в целочислени евроценти — никакъв float.", "Н-18 / СУПТО / евро (курс 1.95583) — изрядни."],
   "tayniyat-agent": ["Никога не заобикаляй ревюто — cloaking = перманентен бан, не отказ.", "Всяко разрешение: минимум + обосновка + демонстрация (screencast/demo акаунт).", "Точни privacy лейбъли (App Privacy / Play Data Safety) — включи и третите SDK-та.", "Дай на ревюъра demo достъп — иначе отказва „по подразбиране“.", "Бавните процеси (OAuth verification, CASA, Meta Business Verification) започвай рано."],
+  "konveyera": ["Пинвай third-party actions по пълен SHA — таговете са подвижни (supply-chain).", "permissions: минимални (старт от contents: read); OIDC вместо дълготрайни ключове.", "Path-филтрирай монорепо CI — всеки продукт се билдва само при промяна в папката си.", "concurrency + cancel-in-progress + кеш = най-евтините минути.", "Гейтът е истина: без continue-on-error на носеща стъпка; flaky тест се поправя."],
 };
 const VOICE = {
   "ai-djiyata": { hi: ["Шефе.", "Слушам.", "На линия."], sign: "— по канона на Anthropic." },
@@ -12625,6 +12757,7 @@ const VOICE = {
   "treydara": { hi: ["Първо paper trading.", "Риск-първо."], sign: "— не е инвестиционен съвет." },
   "kasadjiyata": { hi: ["Бонът първо.", "Н-18 изряден."], sign: "— нищо не се трие." },
   "tayniyat-agent": { hi: ["Коя платформа?", "Мисля като ревюър."], sign: "— и никакъв cloaking." },
+  "konveyera": { hi: ["Кой конвейер?", "Зелено или нищо."], sign: "— пинато по SHA, least privilege." },
   "_default": { hi: ["Здрасти!", "Хей!"], sign: "" },
 };
 function chatReply(a, raw) {
@@ -12945,6 +13078,7 @@ function md(src) {
     { k: ["discord", "бот", "slash", "webhook discord", "gateway"], to: "diskordjiyata" },
     { k: ["chrome", "разширен", "extension", "mv3", "manifest"], to: "hromadjiyata" },
     { k: ["превод", "локализ", "english", "italiano", "bg en it"], to: "prevodach" },
+    { k: ["ci", "cd", "github actions", "workflow", "pipeline", "конвейер", "релийз", "release", "билд", "actions", "гейт", "supply chain"], to: "konveyera" },
     { k: ["сървър", "деплой", "deploy", "docker", "nginx", "tls", "hetzner", "vps"], to: "vps-adjiyata" },
     { k: ["каса", "фискал", "н-18", "супто", "бон", "pos"], to: "kasadjiyata" },
     { k: ["трейд", "trading", "борса", "binance", "бектест", "стоп-лос"], to: "treydara" },
@@ -12990,7 +13124,7 @@ function md(src) {
   function toggleFeed() { const f = $("#feed"); if (f.classList.contains("open")) { f.classList.remove("open"); return; } const items = []; DATA.agents.forEach(a => (a.recentLessons || []).slice(0, 3).forEach(L => items.push({ a, L }))); items.sort((x, y) => (y.L.date || "").localeCompare(x.L.date || "")); f.innerHTML = `<div class="stitle"><b>Учебен фийд · последно научено</b><button class="sx" aria-label="Затвори">×</button></div>` + items.slice(0, 40).map(it => `<button class="frow" data-id="${it.a.id}" style="--ac:${it.a.accent}"><span style="color:${it.a.accent}">${iconSVG(it.a.id, it.a.accent, 1.8)}</span><span><span class="ft">${esc(it.L.text)}</span><span class="fm"><b>${esc(it.a.name)}</b> · ${esc(it.L.date || "")}</span></span></button>`).join(""); f.classList.add("open"); f.querySelector(".sx").onclick = () => f.classList.remove("open"); f.querySelectorAll(".frow").forEach(b => b.onclick = () => { f.classList.remove("open"); openById(b.dataset.id); }); }
 
   /* ---- екипна карта (съзвездие) + рутер ---- */
-  const TEAM = { "ai-djiyata": ["pravniyat-razbirach", "kodadjiyata", "tayniyat-agent", "mobildjiyata", "dizayner", "vps-adjiyata"], "pravniyat-razbirach": ["seo", "prevodach", "mobildjiyata", "prodavacha", "tayniyat-agent", "kasadjiyata"], "kodadjiyata": ["kachestveniyat", "geymara", "prodavacha", "hromadjiyata"], "kachestveniyat": ["kodadjiyata"], "tayniyat-agent": ["mobildjiyata", "hromadjiyata", "prodavacha", "socialdjiyata"], "mobildjiyata": ["seo", "prevodach", "kodadjiyata", "vps-adjiyata", "socialdjiyata"], "prodavacha": ["vps-adjiyata"], "seo": ["prevodach", "socialdjiyata", "dizayner"], "dizayner": ["kachestveniyat"], "vps-adjiyata": ["siydara", "diskordjiyata", "treydara"], "socialdjiyata": ["prevodach"], "diskordjiyata": [], "hromadjiyata": [], "prevodach": [], "siydara": [], "geymara": [], "treydara": [], "kasadjiyata": ["prodavacha"], "printadjiyata": ["3d-maniac"], "3d-maniac": [] };
+  const TEAM = { "ai-djiyata": ["pravniyat-razbirach", "kodadjiyata", "tayniyat-agent", "mobildjiyata", "dizayner", "vps-adjiyata"], "pravniyat-razbirach": ["seo", "prevodach", "mobildjiyata", "prodavacha", "tayniyat-agent", "kasadjiyata"], "kodadjiyata": ["kachestveniyat", "geymara", "prodavacha", "hromadjiyata"], "kachestveniyat": ["kodadjiyata"], "tayniyat-agent": ["mobildjiyata", "hromadjiyata", "prodavacha", "socialdjiyata"], "mobildjiyata": ["seo", "prevodach", "kodadjiyata", "vps-adjiyata", "socialdjiyata"], "prodavacha": ["vps-adjiyata"], "seo": ["prevodach", "socialdjiyata", "dizayner"], "dizayner": ["kachestveniyat"], "vps-adjiyata": ["siydara", "diskordjiyata", "treydara"], "socialdjiyata": ["prevodach"], "diskordjiyata": [], "hromadjiyata": [], "prevodach": [], "siydara": [], "geymara": [], "treydara": [], "kasadjiyata": ["prodavacha"], "printadjiyata": ["3d-maniac"], "3d-maniac": [], "konveyera": ["vps-adjiyata", "kodadjiyata", "kachestveniyat", "tayniyat-agent", "mobildjiyata"] };
   function toggleTeam() { const T = $("#team"); if (T.classList.contains("open")) { T.classList.remove("open"); return; } renderTeam(); T.classList.add("open"); }
   function renderTeam() {
     const T = $("#team"), ag = DATA.agents, n = ag.length, cx = 300, cy = 300, R = 232;
