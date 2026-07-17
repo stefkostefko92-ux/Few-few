@@ -268,7 +268,7 @@ function AdminPanel(props) {
   var [serverStats, setServerStats] = useState({connections:0,bandwidth:"0",requests_min:0,uptime:"0d",uptime_pct:"99.9%",load:"0",memory_used:0,memory_total:0,disk_used:0,disk_total:0,nginx_today:0,referrers:[],unique_visitors:0,top_ips:[],hourly:[],user_agents:{desktop:0,mobile:0,bot:0}});
   var [countries, setCountries] = useState({});
   var [tick, setTick] = useState(0);
-  var C="#00e5ff",CR="0,229,255",HEAD="Inter Tight,sans-serif";
+  var C="#00e5ff",CR="0,229,255",HEAD=DISP;
   // Admin auth: the typed password IS the server token (CS_ADMIN_TOKEN in the
   // PHP-FPM env). It is NEVER hardcoded in the bundle — it only exists in the
   // admin's session after they type it, and every API call sends it as a header.
@@ -355,25 +355,34 @@ function AdminPanel(props) {
     csAuthFetch("/api/analyze.php?action=stats").then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}}).catch(function(){});
     csAuthFetch("/api/indexnow.php?action=status").then(function(r){return r.json()}).then(function(d){if(d.ok)setIndexNowLog(d.submissions||[])}).catch(function(){});
     setActLog([{t:new Date().toLocaleTimeString(),a:"Admin session started — all systems nominal",c:"SYSTEM"}]);
-    // SSE real-time lead notifications
-    var sse=null;
-    try{
-      sse=new EventSource("/api/sse-leads.php?token="+encodeURIComponent(csTok()));
-      sse.addEventListener("new_lead",function(e){
-        try{
-          var lead=JSON.parse(e.data);
-          setAnalyzerLeads(function(prev){return [lead].concat(prev).slice(0,50)});
-          setActLog(function(prev){return [{t:new Date().toLocaleTimeString(),a:"NEW LEAD: "+(lead.name||lead.email||"unknown")+" — "+(lead.tested_url||""),c:"LEAD"}].concat(prev).slice(0,100)});
-        }catch(err){}
-      });
-      sse.addEventListener("connected",function(){
-        setActLog(function(prev){return [{t:new Date().toLocaleTimeString(),a:"SSE connected — real-time lead stream active",c:"SYSTEM"}].concat(prev).slice(0,100)});
-      });
-      sse.onerror=function(){
-        setActLog(function(prev){return [{t:new Date().toLocaleTimeString(),a:"SSE reconnecting...",c:"WARN"}].concat(prev).slice(0,100)});
-      };
-    }catch(err){}
-    return function(){clearInterval(iv);if(sse)sse.close()};
+    // Real-time lead stream via a short-lived ticket (admin token never in URL)
+    var sseState={alive:true,cur:null,timer:null};
+    function openLeadStream(){
+      if(!sseState.alive)return;
+      csAuthFetch("/api/sse-ticket.php").then(function(r){return r.json()}).then(function(d){
+        if(!sseState.alive||!d||!d.ok||!d.ticket)return;
+        var s=new EventSource("/api/sse-leads.php?ticket="+encodeURIComponent(d.ticket));
+        sseState.cur=s;
+        s.addEventListener("new_lead",function(e){
+          try{
+            var lead=JSON.parse(e.data);
+            setAnalyzerLeads(function(prev){return [lead].concat(prev).slice(0,50)});
+            setActLog(function(prev){return [{t:new Date().toLocaleTimeString(),a:"NEW LEAD: "+(lead.name||lead.email||"unknown")+" — "+(lead.tested_url||""),c:"LEAD"}].concat(prev).slice(0,100)});
+          }catch(err){}
+        });
+        s.addEventListener("connected",function(){
+          setActLog(function(prev){return [{t:new Date().toLocaleTimeString(),a:"SSE connected — real-time lead stream active",c:"SYSTEM"}].concat(prev).slice(0,100)});
+        });
+        s.onerror=function(){
+          try{s.close()}catch(e){}
+          if(!sseState.alive)return;
+          setActLog(function(prev){return [{t:new Date().toLocaleTimeString(),a:"SSE reconnecting…",c:"WARN"}].concat(prev).slice(0,100)});
+          sseState.timer=setTimeout(openLeadStream,5000); // reopen with a fresh ticket
+        };
+      }).catch(function(){ if(sseState.alive) sseState.timer=setTimeout(openLeadStream,5000); });
+    }
+    openLeadStream();
+    return function(){clearInterval(iv);sseState.alive=false;if(sseState.cur){try{sseState.cur.close()}catch(e){}}if(sseState.timer)clearTimeout(sseState.timer);};
   },[auth]);
 
   function save(key,data){try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}}
@@ -466,28 +475,32 @@ function AdminPanel(props) {
   }
 
   // ═══ STYLES ═══
-  var card=function(glow){return{background:"rgba(245,245,240,.02)",border:"1px solid rgba("+(glow||CR)+",.1)",padding:Math.round(16*F),position:"relative",overflow:"hidden"}};
-  var cardGlow=function(color){return{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+(color||CR)+",.4),transparent)"}};
-  var lb={fontSize:Math.round(8*F),color:"#666",letterSpacing:".2em",marginBottom:4,textTransform:"uppercase"};
-  var vl=function(color){return{fontSize:Math.round(28*F),fontFamily:HEAD,fontWeight:900,color:color||"#C9D1D6",lineHeight:1}};
-  var ip={width:"100%",background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.08)",color:"#C9D1D6",padding:Math.round(10*F)+"px",fontSize:Math.round(11*F),fontFamily:"'Space Mono',monospace",outline:"none",marginBottom:Math.round(6*F)};
-  var btn=function(color){return{display:"inline-block",padding:Math.round(7*F)+"px "+Math.round(16*F)+"px",border:"1px solid "+(color||C)+"44",color:color||C,fontSize:Math.round(9*F),letterSpacing:".1em",cursor:"none",marginRight:6}};
-  var ts=function(t){return{padding:Math.round(8*F)+"px "+Math.round(14*F)+"px",fontSize:Math.round(9*F),letterSpacing:".1em",cursor:"none",border:"1px solid "+(tab===t?"rgba("+CR+",.3)":"rgba(245,245,240,.04)"),background:tab===t?"rgba("+CR+",.06)":"transparent",color:tab===t?C:"#999",transition:"all .2s"}};
+  var card=function(glow){return{background:"linear-gradient(180deg,#14181C,#0E1114)",border:"1px solid rgba(201,209,214,.08)",padding:Math.round(18*F),position:"relative",overflow:"hidden"}};
+  // Restrained top hairline — cyan only (no rainbow), the "active measurement" accent
+  var cardGlow=function(color){return{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+CR+",.30),transparent)"}};
+  var lb={fontSize:Math.round(8*F),color:"#7C868D",letterSpacing:".24em",marginBottom:8,textTransform:"uppercase",fontFamily:"'Space Mono',monospace"};
+  var vl=function(color){return{fontSize:Math.round(32*F),fontFamily:HEAD,fontWeight:600,letterSpacing:"-.02em",color:color||"#E6EBEE",lineHeight:1}};
+  var ip={width:"100%",background:"#0A0C0E",border:"1px solid rgba(201,209,214,.12)",color:"#E6EBEE",padding:Math.round(11*F)+"px",fontSize:Math.round(11*F),fontFamily:"'Space Mono',monospace",outline:"none",marginBottom:Math.round(6*F)};
+  var btn=function(color){return{display:"inline-block",padding:Math.round(8*F)+"px "+Math.round(18*F)+"px",border:"1px solid "+(color||C)+"55",color:color||C,fontSize:Math.round(9*F),letterSpacing:".18em",cursor:"none",marginRight:6,fontFamily:"'Space Mono',monospace",textTransform:"uppercase"}};
+  var ts=function(t){return{padding:Math.round(9*F)+"px "+Math.round(15*F)+"px",fontSize:Math.round(9*F),letterSpacing:".16em",cursor:"none",fontFamily:"'Space Mono',monospace",border:"1px solid "+(tab===t?"rgba("+CR+",.4)":"rgba(201,209,214,.07)"),background:tab===t?"rgba("+CR+",.08)":"transparent",color:tab===t?C:"#7C868D",transition:"all .18s cubic-bezier(.22,1,.36,1)"}};
 
   // ═══ LOGIN GATE ═══
   if (!auth) {
     return (
-      React.createElement("div",{style:{position:"fixed",inset:0,background:"#000",zIndex:100000,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Mono',monospace"}},
-        React.createElement("div",{style:{width:"min(420px,92vw)",padding:"clamp(28px,6vw,48px)",border:"1px solid rgba("+CR+",.12)",background:"rgba(0,0,0,.95)",position:"relative",overflow:"hidden"}},
+      React.createElement("div",{style:{position:"fixed",inset:0,background:"#0A0C0E",zIndex:100000,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Mono',monospace",backgroundImage:"linear-gradient(rgba(201,209,214,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,209,214,.05) 1px,transparent 1px)",backgroundSize:"64px 64px"}},
+        React.createElement("div",{style:{width:"min(420px,92vw)",padding:"clamp(30px,6vw,48px)",border:"1px solid rgba(201,209,214,.1)",background:"linear-gradient(180deg,#14181C,#0E1114)",position:"relative",overflow:"hidden"}},
           React.createElement("div",{style:{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+CR+",.5),transparent)"}}),
-          React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:36,marginBottom:24,display:"block",filter:"drop-shadow(0 0 12px rgba(0,229,255,.3))"}}),
-          React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(22*F),color:"#C9D1D6",marginBottom:4}},"CS COMMAND CENTER"),
-          React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#555",letterSpacing:".25em",marginBottom:32}},"SECURE ACCESS REQUIRED"),
-          pwdErr && React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#ff3366",marginBottom:14,padding:"10px 14px",border:"1px solid rgba(255,51,102,.2)",background:"rgba(255,51,102,.05)"}},"ACCESS DENIED"),
-          React.createElement("input",{type:"password",autoComplete:"current-password",value:pwd,onChange:function(e){setPwd(e.target.value)},onKeyDown:function(e){if(e.key==="Enter")checkPwd()},placeholder:"Enter password...",style:Object.assign({},ip,{marginBottom:16,fontSize:Math.round(13*F),padding:"14px 16px"})}),
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:26}},
+            React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:30,display:"block"}}),
+            React.createElement("span",{style:{fontSize:Math.round(8*F),letterSpacing:".3em",color:C}},"// RESTRICTED")
+          ),
+          React.createElement("div",{style:{fontFamily:HEAD,fontWeight:600,fontSize:Math.round(24*F),letterSpacing:"-.02em",color:"#E6EBEE",marginBottom:6}},"Command Center"),
+          React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",letterSpacing:".26em",marginBottom:30}},"AUTHENTICATION REQUIRED · ±0.00 TOL"),
+          pwdErr && React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#FF6A3D",letterSpacing:".2em",marginBottom:14,padding:"11px 14px",border:"1px solid rgba(255,106,61,.3)",background:"rgba(255,106,61,.05)"}},"ACCESS DENIED"),
+          React.createElement("input",{type:"password",autoComplete:"current-password",value:pwd,onChange:function(e){setPwd(e.target.value)},onKeyDown:function(e){if(e.key==="Enter")checkPwd()},placeholder:"Enter password…",style:Object.assign({},ip,{marginBottom:16,fontSize:Math.round(13*F),padding:"14px 16px"})}),
           React.createElement("div",{style:{display:"flex",gap:10}},
-            React.createElement("div",{onClick:checkPwd,style:{flex:1,padding:"14px",border:"1px solid rgba("+CR+",.3)",background:"rgba("+CR+",.06)",color:C,fontSize:Math.round(11*F),letterSpacing:".2em",cursor:"none",textAlign:"center"}},"LOGIN"),
-            React.createElement("div",{onClick:props.onClose,style:{padding:"14px 24px",border:"1px solid rgba(245,245,240,.08)",color:"#666",fontSize:Math.round(11*F),letterSpacing:".2em",cursor:"none",textAlign:"center"}},"ESC")
+            React.createElement("div",{onClick:checkPwd,style:{flex:1,padding:"14px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.08)",color:C,fontSize:Math.round(10*F),letterSpacing:".28em",cursor:"none",textAlign:"center"}},"UNLOCK →"),
+            React.createElement("div",{onClick:props.onClose,style:{padding:"14px 24px",border:"1px solid rgba(201,209,214,.1)",color:"#7C868D",fontSize:Math.round(10*F),letterSpacing:".2em",cursor:"none",textAlign:"center"}},"ESC")
           )
         )
       )
@@ -605,7 +618,7 @@ function AdminPanel(props) {
 
   // ═══ MAIN DASHBOARD ═══
   return (
-    React.createElement("div",{className:"cs-admin",style:{position:"fixed",inset:0,background:"#060608",zIndex:100000,overflowY:"auto",overflowX:"hidden",fontFamily:"'Space Mono',monospace",color:"#C9D1D6",fontSize:Math.round(12*F)}},
+    React.createElement("div",{className:"cs-admin",style:{position:"fixed",inset:0,background:"#0A0C0E",zIndex:100000,overflowY:"auto",overflowX:"hidden",fontFamily:"'Space Mono',monospace",color:"#C9D1D6",fontSize:Math.round(12*F),backgroundImage:"linear-gradient(rgba(201,209,214,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(201,209,214,.035) 1px,transparent 1px)",backgroundSize:"72px 72px"}},
       React.createElement("style",null,"@media(max-width:760px){.cs-admin [style*='grid-template-columns']{grid-template-columns:1fr !important;gap:8px !important}.cs-admin [style*='display: flex']{flex-wrap:wrap !important;gap:6px !important}.cs-admin [style*='max-width: 1300']{padding:12px !important}.cs-admin{font-size:11px !important}.cs-admin *{max-width:100%;word-break:break-word;overflow-wrap:anywhere}}"),
       React.createElement("div",{style:{maxWidth:1300,margin:"0 auto",padding:Math.round(20*F)+"px"}},
 
@@ -615,8 +628,8 @@ function AdminPanel(props) {
             React.createElement("div",{style:{width:10,height:10,borderRadius:"50%",background:onN===sites.length?"#00ff88":"#ff3366",boxShadow:"0 0 12px "+(onN===sites.length?"rgba(0,255,136,.5)":"rgba(255,51,102,.5)"),animation:"pulse 2s infinite"}}),
             React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:Math.round(28*F),filter:"drop-shadow(0 0 8px rgba(0,229,255,.2))"}}),
             React.createElement("div",null,
-              React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(16*F),letterSpacing:"-.01em"}},"CS COMMAND CENTER"),
-              React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",letterSpacing:".2em"}},onN,"/",sites.length," SYSTEMS ONLINE \u00b7 v5.0")
+              React.createElement("div",{style:{fontFamily:HEAD,fontWeight:600,fontSize:Math.round(17*F),letterSpacing:"-.01em",color:"#E6EBEE"}},"Command Center"),
+              React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#7C868D",letterSpacing:".22em"}},onN,"/",sites.length," SYSTEMS ONLINE \u00b7 v5.0")
             )
           ),
           React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},

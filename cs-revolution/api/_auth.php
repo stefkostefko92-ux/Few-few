@@ -114,3 +114,31 @@ if (!function_exists('cs_admin_token')) {
         return array_values(array_unique($ips));
     }
 }
+
+// ── Short-lived SSE tickets ──────────────────────────────────────
+// EventSource can't send headers, so instead of putting the admin token in
+// the URL (which leaks into access logs), the admin panel exchanges its token
+// for a short-lived opaque ticket and connects with that.
+if (!function_exists('cs_issue_sse_ticket')) {
+    function cs_sse_ticket_file(): string { return cs_log_dir() . '/sse_tickets.json'; }
+
+    function cs_issue_sse_ticket(int $ttl = 120): string {
+        $f = cs_sse_ticket_file();
+        $t = json_decode((string)@file_get_contents($f), true);
+        if (!is_array($t)) $t = [];
+        $now = time();
+        foreach ($t as $k => $exp) { if ((int)$exp < $now) unset($t[$k]); } // prune expired
+        $ticket = bin2hex(random_bytes(16));
+        $t[$ticket] = $now + $ttl;
+        @file_put_contents($f, json_encode($t), LOCK_EX);
+        @chmod($f, 0600);
+        return $ticket;
+    }
+
+    // Valid until expiry (multi-use within TTL so EventSource auto-reconnect works).
+    function cs_check_sse_ticket(string $ticket): bool {
+        if ($ticket === '' || strlen($ticket) > 64 || !ctype_xdigit($ticket)) return false;
+        $t = json_decode((string)@file_get_contents(cs_sse_ticket_file()), true);
+        return is_array($t) && isset($t[$ticket]) && (int)$t[$ticket] >= time();
+    }
+}

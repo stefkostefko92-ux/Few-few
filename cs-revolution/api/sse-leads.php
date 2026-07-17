@@ -3,11 +3,18 @@
  * Carbon Stealth — Server-Sent Events for real-time lead notifications
  * Watches /api/logs/leads.log for new entries and pushes them to the admin panel
  *
- * Usage: new EventSource('/api/sse-leads.php?key=CS@dmin2026!')
+ * Usage: fetch a ticket from /api/sse-ticket.php (admin-gated), then
+ *        new EventSource('/api/sse-leads.php?ticket=<ticket>')
+ * The admin token is never placed in the URL (it would leak into access logs).
  */
 
 require_once __DIR__.'/_auth.php';
-cs_require_admin();
+if (!cs_check_sse_ticket($_GET['ticket'] ?? '')) {
+    http_response_code(401);
+    header('Content-Type: application/json');
+    echo json_encode(['ok' => false, 'error' => 'Invalid or expired ticket']);
+    exit;
+}
 
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
