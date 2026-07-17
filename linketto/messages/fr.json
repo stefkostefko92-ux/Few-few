@@ -47,7 +47,7 @@
     "ctaButton": "Commencez gratuitement en 60 secondes",
     "faqTitle": "Questions fréquentes",
     "faq1q": "Qu’est-ce que Linketto ?",
-    "faq1a": "Linketto est une page « link in bio » : un seul lien qui rassemble tous vos liens, produits et contacts. Sa particularité : votre page parle la langue de chaque visiteur — créez-la une fois, elle s’affiche en 6+ langues.",
+    "faq1a": "Linketto est une page « link in bio » : un seul lien qui rassemble tous vos liens, produits et contacts. Sa particularité : votre page parle la langue de chaque visiteur — créez-la une fois, elle s’affiche en 24 langues de l’UE plus 3 dialectes.",
     "faq2q": "En quoi Linketto est-il meilleur que Linktree ?",
     "faq2a": "Quatre choses : votre profil est multilingue (Linktree n’existe qu’en anglais), il est hébergé dans l’UE avec le RGPD par défaut, les statistiques se passent de cookies et de données personnelles, et les commissions sur les ventes sont de 8/4/0/0 % selon le plan — contre 12 % et 9 % chez Linktree.",
     "faq3q": "Combien coûte Linketto ?",
@@ -387,7 +387,8 @@
     "terms": "Conditions",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Gérer les cookies"
+    "manageConsent": "Gérer les cookies",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — lien en bio multilingue : tous vos liens, dans toutes les langues",
@@ -467,5 +468,34 @@
     "accept": "J’accepte",
     "decline": "Je refuse",
     "moreInfo": "En savoir plus"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs Linktree — la comparaison honnête",
+    "metaDescription": "Commissions 8/4/0 % contre 12/9 %, 24 langues de l’UE contre l’anglais seul, hébergement dans l’UE avec RGPD et statistiques sans cookies. Voyez le tableau.",
+    "title": "Linketto vs Linktree",
+    "intro": "Les deux services résolvent la même tâche — une page pour tous vos liens. Les différences tiennent à l’argent, aux langues et à la confidentialité. Les voici, sans fioritures.",
+    "defTitle": "Qu’est-ce qu’une page « link in bio » ?",
+    "defBody": "Une page « link in bio » est une seule page web publique qui rassemble tous vos liens importants, produits et contacts au même endroit, accessible via une adresse unique. L’idée vient des réseaux sociaux qui n’autorisent qu’un seul lien dans le profil : au lieu de choisir entre votre boutique, votre vidéo et votre newsletter, vous placez un seul lien vers la page, qui mène à tout. Les versions modernes ajoutent la vente de produits numériques, les statistiques de visites et un design personnalisé. Ce qui distingue Linketto : votre page s’affiche automatiquement dans la langue de chaque visiteur — 24 langues de l’UE plus 3 dialectes italiens — sans aucun travail supplémentaire de votre part, et les statistiques fonctionnent sans cookies et sans données personnelles. Créez-la une fois ; elle parle au monde entier.",
+    "tableTitle": "Comparaison ligne par ligne",
+    "thFeature": "Critère",
+    "rowFee": "Commission sur les ventes",
+    "rowFeeL": "8 % Free · 4 % Pro · 0 % Business et Founder",
+    "rowFeeLt": "12 % Free · 9 % sur les offres payantes",
+    "rowLang": "Langues du profil",
+    "rowLangL": "24 langues de l’UE + 3 dialectes, automatique selon le visiteur",
+    "rowLangLt": "Anglais uniquement",
+    "rowHost": "Hébergement et données",
+    "rowHostL": "Hébergement dans l’UE, RGPD par défaut",
+    "rowHostLt": "Hébergement aux États-Unis",
+    "rowAnalytics": "Statistiques",
+    "rowAnalyticsL": "Sans cookies, sans adresses IP, sans données personnelles",
+    "rowAnalyticsLt": "Suivi classique par cookies",
+    "rowModeration": "Modération",
+    "rowModerationL": "Transparente, avec préavis et recours ; pas de bannière publique « BANNI »",
+    "rowModerationLt": "Bannière publique sur les profils bloqués",
+    "honestTitle": "Quand Linktree est-il le meilleur choix ?",
+    "honestBody": "En toute honnêteté : si vous comptez sur leur longue liste d’intégrations toutes prêtes ou si vous voulez la plateforme la plus répandue, Linktree est un choix raisonnable avec un long historique. Linketto l’emporte quand votre public parle plus d’une langue, quand vous vendez et que chaque point de commission compte, et quand la confidentialité de vos visiteurs est une promesse plutôt qu’une note de bas de page.",
+    "ctaTitle": "Essayez la différence avec un seul lien.",
+    "ctaButton": "Créez votre Linketto gratuitement"
   }
 }
