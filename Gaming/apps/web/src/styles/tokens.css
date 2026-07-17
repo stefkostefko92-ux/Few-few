@@ -27,6 +27,12 @@
   /* Suits / semantics */
   --suit-red: #c2362f;
   --suit-black: #14171a;
+  /* Per-suit colours default to the classic two-colour deck; the four-colour
+     accessibility deck (below) recolours diamonds + clubs for colour-blind play. */
+  --suit-spade: var(--suit-black);
+  --suit-club: var(--suit-black);
+  --suit-heart: var(--suit-red);
+  --suit-diamond: var(--suit-red);
   --win: #4ea96b;
   --loss: #c2362f;
   --vip: #e7c87b;
@@ -51,4 +57,13 @@
   /* Type families (validated for BG Cyrillic — §3.3) */
   --font-display: "Playfair Display", "PT Serif", Georgia, serif;
   --font-body: "Manrope", system-ui, -apple-system, sans-serif;
+}
+
+/* Four-colour accessibility deck (colour-blind aid): spades stay black and
+   hearts stay red, but diamonds become blue and clubs green, so every suit is
+   distinguishable by colour as well as shape. Toggled via the account settings
+   (data-four-color on <html>). */
+:root[data-four-color="true"] {
+  --suit-diamond: #1f5fb0;
+  --suit-club: #1c7d43;
 }

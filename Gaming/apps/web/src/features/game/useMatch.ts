@@ -8,6 +8,7 @@ import {
   type PresenceMsg,
 } from "@aso/shared";
 import { getSocket } from "../../lib/socket";
+import { getBotDifficulty } from "../../lib/botDifficulty";
 import { useMatchStore } from "../../lib/store";
 
 export type MatchPhase = "searching" | "playing" | "over";
@@ -111,7 +112,8 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     socket.on(SOCKET_EVENTS.GAME_OVER, onOver);
     socket.on(SOCKET_EVENTS.PRESENCE, onPresence);
 
-    const join = () => socket.emit(SOCKET_EVENTS.QUEUE_JOIN, { game: gameKey });
+    const join = () =>
+      socket.emit(SOCKET_EVENTS.QUEUE_JOIN, { game: gameKey, difficulty: getBotDifficulty() });
     // On (re)connect: a live match resyncs (the fresh socket re-joined the user
     // room on handshake, but missed any state sent during the gap); only when
     // there is no live match do we (re-)enter the queue — otherwise a mid-match

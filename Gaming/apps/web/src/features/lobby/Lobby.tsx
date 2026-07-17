@@ -4,6 +4,7 @@ import { gameHasCosmetics } from "@aso/shared";
 import { Badge, Panel, cn } from "../../ui";
 import { useAuthStore, useCosmeticsModal } from "../../lib/store";
 import { DailyReward } from "../progression/DailyReward";
+import { BotDifficultyPicker } from "./BotDifficultyPicker";
 import { GAME_CATALOG, gameTitle, type GameCard } from "./games";
 
 function GameTile({ game }: { game: GameCard }) {
@@ -70,6 +71,8 @@ export function Lobby() {
       </div>
 
       {user ? <DailyReward /> : null}
+
+      <BotDifficultyPicker />
 
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {GAME_CATALOG.map((game) => (

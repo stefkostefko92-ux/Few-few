@@ -4,10 +4,10 @@ import type { ReactElement } from "react";
 export type SuitChar = "S" | "H" | "D" | "C";
 
 export const SUIT_COLOR: Record<SuitChar, string> = {
-  S: "var(--suit-black)",
-  C: "var(--suit-black)",
-  H: "var(--suit-red)",
-  D: "var(--suit-red)",
+  S: "var(--suit-spade)",
+  C: "var(--suit-club)",
+  H: "var(--suit-heart)",
+  D: "var(--suit-diamond)",
 };
 
 export const isRed = (s: SuitChar): boolean => s === "H" || s === "D";

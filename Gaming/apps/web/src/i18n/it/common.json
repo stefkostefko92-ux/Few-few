@@ -474,7 +474,10 @@
     "card": "carta",
     "cardNamed": "{{name}}",
     "domino": "domino {{a}}-{{b}}",
-    "dialog": "Finestra di dialogo"
+    "dialog": "Finestra di dialogo",
+    "title": "Accessibilità",
+    "fourColor": "Mazzo a quattro colori",
+    "fourColorHint": "Un colore distinto per ogni seme — aiuta col daltonismo."
   },
   "svara": {
     "pot": "Piatto",
@@ -992,5 +995,22 @@
   "announcements": {
     "label": "Annuncio",
     "dismiss": "Chiudi annuncio"
+  },
+  "pwa": {
+    "install": "Installa l'app",
+    "updateReady": "È disponibile una nuova versione.",
+    "update": "Aggiorna"
+  },
+  "rules": {
+    "open": "Regole",
+    "title": "Come si gioca",
+    "steps": "Passaggi",
+    "tips": "Consigli"
+  },
+  "difficulty": {
+    "label": "Difficoltà dei bot",
+    "easy": "Facile",
+    "normal": "Normale",
+    "hard": "Difficile"
   }
 }

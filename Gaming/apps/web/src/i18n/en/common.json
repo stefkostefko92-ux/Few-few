@@ -474,7 +474,10 @@
     "card": "card",
     "cardNamed": "{{name}}",
     "domino": "domino {{a}}-{{b}}",
-    "dialog": "Dialog"
+    "dialog": "Dialog",
+    "title": "Accessibility",
+    "fourColor": "Four-colour deck",
+    "fourColorHint": "A distinct colour per suit — helps with colour-blindness."
   },
   "svara": {
     "pot": "Pot",
@@ -992,5 +995,22 @@
   "announcements": {
     "label": "Announcement",
     "dismiss": "Dismiss announcement"
+  },
+  "pwa": {
+    "install": "Install the app",
+    "updateReady": "A new version is available.",
+    "update": "Update"
+  },
+  "rules": {
+    "open": "Rules",
+    "title": "How to play",
+    "steps": "Steps",
+    "tips": "Tips"
+  },
+  "difficulty": {
+    "label": "Bot difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   }
 }

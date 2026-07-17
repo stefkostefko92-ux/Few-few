@@ -8,3 +8,5 @@ export * from "./cosmetics.js";
 export * from "./cue.js";
 export * from "./magnat.js";
 export * from "./progression.js";
+export * from "./gameRules.js";
+export * from "./bots.js";

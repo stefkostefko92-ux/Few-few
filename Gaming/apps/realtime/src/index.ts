@@ -7,6 +7,7 @@ import {
   SOCKET_EVENTS,
   CHAT_MAX_LEN,
   isGameKey,
+  isBotDifficulty,
   type AccessTokenClaims,
   type ChatMessageMsg,
   type InviteReceivedMsg,
@@ -22,7 +23,11 @@ import { metricsText, registerRealtimeGauges } from "./prometheus.js";
 import type { GameRoom } from "./room.js";
 import { sanitizeChat, chatRateOk, socketRateOk } from "./chat.js";
 
-const queueJoinSchema = z.object({ game: z.string(), mode: z.string().optional() });
+const queueJoinSchema = z.object({
+  game: z.string(),
+  mode: z.string().optional(),
+  difficulty: z.string().optional(),
+});
 const gameActionSchema = z.object({ matchId: z.string(), action: z.unknown() });
 const resyncSchema = z.object({ matchId: z.string() });
 const reclaimSchema = z.object({ matchId: z.string() });
@@ -303,6 +308,7 @@ async function main(): Promise<void> {
       matchmaker.activeRoomForUser(userId)?.resign(userId);
       const game = parsed.data.game;
       const mode = parsed.data.mode;
+      const difficulty = isBotDifficulty(parsed.data.difficulty) ? parsed.data.difficulty : undefined;
       // Server-authoritative buy-in gate for wagering tables (defence in depth
       // over the client's OutOfChips screen).
       void matchmaker
@@ -315,7 +321,7 @@ async function main(): Promise<void> {
             });
             return;
           }
-          return matchmaker.joinQueue(userId, game, mode).then((joined) => {
+          return matchmaker.joinQueue(userId, game, mode, difficulty).then((joined) => {
             if (joined) socket.emit(SOCKET_EVENTS.QUEUE_WAITING, { game });
             else socket.emit(SOCKET_EVENTS.ERROR, { code: "no_engine", message: "Game unavailable" });
           });
