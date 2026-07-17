@@ -1,8 +1,12 @@
 <?php
 /**
  * Carbon Stealth VCC — Server Monitor API v2
- * Returns REAL server stats with visitor details and country data
+ * Returns REAL server stats with visitor details and country data.
+ * Robustness: if shell_exec / a command is disabled or unavailable, each probe
+ * degrades to an empty value (?? '') and display_errors is off so a warning can
+ * never corrupt the JSON body — the endpoint always returns valid JSON.
  */
+ini_set('display_errors', '0');   // keep warnings out of the JSON output
 header('Content-Type: application/json; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store, max-age=0');
