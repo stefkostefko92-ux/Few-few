@@ -34,6 +34,9 @@ interface Listing {
   int_bonus: number;
   wis_bonus: number;
   description: string;
+  // Ценова интелигентност (от сървъра)
+  cheapest_active?: number | null;
+  last_sold_price?: number | null;
 }
 
 const CATEGORIES = ['all', 'weapon', 'armor', 'helm', 'shield', 'ring', 'amulet', 'gloves', 'boots'];
@@ -136,7 +139,25 @@ export default function Market(): React.ReactElement {
                     <td>{l.tier}</td>
                     <td className="muted text-sm">{statSummary(l)}</td>
                     <td className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>{relative(l.listed_at, t)}</td>
-                    <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>{l.price_gold.toLocaleString()}g</td>
+                    <td style={{ fontFamily: 'var(--font-mono)' }}>
+                      <span className="gold">{l.price_gold.toLocaleString()}g</span>
+                      {/* Ценова интелигентност: „най-добра цена" badge, ако това е
+                          най-евтиният активен листинг; иначе показва колко е
+                          най-евтиният конкурент. Последно продадена цена = котва. */}
+                      {l.cheapest_active != null && l.cheapest_active >= l.price_gold && (
+                        <span className="tag" style={{ marginLeft: 6, fontSize: 10, color: 'var(--green-1, #6ad8a4)', borderColor: 'var(--green-1, #6ad8a4)' }}>
+                          {t('market.bestPrice', { defaultValue: 'best price' })}
+                        </span>
+                      )}
+                      <div className="muted" style={{ fontSize: 11 }}>
+                        {l.cheapest_active != null && l.cheapest_active < l.price_gold && (
+                          <span>{t('market.cheapest', { n: l.cheapest_active.toLocaleString(), defaultValue: 'cheapest: {{n}}g' })} · </span>
+                        )}
+                        {l.last_sold_price != null && (
+                          <span>{t('market.lastSold', { n: l.last_sold_price.toLocaleString(), defaultValue: 'last sold: {{n}}g' })}</span>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <button
                         className="btn btn-sm btn-primary"

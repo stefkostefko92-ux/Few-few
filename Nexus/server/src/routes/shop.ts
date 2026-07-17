@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character, Item } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
+import { dealsForDay, dealFor, currentDayIndex, dealsExpireAt } from '../game/dailyDeals';
 
 const router = Router();
 router.use(authRequired);
@@ -15,7 +16,14 @@ router.get('/', (req, res) => {
   const items = db
     .prepare(`SELECT * FROM items WHERE buy_price > 0 AND level_req <= ? ORDER BY category, level_req, buy_price`)
     .all(lvl + 5);
-  res.json({ items });
+  // Дневни оферти: детерминистична ротация по UTC ден (виж game/dailyDeals.ts).
+  // Пращат се всичките — клиентът маркира достъпните; /buy така или иначе
+  // пази level_req гейта.
+  res.json({
+    items,
+    daily_deals: dealsForDay(db, currentDayIndex()),
+    deals_expire_at: dealsExpireAt(),
+  });
 });
 
 const buySchema = z.object({ itemId: z.number().int(), quantity: z.number().int().min(1).max(99).default(1) });
@@ -41,7 +49,10 @@ router.post('/buy', (req, res) => {
     res.status(400).json({ error: `Requires level ${item.level_req}` });
     return;
   }
-  const cost = item.buy_price * parse.data.quantity;
+  // Дневна оферта → сървърът сам прилага отстъпката (клиентът не праща цени).
+  const deal = dealFor(db, item.id);
+  const unitPrice = deal ? deal.deal_price : item.buy_price;
+  const cost = unitPrice * parse.data.quantity;
   // Atomic check-then-spend: UPDATE only succeeds if the character still has the gold.
   // This guards against two interleaved buys both passing the JS-side check.
   const tx = db.transaction(() => {
@@ -79,8 +90,8 @@ router.post('/buy', (req, res) => {
     character_id: char.id,
     target_id: item.id,
     target_type: 'item',
-    message: `${char.name} bought ${parse.data.quantity}x ${item.name} for ${cost}g`,
-    meta: { item_id: item.id, item_name: item.name, quantity: parse.data.quantity, unit_price: item.buy_price, cost },
+    message: `${char.name} bought ${parse.data.quantity}x ${item.name} for ${cost}g${deal ? ' (daily deal −30%)' : ''}`,
+    meta: { item_id: item.id, item_name: item.name, quantity: parse.data.quantity, unit_price: unitPrice, cost, daily_deal: !!deal },
   });
   res.json({ ok: true, gold: char.gold - cost });
 });
