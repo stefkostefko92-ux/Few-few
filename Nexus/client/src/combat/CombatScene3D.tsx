@@ -3113,7 +3113,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       });
     },
     resetCamera() {
-      camAnchorRef.current = { x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 };
+      // Резинг дистанцията пак се смята спрямо съотношението, за да остане
+      // рамкирането коректно и на широк, и на тесен панел.
+      const asp = cameraRef.current?.aspect ?? 1.78;
+      const t = Math.tan((48 * Math.PI) / 180 / 2);
+      const z = Math.max(6.0, 3.2 / (t * Math.max(0.3, asp)), 1.7 / t);
+      camAnchorRef.current = { x: 0, y: 1.9, z, lx: 0, ly: 1.3, lz: 0, fov: 48 };
       introRef.current = { t: 0, dur: 1.4, active: true };
       choreoRef.current?.stop();
     },
