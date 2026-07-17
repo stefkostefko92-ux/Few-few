@@ -57,9 +57,35 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_TOS_CONFIGURED: ${STRIPE_TOS_CONFIGURED:-false}
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
+      # Public origin of the API for OAuth callbacks (must match what's registered
+      # with Google/Facebook). Only used when OAuth is configured. A non-empty
+      # value is required — an empty string fails URL validation and blocks boot.
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://gaming.carbonstealth.eu}
       WEB_BASE_PATH: ${WEB_BASE_PATH:-/app}
+      # Transactional email (verify / password reset). Unset SMTP_HOST => emails
+      # are logged, not sent. SMTP_PORT must stay a positive int (never empty).
+      EMAIL_FROM: "${EMAIL_FROM:-АСО <no-reply@gaming.carbonstealth.eu>}"
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      # Social login (enabled only when both id + secret are set).
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      FACEBOOK_APP_ID: ${FACEBOOK_APP_ID:-}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET:-}
+      # Discord admin notifications (enabled only when the webhook URL is set).
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      DISCORD_WEBHOOK_NAME: ${DISCORD_WEBHOOK_NAME:-АСО}
+      # Error tracking (enabled only when a DSN is set).
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
+      # Reach the realtime node's in-memory room list (admin live-tables view).
+      REALTIME_INTERNAL_URL: ${REALTIME_INTERNAL_URL:-http://realtime:4501}
     ports:
       - "127.0.0.1:${API_HOST_PORT:-4500}:4500"
 
