@@ -156,6 +156,12 @@ deploy_zabobovdol() {
   if [ -f "$CURRENT_LINK/zabobovdol/.env" ] && [ ! -f "$d/.env" ]; then
     cp -a "$CURRENT_LINK/zabobovdol/.env" "$d/.env"; ok "Пренесох zabobovdol/.env"
   fi
+  # Бекъпите живеят на СТАБИЛЕН път извън releases — иначе умират с прочистването
+  # на старите releases (KEEP_RELEASES) и историята се губи при всеки деплой.
+  mkdir -p /opt/few-few/shared/zabobovdol/backups
+  rm -rf "$d/backups"
+  ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
+  ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
   ( cd "$d"
     if [ -f .env ]; then
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)

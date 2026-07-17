@@ -145,7 +145,7 @@ export default async function OutagesPage() {
           <PrintButton variant="secondary" label="Принтирай" />
         </div>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Знаете за обявено прекъсване, което липсва тук? Кажете ни на{" "}
           <a href={`tel:${SITE.contact.phone}`} className="font-medium text-brand-700 hover:underline">
             {SITE.contact.phone}

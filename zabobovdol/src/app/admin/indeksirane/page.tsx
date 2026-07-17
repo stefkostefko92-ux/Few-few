@@ -56,7 +56,7 @@ export default async function IndexingPage({
             Уведоми търсачките за всички страници
           </button>
         </form>
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-slate-600">
           Може да го правите след по-голяма промяна в съдържанието. Ключът за
           IndexNow е генериран автоматично и е достъпен на{" "}
           <a href={INDEXNOW_KEY_PATH} target="_blank" rel="noopener noreferrer" className="text-brand-700 underline">
@@ -89,7 +89,7 @@ export default async function IndexingPage({
               className="input"
               placeholder="напр. abcDEF123..."
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               В Google Search Console изберете метод „HTML маркер“ и поставете тук
               само стойността от <code>content=&quot;…&quot;</code>.
             </p>

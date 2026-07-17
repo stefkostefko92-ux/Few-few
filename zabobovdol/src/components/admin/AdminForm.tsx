@@ -44,7 +44,7 @@ export function AdminForm({ fields, initial, action, cancelHref, title }: Props)
             className={f.fullWidth || f.type === "boolean" ? "md:col-span-2" : ""}
           >
             <FieldInput field={f} value={initial[f.name]} />
-            {f.help && <p className="mt-1 text-xs text-slate-500">{f.help}</p>}
+            {f.help && <p className="mt-1 text-xs text-slate-600">{f.help}</p>}
           </div>
         ))}
       </div>

@@ -103,7 +103,7 @@ export default async function RidePage({
               </a>
             )}
           </div>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-600">
             Уговаряйте се предварително и споделяйте плана с близък. Внимавайте при
             плащания на непознати.
           </p>

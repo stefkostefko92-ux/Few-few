@@ -93,7 +93,7 @@ export default async function AidPage() {
         {/* Конвертор евро ↔ левове — пенсията се превалутира по този курс */}
         <div>
           <EuroConverter />
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-600">
             Пенсиите и помощите се превалутират по този фиксиран курс — стойността
             се запазва. Повече за еврото:{" "}
             <Link href="/evroto" className="font-medium text-brand-700 hover:underline">
@@ -156,7 +156,7 @@ export default async function AidPage() {
               </p>
             </div>
           </div>
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-slate-600">
             Сроковете и условията се променят. Преди да тръгнете, обадете се да
             проверите какви документи са нужни — спестява второ ходене.
           </p>

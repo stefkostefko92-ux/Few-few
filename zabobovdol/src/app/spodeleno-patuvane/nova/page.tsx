@@ -113,7 +113,7 @@ export default function NewRidePage() {
 
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Посочете поне телефон или имейл. За сигурност се уговаряйте предварително
             и не плащайте на непознати без яснота.
           </p>

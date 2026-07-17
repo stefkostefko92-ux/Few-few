@@ -63,6 +63,14 @@ export default async function EuroPage() {
       />
 
       <div className="container-content space-y-10 py-10">
+        {/* AEO: прекият отговор най-отпред, като проза (query fan-out). */}
+        <p className="max-w-3xl text-lg leading-relaxed text-slate-700">
+          Еврото е официалната валута на България от <strong>1 януари 2026
+          г.</strong> Курсът е фиксиран завинаги: <strong>1 евро = 1,95583
+          лева</strong>. С левове в брой може да се плаща до <strong>31 януари
+          2026 г.</strong>, а обмяната на левове е <strong>безплатна</strong> в
+          банките и пощите до 30 юни 2026 г. и <strong>безсрочна</strong> в БНБ.
+        </p>
         {/* Ключови факти */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FACTS.map((f) => {
@@ -101,7 +109,7 @@ export default async function EuroPage() {
               </figure>
             ))}
           </div>
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-slate-600">
             Изображенията са примерни, за онагледяване. Банкнотите са показани по
             цвят и номинал, не като точни копия.
           </p>

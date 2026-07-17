@@ -36,7 +36,7 @@ export default function PrivacyPage() {
       />
       <div className="container-content max-w-3xl py-10">
         <div className="prose-content text-slate-700">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             <strong>Последна актуализация: юни 2026 г.</strong>
           </p>
 
@@ -286,8 +286,11 @@ export default function PrivacyPage() {
               езиков модел, за да се състави отговорът:{" "}
               <strong>Google</strong> (Gemini API,
               generativelanguage.googleapis.com) или{" "}
-              <strong>Anthropic</strong> (Claude). Не въвеждайте пароли, кодове
-              или чувствителни лични данни в чата.
+              <strong>Anthropic</strong> (Claude). Правно основание за тази
+              обработка е нашият <strong>легитимен интерес</strong> (чл.
+              6(1)(е)) да предоставим работещ помощник; разговорът се пази само
+              във вашия браузър и не се съхранява от сайта. Не въвеждайте
+              пароли, кодове или чувствителни лични данни в чата.
             </li>
           </ul>
           <p>

@@ -67,7 +67,7 @@ export default async function AdminAssistantPage({
               ? "Помощникът временно отговаря от съдържанието на сайта. Поставете валиден ключ по-долу и натиснете „Запази“."
               : "Това е надеждно и безплатно. За разговорни отговори изберете Gemini (безплатно) по-долу."}
         </p>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-slate-600">
           Източник на настройката: <strong>{ai.source}</strong>
         </p>
       </div>
@@ -112,7 +112,7 @@ export default async function AdminAssistantPage({
               <span className="text-sm">
                 <span className="font-medium text-slate-900">{PROVIDER_LABELS[p]}</span>
                 {p === "gemini" && (
-                  <span className="block text-slate-500">
+                  <span className="block text-slate-600">
                     Безплатен ключ от{" "}
                     <a
                       href="https://aistudio.google.com/apikey"
@@ -126,7 +126,7 @@ export default async function AdminAssistantPage({
                   </span>
                 )}
                 {p === "anthropic" && (
-                  <span className="block text-slate-500">
+                  <span className="block text-slate-600">
                     Най-високо качество, но платен (ключ от console.anthropic.com).
                   </span>
                 )}
@@ -140,7 +140,7 @@ export default async function AdminAssistantPage({
           <h3 className="font-medium text-slate-900">Google Gemini (безплатен)</h3>
           <div>
             <label className="label" htmlFor="geminiKey">
-              Ключ {ai.geminiKey && <span className="text-slate-500">(зададен: {maskKey(ai.geminiKey)})</span>}
+              Ключ {ai.geminiKey && <span className="text-slate-600">(зададен: {maskKey(ai.geminiKey)})</span>}
             </label>
             <input
               id="geminiKey"
@@ -151,7 +151,7 @@ export default async function AdminAssistantPage({
               placeholder={ai.geminiKey ? "Оставете празно, за да запазите текущия" : "Поставете ключа тук"}
             />
             {ai.geminiKey && (
-              <label className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+              <label className="mt-1 flex items-center gap-2 text-xs text-slate-600">
                 <input type="checkbox" name="clearGemini" /> Изтрий запазения ключ
               </label>
             )}
@@ -173,7 +173,7 @@ export default async function AdminAssistantPage({
           <h3 className="font-medium text-slate-900">Anthropic Claude (платен)</h3>
           <div>
             <label className="label" htmlFor="anthropicKey">
-              Ключ {ai.anthropicKey && <span className="text-slate-500">(зададен: {maskKey(ai.anthropicKey)})</span>}
+              Ключ {ai.anthropicKey && <span className="text-slate-600">(зададен: {maskKey(ai.anthropicKey)})</span>}
             </label>
             <input
               id="anthropicKey"
@@ -184,7 +184,7 @@ export default async function AdminAssistantPage({
               placeholder={ai.anthropicKey ? "Оставете празно, за да запазите текущия" : "Поставете ключа тук"}
             />
             {ai.anthropicKey && (
-              <label className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+              <label className="mt-1 flex items-center gap-2 text-xs text-slate-600">
                 <input type="checkbox" name="clearAnthropic" /> Изтрий запазения ключ
               </label>
             )}
@@ -202,7 +202,7 @@ export default async function AdminAssistantPage({
         </div>
 
         <button type="submit" className="btn-primary">Запази</button>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-600">
           Ключовете се пазят сигурно и никога не се показват изцяло, нито се
           записват в историята на промените.
         </p>

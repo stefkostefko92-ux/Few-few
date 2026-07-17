@@ -85,7 +85,7 @@ export default async function CausePage({
               </a>
             )}
           </div>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-600">
             Внимавайте с измами. Не превеждайте пари на непознати без проверка.
           </p>
           <ReportContent subject={c.title} path={`/zov-za-pomosht/${c.slug}`} />

@@ -49,7 +49,7 @@ export default async function UsersPage({
                 <td className="p-3 text-slate-700">{u.email}</td>
                 <td className="p-3">{ROLE_LABELS[u.role]}</td>
                 <td className="p-3">{u.active ? "Да" : "Не"}</td>
-                <td className="p-3 text-slate-500">
+                <td className="p-3 text-slate-600">
                   {u.lastLoginAt
                     ? new Intl.DateTimeFormat("bg-BG", {
                         day: "2-digit",

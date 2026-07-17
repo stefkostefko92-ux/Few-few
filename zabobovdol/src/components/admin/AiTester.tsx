@@ -89,7 +89,7 @@ export function AiTester() {
             {out || "…"}
           </div>
           {provider && (
-            <div className="mt-3 border-t border-slate-200 pt-2 text-xs text-slate-500">
+            <div className="mt-3 border-t border-slate-200 pt-2 text-xs text-slate-600">
               Отговори: <strong>{PROVIDER_BG[provider] ?? provider}</strong>
               {provider === "rules" && (
                 <> — AI не е включен или ключът не работи. Проверете настройките по-горе.</>

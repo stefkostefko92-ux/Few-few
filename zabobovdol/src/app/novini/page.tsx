@@ -42,7 +42,7 @@ export default async function NewsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             {posts.map((p) => (
               <Link key={p.id} href={`/novini/${p.slug}`} className="card">
-                <div className="text-sm text-slate-500">
+                <div className="text-sm text-slate-600">
                   {fmt(p.publishedAt ?? p.createdAt)}
                 </div>
                 <h2 className="mt-1 text-lg font-semibold text-slate-900">
