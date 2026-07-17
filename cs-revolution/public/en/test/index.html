@@ -85,19 +85,22 @@ a{color:#00e5ff;text-decoration:none}
 .scan-overlay::before{content:"";position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);box-shadow:0 0 20px rgba(0,229,255,0.8);animation:scan-line 2s linear infinite}
 
 /* ═══ NAVBAR (matches site) ═══ */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 20px;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(245,245,240,.08)}
-nav .row{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
-nav .logo{display:flex;align-items:center;gap:10px;color:#ccc;text-decoration:none}
-nav .logo img{height:24px}
-nav .nav-links{display:flex;gap:16px;align-items:center}
-nav .nav-links>a{color:#C9D1D6;font-size:9px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s ease}
-nav .nav-links>a:hover{color:#00e5ff}
-nav .nav-links a.pill{color:#00e5ff;border:1px solid rgba(0,229,255,.35);padding:5px 10px}
-nav .nav-links a.pill:hover{background:rgba(0,229,255,.08)}
-nav .nav-lang{display:inline-flex;gap:5px;align-items:center}
-nav .nav-lang a{font-size:9px;letter-spacing:.12em;padding:3px 6px;color:#7C868D;border:1px solid rgba(245,245,240,.10)}
-nav .nav-lang a.on{color:#00e5ff;border-color:rgba(0,229,255,.4)}
-@media(max-width:760px){nav .nav-links>a:not(.active){display:none}}
+/* ═══ NAVBAR (matches live SPA) ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:10000;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid rgba(245,245,240,.08);font-family:'Space Mono',monospace}
+nav .cs-left{display:flex;align-items:center;gap:8px}
+nav .cs-blink{width:8px;height:8px;background:#00e5ff;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.3}}
+nav .cs-left img{height:28px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(0,229,255,.3))}
+nav .cs-nav-links{display:flex;gap:20px;align-items:center}
+nav .cs-nav-links a{color:#C9D1D6;font-size:9px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:color .18s ease}
+nav .cs-nav-links a:hover{color:#00e5ff}
+nav .cs-nav-links a.pill{color:#00e5ff;border:1px solid rgba(0,229,255,.3);padding:5px 10px}
+nav .cs-right{display:flex;gap:10px;align-items:center}
+nav .cs-meta{font-size:9px;color:#ccc;white-space:nowrap;font-variant-numeric:tabular-nums}
+nav .cs-nav-lang{display:flex;gap:2px;margin-left:8px}
+nav .cs-nav-lang a{font-size:8px;padding:3px 6px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#ccc;border:1px solid rgba(245,245,240,.06)}
+nav .cs-nav-lang a.on{background:rgba(0,229,255,.15);color:#00e5ff;border-color:rgba(0,229,255,.3);font-weight:700}
+@media(max-width:820px){nav .cs-nav-links a:not(.pill){display:none}nav .cs-meta{display:none}}
 
 /* ═══ HERO ═══ */
 .hero{padding:120px 24px 48px;text-align:center;position:relative;border-bottom:1px solid rgba(0,229,255,.08)}
@@ -262,19 +265,23 @@ footer a:hover{color:#00e5ff}
 <div class="scan-overlay" id="scan-overlay"></div>
 
 <nav>
-  <div class="row">
-    <a href="/en/" class="logo"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"><span style="font-family:'Inter Tight',sans-serif;font-weight:900;letter-spacing:-.02em;color:#f5f5f0;font-size:14px">CARBON STEALTH</span></a>
-    <div class="nav-links">
-      <a href="/en/about/">ABOUT</a>
-      <a href="/en/services/web-development/">SERVICES</a>
-      <a href="/en/portfolio/">WORK</a>
-      <a href="/en/">REVERSE LAB</a>
-      <a href="/en/contact/">CONTACT</a>
-      <a href="/en/test/" class="active pill">SITE ANALYSIS</a>
-      <span class="nav-lang"><a href="/test/">IT</a><a href="/en/test/" class="on">EN</a><a href="/bg/test/">BG</a></span>
-    </div>
+  <div class="cs-left"><div class="cs-blink"></div><img src="/logo.png" alt="Carbon Stealth VCC"></div>
+  <div class="cs-nav-links">
+      <a href="/en/#about">ABOUT</a>
+      <a href="/en/#services">SERVICES</a>
+      <a href="/en/#portfolio">WORK</a>
+      <a href="/en/#lab">REVERSE LAB</a>
+      <a href="/en/#contact">CONTACT</a>
+      <a href="/en/test/" class="pill">SITE ANALYSIS</a>
+  </div>
+  <div class="cs-right">
+    <span class="cs-meta" id="cs-fps">60FPS</span>
+    <span class="cs-meta" id="cs-bat" style="display:none"></span>
+    <span class="cs-meta" id="cs-time">00:00:00</span>
+    <div class="cs-nav-lang"><a href="/test/">IT</a><a href="/en/test/" class="on">EN</a><a href="/bg/test/">BG</a></div>
   </div>
 </nav>
+<script>(function(){var f=document.getElementById('cs-fps'),t=document.getElementById('cs-time'),b=document.getElementById('cs-bat');function ck(){t.textContent=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}ck();setInterval(ck,1000);var fr=[];function lp(){var n=performance.now();fr.push(n);fr=fr.filter(function(x){return n-x<1000});f.textContent=fr.length+'FPS';requestAnimationFrame(lp)}requestAnimationFrame(lp);if(navigator.getBattery){navigator.getBattery().then(function(bt){function u(){b.textContent=Math.round(bt.level*100)+'%'+(bt.charging?' CHG':'');b.style.display=''}u();bt.addEventListener('levelchange',u);bt.addEventListener('chargingchange',u)})}})();</script>
 
 <section class="hero">
   <div class="eyebrow">FREE ANALYSIS · 30 SECONDS</div>
