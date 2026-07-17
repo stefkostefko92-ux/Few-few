@@ -47,7 +47,7 @@
     "ctaButton": "Accummencia gratis in 60 seconde",
     "faqTitle": "Dimanne frequente",
     "faq1q": "Che cos'è Linketto?",
-    "faq1a": "Linketto è na paggena link in bio: nu solo link ca arrecoglie tutte 'e link, 'e prudotte e 'e cuntatte tuoje. 'A cosa uneca: 'a paggena parla 'a lengua 'e ogne visitatore — 'a fabbriche na vota e essa cumpare in 6+ lengue.",
+    "faq1a": "Linketto è na paggena link in bio: nu solo link ca arrecoglie tutte 'e link, 'e prudotte e 'e cuntatte tuoje. 'A cosa uneca: 'a paggena parla 'a lengua 'e ogne visitatore — 'a fabbriche na vota e essa cumpare in 24 lengue d'a UE cchiù 3 dialette.",
     "faq2q": "Int'a che ccosa Linketto è meglio 'e Linktree?",
     "faq2a": "Quatto cose: 'o profilo è multilengua (Linktree è sulo n'inglese), è ospitato int'â UE cu GDPR pe' default, ll'analise so' senza cookie e senza date personale, e 'e commissione ncopp'ê vennete so' 8/4/0/0% pe' piano — contro 'o 12% e 'o 9% 'e Linktree.",
     "faq3q": "Quanto costa Linketto?",
@@ -379,7 +379,8 @@
     "terms": "Cundizione",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
-    "manageConsent": "Gestisce ’e cookie"
+    "manageConsent": "Gestisce ’e cookie",
+    "vsLinktree": "Linketto vs Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilengua: tutte 'e link tuoje, in ogne lengua",
