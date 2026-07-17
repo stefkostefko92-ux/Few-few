@@ -435,6 +435,46 @@ function AdminPanel(props) {
     return React.createElement("canvas",{ref:ref,width:p.w||120,height:p.h||32,style:{display:"block"}});
   }
 
+  // ═══ LINE CHART — full chart: grid, y-axis (ms), avg reference line, area fill ═══
+  function LineChart(p){
+    var ref=useRef(null);
+    useEffect(function(){
+      var cv=ref.current;if(!cv)return;var ctx=cv.getContext("2d");
+      var w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);
+      var padL=36,padR=10,padT=10,padB=8;
+      var plotW=w-padL-padR,plotH=h-padT-padB;
+      var data=(p.data||[]).filter(function(v){return typeof v==="number"&&isFinite(v)});
+      var lo=data.length?Math.min.apply(null,data):0,hi=data.length?Math.max.apply(null,data):1;
+      if(hi<=lo)hi=lo+1;
+      var mg=(hi-lo)*0.18||1,yMax=hi+mg,yMin=Math.max(0,lo-mg),yR=yMax-yMin||1;
+      // horizontal gridlines + y labels
+      ctx.font="8px 'Space Mono',monospace";ctx.textAlign="right";ctx.textBaseline="middle";ctx.lineWidth=1;
+      for(var g=0;g<=3;g++){
+        var gy=padT+plotH*(g/3);
+        ctx.beginPath();ctx.moveTo(padL,gy);ctx.lineTo(w-padR,gy);ctx.strokeStyle="rgba(201,209,214,.06)";ctx.stroke();
+        ctx.fillStyle="#7C868D";ctx.fillText(String(Math.round(yMax-yR*(g/3))),padL-6,gy);
+      }
+      if(data.length<2){ctx.textAlign="center";ctx.fillStyle="#7C868D";ctx.font="9px 'Space Mono',monospace";ctx.fillText("awaiting data…",padL+plotW/2,padT+plotH/2);return;}
+      function X(i){return padL+(i/(data.length-1))*plotW;}
+      function Y(v){return padT+plotH-((v-yMin)/yR)*plotH;}
+      // avg reference (dashed)
+      var avg=data.reduce(function(a,b){return a+b},0)/data.length;
+      ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(0,229,255,.35)";ctx.beginPath();ctx.moveTo(padL,Y(avg));ctx.lineTo(w-padR,Y(avg));ctx.stroke();ctx.setLineDash([]);
+      // area
+      var grad=ctx.createLinearGradient(0,padT,0,padT+plotH);
+      grad.addColorStop(0,"rgba(0,229,255,.22)");grad.addColorStop(1,"rgba(0,229,255,0)");
+      ctx.beginPath();ctx.moveTo(X(0),padT+plotH);data.forEach(function(v,i){ctx.lineTo(X(i),Y(v))});ctx.lineTo(X(data.length-1),padT+plotH);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+      // line
+      ctx.beginPath();data.forEach(function(v,i){var x=X(i),y=Y(v);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+      ctx.strokeStyle=p.lineColor||"#00e5ff";ctx.lineWidth=1.6;ctx.stroke();
+      // last point
+      var lx=X(data.length-1),ly=Y(data[data.length-1]);
+      ctx.beginPath();ctx.arc(lx,ly,3,0,Math.PI*2);ctx.fillStyle="#00e5ff";ctx.fill();
+      ctx.beginPath();ctx.arc(lx,ly,6,0,Math.PI*2);ctx.strokeStyle="rgba(0,229,255,.4)";ctx.stroke();
+    },[p.data,tick,p.w,p.h,p.lineColor]);
+    return React.createElement("canvas",{ref:ref,width:p.w||900,height:p.h||130,style:{display:"block",width:"100%"}});
+  }
+
   // ═══ BAR CHART ═══
   function BarChart(p){
     var ref=useRef(null);
@@ -443,7 +483,11 @@ function AdminPanel(props) {
     function draw(){
       var cv=ref.current;if(!cv)return;var ctx=cv.getContext("2d");
       var w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);
-      var data=p.data||[];if(!data.length)return;
+      var data=p.data||[];
+      // faint horizontal gridlines (baseline for the plot area)
+      ctx.strokeStyle="rgba(201,209,214,.06)";ctx.lineWidth=1;
+      for(var g=0;g<=3;g++){var gy=(h-14)*(g/3);ctx.beginPath();ctx.moveTo(2,gy);ctx.lineTo(w-2,gy);ctx.stroke();}
+      if(!data.length){ctx.fillStyle="#7C868D";ctx.font="9px 'Space Mono',monospace";ctx.textAlign="center";ctx.fillText("awaiting data…",w/2,(h-14)/2);return;}
       var max=Math.max.apply(null,data.map(function(d){return d.v}))||1;
       var bw=Math.floor((w-8)/(data.length))-2;
       var positions=[];
@@ -451,9 +495,13 @@ function AdminPanel(props) {
         var bh=(d.v/max)*(h-24);var x=4+i*(bw+2);var y=h-bh-14;
         positions.push({x:x,w:bw,y:y,h:bh});
         var isHover=hover===i;
-        ctx.fillStyle=isHover?"rgba(0,229,255,.9)":"rgba(0,229,255,.5)";
+        var bg=ctx.createLinearGradient(0,y,0,h-14);
+        bg.addColorStop(0,isHover?"rgba(0,229,255,.95)":"rgba(0,229,255,.55)");
+        bg.addColorStop(1,isHover?"rgba(0,229,255,.35)":"rgba(0,229,255,.12)");
+        if(isHover){ctx.fillStyle="rgba(0,229,255,.10)";ctx.fillRect(x,0,bw,h-14)}
+        ctx.fillStyle=bg;
         ctx.fillRect(x,y,bw,bh);
-        if(isHover){ctx.fillStyle="rgba(0,229,255,.15)";ctx.fillRect(x,0,bw,h)}
+        ctx.fillStyle=isHover?"#00e5ff":"rgba(0,229,255,.7)";ctx.fillRect(x,y,bw,1);
         ctx.fillStyle=isHover?"#C9D1D6":"#7C868D";ctx.font=(isHover?"bold ":"")+"7px monospace";ctx.textAlign="center";ctx.fillText(d.l||"",x+bw/2,h-2);
       });
       barPositions.current=positions;
@@ -547,7 +595,7 @@ function AdminPanel(props) {
           React.createElement("div",{style:lb},"LATENCY HISTORY (LAST 30 PINGS)"),
           React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#7C868D"}},"avg:",avgPing,"ms \u00b7 min:",minPing,"ms \u00b7 max:",maxPing,"ms")
         ),
-        React.createElement(Spark,{data:history,w:800,h:80,lineColor:avgPing>300?"#FF6A3D":avgPing>150?"#ffaa00":"#00e5ff"})
+        React.createElement(LineChart,{data:history,w:900,h:140,lineColor:avgPing>300?"#FF6A3D":avgPing>150?"#ffaa00":"#00e5ff"})
       ),
       // Connection details grid
       React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:Math.round(10*F)}},
