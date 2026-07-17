@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "../components/LocaleLink";
 import { SITE } from "../lib/site";
 import { SITE_FAQ } from "../content/faq";
 import { JsonLd } from "../components/JsonLd";

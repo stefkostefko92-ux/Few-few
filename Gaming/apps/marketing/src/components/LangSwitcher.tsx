@@ -1,11 +1,19 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useI18n } from "../i18n/I18nProvider";
-import { LOCALES, LOCALE_LABELS, LOCALE_NAMES } from "../i18n/locales";
+import { LOCALES, LOCALE_LABELS, LOCALE_NAMES, localeHref, stripLocalePrefix, persistLocale } from "../i18n/locales";
 
-/** Header language switcher (BG/EN/IT). Persists the choice via the provider. */
+/**
+ * Header language switcher (BG/EN/IT). Each option is a real <a> to the same
+ * page in the target locale — so it doubles as the hreflang navigation crawlers
+ * follow — and the choice is persisted (shared with the play app).
+ */
 export function LangSwitcher() {
-  const { locale, setLocale, t } = useI18n();
+  const { locale, t } = useI18n();
+  const pathname = usePathname() || "/";
+  const bare = stripLocalePrefix(pathname);
   return (
     <div
       role="group"
@@ -15,15 +23,17 @@ export function LangSwitcher() {
       {LOCALES.map((l) => {
         const active = l === locale;
         return (
-          <button
+          <Link
             key={l}
-            type="button"
-            onClick={() => setLocale(l)}
-            aria-pressed={active}
+            href={localeHref(l, bare)}
+            hrefLang={l}
+            aria-current={active ? "true" : undefined}
             aria-label={LOCALE_NAMES[l]}
             title={LOCALE_NAMES[l]}
+            onClick={() => persistLocale(l)}
             style={{
-              cursor: "pointer",
+              display: "inline-block",
+              textDecoration: "none",
               padding: "0.2rem 0.45rem",
               fontSize: "0.8rem",
               fontWeight: active ? 700 : 500,
@@ -35,7 +45,7 @@ export function LangSwitcher() {
             }}
           >
             {LOCALE_LABELS[l]}
-          </button>
+          </Link>
         );
       })}
     </div>
