@@ -268,6 +268,7 @@ function AdminPanel(props) {
   var [serverStats, setServerStats] = useState({connections:0,bandwidth:"0",requests_min:0,uptime:"0d",uptime_pct:"99.9%",load:"0",memory_used:0,memory_total:0,disk_used:0,disk_total:0,nginx_today:0,referrers:[],unique_visitors:0,top_ips:[],hourly:[],user_agents:{desktop:0,mobile:0,bot:0}});
   var [countries, setCountries] = useState({});
   var [tick, setTick] = useState(0);
+  var [kpiHist, setKpiHist] = useState([]);
   var C="#00e5ff",CR="0,229,255",HEAD=DISP;
   // Admin auth: the typed password IS the server token (CS_ADMIN_TOKEN in the
   // PHP-FPM env). It is NEVER hardcoded in the bundle — it only exists in the
@@ -410,6 +411,12 @@ function AdminPanel(props) {
   var totalRev=0;clients.forEach(function(c){totalRev+=parseFloat(c.budget)||0});
   var avgLat=0;var latVals=Object.values(stats).filter(function(s){return s.latency>0}).map(function(s){return s.latency});if(latVals.length)avgLat=Math.round(latVals.reduce(function(a,b){return a+b},0)/latVals.length);
 
+  // Roll a small KPI history for the dashboard mini-charts (snapshot per monitor refresh)
+  useEffect(function(){
+    if(!auth||!serverStats.ok)return;
+    setKpiHist(function(prev){return prev.concat([{online:onN,lat:avgLat,req:serverStats.nginx_today||0,uniq:serverStats.unique_visitors||0,contacts:contacts.length}]).slice(-40)});
+  },[serverStats]);
+
   // ═══ SPARKLINE COMPONENT ═══
   function Spark(p){
     var ref=useRef(null);
@@ -432,7 +439,7 @@ function AdminPanel(props) {
       // Last dot
       if(data.length>0){var lastX=w;var lastY=h-((data[data.length-1]-min)/range)*h;ctx.beginPath();ctx.arc(lastX,lastY,3,0,Math.PI*2);ctx.fillStyle="#00e5ff";ctx.fill()}
     },[p.data,tick]);
-    return React.createElement("canvas",{ref:ref,width:p.w||120,height:p.h||32,style:{display:"block"}});
+    return React.createElement("canvas",{ref:ref,width:p.w||120,height:p.h||32,style:{display:"block",width:p.fill?"100%":undefined}});
   }
 
   // ═══ LINE CHART — full chart: grid, y-axis (ms), avg reference line, area fill ═══
@@ -728,11 +735,11 @@ function AdminPanel(props) {
         tab==="dashboard"&&React.createElement("div",null,
           // KPI row
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:Math.round(8*F),marginBottom:Math.round(20*F)}},
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"SITES ONLINE"),React.createElement("div",{style:vl(onN===sites.length?"#00ff88":"#FF6A3D")},onN,"/",sites.length)),
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("0,255,136")}),React.createElement("div",{style:lb},"AVG LATENCY"),React.createElement("div",{style:vl(avgLat>300?"#FF6A3D":avgLat>150?"#ffaa00":"#00ff88")},avgLat,"ms")),
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,170,0")}),React.createElement("div",{style:lb},"REQUESTS TODAY"),React.createElement("div",{style:vl()},serverStats.nginx_today||0)),
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("170,136,255")}),React.createElement("div",{style:lb},"UNIQUE VISITORS"),React.createElement("div",{style:vl()},serverStats.unique_visitors||0)),
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,204,0")}),React.createElement("div",{style:lb},"CONTACTS"),React.createElement("div",{style:vl()},contacts.length))
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"SITES ONLINE"),React.createElement("div",{style:vl(onN===sites.length?"#00ff88":"#FF6A3D")},onN,"/",sites.length),React.createElement("div",{style:{marginTop:10}},React.createElement(Spark,{data:kpiHist.map(function(k){return k.online}),w:240,h:22,fill:true,lineColor:"#00e5ff"}))),
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"AVG LATENCY"),React.createElement("div",{style:vl(avgLat>300?"#FF6A3D":avgLat>150?"#ffaa00":"#00ff88")},avgLat,"ms"),React.createElement("div",{style:{marginTop:10}},React.createElement(Spark,{data:kpiHist.map(function(k){return k.lat}),w:240,h:22,fill:true,lineColor:avgLat>300?"#FF6A3D":avgLat>150?"#ffaa00":"#00e5ff"}))),
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"REQUESTS TODAY"),React.createElement("div",{style:vl()},serverStats.nginx_today||0),React.createElement("div",{style:{marginTop:10}},React.createElement(Spark,{data:(serverStats.hourly||[]).map(function(x){return x.count||0}),w:240,h:22,fill:true,lineColor:"#00e5ff"}))),
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"UNIQUE VISITORS"),React.createElement("div",{style:vl()},serverStats.unique_visitors||0),React.createElement("div",{style:{marginTop:10}},React.createElement(Spark,{data:kpiHist.map(function(k){return k.uniq}),w:240,h:22,fill:true,lineColor:"#00e5ff"}))),
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"CONTACTS"),React.createElement("div",{style:vl()},contacts.length),React.createElement("div",{style:{marginTop:10}},React.createElement(Spark,{data:kpiHist.map(function(k){return k.contacts}),w:240,h:22,fill:true,lineColor:"#00e5ff"})))
           ),
           // Quick actions
           React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:Math.round(20*F)}},
@@ -798,6 +805,16 @@ function AdminPanel(props) {
               React.createElement("div",{onClick:function(){exportCSV(contacts,"cs_leads")},style:btn()},"\u2913 EXPORT CSV"),
               React.createElement("div",{onClick:function(){csAuthFetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){})},style:btn()},"\u21bb REFRESH")
             )
+          ),
+          contacts.length>0&&React.createElement("div",{style:Object.assign({},card(),{marginBottom:Math.round(14*F)})},
+            React.createElement("div",{style:cardGlow()}),
+            React.createElement("div",{style:Object.assign({},lb,{marginBottom:12})},"LEADS BY DAY"),
+            (function(){
+              var by={};
+              contacts.forEach(function(c){var d=(c.date||"").slice(0,10);if(d)by[d]=(by[d]||0)+1});
+              var days=Object.keys(by).sort().slice(-14);
+              return React.createElement(BarChart,{w:900,h:130,fill:true,unit:"leads",xsuffix:"",data:days.map(function(d){return {l:d.slice(5),v:by[d]}})});
+            })()
           ),
           contacts.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(201,209,214,.04)",color:"#7C868D"}},"No submissions yet"),
           contacts.map(function(c,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(201,209,214,.04)"}},
