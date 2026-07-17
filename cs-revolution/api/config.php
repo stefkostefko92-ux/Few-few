@@ -27,14 +27,26 @@ if (!function_exists('cs_env')) {
     }
 }
 
-define('SMTP_HOST',      cs_env('CS_SMTP_HOST',   'authsmtp.securemail.pro'));
-define('SMTP_PORT',      (int) cs_env('CS_SMTP_PORT', '465'));
-define('SMTP_SECURE',    cs_env('CS_SMTP_SECURE', 'ssl'));   // 'ssl' for 465, 'tls' for 587
-define('SMTP_USER',      cs_env('CS_SMTP_USER',   'info@carbonstealth.eu'));
-define('SMTP_PASS',      cs_env('CS_SMTP_PASS',   ''));       // ← set env[CS_SMTP_PASS] on the server
-define('SMTP_FROM',      cs_env('CS_SMTP_FROM',   'info@carbonstealth.eu'));
+// Local overrides written by the admin panel (git-ignored, may hold the password).
+$cs_local = @include __DIR__ . '/smtp-local.php';
+if (!is_array($cs_local)) $cs_local = [];
+if (!function_exists('cs_cfg')) {
+    // Precedence: admin-panel local file → PHP-FPM env → default.
+    function cs_cfg(array $local, string $localKey, string $envKey, string $default): string {
+        if (isset($local[$localKey]) && $local[$localKey] !== '') return (string)$local[$localKey];
+        $v = getenv($envKey);
+        return ($v === false || $v === '') ? $default : $v;
+    }
+}
+
+define('SMTP_HOST',      cs_cfg($cs_local, 'host',   'CS_SMTP_HOST',   'authsmtp.securemail.pro'));
+define('SMTP_PORT',      (int) cs_cfg($cs_local, 'port', 'CS_SMTP_PORT', '465'));
+define('SMTP_SECURE',    cs_cfg($cs_local, 'secure', 'CS_SMTP_SECURE', 'ssl'));   // 'ssl' for 465, 'tls' for 587
+define('SMTP_USER',      cs_cfg($cs_local, 'user',   'CS_SMTP_USER',   'info@carbonstealth.eu'));
+define('SMTP_PASS',      cs_cfg($cs_local, 'pass',   'CS_SMTP_PASS',   ''));       // ← env[CS_SMTP_PASS] or admin panel
+define('SMTP_FROM',      cs_cfg($cs_local, 'user',   'CS_SMTP_FROM',   SMTP_USER));
 define('SMTP_FROM_NAME', cs_env('CS_SMTP_FROM_NAME', 'Carbon Stealth VCC'));
-define('SMTP_TO',        cs_env('CS_SMTP_TO',     'info@carbonstealth.eu'));
+define('SMTP_TO',        cs_cfg($cs_local, 'to',     'CS_SMTP_TO',     'info@carbonstealth.eu'));
 define('SMTP_DEBUG',     (int) cs_env('CS_SMTP_DEBUG', '0')); // 2 = verbose SMTP debug
 
 // reCAPTCHA v3 (optional — leave empty to disable)

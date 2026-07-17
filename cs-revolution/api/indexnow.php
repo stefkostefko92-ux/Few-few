@@ -92,6 +92,7 @@ $input = json_decode(file_get_contents('php://input'), true) ?: [];
 
 // === SUBMIT single URL ===
 if ($action === 'submit') {
+    cs_require_admin();
     $url = $_GET['url'] ?? $input['url'] ?? '';
     if (!$url) jsonOut(['ok' => false, 'error' => 'URL required'], 400);
     if (!filter_var($url, FILTER_VALIDATE_URL)) jsonOut(['ok' => false, 'error' => 'Invalid URL'], 400);

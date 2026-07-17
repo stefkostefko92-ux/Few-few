@@ -32,10 +32,30 @@ function sanitizeUrl($raw) {
     return $raw;
 }
 
+// Rate limiter (per hashed IP), mirrors contact.php. Returns false when over.
+function cs_rate_limit($bucket, $max, $window) {
+    $f = cs_log_dir() . '/rl_' . $bucket . '_' . cs_ip_key(cs_client_ip()) . '.json';
+    $d = file_exists($f) ? json_decode((string)@file_get_contents($f), true) : null;
+    if (!is_array($d) || time() > ($d['reset'] ?? 0)) $d = ['count' => 0, 'reset' => time() + $window];
+    if (($d['count'] ?? 0) >= $max) return false;
+    $d['count']++;
+    @file_put_contents($f, json_encode($d), LOCK_EX);
+    return true;
+}
+
 function fetchUrl($url, $timeout = 15) {
+    // Pin curl to the exact vetted public IP so it cannot re-resolve to a
+    // private/loopback address after validation (DNS-rebinding SSRF).
+    $host = parse_url($url, PHP_URL_HOST);
+    $ips  = $host ? cs_resolve_public($host) : [];
+    if (!$ips) return ['error' => 'blocked'];
+    $port = parse_url($url, PHP_URL_PORT) ?: (stripos($url, 'https://') === 0 ? 443 : 80);
+    $resolve = [];
+    foreach ($ips as $ip) { $resolve[] = $host . ':' . $port . ':' . $ip; }
     $ch = curl_init();
     curl_setopt_array($ch, [
         CURLOPT_URL => $url,
+        CURLOPT_RESOLVE => $resolve,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => false,
         CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
@@ -74,6 +94,7 @@ $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 
 // ═══ ANALYZE ═══
 if ($action === 'analyze') {
+    if (!cs_rate_limit('scan', 12, 3600)) jsonOut(['ok' => false, 'error' => 'Too many scans. Try again later.'], 429);
     $url = sanitizeUrl($input['url'] ?? $_GET['url'] ?? '');
     if (!$url) jsonOut(['ok' => false, 'error' => 'Invalid URL'], 400);
 
@@ -317,7 +338,7 @@ if ($action === 'analyze') {
         }
         $data = json_decode($psi['body'], true);
         if (!$data || !isset($data['lighthouseResult'])) {
-            $result['psi_' . $strategy] = ['error' => 'PSI failed', 'raw' => substr($psi['body'], 0, 200)];
+            $result['psi_' . $strategy] = ['error' => 'PSI failed'];
             continue;
         }
         $lh = $data['lighthouseResult'];
@@ -351,7 +372,7 @@ if ($action === 'analyze') {
     // Log scan ONLY if consent is given
     $consent = !empty($input['consent']) && $input['consent'] === true;
     if ($consent) {
-        $logPath = __DIR__ . '/logs/scans.log';
+        $logPath = cs_log_dir() . '/scans.log';
         if (!file_exists(dirname($logPath))) @mkdir(dirname($logPath), 0755, true);
         $logEntry = [
             'ts' => date('c'),
@@ -372,6 +393,9 @@ if ($action === 'analyze') {
 
 // ═══ LEAD CAPTURE ═══
 if ($action === 'lead') {
+    // Honeypot: silently accept bots without sending mail
+    if (trim($input['_gotcha'] ?? '') !== '') jsonOut(['ok' => true]);
+    if (!cs_rate_limit('lead', 6, 3600)) jsonOut(['ok' => false, 'error' => 'Too many requests. Try again later.'], 429);
     $email = trim($input['email'] ?? '');
     $phone = trim($input['phone'] ?? '');
     $testedUrl = trim($input['tested_url'] ?? '');

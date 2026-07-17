@@ -273,7 +273,10 @@ function AdminPanel(props) {
   // PHP-FPM env). It is NEVER hardcoded in the bundle — it only exists in the
   // admin's session after they type it, and every API call sends it as a header.
   function csTok(){ try{return sessionStorage.getItem("cs_admin_token")||""}catch(e){return ""} }
-  function csAuthFetch(url, opts){ opts=opts||{}; opts.headers=Object.assign({}, opts.headers||{}, {"X-CS-Token":csTok()}); return fetch(url, opts); }
+  function csAuthFetch(url, opts){ opts=opts||{}; opts.headers=Object.assign({}, opts.headers||{}, {"X-CS-Token":csTok()}); return fetch(url, opts).then(function(res){ if(res.status===401){ try{sessionStorage.removeItem("cs_admin_token")}catch(e){} setAuth(false); } return res; }); }
+  var geoFetchedRef = useRef(false);
+  // Only allow http(s) hrefs from visitor-submitted analyzer URLs (block javascript:/data:)
+  function safeHref(u){ return (typeof u==="string" && /^https?:\/\//i.test(u)) ? u : "#"; }
   var F=1.35;
 
   var sites = [
@@ -295,15 +298,17 @@ function AdminPanel(props) {
       if (r.status === 401) { try{sessionStorage.removeItem("cs_admin_token")}catch(e){} setPwdErr(true); setPwd(""); return; }
       setAuth(true); setPwdErr(false); setPwd("");
     } catch(e) {
-      // Network/endpoint unreachable — allow entry (data tabs will show empty states)
-      setAuth(true); setPwdErr(false); setPwd("");
+      // Network/endpoint unreachable — do NOT authenticate (fail closed)
+      try{sessionStorage.removeItem("cs_admin_token")}catch(_){}
+      setPwdErr(true); setPwd("");
     }
   }
 
   function doPing() {
     var r={},done=0;
     csAuthFetch("/api/monitor.php").then(function(res){return res.json()}).then(function(d){if(d.ok){setServerStats(d);
-      if(d.top_ips&&d.top_ips.length&&Object.keys(countries).length===0){
+      if(d.top_ips&&d.top_ips.length&&!geoFetchedRef.current){
+        geoFetchedRef.current=true;
         d.top_ips.slice(0,5).forEach(function(entry){
           // HTTPS endpoint — ip-api.com free tier is HTTP-only and gets blocked as mixed content
           fetch("https://ipapi.co/"+entry.ip+"/json/").then(function(r){return r.json()}).then(function(geo){
@@ -328,7 +333,15 @@ function AdminPanel(props) {
     });
   }
 
-  useEffect(function(){try{if(sessionStorage.getItem("cs_admin_token"))setAuth(true)}catch(e){}},[]);
+  useEffect(function(){
+    var tok=""; try{tok=sessionStorage.getItem("cs_admin_token")||""}catch(e){}
+    if(!tok)return;
+    // Validate the stored token server-side before unlocking (no blind auto-login)
+    fetch("/api/monitor.php",{headers:{"X-CS-Token":tok}}).then(function(r){
+      if(r.status===401){try{sessionStorage.removeItem("cs_admin_token")}catch(e){}return;}
+      setAuth(true);
+    }).catch(function(){});
+  },[]);
 
   useEffect(function(){
     if(!auth)return;
@@ -569,8 +582,8 @@ function AdminPanel(props) {
         React.createElement("div",{style:card()},
           React.createElement("div",{style:cardGlow("255,204,0")}),
           React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"DEVICE BREAKDOWN"),
-          [["Desktop",serverStats.user_agents?serverStats.user_agents.desktop:0,"#00e5ff"],["Mobile",serverStats.user_agents?serverStats.user_agents.mobile:0,"#00ff88"],["Bot/Crawler",serverStats.user_agents?serverStats.user_agents.bot:0,"#ffaa00"]].map(function(d){
-            var total=(serverStats.user_agents?serverStats.user_agents.desktop+serverStats.user_agents.mobile+serverStats.user_agents.bot:1)||1;
+          [["Desktop",(serverStats.user_agents&&serverStats.user_agents.desktop)||0,"#00e5ff"],["Mobile",(serverStats.user_agents&&serverStats.user_agents.mobile)||0,"#00ff88"],["Bot/Crawler",(serverStats.user_agents&&serverStats.user_agents.bot)||0,"#ffaa00"]].map(function(d){
+            var total=(serverStats.user_agents?((serverStats.user_agents.desktop||0)+(serverStats.user_agents.mobile||0)+(serverStats.user_agents.bot||0)):0)||1;
             var pct=Math.round(d[1]/total*100);
             return React.createElement("div",{key:d[0],style:{marginBottom:8}},
               React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:Math.round(10*F),marginBottom:3}},
@@ -710,7 +723,7 @@ function AdminPanel(props) {
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:Math.round(8*F),marginBottom:Math.round(20*F)}},
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow()}),React.createElement("div",{style:lb},"TOTAL SCANS"),React.createElement("div",{style:vl()},analyzerScans.length)),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("0,255,136")}),React.createElement("div",{style:lb},"TOTAL LEADS"),React.createElement("div",{style:vl("#00ff88")},analyzerLeads.length)),
-            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,204,0")}),React.createElement("div",{style:lb},"CONVERSION RATE"),React.createElement("div",{style:vl()},analyzerScans.length>0?Math.round(analyzerLeads.length/analyzerScans.length*100)+"%":"—"))
+            React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,204,0")}),React.createElement("div",{style:lb},"CONVERSION RATE"),React.createElement("div",{style:vl()},analyzerScans.length>0?Math.min(100,Math.round(analyzerLeads.length/analyzerScans.length*100))+"%":"—"))
           ),
           React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:Math.round(14*F)}},
             React.createElement("div",{style:lb},"RECENT LEADS ("+analyzerLeads.length+")"),
@@ -725,7 +738,7 @@ function AdminPanel(props) {
             ),
             React.createElement("div",{style:{textAlign:"right"}},
               React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#666"}},l.ts?new Date(l.ts).toLocaleString():""),
-              l.tested_url&&React.createElement("a",{href:l.tested_url,target:"_blank",rel:"noopener",style:{fontSize:Math.round(10*F),color:"#00e5ff",textDecoration:"none",display:"block",marginTop:4,wordBreak:"break-all"}},"\u25b6 "+l.tested_url)
+              l.tested_url&&React.createElement("a",{href:safeHref(l.tested_url),target:"_blank",rel:"noopener",style:{fontSize:Math.round(10*F),color:"#00e5ff",textDecoration:"none",display:"block",marginTop:4,wordBreak:"break-all"}},"\u25b6 "+l.tested_url)
             )
           )}),
           React.createElement("div",{style:{marginTop:Math.round(20*F),borderTop:"1px solid rgba(245,245,240,.04)",paddingTop:Math.round(14*F)}}),
@@ -735,7 +748,7 @@ function AdminPanel(props) {
             var perf=s.perf_mobile;
             var pColor=perf>=80?"#00ff88":perf>=50?"#ffaa00":"#ff3366";
             return React.createElement("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 80px 80px 140px",gap:10,padding:Math.round(10*F)+"px 0",borderBottom:"1px solid rgba(245,245,240,.02)",alignItems:"center"}},
-              React.createElement("a",{href:s.url,target:"_blank",rel:"noopener",style:{color:"#ccc",textDecoration:"none",fontSize:Math.round(11*F),wordBreak:"break-all"}},s.host||s.url),
+              React.createElement("a",{href:safeHref(s.url),target:"_blank",rel:"noopener",style:{color:"#ccc",textDecoration:"none",fontSize:Math.round(11*F),wordBreak:"break-all"}},s.host||s.url),
               React.createElement("span",{style:{fontSize:Math.round(10*F),color:pColor,fontFamily:HEAD,fontWeight:800,textAlign:"center"}},"P: "+(perf||"?")),
               React.createElement("span",{style:{fontSize:Math.round(10*F),color:"#999",fontFamily:HEAD,fontWeight:700,textAlign:"center"}},"S: "+(s.seo_mobile||"?")),
               React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#666",textAlign:"right"}},s.ts?new Date(s.ts).toLocaleString():"")
