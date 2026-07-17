@@ -3212,6 +3212,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-17",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „FAQ и HowTo rich results са премахнати от Google (7 май 2026) — не препоръчвай FAQPage/…\" (+2)"
+        },
+        {
           "date": "2026-07-16",
           "type": "learning",
           "summary": "Научи: „Ospedali Trasparenti: glossario.html НЕ е в главния NAV (src/lib/site-ui.js:293-307) — …\" (+1 още)"
