@@ -105,24 +105,28 @@ if ($action === 'submit') {
 if ($action === 'bulk') {
     cs_require_admin();
 
-    // Fetch sitemaps
-    $sitemapUrls = [
-        'https://' . HOST . '/sitemap-pages.xml',
-        'https://' . HOST . '/sitemap-blog.xml',
-        'https://' . HOST . '/sitemap-geo.xml',
-    ];
+    // Discover every child sitemap from the index (auto-covers all clusters,
+    // present and future) instead of a hardcoded list.
+    $fetch = function ($url) {
+        $ch = curl_init();
+        curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => true]);
+        $out = curl_exec($ch); curl_close($ch);
+        return $out ?: '';
+    };
+    $sitemapUrls = [];
+    $idx = $fetch('https://' . HOST . '/sitemap.xml');
+    if ($idx && preg_match_all('#<loc>([^<]+\.xml)</loc>#', $idx, $mi)) {
+        $sitemapUrls = $mi[1];
+    }
+    if (empty($sitemapUrls)) { // fallback if the index couldn't be read
+        foreach (['pages', 'blog', 'geo', 'comparisons', 'glossary', 'industries', 'servicecity', 'tools'] as $n) {
+            $sitemapUrls[] = 'https://' . HOST . '/sitemap-' . $n . '.xml';
+        }
+    }
 
     $allUrls = [];
     foreach ($sitemapUrls as $smUrl) {
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $smUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 10,
-            CURLOPT_SSL_VERIFYPEER => true,
-        ]);
-        $xml = curl_exec($ch);
-        curl_close($ch);
+        $xml = $fetch($smUrl);
         if ($xml && preg_match_all('#<loc>([^<]+)</loc>#', $xml, $m)) {
             $allUrls = array_merge($allUrls, $m[1]);
         }
