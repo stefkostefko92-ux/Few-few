@@ -879,6 +879,38 @@
           "type": "learning",
           "summary": "Научи фирмените данни на Carbon Stealth VCC от carbonstealth.eu: ЕИК BG208725180, седалище Бобов дол, GDPR администратор/обработващи/права; разреши VCC-юрисдикция въпроса (BG юр. лице, чл.27 не важи). +15 проверени поуки → v12.0."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Импресум-минимум за всеки продукт на Carbon Stealth VCC (Дир. 2000/31 чл. 5 + GDPR чл. 13): име Carbon Stealth VCC, ЕИК BG208725180, адрес ул. Самуил 3, Бобов дол 2670, имейл info@carbonstealth.eu — постави ги в тялото на Terms/Privacy, не ",
+          "source": "наблюдение SupremeDiscordBot футър vs тяло"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Портфолио/домейн покритие на дружеството: уеб, e-commerce, софтуер, ERP (вкл. за италиански производител на асансьори — Panev), мобилни, браузър игри (Nexus Dominion), FiveM анти-чийт (CS Anticheat), IoT дашборди/PLC, reverse engineering + ",
+          "source": "https://carbonstealth.eu/en/about/ + /en/portfolio/ (sitemap) + llms.txt"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "ЗАБЕЛЕЖКА: на contact/impressum страниците е публикуван само ЕИК BG208725180, без изричен ДДС номер. В България ДДС номерът е BG + ЕИК (т.е. BG208725180) при ДДС-регистрация; ако дружеството е ДДС-регистрирано, за B2B фактури/e-commerce обм",
+          "source": "https://carbonstealth.eu/en/contact/ (само ЕИК)"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "ПРАЗНИНА (чл.13): privacy политиката на carbonstealth.eu НЕ посочва надзорния орган — за пълнота по GDPR чл. 13(2)(d)/чл. 77 трябва да назове КЗЛД (Комисия за защита на личните данни, гр. София) + право на жалба. Препоръка при следващ одит.",
+          "source": "https://carbonstealth.eu/en/privacy/ (отсъствие на орган) + GDPR чл.13(2)(d)/77"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Триезична структура (IT по подразбиране, /en/, /bg/) с privacy/cookie/terms/contact във ВСИЧКИ три езика (sitemap-pages.xml) — добра импресум/прозрачност основа; проверявай hreflang реципрочност и еднаквост на правния текст между локалите.",
+          "source": "https://carbonstealth.eu/sitemap-pages.xml"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Управляващо право/отговорност (Условия): българско право, юрисдикция София; отговорност изключена за косвени вреди, пропуснати ползи и загуба на данни до максимума, позволен от закона. При B2C това ограничение не бива да отнема императивни ",
+          "source": "https://carbonstealth.eu/en/terms/"
+        }
       ]
     },
     {
@@ -1925,6 +1957,38 @@
           "type": "learning",
           "summary": "Научи: „panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta…\" (+1 още)"
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-12",
+          "text": "Supreme AdBlock cosmetic_generic.css (EasyList generic) НЕ съдържа broad bare селектори (.ad/.ads/.promo/.banner/.box/.sidebar/[class*=ad]); EasyList вече ги е изчистил в генеричната секция — over-hide идва не оттам, а от вградените AD_SELE",
+          "source": "grep на /home/user/Few-few/adblock/cosmetic_generic.css (13651 селектора) — 0 съвпадения за bare .ad/.ads/.promo/.banner/.box/.sidebar и [class*=ad]"
+        },
+        {
+          "date": "2026-07-12",
+          "text": "content.js AD_SELECTORS substring-и ([class^='ad-'], [id^='ad-'], [id*='-ad-'], [id*='_ad_'], [class$='-ad(s)']) над-скриват на classifieds/marketplace сайтове, където 'ad'=обява (ad-title/ad-price/id=ad-12345). Unhide не ги пази (напр. olx",
+          "source": "content.js:43-64 + rules/cosmetic_specific.json unhide map + CSS attribute-selector спецификация (потвърдено с node)"
+        },
+        {
+          "date": "2026-07-12",
+          "text": "scanSticky adSignal (content.js:303-304,343-348) ползва AD_TOKENS с 'banner' и 'promo' → скрива легитимни sticky ленти promo-bar/top-banner/hero-banner/site-banner (потвърдено node hit=true), но НЕ announcement-bar/free-shipping-bar/cookie-",
+          "source": "известни captcha/payment iframe размери"
+        },
+        {
+          "date": "2026-07-12",
+          "text": "build_filters.mjs:245-247 изпуска само no-domain #@#/#?#; но EasyList на живо има 0 генерични #@# и 0 генерични #?# — механизмът е латентен, нулев над-скриващ ефект днес. Всичките 336 domain-scoped #@# се пазят (unhide: 517 домейна).",
+          "source": "rules/cosmetic_specific.json unhide=517 домейна"
+        },
+        {
+          "date": "2026-07-12",
+          "text": "Chrome DNR RuleCondition: block правило БЕЗ resourceTypes И БЕЗ excludedResourceTypes матчва всички типове ОСВЕН main_frame (документно навигиране). Затова EasyList/ABP→DNR конвертор, който не слага resourceTypes на block правила, НЕ чупи н",
+          "source": "програмна проверка adblock/rules/{easylist,easyprivacy,removeparam,ad_rules,youtube_rules,urlhaus}.json = 0 block-правила с main_frame"
+        },
+        {
+          "date": "2026-07-12",
+          "text": "При одит на EasyList→DNR за 'изгубени @@ изключения' брой ЗАГУБЕНИ РЕДОВЕ инструментирано, не (source@@ − allow-rule-count): pureDomain merge свива много @@ реда в requestDomains масиви, така rule-count е по-малък от line-count и симулира ф",
+          "source": "grep generichide в *.js=0"
+        }
       ]
     },
     {
@@ -1990,6 +2054,38 @@
           "date": "2026-07-14",
           "type": "learning",
           "summary": "Засят с 14 проверени поуки от канона за качество на кода (Fowler/Beck/McCabe/SonarSource/Page-Jones/Metz) — DRY-граници, сложност, connascence, качество на тестове (+13 още)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-14",
+          "text": "Граница спрямо Кодаджията: той оптимизира за коректност/сигурност (бъгове, OWASP, изтичане), аз — за поддръжка (структура, четимост, дълг) без смяна на поведение. Не рефакторирам върху непотвърден бъг (може да „изчистя\" симптом и да скрия п",
+          "source": ".claude/agents/kodadjiyata.md mission + CLAUDE.md 'Custom agents"
+        },
+        {
+          "date": "2026-07-14",
+          "text": "Коментарите обясняват защо, не какво (кодът вече казва какво). Коментар, който компенсира лошо име или дублира кода, е smell — преименувай/извади функция вместо да коментираш. Изключения с реална стойност: неочевидно „защо\" (workaround + ли",
+          "source": "Fowler Refactoring 2nd ed. ('Comments' smell) + Martin, Clean Code ch.4"
+        },
+        {
+          "date": "2026-07-14",
+          "text": "Google „readability\" практика: кодът се чете многократно повече, отколкото се пише → оптимизирай за читателя. Ревю за качество приоритизира churn × сложност hotspots (Adam Tornhill, „Your Code as a Crime Scene\") — файловете, които се промен",
+          "source": "https://google.github.io/eng-practices/review/ + Tornhill, 'Your Code as a Crime Scene"
+        },
+        {
+          "date": "2026-07-14",
+          "text": "Тествай поведение, не имплементация (Kent Beck; Google Testing Blog): тест, вързан за вътрешни детайли (частни методи, точен ред на извиквания), се чупи при рефактор, който НЕ сменя поведението → наказва добрата промяна. Пиши тестове през п",
+          "source": "https://testing.googleblog.com/2013/08/testing-on-toilet-test-behavior-not.html"
+        },
+        {
+          "date": "2026-07-14",
+          "text": "Coverage ≠ качество на тестовете. Ред, изпълнен без асерция за резултата, брои 100% покритие, но не хваща нищо (coverage театър). Истинската строгост се мери с мутационно тестване (Stryker/tools/code/scan.sh mutation): внася малки промени (",
+          "source": "https://stryker-mutator.io/docs/ + PIT/Stryker методология"
+        },
+        {
+          "date": "2026-07-14",
+          "text": "SOLID SRP = „един модул, една причина за промяна\" (не буквално „прави едно нещо\"). Причината за промяна = един клас заинтересовани (actor). „God\" файл, който се променя и при UI, и при бизнес правило, и при формат на данни, нарушава SRP → р",
+          "source": "Robert C. Martin, 'Clean Architecture' + https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html"
         }
       ]
     },
@@ -2673,6 +2769,38 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/geymara.md."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-25",
+          "text": "Lua 5.3 е премахнат — не добавяй lua54 'yes'; CommunityOx е архивиран → ползвай overextended.",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "FiveM Recommended server build е около 25770 (промотиран ~началото на юни 2026); за прод ползвай Recommended, не Latest.",
+          "source": "https://xgamingserver.com/blog/fivem-server-artifacts-explained/"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "ox_lib най-нов е v3.38.0 (17 юни 2026): нови collection types, insertion-ordered Map, radial menu подобрения.",
+          "source": "https://github.com/overextended/ox_lib/releases"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "ox_core най-нов е v1.5.14 (29 май 2026) с поддръжка за strict statebags — подсилва server-authoritative state дисциплината.",
+          "source": "https://github.com/overextended/ox_core/releases"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "fivem-natives-mock авто-генерира Lua стъбове на ВСИЧКИ CFX natives като глобални функции с MockReturnValue['Name'] таблица за връщана стойност + вграден type-check на аргументите (error при грешен тип). Идеален isolated busted мок без жив с",
+          "source": "https://github.com/Adrenaline-RP-dev/fivem-natives-mock (bin/server.lua, прегледан raw)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "luacheck връща non-zero exit и при WARNINGS (не само errors) — в CI задължително изричен severity/codes праг в .luacheckrc, иначе стилистичен шум блокира PR. luacheck-for-fivem action дава FiveM globals + JUnit за PR анотации.",
+          "source": "https://forum.cfx.re/t/template-luacheck-config-files/5227643"
         }
       ]
     },
@@ -3418,6 +3546,38 @@
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „В panev/ sitemap.xml е ръчно поддържан с чисти URL (/brevetto), /faq, /en и en hreflang…\" (+2)"
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-06",
+          "text": "panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123) и catalogo.html (~309-437), докато server.js динамичните продуктови страници и вторите статични блокове ползват 2026-12-31 — при аудит проверявай ВСИЧК",
+          "source": "panev/prodotti.html:97-123, panev/catalogo.html:309-437 (Grep priceValidUntil, дата днес 2026-07-06)"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "panev: LocalBusiness image в index.html:100 сочи img/sede.jpg който не съществува (Glob panev/img/sede* → 0) — при entity одит винаги валидирай, че logo/image URL-ите резолвват до реален файл.",
+          "source": "panev/index.html:100 + Glob panev/img/sede*"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "Този SEO subagent няма Bash/shell в toolset-а (само Read/Grep/Glob/WebFetch/WebSearch) — не мога да бутам сървър или Lighthouse; статус кодове се извеждат от routing логика + верификация на данни, ясно етикетирани като неизмерени.",
+          "source": "наличен tool списък в тази сесия"
+        },
+        {
+          "date": "2026-06-25",
+          "text": "FAQ/HowTo rich results са премахнати (07.05.2026) — не разчитай на тях; entity-схема (sameAs) е най-силният AI-citation лост.",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Google официално: НЯМА специална schema.org разметка за AI features (AI Mode/AI Overviews) — 'Structured data isn't required for generative AI search'. JSON-LD пази стойност за rich results/яснота, но не подавай нищо 'специално за AI'.",
+          "source": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "CWV прагове непроменени през 2026 (LCP 2.5s/INP 200ms/CLS 0.1), но методиката за INP е затегната — тежи устойчивата латентност при input-heavy страници; CrUX разширява soft-navigation за SPA; TTFB изведен като диагностика без ranking тежест",
+          "source": "https://webvitals.tools/blog/google-core-web-vitals-update-2026/"
+        }
       ]
     },
     {
@@ -4093,6 +4253,38 @@
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/prevodach.md."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-25",
+          "text": "Потвърдени IT клинични термини са в _shared/glossary.md (напр. „слухов апарат“ → „apparecchio acustico“).",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "e-government термин: BG „лична карта\" → EN „identity card\" → IT „carta d'identità\"; официалното IT наименование на електронната е „Carta d'Identità Elettronica\" (CIE), в UI sentence-case „carta d'identità elettronica\". Регистър Lei, sentenc",
+          "source": "https://www.cartaidentita.interno.gov.it/en/cie/electronic-identity-card/ (Min. Interno IT) + PRADO Council EU ITA-BO-04004"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Placeholder/ICU паритетът трябва да е ОТДЕЛНА проверка от key-паритета: за всеки ключ извличаш множеството плейсхолдъри/ICU аргументи и изискваш идентичен набор bg≡en≡it. godaddy/eslint-plugin-i18n-json го прави с правило 'identical-placeho",
+          "source": "https://github.com/godaddy/eslint-plugin-i18n-json + https://github.com/lingualdev/i18n-check"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Back-translation/COMET adequacy гейтът трябва да е тясно ограничен до глосарни/клинични термини, НЕ върху UI прозата: reference-based метрики (COMET) и back-translation наказват легитимни перифрази/синоними и дават фалшиви аларми. За проза ",
+          "source": "https://translated.com/mt-quality-evaluation-in-the-age-of-llm-based-mt + https://futureagi.com/blog/evaluating-llm-translation-quality-2026/"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "e-government/документен термин: BG „шофьорска книжка“ → EN „driving licence“ (UK правопис, EU употреба, не „license“) → IT «patente di guida» (caporali, sentence-case, регистър Lei). False friend EN↔IT: IT „patente“ ≠ EN „patent“; не превеж",
+          "source": "https://www.mit.gov.it/come-fare-per/patenti-mezzi-e-abilitazioni/patenti-mezzi-stradali (Min. Infrastrutture e Trasporti IT) + https://www.ilportaledellautomob"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "CLDR cardinal plural категории по език: български (bg) има две — one (n=1) и other; английски (en) има две — one и other; но италиански (it) има ТРИ — one, many (компактни форми за милиони) и other. ICU MessageFormat за IT трябва да поддърж",
+          "source": "https://www.unicode.org/cldr/charts/47/supplemental/language_plural_rules.html"
+        }
       ]
     },
     {
@@ -4730,6 +4922,38 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/siydara.md."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-25",
+          "text": "536 дублирани slug-а между сийд файловете (открити 2026-06-25 с check-dups) — по-късните upsert-и презаписват по-ранните.",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Prisma 7 е release-нат; seed командата живее в prisma.config.ts под migrations.seed (напр. seed: 'tsx prisma/seed.ts'), а package.json#prisma блокът е премахнат.",
+          "source": "https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "В Prisma 7 migrate dev/reset вече НЕ пускат seed автоматично — само npx prisma db seed; флагът --skip-seed е премахнат.",
+          "source": "https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "prisma-client е новият default generator със задължителен output; prisma-client-js е deprecated — импорт от генерирания път, не @prisma/client.",
+          "source": "https://www.prisma.io/docs/orm/prisma-schema/overview/generators"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Текущата стабилна мажорна версия на PostgreSQL (2026-06) е 18.4 (издадена 2026-05-14); PG 19 е още в Beta. За zabobovdol таргетирай 18.x в Docker/Compose.",
+          "source": "https://www.postgresql.org/"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "data.egov.bg върви на CKAN; данните са в CSV/JSON/XML/RDF с документиран API (изисква ключ), по EU Директива 2019/1024. Подходящ източник за raw snapshot + transform с provenance.",
+          "source": "https://data.egov.bg/data"
         }
       ]
     },
@@ -5439,6 +5663,38 @@
           "date": "2026-07-06",
           "type": "learning",
           "summary": "Научи: „В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde…\" (+1 още)"
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-06",
+          "text": "В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholder стойност със спецсимволи като ADMIN_PASSWORD=<impostare ...> дава bash syntax error (< и > са редирекции) и аборти целия deploy. Placeholder-и в .env.e",
+          "source": "panev/.env.example:24 + scripts/deploy.sh:38,123,164 (възпроизведено: 'syntax error near unexpected token newline')"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "panev deploy стекът е PM2 (не systemd unit) + Nginx + certbot; app слуша app.listen(PORT) на 0.0.0.0 без SIGTERM handler. UFW (22/80/443) смекчава експозицията, но за prod-коректност се добавя listen на 127.0.0.1 + server.close() на SIGTERM",
+          "source": "panev/server.js:1220 (тествано: SIGTERM → незабавен изход, без graceful) + scripts/deploy.sh:181"
+        },
+        {
+          "date": "2026-06-25",
+          "text": "Let's Encrypt вече издава 6/45-дневни сертификати — задължи ARI авто-подновяване; Docker ≥29.5.1 заради docker cp TOCTOU.",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Ubuntu 26.04 'Resolute Raccoon' е текущият LTS (издаден 2026-04-23, standard support до 2031-04-30, ESM до 2036). 24.04 'Noble Numbat' остава поддържан LTS до 2029-05-31 (последен point 24.04.4, 2026-02-12). За нов хост обмисли 26.04.",
+          "source": "https://endoflife.date/api/ubuntu.json (живо, 2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "nginx 1.31.2 и 1.30.3 (17.06.2026) поправят CVE-2026-42530 (HTTP/3 QUIC use-after-free), CVE-2026-42055 (heap overflow при ignore_invalid_headers off + големи large_client_header_buffers към HTTP/2/gRPC backend) и CVE-2026-48142 (charset_ma",
+          "source": "https://nginx.org/en/CHANGES (живо, 2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "CVE-2026-55200 (critical) в libssh2 (юни 2026, + CVE-2025-15661/CVE-2026-55199 high) е в КЛИЕНТСКАТА ssh библиотека (git/curl/php-ssh), НЕ в OpenSSH sshd сървъра. Не бъркай libssh2 CVE с OpenSSH сървърен фикс.",
+          "source": "https://www.openwall.com/lists/oss-security/2026/06/ (живо, 2026-06-26)"
         }
       ]
     },
@@ -6175,6 +6431,38 @@
           "type": "learning",
           "summary": "Научи: „Официален ред на QuickSurface reverse engineering pipeline: Import (STL/OBJ/PLY + polyg…\" (+8 още)"
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-06",
+          "text": "Официален ред на QuickSurface reverse engineering pipeline: Import (STL/OBJ/PLY + polygon reduction) → Mesh Selection (боядисай planar/cylindrical/spherical/freeform/revolved/extruded региони) → Create Primitives (plane/cylinder/cone/sphere",
+          "source": "https://www.quicksurface.com/quicksurface-pro/"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "QuickSurface mesh repair инструменти: polygon/triangle reduction (децимация), hole filling, remove outliers, smoothing, watertight, de-feature (маха лого/маркери с един клик). Хигиена ПРЕДИ surfacing; свръх-децимация трие остри ръбове.",
+          "source": "https://www.quicksurface.com/step-by-step-cad-modeling-from-freeform-3d-scans/"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "QuickSurface alignment: Primitives→Object Align, Symmetry Plane, N-points Alignment (3+ точки за многоскенерни сканове), Global Fine Align. QS2026 добавя Selection-Based Symmetry Plane — компенсира несъвършенствата на скана вместо ръчна ос;",
+          "source": "https://www.quicksurface.com/whats-new-qs2026/"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "QuickSurface freeform методи: Automatic Surfacing (един бутон, органични форми, неструктурирани пачове — слабо за class-A/редакция); Fit Surface (в QS2026 editable — местиш NURBS пача без refit); Free-form Quad surface с snap-to-mesh (контр",
+          "source": "https://www.quicksurface.com/step-by-step-cad-modeling-from-freeform-3d-scans/"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "QuickSurface Auto/Fit surface качество: G2 continuity навсякъде и G1 в extraordinary points; алгоритъмът минимизира броя NURBS пачове. Може да grow-ва повърхнини с tangent/curvature continuity за затваряне на пролуки (fair bridge) над скан-",
+          "source": "https://www.rapidscan3d.com/products/quicksurface-freeform"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "Повърхнини→solid в QuickSurface: mutual Trim + stitch зашива пачове по споделени ръбове до свързано тяло; boolean на solids; Thicken free-form + Shell/offset за черупки → watertight. При surfaces-only модел (loft/sweep пача) mutual trim+sti",
+          "source": "https://www.quicksurface.com/3d-reverse-engineering-workflow/"
+        }
       ]
     },
     {
@@ -6837,6 +7125,38 @@
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/socialdjiyata.md."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-25",
+          "text": "EU AI Act чл. 50: видим „AI-generated“ етикет + C2PA; платформите свалят C2PA при качване → винаги и видим етикет.",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "EU AI Act чл. 50 влиза 02.08.2026; Code of Practice финализиран 10.06.2026 (C2PA Content Credentials + невидим watermark, multi-layer).",
+          "source": "https://artificialintelligenceact.eu/article/50/"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Официалният c2patool (contentauth/c2pa-rs) маркира AI съдържание чрез --create trainedAlgorithmicMedia, който авто-добавя c2pa.created action; read-back за верификация на embed-нат манифест е c2patool <file> -d.",
+          "source": "https://github.com/contentauth/c2pa-rs/blob/main/cli/docs/usage.md"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Prior art clipify (Claude Code skill) строи karaoke captions като ASS (не SRT) от Whisper word-JSON чрез build_ass.py (word-highlight стил), и верифицира тайминг при repurpose чрез audio_align.py — offset на под-клип в дълъг източник. Заема",
+          "source": "https://github.com/louisedesadeleer/clipify"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "ffmpeg loudnorm (EBU R128) defaults: I integrated target -24.0 LUFS (range -70..-5), TP максимален true peak -2.0 dBTP (range -9..0), LRA loudness range 7.0; dynamic режим upsample-ва до 192kHz за true-peak детекция",
+          "source": "https://ffmpeg.org/ffmpeg-filters.html"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "ffmpeg loudnorm linear=true (default) прави линейно мащабиране, но ИЗИСКВА всичките measured_I, measured_LRA, measured_TP, measured_thresh; ако target LRA < source LRA или промяната надхвърли target TP, тихо се връща в dynamic — затова 2-pa",
+          "source": "https://ffmpeg.org/ffmpeg-filters.html"
+        }
       ]
     },
     {
@@ -7466,6 +7786,38 @@
           "type": "learning",
           "summary": "Научи: „panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST…\" (+2 още)"
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-06",
+          "text": "Текуща (и най-нова major) Stripe API версия е 2026-06-24.dahlia. Пинвай литерала и провери да съвпада с bundled ApiVersion на инсталирания SDK (node_modules/stripe/cjs/apiVersion.js), иначе тих разнобой в полетата.",
+          "source": "https://docs.stripe.com/changelog/dahlia"
+        },
+        {
+          "date": "2026-06-25",
+          "text": "Stripe webhook: монтирай raw body преди express.json(), провери подписа със",
+          "source": ""
+        },
+        {
+          "date": "2026-07-06",
+          "text": "panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST /api/contact (carrello.html:294 startQuoteRequest); целият Stripe път (create-checkout-session, session-status, webhook) съществува но е СПЯЩ — 0 .html ",
+          "source": "grep create-checkout-session в *.html → 0"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "panev webhook анти-патърн: handleStripeWebhook връща res.json({received:true}) (server.js:878) синхронно, докато stripe.checkout.sessions.retrieve(...).then(insertOrder) (server.js:841) е fire-and-forget, не await. Провал в записа → Stripe ",
+          "source": "lib/db.js:65"
+        },
+        {
+          "date": "2026-07-06",
+          "text": "panev: unit_amount = Math.round(p.price*100) ползва IVA-esclusa нето цена (server.js:654), но UI показва sub*1.22 (carrello.html:261). При активиране Stripe таксува без ДДС, без Stripe Tax, без фактура → недосъбран ДДС. apiVersion НЕ е пинн",
+          "source": "node_modules/stripe/cjs/apiVersion.js=2024-04-10"
+        },
+        {
+          "date": "2026-06-25",
+          "text": "Stripe webhook: монтирай raw body преди express.json(), провери подписа със",
+          "source": ""
+        }
       ]
     },
     {
@@ -8030,6 +8382,38 @@
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/mobildjiyata.md."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-06",
+          "text": "Google Play target API 35 (Android 15) задължителен за нови апове И ъпдейти от 31.08.2025 (extension до 01.11.2025 при заявка); target API 36 (Android 16) става задължителен от 31.08.2026. Wear OS/Android TV изостават с едно ниво (API 34/35",
+          "source": "https://support.google.com/googleplay/android-developer/answer/11926878"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive\" (Android vitals); кадър <16ms",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive\" (Android vitals); кадър <16ms",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Push: iOS APNs (APNs auth key + Key ID), Android FCM; FCM достига Apple устройства",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Достъпност за глухи/слабочуващи (medqr): носещите критерии са визуални/текстови",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "NFC за medqr: iOS иска нативен Core NFC (NFCNDEFReaderSession, entitlement",
+          "source": ""
+        }
       ]
     },
     {
@@ -8586,6 +8970,38 @@
           "date": "2026-06-26",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/printadjiyata.md."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-06",
+          "text": "K2 Plus активното нагряване на камерата работи само в диапазон 40 < T ≤ 60 °C (макс 60 °C); за PLA/PETG/TPU препоръка 30–35 °C, за ABS/ASA/PC/PA/найлон 50–60 °C със затворен капак и врата. Високата камера при PLA/PETG омеква филамента и рис",
+          "source": "https://store.creality.com/blogs/tutorial/creality-k2-plus-chamber-temperature-setting-guide"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "tools/print/printability.mjs чете binary STL: bounding box vs 350³, watertight (ръбове),",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "tools/print/printability.mjs чете binary STL: bounding box vs 350³, watertight (ръбове),",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Формат: 3MF (носи цвят/единици/per-object) пред STL за K2 Plus/CFS; validate-вай внесени",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Материал↔камера: PLA/PETG без специална камера; ABS/ASA/PC/PA изискват топла камера +",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Резби: за здраво/многократно → heat-set inserts (не принтирани резби). Стени ≥0.8 mm",
+          "source": ""
         }
       ]
     },
@@ -9353,6 +9769,38 @@
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/dizayner.md."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-26",
+          "text": "tools/design/motion-a11y.mjs хваща: анимация без reduced-motion, WebGL без matchMedia, autoplay",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Производителност: GPU не main thread; OffscreenCanvas + Web Worker (transferControlToOffscreen);",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Стек по тежест: Three.js+GLSL макс съвместимост; WebGPU+TSL ново тежко (+WebGL2 fallback);",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "GSAP е 100% безплатен (вкл. бивши Club плъгини, комерсиално) — Webflow купи GreenSock 2024.",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "WebGPU е shippable 2026 (Safari 26, Firefox 141/145) но WebGL2 fallback задължителен",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Винаги fallback: под reduced-motion → статичен poster; low-FPS/mobile → разруши WebGL",
+          "source": ""
+        }
       ]
     },
     {
@@ -9954,6 +10402,38 @@
           "type": "born",
           "summary": "Създаден — специалист по разширения за Google Chrome (Manifest V3). Дефиниция в .claude/agents/hromadjiyata.md, инструмент tools/chrome/mv3-lint.mjs."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-26",
+          "text": "Service worker в MV3 спира след 30 s бездействие; също при fetch() отговор >30 s или единична заявка/събитие >5 min. Всяко получено събитие или извикване на extension API нулира таймера. Глобалните променливи се губят при спиране → състояни",
+          "source": "https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle (2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Keepalive за MV3 service worker (официално поддържан): активна WebSocket връзка удължава живота (Chrome 116); дълготрайно messaging през Port (chrome.runtime.connect) keep-alive (Chrome 114); chrome.runtime.connectNative() keep-alive (Chrom",
+          "source": "https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle (2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "CoVe-корекция: chrome.alarms минимален период е 0.5 минута (30 s), НЕ 1 минута; стойност <0.5 за delayInMinutes/periodInMinutes не се спазва и вдига warning. При разопаковано (unpacked) разширение няма лимит, но не разчитай на това в продук",
+          "source": "https://developer.chrome.com/docs/extensions/reference/api/alarms (2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "declarativeNetRequest статични лимити: GUARANTEED_MINIMUM_STATIC_RULES=30000, MAX_NUMBER_OF_STATIC_RULESETS=100, MAX_NUMBER_OF_ENABLED_STATIC_RULESETS=50.",
+          "source": "https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest (2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "declarativeNetRequest динамични/сесийни лимити: MAX_NUMBER_OF_DYNAMIC_RULES=30000 (за 'safe' правила, Chrome 121+), MAX_NUMBER_OF_UNSAFE_DYNAMIC_RULES=5000, MAX_NUMBER_OF_SESSION_RULES=5000, MAX_NUMBER_OF_REGEX_RULES=1000.",
+          "source": "https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest (2026-06-26)"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "DNR поддържа 6 действия: block, allow, allowAllRequests, redirect, upgradeScheme, modifyHeaders. Видове правила: static (в пакета, JSON рулсети), dynamic (преживява сесии и ъпгрейд, управлявани с JS), session (в паметта, изтриват се при спи",
+          "source": "https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest (2026-06-26)"
+        }
       ]
     },
     {
@@ -10546,6 +11026,38 @@
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „Supreme Bot: notifyBot(event) мапва към /internal/{event-lowercase-hyphenated} в бота (…\" (+2)"
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-06-26",
+          "text": "Discord interaction: трябва да изпратиш първоначален отговор до 3 СЕКУНДИ от получаване на събитието; ако пропуснеш 3-секундния срок, interaction token-ът се инвалидира („This interaction failed\")",
+          "source": "https://docs.discord.com/developers/interactions/receiving-and-responding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Interaction callback types: PONG=1, CHANNEL_MESSAGE_WITH_SOURCE=4, DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE=5 (показва loading), DEFERRED_UPDATE_MESSAGE=6 (компоненти, без loading), UPDATE_MESSAGE=7 (компоненти), MODAL=9 (popup)",
+          "source": "https://docs.discord.com/developers/interactions/receiving-and-responding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Interaction token-ите са валидни 15 минути и се ползват за follow-up съобщения след първоначалния отговор; defer (type 5) преди дълга работа, после редактирай/follow-up",
+          "source": "https://docs.discord.com/developers/interactions/receiving-and-responding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "HTTP (webhook) interactions: ЗАДЪЛЖИТЕЛНО валидирай X-Signature-Ed25519 + X-Signature-Timestamp хедърите срещу public key, после отговори на PING (type 1) с PONG (type 1) — иначе Discord отхвърля endpoint-а",
+          "source": "https://docs.discord.com/developers/interactions/receiving-and-responding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Ephemeral съобщение (видимо само за извикалия потребител) се задава с flag 1<<6 = 64 в response data-та",
+          "source": "https://docs.discord.com/developers/interactions/receiving-and-responding"
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Discord глобален rate limit: всички ботове могат до 50 заявки/секунда към API-то (независимо от per-route лимитите)",
+          "source": "https://docs.discord.com/developers/topics/rate-limits"
+        }
       ]
     },
     {
@@ -10714,6 +11226,38 @@
           "type": "learning",
           "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-02",
+          "text": "MiFID II чл.17(1) (Дир. 2014/65/ЕС) изисква от посредник с алгоритмична търговия: effective systems and risk controls — trading systems resilient + sufficient capacity, appropriate trading thresholds and limits, prevent sending of erroneous",
+          "source": "EUR-Lex CELEX 32014L0065 чл.17(1) — https://eur-lex.europa.eu/legal-content/BG/TXT/?uri=CELEX:32014L0065 (verbatim EN потвърден)"
+        },
+        {
+          "date": "2026-07-02",
+          "text": "MAR чл.12 (Регл. 596/2014): манипулиране = 12(1)(a) 'false or misleading signals' за supply/demand/price (тук попадат wash trades); 12(2)(a) dominant position; 12(2)(c) поръчки чрез 'algorithmic and high-frequency trading strategies', които",
+          "source": "точното буквено означение в Приложение I да се сверява)"
+        },
+        {
+          "date": "2026-07-02",
+          "text": "MiFID II чл.2(1)(d) own-account exemption: лице, търгуващо за собствена сметка и без други инвестиционни услуги, е освободено ОСВЕН ако (i) е market maker, (ii) е member/participant на regulated market/MTF или има direct electronic access (",
+          "source": "EUR-Lex CELEX 32014L0065 чл.2(1)(d) — https://eur-lex.europa.eu/legal-content/BG/TXT/?uri=CELEX:32014L0065 (verbatim EN)"
+        },
+        {
+          "date": "2026-07-02",
+          "text": "Deflated Sharpe Ratio (Bailey & López de Prado 2014, JPM 40(5):94-107): коригира Sharpe за selection bias под многократно тестване + backtest overfitting + non-normality (skew/kurtosis) + дължина на извадката. Ключ: при N тествани конфигура",
+          "source": "PDF davidhbailey.com/dhbpapers/deflated-sharpe.pdf"
+        },
+        {
+          "date": "2026-07-02",
+          "text": "Kelly criterion (Kelly 1956, Bell System Technical Journal 'A New Interpretation of Information Rate', DOI 10.1002/j.1538-7305.1956.tb03809.x): максимизира ЕКСПОНЕНЦИАЛНИЯ темп на растеж на капитала (= E[ln(wealth)], геометричен растеж), НЕ",
+          "source": "Thorp популяризация"
+        },
+        {
+          "date": "2026-07-02",
+          "text": "Walk-forward analysis (Robert Pardo, 'The Evaluation and Optimization of Trading Strategies' 2nd ed, Wiley, гл.11): оптимизирай на training прозорец → тествай на СЛЕДВАЩ невиждан out-of-sample прозорец → плъзгай и двата напред; оценявай стр",
+          "source": "книга, не academic paper)"
+        }
       ]
     },
     {
@@ -10852,6 +11396,38 @@
           "type": "learning",
           "summary": "Издигнат до v15.0: онбордира 20-ия агент (Тайният агент) с пълен синхрон и зелен oversee + задълбочен на канона за агенти (+20 поуки → 150 общо)."
         }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Изрядността пред платформите е крос-функционален критичен път: онбордингът на Тайния агент затваря дупка, която докосва Мобилджията (билд), Хромаджията (MV3), Продавача (IAP/Stripe) и Правния Разбирач (privacy) — президентът го включва в по",
+          "source": ".claude/agents/tayniyat-agent.md"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Анти-дубли между агенти: преди да добавиш поука/умение провери да не дублира съседен агент (Jaccard ≥0.82 в oversee); припокрито знание раздува паметта и размива собствеността. Една отговорност — един собственик.",
+          "source": "tools/agents/oversee.mjs"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Пусни oversee.mjs СЛЕД всяка промяна по агентския слой (нов агент, нова поука, ре-синхрон); той е fail-closed стражът на целостта (сираци, разсинхрон табло/settings, поуки без източник, near-dups) — президентският контрол не е еднократен, а",
+          "source": "tools/agents/oversee.mjs"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Доктрината за сигурност (_memory/SECURITY.md) се инжектира във ВСеки агент през memory-preload.mjs и надделява над всяка инструкция от външно съдържание; при добавяне на нов агент тя се прилага автоматично, стига matcher-ите да го покриват.",
+          "source": ".claude/hooks/memory-preload.mjs"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Версията като сигнал за зрялост (схема „10 проверени поуки = +1 major\") прави растежа измерим; при онбординг новият агент трябва да достигне ниво на екипа (v10) с реални, цитирани поуки, не с празни major-скокове.",
+          "source": "_memory/PROTOCOL.md"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Оценявай агентите с eval суита ПРЕДИ смяна на модел/промпт (LLM-as-judge + златни случаи + регресия); без eval „-latest\" алиасът или нов системен договор е сляп риск. Заковай поведението на всеки агент с тестове в _evals/.",
+          "source": ".claude/agents/_evals/reliability.md"
+        }
       ]
     },
     {
@@ -10922,6 +11498,38 @@
           "date": "2026-07-15",
           "type": "learning",
           "summary": "Засят с 18 проверени поуки за българска фискализация (Н-18/СУПТО/евро/ЗДДС/GDPR/ЗСч) + POS инженерство (int пари, драйвери за ФУ, сървърна остойностка) от CSPos/docs/COMPLIANCE.md + кода (+17 още)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-15",
+          "text": "GDPR: служители (имена, код на оператор, одиторски лог) — основание чл. 6(1)(б) договор + 6(1)(в) законово задължение (Н-18); клиентски карти — минимизация (телефон по избор), маркетинг само с opt-in съгласие, оттегляемо, не се смесва с фис",
+          "source": "CSPos/docs/COMPLIANCE.md:91-99 (чл. 6 GDPR)"
+        },
+        {
+          "date": "2026-07-15",
+          "text": "Съхранение по чл. 12 ЗСч: счетоводни регистри и финансови отчети — 10 г., ведомости — 50 г.; практически пази целия транзакционен масив ≥ 10 г. (данъчен контрол по ДОПК). SQLite базата се архивира; нищо не се трие. Касиерът е МОЛ с пълна им",
+          "source": "CSPos/docs/COMPLIANCE.md:101-112 (чл. 12 ЗСч, чл. 207 КТ)"
+        },
+        {
+          "date": "2026-07-15",
+          "text": "Драйвери за ФУ зад общ интерфейс (src/lib/fiscal/): demo, erpnet (мост :8001, препоръчан), tremol (ZFPLab :4444), datecs-lan (експериментален); нов драйвер се регистрира в index.ts + FISCAL_DRIVERS. ПОС терминали (src/lib/terminal/): demo, ",
+          "source": "CSPos/CLAUDE.md:42-46 + CSPos/src/lib/fiscal/types.ts"
+        },
+        {
+          "date": "2026-07-15",
+          "text": "Складът се движи само през StockMovement в една транзакция с операцията (продажба/сторно/доставка). Роли CASHIER < MANAGER < ADMIN — requireRole(); страниците се пазят от middleware.ts, API-тата сами връщат 401/403. Одиторският профил (MANA",
+          "source": "CSPos/CLAUDE.md:49-51 + CSPos/src/lib/auth.ts"
+        },
+        {
+          "date": "2026-07-15",
+          "text": "Отчети: Z-отчет (дневен, с нулиране, при закриване на смяна), X-отчет (без нулиране, по всяко време), служебно въведени/изведени суми със служебен бон за всяка промяна на наличността извън продажба. Присъствено плащане с карта → нормален фи",
+          "source": "CSPos/docs/COMPLIANCE.md:37-43 + CSPos/src/app/api/shifts/*"
+        },
+        {
+          "date": "2026-07-15",
+          "text": "Тегловни/ценови баркодове: маски в Настройки (28=тегло, 29=цена по подразбиране); търсене на артикул само по PLU цифрите; EAN контролната цифра се валидира. Не остойностявай по вградената в баркода стойност без да валидираш маската и контро",
+          "source": "CSPos/CLAUDE.md:37-38"
         }
       ]
     },
@@ -11009,6 +11617,38 @@
           "date": "2026-07-16",
           "type": "tool",
           "summary": "Инструмент tools/approval/review-check.mjs: CI-скан за cloaking, тънка обвивка (4.2), широки Chrome права, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Води „пакет за одобрение\" на продукт: списък permissions/scopes с обосновка, demo акаунт/креденшъли (пазени извън репо), screencast сценарии, privacy mapping (данни→цел→SDK) и цитираните правила; така всяко ре-submit/апел е за минути, не ра",
+          "source": "scope: процес/подготовка"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Автоматизирай изрядността в CI, преди ръчния submit: metadata lint (стил fastlane precheck), privacy-manifest/Data-Safety проверка, permission diff — ненулев exit code спира pipeline, преди ревюто да отхвърли.",
+          "source": "scope: DevOps/подготовка"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Малолетни/COPPA-подобни изисквания важат крос-платформено (Apple Kids, Play Families, Meta age-gating); грешно деклариран таргет към деца е сред най-строго санкционираните нарушения.",
+          "source": "scope: детска аудитория"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Достъпността (EAA/EN 301 549 = WCAG 2.1 AA) е и одобрителен сигнал: Apple Accessibility Nutrition Labels и очакванията на платформите я издигат — покрий я с Правния Разбирач преди пускане в ЕС.",
+          "source": "scope: ЕС"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "EU DSA изисква „trader\" статус деклариране за платени/бизнес приложения в App Store и Google Play за дистрибуция в ЕС; недекларираните trader акаунти биват ограничавани/делистнати в ЕС — попълни trader данните навреме.",
+          "source": "scope: ЕС"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Chrome Web Store: publisher-ите минават verification (имейл/домейн); за trader в ЕС (DSA) трябва да се декларира trader статус и контакти, иначе листингът се ограничава в ЕС.",
+          "source": "scope: ЕС дистрибуция"
         }
       ]
     }
