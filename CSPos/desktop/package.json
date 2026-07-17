@@ -18,7 +18,7 @@
     "dist:win:portable": "node prepare.mjs && electron-builder --win portable --publish never --config electron-builder.yml"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
+    "electron": "^43.1.1",
     "electron-builder": "^25.1.8"
   }
 }
