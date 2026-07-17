@@ -6,3 +6,4 @@ dist/
 api/logs/*.dat
 api/logs/monument-ip-*
 api/logs/ai-rate-*
+vendor/
