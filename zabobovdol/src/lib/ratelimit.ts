@@ -27,22 +27,25 @@ export function rateLimit(
   return true; // разрешено
 }
 
-// Ключ по IP на посетителя (за server actions).
+// IP на посетителя.
 //
 // Зад един обратен прокси (Nginx, както е в продукцията) клиентът може сам да
 // подаде `X-Forwarded-For`, а проксито ДОБАВЯ реалния IP в КРАЯ на веригата.
 // Затова не вярваме на първия (подаваем) запис, а ползваме `X-Real-IP` (зададен
 // от проксито) или ПОСЛЕДНИЯ hop от XFF. (Предполага се точно един доверен
 // прокси пред приложението.)
-export async function clientKey(prefix: string): Promise<string> {
+export async function clientIp(): Promise<string> {
   const h = await headers();
   const xff = (h.get("x-forwarded-for") ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const ip =
-    h.get("x-real-ip")?.trim() || xff[xff.length - 1] || "unknown";
-  return `${prefix}:${ip}`;
+  return h.get("x-real-ip")?.trim() || xff[xff.length - 1] || "unknown";
+}
+
+// Ключ по IP на посетителя (за server actions / rate-limit).
+export async function clientKey(prefix: string): Promise<string> {
+  return `${prefix}:${await clientIp()}`;
 }
 
 export const RATE_LIMIT_MESSAGE =

@@ -23,20 +23,21 @@ export function IntroSplash() {
   // лента — за хора с вестибуларна чувствителност и за да не бави достъпа.
   const seconds = reduce ? 1.5 : SITE.intro.seconds;
 
-  // Истински брояч на посетителите: всеки браузър получава пореден номер
-  // веднъж и го запомня, за да не надува брояча при всяко зареждане.
+  // Брояч на посетителите: сървърът брои ВЕДНЪЖ на уникално IP за деня (същото
+  // IP пак днес не се брои; на другия ден се брои наново). Клиентът пита само
+  // веднъж на сесия — за да не праща заявка при всяка навигация; стойността се
+  // пази временно (sessionStorage, изтрива се при затваряне на браузъра).
   useEffect(() => {
     if (isAdmin) return;
-    const KEY = "zbd_visitor_no";
-    let stored: string | null = null;
+    const KEY = "zbd_visit";
     try {
-      stored = localStorage.getItem(KEY);
+      const cached = sessionStorage.getItem(KEY);
+      if (cached && Number(cached) > 0) {
+        setVisitorNo(Number(cached));
+        return;
+      }
     } catch {
-      /* localStorage недостъпен */
-    }
-    if (stored && Number(stored) > 0) {
-      setVisitorNo(Number(stored));
-      return;
+      /* sessionStorage недостъпен */
     }
     let cancelled = false;
     fetch("/api/visit", { method: "POST" })
@@ -45,7 +46,7 @@ export function IntroSplash() {
         if (cancelled || !d?.ok || typeof d.n !== "number") return;
         setVisitorNo(d.n);
         try {
-          localStorage.setItem(KEY, String(d.n));
+          sessionStorage.setItem(KEY, String(d.n));
         } catch {
           /* пренебрегваме */
         }

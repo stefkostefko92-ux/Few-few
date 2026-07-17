@@ -333,6 +333,21 @@ model Counter {
   updatedAt DateTime @updatedAt
 }
 
+// Дневна дедупликация на посетителите: едно IP се брои веднъж на ден.
+// НЕ пазим суров IP — само дневно осолен хеш (sha256(ден + IP + тайна)),
+// който е различен всеки ден и се трие в началото на новия ден. `seq` е
+// поредният номер, присвоен при първото посещение за деня.
+model VisitDay {
+  id        String   @id @default(cuid())
+  day       String // YYYY-MM-DD (часова зона Европа/София)
+  ipHash    String
+  seq       Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([day, ipHash])
+  @@index([day])
+}
+
 // Галерия със снимки на града — с кредит към автора (кой я е снимал).
 model GalleryPhoto {
   id               String   @id @default(cuid())
