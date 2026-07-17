@@ -9,6 +9,8 @@
   --muted: #9aa2c0;
   --accent: #8b5cf6;
   --accent-2: #38bdf8;
+  --chart-1: #8b5cf6;
+  --chart-2: #0d9bd8; /* валидирана data-серия (не UI акцентът) */
   --ok: #34d399;
   --warn: #fbbf24;
   --danger: #fb7185;
@@ -603,45 +605,92 @@ button .icon {
   background: var(--border);
 }
 
-/* --- SVG бар-графики (server-rendered, нула JS) --- */
+/* --- SVG бар-графики (server-rendered, нула JS; small multiples) --- */
+.chart-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 0.4rem;
+}
 .chart {
   width: 100%;
   height: auto;
   display: block;
-  margin-top: 0.4rem;
 }
 .chart .bar {
-  fill: var(--accent);
-  opacity: 0.9;
+  fill: var(--chart-1);
+  opacity: 0.92;
+  transition: opacity 0.12s ease;
 }
 .chart .bar:hover {
   opacity: 1;
 }
 .chart .bar.alt {
-  fill: var(--accent-2);
+  fill: var(--chart-2);
+}
+.chart .swatch {
+  fill: var(--chart-1);
+}
+.chart .swatch.alt {
+  fill: var(--chart-2);
 }
 .chart .axis {
   stroke: var(--border);
-  stroke-width: 1;
+  stroke-width: 0.5;
 }
-.chart text {
+.chart .grid {
+  stroke: rgba(154, 162, 192, 0.16);
+  stroke-width: 0.35;
+  stroke-dasharray: 1.4 1.8;
+}
+.chart .gridlabel {
   fill: var(--muted);
-  font-size: 5px;
+  font-size: 3.1px;
   font-family: inherit;
 }
-.chart-legend {
-  color: var(--muted);
-  font-size: 0.8rem;
-  display: flex;
-  gap: 1rem;
+.chart .serieslabel {
+  fill: var(--text);
+  font-size: 3.4px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
-.chart-legend .swatch {
-  display: inline-block;
-  width: 0.7em;
-  height: 0.7em;
-  border-radius: 2px;
-  vertical-align: baseline;
-  margin-right: 0.3em;
+
+/* --- Лента-измерител (пейсинг/дялове) --- */
+.meter {
+  display: block;
+  width: 100%;
+  height: 9px;
+  margin: 0.55rem 0 0.35rem;
+}
+.meter .track {
+  fill: rgba(255, 255, 255, 0.06);
+}
+.meter .fill {
+  fill: var(--chart-1);
+}
+.meter .fill.over {
+  fill: var(--danger);
+}
+.meter .tick {
+  stroke: #fff;
+  stroke-width: 1.1;
+  opacity: 0.75;
+}
+.meter.mini {
+  height: 5px;
+  width: 96px;
+  margin: 2px 0 0;
+}
+td.with-meter {
+  min-width: 116px;
+}
+td.with-meter .meter-num {
+  display: block;
+  line-height: 1.15;
+}
+td {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Интелигентен слой */

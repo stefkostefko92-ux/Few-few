@@ -11,6 +11,11 @@
     <div class="stat"><span class="label"><%= t('opt.targetToDate') %></span><span class="value"><%= pacing.targetToDate.toFixed(2) %></span></div>
     <div class="stat"><span class="label"><%= t('opt.dailyTarget') %></span><span class="value"><%= pacing.dailyTargetRemaining.toFixed(2) %></span></div>
   </div>
+  <%- include('_meter', {
+    pct: (pacing.spent / pacing.monthlyBudget) * 100,
+    tick: (pacing.targetToDate / pacing.monthlyBudget) * 100,
+    cls: pacing.over ? 'over' : 'ok',
+  }) %>
   <% if (pacing.over) { %>
     <p class="alert"><%- icon('trending-up') %> <%= t('opt.pacingOver', { dev: pacing.deviationPct }) %></p>
   <% } else if (pacing.under) { %>
@@ -40,7 +45,10 @@
       <% for (const r of recommendations.rows) { %>
       <tr>
         <td><a href="/campaigns/<%= r.id %>"><%= r.name %></a></td>
-        <td><%= r.winProb %>%</td>
+        <td class="with-meter">
+          <span class="meter-num"><%= r.winProb %>%</span>
+          <%- include('_meter', { pct: r.winProb, isMini: true }) %>
+        </td>
         <td><%= r.roas != null ? r.roas.toFixed(2) : '—' %></td>
         <td><%= r.current.toFixed(2) %> <%= r.currency %></td>
         <td><strong><%= r.recommended.toFixed(2) %></strong> <%= r.currency %></td>

@@ -1,35 +1,53 @@
-<%# Server-rendered SVG бар-графика — нула клиентски JS (строгият CSP остава чист).
-    Очаква: series = [{ label, values: [{date, value}], cls }], height (vb единици) %>
+<%# Server-rendered SVG графика — нула клиентски JS (строгият CSP остава чист).
+    Small multiples: всяка серия има СОБСТВЕНА скала (различни мащаби на една ос е
+    анти-патърн). Очаква: series = [{ label, values: [{date, value}], cls }].
+    Hover слоят е нативен: <title> на всеки бар. Без inline style (CSP: style-src 'self'). %>
 <%
-  const H = typeof height !== 'undefined' ? height : 46;
-  const W = 200;
-  const pad = 2;
-  const all = series.flatMap((s) => s.values.map((v) => v.value));
-  const max = Math.max(...all, 0.0001);
-  const n = Math.max(...series.map((s) => s.values.length), 1);
-  const group = (W - pad * 2) / n;
-  const barW = Math.max(1, (group - 1) / series.length);
+  const W = 220;
+  const PLOT_H = 30;      // височина на плот-зоната на една серия
+  const HEAD = 7;         // ред за етикета на серията + горна решетка
+  const pad = 3;
+  const fmtVal = (v) => (v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v.toFixed(2)).replace(/\.0+$/, '');
 %>
-<svg class="chart" viewBox="0 0 <%= W %> <%= H %>" role="img" aria-label="<%= series.map((s) => s.label).join(' · ') %> <%= t('chart.byDays') %>">
-  <line class="axis" x1="<%= pad %>" y1="<%= H - 8 %>" x2="<%= W - pad %>" y2="<%= H - 8 %>" />
-  <% series.forEach((s, si) => { %>
-    <% s.values.forEach((v, i) => {
-      const h = max > 0 ? (v.value / max) * (H - 14) : 0;
-      const x = pad + i * group + si * barW;
-      const y = H - 8 - h;
-    %>
-    <rect class="bar <%= s.cls || '' %>" x="<%= x.toFixed(2) %>" y="<%= y.toFixed(2) %>" width="<%= barW.toFixed(2) %>" height="<%= h.toFixed(2) %>">
-      <title><%= v.date %> · <%= s.label %>: <%= v.value %></title>
-    </rect>
-    <% }) %>
+<div class="chart-stack">
+<% series.forEach((s, si) => {
+  const isLast = si === series.length - 1;
+  const H = HEAD + PLOT_H + (isLast ? 7 : 3);
+  const n = Math.max(s.values.length, 1);
+  const max = Math.max(...s.values.map((v) => v.value), 0.0001);
+  const baseY = HEAD + PLOT_H;
+  const group = (W - pad * 2) / n;
+  const barW = Math.max(1.2, group - 1.1);
+  const first = s.values[0];
+  const last = s.values[s.values.length - 1];
+%>
+<svg class="chart" viewBox="0 0 <%= W %> <%= H %>" role="img" aria-label="<%= s.label %> <%= t('chart.byDays') %>">
+  <%# Решетка: базова линия + средна + макс, с тихи стойностни етикети %>
+  <line class="grid" x1="<%= pad %>" y1="<%= HEAD %>" x2="<%= W - pad %>" y2="<%= HEAD %>" />
+  <line class="grid" x1="<%= pad %>" y1="<%= HEAD + PLOT_H / 2 %>" x2="<%= W - pad %>" y2="<%= HEAD + PLOT_H / 2 %>" />
+  <line class="axis" x1="<%= pad %>" y1="<%= baseY %>" x2="<%= W - pad %>" y2="<%= baseY %>" />
+  <text class="gridlabel" x="<%= W - pad %>" y="<%= HEAD - 1.5 %>" text-anchor="end"><%= fmtVal(max) %></text>
+  <text class="gridlabel" x="<%= W - pad %>" y="<%= HEAD + PLOT_H / 2 - 1.5 %>" text-anchor="end"><%= fmtVal(max / 2) %></text>
+  <%# Етикет на серията със суоч (замества легендата — една серия на плот) %>
+  <rect class="swatch <%= s.cls || '' %>" x="<%= pad %>" y="1.6" width="3" height="3" rx="0.8" />
+  <text class="serieslabel" x="<%= pad + 4.5 %>" y="4.2"><%= s.label %></text>
+  <%# Барове: тънки, заоблен връх, котва в базовата линия, 1.1vb дишане между групите %>
+  <% s.values.forEach((v, i) => {
+    const h = Math.max(v.value > 0 ? 0.8 : 0, (v.value / max) * PLOT_H);
+    const x = pad + i * group + (group - barW) / 2;
+    const y = baseY - h;
+  %>
+  <rect class="bar <%= s.cls || '' %>" x="<%= x.toFixed(2) %>" y="<%= y.toFixed(2) %>" width="<%= barW.toFixed(2) %>" height="<%= h.toFixed(2) %>" rx="0.9">
+    <title><%= v.date %> · <%= s.label %>: <%= v.value %></title>
+  </rect>
   <% }) %>
-  <% const first = series[0]?.values[0]; const last = series[0]?.values[series[0].values.length - 1]; %>
-  <% if (first) { %><text x="<%= pad %>" y="<%= H - 1 %>"><%= first.date.slice(5) %></text><% } %>
-  <% if (last) { %><text x="<%= W - pad - 14 %>" y="<%= H - 1 %>"><%= last.date.slice(5) %></text><% } %>
-  <text x="<%= pad %>" y="6"><%= max.toFixed(0) %></text>
+  <% if (isLast && first) { %>
+  <text class="gridlabel" x="<%= pad %>" y="<%= baseY + 5.5 %>"><%= first.date.slice(5) %></text>
+  <% if (s.values.length > 2) { const mid = s.values[Math.floor(s.values.length / 2)]; %>
+  <text class="gridlabel" x="<%= W / 2 %>" y="<%= baseY + 5.5 %>" text-anchor="middle"><%= mid.date.slice(5) %></text>
+  <% } %>
+  <text class="gridlabel" x="<%= W - pad %>" y="<%= baseY + 5.5 %>" text-anchor="end"><%= last.date.slice(5) %></text>
+  <% } %>
 </svg>
-<div class="chart-legend">
-  <% series.forEach((s) => { %>
-  <span><span class="swatch" style="background: var(<%= s.cls === 'alt' ? '--accent-2' : '--accent' %>)"></span><%= s.label %></span>
-  <% }) %>
+<% }) %>
 </div>

@@ -21,13 +21,17 @@
   <% if (!digest.perCampaign.length) { %>
     <p class="hint"><%= t('dig.noSpend') %></p>
   <% } else { %>
+  <% const maxSpend = Math.max(...digest.perCampaign.map((c) => c.spend), 0.0001); %>
   <table>
     <thead><tr><th><%= t('opt.thCampaign') %></th><th><%= t('dig.thSpend7') %></th><th><%= t('dig.thConversions') %></th><th>ROAS</th></tr></thead>
     <tbody>
       <% for (const c of digest.perCampaign) { %>
       <tr>
         <td><a href="/campaigns/<%= c.id %>"><%= c.name %></a></td>
-        <td><%= c.spend.toFixed(2) %></td>
+        <td class="with-meter">
+          <span class="meter-num"><%= c.spend.toFixed(2) %></span>
+          <%- include('_meter', { pct: (c.spend / maxSpend) * 100, isMini: true }) %>
+        </td>
         <td><%= c.conversions.toFixed(1) %></td>
         <td><%= c.roas != null ? c.roas.toFixed(2) : '—' %></td>
       </tr>

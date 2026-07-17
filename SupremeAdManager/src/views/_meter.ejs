@@ -1,0 +1,19 @@
+<%# Лента-измерител (SVG, нула JS/inline-style — CSP чист).
+    Параметри: pct (0–100 запълване), tick (0–100 маркер на целта, по избор),
+    cls ('ok' | 'over' | '' — цвят на запълването), mini (true = тънка таблична лента). %>
+<%
+  const p = Math.max(0, Math.min(100, pct));
+  const hasTick = typeof tick === 'number' && isFinite(tick);
+  const tk = hasTick ? Math.max(0, Math.min(100, tick)) : null;
+  const mini = typeof isMini !== 'undefined' && isMini;
+  const h = mini ? 5 : 8;
+%>
+<svg class="meter <%= mini ? 'mini' : '' %>" viewBox="0 0 100 <%= h %>" preserveAspectRatio="none" role="img" aria-label="<%= Math.round(p) %>%">
+  <rect class="track" x="0" y="0" width="100" height="<%= h %>" rx="<%= h / 2 %>" />
+  <% if (p > 0) { %>
+  <rect class="fill <%= typeof cls !== 'undefined' ? cls : '' %>" x="0" y="0" width="<%= p.toFixed(1) %>" height="<%= h %>" rx="<%= h / 2 %>" />
+  <% } %>
+  <% if (hasTick) { %>
+  <line class="tick" x1="<%= tk.toFixed(1) %>" y1="-0.5" x2="<%= tk.toFixed(1) %>" y2="<%= h + 0.5 %>" />
+  <% } %>
+</svg>

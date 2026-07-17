@@ -15,6 +15,11 @@
     <a href="/optimizer" class="hint"><%- icon('trending-up') %> <%= t('nav.optimizer') %></a>
   </div>
   <% const pacingParams = { spent: pacing.spent.toFixed(2), target: pacing.targetToDate.toFixed(2), dev: pacing.deviationPct, daily: pacing.dailyTargetRemaining.toFixed(2), days: pacing.remainingDays }; %>
+  <%- include('_meter', {
+    pct: (pacing.spent / pacing.monthlyBudget) * 100,
+    tick: (pacing.targetToDate / pacing.monthlyBudget) * 100,
+    cls: pacing.over ? 'over' : 'ok',
+  }) %>
   <% if (pacing.over) { %>
     <p class="alert"><%= t('dash.pacingOver', pacingParams) %></p>
   <% } else { %>
