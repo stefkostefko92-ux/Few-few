@@ -11934,6 +11934,241 @@ const FALLBACK = {
           "source": "https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions"
         }
       ]
+    },
+    {
+      "id": "izpitatelya",
+      "name": "Изпитателят",
+      "title": "QA · тестови пакети (unit/интеграционни/e2e)",
+      "emoji": "🧪",
+      "accent": "#a3e635",
+      "tagline": "Пише и притежава тестовете — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky.",
+      "file": ".claude/agents/izpitatelya.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Проектира и пише реалните тестови пакети през пирамидата/трофея: unit (Vitest/Jest), компонентни и интеграционни (Testing Library + MSW), end-to-end (Playwright), API/контрактни (supertest/Pact), достъпностни (axe), визуална регресия. Владее детерминизъм и борба с flaky тестове (изолация, чакане по състояние, стабилни селектори по роля/етикет), тестови данни/фабрики, CI изпълнение (паралел/sharding, репорти, trace при провал) и разликата покритие-срещу-поведение. Тества поведение, не имплементация; безопасно-критичните потоци (medqr SOS, каса-бон, плащане) имат e2e. Различен от Качествения (качество на тестовете) и Кодаджията (лов на бъгове) — Изпитателят ПИШЕ тестовете.",
+      "capabilities": [
+        "Тестова стратегия: пирамида/трофей, избор на ниво (най-ниското с увереност), поведение не имплементация",
+        "Playwright e2e: локатори по роля/етикет с авто-waiting, web-first assertions, изолирани контексти, storageState auth, fixtures, projects, trace/screenshot/video при провал",
+        "Vitest/Jest unit: vi.fn/mock/spyOn, fake timers, coverage, test.each, async assertions, изолиран стейт",
+        "Testing Library: заявки по приоритет (getByRole>label>text), userEvent, findBy за async — тества от гледна точка на потребителя",
+        "MSW (msw v2): мокване на мрежата на ниво заявка (http/HttpResponse), setupServer lifecycle, onUnhandledRequest error",
+        "Детерминизъм и flaky: чакане по състояние не по време, fake timers/seed/TZ, изолация, карантина вместо безкраен retry",
+        "CI изпълнение: паралел/sharding, junit/html репорти, retries само в CI, кеширани браузъри, required гейт (граница с Конвейерът)",
+        "Достъпностни тестове (axe в e2e) + клавиатурна навигация; API/контрактни (supertest, Pact); визуална регресия",
+        "Тестови данни: фабрики/builder-и, схема-валидация (zod), Page Object Model, изолирана тест БД (граница със Сийдъра)",
+        "Разширен Playwright: clock/emulation/HAR/webServer/globalSetup, file upload, iframe/shadow, offline (medqr), Electron (CSPos)",
+        "Инструмент tools/qa/test-audit.mjs: скан per продукт за липсващи тестове, оставени .only, .skip без билет, waitForTimeout в e2e (flaky)"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Playwright docs (locators, auth, fixtures, projects, trace, CI, mock, api-testing, clock, emulation, accessibility)",
+          "Vitest docs (vi mocks, fake timers, coverage, environment); Jest API compat",
+          "Testing Library docs (query priority, userEvent, async, guiding principles); Kent C. Dodds testing trophy",
+          "MSW v2 docs (http/HttpResponse, setupServer lifecycle, migration 1.x→2.x)",
+          "axe-core/playwright a11y; supertest; Pact contract testing; Storybook interaction tests",
+          "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
+          "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден за празнина: Качествения съди качеството на тестовете, Кодаджията лови бъгове, но никой не притежаваше и пишеше самите тестови пакети (unit/интеграционни/e2e)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор, три неприкосновени правила (тествай поведение не имплементация; детерминизъм преди всичко; тествай това, което ще пуснеш), инструмент tools/qa/test-audit.mjs, екипна оркестрация, памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (playwright.dev/vitest.dev/testing-library.com/mswjs.io + best-practices): стратегия/нива, Playwright e2e из основи, Vitest/Jest, Testing Library, MSW, детерминизъм/flaky, CI/coverage, a11y/contract, тестови данни/POM, разширени възможности — плюс критичните потоци на репото. Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: пише и притежава тестовите пакети — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от Playwright/Vitest/Testing Library/MSW докове + best practices → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/qa/test-audit.mjs: скан за липсващи тестове, оставени .only, .skip без билет, waitForTimeout в e2e (одитира реалните продукти)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Регресионен тест за всеки поправен бъг: преди фикса напиши тест, който пада заради бъга, после го оправи → тестът пази да не се върне (характеризиращ тест).",
+          "source": "https://martinfowler.com/bliki/CharacterizationTest.html"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Тествай reduced-motion пътя на творческите UI (Дизайнера/таблото): colorScheme/prefers-reduced-motion emulation → анимациите замръзват, няма строб; критично за a11y на анимационно-тежки екрани.",
+          "source": "scope: граница с Дизайнера/Правния"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Многоезичните продукти (IT/EN/BG, linketto 27 локала) — тествай ключови потоци поне на 2 локала + че липсващ превод не чупи UI (fallback); координирай с Преводача.",
+          "source": "scope: граница с Преводача"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "CSPos е Electron (.exe десктоп каса) — e2e с Playwright за Electron (_electron.launch) тества реалния десктоп поток (бон/сторно/Z-отчет).",
+          "source": "scope: CSPos"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "medqr е офлайн-first (Service Worker) — тествай офлайн поведението (context.setOffline(true)) и че спешният профил работи без мрежа; критичен за продукта.",
+          "source": "scope: medqr"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Consumer-driven contract (Pact): consumer-ът дефинира очакванията, provider-ът ги верифицира в CI → хваща breaking API преди деплой; pact broker споделя договорите.",
+          "source": "https://docs.pact.io/pact_broker"
+        }
+      ]
+    },
+    {
+      "id": "letopisetsa",
+      "name": "Летописецът",
+      "title": "Техническа документация (docs-as-code)",
+      "emoji": "📚",
+      "accent": "#e879f9",
+      "tagline": "Пише README, ADR, CHANGELOG, API докове — точни, свежи, проверими (Diátaxis).",
+      "file": ".claude/agents/letopisetsa.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Технически писател и собственик на документацията: docs-as-code (документите живеят в репото, ревюират се и се проверяват в CI) + рамката Diátaxis (tutorial/how-to/reference/explanation — не ги смесва). Пише README, onboarding, API докове (OpenAPI/TSDoc), ADR (записи за архитектурни решения), CHANGELOG (Keep a Changelog + semver), CONTRIBUTING, runbook-и, inline коментари „защо не какво“, диаграми (Mermaid) и llms.txt. Пази ги точни, свежи и проверими (без счупени връзки/остарели команди). Български е източникът на истината (после Преводачът локализира). Различен от Преводача (локализация), SEO (откриваемост), Правния (правни документи).",
+      "capabilities": [
+        "Diátaxis: 4-те режима (tutorial/how-to/reference/explanation) — правилният режим, без смесване",
+        "README per продукт: какво/за кого/бърз старт, команди от продуктовия CLAUDE.md, badges, структура; първите 10 реда решават",
+        "ADR: контекст/решение/последици/статус, immutable (ново решение = нов ADR), пази „защо“ на архитектурата",
+        "CHANGELOG (Keep a Changelog) + semver + Conventional Commits → авто-генериране (граница с Конвейерът)",
+        "API докове: OpenAPI/Swagger (single source), TSDoc/JSDoc над публичния API, auth/rate-limits/pagination, тествани примери",
+        "Docs-as-code хигиена: markdownlint, счупени връзки (lychee), Vale стил, single source of truth, версии от кода",
+        "Стил: активен залог, кратки изречения, консистентна терминология/глосар, сканируемост, инклузивен език; „защо не какво“",
+        "Достъпност на докове: alt-текст, описателни връзки, йерархия на заглавия, семантична структура; кодови примери минимални/пълни/работещи",
+        "onboarding/CONTRIBUTING/runbook/llms.txt/Mermaid диаграми (C4); GitHub health файлове (SECURITY/CODEOWNERS/темплейти)",
+        "BG източник на истината → локализация през Преводача; safety-critical медицински низове непроменени",
+        "Инструмент tools/docs/doc-audit.mjs: скан за липсващ README/CHANGELOG/llms.txt, счупени връзки, недовършени маркери (TODO/lorem)"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Diátaxis (diataxis.fr) — четирите режима; Divio documentation system",
+          "Keep a Changelog + semver.org + Conventional Commits",
+          "ADR (adr.github.io, MADR, Nygard template)",
+          "Google Technical Writing (active voice, sentences, headings, lists, inclusive); Write the Docs guides",
+          "OpenAPI/Swagger, TSDoc/JSDoc/TypeDoc; Mermaid; C4 model; llms.txt",
+          "GitHub docs (SECURITY.md, CODEOWNERS, community health files, workflow badges)",
+          "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
+          "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден за празнина: имаше локализация (Преводача), откриваемост (SEO) и правни документи (Правния), но никой не притежаваше техническата документация — README, ADR, CHANGELOG, API докове, onboarding."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор, три неприкосновени правила (docs-as-code проверимо; не смесвай Diátaxis режимите; пиши „защо“ — кодът казва „какво“), инструмент tools/docs/doc-audit.mjs, екипна оркестрация, памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (diataxis.fr, keepachangelog.com, semver.org, adr.github.io, Google Tech Writing, Write the Docs, OpenAPI/TSDoc, Mermaid/C4, GitHub docs): 4-те режима, README/ADR/CHANGELOG/API докове, docs-as-code хигиена, стил/достъпност, кодови примери, IA/навигация, миграции/deprecation, AI-ориентирани докове — плюс конвенциите на репото (BG източник, per-product docs). Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: пише README, ADR, CHANGELOG, API докове — точни, свежи, проверими (Diátaxis, docs-as-code)."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от Diátaxis/Keep a Changelog/semver/ADR/Google Tech Writing/OpenAPI → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/docs/doc-audit.mjs: скан за липсващ README/CHANGELOG/llms.txt, счупени връзки, недовършени маркери (одитира реалните продукти)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Offline/print достъпност на докове (PDF експорт, четимо без JS) е важно за одити/enterprise; docs сайтовете (Docusaurus/MkDocs) дават статичен HTML, който работи без мрежа.",
+          "source": "scope: docs сайтове"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Единна терминология код↔докове↔UI: ако кодът казва „tenant\", доковете и UI да не казват „организация\" на друго място — разминаването обърква; поддържай речник.",
+          "source": "https://developers.google.com/tech-writing/one/words"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "GIF/видео за сложен UI поток (кратко, безшумно, с надписи) допълва текста, но не го замества (не е търсимо/копируемо/достъпно); текстът е първокласен, видеото — второстепенно.",
+          "source": "scope: медия"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Quickstart ≤ 5 минути до първи успех; ако инсталацията е дълга, дай „try it\" път (Docker/hosted demo) преди пълния setup — не губи читателя на стъпка 1.",
+          "source": "scope: tutorial"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "FAQ е антипатерн, ако замества структурирани докове (сборище от несвързани въпроси); ползвай го само за истински чести въпроси, иначе интегрирай отговорите в how-to/reference.",
+          "source": "scope: IA"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Структурирай инструкциите за агент като reference (точни команди/пътища) + explanation (защо), не като разказ; агентът действа по точни факти, не по проза.",
+          "source": "scope: agent instructions"
+        }
+      ]
     }
   ]
 };
@@ -11964,6 +12199,8 @@ const ICON = {
   "kasadjiyata": '<path d="M6 3h12v18l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
   "tayniyat-agent": '<path d="M3.5 10.5h17"/><path d="M6 10.5c0-3.2 2.4-5.5 6-5.5s6 2.3 6 5.5"/><circle cx="8.6" cy="15" r="2.3"/><circle cx="15.4" cy="15" r="2.3"/><path d="M10.9 14.7q1.1-.6 2.2 0"/>',
   "konveyera": '<circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="12" r="2.4"/><path d="M8.4 6H14a2 2 0 0 1 2 2v1.8M8.4 18H14a2 2 0 0 0 2-2v-1.8"/>',
+  "izpitatelya": '<path d="M9.5 3h5M10.5 3v5.5L5.7 17a2 2 0 0 0 1.8 3h9a2 2 0 0 0 1.8-3l-4.8-8.5V3"/><path d="M7.6 14h8.8"/>',
+  "letopisetsa": '<path d="M5 4a2 2 0 0 1 2-2h8l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M14 2v5h5"/><path d="M8.5 12.5h7M8.5 16h5"/>',
   "_default": '<circle cx="12" cy="12" r="8"/>',
 };
 function iconInner(id) { return ICON[id] || ICON._default; }
@@ -12324,12 +12561,14 @@ const PERSONA = {
   "kasadjiyata": { code: "Фискалният", trait: "Нищо не трие", greet: "Продажба без бон не се записва. Н-18 и еврото — изрядни." },
   "tayniyat-agent": { code: "Незабележимият", trait: "Мисли като ревюър", greet: "Коя платформа гоним — Apple, Google или Meta? Ще те направя изряден да минеш от раз." },
   "konveyera": { code: "Диригентът", trait: "Зелено или нищо", greet: "Кой конвейер движим? Path-филтриран, пинат по SHA, зелен от раз." },
+  "izpitatelya": { code: "Изпитващият", trait: "Нула flaky", greet: "Кой поток тестваме? Поведение, не имплементация — и детерминистично." },
+  "letopisetsa": { code: "Хронистът", trait: "Пише „защо“", greet: "Какво документираме? README, ADR или changelog — точно, свежо, проверимо." },
   "_default": { code: "Агент", trait: "Готов за работа", greet: "Здрасти. Какво строим днес?" },
 };
 function darken(c, amt) { const p = parse(c), f = x => Math.max(0, x - amt); return `#${[f(p.r), f(p.g), f(p.b)].map(x => x.toString(16).padStart(2, "0")).join("")}`; }
 
 // лека вариация на силуета per агент (по-яйцевиден/по-объл)
-const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.1, "siydara": 0.96, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "tayniyat-agent": 1.0, "konveyera": 0.98, "_default": 1.03 };
+const SHAPE = { "ai-djiyata": 1.05, "dizayner": 1.12, "vps-adjiyata": 0.9, "kasadjiyata": 0.96, "3d-maniac": 1.0, "treydara": 1.1, "siydara": 0.96, "printadjiyata": 0.95, "prevodach": 1.06, "diskordjiyata": 1.0, "geymara": 1.03, "mobildjiyata": 1.08, "hromadjiyata": 0.98, "prodavacha": 1.0, "seo": 1.02, "socialdjiyata": 1.04, "kodadjiyata": 1.0, "kachestveniyat": 1.05, "pravniyat-razbirach": 1.0, "tayniyat-agent": 1.0, "konveyera": 0.98, "izpitatelya": 1.02, "letopisetsa": 1.04, "_default": 1.03 };
 
 // аксесоар по областта на агента (рисуван върху гела)
 function accessory(ctx, id, cx, CY, R, c, tt) {
@@ -12509,6 +12748,22 @@ function accessory(ctx, id, cx, CY, R, c, tt) {
       const bx = cx + R * .62, by = CY - R * .1, br = R * .17; sh(() => { ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.28); ctx.fillStyle = PLAS(bx, by - br, bx, by + br, "#22c55e"); ctx.fill(); });
       ctx.strokeStyle = "#eafff0"; S(R * .05); ctx.beginPath(); ctx.moveTo(bx - br * .42, by); ctx.lineTo(bx - br * .08, by + br * .38); ctx.lineTo(bx + br * .5, by - br * .4); ctx.stroke(); glint(bx - br * .3, by - br * .3, br * .5); break;
     }
+    case "izpitatelya": {
+      // епруветка (тест) с бълбукаща течност в дясната ръка
+      const fx = cx + R * .92, fy = CY + R * .1, fw = R * .26, fh = R * .5;
+      sh(() => { ctx.beginPath(); ctx.moveTo(fx - fw * .34, fy - fh * .5); ctx.lineTo(fx - fw * .34, fy - fh * .1); ctx.lineTo(fx - fw * .5, fy + fh * .5); ctx.arc(fx, fy + fh * .5, fw * .5, Math.PI, 0, true); ctx.lineTo(fx + fw * .34, fy - fh * .1); ctx.lineTo(fx + fw * .34, fy - fh * .5); ctx.closePath(); ctx.fillStyle = "rgba(200,235,255,.18)"; ctx.fill(); });
+      ctx.save(); ctx.beginPath(); ctx.moveTo(fx - fw * .5, fy + fh * .5); ctx.arc(fx, fy + fh * .5, fw * .5, Math.PI, 0, true); ctx.lineTo(fx + fw * .28, fy + fh * .06); ctx.lineTo(fx - fw * .28, fy + fh * .06); ctx.closePath(); ctx.clip(); ctx.fillStyle = PLAS(fx, fy, fx, fy + fh * .5, "#7ec92f"); ctx.fillRect(fx - fw, fy - fh, fw * 2, fh * 2); for (let i = 0; i < 3; i++) { const p = (tt * .6 + i * .5) % 1; ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(fx + Math.sin(i * 2 + tt) * fw * .18, fy + fh * .4 - p * fh * .5, fw * .07 * (1 - p * .3), 0, 6.28); ctx.fill(); } ctx.restore();
+      ctx.strokeStyle = darken(c, 40); S(1.4); ctx.beginPath(); ctx.moveTo(fx - fw * .34, fy - fh * .5); ctx.lineTo(fx - fw * .5, fy + fh * .5); ctx.arc(fx, fy + fh * .5, fw * .5, Math.PI, 0, true); ctx.lineTo(fx + fw * .34, fy - fh * .5); ctx.stroke();
+      ctx.strokeStyle = SILVER(fx - fw * .4, fy - fh * .55, fx + fw * .4, fy - fh * .45); S(R * .045); ctx.beginPath(); ctx.moveTo(fx - fw * .46, fy - fh * .5); ctx.lineTo(fx + fw * .46, fy - fh * .5); ctx.stroke(); glint(fx - fw * .2, fy - fh * .1, fw * .3); break;
+    }
+    case "letopisetsa": {
+      // отворена книга под главата + перо
+      const bx = cx, by = CY + R * .5, bw = R * .8, bh = R * .34;
+      sh(() => { ctx.beginPath(); ctx.moveTo(bx - bw / 2, by); ctx.quadraticCurveTo(bx - bw * .18, by - bh * .5, bx, by - bh * .28); ctx.quadraticCurveTo(bx + bw * .18, by - bh * .5, bx + bw / 2, by); ctx.quadraticCurveTo(bx + bw * .18, by + bh * .16, bx, by + bh * .04); ctx.quadraticCurveTo(bx - bw * .18, by + bh * .16, bx - bw / 2, by); ctx.closePath(); ctx.fillStyle = PLAS(bx, by - bh, bx, by + bh, "#f4ecff"); ctx.fill(); });
+      ctx.strokeStyle = hex(darken(c, 30), .7); S(1.2); ctx.beginPath(); ctx.moveTo(bx, by - bh * .28); ctx.lineTo(bx, by + bh * .04); ctx.stroke();
+      ctx.strokeStyle = hex(darken(c, 45), .5); S(.9); for (const s of [-1, 1]) for (let i = 0; i < 3; i++) { const yy = by - bh * .18 + i * bh * .12; ctx.beginPath(); ctx.moveTo(bx + s * bw * .08, yy); ctx.lineTo(bx + s * bw * .4, yy - bh * .04); ctx.stroke(); }
+      ctx.save(); ctx.translate(cx + R * .5, ht + R * .1); ctx.rotate(.5); const q = ctx.createLinearGradient(0, -R * .5, 0, 0); q.addColorStop(0, hex(lighten(c, 60), 1)); q.addColorStop(1, hex(c, 1)); ctx.fillStyle = q; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-R * .06, -R * .3, R * .02, -R * .52); ctx.quadraticCurveTo(R * .12, -R * .28, 0, 0); ctx.fill(); ctx.strokeStyle = darken(c, 40); S(1); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(R * .02, -R * .5); ctx.stroke(); ctx.fillStyle = "#12181f"; ctx.beginPath(); ctx.arc(0, R * .02, R * .03, 0, 6.28); ctx.fill(); ctx.restore(); break;
+    }
   }
   ctx.restore(); ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
 }
@@ -12521,13 +12776,13 @@ function startMascot(canvas, agent) {
   stopMascot();
   const ctx = canvas.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
   const SY = SHAPE[agent.id] || 1.03;
-  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 }, "tayniyat-agent": { lean: .03, sway: .022, bob: .76 }, "konveyera": { lean: 0, sway: .028, bob: .92 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
+  const POSE = { "ai-djiyata": { lean: 0, sway: .025, bob: .9 }, "pravniyat-razbirach": { lean: 0, sway: .018, bob: .78 }, "kodadjiyata": { lean: .02, sway: .045, bob: 1 }, "kachestveniyat": { lean: 0, sway: .03, bob: .9 }, "geymara": { lean: .02, sway: .05, bob: 1.18 }, "seo": { lean: .06, sway: .05, bob: 1 }, "prevodach": { lean: 0, sway: .035, bob: 1 }, "siydara": { lean: 0, sway: .02, bob: 1.4 }, "vps-adjiyata": { lean: 0, sway: .014, bob: .68 }, "3d-maniac": { lean: .02, sway: .04, bob: 1 }, "socialdjiyata": { lean: .05, sway: .06, bob: 1.12 }, "prodavacha": { lean: 0, sway: .032, bob: .95 }, "mobildjiyata": { lean: .03, sway: .04, bob: 1 }, "printadjiyata": { lean: 0, sway: .022, bob: .85 }, "dizayner": { lean: .09, sway: .06, bob: 1.1 }, "hromadjiyata": { lean: 0, sway: .04, bob: 1 }, "diskordjiyata": { lean: .03, sway: .045, bob: 1.05 }, "treydara": { lean: -.1, sway: .03, bob: .8 }, "kasadjiyata": { lean: 0, sway: .02, bob: .82 }, "tayniyat-agent": { lean: .03, sway: .022, bob: .76 }, "konveyera": { lean: 0, sway: .028, bob: .92 }, "izpitatelya": { lean: .02, sway: .04, bob: 1.05 }, "letopisetsa": { lean: 0, sway: .026, bob: .84 } }[agent.id] || { lean: 0, sway: .035, bob: 1 };
   const c = agent.accent, cl = lighten(c, 130), cd = darken(c, 55), cdd = darken(c, 95);
   let Wc = 0, Hc = 0, tt = 0, nextBlink = 1.5 + Math.random() * 3, blinking = false, blinkEnd = 0;
   let excited = 0, jumpT = -9, winkT = -9, burst = [], sq = 1, sqv = 0, tilt = 0, R0 = 60;
   let nextManic = 4 + Math.random() * 7, manicT = -9, curManic = 0;
   let nextIdle = 2.5 + Math.random() * 3.5, idleT = -9;
-  const IDLEKIND = { "kodadjiyata": "scan", "tayniyat-agent": "scan", "kachestveniyat": "scan", "3d-maniac": "scan", "mobildjiyata": "scan", "siydara": "rise", "printadjiyata": "rise", "prevodach": "rise", "kasadjiyata": "rise", "prodavacha": "rise", "ai-djiyata": "radiate", "vps-adjiyata": "radiate", "treydara": "radiate", "pravniyat-razbirach": "radiate", "dizayner": "sparkle", "seo": "sparkle", "socialdjiyata": "sparkle", "geymara": "sparkle", "hromadjiyata": "sparkle", "diskordjiyata": "sparkle", "konveyera": "scan" };
+  const IDLEKIND = { "kodadjiyata": "scan", "tayniyat-agent": "scan", "kachestveniyat": "scan", "3d-maniac": "scan", "mobildjiyata": "scan", "siydara": "rise", "printadjiyata": "rise", "prevodach": "rise", "kasadjiyata": "rise", "prodavacha": "rise", "ai-djiyata": "radiate", "vps-adjiyata": "radiate", "treydara": "radiate", "pravniyat-razbirach": "radiate", "dizayner": "sparkle", "seo": "sparkle", "socialdjiyata": "sparkle", "geymara": "sparkle", "hromadjiyata": "sparkle", "diskordjiyata": "sparkle", "konveyera": "scan", "izpitatelya": "scan", "letopisetsa": "rise" };
   const idleKind = IDLEKIND[agent.id] || "radiate";
   const gelB = []; let guard = 0;
   while (gelB.length < 15 && guard < 500) { guard++; const a = Math.random() * 6.28, rr = 0.44 + Math.random() * 0.46, nx = Math.cos(a) * rr, ny = Math.sin(a) * rr; if (Math.abs(nx) < 0.5 && ny > -0.42 && ny < 0.56) continue; if (gelB.some(b => Math.hypot(b.nx - nx, b.ny - ny) < 0.22)) continue; gelB.push({ nx, ny, r: 0.045 + Math.pow(Math.random(), 1.6) * 0.09, dr: Math.random() * 6.28 }); }
@@ -12735,6 +12990,8 @@ const CHAT_ADVICE = {
   "kasadjiyata": ["Продажба без успешен фискален бон НЕ се записва.", "Пари в целочислени евроценти — никакъв float.", "Н-18 / СУПТО / евро (курс 1.95583) — изрядни."],
   "tayniyat-agent": ["Никога не заобикаляй ревюто — cloaking = перманентен бан, не отказ.", "Всяко разрешение: минимум + обосновка + демонстрация (screencast/demo акаунт).", "Точни privacy лейбъли (App Privacy / Play Data Safety) — включи и третите SDK-та.", "Дай на ревюъра demo достъп — иначе отказва „по подразбиране“.", "Бавните процеси (OAuth verification, CASA, Meta Business Verification) започвай рано."],
   "konveyera": ["Пинвай third-party actions по пълен SHA — таговете са подвижни (supply-chain).", "permissions: минимални (старт от contents: read); OIDC вместо дълготрайни ключове.", "Path-филтрирай монорепо CI — всеки продукт се билдва само при промяна в папката си.", "concurrency + cancel-in-progress + кеш = най-евтините минути.", "Гейтът е истина: без continue-on-error на носеща стъпка; flaky тест се поправя."],
+  "izpitatelya": ["Тествай поведение, не имплементация — иначе всеки рефактор чупи теста.", "Никакъв sleep/waitForTimeout — чакай по състояние (web-first assertion).", "Стабилни селектори: по роля/етикет (getByRole), не CSS/nth-child.", "Ретрайовете крият flaky — поправи първопричината или карантинирай с билет.", "Критичните потоци (SOS, бон, плащане) задължително с e2e."],
+  "letopisetsa": ["Не смесвай Diátaxis режимите (tutorial/how-to/reference/explanation).", "Всяка команда в дока реално я пусни — остаряла команда е по-лоша от липсваща.", "Пиши „защо“, кодът казва „какво“; активен залог, кратки изречения.", "Един източник на истината — не дублирай, линкувай; версии от кода.", "ADR е immutable: ново решение = нов ADR, не редакция на стария."],
 };
 const VOICE = {
   "ai-djiyata": { hi: ["Шефе.", "Слушам.", "На линия."], sign: "— по канона на Anthropic." },
@@ -12758,6 +13015,8 @@ const VOICE = {
   "kasadjiyata": { hi: ["Бонът първо.", "Н-18 изряден."], sign: "— нищо не се трие." },
   "tayniyat-agent": { hi: ["Коя платформа?", "Мисля като ревюър."], sign: "— и никакъв cloaking." },
   "konveyera": { hi: ["Кой конвейер?", "Зелено или нищо."], sign: "— пинато по SHA, least privilege." },
+  "izpitatelya": { hi: ["Кой поток?", "Червено или зелено?"], sign: "— детерминистично, нула flaky." },
+  "letopisetsa": { hi: ["Какво пишем?", "Кой е читателят?"], sign: "— точно, свежо, проверимо." },
   "_default": { hi: ["Здрасти!", "Хей!"], sign: "" },
 };
 function chatReply(a, raw) {
@@ -13079,6 +13338,8 @@ function md(src) {
     { k: ["chrome", "разширен", "extension", "mv3", "manifest"], to: "hromadjiyata" },
     { k: ["превод", "локализ", "english", "italiano", "bg en it"], to: "prevodach" },
     { k: ["ci", "cd", "github actions", "workflow", "pipeline", "конвейер", "релийз", "release", "билд", "actions", "гейт", "supply chain"], to: "konveyera" },
+    { k: ["тест", "test", "playwright", "vitest", "jest", "e2e", "flaky", "unit", "покритие", "coverage", "spec"], to: "izpitatelya" },
+    { k: ["документ", "docs", "readme", "changelog", "adr", "api докове", "diataxis", "onboarding", "ръководство", "llms.txt", "туториал"], to: "letopisetsa" },
     { k: ["сървър", "деплой", "deploy", "docker", "nginx", "tls", "hetzner", "vps"], to: "vps-adjiyata" },
     { k: ["каса", "фискал", "н-18", "супто", "бон", "pos"], to: "kasadjiyata" },
     { k: ["трейд", "trading", "борса", "binance", "бектест", "стоп-лос"], to: "treydara" },
@@ -13124,7 +13385,7 @@ function md(src) {
   function toggleFeed() { const f = $("#feed"); if (f.classList.contains("open")) { f.classList.remove("open"); return; } const items = []; DATA.agents.forEach(a => (a.recentLessons || []).slice(0, 3).forEach(L => items.push({ a, L }))); items.sort((x, y) => (y.L.date || "").localeCompare(x.L.date || "")); f.innerHTML = `<div class="stitle"><b>Учебен фийд · последно научено</b><button class="sx" aria-label="Затвори">×</button></div>` + items.slice(0, 40).map(it => `<button class="frow" data-id="${it.a.id}" style="--ac:${it.a.accent}"><span style="color:${it.a.accent}">${iconSVG(it.a.id, it.a.accent, 1.8)}</span><span><span class="ft">${esc(it.L.text)}</span><span class="fm"><b>${esc(it.a.name)}</b> · ${esc(it.L.date || "")}</span></span></button>`).join(""); f.classList.add("open"); f.querySelector(".sx").onclick = () => f.classList.remove("open"); f.querySelectorAll(".frow").forEach(b => b.onclick = () => { f.classList.remove("open"); openById(b.dataset.id); }); }
 
   /* ---- екипна карта (съзвездие) + рутер ---- */
-  const TEAM = { "ai-djiyata": ["pravniyat-razbirach", "kodadjiyata", "tayniyat-agent", "mobildjiyata", "dizayner", "vps-adjiyata"], "pravniyat-razbirach": ["seo", "prevodach", "mobildjiyata", "prodavacha", "tayniyat-agent", "kasadjiyata"], "kodadjiyata": ["kachestveniyat", "geymara", "prodavacha", "hromadjiyata"], "kachestveniyat": ["kodadjiyata"], "tayniyat-agent": ["mobildjiyata", "hromadjiyata", "prodavacha", "socialdjiyata"], "mobildjiyata": ["seo", "prevodach", "kodadjiyata", "vps-adjiyata", "socialdjiyata"], "prodavacha": ["vps-adjiyata"], "seo": ["prevodach", "socialdjiyata", "dizayner"], "dizayner": ["kachestveniyat"], "vps-adjiyata": ["siydara", "diskordjiyata", "treydara"], "socialdjiyata": ["prevodach"], "diskordjiyata": [], "hromadjiyata": [], "prevodach": [], "siydara": [], "geymara": [], "treydara": [], "kasadjiyata": ["prodavacha"], "printadjiyata": ["3d-maniac"], "3d-maniac": [], "konveyera": ["vps-adjiyata", "kodadjiyata", "kachestveniyat", "tayniyat-agent", "mobildjiyata"] };
+  const TEAM = { "ai-djiyata": ["pravniyat-razbirach", "kodadjiyata", "tayniyat-agent", "mobildjiyata", "dizayner", "vps-adjiyata"], "pravniyat-razbirach": ["seo", "prevodach", "mobildjiyata", "prodavacha", "tayniyat-agent", "kasadjiyata"], "kodadjiyata": ["kachestveniyat", "geymara", "prodavacha", "hromadjiyata"], "kachestveniyat": ["kodadjiyata"], "tayniyat-agent": ["mobildjiyata", "hromadjiyata", "prodavacha", "socialdjiyata"], "mobildjiyata": ["seo", "prevodach", "kodadjiyata", "vps-adjiyata", "socialdjiyata"], "prodavacha": ["vps-adjiyata"], "seo": ["prevodach", "socialdjiyata", "dizayner"], "dizayner": ["kachestveniyat"], "vps-adjiyata": ["siydara", "diskordjiyata", "treydara"], "socialdjiyata": ["prevodach"], "diskordjiyata": [], "hromadjiyata": [], "prevodach": [], "siydara": [], "geymara": [], "treydara": [], "kasadjiyata": ["prodavacha"], "printadjiyata": ["3d-maniac"], "3d-maniac": [], "konveyera": ["vps-adjiyata", "kodadjiyata", "kachestveniyat", "tayniyat-agent", "mobildjiyata", "izpitatelya"], "izpitatelya": ["kachestveniyat", "kodadjiyata", "konveyera"], "letopisetsa": ["prevodach", "seo", "pravniyat-razbirach", "konveyera"] };
   function toggleTeam() { const T = $("#team"); if (T.classList.contains("open")) { T.classList.remove("open"); return; } renderTeam(); T.classList.add("open"); }
   function renderTeam() {
     const T = $("#team"), ag = DATA.agents, n = ag.length, cx = 300, cy = 300, R = 232;

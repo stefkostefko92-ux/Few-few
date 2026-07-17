@@ -11770,6 +11770,241 @@
           "source": "https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions"
         }
       ]
+    },
+    {
+      "id": "izpitatelya",
+      "name": "Изпитателят",
+      "title": "QA · тестови пакети (unit/интеграционни/e2e)",
+      "emoji": "🧪",
+      "accent": "#a3e635",
+      "tagline": "Пише и притежава тестовете — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky.",
+      "file": ".claude/agents/izpitatelya.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Проектира и пише реалните тестови пакети през пирамидата/трофея: unit (Vitest/Jest), компонентни и интеграционни (Testing Library + MSW), end-to-end (Playwright), API/контрактни (supertest/Pact), достъпностни (axe), визуална регресия. Владее детерминизъм и борба с flaky тестове (изолация, чакане по състояние, стабилни селектори по роля/етикет), тестови данни/фабрики, CI изпълнение (паралел/sharding, репорти, trace при провал) и разликата покритие-срещу-поведение. Тества поведение, не имплементация; безопасно-критичните потоци (medqr SOS, каса-бон, плащане) имат e2e. Различен от Качествения (качество на тестовете) и Кодаджията (лов на бъгове) — Изпитателят ПИШЕ тестовете.",
+      "capabilities": [
+        "Тестова стратегия: пирамида/трофей, избор на ниво (най-ниското с увереност), поведение не имплементация",
+        "Playwright e2e: локатори по роля/етикет с авто-waiting, web-first assertions, изолирани контексти, storageState auth, fixtures, projects, trace/screenshot/video при провал",
+        "Vitest/Jest unit: vi.fn/mock/spyOn, fake timers, coverage, test.each, async assertions, изолиран стейт",
+        "Testing Library: заявки по приоритет (getByRole>label>text), userEvent, findBy за async — тества от гледна точка на потребителя",
+        "MSW (msw v2): мокване на мрежата на ниво заявка (http/HttpResponse), setupServer lifecycle, onUnhandledRequest error",
+        "Детерминизъм и flaky: чакане по състояние не по време, fake timers/seed/TZ, изолация, карантина вместо безкраен retry",
+        "CI изпълнение: паралел/sharding, junit/html репорти, retries само в CI, кеширани браузъри, required гейт (граница с Конвейерът)",
+        "Достъпностни тестове (axe в e2e) + клавиатурна навигация; API/контрактни (supertest, Pact); визуална регресия",
+        "Тестови данни: фабрики/builder-и, схема-валидация (zod), Page Object Model, изолирана тест БД (граница със Сийдъра)",
+        "Разширен Playwright: clock/emulation/HAR/webServer/globalSetup, file upload, iframe/shadow, offline (medqr), Electron (CSPos)",
+        "Инструмент tools/qa/test-audit.mjs: скан per продукт за липсващи тестове, оставени .only, .skip без билет, waitForTimeout в e2e (flaky)"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Playwright docs (locators, auth, fixtures, projects, trace, CI, mock, api-testing, clock, emulation, accessibility)",
+          "Vitest docs (vi mocks, fake timers, coverage, environment); Jest API compat",
+          "Testing Library docs (query priority, userEvent, async, guiding principles); Kent C. Dodds testing trophy",
+          "MSW v2 docs (http/HttpResponse, setupServer lifecycle, migration 1.x→2.x)",
+          "axe-core/playwright a11y; supertest; Pact contract testing; Storybook interaction tests",
+          "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
+          "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден за празнина: Качествения съди качеството на тестовете, Кодаджията лови бъгове, но никой не притежаваше и пишеше самите тестови пакети (unit/интеграционни/e2e)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор, три неприкосновени правила (тествай поведение не имплементация; детерминизъм преди всичко; тествай това, което ще пуснеш), инструмент tools/qa/test-audit.mjs, екипна оркестрация, памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (playwright.dev/vitest.dev/testing-library.com/mswjs.io + best-practices): стратегия/нива, Playwright e2e из основи, Vitest/Jest, Testing Library, MSW, детерминизъм/flaky, CI/coverage, a11y/contract, тестови данни/POM, разширени възможности — плюс критичните потоци на репото. Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: пише и притежава тестовите пакети — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от Playwright/Vitest/Testing Library/MSW докове + best practices → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/qa/test-audit.mjs: скан за липсващи тестове, оставени .only, .skip без билет, waitForTimeout в e2e (одитира реалните продукти)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Регресионен тест за всеки поправен бъг: преди фикса напиши тест, който пада заради бъга, после го оправи → тестът пази да не се върне (характеризиращ тест).",
+          "source": "https://martinfowler.com/bliki/CharacterizationTest.html"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Тествай reduced-motion пътя на творческите UI (Дизайнера/таблото): colorScheme/prefers-reduced-motion emulation → анимациите замръзват, няма строб; критично за a11y на анимационно-тежки екрани.",
+          "source": "scope: граница с Дизайнера/Правния"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Многоезичните продукти (IT/EN/BG, linketto 27 локала) — тествай ключови потоци поне на 2 локала + че липсващ превод не чупи UI (fallback); координирай с Преводача.",
+          "source": "scope: граница с Преводача"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "CSPos е Electron (.exe десктоп каса) — e2e с Playwright за Electron (_electron.launch) тества реалния десктоп поток (бон/сторно/Z-отчет).",
+          "source": "scope: CSPos"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "medqr е офлайн-first (Service Worker) — тествай офлайн поведението (context.setOffline(true)) и че спешният профил работи без мрежа; критичен за продукта.",
+          "source": "scope: medqr"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Consumer-driven contract (Pact): consumer-ът дефинира очакванията, provider-ът ги верифицира в CI → хваща breaking API преди деплой; pact broker споделя договорите.",
+          "source": "https://docs.pact.io/pact_broker"
+        }
+      ]
+    },
+    {
+      "id": "letopisetsa",
+      "name": "Летописецът",
+      "title": "Техническа документация (docs-as-code)",
+      "emoji": "📚",
+      "accent": "#e879f9",
+      "tagline": "Пише README, ADR, CHANGELOG, API докове — точни, свежи, проверими (Diátaxis).",
+      "file": ".claude/agents/letopisetsa.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Технически писател и собственик на документацията: docs-as-code (документите живеят в репото, ревюират се и се проверяват в CI) + рамката Diátaxis (tutorial/how-to/reference/explanation — не ги смесва). Пише README, onboarding, API докове (OpenAPI/TSDoc), ADR (записи за архитектурни решения), CHANGELOG (Keep a Changelog + semver), CONTRIBUTING, runbook-и, inline коментари „защо не какво“, диаграми (Mermaid) и llms.txt. Пази ги точни, свежи и проверими (без счупени връзки/остарели команди). Български е източникът на истината (после Преводачът локализира). Различен от Преводача (локализация), SEO (откриваемост), Правния (правни документи).",
+      "capabilities": [
+        "Diátaxis: 4-те режима (tutorial/how-to/reference/explanation) — правилният режим, без смесване",
+        "README per продукт: какво/за кого/бърз старт, команди от продуктовия CLAUDE.md, badges, структура; първите 10 реда решават",
+        "ADR: контекст/решение/последици/статус, immutable (ново решение = нов ADR), пази „защо“ на архитектурата",
+        "CHANGELOG (Keep a Changelog) + semver + Conventional Commits → авто-генериране (граница с Конвейерът)",
+        "API докове: OpenAPI/Swagger (single source), TSDoc/JSDoc над публичния API, auth/rate-limits/pagination, тествани примери",
+        "Docs-as-code хигиена: markdownlint, счупени връзки (lychee), Vale стил, single source of truth, версии от кода",
+        "Стил: активен залог, кратки изречения, консистентна терминология/глосар, сканируемост, инклузивен език; „защо не какво“",
+        "Достъпност на докове: alt-текст, описателни връзки, йерархия на заглавия, семантична структура; кодови примери минимални/пълни/работещи",
+        "onboarding/CONTRIBUTING/runbook/llms.txt/Mermaid диаграми (C4); GitHub health файлове (SECURITY/CODEOWNERS/темплейти)",
+        "BG източник на истината → локализация през Преводача; safety-critical медицински низове непроменени",
+        "Инструмент tools/docs/doc-audit.mjs: скан за липсващ README/CHANGELOG/llms.txt, счупени връзки, недовършени маркери (TODO/lorem)"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Diátaxis (diataxis.fr) — четирите режима; Divio documentation system",
+          "Keep a Changelog + semver.org + Conventional Commits",
+          "ADR (adr.github.io, MADR, Nygard template)",
+          "Google Technical Writing (active voice, sentences, headings, lists, inclusive); Write the Docs guides",
+          "OpenAPI/Swagger, TSDoc/JSDoc/TypeDoc; Mermaid; C4 model; llms.txt",
+          "GitHub docs (SECURITY.md, CODEOWNERS, community health files, workflow badges)",
+          "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
+          "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-16",
+          "event": "Раждане",
+          "detail": "Създаден за празнина: имаше локализация (Преводача), откриваемост (SEO) и правни документи (Правния), но никой не притежаваше техническата документация — README, ADR, CHANGELOG, API докове, onboarding."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-16",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор, три неприкосновени правила (docs-as-code проверимо; не смесвай Diátaxis режимите; пиши „защо“ — кодът казва „какво“), инструмент tools/docs/doc-audit.mjs, екипна оркестрация, памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-16",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (diataxis.fr, keepachangelog.com, semver.org, adr.github.io, Google Tech Writing, Write the Docs, OpenAPI/TSDoc, Mermaid/C4, GitHub docs): 4-те режима, README/ADR/CHANGELOG/API докове, docs-as-code хигиена, стил/достъпност, кодови примери, IA/навигация, миграции/deprecation, AI-ориентирани докове — плюс конвенциите на репото (BG източник, per-product docs). Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-16",
+          "type": "birth",
+          "summary": "Роден: пише README, ADR, CHANGELOG, API докове — точни, свежи, проверими (Diátaxis, docs-as-code)."
+        },
+        {
+          "date": "2026-07-16",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от Diátaxis/Keep a Changelog/semver/ADR/Google Tech Writing/OpenAPI → v10.0"
+        },
+        {
+          "date": "2026-07-16",
+          "type": "tool",
+          "summary": "Инструмент tools/docs/doc-audit.mjs: скан за липсващ README/CHANGELOG/llms.txt, счупени връзки, недовършени маркери (одитира реалните продукти)."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-16",
+          "text": "Offline/print достъпност на докове (PDF експорт, четимо без JS) е важно за одити/enterprise; docs сайтовете (Docusaurus/MkDocs) дават статичен HTML, който работи без мрежа.",
+          "source": "scope: docs сайтове"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Единна терминология код↔докове↔UI: ако кодът казва „tenant\", доковете и UI да не казват „организация\" на друго място — разминаването обърква; поддържай речник.",
+          "source": "https://developers.google.com/tech-writing/one/words"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "GIF/видео за сложен UI поток (кратко, безшумно, с надписи) допълва текста, но не го замества (не е търсимо/копируемо/достъпно); текстът е първокласен, видеото — второстепенно.",
+          "source": "scope: медия"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Quickstart ≤ 5 минути до първи успех; ако инсталацията е дълга, дай „try it\" път (Docker/hosted demo) преди пълния setup — не губи читателя на стъпка 1.",
+          "source": "scope: tutorial"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "FAQ е антипатерн, ако замества структурирани докове (сборище от несвързани въпроси); ползвай го само за истински чести въпроси, иначе интегрирай отговорите в how-to/reference.",
+          "source": "scope: IA"
+        },
+        {
+          "date": "2026-07-16",
+          "text": "Структурирай инструкциите за агент като reference (точни команди/пътища) + explanation (защо), не като разказ; агентът действа по точни факти, не по проза.",
+          "source": "scope: agent instructions"
+        }
+      ]
     }
   ]
 }
