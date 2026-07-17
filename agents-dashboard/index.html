@@ -168,7 +168,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-16",
+    "updated": "2026-07-17",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -2124,34 +2124,34 @@ const FALLBACK = {
       ],
       "recentLessons": [
         {
-          "date": "2026-07-12",
-          "text": "Supreme AdBlock cosmetic_generic.css (EasyList generic) НЕ съдържа broad bare селектори (.ad/.ads/.promo/.banner/.box/.sidebar/[class*=ad]); EasyList вече ги е изчистил в генеричната секция — over-hide идва не оттам, а от вградените AD_SELE",
-          "source": "grep на /home/user/Few-few/adblock/cosmetic_generic.css (13651 селектора) — 0 съвпадения за bare .ad/.ads/.promo/.banner/.box/.sidebar и [class*=ad]"
+          "date": "2026-07-06",
+          "text": "panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/contact.php/deploy.sh/README.md. Ръчният blocklist в server.js блокира /lib,/scripts,/data,/.env,package.json,.db,.git но пропуска root-level source (server.j",
+          "source": "/home/user/Few-few/panev/server.js:160"
         },
         {
-          "date": "2026-07-12",
-          "text": "content.js AD_SELECTORS substring-и ([class^='ad-'], [id^='ad-'], [id*='-ad-'], [id*='_ad_'], [class$='-ad(s)']) над-скриват на classifieds/marketplace сайтове, където 'ad'=обява (ad-title/ad-price/id=ad-12345). Unhide не ги пази (напр. olx",
-          "source": "content.js:43-64 + rules/cosmetic_specific.json unhide map + CSS attribute-selector спецификация (потвърдено с node)"
+          "date": "2026-07-06",
+          "text": "panev: README.md (публично сервиран, 200) съдържа default admin creds info@panevascensori.it/Panev2024!, а scripts/deploy.sh:38 и scripts/seed.js:15 създават admin със същата парола ако ADMIN_PASSWORD не е зададена (JWT_SECRET се рандомизир",
+          "source": "/home/user/Few-few/panev/scripts/deploy.sh:38"
         },
         {
-          "date": "2026-07-12",
-          "text": "scanSticky adSignal (content.js:303-304,343-348) ползва AD_TOKENS с 'banner' и 'promo' → скрива легитимни sticky ленти promo-bar/top-banner/hero-banner/site-banner (потвърдено node hit=true), но НЕ announcement-bar/free-shipping-bar/cookie-",
-          "source": "известни captcha/payment iframe размери"
+          "date": "2026-07-06",
+          "text": "panev prod boot гейтовете минават на живо: NODE_ENV=production с JWT_SECRET<32 или липсващ → process.exit(1), портът не слуша (health=000); lib/auth.js:25-29. Webhook fail-closed 503 без STRIPE_WEBHOOK_SECRET в прод; server.js:833. Login lo",
+          "source": "/home/user/Few-few/panev/server.js:150 (boot+curl тестове на порт 39120/39121/39122/39123)"
         },
         {
-          "date": "2026-07-12",
-          "text": "build_filters.mjs:245-247 изпуска само no-domain #@#/#?#; но EasyList на живо има 0 генерични #@# и 0 генерични #?# — механизмът е латентен, нулев над-скриващ ефект днес. Всичките 336 domain-scoped #@# се пазят (unhide: 517 домейна).",
-          "source": "rules/cosmetic_specific.json unhide=517 домейна"
+          "date": "2026-07-06",
+          "text": "panev: express.static({dotfiles:'deny'}) + Nginx 'location ~ /\\\\. { deny all; return 404 }' (scripts/deploy.sh:320) правят /.well-known/ недостъпна → security.txt/ai.txt 404 на каноничния път (макар security.txt да работи на root). Cert ren",
+          "source": "curl /.well-known/security.txt → 404"
         },
         {
-          "date": "2026-07-12",
-          "text": "Chrome DNR RuleCondition: block правило БЕЗ resourceTypes И БЕЗ excludedResourceTypes матчва всички типове ОСВЕН main_frame (документно навигиране). Затова EasyList/ABP→DNR конвертор, който не слага resourceTypes на block правила, НЕ чупи н",
-          "source": "програмна проверка adblock/rules/{easylist,easyprivacy,removeparam,ad_rules,youtube_rules,urlhaus}.json = 0 block-правила с main_frame"
+          "date": "2026-07-06",
+          "text": "panev: cors() с origin-callback, който вика cb(new Error()) за непозволен Origin, връща 500 (отива в error-handler) вместо чистото 403 от последващия CSRF-guard. Заявката пак е блокирана — само статус кодът е подвеждащ.",
+          "source": "curl -X DELETE с Origin: evil.com → 500"
         },
         {
-          "date": "2026-07-12",
-          "text": "При одит на EasyList→DNR за 'изгубени @@ изключения' брой ЗАГУБЕНИ РЕДОВЕ инструментирано, не (source@@ − allow-rule-count): pureDomain merge свива много @@ реда в requestDomains масиви, така rule-count е по-малък от line-count и симулира ф",
-          "source": "grep generichide в *.js=0"
+          "date": "2026-07-06",
+          "text": "SupremeDiscordBot: две паралелни ревю-имплементации за applications — dashboard пътят (applications.js) праща notifyBot APPLICATION_APPLY_OUTCOME за роля+DM, но bot-secret пътят (bot.js /application/:appId/review, извикван от Discord бутони",
+          "source": "bot/src/index.js:514 (обработчик APPLICATION_APPLY_OUTCOME)"
         }
       ]
     },
@@ -2939,7 +2939,7 @@ const FALLBACK = {
         {
           "date": "2026-06-25",
           "text": "Lua 5.3 е премахнат — не добавяй lua54 'yes'; CommunityOx е архивиран → ползвай overextended.",
-          "source": ""
+          "source": "https://github.com/overextended"
         },
         {
           "date": "2026-06-26",
@@ -3730,7 +3730,7 @@ const FALLBACK = {
         {
           "date": "2026-06-25",
           "text": "FAQ/HowTo rich results са премахнати (07.05.2026) — не разчитай на тях; entity-схема (sameAs) е най-силният AI-citation лост.",
-          "source": ""
+          "source": "FAQ спрени 07.05.2026 (searchenginejournal.com/google-drops-faq-rich-results-from-search)"
         },
         {
           "date": "2026-06-26",
@@ -5092,7 +5092,7 @@ const FALLBACK = {
         {
           "date": "2026-06-25",
           "text": "536 дублирани slug-а между сийд файловете (открити 2026-06-25 с check-dups) — по-късните upsert-и презаписват по-ранните.",
-          "source": ""
+          "source": "открити 2026-06-25)"
         },
         {
           "date": "2026-06-26",
@@ -5843,7 +5843,7 @@ const FALLBACK = {
         {
           "date": "2026-06-25",
           "text": "Let's Encrypt вече издава 6/45-дневни сертификати — задължи ARI авто-подновяване; Docker ≥29.5.1 заради docker cp TOCTOU.",
-          "source": ""
+          "source": "Docker cp TOCTOU — сверявай Docker security advisory"
         },
         {
           "date": "2026-06-26",
@@ -7294,7 +7294,7 @@ const FALLBACK = {
         {
           "date": "2026-06-25",
           "text": "EU AI Act чл. 50: видим „AI-generated“ етикет + C2PA; платформите свалят C2PA при качване → винаги и видим етикет.",
-          "source": ""
+          "source": "https://c2pa.org/"
         },
         {
           "date": "2026-06-26",
@@ -8549,16 +8549,6 @@ const FALLBACK = {
       ],
       "recentLessons": [
         {
-          "date": "2026-07-06",
-          "text": "Google Play target API 35 (Android 15) задължителен за нови апове И ъпдейти от 31.08.2025 (extension до 01.11.2025 при заявка); target API 36 (Android 16) става задължителен от 31.08.2026. Wear OS/Android TV изостават с едно ниво (API 34/35",
-          "source": "https://support.google.com/googleplay/android-developer/answer/11926878"
-        },
-        {
-          "date": "2026-06-26",
-          "text": "Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive\" (Android vitals); кадър <16ms",
-          "source": ""
-        },
-        {
           "date": "2026-06-26",
           "text": "Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive\" (Android vitals); кадър <16ms",
           "source": ""
@@ -8576,6 +8566,16 @@ const FALLBACK = {
         {
           "date": "2026-06-26",
           "text": "NFC за medqr: iOS иска нативен Core NFC (NFCNDEFReaderSession, entitlement",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Сигурно съхранение: iOS Keychain (kSecAttrAccessibleWhenUnlocked…ThisDeviceOnly),",
+          "source": ""
+        },
+        {
+          "date": "2026-06-26",
+          "text": "Тайни в бъндъла НЕ са тайни — извличат се с reverse engineering (OWASP MASWE-0005/0013).",
           "source": ""
         }
       ]
@@ -12172,6 +12172,243 @@ const FALLBACK = {
           "date": "2026-07-16",
           "text": "Структурирай инструкциите за агент като reference (точни команди/пътища) + explanation (защо), не като разказ; агентът действа по точни факти, не по проза.",
           "source": "scope: agent instructions"
+        }
+      ]
+    },
+    {
+      "id": "nabludatelya",
+      "name": "Наблюдателят",
+      "title": "Наблюдаемост и надеждност (SRE)",
+      "emoji": "🔭",
+      "accent": "#f59e0b",
+      "tagline": "Здрава ли е системата в продукция: SLI/SLO/error budget, аларми по симптом, OpenTelemetry, инциденти/postmortem.",
+      "file": ".claude/agents/nabludatelya.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Инженер по наблюдаемост и надеждност (SRE): отговаря дали системата е здрава в ПРОДУКЦИЯ и как разбираме навреме, когато не е. Владее трите стълба (metrics/logs/traces + профилиране) през OpenTelemetry (OTLP, семантични конвенции) и стека Prometheus/Grafana/Loki/Tempo; четирите златни сигнала + RED/USE; канона на Google SRE (SLI/SLO/error budget, аларми по СИМПТОМ не по причина, multi-window burn-rate); управление на инциденти (blameless postmortem, on-call, MTTR), runbook-и, toil, health/readiness probes, синтетичен+RUM мониторинг (Core Web Vitals). Различен от VPS-аджията (машина/деплой) и Конвейерът (CI). Аларми по симптом; всеки SLO има error budget; нула PII в телеметрия.",
+      "capabilities": [
+        "Трите стълба: метрики (counter/gauge/histogram, ниска кардиналност), структурирани логове (trace_id корелация, нива, семплиране), traces (spans, context propagation, exemplars), continuous profiling",
+        "OpenTelemetry: OTLP протокол, Collector (receiver/processor/exporter), семантични конвенции (http/db/service.name), авто+ръчна инструментация, vendor-neutrality (не зашивай доставчик)",
+        "SLI/SLO/SLA: дефиниция от ПОТРЕБИТЕЛСКА гледна точка (availability/latency/correctness); SLO по-строг от SLA",
+        "Error budget: (1−SLO)×събития; policy при изчерпан → feature freeze; 100% е грешна цел",
+        "Четири златни сигнала (latency/traffic/errors/saturation) + RED (заявки) + USE (ресурси)",
+        "Аларми по СИМПТОМ не по причина; multi-window multi-burn-rate (SRE Workbook: бърз 2%/1ч + бавен 5%/6ч); anti alert-fatigue; всяка страница действена + runbook",
+        "Prometheus/PromQL (rate/histogram_quantile, recording+alerting rules, кардиналност), Grafana дашбордове, Alertmanager (групиране/silence/маршрут), Loki (LogQL), Tempo/Jaeger",
+        "Латентност по percentile (P50/P95/P99, не средно; histogram buckets; не осредняваш percentile-и); apdex",
+        "Health: liveness vs readiness vs startup probes (различни цели); graceful shutdown/SIGTERM/drain",
+        "Инциденти: severity, incident commander, MTTR/MTTD, статус комуникация, blameless postmortem (timeline/root cause/action items с owner), toil <50%, on-call хигиена",
+        "Синтетичен мониторинг + RUM: Core Web Vitals (LCP/INP/CLS, p75 от полето), проби, uptime, критичен път",
+        "Приватност на телеметрията: нула PII в логове/labels/traces; redaction; не user-id като label (кардиналност+PII); сверяване с Правния"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Google SRE Book + SRE Workbook (sre.google): SLI/SLO/error budget, golden signals, alerting on SLOs, postmortem, toil",
+          "OpenTelemetry docs (opentelemetry.io): OTLP, Collector, семантични конвенции, signal status; CNCF graduated 2026",
+          "Prometheus docs (prometheus.io): PromQL, recording/alerting rules, naming/labels, histograms, remote write",
+          "Grafana / Loki / Tempo docs; Alertmanager (групиране, silence, маршрутизиране)",
+          "web.dev Core Web Vitals (LCP/INP/CLS прагове, p75 поле) — RUM",
+          "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
+          "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-17",
+          "event": "Раждане",
+          "detail": "Създаден за празнина в наблюдаемостта/надеждността — VPS-аджията владее машината и деплоя, но никой не притежаваше 'здрава ли е системата в продукция': SLO, аларми, инциденти, инструментация."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-17",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор (източник-или-мълчание), три неприкосновени правила (аларми по симптом не по причина; всеки SLO носи error budget; нула PII в телеметрия), инструмент tools/observability/obs-audit.mjs, екипна оркестрация (граница с VPS-аджията/Конвейерът/Анализаторът), памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-17",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (Google SRE Book/Workbook + OpenTelemetry/Prometheus/Grafana docs + web.dev CWV): трите стълба, OTel/OTLP, SLI/SLO/error budget, златни сигнали+RED/USE, burn-rate аларми, PromQL, percentile латентност, health probes, инциденти/postmortem/toil, синтетичен+RUM, приватност на телеметрията — плюс конкретиката на репото. Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-17",
+          "type": "birth",
+          "summary": "Роден: владее наблюдаемостта и надеждността в продукция — трите стълба, OpenTelemetry, SLI/SLO/error budget, аларми по симптом, инциденти."
+        },
+        {
+          "date": "2026-07-17",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от Google SRE Book/Workbook + OpenTelemetry/Prometheus docs → v10.0"
+        },
+        {
+          "date": "2026-07-17",
+          "type": "tool",
+          "summary": "Инструмент tools/observability/obs-audit.mjs: скан за неструктурирано логване, PII/тайна в лог, висока кардиналност, аларма по причина вместо симптом, липсващ health/readiness endpoint."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-17",
+          "text": "Граница с Конвейерът — той владее CI гейтовете в GitHub; Наблюдателят мери ПРОДУКЦИЯТА (runtime), не билда; синтетичен smoke след деплой е обща зона.",
+          "source": "CLAUDE.md — роля на Конвейерът"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "Граница с VPS-аджията — той владее машината/деплой/systemd/Docker/TLS; Наблюдателят дефинира КАКВО и КАК се мери (SLI/аларми/дашборд), не оперира сървъра.",
+          "source": "CLAUDE.md — роля на VPS-аджията"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "SupremeDiscordBot — метрики за gateway latency/heartbeat, rate-limit buckets, командна латентност (RED); Redis като saturation сигнал.",
+          "source": "RED метод"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "medqr (Express+systemd) — лек стек: journalctl за логове, Restart=/MemoryMax= в unit, readiness преди reverse proxy; медицински → нула PII в телеметрия.",
+          "source": "systemd.service(5)"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "zabobovdol (Next.js+Docker) — инструментирай през @opentelemetry/sdk-node + instrumentation-http/pg; health endpoint за Docker healthcheck; тежък стек, structured logs.",
+          "source": "https://opentelemetry.io/docs/languages/js/getting-started/nodejs/"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "Сверявай телеметрията с Правния Разбирач (GDPR/минимизация): събирай само нужното, дефинирай retention, осигури право на изтриване.",
+          "source": "https://opentelemetry.io/docs/security/"
+        }
+      ]
+    },
+    {
+      "id": "analizatora",
+      "name": "Анализаторът",
+      "title": "Продуктова аналитика и данни (приватност-първо)",
+      "emoji": "📊",
+      "accent": "#4f46e5",
+      "tagline": "Какво правят потребителите и работи ли промяната — фунии/retention, A/B (Kohavi), нула PII, съгласие първо.",
+      "file": ".claude/agents/analizatora.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Инженер по продуктова аналитика и данни (приватност-първо): отговаря какво правят потребителите, къде отпадат и работи ли промяната — ДОКАЗАНО, не на око. Владее tracking plan/таксономия на събития, фунии/активиране/retention/cohort, продуктови KPI (AARRR, North Star), контролирани експерименти (A/B, значимост, power, без peeking, SRM, A/A — канонът на Kohavi), атрибуция, и приватностно-съобразена имплементация (GDPR/ePrivacy, съгласие/consent mode, server-side tagging, нула PII, псевдонимизация, retention). Инструменти: GA4, self-host/приватностни (Plausible/Umami/PostHog), warehouse+SQL. Различен от SEO (откриваемост), Продавача (плащания), Наблюдателят (здраве на системата) и Правния (законът). Никаква метрика без дефиниция; съгласие преди проследяване; корелация ≠ причинност.",
+      "capabilities": [
+        "Tracking plan/таксономия: Обект-Действие имена, типизирани properties, версиониране, data contract (не мутирай име за нов смисъл), schema валидация на прием",
+        "Идентичност: anonymous id vs user id, alias/merge, никога PII като id, съгласие при свързване",
+        "Клиент vs server-side: критичните събития (покупка/приход) server-side — клиентът лъже/блокира",
+        "Продуктови KPI: AARRR (pirate metrics), North Star metric, activation ('aha' момент), DAU/WAU/MAU + stickiness, retention видове, cohort/retention curve (PMF сигнал)",
+        "Фунии: стъпки/прозорец/посока, сегментация (парадокс на Симпсън), отпадане по стъпка, абсолютни числа + проценти",
+        "Разпределения не средни: медиана/P90 при тежки опашки; хистограми",
+        "A/B експерименти (Kohavi): OEC, хипотеза, power (MDE, α=0.05, power=0.8, sample size), без peeking, фиксиран хоризонт vs sequential",
+        "Доверие в теста: Sample Ratio Mismatch (chi-squared), A/A тестове (~5% значимост), practical vs statistical significance, guardrail метрики, novelty/primacy",
+        "Причинност: корелация ≠ причинност → нужен експеримент; confounders; observational bias",
+        "Приватност-първо: UA sunset → GA4 (consent mode, cookieless при отказ); Plausible/Umami (self-host, no PII); PostHog; server-side tagging (redaction, data residency); GDPR (минимизация, псевдонимизация, DPA, retention, IP анон.)",
+        "Инструменти: GA4 (event/parameter модел, BigQuery export), GTM (client+server), PostHog (autocapture капани, feature flags), warehouse+SQL (метрики като код), дашборд хигиена (една метрика едно определение, не vanity)",
+        "Дефиниции: всяка метрика с ЕДНО писано определение (какво/знаменател/прозорец/изключения); един собственик"
+      ],
+      "knowledge": {
+        "sources": 100,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Kohavi, Tang, Xu — 'Trustworthy Online Controlled Experiments' (A/B, OEC, peeking, SRM, A/A); exp-platform.com",
+          "Google Analytics 4 docs (support.google.com/analytics, developers.google.com/analytics): event модел, consent, BigQuery export",
+          "Google Tag Manager server-side + consent mode (developers.google.com/tag-platform)",
+          "PostHog docs (posthog.com) + Plausible/Umami (self-host, cookieless, privacy-first)",
+          "GDPR / ePrivacy (gdpr-info.eu, edpb.europa.eu): съгласие, минимизация, псевдонимизация, DPA, retention",
+          "Продуктов канон: AARRR (pirate metrics), North Star metric, 'Lean Analytics'; retention/cohort методология",
+          "Sample Ratio Mismatch (en.wikipedia.org/wiki/Sample_ratio_mismatch); статистика на онлайн експерименти",
+          "Това репо: CLAUDE.md; границата SEO (откриваемост), Продавача (Stripe), Наблюдателят (системни метрики), Правния (закон)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-17",
+          "event": "Раждане",
+          "detail": "Създаден за празнина в продуктовата аналитика/данни — беше разпръснато между SEO (откриваемост) и Продавача (плащания), но никой не притежаваше 'какво правят потребителите, къде отпадат, работи ли промяната' приватностно-съобразено."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-17",
+          "event": "Роден в пълна архитектура",
+          "detail": "Операционен договор (източник-или-мълчание), три неприкосновени правила (съгласие преди проследяване + нула PII; никаква метрика без дефиниция; корелация ≠ причинност — доказвай с експеримент), инструмент tools/analytics/analytics-audit.mjs, екипна оркестрация (граница със SEO/Продавача/Наблюдателят/Правния), памет и самообучаващ се цикъл."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-17",
+          "event": "Обучен до ниво на екипа (mastery v10)",
+          "detail": "Засят със 100 проверени поуки с реален източник (Kohavi 'Trustworthy Online Controlled Experiments' + GA4/PostHog/Plausible docs + GDPR/ePrivacy): tracking plan/таксономия, идентичност, KPI/AARRR/North Star, фунии/retention/cohort, A/B (power/peeking/SRM/A-A), причинност, приватност-първо (consent/server-side/минимизация), warehouse/SQL/дефиниции — плюс конкретиката на репото. Домейнът е покрит."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-17",
+          "type": "birth",
+          "summary": "Роден: владее продуктовата аналитика и данни приватностно-съобразено — tracking plan, фунии/retention, A/B (Kohavi), GDPR/съгласие."
+        },
+        {
+          "date": "2026-07-17",
+          "type": "learning",
+          "summary": "Обучен до ниво на екипа: 100 проверени поуки от Kohavi + GA4/PostHog/Plausible docs + GDPR → v10.0"
+        },
+        {
+          "date": "2026-07-17",
+          "type": "tool",
+          "summary": "Инструмент tools/analytics/analytics-audit.mjs: скан за проследяване без съгласие, PII в събития, hardcode-нат analytics id, липсваща IP анонимизация."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-17",
+          "text": "Граници на ролята: SEO владее откриваемостта (трафик преди продукта), Продавача — Stripe billing/приход, Наблюдателят — системни/инфра метрики (latency/uptime), Правния Разбирач — законността; Анализаторът владее ПРОДУКТОВОТО поведение и не",
+          "source": "монорепо CLAUDE.md + .claude/agents/README.md"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "e-commerce (панев): приходната фуния (view→cart→checkout→purchase) с server-side purchase от Stripe webhook (source of truth), не от success-page; координирай приходните дефиниции с Продавача (billing) — analytics приход и счетоводен приход",
+          "source": "developers.google.com/analytics/devguides/collection/ga4/ecommerce"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "medqr (медицински): чл. 9 здравни данни → НАЙ-строгото; практически без продуктова аналитика на клинични пътеки; ако изобщо — cookieless, агрегирано, нула идентификатори/URL параметри със здравен контекст; при съмнение не проследявай.",
+          "source": "GDPR чл. 9 — gdpr-info.eu"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "zabobovdol (граждански, приватностно-чувствителен): предпочети cookieless/self-host (Plausible/Umami), без Google пренос, без банер ако наистина cookieless; НУЛА PII в събития; минимално проследяване — това е доверителен продукт за граждани",
+          "source": "GDPR чл. 25 + чл. 5(1)(c) — gdpr-info.eu"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "Всяка промяна в проследяването = обнови tracking plan-а + DPA/политиката за поверителност + банера за съгласие; технически и правен артефакт вървят заедно (съгласувай с Правния Разбирач преди пускане).",
+          "source": "GDPR чл. 13-14 (информиране) — gdpr-info.eu"
+        },
+        {
+          "date": "2026-07-17",
+          "text": "Дашборд хигиена: една метрика — едно определение — една карта; всяка карта има дефиниция, прозорец, филтри и „последно обновено\"; без vanity кумулативи; ако не води решение, махни я.",
+          "source": "книга: Lean Analytics (O'Reilly, 2013)"
         }
       ]
     }
