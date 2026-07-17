@@ -997,5 +997,11 @@
     "install": "Install the app",
     "updateReady": "A new version is available.",
     "update": "Update"
+  },
+  "rules": {
+    "open": "Rules",
+    "title": "How to play",
+    "steps": "Steps",
+    "tips": "Tips"
   }
 }

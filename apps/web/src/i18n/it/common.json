@@ -997,5 +997,11 @@
     "install": "Installa l'app",
     "updateReady": "È disponibile una nuova versione.",
     "update": "Aggiorna"
+  },
+  "rules": {
+    "open": "Regole",
+    "title": "Come si gioca",
+    "steps": "Passaggi",
+    "tips": "Consigli"
   }
 }

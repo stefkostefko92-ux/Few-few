@@ -8,6 +8,7 @@ import { GAME_CATALOG, gameTitle } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
+import { GameHelp } from "./GameHelp";
 import { ReclaimBanner } from "./ReclaimBanner";
 import { OutOfChips } from "./OutOfChips";
 
@@ -149,6 +150,7 @@ export function GameView() {
         {renderGame(key, gameTitle(t, key, meta.title))}
       </Suspense>
       <MatchStatus />
+      <GameHelp game={key} />
       <ReclaimBanner />
       <ChatDock />
     </CinematicStage>
