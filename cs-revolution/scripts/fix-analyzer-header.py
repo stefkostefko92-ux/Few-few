@@ -6,7 +6,6 @@ Replaces whatever nav is there (original or a previous patch). Idempotent."""
 import io, os, re
 
 NAV_CSS = (
-"/* ═══ NAVBAR (matches live SPA) ═══ */\n"
 "nav{position:fixed;top:0;left:0;right:0;z-index:10000;padding:12px 20px;display:flex;"
 "justify-content:space-between;align-items:center;background:rgba(0,0,0,.85);"
 "backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);"
@@ -84,11 +83,12 @@ def main():
         if not os.path.isfile(path):
             print('skip (missing):', path); continue
         s = io.open(path, encoding='utf-8').read()
+        # 0. Remove any comment a previous run inserted (keeps re-runs idempotent).
+        s = s.replace('/* ═══ NAVBAR (matches live SPA) ═══ */\n', '')
         # 1. Replace the whole nav CSS region (from `nav{position:fixed` up to the HERO comment).
-        s2 = re.sub(r'nav\{position:fixed.*?(?=/\*[^\n]*HERO)', NAV_CSS, s, count=1, flags=re.S)
-        if s2 == s:
+        s, n = re.subn(r'nav\{position:fixed.*?(?=/\*[^\n]*HERO)', NAV_CSS, s, count=1, flags=re.S)
+        if n == 0:
             print('WARN nav CSS region not found:', path)
-        s = s2
         # 2. Replace the <nav> block (+ any telemetry script we previously added).
         i = s.find('<nav>'); j = s.find('</nav>')
         if i < 0 or j < 0:
