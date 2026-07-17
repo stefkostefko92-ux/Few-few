@@ -468,7 +468,9 @@
     "huntAgain": "Hunt Again",
     "regionInfo": "Lv {{min}}–{{max}} · {{count}} foes",
     "requiresLv": "Requires Lv {{n}}",
-    "huntHere": "Hunt Here"
+    "huntHere": "Hunt Here",
+    "firstWin": "First win of the day — ×2 XP & gold!",
+    "combo": "Combo ×{{n}} (+{{pct}}% XP & gold)"
   },
   "dungeons": {
     "title": "Dungeons",
@@ -1056,7 +1058,11 @@
     "subtitle": "{{discovered}} / {{total}} creatures catalogued.",
     "all": "All",
     "lv": "Lv {{n}}",
-    "kills": "Kills:"
+    "kills": "Kills:",
+    "claim": "Claim",
+    "claimed": "Claimed ✓",
+    "slayAll": "Slay them all",
+    "claimedToast": "Collection reward: +{{gold}}g, +{{gems}} gems!"
   },
   "common": {
     "loading": "Loading…",

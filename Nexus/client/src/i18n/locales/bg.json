@@ -468,7 +468,9 @@
     "huntAgain": "Лов отново",
     "regionInfo": "Ниво {{min}}–{{max}} · {{count}} врагове",
     "requiresLv": "Изисква ниво {{n}}",
-    "huntHere": "Ловувай тук"
+    "huntHere": "Ловувай тук",
+    "firstWin": "Първа победа за деня — ×2 XP и злато!",
+    "combo": "Комбо ×{{n}} (+{{pct}}% XP и злато)"
   },
   "dungeons": {
     "title": "Подземия",
@@ -1056,7 +1058,11 @@
     "subtitle": "{{discovered}} / {{total}} създания в каталога.",
     "all": "Всички",
     "lv": "Нв. {{n}}",
-    "kills": "Убийства:"
+    "kills": "Убийства:",
+    "claim": "Вземи",
+    "claimed": "Взета ✓",
+    "slayAll": "Избий всички",
+    "claimedToast": "Колекционна награда: +{{gold}}g, +{{gems}} гема!"
   },
   "common": {
     "loading": "Зареждане…",
