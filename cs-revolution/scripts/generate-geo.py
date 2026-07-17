@@ -216,7 +216,7 @@ CITIES = [
 # ── Per-language strings ─────────────────────────────────────────
 L = {
  "it": dict(
-  prefix="", urlbase="/geo/", og="og-image.png", locale="it_IT",
+  prefix="", urlbase="/geo/", og="og/og-geo.png", locale="it_IT",
   nav=[("/", "HOME"), ("/chi-siamo/", "CHI SIAMO"), ("/servizi/sviluppo-siti-web/", "SERVIZI"), ("/portfolio/", "PORTFOLIO"), ("/contatti/", "CONTATTI")],
   home="/", contact="/contatti/", hub_name="Dove Lavoriamo",
   h1="Siti Web {name}",
@@ -248,7 +248,7 @@ L = {
   hub_intro="Lavoriamo da remoto in tutta Europa, con focus su Italia e Bulgaria. Scegli la tua città per scoprire i servizi dedicati alle aziende locali.",
  ),
  "en": dict(
-  prefix="/en", urlbase="/en/geo/", og="og-image-en.png", locale="en_US",
+  prefix="/en", urlbase="/en/geo/", og="og/og-geo.png", locale="en_US",
   nav=[("/en/", "HOME"), ("/en/about/", "ABOUT"), ("/en/services/web-development/", "SERVICES"), ("/en/portfolio/", "PORTFOLIO"), ("/en/contact/", "CONTACT")],
   home="/en/", contact="/en/contact/", hub_name="Where We Work",
   h1="Web Development {name}",
@@ -280,7 +280,7 @@ L = {
   hub_intro="We work remotely across Europe, with a focus on Italy and Bulgaria. Pick your city to see services dedicated to local businesses.",
  ),
  "bg": dict(
-  prefix="/bg", urlbase="/bg/geo/", og="og-image-bg.png", locale="bg_BG",
+  prefix="/bg", urlbase="/bg/geo/", og="og/og-geo.png", locale="bg_BG",
   nav=[("/bg/", "ГЛАВНА"), ("/bg/za-nas/", "ЗА НАС"), ("/bg/uslugi/web-razrabotka/", "УСЛУГИ"), ("/bg/portfolio/", "ПОРТФОЛИО"), ("/bg/kontakti/", "КОНТАКТИ")],
   home="/bg/", contact="/bg/kontakti/", hub_name="Къде Работим",
   h1="Изработка на Сайт {name}",

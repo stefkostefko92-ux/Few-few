@@ -21,21 +21,21 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="
 # ── Per-language chrome ──────────────────────────────────────────
 L = {
  "it": dict(
-   prefix="", og="og-image.png", locale="it_IT",
+   prefix="", og="og/og-blog.png", locale="it_IT",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/contatti/">CONTATTI</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p></div>',
    home="/", blog="/blog/", contact="/contatti/", contact_name="Blog",
    date_label="16 Luglio 2026", read="min di lettura", faq_h2="Domande frequenti",
    cta="RICHIEDI UN PREVENTIVO GRATUITO"),
  "en": dict(
-   prefix="/en", og="og-image-en.png", locale="en_US",
+   prefix="/en", og="og/og-blog.png", locale="en_US",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/contact/">CONTACT</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p></div>',
    home="/en/", blog="/en/blog/", contact="/en/contact/", contact_name="Blog",
    date_label="July 16, 2026", read="min read", faq_h2="Frequently asked questions",
    cta="REQUEST A FREE QUOTE"),
  "bg": dict(
-   prefix="/bg", og="og-image-bg.png", locale="bg_BG",
+   prefix="/bg", og="og/og-blog.png", locale="bg_BG",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p></div>',
    home="/bg/", blog="/bg/blog/", contact="/bg/kontakti/", contact_name="Блог",

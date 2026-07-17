@@ -29,21 +29,21 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="
 # ── Per-language chrome ──────────────────────────────────────────
 L = {
  "it": dict(
-   prefix="", og="og-image.png", locale="it_IT", hub="/confronti/",
+   prefix="", og="og/og-confronti.png", locale="it_IT", hub="/confronti/",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/contatti/">CONTATTI</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p></div>',
    home="/", contact="/contatti/", hub_name="Confronti", tag="// CONFRONTO",
    faq_h2="Domande frequenti", cta="RICHIEDI UN PREVENTIVO GRATUITO",
    related_h2="Confronti correlati", verdict_word="In breve"),
  "en": dict(
-   prefix="/en", og="og-image-en.png", locale="en_US", hub="/en/comparisons/",
+   prefix="/en", og="og/og-confronti.png", locale="en_US", hub="/en/comparisons/",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/contact/">CONTACT</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p></div>',
    home="/en/", contact="/en/contact/", hub_name="Comparisons", tag="// COMPARISON",
    faq_h2="Frequently asked questions", cta="REQUEST A FREE QUOTE",
    related_h2="Related comparisons", verdict_word="In short"),
  "bg": dict(
-   prefix="/bg", og="og-image-bg.png", locale="bg_BG", hub="/bg/sravneniya/",
+   prefix="/bg", og="og/og-confronti.png", locale="bg_BG", hub="/bg/sravneniya/",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p></div>',
    home="/bg/", contact="/bg/kontakti/", hub_name="Сравнения", tag="// СРАВНЕНИЕ",

@@ -111,7 +111,7 @@ SERVICES = {
 # ── Per-language chrome ──────────────────────────────────────────
 L = {
     "it": dict(
-        prefix="", hub_path="/servizi-locali/", og="og-image.png", locale="it_IT",
+        prefix="", hub_path="/servizi-locali/", og="og/og-geo.png", locale="it_IT",
         nav=[("/", "HOME"), ("/chi-siamo/", "CHI SIAMO"), ("/servizi/sviluppo-siti-web/", "SERVIZI"), ("/portfolio/", "PORTFOLIO"), ("/contatti/", "CONTATTI")],
         home="/", contact="/contatti/",
         tag="// LOCALE — {NAME}", cta="RICHIEDI PREVENTIVO GRATUITO",
@@ -127,7 +127,7 @@ L = {
         card_cta="Scopri di più →",
     ),
     "en": dict(
-        prefix="/en", hub_path="/en/local-services/", og="og-image-en.png", locale="en_US",
+        prefix="/en", hub_path="/en/local-services/", og="og/og-geo.png", locale="en_US",
         nav=[("/en/", "HOME"), ("/en/about/", "ABOUT"), ("/en/services/web-development/", "SERVICES"), ("/en/portfolio/", "PORTFOLIO"), ("/en/contact/", "CONTACT")],
         home="/en/", contact="/en/contact/",
         tag="// LOCAL — {NAME}", cta="REQUEST A FREE QUOTE",
@@ -143,7 +143,7 @@ L = {
         card_cta="Learn more →",
     ),
     "bg": dict(
-        prefix="/bg", hub_path="/bg/uslugi-lokalni/", og="og-image-bg.png", locale="bg_BG",
+        prefix="/bg", hub_path="/bg/uslugi-lokalni/", og="og/og-geo.png", locale="bg_BG",
         nav=[("/bg/", "ГЛАВНА"), ("/bg/za-nas/", "ЗА НАС"), ("/bg/uslugi/web-razrabotka/", "УСЛУГИ"), ("/bg/portfolio/", "ПОРТФОЛИО"), ("/bg/kontakti/", "КОНТАКТИ")],
         home="/bg/", contact="/bg/kontakti/",
         tag="// ЛОКАЛНО — {NAME}", cta="ЗАЯВИ БЕЗПЛАТНА ОФЕРТА",
