@@ -295,12 +295,49 @@ function NoGuild({ data, browse, onChanged, createOpen, setCreateOpen }: any): R
 
 /* ===== Tabs ===== */
 
+interface GuildMission { key: string; label: string; target: number; reward_gold: number; progress: number; completed: boolean; }
+
 function OverviewTab({ data }: { data: GuildData }) {
   const { t } = useTranslation();
   const g = data.guild!;
   const bonus = g.bonus;
+  const [missions, setMissions] = useState<GuildMission[]>([]);
+  const [missionsResetAt, setMissionsResetAt] = useState(0);
+  useEffect(() => {
+    api.get('/guild/missions')
+      .then((r) => { setMissions(r.missions || []); setMissionsResetAt(r.reset_at || 0); })
+      .catch(() => {});
+  }, []);
+  const missionDays = Math.max(0, Math.ceil((missionsResetAt - Date.now()) / 86_400_000));
+  const MISSION_ICON: Record<string, string> = { hunt_kills: '⚔️', arena_wins: '🏟️', tower_floors: '🗼' };
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+      {/* Седмични кооперативни мисии — общ прогрес, награда за всеки член. */}
+      {missions.length > 0 && (
+        <div style={{ gridColumn: '1 / -1' }}>
+          <div className="flex between" style={{ alignItems: 'center', marginBottom: 10 }}>
+            <h3 style={{ margin: 0 }}>{t('guild.missions.title', { defaultValue: 'Weekly guild missions' })}</h3>
+            <span className="muted text-sm">{t('guild.missions.resets', { days: missionDays, defaultValue: 'Resets in {{days}}d' })}</span>
+          </div>
+          <div className="grid-cards">
+            {missions.map((m) => (
+              <div key={m.key} className="card" style={m.completed ? { borderColor: 'var(--green-1, #6ad8a4)' } : undefined}>
+                <div className="flex between" style={{ alignItems: 'center' }}>
+                  <strong>{MISSION_ICON[m.key] || '🎯'} {t(`guild.missions.${m.key}`, { defaultValue: m.label })}</strong>
+                  <span className="muted text-sm">{m.progress.toLocaleString()}/{m.target.toLocaleString()}</span>
+                </div>
+                <div className="bar" style={{ height: 8, margin: '8px 0' }}>
+                  <div className="bar-fill xp" style={{ width: `${Math.min(100, (m.progress / Math.max(1, m.target)) * 100)}%` }} />
+                </div>
+                <div className="flex between" style={{ alignItems: 'center' }}>
+                  <span className="muted text-sm">💰 {m.reward_gold.toLocaleString()}g {t('guild.missions.perMember', { defaultValue: 'per member' })}</span>
+                  {m.completed && <span className="tag" style={{ color: 'var(--green-1, #6ad8a4)' }}>{t('guild.missions.done', { defaultValue: 'Complete ✓' })}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div>
         <h3 style={{ marginBottom: 10 }}>{t('guild.overview.stats')}</h3>
         <div className="guild-stat-grid">

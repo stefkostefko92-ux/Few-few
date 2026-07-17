@@ -383,6 +383,12 @@ deploy_nexus() {
   ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
   sleep 5
   if health "$NEXUS_HEALTH_URL" "nexus"; then
+    # Content seed на ВСЕКИ деплой (идемпотентен INSERT OR REPLACE по slug):
+    # нови чудовища/предмети/сетове от release-а влизат в живата база, без
+    # да пипат играчите. Без това content ъпдейт стига само до нови инсталации.
+    ( cd "$NEXUS_DIR/source" && docker compose exec -T nexus-dominion node server/dist/seed/run.js ) \
+      && log "nexus: content seed приложен (идемпотентно)." \
+      || warn "nexus: seed стъпката се провали — content-ът може да е непълен (виж docker logs)."
     rm -rf "$NEXUS_DIR/source.bak-$TS"
     # Самоинсталиране на systemd единиците (идемпотентно): стартиране на
     # стека при boot + дневен бекъп таймер. Никакви ръчни стъпки.
