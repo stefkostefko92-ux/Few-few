@@ -11362,6 +11362,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-16",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „oversee.mjs при OVERSEE_TODAY=2026-07-16 дава 23 агента · 0 твърди · 20 предупреждения …\" (+2)"
+        },
+        {
           "date": "2026-07-14",
           "type": "birth",
           "summary": "Роден: покрива LLM/AI интеграцията (Gemini/OpenAI/Claude) — модели, config, авт., квоти, сигурност."

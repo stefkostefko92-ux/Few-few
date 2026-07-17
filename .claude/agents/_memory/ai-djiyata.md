@@ -160,4 +160,7 @@
 - **2026-07-16:** Изрядността пред платформите е крос-функционален критичен път: онбордингът на Тайния агент затваря дупка, която докосва Мобилджията (билд), Хромаджията (MV3), Продавача (IAP/Stripe) и Правния Разбирач (privacy) — президентът го включва в подготовката за всяко пускане към Apple/Google/Meta. _(fleet покритие; verified; .claude/agents/tayniyat-agent.md)_
 
 ## Карантина (непроверено — не се чете като факт)
+- **2026-07-16:** Четирите инструмента на новите агенти минават node --check и реален ран с изход 0 и fail-closed текст „жива проверка все пак задължителна\": tools/approval/review-check.mjs, tools/ci/workflow-audit.mjs, tools/qa/test-audit.mjs, tools/docs/doc-audit.mjs. _("инструменти на агентите"; сигурно; "реален ран на всеки .mjs (изход 0)")_
+- **2026-07-16:** В agents-dashboard/agents.json полето knowledge.sources е ЧИСЛО (напр. 100), не масив — важи и за нови (konveyera) и за стари (seo=21) агенти; проверка чрез .length дава undefined и е фалшива тревога. _("схема на таблото"; сигурно; "файл: agents-dashboard/agents.json (konveyera.knowledge.sources=100, seo.knowledge.sources=21)")_
+- **2026-07-16:** oversee.mjs при OVERSEE_TODAY=2026-07-16 дава 23 агента · 0 твърди · 20 предупреждения · FALLBACK ok · доктрина ok, изход 0 (екипът здрав); предупрежденията са концентрирани в стари агенти (treydara 25 uncited най-тежък), новите четири са чисти. _("надзор на агентския слой"; сигурно; "реален ран: OVERSEE_TODAY=2026-07-16 node tools/agents/oversee.mjs (изход 0)")_
 _(празно)_
