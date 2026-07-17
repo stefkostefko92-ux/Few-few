@@ -3214,10 +3214,10 @@ export default function App(){
             <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"GUIDE & RISORSE":lang==="bg"?"ГИДОВЕ & РЕСУРСИ":"GUIDES & RESOURCES"}</div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {(lang==="bg"
-                ? [["Речник (какво е…)","/bg/rechnik/"],["Сравнения (X срещу Y)","/bg/sravneniya/"],["Решения по бранш","/bg/branshove/"],["Локални услуги","/bg/uslugi-lokalni/"],["Безплатни инструменти","/bg/instrumenti/"]]
+                ? [["Кейс студии","/bg/keys-studii/"],["Речник (какво е…)","/bg/rechnik/"],["Сравнения (X срещу Y)","/bg/sravneniya/"],["Решения по бранш","/bg/branshove/"],["Локални услуги","/bg/uslugi-lokalni/"],["Безплатни инструменти","/bg/instrumenti/"]]
                 : lang==="en"
-                ? [["Glossary (what is…)","/en/glossary/"],["Comparisons (X vs Y)","/en/comparisons/"],["Solutions by industry","/en/industries/"],["Local services","/en/local-services/"],["Free tools","/en/tools/"]]
-                : [["Glossario (cos'è…)","/glossario/"],["Confronti (X vs Y)","/confronti/"],["Soluzioni per settore","/settori/"],["Servizi locali","/servizi-locali/"],["Strumenti gratis","/strumenti/"]]
+                ? [["Case studies","/en/case-studies/"],["Glossary (what is…)","/en/glossary/"],["Comparisons (X vs Y)","/en/comparisons/"],["Solutions by industry","/en/industries/"],["Local services","/en/local-services/"],["Free tools","/en/tools/"]]
+                : [["Case study","/case-study/"],["Glossario (cos'è…)","/glossario/"],["Confronti (X vs Y)","/confronti/"],["Soluzioni per settore","/settori/"],["Servizi locali","/servizi-locali/"],["Strumenti gratis","/strumenti/"]]
               ).map(function(g){return <a key={g[1]} href={g[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {g[0]}</a>})}
             </div>
           </div>

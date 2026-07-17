@@ -9,6 +9,7 @@ Sitemap: https://carbonstealth.eu/sitemap-glossary.xml
 Sitemap: https://carbonstealth.eu/sitemap-industries.xml
 Sitemap: https://carbonstealth.eu/sitemap-servicecity.xml
 Sitemap: https://carbonstealth.eu/sitemap-tools.xml
+Sitemap: https://carbonstealth.eu/sitemap-casestudies.xml
 
 # AI Bots - Allow for AEO
 User-agent: GPTBot
