@@ -11735,9 +11735,20 @@
           "date": "2026-07-16",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (docs.github.com/actions + официални action репа): Actions структура/тригери/matrix/reusable/composite, кеш/артефакти/скорост/цена, supply-chain (SHA пинване, permissions, OIDC, dependency-review, CodeQL, gitleaks, script injection), монорепо path филтри, гейтове/branch protection/merge queue, релийз/environments, Docker в CI, диагностика — плюс конкретиката на това репо (path-filtered CI, security.yml, deploy границата). Домейнът е покрит."
+        },
+        {
+          "version": "10.1.0",
+          "date": "2026-07-17",
+          "event": "v10.1 — учене",
+          "detail": "Научи: В монорепото oversee.mjs (надзор на агентския слой) НЕ се пуска в никой CI workflow — G… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-17",
+          "type": "learning",
+          "summary": "Научи: „В монорепото oversee.mjs (надзор на агентския слой) НЕ се пуска в никой CI workflow — G…\" (+2 още)"
+        },
         {
           "date": "2026-07-16",
           "type": "birth",

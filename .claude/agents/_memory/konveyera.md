@@ -10,6 +10,9 @@
 Версии на actions и лимити са време-чувствителни → потвърждавай на живо преди цитиране.
 
 ## Проверени поуки (verified)
+- **2026-07-17:** security.yml сам пинва third-party actions по подвижен мажорен таг (checkout@v4:27, setup-node@v4:31, dependency-review-action@v4:67); коментар :25-26 признава SHA-пинването като нерешен follow-up. _("ci/supply-chain"; verified; ".github/workflows/security.yml:25-31,67")_
+- **2026-07-17:** Нито един path-филтър не покрива агентския слой (.claude/agents/**, .claude/settings.json, agents-dashboard/agents.json, tools/agents/**); всички 10 workflow-а са продуктови + security.yml — промяна там минава без CI. _("ci/monorepo-paths"; verified; ".github/workflows/*.yml (Glob, 11 файла); security.yml:8-12 (само push:main + pull_request, без paths)")_
+- **2026-07-17:** В монорепото oversee.mjs (надзор на агентския слой) НЕ се пуска в никой CI workflow — Grep за oversee|agents/ по .github/ дава нула; надзорът е само ръчен, въпреки готовия fail-closed exit(hardFails?1:0). _("ci/agent-layer"; verified; "tools/agents/oversee.mjs:177,191; Grep .github/ → No matches")_
 
 ### GitHub Actions — структура и изпълнение
 - **2026-07-16:** Workflow → jobs → steps; jobs вървят паралелно по подразбиране, `needs:` въвежда зависимост/подредба; всеки job е нов чист runner (VM/контейнер) без споделено състояние. _("actions структура"; verified; "https://docs.github.com/en/actions/using-workflows/about-workflows")_
