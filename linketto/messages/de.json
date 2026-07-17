@@ -47,7 +47,7 @@
     "ctaButton": "Starte kostenlos in 60 Sekunden",
     "faqTitle": "Häufige Fragen",
     "faq1q": "Was ist Linketto?",
-    "faq1a": "Linketto ist eine Link-in-Bio-Seite: ein Link, der alle deine Links, Produkte und Kontakte bündelt. Das Besondere: deine Seite spricht die Sprache jedes Besuchers — einmal erstellt, erscheint sie in 6+ Sprachen.",
+    "faq1a": "Linketto ist eine Link-in-Bio-Seite: ein Link, der alle deine Links, Produkte und Kontakte bündelt. Das Besondere: deine Seite spricht die Sprache jedes Besuchers — einmal erstellt, erscheint sie in 24 EU-Sprachen plus 3 Dialekten.",
     "faq2q": "Was macht Linketto besser als Linktree?",
     "faq2a": "Vier Dinge: dein Profil ist mehrsprachig (Linktree ist nur auf Englisch), es wird in der EU mit DSGVO als Standard gehostet, die Analytik kommt ohne Cookies und ohne persönliche Daten aus, und die Verkaufsprovisionen liegen je nach Plan bei 8/4/0/0% — gegenüber 12% und 9% bei Linktree.",
     "faq3q": "Was kostet Linketto?",
@@ -387,7 +387,8 @@
     "terms": "Bedingungen",
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
-    "manageConsent": "Cookies verwalten"
+    "manageConsent": "Cookies verwalten",
+    "vsLinktree": "Linketto vs. Linktree"
   },
   "seo": {
     "metaTitle": "Linketto — mehrsprachiges Link in Bio: alle deine Links, in jeder Sprache",
@@ -467,5 +468,34 @@
     "accept": "Akzeptieren",
     "decline": "Ablehnen",
     "moreInfo": "Mehr erfahren"
+  },
+  "vs": {
+    "metaTitle": "Linketto vs. Linktree — der ehrliche Vergleich",
+    "metaDescription": "Provisionen 8/4/0% gegenüber 12/9%, 24 EU-Sprachen gegenüber nur Englisch, EU-Hosting mit DSGVO und Analytik ohne Cookies. Sieh dir die Tabelle an.",
+    "title": "Linketto vs. Linktree",
+    "intro": "Beide Dienste lösen dieselbe Aufgabe — eine Seite für alle deine Links. Die Unterschiede liegen bei Geld, Sprachen und Datenschutz. Hier sind sie, ohne Schnörkel.",
+    "defTitle": "Was ist eine Link-in-Bio-Seite?",
+    "defBody": "Eine Link-in-Bio-Seite ist eine einzige öffentliche Webseite, die alle deine wichtigen Links, Produkte und Kontakte an einem Ort bündelt, erreichbar über eine einzige Adresse. Die Idee stammt von den sozialen Netzwerken, die nur einen Link im Profil erlauben: Statt zwischen deinem Shop, deinem Video und deinem Newsletter zu wählen, setzt du einen Link zur Seite — und sie führt zu allem. Moderne Varianten ergänzen den Verkauf digitaler Produkte, Besuchsstatistiken und individuelles Design. Was Linketto auszeichnet: Deine Seite erscheint automatisch in der Sprache jedes Besuchers — 24 EU-Sprachen plus 3 italienische Dialekte — ganz ohne zusätzlichen Aufwand, und die Analytik läuft ohne Cookies und ohne personenbezogene Daten. Erstelle sie einmal; sie spricht mit der ganzen Welt.",
+    "tableTitle": "Vergleich Zeile für Zeile",
+    "thFeature": "Kriterium",
+    "rowFee": "Verkaufsprovision",
+    "rowFeeL": "8% Free · 4% Pro · 0% Business und Founder",
+    "rowFeeLt": "12% Free · 9% bei den bezahlten Plänen",
+    "rowLang": "Profilsprachen",
+    "rowLangL": "24 EU-Sprachen + 3 Dialekte, automatisch je nach Besucher",
+    "rowLangLt": "Nur Englisch",
+    "rowHost": "Hosting und Daten",
+    "rowHostL": "EU-Hosting, DSGVO standardmäßig",
+    "rowHostLt": "Hosting in den USA",
+    "rowAnalytics": "Analytik",
+    "rowAnalyticsL": "Keine Cookies, keine IP-Adressen, keine personenbezogenen Daten",
+    "rowAnalyticsLt": "Klassisches Cookie-Tracking",
+    "rowModeration": "Moderation",
+    "rowModerationL": "Transparent, mit Vorankündigung und Widerspruch; kein öffentliches „GESPERRT“-Banner",
+    "rowModerationLt": "Öffentliches Banner bei gesperrten Profilen",
+    "honestTitle": "Wann ist Linktree die bessere Wahl?",
+    "honestBody": "Ehrlich gesagt: Wenn du auf ihre lange Liste fertiger Integrationen angewiesen bist oder die verbreitetste Plattform willst, ist Linktree eine vernünftige Wahl mit langer Erfolgsbilanz. Linketto gewinnt, wenn dein Publikum mehr als eine Sprache spricht, wenn du verkaufst und jeder Provisionspunkt zählt, und wenn der Datenschutz deiner Besucher ein Versprechen ist und keine Fußnote.",
+    "ctaTitle": "Erlebe den Unterschied mit einem Link.",
+    "ctaButton": "Erstelle dein Linketto kostenlos"
   }
 }
