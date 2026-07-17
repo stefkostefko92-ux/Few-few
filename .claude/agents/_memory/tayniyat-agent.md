@@ -11,6 +11,7 @@
 срокове) се потвърждават на живо преди цитиране.
 
 ## Проверени поуки (verified)
+- **2026-07-17:** ai-djiyata (президент) налага разкриване на изпращане на потребителски вход към трети AI доставчик само чрез Privacy Policy + предупреждение до бутона (ред 42-45), но не споменава стор-специфичните форми Apple App Privacy nutrition labels и Google Play Data Safety. Домейнът е слабо приложим — нито един продукт в монорепото не е нативен стор-апп. _("преглед на ai-djiyata от платформено съответствие; важи ако LLM интеграция стигне до App Store/Play дистрибуция"; verified; "/home/user/Few-few/.claude/agents/ai-djiyata.md:42-47; /home/user/Few-few/CLAUDE.md (таблица продукти)")_
 
 ### Apple — App Review, поверителност, notarization
 - **2026-07-16:** Apple App Review Guidelines са структурирани в 5 стълба: 1 Safety, 2 Performance, 3 Business, 4 Design, 5 Legal; всеки отказ цитира конкретен номер (напр. 2.1, 4.2.2, 5.1.1) — искай точния номер, за да мапнеш поправката. _("apple-app-review, четене на отказ"; verified; "https://developer.apple.com/app-store/review/guidelines/")_

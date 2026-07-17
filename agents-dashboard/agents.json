@@ -11605,9 +11605,20 @@
           "date": "2026-07-16",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (официални docs на Apple/Google/Meta/Chrome + App Defense Alliance/OWASP): App Review откази, privacy labels/manifest/ATT, notarization, Play policies/Data Safety/target API/закрит тест/Play Integrity, OAuth verification+CASA, Chrome MV3/Limited Use, Meta App Review/Business Verification/Data Use Checkup/Data Deletion/ad standards, крос-платформена регулация (EU DSA trader, деца/COPPA). Домейнът е покрит из основи."
+        },
+        {
+          "version": "10.1.0",
+          "date": "2026-07-17",
+          "event": "v10.1 — учене",
+          "detail": "Научи: ai-djiyata (президент) налага разкриване на изпращане на потребителски вход към трети A…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-17",
+          "type": "learning",
+          "summary": "Научи: „ai-djiyata (президент) налага разкриване на изпращане на потребителски вход към трети A…\""
+        },
         {
           "date": "2026-07-16",
           "type": "birth",
