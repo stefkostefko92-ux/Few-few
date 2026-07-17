@@ -154,8 +154,9 @@
       pre-consent — German court LG München 20 O 11024/20 awarded €100
       per affected user. The Sentry sub-processor block in the Privacy
       Policy stays the only third-party data path.
+      (A leftover `preconnect href="/"` was removed — preconnect to the
+      own origin is a no-op, and vite 8's html asset pass chokes on it.)
     -->
-    <link rel="preconnect" href="/" />
   </head>
   <body>
     <!-- Crawler-visible H1 + description. Hidden visually after the React app
