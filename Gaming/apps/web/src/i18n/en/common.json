@@ -415,6 +415,10 @@
     "equipped": "Equipped",
     "vipOnly": "VIP only",
     "needGems": "Not enough gems",
+    "custom": "Custom palette",
+    "customVip": "Custom palettes are a VIP feature (Silver and up).",
+    "colorA": "Primary colour",
+    "colorB": "Secondary colour",
     "type": {
       "FELT": "Table felt",
       "CARDBACK": "Card back",
