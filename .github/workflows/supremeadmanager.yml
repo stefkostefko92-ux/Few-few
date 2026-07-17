@@ -1,6 +1,7 @@
 name: supremeadmanager
 
 on:
+  workflow_dispatch: # ръчно преизпълнение при flake/изгубени логове
   push:
     paths:
       - 'SupremeAdManager/**'
