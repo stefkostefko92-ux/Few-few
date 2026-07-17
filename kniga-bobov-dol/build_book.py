@@ -98,6 +98,12 @@ S['finis'] = ParagraphStyle('finis', fontName='Book-Italic', fontSize=12,
                             alignment=TA_CENTER, spaceBefore=18, textColor=GOLD)
 S['ded'] = ParagraphStyle('ded', fontName='Book-Italic', fontSize=10.6, leading=16,
                           alignment=TA_CENTER, textColor=INK)
+S['motto'] = ParagraphStyle('motto', fontName='Book-Italic', fontSize=9.8,
+                            leading=14, alignment=TA_CENTER, spaceBefore=26,
+                            leftIndent=26, rightIndent=26, textColor=INK)
+S['motto_attr'] = ParagraphStyle('motto_attr', fontName='Book', fontSize=8.6,
+                                 alignment=TA_CENTER, spaceBefore=3,
+                                 textColor=GOLD)
 S['imprint'] = ParagraphStyle('imprint', fontName='Book', fontSize=8.8, leading=12.4,
                               textColor=INK, spaceAfter=3)
 S['kvl'] = ParagraphStyle('kvl', fontName='Book-BoldItalic', fontSize=8.6, leading=11,
@@ -1001,6 +1007,9 @@ def blocks_to_flow(blocks, story):
             story.append(para(b[1] + '<br/>' + b[2], S['sign']))
         elif kind == 'src':
             story.append(para('•&nbsp;' + b[1], S['src']))
+        elif kind == 'motto':
+            story.append(para(b[1], S['motto']))
+            story.append(para(b[2], S['motto_attr']))
         elif kind == 'finis':
             story.append(Spacer(1, 10))
             story.append(Ornament(120))
