@@ -1262,6 +1262,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- scene + camera ----- */
     const scene = new THREE.Scene();
+    if (import.meta.env.DEV) (window as any).__scene = scene;
     scene.background = new THREE.Color(pal.sky);
     // По-стегната мъгла = по-силна въздушна перспектива: задните скали се
     // разтварят към хоризонта и сцената получава дълбочина на план-слоеве.
@@ -2365,7 +2366,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- resize ----- */
     function resize() {
-      const w = mount.clientWidth, h = mount.clientHeight;
+      // ||1 пази от 0×0 колабирал панел: aspect=NaN се самозадържа в
+      // lerp-натата камера (lerp(NaN,x)=NaN) дори след връщане на размера.
+      const w = mount.clientWidth || 1, h = mount.clientHeight || 1;
       if (renderer) renderer.setSize(w, h, false);
       if (composer) composer.setSize(w, h);
       camera.aspect = w / h;
@@ -2557,8 +2560,6 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- main loop ----- */
     let last = performance.now();
-    (window as any).__loopCount = ((window as any).__loopCount || 0) + 1;
-    const __loopId = (window as any).__loopCount;
     function tick(now: number) {
       const frameMs = now - last;          // real (uncapped) frame time
       // Флор при 0: rAF `now` може да е с различен произход спрямо
@@ -2568,7 +2569,6 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // кара intro.t да върви назад, тъй че intro никога не завършва.
       const rawDt = Math.max(0, Math.min(0.05, frameMs / 1000));
       last = now;
-      { const w = window as any; w.__ticks = w.__ticks || {}; w.__ticks[__loopId] = (w.__ticks[__loopId] || 0) + 1; w.__lastDt = rawDt; w.__minDt = Math.min(w.__minDt ?? 999, frameMs / 1000); w.__introT = introRef.current.t; }
       adaptiveResolution(frameMs > 0 && frameMs < 1000 ? frameMs : 16);
 
       // Hit-stop freezes simulation for a few frames (camera + bloom still tick).
@@ -2774,6 +2774,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       camTargetX = Math.max(-4.5, Math.min(4.5, camTargetX));
       camTargetY = Math.max(0.8, Math.min(6.0, camTargetY));
       camTargetZ = Math.max(4.0, Math.min(12.0, camTargetZ));
+      // Aspect-осъзнат под на push-in разстоянието: по време на атака
+      // хореографът дърпа камерата навътре, а бойците лунжат до ~±2.6. На
+      // ТЕСЕН/портретен viewport (по-малко хоризонтално поле) същият push-in
+      // изхвърля лунжиращия боец извън кадър. Затова не пускаме камерата
+      // по-близо от дистанцията, при която полу-широчината (боец+lunge+поле)
+      // се събира хоризонтално за текущите fov/aspect. На широк панел това е
+      // малко число → push-in-ът остава свободен; на тесен → спира по-навън.
+      {
+        const camNow = cameraRef.current;
+        const tanH = Math.tan(((camNow ? camNow.fov : FRAME_FOV) * Math.PI) / 180 / 2);
+        const aspect = camNow ? camNow.aspect : 1.78;
+        const minZ = 3.5 / (tanH * Math.max(0.3, aspect));
+        camTargetZ = Math.max(camTargetZ, Math.min(minZ, 9.5));
+      }
 
       const cam = cameraRef.current!;
       const s = shakeRef.current;
@@ -2801,7 +2815,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.position.z = Math.max(3.5, cam.position.z);
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
-      (window as any).__camDbg = { p: [cam.position.x, cam.position.y, cam.position.z], fov: cam.fov, anchor: { ...camAnchorRef.current }, introActive: introRef.current.active, playing: choreoRef.current?.isPlaying(), aspect: cam.aspect, hero: heroRigRef.current ? [heroRigRef.current.position.x, heroRigRef.current.position.y, heroRigRef.current.position.z] : null, foe: foeRigRef.current ? [foeRigRef.current.position.x, foeRigRef.current.position.y, foeRigRef.current.position.z] : null };
+      if (import.meta.env.DEV) {
+        (window as any).__cam = cam;
+        (window as any).__camDbg = { p: [cam.position.x, cam.position.y, cam.position.z], fov: cam.fov, anchor: { ...camAnchorRef.current }, introActive: introRef.current.active, playing: choreoRef.current?.isPlaying(), aspect: cam.aspect, hero: heroRigRef.current ? [heroRigRef.current.position.x, heroRigRef.current.position.y, heroRigRef.current.position.z] : null, foe: foeRigRef.current ? [foeRigRef.current.position.x, foeRigRef.current.position.y, foeRigRef.current.position.z] : null };
+      }
 
       // Floating HUD projection — anchor each health bar above its rig's
       // head by projecting a world point to screen space. Runs every
@@ -3011,6 +3028,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           if (root) try { mixer.uncacheRoot(root); } catch {}
           ref.current = null;
         }
+      }
+      // КРИТИЧНО (fix _cacheIndex crash): нулираме и rig ref-овете + чистим
+      // кешираните combatActions. uncacheRoot по-горе разваля bindings-ите на
+      // тези action-и; ако при смяна на регион новият риг още се зарежда
+      // (async GLB), heroRigRef/foeRigRef иначе продължават да сочат СТАРИЯ,
+      // uncache-нат риг. Атака в този прозорец кара хореографа да извика
+      // action.play() върху счупените bindings → three хвърля
+      // „Cannot set properties of undefined (setting '_cacheIndex')". С
+      // нулиране rigCrossfade вижда rig=null и коректно нищо не прави, докато
+      // новият риг се появи.
+      for (const rigRef of [heroRigRef, foeRigRef]) {
+        const rig = rigRef.current as any;
+        if (rig?.userData) { rig.userData.combatActions = undefined; rig.userData.combatCurrent = undefined; }
+        rigRef.current = null;
       }
       try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}
       scene.traverse((obj) => {
