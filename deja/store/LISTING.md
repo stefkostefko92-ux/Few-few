@@ -4,8 +4,8 @@
 допълнителен. Пакетът: `npm run zip` → `release/deja-<версия>.zip`.
 
 **Скрийншоти:** CWS приема САМО 1280×800 или 640×400. За основния (EN) листинг
-качи `search-en.png`, `options-en.png`, `welcome-en.png`; за BG езиковия таб —
-`search-bg.png`, `options-bg.png`, `welcome-bg.png` (всички 1280×800 в
+качи `search-en.png`, `memory-en.png`, `options-en.png`, `welcome-en.png`; за BG езиковия таб —
+`search-bg.png`, `memory-bg.png`, `options-bg.png`, `welcome-bg.png` (всички 1280×800 в
 `store/screenshots/`). `popup-*`, `landing-*` НЕ са store скрийншоти.
 
 **Privacy policy URL:** https://deja.carbonstealth.eu/privacy (английска,
