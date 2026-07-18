@@ -39,6 +39,7 @@ export default function Leaderboard(): React.ReactElement {
       </div>
 
       {tab === 'arena' && (
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
@@ -77,6 +78,7 @@ export default function Leaderboard(): React.ReactElement {
             )}
           </tbody>
         </table>
+        </div>
       )}
 
       {tab === 'season' && season && (
@@ -102,6 +104,7 @@ export default function Leaderboard(): React.ReactElement {
               {season.last_season.podium.map((p) => `#${p.rank} ${p.name}`).join(' · ')}
             </div>
           )}
+          <div className="table-scroll">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
@@ -133,6 +136,7 @@ export default function Leaderboard(): React.ReactElement {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

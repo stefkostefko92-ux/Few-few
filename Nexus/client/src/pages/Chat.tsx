@@ -117,7 +117,7 @@ export default function Chat(): React.ReactElement {
   return (
     <div>
       <h1 className="page-title">{t('chat.title', { defaultValue: 'Chat' })}</h1>
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="chat-grid" style={{ display: 'grid', gridTemplateColumns: '220px minmax(0, 1fr)', gap: 16, alignItems: 'start' }}>
         {/* Канали + DM списък */}
         <div className="card" style={{ padding: 8 }}>
           <div className="muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, padding: '6px 8px' }}>{t('chat.channels', { defaultValue: 'Channels' })}</div>

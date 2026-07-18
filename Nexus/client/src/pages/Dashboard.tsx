@@ -55,14 +55,14 @@ export default function Dashboard(): React.ReactElement {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
             <div className="tag" style={{ background: 'rgba(232,90,79,.12)', color: 'var(--crimson-1)', textAlign: 'center' }} title={t('dashboard.physDmgTip')}>{t('dashboard.pDmg')} +{derived.phys_dmg || 0}</div>
             <div className="tag" style={{ background: 'rgba(214,161,61,.12)', color: 'var(--gold-1)', textAlign: 'center' }} title={t('dashboard.physDefTip')}>{t('dashboard.pDef')} +{derived.phys_def || 0}</div>
             <div className="tag" style={{ background: 'rgba(194,148,255,.12)', color: '#c294ff', textAlign: 'center' }} title={t('dashboard.magDmgTip')}>{t('dashboard.mDmg')} +{derived.mag_dmg || 0}</div>
             <div className="tag" style={{ background: 'rgba(106,167,255,.12)', color: 'var(--azure-1)', textAlign: 'center' }} title={t('dashboard.magDefTip')}>{t('dashboard.mDef')} +{derived.mag_def || 0}</div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
             <BarRow label={t('dashboard.experience')} pct={pct} text={`${char.xp - xpCurrent} / ${xpForNext - xpCurrent}`} kind="xp" />
             <BarRow label={t('dashboard.health')} pct={(char.hp / char.hp_max) * 100} text={`${char.hp} / ${char.hp_max}`} kind="hp" />
             <BarRow label={t('dashboard.mana')} pct={(char.mp / char.mp_max) * 100} text={`${char.mp} / ${char.mp_max}`} kind="mp" />
