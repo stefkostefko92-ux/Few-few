@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-17",
+    "updated": "2026-07-18",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -9484,6 +9484,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-18",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В rAF loop винаги флорирай delta при 0: `Math.max(0, Math.min(cap, (now-last)/1000))`. …\" (+2)"
+        },
         {
           "date": "2026-07-17",
           "type": "learning",
