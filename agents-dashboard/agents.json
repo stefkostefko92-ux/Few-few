@@ -1506,9 +1506,20 @@
           "date": "2026-07-17",
           "event": "v13.6 — учене",
           "detail": "Научи: zabobovdol гейтове минават чисти на актуалния клон: tsc EXIT 0, eslint EXIT 0, tsx --te… (+3 още)"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-07-18",
+          "event": "Научи contact-form→Gmail SMTP патърна",
+          "detail": "Усвои патърна от PR#15 (cs-revolution/api): fallback верига (PHPMailer→native SMTP→mail()→файл-лог, никога не губи lead), native smtp-native.php механика (AUTH LOGIN, STARTTLS/SSL, MIME, dot-stuffing, verify_peer), header-injection guard cs_hdr_safe, anti-spoofing From/Reply-To, анти-abuse (honeypot/rate-limit/reCAPTCHA/CORS), cs_client_ip=REMOTE_ADDR + HMAC псевдоним. +6 проверени поуки."
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-18",
+          "type": "learning",
+          "summary": "Научи contact-form→Gmail SMTP патърна (PR#15): fallback верига, native SMTP, header-injection guard, anti-spoof, анти-abuse — +6 проверени поуки → v14.2."
+        },
         {
           "date": "2026-07-17",
           "type": "learning",
