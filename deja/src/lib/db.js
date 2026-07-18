@@ -200,17 +200,32 @@ export async function exportAll() {
   };
 }
 
+// Архивът е НЕДОВЕРЕН вход (файл от диска). urlKey става link.href в UI-то —
+// пускаме само http(s), иначе подхвърлен архив може да вкара javascript: линк.
+function safeUrlKey(urlKey) {
+  return typeof urlKey === 'string' && /^https?:\/\//.test(urlKey);
+}
+
 export async function importAll(dump) {
   if (dump?.format !== 'deja-memory' || dump.version !== 2) {
     throw new Error('непознат формат на архива');
   }
   const db = await open();
   const tx = db.transaction(['pages', 'chunks', 'pagevecs'], 'readwrite');
-  for (const page of dump.pages || []) tx.objectStore('pages').put(page);
-  for (const chunk of dump.chunks || []) tx.objectStore('chunks').put(chunk);
+  let imported = 0;
+  for (const page of dump.pages || []) {
+    if (!safeUrlKey(page?.urlKey)) continue;
+    tx.objectStore('pages').put(page);
+    imported++;
+  }
+  for (const chunk of dump.chunks || []) {
+    if (!safeUrlKey(chunk?.urlKey)) continue;
+    tx.objectStore('chunks').put(chunk);
+  }
   for (const pv of dump.pagevecs || []) {
+    if (!safeUrlKey(pv?.urlKey) || !Array.isArray(pv.data)) continue;
     tx.objectStore('pagevecs').put({ ...pv, data: new Float32Array(pv.data) });
   }
   await done(tx);
-  return (dump.pages || []).length;
+  return imported;
 }
