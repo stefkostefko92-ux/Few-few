@@ -351,7 +351,7 @@ function OverviewTab({ data }: { data: GuildData }) {
       <div>
         <h3 style={{ marginBottom: 10 }}>{t('guild.overview.activeBonuses')}</h3>
         <div className="guild-bonus-list">
-          <BonusRow icon="✨" label={t('guild.overview.xpGain')} value={`+${Math.round((bonus.xp_multiplier - 1) * 100)}%`} />
+          <BonusRow icon="✨" label={t('guild.overview.xpGain')} value={`+${Math.round(((bonus.exp_multiplier ?? 1) - 1) * 100)}%`} />
           <BonusRow icon="💰" label={t('guild.overview.goldGain')} value={`+${Math.round((bonus.gold_multiplier - 1) * 100)}%`} />
           {bonus.crit_bonus > 0 && <BonusRow icon="🗡" label={t('guild.overview.critChance')} value={`+${Math.round(bonus.crit_bonus * 100)}%`} />}
           {bonus.dodge_bonus > 0 && <BonusRow icon="🌀" label={t('guild.overview.dodgeChance')} value={`+${Math.round(bonus.dodge_bonus * 100)}%`} />}
