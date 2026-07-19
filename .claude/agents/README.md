@@ -53,6 +53,11 @@ remember. The loop is **read → act → verify → persist → curate**: a `Sub
 the agent ends every turn with a strict, self-identifying ```learn block; a `SubagentStop` hook
 (`.claude/hooks/memory-capture.mjs`) parses it from the transcript and persists it — **verified
 lessons → memory, everything else → a `Карантина` (quarantine) section that is never read as fact** —
+</br>Alongside memory, the `SubagentStart` hook injects **two shared doctrines into every agent** so the
+fleet *acts the same way and chains reliably*: `_memory/SECURITY.md` (state-level security doctrine) and
+`_memory/PROCEDURE.md` (**one lifecycle** — Orient → verify-live → Act → Self-check → **Hand off** — plus
+global red lines and a **typed HANDOFF contract**). Named cross-agent flows (lead · pipeline · escalation)
+live in `.claude/agents/_orchestration.md` (v4.0); `oversee.mjs` hard-gates on both doctrines' presence.
 deduping as it goes (works even for the read-only auditors that can't write files themselves) and
 also **appending a learning entry to that agent's activity feed in the dashboard** (`agents.json` +
 the embedded FALLBACK in `index.html`, atomic write + lock) and **bumping the agent's version**

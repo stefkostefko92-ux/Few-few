@@ -50,7 +50,7 @@ const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
 
 // „Не-агентски" файлове в директориите
 const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
-const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md"]);
+const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md"]);
 
 // --- Събери източниците на истина ---
 const defIds = new Set(readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !NOT_AGENT_DEF.has(f)).map((f) => f.replace(/\.md$/, "")));
@@ -73,6 +73,11 @@ try {
 }
 
 const securityDoctrine = existsSync(join(MEM_DIR, "SECURITY.md"));
+// Общата процедура (единен цикъл + red lines + HANDOFF), инжектирана във всеки агент — задължителна.
+const procedureDoctrine = (() => {
+  const f = join(MEM_DIR, "PROCEDURE.md");
+  return existsSync(f) && sectionBullets(readFileSync(f, "utf8"), "Процедура").length > 0;
+})();
 
 // FALLBACK === agents.json ?  (балансираният парсер е изнесен в oversee-lib за тестваемост)
 let fallbackOk = null;
@@ -135,6 +140,7 @@ const team = [];
 if (fallbackOk === false) { team.push({ level: "hard", msg: "FALLBACK в index.html НЕ съвпада с agents.json" }); hardFails++; }
 if (fallbackOk === null) { team.push({ level: "warn", msg: "не намерих FALLBACK блок в index.html" }); warns++; }
 if (!securityDoctrine) { team.push({ level: "hard", msg: "липсва доктрината _memory/SECURITY.md (инжектира се във всеки агент)" }); hardFails++; }
+if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва общата процедура _memory/PROCEDURE.md (единен цикъл + HANDOFF, инжектира се във всеки агент)" }); hardFails++; }
 
 // --- тренд: сравни с предишна снимка (по избор) → регресии ---
 const trend = [];
@@ -165,7 +171,7 @@ if (snapshotArg) {
 }
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine } }, null, 2));
+  console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, null, 2));
   process.exit(hardFails ? 1 : 0);
 }
 
@@ -179,6 +185,6 @@ for (const r of report) {
 }
 if (team.length) { console.log("\n— екип —"); team.forEach((t) => console.log(`  ${t.level === "hard" ? "✗" : "▲"} ${t.msg}`)); }
 if (trend.length) { console.log("\n— тренд —"); trend.forEach((t) => console.log(`  ▲ ${t.msg}`)); }
-console.log(`\nИтог: ${report.length} агента · ${hardFails} твърди · ${warns} предупреждения · FALLBACK ${fallbackOk ? "ok" : fallbackOk === false ? "РАЗСИНХРОН" : "?"} · доктрина ${securityDoctrine ? "ok" : "ЛИПСВА"}`);
+console.log(`\nИтог: ${report.length} агента · ${hardFails} твърди · ${warns} предупреждения · FALLBACK ${fallbackOk ? "ok" : fallbackOk === false ? "РАЗСИНХРОН" : "?"} · доктрина ${securityDoctrine ? "ok" : "ЛИПСВА"} · процедура ${procedureDoctrine ? "ok" : "ЛИПСВА"}`);
 console.log(hardFails ? "СТАТУС: има твърди проблеми — виж ✗ по-горе." : "СТАТУС: екипът е здрав.");
 process.exit(hardFails ? 1 : 0);

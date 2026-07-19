@@ -51,6 +51,20 @@ function securityDoctrine() {
   );
 }
 
+// Общата ПРОЦЕДУРА — инжектира се на ВСЕКИ наш агент, за да процедира по един и същ начин и
+// да се навързва с останалите (единен цикъл + глобални red lines + типизиран HANDOFF). Един източник.
+function procedureDoctrine() {
+  const f = join(MEM_DIR, "PROCEDURE.md");
+  if (!existsSync(f)) return "";
+  const bullets = bulletsUnder(f, /^##\s*Процедура/);
+  if (!bullets.length) return "";
+  return (
+    `⚙ ОБЩА ПРОЦЕДУРА (задължителна за всеки агент — процедирай по този единен цикъл и се ` +
+    `навързвай по типизирания HANDOFF; потоците са в _orchestration.md):\n` +
+    bullets.join("\n")
+  );
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
@@ -61,11 +75,14 @@ function main() {
 
   // 1) Доктрината за сигурност — за ВСЕКИ наш агент, дори с празна памет.
   const doctrine = securityDoctrine();
+  // 1b) Общата процедура — за ВСЕКИ наш агент (единен цикъл + red lines + HANDOFF).
+  const procedure = procedureDoctrine();
   // 2) Личната проверена памет на агента (ако има).
   const lessons = verifiedSection(file).slice(0, MAX_LESSONS);
 
   const parts = [];
   if (doctrine) parts.push(doctrine);
+  if (procedure) parts.push(procedure);
   if (lessons.length) {
     parts.push(
       `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n` +
