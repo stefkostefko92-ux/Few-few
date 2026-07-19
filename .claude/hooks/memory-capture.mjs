@@ -14,7 +14,7 @@
 import { readFileSync, existsSync, writeFileSync, renameSync, mkdirSync, rmdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -130,7 +130,7 @@ function atomicWrite(file, content) {
 
 // Сериен достъп до таблото — оцелява при паралелни субагенти. mkdir е атомичен.
 function withLock(fn) {
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 150; i++) {
     try { mkdirSync(LOCK_DIR); } catch { sleepMs(40); continue; }
     try { return fn(); } finally { try { rmdirSync(LOCK_DIR); } catch { /* ignore */ } }
   }
@@ -238,34 +238,31 @@ function updateDashboard(agentId, entry, evoDetail) {
   }
 }
 
-// Авто-commit (само паметта на агента + таблото) — локално и бързо. Без помитане на чужди промени.
-function gitCommitLocal(agentId) {
+// Целият git-критичен участък (add + commit + push) под ЕДИН flock — сериализира се между
+// ВСИЧКИ паралелни hook-ове. Иначе два detached `git pull --rebase --autostash` се стъпват
+// (местят HEAD/индекса едновременно) и губят commit-и — точно бъгът, при който паралелни
+// агенти губеха поуки. flock -w 120 ЧАКА реда си (не „пропуска" като mkdir-lock при контенция).
+// Detached: не блокира hook-а (SubagentStop има timeout). Push политика: на канона (main/master)
+// не пушва сам (влиза през човек/CI/PR — verified-гейтът е синтактичен), освен AGENT_MEMORY_PUSH_MAIN=1.
+function bgGitSync(agentId) {
   if (!/^[\w-]+$/.test(agentId)) return; // sanity срещу инжекция в командата
+  const lock = join(PROJECT_DIR, "agents-dashboard", ".git-sync.lock");
+  const pushMain = process.env.AGENT_MEMORY_PUSH_MAIN === "1" ? "1" : "0";
+  const script = [
+    `exec 9>"${lock}" 2>/dev/null || exit 0`,
+    `flock -w 120 9 || exit 0`,                        // изчакай реда си (до 120с), после се откажи тихо
+    `cd "${PROJECT_DIR}" || exit 0`,
+    `git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html" 2>/dev/null`,
+    `git diff --cached --quiet 2>/dev/null && exit 0`, // нищо staged → нищо за commit
+    `git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
+    `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
+    `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
+    `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,
+  ].join("\n");
   try {
-    execSync(`git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html"`,
-      { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
-    try { execSync("git diff --cached --quiet", { cwd: PROJECT_DIR, stdio: "ignore" }); return; } // нищо staged → нищо за commit
-    catch { /* има staged промени → commit */ }
-    execSync(`git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло"`,
-      { cwd: PROJECT_DIR, stdio: "ignore", timeout: 10000 });
-  } catch { /* никога не блокирай агента заради git */ }
-}
-
-// Push във ФОН (detached) — не блокира hook-а; при non-fast-forward прави rebase и пробва пак.
-// ГЕЙТ (сигурност): verified-гейтът е синтактичен → лоша/полу-отровена поука може да мине.
-// Затова НЕ пушваме автономно към КАНОНА (main/master) — там влиза само през човек/CI/PR.
-// На работни клонове (PR) авто-push е ОК (там има ревю преди merge). Override за спешност:
-// AGENT_MEMORY_PUSH_MAIN=1. Локалният commit винаги става — просто не лети сам в main.
-function bgPush() {
-  try {
-    let branch = "";
-    try { branch = execSync("git rev-parse --abbrev-ref HEAD", { cwd: PROJECT_DIR }).toString().trim(); } catch { /* detached/грешка */ }
-    const isCanon = branch === "main" || branch === "master";
-    if (isCanon && process.env.AGENT_MEMORY_PUSH_MAIN !== "1") return; // commit-нато локално; човек/CI пушва
-    const child = spawn("sh", ["-c", "git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)"],
-      { cwd: PROJECT_DIR, detached: true, stdio: "ignore" });
+    const child = spawn("sh", ["-c", script], { cwd: PROJECT_DIR, detached: true, stdio: "ignore", env: process.env });
     child.unref();
-  } catch { /* ignore */ }
+  } catch { /* никога не блокирай агента заради git */ }
 }
 
 function main() {
@@ -320,12 +317,10 @@ function main() {
   const evoDetail = newVerified.length
     ? `Научи: ${trim(newVerified[0])}${newVerified.length > 1 ? ` (+${newVerified.length - 1} още)` : ""}`
     : null;
-  // Таблото + локален commit под един lock (бързи, локални операции); push-ът е във фон.
-  withLock(() => {
-    updateDashboard(parsed.agent, activity, evoDetail);
-    gitCommitLocal(parsed.agent);
-  });
-  bgPush();
+  // Таблото (локален JSON запис) под mkdir-lock; целият git участък (add+commit+push) отива
+  // в ЕДИН flock-guarded detached процес → сериализиран между всички паралелни агенти, без загуба.
+  withLock(() => { updateDashboard(parsed.agent, activity, evoDetail); });
+  bgGitSync(parsed.agent);
 
   process.exit(0);
 }

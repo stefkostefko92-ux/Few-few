@@ -7,3 +7,5 @@ HANDOFF-*.md
 HANDOVER-*.md
 handoff.md
 .tmp/
+agents-dashboard/.git-sync.lock
+agents-dashboard/.sync.lock
