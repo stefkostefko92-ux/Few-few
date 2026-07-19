@@ -46,5 +46,9 @@ jobs:
         run: node --version
       - name: Надзор над екипа (fail-closed — изход 1 при твърд проблем)
         run: node tools/agents/oversee.mjs
-      - name: Тестове на надзорната логика
+      - name: Golden eval — структурна валидност на spec-овете (без агент)
+        run: node tools/agents/evals/eval.mjs --check
+      - name: Покритие на домейни (картата не сочи несъществуващи агенти)
+        run: node tools/agents/coverage.mjs --json > /dev/null
+      - name: Тестове на надзорната логика + скорера + рубриката
         run: node --test $(find tools -name '*.test.mjs')

@@ -61,10 +61,11 @@ function parseLearn(block) {
     let m;
     if ((m = line.match(/^\s*agent:\s*(.+)$/))) res.agent = m[1].trim().replace(/^["']|["']$/g, "");
     else if ((m = line.match(/^\s*date:\s*(.+)$/))) res.date = m[1].trim();
-    else if ((m = line.match(/^\s*-\s*text:\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "" }; res.lessons.push(cur); }
+    else if ((m = line.match(/^\s*-\s*text:\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
     else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = m[1].trim().toLowerCase();
     else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = m[1].trim();
     else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
+    else if (cur && (m = line.match(/^\s*re-?verify:\s*(\d{4}-\d{2}-\d{2}).*$/i))) cur.reverify = m[1].trim(); // #2 явен TTL за критичен факт
   }
   return res;
 }
@@ -297,7 +298,7 @@ function main() {
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).
     let confidence = String(les.confidence || "").toLowerCase();
     if (confidence === "verified" && !sourceIsReal(les.source)) confidence = "unverified";
-    const entry = `- **${date}:** ${les.text} _(${les.scope || "общо"}; ${confidence}; ${les.source})_`;
+    const entry = `- **${date}:** ${les.text} _(${les.scope || "общо"}; ${confidence}; ${les.source}${les.reverify ? `; re-verify: ${les.reverify}` : ""})_`;
     if (existingNorm.has(norm(entry)) || [...existingNorm].some((e) => e.includes(norm(les.text)))) continue;
     const verified = confidence === "verified";
     txt = insertUnder(txt, verified ? "Проверени поуки" : "Карантина", entry);

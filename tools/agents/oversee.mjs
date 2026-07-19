@@ -49,6 +49,13 @@ const baselineArg = flagVal("--baseline");
 const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
 const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
 
+// #4 постнота на дефиницията: раздутото разрежда адхеренцията (както „CLAUDE.md < 200 реда").
+// Праг над реалното p75 (~144) — флагва само истинските извънредни случаи, не всекидневния ръст.
+const DEF_LINE_WARN = 200;
+// #2 явна повторна проверка: поука може да носи „re-verify: YYYY-MM-DD"; минала дата → застаряла,
+// независимо дали е време-чувствителна по регекс. Дава ръчен контрол над TTL за критични факти.
+const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
+
 // „Не-агентски" файлове в директориите
 const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
 const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md"]);
@@ -116,11 +123,17 @@ for (const id of allIds) {
     for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccard(verified[i], verified[j]) >= MERGE_THRESHOLD) dup++;
     r.dups = dup;
     if (dup) r.warn.push(`${dup} почти-дубли (Jaccard ≥${MERGE_THRESHOLD}) → curate --merge-dups`);
-    // застарели
+    // застарели: време-чувствителни >STALE_DAYS, ИЛИ с явна минала „re-verify:" дата (#2)
     let stale = 0;
-    for (const b of verified) { const d = lessonDate(b); if (d && TIME_SENSITIVE.test(b) && daysSince(d, TODAY) > STALE_DAYS) stale++; }
+    for (const b of verified) {
+      const d = lessonDate(b);
+      const rv = b.match(REVERIFY_RE);
+      const explicitDue = rv && daysSince(rv[1], TODAY) > 0;
+      const implicitStale = d && TIME_SENSITIVE.test(b) && daysSince(d, TODAY) > STALE_DAYS;
+      if (explicitDue || implicitStale) stale++;
+    }
     r.stale = stale;
-    if (stale) r.warn.push(`${stale}/${verified.length} застарели време-чувствителни поуки (>${STALE_DAYS}д)`);
+    if (stale) r.warn.push(`${stale}/${verified.length} застарели поуки (време-чувствителни >${STALE_DAYS}д или с минала re-verify дата)`);
     // карантината надвишава проверените → самообучаващият цикъл затлачва (гейтът реже повече, отколкото минава)
     if (quarantine.length > verified.length) r.warn.push(`карантина (${quarantine.length}) надвишава проверените (${verified.length}) — цикълът затлачва`);
     // версия vs поуки (само сигнал; засетите на mastery агенти може да имат по-малко)
@@ -130,6 +143,12 @@ for (const id of allIds) {
       r.version = ver;
       if (+ver.split(".")[0] < 10) r.warn.push(`версия ${ver} < v10 (mastery)`);
     }
+  }
+  // #4 постнота на дефиницията — историческите „## vX.Y" секции трябва да слизат в паметта/докове
+  if (hasDef) {
+    const defLines = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8").split("\n").length;
+    r.defLines = defLines;
+    if (defLines > DEF_LINE_WARN) r.warn.push(`дефиниция ${defLines} реда (>${DEF_LINE_WARN}) — раздутото разрежда адхеренцията; премести исторически „vX.Y" секции в паметта/докове`);
   }
   if (r.hard.length) hardFails += r.hard.length;
   if (r.warn.length) warns += r.warn.length;
@@ -183,7 +202,7 @@ if (JSON_OUT) {
 console.log(`\n🏛  Надзор над агентския екип — ${report.length} агента (${TODAY})\n`);
 for (const r of report) {
   const badge = r.hard.length ? "✗" : r.warn.length ? "▲" : "✓";
-  const stats = r.lessons != null ? ` [${r.lessons} поуки${r.quarantine ? `, ${r.quarantine} каран.` : ""}${r.version ? `, v${r.version}` : ""}]` : "";
+  const stats = r.lessons != null ? ` [${r.lessons} поуки${r.quarantine ? `, ${r.quarantine} каран.` : ""}${r.version ? `, v${r.version}` : ""}${r.defLines ? `, ${r.defLines}р деф` : ""}]` : "";
   console.log(`${badge} ${r.id}${stats}`);
   r.hard.forEach((h) => console.log(`    ✗ ${h}`));
   r.warn.forEach((w) => console.log(`    ▲ ${w}`));
