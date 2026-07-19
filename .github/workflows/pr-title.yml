@@ -1,0 +1,30 @@
+# Гейт за conventional PR заглавие (Конвейерът). Без външен action — само bash проверка на
+# заглавието от event контекста. Least-privilege (само чете), отменя предходен ран за същия PR.
+name: pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventional:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Провери conventional заглавие
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "PR заглавие: $TITLE"
+          if printf '%s' "$TITLE" | grep -qE '^(feat|fix|chore|docs|refactor|perf|test|build|ci|style|revert)(\(.+\))?!?: .+'; then
+            echo "OK — conventional."
+          else
+            echo "::error::Заглавието трябва да е conventional: type(scope): описание — type ∈ feat|fix|chore|docs|refactor|perf|test|build|ci|style|revert (напр. 'fix(medqr): …')"
+            exit 1
+          fi

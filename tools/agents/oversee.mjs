@@ -40,6 +40,7 @@ const DEFAULT_SNAP = join(MEM_DIR, ".oversee-snapshot.json");
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
+const STRICT = argv.includes("--strict"); // exit≠0 и при предупреждения (за CI, който иска нулев дрейф)
 // стойност на флаг с по избор аргумент: път след флага (ако не е нов флаг), иначе true, иначе null
 const flagVal = (name) => { const i = argv.indexOf(name); return i < 0 ? null : (argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : true); };
 const snapshotArg = flagVal("--snapshot");
@@ -141,6 +142,10 @@ if (fallbackOk === false) { team.push({ level: "hard", msg: "FALLBACK в index.h
 if (fallbackOk === null) { team.push({ level: "warn", msg: "не намерих FALLBACK блок в index.html" }); warns++; }
 if (!securityDoctrine) { team.push({ level: "hard", msg: "липсва доктрината _memory/SECURITY.md (инжектира се във всеки агент)" }); hardFails++; }
 if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва общата процедура _memory/PROCEDURE.md (единен цикъл + HANDOFF, инжектира се във всеки агент)" }); hardFails++; }
+// Fail-loud при ТОЧЕН сблъсък (не near-dup): два агента с еднакъв accent/name чупят разпознаваемостта.
+const dupKey = (k) => { const seen = new Set(), dups = new Set(); for (const a of aj.agents) { const v = a[k]; if (v == null) continue; if (seen.has(v)) dups.add(v); else seen.add(v); } return [...dups]; };
+for (const acc of dupKey("accent")) { team.push({ level: "hard", msg: `дублиран accent „${acc}" при два агента — сменѝ единия` }); hardFails++; }
+for (const nm of dupKey("name")) { team.push({ level: "hard", msg: `дублирано име „${nm}" при два агента` }); hardFails++; }
 
 // --- тренд: сравни с предишна снимка (по избор) → регресии ---
 const trend = [];
@@ -172,7 +177,7 @@ if (snapshotArg) {
 
 if (JSON_OUT) {
   console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, null, 2));
-  process.exit(hardFails ? 1 : 0);
+  process.exit(hardFails || (STRICT && warns) ? 1 : 0);
 }
 
 console.log(`\n🏛  Надзор над агентския екип — ${report.length} агента (${TODAY})\n`);
@@ -187,4 +192,4 @@ if (team.length) { console.log("\n— екип —"); team.forEach((t) => consol
 if (trend.length) { console.log("\n— тренд —"); trend.forEach((t) => console.log(`  ▲ ${t.msg}`)); }
 console.log(`\nИтог: ${report.length} агента · ${hardFails} твърди · ${warns} предупреждения · FALLBACK ${fallbackOk ? "ok" : fallbackOk === false ? "РАЗСИНХРОН" : "?"} · доктрина ${securityDoctrine ? "ok" : "ЛИПСВА"} · процедура ${procedureDoctrine ? "ok" : "ЛИПСВА"}`);
 console.log(hardFails ? "СТАТУС: има твърди проблеми — виж ✗ по-горе." : "СТАТУС: екипът е здрав.");
-process.exit(hardFails ? 1 : 0);
+process.exit(hardFails || (STRICT && warns) ? 1 : 0);
