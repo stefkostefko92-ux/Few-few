@@ -11,7 +11,15 @@ const MAX_FAILS = 8;
 const attempts = new Map<string, { count: number; first: number }>();
 
 function clientIp(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  // Prefer X-Real-IP: nginx sets it to $remote_addr (the real peer), so it can't
+  // be spoofed by the client. X-Forwarded-For is $proxy_add_x_forwarded_for, whose
+  // FIRST element is attacker-controlled — taking it would let a rotating header
+  // defeat the rate limit. Fall back to the LAST XFF hop, then "unknown".
+  return (
+    req.headers.get("x-real-ip")?.trim() ||
+    req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ||
+    "unknown"
+  );
 }
 
 function isBlocked(ip: string): boolean {
