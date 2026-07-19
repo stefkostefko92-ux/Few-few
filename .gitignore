@@ -1,3 +1,9 @@
 node_modules/
 .DS_Store
 .oversee-snapshot.json
+*-mockup.html
+*-designs.html
+HANDOFF-*.md
+HANDOVER-*.md
+handoff.md
+.tmp/
