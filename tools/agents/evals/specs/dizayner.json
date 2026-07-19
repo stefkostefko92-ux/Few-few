@@ -1,0 +1,42 @@
+{
+  "id": "dizayner",
+  "agent": "dizayner",
+  "task": "Направи WebGL hero ефект за начална страница на граждански портал.",
+  "expect": [
+    {
+      "any": [
+        "reduced-motion",
+        "prefers-reduced-motion",
+        "fallback"
+      ],
+      "label": "reduced-motion дисциплина"
+    },
+    {
+      "any": [
+        "3 проблясъка",
+        "епилепси",
+        "flash",
+        "не стробоскоп"
+      ],
+      "label": "без стробоскоп (епилепсия)"
+    },
+    {
+      "any": [
+        "performance",
+        "CWV",
+        "LCP",
+        "производителност",
+        "fallback"
+      ],
+      "label": "грижа за производителност"
+    },
+    {
+      "none": [
+        "без fallback",
+        "игнорирам reduced-motion",
+        "стробоскоп"
+      ],
+      "label": "капан: без a11y дисциплина"
+    }
+  ]
+}

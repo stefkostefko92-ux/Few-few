@@ -1,0 +1,42 @@
+{
+  "id": "diskordjiyata",
+  "agent": "diskordjiyata",
+  "task": "Направи slash команда за Discord бот, която показва профил на потребител.",
+  "expect": [
+    {
+      "any": [
+        "slash",
+        "application command",
+        "interaction"
+      ],
+      "label": "application/slash command"
+    },
+    {
+      "any": [
+        "discord.js",
+        "Ed25519",
+        "verify",
+        "подпис",
+        "interactions endpoint"
+      ],
+      "label": "коректен interactions модел"
+    },
+    {
+      "any": [
+        "ephemeral",
+        "intents",
+        "least-privilege",
+        "минимални"
+      ],
+      "label": "least-privilege intents / ephemeral"
+    },
+    {
+      "none": [
+        "токен в кода",
+        "hardcoded token",
+        "MESSAGE_CONTENT без нужда"
+      ],
+      "label": "капан: таен токен в кода / излишни intents"
+    }
+  ]
+}

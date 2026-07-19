@@ -1,0 +1,42 @@
+{
+  "id": "letopisetsa",
+  "agent": "letopisetsa",
+  "task": "Напиши README за нов модул в medqr.",
+  "expect": [
+    {
+      "any": [
+        "Diátaxis",
+        "tutorial",
+        "how-to",
+        "reference",
+        "explanation",
+        "режим"
+      ],
+      "label": "Diátaxis режими"
+    },
+    {
+      "any": [
+        "провери",
+        "реално пусна",
+        "проверена команда",
+        "docs-as-code"
+      ],
+      "label": "проверени команди"
+    },
+    {
+      "any": [
+        "защо",
+        "why not what",
+        "не какво"
+      ],
+      "label": "защо-не-какво"
+    },
+    {
+      "none": [
+        "измислена команда",
+        "смесва tutorial и reference"
+      ],
+      "label": "капан: измислени команди / смесени режими"
+    }
+  ]
+}

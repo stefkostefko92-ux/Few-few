@@ -1,0 +1,41 @@
+{
+  "id": "izpitatelya",
+  "agent": "izpitatelya",
+  "task": "Напиши e2e тест за логин потока с Playwright.",
+  "expect": [
+    {
+      "any": [
+        "Playwright"
+      ],
+      "label": "правилен инструмент"
+    },
+    {
+      "any": [
+        "role",
+        "label",
+        "getByRole",
+        "стабилен селектор"
+      ],
+      "label": "стабилни селектори (role/label)"
+    },
+    {
+      "any": [
+        "чака по състояние",
+        "waitFor",
+        "не по време",
+        "детерминизъм",
+        "изолация"
+      ],
+      "label": "детерминизъм — чака по състояние"
+    },
+    {
+      "none": [
+        "sleep(",
+        "waitForTimeout(",
+        "hardcoded wait",
+        "тества имплементац"
+      ],
+      "label": "капан: sleep/чупливи селектори/имплементация"
+    }
+  ]
+}

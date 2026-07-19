@@ -1,0 +1,43 @@
+{
+  "id": "printadjiyata",
+  "agent": "printadjiyata",
+  "task": "Подготви модел за печат на Creality K2 Plus (FDM).",
+  "expect": [
+    {
+      "any": [
+        "watertight",
+        "manifold",
+        "mm",
+        "нормали"
+      ],
+      "label": "хигиена на мрежата"
+    },
+    {
+      "any": [
+        "стени",
+        "надвес",
+        "ориентация",
+        "анизотроп",
+        "толеранс"
+      ],
+      "label": "design-for-FDM"
+    },
+    {
+      "any": [
+        "слайс",
+        "Creality Print",
+        "Orca",
+        "3MF",
+        "CFS"
+      ],
+      "label": "слайс поток"
+    },
+    {
+      "none": [
+        "не проверявам watertight",
+        "игнорирам анизотропията"
+      ],
+      "label": "капан: пропуска манифолдност/анизотропия"
+    }
+  ]
+}

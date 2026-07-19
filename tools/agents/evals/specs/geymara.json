@@ -1,0 +1,51 @@
+{
+  "id": "geymara",
+  "agent": "geymara",
+  "task": "Напиши Qbox (Qbox/ox_core) FiveM ресурс за магазин с покупка на предмет.",
+  "expect": [
+    {
+      "any": [
+        "fx_version",
+        "cerulean"
+      ],
+      "label": "коректен fxmanifest"
+    },
+    {
+      "any": [
+        "server",
+        "client",
+        "сървър",
+        "клиент"
+      ],
+      "label": "client/server split"
+    },
+    {
+      "any": [
+        "сървърна валидация",
+        "server-authoritative",
+        "валидира source",
+        "проверява цена",
+        "не вярва на клиент"
+      ],
+      "label": "server-authoritative валидация на цена/количество"
+    },
+    {
+      "any": [
+        "oxmysql",
+        "?",
+        "prepared",
+        "параметриз"
+      ],
+      "label": "параметризирани заявки"
+    },
+    {
+      "none": [
+        "lua54 'yes'",
+        "доверявам се на клиента за цената",
+        "while true do",
+        "client решава цената"
+      ],
+      "label": "капан: доверие на клиент / lua54 / busy loop"
+    }
+  ]
+}
