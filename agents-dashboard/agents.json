@@ -1523,9 +1523,20 @@
           "date": "2026-07-18",
           "event": "Научи contact-form→Gmail SMTP патърна",
           "detail": "Усвои патърна от PR#15 (cs-revolution/api): fallback верига (PHPMailer→native SMTP→mail()→файл-лог, никога не губи lead), native smtp-native.php механика (AUTH LOGIN, STARTTLS/SSL, MIME, dot-stuffing, verify_peer), header-injection guard cs_hdr_safe, anti-spoofing From/Reply-To, анти-abuse (honeypot/rate-limit/reCAPTCHA/CORS), cs_client_ip=REMOTE_ADDR + HMAC псевдоним. +6 проверени поуки."
+        },
+        {
+          "version": "14.3.0",
+          "date": "2026-07-19",
+          "event": "v14.3 — учене",
+          "detail": "Научи: Rate-limit по req.headers x-forwarded-for split(',')[0] е spoofable, когато nginx подав… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-19",
+          "type": "learning",
+          "summary": "Научи: „Rate-limit по req.headers x-forwarded-for split(',')[0] е spoofable, когато nginx подав…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-19",
           "type": "quarantine",
