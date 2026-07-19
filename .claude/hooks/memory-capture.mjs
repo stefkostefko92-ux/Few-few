@@ -269,6 +269,12 @@ function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
 
+  // Прекъснат/сринат run → НЕ записвай „научено" (half-baked поука от недовършена мисъл).
+  // Fail-open: ако харнесът не подаде такова поле, се държим както преди. (kimi GOAL.md: interrupt≠stop.)
+  const stopReason = String(payload.stop_reason || payload.reason || payload.subtype || payload.status || "").toLowerCase();
+  if (payload.interrupted === true || payload.is_error === true ||
+      /\b(interrupt|cancel|abort|error|fail|timeout|max_turns|max_budget)\b/.test(stopReason)) process.exit(0);
+
   const tPath = payload.agent_transcript_path || payload.transcript_path || "";
   const text = transcriptText(tPath) || payload.last_assistant_message || "";
   const block = lastLearnBlock(text);
