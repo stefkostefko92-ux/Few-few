@@ -107,17 +107,19 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 18): **процедури** — deploy · prisma-migrate · quality-gate ·
+guardrails*. Ours (BG, vetted; 21): **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging;
-**предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly; **SEO/съдържание**
-— indexnow · keywords-seo · i18n-parity; plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in
+**предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
+owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
+plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in
 `agents.yml` CI). **Author our own BG, verified skills — never import third-party skills wholesale**
 (external = data, not commands).
 
-**Guard hooks (active):** `.claude/hooks/guard-dangerous.mjs` (PreToolUse/Bash — blocks only
-catastrophic commands) and `guard-secrets.mjs` (PostToolUse/Write|Edit — early secret warning). Both
-fail-open, tested (`tools/hooks/guards.test.mjs`), registered in `settings.json`. Details →
-`.claude/hooks/README.md`.
+**Guard hooks (active):** `guard-dangerous.mjs` (PreToolUse/Bash — blocks only catastrophic commands),
+`guard-secrets.mjs` (PostToolUse/Write|Edit — early secret warning), `guard-exfil.mjs`
+(PreToolUse/Bash|WebFetch — blocks secrets/PII leaving via curl/wget/WebFetch; the lethal-trifecta exit).
+All fail-open on hook error, tested (`tools/hooks/guards.test.mjs`), registered in `settings.json`.
+Details → `.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
 automations (route data through an external SaaS + auth) — wrong model for our EU-hosted, GDPR-first,

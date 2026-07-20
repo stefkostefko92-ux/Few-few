@@ -18,6 +18,10 @@
 - **`guard-secrets.mjs`** (`PostToolUse` matcher `Write|Edit`) — ранно предупреждение, ако тъкмо записан
   файл съдържа високо-уверен секрет-шаблон (Stripe/AWS/GitHub/PEM/Slack/Google). Пропуска fixture/test/
   eval/scratch пътища. Реалният hard gate остава `tools/security/secret-scan.mjs` при commit/CI.
+- **`guard-exfil.mjs`** (`PreToolUse` matcher `Bash|WebFetch`) — блокира ИЗНАСЯНЕ на тайни/данни навън:
+  `curl`/`wget`/`nc`/… с литерален секрет, тайна env променлива, `.env` файл или пълен env dump към мрежата;
+  WebFetch към URL с секрет. Near-zero-FP (нормалните curl/git/npm минават). Затваря lethal-trifecta изхода,
+  който `guard-secrets` (само запис в repo) не покрива. Споделя secret-шаблоните с `guard-secrets.mjs`.
 
 Регистрацията (вече в settings.json):
 
