@@ -2173,7 +2173,7 @@
       "accent": "#6f7bf7",
       "tagline": "Пише сигурни, оптимизирани FiveM ресурси — сървърът е авторитетът.",
       "file": ".claude/agents/geymara.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -2888,7 +2888,7 @@
       "accent": "#e0663b",
       "tagline": "Прави сайта видим за хора и за AI отговор-машините.",
       "file": ".claude/agents/seo.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -4392,7 +4392,7 @@
       "accent": "#3aa0c9",
       "tagline": "Идемпотентно съдържание в базата — upsert, проверени факти.",
       "file": ".claude/agents/siydara.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -5814,7 +5814,7 @@
       "accent": "#d64f7a",
       "tagline": "Безпощадно точна трансформация скан → параметричен solid за карбон части.",
       "file": ".claude/agents/3d-maniac.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -6581,7 +6581,7 @@
       "accent": "#ff3d71",
       "tagline": "Максимален обхват + произвежда клипчета (ffmpeg/WhisperX) — не само съветва.",
       "file": ".claude/agents/socialdjiyata.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -7936,7 +7936,7 @@
       "accent": "#30b06a",
       "tagline": "Прави приложения, които минават ревюто и усещат нативно — без тайни в бъндъла.",
       "file": ".claude/agents/mobildjiyata.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -8548,7 +8548,7 @@
       "accent": "#f26322",
       "tagline": "Прави модели, които печатат от първия път на K2 Plus — здрави по правилната ос, без излишен support.",
       "file": ".claude/agents/printadjiyata.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -9137,7 +9137,7 @@
       "accent": "#b026ff",
       "tagline": "Изскача с нещо брутално за гледане — пълна дисциплина за сериозни сайтове, максимален спектакъл за творчески.",
       "file": ".claude/agents/dizayner.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -9951,7 +9951,7 @@
       "accent": "#1a73e8",
       "tagline": "MV3 по подразбиране: ефимерен service worker, минимални права, declarativeNetRequest, нула отдалечен код — минава ревюто от първия път.",
       "file": ".claude/agents/hromadjiyata.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -10584,7 +10584,7 @@
       "accent": "#5865f2",
       "tagline": "Event-driven и rate-limit-aware: таен токен, минимални intents, defer под 3 секунди, Ed25519 верификация на interactions.",
       "file": ".claude/agents/diskordjiyata.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -11823,7 +11823,7 @@
       "accent": "#38bdf8",
       "tagline": "Държи CI/CD бърз, зелен и сигурен: GitHub Actions, path-филтриран монорепо CI, supply-chain, релийзи.",
       "file": ".claude/agents/konveyera.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -11953,7 +11953,7 @@
       "accent": "#a3e635",
       "tagline": "Пише и притежава тестовете — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky.",
       "file": ".claude/agents/izpitatelya.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",
@@ -12081,7 +12081,7 @@
       "accent": "#e879f9",
       "tagline": "Пише README, ADR, CHANGELOG, API докове — точни, свежи, проверими (Diátaxis).",
       "file": ".claude/agents/letopisetsa.md",
-      "model": "opus",
+      "model": "sonnet",
       "status": "active",
       "tools": [
         "Read",

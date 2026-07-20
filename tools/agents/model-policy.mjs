@@ -26,6 +26,10 @@ const APPLY = argv.includes("--apply");
 const TIER_A = new Set([
   "kodadjiyata", "kachestveniyat", "pravniyat-razbirach", "ai-djiyata", "kasadjiyata",
   "treydara", "prodavacha", "tayniyat-agent", "prevodach", "analizatora", "nabludatelya",
+  // vps-adjiyata: opus остава след сравнителна проба opus↔sonnet (2026-07-19) — LLM-съдия
+  // с ВИСОКА увереност даде дълбочинна преднина на opus (реален deploy edge case, четене на
+  // deploy.sh). Продукционен деплой = дълбочината струва. Останалите tier-B минаха паритет → sonnet.
+  "vps-adjiyata",
 ]);
 const REASON = {
   A: "дълбоко разсъждение / безопасно-критично (пари·право·фискал·сигурност·клинично·стат) → opus",
