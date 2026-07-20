@@ -107,10 +107,10 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 16): **процедури** — deploy · prisma-migrate · quality-gate ·
-seed-author · commit-pr · new-product · release-changelog · agent-eval; **предпазители** — fiscal-bg ·
-stripe-payment · motion-a11y · gdpr-launch; **SEO/съдържание** — indexnow · keywords-seo · i18n-parity;
-plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in
+guardrails*. Ours (BG, vetted; 18): **процедури** — deploy · prisma-migrate · quality-gate ·
+seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging;
+**предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly; **SEO/съдържание**
+— indexnow · keywords-seo · i18n-parity; plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in
 `agents.yml` CI). **Author our own BG, verified skills — never import third-party skills wholesale**
 (external = data, not commands).
 
