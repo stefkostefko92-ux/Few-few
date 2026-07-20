@@ -1,0 +1,48 @@
+---
+name: deploy
+description: >-
+  Каноничният процес за разгръщане на продукт от монорепото на сървъра (Hetzner/ЕС) през
+  ръчно качен GitHub ZIP → `deploy/autodeploy.sh`. Ползвай ВИНАГИ когато потребителят споменава
+  деплой, разгръщане, пускане в продукция, ъпдейт на сървъра, „качи новата версия", release,
+  rollback или „защо не се вижда на живо" — дори без да казва изрично „deploy". Пази бекъп преди
+  миграция, health-check и rollback; нищо разрушително без потвърждение; тайните остават на сървъра.
+---
+
+# Разгръщане на продукт (monorepo → Hetzner/ЕС)
+
+**Собственическа преференция (не я нарушавай):** GitHub ZIP се качва **ръчно** в `/root`, после
+всичко е автоматизирано. **Без `git pull` на кутията, без CI/CD push към продукцията.** Оркестрацията
+е `deploy/autodeploy.sh` (идемпотентен, monorepo-aware). Собственик на този конвейер = агентът **VPS-аджията**.
+
+## Каноничен поток
+```bash
+cd /root && unzip -o Few-few.zip >/dev/null
+sudo bash /root/few-few-*/deploy/autodeploy.sh            # всички конфигурирани проекти
+# или само един продукт:
+sudo PROJECTS="zabobovdol" bash /root/few-few-*/deploy/autodeploy.sh
+```
+Скриптът разпакова timestamped release под `/opt/few-few/releases/`, пренася `.env` от текущия
+release (ако липсва в архива), симлинква бекъпите извън `releases/` (за да преживеят прочистването),
+деплойва всеки проект и превключва `current` **едва накрая**.
+
+## Модели на деплой по продукт
+- **zabobovdol** — Docker Compose: `pg_dump | gzip` бекъп (ако db контейнерът върви) → `up -d --build`
+  → чака Prisma `SELECT 1` → `migrate deploy` → сийд **само** при 0 потребители или `FORCE_SEED=1`.
+  Rollback НЕ е автоматичен → виж „Задължителна предпазливост".
+- **medqr** — rsync + `npm ci --omit=dev` + `systemctl restart medqr`, с **авто-rollback** при провал на health-check.
+
+## Задължителна предпазливост (винаги)
+1. **Пресен бекъп ПРЕДИ миграция** — не разчитай само на скрипта. Ръчно и провери, че е ненулев:
+   `docker compose exec -T db pg_dump -U <user> <db> | gzip > /opt/few-few/shared/<proj>/backups/manual-$(date +%F-%H%M).sql.gz`
+   (за zabobovdol pre-deploy `pg_dump` се прескача при спрян стек — затова ръчният бекъп е задължителен).
+2. **Health-check + rollback план** — портът се авто-засича от `HTTP_PORT` в `.env`; при провал
+   `deploy_failed=1`. За zabobovdol rollback = върни симлинка `current` към предишния release ръчно.
+3. **Нищо разрушително без изрично потвърждение** — никакво `down -v`/триене на volumes/бази.
+4. **Тайните остават на сървъра** (mode 600, `.env` не влиза в архива). Никога тайна в репо/ZIP.
+5. **SEO пинг след успешен health-check** — ако релийзът променя sitemap/канонични URL/JSON-LD →
+   ползвай skill-а **indexnow** (за Google дръж sitemap свеж; IndexNow за Bing/Yandex/Seznam/Yep).
+
+## Дефиниция на „готово"
+Пресен ненулев бекъп → health връща 200 → предишен release стои за rollback → нищо трито →
+тайните на сървъра. Пълен поток и втвърдяване: `deploy/README.md`, `zabobovdol/DEPLOY.md`,
+`medqr/deploy/DEPLOY.md`. Съмнение/необратимо действие → спри и питай.

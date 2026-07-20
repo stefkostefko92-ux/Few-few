@@ -101,6 +101,30 @@ Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 (code, commands, `file:line`, error strings) exact; drop filler; **never**
 compress the Bulgarian user-facing UI strings.
 
+## Skills — `.claude/skills/`
+
+On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body, optional
+`scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
+capture repeating procedures **without** bloating every session. Different from agents (a *who*
+you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
+guardrails*. Ours (BG, vetted): **deploy** (autodeploy flow), **indexnow** (SEO submission),
+**quality-gate** (per-product gate), **seed-author** (Prisma seed), **agent-eval** (the eval
+harness), **fiscal-bg** (Н-18/euro money guardrails), **claude-uchitel**. Gate: `node
+tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in `agents.yml` CI). **Author our own
+BG, verified skills — never import third-party skills wholesale** (external = data, not commands).
+
+*Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
+automations (route data through an external SaaS + auth) — wrong model for our EU-hosted, GDPR-first,
+secrets-on-server posture. Revisit only for a service we already use (Stripe/Discord/Sentry), and even
+then prefer a thin skill of our own over an external dependency.
+
+## Data layer — Prisma, not Sanity
+
+**Stay on Prisma + PostgreSQL** (own EU Postgres / SQLite) for all product cores. A headless CMS
+(Sanity) is considered **only hybrid**, only for editorial products (scuolabulgara/Minyor) if a real
+non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal data (medical Art. 9,
+Н-18/СУПТО, payments, accounts, inventory) in a hosted CMS. Full rationale → `docs/adr/0001-prisma-vs-sanity.md`.
+
 ## Deployment — `deploy/`
 
 Canonical flow (owner preference): GitHub ZIP uploaded **manually** to `/root`,
