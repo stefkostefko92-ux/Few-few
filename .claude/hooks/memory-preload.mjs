@@ -65,6 +65,18 @@ function procedureDoctrine() {
   );
 }
 
+// Споделени крос-режещи поуки — инжектират се на ВСЕКИ агент (знанието циркулира, не тъне в силоз).
+function sharedLessons() {
+  const f = join(MEM_DIR, "_shared.md");
+  if (!existsSync(f)) return "";
+  const bullets = bulletsUnder(f, /^##\s*Споделени поуки/);
+  if (!bullets.length) return "";
+  return (
+    `🔗 СПОДЕЛЕНИ ПОУКИ (крос-режещи — важат за всички агенти; ползвай ги, не ги нарушавай):\n` +
+    bullets.join("\n")
+  );
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
@@ -83,6 +95,8 @@ function main() {
   const parts = [];
   if (doctrine) parts.push(doctrine);
   if (procedure) parts.push(procedure);
+  const shared = sharedLessons();
+  if (shared) parts.push(shared);
   if (lessons.length) {
     parts.push(
       `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n` +

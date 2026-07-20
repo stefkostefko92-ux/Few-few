@@ -56,5 +56,9 @@ jobs:
         run: node tools/agents/coverage.mjs --json > /dev/null
       - name: Skills lint (frontmatter/name/тяло — fail-closed)
         run: node tools/skills/lint.mjs
+      - name: Одит за най-малки права (advisory агенти без Write/Edit)
+        run: node tools/agents/tools-audit.mjs
+      - name: Свежест на дефинициите (без просрочени срокове)
+        run: node tools/agents/def-freshness.mjs
       - name: Тестове на надзорната логика + скорера + рубриката
         run: node --test $(find tools -name '*.test.mjs')

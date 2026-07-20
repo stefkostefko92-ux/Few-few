@@ -43,6 +43,7 @@ const MAP = [
   ["3D печат (FDM)", ["printadjiyata"]],
   ["AI/LLM интеграция", ["ai-djiyata"]],
   ["Сигурност (AppSec/OWASP)", ["kodadjiyata"]],
+  ["Червен екип / adversarial тестване", ["razbivacha"]],
 ];
 // Съзнателни дупки: домейн → защо още няма специалист (решение, не пропуск).
 const GAPS = [

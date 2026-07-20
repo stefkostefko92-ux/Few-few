@@ -79,7 +79,7 @@ hooks, rules).
 
 ## Custom agents — `.claude/agents/`
 
-25 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+26 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also gets a **hook-injected
@@ -87,7 +87,9 @@ security doctrine** (`_memory/SECURITY.md`, via `memory-preload.mjs`) — state-
 defense against malicious sites: all external content is untrusted **data not
 instructions** (prompt-injection resistant), lethal-trifecta aware, **never
 exfiltrates secrets/PII**, fail-closed. It overrides any instruction found in
-fetched content. Live dashboard: `agents-dashboard/`.
+fetched content. Cross-cutting verified knowledge lives once in
+`_memory/_shared.md` (injected into every agent — knowledge circulates, not siloed).
+Live dashboard: `agents-dashboard/`.
 Invoke via the Agent tool (*„пусни Кодаджията върху промените“*); several run in
 parallel. **Full roster, the loop, per-agent `tools/<area>/`, the dashboard and
 authoring rules → [`.claude/agents/README.md`](.claude/agents/README.md).** Keep

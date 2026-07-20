@@ -15,7 +15,7 @@
 //
 // Изход код: 0 = ok/чисто; 1 = провал/невалиден spec. `--check` НИКОГА не пуска агент → безопасен за CI.
 
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreOutput, validateSpec, summarize } from "./eval-lib.mjs";
@@ -107,4 +107,13 @@ if (has("--run")) {
 }
 
 report(results);
+
+// --record: запиши обобщението в trend.jsonl (тренд на качеството във времето; git-ignored runtime).
+if (has("--record") && results.length) {
+  const s = summarize(results);
+  const stamp = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
+  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...s }) + "\n");
+  if (!JSON_OUT) console.log(dim("↳ записано в trend.jsonl (тренд на качеството)"));
+}
+
 process.exit(results.length && results.every((r) => r.ok) ? 0 : 1);

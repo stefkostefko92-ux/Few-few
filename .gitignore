@@ -11,3 +11,4 @@ agents-dashboard/.git-sync.lock
 agents-dashboard/.sync.lock
 .claude/agents/_memory/_flows.jsonl
 agents-dashboard/metrics.json
+tools/agents/evals/trend.jsonl

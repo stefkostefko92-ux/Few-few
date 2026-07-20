@@ -58,7 +58,7 @@ const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
 
 // „Не-агентски" файлове в директориите
 const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
-const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md"]);
+const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md", "_shared.md"]);
 
 // --- Събери източниците на истина ---
 const defIds = new Set(readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !NOT_AGENT_DEF.has(f)).map((f) => f.replace(/\.md$/, "")));
