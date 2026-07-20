@@ -62,5 +62,7 @@ jobs:
         run: node tools/agents/def-freshness.mjs
       - name: Токен-бюджет (гейт срещу разбягване на дефиниция; печат за логовете)
         run: node tools/agents/token-budget.mjs --check
+      - name: Кандидати за _shared (дедуп на памет през агенти; информативно)
+        run: node tools/agents/shared-candidates.mjs
       - name: Тестове на надзорната логика + скорера + рубриката + бюджета
         run: node --test $(find tools -name '*.test.mjs')

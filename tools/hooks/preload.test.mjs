@@ -6,7 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { staticPrefixParts } from "../../.claude/hooks/memory-preload.mjs";
+import { staticPrefixParts, selectLessons } from "../../.claude/hooks/memory-preload.mjs";
 
 test("статичният префикс е непразен и има трите блока (доктрина+процедура+споделено)", () => {
   const parts = staticPrefixParts();
@@ -28,4 +28,22 @@ test("статичният префикс е агент-независим (ну
   for (const name of ["Кодаджията", "Касаджията", "kodadjiyata", "kasadjiyata", "razbivacha"]) {
     assert.ok(!joined.includes(name), `статичният префикс не бива да съдържа „${name}" (чупи кеша)`);
   }
+});
+
+test("selectLessons: при задача подрежда релевантните първо (акроними се пазят)", () => {
+  const all = ["- поука за деплой и Docker контейнери", "- поука за SQL injection в Prisma заявка", "- поука за типография"];
+  const r = selectLessons(all, "провери за SQL injection уязвимост", 9999);
+  assert.match(r[0], /SQL injection/, "най-релевантната поука трябва да е първа");
+});
+
+test("selectLessons: без задача → най-новите (последните във файла) първо", () => {
+  const all = ["- стара поука", "- средна поука", "- най-нова поука"];
+  const r = selectLessons(all, "", 9999);
+  assert.match(r[0], /най-нова/, "без задача най-новата (отдолу) е първа");
+});
+
+test("selectLessons: спазва токен-бюджета (не изсипва всичко)", () => {
+  const all = Array.from({ length: 50 }, (_, i) => "- дълга проверена поука номер " + i + " с доста български текст за пълнеж");
+  const few = selectLessons(all, "", 300);
+  assert.ok(few.length > 0 && few.length < all.length, "бюджетът трябва да отреже част от поуките");
 });

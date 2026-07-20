@@ -18,3 +18,4 @@
 - **CI е path-филтриран** — пусни гейта (lint/typecheck/test/build) на **засегнатия продукт** преди „готово"; „готово" = реално зелен гейт, не „предполагам". _(общо; verified; CLAUDE.md)_
 - **SEO/откриваемост промяна → IndexNow** (`node tools/seo/indexnow.mjs <domain>` — Bing/Yandex/Seznam/Naver/Yep с едно извикване); **Google НЕ поддържа IndexNow** — дръж sitemap свеж + Search Console. _(общо; verified; CLAUDE.md)_
 - **Един продукт на промяна** — `cd` в него; никакво смесване на deps/toolchain между продуктите (няма root `package.json`). _(общо; verified; CLAUDE.md)_
+- **Терсен изход — токен-дисциплина** (изходните токени струват ~5× входните): не преповтаряй задачата, не ехотирай големи блокове код/файлове, дай находки+HANDOFF стегнато с `файл:ред`, не есе. Структуриран изход пред проза; никога не издувай отговора за обем. Caveman стилът е точно това. _(общо; verified; CLAUDE.md · claude-api pricing)_

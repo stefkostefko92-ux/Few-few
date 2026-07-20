@@ -34,6 +34,10 @@ const CHECK = argv.includes("--check");
 //    затова CI минава; но ако дефиниция подуе над него → провал. Гейтваме регресията, не текущото състояние.
 const DEF_TOKEN_WARN = 4800;
 const DEF_TOKEN_HARD = 8000;
+// Инжектираната лична памет е капната по токен-бюджет от memory-preload (релевантно извличане),
+// не сляпо първите N. Отразяваме РЕАЛНО инжектирания разход, не пълния файл. Дръж в синхрон с
+// MEM_TOKEN_BUDGET в .claude/hooks/memory-preload.mjs.
+const MEM_INJECT_BUDGET = 3200;
 
 // --- Cyrillic-aware евристичен токенизатор ---------------------------------
 // Claude токенизаторът дели кирилицата по-ситно от латиницата. Емпирично blended съотношение:
@@ -93,9 +97,11 @@ export function computeBudget() {
     const md = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8");
     const sysTokens = estTokens(defBody(md));
     const memFile = join(MEM_DIR, id + ".md");
-    const personalTokens = existsSync(memFile)
+    const personalFull = existsSync(memFile)
       ? estTokens(bulletsUnder(memFile, /^##\s*Проверени поуки/).slice(0, 40).join("\n"))
       : 0;
+    // Реален инжектиран разход = капнат по бюджета за извличане (по-малкото от пълния и тавана).
+    const personalTokens = Math.min(personalFull, MEM_INJECT_BUDGET);
     // Разход при старт (без кеш) = системен промпт + статичен префикс + лична памет.
     const perStartCold = sysTokens + STATIC_PREFIX_TOKENS + personalTokens;
     // Разход при старт (със заключен кеш) = плащаш пълно само динамичното; статичното на 0.1×.
@@ -104,6 +110,7 @@ export function computeBudget() {
     rows.push({
       id, model: frontModel(md), effort: frontEffort(md),
       sysTokens, staticPrefix: STATIC_PREFIX_TOKENS, personalTokens,
+      personalFull, memTrim: personalFull - personalTokens, // спестено от релевантното извличане (капа)
       perStartCold, perStartWarm, cacheSaved: CACHE_SAVED, savedPct,
       bloated: sysTokens > DEF_TOKEN_WARN, overHard: sysTokens > DEF_TOKEN_HARD,
     });

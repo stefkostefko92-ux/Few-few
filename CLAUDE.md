@@ -99,13 +99,17 @@ that file **and** `agents-dashboard/agents.json` in sync when you change an agen
 **model/effort sync** frontmatter↔`agents.json`, uncited lessons, near-dups, dashboard/doctrine sync;
 fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
-**Cost/token discipline (не Fable).** Fable 5 ($10/$50 per 1M) е по-скъп от Opus 4.8 ($5/$25) и Sonnet 5
-($3/$15) — не за флота. Пестенето минава през: **model+effort routing** (`tools/agents/model-policy.mjs` —
-TIER_A opus/high · TIER_B sonnet/medium · TIER_C haiku празен до eval-паритет · `--apply` пише frontmatter);
-**prompt caching** на статичния инжектиран префикс (доктрина+процедура+споделено, заключен в
-`memory-preload.mjs`, byte-стабилен → чете се на ~0.1×); и **token-budget** (`tools/agents/token-budget.mjs`
-— оценка на разход/старт + печалба от кеш по агент; `--check` гейтва срещу разбягнала се дефиниция; в CI).
-Табло: изгледът „Токен-бюджет" + бюджет-картата в профила на всеки агент.
+**Cost/token discipline (не Fable, без Haiku).** Fable 5 ($10/$50 per 1M) е по-скъп от Opus 4.8 ($5/$25) и
+Sonnet 5 ($3/$15) — не за флота; Haiku е изключен по решение на собственика. Пестенето минава през:
+**model+effort routing** (`tools/agents/model-policy.mjs` — TIER_A opus/high · TIER_B sonnet/medium · шаблонно
+low · `--apply` пише frontmatter; oversee гейтва model/effort sync); **рутинг по ЗАДАЧА** (`route.mjs` —
+per-invocation надстройка opus/sonnet × effort, без Haiku); **prompt caching** на статичния префикс
+(доктрина+процедура+споделено, заключен в `memory-preload.mjs`, byte-стабилен → ~0.1×); **релевантно
+извличане на памет** (`memory-preload.mjs` — инжектира релевантните на задачата поуки в токен-бюджет ~3.2k,
+не сляпо първите 40 → реже ~40k т/вълна + маха шума); **_shared промоция** (`shared-candidates.mjs` — поука в
+много агенти → в _shared веднъж, кеширана, не платена K пъти); **терсен изход** (изходни токени ~5× входните
+— доктрина в `_shared.md`); и **token-budget** (`tools/agents/token-budget.mjs` — разход/старт + печалба по
+агент; `--check` гейт срещу разбягване; в CI). Табло: изгледът „Токен-бюджет" + бюджет-картата в профила.
 
 **Communication style (caveman):** terse, fragment prose; every technical token
 (code, commands, `file:line`, error strings) exact; drop filler; **never**
