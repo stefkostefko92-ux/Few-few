@@ -77,6 +77,23 @@ function sharedLessons() {
   );
 }
 
+// КЕШ-ЗАКЛЮЧВАНЕ (prompt caching). Статичният префикс = доктрина + процедура + споделени поуки.
+// Той е БАЙТ-в-БАЙТ еднакъв за ВСЕКИ агент и НЕ съдържа нищо агент-специфично (без име, без задача) —
+// затова API-то може да го кешира и да го чете на ~0.1× цена след първото извикване. Инвариантът:
+// (1) статичното ВИНАГИ първо и в ФИКСИРАН ред (доктрина→процедура→споделено); (2) динамичното (личната
+// памет, която носи името на агента + променливо съдържание) ВИНАГИ последно. Не смесвай двете —
+// всяка агент-специфична добавка в началото чупи кеша за целия флот. Тестван в tools/hooks/preload.test.mjs.
+export function staticPrefixParts() {
+  const parts = [];
+  const doctrine = securityDoctrine();
+  if (doctrine) parts.push(doctrine);
+  const procedure = procedureDoctrine();
+  if (procedure) parts.push(procedure);
+  const shared = sharedLessons();
+  if (shared) parts.push(shared);
+  return parts;
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
@@ -85,18 +102,10 @@ function main() {
   const file = join(MEM_DIR, `${agent}.md`);
   if (!existsSync(file)) process.exit(0); // не е наш агент → нищо не инжектираме
 
-  // 1) Доктрината за сигурност — за ВСЕКИ наш агент, дори с празна памет.
-  const doctrine = securityDoctrine();
-  // 1b) Общата процедура — за ВСЕКИ наш агент (единен цикъл + red lines + HANDOFF).
-  const procedure = procedureDoctrine();
-  // 2) Личната проверена памет на агента (ако има).
+  // Статичен, кешируем префикс (агент-независим) — ВИНАГИ първо и в фиксиран ред.
+  const parts = staticPrefixParts();
+  // Динамичното (лична проверена памет — носи името на агента) идва СЛЕД статичното, за да не чупи кеша.
   const lessons = verifiedSection(file).slice(0, MAX_LESSONS);
-
-  const parts = [];
-  if (doctrine) parts.push(doctrine);
-  if (procedure) parts.push(procedure);
-  const shared = sharedLessons();
-  if (shared) parts.push(shared);
   if (lessons.length) {
     parts.push(
       `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n` +
@@ -114,4 +123,7 @@ function main() {
   process.exit(0);
 }
 
-try { main(); } catch { process.exit(0); }
+// Пусни main() само като CLI (SubagentStart hook), не при import от тест — иначе import-ът чете stdin/излиза.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  try { main(); } catch { process.exit(0); }
+}

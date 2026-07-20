@@ -22,6 +22,7 @@ const APPLY = argv.includes("--apply");
 
 // Политика: TIER_A = дълбоко разсъждение / безопасно-критично / cross-family съд → opus.
 // TIER_B = способно, но по-евтино стига (структурно/авторско/механично) → sonnet.
+// TIER_C = чисто механично, детерминистично, без преценка → haiku ($1/$5, 3× по-евтин от sonnet).
 // Обосновка на реда: пари/право/фискал/сигурност/клинично/стат/AI-канон → A. Останалото → B.
 const TIER_A = new Set([
   "kodadjiyata", "kachestveniyat", "pravniyat-razbirach", "ai-djiyata", "kasadjiyata",
@@ -31,49 +32,85 @@ const TIER_A = new Set([
   // deploy.sh). Продукционен деплой = дълбочината струва. Останалите tier-B минаха паритет → sonnet.
   "vps-adjiyata",
 ]);
+// TIER_C (haiku) е ПРАЗЕН по подразбиране — умишлено. Свалянето на агент на haiku е промяна в
+// поведението и изисква СЪЩОТО доказателство като opus→sonnet: паритет през `agent-eval` (golden
+// маркери + сляпо двойково съдийство). Никой агент не се слага тук „на око"; всеки наш агент носи
+// домейнова преценка, а тя не е механична. Празно = честно: не сме доказали haiku-паритет за никого.
+const TIER_C = new Set([]);
+
+// Усилие (effort: reasoning бюджет) — ортогонален лост на модела. Реже ИЗХОДНИ (reasoning) токени.
+// high = безопасно-критично / дълбок ревю → всички TIER_A. low = механично/шаблонно. иначе medium.
+// LOW_EFFORT: най-шаблонно-процедурните — upsert seed / clip-repurpose. Тесен, защитим списък;
+// разширяване = през eval-паритет, не на око (същата дисциплина като TIER_C).
+const LOW_EFFORT = new Set(["siydara", "socialdjiyata"]);
+
 const REASON = {
-  A: "дълбоко разсъждение / безопасно-критично (пари·право·фискал·сигурност·клинично·стат) → opus",
+  A: "дълбоко разсъждение / безопасно-критично (пари·право·фискал·сигурност·клинично·стат) → opus + effort:high",
   B: "структурно/авторско/механично — способно на sonnet без загуба на качество → разходен лост",
+  C: "чисто механично/детерминистично → haiku (само след eval-паритет; засега празно)",
+  effort: "high=критично/дълбоко (TIER_A) · low=шаблонно/механично (LOW_EFFORT) · medium=останалите",
 };
-const rec = (id) => (TIER_A.has(id) ? "opus" : "sonnet");
+const rec = (id) => (TIER_C.has(id) ? "haiku" : TIER_A.has(id) ? "opus" : "sonnet");
+const recEffort = (id) => (TIER_A.has(id) ? "high" : LOW_EFFORT.has(id) ? "low" : "medium");
 
 function agentIds() {
   return readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")).sort();
 }
 function frontModel(md) { const m = md.match(/^model:\s*(.+)$/m); return m ? m[1].trim() : null; }
+function frontEffort(md) { const m = md.match(/^effort:\s*(.+)$/m); return m ? m[1].trim() : null; }
+
+// Запиши effort във frontmatter: замени реда, ако го има; иначе го добави веднага след `model:`.
+function withEffort(md, effort) {
+  if (/^effort:\s*.+$/m.test(md)) return md.replace(/^effort:\s*.+$/m, "effort: " + effort);
+  return md.replace(/^(model:\s*.+)$/m, "$1\neffort: " + effort);
+}
 
 const rows = [];
 for (const id of agentIds()) {
   const file = join(AGENTS_DIR, id + ".md");
-  const md = readFileSync(file, "utf8");
+  let md = readFileSync(file, "utf8");
   const actual = frontModel(md);
+  const actualEffort = frontEffort(md);
   const want = rec(id);
-  const tier = TIER_A.has(id) ? "A" : "B";
+  const wantEffort = recEffort(id);
+  const tier = TIER_C.has(id) ? "C" : TIER_A.has(id) ? "A" : "B";
   const diverges = actual && actual !== want;
-  rows.push({ id, tier, actual, recommended: want, diverges });
-  if (APPLY && diverges) {
-    writeFileSync(file, md.replace(/^model:\s*.+$/m, "model: " + want));
+  const effortDiverges = actualEffort !== wantEffort;
+  rows.push({ id, tier, actual, recommended: want, diverges, effort: actualEffort, recommendedEffort: wantEffort, effortDiverges });
+  if (APPLY && (diverges || effortDiverges)) {
+    if (diverges) md = md.replace(/^model:\s*.+$/m, "model: " + want);
+    if (effortDiverges) md = withEffort(md, wantEffort);
+    writeFileSync(file, md);
   }
 }
 
 const diverging = rows.filter((r) => r.diverges);
+const effortDiverging = rows.filter((r) => r.effortDiverges);
 const toSonnet = diverging.filter((r) => r.recommended === "sonnet").length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ policy: REASON, rows, diverging: diverging.length, applied: APPLY }, null, 2));
+  console.log(JSON.stringify({
+    policy: REASON, rows,
+    diverging: diverging.length, effortDiverging: effortDiverging.length, applied: APPLY,
+  }, null, 2));
   process.exit(0);
 }
 
-console.log(`\n🎛  Рутинг на модел по агент (${rows.length} агента)\n`);
-console.log("  A = opus (дълбоко/критично) · B = sonnet (по-евтино стига)\n");
+console.log(`\n🎛  Рутинг на модел + усилие по агент (${rows.length} агента)\n`);
+console.log("  A = opus (дълбоко/критично) · B = sonnet (по-евтино стига) · C = haiku (механично; засега 0)\n");
 for (const r of rows) {
-  const flag = r.diverges ? "\x1b[33m▲\x1b[0m" : "\x1b[90m·\x1b[0m";
-  console.log(`  ${flag} ${r.id.padEnd(22)} tier ${r.tier}  декл=${(r.actual || "—").padEnd(7)} препоръка=${r.recommended}`);
+  const mFlag = r.diverges ? "\x1b[33mM\x1b[0m" : "\x1b[90m·\x1b[0m";
+  const eFlag = r.effortDiverges ? "\x1b[36mE\x1b[0m" : "\x1b[90m·\x1b[0m";
+  console.log(
+    `  ${mFlag}${eFlag} ${r.id.padEnd(22)} tier ${r.tier}  ` +
+    `модел ${(r.actual || "—").padEnd(7)}→${r.recommended.padEnd(7)}  ` +
+    `усилие ${(r.effort || "—").padEnd(6)}→${r.recommendedEffort}`,
+  );
 }
 if (APPLY) {
-  console.log(`\n✎ приложено: ${diverging.length} агента преместени към препоръчания модел.`);
+  console.log(`\n✎ приложено: ${diverging.length} модел + ${effortDiverging.length} усилие преместени към препоръката.`);
 } else {
-  console.log(`\nПрепоръка: ${toSonnet} агента (tier B) могат да минат opus→sonnet — разходен лост без загуба на дълбочина за критичните.`);
-  console.log("Това е промяна в поведението — пусни с --apply само след човешко решение. Одит-only по подразбиране.");
+  console.log(`\nПрепоръка: ${toSonnet} агента (tier B) opus→sonnet · ${effortDiverging.length} агента с липсващо/разминаващо се усилие.`);
+  console.log("M = моделът се разминава · E = усилието се разминава. Промяна в поведението — пусни с --apply само след човешко решение.");
 }
 process.exit(0);

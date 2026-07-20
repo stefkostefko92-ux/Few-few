@@ -107,6 +107,18 @@ for (const id of allIds) {
   if (!hasJson) r.hard.push("липсва запис в agents.json");
   matcherIds.forEach((set, idx) => { if (hasDef && !set.has(id)) r.hard.push(`не е в hook matcher #${idx + 1} (settings.json)`); });
 
+  // Синхрон модел/усилие: frontmatter (истината за рутинга) ↔ agents.json/FALLBACK (таблото).
+  // Разсинхрон = таблото лъже за кой модел/бюджет върви агентът → твърд провал (както FALLBACK).
+  if (hasDef && hasJson) {
+    const md = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8");
+    const fm = (md.match(/^model:\s*(.+)$/m) || [])[1]?.trim() || null;
+    const fe = (md.match(/^effort:\s*(.+)$/m) || [])[1]?.trim() || null;
+    const jrec = aj.agents.find((a) => a.id === id) || {};
+    if (fm && jrec.model && fm !== jrec.model) r.hard.push(`модел разсинхрон: frontmatter=${fm} ≠ agents.json=${jrec.model}`);
+    if (!fe) r.hard.push("липсва effort във frontmatter (рутинг на усилие)");
+    else if (jrec.effort && fe !== jrec.effort) r.hard.push(`усилие разсинхрон: frontmatter=${fe} ≠ agents.json=${jrec.effort}`);
+  }
+
   if (hasMem) {
     const md = readFileSync(join(MEM_DIR, id + ".md"), "utf8");
     const verified = sectionBullets(md, "Проверени поуки");

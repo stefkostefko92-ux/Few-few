@@ -96,8 +96,16 @@ authoring rules → [`.claude/agents/README.md`](.claude/agents/README.md).** Ke
 that file **and** `agents-dashboard/agents.json` in sync when you change an agent.
 **AI-джията is the lead („president") agent** — it oversees fleet health with
 `node tools/agents/oversee.mjs` (integrity def↔memory↔`agents.json`↔`settings.json`,
-uncited lessons, near-dups, dashboard/doctrine sync; fail-closed) and orchestrates by
-Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
+**model/effort sync** frontmatter↔`agents.json`, uncited lessons, near-dups, dashboard/doctrine sync;
+fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
+
+**Cost/token discipline (не Fable).** Fable 5 ($10/$50 per 1M) е по-скъп от Opus 4.8 ($5/$25) и Sonnet 5
+($3/$15) — не за флота. Пестенето минава през: **model+effort routing** (`tools/agents/model-policy.mjs` —
+TIER_A opus/high · TIER_B sonnet/medium · TIER_C haiku празен до eval-паритет · `--apply` пише frontmatter);
+**prompt caching** на статичния инжектиран префикс (доктрина+процедура+споделено, заключен в
+`memory-preload.mjs`, byte-стабилен → чете се на ~0.1×); и **token-budget** (`tools/agents/token-budget.mjs`
+— оценка на разход/старт + печалба от кеш по агент; `--check` гейтва срещу разбягнала се дефиниция; в CI).
+Табло: изгледът „Токен-бюджет" + бюджет-картата в профила на всеки агент.
 
 **Communication style (caveman):** terse, fragment prose; every technical token
 (code, commands, `file:line`, error strings) exact; drop filler; **never**
