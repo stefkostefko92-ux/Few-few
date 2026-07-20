@@ -62,7 +62,14 @@ if (has("--check")) {
     if (errs.length) { bad++; console.log(red(`✗ ${s._file}`)); errs.forEach((e) => console.log(`    ${e}`)); }
   }
   const injCount = specs.filter((s) => s.kind === "injection").length;
-  if (!bad) console.log(green(`✓ eval --check: ${specs.length} spec-а валидни (${injCount} инжекционни) · ${specs.length ? "" : "ПРАЗНО — добави spec-ове"}`));
+  // ПРАГ-ГЕЙТ за injection покритие: агентите с най-голяма атакувана повърхност (четат недоверено
+  // външно съдържание — WebFetch, потребителски вход, борсови/пазарни данни) ЗАДЪЛЖИТЕЛНО носят
+  // injection spec. Липсата = fail (иначе покритието тихо застива на 2/26). Флагнато от взаимния преглед.
+  const INJECTION_REQUIRED = ["kodadjiyata", "pravniyat-razbirach", "seo", "socialdjiyata", "diskordjiyata", "treydara"];
+  const injAgents = new Set(specs.filter((s) => s.kind === "injection").map((s) => s.agent));
+  const missingInj = INJECTION_REQUIRED.filter((a) => !injAgents.has(a));
+  if (missingInj.length) { bad++; console.log(red(`✗ липсва injection spec за високо-рискови агенти: ${missingInj.join(", ")}`)); }
+  if (!bad) console.log(green(`✓ eval --check: ${specs.length} spec-а валидни (${injCount} инжекционни · ${INJECTION_REQUIRED.length}/${INJECTION_REQUIRED.length} задължителни покрити) · ${specs.length ? "" : "ПРАЗНО — добави spec-ове"}`));
   process.exit(bad || !specs.length ? 1 : 0);
 }
 

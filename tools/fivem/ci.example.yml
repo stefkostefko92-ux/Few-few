@@ -1,9 +1,15 @@
 # FiveM ресурс CI (Геймъра v2.0) — копирай в .github/workflows/ на ресурса.
 # lint (luacheck + selene) → (по избор) busted unit тестове с мокнати natives.
+# ВАЖНО (supply-chain, наше CI правило): пинни ВСЕКИ external action по SHA, не по подвижен таг —
+#   `uses: owner/action@<40-hex-sha>  # vX.Y.Z`. Таговете тук са само за четимост на примера.
 name: FiveM resource CI
 on:
   push: { paths: ["**/*.lua", "fxmanifest.lua"] }
   pull_request: { paths: ["**/*.lua", "fxmanifest.lua"] }
+
+# Least-privilege GITHUB_TOKEN — CI само чете кода.
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -15,8 +21,8 @@ jobs:
         with: { args: "--config tools/fivem/.luacheckrc ." }
       - name: selene (argument/type checks)
         run: |
-          cargo install selene --locked || true
-          selene --config tools/fivem/selene.toml . || true
+          cargo install selene --locked
+          selene --config tools/fivem/selene.toml .
 
   test:
     runs-on: ubuntu-latest
@@ -27,5 +33,5 @@ jobs:
         with: { luaVersion: "5.4" }
       - uses: leafo/gh-actions-luarocks@v4
       - run: luarocks install busted
-      # Очаква spec/ с мокнати natives (виж tools/fivem/README.md).
-      - run: busted --verbose || echo "няма тестове още — добави spec/"
+      # Очаква spec/ с мокнати natives (виж tools/fivem/README.md). Провал НЕ се маскира с `|| echo`.
+      - run: busted --verbose

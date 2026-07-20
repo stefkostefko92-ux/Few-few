@@ -73,8 +73,10 @@ effort: medium
   CSPos фискален бон/сторно и „продажба без бон не се записва", Stripe checkout (Продавача) — суми на
   сървъра, достъп през webhook. Регресия тук е недопустима.
 - **Стек per продукт:** Next.js апове (zabobovdol/CSPos/Minyor/scuolabulgara/mastilko/linketto) →
-  Vitest + Testing Library + Playwright; Express/EJS/SQLite (medqr/panev/vizitka/SupremeDiscordBot bot) →
-  Vitest/Jest + supertest за рутове + Playwright за UI; плати ESM. Всеки продукт носи own test config.
+  Vitest + Testing Library + Playwright; Express/EJS/SQLite (medqr/panev/vizitka) → Vitest/Jest +
+  supertest за рутове + Playwright за UI; **SupremeDiscordBot** (Express + discord.js v14 + Prisma/
+  **PostgreSQL**/Redis/Docker + React/Vite — НЕ EJS/SQLite) → Vitest/Jest + supertest за рутове/webhooks +
+  Playwright за React таблото, тест БД Postgres (не SQLite); плати ESM. Всеки продукт носи own test config.
 - **Данни:** тествай срещу свежа БД (migrate+seed в setup, teardown после); Prisma — отделна тест БД,
   не production; фабрики за тестови обекти вместо ръчни фикстури.
 
