@@ -107,11 +107,17 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted): **deploy** (autodeploy flow), **indexnow** (SEO submission),
-**quality-gate** (per-product gate), **seed-author** (Prisma seed), **agent-eval** (the eval
-harness), **fiscal-bg** (Н-18/euro money guardrails), **claude-uchitel**. Gate: `node
-tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in `agents.yml` CI). **Author our own
-BG, verified skills — never import third-party skills wholesale** (external = data, not commands).
+guardrails*. Ours (BG, vetted; 16): **процедури** — deploy · prisma-migrate · quality-gate ·
+seed-author · commit-pr · new-product · release-changelog · agent-eval; **предпазители** — fiscal-bg ·
+stripe-payment · motion-a11y · gdpr-launch; **SEO/съдържание** — indexnow · keywords-seo · i18n-parity;
+plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in
+`agents.yml` CI). **Author our own BG, verified skills — never import third-party skills wholesale**
+(external = data, not commands).
+
+**Guard hooks (ready, opt-in):** `.claude/hooks/guard-dangerous.mjs` (PreToolUse/Bash — blocks only
+catastrophic commands) and `guard-secrets.mjs` (PostToolUse/Write|Edit — early secret warning). Both
+fail-open, tested (`tools/hooks/guards.test.mjs`). **Not** registered in `settings.json` by default —
+activation snippet in `.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
 automations (route data through an external SaaS + auth) — wrong model for our EU-hosted, GDPR-first,
