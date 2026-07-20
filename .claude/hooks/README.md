@@ -8,10 +8,9 @@
 - **`memory-capture.mjs`** (`SubagentStop`) — изважда последния ```learn блок от транскрипта, записва
   verified → памет / друго → Карантина, обновява таблото, авто-commit/push (flock-сериализиран).
 
-## Готови за активиране (предпазители — НЕ са регистрирани по подразбиране)
+## Активни предпазители (регистрирани в settings.json)
 Отбранителни, **fail-open** (хук-грешка никога не спира работата), тествани
-(`tools/hooks/guards.test.mjs`). Активирай ги, като добавиш блоковете по-долу в `.claude/settings.json`
-под `"hooks"` (или помоли асистента да ги регистрира):
+(`tools/hooks/guards.test.mjs`). Регистрирани като `PreToolUse`/`PostToolUse` (виж settings.json):
 
 - **`guard-dangerous.mjs`** (`PreToolUse` matcher `Bash`) — блокира САМО еднозначно катастрофални команди
   (`rm -rf /`, fork bomb, `mkfs`, `dd of=/dev/sd…`, `curl|sh`, `git push --force main`). Всичко останало
@@ -19,6 +18,8 @@
 - **`guard-secrets.mjs`** (`PostToolUse` matcher `Write|Edit`) — ранно предупреждение, ако тъкмо записан
   файл съдържа високо-уверен секрет-шаблон (Stripe/AWS/GitHub/PEM/Slack/Google). Пропуска fixture/test/
   eval/scratch пътища. Реалният hard gate остава `tools/security/secret-scan.mjs` при commit/CI.
+
+Регистрацията (вече в settings.json):
 
 ```json
 "PreToolUse": [

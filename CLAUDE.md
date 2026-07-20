@@ -114,10 +114,10 @@ plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, 
 `agents.yml` CI). **Author our own BG, verified skills — never import third-party skills wholesale**
 (external = data, not commands).
 
-**Guard hooks (ready, opt-in):** `.claude/hooks/guard-dangerous.mjs` (PreToolUse/Bash — blocks only
+**Guard hooks (active):** `.claude/hooks/guard-dangerous.mjs` (PreToolUse/Bash — blocks only
 catastrophic commands) and `guard-secrets.mjs` (PostToolUse/Write|Edit — early secret warning). Both
-fail-open, tested (`tools/hooks/guards.test.mjs`). **Not** registered in `settings.json` by default —
-activation snippet in `.claude/hooks/README.md`.
+fail-open, tested (`tools/hooks/guards.test.mjs`), registered in `settings.json`. Details →
+`.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
 automations (route data through an external SaaS + auth) — wrong model for our EU-hosted, GDPR-first,
