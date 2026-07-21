@@ -19,6 +19,7 @@ const TOOLS = [
   { href: "/obyava", label: "Обява с ресни", icon: "/icons/tabelki.webp" },
   { href: "/vaucheri", label: "Ваучери и талони", icon: "/icons/pokani.webp" },
   { href: "/kalendar", label: "Календар за печат", icon: "/icons/gramoti.webp" },
+  { href: "/menu", label: "Меню и ценоразпис", icon: "/icons/etiketi.webp" },
 ];
 
 export default function Header() {

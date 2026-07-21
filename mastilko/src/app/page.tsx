@@ -114,6 +114,14 @@ const TOOLS: Array<{
     text: "Месечен календар на български с официалните празници (вкл. Великден) — за стена или бюро, всеки месец на лист А4.",
     accent: "bg-med-pale text-med-dark",
   },
+  {
+    href: "/menu",
+    emoji: "🍽️",
+    icon: "/icons/etiketi.webp",
+    title: "Меню и ценоразпис",
+    text: "За кафене, бар или ресторант — раздели, продукти и цени с точкова линия, готово за печат на А4.",
+    accent: "bg-gora-pale text-gora-dark",
+  },
 ];
 
 const STEPS = [
