@@ -235,7 +235,7 @@ export default function HeroSignature() {
       }
       sizeToHost();
       renderFrame();
-      requestAnimationFrame(function () { canvas.style.opacity = "1"; });
+      var fadeRaf = requestAnimationFrame(function () { canvas.style.opacity = "1"; });
 
       function onMove(e) {
         var r = el.getBoundingClientRect();
@@ -300,20 +300,30 @@ export default function HeroSignature() {
       }
       document.addEventListener("visibilitychange", onVisibility);
 
-      function onContextLost(e) { e.preventDefault(); stopLoop(); }
+      // On context loss, hide the canvas so the CSS poster shows through (canvas is
+      // opaque). On restore, re-init size + repaint and resume, instead of a dead
+      // black hero until reload.
+      function onContextLost(e) { e.preventDefault(); stopLoop(); canvas.style.opacity = "0"; }
+      function onContextRestored() { sizeToHost(); renderFrame(); canvas.style.opacity = "1"; startLoop(); }
       canvas.addEventListener("webglcontextlost", onContextLost, false);
+      canvas.addEventListener("webglcontextrestored", onContextRestored, false);
 
       cleanup = function () {
         stopLoop();
+        if (fadeRaf) cancelAnimationFrame(fadeRaf);
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerleave", onLeave);
         window.removeEventListener("resize", sizeToHost);
         document.removeEventListener("visibilitychange", onVisibility);
         canvas.removeEventListener("webglcontextlost", onContextLost);
+        canvas.removeEventListener("webglcontextrestored", onContextRestored);
         if (ro) ro.disconnect();
         if (io) io.disconnect();
         geo.dispose();
         material.dispose();
+        // Force the GL context to be released now instead of waiting for GC —
+        // avoids "too many active WebGL contexts" across repeated mounts (HMR).
+        try { renderer.forceContextLoss(); } catch (e) {}
         renderer.dispose();
         if (el && el.contains(canvas)) el.removeChild(canvas);
       };
