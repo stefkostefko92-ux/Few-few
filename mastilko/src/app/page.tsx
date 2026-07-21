@@ -90,6 +90,14 @@ const TOOLS: Array<{
     text: "За конференции и събития — цял списък гости наведнъж (име, роля, фирма, лого, QR). Серийна изработка от таблица.",
     accent: "bg-med-pale text-med-dark",
   },
+  {
+    href: "/obyava",
+    emoji: "📢",
+    icon: "/icons/tabelki.webp",
+    title: "Обява с ресни",
+    text: "Класическата обява с откъсващи се телефончета — за уроци, квартира, услуги. Печаташ, залепваш, хората късат номера.",
+    accent: "bg-gora-pale text-gora-dark",
+  },
 ];
 
 const STEPS = [
