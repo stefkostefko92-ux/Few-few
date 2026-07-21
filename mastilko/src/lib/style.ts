@@ -361,6 +361,24 @@ export function titleFx(s: StyleState, theme: WarmTheme): React.CSSProperties {
   return fx;
 }
 
+/**
+ * Приблизителна проверка дали цветът е извън CMYK обхвата на типичен принтер
+ * (много наситени/неонови RGB тонове излизат по-матово/различно на хартия).
+ * Груба евристика по HSV: висока яркост + висока насиченост.
+ */
+export function cmykRisk(hexColor: string): boolean {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);
+  if (!m) return false;
+  const n = parseInt(m[1]!, 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const chroma = max - min; // ≈ насиденост × яркост
+  return max > 0.82 && chroma > 0.55;
+}
+
 /** Относителна осветеност (WCAG) на hex цвят, или null при невалиден. */
 export function relLuminance(hexColor: string): number | null {
   const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);

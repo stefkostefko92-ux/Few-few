@@ -1,6 +1,6 @@
 "use client";
 
-import { DECORS, contrastRatio, contrastGrade, inkCoverage, resolveTheme, type StyleState } from "@/lib/style";
+import { DECORS, contrastRatio, contrastGrade, inkCoverage, cmykRisk, resolveTheme, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
 import Icon from "@/components/Icon";
@@ -78,6 +78,14 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
           fg={value.cfg || "#3A2E28"}
           acc={value.cacc || "#C25E3F"}
         />
+      )}
+
+      {value.customColors && [value.cbg, value.cfg, value.cacc].some((c) => c && cmykRisk(c)) && (
+        <p className="rounded-lg bg-tera/10 p-2 text-xs font-semibold text-tera-dark">
+          Някои цветове са много наситени (неонови) и на хартия може да излязат
+          по-матово/различно от екрана. За сигурен резултат избери малко
+          по-меки тонове.
+        </p>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
