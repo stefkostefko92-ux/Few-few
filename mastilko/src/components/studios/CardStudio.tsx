@@ -28,8 +28,12 @@ interface CardState extends StyleState {
   cutLines: boolean;
   /** QR код с контактите (vCard) в долния десен ъгъл. */
   qr: boolean;
-  /** Лого (data URL) — показва се в акцентния панел. */
+  /** Лого/снимка (data URL) — показва се в акцентния панел. */
   logo: string;
+  /** Форма на логото/снимката. */
+  logoShape: "circle" | "square";
+  /** Размер на логото/снимката в mm. */
+  logoSize: number;
   /** Гръб на визитката (втори лист за двустранен печат). */
   back: boolean;
 }
@@ -47,6 +51,8 @@ const INITIAL: CardState = {
   cutLines: true,
   qr: false,
   logo: "",
+  logoShape: "square",
+  logoSize: 16,
   back: false,
 };
 
@@ -65,6 +71,8 @@ const ProjectSchema = z
     cutLines: z.boolean(),
     qr: z.boolean(),
     logo: z.string().max(500000),
+    logoShape: z.enum(["circle", "square"]),
+    logoSize: z.number().min(8).max(30),
     back: z.boolean(),
   })
   .partial();
@@ -85,6 +93,20 @@ type Unit = (v: number) => string;
 // оформлението. В екранния близък преглед var-ът липсва → пада на 1 (натурален).
 const fontUnit = (s: StyleState, u: Unit) => (v: number) =>
   typeof s.textScale === "number" ? `calc(${s.textScale} * ${u(v)})` : u(v);
+
+/** Лого/снимка на визитката — кръг (снимка, cover) или квадрат (лого, contain). */
+function CardLogo({ s, u }: { s: CardState; u: Unit }) {
+  if (s.logoShape === "circle") {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={s.logo} alt="" style={{ width: u(s.logoSize), height: u(s.logoSize), objectFit: "cover", borderRadius: "50%", display: "block" }} />
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={s.logo} alt="" style={{ maxWidth: u(s.logoSize * 1.5), maxHeight: u(s.logoSize), objectFit: "contain", display: "block" }} />
+  );
+}
 
 /** Обвивка: шаблонът + (по желание) QR с vCard в долния десен ъгъл. */
 function CardFace({
@@ -147,8 +169,7 @@ function CardBack({ s, theme, u }: { s: CardState; theme: WarmTheme; u: Unit }) 
       }}
     >
       {s.logo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={s.logo} alt="" style={{ maxWidth: u(40), maxHeight: u(24), objectFit: "contain" }} />
+        <CardLogo s={s} u={u} />
       ) : (
         <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fu(14) }}>
           {initials || "М"}
@@ -206,8 +227,7 @@ function CardFaceInner({
           }}
         >
           {s.logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.logo} alt="" style={{ maxWidth: u(20), maxHeight: u(20), objectFit: "contain" }} />
+            <CardLogo s={s} u={u} />
           ) : (
             initials || "М"
           )}
@@ -465,8 +485,7 @@ function CardFaceInner({
             }}
           >
             {s.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={s.logo} alt="" style={{ maxWidth: u(18), maxHeight: u(18), objectFit: "contain" }} />
+              <CardLogo s={s} u={u} />
             ) : (
               initials || "М"
             )}
@@ -610,7 +629,39 @@ export default function CardStudio() {
             </span>
           </label>
 
-          <ImageUpload value={s.logo} onChange={(v) => set({ logo: v })} label="Лого (по желание)" />
+          <ImageUpload value={s.logo} onChange={(v) => set({ logo: v })} label="Лого / снимка (по желание)" />
+
+          {s.logo && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-xs font-semibold text-ink-soft">
+                Форма
+                <select
+                  className="field-input mt-1"
+                  value={s.logoShape}
+                  onChange={(e) => set({ logoShape: e.target.value as CardState["logoShape"] })}
+                >
+                  <option value="square">Лого (квадрат)</option>
+                  <option value="circle">Снимка (кръг)</option>
+                </select>
+              </label>
+              <label className="block text-xs font-semibold text-ink-soft">
+                <span className="flex items-baseline justify-between">
+                  <span>Размер</span>
+                  <span className="tabular-nums text-ink-faint">{s.logoSize} mm</span>
+                </span>
+                <input
+                  type="range"
+                  min={8}
+                  max={30}
+                  step={1}
+                  value={s.logoSize}
+                  onChange={(e) => set({ logoSize: Number(e.target.value) })}
+                  className="mt-1 h-4 w-full accent-tera"
+                  aria-label="Размер на логото"
+                />
+              </label>
+            </div>
+          )}
 
           <label className="flex items-start gap-2 text-sm font-semibold text-ink-soft">
             <input

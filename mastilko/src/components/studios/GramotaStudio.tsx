@@ -5,6 +5,7 @@ import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, 
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
+import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -23,6 +24,14 @@ interface GramotaState extends StyleState {
   date: string;
   signer: string;
   themeId: string;
+  /** Лого/емблема (data URL) над заглавието. */
+  logo: string;
+  /** Размер на логото в mm. */
+  logoSize: number;
+  /** Кръгъл печат до подписа. */
+  seal: boolean;
+  /** Декоративна лента-розетка. */
+  ribbon: boolean;
 }
 
 const INITIAL: GramotaState = {
@@ -34,6 +43,10 @@ const INITIAL: GramotaState = {
   date: "31 май 2026 г.",
   signer: "Директор",
   themeId: "med",
+  logo: "",
+  logoSize: 18,
+  seal: false,
+  ribbon: false,
 };
 
 const ProjectSchema = z
@@ -45,11 +58,40 @@ const ProjectSchema = z
     place: z.string().max(60),
     date: z.string().max(60),
     signer: z.string().max(60),
+    logo: z.string().max(500000),
+    logoSize: z.number().min(8).max(40),
+    seal: z.boolean(),
+    ribbon: z.boolean(),
     ...StyleSchemaShape,
   })
   .partial();
 
 const KINDS = ["ГРАМОТА", "СЕРТИФИКАТ", "ДИПЛОМА", "БЛАГОДАРСТВЕНО ПИСМО"];
+
+/** Кръгъл печат (концентрични кръгове + звезда) — чист CSS, печата се. */
+function Seal({ color }: { color: string }) {
+  return (
+    <div style={{ position: "relative", width: "26mm", height: "26mm" }}>
+      <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: `1mm solid ${color}`, opacity: 0.9 }} />
+      <div style={{ position: "absolute", inset: "2mm", borderRadius: "50%", border: `0.3mm solid ${color}`, opacity: 0.9 }} />
+      <div style={{
+        position: "absolute", inset: 0, display: "flex", alignItems: "center",
+        justifyContent: "center", color, fontSize: "12mm", lineHeight: 1,
+      }}>★</div>
+    </div>
+  );
+}
+
+/** Наградна лента-розетка — два триъгълни края + кръгъл медальон. */
+function Ribbon({ color }: { color: string }) {
+  return (
+    <div style={{ position: "relative", width: "20mm", height: "30mm" }}>
+      <div style={{ position: "absolute", left: "4mm", top: "12mm", width: "5mm", height: "18mm", background: color, opacity: 0.85, clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)" }} />
+      <div style={{ position: "absolute", right: "4mm", top: "12mm", width: "5mm", height: "18mm", background: color, opacity: 0.85, clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)" }} />
+      <div style={{ position: "absolute", left: "1mm", top: 0, width: "18mm", height: "18mm", borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "9mm" }}>★</div>
+    </div>
+  );
+}
 
 export default function GramotaStudio() {
   const [s, setS] = useLocalState<GramotaState>("mastilko-gramota", INITIAL, (r) => ProjectSchema.parse(r));
@@ -95,6 +137,32 @@ export default function GramotaStudio() {
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} />
             </div>
           ))}
+
+          <div className="space-y-3 border-t border-ink/10 pt-3">
+            <ImageUpload label="Лого / емблема (по желание)" value={s.logo} onChange={(logo) => set({ logo })} />
+            {s.logo && (
+              <label className="block text-xs font-semibold text-ink-soft">
+                <span className="flex items-baseline justify-between">
+                  <span>Размер на логото</span>
+                  <span className="tabular-nums text-ink-faint">{s.logoSize} mm</span>
+                </span>
+                <input type="range" min={8} max={40} step={1} value={s.logoSize}
+                  onChange={(e) => set({ logoSize: Number(e.target.value) })}
+                  className="mt-1 h-4 w-full accent-tera" aria-label="Размер на логото" />
+              </label>
+            )}
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input type="checkbox" checked={s.seal} onChange={(e) => set({ seal: e.target.checked })} className="h-4 w-4 accent-tera" />
+                Печат
+              </label>
+              <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input type="checkbox" checked={s.ribbon} onChange={(e) => set({ ribbon: e.target.checked })} className="h-4 w-4 accent-tera" />
+                Лента-розетка
+              </label>
+            </div>
+          </div>
+
           <StyleControls value={s} onChange={set} />
         </div>
         <ProjectFile state={s} filename="mastilko-gramota"
@@ -120,6 +188,17 @@ export default function GramotaStudio() {
                 color: theme.fg, background: sheetBg(s, theme), position: "relative", overflow: "hidden",
               }}>
                 <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+                {s.ribbon && (
+                  <div style={{ position: "absolute", top: "3mm", right: "5mm", zIndex: 2 }}>
+                    <Ribbon color={theme.accent} />
+                  </div>
+                )}
+                {s.logo && (
+                  <div style={{ marginBottom: "3mm", position: "relative", zIndex: 1 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={s.logo} alt="" style={{ height: `${s.logoSize}mm`, maxWidth: "70mm", objectFit: "contain", display: "block" }} />
+                  </div>
+                )}
                 <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
                   {s.org || " "}
                 </div>
@@ -151,6 +230,11 @@ export default function GramotaStudio() {
                       {s.place}{s.place && s.date ? ", " : ""}{s.date}
                     </div>
                   </div>
+                  {s.seal && (
+                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                      <Seal color={theme.accent} />
+                    </div>
+                  )}
                   <div style={{ textAlign: "center" }}>
                     <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
                       {s.signer}

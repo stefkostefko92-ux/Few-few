@@ -4,6 +4,7 @@ import { z } from "zod";
 import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
+import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -42,6 +43,12 @@ interface CvState extends StyleState {
   languages: string;
   themeId: string;
   layout: "klasik" | "moderen" | "europass";
+  /** Снимка (data URL) — по желание. */
+  photo: string;
+  /** Форма на снимката. */
+  photoShape: "circle" | "square";
+  /** Размер на снимката в mm. */
+  photoSize: number;
   // Полета по стандарта Europass (ползват се в Europass шаблона)
   birthDate: string;
   nationality: string;
@@ -85,6 +92,9 @@ const ProjectSchema = z
     languages: z.string().max(300),
     ...StyleSchemaShape,
     layout: z.enum(["klasik", "moderen", "europass"]),
+    photo: z.string().max(500000),
+    photoShape: z.enum(["circle", "square"]),
+    photoSize: z.number().min(15).max(45),
     birthDate: z.string().max(120),
     nationality: z.string().max(120),
     motherTongue: z.string().max(120),
@@ -107,6 +117,9 @@ const INITIAL: CvState = {
   languages: "",
   themeId: "gora",
   layout: "moderen",
+  photo: "",
+  photoShape: "circle",
+  photoSize: 28,
   birthDate: "",
   nationality: "",
   motherTongue: "",
@@ -136,6 +149,25 @@ function parseLanguage(entry: string): { name: string; level: string } {
 
 function splitList(s: string): string[] {
   return s.split(/[,;]+/).map((x) => x.trim()).filter(Boolean);
+}
+
+/** Снимка на кандидата — фиксиран mm размер (не се влияе от размера на текста). */
+function CvPhoto({ src, shape, size }: { src: string; shape: "circle" | "square"; size: number }) {
+  if (!src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      style={{
+        width: `${size}mm`,
+        height: `${size}mm`,
+        objectFit: "cover",
+        borderRadius: shape === "circle" ? "50%" : "1.5mm",
+        display: "block",
+      }}
+    />
+  );
 }
 
 export default function CvStudio() {
@@ -190,6 +222,47 @@ export default function CvStudio() {
               />
             </div>
           ))}
+
+          {s.layout !== "europass" && (
+            <div className="space-y-3 border-t border-ink/10 pt-3">
+              <ImageUpload
+                label="Снимка (по желание)"
+                value={s.photo}
+                onChange={(photo) => set({ photo })}
+              />
+              {s.photo && (
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-xs font-semibold text-ink-soft">
+                    Форма
+                    <select
+                      className="field-input mt-1"
+                      value={s.photoShape}
+                      onChange={(e) => set({ photoShape: e.target.value as CvState["photoShape"] })}
+                    >
+                      <option value="circle">Кръг</option>
+                      <option value="square">Квадрат</option>
+                    </select>
+                  </label>
+                  <label className="block text-xs font-semibold text-ink-soft">
+                    <span className="flex items-baseline justify-between">
+                      <span>Размер</span>
+                      <span className="tabular-nums text-ink-faint">{s.photoSize} mm</span>
+                    </span>
+                    <input
+                      type="range"
+                      min={15}
+                      max={45}
+                      step={1}
+                      value={s.photoSize}
+                      onChange={(e) => set({ photoSize: Number(e.target.value) })}
+                      className="mt-1 h-4 w-full accent-tera"
+                      aria-label="Размер на снимката"
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -457,6 +530,11 @@ export default function CvStudio() {
                   flexShrink: 0,
                 }}
               >
+                {s.photo && (
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: "5mm" }}>
+                    <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} />
+                  </div>
+                )}
                 <div
                   style={{
                     fontFamily: "var(--font-display)",
@@ -510,6 +588,11 @@ export default function CvStudio() {
           ) : (
             <div style={{ padding: "14mm 16mm", color: "#2E2620", minHeight: "297mm" }}>
               <div style={{ textAlign: "center", marginBottom: "6mm" }}>
+                {s.photo && (
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: "4mm" }}>
+                    <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} />
+                  </div>
+                )}
                 <div
                   style={{
                     fontFamily: "var(--font-display)",
