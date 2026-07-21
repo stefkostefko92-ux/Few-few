@@ -42,9 +42,10 @@ $SERVICES = [
     ['name' => 'carbonstealth.eu',            'label' => 'Carbon Stealth',   'url' => 'https://carbonstealth.eu'],
     ['name' => 'ouvaptsarov.com',             'label' => 'OU Vaptsarov',     'url' => 'https://ouvaptsarov.com'],
     ['name' => 'nexus.carbonstealth.eu',      'label' => 'Nexus Dominion',   'url' => 'https://nexus.carbonstealth.eu'],
-    ['name' => 'ac.carbonstealth.eu',         'label' => 'CS Anti-Cheat',    'url' => 'https://ac.carbonstealth.eu'],
     ['name' => 'tretimart.carbonstealth.eu',  'label' => 'Treti Mart',       'url' => 'https://tretimart.carbonstealth.eu'],
     ['name' => 'erp.carbonstealth.eu',        'label' => 'ERP Ascensori',    'url' => 'https://erp.carbonstealth.eu'],
+    ['name' => 'vizitka-bg.com',              'label' => 'Vizitka',          'url' => 'https://vizitka-bg.com'],
+    ['name' => 'mastilko-bg.com',             'label' => 'Mastilko',         'url' => 'https://mastilko-bg.com'],
 ];
 
 $MAIN_DOMAIN     = 'carbonstealth.eu';
