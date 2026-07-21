@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import TabelkaStudio from "@/components/studios/TabelkaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
@@ -50,7 +51,10 @@ export default function TabelkiPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">🪧 Табелки и надписи</h1>
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/tabelki.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Табелки и надписи
+        </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „Табелки“ е безплатен инструмент за табелки и надписи за печат на български</strong>{" "}
           — готови заготовки „Отворено/Затворено“, работно време, „Пази се от

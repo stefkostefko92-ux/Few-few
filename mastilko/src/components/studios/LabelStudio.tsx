@@ -6,6 +6,7 @@ import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
@@ -109,7 +110,7 @@ export default function LabelStudio() {
   const qrSize = Math.min(preset.h, preset.w) * 0.6;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -132,7 +133,7 @@ export default function LabelStudio() {
           <fieldset>
             <legend className="field-label">Съдържание</legend>
             <div className="flex gap-2">
-              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "same" ? "border-tera bg-tera-pale/60" : "border-ink/10"}`}>
+              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "same" ? "border-tera bg-tera-pale/60 dark:bg-white/10 vivid:bg-white/10" : "border-ink/10"}`}>
                 <input
                   type="radio"
                   name="label-mode"
@@ -142,7 +143,7 @@ export default function LabelStudio() {
                 />
                 Еднакви
               </label>
-              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "list" ? "border-tera bg-tera-pale/60" : "border-ink/10"}`}>
+              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "list" ? "border-tera bg-tera-pale/60 dark:bg-white/10 vivid:bg-white/10" : "border-ink/10"}`}>
                 <input
                   type="radio"
                   name="label-mode"
@@ -257,7 +258,7 @@ export default function LabelStudio() {
 
         <div className="card-warm space-y-3 p-5">
           <label htmlFor="aiDesc" className="field-label">
-            ✨ Не ти хрумва текст? Опиши за какво е етикетът:
+            <Icon name="sparkles" className="mr-1 h-4 w-4 align-[-3px]" /> Не ти хрумва текст? Опиши за какво е етикетът:
           </label>
           <input
             id="aiDesc"

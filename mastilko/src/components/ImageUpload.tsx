@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Icon from "@/components/Icon";
 
 interface Props {
   /** Текущото изображение (data URL) или "". */
@@ -54,7 +55,7 @@ export default function ImageUpload({
           </>
         ) : (
           <button type="button" onClick={() => inputRef.current?.click()} className="btn-secondary text-sm">
-            📷 Качи изображение
+            <Icon name="image" className="h-4 w-4" /> Качи изображение
           </button>
         )}
         <input

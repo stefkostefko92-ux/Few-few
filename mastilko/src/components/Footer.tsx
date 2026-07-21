@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="no-print mt-16 border-t border-ink/10 bg-paper-warm">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
         <div>
-          <p className="font-display text-lg font-bold">Мастилко</p>
+          <p className="wordmark text-2xl">Мастилко</p>
           <p className="mt-2 max-w-xs text-sm text-ink-soft">
             Топло местенце за етикети, визитки и CV — безплатно, без
             регистрация, направо от браузъра към принтера.

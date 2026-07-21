@@ -49,7 +49,10 @@ export default function SheetPreview({
   const h = fixedHeight ? hPx : contentH;
 
   return (
-    <div ref={wrapRef} className="w-full">
+    // min-w-0 позволява на grid клетката да се свие под ширината на листа
+    // (иначе А4 = 794px издува колоната на телефон/таблет); overflow-hidden
+    // клипва при преходни изчисления на мащаба.
+    <div ref={wrapRef} className="w-full min-w-0 overflow-hidden">
       {/* @page е глобален; докато този лист е на екрана, задава ориентацията. */}
       {landscape && (
         <style>{"@media print{@page{size:A4 landscape;margin:0}}"}</style>

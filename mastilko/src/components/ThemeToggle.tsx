@@ -1,36 +1,64 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Icon from "@/components/Icon";
 
-// Превключвател светла/тъмна тема. Изборът се помни в localStorage
-// (функционална преференция — без проследяване).
+// Превключвател на темата: светла → тъмна → жива (vivid) → светла.
+// Изборът се помни в localStorage (функционална преференция — без проследяване).
+// Бутонът показва иконата на СЛЕДВАЩАТА тема (както досега).
+type Theme = "light" | "dark" | "vivid";
+
+const NEXT: Record<Theme, Theme> = {
+  light: "dark",
+  dark: "vivid",
+  vivid: "light",
+};
+
+// Икона + надпис за темата, към която ще превключим (за икона и aria-label).
+const NEXT_META: Record<Theme, { icon: "sun" | "moon" | "sparkles"; label: string }> = {
+  light: { icon: "sun", label: "Светла тема" },
+  dark: { icon: "moon", label: "Тъмна тема" },
+  vivid: { icon: "sparkles", label: "Жива тема" },
+};
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  root.classList.toggle("dark", theme === "dark");
+  root.classList.toggle("vivid", theme === "vivid");
+}
+
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
+    const root = document.documentElement;
+    if (root.classList.contains("vivid")) setTheme("vivid");
+    else if (root.classList.contains("dark")) setTheme("dark");
+    else setTheme("light");
   }, []);
 
-  function toggle() {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
+  function cycle() {
+    const next = NEXT[theme];
+    setTheme(next);
+    applyTheme(next);
     try {
-      localStorage.setItem("mastilko-theme", next ? "dark" : "light");
+      localStorage.setItem("mastilko-theme", next === "light" ? "light" : next);
     } catch {
       /* забранено хранилище → просто не помним */
     }
   }
 
+  const meta = NEXT_META[NEXT[theme]];
+
   return (
     <button
       type="button"
-      onClick={toggle}
-      aria-label={dark ? "Светла тема" : "Тъмна тема"}
-      title={dark ? "Светла тема" : "Тъмна тема"}
-      className="rounded-full p-2 text-lg transition hover:bg-tera-pale dark:hover:bg-white/10"
+      onClick={cycle}
+      aria-label={meta.label}
+      title={meta.label}
+      className="rounded-full p-2 text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10 vivid:hover:bg-white/10"
     >
-      <span aria-hidden>{dark ? "☀️" : "🌙"}</span>
+      <Icon name={meta.icon} />
     </button>
   );
 }

@@ -19,7 +19,10 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
   const cats = [...new Set(FONTS.map((f) => f.cat))];
 
   return (
-    <div className="relative">
+    // Когато менюто е отворено, вдигаме контейнера в собствен stacking context
+    // (z-30), за да не се скрива падащото зад следващата карта (card-warm във
+    // „жива" тема прави backdrop-filter → нов stacking context).
+    <div className={`relative ${open ? "z-30" : ""}`}>
       {label && <span className="field-label">{label}</span>}
       <button
         type="button"
@@ -46,7 +49,7 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
                   role="option"
                   aria-selected={!value}
                   onClick={() => { onChange(""); setOpen(false); }}
-                  className="w-full rounded-lg px-3 py-1.5 text-left text-sm hover:bg-tera-pale dark:hover:bg-white/10"
+                  className="w-full rounded-lg px-3 py-1.5 text-left text-sm hover:bg-tera-pale dark:hover:bg-white/10 vivid:hover:bg-white/10"
                 >
                   По подразбиране
                 </button>
@@ -64,7 +67,7 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
                     role="option"
                     aria-selected={value === f.id}
                     onClick={() => { onChange(f.id); setOpen(false); }}
-                    className={`w-full rounded-lg px-3 py-1.5 text-left text-base hover:bg-tera-pale dark:hover:bg-white/10 ${value === f.id ? "bg-tera-pale dark:bg-white/10" : ""}`}
+                    className={`w-full rounded-lg px-3 py-1.5 text-left text-base hover:bg-tera-pale dark:hover:bg-white/10 vivid:hover:bg-white/10 ${value === f.id ? "bg-tera-pale dark:bg-white/10 vivid:bg-white/10" : ""}`}
                     style={{ fontFamily: fontCss(f.id) }}
                   >
                     {f.name}

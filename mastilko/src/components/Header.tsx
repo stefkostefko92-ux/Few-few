@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const TOOLS = [
-  { href: "/etiketi", label: "Етикети", emoji: "🏷️" },
-  { href: "/vizitki", label: "Визитки", emoji: "💼" },
-  { href: "/cv", label: "Автобиография (CV)", emoji: "📄" },
-  { href: "/pismo", label: "Мотивационно писмо", emoji: "✉️" },
-  { href: "/gramoti", label: "Грамоти и сертификати", emoji: "🏆" },
-  { href: "/pokani", label: "Покани и картички", emoji: "🎉" },
-  { href: "/tabelki", label: "Табелки и надписи", emoji: "🪧" },
-  { href: "/wifi", label: "WiFi стикер", emoji: "📶" },
+  { href: "/etiketi", label: "Етикети", icon: "/icons/etiketi.webp" },
+  { href: "/vizitki", label: "Визитки", icon: "/icons/vizitki.webp" },
+  { href: "/cv", label: "Автобиография (CV)", icon: "/icons/cv.webp" },
+  { href: "/pismo", label: "Мотивационно писмо", icon: "/icons/pismo.webp" },
+  { href: "/gramoti", label: "Грамоти и сертификати", icon: "/icons/gramoti.webp" },
+  { href: "/pokani", label: "Покани и картички", icon: "/icons/pokani.webp" },
+  { href: "/tabelki", label: "Табелки и надписи", icon: "/icons/tabelki.webp" },
+  { href: "/wifi", label: "WiFi стикер", icon: "/icons/wifi.webp" },
 ];
 
 export default function Header() {
@@ -21,12 +22,12 @@ export default function Header() {
 
   return (
     <header className="no-print sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur dark:bg-[#241d19]/85">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight">
-          <Logo className="h-9 w-9" />
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5 text-xl font-bold tracking-tight">
+          <Logo className="h-9 w-9" decorative />
           <span>
-            Мастилко
-            <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10">
+            <span className="wordmark">Мастилко</span>
+            <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10 vivid:bg-[#5bb4e8]/15 vivid:text-[#8fd0f5]">
               безплатно
             </span>
           </span>
@@ -39,7 +40,7 @@ export default function Header() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-haspopup="true"
-              className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:text-base dark:hover:bg-white/10"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:px-4 sm:text-base dark:hover:bg-white/10 vivid:hover:bg-white/10"
             >
               Инструменти
               <span aria-hidden className={`transition ${open ? "rotate-180" : ""}`}>▾</span>
@@ -49,7 +50,7 @@ export default function Header() {
                 <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
                 <nav
                   aria-label="Инструменти"
-                  className="card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2 dark:bg-[#2e2620]"
+                  className="tools-menu card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2"
                 >
                   {TOOLS.map((t) => (
                     <Link
@@ -58,7 +59,7 @@ export default function Header() {
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10"
                     >
-                      <span aria-hidden className="text-lg">{t.emoji}</span>
+                      <Image src={t.icon} alt="" width={36} height={36} unoptimized className="h-8 w-8 shrink-0 object-contain" aria-hidden />
                       {t.label}
                     </Link>
                   ))}

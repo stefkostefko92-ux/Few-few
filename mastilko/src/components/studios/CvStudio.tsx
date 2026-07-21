@@ -115,8 +115,19 @@ const EUROPASS_BLUE = "#0E4194";
 
 /** „английски (B2)“ → { name: „английски“, level: „B2“ } за Europass таблицата. */
 function parseLanguage(entry: string): { name: string; level: string } {
-  const m = entry.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
-  return m ? { name: m[1]!.trim(), level: m[2]!.trim() } : { name: entry, level: "" };
+  // 1) „име (ниво)" — нивото в скоби (пази и „роден", не само CEFR).
+  const paren = entry.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (paren) return { name: paren[1]!.trim(), level: paren[2]!.trim() };
+  // 2) „име A2" / „име А2" — CEFR ниво в края без скоби. Кирилицата А/В/С
+  //    (U+0410/0412/0421) изглежда като латиница, но е друг код — нормализираме.
+  const cefr = entry.match(/^(.+?)[\s–—-]+([ABCАВС])\s*([12])\s*$/i);
+  if (cefr) {
+    const level =
+      cefr[2]!.toUpperCase().replace(/А/g, "A").replace(/В/g, "B").replace(/С/g, "C") +
+      cefr[3];
+    return { name: cefr[1]!.trim(), level };
+  }
+  return { name: entry, level: "" };
 }
 
 function splitList(s: string): string[] {
@@ -148,7 +159,7 @@ export default function CvStudio() {
   const contact = [s.phone, s.email, s.city, s.website].filter(Boolean);
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -386,11 +397,12 @@ export default function CvStudio() {
           {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor />}
         </div>
 
+        {s.layout === "europass" && (
         <div className="card-warm space-y-4 p-5">
           <h2 className="font-display text-lg font-bold">Данни за Europass</h2>
           <p className="text-sm text-ink-soft">
-            Стандартът Europass на ЕС включва и тези полета (по желание) —
-            показват се в Europass шаблона.
+            Стандартът Europass на ЕС включва и тези допълнителни полета (по
+            желание) — попълни ги и се показват в документа по-долу.
           </p>
           {(
             [
@@ -414,6 +426,7 @@ export default function CvStudio() {
             </div>
           ))}
         </div>
+        )}
 
         <ProjectFile
           state={s}

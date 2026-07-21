@@ -17,7 +17,7 @@ export default function PoveritelnostPage() {
         В сила от 7 юли 2026 г. · Отговаря на Регламент (ЕС) 2016/679 (GDPR)
       </p>
 
-      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
+      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink dark:[&_h2]:text-paper vivid:[&_h2]:text-paper">
         <div>
           <h2>Кой стои зад Мастилко</h2>
           <p className="mt-2">
@@ -107,7 +107,7 @@ export default function PoveritelnostPage() {
         </div>
 
         <div>
-          <h2>Внасяне на визитка от „Визитка“</h2>
+          <h2>Обмен на визитка с „Визитка“</h2>
           <p className="mt-2">
             Ако дойдеш в Мастилко през бутона „Разпечатай визитки“ на нашия
             сайт <strong>Визитка</strong> (vizitka-bg.com — също на Carbon
@@ -119,6 +119,16 @@ export default function PoveritelnostPage() {
             ти — не минава през наш сървър и не го съхраняваме. Кодът важи
             кратко (около 30 минути). Ако не идваш през този бутон, нищо не се
             внася.
+          </p>
+          <p className="mt-2">
+            Обратната посока става <strong>само по твой изричен клик</strong>:
+            ако в редактора на визитки натиснеш „Направи я жива визитка“,
+            отваряме Визитка с попълнени <strong>име, длъжност, фирма, телефон
+            и сайт</strong> (предадени като параметри в адреса, за да не ги
+            въвеждаш пак). <strong>Имейл не пренасяме.</strong> Данните са
+            твоите собствени, отиват към същия администратор (Carbon Stealth
+            VCC) и само когато ти избереш да продължиш — без този клик нищо не
+            напуска устройството ти.
           </p>
         </div>
 

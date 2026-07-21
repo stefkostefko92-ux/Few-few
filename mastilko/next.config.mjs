@@ -20,6 +20,12 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
+            // Принуди браузъра винаги да ползва HTTPS за домейна (2 г.). Праща
+            // се само по HTTPS; локалният http dev го игнорира — без ефект там.
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains",
+          },
+          {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
@@ -32,7 +38,8 @@ const nextConfig = {
               "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
               `style-src 'self' 'unsafe-inline'; img-src 'self' data: ${VIZITKA_ORIGIN}; ` +
               `font-src 'self'; connect-src 'self' ${VIZITKA_ORIGIN}; object-src 'none'; ` +
-              "frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+              "frame-ancestors 'none'; base-uri 'none'; form-action 'self'; " +
+              "upgrade-insecure-requests",
           },
         ],
       },

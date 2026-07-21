@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Icon from "@/components/Icon";
 import ShareButton from "@/components/ShareButton";
 
 interface Props {
@@ -38,7 +39,7 @@ export default function ProjectFile({ state, onLoad, filename }: Props) {
         throw new Error("bad");
       }
       onLoad(data as Record<string, unknown>);
-      setMsg("Проектът е зареден ✔");
+      setMsg("Проектът е зареден.");
     } catch {
       setMsg("Файлът не прилича на проект от Мастилко.");
     }
@@ -52,14 +53,14 @@ export default function ProjectFile({ state, onLoad, filename }: Props) {
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button type="button" onClick={download} className="btn-secondary text-sm">
-          💾 Свали проекта
+          <Icon name="download" className="h-4 w-4" /> Свали проекта
         </button>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           className="btn-secondary text-sm"
         >
-          📂 Качи проект
+          <Icon name="upload" className="h-4 w-4" /> Качи проект
         </button>
         <input
           ref={inputRef}

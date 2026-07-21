@@ -14,6 +14,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BannerZone from "@/components/BannerZone";
+import VividFx from "@/components/VividFx";
 import "./globals.css";
 
 // Всички шрифтове са с кирилица И латиница. Само основните два се preload-ват;
@@ -75,7 +76,9 @@ const underdog = Underdog({ subsets: ["cyrillic", "latin"], display: "swap", pre
 const seymour = Seymour_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-seymour" });
 
 // Ръкописни
-const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-pacifico" });
+// Pacifico е и брандовият шрифт на надписа „Мастилко" (като в логото) — ползва
+// се в хедъра/футъра на всяка страница, затова се preload-ва.
+const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", weight: "400", variable: "--font-pacifico" });
 const caveat = Caveat({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-caveat" });
 const marck = Marck_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-marck" });
 const badscript = Bad_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-badscript" });
@@ -153,15 +156,16 @@ export default function RootLayout({
   return (
     <html lang="bg" className={FONT_VARS}>
       <head>
-        {/* Прилага тъмната тема преди рисуване, за да няма трепване. */}
+        {/* Прилага темата (тъмна/жива) преди рисуване, за да няма трепване. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('mastilko-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}",
+              "try{var t=localStorage.getItem('mastilko-theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light'){}else document.documentElement.classList.add('vivid')}catch(e){document.documentElement.classList.add('vivid')}",
           }}
         />
       </head>
       <body className="flex min-h-screen flex-col">
+        <VividFx />
         <a
           href="#glavno"
           className="no-print sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"

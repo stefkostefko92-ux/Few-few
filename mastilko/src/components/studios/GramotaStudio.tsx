@@ -53,7 +53,7 @@ export default function GramotaStudio() {
   const set = (patch: Partial<GramotaState>) => setS({ ...s, ...patch });
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
           <div>

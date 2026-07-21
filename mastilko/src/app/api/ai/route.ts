@@ -100,7 +100,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Невалидна заявка." }, { status: 400 });
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  // „…-latest" alias винаги сочи актуалния безплатен Flash — фиксираните версии
+  // (gemini-2.5-flash) Google спира за нови проекти (404 NOT_FOUND).
+  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
   try {
@@ -114,7 +116,15 @@ export async function POST(req: NextRequest) {
         contents: [
           { role: "user", parts: [{ text: PROMPTS[body.mode](body.input) }] },
         ],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 600 },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1024,
+          // Gemini 2.5+/3.x „мислят" по подразбиране и thinking токените се
+          // броят срещу maxOutputTokens → отговорът се съкращаваше до 1–2 реда.
+          // Изключваме мисленето (кратки генерации, не ни трябва) — целият
+          // бюджет отива за видимия текст.
+          thinkingConfig: { thinkingBudget: 0 },
+        },
       }),
       signal: AbortSignal.timeout(25_000),
     });

@@ -534,7 +534,7 @@ export default function CardStudio() {
   const qrSrc = useQrDataUrl(s.qr && s.name.trim() ? vCard(s) : "");
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -652,7 +652,7 @@ export default function CardStudio() {
           <a
             href={vizitkaRegisterUrl(s)}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             className="btn-secondary inline-flex w-fit"
           >
             Направи я жива визитка →

@@ -8,12 +8,24 @@
 .dark {
   color-scheme: dark;
 }
+/* „Жива“ (vivid) тема — брандов спектакъл около синьото на логото. */
+.vivid {
+  color-scheme: dark;
+}
 
 body {
   @apply bg-paper text-ink font-sans antialiased;
   /* Фина „хартиена“ текстура от тънки точици. */
   background-image: radial-gradient(rgba(58, 46, 40, 0.045) 1px, transparent 1px);
   background-size: 22px 22px;
+}
+
+/* Брандовият надпис „Мастилко" — със същия ръкописен шрифт като в логото
+   (Pacifico). Ползва се за името на марката (хедър, футър). */
+.wordmark {
+  font-family: var(--font-pacifico), cursive;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 /* Тъмна тема — топло „нощно“ мастилено, но печатните листове остават бели. */
@@ -47,6 +59,376 @@ body {
 .dark footer {
   @apply border-white/10;
 }
+/* Footer-ът пазеше светлия bg-paper-warm, а в тъмна тема текстът е ремапнат на
+   светло (text-ink* → paper) → светло на светло, нечетимо. Даваме тъмен фон. */
+.dark footer {
+  background-color: #2a2320;
+}
+
+/* ── Контраст-поправки за тъмна/жива тема (одит 2026-07) ──────────────────── */
+/* Акцентните tera/tera-dark не бяха ремапнати за тъмна тема → тъмни линкове на
+   тъмен фон (правни страници, „Започни →" и др.). */
+.dark .text-tera {
+  color: #e08963;
+}
+.dark .text-tera-dark {
+  color: #e79471;
+}
+/* hover:text-tera-dark е отделен клас — ремапваме и него, иначе hover „изяжда"
+   линка на тъмния footer/карти/хедър. */
+.dark .hover\:text-tera-dark:hover {
+  color: #e79471;
+}
+.vivid .hover\:text-tera-dark:hover {
+  color: #8fd0f5;
+}
+/* Светлият градиент на AI картата се рисуваше ВЪРХУ тъмния background-color →
+   светъл текст на светла повърхност в тъмна тема (vivid е покрит по-долу). */
+.dark .card-warm.bg-gradient-to-br {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  ) !important;
+}
+/* Вътрешните разделители на footer-а (border-ink/10) изчезваха на тъмния фон. */
+.dark footer .border-t,
+.vivid footer .border-t {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- „Жива“ (vivid) тема — обвивка на сайта ---------- */
+/* Дълбока синя основа; печатният лист (.print-area) остава недокоснат. */
+.vivid body {
+  background-color: #0a1826;
+  color: #dcebf7;
+  background-image: none;
+}
+.vivid .text-ink {
+  color: #dcebf7;
+}
+.vivid .text-ink-soft {
+  color: rgba(220, 235, 247, 0.78);
+}
+.vivid .text-ink-faint {
+  color: rgba(220, 235, 247, 0.55);
+}
+.vivid .text-tera {
+  color: #6fc3f0;
+}
+.vivid .text-tera-dark {
+  color: #8fd0f5;
+}
+.vivid .bg-ink {
+  background-color: #3a86b9 !important;
+}
+.vivid header {
+  background-color: rgba(10, 24, 38, 0.75) !important;
+  border-color: rgba(111, 195, 240, 0.16);
+}
+.vivid footer {
+  /* Footer-ът пазеше светлия bg-paper-warm, а текстът е ремапнат на светло за
+     тъмната „жива" визия → светло на светло, нечетимо. Даваме тъмен фон. */
+  background-color: #0b1d30;
+  border-color: rgba(111, 195, 240, 0.12);
+}
+.vivid .card-warm {
+  border-color: rgba(111, 195, 240, 0.18);
+  background-color: rgba(15, 38, 60, 0.55);
+  box-shadow: 0 2px 24px rgba(4, 12, 20, 0.5);
+  backdrop-filter: blur(8px);
+}
+/* AI панелът е единственият .card-warm с градиент — пребоядисваме го в синьо стъкло. */
+.vivid .card-warm.bg-gradient-to-br {
+  background-image: linear-gradient(135deg, rgba(23, 69, 106, 0.6), rgba(12, 44, 70, 0.55)) !important;
+}
+
+/* Падащото меню „Инструменти" трябва да е ПЛЪТНО на всичките теми — card-warm
+   фонът е полупрозрачен и менюто прозираше върху съдържанието отдолу. */
+.tools-menu {
+  background-color: #ffffff;
+  border-color: rgba(31, 27, 23, 0.14);
+  box-shadow: 0 14px 34px rgba(31, 27, 23, 0.18);
+  backdrop-filter: none;
+}
+.dark .tools-menu {
+  background-color: #2e2620;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+.vivid .tools-menu {
+  background-color: #0b2036;
+  border-color: rgba(91, 180, 232, 0.32);
+  box-shadow: 0 14px 34px rgba(4, 12, 20, 0.62);
+  backdrop-filter: none;
+}
+.vivid .btn-primary {
+  background-color: #3a86b9;
+  background-image: linear-gradient(135deg, #3a86b9, #5bb4e8);
+  color: #06131f;
+  box-shadow: 0 0 22px rgba(91, 180, 232, 0.35);
+}
+.vivid .btn-primary:hover {
+  background-image: linear-gradient(135deg, #5bb4e8, #6fc3f0);
+  box-shadow: 0 0 30px rgba(111, 195, 240, 0.45);
+}
+.vivid .btn-secondary {
+  border-color: rgba(91, 180, 232, 0.4);
+  background-color: rgba(91, 180, 232, 0.08);
+  color: #dcebf7;
+}
+.vivid .btn-secondary:hover {
+  border-color: #6fc3f0;
+  color: #6fc3f0;
+}
+.vivid .field-input {
+  border-color: rgba(111, 195, 240, 0.25);
+  background-color: rgba(10, 24, 38, 0.6);
+  color: #dcebf7;
+}
+.vivid .field-input::placeholder {
+  color: rgba(220, 235, 247, 0.4);
+}
+.vivid .field-label {
+  color: rgba(220, 235, 247, 0.8);
+}
+/* Двете размазани декоративни петна в херото → сини сияния вместо топли. */
+.vivid .bg-med-pale.blur-3xl {
+  background-color: rgba(91, 180, 232, 0.22) !important;
+}
+.vivid .bg-tera-pale.blur-3xl {
+  background-color: rgba(58, 134, 185, 0.24) !important;
+}
+.vivid ::selection {
+  background: rgba(91, 180, 232, 0.35);
+  color: #eaf4fb;
+}
+
+/* ---------- Слой с ефекти (VividFx) ---------- */
+/* ВАЖНО: анимациите ползват класови селектори + !important, за да НАДДЕЛЕЯТ над
+   глобалния prefers-reduced-motion reset (той таргетира `*`, по-ниска специфичност).
+   Така спектакълът върви и при включен reduced-motion — изрично решение на собственика.
+   ТВЪРДА ГРАНИЦА: без стробоскоп — всички движения са бавни (≥ ~1s) и плавни, без
+   резки скокове в яркостта. */
+.viv-fx {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #0a1826;
+  contain: strict;
+}
+.viv-aurora {
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(40% 50% at 20% 30%, rgba(58, 134, 185, 0.55), transparent 60%),
+    radial-gradient(45% 55% at 80% 25%, rgba(91, 180, 232, 0.45), transparent 60%),
+    radial-gradient(50% 60% at 60% 82%, rgba(23, 69, 106, 0.6), transparent 65%);
+  filter: blur(42px);
+  mix-blend-mode: screen;
+  will-change: transform;
+  animation: viv-drift-a 34s ease-in-out infinite !important;
+}
+.viv-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(45% 55% at 72% 62%, rgba(111, 195, 240, 0.4), transparent 60%),
+    radial-gradient(50% 50% at 28% 72%, rgba(58, 134, 185, 0.4), transparent 60%);
+  mix-blend-mode: screen;
+  will-change: transform;
+  animation: viv-drift-b 46s ease-in-out infinite !important;
+}
+/* Лека винетка → пази контраста на текста в центъра. */
+.viv-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 42%, transparent 40%, rgba(8, 18, 30, 0.55) 100%);
+}
+/* Контейнер за капките. БЕЗ gooey филтър — стъклените капки искат остри блясъци,
+   а goo-прагът убива highlight-ите и формата. */
+.viv-drops {
+  position: absolute;
+  inset: 0;
+}
+/* Стъклена мастилена КАПКА (teardrop): заоблено тяло + изтеглен връх, който сочи
+   НАДОЛУ (по посока на движението). Капе отгоре надолу с лек хоризонтален sway.
+   Форма: границите на border-radius правят долния ръб по-остър от горния. */
+.viv-drop {
+  position: absolute;
+  top: 0;
+  overflow: hidden; /* клипва блясъците вътре в силуета на капката */
+  border-radius: 52% 48% 48% 52% / 62% 62% 40% 40%;
+  /* Полупрозрачно синьо „мастило" — стъклен градиент: блик горе, дълбочина долу. */
+  background:
+    radial-gradient(58% 42% at 40% 24%, rgba(255, 255, 255, 0.6), rgba(111, 195, 240, 0.28) 44%, transparent 66%),
+    radial-gradient(130% 120% at 50% 80%, rgba(23, 69, 106, 0.62), rgba(58, 134, 185, 0.5) 52%, rgba(91, 180, 232, 0.42));
+  box-shadow:
+    0 4px 10px rgba(8, 18, 30, 0.45),
+    inset 0 1px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -3px 7px rgba(23, 69, 106, 0.5);
+  backdrop-filter: blur(1.5px) brightness(1.04);
+  -webkit-backdrop-filter: blur(1.5px) brightness(1.04);
+  will-change: transform, opacity;
+  opacity: 0;
+  /* Всичко с !important — за да надделее над prefers-reduced-motion reset (`*`).
+     Скоростта идва от inline променлива `--viv-dur`, за да пазим разнообразие.
+     Timing = linear → времевата фракция съвпада с позицията → splash-ът е в синхрон. */
+  animation-name: viv-fall !important;
+  animation-timing-function: linear !important;
+  animation-iteration-count: infinite !important;
+  animation-duration: var(--viv-dur, 30s) !important;
+}
+/* Специуларен блик (стъкло) горе-вляво — статичен, без мигане. */
+.viv-drop::before {
+  content: "";
+  position: absolute;
+  top: 12%;
+  left: 22%;
+  width: 32%;
+  height: 24%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 70%);
+}
+/* Вътрешно сияние / пречупване по-надолу в тялото — статично. */
+.viv-drop::after {
+  content: "";
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  width: 46%;
+  height: 30%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(111, 195, 240, 0.68), rgba(111, 195, 240, 0) 72%);
+}
+/* Сплаш при „падане" — статичен контейнер закотвен долу; вълничката (::before) и
+   пръсналата капчица (::after) анимират НЕЗАВИСИМО (без компаундиране на transform).
+   `--viv-delay` е inherited custom property → достига псевдо-елементите (inline
+   animation-delay НЕ стига до тях). */
+.viv-splash {
+  position: absolute;
+  bottom: 2.5vh;
+  width: var(--viv-sw, 60px);
+  height: calc(var(--viv-sw, 60px) * 0.5);
+  transform: translateX(-50%);
+}
+.viv-splash::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(111, 195, 240, 0.5);
+  background: radial-gradient(closest-side, rgba(91, 180, 232, 0.16), transparent);
+  transform-origin: center bottom;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: viv-splash var(--viv-dur, 30s) ease-out var(--viv-delay, 0s) infinite !important;
+}
+.viv-splash::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  width: 20%;
+  height: 42%;
+  border-radius: 50% 50% 50% 50% / 40% 40% 62% 62%;
+  background: linear-gradient(#6fc3f0, #3a86b9);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: viv-splash-jet var(--viv-dur, 30s) ease-out var(--viv-delay, 0s) infinite !important;
+}
+/* Фин статичен шум/grain (без анимация → нулев риск от мигане). */
+.viv-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+@keyframes viv-drift-a {
+  0% {
+    transform: translate3d(-4%, -3%, 0) scale(1.08) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(6%, 5%, 0) scale(1.24) rotate(7deg);
+  }
+  100% {
+    transform: translate3d(-4%, -3%, 0) scale(1.08) rotate(0deg);
+  }
+}
+@keyframes viv-drift-b {
+  0% {
+    transform: translate3d(5%, 4%, 0) scale(1.15) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-6%, -4%, 0) scale(1) rotate(-6deg);
+  }
+  100% {
+    transform: translate3d(5%, 4%, 0) scale(1.15) rotate(0deg);
+  }
+}
+/* Капва отгоре (-25vh) до под екрана (118vh) с лек хоризонтален sway и фина
+   „течна" деформация (scaleY). Плавно fade-in горе / fade-out при достигане на
+   пода (~85%), където капката се разтваря в сплаша. Само transform/opacity. */
+@keyframes viv-fall {
+  0% {
+    transform: translate3d(0, -25vh, 0) scaleY(0.92);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.92;
+  }
+  50% {
+    transform: translate3d(var(--viv-sway, 0), 46vh, 0) scaleY(1.12);
+  }
+  82% {
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(0, 118vh, 0) scaleY(0.9);
+    opacity: 0;
+  }
+}
+/* Вълничка/ripple от пода — мек растеж, без рязък проблясък (opacity ≤ 0.5). */
+@keyframes viv-splash {
+  0%,
+  80% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  85% {
+    transform: scale(0.55);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+/* Пръсната капчица „изхвърча" нагоре при удара и пада обратно. */
+@keyframes viv-splash-jet {
+  0%,
+  82% {
+    transform: translate(-50%, 30%) scale(0.4);
+    opacity: 0;
+  }
+  86% {
+    transform: translate(-50%, -70%) scale(0.85);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, 20%) scale(0.25);
+    opacity: 0;
+  }
+}
 
 ::selection {
   @apply bg-tera-pale text-ink;
@@ -54,9 +436,11 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-tera px-6 py-3
+    /* bg-tera-dark (не bg-tera): бял текст върху #C25E3F е 3.86:1 (под WCAG AA);
+       върху tera-dark е ~5.3:1. Пази брандовия теракота, но четимо. */
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-tera-dark px-6 py-3
       font-semibold text-paper shadow-soft transition
-      hover:bg-tera-dark hover:shadow-lift focus-visible:outline focus-visible:outline-2
+      hover:bg-[#8a3a23] hover:shadow-lift focus-visible:outline focus-visible:outline-2
       focus-visible:outline-offset-2 focus-visible:outline-tera-dark disabled:opacity-50;
   }
   .btn-secondary {
