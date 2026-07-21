@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import HeroSignature from "./HeroSignature.jsx";
+import ReverseLabShowcase from "./ReverseLabShowcase.jsx";
 // THREE.js is lazy loaded inside Scene3D via dynamic import()
 // This removes 465KB from the initial bundle and improves LCP/FCP significantly
 
@@ -3011,7 +3012,7 @@ export default function App(){
         <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("lab_desc")}</p>
         <div className="cs-lab-grid" style={{display:"grid",gridTemplateColumns:"minmax(280px,1fr) minmax(280px,1fr)",gap:2,alignItems:"stretch"}}>
           <div style={{border:"1px solid rgba("+CR+",.15)",background:"rgba("+CR+",.02)",minHeight:340,position:"relative"}}>
-            <PrintForge/>
+            <ReverseLabShowcase/>
           </div>
           <div style={{border:"1px solid rgba(245,245,240,.06)",padding:"28px 24px",display:"flex",flexDirection:"column",justifyContent:"center",gap:18}}>
             {[t("lab_b1"),t("lab_b2"),t("lab_b3")].map(function(b,i){
