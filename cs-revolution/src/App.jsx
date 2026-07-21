@@ -3208,6 +3208,7 @@ export default function App(){
             <div style={{marginTop:16,display:"flex",gap:12}}>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>SSL {lang==="it"?"PROTETTO":lang==="bg"?"\u0417\u0410\u0429\u0418\u0422\u0415\u041D":"SECURED"}</span>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>99.9% UPTIME</span>
+              <a href="/status/" style={{fontSize:8,color:C,letterSpacing:".15em",textDecoration:"none",cursor:"none"}}>{"\u25CF"} {lang==="it"?"STATO LIVE":lang==="bg"?"\u0421\u0422\u0410\u0422\u0423\u0421 \u041D\u0410 \u0416\u0418\u0412\u041E":"LIVE STATUS"} {"\u2192"}</a>
             </div>
           </div>
         </div>
