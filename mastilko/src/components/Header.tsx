@@ -17,6 +17,7 @@ const TOOLS = [
   { href: "/wifi", label: "WiFi стикер", icon: "/icons/wifi.webp" },
   { href: "/badzhove", label: "Баджове за събития", icon: "/icons/vizitki.webp" },
   { href: "/obyava", label: "Обява с ресни", icon: "/icons/tabelki.webp" },
+  { href: "/vaucheri", label: "Ваучери и талони", icon: "/icons/pokani.webp" },
 ];
 
 export default function Header() {

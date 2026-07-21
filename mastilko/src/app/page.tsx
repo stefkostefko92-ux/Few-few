@@ -98,6 +98,14 @@ const TOOLS: Array<{
     text: "Класическата обява с откъсващи се телефончета — за уроци, квартира, услуги. Печаташ, залепваш, хората късат номера.",
     accent: "bg-gora-pale text-gora-dark",
   },
+  {
+    href: "/vaucheri",
+    emoji: "🎁",
+    icon: "/icons/pokani.webp",
+    title: "Ваучери и талони",
+    text: "Подаръчни ваучери и талони за отстъпка с уникален код и QR — цяла серия наведнъж. За салони, кафенета и магазини.",
+    accent: "bg-tera-pale text-tera-dark",
+  },
 ];
 
 const STEPS = [
