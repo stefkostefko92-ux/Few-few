@@ -9562,9 +9562,20 @@
           "date": "2026-07-21",
           "event": "v11.6 — учене",
           "detail": "Научи: mastilko: глобалната типографска персонализация (letter-spacing/font-weight/line-height… (+1 още)"
+        },
+        {
+          "version": "11.7.0",
+          "date": "2026-07-21",
+          "event": "v11.7 — учене",
+          "detail": "Научи: mastilko StyleState schema pattern: всяко ново персонализационно поле следва фиксиран 3…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-21",
+          "type": "learning",
+          "summary": "Научи: „mastilko StyleState schema pattern: всяко ново персонализационно поле следва фиксиран 3…\" · 1 в карантина"
+        },
         {
           "date": "2026-07-21",
           "type": "learning",
