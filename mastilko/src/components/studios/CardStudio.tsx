@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { CARD, cardGrid } from "@/lib/print";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import { vCard } from "@/lib/vcard";
 import { vizitkaRegisterUrl } from "@/lib/vizitka-import";
@@ -175,7 +175,7 @@ function CardFaceInner({
   const base: React.CSSProperties = {
     width: u(CARD.w),
     height: u(CARD.h),
-    background: theme.bg,
+    background: sheetBg(s, theme),
     color: theme.fg,
     overflow: "hidden",
     display: "flex",

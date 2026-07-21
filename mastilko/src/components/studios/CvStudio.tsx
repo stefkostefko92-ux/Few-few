@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
@@ -447,7 +447,7 @@ export default function CvStudio() {
               <div
                 style={{
                   width: "62mm",
-                  background: theme.bg,
+                  background: sheetBg(s, theme),
                   color: theme.fg,
                   padding: "12mm 7mm",
                   flexShrink: 0,

@@ -115,6 +115,12 @@ export interface StyleState {
   leading?: number;
   /** Наклонен (курсив) текст. */
   italic?: boolean;
+  /** Градиентен фон на листа (вместо плътен). */
+  bgGrad?: boolean;
+  /** Втори цвят на градиента. */
+  cbg2?: string;
+  /** Ъгъл на градиента в градуси: 0 … 360. */
+  bgAngle?: number;
   /** Украса на фона. */
   decor?: string;
   /** Свой цвят на украсата (по подразбиране — акцентният). */
@@ -137,6 +143,9 @@ export const StyleSchemaShape = {
   weight: z.number().int().min(300).max(800),
   leading: z.number().min(1).max(2),
   italic: z.boolean(),
+  bgGrad: z.boolean(),
+  cbg2: z.string().max(20),
+  bgAngle: z.number().min(0).max(360),
   decor: z.string().max(20),
   decorColor: z.string().max(20),
   decorOpacity: z.number().min(0.05).max(1),
@@ -174,6 +183,18 @@ export function fontVars(s: StyleState): React.CSSProperties {
   if (typeof s.leading === "number") v.lineHeight = s.leading;
   if (s.italic) v.fontStyle = "italic";
   return v;
+}
+
+/**
+ * Фон на листа: плътен (theme.bg) или мек градиент към втори цвят. Ползва се
+ * навсякъде, където студиото рендира цветна повърхност на листа.
+ */
+export function sheetBg(s: StyleState, theme: WarmTheme): string {
+  if (s.bgGrad && s.cbg2 && hex.test(s.cbg2)) {
+    const angle = typeof s.bgAngle === "number" ? s.bgAngle : 135;
+    return `linear-gradient(${angle}deg, ${theme.bg}, ${s.cbg2})`;
+  }
+  return theme.bg;
 }
 
 /** Резолюция на украсата — свой цвят/прозрачност/мащаб с безопасни граници. */

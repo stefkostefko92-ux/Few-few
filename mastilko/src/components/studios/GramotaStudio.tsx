@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -113,7 +113,7 @@ export default function GramotaStudio() {
                 height: "100%", border: `0.5mm solid ${theme.accent}`,
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "10mm 18mm",
-                color: theme.fg, background: theme.bg, position: "relative", overflow: "hidden",
+                color: theme.fg, background: sheetBg(s, theme), position: "relative", overflow: "hidden",
               }}>
                 <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
                 <div style={{ fontSize: "5mm", letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>

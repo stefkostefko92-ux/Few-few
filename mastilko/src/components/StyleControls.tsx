@@ -58,6 +58,40 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor }: 
         </div>
       )}
 
+      <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+        <input
+          type="checkbox"
+          checked={!!value.bgGrad}
+          onChange={(e) => onChange({ bgGrad: e.target.checked })}
+          className="h-4 w-4 accent-tera"
+        />
+        <Icon name="palette" className="h-4 w-4" /> Градиентен фон
+      </label>
+
+      {value.bgGrad && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block text-xs font-semibold text-ink-soft">
+            Втори цвят
+            <input
+              type="color"
+              value={value.cbg2 || "#F3D9C0"}
+              onChange={(e) => onChange({ cbg2: e.target.value })}
+              className="mt-1 h-10 w-full rounded-lg border border-ink/15"
+              aria-label="Втори цвят на градиента"
+            />
+          </label>
+          <Slider
+            label="Ъгъл"
+            min={0}
+            max={360}
+            step={15}
+            value={value.bgAngle ?? 135}
+            suffix="°"
+            onChange={(v) => onChange({ bgAngle: v })}
+          />
+        </div>
+      )}
+
       {!hideFont && (
         <>
           <div>

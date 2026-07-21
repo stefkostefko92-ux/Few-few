@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -104,7 +104,7 @@ export default function TabelkaStudio() {
         <PrintBar summary={`Табелка на ${s.landscape ? "хоризонтален" : "вертикален"} лист А4`} />
         <SheetPreview landscape={s.landscape} style={fontVars(s)}>
           <div style={{
-            position: "absolute", inset: 0, background: theme.bg, color: theme.fg,
+            position: "absolute", inset: 0, background: sheetBg(s, theme), color: theme.fg,
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", textAlign: "center", padding: "20mm",
             border: `4mm solid ${theme.accent}`, overflow: "hidden",

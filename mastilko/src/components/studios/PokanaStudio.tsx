@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -63,7 +63,7 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
   return (
     <div style={{
       position: "relative",
-      width: u(200), height: u(138), background: theme.bg, color: theme.fg,
+      width: u(200), height: u(138), background: sheetBg(s, theme), color: theme.fg,
       display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center", textAlign: "center", padding: `${u(8)} ${u(14)}`,
       border: `${u(1)} solid ${theme.accent}`, borderRadius: u(3), overflow: "hidden",

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -140,7 +140,7 @@ export default function WifiStudio() {
               <div key={i} style={{
                 position: "absolute", left: `${left}mm`, top: `${top}mm`,
                 width: `${size.w}mm`, height: `${size.h}mm`,
-                background: theme.bg, color: theme.fg, borderRadius: "3mm",
+                background: sheetBg(s, theme), color: theme.fg, borderRadius: "3mm",
                 border: `0.3mm dashed rgba(120,110,100,0.5)`, overflow: "hidden",
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "4mm", gap: "2mm",
