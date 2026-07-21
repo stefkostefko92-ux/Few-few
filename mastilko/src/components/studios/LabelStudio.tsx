@@ -129,6 +129,38 @@ export default function LabelStudio() {
   // Един QR за целия лист — не по един на клетка.
   const qrSrc = useQrDataUrl(qrText, s.qrColor ? qrSafeColor(theme.accent) : undefined);
 
+  // Експорт на контурите (cut lines) като A4 SVG в mm — за режещо плоте
+  // (Cricut/Silhouette): печаташ листа, после машината реже по същите позиции.
+  function downloadCutSvg() {
+    const parts: string[] = [];
+    for (let i = 0; i < grid.total; i++) {
+      const ci = i - skip;
+      if (ci < 0) continue;
+      if (!cellContent(s, listLines, ci)) continue;
+      const col = i % grid.cols;
+      const row = Math.floor(i / grid.cols);
+      const x = grid.offsetX + col * (preset.w + grid.gapX);
+      const y = grid.offsetY + row * (preset.h + grid.gapY);
+      const cx = (x + preset.w / 2).toFixed(2);
+      const cy = (y + preset.h / 2).toFixed(2);
+      const stroke = `fill="none" stroke="#000" stroke-width="0.1"`;
+      if (preset.shape === "circle") {
+        parts.push(`<circle cx="${cx}" cy="${cy}" r="${(preset.w / 2).toFixed(2)}" ${stroke}/>`);
+      } else if (preset.shape === "round") {
+        parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${(preset.w / 2).toFixed(2)}" ry="${(preset.h / 2).toFixed(2)}" ${stroke}/>`);
+      } else {
+        parts.push(`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${preset.w}" height="${preset.h}" rx="2.5" ${stroke}/>`);
+      }
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">${parts.join("")}</svg>`;
+    const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mastilko-rezhi.svg";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const radius =
     preset.shape === "circle" ? "50%" : preset.shape === "round" ? "50% / 45%" : "2.5mm";
   const qrSize = Math.min(preset.h, preset.w) * 0.6;
@@ -350,6 +382,16 @@ export default function LabelStudio() {
                 </p>
               </div>
             )}
+          </div>
+
+          <div className="border-t border-ink/10 pt-3">
+            <button type="button" className="btn-secondary text-sm" onClick={downloadCutSvg}>
+              <Icon name="download" className="h-4 w-4" /> Свали SVG за рязане (Cricut/Silhouette)
+            </button>
+            <p className="mt-1 text-xs text-ink-faint">
+              Контурите на етикетите като SVG в mm — зареждаш го в машината за
+              рязане (print-then-cut) на същите позиции като разпечатката.
+            </p>
           </div>
         </div>
 
