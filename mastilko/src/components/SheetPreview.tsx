@@ -72,6 +72,33 @@ export default function SheetPreview({
             }}
           >
             {children}
+            {/* Резници за печатница — скрити, освен при клас .crop-on (виж
+                globals.css + PrintBar). Печатат се заедно с листа. */}
+            <div className="crop-marks" aria-hidden>
+              {(["tl", "tr", "bl", "br"] as const).map((corner) => {
+                const top = corner[0] === "t";
+                const left = corner[1] === "l";
+                const mark = "0.25mm solid #111";
+                return (
+                  <span
+                    key={corner}
+                    style={{
+                      position: "absolute",
+                      width: "6mm",
+                      height: "6mm",
+                      top: top ? 0 : undefined,
+                      bottom: top ? undefined : 0,
+                      left: left ? 0 : undefined,
+                      right: left ? undefined : 0,
+                      borderTop: top ? mark : undefined,
+                      borderBottom: top ? undefined : mark,
+                      borderLeft: left ? mark : undefined,
+                      borderRight: left ? undefined : mark,
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

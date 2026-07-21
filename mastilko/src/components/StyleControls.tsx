@@ -1,6 +1,6 @@
 "use client";
 
-import { DECORS, contrastRatio, contrastGrade, type StyleState } from "@/lib/style";
+import { DECORS, contrastRatio, contrastGrade, inkCoverage, resolveTheme, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
 import Icon from "@/components/Icon";
@@ -79,6 +79,26 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
           acc={value.cacc || "#C25E3F"}
         />
       )}
+
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+          <input
+            type="checkbox"
+            checked={!!value.ecoMode}
+            onChange={(e) => onChange({ ecoMode: e.target.checked })}
+            className="h-4 w-4 accent-tera"
+          />
+          Мастило-пестелив (еко) режим
+        </label>
+        {(() => {
+          const cov = inkCoverage(value, resolveTheme(value));
+          return (
+            <span className={`text-xs font-semibold ${cov.heavy ? "text-tera-dark" : "text-ink-faint"}`}>
+              Мастило: {cov.label}
+            </span>
+          );
+        })()}
+      </div>
 
       <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
         <input

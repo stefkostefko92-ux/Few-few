@@ -155,6 +155,8 @@ export interface StyleState {
   titleShadow?: boolean;
   /** QR кодът в акцентния цвят (с проверка за скенируемост). */
   qrColor?: boolean;
+  /** Мастило-пестелив режим — бял фон, за да не хаби мастило/тонер. */
+  ecoMode?: boolean;
 }
 
 export const StyleSchemaShape = {
@@ -186,6 +188,7 @@ export const StyleSchemaShape = {
   titleGradient: z.boolean(),
   titleShadow: z.boolean(),
   qrColor: z.boolean(),
+  ecoMode: z.boolean(),
 };
 
 const hex = /^#[0-9a-fA-F]{3,8}$/;
@@ -267,11 +270,26 @@ export function borderCss(s: StyleState, fb: BorderFallback): { border: string; 
  * навсякъде, където студиото рендира цветна повърхност на листа.
  */
 export function sheetBg(s: StyleState, theme: WarmTheme): string {
+  // Еко режим: чисто бял фон — най-малко мастило/тонер (има превес над всичко).
+  if (s.ecoMode) return "#FFFFFF";
   if (s.bgGrad && s.cbg2 && hex.test(s.cbg2)) {
     const angle = typeof s.bgAngle === "number" ? s.bgAngle : 135;
     return `linear-gradient(${angle}deg, ${theme.bg}, ${s.cbg2})`;
   }
   return theme.bg;
+}
+
+/**
+ * Груба оценка на мастилената покривност от цвета на фона (по-тъмен фон =
+ * повече мастило). Връща етикет за потребителя — ориентир, не точна стойност.
+ */
+export function inkCoverage(s: StyleState, theme: WarmTheme): { label: string; heavy: boolean } {
+  if (s.ecoMode) return { label: "ниска (еко)", heavy: false };
+  const lum = relLuminance(s.customColors && s.cbg && hex.test(s.cbg) ? s.cbg : theme.bg);
+  if (lum === null) return { label: "средна", heavy: false };
+  if (lum < 0.35) return { label: "висока", heavy: true };
+  if (lum < 0.7) return { label: "средна", heavy: false };
+  return { label: "ниска", heavy: false };
 }
 
 /** Резолюция на украсата — свой цвят/прозрачност/мащаб с безопасни граници. */

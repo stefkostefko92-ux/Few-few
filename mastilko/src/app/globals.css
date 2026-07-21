@@ -469,6 +469,11 @@ body {
 .cvd-deut .sheet { filter: url(#cvd-deut); }
 .cvd-trit .sheet { filter: url(#cvd-trit); }
 
+/* Резници за печатница — скрити по подразбиране, показват се при .crop-on
+   (превключвател в PrintBar) и се печатат заедно с листа. */
+.crop-marks { display: none; }
+.crop-on .crop-marks { display: block; }
+
 /* Печата се САМО съдържанието на .print-area — точен А4 лист в mm. */
 
 @page {
