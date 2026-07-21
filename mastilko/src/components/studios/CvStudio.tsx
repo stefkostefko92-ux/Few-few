@@ -4,6 +4,7 @@ import { z } from "zod";
 import { resolveTheme, fontVars, sheetBg, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
+import BrandKitButton from "@/components/BrandKitButton";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
@@ -49,6 +50,10 @@ interface CvState extends StyleState {
   photoShape: "circle" | "square";
   /** Размер на снимката в mm. */
   photoSize: number;
+  /** Времева линия за опита. */
+  timeline: boolean;
+  /** Чертички за нивото на уменията (парсва „умение 4“ или „умение 80%“). */
+  skillBars: boolean;
   // Полета по стандарта Europass (ползват се в Europass шаблона)
   birthDate: string;
   nationality: string;
@@ -95,6 +100,8 @@ const ProjectSchema = z
     photo: z.string().max(500000),
     photoShape: z.enum(["circle", "square"]),
     photoSize: z.number().min(15).max(45),
+    timeline: z.boolean(),
+    skillBars: z.boolean(),
     birthDate: z.string().max(120),
     nationality: z.string().max(120),
     motherTongue: z.string().max(120),
@@ -120,6 +127,8 @@ const INITIAL: CvState = {
   photo: "",
   photoShape: "circle",
   photoSize: 28,
+  timeline: false,
+  skillBars: false,
   birthDate: "",
   nationality: "",
   motherTongue: "",
@@ -149,6 +158,36 @@ function parseLanguage(entry: string): { name: string; level: string } {
 
 function splitList(s: string): string[] {
   return s.split(/[,;]+/).map((x) => x.trim()).filter(Boolean);
+}
+
+/** „Photoshop 4“ / „Excel 80%“ → { name, level 0…1 }; без число → level null. */
+function parseSkill(entry: string): { name: string; level: number | null } {
+  const pct = entry.match(/^(.+?)\s+(\d{1,3})\s*%\s*$/);
+  if (pct) return { name: pct[1]!.trim(), level: Math.min(1, Math.max(0, Number(pct[2]) / 100)) };
+  const num = entry.match(/^(.+?)\s+([1-5])\s*$/);
+  if (num) return { name: num[1]!.trim(), level: Number(num[2]) / 5 };
+  return { name: entry, level: null };
+}
+
+/** Списък умения с чертички за нивото (mm-безопасно). */
+function SkillBars({ skills, accent }: { skills: string[]; accent: string }) {
+  return (
+    <>
+      {skills.map((sk) => {
+        const { name, level } = parseSkill(sk);
+        return (
+          <div key={sk} style={{ marginBottom: "1.6mm" }}>
+            <div style={{ fontSize: fs(3) }}>{name}</div>
+            {level !== null && (
+              <div style={{ height: "1.2mm", borderRadius: "1mm", background: "rgba(0,0,0,0.12)", marginTop: "0.6mm" }}>
+                <div style={{ width: `${(level * 100).toFixed(0)}%`, height: "100%", borderRadius: "1mm", background: accent }} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 /** Снимка на кандидата — фиксиран mm размер (не се влияе от размера на текста). */
@@ -445,6 +484,19 @@ export default function CvStudio() {
               onChange={(e) => set({ skills: e.target.value })}
               placeholder="напр. Photoshop, работа с клиенти, Excel"
             />
+            {s.layout !== "europass" && (
+              <label className="mt-2 flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input type="checkbox" checked={s.skillBars}
+                  onChange={(e) => set({ skillBars: e.target.checked })} className="h-4 w-4 accent-tera" />
+                Чертички за нивото
+              </label>
+            )}
+            {s.skillBars && (
+              <p className="mt-1 text-xs text-ink-faint">
+                Добави ниво след умението: „Photoshop 4“ (от 1 до 5) или
+                „Excel 80%“. Без число — само текст.
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="cv-langs" className="field-label">
@@ -472,7 +524,19 @@ export default function CvStudio() {
               <option value="europass">Europass (стандарт на ЕС)</option>
             </select>
           </div>
-          {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor hideBorder showPhotoFx />}
+          {s.layout !== "europass" && (
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+              <input type="checkbox" checked={s.timeline}
+                onChange={(e) => set({ timeline: e.target.checked })} className="h-4 w-4 accent-tera" />
+              Времева линия за опита
+            </label>
+          )}
+          {s.layout !== "europass" && (
+            <>
+              <BrandKitButton onApply={set} />
+              <StyleControls value={s} onChange={set} hideDecor hideBorder showPhotoFx />
+            </>
+          )}
         </div>
 
         {s.layout === "europass" && (
@@ -562,9 +626,13 @@ export default function CvStudio() {
                 )}
                 {skills.length > 0 && (
                   <CvSideSection title="Умения" accent={theme.accent}>
-                    {skills.map((sk) => (
-                      <div key={sk} style={{ marginBottom: "1.2mm" }}>• {sk}</div>
-                    ))}
+                    {s.skillBars ? (
+                      <SkillBars skills={skills} accent={theme.accent} />
+                    ) : (
+                      skills.map((sk) => (
+                        <div key={sk} style={{ marginBottom: "1.2mm" }}>• {sk}</div>
+                      ))
+                    )}
                   </CvSideSection>
                 )}
                 {languages.length > 0 && (
@@ -582,7 +650,7 @@ export default function CvStudio() {
                     <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{s.summary}</p>
                   </CvMainSection>
                 )}
-                <CvJobs jobs={s.jobs} accent={theme.accent} />
+                <CvJobs jobs={s.jobs} accent={theme.accent} timeline={s.timeline} />
                 <CvSchools schools={s.schools} accent={theme.accent} />
               </div>
             </div>
@@ -619,11 +687,17 @@ export default function CvStudio() {
                   <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{s.summary}</p>
                 </CvMainSection>
               )}
-              <CvJobs jobs={s.jobs} accent={theme.accent} />
+              <CvJobs jobs={s.jobs} accent={theme.accent} timeline={s.timeline} />
               <CvSchools schools={s.schools} accent={theme.accent} />
               {skills.length > 0 && (
                 <CvMainSection title="Умения" accent={theme.accent}>
-                  <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{skills.join(" · ")}</p>
+                  {s.skillBars ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "8mm" }}>
+                      <SkillBars skills={skills} accent={theme.accent} />
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{skills.join(" · ")}</p>
+                  )}
                 </CvMainSection>
               )}
               {languages.length > 0 && (
@@ -893,31 +967,36 @@ function CvMainSection({
   );
 }
 
-function CvJobs({ jobs, accent }: { jobs: Job[]; accent: string }) {
+function CvJobs({ jobs, accent, timeline }: { jobs: Job[]; accent: string; timeline?: boolean }) {
   const filled = jobs.filter((j) => j.role || j.company || j.desc);
   if (filled.length === 0) return null;
   return (
     <CvMainSection title="Опит" accent={accent}>
-      {filled.map((j) => (
-        <div key={j.id} style={{ marginBottom: "4mm", breakInside: "avoid" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "4mm" }}>
-            <span style={{ fontWeight: 700, fontSize: fs(3.4) }}>
-              {j.role}
-              {j.company && (
-                <span style={{ fontWeight: 400, opacity: 0.75 }}> · {j.company}</span>
-              )}
-            </span>
-            {j.period && (
-              <span style={{ fontSize: fs(3), opacity: 0.7, whiteSpace: "nowrap" }}>
-                {j.period}
+      <div style={timeline ? { borderLeft: `0.4mm solid ${accent}`, paddingLeft: "5mm", marginLeft: "1mm" } : undefined}>
+        {filled.map((j) => (
+          <div key={j.id} style={{ position: "relative", marginBottom: "4mm", breakInside: "avoid" }}>
+            {timeline && (
+              <span style={{ position: "absolute", left: "-6.2mm", top: "1.2mm", width: "2.4mm", height: "2.4mm", borderRadius: "50%", background: accent }} />
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "4mm" }}>
+              <span style={{ fontWeight: 700, fontSize: fs(3.4) }}>
+                {j.role}
+                {j.company && (
+                  <span style={{ fontWeight: 400, opacity: 0.75 }}> · {j.company}</span>
+                )}
               </span>
+              {j.period && (
+                <span style={{ fontSize: fs(3), opacity: 0.7, whiteSpace: "nowrap" }}>
+                  {j.period}
+                </span>
+              )}
+            </div>
+            {j.desc && (
+              <p style={{ fontSize: fs(3.1), lineHeight: 1.5, marginTop: "1mm" }}>{j.desc}</p>
             )}
           </div>
-          {j.desc && (
-            <p style={{ fontSize: fs(3.1), lineHeight: 1.5, marginTop: "1mm" }}>{j.desc}</p>
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </CvMainSection>
   );
 }

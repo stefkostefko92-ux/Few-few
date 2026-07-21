@@ -4,6 +4,7 @@ import { z } from "zod";
 import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
+import BrandKitButton from "@/components/BrandKitButton";
 import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
@@ -31,7 +32,15 @@ interface PismoState extends StyleState {
   margin: number;
   /** Цветна лента-бланка с името горе. */
   letterhead: boolean;
+  /** Диагонален воден знак. */
+  watermark: "none" | "chernova" | "poveritelno" | "kopie";
 }
+
+const WATERMARKS: Record<string, string> = {
+  chernova: "ЧЕРНОВА",
+  poveritelno: "ПОВЕРИТЕЛНО",
+  kopie: "КОПИЕ",
+};
 
 // Валидация на качен проект-файл (виж бележката в LabelStudio).
 const ProjectSchema = z
@@ -48,6 +57,7 @@ const ProjectSchema = z
     body: z.string().max(4000),
     margin: z.number().min(12).max(30),
     letterhead: z.boolean(),
+    watermark: z.enum(["none", "chernova", "poveritelno", "kopie"]),
     ...StyleSchemaShape,
   })
   .partial();
@@ -74,6 +84,7 @@ const INITIAL: PismoState = {
   themeId: "tera",
   margin: 20,
   letterhead: false,
+  watermark: "none",
 };
 
 export default function PismoStudio() {
@@ -121,6 +132,7 @@ export default function PismoStudio() {
               />
             </div>
           ))}
+          <BrandKitButton onApply={set} />
           <StyleControls value={s} onChange={set} hideDecor hideBorder />
 
           <div className="space-y-3 border-t border-ink/10 pt-3">
@@ -138,6 +150,16 @@ export default function PismoStudio() {
                 onChange={(e) => set({ margin: Number(e.target.value) })}
                 className="mt-1 h-4 w-full accent-tera" aria-label="Поле на страницата" />
             </label>
+            <div>
+              <label className="field-label" htmlFor="watermark">Воден знак</label>
+              <select id="watermark" className="field-input" value={s.watermark}
+                onChange={(e) => set({ watermark: e.target.value as PismoState["watermark"] })}>
+                <option value="none">Без воден знак</option>
+                <option value="chernova">ЧЕРНОВА</option>
+                <option value="poveritelno">ПОВЕРИТЕЛНО</option>
+                <option value="kopie">КОПИЕ</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -213,8 +235,32 @@ export default function PismoStudio() {
               lineHeight: 1.65,
               display: "flex",
               flexDirection: "column",
+              position: "relative",
+              isolation: "isolate",
             }}
           >
+            {s.watermark && s.watermark !== "none" && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transform: "rotate(-30deg)",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 800,
+                  fontSize: "40mm",
+                  letterSpacing: "0.08em",
+                  color: "rgba(46,38,32,0.07)",
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                  zIndex: -1,
+                }}
+              >
+                {WATERMARKS[s.watermark]}
+              </div>
+            )}
             {s.letterhead ? (
               // Цветна бланка до ръбовете на страницата (отрицателно поле).
               <div

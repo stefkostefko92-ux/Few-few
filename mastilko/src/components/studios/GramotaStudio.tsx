@@ -7,6 +7,7 @@ import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
+import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
@@ -32,6 +33,10 @@ interface GramotaState extends StyleState {
   seal: boolean;
   /** Декоративна лента-розетка. */
   ribbon: boolean;
+  /** QR код за проверка (линк/код). */
+  verifyQr: boolean;
+  /** Съдържание на проверовъчния QR (линк или код). */
+  verifyCode: string;
 }
 
 const INITIAL: GramotaState = {
@@ -47,6 +52,8 @@ const INITIAL: GramotaState = {
   logoSize: 18,
   seal: false,
   ribbon: false,
+  verifyQr: false,
+  verifyCode: "",
 };
 
 const ProjectSchema = z
@@ -62,6 +69,8 @@ const ProjectSchema = z
     logoSize: z.number().min(8).max(40),
     seal: z.boolean(),
     ribbon: z.boolean(),
+    verifyQr: z.boolean(),
+    verifyCode: z.string().max(300),
     ...StyleSchemaShape,
   })
   .partial();
@@ -97,6 +106,7 @@ export default function GramotaStudio() {
   const [s, setS] = useLocalState<GramotaState>("mastilko-gramota", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = resolveTheme(s);
   const set = (patch: Partial<GramotaState>) => setS({ ...s, ...patch });
+  const verifySrc = useQrDataUrl(s.verifyQr && s.verifyCode.trim() ? s.verifyCode.trim() : "");
 
   return (
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -160,7 +170,22 @@ export default function GramotaStudio() {
                 <input type="checkbox" checked={s.ribbon} onChange={(e) => set({ ribbon: e.target.checked })} className="h-4 w-4 accent-tera" />
                 Лента-розетка
               </label>
+              <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input type="checkbox" checked={s.verifyQr} onChange={(e) => set({ verifyQr: e.target.checked })} className="h-4 w-4 accent-tera" />
+                QR за проверка
+              </label>
             </div>
+            {s.verifyQr && (
+              <div>
+                <label htmlFor="verify-code" className="field-label">Линк/код за проверка</label>
+                <input id="verify-code" className="field-input" maxLength={300} value={s.verifyCode}
+                  onChange={(e) => set({ verifyCode: e.target.value })}
+                  placeholder="напр. https://uchilishte.bg/proveri/2026-042" />
+                <p className="mt-1 text-xs text-ink-faint">
+                  QR кодът се генерира в твоя браузър — нищо не се изпраща навън.
+                </p>
+              </div>
+            )}
           </div>
 
           <StyleControls value={s} onChange={set} showTitleFx showPhotoFx />
@@ -191,6 +216,12 @@ export default function GramotaStudio() {
                 {s.ribbon && (
                   <div style={{ position: "absolute", top: "3mm", right: "5mm", zIndex: 2 }}>
                     <Ribbon color={theme.accent} />
+                  </div>
+                )}
+                {verifySrc && (
+                  <div style={{ position: "absolute", bottom: "5mm", left: "6mm", zIndex: 2, textAlign: "center" }}>
+                    <QrImage src={verifySrc} style={{ width: "15mm", height: "15mm", background: "#fff", padding: "1mm", borderRadius: "1mm" }} />
+                    <div style={{ fontSize: fs(2.4), marginTop: "0.5mm", opacity: 0.7 }}>проверка</div>
                   </div>
                 )}
                 {s.logo && (

@@ -8,6 +8,7 @@ import FontPicker from "@/components/FontPicker";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
+import SignIcon, { SIGN_ICONS } from "@/components/SignIcon";
 import StyleControls from "@/components/StyleControls";
 
 // Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
@@ -16,6 +17,8 @@ const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface TabelkaState extends StyleState {
   emoji: string;
+  /** Монохромна икона (приоритет пред емоджи, ако е зададена). */
+  iconId: string;
   title: string;
   subtitle: string;
   landscape: boolean;
@@ -24,6 +27,7 @@ interface TabelkaState extends StyleState {
 
 const INITIAL: TabelkaState = {
   emoji: "🔔",
+  iconId: "none",
   title: "МОЛЯ, ЗВЪННЕТЕ",
   subtitle: "Заповядайте — ей сега идваме",
   landscape: false,
@@ -33,6 +37,7 @@ const INITIAL: TabelkaState = {
 const ProjectSchema = z
   .object({
     emoji: z.string().max(8),
+    iconId: z.string().max(20),
     title: z.string().max(60),
     subtitle: z.string().max(120),
     landscape: z.boolean(),
@@ -76,6 +81,13 @@ export default function TabelkaStudio() {
               onChange={(e) => set({ emoji: e.target.value })} placeholder="напр. 🔔" />
           </div>
           <div>
+            <label htmlFor="t-icon" className="field-label">Или монохромна икона (по-надеждна за печат)</label>
+            <select id="t-icon" className="field-input" value={s.iconId}
+              onChange={(e) => set({ iconId: e.target.value })}>
+              {SIGN_ICONS.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
+            </select>
+          </div>
+          <div>
             <label htmlFor="t-title" className="field-label">Голям текст</label>
             <input id="t-title" className="field-input" maxLength={60} value={s.title}
               onChange={(e) => set({ title: e.target.value })} />
@@ -115,7 +127,11 @@ export default function TabelkaStudio() {
           }}>
             <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {s.emoji && <div style={{ fontSize: fs(60), lineHeight: 1 }}>{s.emoji}</div>}
+              {s.iconId && s.iconId !== "none" ? (
+                <SignIcon id={s.iconId} color={theme.accent} style={{ width: fs(60), height: fs(60) }} />
+              ) : (
+                s.emoji && <div style={{ fontSize: fs(60), lineHeight: 1 }}>{s.emoji}</div>
+              )}
               <div style={{
                 fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800,
                 fontSize: fs(s.title.length > 20 ? 18 : 26), lineHeight: 1.05,
