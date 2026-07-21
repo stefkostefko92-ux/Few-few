@@ -61,7 +61,10 @@ effort: high
 ## Приватност-първа имплементация
 - **UA е спрян** (стандарт 01.07.2023, 360 на 01.10.2023) → **GA4** (event-based, first-party, consent
   mode вграден, cookieless при отказ). Алтернативи без cookie/приватностни: **Plausible/Umami** (self-host,
-  без лични данни, често без banner) и **PostHog** (product analytics, self-host опция).
+  без лични данни, често **без cookie banner**) и **PostHog** (product analytics, self-host опция).
+  ⚠ „Cookieless без banner" НЕ значи „без правно основание": ePrivacy изисква съгласие само за достъп до/
+  съхранение в устройството (cookies/подобни); cookieless аналитика може да мине без consent banner, но пак дължи
+  **чл.13 прозрачност** (privacy policy) + оценка на легитимен интерес. Правната преценка → сверявай с Правния Разбирач.
 - **Consent mode / server-side tagging:** съгласието се улавя (CMP) и се предава; server-side дава контрол,
   PII redaction, data residency. **DPA с доставчика** задължителен; минимизация; договорни трансфери.
 - **IP/геолокация:** анонимизирай; **никаква PII** в custom dimensions/properties. Retention изрична и къса
