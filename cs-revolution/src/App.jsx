@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import HeroSignature from "./HeroSignature.jsx";
 // THREE.js is lazy loaded inside Scene3D via dynamic import()
 // This removes 465KB from the initial bundle and improves LCP/FCP significantly
 
@@ -2840,8 +2841,10 @@ export default function App(){
           HERO — Viewport-spanning typography + 3D
           ═══════════════════════════════════════════ */}
       <section id="hero" aria-label={t("hero_eyebrow")} style={{position:"relative",minHeight:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"0 clamp(20px,5vw,64px) clamp(40px,6vh,72px)"}}>
-        {/* Signature: the measured carbon surface, resolving scan -> weave */}
-        <MeasuredSurface />
+        {/* Signature: live measured-carbon shader field — grid, fresnel edge, radar
+            sweep, caliper ring that tracks the pointer. Replaces the old
+            MeasuredSurface points/wireframe mount as the hero's single WebGL moment. */}
+        <HeroSignature />
 
         {/* Blueprint furniture - measured coordinates + tolerance callout */}
         <div aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
