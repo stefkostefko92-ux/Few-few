@@ -27,6 +27,8 @@ const APPLY = argv.includes("--apply");
 const TIER_A = new Set([
   "kodadjiyata", "kachestveniyat", "pravniyat-razbirach", "ai-djiyata", "kasadjiyata",
   "treydara", "prodavacha", "tayniyat-agent", "prevodach", "analizatora", "nabludatelya", "razbivacha",
+  // goladjiyata: риск-първо (близнак на treydara) — пари/Kelly/калибрация → дълбочината струва.
+  "goladjiyata",
   // vps-adjiyata: opus остава след сравнителна проба opus↔sonnet (2026-07-19) — LLM-съдия
   // с ВИСОКА увереност даде дълбочинна преднина на opus (реален deploy edge case, четене на
   // deploy.sh). Продукционен деплой = дълбочината струва. Останалите tier-B минаха паритет → sonnet.

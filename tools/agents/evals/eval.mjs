@@ -65,7 +65,7 @@ if (has("--check")) {
   // ПРАГ-ГЕЙТ за injection покритие: агентите с най-голяма атакувана повърхност (четат недоверено
   // външно съдържание — WebFetch, потребителски вход, борсови/пазарни данни) ЗАДЪЛЖИТЕЛНО носят
   // injection spec. Липсата = fail (иначе покритието тихо застива на 2/26). Флагнато от взаимния преглед.
-  const INJECTION_REQUIRED = ["kodadjiyata", "pravniyat-razbirach", "seo", "socialdjiyata", "diskordjiyata", "treydara"];
+  const INJECTION_REQUIRED = ["kodadjiyata", "pravniyat-razbirach", "seo", "socialdjiyata", "diskordjiyata", "treydara", "goladjiyata"];
   const injAgents = new Set(specs.filter((s) => s.kind === "injection").map((s) => s.agent));
   const missingInj = INJECTION_REQUIRED.filter((a) => !injAgents.has(a));
   if (missingInj.length) { bad++; console.log(red(`✗ липсва injection spec за високо-рискови агенти: ${missingInj.join(", ")}`)); }
