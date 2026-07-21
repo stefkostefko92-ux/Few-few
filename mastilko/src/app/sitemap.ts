@@ -5,7 +5,7 @@ const BASE = "https://mastilko-bg.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   // lastmod = моментът на билда — при всеки деплой съдържанието е прегледано.
   const lastModified = new Date();
-  const tools = ["/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/pokani", "/tabelki", "/wifi"];
+  const tools = ["/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/pokani", "/tabelki", "/wifi", "/badzhove"];
   const legal = ["/impresum", "/poveritelnost", "/usloviya"];
   return ["", ...tools, ...legal].map((path) => ({
     url: `${BASE}${path}`,

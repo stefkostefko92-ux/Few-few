@@ -82,6 +82,14 @@ const TOOLS: Array<{
     text: "„Отворено/Затворено“, работно време, надпис за врата. Готови заготовки, избираш цвят, принтираш на А4.",
     accent: "bg-paper-deep text-ink-soft",
   },
+  {
+    href: "/badzhove",
+    emoji: "🎟️",
+    icon: "/icons/vizitki.webp",
+    title: "Баджове за събития",
+    text: "За конференции и събития — цял списък гости наведнъж (име, роля, фирма, лого, QR). Серийна изработка от таблица.",
+    accent: "bg-med-pale text-med-dark",
+  },
 ];
 
 const STEPS = [
