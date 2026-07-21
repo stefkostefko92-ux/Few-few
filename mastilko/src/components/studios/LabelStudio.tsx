@@ -13,6 +13,10 @@ import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
 
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
+
 interface LabelState extends StyleState {
   presetId: string;
   themeId: string;
@@ -128,7 +132,7 @@ export default function LabelStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} hideBorder />
 
           <fieldset>
             <legend className="field-label">Съдържание</legend>
@@ -350,7 +354,7 @@ export default function LabelStudio() {
                   <span
                     style={{
                       fontWeight: 800,
-                      fontSize: `${Math.min(preset.h * 0.2, 9)}mm`,
+                      fontSize: fs(Math.min(preset.h * 0.2, 9)),
                       lineHeight: 1.15,
                     }}
                   >
@@ -360,7 +364,7 @@ export default function LabelStudio() {
                     <span
                       style={{
                         marginTop: "1mm",
-                        fontSize: `${Math.min(preset.h * 0.12, 5)}mm`,
+                        fontSize: fs(Math.min(preset.h * 0.12, 5)),
                         opacity: 0.85,
                       }}
                     >
@@ -371,7 +375,7 @@ export default function LabelStudio() {
                     <span
                       style={{
                         marginTop: "0.8mm",
-                        fontSize: `${Math.min(preset.h * 0.11, 4.5)}mm`,
+                        fontSize: fs(Math.min(preset.h * 0.11, 4.5)),
                         fontWeight: 700,
                         color: theme.accent,
                       }}

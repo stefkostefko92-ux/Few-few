@@ -81,6 +81,11 @@ const LAYOUTS: Array<{ id: CardState["layout"]; name: string }> = [
 /** Размерна единица: на листа — mm; в големия преглед — px (mm × mult). */
 type Unit = (v: number) => string;
 
+// Размер на текста с глобален мащаб (--sheet-scale) — само шрифтът, не
+// оформлението. В екранния близък преглед var-ът липсва → пада на 1 (натурален).
+const fontUnit = (s: StyleState, u: Unit) => (v: number) =>
+  typeof s.textScale === "number" ? `calc(${s.textScale} * ${u(v)})` : u(v);
+
 /** Обвивка: шаблонът + (по желание) QR с vCard в долния десен ъгъл. */
 function CardFace({
   s,
@@ -118,6 +123,7 @@ function CardFace({
 
 /** Гръб на визитката: акцентен фон с лого/инициал + слоган. */
 function CardBack({ s, theme, u }: { s: CardState; theme: WarmTheme; u: Unit }) {
+  const fu = fontUnit(s, u);
   const initials = s.name
     .split(/\s+/)
     .filter(Boolean)
@@ -144,12 +150,12 @@ function CardBack({ s, theme, u }: { s: CardState; theme: WarmTheme; u: Unit }) 
         // eslint-disable-next-line @next/next/no-img-element
         <img src={s.logo} alt="" style={{ maxWidth: u(40), maxHeight: u(24), objectFit: "contain" }} />
       ) : (
-        <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: u(14) }}>
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fu(14) }}>
           {initials || "М"}
         </div>
       )}
-      {s.company && <div style={{ fontWeight: 700, fontSize: u(4) }}>{s.company}</div>}
-      {s.slogan && <div style={{ fontStyle: "italic", fontSize: u(3) }}>„{s.slogan}“</div>}
+      {s.company && <div style={{ fontWeight: 700, fontSize: fu(4) }}>{s.company}</div>}
+      {s.slogan && <div style={{ fontStyle: "italic", fontSize: fu(3) }}>„{s.slogan}“</div>}
     </div>
   );
 }
@@ -163,6 +169,7 @@ function CardFaceInner({
   theme: WarmTheme;
   u: Unit;
 }) {
+  const fu = fontUnit(s, u);
   const initials = s.name
     .split(/\s+/)
     .filter(Boolean)
@@ -194,7 +201,7 @@ function CardFaceInner({
             alignItems: "center",
             justifyContent: "center",
             fontWeight: 800,
-            fontSize: u(9),
+            fontSize: fu(9),
             fontFamily: "var(--font-display)",
           }}
         >
@@ -214,18 +221,18 @@ function CardFaceInner({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontWeight: 800, fontSize: u(4.6), lineHeight: 1.15 }}>
+          <div style={{ fontWeight: 800, fontSize: fu(4.6), lineHeight: 1.15 }}>
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.9), marginTop: u(0.8), opacity: 0.85 }}>
+            <div style={{ fontSize: fu(2.9), marginTop: u(0.8), opacity: 0.85 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.6),
+                fontSize: fu(2.6),
                 marginTop: u(1.6),
                 fontStyle: "italic",
                 color: theme.accent,
@@ -234,7 +241,7 @@ function CardFaceInner({
               „{s.slogan}“
             </div>
           )}
-          <div style={{ marginTop: u(2.4), fontSize: u(2.7), lineHeight: 1.5 }}>
+          <div style={{ marginTop: u(2.4), fontSize: fu(2.7), lineHeight: 1.5 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -259,7 +266,7 @@ function CardFaceInner({
         <div
           style={{
             fontWeight: 800,
-            fontSize: u(5),
+            fontSize: fu(5),
             fontFamily: "var(--font-display)",
           }}
         >
@@ -275,14 +282,14 @@ function CardFaceInner({
           }}
         />
         {(s.role || s.company) && (
-          <div style={{ fontSize: u(3), opacity: 0.85 }}>
+          <div style={{ fontSize: fu(3), opacity: 0.85 }}>
             {[s.role, s.company].filter(Boolean).join(" · ")}
           </div>
         )}
         {s.slogan && (
           <div
             style={{
-              fontSize: u(2.6),
+              fontSize: fu(2.6),
               marginTop: u(1.4),
               fontStyle: "italic",
               color: theme.accent,
@@ -291,7 +298,7 @@ function CardFaceInner({
             „{s.slogan}“
           </div>
         )}
-        <div style={{ marginTop: u(2.2), fontSize: u(2.7), lineHeight: 1.5 }}>
+        <div style={{ marginTop: u(2.2), fontSize: fu(2.7), lineHeight: 1.5 }}>
           {contact.map((c) => (
             <div key={c}>{c}</div>
           ))}
@@ -320,21 +327,21 @@ function CardFaceInner({
           <div
             style={{
               fontWeight: 800,
-              fontSize: u(4.8),
+              fontSize: fu(4.8),
               fontFamily: "var(--font-display)",
             }}
           >
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.9), marginTop: u(1), opacity: 0.85 }}>
+            <div style={{ fontSize: fu(2.9), marginTop: u(1), opacity: 0.85 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.5),
+                fontSize: fu(2.5),
                 marginTop: u(1.4),
                 fontStyle: "italic",
                 color: theme.accent,
@@ -343,7 +350,7 @@ function CardFaceInner({
               „{s.slogan}“
             </div>
           )}
-          <div style={{ marginTop: u(2), fontSize: u(2.6), lineHeight: 1.5 }}>
+          <div style={{ marginTop: u(2), fontSize: fu(2.6), lineHeight: 1.5 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -366,7 +373,7 @@ function CardFaceInner({
           <div
             style={{
               fontWeight: 800,
-              fontSize: u(4.6),
+              fontSize: fu(4.6),
               fontFamily: "var(--font-display)",
               lineHeight: 1.1,
             }}
@@ -374,7 +381,7 @@ function CardFaceInner({
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.8), marginTop: u(0.6), opacity: 0.9 }}>
+            <div style={{ fontSize: fu(2.8), marginTop: u(0.6), opacity: 0.9 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
@@ -388,7 +395,7 @@ function CardFaceInner({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontSize: u(2.7), lineHeight: 1.55 }}>
+          <div style={{ fontSize: fu(2.7), lineHeight: 1.55 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -396,7 +403,7 @@ function CardFaceInner({
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.5),
+                fontSize: fu(2.5),
                 marginTop: u(1.6),
                 fontStyle: "italic",
                 color: theme.accent,
@@ -423,15 +430,15 @@ function CardFaceInner({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontWeight: 800, fontSize: u(4.5), lineHeight: 1.15 }}>
+          <div style={{ fontWeight: 800, fontSize: fu(4.5), lineHeight: 1.15 }}>
             {s.name || "Твоето име"}
           </div>
           {(s.role || s.company) && (
-            <div style={{ fontSize: u(2.8), marginTop: u(0.8), opacity: 0.85 }}>
+            <div style={{ fontSize: fu(2.8), marginTop: u(0.8), opacity: 0.85 }}>
               {[s.role, s.company].filter(Boolean).join(" · ")}
             </div>
           )}
-          <div style={{ marginTop: u(2.2), fontSize: u(2.6), lineHeight: 1.5 }}>
+          <div style={{ marginTop: u(2.2), fontSize: fu(2.6), lineHeight: 1.5 }}>
             {contact.map((c) => (
               <div key={c}>{c}</div>
             ))}
@@ -453,7 +460,7 @@ function CardFaceInner({
           <div
             style={{
               fontWeight: 800,
-              fontSize: u(8),
+              fontSize: fu(8),
               fontFamily: "var(--font-display)",
             }}
           >
@@ -467,7 +474,7 @@ function CardFaceInner({
           {s.slogan && (
             <div
               style={{
-                fontSize: u(2.1),
+                fontSize: fu(2.1),
                 fontStyle: "italic",
                 textAlign: "center",
                 opacity: 0.9,
@@ -493,18 +500,18 @@ function CardFaceInner({
           justifyContent: "center",
         }}
       >
-        <div style={{ fontWeight: 800, fontSize: u(4.8), lineHeight: 1.15 }}>
+        <div style={{ fontWeight: 800, fontSize: fu(4.8), lineHeight: 1.15 }}>
           {s.name || "Твоето име"}
         </div>
         {(s.role || s.company) && (
-          <div style={{ fontSize: u(2.9), marginTop: u(0.8), opacity: 0.85 }}>
+          <div style={{ fontSize: fu(2.9), marginTop: u(0.8), opacity: 0.85 }}>
             {[s.role, s.company].filter(Boolean).join(" · ")}
           </div>
         )}
         <div
           style={{
             marginTop: u(2.4),
-            fontSize: u(2.7),
+            fontSize: fu(2.7),
             lineHeight: 1.5,
             display: "flex",
             flexWrap: "wrap",
@@ -575,7 +582,7 @@ export default function CardStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} hideDecor />
+          <StyleControls value={s} onChange={set} hideDecor hideBorder />
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input

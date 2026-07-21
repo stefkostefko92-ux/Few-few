@@ -5,6 +5,14 @@ import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
 import Icon from "@/components/Icon";
 
+const BORDER_STYLES: Array<{ id: NonNullable<StyleState["bstyle"]>; name: string }> = [
+  { id: "solid", name: "Плътна" },
+  { id: "dashed", name: "Пунктир" },
+  { id: "dotted", name: "Точки" },
+  { id: "double", name: "Двойна" },
+  { id: "none", name: "Без рамка" },
+];
+
 interface Props {
   value: StyleState;
   onChange: (patch: Partial<StyleState>) => void;
@@ -12,11 +20,13 @@ interface Props {
   hideFont?: boolean;
   /** Скрий украсата на фона (напр. за документи като CV). */
   hideDecor?: boolean;
+  /** Скрий настройките на рамката (напр. за инструменти без рамка). */
+  hideBorder?: boolean;
 }
 
 // Общ панел за персонализация: тема или свои цветове + шрифт + украса на фона.
 // Ползва се от всички редактори, за да е поведението еднакво навсякъде.
-export default function StyleControls({ value, onChange, hideFont, hideDecor }: Props) {
+export default function StyleControls({ value, onChange, hideFont, hideDecor, hideBorder }: Props) {
   return (
     <div className="space-y-3">
       <div>
@@ -127,16 +137,92 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor }: 
             />
           </div>
 
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+              <input
+                type="checkbox"
+                checked={!!value.italic}
+                onChange={(e) => onChange({ italic: e.target.checked })}
+                className="h-4 w-4 accent-tera"
+              />
+              <span className="italic">Наклонен (курсив)</span>
+            </label>
+            <div className="min-w-40 flex-1">
+              <Slider
+                label="Размер на текста"
+                min={0.8}
+                max={1.3}
+                step={0.05}
+                value={value.textScale ?? 1}
+                suffix="×"
+                onChange={(v) => onChange({ textScale: v })}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {!hideBorder && (
+        <div>
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input
               type="checkbox"
-              checked={!!value.italic}
-              onChange={(e) => onChange({ italic: e.target.checked })}
+              checked={!!value.bord}
+              onChange={(e) => onChange({ bord: e.target.checked })}
               className="h-4 w-4 accent-tera"
             />
-            <span className="italic">Наклонен (курсив)</span>
+            <Icon name="palette" className="h-4 w-4" /> Своя рамка
           </label>
-        </>
+
+          {value.bord && (
+            <div className="mt-2 space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="block text-xs font-semibold text-ink-soft">
+                  Стил
+                  <select
+                    className="field-input mt-1"
+                    value={value.bstyle || "solid"}
+                    onChange={(e) => onChange({ bstyle: e.target.value as StyleState["bstyle"] })}
+                  >
+                    {BORDER_STYLES.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-xs font-semibold text-ink-soft">
+                  Цвят
+                  <input
+                    type="color"
+                    value={value.bcolor || "#C25E3F"}
+                    onChange={(e) => onChange({ bcolor: e.target.value })}
+                    className="mt-1 h-10 w-full rounded-lg border border-ink/15"
+                    aria-label="Цвят на рамката"
+                  />
+                </label>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Slider
+                  label="Дебелина"
+                  min={0}
+                  max={8}
+                  step={0.5}
+                  value={value.bwidth ?? 1}
+                  suffix="mm"
+                  onChange={(v) => onChange({ bwidth: v })}
+                />
+                <Slider
+                  label="Заобляне"
+                  min={0}
+                  max={20}
+                  step={1}
+                  value={value.bradius ?? 0}
+                  suffix="mm"
+                  onChange={(v) => onChange({ bradius: v })}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {!hideDecor && (

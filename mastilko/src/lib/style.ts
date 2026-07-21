@@ -121,6 +121,18 @@ export interface StyleState {
   cbg2?: string;
   /** Ъгъл на градиента в градуси: 0 … 360. */
   bgAngle?: number;
+  /** Глобален мащаб на текста върху листа: 0.8 … 1.3. */
+  textScale?: number;
+  /** Своя рамка на листа (вместо стандартната). */
+  bord?: boolean;
+  /** Стил на рамката. */
+  bstyle?: "solid" | "dashed" | "dotted" | "double" | "none";
+  /** Цвят на рамката. */
+  bcolor?: string;
+  /** Дебелина на рамката в mm: 0 … 8. */
+  bwidth?: number;
+  /** Заобляне на ъглите в mm: 0 … 20. */
+  bradius?: number;
   /** Украса на фона. */
   decor?: string;
   /** Свой цвят на украсата (по подразбиране — акцентният). */
@@ -146,6 +158,12 @@ export const StyleSchemaShape = {
   bgGrad: z.boolean(),
   cbg2: z.string().max(20),
   bgAngle: z.number().min(0).max(360),
+  textScale: z.number().min(0.8).max(1.3),
+  bord: z.boolean(),
+  bstyle: z.enum(["solid", "dashed", "dotted", "double", "none"]),
+  bcolor: z.string().max(20),
+  bwidth: z.number().min(0).max(8),
+  bradius: z.number().min(0).max(20),
   decor: z.string().max(20),
   decorColor: z.string().max(20),
   decorOpacity: z.number().min(0.05).max(1),
@@ -182,7 +200,48 @@ export function fontVars(s: StyleState): React.CSSProperties {
   if (typeof s.weight === "number") v.fontWeight = s.weight;
   if (typeof s.leading === "number") v.lineHeight = s.leading;
   if (s.italic) v.fontStyle = "italic";
+  if (typeof s.textScale === "number") {
+    (v as Record<string, string>)["--sheet-scale"] = String(s.textScale);
+  }
   return v;
+}
+
+interface BorderFallback { width: number; style: string; color: string; radius: number }
+
+/**
+ * Числовите части на рамката (mm): стандартната (fallback) или изцяло по
+ * избор. Всяко студио ги форматира със собствената си единица (mm или u()),
+ * за да работи и в екранния преглед, и при печат.
+ */
+export function borderParts(s: StyleState, fb: BorderFallback): BorderFallback {
+  const on = !!s.bord;
+  return {
+    style: on && s.bstyle ? s.bstyle : fb.style,
+    width: on && typeof s.bwidth === "number" ? s.bwidth : fb.width,
+    color: on && s.bcolor && hex.test(s.bcolor) ? s.bcolor : fb.color,
+    radius: on && typeof s.bradius === "number" ? s.bradius : fb.radius,
+  };
+}
+
+/**
+ * Рамка, форматирана с дадена единица (mm за печат, u() за екранен преглед).
+ * Печатната математика не се влияе — размерите се задават в mm числа.
+ */
+export function borderWith(
+  s: StyleState,
+  fb: BorderFallback,
+  unit: (n: number) => string,
+): { border: string; borderRadius: string } {
+  const p = borderParts(s, fb);
+  return {
+    border: p.style === "none" ? "none" : `${unit(p.width)} ${p.style} ${p.color}`,
+    borderRadius: unit(p.radius),
+  };
+}
+
+/** Рамка в mm — за студиата, които рендират директно в mm. */
+export function borderCss(s: StyleState, fb: BorderFallback): { border: string; borderRadius: string } {
+  return borderWith(s, fb, (n) => `${n}mm`);
 }
 
 /**

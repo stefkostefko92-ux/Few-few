@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -12,6 +12,10 @@ import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
+
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface WifiState extends StyleState {
   title: string;
@@ -140,25 +144,25 @@ export default function WifiStudio() {
               <div key={i} style={{
                 position: "absolute", left: `${left}mm`, top: `${top}mm`,
                 width: `${size.w}mm`, height: `${size.h}mm`,
-                background: sheetBg(s, theme), color: theme.fg, borderRadius: "3mm",
-                border: `0.3mm dashed rgba(120,110,100,0.5)`, overflow: "hidden",
+                background: sheetBg(s, theme), color: theme.fg,
+                ...borderCss(s, { width: 0.3, style: "dashed", color: "rgba(120,110,100,0.5)", radius: 3 }), overflow: "hidden",
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "4mm", gap: "2mm",
               }}>
                 <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
-                <div style={{ fontWeight: 800, fontSize: "5mm", fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
+                <div style={{ fontWeight: 800, fontSize: fs(5), fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
                   📶 {s.title || "WiFi"}
                 </div>
                 {qrSrc && <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * 0.5}mm`, height: `${Math.min(size.w, size.h) * 0.5}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />}
-                <div style={{ fontSize: "3.2mm", wordBreak: "break-all" }}>
+                <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
                   <strong>Мрежа:</strong> {s.ssid || "…"}
                 </div>
                 {s.auth !== "nopass" && (
-                  <div style={{ fontSize: "3.2mm", wordBreak: "break-all" }}>
+                  <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
                     <strong>Парола:</strong> {s.password || "…"}
                   </div>
                 )}
-                {s.note && <div style={{ fontSize: "2.6mm", opacity: 0.8 }}>{s.note}</div>}
+                {s.note && <div style={{ fontSize: fs(2.6), opacity: 0.8 }}>{s.note}</div>}
               </div>
             );
           })}

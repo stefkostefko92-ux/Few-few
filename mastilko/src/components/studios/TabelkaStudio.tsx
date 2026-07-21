@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -9,6 +9,10 @@ import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
+
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface TabelkaState extends StyleState {
   emoji: string;
@@ -107,14 +111,14 @@ export default function TabelkaStudio() {
             position: "absolute", inset: 0, background: sheetBg(s, theme), color: theme.fg,
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", textAlign: "center", padding: "20mm",
-            border: `4mm solid ${theme.accent}`, overflow: "hidden",
+            ...borderCss(s, { width: 4, style: "solid", color: theme.accent, radius: 0 }), overflow: "hidden",
           }}>
             <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {s.emoji && <div style={{ fontSize: "60mm", lineHeight: 1 }}>{s.emoji}</div>}
+              {s.emoji && <div style={{ fontSize: fs(60), lineHeight: 1 }}>{s.emoji}</div>}
               <div style={{
                 fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800,
-                fontSize: s.title.length > 20 ? "18mm" : "26mm", lineHeight: 1.05,
+                fontSize: fs(s.title.length > 20 ? 18 : 26), lineHeight: 1.05,
                 marginTop: "8mm",
               }}>
                 {s.title}
@@ -122,7 +126,7 @@ export default function TabelkaStudio() {
               {s.subtitle && (
                 <div style={{
                   fontFamily: elementFont(s, "subtitle", "var(--font-sans)"),
-                  fontSize: "9mm", marginTop: "8mm", lineHeight: 1.3, whiteSpace: "pre-line",
+                  fontSize: fs(9), marginTop: "8mm", lineHeight: 1.3, whiteSpace: "pre-line",
                 }}>
                   {s.subtitle}
                 </div>

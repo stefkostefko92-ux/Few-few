@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -9,6 +9,10 @@ import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
+
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface GramotaState extends StyleState {
   kind: string;
@@ -106,7 +110,7 @@ export default function GramotaStudio() {
           }}>
             {/* Двойна орнаментна рамка */}
             <div style={{
-              flex: 1, border: `2mm solid ${theme.accent}`,
+              flex: 1, ...borderCss(s, { width: 2, style: "solid", color: theme.accent, radius: 0 }),
               padding: "4mm", position: "relative",
             }}>
               <div style={{
@@ -116,30 +120,30 @@ export default function GramotaStudio() {
                 color: theme.fg, background: sheetBg(s, theme), position: "relative", overflow: "hidden",
               }}>
                 <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
-                <div style={{ fontSize: "5mm", letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
+                <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
                   {s.org || " "}
                 </div>
                 <div style={{
                   fontFamily: elementFont(s, "kind", "var(--font-display)"), fontWeight: 800,
-                  fontSize: "16mm", letterSpacing: "0.05em", marginTop: "4mm",
+                  fontSize: fs(16), letterSpacing: "0.05em", marginTop: "4mm",
                   color: theme.accent, position: "relative", zIndex: 1,
                 }}>
                   {s.kind}
                 </div>
-                <div style={{ fontSize: "4mm", marginTop: "6mm", position: "relative", zIndex: 1 }}>връчва се на</div>
+                <div style={{ fontSize: fs(4), marginTop: "6mm", position: "relative", zIndex: 1 }}>връчва се на</div>
                 <div style={{
                   fontFamily: elementFont(s, "recipient", "var(--font-display)"), fontWeight: 800,
-                  fontSize: "11mm", margin: "3mm 0", borderBottom: `0.4mm solid ${theme.accent}`,
+                  fontSize: fs(11), margin: "3mm 0", borderBottom: `0.4mm solid ${theme.accent}`,
                   paddingBottom: "2mm", minWidth: "60%", position: "relative", zIndex: 1,
                 }}>
                   {s.recipient || "Име Фамилия"}
                 </div>
-                <div style={{ fontSize: "4.2mm", lineHeight: 1.5, maxWidth: "80%", marginTop: "3mm", position: "relative", zIndex: 1 }}>
+                <div style={{ fontSize: fs(4.2), lineHeight: 1.5, maxWidth: "80%", marginTop: "3mm", position: "relative", zIndex: 1 }}>
                   {s.reason}
                 </div>
                 <div style={{
                   display: "flex", justifyContent: "space-between", width: "100%",
-                  marginTop: "auto", paddingTop: "12mm", fontSize: "3.6mm",
+                  marginTop: "auto", paddingTop: "12mm", fontSize: fs(3.6),
                   position: "relative", zIndex: 1,
                 }}>
                   <div style={{ textAlign: "center" }}>

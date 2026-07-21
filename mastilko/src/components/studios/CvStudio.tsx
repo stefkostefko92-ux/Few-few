@@ -9,6 +9,10 @@ import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
 
+// Размер на текста с глобален мащаб (--sheet-scale); mm математиката не се влияе.
+// В Europass var-ът не се излъчва (контролите са скрити) → винаги натурален размер.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
+
 interface Job {
   id: number;
   role: string;
@@ -394,7 +398,7 @@ export default function CvStudio() {
               <option value="europass">Europass (стандарт на ЕС)</option>
             </select>
           </div>
-          {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor />}
+          {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor hideBorder />}
         </div>
 
         {s.layout === "europass" && (
@@ -438,7 +442,7 @@ export default function CvStudio() {
       {/* Преглед + печат */}
       <div className="space-y-4">
         <PrintBar summary="Автобиография на лист А4 (може и няколко страници)" />
-        <SheetPreview fixedHeight={false} style={fontVars(s)}>
+        <SheetPreview fixedHeight={false} style={fontVars(s.layout === "europass" ? { ...s, textScale: undefined } : s)}>
           {s.layout === "europass" ? (
             <EuropassCv s={s} skills={skills} languages={languages} />
           ) : s.layout === "moderen" ? (
@@ -457,14 +461,14 @@ export default function CvStudio() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
-                    fontSize: "7mm",
+                    fontSize: fs(7),
                     lineHeight: 1.15,
                   }}
                 >
                   {s.name || "Твоето име"}
                 </div>
                 {s.title && (
-                  <div style={{ fontSize: "3.4mm", marginTop: "1.5mm", opacity: 0.85 }}>
+                  <div style={{ fontSize: fs(3.4), marginTop: "1.5mm", opacity: 0.85 }}>
                     {s.title}
                   </div>
                 )}
@@ -496,7 +500,7 @@ export default function CvStudio() {
               <div style={{ flex: 1, padding: "12mm 10mm", color: "#2E2620" }}>
                 {s.summary && (
                   <CvMainSection title="Профил" accent={theme.accent}>
-                    <p style={{ fontSize: "3.2mm", lineHeight: 1.55 }}>{s.summary}</p>
+                    <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{s.summary}</p>
                   </CvMainSection>
                 )}
                 <CvJobs jobs={s.jobs} accent={theme.accent} />
@@ -510,37 +514,37 @@ export default function CvStudio() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
-                    fontSize: "8mm",
+                    fontSize: fs(8),
                   }}
                 >
                   {s.name || "Твоето име"}
                 </div>
                 {s.title && (
-                  <div style={{ fontSize: "3.6mm", marginTop: "1mm", color: theme.accent }}>
+                  <div style={{ fontSize: fs(3.6), marginTop: "1mm", color: theme.accent }}>
                     {s.title}
                   </div>
                 )}
                 {contact.length > 0 && (
-                  <div style={{ fontSize: "3mm", marginTop: "2mm", opacity: 0.8 }}>
+                  <div style={{ fontSize: fs(3), marginTop: "2mm", opacity: 0.8 }}>
                     {contact.join("  ·  ")}
                   </div>
                 )}
               </div>
               {s.summary && (
                 <CvMainSection title="Профил" accent={theme.accent}>
-                  <p style={{ fontSize: "3.2mm", lineHeight: 1.55 }}>{s.summary}</p>
+                  <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{s.summary}</p>
                 </CvMainSection>
               )}
               <CvJobs jobs={s.jobs} accent={theme.accent} />
               <CvSchools schools={s.schools} accent={theme.accent} />
               {skills.length > 0 && (
                 <CvMainSection title="Умения" accent={theme.accent}>
-                  <p style={{ fontSize: "3.2mm", lineHeight: 1.55 }}>{skills.join(" · ")}</p>
+                  <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{skills.join(" · ")}</p>
                 </CvMainSection>
               )}
               {languages.length > 0 && (
                 <CvMainSection title="Езици" accent={theme.accent}>
-                  <p style={{ fontSize: "3.2mm", lineHeight: 1.55 }}>{languages.join(" · ")}</p>
+                  <p style={{ fontSize: fs(3.2), lineHeight: 1.55 }}>{languages.join(" · ")}</p>
                 </CvMainSection>
               )}
             </div>
@@ -567,7 +571,7 @@ function EpRow({
         style={{
           color: EUROPASS_BLUE,
           fontWeight: 700,
-          fontSize: "3mm",
+          fontSize: fs(3),
           textTransform: "uppercase",
           letterSpacing: "0.04em",
           textAlign: "right",
@@ -584,7 +588,7 @@ function EpRow({
           paddingLeft: "4mm",
           paddingTop: first ? 0 : "6mm",
           paddingBottom: "1mm",
-          fontSize: "3.2mm",
+          fontSize: fs(3.2),
           lineHeight: 1.5,
           breakInside: "avoid",
         }}
@@ -628,7 +632,7 @@ function EuropassCv({
         <div
           style={{
             fontWeight: 800,
-            fontSize: "6.4mm",
+            fontSize: fs(6.4),
             color: EUROPASS_BLUE,
             lineHeight: 1.15,
           }}
@@ -636,7 +640,7 @@ function EuropassCv({
           {s.name || "Твоето име"}
         </div>
         {s.title && (
-          <div style={{ fontSize: "3.4mm", marginTop: "1mm" }}>{s.title}</div>
+          <div style={{ fontSize: fs(3.4), marginTop: "1mm" }}>{s.title}</div>
         )}
       </EpRow>
 
@@ -658,7 +662,7 @@ function EuropassCv({
           {filledJobs.map((j) => (
             <div key={j.id} style={{ marginBottom: "3.5mm", breakInside: "avoid" }}>
               {j.period && (
-                <div style={{ color: EUROPASS_BLUE, fontWeight: 700, fontSize: "2.9mm" }}>
+                <div style={{ color: EUROPASS_BLUE, fontWeight: 700, fontSize: fs(2.9) }}>
                   {j.period}
                 </div>
               )}
@@ -679,7 +683,7 @@ function EuropassCv({
           {filledSchools.map((e) => (
             <div key={e.id} style={{ marginBottom: "2.5mm", breakInside: "avoid" }}>
               {e.period && (
-                <div style={{ color: EUROPASS_BLUE, fontWeight: 700, fontSize: "2.9mm" }}>
+                <div style={{ color: EUROPASS_BLUE, fontWeight: 700, fontSize: fs(2.9) }}>
                   {e.period}
                 </div>
               )}
@@ -703,7 +707,7 @@ function EuropassCv({
           {langRows.length > 0 && (
             <div style={{ marginBottom: "2.5mm" }}>
               <div style={{ fontWeight: 700, marginBottom: "1mm" }}>Чужди езици</div>
-              <table style={{ borderCollapse: "collapse", fontSize: "3mm", width: "100%" }}>
+              <table style={{ borderCollapse: "collapse", fontSize: fs(3), width: "100%" }}>
                 <thead>
                   <tr style={{ color: EUROPASS_BLUE }}>
                     <th style={cellStyle}>Език</th>
@@ -761,7 +765,7 @@ function CvSideSection({
       <div
         style={{
           fontWeight: 800,
-          fontSize: "3.4mm",
+          fontSize: fs(3.4),
           textTransform: "uppercase",
           letterSpacing: "0.06em",
           borderBottom: `0.6mm solid ${accent}`,
@@ -771,7 +775,7 @@ function CvSideSection({
       >
         {title}
       </div>
-      <div style={{ fontSize: "3mm", lineHeight: 1.5 }}>{children}</div>
+      <div style={{ fontSize: fs(3), lineHeight: 1.5 }}>{children}</div>
     </div>
   );
 }
@@ -791,7 +795,7 @@ function CvMainSection({
         style={{
           fontFamily: "var(--font-display)",
           fontWeight: 800,
-          fontSize: "4.4mm",
+          fontSize: fs(4.4),
           color: accent,
           borderBottom: "0.3mm solid rgba(0,0,0,0.15)",
           paddingBottom: "1mm",
@@ -813,20 +817,20 @@ function CvJobs({ jobs, accent }: { jobs: Job[]; accent: string }) {
       {filled.map((j) => (
         <div key={j.id} style={{ marginBottom: "4mm", breakInside: "avoid" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "4mm" }}>
-            <span style={{ fontWeight: 700, fontSize: "3.4mm" }}>
+            <span style={{ fontWeight: 700, fontSize: fs(3.4) }}>
               {j.role}
               {j.company && (
                 <span style={{ fontWeight: 400, opacity: 0.75 }}> · {j.company}</span>
               )}
             </span>
             {j.period && (
-              <span style={{ fontSize: "3mm", opacity: 0.7, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: fs(3), opacity: 0.7, whiteSpace: "nowrap" }}>
                 {j.period}
               </span>
             )}
           </div>
           {j.desc && (
-            <p style={{ fontSize: "3.1mm", lineHeight: 1.5, marginTop: "1mm" }}>{j.desc}</p>
+            <p style={{ fontSize: fs(3.1), lineHeight: 1.5, marginTop: "1mm" }}>{j.desc}</p>
           )}
         </div>
       ))}
@@ -842,14 +846,14 @@ function CvSchools({ schools, accent }: { schools: School[]; accent: string }) {
       {filled.map((e) => (
         <div key={e.id} style={{ marginBottom: "3mm", breakInside: "avoid" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "4mm" }}>
-            <span style={{ fontWeight: 700, fontSize: "3.4mm" }}>
+            <span style={{ fontWeight: 700, fontSize: fs(3.4) }}>
               {e.degree}
               {e.school && (
                 <span style={{ fontWeight: 400, opacity: 0.75 }}> · {e.school}</span>
               )}
             </span>
             {e.period && (
-              <span style={{ fontSize: "3mm", opacity: 0.7, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: fs(3), opacity: 0.7, whiteSpace: "nowrap" }}>
                 {e.period}
               </span>
             )}

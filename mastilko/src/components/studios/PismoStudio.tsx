@@ -10,6 +10,10 @@ import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
 
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
+
 interface PismoState extends StyleState {
   name: string;
   phone: string;
@@ -109,7 +113,7 @@ export default function PismoStudio() {
               />
             </div>
           ))}
-          <StyleControls value={s} onChange={set} hideDecor />
+          <StyleControls value={s} onChange={set} hideDecor hideBorder />
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -180,7 +184,7 @@ export default function PismoStudio() {
               padding: "20mm 18mm",
               minHeight: "297mm",
               color: "#2E2620",
-              fontSize: "3.4mm",
+              fontSize: fs(3.4),
               lineHeight: 1.65,
               display: "flex",
               flexDirection: "column",
@@ -192,13 +196,13 @@ export default function PismoStudio() {
                 style={{
                   fontFamily: "var(--font-display)",
                   fontWeight: 800,
-                  fontSize: "5.2mm",
+                  fontSize: fs(5.2),
                 }}
               >
                 {s.name || "Твоето име"}
               </div>
               {contact && (
-                <div style={{ fontSize: "3mm", opacity: 0.8, marginTop: "0.5mm" }}>
+                <div style={{ fontSize: fs(3), opacity: 0.8, marginTop: "0.5mm" }}>
                   {contact}
                 </div>
               )}
@@ -250,14 +254,14 @@ export default function PismoStudio() {
                 style={{
                   fontFamily: "var(--font-display)",
                   fontWeight: 800,
-                  fontSize: "4.2mm",
+                  fontSize: fs(4.2),
                   marginTop: "6mm",
                 }}
               >
                 {s.name || "Твоето име"}
               </div>
               {(s.city || s.date) && (
-                <div style={{ fontSize: "3mm", opacity: 0.8, marginTop: "1mm" }}>
+                <div style={{ fontSize: fs(3), opacity: 0.8, marginTop: "1mm" }}>
                   {[s.city, s.date].filter(Boolean).join(", ")}
                 </div>
               )}

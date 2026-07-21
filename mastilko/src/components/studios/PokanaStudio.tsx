@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -60,26 +60,28 @@ const PRESETS: Array<{ label: string; v: Partial<PokanaState> }> = [
 ];
 
 function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number) => string }) {
+  // Размер на текста с глобален мащаб — само шрифтът, не оформлението.
+  const fu = (v: number) => `calc(var(--sheet-scale, 1) * ${u(v)})`;
   return (
     <div style={{
       position: "relative",
       width: u(200), height: u(138), background: sheetBg(s, theme), color: theme.fg,
       display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center", textAlign: "center", padding: `${u(8)} ${u(14)}`,
-      border: `${u(1)} solid ${theme.accent}`, borderRadius: u(3), overflow: "hidden",
+      ...borderWith(s, { width: 1, style: "solid", color: theme.accent, radius: 3 }, u), overflow: "hidden",
     }}>
       <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {s.emoji && <div style={{ fontSize: u(16), lineHeight: 1 }}>{s.emoji}</div>}
-        <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: u(8), marginTop: u(2), color: theme.accent }}>
+        {s.emoji && <div style={{ fontSize: fu(16), lineHeight: 1 }}>{s.emoji}</div>}
+        <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: fu(8), marginTop: u(2), color: theme.accent }}>
           {s.heading}
         </div>
-        {s.who && <div style={{ fontFamily: elementFont(s, "who", "var(--font-sans)"), fontSize: u(5.5), fontWeight: 700, marginTop: u(2) }}>{s.who}</div>}
-        <div style={{ fontSize: u(4.2), marginTop: u(3), lineHeight: 1.5 }}>
+        {s.who && <div style={{ fontFamily: elementFont(s, "who", "var(--font-sans)"), fontSize: fu(5.5), fontWeight: 700, marginTop: u(2) }}>{s.who}</div>}
+        <div style={{ fontSize: fu(4.2), marginTop: u(3), lineHeight: 1.5 }}>
           {[s.date, s.time].filter(Boolean).join(" · ")}
           {s.place && <div>{s.place}</div>}
         </div>
-        {s.note && <div style={{ fontFamily: elementFont(s, "note", "var(--font-sans)"), fontSize: u(3.8), marginTop: u(3), fontStyle: "italic", opacity: 0.85 }}>{s.note}</div>}
+        {s.note && <div style={{ fontFamily: elementFont(s, "note", "var(--font-sans)"), fontSize: fu(3.8), marginTop: u(3), fontStyle: "italic", opacity: 0.85 }}>{s.note}</div>}
       </div>
     </div>
   );
