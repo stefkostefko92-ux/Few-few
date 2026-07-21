@@ -103,6 +103,18 @@ export const DECORS: Array<{ id: string; name: string }> = [
   { id: "gradient", name: "Меко сияние" },
 ];
 
+// Стилови пакети (kit packs) — един клик слага съгласуван вид (тема/цветове/
+// шрифт/украса/ефекти) навсякъде. Прилагат се върху персонализацията, важат за
+// всичките инструменти. Всеки задава customColors изрично, за да е чист изходът.
+export const STYLE_KITS: Array<{ id: string; name: string; patch: Partial<StyleState> }> = [
+  { id: "prazni", name: "Празничен", patch: { themeId: "med", customColors: false, font: "pacifico", decor: "confetti", titleShadow: true, titleGradient: false } },
+  { id: "elegant", name: "Елегантен", patch: { themeId: "nebe", customColors: false, font: "cormorant", decor: "frame", tracking: 0.06, titleGradient: true, titleShadow: false } },
+  { id: "detski", name: "Детски", patch: { themeId: "gora", customColors: false, font: "nunito", decor: "stars", weight: 700, titleShadow: true, titleGradient: false } },
+  { id: "retro", name: "Ретро", patch: { customColors: true, cbg: "#F3E7CE", cfg: "#4A3B2A", cacc: "#B5561E", font: "oswald", decor: "diagonal", titleGradient: false, titleShadow: false } },
+  { id: "luks", name: "Луксозен", patch: { customColors: true, cbg: "#141210", cfg: "#F2E6C9", cacc: "#C9A24B", font: "prata", decor: "frame", titleGradient: true, titleShadow: false } },
+  { id: "minimal", name: "Минимал", patch: { themeId: "tera", customColors: false, font: "inter", decor: "none", tracking: 0.02, titleGradient: false, titleShadow: false, ecoMode: true } },
+];
+
 export interface StyleState {
   themeId: string;
   cbg?: string;

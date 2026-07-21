@@ -1,6 +1,6 @@
 "use client";
 
-import { DECORS, contrastRatio, contrastGrade, inkCoverage, cmykRisk, resolveTheme, type StyleState } from "@/lib/style";
+import { DECORS, STYLE_KITS, contrastRatio, contrastGrade, inkCoverage, cmykRisk, resolveTheme, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
 import Icon from "@/components/Icon";
@@ -33,6 +33,22 @@ interface Props {
 export default function StyleControls({ value, onChange, hideFont, hideDecor, hideBorder, showPhotoFx, showTitleFx }: Props) {
   return (
     <div className="space-y-3">
+      <div>
+        <span className="field-label">Готови пакети (един клик)</span>
+        <div className="flex flex-wrap gap-2">
+          {STYLE_KITS.map((k) => (
+            <button
+              key={k.id}
+              type="button"
+              onClick={() => onChange(k.patch)}
+              className="rounded-full border-2 border-ink/10 px-3 py-1 text-sm font-semibold hover:border-tera-dark"
+            >
+              {k.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div>
         <span className="field-label">Цветова тема</span>
         <ThemePicker
