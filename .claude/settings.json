@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-capture.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-dangerous.mjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-exfil.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secrets.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
