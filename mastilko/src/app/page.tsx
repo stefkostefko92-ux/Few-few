@@ -106,6 +106,14 @@ const TOOLS: Array<{
     text: "Подаръчни ваучери и талони за отстъпка с уникален код и QR — цяла серия наведнъж. За салони, кафенета и магазини.",
     accent: "bg-tera-pale text-tera-dark",
   },
+  {
+    href: "/kalendar",
+    emoji: "📅",
+    icon: "/icons/gramoti.webp",
+    title: "Календар за печат",
+    text: "Месечен календар на български с официалните празници (вкл. Великден) — за стена или бюро, всеки месец на лист А4.",
+    accent: "bg-med-pale text-med-dark",
+  },
 ];
 
 const STEPS = [
