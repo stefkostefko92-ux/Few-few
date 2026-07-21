@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -72,7 +72,8 @@ export default function WifiStudio() {
   const size = SIZES[s.perSheet] ?? SIZES[6]!;
   const grid = sheetGrid(size.w, size.h, 8, 4, 6);
   const total = Math.min(grid.total, s.perSheet);
-  const qrSrc = useQrDataUrl(s.ssid.trim() ? wifiQr(s) : "");
+  const qrSrc = useQrDataUrl(s.ssid.trim() ? wifiQr(s) : "", s.qrColor ? qrSafeColor(theme.accent) : undefined);
+  const confusable = /[0OIl1|]/.test(s.password);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -101,6 +102,12 @@ export default function WifiStudio() {
                 Паролата влиза само в QR кода, генериран в твоя браузър — не се
                 изпраща никъде.
               </p>
+              {confusable && (
+                <p className="mt-1 text-xs font-semibold text-tera-dark">
+                  Паролата съдържа лесно объркващи знаци (0/O, l/1/I) — равноширокият
+                  шрифт на стикера ги разграничава ясно.
+                </p>
+              )}
             </div>
           )}
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
@@ -133,6 +140,11 @@ export default function WifiStudio() {
             <input type="range" min={0.3} max={0.7} step={0.05} value={s.qrScale}
               onChange={(e) => set({ qrScale: Number(e.target.value) })}
               className="mt-1 h-4 w-full accent-tera" aria-label="Размер на QR кода" />
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input type="checkbox" checked={!!s.qrColor}
+              onChange={(e) => set({ qrColor: e.target.checked })} className="h-4 w-4 accent-tera" />
+            QR в акцентния цвят (ако е скенируем)
           </label>
           <StyleControls value={s} onChange={set} />
         </div>
@@ -172,7 +184,8 @@ export default function WifiStudio() {
                 </div>
                 {s.auth !== "nopass" && (
                   <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
-                    <strong>Парола:</strong> {s.password || "…"}
+                    <strong>Парола:</strong>{" "}
+                    <span style={{ fontFamily: "var(--font-jetbrains)" }}>{s.password || "…"}</span>
                   </div>
                 )}
                 {s.note && <div style={{ fontSize: fs(2.6), opacity: 0.8 }}>{s.note}</div>}

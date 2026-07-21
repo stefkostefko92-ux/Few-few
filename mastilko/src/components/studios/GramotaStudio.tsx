@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -163,7 +163,7 @@ export default function GramotaStudio() {
             </div>
           </div>
 
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} showTitleFx showPhotoFx />
         </div>
         <ProjectFile state={s} filename="mastilko-gramota"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
@@ -196,7 +196,7 @@ export default function GramotaStudio() {
                 {s.logo && (
                   <div style={{ marginBottom: "3mm", position: "relative", zIndex: 1 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.logo} alt="" style={{ height: `${s.logoSize}mm`, maxWidth: "70mm", objectFit: "contain", display: "block" }} />
+                    <img src={s.logo} alt="" style={{ height: `${s.logoSize}mm`, maxWidth: "70mm", objectFit: "contain", display: "block", filter: photoFilterCss(s) }} />
                   </div>
                 )}
                 <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
@@ -205,7 +205,7 @@ export default function GramotaStudio() {
                 <div style={{
                   fontFamily: elementFont(s, "kind", "var(--font-display)"), fontWeight: 800,
                   fontSize: fs(16), letterSpacing: "0.05em", marginTop: "4mm",
-                  color: theme.accent, position: "relative", zIndex: 1,
+                  color: theme.accent, position: "relative", zIndex: 1, ...titleFx(s, theme),
                 }}>
                   {s.kind}
                 </div>

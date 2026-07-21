@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { CARD, cardGrid } from "@/lib/print";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, photoFilterCss, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import { vCard } from "@/lib/vcard";
 import { vizitkaRegisterUrl } from "@/lib/vizitka-import";
@@ -107,12 +107,12 @@ function CardLogo({ s, u }: { s: CardState; u: Unit }) {
   if (s.logoShape === "circle") {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={s.logo} alt="" style={{ width: u(s.logoSize), height: u(s.logoSize), objectFit: "cover", borderRadius: "50%", display: "block" }} />
+      <img src={s.logo} alt="" style={{ width: u(s.logoSize), height: u(s.logoSize), objectFit: "cover", borderRadius: "50%", display: "block", filter: photoFilterCss(s) }} />
     );
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={s.logo} alt="" style={{ maxWidth: u(s.logoSize * 1.5), maxHeight: u(s.logoSize), objectFit: "contain", display: "block" }} />
+    <img src={s.logo} alt="" style={{ maxWidth: u(s.logoSize * 1.5), maxHeight: u(s.logoSize), objectFit: "contain", display: "block", filter: photoFilterCss(s) }} />
   );
 }
 
@@ -565,7 +565,7 @@ export default function CardStudio() {
   const set = (patch: Partial<CardState>) => setS({ ...s, ...patch });
 
   // Един QR за целия лист + близкия преглед — не по един на визитка.
-  const qrSrc = useQrDataUrl(s.qr && s.name.trim() ? vCard(s) : "");
+  const qrSrc = useQrDataUrl(s.qr && s.name.trim() ? vCard(s) : "", s.qrColor ? qrSafeColor(theme.accent) : undefined);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -609,7 +609,7 @@ export default function CardStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} hideDecor hideBorder />
+          <StyleControls value={s} onChange={set} hideDecor hideBorder showPhotoFx />
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input
@@ -665,6 +665,15 @@ export default function CardStudio() {
                   className="mt-1 h-4 w-full accent-tera"
                   aria-label="Размер на QR кода"
                 />
+              </label>
+              <label className="col-span-2 flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={!!s.qrColor}
+                  onChange={(e) => set({ qrColor: e.target.checked })}
+                  className="h-4 w-4 accent-tera"
+                />
+                QR в акцентния цвят (ако е скенируем)
               </label>
             </div>
           )}

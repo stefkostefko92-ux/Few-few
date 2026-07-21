@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -98,7 +98,7 @@ export default function TabelkaStudio() {
               onChange={(e) => set({ landscape: e.target.checked })} className="h-4 w-4 accent-tera" />
             Хоризонтално (пейзаж)
           </label>
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} showTitleFx />
         </div>
         <ProjectFile state={s} filename="mastilko-tabelka"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
@@ -119,7 +119,7 @@ export default function TabelkaStudio() {
               <div style={{
                 fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800,
                 fontSize: fs(s.title.length > 20 ? 18 : 26), lineHeight: 1.05,
-                marginTop: "8mm",
+                marginTop: "8mm", ...titleFx(s, theme),
               }}>
                 {s.title}
               </div>

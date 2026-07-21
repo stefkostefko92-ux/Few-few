@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, titleFx, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -73,7 +73,7 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
       <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {s.emoji && <div style={{ fontSize: fu(16), lineHeight: 1 }}>{s.emoji}</div>}
-        <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: fu(8), marginTop: u(2), color: theme.accent }}>
+        <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: fu(8), marginTop: u(2), color: theme.accent, ...titleFx(s, theme) }}>
           {s.heading}
         </div>
         {s.who && <div style={{ fontFamily: elementFont(s, "who", "var(--font-sans)"), fontSize: fu(5.5), fontWeight: 700, marginTop: u(2) }}>{s.who}</div>}
@@ -139,7 +139,7 @@ export default function PokanaStudio() {
             <FontPicker label="Шрифт: повод" value={s.fonts?.who} allowDefault
               onChange={(id) => set({ fonts: { ...s.fonts, who: id } })} />
           </div>
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} showTitleFx />
         </div>
         <ProjectFile state={s} filename="mastilko-pokana"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />

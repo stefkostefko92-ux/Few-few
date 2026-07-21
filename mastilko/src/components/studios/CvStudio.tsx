@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import ImageUpload from "@/components/ImageUpload";
@@ -152,7 +152,7 @@ function splitList(s: string): string[] {
 }
 
 /** Снимка на кандидата — фиксиран mm размер (не се влияе от размера на текста). */
-function CvPhoto({ src, shape, size }: { src: string; shape: "circle" | "square"; size: number }) {
+function CvPhoto({ src, shape, size, filter }: { src: string; shape: "circle" | "square"; size: number; filter?: string }) {
   if (!src) return null;
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -165,6 +165,7 @@ function CvPhoto({ src, shape, size }: { src: string; shape: "circle" | "square"
         objectFit: "cover",
         borderRadius: shape === "circle" ? "50%" : "1.5mm",
         display: "block",
+        filter,
       }}
     />
   );
@@ -471,7 +472,7 @@ export default function CvStudio() {
               <option value="europass">Europass (стандарт на ЕС)</option>
             </select>
           </div>
-          {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor hideBorder />}
+          {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor hideBorder showPhotoFx />}
         </div>
 
         {s.layout === "europass" && (
@@ -532,7 +533,7 @@ export default function CvStudio() {
               >
                 {s.photo && (
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: "5mm" }}>
-                    <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} />
+                    <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} filter={photoFilterCss(s)} />
                   </div>
                 )}
                 <div
@@ -590,7 +591,7 @@ export default function CvStudio() {
               <div style={{ textAlign: "center", marginBottom: "6mm" }}>
                 {s.photo && (
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: "4mm" }}>
-                    <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} />
+                    <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} filter={photoFilterCss(s)} />
                   </div>
                 )}
                 <div

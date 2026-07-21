@@ -22,11 +22,15 @@ interface Props {
   hideDecor?: boolean;
   /** Скрий настройките на рамката (напр. за инструменти без рамка). */
   hideBorder?: boolean;
+  /** Покажи филтър за снимки/лога (инструменти с изображения). */
+  showPhotoFx?: boolean;
+  /** Покажи ефекти за декоративни заглавия (градиент/сянка). */
+  showTitleFx?: boolean;
 }
 
 // Общ панел за персонализация: тема или свои цветове + шрифт + украса на фона.
 // Ползва се от всички редактори, за да е поведението еднакво навсякъде.
-export default function StyleControls({ value, onChange, hideFont, hideDecor, hideBorder }: Props) {
+export default function StyleControls({ value, onChange, hideFont, hideDecor, hideBorder, showPhotoFx, showTitleFx }: Props) {
   return (
     <div className="space-y-3">
       <div>
@@ -160,6 +164,46 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
             </div>
           </div>
         </>
+      )}
+
+      {showTitleFx && (
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={!!value.titleGradient}
+              onChange={(e) => onChange({ titleGradient: e.target.checked })}
+              className="h-4 w-4 accent-tera"
+            />
+            Градиентно заглавие
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={!!value.titleShadow}
+              onChange={(e) => onChange({ titleShadow: e.target.checked })}
+              className="h-4 w-4 accent-tera"
+            />
+            Релефна сянка
+          </label>
+        </div>
+      )}
+
+      {showPhotoFx && (
+        <div>
+          <label className="field-label" htmlFor="photo-filter">Филтър на снимки/лога</label>
+          <select
+            id="photo-filter"
+            className="field-input"
+            value={value.photoFilter || "none"}
+            onChange={(e) => onChange({ photoFilter: e.target.value as StyleState["photoFilter"] })}
+          >
+            <option value="none">Без филтър</option>
+            <option value="gray">Черно-бяло</option>
+            <option value="sepia">Сепия</option>
+            <option value="duo">Дуотон</option>
+          </select>
+        </div>
       )}
 
       {!hideBorder && (

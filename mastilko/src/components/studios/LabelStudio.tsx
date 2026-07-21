@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, resolveDecor, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -107,7 +107,7 @@ export default function LabelStudio() {
       : `https://${s.qrUrl.trim()}`
     : "";
   // Един QR за целия лист — не по един на клетка.
-  const qrSrc = useQrDataUrl(qrText);
+  const qrSrc = useQrDataUrl(qrText, s.qrColor ? qrSafeColor(theme.accent) : undefined);
 
   const radius =
     preset.shape === "circle" ? "50%" : preset.shape === "round" ? "50% / 45%" : "2.5mm";
@@ -247,6 +247,17 @@ export default function LabelStudio() {
             <p className="mt-1 text-xs text-ink-faint">
               Генерира се в твоя браузър — нищо не се изпраща навън.
             </p>
+            {s.qrUrl.trim() && (
+              <label className="mt-2 flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={!!s.qrColor}
+                  onChange={(e) => set({ qrColor: e.target.checked })}
+                  className="h-4 w-4 accent-tera"
+                />
+                QR в акцентния цвят (ако е скенируем)
+              </label>
+            )}
           </div>
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">

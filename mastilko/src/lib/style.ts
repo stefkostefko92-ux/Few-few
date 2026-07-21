@@ -92,6 +92,12 @@ export const DECORS: Array<{ id: string; name: string }> = [
   { id: "diagonal", name: "Диагонални линии" },
   { id: "stripes", name: "Ивици" },
   { id: "confetti", name: "Конфети" },
+  { id: "waves", name: "Вълни" },
+  { id: "hearts", name: "Сърца" },
+  { id: "stars", name: "Звезди" },
+  { id: "fireworks", name: "Фойерверк" },
+  { id: "laurel", name: "Лаврови клонки" },
+  { id: "texture", name: "Фина текстура" },
   { id: "corners", name: "Ъглови орнаменти" },
   { id: "frame", name: "Двойна рамка" },
   { id: "gradient", name: "Меко сияние" },
@@ -141,6 +147,14 @@ export interface StyleState {
   decorOpacity?: number;
   /** Мащаб на украсата: 0.5 … 2. */
   decorScale?: number;
+  /** Филтър на снимки/лога. */
+  photoFilter?: "none" | "gray" | "sepia" | "duo";
+  /** Градиентен текст на декоративните заглавия. */
+  titleGradient?: boolean;
+  /** Релефна сянка на заглавията. */
+  titleShadow?: boolean;
+  /** QR кодът в акцентния цвят (с проверка за скенируемост). */
+  qrColor?: boolean;
 }
 
 export const StyleSchemaShape = {
@@ -168,6 +182,10 @@ export const StyleSchemaShape = {
   decorColor: z.string().max(20),
   decorOpacity: z.number().min(0.05).max(1),
   decorScale: z.number().min(0.5).max(2),
+  photoFilter: z.enum(["none", "gray", "sepia", "duo"]),
+  titleGradient: z.boolean(),
+  titleShadow: z.boolean(),
+  qrColor: z.boolean(),
 };
 
 const hex = /^#[0-9a-fA-F]{3,8}$/;
@@ -274,4 +292,58 @@ export function elementFont(s: StyleState, key: string, fallback?: string): stri
   if (perEl) return fontCss(perEl);
   if (s.font) return fontCss(s.font);
   return fallback ?? "var(--font-sans)";
+}
+
+/** CSS filter за снимки/лога (ч-б, сепия, дуотон) или undefined. */
+export function photoFilterCss(s: StyleState): string | undefined {
+  switch (s.photoFilter) {
+    case "gray":
+      return "grayscale(1)";
+    case "sepia":
+      return "sepia(0.6)";
+    case "duo":
+      return "grayscale(1) sepia(1) hue-rotate(175deg) saturate(1.3) brightness(0.95)";
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Ефекти за ДЕКОРАТИВНИ заглавия (едри) — градиентен текст и/или релефна сянка.
+ * Ползва САМО акцент/втори цвят (никога theme.bg, който на места е текст-цвят).
+ * Спреа се върху заглавния стил, затова прегазва color при градиент.
+ */
+export function titleFx(s: StyleState, theme: WarmTheme): React.CSSProperties {
+  const fx: React.CSSProperties = {};
+  if (s.titleGradient) {
+    const c2 = s.cbg2 && hex.test(s.cbg2) ? s.cbg2 : theme.fg;
+    fx.backgroundImage = `linear-gradient(90deg, ${theme.accent}, ${c2})`;
+    fx.WebkitBackgroundClip = "text";
+    fx.backgroundClip = "text";
+    fx.color = "transparent";
+    fx.WebkitTextFillColor = "transparent";
+  }
+  if (s.titleShadow) {
+    fx.textShadow = "0 0.3mm 0 rgba(0,0,0,0.18)";
+  }
+  return fx;
+}
+
+/**
+ * Безопасен цвят за QR модулите: връща акцента само ако е достатъчно тъмен
+ * спрямо бял фон (иначе чисто черно — скенируемостта е над естетиката).
+ */
+export function qrSafeColor(accent: string): string {
+  const FALLBACK = "#1B1B1B";
+  const m = /^#([0-9a-fA-F]{6})$/.exec(accent);
+  if (!m) return FALLBACK;
+  const n = parseInt(m[1]!, 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const lin = (c: number) => {
+    const x = c / 255;
+    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  };
+  const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  // Контраст спрямо бяло (L=1): (1+0.05)/(lum+0.05) ≥ 4 → достатъчно тъмен.
+  return 1.05 / (lum + 0.05) >= 4 ? accent : FALLBACK;
 }

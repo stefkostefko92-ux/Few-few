@@ -26,6 +26,13 @@ export default function BackgroundDecor({ decor, color, opacity = 1, scale = 1 }
     zIndex: 0,
   };
 
+  // SVG шаблон като data-URI (без външни ресурси); цветът се инжектира и
+  // URL-кодира. backgroundSize в mm → печатната математика остава непокътната.
+  const svg = (inner: string, w: number, h: number) =>
+    `url("data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>${inner}</svg>`,
+    )}")`;
+
   switch (decor) {
     case "dots":
       return (
@@ -51,6 +58,84 @@ export default function BackgroundDecor({ decor, color, opacity = 1, scale = 1 }
             `radial-gradient(circle, ${color} 1.6mm, transparent 1.7mm), radial-gradient(circle, ${color} 1mm, transparent 1.1mm)`,
           backgroundSize: `${mm(24)} ${mm(24)}, ${mm(18)} ${mm(18)}`,
           backgroundPosition: `0 0, ${mm(9)} ${mm(12)}`,
+        }} />
+      );
+    case "waves":
+      return (
+        <div style={{
+          ...base, opacity: 0.22 * op,
+          backgroundImage: svg(`<path d='M0 6 Q10 0 20 6 T40 6' fill='none' stroke='${color}' stroke-width='1'/>`, 40, 12),
+          backgroundSize: `${mm(20)} ${mm(6)}`,
+        }} />
+      );
+    case "hearts":
+      return (
+        <div style={{
+          ...base, opacity: 0.22 * op,
+          backgroundImage: svg(`<path d='M10 17 L3.5 9.5 A4 4 0 0 1 10 5 A4 4 0 0 1 16.5 9.5 Z' fill='${color}'/>`, 20, 20),
+          backgroundSize: `${mm(14)} ${mm(14)}`,
+        }} />
+      );
+    case "stars":
+      return (
+        <div style={{
+          ...base, opacity: 0.26 * op,
+          backgroundImage: svg(`<path d='M10 1 l2.4 5.6 6 .5 -4.6 3.9 1.4 5.9 -5.2-3.2 -5.2 3.2 1.4-5.9 -4.6-3.9 6-.5z' fill='${color}'/>`, 20, 20),
+          backgroundSize: `${mm(16)} ${mm(16)}`,
+        }} />
+      );
+    case "fireworks":
+      return (
+        <div style={{
+          ...base, opacity: 0.24 * op,
+          backgroundImage: svg(
+            `<g stroke='${color}' stroke-width='0.7' stroke-linecap='round'>` +
+              [0, 45, 90, 135, 180, 225, 270, 315]
+                .map((a) => {
+                  const r = (a * Math.PI) / 180;
+                  return `<line x1='15' y1='15' x2='${(15 + 11 * Math.cos(r)).toFixed(1)}' y2='${(15 + 11 * Math.sin(r)).toFixed(1)}'/>`;
+                })
+                .join("") +
+              `</g>`,
+            30, 30,
+          ),
+          backgroundSize: `${mm(26)} ${mm(26)}`,
+        }} />
+      );
+    case "laurel":
+      // Венец от лаврови клонки — центриран орнамент долу (не се тапицира).
+      return (
+        <div style={{
+          ...base, opacity: 0.5 * op,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center 82%",
+          backgroundSize: `${mm(80)} auto`,
+          backgroundImage: svg(
+            `<g fill='none' stroke='${color}' stroke-width='1.4'>` +
+              `<path d='M50 78 Q26 74 16 52'/><path d='M50 78 Q74 74 84 52'/>` +
+              `</g><g fill='${color}'>` +
+              [0.15, 0.32, 0.49, 0.66, 0.83]
+                .map((t) => {
+                  const lx = 50 - t * 34 - 2, ly = 78 - Math.sin(t * 2.4) * 26 - t * 8;
+                  const rx = 50 + t * 34 + 2, ry = ly;
+                  return `<ellipse cx='${lx.toFixed(1)}' cy='${ly.toFixed(1)}' rx='4.2' ry='2' transform='rotate(-35 ${lx.toFixed(1)} ${ly.toFixed(1)})'/>` +
+                    `<ellipse cx='${rx.toFixed(1)}' cy='${ry.toFixed(1)}' rx='4.2' ry='2' transform='rotate(35 ${rx.toFixed(1)} ${ry.toFixed(1)})'/>`;
+                })
+                .join("") +
+              `</g>`,
+            100, 90,
+          ),
+        }} />
+      );
+    case "texture":
+      // Лек noise (feTurbulence) — ниска непрозрачност, за да не хаби мастило.
+      return (
+        <div style={{
+          ...base, opacity: 0.06 * op,
+          backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(
+            `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='120' height='120' filter='url(#n)'/></svg>`,
+          )}")`,
+          backgroundSize: `${mm(40)} ${mm(40)}`,
         }} />
       );
     case "gradient":
