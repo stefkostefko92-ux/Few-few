@@ -157,6 +157,8 @@ export interface StyleState {
   qrColor?: boolean;
   /** Мастило-пестелив режим — бял фон, за да не хаби мастило/тонер. */
   ecoMode?: boolean;
+  /** Четим режим за дислексия (по-голяма разредка, тегло и редова разредка). */
+  dyslexia?: boolean;
 }
 
 export const StyleSchemaShape = {
@@ -189,6 +191,7 @@ export const StyleSchemaShape = {
   titleShadow: z.boolean(),
   qrColor: z.boolean(),
   ecoMode: z.boolean(),
+  dyslexia: z.boolean(),
 };
 
 const hex = /^#[0-9a-fA-F]{3,8}$/;
@@ -212,6 +215,17 @@ export function resolveTheme(s: StyleState): WarmTheme {
  */
 export function fontVars(s: StyleState): React.CSSProperties {
   const v: React.CSSProperties = {};
+  // Четим режим за дислексия — база от добри стойности; изричните избори на
+  // потребителя (шрифт/разредка/тегло/редова разредка) я прегазват по-долу.
+  if (s.dyslexia) {
+    const css = "var(--font-nunito)"; // закръглен, четим безсерифен
+    v.fontFamily = css;
+    (v as Record<string, string>)["--font-display"] = css;
+    v.letterSpacing = "0.05em";
+    v.wordSpacing = "0.14em";
+    v.lineHeight = 1.7;
+    v.fontWeight = 500;
+  }
   if (s.font) {
     const css = fontCss(s.font);
     v.fontFamily = css;

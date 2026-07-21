@@ -15,6 +15,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BannerZone from "@/components/BannerZone";
 import VividFx from "@/components/VividFx";
+import PwaRegister from "@/components/PwaRegister";
 import "./globals.css";
 
 // Всички шрифтове са с кирилица И латиница. Само основните два се preload-ват;
@@ -176,6 +177,7 @@ export default function RootLayout({
         <BannerZone placement="all" />
         <main id="glavno" className="flex-1">{children}</main>
         <Footer />
+        <PwaRegister />
       </body>
     </html>
   );

@@ -191,6 +191,16 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
               />
             </div>
           </div>
+
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={!!value.dyslexia}
+              onChange={(e) => onChange({ dyslexia: e.target.checked })}
+              className="h-4 w-4 accent-tera"
+            />
+            Четим режим за дислексия
+          </label>
         </>
       )}
 
