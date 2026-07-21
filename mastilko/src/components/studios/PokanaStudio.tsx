@@ -22,6 +22,9 @@ interface PokanaState extends StyleState {
   note: string;
   themeId: string;
   copies: 1 | 2;
+  /** Серия: по едно име на ред → покана за всеки (2 на лист). „{име}“ в
+   *  заглавието се заменя с името. Празно = обикновен режим. */
+  series: string;
 }
 
 const INITIAL: PokanaState = {
@@ -35,6 +38,7 @@ const INITIAL: PokanaState = {
   note: "Очакваме те за игри, торта и много изненади!",
   themeId: "med",
   copies: 2,
+  series: "",
 };
 
 const ProjectSchema = z
@@ -48,6 +52,7 @@ const ProjectSchema = z
     place: z.string().max(120),
     note: z.string().max(200),
     copies: z.union([z.literal(1), z.literal(2)]),
+    series: z.string().max(4000),
     ...StyleSchemaShape,
   })
   .partial();
@@ -93,6 +98,7 @@ export default function PokanaStudio() {
   const set = (patch: Partial<PokanaState>) => setS({ ...s, ...patch });
   const mm = (v: number) => `${v}mm`;
   const px = (v: number) => `${v * 3.1}px`;
+  const names = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
@@ -125,6 +131,19 @@ export default function PokanaStudio() {
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} />
             </div>
           ))}
+          <div>
+            <label htmlFor="p-series" className="field-label">
+              Серия — по едно име на ред (покана за всеки гост)
+            </label>
+            <textarea id="p-series" className="field-input min-h-20" maxLength={4000} value={s.series}
+              onChange={(e) => set({ series: e.target.value })}
+              placeholder={"Иван\nМария\nсем. Петрови"} />
+            <p className="mt-1 text-xs text-ink-faint">
+              {names.length > 0
+                ? `Ще се отпечатат ${names.length} покани (2 на лист). Можеш да ползваш „{име}“ в заглавието; „Кой / повод“ се заменя с името.`
+                : "Остави празно за обикновена покана. Всеки ред става отделна покана."}
+            </p>
+          </div>
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             Брой на лист:
             <select className="field-input !w-20" value={s.copies}
@@ -154,15 +173,40 @@ export default function PokanaStudio() {
             </div>
           </div>
         </div>
-        <PrintBar summary={`${s.copies} покани на лист А4`} />
-        <SheetPreview style={fontVars(s)}>
-          {Array.from({ length: s.copies }).map((_, i) => (
-            <div key={i} style={{ position: "absolute", left: "5mm", top: `${8 + i * 145}mm` }}>
-              <Card s={s} theme={theme} u={mm} />
-            </div>
-          ))}
-        </SheetPreview>
+        <PrintBar summary={names.length > 0
+          ? `Серия: ${names.length} покани (2 на лист А4)`
+          : `${s.copies} покани на лист А4`} />
+        {names.length > 0 ? (
+          chunkPairs(names).map((pair, si) => (
+            <SheetPreview key={si} style={fontVars(s)}>
+              {pair.map((name, j) => (
+                <div key={j} style={{ position: "absolute", left: "5mm", top: `${8 + j * 145}mm` }}>
+                  <Card
+                    s={{ ...s, who: name, heading: s.heading.replace(/\{име\}/g, name) }}
+                    theme={theme}
+                    u={mm}
+                  />
+                </div>
+              ))}
+            </SheetPreview>
+          ))
+        ) : (
+          <SheetPreview style={fontVars(s)}>
+            {Array.from({ length: s.copies }).map((_, i) => (
+              <div key={i} style={{ position: "absolute", left: "5mm", top: `${8 + i * 145}mm` }}>
+                <Card s={s} theme={theme} u={mm} />
+              </div>
+            ))}
+          </SheetPreview>
+        )}
       </div>
     </div>
   );
+}
+
+/** Разбива списък на двойки (по 2 покани на лист). */
+function chunkPairs<T>(arr: T[]): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += 2) out.push(arr.slice(i, i + 2));
+  return out;
 }

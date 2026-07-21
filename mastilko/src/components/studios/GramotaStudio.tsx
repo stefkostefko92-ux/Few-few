@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -37,6 +38,9 @@ interface GramotaState extends StyleState {
   verifyQr: boolean;
   /** Съдържание на проверовъчния QR (линк или код). */
   verifyCode: string;
+  /** Серия: по едно име на ред → отделна грамота на страница. „{име}“ в текста
+   *  „За какво“ се заменя с името. Празно = една грамота. */
+  series: string;
 }
 
 const INITIAL: GramotaState = {
@@ -54,6 +58,7 @@ const INITIAL: GramotaState = {
   ribbon: false,
   verifyQr: false,
   verifyCode: "",
+  series: "",
 };
 
 const ProjectSchema = z
@@ -71,6 +76,7 @@ const ProjectSchema = z
     ribbon: z.boolean(),
     verifyQr: z.boolean(),
     verifyCode: z.string().max(300),
+    series: z.string().max(4000),
     ...StyleSchemaShape,
   })
   .partial();
@@ -102,11 +108,107 @@ function Ribbon({ color }: { color: string }) {
   );
 }
 
+// Съдържанието на една грамота — параметризирано с получател (за серия).
+function GramotaSheet({
+  s,
+  theme,
+  recipient,
+  verifySrc,
+}: {
+  s: GramotaState;
+  theme: WarmTheme;
+  recipient: string;
+  verifySrc: string | null;
+}) {
+  const reason = s.reason.replace(/\{име\}/g, recipient || "Име Фамилия");
+  return (
+    <div style={{
+      position: "absolute", inset: 0, padding: "10mm",
+      display: "flex", flexDirection: "column",
+    }}>
+      {/* Двойна орнаментна рамка */}
+      <div style={{
+        flex: 1, ...borderCss(s, { width: 2, style: "solid", color: theme.accent, radius: 0 }),
+        padding: "4mm", position: "relative",
+      }}>
+        <div style={{
+          height: "100%", border: `0.5mm solid ${theme.accent}`,
+          display: "flex", flexDirection: "column", alignItems: "center",
+          justifyContent: "center", textAlign: "center", padding: "10mm 18mm",
+          color: theme.fg, background: sheetBg(s, theme), position: "relative", overflow: "hidden",
+        }}>
+          <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+          {s.ribbon && (
+            <div style={{ position: "absolute", top: "3mm", right: "5mm", zIndex: 2 }}>
+              <Ribbon color={theme.accent} />
+            </div>
+          )}
+          {verifySrc && (
+            <div style={{ position: "absolute", bottom: "5mm", left: "6mm", zIndex: 2, textAlign: "center" }}>
+              <QrImage src={verifySrc} style={{ width: "15mm", height: "15mm", background: "#fff", padding: "1mm", borderRadius: "1mm" }} />
+              <div style={{ fontSize: fs(2.4), marginTop: "0.5mm", opacity: 0.7 }}>проверка</div>
+            </div>
+          )}
+          {s.logo && (
+            <div style={{ marginBottom: "3mm", position: "relative", zIndex: 1 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.logo} alt="" style={{ height: `${s.logoSize}mm`, maxWidth: "70mm", objectFit: "contain", display: "block", filter: photoFilterCss(s) }} />
+            </div>
+          )}
+          <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
+            {s.org || " "}
+          </div>
+          <div style={{
+            fontFamily: elementFont(s, "kind", "var(--font-display)"), fontWeight: 800,
+            fontSize: fs(16), letterSpacing: "0.05em", marginTop: "4mm",
+            color: theme.accent, position: "relative", zIndex: 1, ...titleFx(s, theme),
+          }}>
+            {s.kind}
+          </div>
+          <div style={{ fontSize: fs(4), marginTop: "6mm", position: "relative", zIndex: 1 }}>връчва се на</div>
+          <div style={{
+            fontFamily: elementFont(s, "recipient", "var(--font-display)"), fontWeight: 800,
+            fontSize: fs(11), margin: "3mm 0", borderBottom: `0.4mm solid ${theme.accent}`,
+            paddingBottom: "2mm", minWidth: "60%", position: "relative", zIndex: 1,
+          }}>
+            {recipient || "Име Фамилия"}
+          </div>
+          <div style={{ fontSize: fs(4.2), lineHeight: 1.5, maxWidth: "80%", marginTop: "3mm", position: "relative", zIndex: 1 }}>
+            {reason}
+          </div>
+          <div style={{
+            display: "flex", justifyContent: "space-between", width: "100%",
+            marginTop: "auto", paddingTop: "12mm", fontSize: fs(3.6),
+            position: "relative", zIndex: 1,
+          }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
+                {s.place}{s.place && s.date ? ", " : ""}{s.date}
+              </div>
+            </div>
+            {s.seal && (
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                <Seal color={theme.accent} />
+              </div>
+            )}
+            <div style={{ textAlign: "center" }}>
+              <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
+                {s.signer}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GramotaStudio() {
   const [s, setS] = useLocalState<GramotaState>("mastilko-gramota", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = resolveTheme(s);
   const set = (patch: Partial<GramotaState>) => setS({ ...s, ...patch });
   const verifySrc = useQrDataUrl(s.verifyQr && s.verifyCode.trim() ? s.verifyCode.trim() : "");
+  const names = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
 
   return (
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -122,7 +224,21 @@ export default function GramotaStudio() {
           <div>
             <label htmlFor="recipient" className="field-label">Награждава се</label>
             <input id="recipient" className="field-input" maxLength={80} value={s.recipient}
-              onChange={(e) => set({ recipient: e.target.value })} placeholder="Име Фамилия" />
+              onChange={(e) => set({ recipient: e.target.value })}
+              placeholder="Име Фамилия" disabled={names.length > 0} />
+          </div>
+          <div>
+            <label htmlFor="series" className="field-label">
+              Серия — по едно име на ред (цял клас наведнъж)
+            </label>
+            <textarea id="series" className="field-input min-h-24" maxLength={4000} value={s.series}
+              onChange={(e) => set({ series: e.target.value })}
+              placeholder={"Иван Петров\nМария Георгиева\nГеорги Иванов"} />
+            <p className="mt-1 text-xs text-ink-faint">
+              {names.length > 0
+                ? `Ще се отпечатат ${names.length} грамоти — по една на лист. Можеш да ползваш „{име}“ в текста „За какво“.`
+                : "Остави празно за една грамота. Всеки ред става отделна грамота с това име."}
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <FontPicker label="Шрифт: заглавие" value={s.fonts?.kind} allowDefault
@@ -195,87 +311,20 @@ export default function GramotaStudio() {
       </div>
 
       <div className="space-y-4">
-        <PrintBar summary="Грамота на хоризонтален лист А4" />
-        <SheetPreview landscape style={fontVars(s)}>
-          <div style={{
-            position: "absolute", inset: 0, padding: "10mm",
-            display: "flex", flexDirection: "column",
-          }}>
-            {/* Двойна орнаментна рамка */}
-            <div style={{
-              flex: 1, ...borderCss(s, { width: 2, style: "solid", color: theme.accent, radius: 0 }),
-              padding: "4mm", position: "relative",
-            }}>
-              <div style={{
-                height: "100%", border: `0.5mm solid ${theme.accent}`,
-                display: "flex", flexDirection: "column", alignItems: "center",
-                justifyContent: "center", textAlign: "center", padding: "10mm 18mm",
-                color: theme.fg, background: sheetBg(s, theme), position: "relative", overflow: "hidden",
-              }}>
-                <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
-                {s.ribbon && (
-                  <div style={{ position: "absolute", top: "3mm", right: "5mm", zIndex: 2 }}>
-                    <Ribbon color={theme.accent} />
-                  </div>
-                )}
-                {verifySrc && (
-                  <div style={{ position: "absolute", bottom: "5mm", left: "6mm", zIndex: 2, textAlign: "center" }}>
-                    <QrImage src={verifySrc} style={{ width: "15mm", height: "15mm", background: "#fff", padding: "1mm", borderRadius: "1mm" }} />
-                    <div style={{ fontSize: fs(2.4), marginTop: "0.5mm", opacity: 0.7 }}>проверка</div>
-                  </div>
-                )}
-                {s.logo && (
-                  <div style={{ marginBottom: "3mm", position: "relative", zIndex: 1 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.logo} alt="" style={{ height: `${s.logoSize}mm`, maxWidth: "70mm", objectFit: "contain", display: "block", filter: photoFilterCss(s) }} />
-                  </div>
-                )}
-                <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
-                  {s.org || " "}
-                </div>
-                <div style={{
-                  fontFamily: elementFont(s, "kind", "var(--font-display)"), fontWeight: 800,
-                  fontSize: fs(16), letterSpacing: "0.05em", marginTop: "4mm",
-                  color: theme.accent, position: "relative", zIndex: 1, ...titleFx(s, theme),
-                }}>
-                  {s.kind}
-                </div>
-                <div style={{ fontSize: fs(4), marginTop: "6mm", position: "relative", zIndex: 1 }}>връчва се на</div>
-                <div style={{
-                  fontFamily: elementFont(s, "recipient", "var(--font-display)"), fontWeight: 800,
-                  fontSize: fs(11), margin: "3mm 0", borderBottom: `0.4mm solid ${theme.accent}`,
-                  paddingBottom: "2mm", minWidth: "60%", position: "relative", zIndex: 1,
-                }}>
-                  {s.recipient || "Име Фамилия"}
-                </div>
-                <div style={{ fontSize: fs(4.2), lineHeight: 1.5, maxWidth: "80%", marginTop: "3mm", position: "relative", zIndex: 1 }}>
-                  {s.reason}
-                </div>
-                <div style={{
-                  display: "flex", justifyContent: "space-between", width: "100%",
-                  marginTop: "auto", paddingTop: "12mm", fontSize: fs(3.6),
-                  position: "relative", zIndex: 1,
-                }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
-                      {s.place}{s.place && s.date ? ", " : ""}{s.date}
-                    </div>
-                  </div>
-                  {s.seal && (
-                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-                      <Seal color={theme.accent} />
-                    </div>
-                  )}
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
-                      {s.signer}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </SheetPreview>
+        <PrintBar summary={names.length > 0
+          ? `Серия: ${names.length} грамоти (по една на лист А4)`
+          : "Грамота на хоризонтален лист А4"} />
+        {names.length > 0 ? (
+          names.map((name, i) => (
+            <SheetPreview key={`${name}-${i}`} landscape style={fontVars(s)}>
+              <GramotaSheet s={s} theme={theme} recipient={name} verifySrc={verifySrc} />
+            </SheetPreview>
+          ))
+        ) : (
+          <SheetPreview landscape style={fontVars(s)}>
+            <GramotaSheet s={s} theme={theme} recipient={s.recipient || "Име Фамилия"} verifySrc={verifySrc} />
+          </SheetPreview>
+        )}
       </div>
     </div>
   );
