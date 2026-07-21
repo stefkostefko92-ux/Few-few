@@ -66,6 +66,23 @@ if (is_file($CACHE_FILE) && (time() - (int) @filemtime($CACHE_FILE)) < $CACHE_TT
 }
 header('X-Cache: MISS');
 
+// ── 1b) Single-flight: only ONE process probes per TTL window. Concurrent
+// callers hitting an expired cache serve the last result instead of each firing
+// 6 outbound probes (anti-amplification / cache-stampede guard). ───────────────
+$LOCK_FP  = @fopen(sys_get_temp_dir() . '/cs_status.lock', 'c');
+$haveLock = $LOCK_FP && @flock($LOCK_FP, LOCK_EX | LOCK_NB);
+if ($LOCK_FP && !$haveLock) {
+    $stale = @file_get_contents($CACHE_FILE);
+    if ($stale !== false && $stale !== '') { header('X-Cache: STALE'); echo $stale; exit; }
+    // No cache yet — block until the in-flight prober finishes, then serve it.
+    if (@flock($LOCK_FP, LOCK_EX)) {
+        $haveLock = true;
+        $fresh = @file_get_contents($CACHE_FILE);
+        if ($fresh !== false && $fresh !== '') { @flock($LOCK_FP, LOCK_UN); header('X-Cache: STALE'); echo $fresh; exit; }
+        // Still nothing (rare) — keep the lock and probe ourselves.
+    }
+}
+
 // ── 2) Probe each service in parallel (curl_multi) ─────────────────────────
 /**
  * @return array{status:string,latency_ms:?int,http:int}
@@ -196,8 +213,13 @@ function cs_availability(string $stateFile, string $overall): array
 {
     $now    = time();
     $window = 30 * 86400;
-    $raw    = @file_get_contents($stateFile);
-    $st     = $raw !== false ? json_decode($raw, true) : null;
+    // Hold ONE lock across the whole read-modify-write so concurrent requests
+    // can't both read the same state, append, and clobber each other (lost
+    // samples). fopen('c+') creates-or-opens without truncating.
+    $fp = @fopen($stateFile, 'c+');
+    if ($fp) { @flock($fp, LOCK_EX); }
+    $raw = $fp ? stream_get_contents($fp) : @file_get_contents($stateFile);
+    $st  = ($raw !== false && $raw !== '') ? json_decode($raw, true) : null;
     if (!is_array($st)) {
         $st = [];
     }
@@ -211,8 +233,15 @@ function cs_availability(string $stateFile, string $overall): array
     if (count($st) > 50000) {
         $st = array_slice($st, -50000);
     }
-    @file_put_contents($stateFile, json_encode($st), LOCK_EX);
-    @chmod($stateFile, 0600);
+    if ($fp) {
+        ftruncate($fp, 0);
+        rewind($fp);
+        fwrite($fp, json_encode($st));
+        fflush($fp);
+        @flock($fp, LOCK_UN);
+        fclose($fp);
+        @chmod($stateFile, 0600);
+    }
 
     $total = count($st);
     if ($total === 0) {
@@ -291,5 +320,8 @@ if (@file_put_contents($tmp, $json, LOCK_EX) !== false) {
     @chmod($tmp, 0644);
     @rename($tmp, $CACHE_FILE);
 }
+
+// release the single-flight lock so the next TTL window can probe
+if (!empty($haveLock) && !empty($LOCK_FP)) { @flock($LOCK_FP, LOCK_UN); @fclose($LOCK_FP); }
 
 echo $json;

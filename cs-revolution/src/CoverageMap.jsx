@@ -298,13 +298,14 @@ export default function CoverageMap() {
       sizeToHost();
       draw(0);
       var roS = null;
+      var onResizeS = function () { sizeToHost(); draw(0); };
       if ("ResizeObserver" in window) {
-        roS = new ResizeObserver(function () { sizeToHost(); draw(0); });
+        roS = new ResizeObserver(onResizeS);
         roS.observe(el);
       } else {
-        window.addEventListener("resize", function () { sizeToHost(); draw(0); });
+        window.addEventListener("resize", onResizeS);
       }
-      return function () { mounted = false; if (roS) roS.disconnect(); };
+      return function () { mounted = false; if (roS) roS.disconnect(); else window.removeEventListener("resize", onResizeS); };
     }
 
     // ── animated branch ──
@@ -319,13 +320,14 @@ export default function CoverageMap() {
       raf = requestAnimationFrame(loop);
     }
     function startLoop() {
-      if (raf || !visible || document.hidden) return;
-      raf = requestAnimationFrame(loop);
+      if (!visible || document.hidden) return;
+      if (!raf) raf = requestAnimationFrame(loop);
+      if (!parallaxRaf) parallaxRaf = requestAnimationFrame(parallaxLoop);
     }
-    function stopLoop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
-
-    draw(0);
-    startLoop();
+    function stopLoop() {
+      if (raf) { cancelAnimationFrame(raf); raf = null; }
+      if (parallaxRaf) { cancelAnimationFrame(parallaxRaf); parallaxRaf = null; }
+    }
 
     // subtle pointer parallax on the whole plot layer + hub hover glow
     var tx = 0, ty = 0, curX = 0, curY = 0;
@@ -356,7 +358,10 @@ export default function CoverageMap() {
     }
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerleave", onPointerLeave, { passive: true });
-    parallaxRaf = requestAnimationFrame(parallaxLoop);
+    // start the paint + parallax loops last, once every var/fn above is defined;
+    // startLoop drives BOTH raf and parallaxRaf so IO/visibility pause both.
+    draw(0);
+    startLoop();
 
     var ro = null;
     if ("ResizeObserver" in window) {
