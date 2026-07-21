@@ -12521,15 +12521,17 @@
         "Дисциплина/мислене: EV над win-rate, risk of ruin, ex-ante≠ex-post, скромност срещу остър пазар"
       ],
       "knowledge": {
-        "sources": 6,
-        "researchToolUses": 0,
+        "sources": 24,
+        "researchToolUses": 5,
         "priorArt": [
-          "Dixon & Coles (1997) — „Modelling Association Football Scores and Inefficiencies in the Football Betting Market“ (Поасон + τ корекция, time decay)",
-          "Kelly (1956) + Thorp — критерий за размер на залог; дробен Kelly срещу variance drag",
-          "Brier (1950) — Brier score за калибрация на вероятностни прогнози",
-          "Ефективен пазар / closing line value — затварящият коефициент на остър пазар (Pinnacle) като предиктор",
-          "xG модели (Understat/FBref) — очаквани голове като по-малко шумна мярка от суровите голове",
-          "Shin (1993) — обезмаржване на коефициенти (overround) към честни вероятности"
+          "Dixon & Coles (1997) — модел Поасон + τ корекция, time decay (JRSS-C 46(2))",
+          "Karlis & Ntzoufras (2003) — bivariate Poisson / diagonal inflation за равенства (The Statistician 52(3))",
+          "Kelly (1956) + Thorp — критерий за размер; дробен Kelly срещу volatility drag (μ−σ²/2)",
+          "Brier (1950), log score, reliability diagrams (ECMWF); RPS за 1X2 — Constantinou & Fenton (2012, JQAS 8(1))",
+          "Shin (1993) + пропорционален/power devig — махане на overround (penaltyblog); favourite-longshot bias",
+          "xG: StatsBomb/Opta/Understat, npxG, context-adjusted xG (Skripnikov 2026); FBref→Opta смяна 2022",
+          "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
+          "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
         ]
       },
       "evolution": [
@@ -12544,9 +12546,20 @@
           "date": "2026-07-21",
           "event": "v6.0 — самообучаващо поколение",
           "detail": "Вграден в наложения от hooks цикъл (read→act→verify→persist→curate): preload на проверени поуки, гейт преди 'verified' (пазарно твърдение НИКОГА не е verified), auto-capture. Стартова памет: обезмаржване, ρ Диксън-Коулс, дробен Kelly, market anchor, калибрация, SoS нормализация, xG тегло, H2H шум."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-21",
+          "event": "v10.0 — майсторство (обучен с цитирани източници)",
+          "detail": "Изравнен с майсторския ешелон на екипа: 42 проверени, цитирани поуки от целенасочено изследване с живи източници — Поасон + Диксън-Коулс (ρ≈−0.13, τ на 4 клетки, time-decay ξ half-life ~1г), bivariate Poisson (Karlis-Ntzoufras), xG предиктивност/ограничения и доставчици (StatsBomb/Opta/Understat), домакинско предимство (CIES + COVID естествен експеримент, ~0.2 гол/мач, съдийски уклон), пазар/марж (пропорционален vs Shin/power devig, favourite-longshot, CLV, Constantinou-Fenton), стейкинг Kelly (дробен ½/¼, volatility drag μ−σ²/2) и калибрация (Brier, log-loss, reliability, RPS за 1X2), голови базлайни на топ-5 лиги. 5 спорни твърдения в карантина (напр. ефект на надморска — McSharry vs Chumacero). Дисциплина и калибрация, не гарантирана печалба."
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-21",
+          "type": "learning",
+          "summary": "v10.0 майсторство: 42 проверени поуки от изследване с живи източници (Диксън-Коулс ρ/τ/time-decay, bivariate Poisson, xG, дом.предимство/COVID, devig Shin, Kelly, Brier/RPS, голови базлайни). 5 спорни в карантина. Дисциплина, не гарантирана печалба."
+        },
         {
           "date": "2026-07-21",
           "type": "birth",
@@ -12556,18 +12569,28 @@
       "recentLessons": [
         {
           "date": "2026-07-21",
-          "text": "Стойност се мери едва СЛЕД махане на маржа (overround) — суровите 1/X/2 сумират >100% (~5–8%); нормализирай към 100%, чак тогава EV = p·коеф − 1.",
-          "source": ".claude/agents/goladjiyata.md — операционен договор"
+          "text": "Диксън-Коулс τ коригира 4 клетки (0:0,1:0,0:1,1:1); ρ≈−0.13 (обикн. −0.03…−0.15) вдига равенствата, които независимият Поасон подценява.",
+          "source": "Dixon & Coles 1997; dashee87.github.io; opisthokonta.net"
         },
         {
           "date": "2026-07-21",
-          "text": "Разпределението на резултата = Поасон × Диксън-Коулс τ(x,y;ρ≈−0.1) — чистият Поасон подценява 0:0/1:1 и равенствата.",
-          "source": "Dixon & Coles 1997; проверено числено (сумата = 1)"
+          "text": "Стойност се мери едва след devig (overround ~5–8% меки / ~2% Pinnacle → нормализирай към 100%); проп. метод пренебрегва favourite-longshot, Shin/power го коригират.",
+          "source": "penaltyblog pena.lt/y/2025/09/14; Shin 1993"
         },
         {
           "date": "2026-07-21",
-          "text": "Размер = дробен Kelly (¼–½ f*) с таван ≤2–3%/залог; отрицателна стойност → не се залага; без прогонка/мартингейл.",
-          "source": "Kelly 1956 + Thorp; .claude/agents/goladjiyata.md"
+          "text": "Дробен Kelly (½/¼) е стандарт: половин Kelly ~¾ растеж при ~½ волатилност; геометричен растеж ≈ μ−σ²/2 (volatility drag); при корелирани залози размерът се сваля.",
+          "source": "Kelly 1956; Pinnacle real Kelly; kitces.com"
+        },
+        {
+          "date": "2026-07-21",
+          "text": "Оценявай 1X2 с RPS (чувствителна към ред: дом по-близо до равен, отколкото до гост) + Brier/log-loss + reliability; win-rate на малка извадка е шум (~1000+ залога за едж).",
+          "source": "Constantinou & Fenton 2012, JQAS 8(1); ECMWF"
+        },
+        {
+          "date": "2026-07-21",
+          "text": "Домакинско предимство не е константа: ~0.2 гол/мач, падна >½ при празни COVID стадиони (CIES 44.3%→42.2%; ~0.29→0.15 гол/мач) — публиката/съдията са реален компонент.",
+          "source": "CIES Football Observatory; Frontiers 2021; Nevill 2002"
         }
       ]
     }
