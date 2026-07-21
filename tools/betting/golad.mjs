@@ -20,8 +20,9 @@ try { input = JSON.parse(fileArg ? readFileSync(fileArg, "utf8") : readFileSync(
 
 let { lambdaHome, lambdaAway } = input;
 if ((lambdaHome == null || lambdaAway == null) && input.ratings) ({ lambdaHome, lambdaAway } = lambdaFromRatings(input.ratings));
-if (lambdaHome == null || lambdaAway == null) {
-  console.error('Дай {"lambdaHome":..,"lambdaAway":..} или {"ratings":{..}}. Не измисляй λ — тегли ги от xG.');
+// Валидирай с Number.isFinite (не `== null`): частичен ratings → NaN λ, който `== null` НЕ хваща → тих NaN изход.
+if (!Number.isFinite(lambdaHome) || !Number.isFinite(lambdaAway) || lambdaHome <= 0 || lambdaAway <= 0) {
+  console.error('Дай валидни ПОЛОЖИТЕЛНИ {"lambdaHome":..,"lambdaAway":..} или пълни {"ratings":{..}}. λ тегли от xG.');
   process.exit(1);
 }
 
@@ -38,7 +39,7 @@ const pModel = [mk["1"], mk.X, mk["2"]]; // 1 / X / 2
 
 // Пазар (ако са дадени коефициенти 1x2) → обезмаржи → смеси → стойност.
 let value = null;
-if (Array.isArray(input.odds1x2) && input.odds1x2.length === 3) {
+if (Array.isArray(input.odds1x2) && input.odds1x2.length === 3 && input.odds1x2.every((o) => Number.isFinite(o) && o > 1)) {
   const odds = input.odds1x2;
   const pMarket = devig(odds, method);
   const pFinal = blend(pModel, pMarket, w);

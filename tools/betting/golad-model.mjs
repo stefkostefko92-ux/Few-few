@@ -41,19 +41,20 @@ export function scoreMatrix(lambdaHome, lambdaAway, { rho = -0.12, maxGoals = 10
 // Пазари от матрицата (сумиране на клетки). Всичко е вероятност ∈[0,1].
 export function markets(M, { totalsLine = 2.5, handicap = 0 } = {}) {
   const n = M.length;
-  let home = 0, draw = 0, away = 0, over = 0, under = 0, bttsYes = 0, bttsNo = 0;
+  let home = 0, draw = 0, away = 0, over = 0, under = 0, totalsPush = 0, bttsYes = 0, bttsNo = 0;
   let hPush = 0, hHome = 0, hAway = 0; // азиатски хендикап (цяло/половин) за домакина
   for (let x = 0; x < n; x++) for (let y = 0; y < n; y++) {
     const p = M[x][y];
     if (x > y) home += p; else if (x === y) draw += p; else away += p;
-    if (x + y > totalsLine) over += p; else under += p;
+    // цяла линия (напр. 2.0): точната сума е PUSH, не „под". За .5 линии push=0.
+    if (x + y > totalsLine) over += p; else if (x + y === totalsLine) totalsPush += p; else under += p;
     if (x >= 1 && y >= 1) bttsYes += p; else bttsNo += p;
     const adj = (x - y) + handicap; // азиатски хендикап за домакина
     if (adj > 0) hHome += p; else if (adj === 0) hPush += p; else hAway += p;
   }
   return {
     "1": home, X: draw, "2": away,
-    over, under, totalsLine,
+    over, under, totalsPush, totalsLine,
     bttsYes, bttsNo,
     handicap, hHome, hPush, hAway,
   };

@@ -1,7 +1,12 @@
 // golad.test.mjs — доказва математиката на прецизния слой (CI auto-discover).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { join, dirname } from "node:path";
 import { poisson, tau, scoreMatrix, markets, lambdaFromRatings, timeDecayWeight } from "./golad-model.mjs";
+
+const CLI = join(dirname(fileURLToPath(import.meta.url)), "golad.mjs");
 import { proportional, power, shin, overround, devig } from "./devig.mjs";
 import { blend, ev, kelly, brier, logLoss, rps, clv, avgClv } from "./calibration.mjs";
 
@@ -80,4 +85,37 @@ test("метрики: перфектна прогноза → 0; строго п
 test("CLV: победен closing = положителен", () => {
   approx(clv(2.10, 2.00), 2.10 / 2.00 - 1);
   assert.ok(avgClv([{ betOdds: 2.1, closingOdds: 2.0 }, { betOdds: 1.9, closingOdds: 2.0 }]) > -1);
+});
+
+// --- Робустност (дупки, посочени от Кодаджията) ---
+test("devig: екстремни фаворит/аутсайдер пазари → валидни вероятности ∈(0,1), Σ=1", () => {
+  for (const odds of [[1.001, 999, 999], [15, 15, 1.05], [1.2, 6.5, 15]]) {
+    for (const p of [proportional(odds), power(odds), shin(odds)]) {
+      approx(sum(p), 1, 1e-6);
+      assert.ok(p.every((x) => x > 0 && x < 1), `всички ∈(0,1) за ${odds}`);
+    }
+  }
+});
+
+test("Dixon-Coles клампване: екстремен ρ=−0.2 + голямо λ → матрицата остава валидна (Σ=1, ≥0)", () => {
+  const M = scoreMatrix(8, 8, { rho: -0.2 });
+  approx(sum(M.flat()), 1, 1e-9);
+  assert.ok(M.flat().every((p) => p >= 0 && Number.isFinite(p)), "нула отрицателни/NaN клетки");
+});
+
+test("totals: цяла линия → точната сума е PUSH (over+under+push=1), не под", () => {
+  const M = scoreMatrix(1.6, 1.05);
+  const m = markets(M, { totalsLine: 2 });
+  approx(m.over + m.under + m.totalsPush, 1, 1e-9);
+  assert.ok(m.totalsPush > 0, "при цяла линия push > 0");
+  const half = markets(M, { totalsLine: 2.5 });
+  approx(half.totalsPush, 0, 1e-12); // .5 линия → нула push
+});
+
+test("CLI golad.mjs: невалиден вход не дава тих NaN (exit≠0 при NaN/непълни λ)", () => {
+  const run = (obj) => { try { execFileSync("node", [CLI], { input: JSON.stringify(obj), encoding: "utf8" }); return 0; } catch (e) { return e.status || 1; } };
+  assert.notEqual(run({ ratings: { attHome: 1.2 } }), 0, "частичен ratings → NaN λ → грешка, не тих NaN");
+  assert.notEqual(run({ lambdaHome: -1, lambdaAway: 1 }), 0, "≤0 λ → грешка");
+  assert.notEqual(run({ lambdaHome: "x", lambdaAway: 1 }), 0, "нечислена λ → грешка");
+  assert.equal(run({ lambdaHome: 1.5, lambdaAway: 1.0 }), 0, "валидни λ → ок");
 });
