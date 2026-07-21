@@ -531,7 +531,11 @@ gl_FragColor.rgb += uRim * _fres * 0.5;\n\
       var groups = [groupA, groupB, groupC, groupD];
       groups.forEach(function (g) { model.add(g); g.visible = false; });
 
-      function setGroupOpacity(g, v) { g.userData.materials.forEach(function (m) { m.opacity = v; }); }
+      // Scale each material by ITS design opacity, not a flat 1.0 — otherwise the
+      // rare-accent cyan (cage .14, edges .3) and isocurves (.4) burn to full
+      // brightness at rest. baseOpacity is captured lazily on first call, before
+      // any crossfade touches the group, so it reads the design value.
+      function setGroupOpacity(g, v) { g.userData.materials.forEach(function (m) { if (m.userData.baseOpacity === undefined) m.userData.baseOpacity = m.opacity; m.opacity = m.userData.baseOpacity * v; }); }
       function showGroupFull(g) { g.visible = true; g.userData.plane.normal.set(-1, 0, 0); g.userData.plane.constant = 1e6; setGroupOpacity(g, 1); }
       function hideGroup(g) { g.userData.plane.constant = -1e6; setGroupOpacity(g, 0); g.visible = false; }
 
