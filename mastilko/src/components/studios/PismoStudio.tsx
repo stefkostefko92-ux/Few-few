@@ -27,6 +27,10 @@ interface PismoState extends StyleState {
   strengths: string;
   body: string;
   themeId: string;
+  /** Поле (margin) на страницата в mm. */
+  margin: number;
+  /** Цветна лента-бланка с името горе. */
+  letterhead: boolean;
 }
 
 // Валидация на качен проект-файл (виж бележката в LabelStudio).
@@ -42,6 +46,8 @@ const ProjectSchema = z
     recipient: z.string().max(100),
     strengths: z.string().max(600),
     body: z.string().max(4000),
+    margin: z.number().min(12).max(30),
+    letterhead: z.boolean(),
     ...StyleSchemaShape,
   })
   .partial();
@@ -66,6 +72,8 @@ const INITIAL: PismoState = {
   strengths: "",
   body: "",
   themeId: "tera",
+  margin: 20,
+  letterhead: false,
 };
 
 export default function PismoStudio() {
@@ -114,6 +122,23 @@ export default function PismoStudio() {
             </div>
           ))}
           <StyleControls value={s} onChange={set} hideDecor hideBorder />
+
+          <div className="space-y-3 border-t border-ink/10 pt-3">
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+              <input type="checkbox" checked={s.letterhead}
+                onChange={(e) => set({ letterhead: e.target.checked })} className="h-4 w-4 accent-tera" />
+              Цветна бланка с името
+            </label>
+            <label className="block text-xs font-semibold text-ink-soft">
+              <span className="flex items-baseline justify-between">
+                <span>Поле на страницата</span>
+                <span className="tabular-nums text-ink-faint">{s.margin} mm</span>
+              </span>
+              <input type="range" min={12} max={30} step={1} value={s.margin}
+                onChange={(e) => set({ margin: Number(e.target.value) })}
+                className="mt-1 h-4 w-full accent-tera" aria-label="Поле на страницата" />
+            </label>
+          </div>
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -181,7 +206,7 @@ export default function PismoStudio() {
         <SheetPreview fixedHeight={false} style={fontVars(s)}>
           <div
             style={{
-              padding: "20mm 18mm",
+              padding: `${s.margin}mm ${s.margin - 2}mm`,
               minHeight: "297mm",
               color: "#2E2620",
               fontSize: fs(3.4),
@@ -190,32 +215,52 @@ export default function PismoStudio() {
               flexDirection: "column",
             }}
           >
-            {/* Подател */}
-            <div style={{ textAlign: "right" }}>
+            {s.letterhead ? (
+              // Цветна бланка до ръбовете на страницата (отрицателно поле).
               <div
                 style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 800,
-                  fontSize: fs(5.2),
+                  background: theme.accent,
+                  color: theme.bg,
+                  margin: `${-s.margin}mm ${-(s.margin - 2)}mm 8mm`,
+                  padding: `${s.margin * 0.55}mm ${s.margin - 2}mm`,
+                  textAlign: "right",
                 }}
               >
-                {s.name || "Твоето име"}
-              </div>
-              {contact && (
-                <div style={{ fontSize: fs(3), opacity: 0.8, marginTop: "0.5mm" }}>
-                  {contact}
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fs(5.6) }}>
+                  {s.name || "Твоето име"}
                 </div>
-              )}
-            </div>
+                {contact && <div style={{ fontSize: fs(3), opacity: 0.9, marginTop: "0.5mm" }}>{contact}</div>}
+              </div>
+            ) : (
+              <>
+                {/* Подател */}
+                <div style={{ textAlign: "right" }}>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 800,
+                      fontSize: fs(5.2),
+                    }}
+                  >
+                    {s.name || "Твоето име"}
+                  </div>
+                  {contact && (
+                    <div style={{ fontSize: fs(3), opacity: 0.8, marginTop: "0.5mm" }}>
+                      {contact}
+                    </div>
+                  )}
+                </div>
 
-            <div
-              style={{
-                height: "0.8mm",
-                background: theme.accent,
-                borderRadius: "1mm",
-                margin: "4mm 0 8mm",
-              }}
-            />
+                <div
+                  style={{
+                    height: "0.8mm",
+                    background: theme.accent,
+                    borderRadius: "1mm",
+                    margin: "4mm 0 8mm",
+                  }}
+                />
+              </>
+            )}
 
             {/* Получател */}
             <div>

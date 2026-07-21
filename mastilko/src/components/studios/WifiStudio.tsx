@@ -26,6 +26,8 @@ interface WifiState extends StyleState {
   note: string;
   themeId: string;
   perSheet: number;
+  /** Дял на QR кода спрямо стикера: 0.3 … 0.7. */
+  qrScale: number;
 }
 
 const INITIAL: WifiState = {
@@ -37,6 +39,7 @@ const INITIAL: WifiState = {
   note: "Сканирай кода и се свързваш автоматично",
   themeId: "nebe",
   perSheet: 6,
+  qrScale: 0.5,
 };
 
 const ProjectSchema = z
@@ -48,6 +51,7 @@ const ProjectSchema = z
     hidden: z.boolean(),
     note: z.string().max(120),
     perSheet: z.number().int().min(1).max(12),
+    qrScale: z.number().min(0.3).max(0.7),
     ...StyleSchemaShape,
   })
   .partial();
@@ -121,6 +125,15 @@ export default function WifiStudio() {
               {[2, 4, 6, 9].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </label>
+          <label className="block text-xs font-semibold text-ink-soft">
+            <span className="flex items-baseline justify-between">
+              <span>Размер на QR кода</span>
+              <span className="tabular-nums text-ink-faint">{Math.round(s.qrScale * 100)}%</span>
+            </span>
+            <input type="range" min={0.3} max={0.7} step={0.05} value={s.qrScale}
+              onChange={(e) => set({ qrScale: Number(e.target.value) })}
+              className="mt-1 h-4 w-full accent-tera" aria-label="Размер на QR кода" />
+          </label>
           <StyleControls value={s} onChange={set} />
         </div>
 
@@ -153,7 +166,7 @@ export default function WifiStudio() {
                 <div style={{ fontWeight: 800, fontSize: fs(5), fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
                   📶 {s.title || "WiFi"}
                 </div>
-                {qrSrc && <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * 0.5}mm`, height: `${Math.min(size.w, size.h) * 0.5}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />}
+                {qrSrc && <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * s.qrScale}mm`, height: `${Math.min(size.w, size.h) * s.qrScale}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />}
                 <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
                   <strong>Мрежа:</strong> {s.ssid || "…"}
                 </div>

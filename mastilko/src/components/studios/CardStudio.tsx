@@ -26,8 +26,12 @@ interface CardState extends StyleState {
   themeId: string;
   layout: "lenta" | "klasik" | "linia" | "ramka" | "gorna" | "duo";
   cutLines: boolean;
-  /** QR код с контактите (vCard) в долния десен ъгъл. */
+  /** QR код с контактите (vCard) в долния ъгъл. */
   qr: boolean;
+  /** Размер на QR кода в mm. */
+  qrSize: number;
+  /** QR в долния ЛЯВ ъгъл (иначе десен). */
+  qrLeft: boolean;
   /** Лого/снимка (data URL) — показва се в акцентния панел. */
   logo: string;
   /** Форма на логото/снимката. */
@@ -50,6 +54,8 @@ const INITIAL: CardState = {
   layout: "lenta",
   cutLines: true,
   qr: false,
+  qrSize: 11,
+  qrLeft: false,
   logo: "",
   logoShape: "square",
   logoSize: 16,
@@ -70,6 +76,8 @@ const ProjectSchema = z
     layout: z.enum(["lenta", "klasik", "linia", "ramka", "gorna", "duo"]),
     cutLines: z.boolean(),
     qr: z.boolean(),
+    qrSize: z.number().min(8).max(18),
+    qrLeft: z.boolean(),
     logo: z.string().max(500000),
     logoShape: z.enum(["circle", "square"]),
     logoSize: z.number().min(8).max(30),
@@ -128,10 +136,10 @@ function CardFace({
           src={qrSrc}
           style={{
             position: "absolute",
-            right: u(3),
+            ...(s.qrLeft ? { left: u(3) } : { right: u(3) }),
             bottom: s.layout === "linia" ? u(6.5) : u(3),
-            width: u(11),
-            height: u(11),
+            width: u(s.qrSize),
+            height: u(s.qrSize),
             background: "#FFFFFF",
             padding: u(0.7),
             borderRadius: u(1),
@@ -628,6 +636,38 @@ export default function CardStudio() {
               </span>
             </span>
           </label>
+
+          {s.qr && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-xs font-semibold text-ink-soft">
+                Ъгъл на QR
+                <select
+                  className="field-input mt-1"
+                  value={s.qrLeft ? "left" : "right"}
+                  onChange={(e) => set({ qrLeft: e.target.value === "left" })}
+                >
+                  <option value="right">Долу вдясно</option>
+                  <option value="left">Долу вляво</option>
+                </select>
+              </label>
+              <label className="block text-xs font-semibold text-ink-soft">
+                <span className="flex items-baseline justify-between">
+                  <span>Размер на QR</span>
+                  <span className="tabular-nums text-ink-faint">{s.qrSize} mm</span>
+                </span>
+                <input
+                  type="range"
+                  min={8}
+                  max={18}
+                  step={0.5}
+                  value={s.qrSize}
+                  onChange={(e) => set({ qrSize: Number(e.target.value) })}
+                  className="mt-1 h-4 w-full accent-tera"
+                  aria-label="Размер на QR кода"
+                />
+              </label>
+            </div>
+          )}
 
           <ImageUpload value={s.logo} onChange={(v) => set({ logo: v })} label="Лого / снимка (по желание)" />
 
