@@ -1,0 +1,160 @@
+# Памет на агента „Летописецът" (v6.0 — самообучение)
+
+Трайно файлово знание между извикванията (Claude Code субагентите са stateless).
+Цикълът е **наложен от hooks** (виж `_memory/PROTOCOL.md`): при старт `SubagentStart`
+инжектира „Проверени поуки"; накрая `SubagentStop` добавя новия ```learn блок; `curate.mjs` дедупира.
+**Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
+
+Специалност: **технически писател** — README, ADR, CHANGELOG, API докове, onboarding; docs-as-code, Diátaxis.
+Български е източникът на истината; всяка команда/пример се проверява, че реално работи.
+
+## Проверени поуки (verified)
+
+### Diátaxis — четирите режима
+- **2026-07-16:** Diátaxis дели документацията на 4 режима по потребност: **tutorial** (учене), **how-to** (задача), **reference** (информация), **explanation** (разбиране); всеки има различна цел, глас и структура. _("diataxis рамка"; verified; "https://diataxis.fr/")_
+- **2026-07-16:** Tutorial е learning-oriented: води начинаещ през стъпки, всяка успява, без избори/теория; целта е увереност „работи!", не пълнота. _("diataxis tutorial"; verified; "https://diataxis.fr/tutorials/")_
+- **2026-07-16:** How-to guide е task-oriented: рецепта за конкретен резултат за някой, който вече знае основите; допуска варианти; не обяснява теория. _("diataxis how-to"; verified; "https://diataxis.fr/how-to-guides/")_
+- **2026-07-16:** Reference е information-oriented: описва машината (API/флагове/конфиг), точен, изчерпателен, предсказуема структура, без мнение/стъпки/„защо". _("diataxis reference"; verified; "https://diataxis.fr/reference/")_
+- **2026-07-16:** Explanation е understanding-oriented: защо, алтернативи, компромиси, контекст; свързва точките; чете се за разбиране, не за действие. _("diataxis explanation"; verified; "https://diataxis.fr/explanation/")_
+- **2026-07-16:** Най-честият дефект: документ, който смесва tutorial + reference + explanation → нечитаем; раздели по режим (най-мощният ход в техническото писане). _("diataxis не смесвай"; verified; "https://diataxis.fr/compass/")_
+
+### README и структура
+- **2026-07-16:** README отговаря бързо: какво е това, за кого, как да го пусна (най-краткият път до „работи"); първите ~10 реда решават дали читателят продължава. _("readme същина"; verified; "https://www.makeareadme.com/")_
+- **2026-07-16:** Задължителни секции: заглавие + едноредово описание, Quick start (инсталация + минимална команда), употреба, конфигурация, статус/badges, лиценз; за продукт — линк към живото/деплоя. _("readme секции"; verified; "https://github.com/othneildrew/Best-README-Template")_
+- **2026-07-16:** Показвай, не разказвай: работещ copy-paste пример над абстрактно описание; всяка команда в README реално се пуска преди да влезе (остаряла команда е по-лоша от липсваща). _("readme примери проверени"; verified; "https://www.divio.com/blog/documentation/"; scope: docs-as-code)_
+- **2026-07-16:** Един README per продукт (тук всеки продукт носи own toolchain, няма коренен package.json); коренният README/CLAUDE.md е „вярно навсякъде", продуктовият е дълбок за него — не дублирай. _("монорепо readme граница"; verified; "CLAUDE.md (per-product CLAUDE.md loads on demand)")_
+- **2026-07-16:** Status badge (GitHub Actions `.../workflows/x.yml/badge.svg?branch=main`) показва зеленото на CI в README; сочи конкретен branch за да не мами. _("readme badge"; verified; "https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/adding-a-workflow-status-badge")_
+
+### ADR — записи за архитектурни решения
+- **2026-07-16:** ADR фиксира едно значимо решение: контекст, решение, последици, статус (Proposed/Accepted/Superseded/Deprecated); кратък (1 страница), номериран, датиран. _("adr формат"; verified; "https://adr.github.io/")_
+- **2026-07-16:** ADR-ите са immutable: ново решение = НОВ ADR, който „supersedes" стария (не редактираш стария) → пази историята на „защо" на архитектурата. _("adr immutable"; verified; "https://github.com/joelparkerhenderson/architecture-decision-record")_
+- **2026-07-16:** Michael Nygard шаблонът (Title/Status/Context/Decision/Consequences) е де факто стандартът; MADR е по-структуриран вариант с опции и оценка. _("adr шаблони"; verified; "https://github.com/adr/madr")_
+- **2026-07-16:** ADR отговаря „защо е така, а не иначе" за бъдещия екип/агент → спира преоткриване на решени въпроси и „защо не махнем това". _("adr стойност"; verified; "https://adr.github.io/")_
+
+### CHANGELOG и версии
+- **2026-07-16:** Keep a Changelog: човеко-четим, групи Added/Changed/Deprecated/Removed/Fixed/Security, най-новото отгоре, `Unreleased` секция расте между релийзи, дати ISO 8601. НЕ суров git log. _("keep a changelog"; verified; "https://keepachangelog.com/en/1.1.0/")_
+- **2026-07-16:** Semver MAJOR.MINOR.PATCH: MAJOR при breaking, MINOR при нова съвместима функция, PATCH при поправка; pre-release `-alpha.1`, build `+meta`. _("semver"; verified; "https://semver.org/")_
+- **2026-07-16:** Conventional Commits (`feat:`/`fix:`/`feat!:`) позволяват авто-генериране на changelog + версия (release-please/semantic-release/changesets) — координирай с Конвейерът. _("conventional commits"; verified; "https://www.conventionalcommits.org/en/v1.0.0/")_
+- **2026-07-16:** Changelog е за читателя (какво се промени за него), не за разработчика; „Fixed crash on empty cart" > „refactor cart util". Пиши от гледна точка на употребата. _("changelog ориентация"; verified; "https://keepachangelog.com/en/1.1.0/#how")_
+
+### API документация
+- **2026-07-16:** OpenAPI (Swagger) е single source за REST API: описва пътища/схеми/отговори → генерира интерактивни докове, клиенти, валидация; дръж го синхрон с кода (или генерирай от кода). _("openapi"; verified; "https://swagger.io/specification/")_
+- **2026-07-16:** TSDoc/JSDoc над публичния API (`@param`/`@returns`/`@example`/`@deprecated`) → IDE подсказки + генерирани докове (TypeDoc); документирай публичния контракт, не всяка вътрешна функция. _("tsdoc/jsdoc"; verified; "https://tsdoc.org/")_
+- **2026-07-16:** Примерите в API доковете трябва да работят — docs-as-tests (изпълни примерите в CI, ако е възможно) хваща разминаване код↔докове. _("docs-as-tests"; verified; "https://blog.readme.com/what-is-documentation-testing/"; scope: проверимост)_
+- **2026-07-16:** Документирай грешките/edge случаите (кодове, лимити, идемпотентност), не само happy path — интеграторът има нужда точно от тях. _("api грешки в докове"; verified; "https://swagger.io/specification/#responses-object")_
+
+### Docs-as-code и хигиена
+- **2026-07-16:** Docs-as-code: документите живеят в репото до кода, ревюират се в PR, проверяват се в CI (счупени връзки/стил) → остаряват по-бавно, защото се менят със същия diff. _("docs-as-code"; verified; "https://www.writethedocs.org/guide/docs-as-code/")_
+- **2026-07-16:** markdownlint налага консистентен markdown стил (заглавия, списъци, редове) в CI; lychee/lint за счупени връзки (относителни и външни) — счупена връзка е доказан развален док. _("markdownlint/link check"; verified; "https://github.com/DavidAnson/markdownlint")_
+- **2026-07-16:** Vale налага стил/терминология (тон, забранени думи, гласност) като линтер за проза → консистентен глас без ръчен ревю на всяка дума. _("vale prose linter"; verified; "https://vale.sh/")_
+- **2026-07-16:** Един източник на истината: не дублирай съдържание (дублите се разминават), линкувай; версии/числа генерирай от кода, не преписвай ръчно. _("single source of truth"; verified; "https://www.writethedocs.org/guide/writing/docs-principles/")_
+
+### Стил на техническото писане
+- **2026-07-16:** Активен залог, второ лице, кратки изречения, конкретни глаголи; „Изпълни `npm run build`", не „Билдът може да бъде изпълнен". По-ясно и по-кратко. _("активен залог"; verified; "https://developers.google.com/tech-writing/one/active-voice"; scope: стил)_
+- **2026-07-16:** Избягвай „просто/лесно/очевидно" — обезценяват читателя, който се затруднява, и не носят информация. Опиши стъпката, не я квалифицирай. _("без просто/лесно"; verified; "https://developers.google.com/style/inclusive-documentation")_
+- **2026-07-16:** Пиши за конкретен читател с конкретен въпрос; преди да пишеш — „кой чете това и какво иска да постигне?". Документ без адресат е пух. _("знай читателя"; verified; "https://www.writethedocs.org/guide/writing/docs-principles/#write-for-your-readers")_
+- **2026-07-16:** Google Technical Writing насоки: кратки изречения, дефинирай термините при първа поява, консистентна терминология (не сменяй синоними за едно нещо), списъци за стъпки/опции. _("google tech writing"; verified; "https://developers.google.com/tech-writing/one")_
+- **2026-07-16:** Пиши „защо", кодът/референсът казва „какво"; inline коментар обяснява намерение/компромис, не преразказва реда над него. _("защо не какво"; verified; "https://developers.google.com/tech-writing/one/inline-comments"; scope: коментари)_
+
+### Диаграми и визуали
+- **2026-07-16:** Mermaid диаграми (flowchart/sequence/ER/state) в markdown се версионират като текст и се рендерят от GitHub/табла → предпочитай пред статични картинки, които гният и не се diff-ват. _("mermaid"; verified; "https://mermaid.js.org/intro/")_
+- **2026-07-16:** Скрийншотите гният (UI се променя) — ако ползваш, автоматизирай генерирането им или предпочитай Mermaid/текст; винаги alt-текст за достъпност. _("скрийншоти гният"; verified; "https://www.writethedocs.org/guide/writing/docs-principles/"; scope: поддръжка)_
+- **2026-07-16:** C4 моделът (Context/Container/Component/Code) дава последователни архитектурни диаграми на 4 нива на детайл; Mermaid/Structurizr ги рендерят. _("c4 диаграми"; verified; "https://c4model.com/")_
+
+### llms.txt, onboarding, runbook
+- **2026-07-16:** llms.txt е кратко машинно-приятелско резюме на продукта/сайта за AI агенти (какво е, услуги, контакти, линкове) на web root; ти пишеш точното съдържание, SEO го ползва за откриваемост. _("llms.txt"; verified; "https://llmstxt.org/"; scope: граница със SEO)_
+- **2026-07-16:** CONTRIBUTING описва как да пуснеш проекта локално + конвенции (стил, commit, PR, quality gate) → „ден 1" на нов разработчик е самообслужване, не разпит на екипа. _("contributing"; verified; "https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/setting-guidelines-for-repository-contributors")_
+- **2026-07-16:** Runbook описва стъпките при инцидент/деплой/rollback (какво, как да проверя, как да върна) — краен, изпълним, тестван; координирай с VPS-аджията/Конвейерът. _("runbook"; verified; "https://sre.google/sre-book/introduction/"; scope: граница с VPS/Конвейерът)_
+- **2026-07-16:** Onboarding docs = tutorial за нов екип-член: от клон до „пуснах локално и разбирам структурата"; всяка стъпка работи, без предположения за предишно знание. _("onboarding docs"; verified; "https://diataxis.fr/tutorials/")_
+
+### Репото конкретно
+- **2026-07-16:** Всеки продукт има own `README.md` + own `CLAUDE.md` (deep detail, зарежда се on-demand при четене на файлове там — нула токени иначе); коренният CLAUDE.md държи само общото. Не дублирай. _("репо docs структура"; verified; "CLAUDE.md (Every product dir has its own CLAUDE.md)")_
+- **2026-07-16:** Български е източникът на истината за UI текст, коментари, commit-и и докове (продуктите IT/multilingual match-ват продукта); ползвай „ … " кавички; после Преводачът локализира. _("bg източник"; verified; "CLAUDE.md (Bulgarian is the source of truth)")_
+- **2026-07-16:** Runbook-ите на репото: `deploy/README.md`, `zabobovdol/DEPLOY.md`, `medqr/deploy/DEPLOY.md`; `.claude/agents/README.md` е ростерът на агентите (дръж го синхрон с agents.json). _("репо runbook-и/ростер"; verified; "CLAUDE.md (Deployment); .claude/agents/README.md")_
+- **2026-07-16:** Безопасно-критичните медицински/правни низове (medqr) НЕ се машинно превеждат и не се преформулират леко — пази точната формулировка при документиране/локализация. _("safety-critical формулировки"; verified; "CLAUDE.md (Never machine-translate safety-critical strings)")_
+- **2026-07-16:** Commit-ите: български, conventional, описателни, съвпадащи с историята; PR → main. Changelog-ът може да се генерира от тях (координирай с Конвейерът). _("репо commit конвенция"; verified; "CLAUDE.md (Commits: Bulgarian, conventional)")_
+
+### Поддръжка, свежест, антипатерни
+- **2026-07-16:** Документ без собственик/ревю гние; docs-as-code + CI проверка + „последно проверено" дата държат свежестта; остарял док подвежда повече от липсващ. _("свежест на докове"; verified; "https://www.writethedocs.org/guide/docs-as-code/"; scope: поддръжка)_
+- **2026-07-16:** Антипатерн „wall of text" — разбий с заглавия, списъци, кодови блокове, таблици; читателят сканира, не чете линейно. _("сканируемост"; verified; "https://developers.google.com/tech-writing/one/lists-and-tables")_
+- **2026-07-16:** Не документирай очевидното (`// increment i` над `i++`) — шум, който крие важното; документирай неочакваното, компромисите, „защо не другояче". _("не документирай очевидното"; verified; "https://developers.google.com/tech-writing/one/inline-comments")_
+- **2026-07-16:** TODO/TBD/FIXME/lorem ipsum в публикуван док = недовършено; hook/линт да ги хваща преди merge (както secret-scan за тайни). _("недовършени маркери"; verified; "https://www.writethedocs.org/guide/writing/docs-principles/")_
+- **2026-07-16:** Версионирай доковете с продукта (docs в репото per версия/таг); „latest" докове за текущо, архив за стари мажорни — потребителят на v1 не бива да чете v2 инструкции. _("версиониране на докове"; verified; "https://docusaurus.io/docs/versioning"; scope: docs сайтове)_
+
+### Инструменти за docs сайтове
+- **2026-07-16:** За docs сайт: Docusaurus/VitePress/MkDocs (Material) — markdown-базирани, версиониране, търсене, i18n; за монорепо продукт често README + няколко .md са достатъчни (не над-инженирай). _("docs сайт инструменти"; verified; "https://www.mkdocs.org/"; scope: избор)_
+- **2026-07-16:** Търсене в докове (Algolia DocSearch / вградено) е критично за големи докове; за малки — браузърният Ctrl+F стига. _("docs search"; verified; "https://docsearch.algolia.com/"; scope: големи докове)_
+- **2026-07-16:** OpenAPI → Redoc/Swagger UI дава интерактивни API докове от спецификацията; дръж спецификацията като източник, доковете се генерират. _("api docs генериране"; verified; "https://github.com/Redocly/redoc")_
+
+### Стил и език (още)
+- **2026-07-16:** Дефинирай термина при първа поява; поддържай глосар за проекта; не сменяй синоними за едно и също нещо (login/sign-in/влизане) — консистентността намалява когнитивния товар. _("терминология/глосар"; verified; "https://developers.google.com/tech-writing/one/words")_
+- **2026-07-16:** Изречение ≤ ~20-25 думи; един параграф — една идея; ако изречението има 3 „и/но" — разбий го. Кратко ≠ бедно, кратко = ясно. _("дължина на изречения"; verified; "https://developers.google.com/tech-writing/one/short-sentences")_
+- **2026-07-16:** Списък с номера за подредени стъпки, с точки за неподредени опции; таблица за структурирано сравнение (не проза с „а също и"). _("списъци и таблици"; verified; "https://developers.google.com/tech-writing/one/lists-and-tables")_
+- **2026-07-16:** Заглавия описват съдържанието (не „Въведение", а „Как да пуснеш локално"); йерархия h1→h2→h3 без прескачане — важно за сканиране И за екранни четци. _("заглавия"; verified; "https://developers.google.com/tech-writing/one/headings")_
+- **2026-07-16:** Пиши в сегашно време за поведение („командата връща JSON"), не бъдеще/условно; описвай какво прави системата, не какво „ще" направи. _("сегашно време"; verified; "https://developers.google.com/style/tense")_
+- **2026-07-16:** Инклузивен език: избягвай ableist/gendered/жаргон без обяснение; „allowlist/blocklist" вместо остарели термини; глобална аудитория. _("инклузивен език"; verified; "https://developers.google.com/style/inclusive-documentation")_
+- **2026-07-16:** Обяснявай съкращенията при първа поява (пълно име (СЪКР)); после ползвай съкращението; не приемай, че читателят ги знае. _("съкращения"; verified; "https://developers.google.com/style/abbreviations")_
+
+### Достъпност на документацията
+- **2026-07-16:** Alt-текст за всяка информативна картинка/диаграма (какво показва, не „картинка"); декоративните — празен alt. Екранните четци и AI ги четат. _("alt текст"; verified; "https://www.w3.org/WAI/tutorials/images/")_
+- **2026-07-16:** Текст на връзка да е описателен („виж ръководството за деплой"), не „кликни тук"/„тук" — извън контекст (списък връзки от четец) „тук" е безполезно. _("descriptive link text"; verified; "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html")_
+- **2026-07-16:** Контраст на docs темата, работеща светла/тъмна, четим шрифт; кодовите блокове с достатъчен контраст; не разчитай само на цвят за смисъл. _("docs a11y визуал"; verified; "https://www.w3.org/WAI/WCAG21/quickref/"; scope: docs сайтове)_
+- **2026-07-16:** Структурата (заглавия/списъци/таблици) е и достъпност: правилните семантични елементи правят дока навигируем за екранни четци, не само красив. _("семантична структура a11y"; verified; "https://www.w3.org/WAI/tutorials/page-structure/")_
+
+### Кодови примери
+- **2026-07-16:** Добрият пример е минимален, пълен и работещ (copy-paste да върви): без излишен контекст, но и без липсващи import-и/setup; тествай го преди да влезе. _("кодови примери"; verified; "https://developers.google.com/style/code-samples")_
+- **2026-07-16:** Показвай очаквания изход до примера (какво трябва да видиш) → читателят проверява, че е успял; за грешки — покажи как изглежда провалът. _("пример + изход"; verified; "https://developers.google.com/style/code-samples#expected-output")_
+- **2026-07-16:** Placeholder-ите в примери да са очевидни (`<YOUR_API_KEY>`, `<домейн>`), не реални стойности; никога реална тайна в пример (secret-scan/ревю ще я хване). _("placeholders в примери"; verified; "https://developers.google.com/style/placeholders")_
+- **2026-07-16:** Не изисквай нищо недокументирано за да върви примерът (скрит env/setup); ако трябва — документирай го преди примера. _("самодостатъчен пример"; verified; "https://www.divio.com/blog/documentation/")_
+
+### GitHub специални файлове
+- **2026-07-16:** `SECURITY.md` описва политиката за уязвимости (как да докладваш, координирано разкриване, обхват); GitHub го показва в Security таба. Тук има коренен + per-продукт SECURITY.md. _("security.md"; verified; "https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository")_
+- **2026-07-16:** `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, issue/PR темплейти (`.github/`) стандартизират приноса; PR темплейт напомня чеклист (тестове/докове/changelog). _("community health files"; verified; "https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions")_
+- **2026-07-16:** `CODEOWNERS` документира собствеността по път (кой ревюира какво) — жива документация на отговорностите; авто-назначава ревюъри. _("codeowners като докове"; verified; "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners")_
+- **2026-07-16:** LICENSE файл (SPDX идентификатор в README) — проприетарно тук (Carbon Stealth VCC); ясният лиценз/notice е част от документацията. _("license документиране"; verified; "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository"; scope: репото е проприетарно)_
+
+### API reference детайли
+- **2026-07-16:** Документирай автентикацията (как се подава ключ/токен, къде се взема), rate limits (лимити, хедъри, backoff) и pagination (cursor/offset, как се обхожда) — интеграторът се спъва точно там. _("api auth/limits/pagination"; verified; "https://swagger.io/docs/specification/authentication/")_
+- **2026-07-16:** За всеки endpoint: метод/път, параметри (тип, задължителен, default), тяло, отговори по код (200/4xx/5xx) с примери, идемпотентност; консистентна структура през всички. _("endpoint reference"; verified; "https://swagger.io/specification/#operation-object")_
+- **2026-07-16:** Примери на няколко езика (curl + поне един SDK) покриват повече читатели; генерирай ги от OpenAPI за да не гният. _("multi-lang примери"; verified; "https://swagger.io/docs/specification/adding-examples/")_
+- **2026-07-16:** Deprecation в API докове: маркирай `@deprecated` + от коя версия + заместител + миграционен път; не махай рязко без период на предупреждение. _("api deprecation докове"; verified; "https://swagger.io/specification/#operation-object"; scope: reference)_
+
+### Миграции, deprecation, release notes
+- **2026-07-16:** Migration guide за breaking промяна (мажорна версия): какво се счупи, преди→след пример, стъпки, автоматизация ако има; спестява дни на всеки потребител. _("migration guide"; verified; "https://keepachangelog.com/en/1.1.0/"; scope: how-to)_
+- **2026-07-16:** Release notes (за потребителя, разказ) ≠ changelog (структуриран, изчерпателен); release notes подчертават важното с контекст, changelog изброява всичко. _("release notes vs changelog"; verified; "https://keepachangelog.com/en/1.1.0/")_
+- **2026-07-16:** Deprecation notice: обяви рано, дай заместител + краен срок, повтори в changelog/докове/код (`@deprecated`); тихото махане чупи доверие. _("deprecation notice"; verified; "https://semver.org/#how-should-i-handle-deprecating-functionality")_
+
+### Информационна архитектура и навигация
+- **2026-07-16:** Организирай доковете по потребност (Diátaxis), не по вътрешна структура на кода; читателят търси „как да направя X", не „модул Y". _("IA по потребност"; verified; "https://diataxis.fr/compass/")_
+- **2026-07-16:** Навигацията да отразява 4-те режима (Tutorials/How-to/Reference/Explanation) на горно ниво → читателят веднага знае къде да търси. _("docs навигация diataxis"; verified; "https://diataxis.fr/how-to-use-diataxis/")_
+- **2026-07-16:** Прогресивно разкриване: quick start отпред, детайлите по-навътре; не удавяй начинаещия в reference, не оставяй експерта без пълнота. _("прогресивно разкриване"; verified; "https://www.writethedocs.org/guide/writing/docs-principles/")_
+- **2026-07-16:** Кръстосани връзки между режимите (tutorial → reference за детайл; how-to → explanation за „защо") свързват без да смесват съдържанието в един документ. _("cross-linking режими"; verified; "https://diataxis.fr/")_
+
+### Commit/PR писане (докове на промяната)
+- **2026-07-16:** Commit съобщение: кратко заглавие в повелително „Добави X" (≤~50 знака) + тяло „защо" при нужда; съвпада с историята на репото (български, conventional). _("commit съобщения"; verified; "https://cbea.ms/git-commit/")_
+- **2026-07-16:** PR описанието е документация на промяната: какво, защо, как да се тества, рискове; линк към issue/ADR; ревюърът и бъдещето го четат. _("pr описание"; verified; "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request"; scope: процес)_
+- **2026-07-16:** Squash merge + чисто заглавие държи историята на main четима като changelog източник; координирай стратегията с Конвейерът. _("merge история"; verified; "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges"; scope: граница с Конвейерът)_
+
+### Свежест, метрики, обратна връзка
+- **2026-07-16:** Docs метрики: страници без посещения (мъртви), с висок bounce/търсене без резултат (липса) → приоритизирай поддръжката по реална употреба, не по усещане. _("docs метрики"; verified; "https://www.writethedocs.org/guide/measuring-documentation/"; scope: поддръжка)_
+- **2026-07-16:** „Полезно ли беше?" feedback widget + линк „редактирай тази страница" (docs-as-code) → читателите поправят/сигнализират; кратък цикъл на подобрение. _("docs feedback"; verified; "https://docusaurus.io/docs/api/plugins/@docusaurus/plugin-content-docs"; scope: docs сайтове)_
+- **2026-07-16:** „Last reviewed" дата на критичните докове (деплой/сигурност) + периодичен преглед → доверие в свежестта; време-чувствителното (версии/URL) гние по-бързо (виж curate TTL 45д). _("last reviewed"; verified; "_memory/PROTOCOL.md (TTL/provenance)")_
+
+### Self-documenting code и коментари
+- **2026-07-16:** Най-добрият коментар е ясно име (функция/променлива, която обяснява себе си); коментарът допълва „защо", не компенсира лош код. Рефактор > коментар (координирай с Качествения). _("self-documenting"; verified; "https://developers.google.com/tech-writing/one/inline-comments"; scope: граница с Качествения)_
+- **2026-07-16:** Docstring над публичен API (какво прави, параметри, връща, хвърля, пример) — четимо в IDE и генерируемо; вътрешните детайли не се документират прекомерно. _("docstrings публичен API"; verified; "https://tsdoc.org/"; scope: reference)_
+- **2026-07-16:** Мъртви/подвеждащи коментари са по-лоши от липсващи (лъжат читателя) — при промяна на код обнови/махни коментара; коментар, който не съвпада с кода, е бъг. _("остарели коментари"; verified; "https://developers.google.com/tech-writing/one/inline-comments")_
+
+### AI-ориентирани докове
+- **2026-07-16:** llms.txt + чист markdown + структурни данни правят продукта цитируем от AI (GEO/AEO — координирай със SEO); „отговорът отпред" помага и на човек, и на модел. _("докове за AI"; verified; "https://llmstxt.org/"; scope: граница със SEO)_
+- **2026-07-16:** CLAUDE.md файловете тук СА документация за AI агенти (контекст, конвенции, команди) — дръж ги точни и не-подпухнали (коренният общо, продуктовият дълбоко on-demand). _("claude.md като докове"; verified; "CLAUDE.md (root file holds only what is true across all products)")_
+- **2026-07-16:** Структурирай инструкциите за агент като reference (точни команди/пътища) + explanation (защо), не като разказ; агентът действа по точни факти, не по проза. _("докове за агенти"; verified; "https://diataxis.fr/reference/"; scope: agent instructions)_
+- **2026-07-16:** FAQ е антипатерн, ако замества структурирани докове (сборище от несвързани въпроси); ползвай го само за истински чести въпроси, иначе интегрирай отговорите в how-to/reference. _("faq антипатерн"; verified; "https://diataxis.fr/compass/"; scope: IA)_
+- **2026-07-16:** Quickstart ≤ 5 минути до първи успех; ако инсталацията е дълга, дай „try it" път (Docker/hosted demo) преди пълния setup — не губи читателя на стъпка 1. _("quickstart 5 мин"; verified; "https://diataxis.fr/tutorials/"; scope: tutorial)_
+- **2026-07-16:** GIF/видео за сложен UI поток (кратко, безшумно, с надписи) допълва текста, но не го замества (не е търсимо/копируемо/достъпно); текстът е първокласен, видеото — второстепенно. _("gif/видео допълва"; verified; "https://www.writethedocs.org/guide/writing/docs-principles/"; scope: медия)_
+- **2026-07-16:** Единна терминология код↔докове↔UI: ако кодът казва „tenant", доковете и UI да не казват „организация" на друго място — разминаването обърква; поддържай речник. _("терминология код↔докове↔UI"; verified; "https://developers.google.com/tech-writing/one/words")_
+- **2026-07-16:** Offline/print достъпност на докове (PDF експорт, четимо без JS) е важно за одити/enterprise; docs сайтовете (Docusaurus/MkDocs) дават статичен HTML, който работи без мрежа. _("offline/print докове"; verified; "https://www.mkdocs.org/"; scope: docs сайтове)_
+
+## Карантина (непроверени — НЕ са факт)
+- **2026-07-16:** Кои продукти в репото имат актуален README/CHANGELOG/llms.txt и къде липсват не е установено — пусни `tools/docs/doc-audit.mjs` и прочети файловете преди твърдение. _("репо docs покритие; unverified; tools/docs/doc-audit.mjs (чети преди да твърдиш)")_
+- **2026-07-16:** Точните текущи мажорни версии/пътища на docs инструменти (Docusaurus/VitePress) и техните команди са време-чувствителни → потвърди в официалните докове преди да ги цитираш в инструкция. _("docs tooling версии; unverified; провери официалните докове")_

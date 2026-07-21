@@ -68,7 +68,7 @@
 - **2026-06-26:** prisma-client е новият default generator със задължителен output; prisma-client-js е deprecated — импорт от генерирания път, не @prisma/client. _("Prisma 7 generator"; verified; "https://www.prisma.io/docs/orm/prisma-schema/overview/generators")_
 - **2026-06-26:** В Prisma 7 migrate dev/reset вече НЕ пускат seed автоматично — само npx prisma db seed; флагът --skip-seed е премахнат. _("Prisma 7 seed workflow"; verified; "https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding")_
 - **2026-06-26:** Prisma 7 е release-нат; seed командата живее в prisma.config.ts под migrations.seed (напр. seed: 'tsx prisma/seed.ts'), а package.json#prisma блокът е премахнат. _("Prisma 7 seed конфигурация (upstream); zabobovdol все още Prisma 6 — не натрапвай v7."; verified; "https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding")_
-- **2026-06-25:** 536 дублирани slug-а между сийд файловете (открити 2026-06-25 с check-dups) — по-късните upsert-и презаписват по-ранните.
+- **2026-06-25:** 536 дублирани slug-а между сийд файловете (открити 2026-06-25 с check-dups) — по-късните upsert-и презаписват по-ранните. _("zabobovdol сийд slug дублати"; verified; "tools/seed/check-dups.mjs (репо инструмент; открити 2026-06-25)")_
 
 ## Карантина (непроверени — НЕ са факт)
 - **2026-07-06:** TypedSQL ($queryRawTyped) е добавен в Prisma v5.19.0 като preview feature (нужен preview flag 'typedSql'); GA се планира за 2025-2026. Дава типизирани raw SQL заявки за Postgres/MySQL 8+. Не е нужен за курирано seed съдържание. _("raw SQL при seed — само ако бъдещ pipeline го изисква (GA статус за проверка)"; unverified; "https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/typedsql")_
