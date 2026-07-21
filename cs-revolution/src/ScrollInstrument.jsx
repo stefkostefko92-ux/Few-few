@@ -189,6 +189,15 @@ export default function ScrollInstrument() {
       window.addEventListener("scroll", onScroll, { passive: true });
     }
 
+    // Reflow (resize / orientation / late-loading fonts+images changing height)
+    // shifts the scrollHeight-innerHeight denominator; repaint so the fill/notch
+    // don't stay stale until the next scroll.
+    function onResize() {
+      if (staticMode) onScrollStatic();
+      else { targetDepth = currentDepth(); startLoop(); }
+    }
+    window.addEventListener("resize", onResize, { passive: true });
+
     function onVisibility() {
       visible = !document.hidden;
       if (visible && !staticMode) startLoop();
@@ -199,6 +208,7 @@ export default function ScrollInstrument() {
       if (rafId) cancelAnimationFrame(rafId);
       if (staticMode) window.removeEventListener("scroll", onScrollStatic);
       else window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
@@ -207,7 +217,11 @@ export default function ScrollInstrument() {
   useEffect(function () {
     if (!("IntersectionObserver" in window)) return;
     var reduced = prefersReducedMotion();
-    var els = [].slice.call(document.querySelectorAll("#main section"));
+    // Only real, labelled sections — skip hero (App's own reveal-observer skips it
+    // too) and any id-less section, so NN/total and the label stay consistent.
+    var els = [].slice.call(document.querySelectorAll("#main section")).filter(function (s) {
+      return s.id && s.id !== "hero";
+    });
     if (!els.length) return;
     var total = els.length;
     var lastIdx = -1;
