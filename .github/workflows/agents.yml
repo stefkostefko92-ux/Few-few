@@ -60,6 +60,8 @@ jobs:
         run: node tools/agents/tools-audit.mjs
       - name: Свежест на дефинициите (без просрочени срокове)
         run: node tools/agents/def-freshness.mjs
+      - name: Drift-lint (счупени референции = твърд провал; memory дрейф = съвет)
+        run: node tools/agents/drift-lint.mjs
       - name: Токен-бюджет (гейт срещу разбягване на дефиниция; печат за логовете)
         run: node tools/agents/token-budget.mjs --check
       - name: Кандидати за _shared (дедуп на памет през агенти; информативно)
