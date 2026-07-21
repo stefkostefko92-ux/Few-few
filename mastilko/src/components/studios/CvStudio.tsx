@@ -6,6 +6,7 @@ import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BrandKitButton from "@/components/BrandKitButton";
 import ImageUpload from "@/components/ImageUpload";
+import TextTools from "@/components/TextTools";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -331,6 +332,7 @@ export default function CvStudio() {
               onPick={(text) => set({ summary: text })}
             />
           </div>
+          <TextTools value={s.summary} onChange={(summary) => set({ summary })} />
         </div>
 
         <div className="card-warm space-y-4 p-5">

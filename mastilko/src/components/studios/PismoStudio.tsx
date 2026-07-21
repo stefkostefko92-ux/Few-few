@@ -6,6 +6,7 @@ import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BrandKitButton from "@/components/BrandKitButton";
 import Icon from "@/components/Icon";
+import TextTools from "@/components/TextTools";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -213,6 +214,7 @@ export default function PismoStudio() {
               onPick={(text) => set({ body: text })}
             />
           </div>
+          <TextTools value={s.body} onChange={(body) => set({ body })} />
         </div>
 
         <ProjectFile
