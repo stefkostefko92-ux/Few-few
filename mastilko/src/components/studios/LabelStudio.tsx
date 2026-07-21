@@ -6,6 +6,7 @@ import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchema
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Barcode from "@/components/Barcode";
 import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
@@ -34,6 +35,12 @@ interface LabelState extends StyleState {
   aiDesc: string;
   /** Начеван лист: пропусни първите N клетки (вече използвани етикети). */
   skipCells: number;
+  /** Баркод върху всеки етикет. */
+  barcode: boolean;
+  /** Формат на баркода. */
+  barcodeType: "CODE128" | "EAN13" | "EAN8" | "UPC";
+  /** Стойност на баркода. */
+  barcodeValue: string;
 }
 
 // Валидация на качен проект-файл: грешен тип стойност иначе сменя правилно
@@ -52,6 +59,9 @@ const ProjectSchema = z
     cutLines: z.boolean(),
     aiDesc: z.string().max(300),
     skipCells: z.number().int().min(0).max(200),
+    barcode: z.boolean(),
+    barcodeType: z.enum(["CODE128", "EAN13", "EAN8", "UPC"]),
+    barcodeValue: z.string().max(48),
   })
   .partial();
 
@@ -68,6 +78,9 @@ const INITIAL: LabelState = {
   cutLines: true,
   aiDesc: "",
   skipCells: 0,
+  barcode: false,
+  barcodeType: "CODE128",
+  barcodeValue: "",
 };
 
 interface CellContent {
@@ -299,6 +312,45 @@ export default function LabelStudio() {
               свободна клетка — нищо не се хаби. Остават {capacity} свободни.
             </p>
           </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+              <input
+                type="checkbox"
+                checked={s.barcode}
+                onChange={(e) => set({ barcode: e.target.checked })}
+                className="h-4 w-4 accent-tera"
+              />
+              Баркод (за продукти/цени)
+            </label>
+            {s.barcode && (
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[auto_1fr]">
+                <select
+                  className="field-input !w-auto"
+                  value={s.barcodeType}
+                  onChange={(e) => set({ barcodeType: e.target.value as LabelState["barcodeType"] })}
+                  aria-label="Формат на баркода"
+                >
+                  <option value="CODE128">Code 128</option>
+                  <option value="EAN13">EAN-13</option>
+                  <option value="EAN8">EAN-8</option>
+                  <option value="UPC">UPC-A</option>
+                </select>
+                <input
+                  className="field-input"
+                  maxLength={48}
+                  value={s.barcodeValue}
+                  onChange={(e) => set({ barcodeValue: e.target.value })}
+                  placeholder={s.barcodeType === "CODE128" ? "напр. ABC-12345" : "напр. 3800000000001"}
+                  aria-label="Стойност на баркода"
+                />
+                <p className="text-xs text-ink-faint sm:col-span-2">
+                  EAN-13 иска 12–13 цифри, EAN-8 — 7–8, UPC — 11–12. Кодът се
+                  генерира в браузъра; при невалидна стойност не се показва.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -424,6 +476,14 @@ export default function LabelStudio() {
                     >
                       № {content.num}
                     </span>
+                  )}
+                  {s.barcode && s.barcodeValue.trim() && (
+                    <Barcode
+                      value={s.barcodeValue}
+                      format={s.barcodeType}
+                      color={theme.fg}
+                      style={{ marginTop: "1mm", width: "92%", height: `${Math.min(preset.h * 0.42, 14)}mm` }}
+                    />
                   )}
                 </div>
               </div>
