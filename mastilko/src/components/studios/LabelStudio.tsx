@@ -32,6 +32,8 @@ interface LabelState extends StyleState {
   qrUrl: string;
   cutLines: boolean;
   aiDesc: string;
+  /** Начеван лист: пропусни първите N клетки (вече използвани етикети). */
+  skipCells: number;
 }
 
 // Валидация на качен проект-файл: грешен тип стойност иначе сменя правилно
@@ -49,6 +51,7 @@ const ProjectSchema = z
     qrUrl: z.string().max(300),
     cutLines: z.boolean(),
     aiDesc: z.string().max(300),
+    skipCells: z.number().int().min(0).max(200),
   })
   .partial();
 
@@ -64,6 +67,7 @@ const INITIAL: LabelState = {
   qrUrl: "",
   cutLines: true,
   aiDesc: "",
+  skipCells: 0,
 };
 
 interface CellContent {
@@ -98,8 +102,11 @@ export default function LabelStudio() {
     s.mode === "list"
       ? s.listText.split("\n").map((l) => l.trim()).filter(Boolean)
       : [];
-  const usedCells = s.mode === "list" ? Math.min(listLines.length, grid.total) : grid.total;
-  const overflow = s.mode === "list" ? Math.max(0, listLines.length - grid.total) : 0;
+  // Начеван лист: първите N клетки са вече изразходвани → печатаме от N нататък.
+  const skip = Math.min(s.skipCells ?? 0, Math.max(0, grid.total - 1));
+  const capacity = grid.total - skip;
+  const usedCells = s.mode === "list" ? Math.min(listLines.length, capacity) : capacity;
+  const overflow = s.mode === "list" ? Math.max(0, listLines.length - capacity) : 0;
 
   const qrText = s.qrUrl.trim()
     ? /^https?:\/\//i.test(s.qrUrl.trim())
@@ -269,6 +276,29 @@ export default function LabelStudio() {
             />
             Пунктирани линии за рязане
           </label>
+
+          <div>
+            <label htmlFor="skip-cells" className="field-label">
+              Начеван лист — пропусни първите клетки
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                id="skip-cells"
+                type="range"
+                min={0}
+                max={Math.max(0, grid.total - 1)}
+                step={1}
+                value={skip}
+                onChange={(e) => set({ skipCells: Number(e.target.value) })}
+                className="h-4 flex-1 accent-tera"
+              />
+              <span className="tabular-nums text-sm font-semibold text-ink-soft">{skip}</span>
+            </div>
+            <p className="mt-1 text-xs text-ink-faint">
+              Ползвал си вече част от листа със стикери? Печатаме от следващата
+              свободна клетка — нищо не се хаби. Остават {capacity} свободни.
+            </p>
+          </div>
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -308,7 +338,8 @@ export default function LabelStudio() {
         />
         <SheetPreview style={fontVars(s)}>
           {Array.from({ length: grid.total }).map((_, i) => {
-            const content = cellContent(s, listLines, i);
+            const ci = i - skip;
+            const content = ci < 0 ? null : cellContent(s, listLines, ci);
             if (!content) return null;
             const col = i % grid.cols;
             const row = Math.floor(i / grid.cols);
