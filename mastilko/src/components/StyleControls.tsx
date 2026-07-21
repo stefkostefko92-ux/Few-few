@@ -59,10 +59,50 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor }: 
       )}
 
       {!hideFont && (
-        <div>
-          <span className="field-label">Основен шрифт</span>
-          <FontPicker value={value.font} onChange={(id) => onChange({ font: id })} allowDefault />
-        </div>
+        <>
+          <div>
+            <span className="field-label">Основен шрифт</span>
+            <FontPicker value={value.font} onChange={(id) => onChange({ font: id })} allowDefault />
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Slider
+              label="Разредка"
+              min={-0.03}
+              max={0.3}
+              step={0.005}
+              value={value.tracking ?? 0}
+              suffix="em"
+              onChange={(v) => onChange({ tracking: v })}
+            />
+            <Slider
+              label="Тегло"
+              min={300}
+              max={800}
+              step={100}
+              value={value.weight ?? 400}
+              onChange={(v) => onChange({ weight: v })}
+            />
+            <Slider
+              label="Редова разредка"
+              min={1}
+              max={2}
+              step={0.05}
+              value={value.leading ?? 1.4}
+              onChange={(v) => onChange({ leading: v })}
+            />
+          </div>
+
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={!!value.italic}
+              onChange={(e) => onChange({ italic: e.target.checked })}
+              className="h-4 w-4 accent-tera"
+            />
+            <span className="italic">Наклонен (курсив)</span>
+          </label>
+        </>
       )}
 
       {!hideDecor && (
@@ -78,8 +118,80 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor }: 
               <option key={d.id} value={d.id}>{d.name}</option>
             ))}
           </select>
+
+          {value.decor && value.decor !== "none" && (
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <label className="block text-xs font-semibold text-ink-soft">
+                Цвят на украсата
+                <input
+                  type="color"
+                  value={value.decorColor || "#C25E3F"}
+                  onChange={(e) => onChange({ decorColor: e.target.value })}
+                  className="mt-1 h-10 w-full rounded-lg border border-ink/15"
+                  aria-label="Цвят на украсата"
+                />
+              </label>
+              <Slider
+                label="Прозрачност"
+                min={0.05}
+                max={1}
+                step={0.05}
+                value={value.decorOpacity ?? 1}
+                onChange={(v) => onChange({ decorOpacity: v })}
+              />
+              <Slider
+                label="Мащаб"
+                min={0.5}
+                max={2}
+                step={0.1}
+                value={value.decorScale ?? 1}
+                suffix="×"
+                onChange={(v) => onChange({ decorScale: v })}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+function Slider({
+  label,
+  min,
+  max,
+  step,
+  value,
+  suffix,
+  onChange,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  suffix?: string;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <label className="block text-xs font-semibold text-ink-soft">
+      <span className="flex items-baseline justify-between gap-2">
+        <span>{label}</span>
+        <span className="tabular-nums text-ink-faint">
+          {step < 1 ? value.toFixed(2) : value}
+          {suffix ? ` ${suffix}` : ""}
+        </span>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="mt-1 h-4 w-full accent-tera"
+        aria-label={label}
+      />
+    </label>
   );
 }

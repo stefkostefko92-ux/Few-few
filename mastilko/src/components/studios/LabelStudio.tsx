@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -324,7 +324,7 @@ export default function LabelStudio() {
                   overflow: "hidden",
                 }}
               >
-                <BackgroundDecor decor={s.decor} color={theme.accent} />
+                <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
                 {qrSrc && (
                   <QrImage
                     src={qrSrc}

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -145,7 +145,7 @@ export default function WifiStudio() {
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "4mm", gap: "2mm",
               }}>
-                <BackgroundDecor decor={s.decor} color={theme.accent} />
+                <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
                 <div style={{ fontWeight: 800, fontSize: "5mm", fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
                   📶 {s.title || "WiFi"}
                 </div>

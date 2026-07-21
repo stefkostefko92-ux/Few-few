@@ -107,8 +107,22 @@ export interface StyleState {
   font?: string;
   /** Шрифт за конкретен елемент/ред: ключ → font id. */
   fonts?: Record<string, string>;
+  /** Разредка (letter-spacing) в em: -0.03 … 0.3. */
+  tracking?: number;
+  /** Тегло на шрифта: 300 … 800. */
+  weight?: number;
+  /** Редова разредка (line-height): 1 … 2. */
+  leading?: number;
+  /** Наклонен (курсив) текст. */
+  italic?: boolean;
   /** Украса на фона. */
   decor?: string;
+  /** Свой цвят на украсата (по подразбиране — акцентният). */
+  decorColor?: string;
+  /** Прозрачност на украсата (множител): 0.05 … 1. */
+  decorOpacity?: number;
+  /** Мащаб на украсата: 0.5 … 2. */
+  decorScale?: number;
 }
 
 export const StyleSchemaShape = {
@@ -119,7 +133,14 @@ export const StyleSchemaShape = {
   customColors: z.boolean(),
   font: z.string().max(20),
   fonts: z.record(z.string().max(30), z.string().max(20)),
+  tracking: z.number().min(-0.03).max(0.3),
+  weight: z.number().int().min(300).max(800),
+  leading: z.number().min(1).max(2),
+  italic: z.boolean(),
   decor: z.string().max(20),
+  decorColor: z.string().max(20),
+  decorOpacity: z.number().min(0.05).max(1),
+  decorScale: z.number().min(0.5).max(2),
 };
 
 const hex = /^#[0-9a-fA-F]{3,8}$/;
@@ -135,11 +156,33 @@ export function resolveTheme(s: StyleState): WarmTheme {
   };
 }
 
-/** CSS променливи за глобалния шрифт — подават се на SheetPreview (style). */
+/**
+ * CSS променливи за типографията — подават се на SheetPreview (style) и се
+ * НАСЛЕДЯВАТ от цялото съдържание на листа. Затова разредка/тегло/редова
+ * разредка/наклон важат за всичките 8 инструмента без промяна по студиата.
+ * Печатната математика (mm) не се влияе — тук няма размери.
+ */
 export function fontVars(s: StyleState): React.CSSProperties {
-  if (!s.font) return {};
-  const css = fontCss(s.font);
-  return { fontFamily: css, ["--font-display" as string]: css };
+  const v: React.CSSProperties = {};
+  if (s.font) {
+    const css = fontCss(s.font);
+    v.fontFamily = css;
+    (v as Record<string, string>)["--font-display"] = css;
+  }
+  if (typeof s.tracking === "number") v.letterSpacing = `${s.tracking}em`;
+  if (typeof s.weight === "number") v.fontWeight = s.weight;
+  if (typeof s.leading === "number") v.lineHeight = s.leading;
+  if (s.italic) v.fontStyle = "italic";
+  return v;
+}
+
+/** Резолюция на украсата — свой цвят/прозрачност/мащаб с безопасни граници. */
+export function resolveDecor(s: StyleState, accent: string) {
+  return {
+    color: s.decorColor && hex.test(s.decorColor) ? s.decorColor : accent,
+    opacity: typeof s.decorOpacity === "number" ? s.decorOpacity : 1,
+    scale: typeof s.decorScale === "number" ? s.decorScale : 1,
+  };
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -68,7 +68,7 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
       justifyContent: "center", textAlign: "center", padding: `${u(8)} ${u(14)}`,
       border: `${u(1)} solid ${theme.accent}`, borderRadius: u(3), overflow: "hidden",
     }}>
-      <BackgroundDecor decor={s.decor} color={theme.accent} />
+      <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {s.emoji && <div style={{ fontSize: u(16), lineHeight: 1 }}>{s.emoji}</div>}
         <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: u(8), marginTop: u(2), color: theme.accent }}>

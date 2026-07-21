@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -109,7 +109,7 @@ export default function TabelkaStudio() {
             justifyContent: "center", textAlign: "center", padding: "20mm",
             border: `4mm solid ${theme.accent}`, overflow: "hidden",
           }}>
-            <BackgroundDecor decor={s.decor} color={theme.accent} />
+            <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
               {s.emoji && <div style={{ fontSize: "60mm", lineHeight: 1 }}>{s.emoji}</div>}
               <div style={{
