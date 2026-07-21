@@ -329,21 +329,44 @@ export function titleFx(s: StyleState, theme: WarmTheme): React.CSSProperties {
   return fx;
 }
 
+/** Относителна осветеност (WCAG) на hex цвят, или null при невалиден. */
+export function relLuminance(hexColor: string): number | null {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);
+  if (!m) return null;
+  const n = parseInt(m[1]!, 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const x = c / 255;
+    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * ch[0]! + 0.7152 * ch[1]! + 0.0722 * ch[2]!;
+}
+
+/** Контрастно съотношение (WCAG) между два hex цвята, или null. */
+export function contrastRatio(a: string, b: string): number | null {
+  const la = relLuminance(a);
+  const lb = relLuminance(b);
+  if (la === null || lb === null) return null;
+  const hi = Math.max(la, lb);
+  const lo = Math.min(la, lb);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** Степен по WCAG за нормален текст: AAA ≥7, AA ≥4.5, AA-голям ≥3, иначе слаб. */
+export function contrastGrade(ratio: number): { label: string; ok: boolean } {
+  if (ratio >= 7) return { label: "AAA", ok: true };
+  if (ratio >= 4.5) return { label: "AA", ok: true };
+  if (ratio >= 3) return { label: "AA (едър текст)", ok: true };
+  return { label: "слаб", ok: false };
+}
+
 /**
  * Безопасен цвят за QR модулите: връща акцента само ако е достатъчно тъмен
  * спрямо бял фон (иначе чисто черно — скенируемостта е над естетиката).
  */
 export function qrSafeColor(accent: string): string {
   const FALLBACK = "#1B1B1B";
-  const m = /^#([0-9a-fA-F]{6})$/.exec(accent);
-  if (!m) return FALLBACK;
-  const n = parseInt(m[1]!, 16);
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  const lin = (c: number) => {
-    const x = c / 255;
-    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
-  };
-  const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const lum = relLuminance(accent);
+  if (lum === null) return FALLBACK;
   // Контраст спрямо бяло (L=1): (1+0.05)/(lum+0.05) ≥ 4 → достатъчно тъмен.
   return 1.05 / (lum + 0.05) >= 4 ? accent : FALLBACK;
 }

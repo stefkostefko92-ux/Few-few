@@ -463,6 +463,12 @@ body {
 }
 
 /* ---------- Печат ---------- */
+/* Преглед „далтонизъм“ — филтър само на екрана върху листа (виж
+   ColorVisionToggle). При печат се маха, за да е реалният цвят точен. */
+.cvd-prot .sheet { filter: url(#cvd-prot); }
+.cvd-deut .sheet { filter: url(#cvd-deut); }
+.cvd-trit .sheet { filter: url(#cvd-trit); }
+
 /* Печата се САМО съдържанието на .print-area — точен А4 лист в mm. */
 
 @page {
@@ -495,6 +501,7 @@ body {
     box-shadow: none !important;
     border: none !important;
     page-break-after: always;
+    filter: none !important;
   }
   .no-print {
     display: none !important;

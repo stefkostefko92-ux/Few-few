@@ -1,6 +1,6 @@
 "use client";
 
-import { DECORS, type StyleState } from "@/lib/style";
+import { DECORS, contrastRatio, contrastGrade, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
 import Icon from "@/components/Icon";
@@ -70,6 +70,14 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
             </label>
           ))}
         </div>
+      )}
+
+      {value.customColors && (
+        <ContrastReport
+          bg={value.cbg || "#FAF4E8"}
+          fg={value.cfg || "#3A2E28"}
+          acc={value.cacc || "#C25E3F"}
+        />
       )}
 
       <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
@@ -316,6 +324,37 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// Жив WCAG контраст-чекър — показва дали текстът/акцентът се четат на фона.
+function ContrastReport({ bg, fg, acc }: { bg: string; fg: string; acc: string }) {
+  const rows: Array<[string, number | null]> = [
+    ["Текст върху фон", contrastRatio(fg, bg)],
+    ["Акцент върху фон", contrastRatio(acc, bg)],
+  ];
+  return (
+    <div className="space-y-1 rounded-lg bg-ink/5 p-2 text-xs">
+      {rows.map(([label, ratio]) => {
+        const grade = ratio !== null ? contrastGrade(ratio) : null;
+        return (
+          <div key={label} className="flex items-center justify-between gap-2">
+            <span className="text-ink-soft">{label}</span>
+            <span className="flex items-center gap-1.5 font-semibold">
+              {ratio !== null && <span className="tabular-nums text-ink-faint">{ratio.toFixed(1)}:1</span>}
+              <span
+                className={`rounded px-1.5 py-0.5 ${
+                  grade?.ok ? "bg-gora/15 text-gora-dark" : "bg-tera/15 text-tera-dark"
+                }`}
+              >
+                {grade ? grade.label : "—"}
+              </span>
+            </span>
+          </div>
+        );
+      })}
+      <p className="pt-0.5 text-ink-faint">Цел: поне „AA“ (4.5:1) за да се чете лесно.</p>
     </div>
   );
 }
