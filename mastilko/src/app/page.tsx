@@ -122,6 +122,14 @@ const TOOLS: Array<{
     text: "За кафене, бар или ресторант — раздели, продукти и цени с точкова линия, готово за печат на А4.",
     accent: "bg-gora-pale text-gora-dark",
   },
+  {
+    href: "/dokumentni-snimki",
+    emoji: "🪪",
+    icon: "/icons/cv.webp",
+    title: "Снимки за документи",
+    text: "Снимки за лична карта, паспорт и виза (35×45 mm) — качваш, изрязваш и печаташ цял лист. Всичко в браузъра.",
+    accent: "bg-med-pale text-med-dark",
+  },
 ];
 
 const STEPS = [
