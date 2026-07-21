@@ -113,7 +113,10 @@ per-invocation надстройка opus/sonnet × effort, без Haiku); **prom
 
 **Communication style (caveman):** terse, fragment prose; every technical token
 (code, commands, `file:line`, error strings) exact; drop filler; **never**
-compress the Bulgarian user-facing UI strings.
+compress the Bulgarian user-facing UI strings. **Споделен речник** за терсен изход
+(кеширан в `_shared.md`, стандартизира термините → по-малко токени, нула двусмислие):
+`ф:р · PI · LT · QG · RM · SC · ИоМ` — ползвай в HANDOFF/вътрешни бележки, разгъни при
+първо ползване пред човек; **никога** в UI/SC/код/команди/commit.
 
 ## Skills — `.claude/skills/`
 
