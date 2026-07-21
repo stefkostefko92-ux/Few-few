@@ -3,6 +3,7 @@
 import { DECORS, STYLE_KITS, contrastRatio, contrastGrade, inkCoverage, cmykRisk, resolveTheme, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
 import FontPicker from "@/components/FontPicker";
+import ImageUpload from "@/components/ImageUpload";
 import Icon from "@/components/Icon";
 
 const BORDER_STYLES: Array<{ id: NonNullable<StyleState["bstyle"]>; name: string }> = [
@@ -157,6 +158,43 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
           />
         </div>
       )}
+
+      <div>
+        <ImageUpload
+          label="Своя снимка за фон (по избор)"
+          value={value.bgImage || ""}
+          onChange={(bgImage) => onChange({ bgImage })}
+          maxSide={1000}
+        />
+        {value.bgImage && (
+          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="block text-xs font-semibold text-ink-soft">
+              Как ляга
+              <select
+                className="field-input mt-1"
+                value={value.bgImageFit || "cover"}
+                onChange={(e) => onChange({ bgImageFit: e.target.value as StyleState["bgImageFit"] })}
+              >
+                <option value="cover">Запълва листа</option>
+                <option value="contain">Цялата снимка</option>
+                <option value="tile">Повтаряща се</option>
+              </select>
+            </label>
+            <Slider
+              label="Видимост"
+              min={0.05}
+              max={1}
+              step={0.05}
+              value={value.bgImageOpacity ?? 0.5}
+              onChange={(v) => onChange({ bgImageOpacity: v })}
+            />
+            <p className="text-xs text-ink-faint sm:col-span-2">
+              Върху снимката слагаме лек воал в цвета на фона, за да остане
+              текстът четим. Смъкни „Видимост“, ако буквите се губят.
+            </p>
+          </div>
+        )}
+      </div>
 
       {!hideFont && (
         <>

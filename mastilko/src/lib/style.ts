@@ -171,6 +171,12 @@ export interface StyleState {
   ecoMode?: boolean;
   /** Четим режим за дислексия (по-голяма разредка, тегло и редова разредка). */
   dyslexia?: boolean;
+  /** Своя снимка за фон на листа (data URL). */
+  bgImage?: string;
+  /** Видимост на фоновата снимка (0.05 … 1) — останалото е скрим за контраст. */
+  bgImageOpacity?: number;
+  /** Как ляга снимката. */
+  bgImageFit?: "cover" | "contain" | "tile";
 }
 
 export const StyleSchemaShape = {
@@ -204,6 +210,9 @@ export const StyleSchemaShape = {
   qrColor: z.boolean(),
   ecoMode: z.boolean(),
   dyslexia: z.boolean(),
+  bgImage: z.string().max(1500000),
+  bgImageOpacity: z.number().min(0.05).max(1),
+  bgImageFit: z.enum(["cover", "contain", "tile"]),
 };
 
 const hex = /^#[0-9a-fA-F]{3,8}$/;
@@ -296,13 +305,27 @@ export function borderCss(s: StyleState, fb: BorderFallback): { border: string; 
  * навсякъде, където студиото рендира цветна повърхност на листа.
  */
 export function sheetBg(s: StyleState, theme: WarmTheme): string {
-  // Еко режим: чисто бял фон — най-малко мастило/тонер (има превес над всичко).
-  if (s.ecoMode) return "#FFFFFF";
-  if (s.bgGrad && s.cbg2 && hex.test(s.cbg2)) {
-    const angle = typeof s.bgAngle === "number" ? s.bgAngle : 135;
-    return `linear-gradient(${angle}deg, ${theme.bg}, ${s.cbg2})`;
+  // Базов фон: еко (бял) → градиент → плътна тема.
+  const base =
+    s.ecoMode
+      ? "#FFFFFF"
+      : s.bgGrad && s.cbg2 && hex.test(s.cbg2)
+        ? `linear-gradient(${typeof s.bgAngle === "number" ? s.bgAngle : 135}deg, ${theme.bg}, ${s.cbg2})`
+        : theme.bg;
+
+  // Своя снимка за фон: наслагва се НАД базата, а отгоре — скрим в цвета на
+  // фона (color-mix), за да остане текстът четим. Повече „видимост“ = по-слаб
+  // скрим. Размерите (mm) не се влияят — само фонов слой.
+  if (s.bgImage) {
+    const op = typeof s.bgImageOpacity === "number" ? s.bgImageOpacity : 0.5;
+    const scrimPct = Math.round((1 - op) * 100);
+    const scrimColor = s.ecoMode ? "#FFFFFF" : theme.bg;
+    const scrim = `color-mix(in srgb, ${scrimColor} ${scrimPct}%, transparent)`;
+    const size = s.bgImageFit === "contain" ? "contain" : s.bgImageFit === "tile" ? "auto" : "cover";
+    const repeat = s.bgImageFit === "tile" ? "repeat" : "no-repeat";
+    return `linear-gradient(${scrim}, ${scrim}), url("${s.bgImage}") center / ${size} ${repeat}, ${base}`;
   }
-  return theme.bg;
+  return base;
 }
 
 /**
