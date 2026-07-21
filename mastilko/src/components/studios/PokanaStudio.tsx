@@ -25,6 +25,8 @@ interface PokanaState extends StyleState {
   /** Серия: по едно име на ред → покана за всеки (2 на лист). „{име}“ в
    *  заглавието се заменя с името. Празно = обикновен режим. */
   series: string;
+  /** Централна линия за сгъване (сгъната картичка). */
+  foldLine: boolean;
 }
 
 const INITIAL: PokanaState = {
@@ -39,6 +41,7 @@ const INITIAL: PokanaState = {
   themeId: "med",
   copies: 2,
   series: "",
+  foldLine: false,
 };
 
 const ProjectSchema = z
@@ -53,6 +56,7 @@ const ProjectSchema = z
     note: z.string().max(200),
     copies: z.union([z.literal(1), z.literal(2)]),
     series: z.string().max(4000),
+    foldLine: z.boolean(),
     ...StyleSchemaShape,
   })
   .partial();
@@ -76,6 +80,12 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
       ...borderWith(s, { width: 1, style: "solid", color: theme.accent, radius: 3 }, u), overflow: "hidden",
     }}>
       <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+      {s.foldLine && (
+        <div aria-hidden style={{
+          position: "absolute", left: 0, right: 0, top: "50%",
+          borderTop: "0.3mm dashed rgba(0,0,0,0.4)", zIndex: 3,
+        }} />
+      )}
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {s.emoji && <div style={{ fontSize: fu(16), lineHeight: 1 }}>{s.emoji}</div>}
         <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: fu(8), marginTop: u(2), color: theme.accent, ...titleFx(s, theme) }}>
@@ -151,6 +161,11 @@ export default function PokanaStudio() {
               <option value={2}>2</option>
               <option value={1}>1</option>
             </select>
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input type="checkbox" checked={s.foldLine}
+              onChange={(e) => set({ foldLine: e.target.checked })} className="h-4 w-4 accent-tera" />
+            Линия за сгъване (сгъната картичка)
           </label>
           <div className="grid grid-cols-2 gap-2">
             <FontPicker label="Шрифт: заглавие" value={s.fonts?.heading} allowDefault

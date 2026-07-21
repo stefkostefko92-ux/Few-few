@@ -23,6 +23,8 @@ interface TabelkaState extends StyleState {
   subtitle: string;
   landscape: boolean;
   themeId: string;
+  /** Централна линия за сгъване (палатка-табелка). */
+  foldLine: boolean;
 }
 
 const INITIAL: TabelkaState = {
@@ -32,6 +34,7 @@ const INITIAL: TabelkaState = {
   subtitle: "Заповядайте — ей сега идваме",
   landscape: false,
   themeId: "tera",
+  foldLine: false,
 };
 
 const ProjectSchema = z
@@ -41,6 +44,7 @@ const ProjectSchema = z
     title: z.string().max(60),
     subtitle: z.string().max(120),
     landscape: z.boolean(),
+    foldLine: z.boolean(),
     ...StyleSchemaShape,
   })
   .partial();
@@ -110,6 +114,11 @@ export default function TabelkaStudio() {
               onChange={(e) => set({ landscape: e.target.checked })} className="h-4 w-4 accent-tera" />
             Хоризонтално (пейзаж)
           </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input type="checkbox" checked={s.foldLine}
+              onChange={(e) => set({ foldLine: e.target.checked })} className="h-4 w-4 accent-tera" />
+            Линия за сгъване (палатка-табелка)
+          </label>
           <StyleControls value={s} onChange={set} showTitleFx />
         </div>
         <ProjectFile state={s} filename="mastilko-tabelka"
@@ -126,6 +135,12 @@ export default function TabelkaStudio() {
             ...borderCss(s, { width: 4, style: "solid", color: theme.accent, radius: 0 }), overflow: "hidden",
           }}>
             <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+            {s.foldLine && (
+              <div aria-hidden style={{
+                position: "absolute", left: 0, right: 0, top: "50%",
+                borderTop: "0.3mm dashed rgba(0,0,0,0.4)", zIndex: 3,
+              }} />
+            )}
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
               {s.iconId && s.iconId !== "none" ? (
                 <SignIcon id={s.iconId} color={theme.accent} style={{ width: fs(60), height: fs(60) }} />
