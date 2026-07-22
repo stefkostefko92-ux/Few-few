@@ -7674,6 +7674,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „checkout.session.completed НЕ гарантира плащане — при отложени методи (SEPA/ACH/bank tr…\" (+2)"
+        },
+        {
           "date": "2026-07-10",
           "type": "learning",
           "summary": "Научи: „Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…\" · 5 в карантина"
