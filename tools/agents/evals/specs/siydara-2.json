@@ -1,0 +1,24 @@
+{
+  "id": "siydara-2",
+  "agent": "siydara",
+  "task": "Напиши seed за дежурни аптеки в zabobovdol. Идемпотентност + регистрация?",
+  "expect": [
+    {
+      "any": [
+        "upsert",
+        "уникален",
+        "slug",
+        "check-dups"
+      ],
+      "label": "идемпотентен upsert"
+    },
+    {
+      "any": [
+        "db:seed:all",
+        "package.json",
+        "регистр"
+      ],
+      "label": "регистрация във веригата"
+    }
+  ]
+}

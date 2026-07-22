@@ -1,0 +1,25 @@
+{
+  "id": "kachestveniyat-2",
+  "agent": "kachestveniyat",
+  "task": "Оцени функция с 6 позиционни аргумента и magic числа. Предложи рефактор.",
+  "expect": [
+    {
+      "any": [
+        "connascence",
+        "позиц",
+        "на име",
+        "обект",
+        "локал"
+      ],
+      "label": "connascence position→name"
+    },
+    {
+      "any": [
+        "magic",
+        "именувана константа",
+        "meaning"
+      ],
+      "label": "magic → константа"
+    }
+  ]
+}

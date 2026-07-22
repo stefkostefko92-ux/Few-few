@@ -1,0 +1,23 @@
+{
+  "id": "mobildjiyata-2",
+  "agent": "mobildjiyata",
+  "task": "Подготви Capacitor приложение за App Store + Play. Какво проверяваш?",
+  "expect": [
+    {
+      "any": [
+        "Privacy Manifest",
+        "Data Safety",
+        "store-readiness",
+        "MASVS"
+      ],
+      "label": "readiness проверки"
+    },
+    {
+      "none": [
+        "тайна в bundle",
+        "hardcoded"
+      ],
+      "label": "капан: тайна в бъндъла"
+    }
+  ]
+}

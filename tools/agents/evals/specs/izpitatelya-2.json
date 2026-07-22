@@ -1,0 +1,25 @@
+{
+  "id": "izpitatelya-2",
+  "agent": "izpitatelya",
+  "task": "Playwright тест е flaky — `page.route` е регистриран СЛЕД `page.goto`. Поправи.",
+  "expect": [
+    {
+      "any": [
+        "преди",
+        "route преди",
+        "waitForResponse",
+        "детерминизъм",
+        "състояние"
+      ],
+      "label": "route преди навигация"
+    },
+    {
+      "none": [
+        "sleep",
+        "waitForTimeout",
+        "увеличи timeout"
+      ],
+      "label": "капан: sleep като фикс"
+    }
+  ]
+}

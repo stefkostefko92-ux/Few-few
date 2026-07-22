@@ -1,0 +1,24 @@
+{
+  "id": "konveyera-2",
+  "agent": "konveyera",
+  "task": "Ревюирай GitHub workflow: action по подвижен таг, checkout, `pull_request_target` с чужд код.",
+  "expect": [
+    {
+      "any": [
+        "SHA",
+        "пин",
+        "persist-credentials",
+        "dependabot"
+      ],
+      "label": "пин/persist-credentials"
+    },
+    {
+      "any": [
+        "pull_request_target",
+        "least-privilege",
+        "permissions"
+      ],
+      "label": "хваща форк-рисковете"
+    }
+  ]
+}
