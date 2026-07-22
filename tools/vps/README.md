@@ -3,7 +3,7 @@
 Скокът от imperative скрипт към **rebuildable + observable + verified** сървър.
 Тайните/ключовете остават на хоста (mode 600), никога в репото.
 
-## `deploy-check.mjs` — zero-dep линтер за деплой скриптове (в агентския гейт)
+## `deploy-check.mjs` — zero-dep линтер за деплой скриптове (тестът в CI; CLI на `autodeploy.sh` в sweep-а)
 ```bash
 node tools/vps/deploy-check.mjs deploy/autodeploy.sh   # или папка
 ```

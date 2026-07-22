@@ -11,7 +11,7 @@ selene --config tools/fivem/selene.toml .            # argument/type прове�
 `.luacheckrc` декларира CitizenFX/ox/framework глобалите — иначе luacheck вдига
 фалшиви тревоги (CfxLua ≠ vanilla Lua 5.4: vector3/quat/source и т.н.).
 
-## `manifest-lint.mjs` — zero-dep pre-ship линтер (в агентския гейт)
+## `manifest-lint.mjs` — zero-dep pre-ship линтер (тестът в CI; CLI върху ресурс ръчно)
 ```bash
 node tools/fivem/manifest-lint.mjs path/to/resource
 ```

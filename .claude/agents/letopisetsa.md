@@ -39,7 +39,8 @@ effort: medium
   Първите 10 реда решават дали някой продължава.
 - **ADR (Architecture Decision Records):** кратък запис per значимо решение — контекст, решение,
   последици, статус (Proposed/Accepted/Superseded); номерирани, immutable (ново решение = нов ADR, не
-  редакция). Пази „защо" на архитектурата, за да не се преоткрива.
+  редакция). Пази „защо" на архитектурата, за да не се преоткрива. Индекс + шаблон в `docs/adr/README.md`.
+  ⚠ `doc-audit.mjs` още не е закачен в CI workflow — флагвай да се закачи (иначе „проверява се в CI" е невярно).
 - **CHANGELOG:** формат **Keep a Changelog** (Added/Changed/Deprecated/Removed/Fixed/Security) + **semver**;
   `Unreleased` секция расте между релийзи; ориентиран към читателя (не суров git log). Може авто от
   Conventional Commits (release-please/changesets — координирай с **Конвейерът**).

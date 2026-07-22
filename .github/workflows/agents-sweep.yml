@@ -30,5 +30,6 @@ jobs:
           node tools/agents/tools-audit.mjs
           node tools/agents/def-freshness.mjs
           node tools/agents/token-budget.mjs --check
+          node tools/vps/deploy-check.mjs deploy/autodeploy.sh
       - name: Всички тестове
         run: node --test $(find tools -name '*.test.mjs')

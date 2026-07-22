@@ -18,7 +18,7 @@ bash tools/social/clip.sh norm     cap.mp4 final.mp4      # -14 LUFS
 bash tools/social/clip.sh thumb    final.mp4 cover.jpg
 ```
 
-## `post-lint.mjs` — zero-dep линтер за план на постове (в агентския гейт)
+## `post-lint.mjs` — zero-dep линтер за план на постове (тестът в CI; CLI върху plan.json ръчно)
 ```bash
 node tools/social/post-lint.mjs posts.json    # или папка
 ```
