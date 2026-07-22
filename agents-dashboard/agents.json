@@ -1548,6 +1548,11 @@
       "activity": [
         {
           "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „adblock/ (MV3): dynamic DNR rules И chrome.storage.local персистират през extension upd…\" (+1)"
+        },
+        {
+          "date": "2026-07-22",
           "type": "learning",
           "summary": "Научи: „adblock/: scriptlet engine (engine.js/main.js) НЕ обвива fetch/JSON.parse/Response.json…\" (+2 още)"
         },
