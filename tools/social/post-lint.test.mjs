@@ -21,7 +21,9 @@ test("празен текст → HIGH empty-text", () => {
 });
 
 test("тайна в текста → HIGH secret-in-text", () => {
-  const f = lintPost({ platform: "linkedin", text: "ключът е sk-ABCDEFGHIJKLMNOPQRSTUV123" }, 0);
+  // Ползваме Bearer токен (не sk-…), за да не трипваме repo secret-scan-а върху самия тест —
+  // post-lint.SECRET_RE хваща и двете, а gitleaks/secret-scan няма Bearer правило.
+  const f = lintPost({ platform: "linkedin", text: "токенът е Bearer abcdefghij0123456789xyz" }, 0);
   assert.ok(f.some((x) => x.code === "secret-in-text" && x.sev === "HIGH"));
 });
 
