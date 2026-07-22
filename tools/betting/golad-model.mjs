@@ -60,6 +60,35 @@ export function markets(M, { totalsLine = 2.5, handicap = 0 } = {}) {
   };
 }
 
+// Двоен шанс: 1X / 12 / X2.
+export function doubleChance(M) {
+  const m = markets(M);
+  return { "1X": m["1"] + m.X, "12": m["1"] + m["2"], X2: m.X + m["2"] };
+}
+
+// Draw-no-bet (равен = връща залога): условна вероятност при не-равен.
+export function drawNoBet(M) {
+  const m = markets(M);
+  const denom = m["1"] + m["2"];
+  return { home: m["1"] / denom, away: m["2"] / denom };
+}
+
+// Азиатски хендикап за домакина. line: цяло/половин/четвърт (напр. −0.25, −0.75). Четвъртите се
+// делят на две съседни линии (половин залог всяка). Връща {win, push, loss} дялове (за EV/сетълмент).
+export function asianHandicap(M, line) {
+  const q = Math.round(line * 4) / 4;
+  if (Math.abs(q * 2 - Math.round(q * 2)) > 1e-9) { // четвърт линия → средно на две половини
+    const a = asianHandicap(M, q - 0.25), b = asianHandicap(M, q + 0.25);
+    return { line: q, win: (a.win + b.win) / 2, push: (a.push + b.push) / 2, loss: (a.loss + b.loss) / 2 };
+  }
+  let win = 0, push = 0, loss = 0;
+  for (let x = 0; x < M.length; x++) for (let y = 0; y < M.length; y++) {
+    const adj = (x - y) + q;
+    if (adj > 1e-9) win += M[x][y]; else if (adj < -1e-9) loss += M[x][y]; else push += M[x][y];
+  }
+  return { line: q, win, push, loss };
+}
+
 // Топ N точни резултата.
 export function topScores(M, n = 5) {
   const out = [];

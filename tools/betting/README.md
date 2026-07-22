@@ -5,11 +5,14 @@
 
 | Модул | Какво |
 |---|---|
-| `golad-model.mjs` | Поасон pmf · Диксън-Коулс τ(ρ) · матрица на резултата (нормализирана) · пазари (1X2/О-У/BTTS/точен/хендикап) · λ от рейтинги · time-decay тегло |
-| `devig.mjs` | Обезмаржване: **power** (база — коригира favorite-longshot) · proportional · Shin · overround |
+| **`golad-fit.mjs`** | **Напаснат Диксън-Коулс от история на резултати** (MLE + time-decay) → атака/защита рейтинги + домакинско предимство + ρ → предсказва λ. CLI: `golad-fit.mjs results.json "Дом" "Гост"`. Скок от ръчна λ. |
+| `golad-model.mjs` | Поасон pmf · Диксън-Коулс τ(ρ) · матрица · пазари: 1X2/О-У/BTTS/точен · **азиатски хендикап (вкл. четвърт)** · двоен шанс · draw-no-bet · λ от рейтинги · time-decay |
+| `devig.mjs` | Обезмаржване: **power** (база — favorite-longshot корекция) · proportional · Shin · overround |
+| **`golad-portfolio.mjs`** | **Bankroll над единичен Kelly:** симултанен дробен Kelly + тавани (залог/мач/общо) + **drawdown kill-switch** |
+| **`golad-backtest.mjs`** | **walk-forward** калибрация (напасни на миналото → предскажи бъдещето, нула look-ahead) → Brier/log-loss/RPS vs база |
 | `calibration.mjs` | market-anchor смес · EV · **дробен Kelly** с таван · Brier · log-loss · **RPS** · **CLV** |
 | `golad.mjs` | CLI — цялата верига λ → матрица → пазари → обезмаржване → смес → EV → Kelly |
-| `golad.test.mjs` | Доказва математиката (Поасон Σ=1, DC норм., devig Σ=1, Kelly, метрики) — в CI |
+| `*.test.mjs` | **20 теста** доказват математиката + fit-възстановяване + walk-forward бие база — в CI |
 
 ## Употреба
 ```bash
