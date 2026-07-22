@@ -11952,9 +11952,20 @@
           "date": "2026-07-17",
           "event": "v10.1 — учене",
           "detail": "Научи: В монорепото oversee.mjs (надзор на агентския слой) НЕ се пуска в никой CI workflow — G… (+2 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-22",
+          "event": "v10.2 — учене",
+          "detail": "Научи: actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN д… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN д…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-17",
           "type": "learning",
