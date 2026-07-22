@@ -64,6 +64,6 @@ jobs:
       # secret-scan (job „secrets" по-горе).
       - name: dependency-review (best-effort — иска GHAS)
         continue-on-error: true
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
