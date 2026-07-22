@@ -37,6 +37,7 @@ const MAP = [
   ["Discord", ["diskordjiyata"]],
   ["FiveM", ["geymara"]],
   ["Трейдинг ботове", ["treydara"]],
+  ["Спортен/бетинг анализ", ["goladjiyata"]],
   ["Визуален WOW / WebGL", ["dizayner"]],
   ["Social media", ["socialdjiyata"]],
   ["3D reverse engineering", ["3d-maniac"]],

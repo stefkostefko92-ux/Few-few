@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-19",
+    "updated": "2026-07-21",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -17,6 +17,7 @@
       "tagline": "Прави сайта законен по правото на ЕС — и видим за AI търсачките.",
       "file": ".claude/agents/pravniyat-razbirach.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -949,6 +950,7 @@
       "tagline": "Хваща бъгове и уязвимости — с нула шум, всяка находка самопроверена.",
       "file": ".claude/agents/kodadjiyata.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -1529,9 +1531,20 @@
           "date": "2026-07-19",
           "event": "v14.3 — учене",
           "detail": "Научи: Rate-limit по req.headers x-forwarded-for split(',')[0] е spoofable, когато nginx подав… (+1 още)"
+        },
+        {
+          "version": "14.4.0",
+          "date": "2026-07-21",
+          "event": "v14.4 — учене",
+          "detail": "Научи: tools/betting/golad.mjs:23 — guard-ът за λ ползва само `== null`, което НЕ хваща NaN (ч… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-21",
+          "type": "learning",
+          "summary": "Научи: „tools/betting/golad.mjs:23 — guard-ът за λ ползва само `== null`, което НЕ хваща NaN (ч…\" (+2 още)"
+        },
         {
           "date": "2026-07-19",
           "type": "learning",
@@ -2065,6 +2078,7 @@
       "tagline": "Прави кода лесен за четене и промяна — поведение-запазващи рефактори, нула шум.",
       "file": ".claude/agents/kachestveniyat.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -2174,6 +2188,7 @@
       "tagline": "Пише сигурни, оптимизирани FiveM ресурси — сървърът е авторитетът.",
       "file": ".claude/agents/geymara.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -2889,6 +2904,7 @@
       "tagline": "Прави сайта видим за хора и за AI отговор-машините.",
       "file": ".claude/agents/seo.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -3675,6 +3691,7 @@
       "tagline": "Държи трите езика в синхрон — без да рискува медицинската точност.",
       "file": ".claude/agents/prevodach.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -4393,6 +4410,7 @@
       "tagline": "Идемпотентно съдържание в базата — upsert, проверени факти.",
       "file": ".claude/agents/siydara.md",
       "model": "sonnet",
+      "effort": "low",
       "status": "active",
       "tools": [
         "Read",
@@ -5063,6 +5081,7 @@
       "tagline": "Архив в /root → жив сървър. Идемпотентно, с бекъп и rollback.",
       "file": ".claude/agents/vps-adjiyata.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -5815,6 +5834,7 @@
       "tagline": "Безпощадно точна трансформация скан → параметричен solid за карбон части.",
       "file": ".claude/agents/3d-maniac.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -6582,6 +6602,7 @@
       "tagline": "Максимален обхват + произвежда клипчета (ffmpeg/WhisperX) — не само съветва.",
       "file": ".claude/agents/socialdjiyata.md",
       "model": "sonnet",
+      "effort": "low",
       "status": "active",
       "tools": [
         "Read",
@@ -7276,6 +7297,7 @@
       "tagline": "Продава онлайн без да губи пари: коректен Stripe, нула дублирано таксуване, изряден по правото на ЕС.",
       "file": ".claude/agents/prodavacha.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -7937,6 +7959,7 @@
       "tagline": "Прави приложения, които минават ревюто и усещат нативно — без тайни в бъндъла.",
       "file": ".claude/agents/mobildjiyata.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -8549,6 +8572,7 @@
       "tagline": "Прави модели, които печатат от първия път на K2 Plus — здрави по правилната ос, без излишен support.",
       "file": ".claude/agents/printadjiyata.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -9138,6 +9162,7 @@
       "tagline": "Изскача с нещо брутално за гледане — пълна дисциплина за сериозни сайтове, максимален спектакъл за творчески.",
       "file": ".claude/agents/dizayner.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -9952,6 +9977,7 @@
       "tagline": "MV3 по подразбиране: ефимерен service worker, минимални права, declarativeNetRequest, нула отдалечен код — минава ревюто от първия път.",
       "file": ".claude/agents/hromadjiyata.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -10585,6 +10611,7 @@
       "tagline": "Event-driven и rate-limit-aware: таен токен, минимални intents, defer под 3 секунди, Ed25519 верификация на interactions.",
       "file": ".claude/agents/diskordjiyata.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -11209,6 +11236,7 @@
       "tagline": "Безгрешността е инженерна, не пазарна: коректно изпълнение + строг риск-контрол. Никога не гарантира печалба, никога не дава инвестиционен съвет — paper/testnet преди реален капитал.",
       "file": ".claude/agents/treydara.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -11409,6 +11437,7 @@
       "tagline": "Води и следи целия екип агенти (oversee); свързва продуктите с Gemini/OpenAI/Claude.",
       "file": ".claude/agents/ai-djiyata.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -11435,7 +11464,7 @@
         "Инженерство на агенти (канон на Anthropic): workflow vs agent, патърни (routing/parallelization/orchestrator-workers/evaluator-optimizer), автономен цикъл, ACI/дизайн на инструменти",
         "Multi-agent оркестрация: lead+subagents, кога помага (breadth-first), ~15x токени, режими на провал, делегиране с явна цел/формат/граници",
         "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval",
-        "Онбординг и надзор на растящ екип (25 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна",
+        "Онбординг и надзор на растящ екип (26 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна",
         "Твърди правила (от екипния одит): бюджетен таван (maxBudgetUsd+maxTurns) + Idempotency-Key на мутиращи AI извиквания; per-доставчик трансферен механизъм + чл.28 GDPR DPA; стор-етикети (App Privacy/Data Safety)",
         "CI гейт на агентския слой (.github/workflows/agents.yml): oversee fail-closed + 11 unit теста при промяна; oversee с тренд/базлайн (--snapshot/--baseline) и знаменатели вместо голи бройки"
       ],
@@ -11591,6 +11620,7 @@
       "tagline": "Каса за хранителен магазин по правилата: int пари, фискален-бон-първо, нищо не се трие.",
       "file": ".claude/agents/kasadjiyata.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -11694,6 +11724,7 @@
       "tagline": "Знае как Apple, Google и Meta проверяват софтуер — и ги прави изрядни, за да минат ревюто от първия път.",
       "file": ".claude/agents/tayniyat-agent.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -11824,6 +11855,7 @@
       "tagline": "Държи CI/CD бърз, зелен и сигурен: GitHub Actions, path-филтриран монорепо CI, supply-chain, релийзи.",
       "file": ".claude/agents/konveyera.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -11954,6 +11986,7 @@
       "tagline": "Пише и притежава тестовете — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky.",
       "file": ".claude/agents/izpitatelya.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -12082,6 +12115,7 @@
       "tagline": "Пише README, ADR, CHANGELOG, API докове — точни, свежи, проверими (Diátaxis).",
       "file": ".claude/agents/letopisetsa.md",
       "model": "sonnet",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -12200,6 +12234,7 @@
       "tagline": "Здрава ли е системата в продукция: SLI/SLO/error budget, аларми по симптом, OpenTelemetry, инциденти/postmortem.",
       "file": ".claude/agents/nabludatelya.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -12318,6 +12353,7 @@
       "tagline": "Какво правят потребителите и работи ли промяната — фунии/retention, A/B (Kohavi), нула PII, съгласие първо.",
       "file": ".claude/agents/analizatora.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -12437,6 +12473,7 @@
       "tagline": "Мисли като нападател, служи на защитата",
       "file": ".claude/agents/razbivacha.md",
       "model": "opus",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -12467,10 +12504,10 @@
       },
       "evolution": [
         {
-          "version": "0.1.0",
+          "version": "10.0.0",
           "date": "2026-07-20",
-          "event": "Раждане",
-          "detail": "Създаден за празнина: имахме пасивен ревю (Кодаджията) + injection eval spec-ове, но НЯМАШЕ активен противник. Разбивача атакува изходите на другите агенти и сигурността на продуктите чрез оторизирано отбранително red-teaming — строго наши системи, нула вреда/exfil, coordinated disclosure."
+          "event": "Раждане (production baseline)",
+          "detail": "Създаден за празнина: имахме пасивен ревю (Кодаджията) + injection eval spec-ове, но НЯМАШЕ активен противник. Разбивача атакува изходите на другите агенти и сигурността на продуктите чрез оторизирано отбранително red-teaming — строго наши системи, нула вреда/exfil, coordinated disclosure. По флотилната конвенция агент, изграден по deep-research production стандарт, стартира на v10 (mastery baseline) — както всичките 25 негови връстника. Интеграция: пълен def + tools + памет + injection гейт 6/6 (eval.mjs --check) + drift-lint; издържа взаимния преглед на 26 агента (3 ok присъди по обхвата, 0 блокера)."
         }
       ],
       "activity": [
@@ -12484,6 +12521,129 @@
           "date": "2026-07-20",
           "text": "Adversarial верификация: преди да повярваш на находка, опитай да я опровергаеш (реален задействащ вход, по-проста причина, детерминизъм); приемай само ако устои.",
           "source": "reliability.md"
+        }
+      ]
+    },
+    {
+      "id": "goladjiyata",
+      "name": "Голаджията",
+      "title": "Футболен анализатор за залози (НЕ гарантира печалба, НЕ е съветник)",
+      "emoji": "⚽",
+      "accent": "#4d7c0f",
+      "tagline": "Вади реалните данни и ги цитира (не измисля мачове/резултати/коефициенти); Поасон + Диксън-Коулс, обезмаржване + пазарна котва, дробен Kelly, калибрация (Brier/CLV). Дисциплина, не пророчество — хазартът е 18+ и носи риск.",
+      "file": ".claude/agents/goladjiyata.md",
+      "model": "opus",
+      "effort": "high",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Анализира футболни мачове и дава вероятностна прогноза със стойност и размер на залога, на enterprise ниво на изрядност, риск-първо. Сам вади реалните данни (форма домакин/гост, xG/xGA, състав/травми, коефициенти, контекст) от живи източници и ги цитира — никога не измисля мач, резултат или коефициент. Смята прозрачна математика: сила атака/защита нормализирана спрямо силата на съперника (SoS/Elo) с експоненциално тегло на скорошността, очаквани голове λ, матрица на резултата Поасон × Диксън-Коулс τ(ρ). Открива стойност само след махане на маржа (overround) и смесване с обезмаржената пазарна вероятност (market anchor); размер през дробен Kelly с таван; мери калибрация (Brier/log-loss) и CLV, не win-rate. НЕ гарантира печалба; НЕ дава финансов/бетинг съвет; всяка доставка с дисклеймър.",
+      "capabilities": [
+        "Модел на голове: Поасон × корекция Диксън-Коулс τ(x,y;ρ≈−0.1) — коригира 0:0/1:1/равенства; матрица 0..8, нормализирана",
+        "Сила атака/защита нормализирана спрямо силата на съперниците (SoS/Elo итеративно), не сурови средни",
+        "Тегло на скорошността: експоненциално затихване (по-нов мач тежи повече); отделни домакин/гост профили",
+        "Данни на живо (цитирани): форма, xG/xGA (Understat/FBref), състав/травми (Sofascore), коефициенти (Pinnacle/Oddsportal), време/контекст",
+        "Обезмаржване (overround → 100%, proportional/Shin) преди мерене на стойност",
+        "Market anchor: смесване на модела с обезмаржената пазарна вероятност (w≈0.3–0.5)",
+        "Стойност: EV = p·коеф − 1 с праг; пазари 1X2, Над/Под, BTTS, точен резултат, азиатски хендикап",
+        "Стейкинг: дробен Kelly (¼–½ f*) с твърд таван, банкрол-дисциплина, без прогонка/мартингейл",
+        "Калибрация: Brier score, log-loss, надеждностна крива, CLV — истинската мярка за едж",
+        "Дисциплина/мислене: EV над win-rate, risk of ruin, ex-ante≠ex-post, скромност срещу остър пазар"
+      ],
+      "knowledge": {
+        "sources": 24,
+        "researchToolUses": 5,
+        "priorArt": [
+          "Dixon & Coles (1997) — модел Поасон + τ корекция, time decay (JRSS-C 46(2))",
+          "Karlis & Ntzoufras (2003) — bivariate Poisson / diagonal inflation за равенства (The Statistician 52(3))",
+          "Kelly (1956) + Thorp — критерий за размер; дробен Kelly срещу volatility drag (μ−σ²/2)",
+          "Brier (1950), log score, reliability diagrams (ECMWF); RPS за 1X2 — Constantinou & Fenton (2012, JQAS 8(1))",
+          "Shin (1993) + пропорционален/power devig — махане на overround (penaltyblog); favourite-longshot bias",
+          "xG: StatsBomb/Opta/Understat, npxG, context-adjusted xG (Skripnikov 2026); FBref→Opta смяна 2022",
+          "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
+          "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-21",
+          "event": "Раждане",
+          "detail": "Създаден по изрична заявка като футболен анализатор за залози (НЕ машина за пари, НЕ съветник). Риск-първо, близнак по дух на Трейдъра. Четири неприкосновени правила: махни маржа преди стойност; пазарът е котва; дробен Kelly с таван; мери калибрация (Brier/CLV), не win-rate. Модел: сила атака/защита спрямо съперника + time decay → λ → Поасон × Диксън-Коулс τ. Никога измислени данни; източник или мълчание; винаги дисклеймър."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-07-21",
+          "event": "v6.0 — самообучаващо поколение",
+          "detail": "Вграден в наложения от hooks цикъл (read→act→verify→persist→curate): preload на проверени поуки, гейт преди 'verified' (пазарно твърдение НИКОГА не е verified), auto-capture. Стартова памет: обезмаржване, ρ Диксън-Коулс, дробен Kelly, market anchor, калибрация, SoS нормализация, xG тегло, H2H шум."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-21",
+          "event": "v10.0 — майсторство (обучен с цитирани източници)",
+          "detail": "Изравнен с майсторския ешелон на екипа: 42 проверени, цитирани поуки от целенасочено изследване с живи източници — Поасон + Диксън-Коулс (ρ≈−0.13, τ на 4 клетки, time-decay ξ half-life ~1г), bivariate Poisson (Karlis-Ntzoufras), xG предиктивност/ограничения и доставчици (StatsBomb/Opta/Understat), домакинско предимство (CIES + COVID естествен експеримент, ~0.2 гол/мач, съдийски уклон), пазар/марж (пропорционален vs Shin/power devig, favourite-longshot, CLV, Constantinou-Fenton), стейкинг Kelly (дробен ½/¼, volatility drag μ−σ²/2) и калибрация (Brier, log-loss, reliability, RPS за 1X2), голови базлайни на топ-5 лиги. 5 спорни твърдения в карантина (напр. ефект на надморска — McSharry vs Chumacero). Дисциплина и калибрация, не гарантирана печалба."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-21",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За UEFA квалификации от малки лиги (ARM/GEO/GIB/AZE/FIN дивизии) публичен xG на практик…\" (+1)"
+        },
+        {
+          "date": "2026-07-21",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Диксън-Коулс с λ захранена от xG + time-decay ξ + съперник-коригирани рейтинги е препор…\" (+5)"
+        },
+        {
+          "date": "2026-07-21",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За квалификационни отбори от малки лиги (Армения/Грузия/Гибралтар/Азербайджан) няма пуб…\" (+2)"
+        },
+        {
+          "date": "2026-07-21",
+          "type": "learning",
+          "summary": "v10.0 майсторство: 42 проверени поуки от изследване с живи източници (Диксън-Коулс ρ/τ/time-decay, bivariate Poisson, xG, дом.предимство/COVID, devig Shin, Kelly, Brier/RPS, голови базлайни). 5 спорни в карантина. Дисциплина, не гарантирана печалба."
+        },
+        {
+          "date": "2026-07-21",
+          "type": "birth",
+          "summary": "Роден: футболен анализатор за залози (риск-първо, близнак на Трейдъра). Обезмаржване + пазарна котва, Поасон+Диксън-Коулс, дробен Kelly, калибрация. Никога измислени данни; винаги дисклеймър."
+        }
+      ],
+      "recentLessons": [
+        {
+          "date": "2026-07-21",
+          "text": "Диксън-Коулс τ коригира 4 клетки (0:0,1:0,0:1,1:1); ρ≈−0.13 (обикн. −0.03…−0.15) вдига равенствата, които независимият Поасон подценява.",
+          "source": "Dixon & Coles 1997; dashee87.github.io; opisthokonta.net"
+        },
+        {
+          "date": "2026-07-21",
+          "text": "Стойност се мери едва след devig (overround ~5–8% меки / ~2% Pinnacle → нормализирай към 100%); проп. метод пренебрегва favourite-longshot, Shin/power го коригират.",
+          "source": "penaltyblog pena.lt/y/2025/09/14; Shin 1993"
+        },
+        {
+          "date": "2026-07-21",
+          "text": "Дробен Kelly (½/¼) е стандарт: половин Kelly ~¾ растеж при ~½ волатилност; геометричен растеж ≈ μ−σ²/2 (volatility drag); при корелирани залози размерът се сваля.",
+          "source": "Kelly 1956; Pinnacle real Kelly; kitces.com"
+        },
+        {
+          "date": "2026-07-21",
+          "text": "Оценявай 1X2 с RPS (чувствителна към ред: дом по-близо до равен, отколкото до гост) + Brier/log-loss + reliability; win-rate на малка извадка е шум (~1000+ залога за едж).",
+          "source": "Constantinou & Fenton 2012, JQAS 8(1); ECMWF"
+        },
+        {
+          "date": "2026-07-21",
+          "text": "Домакинско предимство не е константа: ~0.2 гол/мач, падна >½ при празни COVID стадиони (CIES 44.3%→42.2%; ~0.29→0.15 гол/мач) — публиката/съдията са реален компонент.",
+          "source": "CIES Football Observatory; Frontiers 2021; Nevill 2002"
         }
       ]
     }

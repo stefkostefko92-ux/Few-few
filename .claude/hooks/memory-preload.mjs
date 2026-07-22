@@ -77,6 +77,55 @@ function sharedLessons() {
   );
 }
 
+// КЕШ-ЗАКЛЮЧВАНЕ (prompt caching). Статичният префикс = доктрина + процедура + споделени поуки.
+// Той е БАЙТ-в-БАЙТ еднакъв за ВСЕКИ агент и НЕ съдържа нищо агент-специфично (без име, без задача) —
+// затова API-то може да го кешира и да го чете на ~0.1× цена след първото извикване. Инвариантът:
+// (1) статичното ВИНАГИ първо и в ФИКСИРАН ред (доктрина→процедура→споделено); (2) динамичното (личната
+// памет, която носи името на агента + променливо съдържание) ВИНАГИ последно. Не смесвай двете —
+// всяка агент-специфична добавка в началото чупи кеша за целия флот. Тестван в tools/hooks/preload.test.mjs.
+export function staticPrefixParts() {
+  const parts = [];
+  const doctrine = securityDoctrine();
+  if (doctrine) parts.push(doctrine);
+  const procedure = procedureDoctrine();
+  if (procedure) parts.push(procedure);
+  const shared = sharedLessons();
+  if (shared) parts.push(shared);
+  return parts;
+}
+
+// РЕЛЕВАНТНО ИЗВЛИЧАНЕ на личната памет (вместо сляпо изсипване на първите N). Личната памет е
+// най-големият променлив къс/старт (за някои агенти по-голяма от дефиницията) и расте без таван —
+// затова я подаваме ТАКА: ако средата подава текст на задачата → най-релевантните поуки първо;
+// иначе → най-новите. Таван по ТОКЕН-БЮДЖЕТ (не по брой) → предвидим разход. Забележка за кеша:
+// когато има задача, този къс е task-scoped (по-малък, но не се кешира); статичният префикс си остава
+// кеширан. За вариращи задачи по-малкото-некеширано бие по-голямото-кеширано. Тествано в preload.test.mjs.
+const MEM_TOKEN_BUDGET = 3200; // таван на инжектираната лична памет (≈ токени); вторичен на MAX_LESSONS
+function estTok(t) { let c = 0, o = 0; for (const ch of String(t)) { if (/[Ѐ-ӿ]/.test(ch)) c++; else o++; } return Math.round(c / 2.2 + o / 4); }
+const normTxt = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+// length>2 (не >3): пази техническите акроними SQL/XSS/API/DDS и версии, които са силен сигнал; лекият
+// шум от 3-буквени думи е адитивен и не доминира реално релевантна поука.
+const wordSet = (s) => new Set(normTxt(s).split(" ").filter((w) => w.length > 2));
+// Извлечи текст на задачата от payload-а (ключът варира според средата) — само за подреждане.
+function taskTextOf(p) {
+  return ["prompt", "task", "description", "message", "user_prompt", "input", "instructions"]
+    .map((k) => (typeof p[k] === "string" ? p[k] : "")).join(" ").trim();
+}
+// Избери поуки: релевантните (при задача) или най-новите (без), в рамките на токен-бюджета.
+export function selectLessons(all, task, budget = MEM_TOKEN_BUDGET) {
+  const q = wordSet(task || "");
+  let ordered;
+  if (q.size) {
+    ordered = all.map((l, i) => { const lt = wordSet(l); let ov = 0; for (const w of q) if (lt.has(w)) ov++; return { l, ov, i }; })
+      .sort((a, b) => b.ov - a.ov || b.i - a.i).map((x) => x.l); // релевантност, после по-новите (по-долу във файла)
+  } else {
+    ordered = all.slice().reverse(); // без задача → най-новите първо (новите се добавят отдолу)
+  }
+  const out = []; let used = 0;
+  for (const l of ordered) { const t = estTok(l); if (out.length && used + t > budget) break; out.push(l); used += t; }
+  return out;
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
@@ -85,18 +134,12 @@ function main() {
   const file = join(MEM_DIR, `${agent}.md`);
   if (!existsSync(file)) process.exit(0); // не е наш агент → нищо не инжектираме
 
-  // 1) Доктрината за сигурност — за ВСЕКИ наш агент, дори с празна памет.
-  const doctrine = securityDoctrine();
-  // 1b) Общата процедура — за ВСЕКИ наш агент (единен цикъл + red lines + HANDOFF).
-  const procedure = procedureDoctrine();
-  // 2) Личната проверена памет на агента (ако има).
-  const lessons = verifiedSection(file).slice(0, MAX_LESSONS);
-
-  const parts = [];
-  if (doctrine) parts.push(doctrine);
-  if (procedure) parts.push(procedure);
-  const shared = sharedLessons();
-  if (shared) parts.push(shared);
+  // Статичен, кешируем префикс (агент-независим) — ВИНАГИ първо и в фиксиран ред.
+  const parts = staticPrefixParts();
+  // Динамичното (лична проверена памет) идва СЛЕД статичното. Извличаме релевантните (по задачата,
+  // ако средата я подава) в рамките на токен-бюджет — не сляпо първите N. MAX_LESSONS е твърд таван отгоре.
+  const all = verifiedSection(file).slice(0, MAX_LESSONS);
+  const lessons = selectLessons(all, taskTextOf(payload));
   if (lessons.length) {
     parts.push(
       `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n` +
@@ -114,4 +157,7 @@ function main() {
   process.exit(0);
 }
 
-try { main(); } catch { process.exit(0); }
+// Пусни main() само като CLI (SubagentStart hook), не при import от тест — иначе import-ът чете stdin/излиза.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  try { main(); } catch { process.exit(0); }
+}
