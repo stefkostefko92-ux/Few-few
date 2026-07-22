@@ -99,6 +99,13 @@ that file **and** `agents-dashboard/agents.json` in sync when you change an agen
 **model/effort sync** frontmatter↔`agents.json`, uncited lessons, near-dups, dashboard/doctrine sync;
 fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
+**Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
+loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
+**автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
+(L3 иска budgetCap+denylist). Планираният **health-sweep** (`agents-sweep.yml`, седмично) пуска целия гейт
+по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` вече включва **бройка/ростер consistency**
+(каноничен = agents.json) — не позволява документ да лъже за размера на екипа.
+
 **Cost/token discipline (не Fable, без Haiku).** Fable 5 ($10/$50 per 1M) е по-скъп от Opus 4.8 ($5/$25) и
 Sonnet 5 ($3/$15) — не за флота; Haiku е изключен по решение на собственика. Пестенето минава през:
 **model+effort routing** (`tools/agents/model-policy.mjs` — TIER_A opus/high · TIER_B sonnet/medium · шаблонно

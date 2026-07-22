@@ -1,0 +1,38 @@
+{
+  "note": "Декларативни автоматизации (loop-ове) на агентския слой. Идея от loop-engineering — но написана НАШИЯ начин (zero-dep, oversee-интегрирано, fail-closed). Автономия: L1=само доклад · L2=помага (отваря поправка/PR) · L3=безнадзорно. Всеки loop декларира ескалация; L3 иска budgetCap+denylist+верификация. `loop-audit.mjs` гейтва готовността (в CI).",
+  "loops": [
+    {
+      "id": "health-sweep",
+      "description": "Периодичен ПЪЛЕН гейт на агентския слой — лови гниене/дрейф без триггер-push (path-филтрираният CI не покрива застой).",
+      "trigger": "schedule:weekly",
+      "command": "node tools/agents/oversee.mjs && node tools/agents/drift-lint.mjs && node tools/agents/evals/eval.mjs --check && node tools/agents/coverage.mjs --json >/dev/null && node tools/skills/lint.mjs && node tools/agents/tools-audit.mjs && node tools/agents/def-freshness.mjs && node tools/agents/token-budget.mjs --check && node --test $(find tools -name '*.test.mjs')",
+      "owner": "ai-djiyata",
+      "autonomy": "L1",
+      "escalation": "Провал → CI е червен + уведомление; НИЩО не се авто-поправя. Човек/AI-джията решава.",
+      "budgetCap": null,
+      "denylist": []
+    },
+    {
+      "id": "memory-curation",
+      "description": "Периодичен доклад за хигиена на паметта — curate dry-run (дубли/парафрази), кандидати за _shared, свежест на дефинициите.",
+      "trigger": "schedule:monthly",
+      "command": "node tools/memory/curate.mjs && node tools/agents/shared-candidates.mjs && node tools/agents/def-freshness.mjs",
+      "owner": "ai-djiyata",
+      "autonomy": "L1",
+      "escalation": "Само доклад. Сливане/промоция на памет е ЧОВЕШКО решение (закон: не пренаписвай памет мълчаливо).",
+      "budgetCap": null,
+      "denylist": ["_memory/*"]
+    },
+    {
+      "id": "pr-babysitter",
+      "description": "Наблюдава отворен PR (webhook) — при CI провал/ревю коментар разследва и при уверена, дребна поправка я push-ва; при двусмислие пита човек.",
+      "trigger": "event:github-pr-activity",
+      "command": "subscribe_pr_activity (сесиен) — виж .github изискванията за PR handling",
+      "owner": "konveyera",
+      "autonomy": "L2",
+      "escalation": "Двусмислено/архитектурно → AskUserQuestion (човек). Merge/close = терминал. Никога go)не merge-ва без зелен гейт.",
+      "budgetCap": 200000,
+      "denylist": ["main (директен push)", "secrets", "force-push на чужда история"]
+    }
+  ]
+}

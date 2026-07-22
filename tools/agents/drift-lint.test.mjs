@@ -7,8 +7,9 @@ import { join, dirname } from "node:path";
 
 const TOOL = join(dirname(fileURLToPath(import.meta.url)), "drift-lint.mjs");
 
-test("drift-lint: репото е без дрейф (нула счупени пътища, нула memory дрейф)", () => {
+test("drift-lint: репото е без дрейф (нула счупени пътища, нула memory дрейф, консистентна бройка)", () => {
   const out = JSON.parse(execFileSync("node", [TOOL, "--json"], { encoding: "utf8" }));
   assert.equal(out.brokenPaths.length, 0, "счупени файлови референции: " + JSON.stringify(out.brokenPaths));
   assert.equal(out.memoryDrift.length, 0, "memory↔domain дрейф: " + JSON.stringify(out.memoryDrift));
+  assert.equal(out.countConsistency.length, 0, "бройка/ростер несъответствия: " + JSON.stringify(out.countConsistency));
 });

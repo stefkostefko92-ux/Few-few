@@ -78,18 +78,63 @@ function memoryDrift() {
   return hits;
 }
 
+// --- ТВЪРДА: consistency на бройката/ростера (бройка-дрейфът е доказан рецидивен клас грешки) ---
+// Каноничният брой = agents.json. Проверяваме, че settings matcher-ите и човеко-четимите бройки
+// в CLAUDE.md/README.md/_orchestration.md съвпадат — иначе документите лъжат за размера на екипа.
+const EN = { "twenty-one": 21, "twenty-two": 22, "twenty-three": 23, "twenty-four": 24, "twenty-five": 25, "twenty-six": 26, "twenty-seven": 27, "twenty-eight": 28, "twenty-nine": 29, thirty: 30, "thirty-one": 31, "thirty-two": 32 };
+const BG_ONES = { еднате: 1, еднат: 1, двете: 2, трите: 3, четирите: 4, петте: 5, шестте: 6, седемте: 7, осемте: 8, деветте: 9 };
+function countConsistency() {
+  const aj = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+  const ids = new Set(aj.agents.map((a) => a.id));
+  const N = ids.size;
+  const hits = [];
+  const read = (p) => { try { return readFileSync(join(ROOT, p), "utf8"); } catch { return ""; } };
+
+  // 1) settings.json hook matcher-и == точния id набор (липсващ агент = счупен памет-цикъл).
+  try {
+    const sj = JSON.parse(read(".claude/settings.json"));
+    for (const ev of ["SubagentStart", "SubagentStop"]) for (const h of (sj.hooks?.[ev] || [])) {
+      if (typeof h.matcher !== "string") continue;
+      const set = new Set(h.matcher.split("|"));
+      const missing = [...ids].filter((x) => !set.has(x)), extra = [...set].filter((x) => !ids.has(x));
+      if (missing.length || extra.length) hits.push({ file: ".claude/settings.json", what: `${ev} matcher`, detail: `липсват: ${missing.join(",") || "—"} · излишни: ${extra.join(",") || "—"}` });
+    }
+  } catch { /* */ }
+
+  // 2) човеко-четими бройки → число, сравни с N.
+  const checkNum = (file, label, num) => { if (num != null && num !== N) hits.push({ file, what: label, detail: `казва ${num}, а са ${N}` }); };
+  const claude = read("CLAUDE.md");
+  checkNum("CLAUDE.md", "purpose-built subagents", (claude.match(/(\d+)\s+purpose-built subagents/) || [])[1] | 0 || null);
+  for (const m of claude.matchAll(/(\d+)\s+(?:агента|agents|subagents)\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum("CLAUDE.md", `„${m[0]}"`, n); }
+
+  const readme = read(".claude/agents/README.md");
+  const enM = readme.match(/(twenty-\w+|thirty(?:-\w+)?)\s+agents/i);
+  if (enM) checkNum(".claude/agents/README.md", `„${enM[0]}"`, EN[enM[1].toLowerCase()] ?? null);
+  for (const m of readme.matchAll(/(\d+)\s+agents\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum(".claude/agents/README.md", `„${m[0]}"`, n); }
+
+  const orch = read(".claude/agents/_orchestration.md");
+  const bgM = orch.match(/(Двадесет|Тридесет)\s+и\s+(\S+?те)\s+агента/);
+  if (bgM) { const base = bgM[1].toLowerCase() === "тридесет" ? 30 : 20; const ones = BG_ONES[bgM[2].toLowerCase()]; if (ones != null) checkNum(".claude/agents/_orchestration.md", `„${bgM[0]}"`, base + ones); }
+  for (const m of orch.matchAll(/(\d+)\s+агента\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum(".claude/agents/_orchestration.md", `„${m[0]}"`, n); }
+
+  return { N, hits };
+}
+
 const broken = brokenPaths();
 const drift = memoryDrift();
+const cons = countConsistency();
 
-if (JSON_OUT) { console.log(JSON.stringify({ brokenPaths: broken, memoryDrift: drift }, null, 2)); process.exit(broken.length ? 1 : 0); }
+if (JSON_OUT) { console.log(JSON.stringify({ brokenPaths: broken, memoryDrift: drift, countConsistency: cons.hits }, null, 2)); process.exit(broken.length || cons.hits.length ? 1 : 0); }
 
 console.log(`\n🧭 Drift-lint на агентския слой\n`);
 if (!broken.length) console.log("  ✓ файлови референции: нула счупени пътища в дефинициите");
 else { console.log(`  ✗ ${broken.length} СЧУПЕНИ файлови референции (сочат несъществуващ път):`); for (const h of broken) console.log(`      ${h.file}: \`${h.path}\``); }
+if (!cons.hits.length) console.log(`  ✓ consistency: бройката/ростерът съвпадат навсякъде (${cons.N} агента)`);
+else { console.log(`  ✗ ${cons.hits.length} НЕсъответствия в бройката/ростера (каноничен = ${cons.N}):`); for (const h of cons.hits) console.log(`      ${h.file} · ${h.what}: ${h.detail}`); }
 if (!drift.length) console.log("  ✓ memory↔domain: нула чужди поуки в паметите");
 else { console.log(`  ⚠ ${drift.length} възможен memory↔domain дрейф (съвет — премести при собственика):`); for (const h of drift) console.log(`      ${h.agent} ← ${h.signal}: „${h.excerpt}…" (→ ${h.owner})`); }
 
-const hard = broken.length;
+const hard = broken.length + cons.hits.length;
 const soft = drift.length;
 console.log(`\nИтог: ${hard} твърди · ${soft} съвети · ${hard || (STRICT && soft) ? "ДРЕЙФ" : "чисто"}\n`);
 process.exit(hard || (STRICT && soft) ? 1 : 0);
