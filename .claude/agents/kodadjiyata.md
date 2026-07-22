@@ -55,6 +55,8 @@ effort: high
 - CSP nonce, който не е per-request; inline скриптове, които трябва да са в CSP-safe файл.
 - JWT не е HS256/`jose`; `AUTH_SECRET` < 32 знака или примерен; cookie без
   `HttpOnly`+`SameSite=strict`; `auth.ts` без `server-only`; middleware, който не пази `/admin/*`.
+- **Mass assignment (CWE-915 / OWASP API3):** `prisma.*.create/update({ data: req.body })` или spread `{ ...body }` без allowlist → атакуващ праща `role`/`isAdmin`/`ownerId`/`price`. Zod без `.strict()` не го хваща; изисквай явен pick на позволените полета.
+- **`redirect()`/`notFound()` в `try/catch`:** в Next 15 хвърлят вътрешна грешка (`NEXT_REDIRECT`); обгръщащ `catch` я поглъща → редиректът тихо не се случва (authz bypass / fail-open). Викай ги извън `try` или re-throw при `isRedirectError(e)`.
 
 **Express / EJS / SQLite (better-sqlite3)**
 - Подреждане на middleware: auth/CSRF/helmet регистрирани **след** маршрутите, които пазят.
@@ -62,6 +64,7 @@ effort: high
 - Липсващ per-request CSP nonce; клиентска логика в inline скрипт вместо `public/app.js`.
 - Отслабени крипто гаранции: `ENCRYPTION_KEY`, Argon2id, AES-256-GCM — никога не ги
   отслабвай, не логвай декриптирани данни, спешният токен трябва да остане непредвидим.
+- Сравнение на токен/подпис с `===`/`==` вместо `crypto.timingSafeEqual` (равнодължинни `Buffer`) → timing side-channel (CWE-208); важи и за HMAC/подпис верификация (спешен QR токен на medqr).
 - `better-sqlite3` е синхронен — тежки заявки блокират event loop-а; групови операции
   в транзакция.
 

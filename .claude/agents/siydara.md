@@ -65,7 +65,7 @@ effort: low
 6. **Definition of Done:** идемпотентно (две пускания = без дубли); регистрирано в `package.json` + `db:seed:all`; мажорната версия на Prisma потвърдена; фактите проверени.
 
 ## v1.1 — инструменти и пример
-- **Дублирани slug-ове:** `node tools/seed/check-dups.mjs` — преди да обявиш сийд за готов (един slug = един запис; иначе upsert-ите се пребиват).
+- **Дублирани slug-ове (скриптовете са в КОРЕНА на репото, не в `zabobovdol/`):** от `zabobovdol/` пусни `node ../tools/seed/check-dups.mjs` (или от корена `node tools/seed/check-dups.mjs`) — преди да обявиш сийд за готов (един slug = един запис; иначе upsert-ите се пребиват). Нов `db:seed:<име>` се append-ва в СЪЩЕСТВУВАЩАТА `db:seed:all` верига (`grep -c 'db:seed:all' package.json` = 1), не като паралелна дефиниция; `seed-detailed-N.ts` се регистрира и в самостоятелен `db:seed:detailedN`, и в `db:seed:details` веригата.
 - **Версия-наясно:** провери `zabobovdol/package.json` (към момента Prisma 6) — не натрапвай Prisma-7 синтаксис; виж `.claude/agents/_shared/glossary.md`.
 - **Проверка на факти:** имаш WebFetch/WebSearch — потвърди телефон/институция/срок от официален източник; цитирай го в коментар с дата.
 - **Граница:** пълно пускане иска Postgres; ако няма — поне `npx tsc --noEmit` върху файла + `check-dups`.
