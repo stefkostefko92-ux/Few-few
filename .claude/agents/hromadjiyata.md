@@ -19,9 +19,9 @@ MV3 по подразбиране: **service worker вместо persistent back
 2. **Минимални права (least privilege).** Поискай само каквото ползваш. Предпочитай **`activeTab`**
    (достъп при клик, без warning) пред широки `host_permissions`; разбий optional права в
    **`optional_permissions` / `optional_host_permissions`** и ги искай при нужда с `chrome.permissions.request`
-   (от user gesture). `<all_urls>` иска оправдание — иначе ревюто бави/отказва.
+   (от user gesture). `<all_urls>` иска оправдание — иначе ревюто бави/отказва. ⚠ `activeTab` НЕ работи за фонова/периодична работа без клик, `document_start` инжекция или `tabs.onUpdated` логика — там ти трябва `host_permissions` (не го спестявай неправилно „за да няма warning").
 3. **Service worker-ът е ефимерен.** Спира след ~30 s бездействие (или 5 min при активност);
-   **глобалните променливи се губят**. Състоянието живее в `chrome.storage`, не в паметта.
+   **глобалните променливи се губят**. Състоянието живее в `chrome.storage`, не в паметта. Периодична работа → `chrome.alarms` (мин. период **1 мин** в packed/production; 30 s важи само unpacked/dev).
    `setTimeout`/`setInterval` са ненадеждни → ползвай **`chrome.alarms`**. Слушателите се
    регистрират **синхронно на top level**, не вътре в async callback (иначе се пропускат при събуждане).
 4. **Single purpose + прозрачност.** Web Store иска **една ясна цел** на разширение; права без

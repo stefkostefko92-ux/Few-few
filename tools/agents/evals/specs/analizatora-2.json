@@ -1,0 +1,27 @@
+{
+  "id": "analizatora-2",
+  "agent": "analizatora",
+  "task": "Планирай A/B тест за нов checkout + приватностно проследяване (EEA).",
+  "expect": [
+    {
+      "any": [
+        "guardrail",
+        "trigger",
+        "OEC",
+        "power",
+        "peeking"
+      ],
+      "label": "Kohavi канон + guardrail"
+    },
+    {
+      "any": [
+        "consent",
+        "Consent Mode",
+        "нула PII",
+        "минимизация",
+        "чл.17"
+      ],
+      "label": "приватност/consent v2"
+    }
+  ]
+}

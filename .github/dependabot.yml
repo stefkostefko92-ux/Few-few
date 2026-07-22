@@ -1,0 +1,16 @@
+# Dependabot — поддържа SHA-пинатите GitHub Actions свежи (иначе замръзват и пропускат security patch-ове).
+# Предложено от Конвейера при само-подобрителната вълна. Само github-actions екосистемата засега —
+# продуктовите npm деп-ове са path-филтрирани per продукт и се движат отделно.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"

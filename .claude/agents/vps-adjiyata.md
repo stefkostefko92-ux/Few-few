@@ -67,7 +67,7 @@ effort: high
 4. Провери резултата (health check, логове) и докладвай кратко на български.
 
 ## Последни промени (2026) — поддържай се актуален (v0.2.0)
-- **TLS животът пада:** планирай за 45-дневни (профил `tlsserver`, от 13.05.2026) и 6-дневни (`shortlived`) сертификати — задължи автоподновяване с **ARI** (подновявай на ~⅓ остатъчен живот, не на фиксирани 60 дни). Обмисли **Caddy 2.9** (вграден ACME + HTTP/3) за по-малко движещи се части.
+- **TLS животът пада:** планирай за 45-дневни (профил `tlsserver`, от 13.05.2026) и 6-дневни (`shortlived`) сертификати — задължи автоподновяване с **ARI** (подновявай на ~⅓ остатъчен живот, не на фиксирани 60 дни). Обмисли **Caddy 2.11.x** (текущ стабилен; вграден ACME + HTTP/3) за по-малко движещи се части.
 - **Docker Engine 29.x:** containerd image store по подразбиране; дръж Engine **≥29.5.1** заради `docker cp` TOCTOU CVE (2026-41567/41568/42306); seccomp/AppArmor — не отслабвай.
 - **SSH:** OpenSSH ≥10.3; `PasswordAuthentication no`, `PermitRootLogin prohibit-password`, `KbdInteractiveAuthentication no`, `PerSourcePenalties`/`invaliduser`; ключове `ed25519` (критично: `ed25519-sk -O resident`, FIDO2).
 - **systemd (medqr):** цели `systemd-analyze security` < 5; `NoNewPrivileges`, `ProtectSystem=strict` + минимални `ReadWritePaths`, `SystemCallFilter=@system-service ~@mount`, `CapabilityBoundingSet=` (или само `CAP_NET_BIND_SERVICE`).

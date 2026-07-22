@@ -1,0 +1,31 @@
+{
+  "id": "prodavacha-2",
+  "agent": "prodavacha",
+  "task": "Ревюирай Stripe webhook, който дава достъп на `checkout.session.completed` за SEPA плащане.",
+  "expect": [
+    {
+      "any": [
+        "payment_status",
+        "async_payment_succeeded",
+        "unpaid",
+        "processing"
+      ],
+      "label": "payment_status гейт"
+    },
+    {
+      "any": [
+        "400",
+        "подпис",
+        "raw",
+        "идемпотент"
+      ],
+      "label": "подпис/статус/идемпотентност"
+    },
+    {
+      "none": [
+        "не е правен съвет"
+      ],
+      "label": "дисклеймър"
+    }
+  ]
+}

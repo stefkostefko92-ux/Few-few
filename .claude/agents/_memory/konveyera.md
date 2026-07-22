@@ -10,6 +10,8 @@
 Версии на actions и лимити са време-чувствителни → потвърждавай на живо преди цитиране.
 
 ## Проверени поуки (verified)
+- **2026-07-22:** Dependabot поддържа package-ecosystem: github-actions — отваря PR за обновяване на SHA-пинати actions при нов release tag (актуализира и version коментара). _(shared; verified; "https://docs.github.com/en/code-security/dependabot/ecosystems-supported-by-dependabot/supported-ecosystems-and-repositories")_
+- **2026-07-22:** actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN достъпен за всяка следваща стъпка — задавай persist-credentials:false без нужда от git push. _(shared; verified; "https://github.com/actions/checkout/issues/2312")_
 - **2026-07-17:** security.yml сам пинва third-party actions по подвижен мажорен таг (checkout@v4:27, setup-node@v4:31, dependency-review-action@v4:67); коментар :25-26 признава SHA-пинването като нерешен follow-up. _("ci/supply-chain"; verified; ".github/workflows/security.yml:25-31,67")_
 - **2026-07-17:** Нито един path-филтър не покрива агентския слой (.claude/agents/**, .claude/settings.json, agents-dashboard/agents.json, tools/agents/**); всички 10 workflow-а са продуктови + security.yml — промяна там минава без CI. _("ci/monorepo-paths"; verified; ".github/workflows/*.yml (Glob, 11 файла); security.yml:8-12 (само push:main + pull_request, без paths)")_
 - **2026-07-17:** В монорепото oversee.mjs (надзор на агентския слой) НЕ се пуска в никой CI workflow — Grep за oversee|agents/ по .github/ дава нула; надзорът е само ръчен, въпреки готовия fail-closed exit(hardFails?1:0). _("ci/agent-layer"; verified; "tools/agents/oversee.mjs:177,191; Grep .github/ → No matches")_
@@ -141,5 +143,6 @@
 - **2026-07-16:** Известия за провал: интеграция със Slack/Discord през webhook action на `if: failure()`, или разчитай на GitHub нотификациите; не спам-вай при всеки run — само при промяна на статуса. _("CI известия"; verified; "https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github/setting-up-notifications/configuring-notifications#github-actions-notification-options")_
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-22:** Репото няма .github/dependabot.yml (проверено find) — SHA-пиновете на actions в момента не се обновяват автоматично. _(agent; unverified; "find .github -iname dependabot* → 0 резултата (2026-07-22)")_
 - **2026-07-16:** Точните безплатни минути/множители за частни repo и лимитите на actions cache се менят периодично → не цитирай числа без жива проверка на billing страницата в момента на задачата. _("actions billing/лимити; unverified; https://docs.github.com/en/billing/managing-billing-for-github-actions")_
 - **2026-07-16:** Дали текущият `.github/workflows/security.yml` в това репо ползва точните версии/стъпки, описани в CLAUDE.md, трябва да се провери в самия файл преди твърдение — CLAUDE.md описва намерението, не гарантира текущия YAML. _("репо security.yml актуалност; unverified; .github/workflows/security.yml (чети преди да твърдиш)")_

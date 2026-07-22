@@ -1,0 +1,32 @@
+{
+  "id": "treydara-2",
+  "agent": "treydara",
+  "task": "Ревюирай бот, който праща market поръчки в цикъл без clientOrderId и без борсов стоп.",
+  "expect": [
+    {
+      "any": [
+        "clientOrderId",
+        "идемпотент",
+        "recvWindow",
+        "часовник"
+      ],
+      "label": "идемпотентност/часовник"
+    },
+    {
+      "any": [
+        "stop-loss",
+        "стоп на борсата",
+        "kill-switch",
+        "reduce-only"
+      ],
+      "label": "потвърден стоп/kill-switch"
+    },
+    {
+      "none": [
+        "гарантира печалба",
+        "инвестиционен съвет"
+      ],
+      "label": "капан: съвет/печалба"
+    }
+  ]
+}

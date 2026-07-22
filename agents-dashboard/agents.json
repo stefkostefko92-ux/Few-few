@@ -37,7 +37,8 @@
         "SEO / GEO / AEO за AI цитирания",
         "Runtime consent + a11y гейтове (tools/legal/)",
         "RoPA/DPIA генератор (tools/legal/ropa-gen.mjs)",
-        "Памет + екипна оркестрация (lead: преди продукция)"
+        "Памет + екипна оркестрация (lead: преди продукция)",
+        "EAA micro-изключение (анти-over-flag) + детско съгласие BG=14 (ЗЗЛД 25а)"
       ],
       "knowledge": {
         "sources": 49,
@@ -508,6 +509,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „EAA (Дир. 2019/882) чл.4(5)+Recital 70: микропредприятие (<10 заети И оборот/баланс ≤€2…\" (+1)"
+        },
+        {
           "date": "2026-07-19",
           "type": "learning",
           "summary": "Научи: „При контактна форма, чиято крайна пощенска кутия е @gmail.com (mailer.ts destination + …\" (+1 още)"
@@ -968,7 +974,8 @@
         "Доклад по тежест × увереност с file:line и минимална поправка",
         "SAST/SCA оркестратор (tools/code/scan.sh)",
         "Mutation testing (tools/code/scan.sh mutation)",
-        "Памет + reviewer в почти всеки поток"
+        "Памет + reviewer в почти всеки поток",
+        "Mass-assignment (CWE-915), redirect()-в-try/catch fail-open, timingSafeEqual (CWE-208)"
       ],
       "knowledge": {
         "sources": 26,
@@ -2112,7 +2119,8 @@
         "Качество на тестовете: поведение не имплементация; мутационен тест за строгост",
         "Hotspot приоритизиране (churn × сложност) — най-голяма възвръщаемост",
         "Инструментиран: продуктовите гейтове остават зелени + tools/code/scan.sh",
-        "Граница с Кодаджията: качество без поведение, предаване през гейт"
+        "Граница с Кодаджията: качество без поведение, предаване през гейт",
+        "Connascence: статична над динамична + правило за локалност (Page-Jones)"
       ],
       "knowledge": {
         "sources": 14,
@@ -2226,7 +2234,8 @@
         "Оптимизация: кеширане на natives, Wait дисциплина, state bags",
         "FiveM lint + CI (tools/fivem/)",
         "Busted spec + event-fuzz (tools/fivem/)",
-        "Памет + самостоятелен FiveM поток"
+        "Памет + самостоятелен FiveM поток",
+        "manifest-lint пре-доставка гейт + `local src = source` anti-pattern"
       ],
       "knowledge": {
         "sources": 26,
@@ -2579,9 +2588,20 @@
           "date": "2026-07-16",
           "event": "v11.1 — учене",
           "detail": "Научи: „Игра, в която ЕДИН играч управлява две ръце (бридж дъми), се реализира engine-only без …\" (+1 още)"
+        },
+        {
+          "version": "11.2.0",
+          "date": "2026-07-22",
+          "event": "v11.2 — учене",
+          "detail": "Научи: tools/fivem/manifest-lint.mjs (zero-dep pre-ship линтер, тестван с manifest-lint.test.m…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „tools/fivem/manifest-lint.mjs (zero-dep pre-ship линтер, тестван с manifest-lint.test.m…\""
+        },
         {
           "date": "2026-07-16",
           "type": "learning",
@@ -2939,7 +2959,8 @@
         "Приоритизиране по ефект × усилие (бързи победи)",
         "CWV/JSON-LD/AI-bot скриптове (tools/seo/)",
         "GSC ingest (tools/seo/gsc.mjs)",
-        "Памет + handoff с Преводач/Правен"
+        "Памет + handoff с Преводач/Правен",
+        "robots.txt: UA групи не наследяват Disallow от '*'; AI ботове 2026"
       ],
       "knowledge": {
         "sources": 21,
@@ -3727,7 +3748,8 @@
         "Скрипт за паритет на ключове (tools/i18n/check-parity.mjs)",
         "Псевдолокализация (tools/i18n/pseudo.mjs)",
         "Глосар enforcement (tools/i18n/glossary-check.mjs)",
-        "Памет + owner на глосара (получава от Сийдъра)"
+        "Памет + owner на глосара (получава от Сийдъра)",
+        "CLINICAL_IT глосар-захранван map (medqr е JS модул, не JSON)"
       ],
       "knowledge": {
         "sources": 15,
@@ -4080,9 +4102,20 @@
           "date": "2026-07-19",
           "event": "v10.7 — учене",
           "detail": "Научи: scuolabulgara IT използва caporali « » за цитати от първо ниво; проверявай legal.ts за … (+1 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-22",
+          "event": "v10.8 — учене",
+          "detail": "Научи: medqr държи преводите в src/i18n.js като плосък JS обект {ключ:{bg,en}} — само bg/en, б… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „medqr държи преводите в src/i18n.js като плосък JS обект {ключ:{bg,en}} — само bg/en, б…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-19",
           "type": "learning",
@@ -4447,7 +4480,8 @@
         "Детектор за дублирани slug-ове (tools/seed/check-dups.mjs)",
         "Zod seed factory + provenance (tools/seed/)",
         "Integrity check (tools/seed/check-integrity.mjs)",
-        "Памет + handoff към Преводач/Кодаджията"
+        "Памет + handoff към Преводач/Кодаджията",
+        "Правилен път check-dups (корен на репо) + db:seed:all верига дисциплина"
       ],
       "knowledge": {
         "sources": 11,
@@ -4779,6 +4813,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „tools/seed/check-dups.mjs и check-integrity.mjs живеят в корена на репото (/home/user/F…\" (+2)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -5118,7 +5157,8 @@
         "Харднат autodeploy.sh (sha256 + авто-порт)",
         "IaC + backup-verify + мониторинг (tools/vps/)",
         "Blue/green деплой (tools/vps/blue-green.sh)",
-        "Памет + lead на деплой потока"
+        "Памет + lead на деплой потока",
+        "deploy-check.mjs в потока/sweep + Caddy 2.11.x"
       ],
       "knowledge": {
         "sources": 16,
@@ -5489,9 +5529,20 @@
           "date": "2026-07-17",
           "event": "v10.8 — учене",
           "detail": "Научи: zabobovdol autodeploy пуска scripts/deploy.sh с cwd=/opt/few-few/releases/<TS>/zabobovd… (+3 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-22",
+          "event": "v10.9 — учене",
+          "detail": "Научи: tools/vps/deploy-check.mjs е орфан — grep 'deploy-check' в .github/, tools/agents/, dep…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „tools/vps/deploy-check.mjs е орфан — grep 'deploy-check' в .github/, tools/agents/, dep…\""
+        },
         {
           "date": "2026-07-17",
           "type": "learning",
@@ -5873,7 +5924,8 @@
         "Скриптуем prep/verify (tools/3d/clean_and_validate.py)",
         "RANSAC + mold генератор (tools/3d/)",
         "Deviation heatmap (clean_and_validate --heatmap)",
-        "Памет + самостоятелен карбон поток"
+        "Памет + самостоятелен карбон поток",
+        "Deviation mean±σ/3σ/% (не гол max); мейтинг по номинал (ISO 286)"
       ],
       "knowledge": {
         "sources": 32,
@@ -6641,7 +6693,8 @@
         "Скриптуем клип pipeline (tools/social/clip.sh)",
         "Trends + C2PA + publish (tools/social/)",
         "Repurpose (tools/social/repurpose.sh)",
-        "Памет + контент по заявка от всеки продукт"
+        "Памет + контент по заявка от всеки продукт",
+        "Платформено-специфични safe-zone px (TikTok/IG Reels/YT Shorts)"
       ],
       "knowledge": {
         "sources": 26,
@@ -7336,7 +7389,8 @@
         "Право на ЕС: 14-дневен отказ + чл. 16(м), ДДС OSS/IOSS, Omnibus, ЗЗП",
         "Сигурност: restricted keys, test/live, само Stripe ID-та, пин на API версия, Radar",
         "Инструменти: stripe-lint.mjs + stripe listen/trigger (tools/commerce/)",
-        "Памет + екипна оркестрация (правен слой → Правния Разбирач)"
+        "Памет + екипна оркестрация (правен слой → Правния Разбирач)",
+        "checkout.session.completed≠платено (payment_status/async); невалиден подпис→400"
       ],
       "knowledge": {
         "sources": 32,
@@ -7657,6 +7711,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „checkout.session.completed НЕ гарантира плащане — при отложени методи (SEPA/ACH/bank tr…\" (+2)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
@@ -7998,7 +8057,8 @@
         "Кросплатформа: React Native / Flutter / SwiftUI / Jetpack Compose",
         "Производителност: cold start, 60fps, размер (AAB+R8), crash reporter",
         "Инструмент: store-readiness.mjs (tools/mobile/)",
-        "Памет + екипна оркестрация (право→Правния Разбирач, web→SEO)"
+        "Памет + екипна оркестрация (право→Правния Разбирач, web→SEO)",
+        "store-readiness → JSON+exit≠0 за CI гейт"
       ],
       "knowledge": {
         "sources": 40,
@@ -8610,7 +8670,8 @@
         "Материал↔камера/дюза (PLA/PETG/ABS/ASA/PC/PA/CF; TPU не в CFS)",
         "Хигиена на мрежата: watertight/manifold, mm, нормали; 3MF > STL",
         "Инструмент: printability.mjs (tools/print/)",
-        "Памет + екипна оркестрация (скан→CAD от 3D Maniac; визуализация → Социалджията)"
+        "Памет + екипна оркестрация (скан→CAD от 3D Maniac; визуализация → Социалджията)",
+        "Камера 40–60 °C (verified) + CF дюза 0.6mm, никога 0.2mm"
       ],
       "knowledge": {
         "sources": 30,
@@ -9201,7 +9262,8 @@
         "Физика Rapier/Matter; вектор Lottie/Rive",
         "Производителност: 60fps, GPU, OffscreenCanvas/worker, lazy-init, CWV (LCP/INP)",
         "Контекстно-зависим режим: reduced-motion дисциплина за сериозни сайтове; спектакъл за творчески; универсален анти-строб",
-        "Инструмент: motion-a11y.mjs (tools/design/)"
+        "Инструмент: motion-a11y.mjs (tools/design/)",
+        "Строб-праг <333ms/Δ10% (WCAG 2.3.1) + WEBGL_lose_context teardown + reduced-data"
       ],
       "knowledge": {
         "sources": 30,
@@ -10018,7 +10080,8 @@
         "Нула отдалечен код: пакетиране, забрана на eval/new Function/CDN script (MV3 CSP)",
         "Chrome Web Store: пакет/версия, single purpose, privacy декларация, причини за отказ",
         "Миграция MV2→MV3 (browser_action→action, background.scripts→service_worker, webRequest→DNR)",
-        "Кросбраузър: Edge/Brave/Opera/Chromium + допир до WebExtensions (web-ext lint)"
+        "Кросбраузър: Edge/Brave/Opera/Chromium + допир до WebExtensions (web-ext lint)",
+        "activeTab граници (фон/document_start) + chrome.alarms мин 1мин (packed)"
       ],
       "knowledge": {
         "sources": 26,
@@ -10663,7 +10726,8 @@
         "Rate limits: per-route buckets, global ~50/s, 429/retry_after, Cloudflare бан праг",
         "Embed/съобщение лимити (title 256/desc 4096/25 полета/≤6000/2000 знака)",
         "Сигурност: таен токен, least-privilege intents, allowed_mentions, валидиран вход",
-        "discord.js / discord.py — идиоми и капани"
+        "discord.js / discord.py — идиоми и капани",
+        "discord-lint --embeds/--slash-schema/--perm-diff гейтове"
       ],
       "knowledge": {
         "sources": 22,
@@ -11290,7 +11354,8 @@
         "Регулация ЕС: MiFID II чл. 17 (контроли/kill-switch/тестване), MAR (spoofing/wash/layering)",
         "Учене от грешки: journal (R-multiples) + coach (expectancy, ¼-Kelly, маркер на повтарящи се грешки)",
         "ADX режим-филтър + честотни спирачки (cooldown/лимит сделки)",
-        "Monte Carlo risk-of-ruin + портфейл с корелационни лимити (Dalio Holy Grail)"
+        "Monte Carlo risk-of-ruin + портфейл с корелационни лимити (Dalio Holy Grail)",
+        "recvWindow/часовник drift (Binance -1021) + потвърден-на-борсата reduce-only стоп"
       ],
       "knowledge": {
         "sources": 9,
@@ -11366,6 +11431,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Binance Spot: recvWindow default 5000ms, max 60000ms; timestamp се валидира спрямо serv…\" (+2)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -11493,7 +11563,8 @@
         "Context engineering: минимален високосигнален контекст, compaction, structured note-taking, sub-agent изолация, just-in-time retrieval",
         "Онбординг и надзор на растящ екип (26 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна",
         "Твърди правила (от екипния одит): бюджетен таван (maxBudgetUsd+maxTurns) + Idempotency-Key на мутиращи AI извиквания; per-доставчик трансферен механизъм + чл.28 GDPR DPA; стор-етикети (App Privacy/Data Safety)",
-        "CI гейт на агентския слой (.github/workflows/agents.yml): oversee fail-closed + 11 unit теста при промяна; oversee с тренд/базлайн (--snapshot/--baseline) и знаменатели вместо голи бройки"
+        "CI гейт на агентския слой (.github/workflows/agents.yml): oversee fail-closed + 11 unit теста при промяна; oversee с тренд/базлайн (--snapshot/--baseline) и знаменатели вместо голи бройки",
+        "Cost рутинг без Haiku + prompt-caching подредба (статично напред)"
       ],
       "knowledge": {
         "sources": 150,
@@ -11670,7 +11741,8 @@
         "Сървърна остойностка + промоции (bestPromotion), тегловни/ценови баркодове (маски 28/29, EAN контрола), FEFO срок на годност",
         "Роли CASHIER<MANAGER<ADMIN, склад само през StockMovement, каса/смени (Z-отчет + сверка), материална отговорност на касиера (МОЛ)",
         "Electron десктоп (.exe): офлайн-first, локална периферия (ФУ/терминал/везна/чекмедже), тайни на машината не в архива",
-        "Граница: дълбок правен одит → Правния Разбирач; онлайн Stripe → Продавача; всеки правен изход завършва с „не е правен съвет“"
+        "Граница: дълбок правен одит → Правния Разбирач; онлайн Stripe → Продавача; всеки правен изход завършва с „не е правен съвет“",
+        "Крах-възстановяване: write-ahead PENDING+УНП → идемпотентен commit → reconcile"
       ],
       "knowledge": {
         "sources": 18,
@@ -11695,9 +11767,20 @@
           "date": "2026-07-15",
           "event": "Засят на ниво mastery",
           "detail": "Засят с установената нормативна и инженерна база от CSPos/docs/COMPLIANCE.md + CSPos/CLAUDE.md + консолидираните закони — 18 проверени поуки (всяка с реален източник: член от наредба/закон или файл:ред), операционен договор с безгрешност, самообучаващ се цикъл (hooks), граница/предаване с Правния Разбирач и Продавача."
+        },
+        {
+          "version": "10.1.0",
+          "date": "2026-07-22",
+          "event": "v10.1 — учене",
+          "detail": "Научи: eurCents (int) е единственият каноничен носител на стойност; BGN само се извежда за пок…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „eurCents (int) е единственият каноничен носител на стойност; BGN само се извежда за пок…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-15",
           "type": "born",
@@ -11776,7 +11859,8 @@
         "Meta Ads: Advertising Standards, personal-attributes политика, Conversions API, Limited Data Use (CCPA)",
         "Крос-платформено: анти-cloaking (бан-ниво), минимални права с обосновка+демонстрация, точни privacy лейбъли вкл. SDK-та, EU DSA trader статус",
         "Реакция на отказ: разчитане на правилото зад отказа, конкретен апел с доказателства, пакет за одобрение (permissions/scopes justification, demo, screencast, privacy mapping)",
-        "Инструмент tools/approval/review-check.mjs: статичен CI-скан за cloaking, тънка обвивка (4.2), широки Chrome permissions, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла"
+        "Инструмент tools/approval/review-check.mjs: статичен CI-скан за cloaking, тънка обвивка (4.2), широки Chrome permissions, липсващ privacy policy/manifest/Data Deletion, тайни в бъндъла",
+        "Apple US carve-out + Play org-exemption (одит разрезан по юрисдикция/акаунт)"
       ],
       "knowledge": {
         "sources": 100,
@@ -11816,9 +11900,20 @@
           "date": "2026-07-17",
           "event": "v10.1 — учене",
           "detail": "Научи: ai-djiyata (президент) налага разкриване на изпращане на потребителски вход към трети A…"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-22",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Apple App Store 3.1.1 — от 30.04.2025 (перманентна съдебна забрана, Epic v. Apple, N.D.… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „Apple App Store 3.1.1 — от 30.04.2025 (перманентна съдебна забрана, Epic v. Apple, N.D.…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-17",
           "type": "learning",
@@ -11907,7 +12002,8 @@
         "Релийз: semantic-release/release-please/changesets (semver+changelog+Release), тагове, environments с одобрение",
         "Docker в CI: build-push-action + buildx GHA кеш, multi-arch, детерминистично тагване (sha), OIDC/GHCR логин",
         "Диагностика: debug логове, re-run failed, step summary, status badges; act за локален тест",
-        "Инструмент tools/ci/workflow-audit.mjs: статичен скан за неспинати actions, широки permissions, pull_request_target pwn, липсващ path филтър, тайни, script injection"
+        "Инструмент tools/ci/workflow-audit.mjs: статичен скан за неспинати actions, широки permissions, pull_request_target pwn, липсващ path филтър, тайни, script injection",
+        "persist-credentials:false + .github/dependabot.yml за SHA свежест"
       ],
       "knowledge": {
         "sources": 100,
@@ -11947,9 +12043,20 @@
           "date": "2026-07-17",
           "event": "v10.1 — учене",
           "detail": "Научи: В монорепото oversee.mjs (надзор на агентския слой) НЕ се пуска в никой CI workflow — G… (+2 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-22",
+          "event": "v10.2 — учене",
+          "detail": "Научи: actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN д… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN д…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-17",
           "type": "learning",
@@ -12037,7 +12144,8 @@
         "Достъпностни тестове (axe в e2e) + клавиатурна навигация; API/контрактни (supertest, Pact); визуална регресия",
         "Тестови данни: фабрики/builder-и, схема-валидация (zod), Page Object Model, изолирана тест БД (граница със Сийдъра)",
         "Разширен Playwright: clock/emulation/HAR/webServer/globalSetup, file upload, iframe/shadow, offline (medqr), Electron (CSPos)",
-        "Инструмент tools/qa/test-audit.mjs: скан per продукт за липсващи тестове, оставени .only, .skip без билет, waitForTimeout в e2e (flaky)"
+        "Инструмент tools/qa/test-audit.mjs: скан per продукт за липсващи тестове, оставени .only, .skip без билет, waitForTimeout в e2e (flaky)",
+        "Playwright route/waitForResponse ПРЕДИ навигацията (анти-flaky race)"
       ],
       "knowledge": {
         "sources": 100,
@@ -12166,7 +12274,8 @@
         "Достъпност на докове: alt-текст, описателни връзки, йерархия на заглавия, семантична структура; кодови примери минимални/пълни/работещи",
         "onboarding/CONTRIBUTING/runbook/llms.txt/Mermaid диаграми (C4); GitHub health файлове (SECURITY/CODEOWNERS/темплейти)",
         "BG източник на истината → локализация през Преводача; safety-critical медицински низове непроменени",
-        "Инструмент tools/docs/doc-audit.mjs: скан за липсващ README/CHANGELOG/llms.txt, счупени връзки, недовършени маркери (TODO/lorem)"
+        "Инструмент tools/docs/doc-audit.mjs: скан за липсващ README/CHANGELOG/llms.txt, счупени връзки, недовършени маркери (TODO/lorem)",
+        "ADR индекс/шаблон (docs/adr/README.md) + Diátaxis режими"
       ],
       "knowledge": {
         "sources": 100,
@@ -12286,7 +12395,8 @@
         "Health: liveness vs readiness vs startup probes (различни цели); graceful shutdown/SIGTERM/drain",
         "Инциденти: severity, incident commander, MTTR/MTTD, статус комуникация, blameless postmortem (timeline/root cause/action items с owner), toil <50%, on-call хигиена",
         "Синтетичен мониторинг + RUM: Core Web Vitals (LCP/INP/CLS, p75 от полето), проби, uptime, критичен път",
-        "Приватност на телеметрията: нула PII в логове/labels/traces; redaction; не user-id като label (кардиналност+PII); сверяване с Правния"
+        "Приватност на телеметрията: нула PII в логове/labels/traces; redaction; не user-id като label (кардиналност+PII); сверяване с Правния",
+        "Burn-rate таблица (SRE Workbook 14.4/6/1×) + redactionprocessor PII scrub"
       ],
       "knowledge": {
         "sources": 100,
@@ -12322,6 +12432,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Google SRE Workbook Табл. 5-8 (multi-window multi-burn-rate старт): страница burn 14.4×…\" (+2)"
+        },
         {
           "date": "2026-07-17",
           "type": "birth",
@@ -12405,7 +12520,8 @@
         "Причинност: корелация ≠ причинност → нужен експеримент; confounders; observational bias",
         "Приватност-първо: UA sunset → GA4 (consent mode, cookieless при отказ); Plausible/Umami (self-host, no PII); PostHog; server-side tagging (redaction, data residency); GDPR (минимизация, псевдонимизация, DPA, retention, IP анон.)",
         "Инструменти: GA4 (event/parameter модел, BigQuery export), GTM (client+server), PostHog (autocapture капани, feature flags), warehouse+SQL (метрики като код), дашборд хигиена (една метрика едно определение, не vanity)",
-        "Дефиниции: всяка метрика с ЕДНО писано определение (какво/знаменател/прозорец/изключения); един собственик"
+        "Дефиниции: всяка метрика с ЕДНО писано определение (какво/знаменател/прозорец/изключения); един собственик",
+        "Guardrail/trigger метрики (Kohavi) + Consent Mode v2 + чл.17 erasure"
       ],
       "knowledge": {
         "sources": 100,
@@ -12516,7 +12632,8 @@
         "Счупване на инварианти: пари/фискал (отрицателно/дробно кол-во, цена от клиента, повторен webhook), достъп (IDOR/authz/CSRF), инжекция (SQL/command/SSRF), тайни (изтичане/exfil път)",
         "Edge cases: празно/огромно/unicode/race/timeout/частичен провал/повторно доставяне",
         "Adversarial верификация — опитва да опровергае находка преди да я приеме (сензор ≠ съдия в атака)",
-        "Докладва по HANDOFF: находка с файл:ред + вектор + тежест (рубрика) + минимална поправка + кому"
+        "Докладва по HANDOFF: находка с файл:ред + вектор + тежест (рубрика) + минимална поправка + кому",
+        "OWASP LLM/Web Top-10 таксономия + red-before-green артефакт на находка"
       ],
       "knowledge": {
         "sources": 0,
@@ -12583,7 +12700,8 @@
         "Стойност: EV = p·коеф − 1 с праг; пазари 1X2, Над/Под, BTTS, точен резултат, азиатски хендикап",
         "Стейкинг: дробен Kelly (¼–½ f*) с твърд таван, банкрол-дисциплина, без прогонка/мартингейл",
         "Калибрация: Brier score, log-loss, надеждностна крива, CLV — истинската мярка за едж",
-        "Дисциплина/мислене: EV над win-rate, risk of ruin, ex-ante≠ex-post, скромност срещу остър пазар"
+        "Дисциплина/мислене: EV над win-rate, risk of ruin, ex-ante≠ex-post, скромност срещу остър пазар",
+        "τ (low-score) ≠ ξ (time-decay) разделени; котва/CLV по остър пазар"
       ],
       "knowledge": {
         "sources": 24,

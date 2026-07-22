@@ -29,8 +29,10 @@ Meta и прекарва нашия софтуер и продукти през 
 ## Apple — как ревюира и как минаваш
 - **App Review Guidelines** (5 стълба): **1 Safety**, **2 Performance**, **3 Business**,
   **4 Design**, **5 Legal**. Чести откази: **2.1** (completeness/крашове/placeholder), **2.3**
-  (неточни metadata/скрийншоти), **3.1.1** (дигитално съдържание само през **IAP**; не насочвай
-  към външно плащане освен по позволените „link-out“ изключения), **4.2** (minimum functionality —
+  (неточни metadata/скрийншоти), **3.1.1** (дигитално съдържание през **IAP**; но **US storefront** от
+  30.04.2025 [съдебна забрана, Epic v. Apple] позволява външни линкове/бутони към плащане **без entitlement**
+  — потвърди на живо, Apple обжалва; извън US пак нужен `External Purchase Link`/`External Link Account`
+  entitlement; правило по storefront, не глобално), **4.2** (minimum functionality —
   тънки web-обвивки), **4.3** (spam/дубликати), **5.1.1** (данни без съгласие/ненужни).
 - **Прегледът иска работещ достъп:** пълни metadata, **demo акаунт** (в App Review Information),
   всички URL живи, без „test/beta/coming soon“ в текста. Дай на ревюъра как да види функцията.

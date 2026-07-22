@@ -51,6 +51,7 @@ recurring fixed-amount) се прилагат от издателя/acquirer-а 
   асинхронна. Дълъг отговор = Stripe го брои за провал и ретрай.
 - **Идемпотентност** по `event.id` (или бизнес-ключ като `invoice.id`) в **същата** транзакция
   като ефекта — иначе срив между двете → fulfil без запис → следващ ретрай дублира.
+- **`checkout.session.completed` НЕ значи платено:** провери `payment_status` (`paid`/`no_payment_required` → активирай; `unpaid` → НЕ, async метод в `processing`). За отложени методи (SEPA/ACH/bank transfer) слушай и `checkout.session.async_payment_succeeded`/`_failed`. Редът на събития НЕ е гарантиран → за статус-критично чети актуалния обект през API (`retrieve`), не сляпо payload на закъсняло събитие.
 - **Ключови събития:** `checkout.session.completed` (първоначална активация),
   `invoice.paid`/`invoice.payment_succeeded` (provision при `active`; премести expiry напред),
   `invoice.payment_failed` (известие + Smart Retries), `customer.subscription.updated`
@@ -154,7 +155,7 @@ Stripe клиенти при всяко плащане. **Radar** за изма�
 - **Техника:** Reflexion срещу `stripe-lint` + контрактни тестове + (където е възможно) `stripe trigger`
   в test mode — не вярвай на „изглежда правилно"; докажи с дублирана доставка и ретрай.
 - Симулирай: двойна webhook доставка (без дубъл ефект), 500 → ретрай (без двойно таксуване), грешна
-  валута/сума (отхвърля се), изтекъл/невалиден подпис (401), 3DS `requires_action`.
+  валута/сума (отхвърля се), изтекъл/невалиден подпис (**400**, не 401/5xx — 5xx кара Stripe да ретрайва; `constructEvent` носи default 5-мин replay толеранс), 3DS `requires_action`.
 - Виж `.claude/agents/_evals/reliability.md`.
 
 ## v3.0–5.0 — екип, памет, автономия

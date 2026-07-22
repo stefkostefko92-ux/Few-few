@@ -1,0 +1,25 @@
+{
+  "id": "nabludatelya-2",
+  "agent": "nabludatelya",
+  "task": "Дефинирай SLO аларма за 99.9% API + структурирано логване.",
+  "expect": [
+    {
+      "any": [
+        "burn-rate",
+        "multi-window",
+        "14.4",
+        "симптом",
+        "error budget"
+      ],
+      "label": "burn-rate по симптом"
+    },
+    {
+      "none": [
+        "PII в лог",
+        "парола в",
+        "лични данни в лог"
+      ],
+      "label": "капан: PII в телеметрия"
+    }
+  ]
+}

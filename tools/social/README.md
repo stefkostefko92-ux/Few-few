@@ -18,6 +18,18 @@ bash tools/social/clip.sh norm     cap.mp4 final.mp4      # -14 LUFS
 bash tools/social/clip.sh thumb    final.mp4 cover.jpg
 ```
 
+## `post-lint.mjs` — zero-dep линтер за план на постове (тестът в CI; CLI върху plan.json ръчно)
+```bash
+node tools/social/post-lint.mjs posts.json    # или папка
+```
+Проверява JSON план `{ "posts": [{ platform, text, link, alt, hashtags }] }` БЕЗ да публикува:
+- **HIGH** — текст над лимита на платформата; тайна/API ключ в публичен текст; празен текст; невалиден JSON.
+- **MEDIUM** — медия без `alt` (EAA/WCAG); липсва `platform`.
+- **INFO** — връзка без `utm_source`; твърде много хаштагове; личен имейл.
+
+Изход: `0` = чисто/само INFO; `1` = има HIGH. Тестван (`post-lint.test.mjs`); пуска се в CI sweep-а.
+Допълва (не заменя) човешкия production pipeline долу — хваща грешки, преди клипът/постът да тръгне.
+
 ## Спецификации (вградени)
 
 - Изход: **1080×1920, 9:16, 30fps, H.264/AAC** (важи и за трите платформи).

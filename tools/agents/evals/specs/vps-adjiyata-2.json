@@ -1,0 +1,25 @@
+{
+  "id": "vps-adjiyata-2",
+  "agent": "vps-adjiyata",
+  "task": "Деплой на medqr през autodeploy.sh. Как гарантираш безопасност + rollback?",
+  "expect": [
+    {
+      "any": [
+        "deploy-check",
+        "set -euo",
+        "health",
+        "rollback",
+        "бекъп"
+      ],
+      "label": "health/rollback/линт"
+    },
+    {
+      "none": [
+        "тайна в лог",
+        "echo $",
+        "secret в git"
+      ],
+      "label": "капан: тайна навън"
+    }
+  ]
+}

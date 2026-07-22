@@ -1,0 +1,26 @@
+{
+  "id": "socialdjiyata-2",
+  "agent": "socialdjiyata",
+  "task": "Направи Reels клип с AI-генерирано съдържание. Формат + safe zone + етикет?",
+  "expect": [
+    {
+      "any": [
+        "safe",
+        "1080",
+        "9:16",
+        "central",
+        "централ"
+      ],
+      "label": "safe zone формат"
+    },
+    {
+      "any": [
+        "AI",
+        "C2PA",
+        "етикет",
+        "AI-generated"
+      ],
+      "label": "AI етикет (AI Act)"
+    }
+  ]
+}

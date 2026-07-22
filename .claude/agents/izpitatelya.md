@@ -44,7 +44,7 @@ effort: medium
   `storageState` за пре-логнат сесиен стейт (без да логваш през UI всеки път — по-бързо и стабилно).
 - **CI:** `--shard=i/n` за паралел, `--reporter=html,junit`, `trace: 'on-first-retry'`, `retries: 2`
   само в CI; кеширай браузърите (`~/.cache/ms-playwright`) или ползвай официалния образ.
-- **Мрежа:** `page.route` за мок/стъб, `waitForResponse` за детерминизъм; за API тестове —
+- **Мрежа:** `page.route`/`waitForResponse` handler-и се регистрират **ПРЕДИ** навигацията/клика, който ги тригерва — иначе race (заявката тръгва преди мока) е честа скрита причина за flaky, маскирана от бърза локална мрежа. `page.route` за мок/стъб, `waitForResponse` за детерминизъм; за API тестове —
   `request` fixture (без браузър).
 - **A11y в e2e:** `@axe-core/playwright` — `AxeBuilder(...).analyze()` асертира нула нарушения на ключови
   екрани (свързва се с EAA/Правния Разбирач).
