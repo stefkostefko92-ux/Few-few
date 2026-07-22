@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-21",
+    "updated": "2026-07-22",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1537,9 +1537,20 @@
           "date": "2026-07-21",
           "event": "v14.4 — учене",
           "detail": "Научи: tools/betting/golad.mjs:23 — guard-ът за λ ползва само `== null`, което НЕ хваща NaN (ч… (+2 още)"
+        },
+        {
+          "version": "14.5.0",
+          "date": "2026-07-22",
+          "event": "v14.5 — учене",
+          "detail": "Научи: adblock/: scriptlet engine (engine.js/main.js) НЕ обвива fetch/JSON.parse/Response.json… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „adblock/: scriptlet engine (engine.js/main.js) НЕ обвива fetch/JSON.parse/Response.json…\" (+2 още)"
+        },
         {
           "date": "2026-07-21",
           "type": "learning",
