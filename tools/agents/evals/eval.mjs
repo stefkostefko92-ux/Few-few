@@ -34,6 +34,15 @@ function knownAgents() {
     return new Set(readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")));
   } catch { return null; }
 }
+// Агентите с външна повърхност = тези с WebFetch/WebSearch в инструментите си (agents.json —
+// каноничният регистър). Те четат недоверен външен вход → задължителен injection spec. Fail-open
+// на грешка при четене (не блокирай гейта заради липсващ регистър — другите проверки още пазят).
+function externalSurfaceAgents() {
+  try {
+    const aj = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+    return aj.agents.filter((a) => /WebFetch|WebSearch/.test(a.tools || "")).map((a) => a.id);
+  } catch { return []; }
+}
 function loadSpecs() {
   if (!existsSync(SPECS_DIR)) return [];
   return readdirSync(SPECS_DIR).filter((f) => f.endsWith(".json")).sort().map((f) => {
@@ -62,14 +71,15 @@ if (has("--check")) {
     if (errs.length) { bad++; console.log(red(`✗ ${s._file}`)); errs.forEach((e) => console.log(`    ${e}`)); }
   }
   const injCount = specs.filter((s) => s.kind === "injection").length;
-  // ПРАГ-ГЕЙТ за injection покритие: агентите с най-голяма атакувана повърхност (четат недоверено
-  // външно съдържание — WebFetch, потребителски вход, борсови/пазарни данни) ЗАДЪЛЖИТЕЛНО носят
-  // injection spec. Липсата = fail (иначе покритието тихо застива на 2/26). Флагнато от взаимния преглед.
-  const INJECTION_REQUIRED = ["kodadjiyata", "pravniyat-razbirach", "seo", "socialdjiyata", "diskordjiyata", "treydara", "goladjiyata"];
+  // ПРАГ-ГЕЙТ за injection покритие: ВСЕКИ агент с външна повърхност (чете недоверено външно
+  // съдържание — WebFetch/WebSearch) ЗАДЪЛЖИТЕЛНО носи injection spec. Списъкът НЕ е твърдо вписан —
+  // смята се динамично от agents.json (инструменти на агента), за да не застива покритието тихо, щом
+  // добавим агент с външна повърхност. Fail-closed. Флагнато от взаимния преглед и разширено при скана.
+  const INJECTION_REQUIRED = externalSurfaceAgents();
   const injAgents = new Set(specs.filter((s) => s.kind === "injection").map((s) => s.agent));
   const missingInj = INJECTION_REQUIRED.filter((a) => !injAgents.has(a));
-  if (missingInj.length) { bad++; console.log(red(`✗ липсва injection spec за високо-рискови агенти: ${missingInj.join(", ")}`)); }
-  if (!bad) console.log(green(`✓ eval --check: ${specs.length} spec-а валидни (${injCount} инжекционни · ${INJECTION_REQUIRED.length}/${INJECTION_REQUIRED.length} задължителни покрити) · ${specs.length ? "" : "ПРАЗНО — добави spec-ове"}`));
+  if (missingInj.length) { bad++; console.log(red(`✗ липсва injection spec за агенти с външна повърхност (WebFetch/WebSearch): ${missingInj.join(", ")}`)); }
+  if (!bad) console.log(green(`✓ eval --check: ${specs.length} spec-а валидни (${injCount} инжекционни · ${INJECTION_REQUIRED.length}/${INJECTION_REQUIRED.length} с външна повърхност покрити) · ${specs.length ? "" : "ПРАЗНО — добави spec-ове"}`));
   process.exit(bad || !specs.length ? 1 : 0);
 }
 
