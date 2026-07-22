@@ -111,3 +111,6 @@
 - **2026-07-17:** Граница с Конвейерът — той владее CI гейтовете в GitHub; Наблюдателят мери ПРОДУКЦИЯТА (runtime), не билда; синтетичен smoke след деплой е обща зона. _("монорепо: граница CI"; verified; "CLAUDE.md — роля на Конвейерът")_
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-22:** Error-budget policy трябва да е предварително записан и съгласуван документ (product+eng+SRE), не ad-hoc решение при инцидент — иначе freeze-ът се предоговаря под напрежение. _(общо; unverified; "Google SRE канон, SRE Workbook Implementing SLOs — точен URL несверен на живо")_
+- **2026-07-22:** PII scrub на ръба в OTel Collector = redactionprocessor (collector-contrib): allowlist на атрибути + маскиране/хеш (MD5/SHA1/SHA3/HMAC) по blocked regex + URL/DB санитизация. Зрелост: traces beta, logs/metrics alpha — провери преди прод. _(общо; unverified; "https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/redactionprocessor (сверено на живо 2026-07-22)")_
+- **2026-07-22:** Google SRE Workbook Табл. 5-8 (multi-window multi-burn-rate старт): страница burn 14.4× (2% бюджет, 1ч long/5мин short) и 6× (5%, 6ч/30мин); тикет 1× (10%, 3д/6ч). Short window ~1/12 от long потвърждава активно изгаряне. _(общо; unverified; "https://sre.google/workbook/alerting-on-slos/ (сверено на живо 2026-07-22)")_
