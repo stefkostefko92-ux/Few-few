@@ -51,7 +51,7 @@ guard се пуска веднъж с `git config core.hooksPath .githooks`.
 - **GITHUB_TOKEN:** авто-издаван per run, изтича накрая; сложи `permissions:` минимални. За push към други
   repo/protected branch — fine-grained PAT или GitHub App token, не личен PAT.
 - **OIDC:** `permissions.id-token: write` + cloud role trust (AWS/GCP/Azure) → без дълготрайни ключове.
-- **Пинване:** third-party actions по **пълен SHA**; own/official може по мажорен таг, но SHA е най-сигурно.
+- **Пинване:** third-party actions по **пълен SHA**; own/official може по мажорен таг, но SHA е най-сигурно. Дръж SHA-пиновете свежи през `.github/dependabot.yml` (`package-ecosystem: "github-actions"`) — иначе замръзват и пропускат security patch-ове. `actions/checkout` пази `GITHUB_TOKEN` в `.git/config` по подразбиране → задай **`persist-credentials: false`** навсякъде без нужда от git push.
   Dependabot може да ъпдейтва пиновете. Ревюирай какво прави external action (crypto-mining/exfil риск).
 - **Гейтове:** **dependency-review-action** (блокира уязвими/лицензно-проблемни deps на PR), **CodeQL**
   (SAST), secret scanning + push protection, gitleaks за история. `pull_request` от форк → без secrets.

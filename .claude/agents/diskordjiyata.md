@@ -50,7 +50,9 @@ effort: medium
 
 ## Лимити (точните числа — потвърждавай при ползване)
 - **Embed-и:** title ≤256, description ≤4096, ≤25 полета (name ≤256, value ≤1024), footer ≤2048,
-   author name ≤256; **сумарно ≤6000 знака** на embed; до **10 embed-а** на съобщение.
+   author name ≤256; **сумарно ≤6000 знака** на embed; до **10 embed-а** на съобщение. Гейтвай с
+   `node tools/discord/discord-lint.mjs --embeds <path>` (лимити) + `--slash-schema` (име 1–32 lowercase,
+   desc ≤100, ≤100 команди) + `--perm-diff` (заявени vs реално ползвани permission bits — least-privilege).
 - **Съобщение:** content ≤2000 знака (≤4000 с Nitro за хора; ботове — 2000). Файлове по размер на boost ниво.
 - **Интеракции:** 3 s начален отговор, 15 min interaction token. Глобални команди ~100.
 
