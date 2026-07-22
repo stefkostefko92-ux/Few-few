@@ -16,6 +16,7 @@ async function getRuleCounts() {
 }
 
 // Dynamic-rule id ranges, kept clear of the static rulesets.
+const YT_BYPASS_RULE_ID = 70000; // YouTube session bypass (allowAllRequests); below every sync range
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
 const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
@@ -25,6 +26,13 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 // Web Store re-review needed. MV3 forbids remote CODE, not remote data.
 const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
 const LIVE_RULE_MAX = 3000;
+
+// YouTube anti-adblock bypass window. When YouTube hard-blocks playback (its
+// "3 strikes" enforcement) we turn the YouTube DNR ruleset OFF for this long so
+// the page is a genuinely clean client and videos play (ads return, auto-skip
+// still fast-forwards them). It auto-expires so blocking retries later —
+// enforcement comes in waves, so we don't give up ad blocking permanently.
+const YT_BYPASS_MS = 6 * 60 * 60 * 1000; // 6h
 
 // Ed25519 подпис на filters.json (data-only канала). Публичният ключ е вграден;
 // приватният живее само на сървъра (deploy-ът подписва при качване). Ако .sig
@@ -122,6 +130,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await syncUserRules();
   createMenus();
   chrome.alarms.create("config-update", { periodInMinutes: 720 }); // every 12h
+  await reconcileYtBypass(); // update clears alarms; re-arm/clear an in-flight bypass
   fetchLiveConfig();
 });
 
@@ -144,6 +153,7 @@ chrome.runtime.onStartup.addListener(async () => {
   await syncLiveRules(liveConfig?.blockDomains || []); // re-apply + clear stale
   createMenus();
   chrome.alarms.create("config-update", { periodInMinutes: 720 });
+  await reconcileYtBypass();
 });
 
 // right-click entries: element picker (saves) + zapper (one-off)
@@ -228,6 +238,7 @@ async function resumeNow() {
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
   if (a.name === "config-update") fetchLiveConfig();
+  if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false));
 });
 
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
@@ -320,6 +331,51 @@ async function doSyncScriptlets(on) {
     await chrome.scripting.registerContentScripts([script]);
   } catch (e) {
     console.warn("scriptlet registration failed", e);
+  }
+}
+
+// YouTube session bypass: one high-priority allowAllRequests rule scoped to
+// YouTube. It overrides EVERY block ruleset (youtube_rules AND easylist/
+// easyprivacy, which also block YouTube's first-party detection paths), so the
+// reloaded page's network is unblocked. Paired with youtube_loader skipping the
+// player-script injection and youtube_skip skipping ad manipulation during the
+// bypass (see bgBypass), the client stops signalling ad blocking, so playback
+// resumes. Its id sits below all sync ranges so syncAllow/User/LiveRules never
+// touch it. Removed when the bypass window (YT_BYPASS_MS) expires.
+async function setYtBypassRule(active) {
+  const addRules = active
+    ? [{
+        id: YT_BYPASS_RULE_ID,
+        priority: 20000, // above allowlist (10000) and every block rule
+        action: { type: "allowAllRequests" },
+        condition: {
+          requestDomains: ["youtube.com", "youtube-nocookie.com"],
+          resourceTypes: ["main_frame", "sub_frame"],
+        },
+      }]
+    : [];
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [YT_BYPASS_RULE_ID],
+      addRules,
+    });
+  } catch (e) {
+    console.warn("yt bypass rule update failed", e);
+  }
+}
+
+// Reconcile the persisted YouTube bypass with its expiry. Dynamic rules and
+// storage survive restarts/updates but alarms do not, so both onStartup AND
+// onInstalled must call this — otherwise an in-flight bypass can outlive its
+// window until the next browser restart.
+async function reconcileYtBypass() {
+  const { ytBypassUntil } = await chrome.storage.local.get("ytBypassUntil");
+  if (ytBypassUntil && ytBypassUntil > Date.now()) {
+    await setYtBypassRule(true);
+    chrome.alarms.create("yt-bypass-expire", { when: ytBypassUntil });
+  } else {
+    if (ytBypassUntil) await chrome.storage.local.remove("ytBypassUntil");
+    await setYtBypassRule(false);
   }
 }
 
@@ -746,6 +802,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "updateFilters":
       fetchLiveConfig(true).then((r) => sendResponse(r));
+      return true;
+
+    case "ytBypass":
+      // YouTube hard-blocked us; a content script can't touch DNR, so it asks
+      // the service worker to add the YouTube allow-all rule for the bypass
+      // window BEFORE it reloads. Only then is the reload a clean client.
+      chrome.storage.local.set({ ytBypassUntil: Date.now() + YT_BYPASS_MS }, async () => {
+        await setYtBypassRule(true);
+        chrome.alarms.create("yt-bypass-expire", { when: Date.now() + YT_BYPASS_MS });
+        sendResponse({ ok: true });
+      });
       return true;
 
     case "setAutoUpdate":

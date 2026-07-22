@@ -54,11 +54,14 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
-  chrome.storage?.local.get(["enabled", "features", "allowlist", "liveConfig"], (data) => {
+  chrome.storage?.local.get(["enabled", "features", "allowlist", "liveConfig", "ytBypassUntil"], (data) => {
     const on = data.enabled !== false;
     const ytOn = (data.features || {}).youtube !== false;
     const allowed = (data.allowlist || []).some(hostMatches);
-    if (on && ytOn && !allowed) {
+    // Session bypass active (YouTube hard-blocked us): stay hands-off so a new
+    // tab can't re-inject and re-trip detection while the DNR ruleset is off.
+    const bgBypass = data.ytBypassUntil && data.ytBypassUntil > Date.now();
+    if (on && ytOn && !allowed && !bgBypass) {
       passConfig(data.liveConfig && data.liveConfig.youtube);
       inject();
     }

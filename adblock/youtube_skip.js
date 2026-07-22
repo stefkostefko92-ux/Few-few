@@ -10,6 +10,7 @@
   let prevMuted = false;
   let prevRate = 1;
   let bypassReloaded = false; // guards the enforcement reload against loops
+  let bgBypass = false; // service worker has the YouTube allow-all bypass rule active
 
   const SKIP_DEFAULT = [
     ".ytp-ad-skip-button",
@@ -55,7 +56,11 @@
 
     const player = document.querySelector(".html5-video-player");
     const video = document.querySelector("video.html5-main-video, video");
-    const showing = !!player?.classList.contains("ad-showing");
+    // During a session bypass we must NOT force-skip the ad (seek to end /
+    // playbackRate 16) — that manipulation is exactly what YouTube detects and
+    // would re-trip enforcement. Let ads play; the native "Skip" button below is
+    // still clicked (user-equivalent, undetectable). See background.js bypass.
+    const showing = !bgBypass && !!player?.classList.contains("ad-showing");
 
     if (showing && video) {
       if (!adActive) {
@@ -110,12 +115,15 @@
       } catch {}
     }
 
-    // Enforcement / black screen: reload once with ad removal disabled so the
-    // clip plays (with ads, which we still auto-skip). Reload only when we can
-    // persist the bypass, so a blocked sessionStorage can't loop.
+    // Enforcement / black screen: YouTube hard-blocked playback because it
+    // detected us. A content script can't disable declarativeNetRequest, so we
+    // ask the service worker to turn the YouTube ruleset OFF for the session,
+    // THEN reload — only then is the reload a genuinely clean client and the
+    // clip plays (with ads, which auto-skip still fast-forwards). Reload only
+    // when we can persist the bypass, so a blocked sessionStorage can't loop.
     const enf = matchAny(ENFORCE);
     if (enf) {
-      let bypassing = bypassReloaded;
+      let bypassing = bypassReloaded || bgBypass;
       try {
         bypassing = bypassing || sessionStorage.getItem("tbab_yt_bypass") === "1";
       } catch {}
@@ -128,17 +136,20 @@
         } catch {}
         bypassReloaded = true;
         if (persisted) {
-          location.reload();
+          try {
+            chrome.runtime.sendMessage({ type: "ytBypass" }, () => {
+              try { location.reload(); } catch {}
+            });
+          } catch {
+            try { location.reload(); } catch {}
+          }
           return;
         }
       }
 
-      const dialog = enf.closest("ytd-popup-container, tp-yt-paper-dialog");
-      if (dialog) {
-        try {
-          dialog.remove();
-        } catch {}
-      }
+      // Already bypassing: with the ruleset off and no injection the dialog
+      // shouldn't reappear. Don't touch the dialog/player (that leaves a dead
+      // player); only clear a leftover overlay/scroll-lock so the page is usable.
       document.querySelectorAll("tp-yt-iron-overlay-backdrop").forEach((b) => {
         try {
           b.remove();
@@ -168,16 +179,20 @@
   const host = location.hostname.replace(/^www\./, "");
   const hostMatches = (d) => host === d || host.endsWith("." + d);
 
-  chrome.storage?.local.get(["enabled", "features", "allowlist", "liveConfig"], (data) => {
+  chrome.storage?.local.get(["enabled", "features", "allowlist", "liveConfig", "ytBypassUntil"], (data) => {
     enabled = data.enabled !== false;
     const ytOn = (data.features || {}).youtube !== false;
     const allowed = (data.allowlist || []).some(hostMatches);
+    bgBypass = data.ytBypassUntil && data.ytBypassUntil > Date.now();
     applyConfig(data.liveConfig && data.liveConfig.youtube);
+    // Run even when bypassing: ads now play, so auto-skip still fast-forwards
+    // them; only the enforcement reload is gated on the bypass state.
     if (enabled && ytOn && !allowed) start();
   });
 
   chrome.storage?.onChanged.addListener((c) => {
     if (c.enabled) enabled = c.enabled.newValue !== false;
     if (c.liveConfig) applyConfig(c.liveConfig.newValue && c.liveConfig.newValue.youtube);
+    if (c.ytBypassUntil) bgBypass = c.ytBypassUntil.newValue && c.ytBypassUntil.newValue > Date.now();
   });
 })();

@@ -1,5 +1,26 @@
 # Changelog
 
+## 4.4.1
+
+Поправка: YouTube спираше да зарежда клипове след ~3 гледания (анти-адблок enforcement).
+- **Първопричина** (доказана от Хромаджията + Кодаджията): „точно 3" е броячът на
+  YouTube (3-strike enforcement), който ни детектира всяка сесия. Старият bypass
+  само спираше инжекцията на player-скрипта при reload, но **статичните DNR правила
+  (youtube_rules + easylist/easyprivacy) продължаваха да блокират** first-party
+  detection пътищата на YouTube (`/pagead/`, `/ptracking`, `/api/stats/ads`) →
+  YouTube пак детектираше → траен твърд блок = „спира да зарежда". Content script
+  няма достъп до `declarativeNetRequest`, затова bypass-ът беше на грешен слой.
+- **Поправка (на верния слой):** при enforcement `youtube_skip.js` праща
+  `ytBypass` до service worker-а, който добавя **един high-priority
+  `allowAllRequests` DNR правило само за YouTube** (id 70000, приоритет 20000 —
+  надвива ВСЕКИ блокиращ ruleset) ПРЕДИ reload. Чак тогава презаредената страница е
+  наистина „чист" клиент и видеото зарежда (рекламите се връщат за сесията, auto-skip
+  ги пропуска бързо).
+- Bypass-ът **авто-изтича след 6ч** (enforcement идва на вълни → блокирането се
+  възобновява по-късно), с alarm + reconcile при рестарт (динамичните правила
+  персистират). `youtube_loader`/`youtube_skip` зачитат bypass състоянието
+  (`ytBypassUntil`) — не преинжектират и не оставят „мъртъв плейър".
+
 ## 4.4.0
 
 Scriptlet engine (`##+js(...)`) — uBO паритет спринт 1, най-голямата останала липса:
