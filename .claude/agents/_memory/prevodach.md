@@ -7,6 +7,8 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-07-22:** Командите check-parity/glossary-check в дефиницията приемат *.json + it locale, но medqr няма такива — паритетът иска екстракция от JS модула преди гейта. _(medqr; verified; "prevodach.md:81,87,93 vs medqr/src/i18n.js структура")_
+- **2026-07-22:** medqr държи преводите в src/i18n.js като плосък JS обект {ключ:{bg,en}} — само bg/en, без it и без JSON файлове; клиничният контрол е map CLINICAL_EN, IT още не е в живото приложение. _(medqr; verified; "medqr/src/i18n.js:8,25,206; _shared/glossary.md:66-67")_
 - **2026-07-19:** scuolabulgara IT регистър е последователно „tu“ (не Lei) — топъл общностен тон за училището; BG върви на учтиво „Вие“. Различен регистър по език е нарочен, не грешка. _(scuolabulgara/register; verified; /home/user/Few-few/scuolabulgara/src/lib/i18n.ts:46)_
 - **2026-07-19:** scuolabulgara IT използва caporali « » за цитати от първо ниво; проверявай legal.ts за случайни английски къдрави „ “ (напр. «così come sono»), защото останалата част от документа е на caporali. _(scuolabulgara/it-typography; verified; /home/user/Few-few/scuolabulgara/src/lib/legal.ts:141)_
 - **2026-07-14:** Каноничната IT съкратка е 'D.Lgs.' с финална точка; в ospedali сайта е непоследователна (consulenze с точка, storico/privacy без). _("IT abbreviazioni giuridiche"; verified; "Read consulenze.html:214, storico.html:229, privacy.html:221")_
@@ -76,6 +78,7 @@
 - **2026-06-25:** Потвърдени IT клинични термини са в _shared/glossary.md (напр. „слухов апарат“ → „apparecchio acustico“).
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-22:** IT елизия (l'/un'/dell') с печатарски апостроф ’ и родова разлика un(м)/un'(ж) е стандартна норма, но не е в дефиницията; за фиксиране трябва жива проверка на авторитетен източник (Crusca). _(it-typography; quarantine; "hypothesis — needs live check")_
 - **2026-07-10:** Официална ЕС конвенция за чл. 9а от Регл. 282/2011: it/es/fr ползват 'bis' (articolo 9 bis / artículo 9 bis / article 9 bis), докато de ползва буквен суфикс (Artikel 9a). Не транспонирай сляпо '9a' в романските езици. _("legal translation / EU regulations"; quarantine; "EUR-Lex конвенция (не жив-верифицирана в тази сесия) — за потвърждение от Правния Разбирач")_
 - **2026-07-10:** linketto legal.* (termsBody/vatNote) са родни само за bg/en/it/es/de/fr; останалите 22 локала падат към en (deepMerge). Промяна на правна клауза = редактиране само в тези 6 файла (тук it/es/de/fr, тъй като bg/en вече готови), не в 27-те. _("linketto i18n / legal"; unverified; "linketto/CLAUDE.md 'legal.* родни само за bg/en/it/es/de/fr; за останалите падат към en' + Read messages")_
 - **2026-07-09:** SCC съкращения по език в linketto legal текстовете: it=CCS, es=CCT, de=SVK, fr=CCT. Взимай от съществуващия transfers пасаж в същия файл, не въвеждай нов вариант. _("linketto i18n / glossary"; unverified; "/home/user/Few-few/linketto/messages/{it,es,de,fr}.json legal.privacyBody")_
