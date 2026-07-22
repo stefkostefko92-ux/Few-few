@@ -298,6 +298,8 @@ function AdminPanel(props) {
     {name:"nexus.carbonstealth.eu",url:"https://nexus.carbonstealth.eu",label:"Nexus Dominion",type:"MMO GAME",tech:"React+Node+PG+Redis",port:443,proto:"HTTPS/2",cdn:"None"},
     {name:"tretimart.carbonstealth.eu",url:"https://tretimart.carbonstealth.eu",label:"Treti Mart",type:"MARKETPLACE",tech:"React+Node+Stripe",port:443,proto:"HTTPS/2",cdn:"None"},
     {name:"erp.carbonstealth.eu",url:"https://erp.carbonstealth.eu",label:"ERP Ascensori",type:"ERP SYSTEM",tech:"React+Prisma+PG",port:443,proto:"HTTPS/2",cdn:"None"},
+    {name:"vizitka-bg.com",url:"https://vizitka-bg.com",label:"Vizitka",type:"QR PROFILE",tech:"Express+EJS+SQLite",port:443,proto:"HTTPS/2",cdn:"None"},
+    {name:"mastilko-bg.com",url:"https://mastilko-bg.com",label:"Mastilko",type:"PRINT TOOLS",tech:"Next.js+React+TS",port:443,proto:"HTTPS/2",cdn:"None"},
   ];
 
   async function checkPwd() {
