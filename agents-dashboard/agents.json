@@ -2568,9 +2568,20 @@
           "date": "2026-07-16",
           "event": "v11.1 — учене",
           "detail": "Научи: „Игра, в която ЕДИН играч управлява две ръце (бридж дъми), се реализира engine-only без …\" (+1 още)"
+        },
+        {
+          "version": "11.2.0",
+          "date": "2026-07-22",
+          "event": "v11.2 — учене",
+          "detail": "Научи: tools/fivem/manifest-lint.mjs (zero-dep pre-ship линтер, тестван с manifest-lint.test.m…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-22",
+          "type": "learning",
+          "summary": "Научи: „tools/fivem/manifest-lint.mjs (zero-dep pre-ship линтер, тестван с manifest-lint.test.m…\""
+        },
         {
           "date": "2026-07-16",
           "type": "learning",
