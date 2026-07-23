@@ -19,6 +19,8 @@
 |----|---------|-----------|-------|
 | `health-sweep` | schedule:weekly (`agents-sweep.yml`) | L1 | пълен гейт по каданс — лови гниене без push |
 | `memory-curation` | schedule:monthly | L1 | доклад: curate dry-run + _shared кандидати + свежест |
+| `behavioral-eval` | schedule:monthly | L1 | агент-в-цикъла: рън срещу golden spec-овете + верификатор → trend.jsonl (лови поведенческа регресия) |
+| `pairwise-judging` | schedule:quarterly | L1 | сляпо двойково LLM-съдийство (skill agent-eval) — „по-добър ли стана“ с доказателство |
 | `pr-babysitter` | event:github-pr-activity | L2 | наблюдава PR, поправя дребно уверено, пита при двусмислие |
 
 Нов loop → добави в `loops.json`, пусни `node tools/agents/loops/loop-audit.mjs` (трябва зелено), стартирай на **L1**.

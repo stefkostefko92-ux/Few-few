@@ -64,6 +64,8 @@ jobs:
         run: node tools/agents/drift-lint.mjs
       - name: Loop-audit (readiness на автоматизациите — автономия-стълба)
         run: node tools/agents/loops/loop-audit.mjs
+      - name: Error-ledger (всяка реална грешка носи регресионен spec — fail-closed)
+        run: node tools/agents/error-ledger.mjs --check
       - name: Токен-бюджет (гейт срещу разбягване на дефиниция; печат за логовете)
         run: node tools/agents/token-budget.mjs --check
       - name: Кандидати за _shared (дедуп на памет през агенти; информативно)

@@ -168,7 +168,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-22",
+    "updated": "2026-07-23",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -7876,6 +7876,11 @@ const FALLBACK = {
       ],
       "activity": [
         {
+          "date": "2026-07-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „SEPA Direct Debit е delayed-notification метод: при checkout.session.completed payment_…\" (+2)"
+        },
+        {
           "date": "2026-07-22",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „checkout.session.completed НЕ гарантира плащане — при отложени методи (SEPA/ACH/bank tr…\" (+2)"
@@ -11728,7 +11733,8 @@ const FALLBACK = {
         "Онбординг и надзор на растящ екип (26 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна",
         "Твърди правила (от екипния одит): бюджетен таван (maxBudgetUsd+maxTurns) + Idempotency-Key на мутиращи AI извиквания; per-доставчик трансферен механизъм + чл.28 GDPR DPA; стор-етикети (App Privacy/Data Safety)",
         "CI гейт на агентския слой (.github/workflows/agents.yml): oversee fail-closed + 11 unit теста при промяна; oversee с тренд/базлайн (--snapshot/--baseline) и знаменатели вместо голи бройки",
-        "Cost рутинг без Haiku + prompt-caching подредба (статично напред)"
+        "Cost рутинг без Haiku + prompt-caching подредба (статично напред)",
+        "Claude Code майстор: hooks (~30 събития, exit-код семантика), plugins/marketplace схема, headless --bare, checkpointing граници"
       ],
       "knowledge": {
         "sources": 150,
@@ -11937,9 +11943,20 @@ const FALLBACK = {
           "date": "2026-07-22",
           "event": "v10.1 — учене",
           "detail": "Научи: eurCents (int) е единственият каноничен носител на стойност; BGN само се извежда за пок…"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-23",
+          "event": "v10.2 — учене",
+          "detail": "Научи: CSPos sales/route.ts НЯМА write-ahead и НЯМА reconcile — Sale.create е чак на :227 вътр… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-23",
+          "type": "learning",
+          "summary": "Научи: „CSPos sales/route.ts НЯМА write-ahead и НЯМА reconcile — Sale.create е чак на :227 вътр…\" (+1 още) · 2 в карантина"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",

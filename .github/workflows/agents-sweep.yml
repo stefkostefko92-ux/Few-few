@@ -31,5 +31,8 @@ jobs:
           node tools/agents/def-freshness.mjs
           node tools/agents/token-budget.mjs --check
           node tools/vps/deploy-check.mjs deploy/autodeploy.sh
+          node tools/agents/error-ledger.mjs --check
+      - name: Doc-audit (advisory — доклад за застаряла/липсваща документация, не гейтва)
+        run: node tools/docs/doc-audit.mjs || true
       - name: Всички тестове
         run: node --test $(find tools -name '*.test.mjs')

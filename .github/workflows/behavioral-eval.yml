@@ -1,0 +1,29 @@
+# Behavioral eval — АГЕНТ-В-ЦИКЪЛА, напълно автоматичен (loop „behavioral-eval", L1 само доклад).
+# Месечно + ръчно: пуска парично-критичните агенти headless (`claude -p`) срещу golden spec-овете
+# им, скорира (eval --run --record) + верификатор. Лови ПОВЕДЕНЧЕСКА регресия без човек в цикъла.
+#
+# Изисква repo secret ANTHROPIC_API_KEY (Settings → Secrets → Actions). БЕЗ него job-ът излиза
+# зелен с ясно съобщение „пропуснато" — гейт, който лъже червено заради конфигурация, е шум.
+name: behavioral-eval
+on:
+  schedule:
+    - cron: "43 5 2 * *" # 2-о число, 05:43 UTC (off-peak минута)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  behavioral:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2, пинат по SHA
+      - name: Claude Code CLI (headless)
+        if: ${{ env.HAS_KEY == 'true' }}
+        run: npm install -g @anthropic-ai/claude-code
+        env:
+          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      - name: Headless рън на критичните агенти + скориране + верификатор
+        run: node tools/agents/evals/headless-run.mjs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
