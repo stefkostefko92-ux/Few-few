@@ -11569,7 +11569,8 @@
         "Онбординг и надзор на растящ екип (26 агента): 4-синхрон при нов агент (дефиниция↔памет↔agents.json/FALLBACK↔двата hook matcher-а), анти-застъпване на домейни, oversee след всяка промяна",
         "Твърди правила (от екипния одит): бюджетен таван (maxBudgetUsd+maxTurns) + Idempotency-Key на мутиращи AI извиквания; per-доставчик трансферен механизъм + чл.28 GDPR DPA; стор-етикети (App Privacy/Data Safety)",
         "CI гейт на агентския слой (.github/workflows/agents.yml): oversee fail-closed + 11 unit теста при промяна; oversee с тренд/базлайн (--snapshot/--baseline) и знаменатели вместо голи бройки",
-        "Cost рутинг без Haiku + prompt-caching подредба (статично напред)"
+        "Cost рутинг без Haiku + prompt-caching подредба (статично напред)",
+        "Claude Code майстор: hooks (~30 събития, exit-код семантика), plugins/marketplace схема, headless --bare, checkpointing граници"
       ],
       "knowledge": {
         "sources": 150,
