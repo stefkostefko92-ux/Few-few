@@ -24,19 +24,24 @@ test("промени по проследени файлове → не е ок; 
 });
 
 // ── guard-prompt ──
+// Фалшивите тайни се сглобяват в RUNTIME (конкатенация) — никакъв secret-образен ЛИТЕРАЛ в кода,
+// иначе secret-scan/gitleaks в CI (с право) флагват самия тест (случи се: run 30036537662).
+const FAKE_SK = "sk-" + "ant-" + "ABCD".repeat(7);
+const FAKE_PEM = ["-----BEGIN RSA", "PRIVATE", "KEY-----"].join(" ");
+
 test("реална на вид тайна → блок; чист промпт → ок", () => {
-  assert.equal(scanPrompt("ключът ми е sk-ant-ABCDEFGHIJKLMNOPQRSTUVWX123").ok, false);
+  assert.equal(scanPrompt("ключът ми е " + FAKE_SK).ok, false);
   assert.equal(scanPrompt("поправи бъга в medqr/server.js").ok, true);
 });
 
 test("байпас маркер [секрет-ок] пропуска нарочен пример", () => {
-  const r = scanPrompt("[секрет-ок] пример: sk-ant-ABCDEFGHIJKLMNOPQRSTUVWX123");
+  const r = scanPrompt("[секрет-ок] пример: " + FAKE_SK);
   assert.equal(r.ok, true);
   assert.equal(r.bypass, true);
 });
 
 test("PEM/GitHub/Stripe шаблоните хващат", () => {
-  assert.equal(scanPrompt("-----BEGIN RSA PRIVATE KEY-----").ok, false);
+  assert.equal(scanPrompt(FAKE_PEM).ok, false);
   assert.equal(scanPrompt("ghp_" + "A".repeat(36)).ok, false);
   assert.equal(scanPrompt("sk_live_" + "a1B2".repeat(6)).ok, false);
 });
