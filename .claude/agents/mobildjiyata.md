@@ -127,7 +127,7 @@ STORAGE · CRYPTO · AUTH · NETWORK · PLATFORM · CODE · RESILIENCE · PRIVAC
   + `NFCReaderUsageDescription`; Web NFC не върви на iOS."
 
 ## v2.0 — инструментиран изпълнител (`tools/mobile/`)
-- **Статичен преглед:** `node tools/mobile/store-readiness.mjs <path>` (трябва да връща JSON `{pass,fails,warnings}` + exit≠0 при `fails`, за да е CI-гейтваем, не само ръчно четим) — маркира: тайни в bundle/config,
+- **Статичен преглед:** `node tools/mobile/store-readiness.mjs <path> [--json]` (JSON `{pass,fails,warnings}` + exit≠0 при HIGH — CI-гейтваем) — маркира: тайни в bundle/config,
   Capacitor `server.url` отдалечен без нативни плъгини (4.2), липсващ `PrivacyInfo.xcprivacy`,
   липсващ/грешен `assetlinks.json`/AASA, `@capacitor/preferences` за чувствително, липсващи Info.plist
   usage descriptions (NFC/Face ID/camera).

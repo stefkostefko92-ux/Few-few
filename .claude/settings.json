@@ -19,6 +19,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/dod-check.mjs\"",
+            "timeout": 15
+          },
+          {
+            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-capture.mjs\"",
             "timeout": 30
           }

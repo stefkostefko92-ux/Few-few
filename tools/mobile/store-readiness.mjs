@@ -10,9 +10,10 @@
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 
-const root = process.argv[2];
+const JSON_OUT = process.argv.includes("--json"); // CI-гейтваем изход: {pass, fails, warnings}
+const root = process.argv.slice(2).find((a) => !a.startsWith("--"));
 if (!root || !existsSync(root)) {
-  console.error("Употреба: node tools/mobile/store-readiness.mjs <папка>");
+  console.error("Употреба: node tools/mobile/store-readiness.mjs <папка> [--json]");
   process.exit(2);
 }
 
@@ -105,6 +106,12 @@ for (const f of files) {
 // ─── доклад ───────────────────────────────────────────────────────────────────
 const order = { HIGH: 0, MED: 1, INFO: 2 };
 findings.sort((a, b) => order[a.sev] - order[b.sev]);
+if (JSON_OUT) {
+  const fails = findings.filter((f) => f.sev === "HIGH");
+  const warnings = findings.filter((f) => f.sev !== "HIGH");
+  console.log(JSON.stringify({ pass: fails.length === 0, fails, warnings }, null, 2));
+  process.exit(fails.length ? 1 : 0);
+}
 if (!findings.length) { console.log(`✅ store-readiness: чисто (${files.length} файла в ${root}).`); process.exit(0); }
 console.log(`store-readiness: ${findings.length} находки (${root})\n`);
 for (const f of findings) console.log(`[${f.sev}] (${f.id}) ${f.msg}`);

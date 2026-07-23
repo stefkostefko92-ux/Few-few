@@ -24,6 +24,28 @@
       "denylist": ["_memory/*"]
     },
     {
+      "id": "behavioral-eval",
+      "description": "Агент-в-цикъла: пусни агентите срещу golden spec-овете им, скорирай изходите (eval --run --record → trend.jsonl) + верификатор за парично-критичните. Ловим ПОВЕДЕНЧЕСКА регресия, която структурният --check не вижда. Пилотът (2026-07-23) хвана 3 маркер-бъга още в първия рън.",
+      "trigger": "schedule:monthly",
+      "command": "node tools/agents/evals/run-plan.mjs --critical → оркестраторът пуска всеки агент, пише <dir>/<specId>.txt → node tools/agents/evals/eval.mjs --run <dir> --record → node tools/agents/verifier.mjs <agent> <файл>",
+      "owner": "ai-djiyata",
+      "autonomy": "L1",
+      "escalation": "Спад под 100% на критичните / под предишния тренд → доклад с диф на провалените проверки; поправка на дефиниция/spec е решение на човек/AI-джията.",
+      "budgetCap": null,
+      "denylist": []
+    },
+    {
+      "id": "pairwise-judging",
+      "description": "Сляпо двойково LLM-съдийство (skill agent-eval): сравни изход на агент преди/след редакция на дефиниция или между модели (opus↔sonnet). Отговаря „по-добър ли стана“ с доказателство, не с усещане.",
+      "trigger": "schedule:quarterly",
+      "command": "skill agent-eval — двойки (стар изход, нов изход) от trend/goldens; съдия без знание кой е кой",
+      "owner": "ai-djiyata",
+      "autonomy": "L1",
+      "escalation": "Само доклад. Смяна на модел/дефиниция по резултата е решение на собственика.",
+      "budgetCap": null,
+      "denylist": []
+    },
+    {
       "id": "pr-babysitter",
       "description": "Наблюдава отворен PR (webhook) — при CI провал/ревю коментар разследва и при уверена, дребна поправка я push-ва; при двусмислие пита човек.",
       "trigger": "event:github-pr-activity",
