@@ -46,6 +46,23 @@ test("_memory/*.md НЕ тригерва правилото за дефиниц�
   assert.equal(checkDoD(uses).length, 0);
 });
 
+test("писане в 2 продукта → scope-creep нарушение (монорепо закон №1)", () => {
+  const uses = collectToolUses(jl([
+    { message: { content: [{ type: "tool_use", name: "Write", input: { file_path: "medqr/server.js" } }] } },
+    { message: { content: [{ type: "tool_use", name: "Edit", input: { file_path: "zabobovdol/src/app/page.tsx" } }] } },
+  ]));
+  const v = checkDoD(uses);
+  assert.ok(v.some((x) => /продукта/.test(x.gate)), JSON.stringify(v));
+});
+
+test("инфра + 1 продукт → без scope нарушение", () => {
+  const uses = collectToolUses(jl([
+    { message: { content: [{ type: "tool_use", name: "Write", input: { file_path: "medqr/server.js" } }] } },
+    { message: { content: [{ type: "tool_use", name: "Edit", input: { file_path: "tools/agents/oversee.mjs" } }] } },
+  ]));
+  assert.equal(checkDoD(uses).filter((x) => /продукта/.test(x.gate)).length, 0);
+});
+
 test("непарсим ред в транскрипта не чупи събирането", () => {
   const uses = collectToolUses('не е json\n' + JSON.stringify({ message: { content: [{ type: "tool_use", name: "Bash", input: { command: "echo x" } }] } }));
   assert.equal(uses.length, 1);

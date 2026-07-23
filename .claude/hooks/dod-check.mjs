@@ -9,6 +9,7 @@
 // Fail-open: всяка грешка на hook-а → exit 0 (никога не заклещваме агент заради счупен hook).
 
 import { readFileSync } from "node:fs";
+import { checkScope } from "../../tools/agents/scope-check.mjs";
 
 // Правила: писан файл match-ва `wrote` → в Bash командите трябва да се появи `mustRun`.
 const RULES = [
@@ -49,6 +50,9 @@ export function checkDoD(uses) {
     const hits = written.filter((f) => r.wrote.test(f));
     if (hits.length && !r.mustRun.test(bash)) violations.push({ files: [...new Set(hits)], gate: r.gate });
   }
+  // Монорепо закон №1: писане в ≥2 продуктови папки в една задача = scope creep.
+  const scope = checkScope(written);
+  if (!scope.ok) violations.push({ files: scope.products, gate: `СПРИ — пишеш в ${scope.products.length} продукта (${scope.products.join(", ")}). Един продукт на промяна; останалото е отделна задача/клон` });
   return violations;
 }
 

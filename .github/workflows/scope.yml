@@ -1,0 +1,24 @@
+# Монорепо закон №1: „One project per change" — наложен, не обещан (scope-creep гейт).
+# Тича на ВСЕКИ PR (без path филтър — законът е репо-широк): промяна, пипаща ≥2 продуктови
+# папки, е червена. Инфраструктурата (tools/.claude/.github/…) е освободена; инфра+1 продукт е ОК.
+name: scope
+on:
+  pull_request: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scope-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    steps:
+      # Пинат по SHA — supply-chain дисциплина. actions/checkout v4.2.2. fetch-depth: 0 за merge-base.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Scope-check (one project per change)
+        run: node tools/agents/scope-check.mjs --range "origin/${{ github.base_ref }}...HEAD"
