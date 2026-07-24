@@ -7213,3 +7213,7 @@ select:disabled {
 }
 .b2b-notice svg { color: var(--panev-blue); flex-shrink: 0; }
 .b2b-notice strong { color: var(--panev-blue); }
+
+/* Cart trust-bar items (SVG icon + label) */
+.payment-methods .pm-item { display: inline-flex; align-items: center; gap: .3rem; }
+.payment-methods .pm-item svg { color: var(--panev-blue); flex-shrink: 0; }

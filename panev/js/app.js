@@ -179,7 +179,7 @@ function openCart() {
   s?.classList.add('open');
   s?.removeAttribute('inert');
   s?.setAttribute('aria-hidden', 'false');
-  document.getElementById('cart-overlay')?.classList.add('on');
+  document.getElementById('cart-overlay')?.classList.add('open');
   Cart.renderSidebar();
   openOverlay(s, document.activeElement);
 }
@@ -188,7 +188,7 @@ function closeCart() {
   s?.classList.remove('open');
   s?.setAttribute('inert', '');
   s?.setAttribute('aria-hidden', 'true');
-  document.getElementById('cart-overlay')?.classList.remove('on');
+  document.getElementById('cart-overlay')?.classList.remove('open');
   closeOverlay(s);
 }
 
