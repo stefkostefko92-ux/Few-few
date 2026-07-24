@@ -167,10 +167,17 @@ function bumpVersion(v) {
   if (min > 9) { maj += 1; min = 0; }
   return `${maj}.${min}.0`;
 }
+// Вдига версията с N стъпки — по ЕДНА на ПРОВЕРЕНА поука (документираният замисъл: 10 поуки = +1 major).
+// По-рано вдигаше +0.1 на РЪН независимо от броя поуки → подценяваше многопоучните рънове.
+function bumpVersionBy(v, n) {
+  let out = v;
+  for (let i = 0; i < Math.max(1, n); i++) out = bumpVersion(out);
+  return out;
+}
 
 // Прилага activity запис и (при проверено учене) вдига minor версията + timeline запис.
 // Връща true, ако нещо се е променило.
-function applyUpdate(obj, agentId, activityEntry, evoDetail) {
+function applyUpdate(obj, agentId, activityEntry, evoDetail, verifiedCount = 1) {
   const a = (obj.agents || []).find((x) => x.id === agentId);
   if (!a) return false;
   let changed = false;
@@ -181,11 +188,11 @@ function applyUpdate(obj, agentId, activityEntry, evoDetail) {
     changed = true;
   }
 
-  // Проверено учене вдига версията (6.1 → 6.2 → …) — ученето „level-up"-ва агента.
+  // Проверено учене вдига версията — по ЕДНА стъпка на ПРОВЕРЕНА поука (не на рън).
   if (evoDetail) {
     a.evolution = a.evolution || [];
     if (!a.evolution.some((e) => e.detail === evoDetail)) {
-      const next = bumpVersion(latestVersion(a));
+      const next = bumpVersionBy(latestVersion(a), verifiedCount);
       a.evolution.push({
         version: next,
         date: activityEntry.date,
@@ -205,12 +212,12 @@ function applyUpdate(obj, agentId, activityEntry, evoDetail) {
   return changed;
 }
 
-function updateDashboard(agentId, entry, evoDetail) {
+function updateDashboard(agentId, entry, evoDetail, verifiedCount = 1) {
   // 1) agents.json (каноничен)
   if (existsSync(DASH_JSON)) {
     try {
       const j = JSON.parse(readFileSync(DASH_JSON, "utf8"));
-      if (applyUpdate(j, agentId, entry, evoDetail)) atomicWrite(DASH_JSON, JSON.stringify(j, null, 2) + "\n");
+      if (applyUpdate(j, agentId, entry, evoDetail, verifiedCount)) atomicWrite(DASH_JSON, JSON.stringify(j, null, 2) + "\n");
     } catch { /* ignore */ }
   }
   // 2) вграден FALLBACK в index.html (за file:// преглед)
@@ -231,7 +238,7 @@ function updateDashboard(agentId, entry, evoDetail) {
       }
       if (e === -1) return;
       const fb = JSON.parse(h.slice(b, e + 1));
-      if (applyUpdate(fb, agentId, entry, evoDetail)) {
+      if (applyUpdate(fb, agentId, entry, evoDetail, verifiedCount)) {
         h = h.slice(0, b) + JSON.stringify(fb, null, 2) + h.slice(e + 1);
         atomicWrite(DASH_HTML, h);
       }
@@ -326,7 +333,7 @@ function main() {
     : null;
   // Таблото (локален JSON запис) под mkdir-lock; целият git участък (add+commit+push) отива
   // в ЕДИН flock-guarded detached процес → сериализиран между всички паралелни агенти, без загуба.
-  withLock(() => { updateDashboard(parsed.agent, activity, evoDetail); });
+  withLock(() => { updateDashboard(parsed.agent, activity, evoDetail, newVerified.length); });
   bgGitSync(parsed.agent);
 
   process.exit(0);
