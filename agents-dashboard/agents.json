@@ -1572,9 +1572,20 @@
           "date": "2026-07-22",
           "event": "v14.5 — учене",
           "detail": "Научи: adblock/: scriptlet engine (engine.js/main.js) НЕ обвива fetch/JSON.parse/Response.json… (+2 още)"
+        },
+        {
+          "version": "15.1.0",
+          "date": "2026-07-24",
+          "event": "v15.1 — учене",
+          "detail": "Научи: Gaming/АСО admin PATCH /users/:id е втвърден — предишните находки за RBAC ескалация (AD… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Gaming/АСО admin PATCH /users/:id е втвърден — предишните находки за RBAC ескалация (AD…\" (+5 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "quarantine",
