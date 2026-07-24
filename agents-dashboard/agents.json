@@ -8412,9 +8412,20 @@
           "date": "2026-07-17",
           "event": "v10.3 — учене",
           "detail": "Научи: zabobovdol TWA обвивка: assetlinks.json се сервира ДИНАМИЧНО от админ отпечатъка през r… (+2 още)"
+        },
+        {
+          "version": "11.1.0",
+          "date": "2026-07-24",
+          "event": "v11.1 — учене",
+          "detail": "Научи: Play Console — нови апове/ъпдейти трябва target Android 16 (API 36)+ (Wear OS/Auto API … (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Play Console — нови апове/ъпдейти трябва target Android 16 (API 36)+ (Wear OS/Auto API …\" (+7 още)"
+        },
         {
           "date": "2026-07-18",
           "type": "quarantine",
