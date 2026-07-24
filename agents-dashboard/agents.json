@@ -12082,9 +12082,20 @@
           "date": "2026-07-22",
           "event": "v10.2 — учене",
           "detail": "Научи: Apple App Store 3.1.1 — от 30.04.2025 (перманентна съдебна забрана, Epic v. Apple, N.D.… (+1 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-24",
+          "event": "v10.9 — учене",
+          "detail": "Научи: Google Play target API: от 31.08.2025 нови апс и ъпдейти таргетират ≥ API 35 (Android 1… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Google Play target API: от 31.08.2025 нови апс и ъпдейти таргетират ≥ API 35 (Android 1…\" (+6 още) · 4 в карантина"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
