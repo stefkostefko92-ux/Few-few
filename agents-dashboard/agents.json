@@ -3421,9 +3421,20 @@
           "date": "2026-07-24",
           "event": "v13.5 — учене",
           "detail": "Научи: GEO/AEO примирение (не конфликт): 'content depth' и 'кратък answer-first лийд' са разли…"
+        },
+        {
+          "version": "13.9.0",
+          "date": "2026-07-24",
+          "event": "v13.9 — учене",
+          "detail": "Научи: panev/robots.txt explicit UA групи (Bingbot, Applebot, ChatGPT-User, OAI-SearchBot, Cla… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „panev/robots.txt explicit UA групи (Bingbot, Applebot, ChatGPT-User, OAI-SearchBot, Cla…\" (+3 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
