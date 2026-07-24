@@ -30,3 +30,23 @@ test("./ префикс се нормализира", () => {
   const r = checkScope(["./medqr/a.js", "./panev/b.js"]);
   assert.equal(r.ok, false);
 });
+
+// ── Red-team F1 (razbivacha 2026-07-24): абсолютни пътища обезсилваха гейта ──
+test("АБСОЛЮТНИ пътища с root → релативизират се и хващат 2 продукта (F1)", () => {
+  const root = "/home/user/Few-few";
+  const r = checkScope([`${root}/medqr/server.js`, `${root}/zabobovdol/src/app/page.tsx`], root);
+  assert.equal(r.ok, false, "трябва да хване scope-creep при абсолютни пътища");
+  assert.deepEqual(r.products, ["medqr", "zabobovdol"]);
+});
+
+test("абсолютни пътища в ЕДИН продукт (+ инфра) с root → ок", () => {
+  const root = "/home/user/Few-few";
+  const r = checkScope([`${root}/medqr/a.js`, `${root}/tools/agents/x.mjs`], root);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.products, ["medqr"]);
+});
+
+test("абсолютен път БЕЗ root вече не мислабелва като продукт '' (F1 регресия)", () => {
+  const r = checkScope(["/home/user/Few-few/medqr/a.js", "/home/user/Few-few/panev/b.js"]);
+  assert.ok(!r.products.includes(""), "празен продукт не бива да съществува");
+});

@@ -1,0 +1,1 @@
+{"date":"2026-07-24","agent":"razbivacha","desc":"F1: scope-check обезсилен в dod-check при абсолютни пътища (seg[0]='' → всички в един празен продукт); гейтът no-op в реално време. Fix: checkScope релативизира спрямо root.","spec":"scope-check-f1"}
