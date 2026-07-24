@@ -7730,9 +7730,20 @@
           "date": "2026-07-10",
           "event": "v10.4 — учене",
           "detail": "Научи: Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…"
+        },
+        {
+          "version": "12.4.0",
+          "date": "2026-07-24",
+          "event": "v12.4 — учене",
+          "detail": "Научи: constructEvent/construct_event има default replay толеранс 5 минути между timestamp-а в… (+19 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „constructEvent/construct_event има default replay толеранс 5 минути между timestamp-а в…\" (+19 още)"
+        },
         {
           "date": "2026-07-23",
           "type": "quarantine",
