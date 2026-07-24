@@ -1595,9 +1595,20 @@
           "date": "2026-07-24",
           "event": "v15.0 — учене",
           "detail": "Научи: panev/server.js clean-URL слоят прави безкраен 301-цикъл за реални папки без index.html… (+1 още)"
+        },
+        {
+          "version": "15.3.0",
+          "date": "2026-07-24",
+          "event": "v15.3 — учене",
+          "detail": "Научи: В Express req.path НЕ е percent-decoded, докато express.static/send декодират преди да … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „В Express req.path НЕ е percent-decoded, докато express.static/send декодират преди да …\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
