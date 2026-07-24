@@ -7956,9 +7956,20 @@
           "date": "2026-07-24",
           "event": "v14.3 — учене",
           "detail": "Научи: SetupIntent usage: default е off_session (важи и за on+off). off_session прави UPFRONT … (+18 още)"
+        },
+        {
+          "version": "14.5.0",
+          "date": "2026-07-24",
+          "event": "v14.5 — учене",
+          "detail": "Научи: КОРЕКЦИЯ на ред 32: €150-те са ДВА различни прага. (а) Митническото (customs duty) осво… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „КОРЕКЦИЯ на ред 32: €150-те са ДВА различни прага. (а) Митническото (customs duty) осво…\" (+1 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
