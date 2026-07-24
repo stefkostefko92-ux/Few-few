@@ -3337,9 +3337,20 @@
           "date": "2026-07-16",
           "event": "v10.7 — учене",
           "detail": "Научи: Ospedali Trasparenti: glossario.html НЕ е в главния NAV (src/lib/site-ui.js:293-307) — … (+1 още)"
+        },
+        {
+          "version": "12.8.0",
+          "date": "2026-07-24",
+          "event": "v12.8 — учене",
+          "detail": "Научи: CWV headline прагове 2026 остават непроменени — LCP <2.5s, INP <200ms, CLS <0.1 (75-ти … (+20 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „CWV headline прагове 2026 остават непроменени — LCP <2.5s, INP <200ms, CLS <0.1 (75-ти …\" (+20 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-19",
           "type": "quarantine",
