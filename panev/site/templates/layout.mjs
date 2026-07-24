@@ -49,6 +49,8 @@ function organizationLd(t) {
     email: COMPANY.email,
     telephone: COMPANY.phone,
     vatID: COMPANY.vat,
+    taxID: COMPANY.vat.replace(/^IT/, ''),
+    identifier: { '@type': 'PropertyValue', propertyID: 'REA', value: COMPANY.rea },
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Via Madonna del Salvatore 6',
@@ -230,6 +232,7 @@ ${orderDrawer(t)}
         <li>${esc(COMPANY.legalSeat)}</li>
         <li>${esc(t.contactsPage.rows.operative)}: ${esc(COMPANY.operativeSeat)}</li>
         <li>${esc(t.contactsPage.rows.vat)} ${esc(COMPANY.vat)}</li>
+        <li>REA ${esc(COMPANY.rea)} — ${esc(COMPANY.registry)}</li>
         <li><a href="tel:${COMPANY.phoneHref}">${esc(COMPANY.phone)}</a></li>
         <li><a href="mailto:${COMPANY.email}">${esc(COMPANY.email)}</a></li>
       </ul>

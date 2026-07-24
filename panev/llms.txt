@@ -8,7 +8,8 @@
 ## Azienda
 
 - **Ragione sociale:** Panev Ascensori SAS
-- **P.IVA:** IT09346970966
+- **P.IVA / C.F.:** IT09346970966
+- **REA:** MI - 2084376 (Registro Imprese di Milano Monza Brianza Lodi)
 - **Sede legale:** Via Madonna del Salvatore 6, 20010 Vittuone (MI), Italia
 - **Sede operativa:** Via Milano 7, Cornaredo (MI), Italia
 - **Email (ordini e preventivi):** info@panevascensori.it

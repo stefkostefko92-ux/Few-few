@@ -476,6 +476,7 @@ export function contactsPage(t, locales) {
         <div class="spec-row"><dt>${esc(c.rows.legal)}</dt><dd>${esc(COMPANY.legalSeat)}</dd></div>
         <div class="spec-row"><dt>${esc(c.rows.operative)}</dt><dd>${esc(COMPANY.operativeSeat)}</dd></div>
         <div class="spec-row"><dt>${esc(c.rows.vat)}</dt><dd>${esc(COMPANY.vat)}</dd></div>
+        <div class="spec-row"><dt>REA</dt><dd>${esc(COMPANY.rea)} · ${esc(COMPANY.registry)}</dd></div>
       </dl>
 
       <h2 class="mt">${esc(c.shippingTitle)}</h2>
