@@ -61,7 +61,9 @@ function parseLearn(block) {
     let m;
     if ((m = line.match(/^\s*agent:\s*(.+)$/))) res.agent = m[1].trim().replace(/^["']|["']$/g, "");
     else if ((m = line.match(/^\s*date:\s*(.+)$/))) res.date = m[1].trim();
-    else if ((m = line.match(/^\s*-\s*text:\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
+    // Приема и `text:`, и `lesson:` като начало на поука (агентите естествено варират ключа —
+    // nabludatelya/analizatora ползваха `lesson:` и поуките им бяха тихо изхвърлени).
+    else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
     else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = m[1].trim().toLowerCase();
     else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = m[1].trim();
     else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
