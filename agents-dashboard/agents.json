@@ -11197,9 +11197,20 @@
           "date": "2026-07-24",
           "event": "v11.3 — учене",
           "detail": "Научи: discord.js стабилна линия вече v14.27.0 (последна публикувана ~7 дни преди 2026-07-24) … (+10 още)"
+        },
+        {
+          "version": "12.9.0",
+          "date": "2026-07-24",
+          "event": "v12.9 — учене",
+          "detail": "Научи: AutoMod trigger types: KEYWORD=1 (макс 6 правила/guild), SPAM=3 (макс 1), KEYWORD_PRESE… (+15 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „AutoMod trigger types: KEYWORD=1 (макс 6 правила/guild), SPAM=3 (макс 1), KEYWORD_PRESE…\" (+15 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
