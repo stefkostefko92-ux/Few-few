@@ -3387,9 +3387,20 @@
           "date": "2026-07-24",
           "event": "v12.8 — учене",
           "detail": "Научи: CWV headline прагове 2026 остават непроменени — LCP <2.5s, INP <200ms, CLS <0.1 (75-ти … (+20 още)"
+        },
+        {
+          "version": "13.4.0",
+          "date": "2026-07-24",
+          "event": "v13.4 — учене",
+          "detail": "Научи: Google Search Central потвърждава: JSON-LD, Microdata и RDFa са трите ЕДНАКВО поддържан… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Google Search Central потвърждава: JSON-LD, Microdata и RDFa са трите ЕДНАКВО поддържан…\" (+5 още) · 4 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
