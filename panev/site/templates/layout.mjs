@@ -69,6 +69,7 @@ function organizationLd(t) {
     knowsAbout: [
       'staffe per ascensori', 'staffe porte di piano', 'guide del contrappeso',
       'lift brackets', 'landing door brackets', 'counterweight guide rails',
+      'планки за асансьори', 'планки за етажни врати', 'водачи на противотежестта',
       'brevetto Modello di Utilità UIBM 202023000002112',
     ],
   };
@@ -129,6 +130,9 @@ ${hreflangLinks(locales, pageKey)}
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${ORIGIN}${ogImage}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${esc(m.title)}">
+  <meta name="twitter:description" content="${esc(m.description)}">
+  <meta name="twitter:image" content="${ORIGIN}${ogImage}">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   <link rel="preload" href="/fonts/Inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>

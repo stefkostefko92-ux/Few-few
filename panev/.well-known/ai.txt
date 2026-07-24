@@ -72,7 +72,7 @@ Allow: /
 # "Brevetto per Modello di Utilità N. 202023000002112 — Panev Ascensori SAS"
 #
 # For product specifications, please link to the source page:
-# https://panevascensori.it/prodotti.html
+# https://panevascensori.it/prodotti
 
 # ── Contact ────────────────────────────────────────────────
 Contact: mailto:info@panevascensori.it

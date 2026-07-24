@@ -60,13 +60,17 @@ setInterval(() => {
 
 // Daily cleanup: стари login опити + съобщения над 24 месеца (обещано в
 // информативата — чл. 5.1.д GDPR; поръчковата документация живее другаде).
-setInterval(() => {
+// Пуска се веднага при старт + после на 24ч интервал (сървър, който рестартира
+// по-често от дневно, иначе рядко би достигал prune-а).
+function runCleanup() {
   try { db.cleanupLoginAttempts(); } catch (e) { console.error('[cleanup]', e.message); }
   try {
     const n = db.pruneOldMessages();
     if (n) console.log(`[cleanup] ${n} messaggi oltre 24 mesi rimossi`);
   } catch (e) { console.error('[cleanup]', e.message); }
-}, 24 * 60 * 60 * 1000);
+}
+runCleanup();
+setInterval(runCleanup, 24 * 60 * 60 * 1000);
 
 function sanitize(str, maxLen = 500) {
   if (str == null) return '';

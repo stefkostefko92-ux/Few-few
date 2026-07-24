@@ -1,6 +1,6 @@
 # ============================================================
 #  PANEV ASCENSORI — robots.txt
-#  https://www.panevascensori.it/
+#  https://panevascensori.it/
 #  Format: https://www.rfc-editor.org/rfc/rfc9309
 # ============================================================
 
