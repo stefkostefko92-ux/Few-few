@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-23",
+    "updated": "2026-07-24",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -12066,9 +12066,20 @@
           "date": "2026-07-22",
           "event": "v10.2 — учене",
           "detail": "Научи: actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN д… (+1 още)"
+        },
+        {
+          "version": "12.1.0",
+          "date": "2026-07-24",
+          "event": "v12.1 — учене",
+          "detail": "Научи: Pin по подвижен таг (@v4) = риск: maintainer/token компрометиран → tag re-point → malic… (+18 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Pin по подвижен таг (@v4) = риск: maintainer/token компрометиран → tag re-point → malic…\" (+18 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
