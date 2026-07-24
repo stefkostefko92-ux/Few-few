@@ -3404,9 +3404,20 @@
           "date": "2026-07-24",
           "event": "v13.4 — учене",
           "detail": "Научи: Google Search Central потвърждава: JSON-LD, Microdata и RDFa са трите ЕДНАКВО поддържан… (+5 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: GEO/AEO примирение (не конфликт): 'content depth' и 'кратък answer-first лийд' са разли…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „GEO/AEO примирение (не конфликт): 'content depth' и 'кратък answer-first лийд' са разли…\""
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
