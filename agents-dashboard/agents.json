@@ -12223,9 +12223,20 @@
           "date": "2026-07-19",
           "event": "Научи CCCR тест-методологията (kimi-code)",
           "detail": "Усвои тествай-контракта-не-имплементацията от kimi-code test lens: едно поведение/it, name=поведение+условие+изход, стъбвай само реалната граница, време през knobs (не fake timers), DAMP, изолация, CCCR bar. +12 проверени поуки."
+        },
+        {
+          "version": "13.8.0",
+          "date": "2026-07-24",
+          "event": "v13.8 — учене",
+          "detail": "Научи: Playwright auto-waiting не покрива API отговор/route промяна — избирай wait по СИГНАЛ: … (+25 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Playwright auto-waiting не покрива API отговор/route промяна — избирай wait по СИГНАЛ: …\" (+25 още)"
+        },
         {
           "date": "2026-07-19",
           "type": "learning",
