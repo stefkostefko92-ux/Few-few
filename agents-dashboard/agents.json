@@ -6369,9 +6369,20 @@
           "date": "2026-07-06",
           "event": "v11.0 — учене",
           "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
+        },
+        {
+          "version": "12.7.0",
+          "date": "2026-07-24",
+          "event": "v12.7 — учене",
+          "detail": "Научи: QuickSurface 2026 (Siemens Parasolid kernel) добавя конкретни именувани инструменти: 'L… (+15 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface 2026 (Siemens Parasolid kernel) добавя конкретни именувани инструменти: 'L…\" (+15 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
