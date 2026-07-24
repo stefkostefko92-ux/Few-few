@@ -2162,9 +2162,20 @@
           "date": "2026-07-19",
           "event": "Научи ревю-обектива SLAP (kimi-code)",
           "detail": "Усвои Single Level of Abstraction + слоесто обработване на грешки от kimi-code slop lens: SLAP, тест-без-и, down/up класификация, сензор≠съдия (severity downstream), Extract-минимален diff. +12 проверени поуки."
+        },
+        {
+          "version": "12.6.0",
+          "date": "2026-07-24",
+          "event": "v12.6 — учене",
+          "detail": "Научи: Mutation score = detected / valid × 100, където detected = killed + timeout, а valid = … (+13 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Mutation score = detected / valid × 100, където detected = killed + timeout, а valid = …\" (+13 още)"
+        },
         {
           "date": "2026-07-19",
           "type": "learning",
