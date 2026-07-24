@@ -4921,9 +4921,20 @@
           "date": "2026-07-24",
           "event": "v12.0 — учене",
           "detail": "Научи: Nested create/connect/connectOrCreate/createMany НЕ могат вътре в ТОП-НИВО createMany()… (+11 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: zabobovdol/prisma/schema.prisma ползва изключително String @id @default(cuid()) за всич… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol/prisma/schema.prisma ползва изключително String @id @default(cuid()) за всич…\" (+14 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
