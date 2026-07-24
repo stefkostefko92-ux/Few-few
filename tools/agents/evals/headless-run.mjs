@@ -8,11 +8,15 @@
 //   node tools/agents/evals/headless-run.mjs --dry          # само покажи какво би пуснал
 //
 // Изисква: `claude` CLI + ANTHROPIC_API_KEY в средата (CI secret — НИКОГА в репото).
-// Без ключ → изход 0 с ясно съобщение (гейтът не лъже червено заради липсваща конфигурация).
-// Цена: критичните са 8 рънa; --all е ~54 — пускай --all нарочно, не по каданс.
+// Без ключ/CLI → изход 0 с ясно съобщение (гейтът не лъже червено заради липсваща конфигурация).
+//
+// ПОУКА (run 30044070028): кодът беше непроверен и падна при първи реален контакт. Сега е
+// САМОДИАГНОСТИЦИРАЩ: probe на CLI преди 8-те скъпи рънa, feature-detect на флагове (`--bare`
+// не съществува в стар CLI → всяко извикване падаше мигновено), stderr се хваща и показва,
+// нула изходи → чист диагностичен изход (не stack trace). Цена: критичните = 8 рънa.
 
 import { execSync, execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -26,38 +30,75 @@ function agentBody(id) {
   return raw.replace(/^---[\s\S]*?---\n/, ""); // без frontmatter — само системният промпт
 }
 
+// Извиква claude, връща {ok, out, err}. Никога не хвърля — грешката е ДАННИ, не крах.
+function claudeRun(args) {
+  try {
+    const out = execFileSync("claude", args, { encoding: "utf8", timeout: 300000, cwd: ROOT, stdio: ["ignore", "pipe", "pipe"] });
+    return { ok: true, out, err: "" };
+  } catch (e) {
+    return { ok: false, out: e.stdout || "", err: (e.stderr || e.message || "").toString().slice(0, 400) };
+  }
+}
+
+function cliSupports(flag) {
+  try { return execFileSync("claude", ["--help"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).includes(flag); }
+  catch { return false; }
+}
+
 function main() {
-  if (!process.env.ANTHROPIC_API_KEY && !argv.includes("--dry")) {
-    console.log("headless-run: няма ANTHROPIC_API_KEY в средата — пропускам (добави го като CI secret, никога в репото). Изход 0.");
-    process.exit(0);
+  const dry = argv.includes("--dry");
+  if (!process.env.ANTHROPIC_API_KEY && !dry) {
+    console.log("headless-run: няма ANTHROPIC_API_KEY — пропускам (добави като CI secret, никога в репото). Изход 0."); process.exit(0);
   }
-  try { execSync("command -v claude", { encoding: "utf8" }); } catch {
-    if (!argv.includes("--dry")) { console.log("headless-run: няма `claude` CLI — пропускам. Изход 0."); process.exit(0); }
-  }
+  try { execSync("command -v claude", { stdio: "ignore" }); }
+  catch { if (!dry) { console.log("headless-run: няма `claude` CLI — пропускам. Изход 0."); process.exit(0); } }
 
   const plan = JSON.parse(execSync(`node ${join(HERE, "run-plan.mjs")}${argv.includes("--all") ? "" : " --critical"}`, { encoding: "utf8" }));
-  console.log(`headless-run: ${plan.length} рънa${argv.includes("--dry") ? " (dry)" : ""}`);
-  if (argv.includes("--dry")) { plan.forEach((p) => console.log(`  · ${p.specId} (${p.agent})`)); process.exit(0); }
+  const specIds = new Set(plan.map((p) => p.specId));
+  console.log(`headless-run: ${plan.length} рънa${dry ? " (dry)" : ""}`);
+  if (dry) { plan.forEach((p) => console.log(`  · ${p.specId} (${p.agent})`)); process.exit(0); }
+
+  // ── Probe: работи ли CLI headless ИЗОБЩО, преди 8-те скъпи рънa? ──
+  console.log(`claude версия: ${(() => { const r = claudeRun(["--version"]); return r.ok ? r.out.trim() : "?"; })()}`);
+  const probe = claudeRun(["-p", "Отговори само с думата: ok", "--output-format", "text"]);
+  if (!probe.ok) {
+    console.error(`✗ headless-run: probe извикването се провали — CLI не работи headless в тази среда.\n  stderr: ${probe.err}\n  (вероятно: авторизация/permission режим или флагов формат. Ключът присъства, но CLI не тръгва.)`);
+    process.exit(1);
+  }
+  console.log(`✓ probe ok (${probe.out.trim().slice(0, 40)})`);
+
+  // Feature-detect: --bare изолира от auto-discovery, но липсва в стар CLI → ползвай само ако е наличен.
+  const bare = cliSupports("--bare");
+  console.log(`--bare поддръжка: ${bare ? "да (изолиран режим)" : "не (auto-discovery активен)"}`);
 
   mkdirSync(OUT, { recursive: true });
-  let failed = 0;
+  let produced = 0;
   for (const p of plan) {
-    try {
-      // execFile (не shell) — задачата/дефиницията не минават през shell интерполация.
-      // --bare: без auto-discovery (hooks/skills/CLAUDE.md) → тестваме ЧИСТАТА дефиниция, детерминистично (проверено: code.claude.com/docs/en/headless).
-      const out = execFileSync("claude", ["-p", p.task, "--bare", "--append-system-prompt", agentBody(p.agent), "--output-format", "text"], { encoding: "utf8", timeout: 300000, cwd: ROOT });
-      writeFileSync(join(OUT, p.specId + ".txt"), out);
-      console.log(`  ✓ ${p.specId} (${out.length} знака)`);
-    } catch (e) { failed++; console.log(`  ✗ ${p.specId}: ${String(e.message).slice(0, 120)}`); }
+    const args = ["-p", p.task, ...(bare ? ["--bare"] : []), "--append-system-prompt", agentBody(p.agent), "--output-format", "text"];
+    const r = claudeRun(args);
+    if (r.ok && r.out.trim()) { writeFileSync(join(OUT, p.specId + ".txt"), r.out); produced++; console.log(`  ✓ ${p.specId} (${r.out.length} знака)`); }
+    else console.log(`  ✗ ${p.specId}: ${r.err || "празен изход"}`);
   }
 
-  // Скориране: golden + verifier (verifier само за покритите агенти — той сам пропуска другите).
-  execSync(`node ${join(HERE, "eval.mjs")} --run ${OUT} --record`, { stdio: "inherit" });
-  for (const p of plan) {
-    try { execSync(`node ${join(ROOT, "tools", "agents", "verifier.mjs")} ${p.agent} ${join(OUT, p.specId + ".txt")}`, { stdio: "inherit" }); }
-    catch { failed++; }
+  if (!produced) {
+    console.error(`✗ headless-run: нула произведени изхода от ${plan.length} рънa — виж ✗ грешките по-горе. НЕ скорирам (нула резултата = безсмислено). Изход 1.`);
+    process.exit(1);
   }
-  process.exit(failed ? 1 : 0);
+
+  // ── Скориране само върху РЕАЛНО произведените файлове ──
+  const madeIds = new Set(readdirSync(OUT).filter((f) => f.endsWith(".txt")).map((f) => f.replace(/\.txt$/, "")).filter((id) => specIds.has(id)));
+  console.log(`\nСкориране на ${madeIds.size}/${plan.length} произведени изхода:`);
+  try { execSync(`node ${join(HERE, "eval.mjs")} --run ${OUT} --record`, { stdio: "inherit" }); }
+  catch { /* eval връща ≠0 при провалени проверки — това е РЕЗУЛТАТ, не крах на скрипта */ }
+  let vfail = 0;
+  for (const p of plan) {
+    if (!existsSync(join(OUT, p.specId + ".txt"))) continue;
+    try { execSync(`node ${join(ROOT, "tools", "agents", "verifier.mjs")} ${p.agent} ${join(OUT, p.specId + ".txt")}`, { stdio: "inherit" }); }
+    catch { vfail++; }
+  }
+  console.log(`\nИтог: ${produced}/${plan.length} изхода · verifier провали: ${vfail}`);
+  // Провал на behavioral eval = агент не покри инвариантите си (verifier) → червено; частично произведени също.
+  process.exit(vfail || produced < plan.length ? 1 : 0);
 }
 
 main();
