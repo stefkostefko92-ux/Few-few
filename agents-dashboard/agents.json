@@ -12940,9 +12940,20 @@
           "date": "2026-07-24",
           "event": "v11.8 — учене",
           "detail": "Научи: GA4 стандарт: default event-data retention = 2 месеца, максимум 14 месеца; 26/38/50 мес… (+17 още)"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-07-24",
+          "event": "v14.2 — учене",
+          "detail": "Научи: CUPED (Controlled experiment Using Pre-Experiment Data) намалява дисперсията чрез pre-e… (+23 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „CUPED (Controlled experiment Using Pre-Experiment Data) намалява дисперсията чрез pre-e…\" (+23 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
