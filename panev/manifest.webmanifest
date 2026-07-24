@@ -1,16 +1,19 @@
 {
   "name": "Panev Ascensori SAS",
   "short_name": "Panev",
-  "description": "Produttore italiano di staffe brevettate UIBM N. 202023000002112 per porte di ascensori e montacarichi. Dal 2013.",
+  "description": "Produttore italiano di staffe brevettate UIBM N. 202023000002112 per porte di piano e guide del contrappeso di ascensori e montacarichi.",
   "lang": "it-IT",
   "dir": "ltr",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "theme_color": "#070e1a",
-  "background_color": "#070e1a",
-  "categories": ["business", "productivity"],
+  "theme_color": "#162862",
+  "background_color": "#101d49",
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/img/apple-touch-icon.png",
@@ -37,21 +40,39 @@
       "short_name": "Prodotti",
       "description": "Vedi le 27 staffe brevettate",
       "url": "/prodotti.html",
-      "icons": [{ "src": "/img/panev-logo.png", "sizes": "any", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/img/panev-logo.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Richiedi Preventivo",
       "short_name": "Contatti",
       "description": "Preventivo gratuito in 2h",
       "url": "/contatti.html",
-      "icons": [{ "src": "/img/panev-logo.png", "sizes": "any", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/img/panev-logo.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Catalogo PDF",
       "short_name": "PDF",
       "description": "Scarica il catalogo tecnico",
       "url": "/catalogo.html",
-      "icons": [{ "src": "/img/panev-logo.png", "sizes": "any", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/img/panev-logo.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

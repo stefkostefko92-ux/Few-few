@@ -180,22 +180,28 @@ app.use((req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-//  Clean URL system (SEO best practice, no .html exposed)
-//  - /brevetto         → serves brevetto.html
-//  - /brevetto.html    → 301 redirect to /brevetto
-//  - /brevetto/        → 301 redirect to /brevetto
+//  Clean URL system (без .html в адресите) + legacy redirects
+//  - /prodotti          → serves prodotti.html
+//  - /prodotti.html     → 301 redirect to /prodotti
+//  - /en/products       → serves en/products.html (важи и за подпапки)
+//  - /en/ , /bg/        → serves the directory index.html
+//  Старите адреси (servizi, carrello…) получават траен 301 към
+//  съответната нова страница — сайтът 2026 е изцяло нов.
 // ─────────────────────────────────────────────────────────────
-const CLEAN_URL_PAGES = new Set([
-  'brevetto', 'prodotti', 'catalogo', 'servizi', 'chi-siamo',
-  'contatti', 'carrello', 'success', 'privacy', 'cookie', 'termini', 'faq', 'en'
+const LEGACY_REDIRECTS = new Map([
+  ['/servizi', '/'], ['/chi-siamo', '/'], ['/brevetto', '/'],
+  ['/faq', '/contatti'], ['/carrello', '/prodotti'], ['/success', '/prodotti'],
+  ['/cookie', '/privacy'], ['/termini', '/condizioni'], ['/en', '/en/'],
 ]);
 
 app.use((req, res, next) => {
   const p = req.path;
 
-  // Guard against protocol-relative / backslash open redirects:
+  // Guard against protocol-relative / backslash / traversal paths:
   // a request to //evil.com would otherwise yield Location: //evil.com.
-  if (p.startsWith('//') || p.includes('\\')) return res.status(400).send('Bad request');
+  if (p.startsWith('//') || p.includes('\\') || p.includes('..')) {
+    return res.status(400).send('Bad request');
+  }
 
   // Skip asset requests and API
   if (p.startsWith('/api/') || p.startsWith('/admin') ||
@@ -203,28 +209,46 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // Strip trailing slash (but keep root /)
-  if (p.length > 1 && p.endsWith('/')) {
-    return res.redirect(301, p.slice(0, -1) + (req.url.slice(p.length) || ''));
+  const query = req.url.slice(p.length) || '';
+  const bare = p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p;
+  const legacyKey = bare.toLowerCase().replace(/\.html$/, '');
+  if (LEGACY_REDIRECTS.has(legacyKey)) {
+    const target = LEGACY_REDIRECTS.get(legacyKey);
+    // Не пренасочвай към самия себе си (напр. /en/ → /en/)
+    if (target !== p) return res.redirect(301, target + query);
   }
 
-  // Redirect /page.html → /page (301)
-  const htmlMatch = p.match(/^\/([^\/]+)\.html$/i);
-  if (htmlMatch) {
-    const slug = htmlMatch[1].toLowerCase();
-    if (slug === 'index') return res.redirect(301, '/');
-    if (CLEAN_URL_PAGES.has(slug)) {
-      return res.redirect(301, '/' + slug + (req.url.slice(p.length) || ''));
+  // Директория с index.html → сервирай индекса директно (без верига редиректи)
+  if (p.endsWith('/')) {
+    if (fs.existsSync(path.join(__dirname, p, 'index.html'))) {
+      req.url = p + 'index.html' + query;
+      return next();
     }
+    if (p.length > 1) return res.redirect(301, p.slice(0, -1) + query);
+    return next();
   }
 
-  // Rewrite /page → /page.html (serve underlying file)
-  const cleanMatch = p.match(/^\/([^\/.]+)$/);
-  if (cleanMatch) {
-    const slug = cleanMatch[1].toLowerCase();
-    if (CLEAN_URL_PAGES.has(slug)) {
-      req.url = '/' + slug + '.html' + (req.url.slice(p.length) || '');
+  // /page.html → 301 /page (само ако файлът реално съществува)
+  if (/\.html$/i.test(p)) {
+    const slug = p.slice(0, -5);
+    if (/\/index$/i.test(slug)) {
+      return res.redirect(301, slug.slice(0, -5) || '/');
     }
+    if (fs.existsSync(path.join(__dirname, p))) {
+      return res.redirect(301, slug + query);
+    }
+    return next();
+  }
+
+  // Без разширение: /page → serve page.html; /dir → 301 /dir/
+  if (!path.extname(p)) {
+    if (fs.existsSync(path.join(__dirname, p + '.html'))) {
+      req.url = p + '.html' + query;
+      return next();
+    }
+    let st = null;
+    try { st = fs.statSync(path.join(__dirname, p)); } catch (e) { /* няма такъв път */ }
+    if (st && st.isDirectory()) return res.redirect(301, p + '/' + query);
   }
 
   next();
@@ -332,310 +356,11 @@ app.get('/api/products/:id', apiLimiter, (req, res) => {
   res.json({ product: p });
 });
 
-// Per-product SEO pages — /prodotti/<ID>.html
-// These are server-rendered HTML with full schema.org Product markup
-app.get(/^\/prodotti\/([A-Za-z0-9_-]+)\.html$/, apiLimiter, (req, res) => {
-  const id = req.params[0];
-  const p = db.getProduct(id);
-  if (!p || !p.available) {
-    res.status(404);
-    const fs = require('fs');
-    const notFoundPath = path.join(__dirname, '404.html');
-    if (fs.existsSync(notFoundPath)) return res.sendFile(notFoundPath);
-    return res.sendFile(path.join(__dirname, 'index.html'));
-  }
-
-  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
-  res.setHeader('X-Robots-Tag', 'index, follow');
-  res.type('html').send(renderProductPage(p));
+// Legacy per-product pages — /prodotti/<ID>.html съществуваха в стария
+// e-commerce фронт; пренасочваме траен (301) към новия ценоразпис.
+app.get(/^\/prodotti\/([A-Za-z0-9_-]+)\.html$/, (req, res) => {
+  res.redirect(301, '/prodotti');
 });
-
-function escHtml(s) {
-  if (s == null) return '';
-  return String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
-
-// Safe embedding of JSON into <script> blocks: JSON.stringify does NOT escape
-// '<' or the line separators, so a raw </script> or U+2028/2029 in any field
-// could break out of the script element. Escape them at the output boundary.
-function ldjson(obj) {
-  return JSON.stringify(obj)
-    .replace(/</g, '\\u003c')
-    .replace(/\u2028/g, '\\u2028')
-    .replace(/\u2029/g, '\\u2029');
-}
-
-function renderProductPage(p) {
-  const title = `${p.name}${p.codice ? ' (' + p.codice + ')' : ''} | Panev Ascensori`;
-  const desc = (p.description || p.descrizione || p.name).slice(0, 155);
-  const url  = `${BASE_URL}/prodotti/${p.id}.html`;
-  const img  = p.image ? `${BASE_URL}/${p.image.replace(/^\//, '')}` : `${BASE_URL}/img/og-prodotti.jpg`;
-  const priceStr = p.price > 0
-    ? `€${p.price.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : 'Su richiesta';
-  const breadcrumb = [
-    { name: 'Home', url: BASE_URL + '/' },
-    { name: 'Prodotti', url: BASE_URL + '/prodotti.html' },
-    { name: p.name, url },
-  ];
-
-  // Product schema
-  const productSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    '@id': url + '#product',
-    name: p.name,
-    description: p.description || p.descrizione || p.name,
-    sku: p.id,
-    mpn: p.codice || p.id,
-    category: p.category,
-    image: img,
-    url,
-    brand: {
-      '@type': 'Brand',
-      name: 'Panev Ascensori',
-      logo: `${BASE_URL}/img/panev-logo.png`,
-    },
-    manufacturer: {
-      '@type': 'Organization',
-      name: 'Panev Ascensori SAS',
-      url: BASE_URL,
-    },
-    material: p.materiale || undefined,
-    countryOfOrigin: { '@type': 'Country', name: 'Italia' },
-  };
-  if (p.patented) {
-    productSchema.isRelatedTo = {
-      '@type': 'CreativeWork',
-      name: 'Brevetto per Modello di Utilità N. 202023000002112',
-      identifier: '202023000002112',
-    };
-  }
-  if (p.price > 0) {
-    productSchema.offers = {
-      '@type': 'Offer',
-      url,
-      priceCurrency: 'EUR',
-      price: p.price.toFixed(2),
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      availability: 'https://schema.org/InStock',
-      itemCondition: 'https://schema.org/NewCondition',
-      seller: { '@type': 'Organization', name: 'Panev Ascensori SAS', url: BASE_URL },
-    };
-  } else {
-    productSchema.offers = {
-      '@type': 'Offer',
-      url,
-      availability: 'https://schema.org/InStock',
-      priceSpecification: { '@type': 'PriceSpecification', priceCurrency: 'EUR', price: 0, description: 'Prezzo su richiesta' },
-    };
-  }
-  // AdditionalProperty for technical specs
-  const addProps = [];
-  if (p.spessore)  addProps.push({ '@type': 'PropertyValue', name: 'Spessore',  value: p.spessore });
-  if (p.larghezza) addProps.push({ '@type': 'PropertyValue', name: 'Larghezza', value: p.larghezza });
-  if (p.lunghezza) addProps.push({ '@type': 'PropertyValue', name: 'Lunghezza', value: p.lunghezza });
-  if (p.range)     addProps.push({ '@type': 'PropertyValue', name: 'Range di estensione', value: p.range });
-  if (p.asole)     addProps.push({ '@type': 'PropertyValue', name: 'Asole', value: String(p.asole) });
-  if (p.materiale) addProps.push({ '@type': 'PropertyValue', name: 'Materiale', value: p.materiale });
-  if (p.codice)    addProps.push({ '@type': 'PropertyValue', name: 'Codice articolo', value: p.codice });
-  if (addProps.length) productSchema.additionalProperty = addProps;
-
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: breadcrumb.map((b, i) => ({
-      '@type': 'ListItem', position: i + 1, name: b.name, item: b.url,
-    })),
-  };
-
-  // Build picture element with WebP + fallback
-  let heroImageHtml;
-  if (p.image) {
-    const webpImg = p.image.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-    const altText = `${p.name} — ${p.codice || p.id}`;
-    heroImageHtml = `<picture>
-      <source srcset="/${escHtml(webpImg)}" type="image/webp">
-      <img itemprop="image" src="/${escHtml(p.image)}" alt="${escHtml(altText)}" style="max-width:100%;max-height:100%;object-fit:contain" fetchpriority="high" width="500" height="500" decoding="async">
-    </picture>`;
-  } else {
-    heroImageHtml = `<div style="font-size:8rem">${escHtml(p.icon || '📦')}</div>`;
-  }
-
-  // Technical specs list
-  const specsHtml = addProps.map(a =>
-    `<div class="spec-row"><span class="spec-label">${escHtml(a.name)}</span><strong>${escHtml(a.value)}</strong></div>`
-  ).join('');
-
-  const badgeHtml = p.patented
-    ? '<span class="product-badge" style="background:linear-gradient(135deg,var(--gold),#8a6e30);color:#000">🏛 Brevettata UIBM</span>'
-    : (p.badge ? `<span class="product-badge">${escHtml(p.badge)}</span>` : '');
-
-  return `<!DOCTYPE html>
-<html lang="it" prefix="og: https://ogp.me/ns#">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="format-detection" content="telephone=no">
-
-<title>${escHtml(title)}</title>
-<meta name="description" content="${escHtml(desc)}">
-<meta name="keywords" content="${escHtml(p.name)}, ${escHtml(p.codice || '')}, ${escHtml(p.category)}, staffa ascensore, ${p.patented ? 'brevetto UIBM, ' : ''}Panev Ascensori">
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-<meta name="author" content="Panev Ascensori SAS">
-<meta name="theme-color" content="#070e1a">
-<link rel="canonical" href="${escHtml(url)}">
-<link rel="alternate" hreflang="it"        href="${escHtml(url)}">
-<link rel="alternate" hreflang="it-IT"     href="${escHtml(url)}">
-<link rel="alternate" hreflang="x-default" href="${escHtml(url)}">
-
-<meta name="geo.region" content="IT-MI">
-<meta name="geo.placename" content="Vittuone, Milano">
-<meta name="geo.position" content="45.4593;8.9612">
-<meta name="ICBM" content="45.4593, 8.9612">
-
-<meta property="og:type" content="product">
-<meta property="og:title" content="${escHtml(title)}">
-<meta property="og:description" content="${escHtml(desc)}">
-<meta property="og:url" content="${escHtml(url)}">
-<meta property="og:image" content="${escHtml(img)}">
-<meta property="og:image:alt" content="${escHtml(p.name)}">
-<meta property="og:locale" content="it_IT">
-<meta property="og:site_name" content="Panev Ascensori SAS">
-<meta property="product:price:amount" content="${p.price.toFixed(2)}">
-<meta property="product:price:currency" content="EUR">
-<meta property="product:availability" content="${p.available ? 'in stock' : 'out of stock'}">
-<meta property="product:brand" content="Panev Ascensori">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escHtml(title)}">
-<meta name="twitter:description" content="${escHtml(desc)}">
-<meta name="twitter:image" content="${escHtml(img)}">
-
-<link rel="preload" href="/fonts/Inter-latin-6ab57b19.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/Fraunces-latin-8f90dc37.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" as="image" type="image/webp" href="/${escHtml((p.image || 'img/og-prodotti.jpg').replace(/\.(png|jpe?g)$/i, '.webp'))}" fetchpriority="high">
-<link rel="preload" href="/css/style.css" as="style">
-<link rel="preload" href="/js/app.js" as="script">
-<link rel="stylesheet" href="/fonts/fonts.css">
-<link rel="stylesheet" href="/css/style.css">
-
-<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta name="msapplication-config" content="/browserconfig.xml">
-
-<script type="application/ld+json">${ldjson(productSchema)}</script>
-<script type="application/ld+json">${ldjson(breadcrumbSchema)}</script>
-</head>
-<body>
-
-<header id="navbar"></header>
-<div id="mobile-nav">
-  <span class="mobile-nav-close" id="mobile-nav-close">✕</span>
-  <a href="/index.html">Home</a>
-  <a href="/brevetto.html">Brevetto</a>
-  <a href="/catalogo.html">Catalogo</a>
-  <a href="/servizi.html">Servizi</a>
-  <a href="/prodotti.html">Prodotti</a>
-  <a href="/chi-siamo.html">Chi Siamo</a>
-  <a href="/contatti.html">Contatti</a>
-</div>
-
-<!-- Breadcrumb -->
-<nav aria-label="Breadcrumb" style="padding:1.5rem 0 .5rem;background:var(--surface)">
-  <div class="container">
-    <ol style="display:flex;gap:.5rem;list-style:none;padding:0;margin:0;font-size:.85rem;flex-wrap:wrap">
-      <li><a href="/" style="color:var(--gold)">Home</a></li>
-      <li style="color:var(--text-muted)">›</li>
-      <li><a href="/prodotti.html" style="color:var(--gold)">Prodotti</a></li>
-      <li style="color:var(--text-muted)">›</li>
-      <li style="color:var(--text-muted)">${escHtml(p.category)}</li>
-      <li style="color:var(--text-muted)">›</li>
-      <li style="color:var(--text-primary)" aria-current="page">${escHtml(p.name)}</li>
-    </ol>
-  </div>
-</nav>
-
-<main>
-<article class="section" style="padding:2rem 0 4rem" itemscope itemtype="https://schema.org/Product">
-<div class="container">
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start" class="product-detail-grid">
-
-<!-- Image -->
-<div style="position:sticky;top:100px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative">
-    ${badgeHtml ? `<div style="position:absolute;top:1rem;right:1rem;z-index:2">${badgeHtml}</div>` : ''}
-    ${heroImageHtml}
-  </div>
-</div>
-
-<!-- Info -->
-<div>
-  <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.5rem" itemprop="category">${escHtml(p.category)}</div>
-  <h1 itemprop="name" style="font-size:2.2rem;margin-bottom:.3rem;line-height:1.2">${escHtml(p.name)}</h1>
-  ${p.codice ? `<div style="color:var(--text-muted);font-family:var(--font-mono);letter-spacing:.05em;margin-bottom:1rem" itemprop="mpn">${escHtml(p.codice)}</div>` : ''}
-
-  <div itemprop="offers" itemscope itemtype="https://schema.org/Offer" style="padding:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:2rem">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
-      <span style="color:var(--text-muted);font-size:.85rem">Prezzo indicativo</span>
-      <span style="font-size:1.8rem;font-weight:700;color:var(--gold)" itemprop="price" content="${p.price.toFixed(2)}">${escHtml(priceStr)}</span>
-    </div>
-    <div style="color:var(--text-muted);font-size:.78rem" itemprop="priceCurrency" content="EUR">IVA esclusa · ${p.price > 0 ? 'Sconti volume su richiesta' : 'Contattaci per preventivo personalizzato'}</div>
-    <meta itemprop="availability" content="https://schema.org/InStock">
-    <meta itemprop="itemCondition" content="https://schema.org/NewCondition">
-  </div>
-
-  <h2 style="font-size:1.1rem;margin-bottom:1rem;color:var(--gold)">Specifiche tecniche</h2>
-  <div class="specs-table">${specsHtml}</div>
-
-  <h2 style="font-size:1.1rem;margin:2rem 0 1rem;color:var(--gold)">Descrizione</h2>
-  <p itemprop="description" style="line-height:1.7;color:var(--text-secondary)">${escHtml(p.description || p.descrizione || '')}</p>
-
-  ${p.patented ? `
-  <div style="margin:2rem 0;padding:1.2rem;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:8px">
-    <div style="font-weight:600;color:var(--gold);margin-bottom:.3rem">🏛 Prodotto Brevettato</div>
-    <div style="font-size:.85rem;color:var(--text-muted)">Questo articolo è coperto dal <a href="/brevetto.html" style="color:var(--gold)">Brevetto UIBM N. 202023000002112</a> concesso il 07/01/2025.</div>
-  </div>` : ''}
-
-  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem">
-    <a href="/prodotti.html#${escHtml(p.id)}" class="btn btn-primary">← Torna al catalogo</a>
-    <a href="/contatti.html?ref=${encodeURIComponent(p.id)}" class="btn btn-outline">Richiedi preventivo</a>
-  </div>
-</div>
-
-</div>
-</div>
-</article>
-</main>
-
-<footer id="footer"></footer>
-<div id="cart-sidebar"></div>
-<div id="cart-overlay" class="cart-overlay"></div>
-<div id="toast" class="toast"></div>
-
-<script src="/js/app.js" defer></script>
-<script src="/js/ga4.js" defer></script>
-<script src="/js/cookies.js" defer></script>
-
-<style>
-.product-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; }
-@media(max-width:900px) { .product-detail-grid { grid-template-columns:1fr !important; } .product-detail-grid > div:first-child { position:relative !important; top:0 !important; } }
-.specs-table { display:flex; flex-direction:column; gap:0; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-.spec-row { display:flex; justify-content:space-between; padding:.75rem 1rem; border-bottom:1px solid var(--border); font-size:.9rem; }
-.spec-row:last-child { border-bottom:none; }
-.spec-row:nth-child(odd) { background:var(--surface); }
-.spec-label { color:var(--text-muted); text-transform:uppercase; font-size:.75rem; letter-spacing:.05em; }
-</style>
-
-</body>
-</html>`;
-}
 
 // ─────────────────────────────────────────────────────────────
 //  PUBLIC API (other endpoints)

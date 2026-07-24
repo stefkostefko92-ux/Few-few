@@ -1,13 +1,14 @@
 {
   "name": "panevascensori",
   "version": "2.0.0",
-  "description": "Panev Ascensori – Sito istituzionale + e-commerce con staffe brevettate UIBM N.202023000002112. Stack: Node.js + Express + SQLite + Stripe.",
+  "description": "Panev Ascensori – Sito multilingue (IT/EN/BG) con listino staffe brevettate UIBM N.202023000002112 e ordini via email. Stack: Node.js + Express + SQLite.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:seed": "node scripts/seed.js",
-    "db:reset": "rm -f data/panev.db && node scripts/seed.js"
+    "db:reset": "rm -f data/panev.db && node scripts/seed.js",
+    "build:site": "node site/build.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

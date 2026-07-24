@@ -9,20 +9,12 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /carrello
-Disallow: /carrello.html
-Disallow: /success
-Disallow: /success.html
 
 # ── Search engines ───────────────────────────────────────────
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /carrello
-Disallow: /carrello.html
-Disallow: /success
-Disallow: /success.html
 
 User-agent: Googlebot-Image
 Allow: /img/
@@ -122,4 +114,4 @@ User-agent: serpstatbot
 Disallow: /
 
 # ── Sitemap ──────────────────────────────────────────────────
-Sitemap: https://www.panevascensori.it/sitemap.xml
+Sitemap: https://panevascensori.it/sitemap.xml
