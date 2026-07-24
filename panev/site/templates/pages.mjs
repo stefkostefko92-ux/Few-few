@@ -401,7 +401,7 @@ export function catalogLd(t) {
     name: t.meta.catalog.title,
     url: `${ORIGIN}${CATALOG_PDF}`,
     encodingFormat: 'application/pdf',
-    inLanguage: 'it',
+    inLanguage: t.htmlLang,
     datePublished: '2026-01-01',
     publisher: { '@id': `${ORIGIN}/#organization` },
   }];

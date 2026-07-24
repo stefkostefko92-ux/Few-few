@@ -54,12 +54,25 @@ function organizationLd(t) {
       telephone: COMPANY.phone,
       availableLanguage: ['it', 'en', 'bg'],
     },
+    knowsAbout: [
+      'staffe per ascensori', 'staffe porte di piano', 'guide del contrappeso',
+      'lift brackets', 'landing door brackets', 'counterweight guide rails',
+      'brevetto Modello di Utilità UIBM 202023000002112',
+    ],
   };
 }
 
 export function jsonLd(t, pageKey, extra = []) {
+  const breadcrumb = pageKey === 'home' ? [] : [{
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t.nav.home, item: `${ORIGIN}${pagePath(t, 'home')}` },
+      { '@type': 'ListItem', position: 2, name: t.meta[pageKey].title.split(/[—|]/)[0].trim(), item: `${ORIGIN}${pagePath(t, pageKey)}` },
+    ],
+  }];
   const graph = [
     organizationLd(t),
+    ...breadcrumb,
     {
       '@type': 'WebSite',
       '@id': `${ORIGIN}/#website`,

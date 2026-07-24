@@ -1,5 +1,5 @@
 # AI Usage Policy for panevascensori.it
-# https://www.panevascensori.it/.well-known/ai.txt
+# https://panevascensori.it/.well-known/ai.txt
 #
 # This file declares our policy on AI crawlers and LLM training data.
 # See: https://spawning.ai/ai-txt and https://ai.robots.txt
@@ -72,7 +72,7 @@ Allow: /
 # "Brevetto per Modello di Utilità N. 202023000002112 — Panev Ascensori SAS"
 #
 # For product specifications, please link to the source page:
-# https://www.panevascensori.it/prodotti.html
+# https://panevascensori.it/prodotti.html
 
 # ── Contact ────────────────────────────────────────────────
 Contact: mailto:info@panevascensori.it

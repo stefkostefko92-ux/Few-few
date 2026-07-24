@@ -23,14 +23,17 @@ Disallow: /admin/
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 2
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Applebot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Slurp
 Allow: /
 Crawl-delay: 3
-
+Disallow: /admin/
+Disallow: /api/
 # ── AI crawlers / Answer engines ─────────────────────────────
 User-agent: GPTBot
 Allow: /
@@ -39,10 +42,12 @@ Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: OAI-SearchBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: anthropic-ai
 Allow: /
 Disallow: /admin/
@@ -51,37 +56,58 @@ Disallow: /api/
 User-agent: ClaudeBot
 Allow: /
 Crawl-delay: 2
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Claude-Web
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
 User-agent: Google-Extended
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Applebot-Extended
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: YouBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: CCBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: cohere-ai
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Diffbot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: FacebookBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: meta-externalagent
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 # ── SEO scrapers / crawlers with no search value ─────────────
 User-agent: SemrushBot
 Disallow: /
