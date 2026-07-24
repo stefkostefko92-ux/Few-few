@@ -11,7 +11,7 @@ import en from './data/i18n/en.mjs';
 import bg from './data/i18n/bg.mjs';
 import { page, pagePath, ORIGIN } from './templates/layout.mjs';
 import {
-  homePage, productsPage, productsLd, catalogPage, catalogLd,
+  homePage, homeLd, productsPage, productsLd, catalogPage, catalogLd,
   contactsPage, contactsLd, privacyPage, termsPage,
 } from './templates/pages.mjs';
 
@@ -19,7 +19,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const locales = [it, en, bg];
 
 const PAGES = [
-  { key: 'home',     og: '/img/og-home.jpg',     body: (t) => homePage(t, locales) },
+  { key: 'home',     og: '/img/og-home.jpg',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t) },
   { key: 'products', og: '/img/og-prodotti.jpg', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t) },
   { key: 'catalog',  og: '/img/og-prodotti.jpg', body: (t) => catalogPage(t, locales),  ld: (t) => catalogLd(t) },
   { key: 'contacts', og: '/img/og-contatti.jpg', body: (t) => contactsPage(t, locales), ld: (t) => contactsLd(t) },

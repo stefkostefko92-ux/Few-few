@@ -655,3 +655,27 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 
 /* Котвите не се крият под sticky хедъра */
 .sec-cover, #modulo, #ordina, .sys-card { scroll-margin-top: 84px; }
+
+/* ── FAQ (нативни details/summary — достъпни без JS) ── */
+.faq-list { max-width: 52rem; margin-top: 1.8rem; }
+.faq-item {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  margin-bottom: .8rem; box-shadow: var(--shadow); overflow: hidden;
+}
+.faq-item summary {
+  cursor: pointer; padding: 1.05rem 3rem 1.05rem 1.4rem; list-style: none;
+  position: relative; user-select: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary h3 { display: inline; font-size: 1.02rem; margin: 0; }
+.faq-item summary::after {
+  content: ''; position: absolute; right: 1.4rem; top: 50%;
+  width: .6rem; height: .6rem; border-right: 2px solid var(--navy-2);
+  border-bottom: 2px solid var(--navy-2);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform var(--dur);
+}
+.faq-item[open] summary::after { transform: translateY(-30%) rotate(225deg); }
+.faq-item[open] summary { border-bottom: 1px solid var(--line); }
+.faq-item summary:hover h3 { color: var(--navy-3); }
+.faq-item > p { margin: 0; padding: 1rem 1.4rem 1.2rem; color: var(--muted); }

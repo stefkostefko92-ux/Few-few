@@ -173,7 +173,33 @@ export function homePage(t, locales) {
     <p class="callout">${esc(t.order.freeShipping)} ${esc(t.order.b2b)}</p>
     <p class="center"><a class="btn btn-primary" href="${mailHref}">${esc(t.nav.orderCta)}</a></p>
   </div>
+</section>
+
+<section class="section section-tint" id="faq">
+  <div class="wrap">
+    <p class="kicker">${esc(t.faq.kicker)}</p>
+    <h2>${esc(t.faq.title)}</h2>
+    <div class="faq-list">
+      ${t.faq.items.map((f, i) => `
+      <details class="faq-item"${i === 0 ? ' open' : ''}>
+        <summary><h3>${esc(f.q)}</h3></summary>
+        <p>${esc(f.a)}</p>
+      </details>`).join('')}
+    </div>
+  </div>
 </section>`;
+}
+
+// JSON-LD FAQPage — за началната страница (най-силният AEO сигнал).
+export function homeLd(t) {
+  return [{
+    '@type': 'FAQPage',
+    mainEntity: t.faq.items.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }];
 }
 
 // ── Продукти и ценоразпис ────────────────────────────────────
