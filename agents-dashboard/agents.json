@@ -7829,9 +7829,20 @@
           "date": "2026-07-24",
           "event": "v12.4 — учене",
           "detail": "Научи: constructEvent/construct_event има default replay толеранс 5 минути между timestamp-а в… (+19 още)"
+        },
+        {
+          "version": "14.3.0",
+          "date": "2026-07-24",
+          "event": "v14.3 — учене",
+          "detail": "Научи: SetupIntent usage: default е off_session (важи и за on+off). off_session прави UPFRONT … (+18 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „SetupIntent usage: default е off_session (важи и за on+off). off_session прави UPFRONT …\" (+18 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
