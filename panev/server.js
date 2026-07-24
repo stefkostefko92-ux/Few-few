@@ -12,6 +12,7 @@ const express      = require('express');
 const cors         = require('cors');
 const compression  = require('compression');
 const path         = require('path');
+const fs           = require('fs');
 const cookieParser = require('cookie-parser');
 const crypto       = require('crypto');
 const stripe       = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy',
@@ -57,9 +58,14 @@ setInterval(() => {
   for (const [k, v] of rateLimitStore) if (now > v.resetAt) rateLimitStore.delete(k);
 }, 10 * 60 * 1000);
 
-// Daily cleanup of stale login attempts
+// Daily cleanup: стари login опити + съобщения над 24 месеца (обещано в
+// информативата — чл. 5.1.д GDPR; поръчковата документация живее другаде).
 setInterval(() => {
   try { db.cleanupLoginAttempts(); } catch (e) { console.error('[cleanup]', e.message); }
+  try {
+    const n = db.pruneOldMessages();
+    if (n) console.log(`[cleanup] ${n} messaggi oltre 24 mesi rimossi`);
+  } catch (e) { console.error('[cleanup]', e.message); }
 }, 24 * 60 * 60 * 1000);
 
 function sanitize(str, maxLen = 500) {
@@ -92,11 +98,11 @@ function validPassword(pw) {
 function securityHeaders(req, res, next) {
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com",
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com",
+    "connect-src 'self' https://api.stripe.com",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -174,7 +180,9 @@ app.use((req, res, next) => {
                    // root source / config must not be served (README leaks admin creds,
                    // server.js/contact.php/*.sh are recon surface). .htaccess covers this
                    // under Apache; the app runs under Node behind Nginx, so enforce here.
-                   /^\/README\.md$/i, /^\/server\.js$/i, /\.php$/i, /\.sh$/i, /^\/\.htaccess$/i];
+                   /^\/README\.md$/i, /^\/server\.js$/i, /\.php$/i, /\.sh$/i, /^\/\.htaccess$/i,
+                   // изходният код на генератора и вътрешните бележки не се сервират
+                   /^\/site\b/i, /^\/CLAUDE\.md$/i];
   if (blocked.some(r => r.test(req.path))) return res.status(404).send('Not found');
   next();
 });
@@ -224,7 +232,11 @@ app.use((req, res, next) => {
       req.url = p + 'index.html' + query;
       return next();
     }
-    if (p.length > 1) return res.redirect(301, p.slice(0, -1) + query);
+    // Реална папка без index.html (напр. /img/) → не сваляй слеша: цикли
+    // с клона „без разширение“, който го връща. Оставяме на static → 404.
+    if (p.length > 1 && !fs.existsSync(path.join(__dirname, p))) {
+      return res.redirect(301, p.slice(0, -1) + query);
+    }
     return next();
   }
 
@@ -232,7 +244,7 @@ app.use((req, res, next) => {
   if (/\.html$/i.test(p)) {
     const slug = p.slice(0, -5);
     if (/\/index$/i.test(slug)) {
-      return res.redirect(301, slug.slice(0, -5) || '/');
+      return res.redirect(301, (slug.slice(0, -5) || '/') + query);
     }
     if (fs.existsSync(path.join(__dirname, p))) {
       return res.redirect(301, slug + query);
@@ -257,7 +269,6 @@ app.use((req, res, next) => {
 // ─────────────────────────────────────────────────────────────
 //  Static files
 // ─────────────────────────────────────────────────────────────
-const fs = require('fs');
 // Serve /.well-known (security.txt, ai.txt) — the main static uses dotfiles:'deny',
 // which would otherwise 404 the RFC 9116 canonical location.
 app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), { maxAge: '1d' }));
@@ -445,8 +456,8 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true }, // B2B — collect/validate VAT id
       shipping_address_collection: { allowed_countries: ['IT', 'SM', 'VA'] },
-      success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${BASE_URL}/carrello.html?cancelled=1`,
+      success_url: `${BASE_URL}/contatti?ordine=ok&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${BASE_URL}/prodotti?annullato=1`,
       payment_intent_data: { metadata },
       metadata,
       locale: 'it',

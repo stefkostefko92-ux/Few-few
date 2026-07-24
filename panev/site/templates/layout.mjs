@@ -5,6 +5,16 @@ import { COMPANY, PATENT, CATALOG_PDF } from '../data/products.mjs';
 
 export const ORIGIN = 'https://panevascensori.it';
 
+// Безопасно вграждане на JSON в <script>: JSON.stringify не екранира '<'
+// и разделителите на редове — суров '</script>' или U+2028/2029 в низ би
+// счупил документа. Екранираме на изходната граница (JSON.parse ги приема).
+export function jsonEmbed(obj) {
+  return JSON.stringify(obj)
+    .replaceAll('<', '\\u003c')
+    .replaceAll(' ', '\\u2028')
+    .replaceAll(' ', '\\u2029');
+}
+
 export function esc(s) {
   return String(s)
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -91,7 +101,7 @@ export function jsonLd(t, pageKey, extra = []) {
     },
     ...extra,
   ];
-  return `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
+  return `<script type="application/ld+json">${jsonEmbed({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
 }
 
 export function head(t, locales, pageKey, { ldExtra = [], ogImage = '/img/og-home.jpg' } = {}) {
@@ -148,7 +158,7 @@ export function header(t, locales, pageKey, activeKey) {
     <a class="brand" href="${pagePath(t, 'home')}" aria-label="${esc(COMPANY.name)}">
       <img src="/img/panev-logo.png" srcset="/img/panev-logo.webp" alt="${esc(COMPANY.name)}" width="170" height="44">
     </a>
-    <nav class="site-nav" id="site-nav" aria-label="Menu">
+    <nav class="site-nav" id="site-nav" aria-label="${esc(t.nav.menuLabel)}">
         ${nav}
     </nav>
     <div class="header-tools">
@@ -169,10 +179,10 @@ export function orderDrawer(t) {
   const ol = t.orderList;
   return `
 <div class="order-backdrop" data-order-backdrop hidden></div>
-<aside class="order-drawer" id="order-drawer" aria-label="${esc(ol.title)}" hidden>
+<aside class="order-drawer" id="order-drawer" role="dialog" aria-modal="true" aria-label="${esc(ol.title)}" hidden>
   <div class="order-head">
     <h2>${esc(ol.title)}</h2>
-    <button type="button" class="order-close" data-order-close aria-label="${esc(t.nav.closeMenu)}">&times;</button>
+    <button type="button" class="order-close" data-order-close aria-label="${esc(ol.close)}">&times;</button>
   </div>
   <p class="order-empty" data-order-empty>${esc(ol.empty)}</p>
   <ul class="order-items" data-order-items></ul>
@@ -205,7 +215,7 @@ ${orderDrawer(t)}
       <img src="/img/panev-logo-darkmode.png" alt="${esc(COMPANY.name)}" width="170" height="44" loading="lazy">
       <p>${esc(f.tagline)}</p>
       <p class="footer-patent">${esc(f.patentLine)}</p>
-      <p class="footer-flag" aria-label="${esc(f.madeInItaly)}"><span></span><span></span><span></span>${esc(f.madeInItaly)}</p>
+      <p class="footer-flag"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>${esc(f.madeInItaly)}</p>
     </div>
     <div>
       <h2>${esc(f.productsTitle)}</h2>
@@ -239,7 +249,7 @@ ${orderDrawer(t)}
   </div>
 </footer>
 <script src="/js/site.js" defer></script>
-<script type="application/json" id="i18n-order">${JSON.stringify({
+<script type="application/json" id="i18n-order">${jsonEmbed({
     mailto: COMPANY.email,
     subject: t.orderList.mailSubject,
     intro: t.orderList.mailIntro,

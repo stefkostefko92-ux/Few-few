@@ -157,19 +157,18 @@ function buildUserHtml({ nome, servizio, msgId, isQuote }) {
 </td></tr>
 <tr><td style="padding:36px 32px">
   <p style="font-size:16px;line-height:1.65;color:#2a2e35;margin:0 0 20px">
-    Abbiamo ricevuto la tua richiesta e ti risponderemo <strong style="color:#162861">entro 2 ore lavorative</strong> (lun-ven, 8:00-18:00).
+    Abbiamo ricevuto la tua richiesta e ti risponderemo <strong style="color:#162861">nei giorni lavorativi</strong> (lun-ven).
   </p>
   <p style="font-size:15px;line-height:1.65;color:#6a6e78;margin:0 0 28px">
-    Un tecnico specializzato sta già esaminando la tua richiesta<br>relativa a <strong style="color:#0f1114">${escape(servizio || 'i nostri servizi')}</strong>.
+    La tua richiesta relativa a <strong style="color:#0f1114">${escape(servizio || 'staffe e accessori')}</strong> è in lavorazione.
   </p>
   <div style="background:#f4f1ea;padding:18px 22px;margin:0 0 28px;border-left:3px solid #162861">
     <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#162861;margin-bottom:8px;font-weight:700">Riferimento pratica</div>
     <div style="font-family:JetBrains Mono,monospace;font-size:13px;color:#0f1114">${escape(msgId)}</div>
   </div>
-  <h3 style="color:#162861;margin:28px 0 12px;font-family:Georgia,serif;font-weight:500;font-size:17px;letter-spacing:-0.015em">Hai urgenza?</h3>
+  <h3 style="color:#162861;margin:28px 0 12px;font-family:Georgia,serif;font-weight:500;font-size:17px;letter-spacing:-0.015em">Contatti diretti</h3>
   <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;width:100%">
-    <tr><td style="padding:6px 0;font-size:14px;color:#2a2e35"><strong style="color:#162861">Commerciale:</strong> <a href="tel:+393463054093" style="color:#162861">+39 346 305 4093</a> (lun-ven, 8:00-18:00)</td></tr>
-    <tr><td style="padding:6px 0;font-size:14px;color:#2a2e35"><strong style="color:#ce2b37">Pronto intervento 24/7:</strong> <a href="tel:+393926848978" style="color:#ce2b37">+39 392 684 8978</a></td></tr>
+    <tr><td style="padding:6px 0;font-size:14px;color:#2a2e35"><strong style="color:#162861">Telefono:</strong> <a href="tel:+393792969699" style="color:#162861">+39 379 296 9699</a> (lun-ven)</td></tr>
     <tr><td style="padding:6px 0;font-size:14px;color:#2a2e35"><strong style="color:#162861">Email:</strong> <a href="mailto:info@panevascensori.it" style="color:#162861">info@panevascensori.it</a></td></tr>
   </table>
   <p style="font-size:14px;line-height:1.65;color:#6a6e78;margin:28px 0 0;font-style:italic">

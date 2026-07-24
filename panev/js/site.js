@@ -147,9 +147,11 @@
     if (sendEl) sendEl.setAttribute('href', mailtoHref(list));
   }
 
+  var mainEl = document.getElementById('main');
   function openDrawer() {
     if (!drawer) return;
     drawer.hidden = false;
+    if (mainEl) mainEl.inert = true;
     if (backdrop) backdrop.hidden = false;
     if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
     render();
@@ -159,6 +161,7 @@
   function closeDrawer() {
     if (!drawer) return;
     drawer.hidden = true;
+    if (mainEl) mainEl.inert = false;
     if (backdrop) backdrop.hidden = true;
     if (toggleBtn) {
       toggleBtn.setAttribute('aria-expanded', 'false');

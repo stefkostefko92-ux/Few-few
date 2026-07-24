@@ -110,7 +110,7 @@ export function homePage(t, locales) {
       </div>
     </div>
     <div class="hero-visual">
-      ${img('staffe-4viste', h.title, { w: 560, h: 560, lazy: false })}
+      ${img('staffe-4viste', h.visualAlt || h.title, { w: 560, h: 560, lazy: false })}
     </div>
   </div>
   <div class="wrap stats-band">${stats}</div>
@@ -214,6 +214,8 @@ export function productsPage(t, locales) {
         <h3>${esc(c.sup.code)} · ${esc(c.gui.code)}</h3>
         <p class="sys-specs"><span>${esc(p.th.corsa)} <strong>${esc(c.corsa)}</strong></span><span>${esc(p.aletta)}</span></p>
         <table class="price-table">
+          <caption class="visually-hidden">${esc(c.sup.code)} · ${esc(c.gui.code)}</caption>
+          <thead><tr><th scope="col">${esc(p.th.code)}</th><th scope="col">${esc(p.th.desc)}</th><th scope="col" class="num">${esc(p.th.price)}</th><th scope="col" class="act"><span class="visually-hidden">${esc(p.addToOrder)}</span></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -235,9 +237,9 @@ export function productsPage(t, locales) {
     return `<tr><th scope="row">${l} mm</th>${cells}</tr>`;
   }).join('');
 
-  // 06 — специални
+  // 06 — специални (dims може да е локализируем ключ вместо суров низ)
   const specialRows = specials.map((it) =>
-    itemRow(t, it, `${p.typeNames[it.type]} · ${it.dims}`)).join('');
+    itemRow(t, it, `${p.typeNames[it.type]} · ${it.dimsKey === 'onDrawing' ? p.dimsOnDrawing : it.dims}`)).join('');
 
   const s = p.sections;
   return `
@@ -334,6 +336,13 @@ export function productsLd(t) {
           '@type': 'Offer',
           price: it.price.toFixed(2),
           priceCurrency: 'EUR',
+          priceSpecification: {
+            '@type': 'UnitPriceSpecification',
+            price: it.price.toFixed(2),
+            priceCurrency: 'EUR',
+            valueAddedTaxIncluded: false,
+          },
+          businessFunction: 'http://purl.org/goodrelations/v1#Sell',
           availability: 'https://schema.org/InStock',
           priceValidUntil: '2026-12-31',
           seller: { '@id': `${ORIGIN}/#organization` },
@@ -450,16 +459,18 @@ export function contactsPage(t, locales) {
     <div id="modulo">
       <h2>${esc(c.formTitle)}</h2>
       <p>${esc(c.formLead)}</p>
+      <p class="note">${esc(f.requiredNote)}</p>
       <form class="contact-form" data-contact-form novalidate>
         <label>${esc(f.name)}<input type="text" name="nome" autocomplete="name" required maxlength="150"></label>
-        <label>${esc(f.company)}<input type="text" name="azienda" autocomplete="organization" maxlength="150"></label>
+        <label>${esc(f.company)}<input type="text" name="azienda" autocomplete="organization" required maxlength="150"></label>
         <div class="form-row">
           <label>${esc(f.email)}<input type="email" name="email" autocomplete="email" required maxlength="200"></label>
           <label>${esc(f.tel)}<input type="tel" name="tel" autocomplete="tel" maxlength="30"></label>
         </div>
         <label>${esc(f.message)}<textarea name="messaggio" rows="7" required maxlength="3000"></textarea></label>
         <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
-        <label class="check"><input type="checkbox" name="privacy" required> <span>${esc(f.privacy)} <a href="${pagePath(t, 'privacy')}">${esc(t.meta.privacy.title.split('—')[0].trim())}</a></span></label>
+        <label class="check"><input type="checkbox" name="privacy" required> <span>${esc(f.privacy)}</span></label>
+        <p class="check-link"><a href="${pagePath(t, 'privacy')}">${esc(f.privacyLink)}</a></p>
         <button class="btn btn-primary" type="submit" data-submit-label="${esc(f.submit)}" data-sending-label="${esc(f.sending)}">${esc(f.submit)}</button>
         <p class="form-status" data-form-status role="status" aria-live="polite"
            data-ok="${esc(f.ok)}" data-err="${esc(f.err)}"></p>

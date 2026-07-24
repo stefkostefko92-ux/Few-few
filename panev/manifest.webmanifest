@@ -38,8 +38,8 @@
     {
       "name": "Catalogo Prodotti",
       "short_name": "Prodotti",
-      "description": "Vedi le 27 staffe brevettate",
-      "url": "/prodotti.html",
+      "description": "Listino completo staffe e accessori",
+      "url": "/prodotti",
       "icons": [
         {
           "src": "/img/panev-logo.png",
@@ -52,7 +52,7 @@
       "name": "Richiedi Preventivo",
       "short_name": "Contatti",
       "description": "Preventivo gratuito in 2h",
-      "url": "/contatti.html",
+      "url": "/contatti",
       "icons": [
         {
           "src": "/img/panev-logo.png",
@@ -65,7 +65,7 @@
       "name": "Catalogo PDF",
       "short_name": "PDF",
       "description": "Scarica il catalogo tecnico",
-      "url": "/catalogo.html",
+      "url": "/catalogo",
       "icons": [
         {
           "src": "/img/panev-logo.png",
