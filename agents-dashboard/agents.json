@@ -12496,9 +12496,20 @@
           "date": "2026-07-16",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (diataxis.fr, keepachangelog.com, semver.org, adr.github.io, Google Tech Writing, Write the Docs, OpenAPI/TSDoc, Mermaid/C4, GitHub docs): 4-те режима, README/ADR/CHANGELOG/API докове, docs-as-code хигиена, стил/достъпност, кодови примери, IA/навигация, миграции/deprecation, AI-ориентирани докове — плюс конвенциите на репото (BG източник, per-product docs). Домейнът е покрит."
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-24",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Keep a Changelog текуща версия 1.1.0, публикувана 2019-02-15; 6 категории (Added/Change… (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Keep a Changelog текуща версия 1.1.0, публикувана 2019-02-15; 6 категории (Added/Change…\" (+7 още) · 5 в карантина"
+        },
         {
           "date": "2026-07-16",
           "type": "birth",
