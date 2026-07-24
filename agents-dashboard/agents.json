@@ -12557,9 +12557,20 @@
           "date": "2026-07-24",
           "event": "v10.8 — учене",
           "detail": "Научи: Keep a Changelog текуща версия 1.1.0, публикувана 2019-02-15; 6 категории (Added/Change… (+7 още)"
+        },
+        {
+          "version": "12.3.0",
+          "date": "2026-07-24",
+          "event": "v12.3 — учене",
+          "detail": "Научи: Conventional Commits 1.0.0: структура `<type>[optional scope]: <description>` + optiona… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Conventional Commits 1.0.0: структура `<type>[optional scope]: <description>` + optiona…\" (+14 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
