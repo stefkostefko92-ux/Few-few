@@ -173,7 +173,12 @@ app.use((req, res, next) => {
   let decodedPath;
   try { decodedPath = decodeURIComponent(req.path); }
   catch { return res.status(400).send('Bad request'); }
-  if (decodedPath.includes('..') || decodedPath.includes('\0')) {
+  // Мачваме срещу НОРМАЛИЗИРАНИЯ път: Express не percent-decode-ва req.path,
+  // а express.static го декодира преди да резолвне файла — затова /li%62/db.js
+  // би подминал prefix-правило върху req.path и би разкрил изходния код.
+  // Декодираме веднъж и колабсираме повтарящи се слешове (заради %2f).
+  const norm = decodedPath.replace(/\/{2,}/g, '/');
+  if (norm.includes('..') || norm.includes('\0')) {
     return res.status(404).send('Not found');
   }
   // Case-insensitive: on case-insensitive filesystems /Data/panev.DB etc. would
@@ -187,7 +192,7 @@ app.use((req, res, next) => {
                    /^\/README\.md$/i, /^\/server\.js$/i, /\.php$/i, /\.sh$/i, /^\/\.htaccess$/i,
                    // изходният код на генератора и вътрешните бележки не се сервират
                    /^\/site\b/i, /^\/CLAUDE\.md$/i];
-  if (blocked.some(r => r.test(req.path))) return res.status(404).send('Not found');
+  if (blocked.some(r => r.test(norm))) return res.status(404).send('Not found');
   next();
 });
 

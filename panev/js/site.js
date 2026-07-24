@@ -147,11 +147,22 @@
     if (sendEl) sendEl.setAttribute('href', mailtoHref(list));
   }
 
-  var mainEl = document.getElementById('main');
+  // Изолираме целия фон зад модалния drawer, не само <main>: header и footer
+  // са сиблинги на main, иначе Tab излиза зад backdrop-а докато aria-modal
+  // твърди обратното (WCAG 2.1.2). Пропускаме самия drawer + backdrop.
+  function setBackgroundInert(on) {
+    var kids = document.body.children;
+    for (var i = 0; i < kids.length; i++) {
+      var el = kids[i];
+      if (el === drawer || el === backdrop) continue;
+      if (el.tagName === 'SCRIPT') continue;
+      el.inert = on;
+    }
+  }
   function openDrawer() {
     if (!drawer) return;
     drawer.hidden = false;
-    if (mainEl) mainEl.inert = true;
+    setBackgroundInert(true);
     if (backdrop) backdrop.hidden = false;
     if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
     render();
@@ -161,7 +172,7 @@
   function closeDrawer() {
     if (!drawer) return;
     drawer.hidden = true;
-    if (mainEl) mainEl.inert = false;
+    setBackgroundInert(false);
     if (backdrop) backdrop.hidden = true;
     if (toggleBtn) {
       toggleBtn.setAttribute('aria-expanded', 'false');

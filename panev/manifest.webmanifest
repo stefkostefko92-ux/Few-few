@@ -51,7 +51,7 @@
     {
       "name": "Richiedi Preventivo",
       "short_name": "Contatti",
-      "description": "Preventivo gratuito in 2h",
+      "description": "Richiedi un preventivo via email",
       "url": "/contatti",
       "icons": [
         {

@@ -32,6 +32,8 @@ Disallow: /api/
 User-agent: Slurp
 Allow: /
 Crawl-delay: 3
+Disallow: /admin/
+Disallow: /api/
 
 User-agent: SeznamBot
 Allow: /
