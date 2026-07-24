@@ -12797,9 +12797,20 @@
           "date": "2026-07-17",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (Kohavi 'Trustworthy Online Controlled Experiments' + GA4/PostHog/Plausible docs + GDPR/ePrivacy): tracking plan/таксономия, идентичност, KPI/AARRR/North Star, фунии/retention/cohort, A/B (power/peeking/SRM/A-A), причинност, приватност-първо (consent/server-side/минимизация), warehouse/SQL/дефиниции — плюс конкретиката на репото. Домейнът е покрит."
+        },
+        {
+          "version": "11.8.0",
+          "date": "2026-07-24",
+          "event": "v11.8 — учене",
+          "detail": "Научи: GA4 стандарт: default event-data retention = 2 месеца, максимум 14 месеца; 26/38/50 мес… (+17 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „GA4 стандарт: default event-data retention = 2 месеца, максимум 14 месеца; 26/38/50 мес…\" (+17 още)"
+        },
         {
           "date": "2026-07-17",
           "type": "birth",
