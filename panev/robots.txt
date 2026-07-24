@@ -32,6 +32,10 @@ Disallow: /api/
 User-agent: Slurp
 Allow: /
 Crawl-delay: 3
+
+User-agent: SeznamBot
+Allow: /
+Crawl-delay: 2
 Disallow: /admin/
 Disallow: /api/
 # ── AI crawlers / Answer engines ─────────────────────────────
@@ -122,9 +126,6 @@ User-agent: DotBot
 Disallow: /
 
 User-agent: BLEXBot
-Disallow: /
-
-User-agent: SeznamBot
 Disallow: /
 
 User-agent: PetalBot
