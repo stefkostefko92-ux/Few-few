@@ -5579,9 +5579,20 @@
           "date": "2026-07-22",
           "event": "v10.9 — учене",
           "detail": "Научи: tools/vps/deploy-check.mjs е орфан — grep 'deploy-check' в .github/, tools/agents/, dep…"
+        },
+        {
+          "version": "12.8.0",
+          "date": "2026-07-24",
+          "event": "v12.8 — учене",
+          "detail": "Научи: LE профил tlsserver дава 45-дневни серт.; маха Common Name, Key Encipherment KU и Subje… (+18 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „LE профил tlsserver дава 45-дневни серт.; маха Common Name, Key Encipherment KU и Subje…\" (+18 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
