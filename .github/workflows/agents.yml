@@ -62,6 +62,8 @@ jobs:
         run: node tools/agents/def-freshness.mjs
       - name: Drift-lint (счупени референции + бройка/ростер consistency = твърд провал; memory дрейф = съвет)
         run: node tools/agents/drift-lint.mjs
+      - name: Consistency-audit (zero-defect — противоречия/безизточникови verified в паметта; празен източник = твърд)
+        run: node tools/agents/consistency-audit.mjs --check
       - name: Loop-audit (readiness на автоматизациите — автономия-стълба)
         run: node tools/agents/loops/loop-audit.mjs
       - name: Error-ledger (всяка реална грешка носи регресионен spec — fail-closed)
