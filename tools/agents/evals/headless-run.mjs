@@ -31,12 +31,15 @@ function agentBody(id) {
 }
 
 // Извиква claude, връща {ok, out, err}. Никога не хвърля — грешката е ДАННИ, не крах.
+// Хваща И stdout И stderr при провал (claude пише грешките си в stdout в -p режим).
 function claudeRun(args) {
   try {
     const out = execFileSync("claude", args, { encoding: "utf8", timeout: 300000, cwd: ROOT, stdio: ["ignore", "pipe", "pipe"] });
     return { ok: true, out, err: "" };
   } catch (e) {
-    return { ok: false, out: e.stdout || "", err: (e.stderr || e.message || "").toString().slice(0, 400) };
+    const out = (e.stdout || "").toString();
+    const err = (e.stderr || "").toString();
+    return { ok: false, out, err: (err + (out ? "\n[stdout]: " + out : "") || e.message || "").toString().slice(0, 600) };
   }
 }
 
@@ -58,23 +61,27 @@ function main() {
   console.log(`headless-run: ${plan.length} рънa${dry ? " (dry)" : ""}`);
   if (dry) { plan.forEach((p) => console.log(`  · ${p.specId} (${p.agent})`)); process.exit(0); }
 
+  // Feature-detect флагове (различни версии CLI): --bare изолира от auto-discovery;
+  // --dangerously-skip-permissions изключва permission промптовете (задължително за headless CI —
+  // ефимерен runner, throwaway). Ползват се само ако `--help` ги обявява.
+  const bare = cliSupports("--bare");
+  const skipPerm = cliSupports("--dangerously-skip-permissions");
+  const COMMON = [...(bare ? ["--bare"] : []), ...(skipPerm ? ["--dangerously-skip-permissions"] : [])];
+  console.log(`флагове: --bare=${bare} · skip-permissions=${skipPerm}`);
+
   // ── Probe: работи ли CLI headless ИЗОБЩО, преди 8-те скъпи рънa? ──
   console.log(`claude версия: ${(() => { const r = claudeRun(["--version"]); return r.ok ? r.out.trim() : "?"; })()}`);
-  const probe = claudeRun(["-p", "Отговори само с думата: ok", "--output-format", "text"]);
+  const probe = claudeRun(["-p", "Отговори само с думата: ok", ...COMMON, "--output-format", "text"]);
   if (!probe.ok) {
-    console.error(`✗ headless-run: probe извикването се провали — CLI не работи headless в тази среда.\n  stderr: ${probe.err}\n  (вероятно: авторизация/permission режим или флагов формат. Ключът присъства, но CLI не тръгва.)`);
+    console.error(`✗ headless-run: probe извикването се провали — CLI не работи headless в тази среда.\n  изход (stdout+stderr): ${probe.err}\n  (вероятни причини: невалиден ANTHROPIC_API_KEY, permission/trust диалог, или флагов формат.)`);
     process.exit(1);
   }
   console.log(`✓ probe ok (${probe.out.trim().slice(0, 40)})`);
 
-  // Feature-detect: --bare изолира от auto-discovery, но липсва в стар CLI → ползвай само ако е наличен.
-  const bare = cliSupports("--bare");
-  console.log(`--bare поддръжка: ${bare ? "да (изолиран режим)" : "не (auto-discovery активен)"}`);
-
   mkdirSync(OUT, { recursive: true });
   let produced = 0;
   for (const p of plan) {
-    const args = ["-p", p.task, ...(bare ? ["--bare"] : []), "--append-system-prompt", agentBody(p.agent), "--output-format", "text"];
+    const args = ["-p", p.task, ...COMMON, "--append-system-prompt", agentBody(p.agent), "--output-format", "text"];
     const r = claudeRun(args);
     if (r.ok && r.out.trim()) { writeFileSync(join(OUT, p.specId + ".txt"), r.out); produced++; console.log(`  ✓ ${p.specId} (${r.out.length} знака)`); }
     else console.log(`  ✗ ${p.specId}: ${r.err || "празен изход"}`);
