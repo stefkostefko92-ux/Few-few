@@ -2622,9 +2622,20 @@
           "date": "2026-07-24",
           "event": "v12.4 — учене",
           "detail": "Научи: Официалният Cfx.re пример за client-side валидация на мрежово събитие идващо от сървъра… (+11 още)"
+        },
+        {
+          "version": "14.6.0",
+          "date": "2026-07-24",
+          "event": "v14.6 — учене",
+          "detail": "Научи: coxdocs.dev редиректва (301) към overextended.dev — overextended.dev остава каноничният… (+21 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „coxdocs.dev редиректва (301) към overextended.dev — overextended.dev остава каноничният…\" (+21 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
