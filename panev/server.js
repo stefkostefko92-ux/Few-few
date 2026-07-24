@@ -520,6 +520,12 @@ app.post('/api/contact', contactLimiter, (req, res) => {
     if (!nome || !email || !messaggio || !privacy) {
       return res.status(400).json({ error: 'Campi obbligatori mancanti' });
     }
+    // Vendita esclusivamente B2B: la ragione sociale / partita IVA è obbligatoria
+    // (non solo `required` lato client). Formato P.IVA non forzato: il sito è
+    // trilingue e un cliente non italiano ha una partita IVA di altro Stato UE.
+    if (String(source || '').startsWith('sito') && !String(azienda || '').trim()) {
+      return res.status(400).json({ error: 'Ragione sociale / partita IVA obbligatoria (operatività B2B)' });
+    }
     if (!validateEmail(email)) {
       return res.status(400).json({ error: 'Email non valida' });
     }
@@ -527,8 +533,10 @@ app.post('/api/contact', contactLimiter, (req, res) => {
     // If cart items provided, append a formatted product list to the message
     let fullMessage = sanitize(messaggio, 3000);
     if (Array.isArray(items) && items.length > 0) {
+      // Санитизираме name/codice при съхранение (defense-in-depth): да не
+      // носят payload на покой в messages.messaggio за бъдещ sink без escape.
       const productLines = items.map(it =>
-        `  • ${it.name || ''} [${it.codice || it.id || ''}] — qty ${it.qty || 1} × €${Number(it.price || 0).toFixed(2)} = €${(Number(it.price || 0) * Number(it.qty || 1)).toFixed(2)}`
+        `  • ${sanitize(it.name || '', 150)} [${sanitize(it.codice || it.id || '', 60)}] — qty ${Math.max(1, Math.min(999, parseInt(it.qty, 10) || 1))} × €${Number(it.price || 0).toFixed(2)} = €${(Number(it.price || 0) * Number(it.qty || 1)).toFixed(2)}`
       ).join('\n');
       const totLine = typeof totale !== 'undefined'
         ? `\n\nTOTALE: €${Number(totale).toFixed(2)} (IVA esclusa)`
