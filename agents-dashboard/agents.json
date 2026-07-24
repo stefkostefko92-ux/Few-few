@@ -12744,9 +12744,20 @@
           "date": "2026-07-24",
           "event": "v12.3 — учене",
           "detail": "Научи: Conventional Commits 1.0.0: структура `<type>[optional scope]: <description>` + optiona… (+14 още)"
+        },
+        {
+          "version": "13.2.0",
+          "date": "2026-07-24",
+          "event": "v13.2 — учене",
+          "detail": "Научи: JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa…\" (+8 още) · 7 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
