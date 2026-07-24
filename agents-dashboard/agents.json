@@ -10592,9 +10592,20 @@
           "date": "2026-07-24",
           "event": "v12.0 — учене",
           "detail": "Научи: MV2 крайна дата в Chrome Web Store: всички останали Manifest V2 разширения се премахват… (+11 още)"
+        },
+        {
+          "version": "13.6.0",
+          "date": "2026-07-24",
+          "event": "v13.6 — учене",
+          "detail": "Научи: declarativeNetRequest RuleCondition получи topDomains/excludedTopDomains от Chrome 145+… (+15 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „declarativeNetRequest RuleCondition получи topDomains/excludedTopDomains от Chrome 145+…\" (+15 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
