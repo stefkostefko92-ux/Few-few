@@ -11565,9 +11565,20 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Binance WS session.logon приема САМО Ed25519 ключове (не HMAC/RSA). След успешен logon … (+6 още)"
+        },
+        {
+          "version": "12.2.0",
+          "date": "2026-07-24",
+          "event": "v12.2 — учене",
+          "detail": "Научи: Bybit V5 REST rate limit: default 600 requests / 5s per IP (breach → 10-min auto-ban); … (+19 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Bybit V5 REST rate limit: default 600 requests / 5s per IP (breach → 10-min auto-ban); …\" (+19 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "quarantine",
