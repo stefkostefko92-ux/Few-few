@@ -12324,9 +12324,20 @@
           "date": "2026-07-24",
           "event": "v12.1 — учене",
           "detail": "Научи: Pin по подвижен таг (@v4) = риск: maintainer/token компрометиран → tag re-point → malic… (+18 още)"
+        },
+        {
+          "version": "13.6.0",
+          "date": "2026-07-24",
+          "event": "v13.6 — учене",
+          "detail": "Научи: КОРЕКЦИЯ на предишен запис (konveyera.md:60, погрешно '4 нива'): reusable workflows под… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „КОРЕКЦИЯ на предишен запис (konveyera.md:60, погрешно '4 нива'): reusable workflows под…\" (+14 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
