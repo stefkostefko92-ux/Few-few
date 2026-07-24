@@ -9,7 +9,11 @@
 // Fail-open: всяка грешка на hook-а → exit 0 (никога не заклещваме агент заради счупен hook).
 
 import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
+
+const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 // Правила: писан файл match-ва `wrote` → в Bash командите трябва да се появи `mustRun`.
 const RULES = [
@@ -41,17 +45,30 @@ export function collectToolUses(jsonl) {
   return uses;
 }
 
-// Чиста логика — тестваема: {violations:[{file, gate}]}.
-export function checkDoD(uses) {
-  const written = uses.filter((u) => u.name === "Write" || u.name === "Edit").map((u) => String(u.input.file_path || ""));
-  const bash = uses.filter((u) => u.name === "Bash").map((u) => String(u.input.command || "")).join("\n");
+// Bash пренасочване към файл се брои за „писане" (red-team F3: `cat > x.lua` заобикаляше гейта).
+// Хваща `> path`, `>> path`, `tee path`, heredoc `> path <<EOF`. Връща списък файлове.
+export function bashWrites(bashCmds) {
+  const out = [];
+  const re = /(?:>>?|\btee(?:\s+-a)?)\s+["']?([^\s"'|;&<>]+)/g;
+  for (const cmd of bashCmds) { let m; while ((m = re.exec(cmd))) out.push(m[1]); }
+  return out;
+}
+
+// Чиста логика — тестваема: {violations:[{file, gate}]}. `root` за релативизиране на абсолютни пътища (F1).
+export function checkDoD(uses, root) {
+  const bashCmds = uses.filter((u) => u.name === "Bash").map((u) => String(u.input.command || ""));
+  const bash = bashCmds.join("\n");
+  const written = [
+    ...uses.filter((u) => u.name === "Write" || u.name === "Edit").map((u) => String(u.input.file_path || "")),
+    ...bashWrites(bashCmds), // F3: и Bash-записите
+  ].filter(Boolean);
   const violations = [];
   for (const r of RULES) {
     const hits = written.filter((f) => r.wrote.test(f));
     if (hits.length && !r.mustRun.test(bash)) violations.push({ files: [...new Set(hits)], gate: r.gate });
   }
-  // Монорепо закон №1: писане в ≥2 продуктови папки в една задача = scope creep.
-  const scope = checkScope(written);
+  // Монорепо закон №1: писане в ≥2 продуктови папки в една задача = scope creep. (root → F1 фикс)
+  const scope = checkScope(written, root);
   if (!scope.ok) violations.push({ files: scope.products, gate: `СПРИ — пишеш в ${scope.products.length} продукта (${scope.products.join(", ")}). Един продукт на промяна; останалото е отделна задача/клон` });
   return violations;
 }
@@ -63,7 +80,7 @@ function main() {
   if (!tPath) process.exit(0);
   let jsonl = "";
   try { jsonl = readFileSync(tPath, "utf8"); } catch { process.exit(0); }
-  const violations = checkDoD(collectToolUses(jsonl));
+  const violations = checkDoD(collectToolUses(jsonl), ROOT);
   if (!violations.length) process.exit(0);
   const msg = violations.map((v) => `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`).join("\n");
   if (payload.stop_hook_active) { console.log(`⚠ dod-check (advisory, без повторно връщане): ${msg}`); process.exit(0); }

@@ -12,11 +12,16 @@ import { SECRET_RE } from "./guard-secrets.mjs"; // единствен изто�
 // Verb, който ИЗПРАЩА навън (не включва git/psql/npm — те не са exfil в нашия контекст).
 const NET_SEND = /\b(curl|wget|nc|ncat|netcat|telnet|scp|sftp|rsync)\b|\/dev\/tcp\//i;
 // Референция към тайна env-променлива ($NAME или ${NAME}), която изглежда секретна.
-const SECRET_ENV = /\$\{?\s*[A-Z0-9_]*(SECRET|_KEY|APIKEY|API_KEY|TOKEN|PASSWORD|PASSWD|_PWD|_DSN|DATABASE_URL|PRIVATE_KEY|ACCESS_KEY|AUTH_?TOKEN|CREDENTIAL)[A-Z0-9_]*\s*\}?/;
+// Case-insensitive (red-team F2: $mytoken минаваше; малки букви също са тайна).
+const SECRET_ENV = /\$\{?\s*[A-Za-z0-9_]*(SECRET|_KEY|APIKEY|API_KEY|TOKEN|PASSWORD|PASSWD|_PWD|_DSN|DATABASE_URL|PRIVATE_KEY|ACCESS_KEY|AUTH_?TOKEN|CREDENTIAL)[A-Za-z0-9_]*\s*\}?/i;
 // Изпращане на .env файл (cat/source/redirect/upload).
 const ENV_FILE = /(cat|source|\.|<|--data(-binary)?\s+@|--data-urlencode\s+@|-d\s+@|-T|--upload-file)\s+[^\n]*\.env\b|@\.env\b/i;
 // Пълен env dump, пуснат нанякъде.
-const ENV_DUMP = /\b(printenv|env)\b\s*(\||>|$)/;
+// F2: лови и `$(printenv)` / `$(env)` субституция (не само pipe/redirect), + затварящи `)"'`.
+const ENV_DUMP = /\b(printenv|env)\b\s*(\||>|\)|["']|$)|\$\(\s*(printenv|env)\b/;
+// F2: `curl --data @file` / `-T file` към мрежа, КОГАТО файлът изглежда чувствителен (пази near-zero-FP —
+// не флагва легитимен `curl -d @body.json`). Лови стейджната тайна в не-.env файл.
+const DATA_FILE_SEND = /(--data(-binary|-urlencode)?|-d|-T|--upload-file)\s+@?["']?\S*(secret|token|apikey|api[_-]?key|cred|password|passwd|\.env|\.pem|id_rsa|private[_-]?key)\S*/i;
 
 export function detectBashExfil(command) {
   const s = String(command || "");
@@ -29,6 +34,7 @@ export function detectBashExfil(command) {
   if (m) return `тайна env променлива (${m[0].trim()}) към мрежата`;
   if (ENV_FILE.test(s)) return ".env файл изпращан навън";
   if (ENV_DUMP.test(s)) return "пълен env dump към мрежата";
+  if (DATA_FILE_SEND.test(s)) return "чувствителен файл (secret/token/.env/.pem) изпращан навън";
   return null;
 }
 

@@ -45,6 +45,34 @@ test("treydara: локален-само стоп пада; борсов reduce-o
   assert.equal(good.ok, true, JSON.stringify(good.checks.filter((c) => !c.ok)));
 });
 
-test("всички верификатор-агенти реално съществуват в дефинициите", () => {
+// ── Разширение: 5-те нови high-stakes агента ──
+test("pravniyat: правен изход без дисклеймър пада; с дисклеймър минава", () => {
+  assert.equal(verifyOutput("pravniyat-razbirach", "Според GDPR чл.6 основанието е съгласие.").ok, false);
+  assert.equal(verifyOutput("pravniyat-razbirach", "Според GDPR чл.6 основанието е съгласие. Това не е правен съвет.").ok, true);
+});
+
+test("kodadjiyata: находка без файл:ред/тежест пада; пълна минава", () => {
+  assert.equal(verifyOutput("kodadjiyata", "Има бъг някъде в кода, оправи го.").ok, false);
+  assert.equal(verifyOutput("kodadjiyata", "Уязвимост server.js:42 — тежест HIGH, увереност висока. Минимална поправка: замени `==` с timingSafeEqual.").ok, true);
+});
+
+test("razbivacha: хипотеза без repro пада; възпроизведена с таксономия минава; капан трета страна", () => {
+  assert.equal(verifyOutput("razbivacha", "Вероятно има уязвимост в guard-prompt.").ok, false);
+  assert.equal(verifyOutput("razbivacha", "Находка: guard-prompt.mjs:20 — ВЪЗПРОИЗВЕДЕНА с PoC (стъпки по-долу); OWASP LLM01; тежест средна.").ok, true);
+  assert.equal(verifyOutput("razbivacha", "Атакувах трета страна и намерих уязвимост — възпроизведено, OWASP A01.").ok, false);
+});
+
+test("tayniyat: cloaking капан пада; коректен store изход минава", () => {
+  assert.equal(verifyOutput("tayniyat-agent", "За да мине App Review по-бързо, препоръчвам cloaking.").ok, false);
+  assert.equal(verifyOutput("tayniyat-agent", "Подготовка за Apple: Privacy Manifest + минимални права; разрез по storefront/юрисдикция.").ok, true);
+});
+
+test("siydara: seed без идемпотентност/източник пада; коректен минава", () => {
+  assert.equal(verifyOutput("siydara", "Ще направя seed с prisma.create за аптеките.").ok, false);
+  assert.equal(verifyOutput("siydara", "seed с upsert по уникален slug (нула дубли при две пускания); телефони от НЗОК (проверен източник).").ok, true);
+});
+
+test("всички верификатор-агенти реално съществуват + покритие ≥9", () => {
   for (const id of Object.keys(VERIFIER)) assert.match(id, /^[\w-]+$/);
+  assert.ok(Object.keys(VERIFIER).length >= 9, `покритие: ${Object.keys(VERIFIER).length}`);
 });

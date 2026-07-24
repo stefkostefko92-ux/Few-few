@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-23",
+    "updated": "2026-07-24",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -505,9 +505,20 @@
           "date": "2026-07-19",
           "event": "v12.2 — учене",
           "detail": "Научи: При контактна форма, чиято крайна пощенска кутия е @gmail.com (mailer.ts destination + … (+1 още)"
+        },
+        {
+          "version": "13.9.0",
+          "date": "2026-07-24",
+          "event": "v13.9 — учене",
+          "detail": "Научи: DSA номерация (коригирай чеклиста): чл. 11 = точка за контакт за власти, чл. 12 = точка… (+16 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „DSA номерация (коригирай чеклиста): чл. 11 = точка за контакт за власти, чл. 12 = точка…\" (+16 още) · 8 в карантина"
+        },
         {
           "date": "2026-07-22",
           "type": "quarantine",
@@ -2151,9 +2162,31 @@
           "date": "2026-07-19",
           "event": "Научи ревю-обектива SLAP (kimi-code)",
           "detail": "Усвои Single Level of Abstraction + слоесто обработване на грешки от kimi-code slop lens: SLAP, тест-без-и, down/up класификация, сензор≠съдия (severity downstream), Extract-минимален diff. +12 проверени поуки."
+        },
+        {
+          "version": "12.6.0",
+          "date": "2026-07-24",
+          "event": "v12.6 — учене",
+          "detail": "Научи: Mutation score = detected / valid × 100, където detected = killed + timeout, а valid = … (+13 още)"
+        },
+        {
+          "version": "14.5.0",
+          "date": "2026-07-24",
+          "event": "v14.5 — учене",
+          "detail": "Научи: Fowler's Technical Debt Quadrant: дългът се класифицира по 2 оси — reckless↔prudent и d… (+18 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Fowler's Technical Debt Quadrant: дългът се класифицира по 2 оси — reckless↔prudent и d…\" (+18 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Mutation score = detected / valid × 100, където detected = killed + timeout, а valid = …\" (+13 още)"
+        },
         {
           "date": "2026-07-19",
           "type": "learning",
@@ -2594,9 +2627,31 @@
           "date": "2026-07-22",
           "event": "v11.2 — учене",
           "detail": "Научи: tools/fivem/manifest-lint.mjs (zero-dep pre-ship линтер, тестван с manifest-lint.test.m…"
+        },
+        {
+          "version": "12.4.0",
+          "date": "2026-07-24",
+          "event": "v12.4 — учене",
+          "detail": "Научи: Официалният Cfx.re пример за client-side валидация на мрежово събитие идващо от сървъра… (+11 още)"
+        },
+        {
+          "version": "14.6.0",
+          "date": "2026-07-24",
+          "event": "v14.6 — учене",
+          "detail": "Научи: coxdocs.dev редиректва (301) към overextended.dev — overextended.dev остава каноничният… (+21 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „coxdocs.dev редиректва (301) към overextended.dev — overextended.dev остава каноничният…\" (+21 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Официалният Cfx.re пример за client-side валидация на мрежово събитие идващо от сървъра…\" (+11 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
@@ -3337,9 +3392,31 @@
           "date": "2026-07-16",
           "event": "v10.7 — учене",
           "detail": "Научи: Ospedali Trasparenti: glossario.html НЕ е в главния NAV (src/lib/site-ui.js:293-307) — … (+1 още)"
+        },
+        {
+          "version": "12.8.0",
+          "date": "2026-07-24",
+          "event": "v12.8 — учене",
+          "detail": "Научи: CWV headline прагове 2026 остават непроменени — LCP <2.5s, INP <200ms, CLS <0.1 (75-ти … (+20 още)"
+        },
+        {
+          "version": "13.4.0",
+          "date": "2026-07-24",
+          "event": "v13.4 — учене",
+          "detail": "Научи: Google Search Central потвърждава: JSON-LD, Microdata и RDFa са трите ЕДНАКВО поддържан… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Google Search Central потвърждава: JSON-LD, Microdata и RDFa са трите ЕДНАКВО поддържан…\" (+5 още) · 4 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „CWV headline прагове 2026 остават непроменени — LCP <2.5s, INP <200ms, CLS <0.1 (75-ти …\" (+20 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-19",
           "type": "quarantine",
@@ -4108,9 +4185,31 @@
           "date": "2026-07-22",
           "event": "v10.8 — учене",
           "detail": "Научи: medqr държи преводите в src/i18n.js като плосък JS обект {ключ:{bg,en}} — само bg/en, б… (+1 още)"
+        },
+        {
+          "version": "12.6.0",
+          "date": "2026-07-24",
+          "event": "v12.6 — учене",
+          "detail": "Научи: CLDR 48 / ICU 78 (Unicode 17) released 2025-10-29/30; maintenance CLDR 48.1 (2026-01-08… (+17 още)"
+        },
+        {
+          "version": "14.1.0",
+          "date": "2026-07-24",
+          "event": "v14.1 — учене",
+          "detail": "Научи: BG официална романизация = 'Streamlined система', станала закон (Закон за транслитераци… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „BG официална романизация = 'Streamlined система', станала закон (Закон за транслитераци…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „CLDR 48 / ICU 78 (Unicode 17) released 2025-10-29/30; maintenance CLDR 48.1 (2026-01-08…\" (+17 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
@@ -4810,9 +4909,42 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Interactive $transaction дефолти: timeout 5000ms, maxWait 2000ms. Голям seed в една тра… (+5 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-24",
+          "event": "v10.8 — учене",
+          "detail": "Научи: prisma.config.ts (Prisma 6.13+/7) конфигурира seed команда под migrations.seed (напр. `… (+5 още)"
+        },
+        {
+          "version": "12.0.0",
+          "date": "2026-07-24",
+          "event": "v12.0 — учене",
+          "detail": "Научи: Nested create/connect/connectOrCreate/createMany НЕ могат вътре в ТОП-НИВО createMany()… (+11 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: zabobovdol/prisma/schema.prisma ползва изключително String @id @default(cuid()) за всич… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol/prisma/schema.prisma ползва изключително String @id @default(cuid()) за всич…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Nested create/connect/connectOrCreate/createMany НЕ могат вътре в ТОП-НИВО createMany()…\" (+11 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „prisma.config.ts (Prisma 6.13+/7) конфигурира seed команда под migrations.seed (напр. `…\" (+5 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "quarantine",
@@ -5535,9 +5667,31 @@
           "date": "2026-07-22",
           "event": "v10.9 — учене",
           "detail": "Научи: tools/vps/deploy-check.mjs е орфан — grep 'deploy-check' в .github/, tools/agents/, dep…"
+        },
+        {
+          "version": "12.8.0",
+          "date": "2026-07-24",
+          "event": "v12.8 — учене",
+          "detail": "Научи: LE профил tlsserver дава 45-дневни серт.; маха Common Name, Key Encipherment KU и Subje… (+18 още)"
+        },
+        {
+          "version": "14.4.0",
+          "date": "2026-07-24",
+          "event": "v14.4 — учене",
+          "detail": "Научи: pg_dump: 'directory' формат (-Fd) е ЕДИНСТВЕНИЯТ, който поддържа паралелни дъмпове (-j … (+15 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „pg_dump: 'directory' формат (-Fd) е ЕДИНСТВЕНИЯТ, който поддържа паралелни дъмпове (-j …\" (+15 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „LE профил tlsserver дава 45-дневни серт.; маха Common Name, Key Encipherment KU и Subje…\" (+18 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
@@ -6314,9 +6468,31 @@
           "date": "2026-07-06",
           "event": "v11.0 — учене",
           "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
+        },
+        {
+          "version": "12.7.0",
+          "date": "2026-07-24",
+          "event": "v12.7 — учене",
+          "detail": "Научи: QuickSurface 2026 (Siemens Parasolid kernel) добавя конкретни именувани инструменти: 'L… (+15 още)"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-07-24",
+          "event": "v14.2 — учене",
+          "detail": "Научи: NURBS рационална basis функция: R_i,p(u) = w_i·N_i,p(u) / Σ_j w_j·N_j,p(u); хомогенни к… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „NURBS рационална basis функция: R_i,p(u) = w_i·N_i,p(u) / Σ_j w_j·N_j,p(u); хомогенни к…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface 2026 (Siemens Parasolid kernel) добавя конкретни именувани инструменти: 'L…\" (+15 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -7035,9 +7211,36 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: YouTube Data API v3 е преструктурирал quota: videos.insert и search.list имат ОТДЕЛНИ q… (+1 още)"
+        },
+        {
+          "version": "12.1.0",
+          "date": "2026-07-24",
+          "event": "v12.1 — учене",
+          "detail": "Научи: TikTok 2026 — прагът за виралност е ~70% completion rate (вдигнат от 50% през 2024); ср… (+18 още)"
+        },
+        {
+          "version": "13.6.0",
+          "date": "2026-07-24",
+          "event": "v13.6 — учене",
+          "detail": "Научи: Instagram Graph API Content Publishing: лимит е точно 100 API-публикувани поста в rolli… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Instagram Graph API Content Publishing: лимит е точно 100 API-публикувани поста в rolli…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „LinkedIn 2026: dwell time е водещ ранкинг сигнал; постове с 0-3s dwell ~1.2% engagement…\" (+19)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „TikTok 2026 — прагът за виралност е ~70% completion rate (вдигнат от 50% през 2024); ср…\" (+18 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -7708,9 +7911,31 @@
           "date": "2026-07-10",
           "event": "v10.4 — учене",
           "detail": "Научи: Stripe Tax с само home-country регистрация: под €10k трансгранични EU B2C дигитални усл…"
+        },
+        {
+          "version": "12.4.0",
+          "date": "2026-07-24",
+          "event": "v12.4 — учене",
+          "detail": "Научи: constructEvent/construct_event има default replay толеранс 5 минути между timestamp-а в… (+19 още)"
+        },
+        {
+          "version": "14.3.0",
+          "date": "2026-07-24",
+          "event": "v14.3 — учене",
+          "detail": "Научи: SetupIntent usage: default е off_session (важи и за on+off). off_session прави UPFRONT … (+18 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „SetupIntent usage: default е off_session (важи и за on+off). off_session прави UPFRONT …\" (+18 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „constructEvent/construct_event има default replay толеранс 5 минути между timestamp-а в…\" (+19 още)"
+        },
         {
           "date": "2026-07-23",
           "type": "quarantine",
@@ -8357,9 +8582,42 @@
           "date": "2026-07-17",
           "event": "v10.3 — учене",
           "detail": "Научи: zabobovdol TWA обвивка: assetlinks.json се сервира ДИНАМИЧНО от админ отпечатъка през r… (+2 още)"
+        },
+        {
+          "version": "11.1.0",
+          "date": "2026-07-24",
+          "event": "v11.1 — учене",
+          "detail": "Научи: Play Console — нови апове/ъпдейти трябва target Android 16 (API 36)+ (Wear OS/Auto API … (+7 още)"
+        },
+        {
+          "version": "12.2.0",
+          "date": "2026-07-24",
+          "event": "v12.2 — учене",
+          "detail": "Научи: OWASP MASTG v2.0.0 излезе 30.06.2026 — завършва многогодишен рефактор от монолитни тест… (+10 още)"
+        },
+        {
+          "version": "13.1.0",
+          "date": "2026-07-24",
+          "event": "v13.1 — учене",
+          "detail": "Научи: Apple phased release: automatic-update юзъри получават ъпдейта по разписание 1%/2%/5%/1… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Apple phased release: automatic-update юзъри получават ъпдейта по разписание 1%/2%/5%/1…\" (+8 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „OWASP MASTG v2.0.0 излезе 30.06.2026 — завършва многогодишен рефактор от монолитни тест…\" (+10 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Play Console — нови апове/ъпдейти трябва target Android 16 (API 36)+ (Wear OS/Auto API …\" (+7 още)"
+        },
         {
           "date": "2026-07-18",
           "type": "quarantine",
@@ -8963,9 +9221,42 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Композитна форма на FDM = печатай ПАТЕРН (PLA/ABS), запечатай с епоксиден coating resin… (+6 още)"
+        },
+        {
+          "version": "11.9.0",
+          "date": "2026-07-24",
+          "event": "v11.9 — учене",
+          "detail": "Научи: K2 Plus камера: активно нагряване само в диапазон 40°C < T ≤ 60°C (под 40°C е пасивно/и… (+16 още)"
+        },
+        {
+          "version": "12.7.0",
+          "date": "2026-07-24",
+          "event": "v12.7 — учене",
+          "detail": "Научи: Klipper input shaping ползва ADXL345 акселерометър (SPI); TEST_RESONANCES AXIS=X/Y мери… (+7 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: OrcaSlicer Max Volumetric Speed калибрация дефолти: старт 5 mm³/s, край 20 mm³/s, стъпк… (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer Max Volumetric Speed калибрация дефолти: старт 5 mm³/s, край 20 mm³/s, стъпк…\" (+7 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Klipper input shaping ползва ADXL345 акселерометър (SPI); TEST_RESONANCES AXIS=X/Y мери…\" (+7 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „K2 Plus камера: активно нагряване само в диапазон 40°C < T ≤ 60°C (под 40°C е пасивно/и…\" (+16 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -9664,9 +9955,20 @@
           "date": "2026-07-17",
           "event": "v11.5 — учене",
           "detail": "Научи: slate-500 на bg-red-100 (#fee2e2) = 3.90 — пропада AA; в тъмен режим същото място минав… (+1 още)"
+        },
+        {
+          "version": "13.3.0",
+          "date": "2026-07-24",
+          "event": "v13.3 — учене",
+          "detail": "Научи: Three.js r171+ прави WebGPURenderer практически 'zero-config' — `import * as THREE from… (+17 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Three.js r171+ прави WebGPURenderer практически 'zero-config' — `import * as THREE from…\" (+17 още)"
+        },
         {
           "date": "2026-07-18",
           "type": "quarantine",
@@ -10405,9 +10707,31 @@
           "date": "2026-07-22",
           "event": "v10.8 — учене",
           "detail": "Научи: In an MV3 adblocker, a content-script/sessionStorage 'bypass' that only skips injecting…"
+        },
+        {
+          "version": "12.0.0",
+          "date": "2026-07-24",
+          "event": "v12.0 — учене",
+          "detail": "Научи: MV2 крайна дата в Chrome Web Store: всички останали Manifest V2 разширения се премахват… (+11 още)"
+        },
+        {
+          "version": "13.6.0",
+          "date": "2026-07-24",
+          "event": "v13.6 — учене",
+          "detail": "Научи: declarativeNetRequest RuleCondition получи topDomains/excludedTopDomains от Chrome 145+… (+15 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „declarativeNetRequest RuleCondition получи topDomains/excludedTopDomains от Chrome 145+…\" (+15 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „MV2 крайна дата в Chrome Web Store: всички останали Manifest V2 разширения се премахват…\" (+11 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
@@ -11026,9 +11350,42 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId … (+8 още)"
+        },
+        {
+          "version": "11.3.0",
+          "date": "2026-07-24",
+          "event": "v11.3 — учене",
+          "detail": "Научи: discord.js стабилна линия вече v14.27.0 (последна публикувана ~7 дни преди 2026-07-24) … (+10 още)"
+        },
+        {
+          "version": "12.9.0",
+          "date": "2026-07-24",
+          "event": "v12.9 — учене",
+          "detail": "Научи: AutoMod trigger types: KEYWORD=1 (макс 6 правила/guild), SPAM=3 (макс 1), KEYWORD_PRESE… (+15 още)"
+        },
+        {
+          "version": "14.1.0",
+          "date": "2026-07-24",
+          "event": "v14.1 — учене",
+          "detail": "Научи: Gateway opcode пълна таблица 0-12: 3=Presence Update (client→server), 4=Voice State Upd… (+11 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Gateway opcode пълна таблица 0-12: 3=Presence Update (client→server), 4=Voice State Upd…\" (+11 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „AutoMod trigger types: KEYWORD=1 (макс 6 правила/guild), SPAM=3 (макс 1), KEYWORD_PRESE…\" (+15 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „discord.js стабилна линия вече v14.27.0 (последна публикувана ~7 дни преди 2026-07-24) …\" (+10 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -11433,9 +11790,31 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Binance WS session.logon приема САМО Ed25519 ключове (не HMAC/RSA). След успешен logon … (+6 още)"
+        },
+        {
+          "version": "12.2.0",
+          "date": "2026-07-24",
+          "event": "v12.2 — учене",
+          "detail": "Научи: Bybit V5 REST rate limit: default 600 requests / 5s per IP (breach → 10-min auto-ban); … (+19 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: Binance локален order book чрез diff depth stream (@depth@100ms/1000ms) — точна процеду… (+12 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Binance локален order book чрез diff depth stream (@depth@100ms/1000ms) — точна процеду…\" (+12 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Bybit V5 REST rate limit: default 600 requests / 5s per IP (breach → 10-min auto-ban); …\" (+19 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "quarantine",
@@ -11785,9 +12164,41 @@
           "date": "2026-07-23",
           "event": "v10.2 — учене",
           "detail": "Научи: CSPos sales/route.ts НЯМА write-ahead и НЯМА reconcile — Sale.create е чак на :227 вътр… (+1 още)"
+        },
+        {
+          "version": "11.5.0",
+          "date": "2026-07-24",
+          "event": "v11.5 — учене",
+          "detail": "Научи: Паричната граница на float: каноничният носител е int eurCents, но ФУ/терминал драйвери… (+12 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: ЗДДС чл.96: от 01.01.2026 задължителна регистрация по ДДС при облагаем оборот над 51 13… (+19 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „ЗДДС чл.96: от 01.01.2026 задължителна регистрация по ДДС при облагаем оборот над 51 13…\" (+19 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „ЗДДС чл.118, ал.1: ВСЯКО лице (регистрирано И нерегистрирано по ЗДДС) е длъжно да регис…\" (+21)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Паричната граница на float: каноничният носител е int eurCents, но ФУ/терминал драйвери…\" (+12 още) · 4 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „чл.39 Н-18: ФУ автоматично генерира ПЪЛЕН дневен финансов отчет с нулиране (Z), със зап…\" (+7)"
+        },
         {
           "date": "2026-07-23",
           "type": "learning",
@@ -11923,9 +12334,31 @@
           "date": "2026-07-22",
           "event": "v10.2 — учене",
           "detail": "Научи: Apple App Store 3.1.1 — от 30.04.2025 (перманентна съдебна забрана, Epic v. Apple, N.D.… (+1 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-24",
+          "event": "v10.9 — учене",
+          "detail": "Научи: Google Play target API: от 31.08.2025 нови апс и ъпдейти таргетират ≥ API 35 (Android 1… (+6 още)"
+        },
+        {
+          "version": "13.1.0",
+          "date": "2026-07-24",
+          "event": "v13.1 — учене",
+          "detail": "Научи: Apple Guideline 4.7 (мини-апс/мини-игри/HTML5/чатботове/плъгини/емулатори): 4.7.1 всеки… (+21 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Apple Guideline 4.7 (мини-апс/мини-игри/HTML5/чатботове/плъгини/емулатори): 4.7.1 всеки…\" (+21 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Google Play target API: от 31.08.2025 нови апс и ъпдейти таргетират ≥ API 35 (Android 1…\" (+6 още) · 4 в карантина"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
@@ -12066,9 +12499,31 @@
           "date": "2026-07-22",
           "event": "v10.2 — учене",
           "detail": "Научи: actions/checkout по подразбиране прави persist-credentials:true, пазейки GITHUB_TOKEN д… (+1 още)"
+        },
+        {
+          "version": "12.1.0",
+          "date": "2026-07-24",
+          "event": "v12.1 — учене",
+          "detail": "Научи: Pin по подвижен таг (@v4) = риск: maintainer/token компрометиран → tag re-point → malic… (+18 още)"
+        },
+        {
+          "version": "13.6.0",
+          "date": "2026-07-24",
+          "event": "v13.6 — учене",
+          "detail": "Научи: КОРЕКЦИЯ на предишен запис (konveyera.md:60, погрешно '4 нива'): reusable workflows под… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „КОРЕКЦИЯ на предишен запис (konveyera.md:60, погрешно '4 нива'): reusable workflows под…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Pin по подвижен таг (@v4) = риск: maintainer/token компрометиран → tag re-point → malic…\" (+18 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
@@ -12201,9 +12656,20 @@
           "date": "2026-07-19",
           "event": "Научи CCCR тест-методологията (kimi-code)",
           "detail": "Усвои тествай-контракта-не-имплементацията от kimi-code test lens: едно поведение/it, name=поведение+условие+изход, стъбвай само реалната граница, време през knobs (не fake timers), DAMP, изолация, CCCR bar. +12 проверени поуки."
+        },
+        {
+          "version": "13.8.0",
+          "date": "2026-07-24",
+          "event": "v13.8 — учене",
+          "detail": "Научи: Playwright auto-waiting не покрива API отговор/route промяна — избирай wait по СИГНАЛ: … (+25 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Playwright auto-waiting не покрива API отговор/route промяна — избирай wait по СИГНАЛ: …\" (+25 още)"
+        },
         {
           "date": "2026-07-19",
           "type": "learning",
@@ -12326,9 +12792,42 @@
           "date": "2026-07-16",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (diataxis.fr, keepachangelog.com, semver.org, adr.github.io, Google Tech Writing, Write the Docs, OpenAPI/TSDoc, Mermaid/C4, GitHub docs): 4-те режима, README/ADR/CHANGELOG/API докове, docs-as-code хигиена, стил/достъпност, кодови примери, IA/навигация, миграции/deprecation, AI-ориентирани докове — плюс конвенциите на репото (BG източник, per-product docs). Домейнът е покрит."
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-24",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Keep a Changelog текуща версия 1.1.0, публикувана 2019-02-15; 6 категории (Added/Change… (+7 още)"
+        },
+        {
+          "version": "12.3.0",
+          "date": "2026-07-24",
+          "event": "v12.3 — учене",
+          "detail": "Научи: Conventional Commits 1.0.0: структура `<type>[optional scope]: <description>` + optiona… (+14 още)"
+        },
+        {
+          "version": "13.2.0",
+          "date": "2026-07-24",
+          "event": "v13.2 — учене",
+          "detail": "Научи: JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa…\" (+8 още) · 7 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Conventional Commits 1.0.0: структура `<type>[optional scope]: <description>` + optiona…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Keep a Changelog текуща версия 1.1.0, публикувана 2019-02-15; 6 категории (Added/Change…\" (+7 още) · 5 в карантина"
+        },
         {
           "date": "2026-07-16",
           "type": "birth",
@@ -12446,9 +12945,31 @@
           "date": "2026-07-17",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (Google SRE Book/Workbook + OpenTelemetry/Prometheus/Grafana docs + web.dev CWV): трите стълба, OTel/OTLP, SLI/SLO/error budget, златни сигнали+RED/USE, burn-rate аларми, PromQL, percentile латентност, health probes, инциденти/postmortem/toil, синтетичен+RUM, приватност на телеметрията — плюс конкретиката на репото. Домейнът е покрит."
+        },
+        {
+          "version": "11.6.0",
+          "date": "2026-07-24",
+          "event": "v11.6 — учене",
+          "detail": "Научи: OTel сигнали статус: Traces, Logs и Baggage са напълно stable (LTS); Metrics — API и OT… (+15 още)"
+        },
+        {
+          "version": "14.0.0",
+          "date": "2026-07-24",
+          "event": "v14.0 — учене",
+          "detail": "Научи: LogQL log range aggregations работят върху брой лог-редове: rate() (записи/сек), count_… (+23 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „LogQL log range aggregations работят върху брой лог-редове: rate() (записи/сек), count_…\" (+23 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „OTel сигнали статус: Traces, Logs и Baggage са напълно stable (LTS); Metrics — API и OT…\" (+15 още)"
+        },
         {
           "date": "2026-07-22",
           "type": "quarantine",
@@ -12572,9 +13093,31 @@
           "date": "2026-07-17",
           "event": "Обучен до ниво на екипа (mastery v10)",
           "detail": "Засят със 100 проверени поуки с реален източник (Kohavi 'Trustworthy Online Controlled Experiments' + GA4/PostHog/Plausible docs + GDPR/ePrivacy): tracking plan/таксономия, идентичност, KPI/AARRR/North Star, фунии/retention/cohort, A/B (power/peeking/SRM/A-A), причинност, приватност-първо (consent/server-side/минимизация), warehouse/SQL/дефиниции — плюс конкретиката на репото. Домейнът е покрит."
+        },
+        {
+          "version": "11.8.0",
+          "date": "2026-07-24",
+          "event": "v11.8 — учене",
+          "detail": "Научи: GA4 стандарт: default event-data retention = 2 месеца, максимум 14 месеца; 26/38/50 мес… (+17 още)"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-07-24",
+          "event": "v14.2 — учене",
+          "detail": "Научи: CUPED (Controlled experiment Using Pre-Experiment Data) намалява дисперсията чрез pre-e… (+23 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „CUPED (Controlled experiment Using Pre-Experiment Data) намалява дисперсията чрез pre-e…\" (+23 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „GA4 стандарт: default event-data retention = 2 месеца, максимум 14 месеца; 26/38/50 мес…\" (+17 още)"
+        },
         {
           "date": "2026-07-17",
           "type": "birth",
@@ -12669,9 +13212,31 @@
           "date": "2026-07-20",
           "event": "Раждане (production baseline)",
           "detail": "Създаден за празнина: имахме пасивен ревю (Кодаджията) + injection eval spec-ове, но НЯМАШЕ активен противник. Разбивача атакува изходите на другите агенти и сигурността на продуктите чрез оторизирано отбранително red-teaming — строго наши системи, нула вреда/exfil, coordinated disclosure. По флотилната конвенция агент, изграден по deep-research production стандарт, стартира на v10 (mastery baseline) — както всичките 25 негови връстника. Интеграция: пълен def + tools + памет + injection гейт 6/6 (eval.mjs --check) + drift-lint; издържа взаимния преглед на 26 агента (3 ok присъди по обхвата, 0 блокера)."
+        },
+        {
+          "version": "12.3.0",
+          "date": "2026-07-24",
+          "event": "v12.3 — учене",
+          "detail": "Научи: OWASP Top 10 for LLM Apps 2025 добавя LLM07 System Prompt Leakage (изтичане на системен… (+22 още)"
+        },
+        {
+          "version": "13.8.0",
+          "date": "2026-07-24",
+          "event": "v13.8 — учене",
+          "detail": "Научи: A01 Broken Access Control №1 в OWASP Web 2021. Два прости PoC за нашите продукти с ID-и… (+14 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „A01 Broken Access Control №1 в OWASP Web 2021. Два прости PoC за нашите продукти с ID-и…\" (+14 още)"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „OWASP Top 10 for LLM Apps 2025 добавя LLM07 System Prompt Leakage (изтичане на системен…\" (+22 още)"
+        },
         {
           "date": "2026-07-20",
           "text": "Роди се червеният екип — активно стрес-тества флота и продуктите (отбранително, оторизирано)."
@@ -12752,9 +13317,31 @@
           "date": "2026-07-21",
           "event": "v10.0 — майсторство (обучен с цитирани източници)",
           "detail": "Изравнен с майсторския ешелон на екипа: 42 проверени, цитирани поуки от целенасочено изследване с живи източници — Поасон + Диксън-Коулс (ρ≈−0.13, τ на 4 клетки, time-decay ξ half-life ~1г), bivariate Poisson (Karlis-Ntzoufras), xG предиктивност/ограничения и доставчици (StatsBomb/Opta/Understat), домакинско предимство (CIES + COVID естествен експеримент, ~0.2 гол/мач, съдийски уклон), пазар/марж (пропорционален vs Shin/power devig, favourite-longshot, CLV, Constantinou-Fenton), стейкинг Kelly (дробен ½/¼, volatility drag μ−σ²/2) и калибрация (Brier, log-loss, reliability, RPS за 1X2), голови базлайни на топ-5 лиги. 5 спорни твърдения в карантина (напр. ефект на надморска — McSharry vs Chumacero). Дисциплина и калибрация, не гарантирана печалба."
+        },
+        {
+          "version": "11.8.0",
+          "date": "2026-07-24",
+          "event": "v11.8 — учене",
+          "detail": "Научи: Kelly: f* = (b·p − q)/b, еквивалентно на f* = p − q/b (b = нето коеф = десетичен−1, q =… (+17 още)"
+        },
+        {
+          "version": "13.9.0",
+          "date": "2026-07-24",
+          "event": "v13.9 — учене",
+          "detail": "Научи: Bivariate Poisson (Karlis-Ntzoufras 2003) точна съвместна pmf: P(X=x,Y=y)=exp(−(λ1+λ2+λ… (+20 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Bivariate Poisson (Karlis-Ntzoufras 2003) точна съвместна pmf: P(X=x,Y=y)=exp(−(λ1+λ2+λ…\" (+20 още) · 3 в карантина"
+        },
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Kelly: f* = (b·p − q)/b, еквивалентно на f* = p − q/b (b = нето коеф = десетичен−1, q =…\" (+17 още)"
+        },
         {
           "date": "2026-07-21",
           "type": "quarantine",

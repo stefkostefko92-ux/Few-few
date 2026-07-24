@@ -8,7 +8,7 @@
 
 // Катастрофални, near-zero-FP шаблони (не хващат обикновени git/node/npm/rm на конкретен файл).
 export const CATASTROPHIC = [
-  { re: /rm\s+-[a-z]*r[a-z]*f?[a-z]*\s+(-{2}no-preserve-root\s+)?(\/(\s|$|\*)|~(\s|\/|$))/i, why: "rm -rf на корен/дом" },
+  { re: /rm\s+-[a-z]*r[a-z]*f?[a-z]*\s+(-{2}no-preserve-root\s+)?["']?(\/(\s|$|\*|["'])|~(\s|\/|$|["']))/i, why: "rm -rf на корен/дом" },
   { re: /rm\s+-[a-z]*\s+--no-preserve-root/i, why: "rm --no-preserve-root" },
   { re: /:\s*\(\s*\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:/, why: "fork bomb" },
   { re: /\bmkfs(\.\w+)?\b/i, why: "форматиране на файлова система (mkfs)" },
