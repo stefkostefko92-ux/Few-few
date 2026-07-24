@@ -11675,9 +11675,20 @@
           "date": "2026-07-24",
           "event": "v12.2 — учене",
           "detail": "Научи: Bybit V5 REST rate limit: default 600 requests / 5s per IP (breach → 10-min auto-ban); … (+19 още)"
+        },
+        {
+          "version": "13.5.0",
+          "date": "2026-07-24",
+          "event": "v13.5 — учене",
+          "detail": "Научи: Binance локален order book чрез diff depth stream (@depth@100ms/1000ms) — точна процеду… (+12 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Binance локален order book чрез diff depth stream (@depth@100ms/1000ms) — точна процеду…\" (+12 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
