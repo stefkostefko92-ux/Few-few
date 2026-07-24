@@ -2605,9 +2605,20 @@
           "date": "2026-07-22",
           "event": "v11.2 — учене",
           "detail": "Научи: tools/fivem/manifest-lint.mjs (zero-dep pre-ship линтер, тестван с manifest-lint.test.m…"
+        },
+        {
+          "version": "12.4.0",
+          "date": "2026-07-24",
+          "event": "v12.4 — учене",
+          "detail": "Научи: Официалният Cfx.re пример за client-side валидация на мрежово събитие идващо от сървъра… (+11 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Официалният Cfx.re пример за client-side валидация на мрежово събитие идващо от сървъра…\" (+11 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-22",
           "type": "learning",
