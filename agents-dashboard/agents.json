@@ -9101,9 +9101,20 @@
           "date": "2026-07-24",
           "event": "v11.9 — учене",
           "detail": "Научи: K2 Plus камера: активно нагряване само в диапазон 40°C < T ≤ 60°C (под 40°C е пасивно/и… (+16 още)"
+        },
+        {
+          "version": "12.7.0",
+          "date": "2026-07-24",
+          "event": "v12.7 — учене",
+          "detail": "Научи: Klipper input shaping ползва ADXL345 акселерометър (SPI); TEST_RESONANCES AXIS=X/Y мери… (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Klipper input shaping ползва ADXL345 акселерометър (SPI); TEST_RESONANCES AXIS=X/Y мери…\" (+7 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
