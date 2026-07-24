@@ -11857,9 +11857,20 @@
           "date": "2026-07-24",
           "event": "v13.5 — учене",
           "detail": "Научи: Binance локален order book чрез diff depth stream (@depth@100ms/1000ms) — точна процеду… (+12 още)"
+        },
+        {
+          "version": "13.7.0",
+          "date": "2026-07-24",
+          "event": "v13.7 — учене",
+          "detail": "Научи: Binance PERCENT_PRICE и PERCENT_PRICE_BY_SIDE ползват РАЗЛИЧНИ имена на полета: PERCENT… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-24",
+          "type": "learning",
+          "summary": "Научи: „Binance PERCENT_PRICE и PERCENT_PRICE_BY_SIDE ползват РАЗЛИЧНИ имена на полета: PERCENT…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
