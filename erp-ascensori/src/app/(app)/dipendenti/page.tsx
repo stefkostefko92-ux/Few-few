@@ -47,6 +47,13 @@ const config: EntityConfig = {
     },
     { name: "codiceFiscale", label: "Codice fiscale", tipo: "text" },
     { name: "dataAssunzione", label: "Data assunzione", tipo: "date" },
+    {
+      // Етикетът носи обяснението: полето е ново и без него хората пишат
+      // брутната заплата на техника, не разхода за фирмата.
+      name: "costoOrario",
+      label: "Costo orario aziendale (€, IVA escl.)",
+      tipo: "text",
+    },
     { name: "patente", label: "Patente", tipo: "text" },
     {
       name: "specializzazioni",

@@ -7,6 +7,7 @@ import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeSessione, richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
+import { emettiEvento } from "@/lib/webhook/emetti";
 import { STATI_ORDINE, transizioneAmmessa, type Stato } from "@/lib/workflow";
 
 const schema = z.object({
@@ -76,6 +77,14 @@ export const PATCH = gestito(async (req, ctx) => {
         utenteId: s.sub,
         tenantId: s.tenantId,
       },
+      tx,
+    );
+    // Известието се ЗАПИСВА в същата транзакция, но се ПРАЩА от автоматизъм:
+    // паднал получател не бива да проваля прехода.
+    await emettiEvento(
+      "ordine.stato_cambiato",
+      { id, numero: ordine.numero, da, a: stato },
+      s.tenantId ?? null,
       tx,
     );
     return tx.ordineLavoro.findUniqueOrThrow({ where: { id } });

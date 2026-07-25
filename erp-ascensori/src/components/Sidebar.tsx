@@ -25,6 +25,8 @@ import {
   FileArrowDown,
   Files,
   ShieldCheck,
+  ChartLineUp,
+  PlugsConnected,
   QrCode,
   UserCircle,
   UserFocus,
@@ -99,6 +101,12 @@ const GRUPPI: Gruppo[] = [
       { href: "/fatture", label: "Fatture", icona: <Receipt size={DIM.navigazione} />, minimo: "DIREZIONE" },
       { href: "/ddt", label: "DDT", icona: <FileArrowDown size={DIM.navigazione} /> },
       { href: "/documenti", label: "Documenti", icona: <Files size={DIM.navigazione} /> },
+      {
+        href: "/redditivita",
+        label: "Redditività",
+        icona: <ChartLineUp size={DIM.navigazione} />,
+        minimo: "DIREZIONE",
+      },
     ],
   },
   {
@@ -115,6 +123,12 @@ const GRUPPI: Gruppo[] = [
         href: "/impostazioni",
         label: "Dati aziendali",
         icona: <Gear size={DIM.navigazione} />,
+        minimo: "ADMIN",
+      },
+      {
+        href: "/integrazioni",
+        label: "Integrazioni",
+        icona: <PlugsConnected size={DIM.navigazione} />,
         minimo: "ADMIN",
       },
       {

@@ -16,6 +16,9 @@ const schema = z.object({
   quantita: z.number().int(),
   nota: z.string().trim().max(500).nullish(),
   ddtId: z.string().uuid().nullish(),
+  /** Ордина, за който излиза материалът. Без него вложеното не може да се
+   *  отнесе към договор или импиант и отчетът за рентабилност брои само труда. */
+  ordineLavoroId: z.string().uuid().nullish(),
 });
 
 export const GET = gestito(async (req) => {
@@ -82,6 +85,7 @@ export const POST = gestito(async (req) => {
         quantita: data.quantita,
         nota: data.nota ?? undefined,
         ddtId: data.ddtId ?? undefined,
+        ordineLavoroId: data.ordineLavoroId ?? undefined,
         ...tenantDiCreazione(s),
       },
     });

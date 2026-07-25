@@ -140,6 +140,9 @@ const dipendenteBase = z.object({
     .optional(),
   codiceFiscale: strOpt,
   dataAssunzione: dataOpt,
+  /** Цена на ЧАС за фирмата (заплата + осигуровки), без ДДС. Влиза в отчета за
+   *  рентабилност; липсата ѝ прави труда невидим разход. */
+  costoOrario: dec.nullish().or(z.literal("").transform(() => null)),
   patente: strOpt,
   specializzazioni: z.array(z.string().trim().min(1).max(100)).optional(),
   email: z
@@ -491,6 +494,8 @@ export const ordineSchema = z.object({
   descrizione: strOpt,
   noteInterne: strOpt,
   noteCommittente: strOpt,
+  /** Платено на котимиста/външен изпълнител за този ордин, без ДДС. */
+  costoEsterno: dec.nullish().or(z.literal("").transform(() => null)),
   dataInizio: dataOpt,
   dataFine: dataOpt,
   impiantoId: uuidOpt,

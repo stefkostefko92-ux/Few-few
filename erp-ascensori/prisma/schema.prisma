@@ -456,6 +456,10 @@ model Dipendente {
   tipo             TipoDipendente @default(TECNICO)
   codiceFiscale    String?
   dataAssunzione   DateTime?
+  /// Цена на ЧАС за фирмата (заплата + осигуровки), без ДДС. Без нея отчетът за
+  /// рентабилност не брои труда като разход и договорът изглежда по-печеливш,
+  /// отколкото е.
+  costoOrario      Decimal?       @db.Decimal(10, 2)
   patente          String?
   specializzazioni String[]       @default([])
   email            String?
@@ -580,12 +584,16 @@ model MovimentoMagazzino {
   quantita   Int
   nota       String?
   ddtId      String?       @db.Uuid
+  /// Ордина, за който е излязъл материалът. Без тази връзка вложеното не може
+  /// да се отнесе към договор или импиант и отчетът брои само труда.
+  ordineLavoroId String?    @db.Uuid
   tenantId  String?   @db.Uuid // изолация по фирма
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   articolo ArticoloMagazzino @relation(fields: [articoloId], references: [id])
   ddt      Ddt?              @relation(fields: [ddtId], references: [id])
+  ordineLavoro OrdineLavoro? @relation(fields: [ordineLavoroId], references: [id])
 
   @@index([tenantId])
   @@map("movimenti_magazzino")
@@ -718,6 +726,8 @@ model OrdineLavoro {
   descrizione    String?
   noteInterne    String? // никога не се печатат
   noteCommittente String?
+  /// Платено на котимиста / външен изпълнител за този ордин, без ДДС.
+  costoEsterno   Decimal?       @db.Decimal(12, 2)
   dataInizio     DateTime?
   dataFine       DateTime?
   impiantoId     String?        @db.Uuid
@@ -738,6 +748,7 @@ model OrdineLavoro {
   cottimista Cottimista?   @relation(fields: [cottimistiId], references: [id])
   squadra    Squadra?      @relation(fields: [squadraId], references: [id])
   storico     StoricoStato[]
+  movimenti   MovimentoMagazzino[]
   fatture     Fattura[]
   ddt         Ddt[]
   rapportini  Rapportino[]
@@ -933,4 +944,79 @@ model AutomatismoRun {
 
   @@index([nome, iniziatoAt])
   @@map("automatismi_run")
+}
+
+// ─── Публично API и webhooks ────────────────────────────────────────────────
+
+/// Ключ за достъп на ВЪНШНА система (счетоводен софтуер, портал на клиента).
+///
+/// Пази се само SHA-256 отпечатък: ключът се показва ВЕДНЪЖ при създаване и не
+/// може да бъде възстановен. Компрометирана база тогава не дава достъп до API-то,
+/// а изгубен ключ се сменя, вместо да се търси.
+model ApiKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  /// Кратък видим префикс — за разпознаване в списъка без да се пази ключът.
+  prefisso   String    @unique
+  chiaveHash String    @unique
+  etichetta  String
+  /// Правата на ключа. Празно значи НИЩО, не „всичко" — затворено по подразбиране.
+  ambiti     String[]  @default([])
+  ultimoUso  DateTime?
+  scadenza   DateTime?
+  revocataAt DateTime?
+  tenantId   String?   @db.Uuid
+  creataDaId String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@map("api_keys")
+}
+
+/// Абонамент за събития. Външната система получава известие, вместо да пита.
+model Webhook {
+  id         String    @id @default(uuid()) @db.Uuid
+  url        String
+  /// Тайна за подписа на доставката. Виждала се е само при създаване.
+  segreto    String
+  /// Кои събития. Празно = никакви (затворено по подразбиране).
+  eventi     String[]  @default([])
+  attivo     Boolean   @default(true)
+  /// Поредни неуспехи; след тавана абонаментът се спира сам.
+  fallimenti Int       @default(0)
+  tenantId   String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  consegne WebhookConsegna[]
+
+  @@index([tenantId])
+  @@map("webhooks")
+}
+
+/// Опашката на доставките. Отделна таблица, защото доставката се ПОВТАРЯ:
+/// получателят може да е недостъпен, а събитието не бива да се губи.
+model WebhookConsegna {
+  id            String    @id @default(uuid()) @db.Uuid
+  webhookId     String    @db.Uuid
+  evento        String
+  /// Тялото се замразява при пораждането: препращане на „текущото състояние"
+  /// би пратило по-късна стойност и получателят би видял събитие, което не се е
+  /// случило така.
+  corpo         Json
+  stato         String    @default("IN_ATTESA") // IN_ATTESA | CONSEGNATO | FALLITO
+  tentativi     Int       @default(0)
+  prossimoTentativo DateTime @default(now())
+  ultimoErrore  String?
+  rispostaStato Int?
+  consegnatoAt  DateTime?
+  tenantId      String?   @db.Uuid
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([stato, prossimoTentativo])
+  @@index([tenantId])
+  @@map("webhook_consegne")
 }

@@ -7,6 +7,7 @@ import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
+import { emettiEvento } from "@/lib/webhook/emetti";
 import {
   STATI_FATTURA,
   transizioneFatturaAmmessa,
@@ -42,7 +43,17 @@ export const PATCH = gestito(async (req, ctx) => {
         409,
         "Stato modificato da un'altra operazione: riprovare",
       );
-    return tx.fattura.findUniqueOrThrow({ where: { id } });
+    const dopo = await tx.fattura.findUniqueOrThrow({ where: { id } });
+    // Двете състояния, които интересуват външна счетоводна система: издадена и
+    // платена. Останалите преходи са наша вътрешна кухня.
+    if (stato === "EMESSA" || stato === "PAGATA")
+      await emettiEvento(
+        stato === "EMESSA" ? "fattura.emessa" : "fattura.pagata",
+        { id, numero: dopo.numero, stato, totaleLordo: String(dopo.totaleLordo) },
+        s.tenantId ?? null,
+        tx,
+      );
+    return dopo;
   });
 
   await scriviAudit({

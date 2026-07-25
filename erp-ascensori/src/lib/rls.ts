@@ -44,6 +44,9 @@ export const TABELLE_CON_TENANT = [
   "fatture",
   "ddt",
   "documenti",
+  "api_keys",
+  "webhooks",
+  "webhook_consegne",
 ] as const;
 
 /** Обхватът на доставчика: вижда всички фирми. */
