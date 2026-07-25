@@ -28,6 +28,31 @@ const DEFAULTS = {
     archiveDir: '/root',
     autodeploy: '', // празно = <archive>/deploy/autodeploy.sh от текущия release
   },
+  // Известия — канали. Празните се пропускат. Тайните живеят само тук (mode 600).
+  notify: {
+    telegram: { botToken: '', chatId: '' },
+    ntfy: { server: 'https://ntfy.sh', topic: '', token: '' },
+    webhook: { url: '' },
+    email: { to: '', from: 'vps-dashboard@localhost' }, // праща се през sendmail, ако е наличен
+  },
+  // Аларми — прагове и каданс. Аларми по СИМПТОМ, не по причина (канонът на Наблюдателя).
+  alerts: {
+    enabled: true,
+    checkIntervalSec: 60,
+    cooldownMin: 60, // повторно известие за същия проблем не по-често от това
+    sustainSamples: 3, // праг трябва да се задържи N проверки → без шум от пикове
+    thresholds: {
+      cpuPct: 90,
+      memPct: 90,
+      diskPct: 85,
+      load1PerCore: 2,
+      certDays: 14,
+    },
+  },
+  // Двуфакторна автентикация (TOTP). secret се записва при включване от панела.
+  totp: { enabled: false, secret: '' },
+  // Качване на архиви от браузъра (за деплой).
+  uploads: { maxBytes: 3 * 1024 * 1024 * 1024 },
   // Продуктови health проверки (име + локален URL). Съвпадат с autodeploy.sh.
   healthChecks: [
     { name: 'zabobovdol', url: 'http://127.0.0.1:80/' },
@@ -89,5 +114,19 @@ export function loadConfig({ configPath = CONFIG_PATH, allowDev = true } = {}) {
 
 function finalize(cfg) {
   fs.mkdirSync(cfg.paths.stateDir, { recursive: true, mode: 0o700 });
+  return cfg;
+}
+
+// Записва промяна по конфига (2FA, канали за известия, прагове) обратно на диск.
+// Атомарно (tmp + rename), mode 600. Мутира и обекта в паметта, за да е в синхрон.
+// В dev режим (без файл) само мутира паметта — нищо не се записва.
+export function saveConfig(cfg, patch, { configPath = CONFIG_PATH } = {}) {
+  const merged = deepMerge(cfg, patch);
+  Object.assign(cfg, merged);
+  if (cfg.dev) return cfg;
+  const { dev, ...toWrite } = merged;
+  const tmp = `${configPath}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, JSON.stringify(toWrite, null, 2), { mode: 0o600 });
+  fs.renameSync(tmp, configPath);
   return cfg;
 }

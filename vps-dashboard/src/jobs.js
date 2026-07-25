@@ -66,6 +66,11 @@ export class Jobs {
       for (const l of job.listeners) l('end', { code: job.code });
       job.listeners.clear();
       this.audit?.log({ action: 'job.end', jobId: id, title: job.title, code: job.code, ...meta });
+      try {
+        this.onEnd?.(job);
+      } catch {
+        /* известието никога не чупи задачата */
+      }
       this.prune();
     });
 

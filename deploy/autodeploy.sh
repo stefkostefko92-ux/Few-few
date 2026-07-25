@@ -108,7 +108,24 @@ die()  { printf '\033[31m✘ %s\033[0m\n' "$*" >&2; exit 1; }
 [ "$(id -u)" = "0" ] || die "Пусни като root (sudo)."
 TS="$(date +%Y%m%d-%H%M%S)"
 
-# ── 1) Намери архива ──────────────────────────────────────────────────────────
+# ── 1) Намери архива (или ползвай вече разопакован release) ───────────────────
+# RELEASE_DIR=<път> прескача архива и разгръща от съществуващ release. Това е
+# ВРЪЩАНЕ НАЗАД (rollback): кодът на стария release вече е на диска, няма какво
+# да се разопакова. Панелът (vps-dashboard) ползва точно това.
+#   sudo RELEASE_DIR=/opt/few-few/releases/20260101-120000 bash .../autodeploy.sh
+if [ -n "${RELEASE_DIR:-}" ]; then
+  [ -d "$RELEASE_DIR" ] || die "Няма такъв release: $RELEASE_DIR"
+  # Приеми както корена на release-а, така и вложената папка от GitHub ZIP.
+  SRC="$RELEASE_DIR"
+  if [ ! -f "$SRC/CLAUDE.md" ]; then
+    shopt -s nullglob dotglob
+    rel_entries=( "$RELEASE_DIR"/* )
+    shopt -u nullglob dotglob
+    if [ "${#rel_entries[@]}" = "1" ] && [ -d "${rel_entries[0]}" ]; then SRC="${rel_entries[0]}"; fi
+  fi
+  log "Разгръщам от съществуващ release (без архив): $SRC"
+fi
+
 find_archive() {
   if [ -n "${ARCHIVE:-}" ]; then echo "$ARCHIVE"; return; fi
   # най-новият .zip/.tar.gz в ARCHIVE_DIR
@@ -117,42 +134,44 @@ find_archive() {
   [ -n "$a" ] || die "Няма архив в $ARCHIVE_DIR (качи .zip или .tar.gz)."
   echo "$a"
 }
-ARCHIVE_PATH="$(find_archive)"
-log "Архив: $ARCHIVE_PATH"
+if [ -z "${RELEASE_DIR:-}" ]; then
+  ARCHIVE_PATH="$(find_archive)"
+  log "Архив: $ARCHIVE_PATH"
 
-# ── 1б) Проверка на целостта (по избор) ───────────────────────────────────────
-# Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
-# случайно повреден или подменен архив не стига до сървъра.
-if [ -f "${ARCHIVE_PATH}.sha256" ]; then
-  log "Проверявам sha256…"
-  ( cd "$(dirname "$ARCHIVE_PATH")" \
-    && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
-    || die "sha256 не съвпада — спирам (повреден или подменен архив)."
-  ok "sha256 е валиден."
-else
-  warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
-fi
+  # ── 1б) Проверка на целостта (по избор) ─────────────────────────────────────
+  # Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
+  # случайно повреден или подменен архив не стига до сървъра.
+  if [ -f "${ARCHIVE_PATH}.sha256" ]; then
+    log "Проверявам sha256…"
+    ( cd "$(dirname "$ARCHIVE_PATH")" \
+      && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
+      || die "sha256 не съвпада — спирам (повреден или подменен архив)."
+    ok "sha256 е валиден."
+  else
+    warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
+  fi
 
-# ── 2) Разопаковай в нов release и нормализирай корена ────────────────────────
-REL="$RELEASES_DIR/$TS"
-mkdir -p "$REL"
-case "$ARCHIVE_PATH" in
-  *.zip)    command -v unzip >/dev/null || { apt-get update -y && apt-get install -y unzip; }
-            unzip -q "$ARCHIVE_PATH" -d "$REL" ;;
-  *.tar.gz) tar -xzf "$ARCHIVE_PATH" -C "$REL" ;;
-  *)        die "Непознат формат на архива." ;;
-esac
-# GitHub ZIP слага едно горно ниво (напр. few-few-main/). Влез в него.
-shopt -s nullglob dotglob
-entries=( "$REL"/* )
-if [ "${#entries[@]}" = "1" ] && [ -d "${entries[0]}" ] && [ ! -f "$REL/CLAUDE.md" ]; then
-  SRC="${entries[0]}"
-else
-  SRC="$REL"
+  # ── 2) Разопаковай в нов release и нормализирай корена ─────────────────────
+  REL="$RELEASES_DIR/$TS"
+  mkdir -p "$REL"
+  case "$ARCHIVE_PATH" in
+    *.zip)    command -v unzip >/dev/null || { apt-get update -y && apt-get install -y unzip; }
+              unzip -q "$ARCHIVE_PATH" -d "$REL" ;;
+    *.tar.gz) tar -xzf "$ARCHIVE_PATH" -C "$REL" ;;
+    *)        die "Непознат формат на архива." ;;
+  esac
+  # GitHub ZIP слага едно горно ниво (напр. few-few-main/). Влез в него.
+  shopt -s nullglob dotglob
+  entries=( "$REL"/* )
+  if [ "${#entries[@]}" = "1" ] && [ -d "${entries[0]}" ] && [ ! -f "$REL/CLAUDE.md" ]; then
+    SRC="${entries[0]}"
+  else
+    SRC="$REL"
+  fi
+  shopt -u nullglob dotglob
 fi
-shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedalitrasparenti" ] || [ -d "$SRC/ospedali" ] || die "Архивът не прилича на това репо ($SRC)."
-ok "Разопаковано в $SRC"
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedalitrasparenti" ] || [ -d "$SRC/ospedali" ] || die "Източникът не прилича на това репо ($SRC)."
+ok "Източник за деплой: $SRC"
 
 deploy_failed=0
 
@@ -782,7 +801,18 @@ done
 # ── 4) Маркирай текущия release + почисти старите ─────────────────────────────
 ln -sfn "$SRC" "$CURRENT_LINK"
 ok "current → $SRC"
-ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf
+# Пази последните KEEP_RELEASES, НО никога не трий този, който току-що разгърнахме
+# (при rollback към стар release той може да е извън най-новите — иначе си трием
+# кода изпод краката, точно докато current сочи натам).
+CURRENT_REL="$(cd "$SRC" && pwd -P)"
+while read -r old; do
+  [ -n "$old" ] || continue
+  old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
+  case "$CURRENT_REL" in
+    "$old_real"|"$old_real"/*) continue ;;   # текущият release (или родителят му) — пропусни
+  esac
+  rm -rf "$old"
+done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
 
 if [ "$deploy_failed" = "0" ]; then
   ok "Деплой готов ($TS). Проекти: $PROJECTS"

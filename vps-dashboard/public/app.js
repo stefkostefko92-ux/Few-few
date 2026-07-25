@@ -44,6 +44,13 @@ function sseUrl(pathname) {
 function showLogin() {
   document.getElementById('app').classList.add('hidden');
   document.getElementById('login').classList.remove('hidden');
+  // Ако входът иска втори фактор, показваме полето предварително.
+  fetch('/api/auth/info')
+    .then((r) => r.json())
+    .then((i) => {
+      if (i.totp) document.getElementById('login-code-wrap').classList.remove('hidden');
+    })
+    .catch(() => {});
 }
 function showApp() {
   document.getElementById('login').classList.add('hidden');
@@ -61,6 +68,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       body: JSON.stringify({
         user: document.getElementById('login-user').value,
         password: document.getElementById('login-pass').value,
+        code: document.getElementById('login-code').value || undefined,
       }),
     }).then(async (r) => {
       if (!r.ok) throw new Error((await r.json()).error || 'Грешка');
@@ -68,6 +76,11 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     await boot();
   } catch (e2) {
     err.textContent = e2.message;
+    // Сървърът поиска втори фактор → показваме полето и фокусираме там.
+    if (/2FA|код/i.test(e2.message)) {
+      document.getElementById('login-code-wrap').classList.remove('hidden');
+      document.getElementById('login-code').focus();
+    }
   }
 });
 
@@ -80,6 +93,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 const SECTIONS = [
   { id: 'overview', ico: '▤', label: 'Обзор', render: renderOverview },
   { id: 'products', ico: '❤', label: 'Продукти', render: renderProducts },
+  { id: 'alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
   { id: 'services', ico: '⚙', label: 'Услуги', render: renderServices },
   { id: 'docker', ico: '⬢', label: 'Docker', render: renderDocker },
   { id: 'processes', ico: '≡', label: 'Процеси', render: renderProcesses },
@@ -94,6 +108,7 @@ const SECTIONS = [
   { id: 'agents', ico: '✦', label: 'Агенти', render: renderAgents },
   { id: 'jobs', ico: '⏻', label: 'Задачи', render: renderJobs },
   { id: 'audit', ico: '✎', label: 'Одит', render: renderAudit },
+  { id: 'settings', ico: '⚿', label: 'Настройки', render: renderSettings },
   { id: 'power', ico: '⏼', label: 'Захранване', render: renderPower },
 ];
 
@@ -158,12 +173,20 @@ async function loadNodes() {
 // ── Обзор + живи графики ───────────────────────────────────────────────────────
 async function renderOverview() {
   const view = document.getElementById('view');
-  const [ov, hist] = await Promise.all([api('/overview'), api('/metrics/history')]);
+  const range = state.range || '24h';
+  const [ov, hist] = await Promise.all([api('/overview'), api('/metrics/history?range=' + range)]);
   state.hist = hist.points || [];
   const m = ov.metrics;
   const info = ov.info;
 
   view.innerHTML = '';
+  const rangeSel = el('select', {}, (hist.ranges || ['24h']).map((k) => el('option', { value: k, text: 'история: ' + k })));
+  rangeSel.value = hist.range || range;
+  rangeSel.onchange = () => {
+    state.range = rangeSel.value;
+    go('overview');
+  };
+  view.appendChild(el('div', { class: 'toolbar' }, [rangeSel, el('span', { class: 'muted', text: `${state.hist.length} точки (пазят се 7 дни на диска)` })]));
   view.appendChild(
     el('div', { class: 'grid grid-metrics' }, [
       metricCard('CPU', 'cpu', `${m.cpuPct.toFixed(0)}<small>%</small>`, `${info.cpus} ядра · load ${m.load.map((x) => x.toFixed(2)).join(' ')}`),
@@ -318,6 +341,198 @@ async function renderProducts() {
       ])
     ))
   );
+}
+
+// ── Аларми ────────────────────────────────────────────────────────────────────
+async function renderAlerts() {
+  const view = document.getElementById('view');
+  const a = await api('/alerts');
+  view.innerHTML = '';
+
+  const chNames = { telegram: 'Telegram', ntfy: 'ntfy', webhook: 'Webhook', email: 'Имейл' };
+  const anyChannel = Object.values(a.channels).some(Boolean);
+
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      pill(a.enabled ? 'ok' : 'dim', a.enabled ? 'алармите са включени' : 'изключени'),
+      ...Object.entries(a.channels).map(([k, on]) => pill(on ? 'ok' : 'dim', chNames[k])),
+      el('span', { class: 'grow' }),
+      el('button', { class: 'btn btn-sm', text: '⟳ Провери сега', onclick: async (e) => {
+        e.target.disabled = true;
+        try { const r = await api('/alerts/check', { method: 'POST' }); toast(`Проверено — ${r.firing.length} активни`); go('alerts'); }
+        catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+      } }),
+      el('button', { class: 'btn btn-sm', text: '✉ Тестово известие', disabled: !anyChannel, onclick: async (e) => {
+        e.target.disabled = true;
+        try { const r = await api('/alerts/test', { method: 'POST' }); toast(r.sent.length ? `Изпратено по: ${r.sent.join(', ')}` : `Провал: ${r.failed.join(', ')}`, r.sent.length ? 'ok' : 'bad'); }
+        catch (err) { toast(err.message, 'bad'); }
+        e.target.disabled = false;
+      } }),
+    ])
+  );
+
+  if (!anyChannel) {
+    view.appendChild(el('div', { class: 'toast warn', style: 'position:static;margin-bottom:14px', text: '⚠ Няма настроен канал — алармите се пазят само в таблото. Настрой Telegram/ntfy по-долу, за да идват на телефона.' }));
+  }
+
+  // Активни в момента
+  view.appendChild(el('h3', { class: 'muted', text: `Активни аларми (${a.active.length})`, style: 'margin:6px 0 10px' }));
+  view.appendChild(
+    a.active.length
+      ? el('div', { class: 'table-wrap' }, [
+          tableEl(['Тежест', 'Проблем', 'Детайли', 'Откога'], a.active.map((x) =>
+            el('tr', {}, [
+              el('td', {}, [pill(sevClass(x.severity), x.severity)]),
+              el('td', { text: x.title }),
+              el('td', { class: 'muted', text: x.body }),
+              el('td', { class: 'muted', text: fmtWhen(new Date(x.since).toISOString()) }),
+            ])
+          )),
+        ])
+      : el('div', { class: 'card' }, [el('div', { class: 'empty', text: '✓ Няма активни аларми — всичко е наред.' })])
+  );
+
+  // Прагове
+  const th = a.thresholds || {};
+  const inputs = {};
+  const thRow = (key, label, suffix) => {
+    const i = el('input', { type: 'text', value: String(th[key] ?? ''), style: 'width:80px' });
+    inputs[key] = i;
+    return el('label', { class: 'muted' }, [document.createTextNode(label + ' '), i, document.createTextNode(' ' + suffix)]);
+  };
+  view.appendChild(
+    el('div', { class: 'card', style: 'margin-top:18px' }, [
+      el('h3', { text: 'Прагове' }),
+      el('div', { class: 'toolbar' }, [
+        thRow('cpuPct', 'CPU', '%'),
+        thRow('memPct', 'Памет', '%'),
+        thRow('diskPct', 'Диск', '%'),
+        thRow('load1PerCore', 'Load/ядро', ''),
+        thRow('certDays', 'Сертификат', 'дни'),
+      ]),
+      el('div', { class: 'metric-sub', text: `Праг трябва да се задържи ${a.sustainSamples} проверки (на ${a.checkIntervalSec}s); повторно известие най-рано след ${a.cooldownMin} мин.` }),
+      el('button', { class: 'btn btn-primary btn-sm', text: 'Запази праговете', onclick: async (e) => {
+        e.target.disabled = true;
+        const thresholds = {};
+        for (const [k, i] of Object.entries(inputs)) {
+          const n = Number(i.value);
+          if (Number.isFinite(n) && n >= 0) thresholds[k] = n;
+        }
+        try { await api('/alerts/settings', { method: 'POST', body: { alerts: { thresholds } } }); toast('Праговете са запазени'); go('alerts'); }
+        catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+      } }),
+    ])
+  );
+
+  // Канали
+  view.appendChild(notifyChannelsCard(a));
+
+  // Дневник
+  view.appendChild(el('h3', { class: 'muted', text: 'Дневник на известията', style: 'margin:22px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(['Кога', 'Тип', 'Тежест', 'Съобщение', 'Изпратено'], (a.log || []).map((x) =>
+        el('tr', {}, [
+          el('td', { class: 'muted', text: fmtWhen(x.ts) }),
+          el('td', { text: x.type }),
+          el('td', {}, [pill(sevClass(x.severity), x.severity)]),
+          el('td', { text: x.title }),
+          el('td', { class: 'muted', text: (x.sent || []).join(', ') || (x.failed || []).join(', ') || '—' }),
+        ])
+      )),
+    ])
+  );
+}
+
+function sevClass(s) {
+  return s === 'critical' ? 'bad' : s === 'warning' ? 'warn' : s === 'ok' ? 'ok' : 'dim';
+}
+
+// Картата за каналите — тайните се ПРАЩАТ, но никога не се четат обратно.
+function notifyChannelsCard(a) {
+  const f = {};
+  const inp = (key, ph) => {
+    const i = el('input', { type: 'text', placeholder: ph, class: 'grow' });
+    f[key] = i;
+    return i;
+  };
+  return el('div', { class: 'card', style: 'margin-top:16px' }, [
+    el('h3', { text: 'Канали за известия' }),
+    el('div', { class: 'metric-sub', text: 'Попълни само това, което ползваш. Полетата са празни по подразбиране — тайните не се връщат обратно към браузъра. Празно поле = без промяна.' }),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Telegram' }), inp('tgToken', 'bot token'), inp('tgChat', 'chat id')]),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'ntfy' }), inp('ntfyServer', 'https://ntfy.sh'), inp('ntfyTopic', 'тема (topic)'), inp('ntfyToken', 'токен (по избор)')]),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Webhook' }), inp('hook', 'https://…')]),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Имейл' }), inp('mailTo', 'до: адрес (иска sendmail на сървъра)')]),
+    el('button', {
+      class: 'btn btn-primary btn-sm',
+      text: 'Запази каналите',
+      onclick: async (e) => {
+        e.target.disabled = true;
+        const notify = {};
+        const set = (obj, key, val) => { if (String(val).trim()) { notify[obj] = notify[obj] || {}; notify[obj][key] = String(val).trim(); } };
+        set('telegram', 'botToken', f.tgToken.value);
+        set('telegram', 'chatId', f.tgChat.value);
+        set('ntfy', 'server', f.ntfyServer.value);
+        set('ntfy', 'topic', f.ntfyTopic.value);
+        set('ntfy', 'token', f.ntfyToken.value);
+        set('webhook', 'url', f.hook.value);
+        set('email', 'to', f.mailTo.value);
+        try { await api('/alerts/settings', { method: 'POST', body: { notify } }); toast('Каналите са запазени'); go('alerts'); }
+        catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+      },
+    }),
+  ]);
+}
+
+// ── Настройки (2FA) ───────────────────────────────────────────────────────────
+async function renderSettings() {
+  const view = document.getElementById('view');
+  const me = await api('/me');
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text: 'Панелът дава пълен контрол над сървъра — втори фактор е силно препоръчителен.' }));
+
+  const box = el('div', { class: 'card' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Двуфакторна автентикация (TOTP)' }),
+      pill(me.totpEnabled ? 'ok' : 'warn', me.totpEnabled ? 'включена' : 'изключена'),
+    ]),
+  ]);
+  view.appendChild(box);
+
+  if (me.totpEnabled) {
+    const pw = el('input', { type: 'password', placeholder: 'парола за потвърждение' });
+    box.appendChild(el('div', { class: 'toolbar' }, [pw, el('button', {
+      class: 'btn btn-danger btn-sm', text: 'Изключи 2FA',
+      onclick: async () => {
+        try { await api('/totp/disable', { method: 'POST', body: { password: pw.value } }); toast('2FA е изключена', 'warn'); go('settings'); }
+        catch (err) { toast(err.message, 'bad'); }
+      },
+    })]));
+  } else {
+    box.appendChild(el('button', {
+      class: 'btn btn-primary btn-sm', text: 'Включи 2FA',
+      onclick: async (e) => {
+        e.target.disabled = true;
+        try {
+          const s = await api('/totp/setup', { method: 'POST' });
+          const code = el('input', { type: 'text', placeholder: '6-цифрен код', maxlength: '6', style: 'width:130px' });
+          box.appendChild(el('div', { style: 'margin-top:12px' }, [
+            el('div', { class: 'metric-sub', text: '1) Добави тайната в Google Authenticator / Aegis / 1Password (ръчно въвеждане или отвори връзката на телефона):' }),
+            el('pre', { class: 'term-out', style: 'user-select:all', text: s.secret }),
+            el('div', {}, [el('a', { href: s.uri, class: 'mono', text: s.uri, style: 'word-break:break-all;font-size:11px' })]),
+            el('div', { class: 'metric-sub', style: 'margin-top:10px', text: '2) Въведи кода, който показва приложението:' }),
+            el('div', { class: 'toolbar' }, [code, el('button', {
+              class: 'btn btn-primary btn-sm', text: 'Потвърди и включи',
+              onclick: async () => {
+                try { await api('/totp/enable', { method: 'POST', body: { code: code.value } }); toast('2FA е включена'); go('settings'); }
+                catch (err) { toast(err.message, 'bad'); }
+              },
+            })]),
+          ]));
+        } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+      },
+    }));
+  }
 }
 
 // ── Услуги ───────────────────────────────────────────────────────────────────────
@@ -620,14 +835,49 @@ async function renderDeploy() {
     ])
   );
 
+  // Качване на архив направо от браузъра (без scp).
+  const fileInput = el('input', { type: 'file', accept: '.zip,.tar.gz,application/zip,application/gzip' });
+  const upBar = el('div', { class: 'bar', style: 'display:none' });
+  const upFill = el('i', { style: 'width:0%' });
+  upBar.appendChild(upFill);
+  const upInfo = el('div', { class: 'metric-sub', text: 'Качи GitHub ZIP направо тук — пише се в /root заедно със sha256 за проверка на целостта.' });
+  view.appendChild(
+    el('div', { class: 'card', style: 'margin-top:16px' }, [
+      el('h3', { text: 'Качване на архив' }),
+      upInfo,
+      el('div', { class: 'toolbar' }, [
+        fileInput,
+        el('button', { class: 'btn btn-sm', text: '⬆ Качи', onclick: () => uploadArchive(fileInput, upBar, upFill, upInfo) }),
+      ]),
+      upBar,
+    ])
+  );
+
   view.appendChild(
     el('div', { class: 'grid grid-2', style: 'margin-top:16px' }, [
       el('div', { class: 'card' }, [
-        el('h3', { text: 'Releases' }),
+        el('h3', { text: 'Releases (връщане назад)' }),
         el('div', { class: 'crumbs', text: 'current → ' + (st.current || '—') }),
         el('div', { class: 'table-wrap' }, [
-          tableEl(['Release', 'Дата'], (st.releases || []).slice(0, 20).map((r) =>
-            el('tr', {}, [el('td', { class: 'mono', text: r.name }), el('td', { class: 'muted', text: fmtWhen(r.mtime) })])
+          tableEl(['Release', 'Дата', ''], (st.releases || []).slice(0, 20).map((r) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: r.name }),
+              el('td', { class: 'muted', text: fmtWhen(r.mtime) }),
+              el('td', {}, [
+                el('button', {
+                  class: 'btn btn-sm btn-warn',
+                  text: '↩ Върни се тук',
+                  onclick: async () => {
+                    const projects = Object.entries(checks).filter(([, c]) => c.checked).map(([p]) => p);
+                    if (!confirm(`Връщам ${projects.length ? projects.join(', ') : 'ВСИЧКИ проекти'} към release ${r.name}?`)) return;
+                    try {
+                      const job = await api('/deploy/rollback', { method: 'POST', body: { release: r.name, projects } });
+                      streamJob(job.id, job.title);
+                    } catch (err) { toast(err.message, 'bad'); }
+                  },
+                }),
+              ]),
+            ])
           )),
         ]),
       ]),
@@ -635,14 +885,59 @@ async function renderDeploy() {
         el('h3', { text: 'Качени архиви (/root)' }),
         st.archives.length
           ? el('div', { class: 'table-wrap' }, [
-              tableEl(['Архив', 'Размер', 'Качен'], st.archives.map((a) =>
-                el('tr', {}, [el('td', { class: 'mono', text: a.name }), el('td', { text: fmtBytes(a.sizeBytes) }), el('td', { class: 'muted', text: fmtWhen(a.mtime) })])
+              tableEl(['Архив', 'Размер', 'Качен', ''], st.archives.map((a) =>
+                el('tr', {}, [
+                  el('td', { class: 'mono', text: a.name }),
+                  el('td', { text: fmtBytes(a.sizeBytes) }),
+                  el('td', { class: 'muted', text: fmtWhen(a.mtime) }),
+                  el('td', {}, [
+                    el('button', {
+                      class: 'btn btn-sm btn-danger', text: 'Изтрий',
+                      onclick: async () => {
+                        if (!confirm(`Изтривам ${a.name}?`)) return;
+                        try { await api('/deploy/archive/delete', { method: 'POST', body: { name: a.name } }); toast('Изтрит'); go('deploy'); }
+                        catch (err) { toast(err.message, 'bad'); }
+                      },
+                    }),
+                  ]),
+                ])
               )),
             ])
-          : el('div', { class: 'empty', text: 'Няма качени архиви — качи GitHub ZIP в /root.' }),
+          : el('div', { class: 'empty', text: 'Няма качени архиви — качи ZIP отгоре.' }),
       ]),
     ])
   );
+}
+
+// Качване с прогрес (XHR — fetch още няма надежден upload progress).
+function uploadArchive(fileInput, bar, fill, info) {
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) { toast('Избери файл', 'warn'); return; }
+  if (!/\.(zip|tar\.gz)$/i.test(file.name)) { toast('Само .zip или .tar.gz', 'bad'); return; }
+  bar.style.display = 'block';
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', apiBase() + '/deploy/upload?name=' + encodeURIComponent(file.name));
+  xhr.setRequestHeader('x-csd', '1');
+  xhr.upload.onprogress = (e) => {
+    if (!e.lengthComputable) return;
+    const pct = (e.loaded / e.total) * 100;
+    fill.style.width = pct.toFixed(1) + '%';
+    info.textContent = `Качвам… ${fmtBytes(e.loaded)} / ${fmtBytes(e.total)} (${pct.toFixed(0)}%)`;
+  };
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const r = JSON.parse(xhr.responseText);
+      toast(`Качен: ${r.name} (${fmtBytes(r.sizeBytes)})`);
+      go('deploy');
+    } else {
+      let msg = `HTTP ${xhr.status}`;
+      try { msg = JSON.parse(xhr.responseText).error || msg; } catch { /* без тяло */ }
+      toast(msg, 'bad');
+      info.textContent = 'Качването се провали.';
+    }
+  };
+  xhr.onerror = () => toast('Мрежова грешка при качване', 'bad');
+  xhr.send(file);
 }
 
 // ── Ъпдейти ───────────────────────────────────────────────────────────────────────

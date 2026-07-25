@@ -103,6 +103,33 @@ export function deploySpec(cfg, { projects, archive, forceSeed }) {
   };
 }
 
+// Връщане назад: разгръща СЪЩЕСТВУВАЩ release без разопаковане (RELEASE_DIR).
+export function rollbackSpec(cfg, { release, projects }) {
+  const script = autodeployScript(cfg);
+  if (!script) throw Object.assign(new Error('Няма autodeploy.sh'), { status: 400 });
+  const name = path.basename(String(release || ''));
+  if (!/^\d{8}-\d{6}$/.test(name)) {
+    throw Object.assign(new Error('Невалиден release'), { status: 400 });
+  }
+  const dir = path.join(cfg.paths.releasesDir, name);
+  if (!fs.existsSync(dir)) throw Object.assign(new Error('Няма такъв release'), { status: 400 });
+  const env = { RELEASE_DIR: dir };
+  if (Array.isArray(projects) && projects.length) {
+    for (const p of projects) {
+      if (!PROJECT_RX.test(p)) throw Object.assign(new Error(`Невалиден проект: ${p}`), { status: 400 });
+    }
+    env.PROJECTS = projects.join(' ');
+  }
+  return {
+    title: `Връщане назад към ${name} (${env.PROJECTS || 'всички проекти'})`,
+    cmd: 'bash',
+    args: [script],
+    env,
+    exclusive: 'system',
+    timeoutMs: 60 * 60 * 1000,
+  };
+}
+
 // ── Продуктови health проверки ────────────────────────────────────────────────
 export async function productHealth(cfg) {
   const checks = cfg.healthChecks || [];

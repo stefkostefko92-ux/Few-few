@@ -6,6 +6,8 @@ import { loadConfig } from './src/config.js';
 import { Audit } from './src/audit.js';
 import { Jobs } from './src/jobs.js';
 import { MetricsCollector } from './src/metrics.js';
+import { MetricsHistory } from './src/history.js';
+import { AlertEngine } from './src/alerts.js';
 import { buildRouter } from './src/routes.js';
 import { serveStatic, sendError } from './src/httpd.js';
 
@@ -15,9 +17,28 @@ const cfg = loadConfig();
 const audit = new Audit(cfg.paths.stateDir);
 const jobs = new Jobs(audit);
 const metrics = new MetricsCollector();
+const history = new MetricsHistory(cfg.paths.stateDir);
+metrics.listeners.add((snap) => history.maybeAppend(snap));
 metrics.startSampling();
 
-const router = buildRouter({ cfg, audit, jobs, metrics });
+const alerts = new AlertEngine({ cfg, metrics, audit });
+alerts.start();
+
+// Провалена системна задача (деплой/ъпдейт/бекъп) вдига известие веднага —
+// иначе научаваш за счупен деплой чак когато продуктът падне.
+jobs.onEnd = (job) => {
+  if (job.code === 0 || !job.exclusive) return;
+  alerts
+    .event({
+      key: `job:${job.id}`,
+      severity: 'critical',
+      title: `Провалена задача: ${job.title}`,
+      body: `Изход ${job.code}. Последни редове:\n${job.output.slice(-800)}`,
+    })
+    .catch(() => {});
+};
+
+const router = buildRouter({ cfg, audit, jobs, metrics, history, alerts });
 const statics = serveStatic(path.join(__dirname, 'public'));
 
 const server = http.createServer(async (req, res) => {

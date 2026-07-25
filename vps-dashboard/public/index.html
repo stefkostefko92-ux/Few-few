@@ -17,6 +17,7 @@
         <p class="login-sub">Контролен панел за сървъра</p>
         <label>Потребител<input id="login-user" name="user" value="admin" autocomplete="username" /></label>
         <label>Парола<input id="login-pass" name="password" type="password" autocomplete="current-password" /></label>
+        <label id="login-code-wrap" class="hidden">Код от приложението (2FA)<input id="login-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" /></label>
         <button type="submit" class="btn btn-primary">Вход</button>
         <div id="login-err" class="login-err"></div>
       </form>

@@ -163,7 +163,20 @@ function parsePorts(text) {
     .filter(Boolean);
 }
 
-async function tlsCerts() {
+// Услуги в състояние failed — суровината за алармата „паднала услуга“.
+export async function failedServices() {
+  const r = await run('systemctl', ['list-units', '--state=failed', '--no-pager', '--output=json'], {
+    timeout: 10000,
+  });
+  if (!r.ok) return [];
+  try {
+    return JSON.parse(r.stdout).map((u) => u.unit);
+  } catch {
+    return [];
+  }
+}
+
+export async function tlsCerts() {
   // Let's Encrypt: четем сертификатите с openssl (без certbot зависимост).
   const out = [];
   const live = '/etc/letsencrypt/live';

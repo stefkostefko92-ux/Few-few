@@ -16,6 +16,11 @@ import * as deploy from './deploy.js';
 import * as agents from './agents.js';
 import * as files from './files.js';
 import * as nodes from './nodes.js';
+import * as upload from './upload.js';
+import { verifyTotp, generateSecret, otpauthUri } from './totp.js';
+import { saveConfig } from './config.js';
+import { configuredChannels } from './notify.js';
+import { RANGES } from './history.js';
 
 const COOKIE = 'csd_sess';
 export const VERSION = '0.1.0';
@@ -86,6 +91,16 @@ export function buildRouter(ctx) {
       audit.log({ action: 'login.fail', ip });
       return sendError(res, 401, 'Грешно име или парола.');
     }
+    // Втори фактор (ако е включен). Стъпката се пази, за да не мине същият код два пъти.
+    if (cfg.totp?.enabled && cfg.totp?.secret) {
+      const step = verifyTotp(cfg.totp.secret, body.code);
+      if (step === null || step === ctx.lastTotpStep) {
+        loginFailed(ip);
+        audit.log({ action: 'login.fail2fa', ip });
+        return sendError(res, 401, body.code ? 'Грешен код от приложението.' : 'Нужен е код (2FA).');
+      }
+      ctx.lastTotpStep = step;
+    }
     loginSucceeded(ip);
     const ttl = (cfg.sessionTtlHours || 12) * 3600 * 1000;
     const token = createSession(cfg.sessionSecret, cfg.adminUser, ttl);
@@ -112,7 +127,60 @@ export function buildRouter(ctx) {
         nodeName: cfg.nodeName,
         version: VERSION,
         peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name })),
+        totpEnabled: Boolean(cfg.totp?.enabled),
       }))
+    )
+  );
+
+  // Изисква ли входът втори фактор (за формата на вход, преди сесия).
+  r.get('/api/auth/info', (req, res) => sendJson(res, 200, { totp: Boolean(cfg.totp?.enabled) }));
+
+  // ── 2FA (TOTP) ─────────────────────────────────────────────────────────────
+  // Записваме тайната в конфига чак при ПОТВЪРЖДЕНИЕ с валиден код — иначе може
+  // да се заключиш с непрочетен QR.
+  r.post(
+    '/api/totp/setup',
+    guard(
+      J(async () => {
+        const secret = generateSecret();
+        ctx.pendingTotp = secret;
+        return { secret, uri: otpauthUri(secret, { account: cfg.adminUser }) };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/totp/enable',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const secret = ctx.pendingTotp;
+        if (!secret) throw Object.assign(new Error('Първо генерирай тайна.'), { status: 400 });
+        if (verifyTotp(secret, b.code) === null) {
+          throw Object.assign(new Error('Кодът не съвпада — провери часовника на телефона.'), { status: 400 });
+        }
+        saveConfig(cfg, { totp: { enabled: true, secret } });
+        ctx.pendingTotp = null;
+        audit.log({ action: 'totp.enable', user: req.user });
+        return { enabled: true };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/totp/disable',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        // Изключването иска паролата пак — кражба на сесия да не маха фактора.
+        if (!verifyPassword(String(b.password || ''), cfg.passwordHash)) {
+          throw Object.assign(new Error('Грешна парола.'), { status: 401 });
+        }
+        saveConfig(cfg, { totp: { enabled: false, secret: '' } });
+        audit.log({ action: 'totp.disable', user: req.user });
+        return { enabled: false };
+      }),
+      { mutating: true }
     )
   );
 
@@ -126,7 +194,18 @@ export function buildRouter(ctx) {
       }))
     )
   );
-  r.get('/api/metrics/history', guard(J(async () => ({ step: 30, points: metrics.getHistory() }))));
+  // История: от диска (преживява рестарт); range=1h|6h|24h|7d.
+  r.get(
+    '/api/metrics/history',
+    guard(
+      J(async (req, res, p, url) => {
+        const key = url.searchParams.get('range') || '24h';
+        const ms = RANGES[key] || RANGES['24h'];
+        const points = ctx.history ? ctx.history.range(ms) : metrics.getHistory();
+        return { step: 30, range: RANGES[key] ? key : '24h', ranges: Object.keys(RANGES), points };
+      })
+    )
+  );
   r.get(
     '/api/stream/metrics',
     guard((req, res) => {
@@ -218,6 +297,117 @@ export function buildRouter(ctx) {
         const b = await readJson(req);
         const spec = deploy.deploySpec(cfg, b);
         return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // Качване на архив направо от браузъра (суровото тяло; име в query).
+  // Пише и <архив>.sha256 → autodeploy.sh проверява целостта преди разопаковане.
+  r.post(
+    '/api/deploy/upload',
+    guard(
+      J(async (req, res, p, url) => {
+        const info = await upload.receiveArchive(req, cfg, url.searchParams.get('name'));
+        audit.log({ action: 'deploy.upload', name: info.name, sizeBytes: info.sizeBytes, sha256: info.sha256, user: req.user });
+        return info;
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/deploy/archive/delete',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        audit.log({ action: 'deploy.archiveDelete', name: b.name, user: req.user });
+        return upload.deleteArchive(cfg, b.name);
+      }),
+      { mutating: true }
+    )
+  );
+  // Връщане назад към стар release (без архив).
+  r.post(
+    '/api/deploy/rollback',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = deploy.rollbackSpec(cfg, b);
+        audit.log({ action: 'deploy.rollback', release: b.release, projects: b.projects, user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Аларми ─────────────────────────────────────────────────────────────────
+  r.get(
+    '/api/alerts',
+    guard(
+      J(async () => ({
+        enabled: Boolean(cfg.alerts?.enabled),
+        thresholds: cfg.alerts?.thresholds || {},
+        cooldownMin: cfg.alerts?.cooldownMin,
+        sustainSamples: cfg.alerts?.sustainSamples,
+        checkIntervalSec: cfg.alerts?.checkIntervalSec,
+        channels: configuredChannels(cfg),
+        active: ctx.alerts ? ctx.alerts.listActive() : [],
+        log: ctx.alerts ? ctx.alerts.log.slice(-100).reverse() : [],
+      }))
+    )
+  );
+  // Настройки: прагове/каданс + канали. Тайните (токени) се записват, но НИКОГА
+  // не се връщат обратно към браузъра — /api/alerts дава само „кой канал е нагласен".
+  r.post(
+    '/api/alerts/settings',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const patch = {};
+        if (b.alerts) {
+          patch.alerts = {};
+          for (const k of ['enabled', 'cooldownMin', 'sustainSamples', 'checkIntervalSec']) {
+            if (b.alerts[k] !== undefined) patch.alerts[k] = b.alerts[k];
+          }
+          if (b.alerts.thresholds) {
+            patch.alerts.thresholds = {};
+            for (const [k, v] of Object.entries(b.alerts.thresholds)) {
+              const n = Number(v);
+              if (Number.isFinite(n) && n >= 0) patch.alerts.thresholds[k] = n;
+            }
+          }
+        }
+        if (b.notify) patch.notify = b.notify;
+        saveConfig(cfg, patch);
+        audit.log({ action: 'alerts.settings', user: req.user }); // без стойности — може да има токени
+        return { ok: true };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/alerts/test',
+    guard(
+      J(async (req) => {
+        if (!ctx.alerts) throw Object.assign(new Error('Алармите не са пуснати'), { status: 400 });
+        const entry = await ctx.alerts.dispatch({
+          type: 'test',
+          key: 'test',
+          severity: 'info',
+          title: 'Тестово известие',
+          body: `Каналите работят. Изпратено от ${cfg.nodeName}.`,
+        });
+        return { sent: entry.sent, failed: entry.failed };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/alerts/check',
+    guard(
+      J(async () => {
+        if (!ctx.alerts) throw Object.assign(new Error('Алармите не са пуснати'), { status: 400 });
+        return ctx.alerts.evaluate();
       }),
       { mutating: true }
     )
