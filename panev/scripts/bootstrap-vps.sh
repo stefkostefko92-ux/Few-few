@@ -59,7 +59,19 @@ NODE_MAJOR=0
 command -v node >/dev/null && NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
 if (( NODE_MAJOR < 20 )); then
   say "Node.js 20 (текущ: ${NODE_MAJOR:-няма})"
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - >/dev/null
+  # БЕЗ пайп от мрежата към шел (това е изпълнение на непроверен отдалечен код
+  # като root — забранено от доктрината и от tools/vps/deploy-check.mjs).
+  # Добавяме хранилището на NodeSource ръчно: ключът влиза в keyring, а apt
+  # проверява подписа на всеки пакет — това е контролът за целостта.
+  command -v curl >/dev/null || apt-get install -y -qq curl
+  command -v gpg  >/dev/null || apt-get install -y -qq gnupg
+  install -d -m 755 /etc/apt/keyrings
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+    | gpg --dearmor --yes -o /etc/apt/keyrings/nodesource.gpg
+  chmod 644 /etc/apt/keyrings/nodesource.gpg
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" \
+    > /etc/apt/sources.list.d/nodesource.list
+  apt-get update -qq
   DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nodejs
 fi
 ok "node $(node -v) · nginx $(nginx -v 2>&1 | cut -d/ -f2) · $(certbot --version 2>&1 | head -1)"
@@ -89,21 +101,23 @@ ask ADMIN_EMAIL "Админ имейл (вход в /admin)" "$ADMIN_EMAIL"
 echo "  SMTP на пощенската кутия $SMTP_USER — БЕЗ парола формата записва в базата, но НЕ праща имейл."
 asksecret SMTP_PASS "SMTP парола" "$SMTP_PASS"
 
+# Пишем директно във файла (mode 600) с heredoc — НИКОГА през echo/printf към
+# стандартния изход: тайна, минала през stdout, влиза в journalctl/CI лога.
 install -o "$APP_USER" -g "$APP_USER" -m 600 /dev/null "$ENV_FILE.new"
-{
-  echo "NODE_ENV=production"
-  echo "PORT=$APP_PORT"
-  echo "BASE_URL=https://$DOMAIN"
-  echo "JWT_SECRET=$JWT_SECRET"
-  echo "JWT_EXPIRES=4h"
-  echo "ADMIN_EMAIL=$ADMIN_EMAIL"
-  echo "SMTP_HOST=$SMTP_HOST"
-  echo "SMTP_PORT=$SMTP_PORT"
-  echo "SMTP_USER=$SMTP_USER"
-  echo "SMTP_PASS=${SMTP_PASS:-CHANGE_ME}"
-  echo "MAIL_FROM=\"Panev Ascensori <$SMTP_USER>\""
-  echo "MAIL_TO_ADMIN=$ADMIN_EMAIL"
-} > "$ENV_FILE.new"
+cat > "$ENV_FILE.new" <<ENVEOF
+NODE_ENV=production
+PORT=$APP_PORT
+BASE_URL=https://$DOMAIN
+JWT_SECRET=$JWT_SECRET
+JWT_EXPIRES=4h
+ADMIN_EMAIL=$ADMIN_EMAIL
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=${SMTP_PASS:-CHANGE_ME}
+MAIL_FROM="Panev Ascensori <$SMTP_USER>"
+MAIL_TO_ADMIN=$ADMIN_EMAIL
+ENVEOF
 mv -f "$ENV_FILE.new" "$ENV_FILE"
 chmod 600 "$ENV_FILE"; chown "$APP_USER:$APP_USER" "$ENV_FILE"
 [[ -n "$SMTP_PASS" ]] || warn "SMTP_PASS остава CHANGE_ME — попълни го после в $ENV_FILE и: systemctl restart panev"

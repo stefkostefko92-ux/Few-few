@@ -6,4 +6,5 @@
 #   деплой на кода:                    sudo PROJECTS="panev" bash deploy/autodeploy.sh
 #
 # Виж panev/DEPLOY.md.
+set -euo pipefail
 exec "$(dirname "$0")/scripts/deploy.sh" "$@"

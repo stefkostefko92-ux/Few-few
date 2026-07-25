@@ -137,7 +137,7 @@ ${hreflangLinks(locales, pageKey)}
   <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="preload" href="/fonts/Inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Inter-var-${t.lang === 'bg' ? 'cyrillic' : 'latin'}.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
   ${jsonLd(t, pageKey, ldExtra)}
 </head>`;

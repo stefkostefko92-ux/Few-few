@@ -53,8 +53,8 @@
       "url": "/prodotti",
       "icons": [
         {
-          "src": "/img/panev-logo.png",
-          "sizes": "any",
+          "src": "/img/icon-192.png",
+          "sizes": "192x192",
           "type": "image/png"
         }
       ]
@@ -66,8 +66,8 @@
       "url": "/contatti",
       "icons": [
         {
-          "src": "/img/panev-logo.png",
-          "sizes": "any",
+          "src": "/img/icon-192.png",
+          "sizes": "192x192",
           "type": "image/png"
         }
       ]
@@ -79,8 +79,8 @@
       "url": "/catalogo",
       "icons": [
         {
-          "src": "/img/panev-logo.png",
-          "sizes": "any",
+          "src": "/img/icon-192.png",
+          "sizes": "192x192",
           "type": "image/png"
         }
       ]

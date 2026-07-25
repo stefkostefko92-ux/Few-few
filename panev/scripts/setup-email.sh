@@ -31,6 +31,11 @@ echo "  Panev — SMTP парола за $SMTP_USER (същата като за 
 read -rsp "  SMTP парола: " SMTP_PASS; echo
 [[ -n "$SMTP_PASS" ]] || { echo "ERR: празна парола" >&2; exit 1; }
 
+# Бекъп на текущата конфигурация — при провал на health check се връщаме на нея.
+BAK="${ENV_FILE}.bak-$(date +%Y%m%d-%H%M%S)"
+install -m 600 /dev/null "$BAK"
+cat "$ENV_FILE" > "$BAK"
+
 # Пренаписва САМО реда SMTP_PASS — останалите стойности остават непокътнати.
 TMP="$(mktemp)"
 chmod 600 "$TMP"
@@ -40,14 +45,28 @@ cat "$TMP" > "$ENV_FILE"          # запазва собственика и п�
 rm -f "$TMP"
 chmod 600 "$ENV_FILE"
 
+PORT="$(sed -n 's/^PORT=//p' "$ENV_FILE" | head -n1)"; PORT="${PORT:-4102}"
+HEALTH_URL="http://127.0.0.1:${PORT}/api/health"
+
 systemctl restart "$SERVICE"
 sleep 2
-if systemctl is-active --quiet "$SERVICE"; then
-  echo "  ✔ $SERVICE рестартиран"
-else
-  echo "  ✘ $SERVICE не тръгна — journalctl -u $SERVICE -n 50" >&2
+
+# Health check + автоматичен rollback: счупена конфигурация не остава жива.
+healthy=0
+for _ in 1 2 3 4 5; do
+  if curl -fsS -o /dev/null --max-time 5 "$HEALTH_URL"; then healthy=1; break; fi
+  sleep 2
+done
+if [[ "$healthy" != "1" ]]; then
+  echo "  ✘ $SERVICE не отговаря на $HEALTH_URL — връщам предишната конфигурация." >&2
+  cat "$BAK" > "$ENV_FILE"
+  chmod 600 "$ENV_FILE"
+  systemctl restart "$SERVICE" || true
+  echo "  Виж: journalctl -u $SERVICE -n 50 --no-pager" >&2
   exit 1
 fi
+rm -f "$BAK"
+echo "  ✔ $SERVICE рестартиран и здрав ($HEALTH_URL)"
 
 BASE_URL="$(sed -n 's/^BASE_URL=//p' "$ENV_FILE" | head -n1)"
 BASE_URL="${BASE_URL:-https://panevascensori.it}"
