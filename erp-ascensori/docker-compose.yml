@@ -107,13 +107,22 @@ services:
     volumes:
       - ./backup:/backup
     entrypoint: ["/bin/sh", "-c"]
+    # ДВЕТЕ добавки при pg_dump не са по избор, откакто има RLS:
+    #   • `--enable-row-security` — иначе pg_dump ОТКАЗВА да дъмпне таблица с
+    #     политика, когато ролята не я заобикаля. Нощният бекъп просто спира.
+    #   • `app.tenant_id=*` — с него дъмпът минава по ИЗРИЧНИЯ обхват на
+    #     доставчика, а не по подразбирането „няма обхват → пропускай". Ако утре
+    #     някой затегне политиката, бекъпът остава пълен вместо тихо частичен.
+    # Пълнотата не се приема наум: `scripts/verifica-backup.mjs` сверява броя
+    # редове възстановено-срещу-източник.
     command:
       - |
         apk add --no-cache age >/dev/null 2>&1 || true
         while true; do
           if [ "$$(date +%H%M)" = "0300" ]; then
             F=/backup/erp-$$(date +%Y%m%d).dump
-            pg_dump -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB:-erp_ascensori} -Fc -f "$$F" \
+            PGOPTIONS="-c app.tenant_id=*" pg_dump --enable-row-security \
+              -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB:-erp_ascensori} -Fc -f "$$F" \
               && if [ -n "$$BACKUP_AGE_RECIPIENT" ]; then age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F" && rm -f "$$F"; fi \
               && find /backup -name 'erp-*' -mtime +31 -delete \
               && echo "✔ бекъп $$F"

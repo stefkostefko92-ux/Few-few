@@ -5,6 +5,7 @@ import { ErroreHttp } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 import { ETICHETTE_CAMPI } from "@/lib/zod-it"; // регистрира и IT error map
 import { log, descriviErrore, rottaModello } from "@/lib/log";
+import { incrementa, osserva, classeStato } from "@/lib/metriche";
 import { randomUUID } from "node:crypto";
 
 /** `JSON.stringify` хвърля TypeError върху BigInt — а един такъв ключ в схемата
@@ -77,22 +78,31 @@ export function gestito(
       return res;
     };
 
+    /** Логът и метриката тръгват ЗАЕДНО — иначе едното мълчи за случай, който
+     *  другото брои, и графиката не съвпада с разследването по `req_id`. */
+    const misura = (stato: number, durata_ms: number) => {
+      const etichette = { rotta, metodo: req.method, stato: classeStato(stato) };
+      incrementa("erp_richieste_totale", etichette);
+      osserva("erp_richieste_durata_secondi", durata_ms / 1000, { rotta, metodo: req.method });
+      if (stato >= 500) incrementa("erp_errori_totale", { rotta, metodo: req.method });
+    };
+
     try {
       const res = await fn(req, ctx);
-      log.info("richiesta", {
-        ...base,
-        stato: res.status,
-        durata_ms: Date.now() - inizio,
-      });
+      const durata_ms = Date.now() - inizio;
+      log.info("richiesta", { ...base, stato: res.status, durata_ms });
+      misura(res.status, durata_ms);
       return conTraccia(res);
     } catch (e) {
       const durata_ms = Date.now() - inizio;
       if (e instanceof ErroreHttp) {
         log.info("richiesta", { ...base, stato: e.status, durata_ms });
+        misura(e.status, durata_ms);
         return conTraccia(errore(e.status, e.message));
       }
       if (e instanceof ZodError) {
         log.info("richiesta", { ...base, stato: 400, durata_ms });
+        misura(400, durata_ms);
         return conTraccia(errore(400, "Dati non validi"));
       }
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -100,6 +110,7 @@ export function gestito(
         // обикновена заявка с техния статус, за да не давят истинските грешки.
         const noto = (stato: number, messaggio: string) => {
           log.info("richiesta", { ...base, stato, durata_ms });
+          misura(stato, durata_ms);
           return conTraccia(errore(stato, messaggio));
         };
         if (e.code === "P2002")
@@ -120,6 +131,7 @@ export function gestito(
             durata_ms,
             ...descriviErrore(e),
           });
+          misura(503, durata_ms);
           const res = errore(
             503,
             "Servizio temporaneamente non disponibile: riprovare tra poco",
@@ -134,6 +146,7 @@ export function gestito(
           durata_ms,
           ...descriviErrore(e),
         });
+        misura(503, durata_ms);
         const res = errore(
           503,
           "Servizio temporaneamente non disponibile: riprovare tra poco",
@@ -149,6 +162,7 @@ export function gestito(
         durata_ms,
         ...descriviErrore(e),
       });
+      misura(500, durata_ms);
       return conTraccia(errore(500, "Errore interno del server"));
     }
   };

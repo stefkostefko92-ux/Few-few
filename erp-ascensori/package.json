@@ -40,7 +40,8 @@
     "scadenze:check": "tsx --env-file-if-exists=.env scripts/check-scadenze.ts",
     "retention": "tsx --env-file-if-exists=.env scripts/retention.ts",
     "contratti": "tsx --env-file-if-exists=.env scripts/contratti.ts",
-    "test:int": "node scripts/test-integration.mjs"
+    "test:int": "node scripts/test-integration.mjs",
+    "verifica:backup": "node scripts/verifica-backup.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

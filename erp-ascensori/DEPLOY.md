@@ -50,10 +50,11 @@ bash scripts/setup-env.sh          # генерира ключовете, mode 6
 `BACKUP_AGE_RECIPIENT`.
 
 > **`AUDIT_HMAC_KEY` е доказателственият ключ.** С него се проверява целият
-> регистър на операциите. Смяната му прави всичко досегашно непроверимо —
-> ротация не е поддържана. Ключът се бекъпва **заедно** с базата и се пази поне
-> колкото най-стария одитен ред (10 години). Копие в мениджъра на пароли, извън
-> тази машина.
+> регистър на операциите. Ротацията минава през `AUDIT_HMAC_KEY_PRECEDENTE`
+> (виж § 7б) — старият ключ се приема САМО при проверка. Загубата на двата
+> прави досегашния регистър непроверим, затова ключът се бекъпва **заедно** с
+> базата и се пази поне колкото най-стария одитен ред (10 години). Копие в
+> мениджъра на пароли, извън тази машина.
 
 ## 3. Първо пускане
 
@@ -122,7 +123,15 @@ curl -fsS http://127.0.0.1:3050/api/healthz/automatismi   # 503 = не е мин
 |---|---|---|
 | `GET /api/readyz` | 60 s | 200 |
 | `GET /api/healthz/automatismi` | 30 min | 200 |
+| `GET /api/metrics` (скрейп от Prometheus) | 30 s | 200 |
 | срок на TLS сертификата | 1 ден | > 14 дни |
+
+Метриките, целите (SLO) и правилата за алармите са в
+[`docs/OSSERVABILITA.md`](docs/OSSERVABILITA.md); готовите правила — в
+[`deploy/prometheus/erp-ascensori.rules.yml`](deploy/prometheus/erp-ascensori.rules.yml).
+Алармите са по **симптом** и по скорост на изгаряне на бюджета за грешки, не по
+праг „5 % за 5 минути" — той едновременно буди без причина и пропуска бавното
+изтичане.
 
 Подробната диагностика на `readyz` иска хедър `x-health-token`. Без него
 отговорът е само „готов/не готов“ — вътрешното състояние не е за пред публиката.
@@ -174,7 +183,9 @@ cp /trezor/.env /opt/erp-ascensori/.env && chmod 600 /opt/erp-ascensori/.env
 # 2) после базата
 age -d -i /trezor/age.key erp-20260725.dump.age > /tmp/erp.dump
 docker compose up -d db
-docker compose exec -T db pg_restore -U erp -d erp_ascensori --clean --if-exists < /tmp/erp.dump
+# `--exit-on-error`: без него pg_restore изрежда грешките и пак излиза с код 0
+docker compose exec -T db pg_restore -U erp -d erp_ascensori --clean --if-exists \
+  --exit-on-error < /tmp/erp.dump
 docker compose up -d
 # 3) и накрая доказателството, че одитът е цял
 curl -s -X POST -H 'Content-Type: application/json' -d '{"limite":1000}' \
@@ -184,7 +195,28 @@ curl -s -X POST -H 'Content-Type: application/json' -d '{"limite":1000}' \
 Обратният ред дава масови „манипулирани“ редове — фалшива тревога, която във
 фискален контекст струва време и доверие.
 
-**Тествай възстановяването месечно.** Бекъп без тестван restore не е бекъп.
+**Тествай възстановяването месечно** — с реален restore, не на око:
+
+```bash
+cd /opt/erp-ascensori/current/erp-ascensori
+BACKUP_SORGENTE_URL="$DATABASE_URL" npm run verifica:backup -- /backup/erp-20260725.dump.age
+```
+
+Скриптът възстановява дъмпа в отделна временна база, сверява го и я трие.
+Проверява четири неща: таблиците не са празни · броят редове съвпада с източника
+(защитата от **частичен** дъмп) · веригата на одита е цяла · политиките
+`tenant_isolation` са налице.
+
+**Две неща около RLS, които чупят бекъпа тихо:**
+
+- `pg_dump` ОТКАЗВА да дъмпне таблица с политика, ако ролята не я заобикаля.
+  Затова командата в `docker-compose.yml` носи `--enable-row-security` и
+  `PGOPTIONS="-c app.tenant_id=*"` (изричният обхват на доставчика). Ако смениш
+  бекъп командата, пренеси и двете.
+- `pg_restore` излиза с код **нула** дори при грешки („errors ignored on restore").
+  Без `--exit-on-error` половин база минава за успешна.
+
+Бекъп без тестван restore не е бекъп.
 
 ## 9. Обновяване
 

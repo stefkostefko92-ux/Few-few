@@ -1,0 +1,106 @@
+# Аларми по СИМПТОМ, не по причина.
+#
+# Праг върху „процент грешки за 5 минути" греши в двете посоки: къс пик буди
+# човек без причина, а бавно изтичане не го буди изобщо. Затова мерим скоростта
+# на изгаряне на бюджета за грешки в ДВА прозореца едновременно — дългият дава
+# достоверност, късият спира алармата, щом инцидентът приключи.
+#
+# SLO: 99,5 % наличност за 30 дни → бюджет 0,5 %.
+#   14,4× изгаря 2 % от бюджета за час   → буди веднага
+#    6×   изгаря 5 % за шест часа        → в работно време
+
+groups:
+  - name: erp-ascensori-slo
+    rules:
+      - record: erp:errori:rate5m
+        expr: |
+          sum(rate(erp_errori_totale[5m]))
+            / clamp_min(sum(rate(erp_richieste_totale[5m])), 0.001)
+      - record: erp:errori:rate30m
+        expr: |
+          sum(rate(erp_errori_totale[30m]))
+            / clamp_min(sum(rate(erp_richieste_totale[30m])), 0.001)
+      - record: erp:errori:rate1h
+        expr: |
+          sum(rate(erp_errori_totale[1h]))
+            / clamp_min(sum(rate(erp_richieste_totale[1h])), 0.001)
+      - record: erp:errori:rate6h
+        expr: |
+          sum(rate(erp_errori_totale[6h]))
+            / clamp_min(sum(rate(erp_richieste_totale[6h])), 0.001)
+
+      - alert: ErpBudgetBruciaVeloce
+        # И двата прозореца — иначе единичен пик от една минута вдига телефона.
+        expr: erp:errori:rate1h > (14.4 * 0.005) and erp:errori:rate5m > (14.4 * 0.005)
+        for: 2m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: il budget di errore brucia 14,4× — 2 % all'ora"
+          description: >-
+            Errori 5xx {{ $value | humanizePercentage }} sull'ultima ora.
+            A questo ritmo il budget mensile finisce in due giorni.
+          runbook: docs/OSSERVABILITA.md
+
+      - alert: ErpBudgetBruciaLento
+        expr: erp:errori:rate6h > (6 * 0.005) and erp:errori:rate30m > (6 * 0.005)
+        for: 15m
+        labels:
+          severity: avviso
+        annotations:
+          summary: "ERP: perdita lenta del budget di errore (6×)"
+          description: "Errori 5xx {{ $value | humanizePercentage }} sulle ultime 6 ore."
+          runbook: docs/OSSERVABILITA.md
+
+      - alert: ErpLatenzaAlta
+        # p95 от хистограмата, не средно: средното крие точно опашката, която
+        # потребителят усеща.
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(erp_richieste_durata_secondi_bucket[30m]))
+          ) > 0.5
+        for: 15m
+        labels:
+          severity: avviso
+        annotations:
+          summary: "ERP: p95 sopra 500 ms"
+          description: "p95 a {{ $value }} s sulle ultime 30 minuti."
+
+  - name: erp-ascensori-integrita
+    rules:
+      - alert: ErpAutomatismiFermi
+        # 26 ч, не 24: автоматизмът е дневен и трябва да има място за забавяне
+        # при рестарт, без да звъни. `-1` значи „никога не е минавал".
+        expr: erp_automatismi_eta_secondi > 93600 or erp_automatismi_eta_secondi == -1
+        for: 10m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: nessun automatismo completato da oltre 26 ore"
+          description: >-
+            Scadenze non aggiornate e conservazione non applicata.
+            Le prime hanno effetti di sicurezza (art. 13 D.P.R. 162/1999),
+            la seconda ha effetti legali (art. 5(1)(e) GDPR).
+
+      - alert: ErpRlsDisattivata
+        # Отказ, който НЕ се вижда никъде другаде: политиките стоят, приложението
+        # работи, а ролята ги заобикаля. Без тази аларма счупената изолация се
+        # открива от клиента.
+        expr: erp_rls_attiva == 0
+        for: 10m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: l'isolamento per azienda NON è in vigore"
+          description: >-
+            Le policy esistono ma il ruolo applicativo le aggira (superuser o
+            BYPASSRLS). Verificare con GET /api/readyz.
+
+      - alert: ErpNonRaggiungibile
+        expr: up{job="erp-ascensori"} == 0
+        for: 5m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: lo scrape non risponde"

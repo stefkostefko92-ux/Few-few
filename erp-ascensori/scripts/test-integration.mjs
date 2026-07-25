@@ -18,6 +18,8 @@ const env = {
   DATABASE_URL: DB_URL,
   SESSION_SECRET: "integration_test_session_secret_32_chars_min",
   AUDIT_HMAC_KEY: "integration_test_audit_hmac_key_32_chars_min",
+  // Метриките са зад токен — пакетът трябва да има с какво да ги поиска.
+  HEALTH_TOKEN: "integration_test_health_token",
   // тестовете правят десетки входа — вдигаме тавана, за да не удрят rate limit-а
   RATE_LIMIT_LOGIN: "10000",
   RATE_LIMIT_REFRESH: "10000",
