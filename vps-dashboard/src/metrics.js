@@ -3,6 +3,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import { run } from './exec.js';
+import { compact } from './history.js';
+import { KernelSampler } from './kernel.js';
 
 const HISTORY_STEP_MS = 30_000;
 const HISTORY_CAP = (24 * 3600 * 1000) / HISTORY_STEP_MS; // 24 часа
@@ -91,6 +93,7 @@ export class MetricsCollector {
     this.history = [];
     this.listeners = new Set();
     this.latest = null;
+    this.kernel = new KernelSampler();
   }
 
   startSampling() {
@@ -137,6 +140,9 @@ export class MetricsCollector {
     const mem = parseMeminfo(readProc('/proc/meminfo'));
     const df = await run('df', ['-kP']);
     const disks = df.ok ? parseDf(df.stdout) : [];
+    // Сигналите от ядрото (PSI, steal, диск I/O, OOM…) — те казват дали БОЛИ,
+    // докато процентите горе казват само колко е заето.
+    const kernel = await this.kernel.sample().catch(() => null);
 
     return {
       ts: now,
@@ -148,6 +154,7 @@ export class MetricsCollector {
       mem,
       net: netRate,
       disks,
+      kernel,
       temperatureC: readTemperature(),
     };
   }
@@ -157,18 +164,6 @@ export class MetricsCollector {
   }
 }
 
-function compact(snap) {
-  return {
-    ts: snap.ts,
-    cpu: Math.round(snap.cpuPct * 10) / 10,
-    memUsed: snap.mem.used,
-    memTotal: snap.mem.total,
-    load1: Math.round(snap.load[0] * 100) / 100,
-    rxBps: Math.round(snap.net.rxBps),
-    txBps: Math.round(snap.net.txBps),
-    diskMax: Math.max(0, ...snap.disks.map((d) => d.usePercent)),
-  };
-}
 
 function readTemperature() {
   // Best-effort: първата термална зона; на VPS често липсва → null.

@@ -30,15 +30,28 @@ function hmac(secret, data) {
   return crypto.createHmac('sha256', secret).update(data).digest('base64url');
 }
 
-// Токен: base64url(JSON{u, exp, n}) + "." + HMAC. Изтича след ttl; nonce пази от повторение на стар payload с друг подпис.
-export function createSession(secret, user, ttlMs) {
+// Токен: base64url(JSON{u, exp, ab, g, jti, n}) + "." + HMAC.
+//   exp — кога изтича ТАЗИ бисквитка (плъзгащ се, подновява се при активност)
+//   ab  — абсолютен таван: докъдето сесията може да се подновява изобщо
+//   g   — поколение: увеличиш ли го в конфига, ВСИЧКИ издадени токени падат
+//         (изход от всички устройства, смяна на парола/2FA)
+//   jti — идентификатор на сесията (за списък и поименна отмяна)
+export function createSession(secret, user, ttlMs, { absoluteMs = ttlMs, gen = 0, jti } = {}) {
+  const now = Date.now();
   const payload = Buffer.from(
-    JSON.stringify({ u: user, exp: Date.now() + ttlMs, n: crypto.randomBytes(8).toString('hex') })
+    JSON.stringify({
+      u: user,
+      exp: now + ttlMs,
+      ab: now + absoluteMs,
+      g: gen,
+      jti: jti || crypto.randomBytes(9).toString('base64url'),
+      n: crypto.randomBytes(8).toString('hex'),
+    })
   ).toString('base64url');
   return `${payload}.${hmac(secret, payload)}`;
 }
 
-export function verifySession(secret, token) {
+export function verifySession(secret, token, { gen = 0, revoked = null } = {}) {
   if (typeof token !== 'string') return null;
   const dot = token.lastIndexOf('.');
   if (dot < 1) return null;
@@ -50,8 +63,12 @@ export function verifySession(secret, token) {
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
   try {
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-    if (!data.exp || Date.now() > data.exp) return null;
-    return { user: data.u, exp: data.exp };
+    const now = Date.now();
+    if (!data.exp || now > data.exp) return null; // бездействие
+    if (data.ab && now > data.ab) return null; // абсолютен таван
+    if ((data.g || 0) !== gen) return null; // отменено поколение
+    if (revoked && data.jti && revoked.has(data.jti)) return null; // поименно отменена
+    return { user: data.u, exp: data.exp, absolute: data.ab, jti: data.jti, gen: data.g || 0 };
   } catch {
     return null;
   }

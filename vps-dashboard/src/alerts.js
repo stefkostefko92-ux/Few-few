@@ -10,12 +10,15 @@ import { notify } from './notify.js';
 import { failedServices, tlsCerts } from './system.js';
 import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
+import { forecastToLimit, fmtDuration } from './forecast.js';
+import { diskSeries, knownMounts } from './history.js';
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit }) {
+  constructor({ cfg, metrics, audit, history }) {
     this.cfg = cfg;
     this.metrics = metrics;
     this.audit = audit;
+    this.history = history; // за прогнозите
     this.file = path.join(cfg.paths.stateDir, 'alerts.json');
     this.active = new Map(); // key → { since, lastNotified, severity, title, body }
     this.streaks = new Map(); // key → колко последователни проверки е активно
@@ -65,32 +68,107 @@ export class AlertEngine {
     const snap = this.metrics.latest;
 
     if (snap) {
-      if (t.cpuPct && snap.cpuPct >= t.cpuPct) {
+      const k = snap.kernel;
+
+      // ── СИМПТОМИ (болка), не причини ─────────────────────────────────────
+      // PSI казва колко време задачи са СТОЯЛИ блокирани. CPU 95% при доволни
+      // потребители не е проблем; PSI 40% при CPU 60% е.
+      if (k?.pressure?.available) {
+        const psi = [
+          ['cpu', k.pressure.cpu?.some?.avg60, t.psiCpu, 'Задачите чакат процесор'],
+          ['io', k.pressure.io?.some?.avg60, t.psiIo, 'Задачите чакат диска'],
+          ['memory', k.pressure.memory?.some?.avg60, t.psiMem, 'Системата се дави в паметта'],
+        ];
+        for (const [name, value, threshold, title] of psi) {
+          if (threshold && value != null && value >= threshold) {
+            out.push({
+              key: `psi:${name}`,
+              severity: value >= threshold * 2 ? 'critical' : 'warning',
+              title,
+              body: `Натиск ${name} ${value.toFixed(1)}% за последната минута (праг ${threshold}%)`,
+            });
+          }
+        }
+      } else if (t.cpuPct && snap.cpuPct >= t.cpuPct) {
+        // Резерва за ядра без PSI: тогава прагът по CPU е всичко, което имаме.
         out.push({
           key: 'cpu',
           severity: 'warning',
           title: 'Високо натоварване на процесора',
-          body: `CPU ${snap.cpuPct.toFixed(0)}% (праг ${t.cpuPct}%)`,
+          body: `CPU ${snap.cpuPct.toFixed(0)}% (праг ${t.cpuPct}%; ядрото не подава PSI)`,
         });
       }
-      const memPct = snap.mem.total ? (snap.mem.used / snap.mem.total) * 100 : 0;
-      if (t.memPct && memPct >= t.memPct) {
+
+      // Steal: единственият сигнал, че бавното НЕ е наша вина, а на съседа/хостера.
+      if (t.stealPct && k?.cpuModes && k.cpuModes.steal >= t.stealPct) {
         out.push({
-          key: 'mem',
+          key: 'steal',
           severity: 'warning',
-          title: 'Паметта свършва',
-          body: `Използвана памет ${memPct.toFixed(0)}% (праг ${t.memPct}%)`,
+          title: 'Хостерът ни краде процесорно време',
+          body: `steal ${k.cpuModes.steal.toFixed(1)}% (праг ${t.stealPct}%) — съседна машина товари хоста. Основание за тикет към доставчика.`,
         });
       }
-      const perCore = snap.cpus ? snap.load[0] / snap.cpus : 0;
-      if (t.load1PerCore && perCore >= t.load1PerCore) {
+
+      // OOM: „приложението се рестартира само" почти винаги е това.
+      if (k?.oomKillDelta > 0) {
         out.push({
-          key: 'load',
-          severity: 'warning',
-          title: 'Високо load average',
-          body: `load1 ${snap.load[0].toFixed(2)} на ${snap.cpus} ядра (${perCore.toFixed(2)}/ядро)`,
+          key: 'oom',
+          severity: 'critical',
+          title: 'Ядрото уби процес заради памет (OOM)',
+          body: `${k.oomKillDelta} убит(и) процеса от последната проверка (общо ${k.oomKillTotal}). Виж кой: journalctl -k -g "Out of memory"`,
+          sustain: false,
         });
       }
+
+      // Файлова система, минала в read-only — приложенията умират тихо, df мълчи.
+      for (const ro of k?.readOnly || []) {
+        out.push({
+          key: `ro:${ro.mount}`,
+          severity: 'critical',
+          title: 'Файловата система е само за четене',
+          body: `${ro.mount} (${ro.dev}) е монтирана ro — ядрото я е защитило при I/O грешка. Приложенията не могат да пишат.`,
+          sustain: false,
+        });
+      }
+
+      // Изчерпани inode-и: 30% свободно място, а системата не приема нов файл.
+      for (const i of k?.inodes || []) {
+        if (t.inodePct && i.usePercent >= t.inodePct) {
+          out.push({
+            key: `inode:${i.mount}`,
+            severity: i.usePercent >= 95 ? 'critical' : 'warning',
+            title: 'Свършват inode-ите',
+            body: `${i.mount} е на ${i.usePercent}% inode-и (${i.free} свободни) — дискът може да изглежда празен, но нов файл няма да се създаде.`,
+          });
+        }
+      }
+
+      // Препълнена accept опашка = „сайтът се отваря понякога" при празен CPU.
+      if (this.prevListen && k?.listen) {
+        const d = k.listen.listenOverflows - this.prevListen.listenOverflows;
+        if (d > 0) {
+          out.push({
+            key: 'listen-overflow',
+            severity: 'warning',
+            title: 'Препълнена опашка за връзки',
+            body: `${d} нови ListenOverflows — заявки се отхвърлят преди да стигнат до приложението (вдигни backlog/worker-и).`,
+            sustain: false,
+          });
+        }
+      }
+      if (k?.listen) this.prevListen = k.listen;
+
+      // Файлови дескриптори — EMFILE вали Node приложение мигновено.
+      if (k?.fds && k.fds.usePercent >= 80) {
+        out.push({
+          key: 'fds',
+          severity: k.fds.usePercent >= 95 ? 'critical' : 'warning',
+          title: 'Свършват файловите дескриптори',
+          body: `${k.fds.allocated} от ${k.fds.max} (${k.fds.usePercent.toFixed(0)}%)`,
+        });
+      }
+
+      // ── Капацитет: праг + ПРОГНОЗА ───────────────────────────────────────
       for (const d of snap.disks || []) {
         if (t.diskPct && d.usePercent >= t.diskPct) {
           out.push({
@@ -100,6 +178,9 @@ export class AlertEngine {
             body: `${d.mount} е на ${d.usePercent}% (остават ${fmtGb(d.availBytes)})`,
           });
         }
+      }
+      for (const f of this.diskForecasts()) {
+        out.push(f);
       }
     }
 
@@ -162,6 +243,36 @@ export class AlertEngine {
       });
     }
 
+    return out;
+  }
+
+  // Прогноза за пълнене по ДЯЛ — предупреждава ПРЕДИ прага, докато има време за
+  // действие. Мълчи, ако трендът не е статистически значим (виж forecast.js).
+  diskForecasts() {
+    const out = [];
+    const days = Number(this.cfg.alerts?.thresholds?.diskEtaDays) || 0;
+    if (!days || !this.history) return out;
+    let points;
+    try {
+      points = this.history.range(7 * 24 * 3600 * 1000, 400);
+    } catch {
+      return out;
+    }
+    if (points.length < 12) return out;
+    for (const mount of knownMounts(points)) {
+      const series = diskSeries(points, mount);
+      if (series.length < 12) continue;
+      const f = forecastToLimit(series, 100);
+      if (!f.ok || f.etaMs === undefined) continue;
+      const etaDays = f.etaMs / 86400000;
+      if (etaDays > days) continue;
+      out.push({
+        key: `disk-eta:${mount}`,
+        severity: etaDays <= 1 ? 'critical' : 'warning',
+        title: `Дискът ${mount} ще се напълни`,
+        body: `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) ${mount} стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
+      });
+    }
     return out;
   }
 

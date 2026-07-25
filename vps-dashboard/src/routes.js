@@ -1,4 +1,5 @@
 // Всички API маршрути + защитите: сесия/Bearer, CSRF маркер, одит.
+import crypto from 'node:crypto';
 import { Router, sendJson, sendError, readJson, parseCookies, openSse, clientIp } from './httpd.js';
 import {
   verifyPassword,
@@ -25,10 +26,26 @@ import * as backups from './backups.js';
 import { verifyTotp, generateSecret, otpauthUri } from './totp.js';
 import { saveConfig } from './config.js';
 import { configuredChannels } from './notify.js';
-import { RANGES } from './history.js';
+import { RANGES, diskSeries, knownMounts } from './history.js';
+import { forecastToLimit, detectAnomaly, changePoint, fmtDuration } from './forecast.js';
 
 const COOKIE = 'csd_sess';
 export const VERSION = '0.1.0';
+
+// Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
+// входовете, които биха дали контрол над машината на компрометиран съсед.
+export const PEER_DENY = [
+  /^\/api\/terminal\//,
+  /^\/api\/pty(\/|$)/,
+  /^\/api\/power$/,
+  /^\/api\/files\/(read|write)$/,
+  /^\/api\/deploy\//,
+  /^\/api\/firewall\//,
+  /^\/api\/webserver\/site$/,
+  /^\/api\/agents\/tools\/run$/,
+  /^\/api\/totp\//,
+  /^\/api\/alerts\/settings$/,
+];
 
 export function buildRouter(ctx) {
   const { cfg, audit, jobs, metrics } = ctx;
@@ -42,8 +59,44 @@ export function buildRouter(ctx) {
       return { user: 'peer', peer: true };
     }
     // 2) Браузър: подписано сесийно куки.
-    const sess = verifySession(cfg.sessionSecret, parseCookies(req)[COOKIE]);
-    return sess ? { user: sess.user, peer: false } : null;
+    const sess = verifySession(cfg.sessionSecret, parseCookies(req)[COOKIE], {
+      gen: cfg.sessionGen || 0,
+      revoked: ctx.revokedSessions,
+    });
+    return sess ? { user: sess.user, peer: false, sess } : null;
+  };
+
+  // Плъзгащ се прозорец: всяка заявка подновява бисквитката до `idleMinutes`
+  // напред, но никога отвъд абсолютния таван в токена. Забравена сесия умира
+  // сама, вместо да е root shell цели 12 часа.
+  const slideSession = (req, res, who) => {
+    if (!who?.sess || who.peer) return;
+    const idleMs = (cfg.idleMinutes || 30) * 60 * 1000;
+    const remaining = who.sess.absolute ? who.sess.absolute - Date.now() : idleMs;
+    if (remaining <= 0) return;
+    const ttl = Math.min(idleMs, remaining);
+    // Подновяваме само ако е изтекла поне минута — иначе пишем куки на всяка заявка.
+    if (who.sess.exp - Date.now() > ttl - 60_000) return;
+    const token = createSession(cfg.sessionSecret, who.user, ttl, {
+      absoluteMs: remaining,
+      gen: cfg.sessionGen || 0,
+      jti: who.sess.jti,
+    });
+    setSessionCookie(res, token, Math.floor(ttl / 1000));
+  };
+
+  const setSessionCookie = (res, token, maxAgeSec) => {
+    const secure = cfg.trustProxy ? '; Secure' : '';
+    res.setHeader('set-cookie', `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure}`);
+  };
+
+  // Federation обхват: по подразбиране peer-ът е САМО ЗА ЧЕТЕНЕ. Компрометиран
+  // втори VPS иначе получава root shell на първия през /api/nodes/<id>/…
+  // Разрешава се изрично с "peerScope": "full" в конфига.
+  const peerAllowed = (req, url) => {
+    if ((cfg.peerScope || 'read') === 'full') return true;
+    if (req.method !== 'GET') return false;
+    return !PEER_DENY.some((rx) => rx.test(url.pathname));
   };
 
   // CSRF за мутации: SameSite=Strict куки + задължителен custom header (не може
@@ -68,7 +121,12 @@ export function buildRouter(ctx) {
       const who = auth(req);
       if (!who) return sendError(res, 401, 'Не си вписан.');
       if (mutating && !csrfOk(req, who)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
+      if (who.peer && !peerAllowed(req, url)) {
+        audit.log({ action: 'peer.denied', path: url.pathname, method: req.method });
+        return sendError(res, 403, 'Peer-ът има само достъп за четене (peerScope).');
+      }
       req.user = who.user;
+      slideSession(req, res, who);
       return handler(req, res, params, url);
     };
   };
@@ -107,21 +165,86 @@ export function buildRouter(ctx) {
       ctx.lastTotpStep = step;
     }
     loginSucceeded(ip);
-    const ttl = (cfg.sessionTtlHours || 12) * 3600 * 1000;
-    const token = createSession(cfg.sessionSecret, cfg.adminUser, ttl);
-    audit.log({ action: 'login.ok', ip, user: cfg.adminUser });
-    const secure = cfg.trustProxy ? '; Secure' : '';
-    res.setHeader(
-      'set-cookie',
-      `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(ttl / 1000)}${secure}`
-    );
+    const absoluteMs = (cfg.sessionTtlHours || 12) * 3600 * 1000;
+    const idleMs = (cfg.idleMinutes || 30) * 60 * 1000;
+    const ttl = Math.min(idleMs, absoluteMs);
+    const jti = crypto.randomBytes(9).toString('base64url');
+    const token = createSession(cfg.sessionSecret, cfg.adminUser, ttl, {
+      absoluteMs,
+      gen: cfg.sessionGen || 0,
+      jti,
+    });
+    // Списък на активните сесии — непозната сесия тук е сигнал за пробив.
+    ctx.sessions.set(jti, {
+      jti,
+      ip,
+      ua: String(req.headers['user-agent'] || '').slice(0, 120),
+      issuedAt: Date.now(),
+      lastSeen: Date.now(),
+      absolute: Date.now() + absoluteMs,
+    });
+    audit.log({ action: 'login.ok', ip, user: cfg.adminUser, jti });
+    setSessionCookie(res, token, Math.floor(ttl / 1000));
     sendJson(res, 200, { ok: true, user: cfg.adminUser });
   });
 
   r.post('/api/logout', (req, res) => {
+    // Токенът е самостоятелен (HMAC) — изтриването на бисквитката не го обезсилва.
+    // Затова jti влиза в списък с отменени: откраднат токен спира ВЕДНАГА.
+    const who = auth(req);
+    if (who?.sess?.jti) {
+      ctx.revokedSessions.add(who.sess.jti);
+      ctx.sessions.delete(who.sess.jti);
+      audit.log({ action: 'logout', jti: who.sess.jti, user: who.user });
+    }
     res.setHeader('set-cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`);
     sendJson(res, 200, { ok: true });
   });
+
+  // ── Сесии: преглед и отмяна ────────────────────────────────────────────────
+  r.get(
+    '/api/sessions',
+    guard(
+      J(async (req) => ({
+        current: req.user,
+        idleMinutes: cfg.idleMinutes || 30,
+        absoluteHours: cfg.sessionTtlHours || 12,
+        sessions: [...ctx.sessions.values()].sort((a, b) => b.lastSeen - a.lastSeen),
+      }))
+    )
+  );
+  r.post(
+    '/api/sessions/revoke-all',
+    guard(
+      J(async (req) => {
+        // Вдигането на поколението обезсилва ВСИЧКИ издадени токени наведнъж.
+        saveConfig(cfg, { sessionGen: (cfg.sessionGen || 0) + 1 });
+        ctx.sessions.clear();
+        ctx.revokedSessions.clear();
+        audit.log({ action: 'sessions.revokeAll', gen: cfg.sessionGen, user: req.user });
+        return { ok: true, gen: cfg.sessionGen };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/sessions/revoke',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const jti = String(b.jti || '');
+        if (!jti) throw Object.assign(new Error('Липсва jti'), { status: 400 });
+        ctx.revokedSessions.add(jti);
+        ctx.sessions.delete(jti);
+        audit.log({ action: 'sessions.revoke', jti, user: req.user });
+        return { ok: true };
+      }),
+      { mutating: true }
+    )
+  );
+
+  // Проверка на целостта на одита (хеш-верига).
+  r.get('/api/audit/verify', guard(J(() => audit.verify())));
 
   r.get(
     '/api/me',
@@ -220,6 +343,48 @@ export function buildRouter(ctx) {
       metrics.listeners.add(listener);
       res.on('close', () => metrics.listeners.delete(listener));
     })
+  );
+
+  // ── Сигнали от ядрото + прогнози ───────────────────────────────────────────
+  r.get(
+    '/api/kernel',
+    guard(
+      J(async () => {
+        const snap = metrics.latest || (await metrics.sample());
+        return { ts: snap.ts, ...(snap.kernel || {}) };
+      })
+    )
+  );
+  r.get(
+    '/api/forecast',
+    guard(
+      J(async () => {
+        const points = ctx.history ? ctx.history.range(7 * 24 * 3600 * 1000, 500) : [];
+        const disks = [];
+        for (const mount of knownMounts(points)) {
+          const series = diskSeries(points, mount);
+          const f = forecastToLimit(series, 100);
+          disks.push({
+            mount,
+            points: series.length,
+            ...f,
+            human: f.ok && f.etaMs !== undefined ? fmtDuration(f.etaMs) : null,
+          });
+        }
+        // Аномалии по основните редове + кога се е сменило поведението.
+        const cpuSeries = points.map((p) => p.cpu).filter((v) => typeof v === 'number');
+        const memSeries = points.map((p) => (p.memTotal ? (p.memUsed / p.memTotal) * 100 : null)).filter((v) => v !== null);
+        return {
+          disks,
+          anomalies: {
+            cpu: detectAnomaly(cpuSeries),
+            memory: detectAnomaly(memSeries),
+          },
+          changePoint: changePoint(points.map((p) => ({ x: p.ts, y: p.cpu ?? 0 }))),
+          basedOnPoints: points.length,
+        };
+      })
+    )
   );
 
   // ── Услуги (systemd) ───────────────────────────────────────────────────────

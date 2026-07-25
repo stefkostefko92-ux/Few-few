@@ -76,17 +76,54 @@ export class MetricsHistory {
   }
 }
 
+// ЕДИН източник на истината за формата на точката (по-рано беше дублиран и в
+// metrics.js). `v` е версия на схемата — старите редове нямат новите полета и
+// четците трябва да го знаят, вместо да четат undefined като нула.
 export function compact(snap) {
   return {
+    v: 2,
     ts: snap.ts,
     cpu: Math.round(snap.cpuPct * 10) / 10,
     memUsed: snap.mem.used,
     memTotal: snap.mem.total,
+    memAvail: snap.mem.available,
+    swapUsed: snap.mem.swapUsed,
     load1: Math.round(snap.load[0] * 100) / 100,
     rxBps: Math.round(snap.net.rxBps),
     txBps: Math.round(snap.net.txBps),
     diskMax: Math.max(0, ...(snap.disks || []).map((d) => d.usePercent)),
+    // Per-дял: прогнозата за пълнене иска НЕПРЕКЪСНАТ ред за всеки дял. Максимумът
+    // през всички дялове скача, когато се смени кой е максимумът → фалшив тренд.
+    disks: (snap.disks || []).map((d) => [d.mount, d.usePercent, d.availBytes]),
+    // Симптомите (ако ядрото ги подава) — за анализ по-късно.
+    psi: snap.kernel?.pressure?.available
+      ? {
+          cpu: snap.kernel.pressure.cpu?.some?.avg60 ?? null,
+          io: snap.kernel.pressure.io?.some?.avg60 ?? null,
+          mem: snap.kernel.pressure.memory?.some?.avg60 ?? null,
+        }
+      : null,
+    steal: snap.kernel?.cpuModes ? Math.round(snap.kernel.cpuModes.steal * 10) / 10 : null,
   };
+}
+
+// Реда за конкретен дял през историята — вход за прогнозата.
+export function diskSeries(points, mount) {
+  const out = [];
+  for (const p of points) {
+    if (Array.isArray(p.disks)) {
+      const hit = p.disks.find((d) => d[0] === mount);
+      if (hit) out.push({ x: p.ts, y: hit[1], avail: hit[2] });
+    }
+  }
+  return out;
+}
+
+// Кои дялове изобщо се срещат в историята.
+export function knownMounts(points) {
+  const set = new Set();
+  for (const p of points) for (const d of p.disks || []) set.add(d[0]);
+  return [...set];
 }
 
 export const RANGES = {

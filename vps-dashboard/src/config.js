@@ -14,7 +14,12 @@ const DEFAULTS = {
   nodeId: 'local',
   nodeName: 'Този сървър',
   adminUser: 'admin',
-  sessionTtlHours: 12,
+  sessionTtlHours: 12, // абсолютен таван на сесията
+  idleMinutes: 30, // без активност толкова → сесията пада
+  sessionGen: 0, // вдигането му обезсилва ВСИЧКИ издадени сесии
+  // Обхват на другия VPS през federation: „read" (по подразбиране) или „full".
+  // При „read" компрометиран peer не може да пипне терминала/деплоя/захранването.
+  peerScope: 'read',
   // Зад reverse proxy с TLS → кукито става Secure и IP-то се чете от X-Forwarded-For.
   trustProxy: false,
   // Входящ federation токен — с него другият VPS вика нашето API. Празно = изключено.
@@ -42,11 +47,19 @@ const DEFAULTS = {
     cooldownMin: 60, // повторно известие за същия проблем не по-често от това
     sustainSamples: 3, // праг трябва да се задържи N проверки → без шум от пикове
     thresholds: {
-      cpuPct: 90,
-      memPct: 90,
+      // СИМПТОМИ (предпочитани): колко % от времето задачите са били блокирани.
+      psiCpu: 40,
+      psiIo: 30,
+      psiMem: 10,
+      stealPct: 10, // хостерът краде процесор → тикет към доставчика
+      // Капацитет.
       diskPct: 85,
-      load1PerCore: 2,
+      diskEtaDays: 7, // прогноза: предупреди, ако дискът се пълни за под N дни
+      inodePct: 85,
       certDays: 14,
+      // Резерва за ядра БЕЗ PSI (иначе не се ползва).
+      cpuPct: 90,
+      memPct: 95,
     },
   },
   // Двуфакторна автентикация (TOTP). secret се записва при включване от панела.

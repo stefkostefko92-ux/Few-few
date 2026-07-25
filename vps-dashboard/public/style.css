@@ -194,6 +194,87 @@ td.mono, .mono { font-family: var(--mono); }
 .toast.bad { border-left-color: var(--danger); }
 .toast.warn { border-left-color: var(--warn); }
 
+/* ── Команден палет (Ctrl/Cmd+K) ────────────────────────── */
+.palette {
+  border: 1px solid var(--line); background: var(--panel); color: var(--txt);
+  border-radius: 12px; padding: 0; width: min(620px, 94vw); max-height: 70vh;
+  box-shadow: 0 24px 70px #000a;
+}
+.palette::backdrop { background: #000b; }
+.palette #palette-input {
+  width: 100%; border: none; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--txt); font-size: 15px; padding: 15px 18px; outline: none;
+}
+.palette-list { max-height: 46vh; overflow-y: auto; padding: 6px; }
+.palette-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: transparent; border: none; color: var(--txt); padding: 9px 12px;
+  border-radius: 8px; cursor: pointer; font-size: 13.5px;
+}
+.palette-item:hover, .palette-item.active { background: var(--panel-2); }
+.palette-item.active { box-shadow: inset 2px 0 0 var(--accent); }
+.pi-label { flex: 1; }
+.pi-section { color: var(--txt-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.palette-hint { border-top: 1px solid var(--line); padding: 8px 14px; font-size: 11px; color: var(--txt-dim); }
+kbd {
+  font-family: var(--mono); font-size: 10.5px; background: var(--bg-2); color: var(--txt-dim);
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px;
+}
+
+/* ── Потвърждение за опасно действие ────────────────────── */
+.confirm-dlg {
+  border: 1px solid var(--danger); background: var(--panel); color: var(--txt);
+  border-radius: 12px; padding: 20px; width: min(520px, 94vw); box-shadow: 0 24px 70px #000a;
+}
+.confirm-dlg::backdrop { background: #000b; }
+.confirm-dlg h3 { margin: 0 0 10px; font-size: 16px; }
+.confirm-what { background: var(--bg-2); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px; color: var(--txt-dim); }
+.confirm-dlg label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 12px; }
+.confirm-dlg input {
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--txt);
+  padding: 9px 11px; border-radius: 8px; font-family: var(--mono);
+}
+.confirm-dlg input:focus { outline: none; border-color: var(--danger); }
+
+/* ── Скелетон при зареждане (вместо спинър) ─────────────── */
+.skeleton { display: grid; gap: 12px; }
+.sk-row { height: 46px; border-radius: 8px; background: var(--panel); position: relative; overflow: hidden; }
+.sk-row.tall { height: 132px; }
+.sk-row::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, #ffffff0d, transparent);
+  transform: translateX(-100%); animation: sk 1.4s infinite;
+}
+@keyframes sk { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .sk-row::after { animation: none; }
+  .dot.live { animation: none; }
+}
+
+/* Дълги логове/таблици: браузърът пропуска чертането на невидимото —
+   виртуализация с нула JS. */
+.log-out, .term-out { content-visibility: auto; contain-intrinsic-size: auto 60vh; }
+tbody tr { content-visibility: auto; contain-intrinsic-size: auto 38px; }
+
+/* Числата да не местят оформлението, докато се обновяват на живо. */
+.metric-val, td.mono, .mono { font-variant-numeric: tabular-nums; }
+
+/* Само за екранни четци (връзка/статус) — визуално скрито, но озвучено. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Печат „данните са остарели" — контролен панел никога не бива да лъже, че е жив. */
+.stale {
+  background: #3a2c12; color: var(--warn); border: 1px solid var(--warn);
+  border-radius: 20px; padding: 3px 12px; font-size: 12px;
+}
+
+/* Индикатор за връзка: три състояния, без стробоскоп. */
+.dot.connecting { background: var(--warn); }
+.dot.down { background: var(--danger); }
+
 .loading { color: var(--txt-dim); padding: 30px; text-align: center; }
 .empty { color: var(--txt-dim); padding: 20px; text-align: center; font-style: italic; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }

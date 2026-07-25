@@ -49,9 +49,12 @@
           <button id="menu-toggle" class="icon-btn" aria-label="Меню">☰</button>
           <h1 id="section-title">Обзор</h1>
           <div class="topbar-right">
+            <span id="stale-banner" class="stale hidden"></span>
             <span id="host-badge" class="badge"></span>
+            <button id="btn-palette" class="icon-btn" title="Команди (Ctrl+K)">⌘K</button>
             <span id="conn-dot" class="dot" title="Връзка на живо"></span>
-            <button id="btn-refresh" class="icon-btn" title="Опресни">⟳</button>
+            <span id="conn-sr" class="sr-only" aria-live="polite"></span>
+            <button id="btn-refresh" class="icon-btn" title="Опресни (r)">⟳</button>
           </div>
         </header>
         <div id="view" class="view"></div>

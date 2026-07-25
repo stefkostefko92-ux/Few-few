@@ -25,7 +25,7 @@ const history = new MetricsHistory(cfg.paths.stateDir);
 metrics.listeners.add((snap) => history.maybeAppend(snap));
 metrics.startSampling();
 
-const alerts = new AlertEngine({ cfg, metrics, audit });
+const alerts = new AlertEngine({ cfg, metrics, audit, history });
 alerts.start();
 
 // Провалена системна задача (деплой/ъпдейт/бекъп) вдига известие веднага —
@@ -43,7 +43,30 @@ jobs.onEnd = (job) => {
 };
 
 const pty = new PtySessions(audit);
-const router = buildRouter({ cfg, audit, jobs, metrics, history, alerts, pty });
+
+// Провалът на одита е шумен: дневник, който тихо не пише, е по-лош от липсващ.
+audit.onWriteFailure = (err) => {
+  alerts
+    .event({
+      key: 'audit:write',
+      severity: 'critical',
+      title: 'Одитът не се записва',
+      body: `Записът в дневника се проваля (${err.message}). Действията остават без следа — провери диска и правата.`,
+    })
+    .catch(() => {});
+};
+
+const router = buildRouter({
+  cfg,
+  audit,
+  jobs,
+  metrics,
+  history,
+  alerts,
+  pty,
+  sessions: new Map(), // активни сесии (jti → метаданни)
+  revokedSessions: new Set(), // поименно отменени до изтичането им
+});
 const statics = serveStatic(path.join(__dirname, 'public'));
 
 const server = http.createServer(async (req, res) => {

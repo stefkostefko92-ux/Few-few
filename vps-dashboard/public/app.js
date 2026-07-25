@@ -1,5 +1,8 @@
 // Carbon Stealth VPS Dashboard — клиент (vanilla ES modules, нула зависимости).
-import { el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml } from './ui.js';
+import {
+  el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml,
+  registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
+} from './ui.js';
 
 // ── Състояние + API слой (с federation рутинг към избрания възел) ──────────────
 const state = { node: 'local', me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
@@ -120,6 +123,8 @@ const SECTIONS = [
 function buildNav() {
   const nav = document.getElementById('nav');
   nav.innerHTML = '';
+  clearCommands('nav');
+  const gotoFor = Object.fromEntries(Object.entries(GOTO_KEYS).map(([k, v]) => [v, k]));
   for (const s of SECTIONS) {
     const b = el('button', { onclick: () => go(s.id) }, [
       el('span', { class: 'ico', text: s.ico }),
@@ -127,7 +132,42 @@ function buildNav() {
     ]);
     b.dataset.id = s.id;
     nav.appendChild(b);
+    registerCommand({
+      id: `go:${s.id}`,
+      scope: 'nav',
+      label: `Отиди: ${s.label}`,
+      section: 'Навигация',
+      // Търси се и на латиница, и на кирилица — интерфейсът е български, но
+      // имената на технологиите се пишат и по двата начина.
+      keywords: `${s.id} ${SECTION_ALIASES[s.id] || ''}`,
+      hint: gotoFor[s.id] ? `g ${gotoFor[s.id]}` : undefined,
+      run: () => go(s.id),
+    });
   }
+}
+
+// Търсачка над вече нарисувана таблица — филтрира DOM редовете, без нова заявка.
+function attachFilter(input, container, { count } = {}) {
+  const apply = () => {
+    const q = input.value.toLowerCase().trim();
+    let shown = 0;
+    for (const row of container.querySelectorAll('tbody tr')) {
+      const hit = !q || row.textContent.toLowerCase().includes(q);
+      row.hidden = !hit;
+      if (hit) shown++;
+    }
+    if (count) count.textContent = q ? `${shown} от ${container.querySelectorAll('tbody tr').length}` : '';
+  };
+  let t;
+  input.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(apply, 80);
+  });
+  return apply;
+}
+
+function searchBox(placeholder = 'Филтрирай…') {
+  return el('input', { type: 'search', placeholder, class: 'grow', 'aria-label': placeholder });
 }
 
 function go(id) {
@@ -137,11 +177,107 @@ function go(id) {
   for (const b of document.querySelectorAll('#nav button')) b.classList.toggle('active', b.dataset.id === id);
   const s = SECTIONS.find((x) => x.id === id);
   document.getElementById('section-title').textContent = s.label;
-  document.getElementById('view').innerHTML = '<div class="loading">Зареждам…</div>';
+  showSkeleton();
   document.querySelector('.sidebar').classList.remove('open');
+  clearCommands('section'); // командите на предишната секция си отиват с нея
   s.render().catch((e) => {
     document.getElementById('view').innerHTML = `<div class="empty">Грешка: ${escapeHtml(e.message)}</div>`;
   });
+}
+
+// Скелет с формата на очакваното съдържание — по-малко усещане за чакане от спинър.
+function showSkeleton(rows = 5) {
+  const view = document.getElementById('view');
+  view.innerHTML = '';
+  const sk = el('div', { class: 'skeleton', 'aria-busy': 'true', 'aria-label': 'Зареждам' });
+  sk.appendChild(el('div', { class: 'sk-row tall' }));
+  for (let i = 0; i < rows; i++) sk.appendChild(el('div', { class: 'sk-row' }));
+  view.appendChild(sk);
+}
+
+// ── Клавиатура: палет + бърза навигация (патърнът на Gmail/Linear) ────────────
+// Кирилски/латински синоними за палета — „докер", „логове", „файлове" и т.н.
+const SECTION_ALIASES = {
+  overview: 'обзор начало dashboard',
+  products: 'продукти сайтове health',
+  alerts: 'аларми известия notifications telegram ntfy',
+  services: 'услуги сервизи systemd unit',
+  docker: 'докер контейнери containers',
+  compose: 'композе стек stack',
+  databases: 'бази данни sqlite postgres дъмп dump',
+  processes: 'процеси ps top kill',
+  logs: 'логове дневник journal journalctl',
+  deploy: 'деплой разгръщане release rollback архив zip',
+  updates: 'ъпдейти обновявания apt upgrade',
+  security: 'сигурност портове ssh tls сертификати',
+  firewall: 'файъруол защитна стена ufw правила',
+  webserver: 'уеб сървър нгинкс nginx caddy vhost certbot',
+  backups: 'бекъпи архиви restic снимки',
+  cron: 'крон таймери timers разписание',
+  files: 'файлове файлов браузър',
+  terminal: 'терминал конзола shell bash ssh',
+  runonce: 'команда еднократна run',
+  agents: 'агенти флот fleet',
+  jobs: 'задачи работи tasks',
+  audit: 'одит дневник история',
+  settings: 'настройки 2fa totp двуфакторна',
+  power: 'захранване рестарт reboot изключване poweroff',
+};
+
+const GOTO_KEYS = {
+  o: 'overview', p: 'products', a: 'alerts', s: 'services', d: 'docker', c: 'compose',
+  b: 'databases', l: 'logs', u: 'updates', f: 'files', t: 'terminal', j: 'jobs', w: 'webserver',
+};
+let gPending = false;
+
+document.addEventListener('keydown', (e) => {
+  const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+  // Палетът работи навсякъде, включително в поле.
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    openPalette();
+    return;
+  }
+  if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (document.getElementById('app').classList.contains('hidden')) return;
+
+  if (gPending) {
+    gPending = false;
+    const target = GOTO_KEYS[e.key.toLowerCase()];
+    if (target) {
+      e.preventDefault();
+      go(target);
+    }
+    return;
+  }
+  if (e.key === 'g') {
+    gPending = true;
+    setTimeout(() => (gPending = false), 1200);
+  } else if (e.key === '/') {
+    // Фокусира търсачката на текущата секция.
+    const box = document.querySelector('#view input[type="search"]');
+    if (box) {
+      e.preventDefault();
+      box.focus();
+      box.select();
+    }
+  } else if (e.key === 'r') {
+    go(state.section);
+  } else if (e.key === '?') {
+    openPalette();
+  }
+});
+
+// Индикатор за връзка: живо / свързва се / прекъснато.
+function setConnStatus(status) {
+  const dot = document.getElementById('conn-dot');
+  dot.classList.toggle('live', status === 'live');
+  dot.classList.toggle('connecting', status === 'connecting');
+  dot.classList.toggle('down', status === 'down');
+  dot.title =
+    status === 'live' ? 'Връзка на живо' : status === 'connecting' ? 'Свързвам се…' : status === 'down' ? 'Връзката прекъсна — пробвам пак' : 'Няма поток';
+  const sr = document.getElementById('conn-sr');
+  if (sr) sr.textContent = dot.title;
 }
 
 document.getElementById('menu-toggle').addEventListener('click', () =>
@@ -220,13 +356,15 @@ async function renderOverview() {
       el('div', { class: 'table-wrap' }, [
         tableEl(
           ['Файлова система', 'Точка', 'Ползвано', 'Общо', '%'],
-          m.disks.map((d) => [
-            el('td', { class: 'mono', text: d.fs }),
-            el('td', { text: d.mount }),
-            el('td', { text: fmtBytes(d.usedBytes) }),
-            el('td', { text: fmtBytes(d.totalBytes) }),
-            el('td', {}, [barEl(d.usePercent)]),
-          ])
+          m.disks.map((d) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: d.fs }),
+              el('td', { text: d.mount }),
+              el('td', { text: fmtBytes(d.usedBytes) }),
+              el('td', { text: fmtBytes(d.totalBytes) }),
+              el('td', {}, [barEl(d.usePercent)]),
+            ])
+          )
         ),
       ]),
     ]),
@@ -308,24 +446,47 @@ function drawSpark(id, data, max, isRate = false) {
 
 function startMetrics(onSnap) {
   stopMetrics();
-  const es = new EventSource(sseUrl('/stream/metrics'));
-  state.metricsEs = es;
-  document.getElementById('conn-dot').classList.add('live');
-  es.addEventListener('metrics', (e) => {
-    try {
-      onSnap(JSON.parse(e.data));
-    } catch {
-      /* игнор */
-    }
+  // Обединен поток с преизграждане на връзката (експоненциален backoff) —
+  // при прекъсване интерфейсът го КАЗВА, вместо да замръзне тихо с живо на вид табло.
+  state.metricsEs = liveStream(sseUrl('/stream/metrics'), {
+    events: {
+      metrics: (e) => {
+        try {
+          const snap = JSON.parse(e.data);
+          state.lastSnapAt = Date.now();
+          markFresh();
+          onSnap(snap);
+        } catch {
+          /* игнор */
+        }
+      },
+    },
+    onStatus: (s) => {
+      setConnStatus(s);
+      if (s === 'down' || s === 'connecting') markStale();
+    },
   });
-  es.onerror = () => document.getElementById('conn-dot').classList.remove('live');
 }
 function stopMetrics() {
   if (state.metricsEs) {
     state.metricsEs.close();
     state.metricsEs = null;
   }
-  document.getElementById('conn-dot').classList.remove('live');
+  setConnStatus('off');
+  markFresh();
+}
+
+// Печат „остаряло от HH:MM" — в контролен панел мълчаливо замръзнало табло е
+// по-опасно от липсващо: може да скрие истински инцидент зад стари „зелени" данни.
+function markStale() {
+  const b = document.getElementById('stale-banner');
+  if (!state.lastSnapAt) return;
+  const when = new Date(state.lastSnapAt).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
+  b.textContent = `⚠ данните са от ${when} — връзката прекъсна`;
+  b.classList.remove('hidden');
+}
+function markFresh() {
+  document.getElementById('stale-banner').classList.add('hidden');
 }
 
 // ── Продукти (health) ───────────────────────────────────────────────────────────
@@ -549,7 +710,7 @@ async function renderServices() {
     view.innerHTML = `<div class="empty">systemd недостъпен: ${escapeHtml(data.error || '')}</div>`;
     return;
   }
-  const filter = el('input', { type: 'search', placeholder: 'Филтър по име…', class: 'grow' });
+  const filter = searchBox('Филтър по име… (натисни /)');
   const onlyActive = el('input', { type: 'checkbox' });
   view.appendChild(
     el('div', { class: 'toolbar' }, [
@@ -559,6 +720,25 @@ async function renderServices() {
   );
   const body = el('div', { class: 'table-wrap' });
   view.appendChild(body);
+
+  // Всяка услуга става команда в палета — Ctrl+K → „рестартирай medqr" е по-бързо
+  // от скролване през стотици unit-и.
+  for (const s of data.services.slice(0, 300)) {
+    registerCommand({
+      id: `svc:restart:${s.unit}`,
+      scope: 'section',
+      label: `Рестартирай ${s.unit}`,
+      section: 'Услуги',
+      run: async () => {
+        try {
+          const r = await api('/services/action', { method: 'POST', body: { unit: s.unit, action: 'restart' } });
+          toast(`${s.unit}: ${r.state}`);
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      },
+    });
+  }
 
   const draw = () => {
     const q = filter.value.toLowerCase();
@@ -753,7 +933,15 @@ function composeBtn(p, action, label, cls = '') {
     class: `btn btn-sm ${cls}`,
     text: label,
     onclick: async () => {
-      if ((action === 'down' || action === 'restart') && !confirm(`${label} за стек ${p.name}?`)) return;
+      if (action === 'down') {
+        const ok = await confirmDanger({
+          title: `Сваляне на стек ${p.name}`,
+          what: ['Всички контейнери в стека спират.', 'Продуктът става недостъпен, докато не го вдигнеш пак.'],
+          expect: p.name,
+          confirmLabel: 'Свали стека',
+        });
+        if (!ok) return;
+      } else if (action === 'restart' && !confirm(`${label} за стек ${p.name}?`)) return;
       try {
         const job = await api('/compose/action', { method: 'POST', body: { project: p.name, configFile: p.configFiles, action } });
         streamJob(job.id, job.title);
@@ -1082,12 +1270,18 @@ async function renderProcesses() {
     el('option', { value: 'cpu', text: 'Подреди по CPU' }),
     el('option', { value: 'mem', text: 'Подреди по памет' }),
   ]);
+  const filter = searchBox('Търси процес… (натисни /)');
+  const count = el('span', { class: 'muted' });
+  // Първата заявка ВЪРВИ, докато скелетонът още стои — изгледът се чисти чак
+  // когато има какво да сложим на негово място.
+  const first = await api(`/processes?sort=${sortSel.value}`);
   view.innerHTML = '';
-  view.appendChild(el('div', { class: 'toolbar' }, [sortSel]));
+  view.appendChild(el('div', { class: 'toolbar' }, [sortSel, filter, count]));
   const body = el('div', { class: 'table-wrap' });
   view.appendChild(body);
-  const load = async () => {
-    const data = await api(`/processes?sort=${sortSel.value}`);
+  const applyFilter = attachFilter(filter, body, { count });
+  const load = async (preloaded) => {
+    const data = preloaded || (await api(`/processes?sort=${sortSel.value}`));
     body.innerHTML = '';
     body.appendChild(
       tableEl(
@@ -1111,9 +1305,10 @@ async function renderProcesses() {
         )
       )
     );
+    applyFilter(); // новите редове веднага спазват активния филтър
   };
-  sortSel.onchange = load;
-  await load();
+  sortSel.onchange = () => load();
+  await load(first);
 }
 
 async function killProc(pid, signal, reload) {
@@ -1708,17 +1903,43 @@ async function renderPower() {
   const view = document.getElementById('view');
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text: 'Рестарт или изключване на сървъра. Отложено с 5s, за да стигне отговорът.' }));
+  const host = state.me?.nodeName || 'сървъра';
   view.appendChild(
     el('div', { class: 'toolbar' }, [
       el('button', {
         class: 'btn btn-warn',
         text: '⟳ Рестарт (reboot)',
-        onclick: () => confirm('Наистина рестартирам сървъра? Панелът ще прекъсне.') && power('reboot'),
+        onclick: async () => {
+          const ok = await confirmDanger({
+            title: 'Рестарт на сървъра',
+            what: [
+              'Всички услуги спират и тръгват наново.',
+              'Панелът прекъсва — ще се върне след ~1 минута.',
+              'Вървящи задачи (деплой, бекъп) се прекъсват.',
+            ],
+            expect: host,
+            confirmLabel: 'Рестартирай',
+          });
+          if (ok) power('reboot');
+        },
       }),
       el('button', {
         class: 'btn btn-danger',
         text: '⏻ Изключване (poweroff)',
-        onclick: () => confirm('ИЗКЛЮЧВАМ сървъра? Ще трябва ръчно да го пуснеш от хостинга!') && power('poweroff'),
+        onclick: async () => {
+          const ok = await confirmDanger({
+            title: 'ИЗКЛЮЧВАНЕ на сървъра',
+            what: [
+              'Сървърът спира напълно и НЯМА да се върне сам.',
+              'Ще трябва да го пуснеш ръчно от конзолата на хостинга.',
+              'Всички сайтове и услуги стават недостъпни.',
+            ],
+            expect: host,
+            confirmLabel: 'Изключи',
+            delayMs: 2000, // изстиване срещу рефлекторно кликане
+          });
+          if (ok) power('poweroff');
+        },
       }),
     ])
   );
@@ -1816,6 +2037,20 @@ function barEl(pct) {
 function setHtml(id, h) { const e = document.getElementById(id); if (e) e.innerHTML = h; }
 
 // ── Boot ────────────────────────────────────────────────────────────────────────
+// Брой активни аларми върху иконата на приложението (Android + iOS 16.4+ PWA).
+// clearAppBadge() е ИЗРИЧЕН — setAppBadge(0) не чисти надеждно в Safari.
+async function refreshBadge() {
+  if (!('setAppBadge' in navigator)) return;
+  try {
+    const a = await api('/alerts');
+    const n = (a.active || []).length;
+    if (n > 0) await navigator.setAppBadge(n);
+    else await navigator.clearAppBadge();
+  } catch {
+    /* без баджа — не е фатално */
+  }
+}
+
 async function boot() {
   try {
     const me = await api('/me');
@@ -1824,12 +2059,24 @@ async function boot() {
     document.getElementById('host-badge').textContent = me.nodeName;
     document.getElementById('ver').textContent = 'v' + me.version;
     buildNav();
+    registerCommand({
+      id: 'act:refresh', scope: 'nav', label: 'Опресни текущата секция', section: 'Действия', hint: 'r',
+      run: () => go(state.section),
+    });
+    registerCommand({
+      id: 'act:logout', scope: 'nav', label: 'Изход от панела', section: 'Действия',
+      run: () => document.getElementById('btn-logout').click(),
+    });
     await loadNodes();
     go('overview');
+    refreshBadge();
+    setInterval(refreshBadge, 60000);
   } catch {
     showLogin();
   }
 }
+
+document.getElementById('btn-palette').addEventListener('click', () => openPalette());
 boot();
 
 // PWA: регистрира се само по HTTPS (или localhost) — иначе браузърът го отказва.
