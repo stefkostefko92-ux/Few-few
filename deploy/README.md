@@ -50,6 +50,15 @@
   Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
   за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
+- **evanita** (Evanita Sport): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. rsync на
+  `evanitasport/` (без служебните файлове) в `/var/www/evanita.carbonstealth.eu`
+  (root:root, 755/644 — уеб сървърът само чете), инсталира Nginx vhost с `nginx -t`
+  гейт и rollback: без сертификат → `nginx.http.conf` (само HTTP) + `certbot certonly
+  --webroot`, със сертификат → пълният `nginx.conf` (HSTS + CSP + HTTP/2; авто-миграция
+  към `http2 on;` при nginx ≥1.25.1). Health-ът е локален (`--resolve` към 127.0.0.1,
+  не чака DNS) + публичен best-effort, накрая IndexNow (`evanitasport/indexnow_key.txt`).
+  **Ръчна стъпка: DNS A (и AAAA) за `evanita.carbonstealth.eu` към VPS-а**; ако деплоят
+  мине преди DNS — сайтът остава по HTTP, следващият пуск взима TLS автоматично.
 - **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
   `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
   статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва
@@ -67,7 +76,7 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali evanita` | кои проекти да се разгръщат тук |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |

@@ -282,6 +282,7 @@ footer .col a{transition:color .3s}
 footer .col a:hover{color:var(--rose)}
 .foot-bottom{margin-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
 .foot-bottom .copy{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--label)}
+.foot-bottom .copy a{color:inherit;text-decoration:underline}
 .foot-credit{display:inline-flex;align-items:center;gap:10px;padding:10px 20px 10px 12px;background:var(--cream);border:1px solid var(--line);border-radius:999px;transition:all .35s;text-decoration:none}
 .foot-credit:hover{background:var(--wine-deep);border-color:var(--wine-deep)}
 .foot-credit .cs-logo{width:26px;height:26px;background:var(--wine-deep);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:600;font-size:9px;color:var(--cream);letter-spacing:.03em;transition:background .35s;flex-shrink:0}
@@ -320,3 +321,25 @@ footer .col a:hover{color:var(--rose)}
 .splash img{height:120px;width:auto;margin-bottom:20px;animation:splashIn .6s ease forwards}
 .splash p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--wine-deep);letter-spacing:.06em;opacity:0;animation:splashIn .5s ease .3s forwards}
 @keyframes splashIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* ── Skip връзка (достъпност) ── */
+.skip{position:absolute;left:-9999px;top:0;z-index:1000;padding:12px 22px;background:var(--wine-deep);color:var(--cream);border-radius:0 0 8px 0;font-size:14px}
+.skip:focus{left:0}
+
+/* ── Карта: click-to-load фасада (ePrivacy) ── */
+.map-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;height:100%;padding:32px;text-align:center}
+.map-facade p{font-size:13px;line-height:1.6;opacity:.75;max-width:340px;margin:0}
+.map-facade p a{color:var(--wine-deep);text-decoration:underline}
+.map-facade button{padding:14px 32px;background:var(--wine-deep);color:var(--cream);border:0;border-radius:999px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .3s}
+.map-facade button:hover{opacity:.85}
+.map-facade .map-ext{font-size:13px;color:var(--wine-deep);text-decoration:underline}
+
+/* ── Бележка под програмите ── */
+.programs-intro small{display:block;margin-top:10px;font-size:11px;opacity:.55;font-style:normal}
+
+/* ── Reduced motion: без анимации/паралакс за хора с вестибуларни проблеми ── */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .reveal,.fade{opacity:1!important;transform:none!important}
+  .splash{display:none}
+}

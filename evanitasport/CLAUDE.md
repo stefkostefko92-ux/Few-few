@@ -12,14 +12,16 @@ _Stack: **чисто статичен** HTML/CSS/JS — без билд, без 
 ## Структура
 
 ```
-index.html        one-page сайт (всички секции)
+index.html        one-page сайт (всички секции + JSON-LD ExerciseGym)
 css/              style.css + fonts.css (self-hosted шрифтове)
 fonts/            woff2 (Cormorant Garamond + Outfit — свалени локално, нула заявки към Google)
-js/main.js        splash, nav scroll, IntersectionObserver reveal
+js/main.js        splash, nav scroll, IntersectionObserver reveal, click-to-load карта
 images/           снимки (компресирани, ≤1400px) + og-cover.jpg (1200×630)
-privacy.html      политика за поверителност
-404.html          страница за грешка
-nginx.conf        vhost темплейт (HTTP-only; TLS се инжектира от certbot при деплой)
+privacy.html      политика за поверителност + импресум (ЕИК/имейл — попълва собственикът!)
+404.html          страница за грешка (nginx error_page 404)
+nginx.conf        пълен TLS vhost (иска издаден сертификат — инсталира го деплоят)
+nginx.http.conf   HTTP-only бутстрап vhost (пръв деплой, преди certbot)
+indexnow_key.txt  публичен IndexNow ключ (материализира се като <key>.txt в webroot)
 robots.txt · sitemap.xml · llms.txt · favicon.svg
 ```
 

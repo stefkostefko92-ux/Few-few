@@ -24,6 +24,7 @@ file holds only what is true across all products. Keep it that way.
 | `scuolabulgara/` | Qui Bulgaria — бълг. училище Милано (CMS) | Next.js · React · TS · Prisma | IT/BG multilingue |
 | `panev/` | Panev Ascensori — сайт + e-commerce | Express · SQLite · Stripe | IT |
 | `kebab/` | Uylas Kebap Center — сайт | static | IT |
+| `evanitasport/` | Evanita Sport — дамско студио за Kangoo Jumps и силови тренировки (Дупница) | static | BG · evanita.carbonstealth.eu |
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
 | `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |
 | `vizitka/` | Vizitka — винаги актуална дигитална визитка (QR профил) | Express · EJS · SQLite · plain JS ESM | BG · vizitka-bg.com |

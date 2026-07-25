@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali evanita}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -89,6 +89,17 @@ CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
 ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
+
+# evanita (Evanita Sport — ЧИСТ СТАТИЧЕН сайт: HTML/CSS/JS/изображения, без билд,
+# Node или база). Обслужва се директно от Nginx от /var/www/<домейн>. TLS през
+# certbot certonly --webroot (НЕ --nginx: не даваме на certbot да пренаписва
+# нашия конфиг, а и без сертификат HTTP-only темплейтът минава nginx -t).
+# Няма тайни. DNS A/AAAA към VPS-а е РЪЧНА стъпка на собственика.
+EVANITA_WWW="${EVANITA_WWW:-/var/www/evanita.carbonstealth.eu}"
+EVANITA_DOMAIN="${EVANITA_DOMAIN:-evanita.carbonstealth.eu}"
+EVANITA_SITE="${EVANITA_SITE:-/etc/nginx/sites-available/evanita.conf}"
+EVANITA_CERT_EMAIL="${EVANITA_CERT_EMAIL:-admin@carbonstealth.eu}"
+EVANITA_HEALTH_URL="${EVANITA_HEALTH_URL:-https://evanita.carbonstealth.eu/}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -678,6 +689,134 @@ deploy_adblock() {
   indexnow_ping "${INKEY:-}"
 }
 
+# ── 3i) evanita — ЧИСТ СТАТИЧЕН сайт зад Nginx (без билд/Node/база) ───────────
+# Модел „adblock, но Nginx-first + без chicken-and-egg": докато няма сертификат
+# се инсталира HTTP-only темплейт (минава nginx -t на гола кутия), взима се
+# сертификат по webroot, чак тогава влиза пълният TLS vhost. Всяка инсталация
+# минава през nginx -t с автоматичен rollback → счупен конфиг никога не стига
+# до жив nginx (иначе би счупил reload за ВСИЧКИ сайтове на кутията).
+
+# nginx ≥1.25.1: `listen ... ssl http2` е deprecated → отделна директива `http2 on;`.
+# Ubuntu 24.04 stock е 1.24.0 (там `http2 on;` НЕ съществува) → пипаме само при
+# по-нов nginx. Идемпотентно: втори пуск не прави нищо.
+nginx_http2_compat() {
+  local f="$1" v
+  v="$(nginx -v 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+  [ -n "$v" ] || return 0
+  # важи само при 1.25.1 <= v
+  [ "$(printf '1.25.1\n%s\n' "$v" | sort -V | head -1)" = "1.25.1" ] || return 0
+  grep -q 'listen [^;]*ssl http2;' "$f" || return 0
+  sed -i 's/\(listen [^;]*ssl\) http2;/\1;/' "$f"
+  grep -qE '^\s*http2 on;' "$f" || sed -i '/ssl_certificate_key/a\    http2 on;' "$f"
+  ok "evanita: nginx $v → мигрирах към 'http2 on;'"
+}
+
+# Инсталира даден темплейт като vhost с nginx -t гейт и rollback. 0 = успех.
+install_evanita_vhost() {
+  local tpl="$1" bak="${EVANITA_SITE}.bak-$TS"
+  [ -f "$tpl" ] || { warn "evanita: липсва темплейт $tpl"; return 1; }
+  [ -f "$EVANITA_SITE" ] && cp -a "$EVANITA_SITE" "$bak"
+  install -m 644 -o root -g root "$tpl" "$EVANITA_SITE"
+  nginx_http2_compat "$EVANITA_SITE"
+  ln -sf "$EVANITA_SITE" /etc/nginx/sites-enabled/evanita.conf
+  if nginx -t >/dev/null 2>&1; then
+    systemctl reload nginx 2>/dev/null || nginx -s reload
+    rm -f "$bak"
+    ok "evanita: vhost инсталиран и презареден ($(basename "$tpl"))."
+    return 0
+  fi
+  warn "evanita: nginx -t провал — връщам стария vhost, НЕ презареждам."
+  if [ -f "$bak" ]; then mv -f "$bak" "$EVANITA_SITE"
+  else rm -f "$EVANITA_SITE" /etc/nginx/sites-enabled/evanita.conf; fi
+  nginx -t >/dev/null 2>&1 || warn "evanita: nginx -t ВСЕ ОЩЕ пада — проблемът е другаде, провери преди следващ reload!"
+  return 1
+}
+
+deploy_evanita() {
+  local d="$SRC/evanitasport"
+  [ -d "$d" ] || { warn "Няма evanitasport/ в архива — пропускам."; return; }
+  log "Разгръщам evanita (статичен сайт зад Nginx)…"
+  command -v nginx >/dev/null || { warn "evanita: няма nginx на този сървър — пропускам."; return; }
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+
+  # 1) Файлове → webroot. Сайтът е ИЗЦЯЛО от репото (нула качено съдържание),
+  # затова --delete: изтрит от репото файл трябва да изчезне и от сървъра.
+  # Изключваме .well-known/ (живи ACME предизвикателства) и служебните файлове.
+  mkdir -p "$EVANITA_WWW"
+  rsync -a --delete \
+    --exclude '.well-known/' \
+    --exclude 'nginx.conf' --exclude 'nginx.http.conf' \
+    --exclude 'indexnow_key.txt' --exclude 'CLAUDE.md' --exclude 'README.md' \
+    --exclude '.git*' --exclude 'node_modules/' \
+    "$d"/ "$EVANITA_WWW"/
+
+  # 2) Права: root:root, дир 755 / файл 644. Уеб сървърът само ЧЕТЕ — www-data
+  # НЕ трябва да може да пише в собствения си документ-корен.
+  chown -R root:root "$EVANITA_WWW" 2>/dev/null || true
+  find "$EVANITA_WWW" -type d -exec chmod 755 {} +
+  find "$EVANITA_WWW" -type f -exec chmod 644 {} +
+  ok "evanita файлове → $EVANITA_WWW"
+
+  # 3) IndexNow ключ: материализираме <key>.txt в webroot от indexnow_key.txt.
+  # Ключът е ПУБЛИЧЕН по дизайн (протоколът иска да е достъпен на домейна) —
+  # това не е тайна и няма място в нито един .env.
+  local inkey=""
+  if [ -f "$d/indexnow_key.txt" ]; then
+    inkey="$(tr -d '[:space:]' < "$d/indexnow_key.txt")"
+    if [ -n "$inkey" ]; then
+      printf '%s' "$inkey" > "$EVANITA_WWW/$inkey.txt"
+      chmod 644 "$EVANITA_WWW/$inkey.txt"
+    fi
+  else
+    warn "evanita: няма indexnow_key.txt — пропускам IndexNow."
+  fi
+
+  # 4) vhost. С наличен сертификат → пълният TLS темплейт; без сертификат →
+  # HTTP-only бутстрап (минава nginx -t на гола кутия) и certbot по webroot.
+  local live="/etc/letsencrypt/live/$EVANITA_DOMAIN/fullchain.pem"
+  if [ -f "$live" ]; then
+    install_evanita_vhost "$d/nginx.conf" || { deploy_failed=1; return; }
+  else
+    install_evanita_vhost "$d/nginx.http.conf" || { deploy_failed=1; return; }
+    if command -v certbot >/dev/null; then
+      # certonly --webroot: certbot НЕ пипа нашия конфиг. --deploy-hook влиза в
+      # renewal конфига → всяко бъдещо подновяване презарежда nginx само.
+      if certbot certonly --webroot -w "$EVANITA_WWW" -d "$EVANITA_DOMAIN" \
+           -n --agree-tos --email "$EVANITA_CERT_EMAIL" --keep-until-expiring \
+           --deploy-hook "systemctl reload nginx" >/dev/null 2>&1; then
+        ok "evanita: TLS сертификат издаден."
+        install_evanita_vhost "$d/nginx.conf" || { deploy_failed=1; return; }
+      else
+        warn "evanita: certbot не успя (DNS още не сочи този VPS?). Сайтът върви по HTTP."
+        warn "  След DNS: пусни autodeploy отново — сертификатът и TLS конфигът влизат автоматично."
+      fi
+    else
+      warn "evanita: няма certbot — сайтът върви само по HTTP."
+    fi
+  fi
+
+  # 5) Health. ЛОКАЛНО (--resolve → не чакаме DNS) е задължително: провал тук
+  # значи нашият конфиг е счупен → маркираме деплоя като провален.
+  if curl -fsSL -o /dev/null --max-time 8 \
+       --resolve "$EVANITA_DOMAIN:80:127.0.0.1" \
+       --resolve "$EVANITA_DOMAIN:443:127.0.0.1" \
+       "http://$EVANITA_DOMAIN/"; then
+    ok "evanita: локален health минава (--resolve към 127.0.0.1)"
+  else
+    deploy_failed=1
+    warn "evanita: ЛОКАЛНИЯТ health не минава — виж /var/log/nginx/evanita.error.log"
+  fi
+  # Публичният е best-effort: зависи от DNS (ръчна стъпка) → не блокира деплоя.
+  if curl -fsS -o /dev/null --max-time 8 "$EVANITA_HEALTH_URL"; then
+    ok "evanita е жив ($EVANITA_HEALTH_URL)"
+  else
+    warn "evanita: публичният health още не минава ($EVANITA_HEALTH_URL) — провери DNS A/AAAA към този VPS и TLS."
+  fi
+
+  # 6) IndexNow (best-effort, след health — както при ospedali/adblock).
+  indexnow_submit "$EVANITA_DOMAIN" "${inkey:-}" "/" "/privacy.html"
+}
+
 health() {
   local url="$1" name="$2" i
   for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -687,18 +826,26 @@ health() {
   warn "$name НЕ отговаря на $url"; return 1
 }
 
-# IndexNow: уведомява Bing/Yandex/Seznam/Naver с един POST (api.indexnow.org
-# ги разпраща). Ключът е публичен (hostнат като <key>.txt). Best-effort.
-indexnow_ping() {
-  local key="$1"; [ -n "$key" ] || return 0
-  local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/privacy"'"]}'
-  if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
-    ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
+# IndexNow (общо): един POST към api.indexnow.org уведомява Bing/Yandex/Seznam/
+# Naver. Google НЕ поддържа IndexNow → за него sitemap.xml + Search Console.
+# Ключът е публичен (hostнат като https://<домейн>/<ключ>.txt). Best-effort.
+# Употреба: indexnow_submit <домейн> <ключ> <път> [път…]
+indexnow_submit() {
+  local domain="$1" key="$2"; shift 2
+  [ -n "$key" ] || return 0
+  local base="https://$domain" list="" p
+  for p in "$@"; do list="${list:+$list,}\"$base$p\""; done
+  [ -n "$list" ] || list="\"$base/\""
+  local body="{\"host\":\"$domain\",\"key\":\"$key\",\"keyLocation\":\"$base/$key.txt\",\"urlList\":[$list]}"
+  if curl -fsS -m 10 -H "Content-Type: application/json" \
+       -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
+    ok "$domain: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else
-    warn "adblock: IndexNow ping не мина (сайтът трябва да е публично достъпен с $key.txt)."
+    warn "$domain: IndexNow ping не мина (сайтът трябва да е публично достъпен с $key.txt)."
   fi
 }
+# Обратна съвместимост — deploy_adblock остава непокътнат.
+indexnow_ping() { indexnow_submit "$ADBLOCK_DOMAIN" "$1" "/" "/privacy"; }
 
 for p in $PROJECTS; do
   case "$p" in
@@ -711,6 +858,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     adblock)    deploy_adblock ;;
+    evanita)    deploy_evanita ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
