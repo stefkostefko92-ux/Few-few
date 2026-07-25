@@ -33,9 +33,12 @@ app.set('trust proxy', 1); // behind Nginx
 //  Utilities
 // ─────────────────────────────────────────────────────────────
 const rateLimitStore = new Map();
-function rateLimit({ windowMs = 15 * 60 * 1000, max = 100, keyFn = auth.clientIp } = {}) {
+function rateLimit({ windowMs = 15 * 60 * 1000, max = 100, keyFn = auth.clientIp, bucket = 'default' } = {}) {
   return (req, res, next) => {
-    const key = 'rl:' + keyFn(req) + ':' + req.path.split('?')[0];
+    // Ключът НЕ бива да зависи от вход на потребителя: с req.path всеки нов
+    // /api/products/:id отваряше собствена кофа → нулев лимит + неограничен
+    // ръст на rateLimitStore. Ключуваме по име на лимитера.
+    const key = 'rl:' + keyFn(req) + ':' + bucket;
     const now = Date.now();
     const rec = rateLimitStore.get(key) || { count: 0, resetAt: now + windowMs };
     if (now > rec.resetAt) { rec.count = 0; rec.resetAt = now + windowMs; }
@@ -100,15 +103,18 @@ function validPassword(pw) {
 //  Security headers
 // ─────────────────────────────────────────────────────────────
 function securityHeaders(req, res, next) {
+  // Публичният сайт няма изпълними inline скриптове (само src=, application/json
+  // и ld+json, които не изискват 'unsafe-inline'); админът има — затова само там.
+  const needsInlineJs = req.path.startsWith('/admin');
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+    "script-src 'self'" + (needsInlineJs ? " 'unsafe-inline'" : '') + " https://js.stripe.com",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.stripe.com",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
-    "object-src 'none'",
+    "object-src 'self'",   // каталожният PDF се вгражда с <object>
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'self'",
@@ -156,7 +162,7 @@ app.use(cookieParser());
 // ─────────────────────────────────────────────────────────────
 //  Webhook Stripe — MUST come before express.json()
 // ─────────────────────────────────────────────────────────────
-const webhookLimiter = rateLimit({ windowMs: 60 * 1000, max: 60 });
+const webhookLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, bucket: 'webhook' });
 app.post('/api/webhook',
   webhookLimiter,
   express.raw({ type: 'application/json' }),
@@ -311,16 +317,20 @@ app.use(express.static(path.join(__dirname), {
       res.setHeader('Cache-Control', 'public, max-age=604800');
     }
     if (filePath.endsWith('.woff2')) {
-      // Hashed filenames → safe to cache aggressively.
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      // Имената НЕ носят хеш (Inter-var-*.woff2) — 'immutable' за година би
+      // заключил стар подмножествен файл у върналия се посетител без изход.
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
     }
-    if (filePath.includes(path.sep + 'admin' + path.sep)) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    }
+    const isAdmin = filePath.includes(path.sep + 'admin' + path.sep);
     if (filePath.endsWith('.html')) {
       // Don't cache HTML (so admin edits show up)
       res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+    // Админът е ПОСЛЕДЕН: no-store не бива да се сваля до no-cache от .html
+    // клона по-горе (страниците му носят имена/имейли/телефони/IP).
+    if (isAdmin) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     }
   },
 }));
@@ -328,10 +338,10 @@ app.use(express.static(path.join(__dirname), {
 // ─────────────────────────────────────────────────────────────
 //  Rate limits
 // ─────────────────────────────────────────────────────────────
-const checkoutLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
-const contactLimiter  = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
-const loginLimiter    = rateLimit({ windowMs: 15 * 60 * 1000, max: 15 });
-const apiLimiter      = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
+const checkoutLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, bucket: 'checkout' });
+const contactLimiter  = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, bucket: 'contact' });
+const loginLimiter    = rateLimit({ windowMs: 15 * 60 * 1000, max: 15, bucket: 'login' });
+const apiLimiter      = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, bucket: 'api' });
 
 // ─────────────────────────────────────────────────────────────
 //  HEALTH CHECK (for uptime monitoring)
@@ -1002,6 +1012,10 @@ const server = app.listen(PORT, '127.0.0.1', () => {
   if (!process.env.STRIPE_SECRET_KEY?.startsWith('sk_')) {
     console.warn('  ⚠  STRIPE_SECRET_KEY non configurata — Stripe Checkout disabilitato');
     console.warn('  ⚠  Copia .env.example in .env e configura le chiavi\n');
+  }
+  if (!process.env.SMTP_PASS) {
+    console.warn('  ⚠  SMTP_PASS non configurata — le richieste di preventivo NON generano email');
+    console.warn('  ⚠  Il modulo salva solo in /admin/messaggi — configura .env prima del lancio\n');
   }
   if (!process.env.JWT_SECRET) {
     console.warn('  ⚠  JWT_SECRET non impostato — usa valore dev INSICURO');

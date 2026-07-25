@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-24",
+    "updated": "2026-07-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1601,9 +1601,20 @@
           "date": "2026-07-24",
           "event": "v15.3 — учене",
           "detail": "Научи: В Express req.path НЕ е percent-decoded, докато express.static/send декодират преди да … (+2 още)"
+        },
+        {
+          "version": "15.9.0",
+          "date": "2026-07-25",
+          "event": "v15.9 — учене",
+          "detail": "Научи: В panev/server.js rateLimit ключът включва req.path, затова всеки маршрут с параметър (… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-25",
+          "type": "learning",
+          "summary": "Научи: „В panev/server.js rateLimit ключът включва req.path, затова всеки маршрут с параметър (…\" (+5 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
@@ -5778,9 +5789,31 @@
           "date": "2026-07-24",
           "event": "v14.4 — учене",
           "detail": "Научи: pg_dump: 'directory' формат (-Fd) е ЕДИНСТВЕНИЯТ, който поддържа паралелни дъмпове (-j … (+15 още)"
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-07-25",
+          "event": "v15.0 — учене",
+          "detail": "Научи: panev сервира /img/ с прозрачна WebP преговорка (при Accept: image/webp връща .webp дво… (+5 още)"
+        },
+        {
+          "version": "15.2.0",
+          "date": "2026-07-25",
+          "event": "v15.2 — учене",
+          "detail": "Научи: Тайна се записва в env файл със heredoc (`cat > файл <<EOF`), не с `echo VAR=$SECRET > … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-25",
+          "type": "learning",
+          "summary": "Научи: „Тайна се записва в env файл със heredoc (`cat > файл <<EOF`), не с `echo VAR=$SECRET > …\" (+1 още)"
+        },
+        {
+          "date": "2026-07-25",
+          "type": "learning",
+          "summary": "Научи: „panev сервира /img/ с прозрачна WebP преговорка (при Accept: image/webp връща .webp дво…\" (+5 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",

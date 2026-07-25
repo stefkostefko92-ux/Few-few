@@ -25,7 +25,7 @@ Web design & development: Carbon Stealth VCC
 
 /* SITE */
 
-Last update:    2026-04-20
+Last update: 2026-07-25
 Language:       Italiano (it-IT)
-Components:     Node.js 20, Express 4, SQLite, Stripe
-Fonts:          Inter, Fraunces, JetBrains Mono (self-hosted)
+Components:     Node.js 22, Express 4, SQLite, generatore statico (site/build.mjs)
+Fonts:          Inter (variable, self-hosted, latin + cyrillic)
