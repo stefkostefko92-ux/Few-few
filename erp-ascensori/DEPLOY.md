@@ -146,13 +146,29 @@ curl -fsS http://127.0.0.1:3050/api/healthz/automatismi   # 503 = не е мин
 
 `"rls": false` с `rlsMotivo: "il ruolo applicativo è superuser"` значи, че
 политиките са там, но Postgres ги подминава: суперпотребителят ги заобикаля
-безусловно, дори при `FORCE ROW LEVEL SECURITY`. Официалният образ създава
-`POSTGRES_USER` именно като суперпотребител, затова миграцията го понижава
-(запазвайки `CREATEDB`). Ако някой го е върнал ръчно:
+безусловно, дори при `FORCE ROW LEVEL SECURITY`.
+
+**Затова приложението НЕ върви с bootstrap потребителя.** Официалният образ прави
+`POSTGRES_USER` бутстрап роля, а Postgres **отказва** да я понижи („The bootstrap
+user must have the SUPERUSER attribute") — тоест при такава конфигурация
+изолацията между фирмите е украса. В `docker-compose.yml` bootstrap-ът е
+`postgres` и не се ползва от нищо друго; приложната роля се създава при първото
+вдигане от [`deploy/postgres-init/`](deploy/postgres-init/) като обикновена,
+непривилегирована роля, която обаче **е собственик** на схемата (Prisma иска това
+за миграциите).
+
+Миграцията с политиките пак опитва да понижи ролята, ако е заварила
+суперпотребителска — но при отказ **не проваля разгръщането**: по-добре работещо
+приложение с видима в `readyz` слабост, отколкото инсталация, умряла на празно.
+Проверката:
 
 ```bash
-docker compose exec -T db psql -U postgres -c 'ALTER ROLE erp NOSUPERUSER CREATEDB'
+docker compose exec -T db psql -U postgres -d erp_ascensori \
+  -c "SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname = 'erp'"
 ```
+
+`rolsuper` трябва да е `f`. Ако е `t`, приложението върви с грешна роля — смени
+`DATABASE_URL` да сочи приложната, не bootstrap-а.
 
 ## 7б. Смяна на `AUDIT_HMAC_KEY`
 

@@ -29,7 +29,22 @@ DO $$
 DECLARE ruolo text := current_user;
 BEGIN
   IF (SELECT rolsuper FROM pg_roles WHERE rolname = ruolo) THEN
-    EXECUTE format('ALTER ROLE %I NOSUPERUSER CREATEDB', ruolo);
+    BEGIN
+      EXECUTE format('ALTER ROLE %I NOSUPERUSER CREATEDB', ruolo);
+      RAISE NOTICE 'Ролята % е понижена: RLS вече важи и за нея.', ruolo;
+    EXCEPTION WHEN OTHERS THEN
+      -- Postgres ОТКАЗВА да понижи bootstrap потребителя („The bootstrap user
+      -- must have the SUPERUSER attribute") — а официалният образ прави точно
+      -- `POSTGRES_USER` такъв. Затова не проваляме миграцията: приложението
+      -- трябва да тръгне, иначе една инсталация умира на празно.
+      --
+      -- Но и не мълчим: суперпотребителят заобикаля политиките безусловно, тоест
+      -- изолацията е УКРАСА. `GET /api/readyz` връща `rls: false` с причината,
+      -- метриката `erp_rls_attiva` пада на нула и алармата `ErpRlsDisattivata`
+      -- звъни. Правилният изход е приложението да върви със СВОЯ роля, а не с
+      -- bootstrap-а — виж `deploy/postgres-init/` и DEPLOY.md § 7.
+      RAISE WARNING 'Ролята % НЕ можа да бъде понижена (%). RLS няма да е в сила, докато приложението върви с нея.', ruolo, SQLERRM;
+    END;
   END IF;
 END
 $$;

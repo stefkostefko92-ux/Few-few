@@ -34,6 +34,9 @@ echo "→ Тайни"
 riempi SESSION_SECRET  "$(openssl rand -hex 32)"
 riempi AUDIT_HMAC_KEY  "$(openssl rand -hex 32)"
 riempi HEALTH_TOKEN    "$(openssl rand -hex 16)"
+# Bootstrap потребителят на Postgres. Приложението не го ползва — с него се
+# създава само приложната роля при първото вдигане (виж deploy/postgres-init/).
+riempi POSTGRES_BOOTSTRAP_PASSWORD "$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-24)"
 
 # Паролата на базата влиза на две места и трябва да съвпада.
 if grep -q '^POSTGRES_PASSWORD="CAMBIAMI"' "$FILE"; then
