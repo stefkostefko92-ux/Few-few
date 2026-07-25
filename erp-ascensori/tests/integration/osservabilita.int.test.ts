@@ -46,6 +46,10 @@ describe("метрики", () => {
       assert.match(corpo, new RegExp(`^${nome} `, "m"), `липсва ${nome}`);
 
     // Изолацията е включена в тестовата база — иначе алармата е безсмислена.
-    assert.match(corpo, /^erp_rls_attiva 1$/m);
+    assert.match(
+      corpo,
+      /^erp_rls_attiva 1$/m,
+      "RLS не е в сила: пакетът върви с bootstrap роля (виж rls-catena.int.test.ts)",
+    );
   });
 });

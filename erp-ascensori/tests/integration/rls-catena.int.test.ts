@@ -67,7 +67,16 @@ after(async () => {
 describe("Row-Level Security", () => {
   test("политиките са налице и ролята НЕ е суперпотребител", async () => {
     const r = await rlsAttiva();
-    assert.equal(r.attiva, true, `RLS не е активна: ${r.motivo ?? "?"}`);
+    assert.equal(
+      r.attiva,
+      true,
+      `RLS не е активна: ${r.motivo ?? "?"}.\n` +
+        "Пакетът трябва да върви с ОБИКНОВЕНА роля, не с bootstrap потребителя на\n" +
+        "Postgres: суперпотребителят заобикаля политиките безусловно, а Postgres\n" +
+        "отказва да понижи именно bootstrap-а. Създай отделна роля:\n" +
+        "  CREATE ROLE erp LOGIN PASSWORD '…' NOSUPERUSER CREATEDB;\n" +
+        "Същото прави `deploy/postgres-init/` при клиента.",
+    );
   });
 
   test("сурова заявка без приложен филтър не вижда чужди редове", async () => {

@@ -13,6 +13,10 @@ Tailwind · Zod · jose · Recharts. Path alias `@/*`.
 npm run dev / build / start
 npm run lint && npm run typecheck && npm test   # качествена порта (задължителна)
 npx prisma db push && npm run db:seed           # локална база + демо данни (IT)
+# ВАЖНО: ролята, с която върви приложението, НЕ бива да е bootstrap потребителят
+# на Postgres — той е суперпотребител, заобикаля RLS безусловно и НЕ може да бъде
+# понижен („The bootstrap user must have the SUPERUSER attribute").
+#   CREATE ROLE erp LOGIN PASSWORD '…' NOSUPERUSER CREATEDB;
 npm run scadenze:check                          # автоматизмът за сроковете (cron 24h)
 npm run retention                               # прочистване по срок (cron седмично)
 bash scripts/setup-env.sh                       # генерира тайните за продукция
