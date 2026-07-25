@@ -13,6 +13,8 @@ export interface RigaAudit {
   userAgent: string | null;
   utenteId: string | null;
   createdAt: Date;
+  /** Подписът на ПРЕДХОДНИЯ ред (версия 3+). `null` за първия. */
+  hmacPrecedente?: string | null;
 }
 
 /** Детерминистична сериализация: ключовете се подреждат РЕКУРСИВНО.
@@ -33,13 +35,25 @@ export function serializzaStabile(v: unknown): string {
   return JSON.stringify(v);
 }
 
+/** Текущата версия на канона. Всяка промяна В ПОКРИТИТЕ ПОЛЕТА я вдига —
+ *  не само промяна в подредбата им. Иначе стари редове стават непроверими
+ *  безшумно и фалшивата тревога заглушава истинската манипулация. */
+export const VERSIONE_CORRENTE = 3;
+
+export type VersioneFirma = 1 | 2 | 3;
+
 /** Каноничен низ на редицата — стабилен ред на полетата.
- *  Подписът покрива и ip/userAgent, за да не се променят в базата без следа. */
-export function canonico(r: RigaAudit, versione: 1 | 2 = 2): string {
-  // Версия 1 сериализираше в реда на вмъкване (преди да се разбере, че jsonb
-  // пренарежда ключовете). Пазим я, за да остане проверим и старият регистър.
+ *
+ *  Версия 1: сериализация в реда на вмъкване (преди да се разбере, че jsonb
+ *            пренарежда ключовете).
+ *  Версия 2: рекурсивно сортирани ключове.
+ *  Версия 3: + `hmacPrecedente` — ВЕРИГА. Дотогава подписът ловеше промяна на
+ *            ред, но не и ИЗТРИВАНЕ на цял ред: махнеш ли редица, останалите
+ *            се проверяват успешно и липсата е невидима. С веригата всеки ред
+ *            сочи предходния, и изваденото звено се вижда веднага. */
+export function canonico(r: RigaAudit, versione: VersioneFirma = VERSIONE_CORRENTE): string {
   const serializza = versione === 1 ? JSON.stringify : serializzaStabile;
-  return JSON.stringify([
+  const campi = [
     r.azione,
     r.entita,
     r.entitaId ?? "",
@@ -50,13 +64,15 @@ export function canonico(r: RigaAudit, versione: 1 | 2 = 2): string {
     r.userAgent ?? "",
     r.utenteId ?? "",
     r.createdAt.toISOString(),
-  ]);
+  ];
+  if (versione >= 3) campi.push(r.hmacPrecedente ?? "");
+  return JSON.stringify(campi);
 }
 
 export function firmaAudit(
   r: RigaAudit,
   chiave: string,
-  versione: 1 | 2 = 2,
+  versione: VersioneFirma = VERSIONE_CORRENTE,
 ): string {
   return createHmac("sha256", chiave)
     .update(canonico(r, versione))
@@ -67,7 +83,7 @@ export function verificaAudit(
   r: RigaAudit,
   hmac: string,
   chiave: string,
-  versione: 1 | 2 = 2,
+  versione: VersioneFirma = VERSIONE_CORRENTE,
 ): boolean {
   const atteso = Buffer.from(firmaAudit(r, chiave, versione), "hex");
   let dato: Buffer;
@@ -77,4 +93,25 @@ export function verificaAudit(
     return false;
   }
   return atteso.length === dato.length && timingSafeEqual(atteso, dato);
+}
+
+/**
+ * Проверява с ТЕКУЩИЯ ключ, а при неуспех — с предишния.
+ *
+ * Без това ротацията на `AUDIT_HMAC_KEY` е еднопосочна щета: всичко подписано
+ * преди смяната става непроверимо ЗАВИНАГИ, а регистърът губи точно
+ * доказателствената стойност, заради която съществува. Подписването винаги
+ * ползва текущия ключ — старият важи само при проверка.
+ */
+export function verificaConRotazione(
+  r: RigaAudit,
+  hmac: string,
+  chiavi: { corrente: string; precedente?: string | null },
+  versione: VersioneFirma = VERSIONE_CORRENTE,
+): { valida: boolean; conChiavePrecedente: boolean } {
+  if (verificaAudit(r, hmac, chiavi.corrente, versione))
+    return { valida: true, conChiavePrecedente: false };
+  if (chiavi.precedente && verificaAudit(r, hmac, chiavi.precedente, versione))
+    return { valida: true, conChiavePrecedente: true };
+  return { valida: false, conChiavePrecedente: false };
 }

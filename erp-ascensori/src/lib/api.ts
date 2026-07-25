@@ -7,8 +7,18 @@ import { ETICHETTE_CAMPI } from "@/lib/zod-it"; // регистрира и IT er
 import { log, descriviErrore, rottaModello } from "@/lib/log";
 import { randomUUID } from "node:crypto";
 
+/** `JSON.stringify` хвърля TypeError върху BigInt — а един такъв ключ в схемата
+ *  сваля целия маршрут с 500. Тук се превръща в текст (числото не се побира
+ *  безопасно в `Number`). Датите вече са минали през `toJSON`. */
+function sostituisciBigInt(_chiave: string, valore: unknown): unknown {
+  return typeof valore === "bigint" ? valore.toString() : valore;
+}
+
 export function ok(data: unknown, status = 200): NextResponse {
-  return NextResponse.json(data, { status });
+  return new NextResponse(JSON.stringify(data, sostituisciBigInt), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 export function errore(status: number, message: string): NextResponse {

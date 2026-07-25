@@ -24,10 +24,25 @@ export const GET = gestito(async (req) => {
   const [righe, totale] = await Promise.all([
     prisma.auditLog.findMany({
       where,
-      include: {
+      // Изричен подбор, а не `include`: `seq` е BigInt и `JSON.stringify` го
+      // отказва — а вътрешният номер на веригата така или иначе не е за навън.
+      select: {
+        id: true,
+        azione: true,
+        entita: true,
+        entitaId: true,
+        dettagli: true,
+        ip: true,
+        userAgent: true,
+        utenteId: true,
+        tenantId: true,
+        createdAt: true,
+        hmac: true,
+        hmacPrecedente: true,
+        versioneFirma: true,
         utente: { select: { nome: true, cognome: true, email: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { seq: "desc" },
       skip,
       take,
     }),

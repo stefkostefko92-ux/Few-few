@@ -2,7 +2,9 @@
 // Всяка операция минава през проверка на ролята (на сървъра!) и пише в audit.
 
 import type { ZodSchema } from "zod";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { conRls } from "@/lib/rls";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
@@ -63,8 +65,12 @@ export interface CrudConfig {
   afterWrite?: (id: string) => Promise<void>;
 }
 
-function delegate(model: ModelloPrisma): Delegate {
-  return (prisma as unknown as Record<ModelloPrisma, Delegate>)[model];
+/** Делегатът върху ТРАНЗАКЦИОНЕН клиент — за да важи наложеният обхват (RLS). */
+function delegate(
+  model: ModelloPrisma,
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+): Delegate {
+  return (db as unknown as Record<ModelloPrisma, Delegate>)[model];
 }
 
 function idRecord(r: unknown): string {
@@ -97,31 +103,37 @@ export function rottaCollezione(cfg: CrudConfig) {
       if (v) where[campo] = campo.endsWith("Id") ? uuidParam(url, campo) : v;
     }
 
-    const d = delegate(cfg.model);
-    const [righe, totale] = await Promise.all([
-      d.findMany({
-        where,
-        include: cfg.include,
-        orderBy: cfg.orderBy ?? { createdAt: "desc" },
-        skip,
-        take,
-      }),
-      d.count({ where }),
-    ]);
+    // Втора линия: дори да отпадне `filtroTenant` горе, обхватът е наложен и от
+    // самата база (политиките `tenant_isolation`, `src/lib/rls.ts`).
+    const [righe, totale] = await conRls(s, (tx) => {
+      const d = delegate(cfg.model, tx);
+      return Promise.all([
+        d.findMany({
+          where,
+          include: cfg.include,
+          orderBy: cfg.orderBy ?? { createdAt: "desc" },
+          skip,
+          take,
+        }),
+        d.count({ where }),
+      ]);
+    });
     return ok({ righe, totale, page, size });
   });
 
   const POST = gestito(async (req) => {
     const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
     const data = await corpoValidato(req, cfg.schemaCreate);
-    const creato = await delegate(cfg.model).create({
-      data: {
-        ...(data as object),
-        ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)),
-        ...(cfg.campiSessione?.(s) ?? {}),
-      },
-      include: cfg.include,
-    });
+    const creato = await conRls(s, (tx) =>
+      delegate(cfg.model, tx).create({
+        data: {
+          ...(data as object),
+          ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)),
+          ...(cfg.campiSessione?.(s) ?? {}),
+        },
+        include: cfg.include,
+      }),
+    );
     const id = idRecord(creato);
     if (cfg.afterWrite) await cfg.afterWrite(id);
     await scriviAudit({
@@ -143,10 +155,12 @@ export function rottaElemento(cfg: CrudConfig) {
   const GET = gestito(async (_req, ctx) => {
     const s = await richiedeRuolo(cfg.ruoloLettura ?? "OPERATORE");
     const { id } = await ctx.params;
-    const r = await delegate(cfg.model).findFirst({
-      where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
-      include: cfg.include,
-    });
+    const r = await conRls(s, (tx) =>
+      delegate(cfg.model, tx).findFirst({
+        where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+        include: cfg.include,
+      }),
+    );
     if (!r) throw new ErroreHttp(404, "Record non trovato");
     return ok(r);
   });
@@ -155,15 +169,20 @@ export function rottaElemento(cfg: CrudConfig) {
     const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
     const { id } = await ctx.params;
     const data = await corpoValidato(req, cfg.schemaUpdate);
-    const d = delegate(cfg.model);
-    const prima = await d.findFirst({
-      where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
-    });
-    if (!prima) throw new ErroreHttp(404, "Record non trovato");
-    const dopo = await d.update({
-      where: { id },
-      data: data as object,
-      include: cfg.include,
+    // Четенето и записът в ЕДНА транзакция: така проверката за собственост не
+    // може да се размине с промяната (и обхватът важи за двете).
+    const { prima, dopo } = await conRls(s, async (tx) => {
+      const d = delegate(cfg.model, tx);
+      const prima = await d.findFirst({
+        where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+      });
+      if (!prima) throw new ErroreHttp(404, "Record non trovato");
+      const dopo = await d.update({
+        where: { id },
+        data: data as object,
+        include: cfg.include,
+      });
+      return { prima, dopo };
     });
     if (cfg.afterWrite) await cfg.afterWrite(id);
     await scriviAudit({
@@ -183,13 +202,16 @@ export function rottaElemento(cfg: CrudConfig) {
   const DELETE = gestito(async (_req, ctx) => {
     const s = await richiedeRuolo(cfg.ruoloCancellazione ?? "RESPONSABILE");
     const { id } = await ctx.params;
-    const d = delegate(cfg.model);
-    const prima = await d.findFirst({
-      where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+    const prima = await conRls(s, async (tx) => {
+      const d = delegate(cfg.model, tx);
+      const prima = await d.findFirst({
+        where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+      });
+      if (!prima) throw new ErroreHttp(404, "Record non trovato");
+      // Референцирани от документи записи ги пази самата база (FK) → 409 в gestito()
+      await d.delete({ where: { id } });
+      return prima;
     });
-    if (!prima) throw new ErroreHttp(404, "Record non trovato");
-    // Референцирани от документи записи ги пази самата база (FK) → 409 в gestito()
-    await d.delete({ where: { id } });
     await scriviAudit({
       azione: "DELETE",
       entita: cfg.entita,

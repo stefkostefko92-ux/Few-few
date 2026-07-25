@@ -60,11 +60,11 @@ async function main() {
   psql(`DROP DATABASE IF EXISTS ${DB} WITH (FORCE)`);
   psql(`CREATE DATABASE ${DB}`);
 
-  console.log("▸ схема + демо данни");
-  execFileSync("npx", ["prisma", "db", "push", "--skip-generate", "--accept-data-loss"], {
-    env,
-    stdio: "inherit",
-  });
+  // МИГРАЦИИ, не `db push`: така пакетът проверява и че историята на миграциите
+  // изгражда точно живата схема (drift се хваща тук, не при клиента), и че
+  // политиките за RLS реално се появяват — `db push` не изпълнява SQL миграции.
+  console.log("▸ схема (миграции) + демо данни");
+  execFileSync("npx", ["prisma", "migrate", "deploy"], { env, stdio: "inherit" });
   execFileSync("npx", ["tsx", "prisma/seed.ts"], { env, stdio: "inherit" });
 
   console.log("▸ билд");

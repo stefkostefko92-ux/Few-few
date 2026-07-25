@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { rlsAttiva } from "@/lib/rls";
 import { log, descriviErrore } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,10 @@ interface Esito {
   db: boolean;
   schema: boolean;
   chiavi: boolean;
+  /** Втората линия на изолацията. Не спира трафика, но операторът трябва да я
+   *  ВИЖДА: суперпотребителска роля прави политиките украса, без нищо в лога. */
+  rls: boolean;
+  rlsMotivo?: string;
 }
 
 let cache: { esito: Esito; scadenza: number } | null = null;
@@ -34,6 +39,7 @@ async function controlla(): Promise<Esito> {
     db: false,
     schema: false,
     chiavi: chiaviValide(),
+    rls: false,
   };
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -41,9 +47,13 @@ async function controlla(): Promise<Esito> {
     // схемата налична? (заместител на проверка за приложени миграции)
     await prisma.user.findFirst({ select: { id: true } });
     esito.schema = true;
+    const r = await rlsAttiva();
+    esito.rls = r.attiva;
+    if (r.motivo) esito.rlsMotivo = r.motivo;
   } catch (e) {
     log.warn("readyz: controllo fallito", descriviErrore(e));
   }
+  if (!esito.rls) log.warn(`readyz: RLS non attiva — ${esito.rlsMotivo ?? "motivo ignoto"}`);
   esito.pronto = esito.db && esito.schema && esito.chiavi;
   return esito;
 }

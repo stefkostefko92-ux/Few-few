@@ -258,6 +258,10 @@ model SessioneAttiva {
 
 model AuditLog {
   id        String   @id @default(uuid()) @db.Uuid
+  /// Монотонен ред на вписване. `createdAt` НЕ става за подредба на веригата:
+  /// две операции в една и съща милисекунда се сортират произволно и проверката
+  /// би обявила счупена верига там, където няма такава.
+  seq       BigInt   @unique @default(autoincrement())
   azione    String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, STATE_CHANGE, IMPORT
   entita    String
   entitaId  String?
@@ -265,7 +269,9 @@ model AuditLog {
   ip        String?
   userAgent String?
   hmac      String // криптографски подпис на редицата
-  versioneFirma Int   @default(2) // 1 = ред на вмъкване, 2 = сортирани ключове
+  /// Подписът на ПРЕДХОДНИЯ ред — веригата, която лови ИЗТРИВАНЕ на ред.
+  hmacPrecedente String?
+  versioneFirma Int   @default(3) // 1 = ред на вмъкване · 2 = сортирани ключове · 3 = + верига
   utenteId  String?  @db.Uuid
   /// Фирмата, чиито данни е засегнала операцията. Без нея регистърът не може
   /// да се филтрира и администраторът на една фирма чете одита на друга.
