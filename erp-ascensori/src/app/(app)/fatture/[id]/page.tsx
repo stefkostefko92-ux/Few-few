@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
-import { IcoIndietro, IcoStampa } from "@/components/icone";
+import { IcoIndietro, IcoStampa, IcoEsporta, IcoAttenzione, IcoIntegro } from "@/components/icone";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
 import { euro, dataIt } from "@/lib/format";
 
@@ -40,6 +40,9 @@ export default function Pagina() {
   const router = useRouter();
   const [f, setF] = useState<Fattura | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
+  // Проверката за SDI е ЖИВА, не изведена от две-три полета в интерфейса: тя е
+  // същата, която пази и самият експорт, за да не се разминат двете истини.
+  const [sdi, setSdi] = useState<{ pronta: boolean; problemi: string[] } | null>(null);
 
   const carica = useCallback(async () => {
     const res = await fetch(`/api/fatture/${id}`);
@@ -47,7 +50,14 @@ export default function Pagina() {
       setErrore("Fattura non trovata");
       return;
     }
-    setF(await res.json());
+    const dati: Fattura = await res.json();
+    setF(dati);
+    if (dati.tipo !== "EMESSA") {
+      setSdi(null);
+      return;
+    }
+    const c = await fetch(`/api/fatture/${id}/xml?controlla=1`);
+    setSdi(c.ok ? await c.json() : null);
   }, [id]);
 
   useEffect(() => {
@@ -75,10 +85,6 @@ export default function Pagina() {
     ? (f.amministratore.ragioneSociale ??
       `${f.amministratore.nome} ${f.amministratore.cognome ?? ""}`)
     : "—";
-  const datiFiscaliIncompleti =
-    f.tipo === "EMESSA" &&
-    f.amministratore &&
-    (!f.amministratore.partitaIva || !f.amministratore.indirizzo || !f.amministratore.citta);
 
   return (
     <div>
@@ -108,6 +114,23 @@ export default function Pagina() {
             <IcoStampa />
             Stampa
           </a>
+          {f.tipo === "EMESSA" && (
+            <a
+              className={`btn-secondary inline-flex items-center gap-1.5 ${
+                sdi && !sdi.pronta ? "pointer-events-none opacity-50" : ""
+              }`}
+              href={`/api/fatture/${id}/xml`}
+              aria-disabled={sdi ? !sdi.pronta : undefined}
+              title={
+                sdi && !sdi.pronta
+                  ? "Completare i requisiti elencati sotto"
+                  : "Scarica il file XML da trasmettere allo SDI"
+              }
+            >
+              <IcoEsporta />
+              XML SdI
+            </a>
+          )}
           <Badge valore={f.stato} />
           <select
             className="input w-40"
@@ -124,11 +147,34 @@ export default function Pagina() {
         </div>
       </div>
 
-      {datiFiscaliIncompleti && (
-        <p className="mb-6 rounded-md bg-warning-subtle px-4 py-3 text-sm text-warning-text">
-          Attenzione: i dati fiscali della controparte sono incompleti — la fattura elettronica
-          non supererà la validazione SdI.
-        </p>
+      {f.tipo === "EMESSA" && sdi && (
+        <div
+          className={`mb-6 flex items-start gap-2 rounded-md px-4 py-3 text-sm ${
+            sdi.pronta
+              ? "bg-success-subtle text-success-text"
+              : "bg-warning-subtle text-warning-text"
+          }`}
+          role="status"
+        >
+          {sdi.pronta ? <IcoIntegro /> : <IcoAttenzione />}
+          <div>
+            {sdi.pronta ? (
+              "Pronta per lo SDI: i requisiti della fattura elettronica sono completi."
+            ) : (
+              <>
+                <p className="font-medium">
+                  Non esportabile allo SDI. Finché non è trasmessa, la fattura si considera
+                  non emessa (art. 6 D.Lgs. 471/1997).
+                </p>
+                <ul className="mt-1.5 list-disc space-y-0.5 pl-5">
+                  {sdi.problemi.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="card mb-6 p-5">

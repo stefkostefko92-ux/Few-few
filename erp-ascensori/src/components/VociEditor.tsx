@@ -14,6 +14,7 @@ export interface VoceRiga {
   quantita: string;
   prezzoUnitario?: string;
   aliquotaIva?: string;
+  naturaIva?: string | null;
   totale?: string;
   um?: string | null;
   peso?: string | null;
@@ -34,7 +35,7 @@ export default function VociEditor({
   onCambiato: () => void;
 }) {
   const vuoto: Record<string, string> = conPrezzi
-    ? { descrizione: "", quantita: "1", prezzoUnitario: "", aliquotaIva: "22" }
+    ? { descrizione: "", quantita: "1", prezzoUnitario: "", aliquotaIva: "22", naturaIva: "" }
     : { descrizione: "", quantita: "1", um: "pz", peso: "" };
   const [form, setForm] = useState<Record<string, string>>(vuoto);
   const [inModifica, setInModifica] = useState<string | null>(null);
@@ -52,6 +53,9 @@ export default function VociEditor({
     if (conPrezzi) {
       b.prezzoUnitario = form.prezzoUnitario || "0";
       b.aliquotaIva = form.aliquotaIva || "22";
+      // Natura се подава САМО при нулева ставка: при ненулева тя е противоречие
+      // и маршрутът я отхвърля (същото правило пази и XML-а за SDI).
+      b.naturaIva = Number(form.aliquotaIva.replace(",", ".")) === 0 ? form.naturaIva || null : null;
     } else {
       b.um = form.um || null;
       b.peso = form.peso || null;
@@ -135,7 +139,12 @@ export default function VociEditor({
                 {conPrezzi ? (
                   <>
                     <td className="py-2 pr-3 text-right font-mono">{euro(v.prezzoUnitario)}</td>
-                    <td className="py-2 pr-3 text-right font-mono">{v.aliquotaIva}</td>
+                    <td className="py-2 pr-3 text-right font-mono">
+                      {v.aliquotaIva}
+                      {v.naturaIva ? (
+                        <span className="ml-1 text-xs text-text-3">{v.naturaIva}</span>
+                      ) : null}
+                    </td>
                     <td className="py-2 pr-3 text-right font-mono font-medium">
                       {euro(v.totale)}
                     </td>
@@ -156,6 +165,7 @@ export default function VociEditor({
                         quantita: v.quantita,
                         prezzoUnitario: v.prezzoUnitario ?? "",
                         aliquotaIva: v.aliquotaIva ?? "22",
+                        naturaIva: v.naturaIva ?? "",
                         um: v.um ?? "",
                         peso: v.peso ?? "",
                       });
@@ -217,6 +227,20 @@ export default function VociEditor({
                 onChange={(e) => setForm({ ...form, aliquotaIva: e.target.value })}
               />
             </div>
+            {Number((form.aliquotaIva || "22").replace(",", ".")) === 0 && (
+              <div className="w-24">
+                <label className="label" title="Codice SDI dell'esenzione">
+                  Natura
+                </label>
+                <input
+                  className="input font-mono"
+                  required
+                  placeholder="N2.2"
+                  value={form.naturaIva}
+                  onChange={(e) => setForm({ ...form, naturaIva: e.target.value })}
+                />
+              </div>
+            )}
           </>
         ) : (
           <>

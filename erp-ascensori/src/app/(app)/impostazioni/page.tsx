@@ -23,6 +23,11 @@ const CAMPI: { name: string; label: string; aiuto?: string; largo?: boolean }[] 
   { name: "email", label: "E-mail" },
   { name: "pec", label: "PEC" },
   { name: "codiceSdi", label: "Codice destinatario (SDI)", aiuto: "Per la fatturazione elettronica" },
+  {
+    name: "regimeFiscale",
+    label: "Regime fiscale",
+    aiuto: "Codice SDI: RF01 ordinario, RF19 forfettario",
+  },
   { name: "iban", label: "IBAN", aiuto: "Stampato in calce ai documenti" },
   { name: "rea", label: "Numero REA" },
   { name: "capitaleSociale", label: "Capitale sociale" },
@@ -31,6 +36,9 @@ const CAMPI: { name: string; label: string; aiuto?: string; largo?: boolean }[] 
 
 /** Реквизитите, без които печатният документ не е редовен. */
 const OBBLIGATORI = ["ragioneSociale", "partitaIva", "indirizzo", "cap", "citta"];
+
+/** Реквизити, които печатният документ търпи, но SDI — не. */
+const OBBLIGATORI_SDI = ["provincia", "regimeFiscale"];
 
 export default function Pagina() {
   const [dati, setDati] = useState<Dati | null>(null);
@@ -72,6 +80,7 @@ export default function Pagina() {
   if (!dati) return <ScheletroDettaglio carte={1} />;
 
   const mancanti = OBBLIGATORI.filter((c) => !dati[c]);
+  const mancantiSdi = OBBLIGATORI_SDI.filter((c) => !dati[c]);
 
   return (
     <div>
@@ -106,6 +115,23 @@ export default function Pagina() {
         </span>
       </div>
 
+      {mancantiSdi.length > 0 && (
+        <div
+          className="mb-5 flex items-start gap-2 rounded-lg border border-warning/30 bg-warning-subtle px-3 py-2.5 text-sm text-warning-text"
+          role="status"
+        >
+          <IcoAttenzione />
+          <span>
+            La stampa funziona, la fattura elettronica no. Mancano:{" "}
+            <strong>
+              {mancantiSdi.map((m) => CAMPI.find((c) => c.name === m)?.label).join(", ")}
+            </strong>
+            . Senza questi dati il file XML viene rifiutato dallo SDI e la fattura risulta
+            non emessa.
+          </span>
+        </div>
+      )}
+
       <form onSubmit={salva} className="card p-5">
         <div className="grid gap-4 sm:grid-cols-2">
           {CAMPI.map((c) => (
@@ -113,6 +139,11 @@ export default function Pagina() {
               <label className="label" htmlFor={`f-${c.name}`}>
                 {c.label}
                 {OBBLIGATORI.includes(c.name) && <span className="ml-1 text-danger-text">*</span>}
+                {OBBLIGATORI_SDI.includes(c.name) && (
+                  <span className="ml-1 text-warning-text" title="Richiesto per la fattura elettronica">
+                    *
+                  </span>
+                )}
               </label>
               <input
                 id={`f-${c.name}`}

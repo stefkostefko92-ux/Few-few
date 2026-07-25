@@ -60,6 +60,27 @@ async function main() {
     where: { email: "master@erp-ascensori.local" },
   });
 
+  // ── Dati azienda (cedente/prestatore) ────────────────────────────────────
+  // Без тях демото прави PDF, но не и електронна фактура — а именно XML-ът е
+  // това, което прави фактурата издадена.
+  await creaSeMancante(prisma.datiAzienda, { tenantId: null }, {
+    ragioneSociale: "Ascensori Demo S.r.l.",
+    partitaIva: "12345678903",
+    codiceFiscale: "12345678903",
+    regimeFiscale: "RF01",
+    indirizzo: "Via dell'Industria 7",
+    cap: "20090",
+    citta: "Segrate",
+    provincia: "MI",
+    telefono: "+39 02 9876543",
+    email: "amministrazione@ascensoridemo.it",
+    pec: "ascensoridemo@pec.it",
+    iban: "IT60X0542811101000000123456",
+    rea: "MI-1234567",
+    capitaleSociale: "50.000,00 €",
+    notePiePagina: "Pagamento a 30 giorni data fattura. Interessi di mora ex D.Lgs. 231/2002.",
+  });
+
   // ── Amministratori ───────────────────────────────────────────────────────
   const datiAmministratori = [
     {
@@ -67,13 +88,17 @@ async function main() {
       tipo: "SOCIETA",
       nome: "Studio",
       ragioneSociale: "Studio Bianchi Amministrazioni S.r.l.",
-      partitaIva: "IT01234567890",
+      // Само цифри: SDI очаква `IdCodice` без представката за държава — тя е
+      // отделен елемент (`IdPaese`).
+      partitaIva: "01234567890",
       pec: "bianchi@pec.it",
       email: "info@studiobianchi.it",
       telefono: "+39 02 1234567",
       indirizzo: "Via Roma 12",
       citta: "Milano",
       cap: "20121",
+      provincia: "MI",
+      codiceSdi: "SUBM70N",
     },
     {
       chiave: "rossi-mario",
@@ -86,6 +111,9 @@ async function main() {
       indirizzo: "Corso Buenos Aires 45",
       citta: "Milano",
       cap: "20124",
+      provincia: "MI",
+      // Без свой код: документът стига през PEC-а.
+      pec: "mario.rossi@pec.it",
     },
   ];
   const amministratori = [];
@@ -109,6 +137,8 @@ async function main() {
             indirizzo: a.indirizzo,
             citta: a.citta,
             cap: a.cap,
+            provincia: a.provincia,
+            codiceSdi: a.codiceSdi,
           },
         }))
     );

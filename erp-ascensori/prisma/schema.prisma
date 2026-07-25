@@ -180,6 +180,9 @@ model DatiAzienda {
   pec              String?
   /// Codice destinatario / codice SDI за е-фактурата.
   codiceSdi        String?
+  /// Данъчен режим по кодировката на SDI (RF01 = обикновен, RF19 = forfettario).
+  /// Задължителен реквизит на `CedentePrestatore` — без него XML-ът се отхвърля.
+  regimeFiscale    String   @default("RF01")
   iban             String?
   /// Регистрация в търговския регистър (REA) — влиза в подписа на документите.
   rea              String?
@@ -418,6 +421,10 @@ model Amministratore {
   partitaIva     String?
   codiceFiscale  String?
   pec            String?
+  /// Codice destinatario НА КЛИЕНТА (7 знака за частни, 6 за PA). Без него и
+  /// без PEC фактурата няма къде да бъде доставена: `0000000` праща документа
+  /// в „кутията" на получателя в Agenzia delle Entrate, не при него.
+  codiceSdi      String?
   email          String?
   telefono       String?
   indirizzo      String?
@@ -623,6 +630,9 @@ model VocePreventivo {
   quantita       Decimal  @default(1) @db.Decimal(12, 2)
   prezzoUnitario Decimal  @default(0) @db.Decimal(12, 2)
   aliquotaIva    Decimal  @default(22) @db.Decimal(5, 2)
+  /// „Natura" по кодировката на SDI (N1…N7). ЗАДЪЛЖИТЕЛНА, когато ставката е 0:
+  /// без нея SDI не може да различи освободена доставка от забравена ставка.
+  naturaIva      String?
   totale         Decimal  @default(0) @db.Decimal(12, 2)
   ordine         Int      @default(0)
   createdAt      DateTime @default(now())
@@ -835,6 +845,9 @@ model VoceFattura {
   quantita       Decimal  @default(1) @db.Decimal(12, 2)
   prezzoUnitario Decimal  @default(0) @db.Decimal(12, 2)
   aliquotaIva    Decimal  @default(22) @db.Decimal(5, 2)
+  /// „Natura" по кодировката на SDI (N1…N7). ЗАДЪЛЖИТЕЛНА, когато ставката е 0:
+  /// без нея SDI не може да различи освободена доставка от забравена ставка.
+  naturaIva      String?
   totale         Decimal  @default(0) @db.Decimal(12, 2)
   ordine         Int      @default(0)
   createdAt      DateTime @default(now())

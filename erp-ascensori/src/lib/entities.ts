@@ -100,6 +100,14 @@ const amministratoreBase = z.object({
     .max(200)
     .nullish()
     .or(z.literal("").transform(() => null)),
+  /** Codice destinatario НА КЛИЕНТА: 6 знака за PA, 7 за частен получател. */
+  codiceSdi: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6,7}$/, "Codice destinatario: 6 o 7 caratteri alfanumerici")
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   email: z
     .string()
     .trim()
@@ -430,6 +438,14 @@ export const voceSchema = z.object({
   quantita: decRiga,
   prezzoUnitario: decRiga,
   aliquotaIva: aliquota.optional(),
+  /** „Natura" по кодировката на SDI — иска се САМО при ставка 0. */
+  naturaIva: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^N[1-7](\.[0-9])?$/, "Natura non valida (N1…N7, es. N2.2)")
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   ordine: z.number().int().min(0).optional(),
 });
 

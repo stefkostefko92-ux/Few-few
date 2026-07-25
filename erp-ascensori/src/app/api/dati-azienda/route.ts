@@ -24,6 +24,14 @@ const schema = z.object({
   email: str(200),
   pec: str(200),
   codiceSdi: str(10),
+  // Данъчният режим е задължителен реквизит на `CedentePrestatore` в XML-а за
+  // SDI: без него документът се отхвърля още на входа.
+  regimeFiscale: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^RF\d{2}$/, "Regime fiscale non valido (es. RF01)")
+    .optional(),
   iban: str(40),
   rea: str(50),
   capitaleSociale: str(50),
