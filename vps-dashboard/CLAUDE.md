@@ -29,25 +29,37 @@ npm run dev      # CSD_DEV=1 — ефимерен конфиг + еднокра�
 ```
 server.js                вход (http сървър, статик + рутер + сигнали)
 src/
-  config.js              зареждане/валидация на конфига (+ dev fallback)
+  config.js              зареждане/валидация на конфига (+ dev fallback) + saveConfig
   auth.js                scrypt пароли + HMAC сесии + login rate-limit
+  totp.js                TOTP 2FA (RFC 6238) — base32, HOTP, проверка с прозорец
   httpd.js               рутер, JSON, SSE, статик, cookies (нула deps)
   exec.js                execFile обвивка (без shell по подразбиране)
   jobs.js                фонови задачи + жив изход (SSE), ексклузивни ключове
   audit.js               append-only JSONL одит (без тайни)
-  metrics.js             /proc + df метрики + 24ч история
+  metrics.js             /proc + df метрики (жива снимка)
+  history.js             история на метриките на диск (JSONL, 7 дни, прозорци)
+  notify.js              канали: Telegram / ntfy / webhook / имейл (sendmail)
+  alerts.js              правила по симптом + задържане + cooldown + „възстановено“
   services.js            systemd list/action/status + journal (tail/follow)
   docker.js              контейнери/образи/stats/logs/действия
+  compose.js             Docker Compose по СТЕК (up/down/pull/restart/logs)
   system.js              обзор, процеси, apt, сигурност, бекъпи, крон, захранване
-  deploy.js              releases/архиви + пускане на autodeploy.sh + product health
+  firewall.js            ufw статус + правила (строга валидация, без shell)
+  webserver.js           Nginx/Caddy vhost преглед/редакция → валидация → reload
+  databases.js           SQLite + Postgres: размери, integrity, dump
+  backups.js             реално пускане на снимки + restic (backup/verify)
+  deploy.js              releases/архиви + autodeploy.sh + rollback + product health
+  upload.js              качване на архив (стрийм + sha256 за autodeploy)
   agents.js              флот от agents.json + allowlist на агентските инструменти
-  files.js               файлов браузър (само четене) + преглед
+  files.js               файлов браузър + преглед + запис с копие (.bak)
+  pty.js                 интерактивни PTY сесии през `script` (нула зависимости)
   nodes.js               federation: proxy към peer VPS + статус
   routes.js              всички API маршрути + auth/CSRF/audit гардове
-public/                  index.html · app.js · ui.js · style.css · favicon.svg
+public/                  index.html · app.js · ui.js · ansi.js · style.css
+                         manifest.json · sw.js (PWA) · favicon.svg
 scripts/syntax-check.mjs zero-dep линтер
 deploy/                  install.sh · vps-dashboard.service · nginx.conf.example
-test/                    unit.test.js
+test/                    unit · level1 · level2 · ansi (39 теста)
 ```
 
 ## Конвенции (важни)
@@ -67,8 +79,28 @@ test/                    unit.test.js
   към `/api/nodes/<id>/*` се проксират с `peerToken` (Bearer). Другият край приема
   Bearer == своя `peerToken`.
 
+## Особености, които е лесно да счупиш
+- **PTY без нативна зависимост.** `pty.js` пуска обвивката през `script -qfc`
+  (util-linux) — това заделя истински TTY, затова htop/nano/sudo и Ctrl+C работят.
+  Не подменяй със `spawn('bash')`: тогава няма TTY и всичко интерактивно умира.
+- **Терминалният рендер е наш.** `public/ansi.js` е малък VT100 емулатор (SGR,
+  движение на курсора, изтриване, алтернативен екран). Изходът минава през
+  екраниране → нула XSS от терминала. Не поддържа целия VT спектър — ако някога
+  потрябва, алтернативата е xterm.js, но тя е външна зависимост.
+- **Конфигът се пише от кода** (`saveConfig`) при 2FA и настройки за аларми —
+  атомарно, mode 600, вложено сливане. Не презаписвай целия файл наивно, ще
+  изгубиш тайните.
+- **Аларми = промяна на състояние**, не всяка проверка. Праговите правила искат
+  задържане N проверки; `sustain: false` е за стабилните (паднала услуга, изтичащ
+  сертификат). Cooldown пази от спам; „възстановено“ също се известява.
+- **Уеб конфигът се валидира преди reload** и се връща при провал — същият патърн
+  като `autodeploy.sh`. Никога не презареждай без `nginx -t` / `caddy validate`.
+- **Rollback** ползва `RELEASE_DIR` в `deploy/autodeploy.sh` (разгръща съществуващ
+  release без разопаковане). Чистенето на стари releases пази текущия.
+
 ## Тестове
-`test/unit.test.js` покрива чистите функции: пароли/сесии (auth), парсване на
-`/proc` (CPU делта, meminfo, netdev, df), рутера (path params + wildcard),
-allowlist-а на unit имена, списъка с проекти. Живите системни извиквания не се
-мокват — тестват се само детерминистичните парсери.
+39 теста, `node --test`, без мокове на системата — тестват се само детерминистични
+чисти функции: пароли/сесии, TOTP (с контролните вектори на RFC 4226), парсване на
+`/proc`, рутера, allowlist-ите (unit имена, архиви, ufw правила, compose, dump),
+историята, сливането на конфига, файловия запис и целия ANSI емулатор (вкл.
+екранирането срещу XSS). Живите системни извиквания се проверяват ръчно на живо.

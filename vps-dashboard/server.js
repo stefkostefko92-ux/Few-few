@@ -8,6 +8,7 @@ import { Jobs } from './src/jobs.js';
 import { MetricsCollector } from './src/metrics.js';
 import { MetricsHistory } from './src/history.js';
 import { AlertEngine } from './src/alerts.js';
+import { PtySessions } from './src/pty.js';
 import { buildRouter } from './src/routes.js';
 import { serveStatic, sendError } from './src/httpd.js';
 
@@ -38,7 +39,8 @@ jobs.onEnd = (job) => {
     .catch(() => {});
 };
 
-const router = buildRouter({ cfg, audit, jobs, metrics, history, alerts });
+const pty = new PtySessions(audit);
+const router = buildRouter({ cfg, audit, jobs, metrics, history, alerts, pty });
 const statics = serveStatic(path.join(__dirname, 'public'));
 
 const server = http.createServer(async (req, res) => {

@@ -38,6 +38,31 @@ export function listDir(p) {
   return { path: full, parent: full === '/' ? null : path.dirname(full), entries };
 }
 
+// Запис на текстов файл. Пази копие на стария (.bak-<време>) — редакцията на
+// конфиг на сървъра трябва да е обратима. Не създава нови файлове по погрешка:
+// изисква файлът да съществува, освен при изричен create.
+export function writeFile(p, content, { create = false } = {}, audit, user) {
+  const full = safeResolve(p);
+  const text = String(content ?? '');
+  if (Buffer.byteLength(text, 'utf8') > VIEW_CAP) {
+    throw Object.assign(new Error('Файлът е твърде голям за редакция през панела'), { status: 400 });
+  }
+  const exists = fs.existsSync(full);
+  if (!exists && !create) throw Object.assign(new Error('Няма такъв файл'), { status: 400 });
+  if (exists) {
+    const st = fs.statSync(full);
+    if (!st.isFile()) throw Object.assign(new Error('Не е файл'), { status: 400 });
+    const bak = `${full}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    fs.copyFileSync(full, bak);
+    audit.log({ action: 'file.write', path: full, bytes: text.length, backup: bak, user });
+    fs.writeFileSync(full, text, { mode: st.mode & 0o777 });
+    return { path: full, bytes: text.length, backup: bak };
+  }
+  audit.log({ action: 'file.create', path: full, bytes: text.length, user });
+  fs.writeFileSync(full, text, { mode: 0o600 });
+  return { path: full, bytes: text.length, backup: null };
+}
+
 export function readFilePreview(p, audit, user) {
   const full = safeResolve(p);
   const st = fs.statSync(full);

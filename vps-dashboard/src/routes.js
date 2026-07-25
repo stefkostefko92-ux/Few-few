@@ -17,6 +17,11 @@ import * as agents from './agents.js';
 import * as files from './files.js';
 import * as nodes from './nodes.js';
 import * as upload from './upload.js';
+import * as firewall from './firewall.js';
+import * as webserver from './webserver.js';
+import * as compose from './compose.js';
+import * as databases from './databases.js';
+import * as backups from './backups.js';
 import { verifyTotp, generateSecret, otpauthUri } from './totp.js';
 import { saveConfig } from './config.js';
 import { configuredChannels } from './notify.js';
@@ -452,7 +457,205 @@ export function buildRouter(ctx) {
     guard(J((req, res, p, url) => files.readFilePreview(url.searchParams.get('path'), audit, req.user)))
   );
 
-  // ── Терминал (пълен контрол, одитиран) ─────────────────────────────────────
+  r.post(
+    '/api/files/write',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return files.writeFile(b.path, b.content, { create: Boolean(b.create) }, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Firewall (ufw) ─────────────────────────────────────────────────────────
+  r.get('/api/firewall', guard(J(() => firewall.firewallStatus())));
+  r.post(
+    '/api/firewall/rule',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return firewall.addRule(b, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/firewall/rule/delete',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return firewall.deleteRule(b.num, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/firewall/enabled',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return firewall.setEnabled(Boolean(b.enabled), audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Уеб сървър (Nginx/Caddy) ───────────────────────────────────────────────
+  r.get('/api/webserver', guard(J(() => webserver.webserverStatus())));
+  r.get(
+    '/api/webserver/site',
+    guard(J((req, res, p, url) => webserver.readSite(url.searchParams.get('server'), url.searchParams.get('name'))))
+  );
+  r.post(
+    '/api/webserver/site',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return webserver.writeSite(b.server, b.name, b.content, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/webserver/enabled',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return webserver.setEnabled(b.server, b.name, Boolean(b.enabled), audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/webserver/reload',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const v = await webserver.validate(b.server);
+        if (!v.ok) throw Object.assign(new Error(`Конфигът е невалиден:\n${v.output}`), { status: 400 });
+        audit.log({ action: 'webserver.reload', server: b.server, user: req.user });
+        return webserver.reload(b.server);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/webserver/cert-renew',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return jobs.start(webserver.certRenewSpec({ dry: Boolean(b.dry) }), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Docker Compose (по стек) ───────────────────────────────────────────────
+  r.get('/api/compose', guard(J(() => compose.composeList())));
+  r.get('/api/compose/ps', guard(J((req, res, p, url) => compose.composePs(url.searchParams.get('project')))));
+  r.get(
+    '/api/compose/logs',
+    guard(J((req, res, p, url) => compose.composeLogs(url.searchParams.get('project'), url.searchParams.get('lines'))))
+  );
+  r.post(
+    '/api/compose/action',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = compose.composeActionSpec(b);
+        audit.log({ action: 'compose.' + b.action, project: b.project, user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Бази ───────────────────────────────────────────────────────────────────
+  r.get('/api/databases', guard(J(() => databases.databasesOverview())));
+  r.get('/api/databases/sqlite/check', guard(J((req, res, p, url) => databases.sqliteCheck(url.searchParams.get('file')))));
+  r.post(
+    '/api/databases/dump',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = b.kind === 'postgres' ? databases.postgresDumpSpec(b) : databases.sqliteDumpSpec(b.file);
+        audit.log({ action: 'db.dump', kind: b.kind || 'sqlite', target: b.database || b.file, user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Бекъпи (реално пускане) ────────────────────────────────────────────────
+  r.get(
+    '/api/backups/dumps',
+    guard(J(() => ({ dir: databases.DUMP_DIR, dumps: backups.listDumps(), restic: backups.resticConfigured() })))
+  );
+  r.post(
+    '/api/backups/run',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec =
+          b.kind === 'restic' ? backups.resticSpec(cfg, b.mode === 'verify' ? 'verify' : 'backup') : backups.backupAllSpec();
+        audit.log({ action: 'backup.run', kind: b.kind || 'databases', mode: b.mode, user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Интерактивен терминал (PTY) ────────────────────────────────────────────
+  r.get('/api/pty', guard(J(() => ({ sessions: ctx.pty.list() }))));
+  r.post(
+    '/api/pty/open',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return ctx.pty.create({ cwd: b.cwd || '/root', cols: b.cols, rows: b.rows }, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/pty/:id/input',
+    guard(
+      J(async (req, res, params) => {
+        const b = await readJson(req);
+        return ctx.pty.write(params.id, b.data, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/pty/:id/resize',
+    guard(
+      J(async (req, res, params) => {
+        const b = await readJson(req);
+        return ctx.pty.resize(params.id, b.cols, b.rows);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/pty/:id/kill',
+    guard(J(async (req, res, params) => ctx.pty.kill(params.id, req.user)), { mutating: true })
+  );
+  r.get(
+    '/api/pty/:id/stream',
+    guard((req, res, params) => {
+      const s = ctx.pty.get(params.id);
+      if (!s) return sendError(res, 404, 'Няма такава сесия');
+      const sse = openSse(res);
+      if (s.buffer) sse.send('data', s.buffer);
+      const listener = (event, data) => sse.send(event, data);
+      s.listeners.add(listener);
+      res.on('close', () => s.listeners.delete(listener));
+    })
+  );
+
+  // ── Терминал (еднократна команда, одитиран) ────────────────────────────────
   r.post(
     '/api/terminal/run',
     guard(

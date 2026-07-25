@@ -96,15 +96,20 @@ const SECTIONS = [
   { id: 'alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
   { id: 'services', ico: '⚙', label: 'Услуги', render: renderServices },
   { id: 'docker', ico: '⬢', label: 'Docker', render: renderDocker },
+  { id: 'compose', ico: '⧉', label: 'Compose', render: renderCompose },
+  { id: 'databases', ico: '⛁', label: 'Бази', render: renderDatabases },
   { id: 'processes', ico: '≡', label: 'Процеси', render: renderProcesses },
   { id: 'logs', ico: '☰', label: 'Логове', render: renderLogs },
   { id: 'deploy', ico: '⇧', label: 'Деплой', render: renderDeploy },
   { id: 'updates', ico: '⟳', label: 'Ъпдейти', render: renderUpdates },
   { id: 'security', ico: '⛨', label: 'Сигурност', render: renderSecurity },
+  { id: 'firewall', ico: '🛡', label: 'Firewall', render: renderFirewall },
+  { id: 'webserver', ico: '🌐', label: 'Уеб сървър', render: renderWebserver },
   { id: 'backups', ico: '⇩', label: 'Бекъпи', render: renderBackups },
   { id: 'cron', ico: '◷', label: 'Крон/таймери', render: renderCron },
   { id: 'files', ico: '🗀', label: 'Файлове', render: renderFiles },
-  { id: 'terminal', ico: '⌘', label: 'Терминал', render: renderTerminal },
+  { id: 'terminal', ico: '⌘', label: 'Терминал', render: renderPty },
+  { id: 'runonce', ico: '▷', label: 'Еднократна команда', render: renderTerminal },
   { id: 'agents', ico: '✦', label: 'Агенти', render: renderAgents },
   { id: 'jobs', ico: '⏻', label: 'Задачи', render: renderJobs },
   { id: 'audit', ico: '✎', label: 'Одит', render: renderAudit },
@@ -693,6 +698,374 @@ async function showDockerLogs(id, name) {
   }
 }
 
+// ── Compose (по стек) ──────────────────────────────────────────────────────────
+async function renderCompose() {
+  const view = document.getElementById('view');
+  const data = await api('/compose');
+  view.innerHTML = '';
+  if (!data.available) {
+    view.innerHTML = `<div class="empty">Docker Compose недостъпен: ${escapeHtml(data.error || '')}</div>`;
+    return;
+  }
+  view.appendChild(el('p', { class: 'section-desc', text: 'Управление на цели стекове (продукти), не отделни контейнери.' }));
+  if (!data.projects.length) view.appendChild(el('div', { class: 'empty', text: 'Няма compose проекти на този сървър.' }));
+  for (const p of data.projects) {
+    const card = el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: p.name }),
+        pill(/running/i.test(p.status || '') ? 'ok' : 'dim', p.status || '—'),
+      ]),
+      el('div', { class: 'metric-sub mono', text: p.configFiles || '' }),
+      el('div', { class: 'toolbar' }, [
+        composeBtn(p, 'up', '▲ Вдигни', 'btn-primary'),
+        composeBtn(p, 'restart', '⟳ Рестарт'),
+        composeBtn(p, 'pull', '⬇ Дръпни образи'),
+        composeBtn(p, 'down', '▼ Свали', 'btn-danger'),
+        el('button', { class: 'btn btn-sm', text: 'Лог', onclick: async () => {
+          openModal(`Compose лог · ${p.name}`);
+          try { const r = await api(`/compose/logs?project=${encodeURIComponent(p.name)}`); setModalOut(r.text || '(празно)'); }
+          catch (e) { setModalOut('Грешка: ' + e.message); }
+        } }),
+      ]),
+    ]);
+    view.appendChild(card);
+    // Услугите в стека (асинхронно, за да не бавят рисуването).
+    api(`/compose/ps?project=${encodeURIComponent(p.name)}`)
+      .then((ps) => {
+        if (!ps.services.length) return;
+        card.appendChild(el('div', { class: 'table-wrap' }, [
+          tableEl(['Услуга', 'Състояние', 'Статус', 'Портове'], ps.services.map((s) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: s.name || s.service }),
+              el('td', {}, [pill(s.state === 'running' ? 'ok' : 'dim', s.state || '—')]),
+              el('td', { class: 'muted', text: s.status || '' }),
+              el('td', { class: 'muted mono', text: s.ports || '' }),
+            ])
+          )),
+        ]));
+      })
+      .catch(() => {});
+  }
+}
+
+function composeBtn(p, action, label, cls = '') {
+  return el('button', {
+    class: `btn btn-sm ${cls}`,
+    text: label,
+    onclick: async () => {
+      if ((action === 'down' || action === 'restart') && !confirm(`${label} за стек ${p.name}?`)) return;
+      try {
+        const job = await api('/compose/action', { method: 'POST', body: { project: p.name, configFile: p.configFiles, action } });
+        streamJob(job.id, job.title);
+      } catch (err) { toast(err.message, 'bad'); }
+    },
+  });
+}
+
+// ── Бази ───────────────────────────────────────────────────────────────────────
+async function renderDatabases() {
+  const view = document.getElementById('view');
+  const [db, bk] = await Promise.all([api('/databases'), api('/backups/dumps')]);
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text: 'Само четене + снимки (dump). Никакви промени по данните от панела — за заявки ползвай терминала.' }));
+
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      el('button', { class: 'btn btn-primary btn-sm', text: '⬇ Снимка на ВСИЧКИ бази', onclick: () => runJob('/backups/run', { kind: 'databases' }, 'Снимка на всички бази') }),
+      bk.restic
+        ? el('span', {}, [
+            el('button', { class: 'btn btn-sm', text: 'restic бекъп', onclick: () => runJob('/backups/run', { kind: 'restic', mode: 'backup' }, 'restic бекъп') }),
+            el('button', { class: 'btn btn-sm', text: 'restic проверка', onclick: () => runJob('/backups/run', { kind: 'restic', mode: 'verify' }, 'restic проверка') }),
+          ])
+        : el('span', { class: 'muted', text: 'restic не е настроен (/etc/vps-dashboard/restic.env)' }),
+    ])
+  );
+
+  view.appendChild(el('h3', { class: 'muted', text: 'SQLite', style: 'margin:18px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(['Продукт', 'Файл', 'Размер', 'WAL', 'Променен', ''], (db.sqlite || []).map((s) =>
+        el('tr', {}, [
+          el('td', { text: s.product }),
+          el('td', { class: 'mono muted', text: s.file }),
+          el('td', { text: fmtBytes(s.sizeBytes) }),
+          el('td', { class: 'muted', text: s.walBytes ? fmtBytes(s.walBytes) : '—' }),
+          el('td', { class: 'muted', text: fmtWhen(s.mtime) }),
+          el('td', {}, [
+            el('button', { class: 'btn btn-sm', text: 'Провери', onclick: async () => {
+              openModal('Проверка · ' + s.file);
+              try {
+                const r = await api('/databases/sqlite/check?file=' + encodeURIComponent(s.file));
+                setModalOut(`integrity_check: ${r.integrity}\n\nТаблици (${r.tables.length}):\n${r.tables.join('\n')}`);
+              } catch (e) { setModalOut('Грешка: ' + e.message); }
+            } }),
+            el('button', { class: 'btn btn-sm', text: 'Снимка', onclick: () => runJob('/databases/dump', { kind: 'sqlite', file: s.file }, 'SQLite снимка') }),
+          ]),
+        ])
+      )),
+    ])
+  );
+
+  const pg = db.postgres || {};
+  view.appendChild(el('h3', { class: 'muted', text: 'PostgreSQL (в Docker)', style: 'margin:22px 0 10px' }));
+  if (!pg.available || !(pg.instances || []).length) {
+    view.appendChild(el('div', { class: 'empty', text: 'Няма открити Postgres контейнери.' }));
+  }
+  for (const inst of pg.instances || []) {
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:12px' }, [
+        el('div', { class: 'card-head' }, [el('h3', { text: inst.container }), pill(inst.reachable ? 'ok' : 'bad', inst.reachable ? 'достъпен' : 'недостъпен')]),
+        el('div', { class: 'metric-sub mono', text: `${inst.image} · ${inst.status}` }),
+        inst.reachable
+          ? el('div', { class: 'table-wrap' }, [
+              tableEl(['База', 'Размер', 'Връзки', ''], inst.databases.map((d) =>
+                el('tr', {}, [
+                  el('td', { class: 'mono', text: d.name }),
+                  el('td', { text: fmtBytes(d.sizeBytes) }),
+                  el('td', { text: d.connections }),
+                  el('td', {}, [el('button', { class: 'btn btn-sm', text: 'pg_dump', onclick: () => runJob('/databases/dump', { kind: 'postgres', container: inst.container, database: d.name }, 'pg_dump ' + d.name) })]),
+                ])
+              )),
+            ])
+          : el('div', { class: 'muted', text: inst.error || '' }),
+      ])
+    );
+  }
+
+  view.appendChild(el('h3', { class: 'muted', text: `Снимки (${bk.dir})`, style: 'margin:22px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(['Файл', 'Размер', 'Кога'], (bk.dumps || []).map((d) =>
+        el('tr', {}, [el('td', { class: 'mono', text: d.name }), el('td', { text: fmtBytes(d.sizeBytes) }), el('td', { class: 'muted', text: fmtWhen(d.mtime) })])
+      )),
+    ])
+  );
+}
+
+// ── Firewall ───────────────────────────────────────────────────────────────────
+async function renderFirewall() {
+  const view = document.getElementById('view');
+  const fw = await api('/firewall');
+  view.innerHTML = '';
+  if (!fw.available) {
+    view.innerHTML = `<div class="empty">ufw недостъпен: ${escapeHtml(fw.error || '')}</div>`;
+    return;
+  }
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      pill(fw.active ? 'ok' : 'bad', fw.active ? 'активен' : 'изключен'),
+      el('button', {
+        class: `btn btn-sm ${fw.active ? 'btn-danger' : 'btn-primary'}`,
+        text: fw.active ? 'Изключи firewall' : 'Включи firewall',
+        onclick: async () => {
+          if (!confirm(fw.active ? 'ИЗКЛЮЧВАМ защитната стена — сървърът остава отворен. Сигурен ли си?' : 'Включвам ufw. Увери се, че SSH портът е разрешен, иначе се заключваш!')) return;
+          try { await api('/firewall/enabled', { method: 'POST', body: { enabled: !fw.active } }); toast('Готово'); go('firewall'); }
+          catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+    ])
+  );
+
+  // Добавяне на правило
+  const f = {};
+  const mk = (k, ph, w) => { const i = el('input', { type: 'text', placeholder: ph, style: `width:${w}` }); f[k] = i; return i; };
+  const actionSel = el('select', {}, ['allow', 'deny', 'reject', 'limit'].map((a) => el('option', { value: a, text: a })));
+  const protoSel = el('select', {}, [el('option', { value: '', text: 'без протокол' }), el('option', { value: 'tcp', text: 'tcp' }), el('option', { value: 'udp', text: 'udp' })]);
+  view.appendChild(
+    el('div', { class: 'card', style: 'margin-top:14px' }, [
+      el('h3', { text: 'Ново правило' }),
+      el('div', { class: 'toolbar' }, [
+        actionSel,
+        mk('port', 'порт / услуга (22, 80, ssh, 1000:2000)', '260px'),
+        protoSel,
+        mk('from', 'от (any или IP/CIDR)', '170px'),
+        mk('comment', 'коментар', '150px'),
+        el('button', { class: 'btn btn-primary btn-sm', text: '+ Добави', onclick: async () => {
+          try {
+            await api('/firewall/rule', { method: 'POST', body: { action: actionSel.value, port: f.port.value, proto: protoSel.value, from: f.from.value, comment: f.comment.value } });
+            toast('Правилото е добавено'); go('firewall');
+          } catch (e) { toast(e.message, 'bad'); }
+        } }),
+      ]),
+    ])
+  );
+
+  view.appendChild(el('h3', { class: 'muted', text: `Правила (${fw.rules.length})`, style: 'margin:20px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(['#', 'Към', 'Действие', 'Посока', 'От', ''], fw.rules.map((r) =>
+        el('tr', {}, [
+          el('td', { class: 'mono', text: r.num }),
+          el('td', { class: 'mono', text: r.to }),
+          el('td', {}, [pill(r.action === 'ALLOW' ? 'ok' : 'bad', r.action)]),
+          el('td', { class: 'muted', text: r.dir }),
+          el('td', { class: 'muted', text: r.from }),
+          el('td', {}, [el('button', { class: 'btn btn-sm btn-danger', text: 'Изтрий', onclick: async () => {
+            if (!confirm(`Изтривам правило #${r.num} (${r.to} ${r.action})?`)) return;
+            try { await api('/firewall/rule/delete', { method: 'POST', body: { num: r.num } }); toast('Изтрито'); go('firewall'); }
+            catch (e) { toast(e.message, 'bad'); }
+          } })]),
+        ])
+      )),
+    ])
+  );
+}
+
+// ── Уеб сървър ─────────────────────────────────────────────────────────────────
+async function renderWebserver() {
+  const view = document.getElementById('view');
+  const ws = await api('/webserver');
+  view.innerHTML = '';
+  if (!ws.nginx && !ws.caddy) {
+    view.innerHTML = '<div class="empty">Няма нито Nginx, нито Caddy на този сървър.</div>';
+    return;
+  }
+  view.appendChild(el('p', { class: 'section-desc', text: 'Редакцията валидира конфига ПРЕДИ презареждане — счупен конфиг не стига до живия сървър (автоматичен откат).' }));
+
+  for (const server of ['nginx', 'caddy']) {
+    const s = ws[server];
+    if (!s) continue;
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: server }),
+          el('div', {}, [
+            pill(s.active === 'active' ? 'ok' : 'bad', s.active),
+            s.configOk === undefined ? el('span') : pill(s.configOk ? 'ok' : 'bad', s.configOk ? 'конфигът е валиден' : 'конфигът е СЧУПЕН'),
+          ]),
+        ]),
+        s.configOutput ? el('pre', { class: 'term-out', style: 'max-height:120px', text: s.configOutput }) : el('span'),
+        el('div', { class: 'toolbar' }, [
+          el('button', { class: 'btn btn-sm', text: '⟳ Презареди', onclick: async () => {
+            try { const r = await api('/webserver/reload', { method: 'POST', body: { server } }); toast(r.ok ? 'Презаредено' : 'Провал: ' + r.output, r.ok ? 'ok' : 'bad'); }
+            catch (e) { toast(e.message, 'bad'); }
+          } }),
+          server === 'nginx' ? el('button', { class: 'btn btn-sm', text: '🔒 certbot renew', onclick: () => runJob('/webserver/cert-renew', {}, 'certbot renew') }) : el('span'),
+          server === 'nginx' ? el('button', { class: 'btn btn-sm', text: 'проба (dry-run)', onclick: () => runJob('/webserver/cert-renew', { dry: true }, 'certbot renew --dry-run') }) : el('span'),
+        ]),
+        el('div', { class: 'table-wrap' }, [
+          tableEl(['Сайт', 'Състояние', ''], (s.sites || []).map((site) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: site.name }),
+              el('td', {}, [pill(site.enabled ? 'ok' : 'dim', site.enabled ? 'включен' : 'изключен')]),
+              el('td', {}, [
+                el('button', { class: 'btn btn-sm', text: 'Редактирай', onclick: () => editSite(server, site.name) }),
+                server === 'nginx'
+                  ? el('button', { class: 'btn btn-sm', text: site.enabled ? 'Изключи' : 'Включи', onclick: async () => {
+                      try { await api('/webserver/enabled', { method: 'POST', body: { server, name: site.name, enabled: !site.enabled } }); toast('Готово'); go('webserver'); }
+                      catch (e) { toast(e.message, 'bad'); }
+                    } })
+                  : el('span'),
+              ]),
+            ])
+          )),
+        ]),
+      ])
+    );
+  }
+}
+
+async function editSite(server, name) {
+  let data;
+  try {
+    data = await api(`/webserver/site?server=${server}&name=${encodeURIComponent(name)}`);
+  } catch (e) { toast(e.message, 'bad'); return; }
+  const ta = el('textarea', { class: 'term-out', style: 'width:100%;height:52vh;resize:vertical' });
+  ta.value = data.content;
+  openModal(`${server} · ${name}`);
+  const out = document.getElementById('modal-out');
+  out.textContent = '';
+  out.appendChild(ta);
+  out.appendChild(el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+    el('button', { class: 'btn btn-primary btn-sm', text: 'Запази + валидирай + презареди', onclick: async (e) => {
+      e.target.disabled = true;
+      try {
+        const r = await api('/webserver/site', { method: 'POST', body: { server, name, content: ta.value } });
+        toast(r.reloaded ? 'Запазено и презаредено' : 'Запазено (презареждането се провали)', r.reloaded ? 'ok' : 'warn');
+        closeModal(); go('webserver');
+      } catch (err) {
+        toast(err.message, 'bad');
+        alert('Конфигът е невалиден — старият е върнат:\n\n' + err.message);
+        e.target.disabled = false;
+      }
+    } }),
+    el('span', { class: 'muted', text: 'Пази се копие (.bak) и се прави откат при невалиден конфиг.' }),
+  ]));
+}
+
+// ── Интерактивен терминал (PTY) ───────────────────────────────────────────────
+async function renderPty() {
+  const view = document.getElementById('view');
+  const { Terminal, keyToSequence } = await import('/ansi.js');
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text: 'Истински интерактивен терминал (PTY): htop, nano, sudo, цветове, Ctrl+C. Всеки въведен ред влиза в одита.' }));
+
+  const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px' });
+  const screen = el('pre', { class: 'log-out', tabindex: '0', style: 'height:64vh;outline:none' });
+  const status = el('span', { class: 'muted', text: 'няма сесия' });
+  const cols = Math.max(60, Math.min(200, Math.floor((window.innerWidth - 320) / 8.4)));
+  const rows = 30;
+  const term = new Terminal(cols, rows);
+  let session = null;
+  let es = null;
+
+  const paint = () => {
+    screen.innerHTML = term.toHtml();
+    screen.scrollTop = screen.scrollHeight;
+  };
+
+  const open = async () => {
+    await close();
+    try {
+      session = await api('/pty/open', { method: 'POST', body: { cwd: cwd.value || '/root', cols, rows } });
+    } catch (e) { toast(e.message, 'bad'); return; }
+    term.reset();
+    paint();
+    status.textContent = `сесия ${session.id.slice(0, 8)} · ${cols}×${rows}`;
+    es = new EventSource(sseUrl(`/pty/${session.id}/stream`));
+    state.sectionEs = es;
+    es.addEventListener('data', (ev) => { term.write(ev.data); paint(); });
+    es.addEventListener('end', () => { status.textContent = 'сесията приключи'; es.close(); session = null; });
+    screen.focus();
+  };
+
+  const close = async () => {
+    if (es) { es.close(); es = null; }
+    if (session) {
+      try { await api(`/pty/${session.id}/kill`, { method: 'POST' }); } catch { /* вече е мъртва */ }
+      session = null;
+    }
+    status.textContent = 'няма сесия';
+  };
+
+  screen.addEventListener('keydown', async (e) => {
+    if (!session) return;
+    // Пускаме браузърните комбинации за копиране/поставяне.
+    if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key.toLowerCase()) && window.getSelection().toString()) return;
+    const seq = keyToSequence(e);
+    if (seq === null) return;
+    e.preventDefault();
+    try { await api(`/pty/${session.id}/input`, { method: 'POST', body: { data: seq } }); }
+    catch (err) { toast(err.message, 'bad'); }
+  });
+  screen.addEventListener('paste', async (e) => {
+    if (!session) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (text) await api(`/pty/${session.id}/input`, { method: 'POST', body: { data: text } });
+  });
+
+  view.appendChild(el('div', { class: 'toolbar' }, [
+    el('span', { class: 'muted', text: 'папка:' }), cwd,
+    el('button', { class: 'btn btn-primary btn-sm', text: '▶ Отвори сесия', onclick: open }),
+    el('button', { class: 'btn btn-sm btn-danger', text: '✕ Затвори', onclick: async () => { await close(); paint(); } }),
+    status,
+  ]));
+  view.appendChild(screen);
+  view.appendChild(el('div', { class: 'metric-sub', text: 'Щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
+  paint();
+}
+
 // ── Процеси ────────────────────────────────────────────────────────────────────────
 async function renderProcesses() {
   const view = document.getElementById('view');
@@ -1125,7 +1498,32 @@ async function viewFile(path) {
   openModal('Файл · ' + path);
   try {
     const r = await api('/files/read?path=' + encodeURIComponent(path));
-    setModalOut(r.binary ? `(бинарен файл, ${fmtBytes(r.sizeBytes)})` : r.content + (r.truncated ? '\n\n… (отрязан)' : ''));
+    if (r.binary) {
+      setModalOut(`(бинарен файл, ${fmtBytes(r.sizeBytes)})`);
+      return;
+    }
+    const out = document.getElementById('modal-out');
+    out.textContent = '';
+    const ta = el('textarea', { class: 'term-out', style: 'width:100%;height:56vh;resize:vertical', readonly: r.truncated ? 'readonly' : null });
+    ta.value = r.content + (r.truncated ? '\n\n… (отрязан — редакцията е изключена)' : '');
+    out.appendChild(ta);
+    out.appendChild(el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+      r.truncated
+        ? el('span', { class: 'muted', text: 'Файлът е твърде голям за редакция.' })
+        : el('button', {
+            class: 'btn btn-primary btn-sm', text: 'Запази',
+            onclick: async (e) => {
+              if (!confirm(`Записвам ${path}? Пази се копие (.bak).`)) return;
+              e.target.disabled = true;
+              try {
+                const w = await api('/files/write', { method: 'POST', body: { path, content: ta.value } });
+                toast(`Запазено (${fmtBytes(w.bytes)}); копие: ${w.backup ? w.backup.split('/').pop() : '—'}`);
+                closeModal();
+              } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+            },
+          }),
+      el('span', { class: 'muted', text: `${fmtBytes(r.sizeBytes)}` }),
+    ]));
   } catch (e) {
     setModalOut('Грешка: ' + e.message);
   }
@@ -1424,3 +1822,12 @@ async function boot() {
   }
 }
 boot();
+
+// PWA: регистрира се само по HTTPS (или localhost) — иначе браузърът го отказва.
+// Кешира САМО обвивката, никога /api/ (виж sw.js).
+if (
+  'serviceWorker' in navigator &&
+  (location.protocol === 'https:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
