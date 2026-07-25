@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vps-dashboard}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -77,6 +77,15 @@ SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
 # сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
+# зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
+# слуша само на 127.0.0.1:7700 зад Nginx+TLS. Конфигът с тайните/паролата живее в
+# /etc/vps-dashboard/config.json (mode 600) — създава се веднъж от install.sh и се
+# пази между деплоите. Деплоят е rsync на кода + рестарт (билд не е нужен).
+VPSDASH_DIR="${VPSDASH_DIR:-/opt/vps-dashboard}"
+VPSDASH_SERVICE="${VPSDASH_SERVICE:-vps-dashboard}"
+VPSDASH_HEALTH_URL="${VPSDASH_HEALTH_URL:-http://127.0.0.1:7700/api/ping}"
 
 # adblock (Supreme AdBlock — ЧИСТ СТАТИЧЕН сайт, без билд/Node/база). Разширението
 # тегли filters.json от адреса; index/privacy са малка витрина + политика за
@@ -542,6 +551,60 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
+# Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
+# рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
+# се ИЗКЛЮЧВАТ — живеят извън release-а и оцеляват. Ако конфигът липсва (пръв деплой),
+# услугата няма да тръгне: пусни веднъж deploy/install.sh за да го създаде. Health +
+# rollback като medqr/mastilko. is-active 401 брои за „жив" (ping иска сесия).
+deploy_vpsdashboard() {
+  local d="$SRC/vps-dashboard"
+  [ -d "$d" ] || { warn "Няма vps-dashboard/ в архива — пропускам."; return; }
+  log "Разгръщам vps-dashboard (systemd, Node, нула зависимости)…"
+  command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+
+  # Пръв деплой без конфиг: НЕ пускаме услугата да гърми в loop — install.sh я
+  # вдига след като създаде тайните. Само разполагаме кода и предупреждаваме.
+  if [ ! -f /etc/vps-dashboard/config.json ]; then
+    warn "Няма /etc/vps-dashboard/config.json — това е пръв деплой."
+    warn "Пусни веднъж: sudo bash $d/deploy/install.sh (създава конфиг + тайни + вдига услугата)."
+    ( cd "$d" && bash deploy/install.sh </dev/null ) || warn "install.sh не мина автоматично — пусни го ръчно."
+    health "$VPSDASH_HEALTH_URL" "vps-dashboard" \
+      || [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null)" = "401" ] \
+      || deploy_failed=1
+    return
+  fi
+
+  # Бекъп на текущия код (конфигът и state са извън тази папка → непокътнати).
+  [ -d "$VPSDASH_DIR" ] && cp -a "$VPSDASH_DIR" "${VPSDASH_DIR}.bak-$TS"
+  mkdir -p "$VPSDASH_DIR"
+  rsync -a --delete --exclude .state/ --exclude node_modules/ "$d"/ "$VPSDASH_DIR"/
+  # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
+  install -m 644 "$VPSDASH_DIR/deploy/vps-dashboard.service" /etc/systemd/system/${VPSDASH_SERVICE}.service
+  systemctl daemon-reload
+  systemctl enable "$VPSDASH_SERVICE" >/dev/null 2>&1 || true
+  systemctl restart "$VPSDASH_SERVICE"
+  sleep 2
+  # /api/ping без сесия връща 401 → това е „жив". health() приема само 2xx/3xx,
+  # затова третираме 401 отделно като успех.
+  local code
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null || echo 000)"
+  if [ "$code" = "401" ] || [ "$code" = "200" ]; then
+    ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
+    rm -rf "${VPSDASH_DIR}.bak-$TS"
+    ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+  else
+    deploy_failed=1
+    warn "vps-dashboard health провал ($code) — връщам предишния код."
+    systemctl stop "$VPSDASH_SERVICE" || true
+    if [ -d "${VPSDASH_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude .state/ "${VPSDASH_DIR}.bak-$TS"/ "$VPSDASH_DIR"/
+      systemctl restart "$VPSDASH_SERVICE"
+    fi
+  fi
+}
+
 # ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
@@ -711,6 +774,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     adblock)    deploy_adblock ;;
+    vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

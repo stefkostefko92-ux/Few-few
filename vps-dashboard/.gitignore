@@ -1,0 +1,7 @@
+# Runtime/dev артефакти — никога в репото.
+node_modules/
+.state/
+*.log
+# Тайните живеят само на сървъра (mode 600), никога тук.
+config.json
+initial-admin-credential.txt

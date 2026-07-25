@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carbon Stealth · VPS Dashboard</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <!-- Вход -->
+    <div id="login" class="login hidden">
+      <form id="login-form" class="login-card" autocomplete="off">
+        <div class="brand"><span class="logo">◆</span> Carbon Stealth <em>VPS</em></div>
+        <p class="login-sub">Контролен панел за сървъра</p>
+        <label>Потребител<input id="login-user" name="user" value="admin" autocomplete="username" /></label>
+        <label>Парола<input id="login-pass" name="password" type="password" autocomplete="current-password" /></label>
+        <button type="submit" class="btn btn-primary">Вход</button>
+        <div id="login-err" class="login-err"></div>
+      </form>
+    </div>
+
+    <!-- Приложение -->
+    <div id="app" class="app hidden">
+      <aside class="sidebar">
+        <div class="brand"><span class="logo">◆</span> <span class="brand-txt">Carbon Stealth <em>VPS</em></span></div>
+        <div class="node-switch">
+          <label for="node-select">Възел</label>
+          <select id="node-select"></select>
+          <div id="node-status" class="node-status"></div>
+        </div>
+        <nav id="nav" class="nav"></nav>
+        <div class="sidebar-foot">
+          <button id="btn-logout" class="btn btn-ghost btn-sm">Изход</button>
+          <span id="ver" class="ver"></span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <button id="menu-toggle" class="icon-btn" aria-label="Меню">☰</button>
+          <h1 id="section-title">Обзор</h1>
+          <div class="topbar-right">
+            <span id="host-badge" class="badge"></span>
+            <span id="conn-dot" class="dot" title="Връзка на живо"></span>
+            <button id="btn-refresh" class="icon-btn" title="Опресни">⟳</button>
+          </div>
+        </header>
+        <div id="view" class="view"></div>
+      </main>
+    </div>
+
+    <!-- Изскачащ прозорец за задача/лог/терминал -->
+    <div id="modal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <span id="modal-title">Задача</span>
+          <div class="modal-actions">
+            <button id="modal-kill" class="btn btn-danger btn-sm hidden">Спри</button>
+            <button id="modal-close" class="icon-btn">✕</button>
+          </div>
+        </div>
+        <pre id="modal-out" class="term-out"></pre>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

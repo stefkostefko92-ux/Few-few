@@ -1,0 +1,170 @@
+// Минимален HTTP слой: рутер с path параметри, JSON тяло, статични файлове, SSE.
+// Нула зависимости — node:http + node:fs. Fail-closed: непозната грешка → 500 без stack.
+import fs from 'node:fs';
+import path from 'node:path';
+
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
+};
+
+export class Router {
+  constructor() {
+    this.routes = [];
+  }
+
+  on(method, pattern, handler) {
+    // pattern: "/api/services/:action" или префикс с "*": "/api/nodes/:id/*"
+    const keys = [];
+    const rx = pattern
+      .split('/')
+      .map((seg) => {
+        if (seg === '*') return '(?<rest>.*)';
+        if (seg.startsWith(':')) {
+          keys.push(seg.slice(1));
+          return `(?<${seg.slice(1)}>[^/]+)`;
+        }
+        return seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      })
+      .join('/');
+    this.routes.push({ method, rx: new RegExp(`^${rx}$`), handler });
+    return this;
+  }
+
+  get(p, h) {
+    return this.on('GET', p, h);
+  }
+
+  post(p, h) {
+    return this.on('POST', p, h);
+  }
+
+  match(method, pathname) {
+    for (const r of this.routes) {
+      if (r.method !== method && r.method !== '*') continue;
+      const m = r.rx.exec(pathname);
+      if (m) return { handler: r.handler, params: m.groups || {} };
+    }
+    return null;
+  }
+}
+
+export function sendJson(res, status, data) {
+  if (res.writableEnded) return;
+  const body = JSON.stringify(data);
+  res.writeHead(status, {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+  });
+  res.end(body);
+}
+
+export function sendError(res, status, message) {
+  sendJson(res, status, { error: message });
+}
+
+export async function readBody(req, { limit = 512 * 1024 } = {}) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on('data', (c) => {
+      size += c.length;
+      if (size > limit) {
+        reject(Object.assign(new Error('Тялото е твърде голямо'), { status: 413 }));
+        req.destroy();
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
+export async function readJson(req) {
+  const buf = await readBody(req);
+  if (!buf.length) return {};
+  try {
+    return JSON.parse(buf.toString('utf8'));
+  } catch {
+    throw Object.assign(new Error('Невалиден JSON'), { status: 400 });
+  }
+}
+
+export function parseCookies(req) {
+  const out = {};
+  const header = req.headers.cookie;
+  if (!header) return out;
+  for (const part of header.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq > 0) out[part.slice(0, eq).trim()] = decodeURIComponent(part.slice(eq + 1).trim());
+  }
+  return out;
+}
+
+// SSE: отваря поток и връща helper-и; пази клиента жив с коментар на всеки 25s.
+export function openSse(res) {
+  res.writeHead(200, {
+    'content-type': 'text/event-stream; charset=utf-8',
+    'cache-control': 'no-store',
+    connection: 'keep-alive',
+    'x-accel-buffering': 'no',
+  });
+  res.write(':ok\n\n');
+  const ping = setInterval(() => {
+    if (!res.writableEnded) res.write(':ping\n\n');
+  }, 25000);
+  res.on('close', () => clearInterval(ping));
+  return {
+    send(event, data) {
+      if (res.writableEnded) return;
+      const payload = typeof data === 'string' ? data : JSON.stringify(data);
+      res.write(`event: ${event}\ndata: ${payload.replace(/\n/g, '\ndata: ')}\n\n`);
+    },
+    close() {
+      clearInterval(ping);
+      if (!res.writableEnded) res.end();
+    },
+  };
+}
+
+// Статични файлове от public/ — resolve + префикс проверка срещу path traversal.
+export function serveStatic(rootDir) {
+  const root = path.resolve(rootDir);
+  return (req, res, pathname) => {
+    let rel = pathname === '/' ? '/index.html' : pathname;
+    const full = path.resolve(root, '.' + rel);
+    if (!full.startsWith(root + path.sep) && full !== root) {
+      sendError(res, 403, 'Забранен път');
+      return true;
+    }
+    let stat;
+    try {
+      stat = fs.statSync(full);
+    } catch {
+      return false;
+    }
+    if (!stat.isFile()) return false;
+    res.writeHead(200, {
+      'content-type': MIME[path.extname(full)] || 'application/octet-stream',
+      'cache-control': rel === '/index.html' ? 'no-store' : 'public, max-age=3600',
+      'x-content-type-options': 'nosniff',
+    });
+    fs.createReadStream(full).pipe(res);
+    return true;
+  };
+}
+
+export function clientIp(req, trustProxy) {
+  if (trustProxy) {
+    const xf = req.headers['x-forwarded-for'];
+    if (xf) return String(xf).split(',')[0].trim();
+  }
+  return req.socket.remoteAddress || '?';
+}

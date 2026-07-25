@@ -1,0 +1,29 @@
+{
+  "name": "vps-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Carbon Stealth VPS Dashboard — пълен контролен панел за VPS сървърите: метрики, услуги, Docker, логове, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал и агентския флот. Нула runtime зависимости.",
+  "license": "UNLICENSED",
+  "author": "CarbonStealth VCC (https://carbonstealth.eu)",
+  "keywords": [
+    "Carbon Stealth",
+    "vps",
+    "dashboard",
+    "server-monitoring",
+    "control-panel",
+    "systemd",
+    "docker",
+    "deploy"
+  ],
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "CSD_DEV=1 node --watch server.js",
+    "lint": "node scripts/syntax-check.mjs",
+    "test": "node --test test/*.test.js"
+  }
+}

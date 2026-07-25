@@ -1,0 +1,34 @@
+# systemd unit за Carbon Stealth VPS Dashboard.
+# Панелът управлява systemd/docker/деплой → трябва root. Затова затягаме всичко
+# останало: no-new-privileges, скрит /home, защитен kernel. Слуша само на localhost
+# (127.0.0.1:7700) — публичният достъп минава през Nginx + TLS + Basic-auth по избор.
+[Unit]
+Description=Carbon Stealth VPS Dashboard
+Documentation=https://carbonstealth.eu
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/vps-dashboard
+Environment=NODE_ENV=production
+Environment=CSD_CONFIG=/etc/vps-dashboard/config.json
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+# Панелът пуска системни команди (systemctl/docker/apt) → не може напълно да се
+# капсулира, но пазим това, което не му трябва.
+NoNewPrivileges=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# Логовете отиват в journald (journalctl -u vps-dashboard).
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
