@@ -7,6 +7,8 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-07-25:** Всеки скрипт, който прави `systemctl restart`, трябва да носи health check + връщане назад — включително помощните (setup-email.sh), не само деплой скриптът; иначе гейтът вдига no-healthcheck (MEDIUM) и с право. _(deploy; verified; "tools/vps/deploy-check.mjs:43-44 + panev/scripts/setup-email.sh (зелен ран, 2026-07-25)")_
+- **2026-07-25:** Тайна се записва в env файл със heredoc (`cat > файл <<EOF`), не с `echo VAR=$SECRET > файл` — вторият пали secret-echo (HIGH) и рискува да изтече в journalctl/CI при пренасочване към лог. _(secrets; verified; "tools/vps/deploy-check.mjs:25-26 + зелен ран след пренаписването (2026-07-25)")_
 - **2026-07-25:** Свободни портове във флота към 2026-07-25: 3000 medqr · 3100 vizitka · 3200 mastilko · 4000 nexus · 4102 panev (нов) · 4300 eternaltouch · 8080 supreme · 8788 ospedali · 80 zabobovdol. _(fleet; verified; "/home/user/Few-few/deploy/autodeploy.sh:31-91 (прочетено 2026-07-25)")_
 - **2026-07-25:** Ако тайните са в /etc/<проект>/ с права 750 root:root, процес под непривилегирования потребител НЕ може да ги прочете (липсва traverse) — групата на папката трябва да е потребителят на услугата, а файлът остава 600. _(deploy/secrets; verified; "deploy/autodeploy.sh:304 + panev/scripts/bootstrap-vps.sh (коригирано преди предаване, 2026-07-25)")_
 - **2026-07-25:** panev/css/site.css и panev/js/site.js са БЕЗ хеш в името (само fonts/ са с content-hash) → Cache-Control: immutable за тях е капан; immutable само за /fonts/. _(panev-deploy; verified; "ls /home/user/Few-few/panev/{css,js,fonts} + index.html:32,329 (прочетено 2026-07-25)")_
