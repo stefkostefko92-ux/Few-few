@@ -1624,9 +1624,20 @@
           "date": "2026-07-25",
           "event": "v16.1 — учене",
           "detail": "Научи: Postgres `jsonb` (Prisma `Json`) НЕ пази реда на ключовете — всеки HMAC/подпис върху `J… (+3 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-07-25",
+          "event": "v16.6 — учене",
+          "detail": "Научи: erp-ascensori: CRUD конфигурация с `senzaTenant: true` изключва filtroTenant в crud.ts:… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-25",
+          "type": "learning",
+          "summary": "Научи: „erp-ascensori: CRUD конфигурация с `senzaTenant: true` изключва filtroTenant в crud.ts:…\" (+4 още)"
+        },
         {
           "date": "2026-07-25",
           "type": "learning",
