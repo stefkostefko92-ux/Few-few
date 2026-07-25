@@ -26,6 +26,7 @@ import {
   Files,
   ShieldCheck,
   UserCircle,
+  UserFocus,
   ClockCounterClockwise,
   Gear,
   Moon,
@@ -107,6 +108,12 @@ const GRUPPI: Gruppo[] = [
         href: "/impostazioni",
         label: "Dati aziendali",
         icona: <Gear size={DIM.navigazione} />,
+        minimo: "ADMIN",
+      },
+      {
+        href: "/privacy",
+        label: "Diritti privacy",
+        icona: <UserFocus size={DIM.navigazione} />,
         minimo: "ADMIN",
       },
       {
