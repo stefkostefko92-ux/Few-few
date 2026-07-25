@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ZodError, type ZodSchema } from "zod";
 import { ErroreHttp } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
+import { ETICHETTE_CAMPI } from "@/lib/zod-it"; // регистрира и IT error map
 
 export function ok(data: unknown, status = 200): NextResponse {
   return NextResponse.json(data, { status });
@@ -23,7 +24,11 @@ export async function corpoValidato<T>(req: Request, schema: ZodSchema<T>): Prom
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
     const msg = parsed.error.issues
-      .map((i) => `${i.path.join(".") || "campo"}: ${i.message}`)
+      .map((i) => {
+        const campo = String(i.path[0] ?? "");
+        const etichetta = ETICHETTE_CAMPI[campo] ?? campo;
+        return etichetta ? `${etichetta}: ${i.message}` : i.message;
+      })
       .join("; ");
     throw new ErroreHttp(400, msg);
   }
@@ -41,9 +46,9 @@ export function gestito(
       if (e instanceof ErroreHttp) return errore(e.status, e.message);
       if (e instanceof ZodError) return errore(400, "Dati non validi");
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2002") return errore(409, "Valore duplicato su campo univoco");
+        if (e.code === "P2002") return errore(409, "Valore già presente: il campo deve essere univoco");
         if (e.code === "P2003")
-          return errore(409, "Record referenziato da altri documenti: usare la disattivazione");
+          return errore(409, "Record collegato ad altri documenti: non può essere eliminato, disattivarlo");
         if (e.code === "P2025") return errore(404, "Record non trovato");
       }
       console.error("[api]", e);

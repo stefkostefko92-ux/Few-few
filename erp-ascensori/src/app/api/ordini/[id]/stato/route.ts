@@ -27,8 +27,10 @@ export const PATCH = gestito(async (req, ctx) => {
     const da = ordine.stato as Stato;
     if (!transizioneAmmessa(da, stato))
       throw new ErroreHttp(409, `Transizione non ammessa: ${da} → ${stato}`);
-    const aggiornato = await tx.ordineLavoro.update({
-      where: { id },
+    // Условен запис: пази от състезание — ако друга заявка е сменила статуса
+    // междувременно, count===0 и преходът се отказва (без невалиден скок).
+    const upd = await tx.ordineLavoro.updateMany({
+      where: { id, stato: da },
       data: {
         stato,
         // първото влизане в работа/приключване попълва реалния период
@@ -36,6 +38,8 @@ export const PATCH = gestito(async (req, ctx) => {
         ...(stato === "COMPLETATO" && !ordine.dataFine ? { dataFine: new Date() } : {}),
       },
     });
+    if (upd.count === 0)
+      throw new ErroreHttp(409, "Stato modificato da un'altra operazione: riprovare");
     await tx.storicoStato.create({
       data: {
         ordineLavoroId: id,
@@ -45,15 +49,19 @@ export const PATCH = gestito(async (req, ctx) => {
         utente: s.nome,
       },
     });
-    return aggiornato;
+    // audit в СЪЩАТА транзакция: ако записът се провали, преходът се отменя
+    await scriviAudit(
+      {
+        azione: "STATE_CHANGE",
+        entita: "ordini_lavoro",
+        entitaId: id,
+        dettagli: { da, dopo: stato, nota },
+        utenteId: s.sub,
+      },
+      tx
+    );
+    return tx.ordineLavoro.findUniqueOrThrow({ where: { id } });
   });
 
-  await scriviAudit({
-    azione: "STATE_CHANGE",
-    entita: "ordini_lavoro",
-    entitaId: id,
-    dettagli: { dopo: stato, nota },
-    utenteId: s.sub,
-  });
   return ok(dopo);
 });

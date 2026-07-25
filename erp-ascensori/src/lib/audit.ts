@@ -18,15 +18,25 @@ function chiaveAudit(): string {
   return k;
 }
 
-export async function scriviAudit(opts: {
-  azione: AzioneAudit;
-  entita: string;
-  entitaId?: string | null;
-  dettagli?: unknown;
-  utenteId?: string | null;
-}): Promise<void> {
+// Минимален контракт за клиента (позволява подаване на транзакционен tx).
+interface ClienteAudit {
+  auditLog: { create(args: { data: Record<string, unknown> }): Promise<unknown> };
+}
+
+export async function scriviAudit(
+  opts: {
+    azione: AzioneAudit;
+    entita: string;
+    entitaId?: string | null;
+    dettagli?: unknown;
+    utenteId?: string | null;
+  },
+  db: ClienteAudit = prisma
+): Promise<void> {
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  // Последният елемент е добавен от нашия единствен доверен proxy; водещите са
+  // подадени от клиента и не бива да се вярват за rate-limit/одит ключ.
+  const ip = h.get("x-forwarded-for")?.split(",").pop()?.trim() ?? null;
   const userAgent = h.get("user-agent");
   const createdAt = new Date();
   const riga = {
@@ -34,15 +44,15 @@ export async function scriviAudit(opts: {
     entita: opts.entita,
     entitaId: opts.entitaId ?? null,
     dettagli: opts.dettagli ?? null,
+    ip,
+    userAgent: userAgent ?? null,
     utenteId: opts.utenteId ?? null,
     createdAt,
   };
-  await prisma.auditLog.create({
+  await db.auditLog.create({
     data: {
       ...riga,
       dettagli: riga.dettagli === null ? undefined : (riga.dettagli as object),
-      ip,
-      userAgent,
       hmac: firmaAudit(riga, chiaveAudit()),
     },
   });

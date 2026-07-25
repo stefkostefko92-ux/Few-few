@@ -19,10 +19,18 @@ export async function prossimoNumero(
   anno = new Date().getFullYear()
 ): Promise<string> {
   const base = `${prefisso}-${anno}-`;
+  // Извеждаме от максималния номер, НЕ от бройката: изтриване на не-последен
+  // документ би направило count-базирания следващ номер дубликат (P2002 завинаги).
+  // 4-цифреното допълване прави лексикографската наредба = числовата.
   const d = prisma[model] as unknown as {
-    count(args: { where: { numero: { startsWith: string } } }): Promise<number>;
+    findFirst(args: object): Promise<{ numero: string } | null>;
   };
-  const n = await d.count({ where: { numero: { startsWith: base } } });
+  const ultimo = await d.findFirst({
+    where: { numero: { startsWith: base } },
+    orderBy: { numero: "desc" },
+    select: { numero: true },
+  });
+  const n = ultimo ? Number(ultimo.numero.slice(base.length)) : 0;
   return `${base}${String(n + 1).padStart(4, "0")}`;
 }
 

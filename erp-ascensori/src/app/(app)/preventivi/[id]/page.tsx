@@ -83,7 +83,7 @@ export default function Pagina() {
           </h1>
           <p className="mt-1 text-sm text-text-2">{p.oggetto}</p>
           <p className="mt-1 text-xs text-text-3">
-            {destinatario} · impianto {p.impianto?.matricola ?? "—"} · emesso il{" "}
+            {destinatario} · impianto {p.impianto?.matricola ?? "—"} · creato il{" "}
             {dataIt(p.createdAt)} · validità {p.validitaGiorni} gg
           </p>
         </div>

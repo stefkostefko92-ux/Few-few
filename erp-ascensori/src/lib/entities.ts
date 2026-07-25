@@ -6,9 +6,19 @@ import type { CrudConfig } from "@/lib/crud";
 import { prisma } from "@/lib/prisma";
 import { statoAutomezzo } from "@/lib/scadenze-logic";
 
+// Приема точка ИЛИ запетая като десетичен разделител; нормализира към точка.
 export const dec = z
   .string()
-  .regex(/^\d{1,10}(\.\d{1,2})?$/, "Importo non valido (usare il punto, max 2 decimali)");
+  .trim()
+  .transform((v) => v.replace(",", "."))
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^\d{1,10}(\.\d{1,2})?$/,
+        "Importo non valido: usare il punto o la virgola come separatore decimale (max. 2 decimali)"
+      )
+  );
 export const decOpt = dec.nullish();
 const str = z.string().trim().min(1).max(300);
 const strOpt = z.string().trim().max(2000).nullish();

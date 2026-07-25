@@ -9,6 +9,8 @@ const riga: RigaAudit = {
   entita: "impianti",
   entitaId: "abc-123",
   dettagli: { prima: { stato: "ATTIVO" }, dopo: { stato: "FERMO" } },
+  ip: "203.0.113.5",
+  userAgent: "Mozilla/5.0",
   utenteId: "user-1",
   createdAt: new Date("2026-07-25T10:00:00.000Z"),
 };
@@ -32,6 +34,9 @@ test("промяна на което и да е поле чупи подписа
     verificaAudit({ ...riga, createdAt: new Date("2026-07-25T10:00:01.000Z") }, h, CHIAVE),
     false
   );
+  // ip/userAgent също са под подписа
+  assert.equal(verificaAudit({ ...riga, ip: "10.0.0.1" }, h, CHIAVE), false);
+  assert.equal(verificaAudit({ ...riga, userAgent: "curl/8" }, h, CHIAVE), false);
 });
 
 test("грешен ключ не верифицира", () => {

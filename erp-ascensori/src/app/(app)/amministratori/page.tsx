@@ -3,7 +3,7 @@
 // Контрагентска и фискална страна: полетата влизат в XML фактурата.
 
 import EntityPage, { type EntityConfig } from "@/components/EntityPage";
-import { Badge } from "@/components/ui";
+import { TIPO_AMMINISTRATORE, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Amministratori",
@@ -21,9 +21,7 @@ const config: EntityConfig = {
     {
       chiave: "tipo",
       label: "Tipo",
-      render: (r) => (
-        <Badge valore={r.tipo === "SOCIETA" ? "SOCIETA" : "PERSONA_FISICA"} />
-      ),
+      render: (r) => etichetta(TIPO_AMMINISTRATORE, String(r.tipo)),
     },
     { chiave: "partitaIva", label: "P. IVA", className: "font-mono" },
     { chiave: "pec", label: "PEC" },

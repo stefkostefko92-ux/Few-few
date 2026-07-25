@@ -5,6 +5,7 @@ import { toCents, fromCents, totaleVoce, ivaVoce, calcolaTotali } from "../total
 
 test("toCents/fromCents двупосочно", () => {
   assert.equal(toCents("123.45"), 12345);
+  assert.equal(toCents("123,45"), 12345); // италианска запетая
   assert.equal(toCents("0.1"), 10);
   assert.equal(toCents("7"), 700);
   assert.equal(fromCents(12345), "123.45");
@@ -13,9 +14,9 @@ test("toCents/fromCents двупосочно", () => {
 });
 
 test("toCents отказва невалиден вход", () => {
-  assert.throws(() => toCents("12,50"));
   assert.throws(() => toCents("abc"));
   assert.throws(() => toCents(""));
+  assert.throws(() => toCents("1.2.3"));
 });
 
 test("тотал на редица: qty × prezzo с half-up", () => {

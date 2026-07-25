@@ -17,7 +17,7 @@ import type { Ruolo } from "@/lib/roles";
 import { consenti } from "@/lib/rate-limit";
 
 export const POST = gestito(async (req) => {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "sconosciuto";
+  const ip = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ?? "sconosciuto";
   if (!consenti(`refresh:${ip}`, 60, 15 * 60_000)) return errore(429, "Troppe richieste");
 
   const token = (await cookies()).get(REFRESH_COOKIE)?.value;

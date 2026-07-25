@@ -55,11 +55,16 @@ export const POST = gestito(async (req) => {
           ? -data.quantita
           : data.quantita; // RETTIFICA: подписана корекция
 
-    const nuovaQuantita = articolo.quantita + delta;
-    if (nuovaQuantita < 0)
+    // Атомарна корекция: условният UPDATE пази от загубена актуализация — две
+    // едновременни USCITA не могат да свалят наличността под нула (READ COMMITTED).
+    const upd = await tx.articoloMagazzino.updateMany({
+      where: { id: data.articoloId, ...(delta < 0 ? { quantita: { gte: -delta } } : {}) },
+      data: { quantita: { increment: delta } },
+    });
+    if (upd.count === 0)
       throw new ErroreHttp(409, `Giacenza insufficiente: disponibili ${articolo.quantita}`);
 
-    const m = await tx.movimentoMagazzino.create({
+    return tx.movimentoMagazzino.create({
       data: {
         articoloId: data.articoloId,
         tipo: data.tipo,
@@ -68,11 +73,6 @@ export const POST = gestito(async (req) => {
         ddtId: data.ddtId ?? undefined,
       },
     });
-    await tx.articoloMagazzino.update({
-      where: { id: data.articoloId },
-      data: { quantita: nuovaQuantita },
-    });
-    return m;
   });
 
   await scriviAudit({

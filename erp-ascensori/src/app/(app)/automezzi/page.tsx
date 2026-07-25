@@ -3,8 +3,8 @@
 // Автопарк — цветният статус (verde/giallo/rosso) идва от най-близката дата.
 
 import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
-import { Badge } from "@/components/ui";
 import { dataIt } from "@/lib/format";
+import { STATO_AUTOMEZZO, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Automezzi",
@@ -14,7 +14,23 @@ const config: EntityConfig = {
   colonne: [
     { chiave: "targa", label: "Targa", className: "font-mono font-medium" },
     { chiave: "marca", label: "Veicolo", render: (r) => `${r.marca} ${r.modello}` },
-    { chiave: "stato", label: "Stato", render: (r) => <Badge valore={String(r.stato)} /> },
+    {
+      chiave: "stato",
+      label: "Stato",
+      render: (r) => (
+        <span
+          className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${
+            r.stato === "verde"
+              ? "bg-success-subtle text-success-text"
+              : r.stato === "giallo"
+                ? "bg-warning-subtle text-warning-text"
+                : "bg-danger-subtle text-danger-text"
+          }`}
+        >
+          {etichetta(STATO_AUTOMEZZO, String(r.stato))}
+        </span>
+      ),
+    },
     {
       chiave: "chilometraggio",
       label: "Km",

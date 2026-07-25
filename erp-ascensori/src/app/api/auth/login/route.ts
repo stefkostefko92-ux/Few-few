@@ -23,14 +23,16 @@ const schema = z.object({
 
 export const POST = gestito(async (req) => {
   puliziaSeNecessaria();
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "sconosciuto";
+  const ip = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ?? "sconosciuto";
   if (!consenti(`login:${ip}`, 20, 15 * 60_000))
     return errore(429, "Troppe richieste: riprovare più tardi");
 
   const { email, password } = await corpoValidato(req, schema);
   const utente = await prisma.user.findUnique({ where: { email } });
 
-  // еднакъв отговор при непознат имейл и грешна парола — без изброяване на акаунти
+  // Документацията изисква „indicazione dei tentativi rimanenti prima del blocco"
+  // (гл. Protezione degli accessi) → съществуващ акаунт вижда оставащите опити.
+  // Непознат имейл получава голото съобщение (timing изравнен с фиктивен bcrypt).
   const rifiuto = () => errore(401, "Credenziali non valide");
   if (!utente || !utente.attivo) {
     // изгаряме bcrypt време и при непознат имейл (timing еднаквост)

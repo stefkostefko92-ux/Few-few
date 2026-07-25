@@ -3,6 +3,7 @@
 import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
 import { Badge } from "@/components/ui";
 import { euro, dataIt } from "@/lib/format";
+import { TIPO_FATTURA, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Fatture",
@@ -12,7 +13,7 @@ const config: EntityConfig = {
   linkDettaglio: (r) => `/fatture/${r.id}`,
   colonne: [
     { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
-    { chiave: "tipo", label: "Tipo" },
+    { chiave: "tipo", label: "Tipo", render: (r) => etichetta(TIPO_FATTURA, String(r.tipo)) },
     { chiave: "stato", label: "Stato", render: (r) => <Badge valore={String(r.stato)} /> },
     {
       chiave: "amministratore",

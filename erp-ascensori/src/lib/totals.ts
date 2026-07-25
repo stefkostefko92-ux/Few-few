@@ -1,9 +1,10 @@
 // Парична аритметика в цели центесими (int) — никакви float.
 // Decimal стойностите пътуват като низове "123.45"; тук се смятат точно.
 
-/** "123.45" | 123.45 | Prisma Decimal → центесими (int). Хвърля при невалиден вход. */
+/** "123.45" | "123,45" | 123.45 | Prisma Decimal → центесими (int). */
 export function toCents(v: string | number | { toString(): string }): number {
-  const s = typeof v === "string" ? v.trim() : v.toString();
+  // приемаме и италианската запетая като десетичен разделител
+  const s = (typeof v === "string" ? v.trim() : v.toString()).replace(",", ".");
   if (!/^-?\d+(\.\d+)?$/.test(s)) throw new Error(`Importo non valido: ${s}`);
   const neg = s.startsWith("-");
   const [intPart, fracPart = ""] = (neg ? s.slice(1) : s).split(".");

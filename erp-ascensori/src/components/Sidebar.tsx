@@ -71,7 +71,7 @@ const GRUPPI: Gruppo[] = [
     ],
   },
   {
-    label: "Ciclo attivo",
+    label: "Commesse",
     voci: [
       { href: "/preventivi", label: "Preventivi", icona: <FileText size={18} /> },
       { href: "/ordini", label: "Ordini di lavoro", icona: <Wrench size={18} /> },

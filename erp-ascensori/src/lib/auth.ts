@@ -110,7 +110,15 @@ export async function richiedeSessione(): Promise<Sessione> {
 /** Изисква минимално ниво; хвърля 403 при недостиг. */
 export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
   const s = await richiedeSessione();
-  if (!haPermesso(s.ruolo, minimo)) throw new ErroreHttp(403, "Permessi insufficienti");
+  // Свежото състояние на потребителя, не токена: деактивиране или понижена роля
+  // важат веднага, без да чакаме изтичането на access token-а (15 мин).
+  const u = await prisma.user.findUnique({
+    where: { id: s.sub },
+    select: { attivo: true, ruolo: true },
+  });
+  if (!u || !u.attivo) throw new ErroreHttp(401, "Utente non attivo");
+  const ruolo = u.ruolo as Ruolo;
+  if (!haPermesso(ruolo, minimo)) throw new ErroreHttp(403, "Permessi insufficienti");
   // мулти-фирма: изтекъл абонамент → 402 (проверка при наличен tenant)
   if (s.tenantId) {
     const t = await prisma.tenant.findUnique({ where: { id: s.tenantId } });
@@ -118,5 +126,5 @@ export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
     if (t.scadenzaAbbonamento && t.scadenzaAbbonamento < new Date())
       throw new ErroreHttp(402, "Abbonamento scaduto");
   }
-  return s;
+  return { ...s, ruolo };
 }

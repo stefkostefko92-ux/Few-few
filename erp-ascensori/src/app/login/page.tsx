@@ -85,7 +85,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-xs text-text-3">
-          Carbon Stealth VCC · Documento riservato · Versione schema 3.0
+          Carbon Stealth VCC · Accesso riservato · Schema versione 3.0
         </p>
       </div>
     </main>

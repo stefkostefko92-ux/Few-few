@@ -26,7 +26,7 @@ export const LIVELLO: Record<Ruolo, number> = {
 // Италиански етикети за интерфейса.
 export const RUOLO_LABEL: Record<Ruolo, string> = {
   MASTER: "Master",
-  ADMIN: "Amministratore",
+  ADMIN: "Amministratore di sistema",
   DIREZIONE: "Direzione",
   RESPONSABILE: "Responsabile",
   TECNICO: "Tecnico",

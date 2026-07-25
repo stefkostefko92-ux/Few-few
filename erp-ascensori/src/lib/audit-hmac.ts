@@ -9,17 +9,22 @@ export interface RigaAudit {
   entita: string;
   entitaId: string | null;
   dettagli: unknown;
+  ip: string | null;
+  userAgent: string | null;
   utenteId: string | null;
   createdAt: Date;
 }
 
-/** Каноничен низ на редицата — стабилен ред на полетата. */
+/** Каноничен низ на редицата — стабилен ред на полетата.
+ *  Подписът покрива и ip/userAgent, за да не се променят в базата без следа. */
 export function canonico(r: RigaAudit): string {
   return JSON.stringify([
     r.azione,
     r.entita,
     r.entitaId ?? "",
     r.dettagli === undefined || r.dettagli === null ? "" : JSON.stringify(r.dettagli),
+    r.ip ?? "",
+    r.userAgent ?? "",
     r.utenteId ?? "",
     r.createdAt.toISOString(),
   ]);

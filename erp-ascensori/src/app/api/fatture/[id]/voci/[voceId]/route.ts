@@ -1,4 +1,4 @@
-// Редове на fattura — промяна/изтриване + преизчисление.
+// Редове на fattura — промяна/изтриване + преизчисление (DIREZIONE+, само BOZZA).
 import { rottaVoceElemento } from "@/lib/voci";
 import { voceSchema } from "@/lib/entities";
 import { ricalcolaFattura } from "@/lib/totali-db";
@@ -10,4 +10,6 @@ export const { PUT, DELETE } = rottaVoceElemento({
   parentField: "fatturaId",
   schema: voceSchema.omit({ articoloId: true }).partial(),
   ricalcola: ricalcolaFattura,
+  ruolo: "DIREZIONE",
+  statiModificabili: ["BOZZA"],
 });

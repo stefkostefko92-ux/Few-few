@@ -81,7 +81,7 @@ export default function Pagina() {
             Registro operazioni
           </h1>
           <p className="mt-1 text-sm text-text-3">
-            Traccia immutabile firmata HMAC-SHA256 · sola lettura, per tutti i livelli
+            Traccia immutabile firmata HMAC-SHA256 · in sola lettura: nessun livello può modificarla
           </p>
         </div>
         <div className="flex items-center gap-3">

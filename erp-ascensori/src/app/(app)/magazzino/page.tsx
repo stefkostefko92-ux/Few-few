@@ -4,6 +4,7 @@
 
 import EntityPage, { type EntityConfig } from "@/components/EntityPage";
 import { euro } from "@/lib/format";
+import { TIPO_MAGAZZINO, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Articoli di magazzino",
@@ -13,7 +14,7 @@ const config: EntityConfig = {
   colonne: [
     { chiave: "codice", label: "Codice", className: "font-mono font-medium" },
     { chiave: "nome", label: "Nome" },
-    { chiave: "tipo", label: "Tipo" },
+    { chiave: "tipo", label: "Tipo", render: (r) => etichetta(TIPO_MAGAZZINO, String(r.tipo)) },
     { chiave: "categoria", label: "Categoria" },
     {
       chiave: "quantita",

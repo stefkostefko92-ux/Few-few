@@ -206,7 +206,7 @@ function FormUtente({
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
-            <label className="label">Password iniziale (min 10 caratteri) *</label>
+            <label className="label">Password iniziale (min. 10 caratteri) *</label>
             <input
               type="password"
               className="input mb-4"
@@ -301,7 +301,7 @@ function FormPassword({
           Nessuno può leggere la password attuale: è possibile solo assegnarne una nuova. Le
           sessioni attive dell&apos;utente verranno chiuse.
         </p>
-        <label className="label">Nuova password temporanea (min 10 caratteri)</label>
+        <label className="label">Nuova password temporanea (min. 10 caratteri)</label>
         <input
           type="password"
           className="input mb-4"

@@ -1,6 +1,7 @@
 "use client";
 
 import EntityPage, { type EntityConfig } from "@/components/EntityPage";
+import { TIPO_COTTIMISTA, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Cottimisti",
@@ -12,7 +13,7 @@ const config: EntityConfig = {
     {
       chiave: "tipo",
       label: "Tipo",
-      render: (r) => String(r.tipo).replaceAll("_", " ").toLowerCase(),
+      render: (r) => etichetta(TIPO_COTTIMISTA, String(r.tipo)),
     },
     { chiave: "partitaIva", label: "P. IVA", className: "font-mono" },
     { chiave: "telefono", label: "Telefono" },

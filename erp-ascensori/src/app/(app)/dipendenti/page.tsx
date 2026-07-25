@@ -2,6 +2,7 @@
 
 import EntityPage, { type EntityConfig } from "@/components/EntityPage";
 import { dataIt } from "@/lib/format";
+import { TIPO_DIPENDENTE, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Dipendenti",
@@ -15,7 +16,7 @@ const config: EntityConfig = {
       className: "font-medium",
       render: (r) => `${r.cognome} ${r.nome}`,
     },
-    { chiave: "tipo", label: "Tipo" },
+    { chiave: "tipo", label: "Tipo", render: (r) => etichetta(TIPO_DIPENDENTE, String(r.tipo)) },
     {
       chiave: "specializzazioni",
       label: "Specializzazioni",

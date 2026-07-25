@@ -31,11 +31,18 @@ npm run scadenze:check                          # автоматизмът за 
 - **Тоталите не се пишат на ръка**: при всяка промяна на voce се вика
   `ricalcolaPreventivo/ricalcolaFattura` (`src/lib/totali-db.ts`). Парите се
   смятат в **цели центесими** (`src/lib/totals.ts`), half-up — никакви float.
+  Входът приема точка И запетая (IT). *Follow-up при е-фактура/XML SDI: ДДС да
+  се смята по аликвота (riepilogo), не сумиран по редове — ±1 цент разлика.*
+  Редовете на fattura/preventivo са променими само в определени статуси
+  (`statiModificabili` в `voci.ts`: fattura=BOZZA, preventivo=BOZZA/INVIATO).
 - **Giacenza-та се движи само през движения** (`/api/movimenti`, в транзакция).
   USCITA под нула се отказва; RETTIFICA е подписана корекция.
 - **Audit-ът е неизменим**: всяка редица е подписана HMAC-SHA256
-  (`src/lib/audit-hmac.ts`), маршрути за промяна/изтриване НЕ съществуват.
-  Проверка: POST `/api/audit/verifica`.
+  (`src/lib/audit-hmac.ts`; подписът покрива и ip/userAgent), маршрути за
+  промяна/изтриване НЕ съществуват. Проверка: POST `/api/audit/verifica`.
+  `scriviAudit(opts, tx)` приема транзакционен клиент — критичните операции
+  (STATE_CHANGE) пишат одита В СЪЩАТА транзакция. *Follow-up (не блокер):
+  верижен подпис (`hmacPrecedente`) за откриване на изтрити редове.*
 - **Вход**: bcrypt 10 rounds; 5 неуспеха → 15 мин блокада; refresh token само
   като SHA-256 хеш в базата, ротира се и се нулира при logout; rate limit по IP.
 - **Фискален архив**: издадена фактура не се трие — сторнира се (STORNATA).

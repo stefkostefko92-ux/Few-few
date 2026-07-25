@@ -3,7 +3,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { ok, gestito } from "@/lib/api";
-import { richiedeSessione } from "@/lib/auth";
+import { richiedeRuolo } from "@/lib/auth";
 import { haPermesso } from "@/lib/roles";
 import { toCents, fromCents } from "@/lib/totals";
 
@@ -21,7 +21,8 @@ function mesiIndietro(n: number): { chiave: string; label: string }[] {
 }
 
 export const GET = gestito(async () => {
-  const s = await richiedeSessione();
+  // минимум OPERATORE: CLIENTE (ниво 7) не вижда оперативните данни на фирмата
+  const s = await richiedeRuolo("OPERATORE");
   const oggi = new Date();
   const fra30 = new Date(oggi.getTime() + 30 * 86_400_000);
   const inizio12Mesi = new Date(oggi.getFullYear(), oggi.getMonth() - 11, 1);

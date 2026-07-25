@@ -37,7 +37,7 @@ const FONTI: Record<string, { label: string; serie?: { chiave: string; label: st
   ordiniPerPriorita: { label: "Ordini aperti per priorità" },
   preventiviPerStato: { label: "Preventivi per stato" },
   impiantiPerStato: { label: "Impianti per stato" },
-  automezziPerStato: { label: "Automezzi per stato scadenze" },
+  automezziPerStato: { label: "Automezzi per stato delle scadenze" },
   fatturatoMensile: {
     label: "Fatturato mensile (12 mesi)",
     serie: [
@@ -201,7 +201,7 @@ export default function Dashboard() {
                 ))}
                 <option value="kpi">Indicatori (KPI)</option>
                 <option value="scadenze">Elenco scadenze imminenti</option>
-                <option value="scorte">Elenco sotto scorta</option>
+                <option value="scorte">Articoli sotto scorta</option>
               </select>
               <button className="btn-secondary" onClick={() => salva(PREDEFINITO)}>
                 Ripristina

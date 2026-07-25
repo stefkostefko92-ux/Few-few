@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { ok, corpoValidato, gestito } from "@/lib/api";
+import { ok, errore, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { verificaAudit } from "@/lib/audit-hmac";
 
@@ -16,7 +16,8 @@ export const POST = gestito(async (req) => {
   await richiedeRuolo("ADMIN");
   const { limite = 500 } = await corpoValidato(req, schema);
   const chiave = process.env.AUDIT_HMAC_KEY;
-  if (!chiave || chiave.length < 32) return ok({ errore: "AUDIT_HMAC_KEY non configurata" }, 500);
+  if (!chiave || chiave.length < 32)
+    return errore(500, "Chiave di verifica non configurata: contattare l'amministratore di sistema");
 
   const righe = await prisma.auditLog.findMany({
     orderBy: { createdAt: "desc" },
@@ -30,6 +31,8 @@ export const POST = gestito(async (req) => {
         entita: r.entita,
         entitaId: r.entitaId,
         dettagli: r.dettagli ?? null,
+        ip: r.ip,
+        userAgent: r.userAgent,
         utenteId: r.utenteId,
         createdAt: r.createdAt,
       },
