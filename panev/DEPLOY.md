@@ -199,6 +199,7 @@ sudo systemctl restart panev
 | 502 от nginx | услугата е спряна или порт ≠ 4102: `systemctl status panev`, `ss -ltnp \| grep 4102` |
 | Формата не праща имейл | `SMTP_PASS` липсва/грешна → `journalctl -u panev \| grep mailer`; запитването пак е в `/admin/messaggi.html` |
 | „Не мога да пиша“ в лога | systemd sandbox: записваем е само `/opt/panev/data` (`ReadWritePaths`) |
+| 403 на `/css/`, `/js/`, `/fonts/`, `/docs/` | nginx ги чете директно от диска — трябва `chmod 755 /opt/panev` и четими файлове (autodeploy го прави; `data/` остава 700) |
 | Стар CSS/JS у клиента | кеш заглавията са 7 дни — виж §4; не слагай `immutable` на нехеширани файлове |
 | Изтичащ сертификат | `sudo certbot certificates`, `systemctl status certbot.timer` |
 

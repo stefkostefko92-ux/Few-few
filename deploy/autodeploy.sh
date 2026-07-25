@@ -329,8 +329,10 @@ EOF
   # от EnvironmentFile-а, а случаен .env от архива само би объркал.
   [ -d "$PANEV_DIR" ] && cp -a "$PANEV_DIR" "${PANEV_DIR}.bak-$TS"
   mkdir -p "$PANEV_DIR"
+  # .npm/ е кешът на npm (HOME на потребителя е $PANEV_DIR) — пази го, за да не
+  # тегли всичко наново при всеки деплой.
   rsync -a --delete \
-    --exclude data/ --exclude node_modules/ --exclude .env \
+    --exclude data/ --exclude node_modules/ --exclude .env --exclude .npm/ \
     "$d"/ "$PANEV_DIR"/
   chown -R panev:panev "$PANEV_DIR"
   # nginx сервира /img /fonts /css /js /docs директно от диска → нужен му е
