@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-24",
+    "updated": "2026-07-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1601,9 +1601,20 @@
           "date": "2026-07-24",
           "event": "v15.3 — учене",
           "detail": "Научи: В Express req.path НЕ е percent-decoded, докато express.static/send декодират преди да … (+2 още)"
+        },
+        {
+          "version": "15.6.0",
+          "date": "2026-07-25",
+          "event": "v15.6 — учене",
+          "detail": "Научи: В zero-dep Node HTTP слоеве (vps-dashboard/src/httpd.js) sendJson проверява само res.wr… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-25",
+          "type": "learning",
+          "summary": "Научи: „В zero-dep Node HTTP слоеве (vps-dashboard/src/httpd.js) sendJson проверява само res.wr…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
