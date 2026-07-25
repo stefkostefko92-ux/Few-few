@@ -1,60 +1,62 @@
-#!/bin/bash
-# ============================================================
-# SETUP EMAIL — SMTP Aruba configuration
-# Run this on VPS: bash scripts/setup-email.sh
-# ============================================================
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────────
+#  PANEV ASCENSORI — задаване/смяна на SMTP паролата (Aruba)
+#
+#  Формата за контакт (/api/contact) ВИНАГИ записва запитването в базата, но
+#  праща имейл само ако SMTP_PASS е зададена. Този скрипт я вписва в
+#  /etc/panev/panev.env (mode 600) и рестартира услугата.
+#
+#  Пусни на VPS-а като root:
+#     sudo bash /opt/panev/scripts/setup-email.sh
+#
+#  Паролата НЕ се показва на екрана и НИКОГА не влиза в репото.
+# ─────────────────────────────────────────────────────────────────────────────
+set -euo pipefail
 
-set -e
+[[ $EUID -eq 0 ]] || { echo "Пусни като root (sudo)." >&2; exit 1; }
 
-cd /var/www/panevascensori || { echo "ERR: /var/www/panevascensori not found"; exit 1; }
+ENV_FILE="${PANEV_ENV:-/etc/panev/panev.env}"
+SERVICE="${PANEV_SERVICE:-panev}"
 
-ENV_FILE=".env"
+[[ -f "$ENV_FILE" ]] || {
+  echo "ERR: няма $ENV_FILE — пусни първо: sudo bash panev/scripts/bootstrap-vps.sh" >&2
+  exit 1
+}
 
-if [ ! -f "$ENV_FILE" ]; then
-  echo "ERR: $ENV_FILE not found. Copy from .env.example first."
+SMTP_USER="$(sed -n 's/^SMTP_USER=//p' "$ENV_FILE" | head -n1)"
+SMTP_USER="${SMTP_USER:-info@panevascensori.it}"
+
+echo
+echo "  Panev — SMTP парола за $SMTP_USER (същата като за уебмейла на Aruba)."
+read -rsp "  SMTP парола: " SMTP_PASS; echo
+[[ -n "$SMTP_PASS" ]] || { echo "ERR: празна парола" >&2; exit 1; }
+
+# Пренаписва САМО реда SMTP_PASS — останалите стойности остават непокътнати.
+TMP="$(mktemp)"
+chmod 600 "$TMP"
+grep -v '^SMTP_PASS=' "$ENV_FILE" > "$TMP" || true
+printf 'SMTP_PASS=%s\n' "$SMTP_PASS" >> "$TMP"
+cat "$TMP" > "$ENV_FILE"          # запазва собственика и правата на оригинала
+rm -f "$TMP"
+chmod 600 "$ENV_FILE"
+
+systemctl restart "$SERVICE"
+sleep 2
+if systemctl is-active --quiet "$SERVICE"; then
+  echo "  ✔ $SERVICE рестартиран"
+else
+  echo "  ✘ $SERVICE не тръгна — journalctl -u $SERVICE -n 50" >&2
   exit 1
 fi
 
-echo ""
-echo "=============================================="
-echo "  PANEV — Setup email SMTP (Aruba)"
-echo "=============================================="
-echo ""
-echo "Inserisci la password della casella info@panevascensori.it"
-echo "(quella che usi per accedere alla webmail Aruba)"
-echo ""
-read -rsp "SMTP password: " SMTP_PASS
-echo ""
+BASE_URL="$(sed -n 's/^BASE_URL=//p' "$ENV_FILE" | head -n1)"
+BASE_URL="${BASE_URL:-https://panevascensori.it}"
+cat <<EOF
 
-if [ -z "$SMTP_PASS" ]; then
-  echo "ERR: password vuota"
-  exit 1
-fi
+  ✔ SMTP паролата е записана в $ENV_FILE (mode 600).
 
-# Remove existing SMTP_* lines
-sed -i '/^SMTP_/d; /^MAIL_/d' "$ENV_FILE"
+  Провери: изпрати запитване от $BASE_URL/contatti
+  Логове:  journalctl -u $SERVICE -f   (грешките на mailer-а излизат там)
+  Архив:   запитванията се виждат и в $BASE_URL/admin/messaggi.html
 
-# Append new config
-cat >> "$ENV_FILE" <<EOF
-
-# ── Email SMTP (aggiunto da setup-email.sh) ──
-SMTP_HOST=smtps.aruba.it
-SMTP_PORT=465
-SMTP_SECURE=true
-SMTP_USER=info@panevascensori.it
-SMTP_PASS=$SMTP_PASS
-MAIL_FROM="Panev Ascensori <info@panevascensori.it>"
-MAIL_TO_ADMIN=info@panevascensori.it
 EOF
-
-echo ""
-echo "✓ Configurazione SMTP scritta in .env"
-echo ""
-echo "Riavvio PM2..."
-pm2 reload panev-web
-echo ""
-echo "✓ Fatto. Controlla i log con:"
-echo "   pm2 logs panev-web --lines 30"
-echo ""
-echo "Poi vai su https://www.panevascensori.it/contatti.html e prova il form."
-echo "Dovrebbe arrivare email sia all'admin che al mittente."

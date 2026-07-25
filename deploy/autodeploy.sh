@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali panev}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -36,6 +36,17 @@ MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
 VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:3100/}"
+
+# panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
+# предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
+# + server-side /admin (JWT + SQLite). Слуша САМО на 127.0.0.1:4102 зад nginx,
+# който прави 301 от www.panevascensori.it към каноничния non-www домейн.
+# Оцеляват деплоя: тайните (/etc/panev/panev.env, 600 — systemd EnvironmentFile)
+# и базата (/opt/panev/data/panev.db — единственият записваем път в unit-а).
+PANEV_DIR="${PANEV_DIR:-/opt/panev}"
+PANEV_SERVICE="${PANEV_SERVICE:-panev}"
+PANEV_ENV="${PANEV_ENV:-/etc/panev/panev.env}"
+PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
 
 # ospedali (Ospedali Trasparenti — systemd модел, като medqr/vizitka, НО без npm
 # ci/build: лек Node сервиз с нула зависимости обслужва предбилднатия статичен сайт
@@ -267,6 +278,116 @@ deploy_vizitka() {
       chown -R vizitka:vizitka "$VIZITKA_DIR"
     fi
     systemctl restart "$VIZITKA_SERVICE"
+  fi
+}
+
+# ── 3b''') panev — systemd (огледално на medqr/vizitka) ──────────────────────
+# Разликите: тайните са в /etc/panev/panev.env (EnvironmentFile, 600) — НЕ в
+# директорията на кода, значи rsync --delete не може да ги докосне; при първо
+# пускане се сийдва базата (админ + каталог за /admin), после никога.
+deploy_panev() {
+  local d="$SRC/panev"
+  [ -d "$d" ] || { warn "Няма panev/ в архива — пропускам."; return; }
+  log "Разгръщам panev (systemd, Express + SQLite)…"
+  command -v node  >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  # Системен потребител — самосъздаващ се, идемпотентно.
+  id panev >/dev/null 2>&1 || useradd --system --home-dir "$PANEV_DIR" \
+    --shell /usr/sbin/nologin panev
+
+  # 1) Тайни. Без валиден JWT_SECRET (≥32 знака) приложението УМИРА при старт в
+  # продукция (panev/lib/auth.js) — затова при първи деплой генерираме файла.
+  if [ ! -f "$PANEV_ENV" ]; then
+    warn "Няма $PANEV_ENV — генерирам с random JWT_SECRET (SMTP_PASS=CHANGE_ME)."
+    # Групата е panev, за да може услугата/сийдът да ЧЕТАТ файла (самият файл
+    # остава 600 panev:panev — без traverse права никой друг не влиза в папката).
+    install -d -m 750 -o root -g panev "$(dirname "$PANEV_ENV")"
+    install -o panev -g panev -m 600 /dev/null "$PANEV_ENV"
+    cat > "$PANEV_ENV" <<EOF
+NODE_ENV=production
+PORT=4102
+# Каноничният домейн е БЕЗ www (canonical/hreflang/sitemap/JSON-LD са non-www);
+# nginx прави 301 от www.panevascensori.it насам.
+BASE_URL=https://panevascensori.it
+JWT_SECRET=$(openssl rand -hex 64)
+JWT_EXPIRES=4h
+ADMIN_EMAIL=info@panevascensori.it
+# Без SMTP_PASS формата записва запитването в базата, но НЕ праща имейл.
+SMTP_HOST=smtps.aruba.it
+SMTP_PORT=465
+SMTP_USER=info@panevascensori.it
+SMTP_PASS=CHANGE_ME
+MAIL_FROM="Panev Ascensori <info@panevascensori.it>"
+MAIL_TO_ADMIN=info@panevascensori.it
+EOF
+    warn "Попълни SMTP_PASS в $PANEV_ENV, за да тръгнат имейлите от формата."
+  fi
+  chmod 600 "$PANEV_ENV"; chown panev:panev "$PANEV_ENV"
+
+  # 2) Код. data/ (SQLite) и node_modules/ остават извън rsync → преживяват деплоя.
+  # .env в директорията на кода се изключва нарочно: в продукция стойностите идват
+  # от EnvironmentFile-а, а случаен .env от архива само би объркал.
+  [ -d "$PANEV_DIR" ] && cp -a "$PANEV_DIR" "${PANEV_DIR}.bak-$TS"
+  mkdir -p "$PANEV_DIR"
+  rsync -a --delete \
+    --exclude data/ --exclude node_modules/ --exclude .env \
+    "$d"/ "$PANEV_DIR"/
+  chown -R panev:panev "$PANEV_DIR"
+  # nginx сервира /img /fonts /css /js /docs директно от диска → нужен му е
+  # достъп за четене през директорията (файловете са публични; data/ остава 700).
+  chmod 755 "$PANEV_DIR"
+  install -d -o panev -g panev -m 700 "$PANEV_DIR/data"
+  ( cd "$PANEV_DIR" && sudo -u panev npm ci --omit=dev )
+
+  # 3) Първо пускане → сийд (админ + каталог за /admin). Сийдът е идемпотентен,
+  # но го пускаме само при липсваща база. Ако ADMIN_PASSWORD не е зададена,
+  # seed.js показва генерирана парола ВЕДНЪЖ в изхода тук.
+  local db="$PANEV_DIR/data/panev.db"
+  if [ ! -f "$db" ]; then
+    log "Първо пускане на panev — сийдвам базата…"
+    sudo -u panev bash -c 'set -a; . "$1"; set +a; cd "$2" && node scripts/seed.js' \
+      _ "$PANEV_ENV" "$PANEV_DIR" \
+      || warn "panev: сийдът не мина — влез после ръчно (виж panev/DEPLOY.md)."
+  fi
+
+  # 4) Снимка на базата ПРЕДИ рестарт (миграциите/схемата се прилагат при старт).
+  local dbbak="${db}.pre-$TS"
+  if [ -f "$db" ]; then
+    sudo -u panev sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
+    log "Снимка на базата преди рестарт: $dbbak"
+  fi
+
+  # 5) systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
+  install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
+  systemctl daemon-reload
+  systemctl enable "$PANEV_SERVICE" >/dev/null 2>&1 || true
+  systemctl restart "$PANEV_SERVICE"
+  sleep 2
+  if health "$PANEV_HEALTH_URL" "panev"; then
+    rm -rf "${PANEV_DIR}.bak-$TS"
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+    ls -1dt "${PANEV_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    grep -q '^SMTP_PASS=CHANGE_ME$' "$PANEV_ENV" 2>/dev/null \
+      && warn "panev: SMTP_PASS все още е CHANGE_ME — формата пише в базата, но НЕ праща имейл."
+    [ -e /etc/nginx/sites-enabled/panev.conf ] \
+      || warn "panev: няма /etc/nginx/sites-enabled/panev.conf — сайтът върви само на 127.0.0.1:4102 (виж panev/DEPLOY.md)."
+  else
+    deploy_failed=1
+    warn "panev health провал — връщам предишния код и базата."
+    systemctl stop "$PANEV_SERVICE" || true
+    if [ -f "$dbbak" ]; then
+      cp -a "$dbbak" "$db"
+      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+      chown panev:panev "$db"
+    fi
+    if [ -d "${PANEV_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude data/ "${PANEV_DIR}.bak-$TS"/ "$PANEV_DIR"/
+      chown -R panev:panev "$PANEV_DIR"
+      chmod 755 "$PANEV_DIR"
+      install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
+      systemctl daemon-reload
+    fi
+    systemctl restart "$PANEV_SERVICE" || true
   fi
 }
 
@@ -705,6 +826,7 @@ for p in $PROJECTS; do
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
     vizitka)    deploy_vizitka ;;
+    panev)      deploy_panev ;;
     ospedali)   deploy_ospedali ;;
     nexus)      deploy_nexus ;;
     mastilko)   deploy_mastilko ;;
