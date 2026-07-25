@@ -123,6 +123,20 @@ const ASSI = {
   tickLine: false as const,
 };
 
+/** Пълен четим етикет: IN_LAVORO → „IN LAVORO" (без рязане на знаци). */
+export function etichettaAsse(v: string): string {
+  return String(v).replaceAll("_", " ");
+}
+
+// Наклонени етикети по X — 9-те статуса се събират без застъпване и без отрязване.
+const ASSE_X_CATEGORIE = {
+  interval: 0 as const,
+  angle: -35,
+  textAnchor: "end" as const,
+  height: 68,
+  tickFormatter: etichettaAsse,
+};
+
 /** Категорийна графика (една стойност по категория). */
 export function GraficoCategorie({
   fonte,
@@ -139,26 +153,41 @@ export function GraficoCategorie({
 
   if (tipo === "donut") {
     return (
-      <ResponsiveContainer width="100%" height={240}>
-        <PieChart>
-          <Tooltip content={<TooltipCard />} />
-          <Pie
-            data={ordinati}
-            dataKey="valore"
-            nameKey="nome"
-            innerRadius="55%"
-            outerRadius="85%"
-            paddingAngle={2}
-            stroke="var(--surface)"
-            strokeWidth={2}
-            isAnimationActive={false}
-          >
-            {ordinati.map((p, i) => (
-              <Cell key={p.nome} fill={coloreCategoria(fonte, p.nome, i, colore)} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+      <div>
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart>
+            <Tooltip content={<TooltipCard />} />
+            <Pie
+              data={ordinati}
+              dataKey="valore"
+              nameKey="nome"
+              innerRadius="55%"
+              outerRadius="85%"
+              paddingAngle={2}
+              stroke="var(--surface)"
+              strokeWidth={2}
+              isAnimationActive={false}
+            >
+              {ordinati.map((p, i) => (
+                <Cell key={p.nome} fill={coloreCategoria(fonte, p.nome, i, colore)} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        {/* легенда: идентичността никога не е само по цвят */}
+        <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 px-2">
+          {ordinati.map((p, i) => (
+            <span key={p.nome} className="flex items-center gap-1.5 text-xs text-text-2">
+              <span
+                className="inline-block h-2 w-2 shrink-0 rounded-full"
+                style={{ background: coloreCategoria(fonte, p.nome, i, colore) }}
+                aria-hidden
+              />
+              {etichettaAsse(p.nome)} <span className="font-mono text-text-1">{p.valore}</span>
+            </span>
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -167,9 +196,9 @@ export function GraficoCategorie({
     const Contenitore = tipo === "line" ? LineChart : AreaChart;
     return (
       <ResponsiveContainer width="100%" height={240}>
-        <Contenitore data={ordinati} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+        <Contenitore data={ordinati} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="nome" {...ASSI} interval={0} tickFormatter={(v) => String(v).slice(0, 6)} />
+          <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
           <YAxis {...ASSI} allowDecimals={false} />
           <Tooltip content={<TooltipCard />} />
           {tipo === "line" ? (
@@ -199,9 +228,9 @@ export function GraficoCategorie({
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={ordinati} margin={{ top: 8, right: 8, bottom: 0, left: -16 }} barCategoryGap="25%">
+      <BarChart data={ordinati} margin={{ top: 8, right: 8, bottom: 8, left: -16 }} barCategoryGap="25%">
         <CartesianGrid stroke="var(--border)" vertical={false} />
-        <XAxis dataKey="nome" {...ASSI} interval={0} tickFormatter={(v) => String(v).slice(0, 6)} />
+        <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
         <YAxis {...ASSI} allowDecimals={false} />
         <Tooltip content={<TooltipCard />} cursor={{ fill: "var(--surface-2)" }} />
         <Bar dataKey="valore" name="valore" radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false}>

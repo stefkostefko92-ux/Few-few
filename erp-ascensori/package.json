@@ -36,8 +36,8 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts",
-    "scadenze:check": "tsx scripts/check-scadenze.ts"
+    "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
+    "scadenze:check": "tsx --env-file-if-exists=.env scripts/check-scadenze.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
