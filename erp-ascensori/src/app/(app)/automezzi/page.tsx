@@ -1,0 +1,63 @@
+"use client";
+
+// Автопарк — цветният статус (verde/giallo/rosso) идва от най-близката дата.
+
+import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import { Badge } from "@/components/ui";
+import { dataIt } from "@/lib/format";
+
+const config: EntityConfig = {
+  titolo: "Automezzi",
+  descrizione: "Flotta aziendale: revisione, assicurazione e tagliando sotto controllo",
+  api: "/api/automezzi",
+  cerca: "Cerca per targa, marca, modello…",
+  colonne: [
+    { chiave: "targa", label: "Targa", className: "font-mono font-medium" },
+    { chiave: "marca", label: "Veicolo", render: (r) => `${r.marca} ${r.modello}` },
+    { chiave: "stato", label: "Stato", render: (r) => <Badge valore={String(r.stato)} /> },
+    {
+      chiave: "chilometraggio",
+      label: "Km",
+      className: "font-mono",
+      render: (r) => Number(r.chilometraggio).toLocaleString("it-IT"),
+    },
+    {
+      chiave: "scadenzaRevisione",
+      label: "Revisione",
+      render: (r) => dataIt(r.scadenzaRevisione as string | null),
+    },
+    {
+      chiave: "scadenzaAssicurazione",
+      label: "Assicurazione",
+      render: (r) => dataIt(r.scadenzaAssicurazione as string | null),
+    },
+    {
+      chiave: "conducente",
+      label: "Conducente",
+      render: (r) => {
+        const c = r.conducente as Riga | null;
+        return c ? `${c.cognome} ${c.nome}` : "—";
+      },
+    },
+  ],
+  campi: [
+    { name: "targa", label: "Targa", tipo: "text", richiesto: true },
+    { name: "marca", label: "Marca", tipo: "text", richiesto: true },
+    { name: "modello", label: "Modello", tipo: "text", richiesto: true },
+    { name: "chilometraggio", label: "Chilometraggio", tipo: "number" },
+    { name: "scadenzaRevisione", label: "Scadenza revisione", tipo: "date" },
+    { name: "scadenzaAssicurazione", label: "Scadenza assicurazione", tipo: "date" },
+    { name: "scadenzaTagliando", label: "Scadenza tagliando", tipo: "date" },
+    {
+      name: "conducenteId",
+      label: "Conducente (un veicolo per dipendente)",
+      tipo: "select",
+      opzioniApi: { url: "/api/dipendenti", etichetta: (r) => `${r.cognome} ${r.nome}` },
+    },
+    { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
+  ],
+};
+
+export default function Pagina() {
+  return <EntityPage config={config} />;
+}

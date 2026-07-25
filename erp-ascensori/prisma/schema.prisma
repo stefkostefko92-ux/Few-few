@@ -1,0 +1,629 @@
+// ERP Ascensori Enterprise — схема v3.0 по „Documentazione tecnica"
+// PostgreSQL 16 · Prisma ORM · Node.js 20
+// 24 таблици · 13 енумерации · UUID PK · createdAt/updatedAt навсякъде
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Енумерации ──────────────────────────────────────────────────────────────
+
+enum UserRole {
+  MASTER
+  ADMIN
+  DIREZIONE
+  RESPONSABILE
+  TECNICO
+  OPERATORE
+  CLIENTE
+}
+
+enum StatoImpianto {
+  ATTIVO
+  FERMO
+  MANUTENZIONE
+  FUORI_SERVIZIO
+  DISMESSO
+}
+
+enum StatoOrdine {
+  BOZZA
+  EMESSO
+  CONFERMATO
+  IN_LAVORO
+  SOSPESO
+  COMPLETATO
+  CHIUSO
+  CONTESTATO
+  ANNULLATO
+}
+
+enum PrioritaOrdine {
+  ORDINARIA
+  URGENTE
+  EMERGENZA
+}
+
+enum StatoPreventivo {
+  BOZZA
+  INVIATO
+  APPROVATO
+  RIFIUTATO
+  SCADUTO
+}
+
+enum TipoFattura {
+  EMESSA
+  RICEVUTA
+}
+
+enum StatoFattura {
+  BOZZA
+  EMESSA
+  INVIATA
+  PAGATA
+  SCADUTA
+  STORNATA
+}
+
+enum TipoAmministratore {
+  PERSONA_FISICA
+  SOCIETA
+}
+
+enum TipoDipendente {
+  TECNICO
+  AMMINISTRATIVO
+  COMMERCIALE
+  MAGAZZINIERE
+}
+
+enum TipoCottimista {
+  DITTA_INDIVIDUALE
+  COOPERATIVA
+  AZIENDA
+}
+
+enum TipoMagazzino {
+  COMPONENTI
+  VENDITA
+}
+
+enum TipoMovimento {
+  ENTRATA
+  USCITA
+  RETTIFICA
+}
+
+enum TipoDocumento {
+  CARTELLO_CANTIERE
+  VERBALE_CANTIERE
+  CERTIFICATO
+  CONTRATTO
+  ALTRO
+}
+
+// ─── Система ────────────────────────────────────────────────────────────────
+
+// Мулти-фирмени инсталации: всяка редица е фирма-клиент със свой лицензен план.
+model Tenant {
+  id                   String    @id @default(uuid()) @db.Uuid
+  slug                 String    @unique
+  ragioneSociale       String
+  email                String
+  piano                String    @default("TRIAL") // TRIAL, STARTER, PROFESSIONAL, ENTERPRISE
+  attivo               Boolean   @default(true)
+  scadenzaAbbonamento  DateTime? // след тази дата достъпът се отказва с 402
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  note                 String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  users User[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  password     String // bcrypt hash, 10 rounds — никога в чист вид
+  nome         String
+  cognome      String
+  ruolo        UserRole  @default(OPERATORE)
+  attivo       Boolean   @default(true)
+  tentativi    Int       @default(0) // поредни неуспешни входа
+  bloccatoFino DateTime? // заключен до този момент
+  ultimoAccesso DateTime?
+  refreshToken String? // нулира се при изход
+  tenantId     String?   @db.Uuid
+  note         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant     Tenant?     @relation(fields: [tenantId], references: [id])
+  auditLogs  AuditLog[]
+  preventivi Preventivo[]
+  fatture    Fattura[]
+  documenti  Documento[]
+
+  @@map("users")
+}
+
+// Неизменяем регистър: всяка редица е подписана с HMAC-SHA256.
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  azione    String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, STATE_CHANGE, IMPORT
+  entita    String
+  entitaId  String?
+  dettagli  Json?
+  ip        String?
+  userAgent String?
+  hmac      String // криптографски подпис на редицата
+  utenteId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+
+  utente User? @relation(fields: [utenteId], references: [id])
+
+  @@index([entita, entitaId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+// ─── Анагрифики ─────────────────────────────────────────────────────────────
+
+model Impianto {
+  id                String        @id @default(uuid()) @db.Uuid
+  matricola         String        @unique
+  marca             String
+  modello           String
+  anno              Int?
+  portata           Int? // kg
+  fermate           Int?
+  stato             StatoImpianto @default(ATTIVO)
+  indirizzo         String?
+  piano             String?
+  dataInstallazione DateTime?
+  ultimaRevisione   DateTime?
+  prossimaRevisione DateTime? // генерира автоматичните известия
+  condominioId      String?       @db.Uuid
+  amministratoreId  String?       @db.Uuid
+  note              String?
+  attivo            Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  condominio     Condominio?           @relation(fields: [condominioId], references: [id])
+  amministratore Amministratore?       @relation(fields: [amministratoreId], references: [id])
+  media          ImpiantoMedia[]
+  scadenze       ScadenzaImpianto[]
+  assegnazioni   AssegnazioneTecnico[]
+  preventivi     Preventivo[]
+  ordiniLavoro   OrdineLavoro[]
+
+  @@map("impianti")
+}
+
+model ImpiantoMedia {
+  id         String   @id @default(uuid()) @db.Uuid
+  impiantoId String   @db.Uuid
+  tipo       String // foto, video, documento
+  url        String
+  nome       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+
+  @@map("impianti_media")
+}
+
+// Законови срокове; трите флага пазят от повторно известяване.
+model ScadenzaImpianto {
+  id           String   @id @default(uuid()) @db.Uuid
+  impiantoId   String   @db.Uuid
+  tipo         String // revisione, certificazione, manutenzione
+  dataScadenza DateTime
+  notificato90 Boolean  @default(false)
+  notificato60 Boolean  @default(false)
+  notificato30 Boolean  @default(false)
+  completata   Boolean  @default(false)
+  note         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+
+  @@index([dataScadenza])
+  @@map("scadenze_impianti")
+}
+
+model AssegnazioneTecnico {
+  id           String    @id @default(uuid()) @db.Uuid
+  impiantoId   String    @db.Uuid
+  dipendenteId String    @db.Uuid
+  dataInizio   DateTime  @default(now())
+  dataFine     DateTime?
+  attiva       Boolean   @default(true)
+  note         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  impianto   Impianto   @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+  dipendente Dipendente @relation(fields: [dipendenteId], references: [id])
+
+  @@map("assegnazioni_tecnici")
+}
+
+model Condominio {
+  id               String   @id @default(uuid()) @db.Uuid
+  nome             String
+  indirizzo        String
+  citta            String
+  cap              String?
+  provincia        String?
+  codiceFiscale    String?
+  unitaImmobiliari Int?
+  amministratoreId String?  @db.Uuid
+  note             String?
+  attivo           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
+  impianti       Impianto[]
+
+  @@map("condomini")
+}
+
+// Договорна и фискална контрагентска страна — данните влизат в XML фактурата.
+model Amministratore {
+  id             String             @id @default(uuid()) @db.Uuid
+  tipo           TipoAmministratore @default(PERSONA_FISICA)
+  nome           String
+  cognome        String?
+  ragioneSociale String?
+  partitaIva     String?
+  codiceFiscale  String?
+  pec            String?
+  email          String?
+  telefono       String?
+  indirizzo      String?
+  citta          String?
+  cap            String?
+  note           String?
+  attivo         Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  condomini  Condominio[]
+  impianti   Impianto[]
+  preventivi Preventivo[]
+  fatture    Fattura[]
+
+  @@map("amministratori")
+}
+
+model Dipendente {
+  id               String         @id @default(uuid()) @db.Uuid
+  nome             String
+  cognome          String
+  tipo             TipoDipendente @default(TECNICO)
+  codiceFiscale    String?
+  dataAssunzione   DateTime?
+  patente          String?
+  specializzazioni String[]       @default([])
+  email            String?
+  telefono         String?
+  note             String?
+  attivo           Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  automezzo    Automezzo?
+  assegnazioni AssegnazioneTecnico[]
+  ordiniLavoro OrdineLavoro[]
+
+  @@map("dipendenti")
+}
+
+// Фирмен автопарк — трите дати определят цветния статус в списъка.
+model Automezzo {
+  id                   String    @id @default(uuid()) @db.Uuid
+  targa                String    @unique
+  marca                String
+  modello              String
+  chilometraggio       Int       @default(0)
+  scadenzaRevisione    DateTime?
+  scadenzaAssicurazione DateTime?
+  scadenzaTagliando    DateTime?
+  stato                String    @default("verde") // verde, giallo, rosso
+  conducenteId         String?   @unique @db.Uuid
+  note                 String?
+  attivo               Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  conducente Dipendente? @relation(fields: [conducenteId], references: [id])
+
+  @@map("automezzi")
+}
+
+model Cottimista {
+  id             String         @id @default(uuid()) @db.Uuid
+  ragioneSociale String
+  tipo           TipoCottimista @default(DITTA_INDIVIDUALE)
+  partitaIva     String?
+  email          String?
+  telefono       String?
+  indirizzo      String?
+  note           String?
+  attivo         Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  squadre      Squadra[]
+  ordiniLavoro OrdineLavoro[]
+
+  @@map("cottimisti")
+}
+
+model Squadra {
+  id           String   @id @default(uuid()) @db.Uuid
+  nome         String
+  cottimistiId String   @db.Uuid
+  capocantiere String?
+  membri       String[] @default([])
+  attiva       Boolean  @default(true)
+  note         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cottimista   Cottimista     @relation(fields: [cottimistiId], references: [id])
+  ordiniLavoro OrdineLavoro[]
+
+  @@map("squadre")
+}
+
+// ─── Магазин ────────────────────────────────────────────────────────────────
+
+model ArticoloMagazzino {
+  id             String        @id @default(uuid()) @db.Uuid
+  codice         String        @unique
+  barcode        String?
+  nome           String
+  descrizione    String        @default("")
+  tipo           TipoMagazzino @default(COMPONENTI)
+  categoria      String?
+  ubicazione     String?
+  quantita       Int           @default(0) // движи се САМО чрез движения
+  sogliaMinima   Int           @default(0)
+  prezzoAcquisto Decimal?      @db.Decimal(12, 2)
+  prezzoVendita  Decimal?      @db.Decimal(12, 2)
+  marginePerc    Decimal?      @db.Decimal(7, 2)
+  aliquotaIva    Decimal       @default(22) @db.Decimal(5, 2)
+  note           String?
+  attivo         Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  movimenti      MovimentoMagazzino[]
+  vociPreventivo VocePreventivo[]
+
+  @@map("articoli_magazzino")
+}
+
+// Хронологичен регистър — quantita никога не се пипа директно.
+model MovimentoMagazzino {
+  id         String        @id @default(uuid()) @db.Uuid
+  articoloId String        @db.Uuid
+  tipo       TipoMovimento
+  quantita   Int
+  nota       String?
+  ddtId      String?       @db.Uuid
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  articolo ArticoloMagazzino @relation(fields: [articoloId], references: [id])
+  ddt      Ddt?              @relation(fields: [ddtId], references: [id])
+
+  @@map("movimenti_magazzino")
+}
+
+// ─── Активен цикъл ──────────────────────────────────────────────────────────
+
+model Preventivo {
+  id               String          @id @default(uuid()) @db.Uuid
+  numero           String          @unique
+  stato            StatoPreventivo @default(BOZZA)
+  oggetto          String
+  descrizione      String?
+  totaleNetto      Decimal         @default(0) @db.Decimal(12, 2) // преизчислява се от редовете
+  totaleIva        Decimal         @default(0) @db.Decimal(12, 2)
+  totaleLordo      Decimal         @default(0) @db.Decimal(12, 2)
+  validitaGiorni   Int             @default(30)
+  impiantoId       String?         @db.Uuid
+  amministratoreId String?         @db.Uuid
+  utenteId         String?         @db.Uuid
+  note             String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  impianto       Impianto?        @relation(fields: [impiantoId], references: [id])
+  amministratore Amministratore?  @relation(fields: [amministratoreId], references: [id])
+  utente         User?            @relation(fields: [utenteId], references: [id])
+  voci           VocePreventivo[]
+  ordiniLavoro   OrdineLavoro[]
+
+  @@map("preventivi")
+}
+
+model VocePreventivo {
+  id             String   @id @default(uuid()) @db.Uuid
+  preventivoId   String   @db.Uuid
+  articoloId     String?  @db.Uuid
+  descrizione    String
+  quantita       Decimal  @default(1) @db.Decimal(12, 2)
+  prezzoUnitario Decimal  @default(0) @db.Decimal(12, 2)
+  aliquotaIva    Decimal  @default(22) @db.Decimal(5, 2)
+  totale         Decimal  @default(0) @db.Decimal(12, 2)
+  ordine         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  preventivo Preventivo         @relation(fields: [preventivoId], references: [id], onDelete: Cascade)
+  articolo   ArticoloMagazzino? @relation(fields: [articoloId], references: [id])
+
+  @@map("voci_preventivo")
+}
+
+// Работата за изпълнение. Статусът минава само по позволените преходи.
+model OrdineLavoro {
+  id             String         @id @default(uuid()) @db.Uuid
+  numero         String         @unique
+  stato          StatoOrdine    @default(BOZZA)
+  priorita       PrioritaOrdine @default(ORDINARIA)
+  oggetto        String
+  descrizione    String?
+  noteInterne    String? // никога не се печатат
+  noteCommittente String?
+  dataInizio     DateTime?
+  dataFine       DateTime?
+  impiantoId     String?        @db.Uuid
+  preventivoId   String?        @db.Uuid
+  tecnicoId      String?        @db.Uuid
+  cottimistiId   String?        @db.Uuid
+  squadraId      String?        @db.Uuid
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  impianto   Impianto?     @relation(fields: [impiantoId], references: [id])
+  preventivo Preventivo?   @relation(fields: [preventivoId], references: [id])
+  tecnico    Dipendente?   @relation(fields: [tecnicoId], references: [id])
+  cottimista Cottimista?   @relation(fields: [cottimistiId], references: [id])
+  squadra    Squadra?      @relation(fields: [squadraId], references: [id])
+  storico    StoricoStato[]
+  fatture    Fattura[]
+  ddt        Ddt[]
+
+  @@map("ordini_lavoro")
+}
+
+// Пише се автоматично при всяка смяна на статус.
+model StoricoStato {
+  id              String       @id @default(uuid()) @db.Uuid
+  ordineLavoroId  String       @db.Uuid
+  statoPrecedente StatoOrdine?
+  statoNuovo      StatoOrdine
+  nota            String?
+  utente          String
+  createdAt       DateTime     @default(now())
+
+  ordineLavoro OrdineLavoro @relation(fields: [ordineLavoroId], references: [id], onDelete: Cascade)
+
+  @@map("storico_stati")
+}
+
+// ─── Документална област ────────────────────────────────────────────────────
+
+model Fattura {
+  id               String       @id @default(uuid()) @db.Uuid
+  numero           String       @unique
+  tipo             TipoFattura  @default(EMESSA)
+  stato            StatoFattura @default(BOZZA)
+  data             DateTime     @default(now())
+  dataScadenza     DateTime?
+  oggetto          String?
+  totaleNetto      Decimal      @default(0) @db.Decimal(12, 2)
+  totaleIva        Decimal      @default(0) @db.Decimal(12, 2)
+  totaleLordo      Decimal      @default(0) @db.Decimal(12, 2)
+  amministratoreId String?      @db.Uuid
+  ordineLavoroId   String?      @db.Uuid
+  utenteId         String?      @db.Uuid
+  note             String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
+  ordineLavoro   OrdineLavoro?   @relation(fields: [ordineLavoroId], references: [id])
+  utente         User?           @relation(fields: [utenteId], references: [id])
+  voci           VoceFattura[]
+
+  @@map("fatture")
+}
+
+model VoceFattura {
+  id             String   @id @default(uuid()) @db.Uuid
+  fatturaId      String   @db.Uuid
+  descrizione    String
+  quantita       Decimal  @default(1) @db.Decimal(12, 2)
+  prezzoUnitario Decimal  @default(0) @db.Decimal(12, 2)
+  aliquotaIva    Decimal  @default(22) @db.Decimal(5, 2)
+  totale         Decimal  @default(0) @db.Decimal(12, 2)
+  ordine         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  fattura Fattura @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
+
+  @@map("voci_fattura")
+}
+
+// Транспортни документи по D.P.R. 472/1996.
+model Ddt {
+  id               String   @id @default(uuid()) @db.Uuid
+  numero           String   @unique
+  data             DateTime @default(now())
+  causale          String?
+  destinatario     String?
+  indirizzoConsegna String?
+  vettore          String?
+  ordineLavoroId   String?  @db.Uuid
+  note             String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  ordineLavoro OrdineLavoro?        @relation(fields: [ordineLavoroId], references: [id])
+  righe        RigaDdt[]
+  movimenti    MovimentoMagazzino[]
+
+  @@map("ddt")
+}
+
+model RigaDdt {
+  id          String   @id @default(uuid()) @db.Uuid
+  ddtId       String   @db.Uuid
+  descrizione String
+  quantita    Decimal  @default(1) @db.Decimal(12, 2)
+  um          String?
+  peso        Decimal? @db.Decimal(10, 2)
+  ordine      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ddt Ddt @relation(fields: [ddtId], references: [id], onDelete: Cascade)
+
+  @@map("righe_ddt")
+}
+
+model Documento {
+  id        String        @id @default(uuid()) @db.Uuid
+  tipo      TipoDocumento @default(ALTRO)
+  titolo    String
+  contenuto String?
+  fileUrl   String?
+  utenteId  String?       @db.Uuid
+  note      String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  utente User? @relation(fields: [utenteId], references: [id])
+
+  @@map("documenti")
+}

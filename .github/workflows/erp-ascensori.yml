@@ -1,0 +1,33 @@
+name: ERP Ascensori CI
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["erp-ascensori/**", ".github/workflows/erp-ascensori.yml"]
+  pull_request:
+    paths: ["erp-ascensori/**", ".github/workflows/erp-ascensori.yml"]
+
+jobs:
+  quality:
+    name: Lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          # build-time стойности; реалните тайни живеят само на сървъра (mode 600)
+          SESSION_SECRET: ci_build_only_session_secret_32_chars_min_0123456789
+          AUDIT_HMAC_KEY: ci_build_only_audit_hmac_key_32_chars_min_012345
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
