@@ -121,6 +121,14 @@ enum Periodicita {
   ANNUALE
 }
 
+/// Изходът от намесата — техникът го избира на място.
+enum EsitoIntervento {
+  RISOLTO
+  DA_COMPLETARE
+  RINVIATO
+  NON_RISOLVIBILE
+}
+
 enum TipoDocumento {
   CARTELLO_CANTIERE
   VERBALE_CANTIERE
@@ -414,6 +422,8 @@ model Dipendente {
   ordiniLavoro OrdineLavoro[]
 
   @@index([tenantId])
+  rapportini Rapportino[]
+
   @@map("dipendenti")
 }
 
@@ -675,13 +685,56 @@ model OrdineLavoro {
   tecnico    Dipendente?   @relation(fields: [tecnicoId], references: [id])
   cottimista Cottimista?   @relation(fields: [cottimistiId], references: [id])
   squadra    Squadra?      @relation(fields: [squadraId], references: [id])
-  storico    StoricoStato[]
-  fatture    Fattura[]
-  ddt        Ddt[]
+  storico     StoricoStato[]
+  fatture     Fattura[]
+  ddt         Ddt[]
+  rapportini  Rapportino[]
 
   @@index([tenantId])
   @@unique([tenantId, numero])
   @@map("ordini_lavoro")
+}
+
+/// Отчет за намесата (rapportino di intervento), подписан на място.
+///
+/// Това е документът, който техникът попълва при клиента и администраторът на
+/// кондоминиума подписва. Днес този лист се пише на хартия и се преписва в
+/// офиса — с всичко, което се губи по пътя: часове, вложени материали, кой
+/// какво е приел.
+///
+/// Подписът се пази като PNG (data URL). Не е квалифициран електронен подпис
+/// по eIDAS и не претендира да е такъв — той е доказателство за приемане на
+/// работата, каквото е и подписът върху хартиения лист.
+model Rapportino {
+  id              String          @id @default(uuid()) @db.Uuid
+  numero          String
+  ordineLavoroId  String          @db.Uuid
+  tecnicoId       String?         @db.Uuid
+  dataOra         DateTime        @default(now())
+  /// Отработени часове, с четвъртинки (1.25 = час и петнайсет).
+  oreLavoro       Decimal         @default(0) @db.Decimal(6, 2)
+  descrizione     String
+  esito           EsitoIntervento @default(RISOLTO)
+  /// Вложени материали като свободен текст; движението по склада е отделно и
+  /// остава единственият източник на истината за наличността.
+  materiali       String?
+  noteInterne     String?
+  /// PNG (data URL) на подписа. Празно = още неподписан.
+  firmaCliente    String?
+  firmatarioNome  String?
+  firmatarioRuolo String?
+  firmatoAt       DateTime?
+  tenantId        String?         @db.Uuid
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  ordineLavoro OrdineLavoro @relation(fields: [ordineLavoroId], references: [id], onDelete: Cascade)
+  tecnico      Dipendente?  @relation(fields: [tecnicoId], references: [id])
+
+  @@index([tenantId])
+  @@index([ordineLavoroId])
+  @@unique([tenantId, numero])
+  @@map("rapportini")
 }
 
 // Пише се автоматично при всяка смяна на статус.

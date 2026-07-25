@@ -537,3 +537,39 @@ export function conPeriodoValido<T extends ZodTipo>(schema: T) {
 }
 
 export const contrattoSchema = conPeriodoValido(contrattoBase);
+
+// ── Отчет за намесата ───────────────────────────────────────────────────────
+
+export const ESITI_INTERVENTO = [
+  "RISOLTO",
+  "DA_COMPLETARE",
+  "RINVIATO",
+  "NON_RISOLVIBILE",
+] as const;
+
+export const rapportinoSchema = z.object({
+  dataOra: z.coerce.date().optional(),
+  /** Часовете влизат във фактурирането — до две десетични, най-много 24 на ден. */
+  oreLavoro: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(",", "."))
+    .pipe(
+      z
+        .string()
+        .regex(/^\d{1,2}(\.\d{1,2})?$/, "Ore non valide")
+        .refine((v) => Number(v) <= 24, "Massimo 24 ore per intervento"),
+    )
+    .optional(),
+  descrizione: z.string().trim().min(1).max(4000),
+  esito: z.enum(ESITI_INTERVENTO).optional(),
+  materiali: strOpt,
+  noteInterne: strOpt,
+  tecnicoId: uuidOpt,
+});
+
+export const firmaSchema = z.object({
+  firmaCliente: z.string().max(700_000),
+  firmatarioNome: z.string().trim().min(1).max(200),
+  firmatarioRuolo: z.string().trim().max(200).nullish(),
+});

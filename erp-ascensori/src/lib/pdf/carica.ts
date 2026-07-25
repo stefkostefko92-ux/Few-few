@@ -166,3 +166,80 @@ export async function pdfDdt(id: string, tenantId: string | null): Promise<Docum
       "Verificare che i dati del cedente e del cessionario siano completi: sono richiesti dall'art. 1, comma 3, D.P.R. 472/1996.",
   };
 }
+
+/** Отчет за намесата — документът, който клиентът подписва на място. */
+export async function pdfRapportino(
+  id: string,
+  tenantId: string | null,
+): Promise<DocumentoPdf | null> {
+  const r = await prisma.rapportino.findFirst({
+    where: { id, tenantId },
+    include: {
+      tecnico: { select: { nome: true, cognome: true } },
+      ordineLavoro: {
+        select: {
+          numero: true,
+          oggetto: true,
+          impianto: { select: { matricola: true, indirizzo: true } },
+        },
+      },
+    },
+  });
+  if (!r) return null;
+
+  const ESITO: Record<string, string> = {
+    RISOLTO: "Risolto",
+    DA_COMPLETARE: "Da completare",
+    RINVIATO: "Rinviato",
+    NON_RISOLVIBILE: "Non risolvibile",
+  };
+
+  return {
+    tipo: "Rapportino di intervento",
+    numero: r.numero,
+    data: r.dataOra,
+    oggetto: r.ordineLavoro.oggetto,
+    azienda: await datiAzienda(tenantId),
+    destinatario: null,
+    corpo: r.descrizione,
+    // Материалите са свободен текст: движението по склада остава единственият
+    // източник на истината за наличността, тук е само какво е вложено на място.
+    righe: r.materiali
+      ? r.materiali
+          .split("\n")
+          .map((x) => x.trim())
+          .filter(Boolean)
+          .map((descrizione) => ({ descrizione, quantita: "" }))
+      : [],
+    conPrezzi: false,
+    dettagli: [
+      { label: "Ordine di lavoro", valore: r.ordineLavoro.numero },
+      ...(r.ordineLavoro.impianto
+        ? [
+            {
+              label: "Impianto",
+              valore: `${r.ordineLavoro.impianto.matricola}${
+                r.ordineLavoro.impianto.indirizzo ? ` — ${r.ordineLavoro.impianto.indirizzo}` : ""
+              }`,
+            },
+          ]
+        : []),
+      { label: "Tecnico", valore: r.tecnico ? `${r.tecnico.nome} ${r.tecnico.cognome}` : "—" },
+      { label: "Ore di lavoro", valore: r.oreLavoro.toString() },
+      { label: "Esito", valore: ESITO[r.esito] ?? r.esito },
+    ],
+    firma:
+      r.firmaCliente && r.firmatoAt
+        ? {
+            immagine: r.firmaCliente,
+            nome: r.firmatarioNome ?? "—",
+            ruolo: r.firmatarioRuolo,
+            data: r.firmatoAt,
+          }
+        : null,
+    // Неподписаният отчет не доказва приемане — казва го на самия лист.
+    avvertenza: r.firmatoAt
+      ? null
+      : "Rapportino non ancora firmato dal cliente: non costituisce accettazione dell'intervento.",
+  };
+}

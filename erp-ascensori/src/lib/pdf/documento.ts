@@ -78,6 +78,10 @@ export interface DocumentoPdf {
   note?: string | null;
   /** Текст, който документът ЗАДЪЛЖИТЕЛНО носи (напр. че не е е-фактура). */
   avvertenza?: string | null;
+  /** Блок за подпис: PNG (data URL) + кой е подписал. */
+  firma?: { immagine: string; nome: string; ruolo?: string | null; data: Date } | null;
+  /** Свободен текст под таблицата (описание на намесата). */
+  corpo?: string | null;
 }
 
 const MARGINE = 40;
@@ -114,8 +118,10 @@ export function generaPdf(doc: DocumentoPdf): Promise<Buffer> {
 
   intestazione(pdf, doc);
   const yTabella = controparti(pdf, doc);
-  const yDopo = tabellaRighe(pdf, doc, yTabella);
-  totali(pdf, doc, yDopo);
+  const yCorpo = testoCorpo(pdf, doc, yTabella);
+  const yDopo = tabellaRighe(pdf, doc, yCorpo);
+  const yTotali = totali(pdf, doc, yDopo);
+  bloccoFirma(pdf, doc, yTotali);
   piePagina(pdf, doc);
 
   pdf.end();
@@ -253,8 +259,48 @@ function tabellaRighe(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: numbe
   return y + 10;
 }
 
-function totali(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number) {
-  if (!doc.conPrezzi) return;
+/** Описателният текст между заглавната част и таблицата. */
+function testoCorpo(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): number {
+  if (!doc.corpo) return yInizio;
+  pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Bold").text("DESCRIZIONE", MARGINE, yInizio);
+  pdf.fillColor(SCURO).fontSize(9).font("Helvetica").text(doc.corpo, MARGINE, yInizio + 12, {
+    width: pdf.page.width - MARGINE * 2,
+  });
+  return pdf.y + 12;
+}
+
+/** Подписът на клиента — доказателството, че работата е приета. */
+function bloccoFirma(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number) {
+  if (!doc.firma) return;
+  let y = yInizio + 10;
+  // Блокът е висок ~110 px; ако не се събира, отива на нова страница цял —
+  // подпис, разделен от името си, не върши работа.
+  if (y > pdf.page.height - 200) {
+    pdf.addPage();
+    y = MARGINE;
+  }
+  pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Bold")
+    .text("FIRMA DEL CLIENTE PER ACCETTAZIONE", MARGINE, y);
+  y += 12;
+  try {
+    pdf.image(doc.firma.immagine, MARGINE, y, { fit: [220, 70] });
+  } catch {
+    // Повреден подпис не бива да проваля целия документ.
+    pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Oblique")
+      .text("(firma non disponibile)", MARGINE, y);
+  }
+  y += 74;
+  pdf.moveTo(MARGINE, y).lineTo(MARGINE + 220, y).strokeColor("#9ca3af").stroke();
+  pdf.fillColor(SCURO).fontSize(9).font("Helvetica-Bold")
+    .text(doc.firma.nome, MARGINE, y + 4, { width: 220 });
+  const sotto = [doc.firma.ruolo, `firmato il ${dataIt(doc.firma.data)}`]
+    .filter(Boolean)
+    .join(" · ");
+  pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica").text(sotto, MARGINE, pdf.y, { width: 260 });
+}
+
+function totali(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): number {
+  if (!doc.conPrezzi) return yInizio;
   let y = yInizio;
   if (y > pdf.page.height - 160) {
     pdf.addPage();
@@ -290,6 +336,7 @@ function totali(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number) {
   pdf.moveTo(destra, y).lineTo(destra + 200, y).strokeColor("#e5e7eb").stroke();
   y += 4;
   riga("TOTALE", euro(doc.totaleLordo), true);
+  return y;
 }
 
 function piePagina(pdf: PDFKit.PDFDocument, doc: DocumentoPdf) {

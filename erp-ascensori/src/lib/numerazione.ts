@@ -13,10 +13,12 @@ type ModelloNumerato =
   | "ordineLavoro"
   | "fattura"
   | "ddt"
-  | "contratto";
+  | "contratto"
+  | "rapportino";
 
 export const PREFISSI = {
   contratto: "CTR",
+  rapportino: "RAP",
   preventivo: "PRV",
   ordineLavoro: "ODL",
   fatturaEmessa: "FT",

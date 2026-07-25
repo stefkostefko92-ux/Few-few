@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
 import { IcoIndietro, IcoTransizione, IcoVerso } from "@/components/icone";
 import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
+import Rapportini from "@/components/Rapportini";
 import { dataIt, dataOraIt } from "@/lib/format";
 import { TRANSIZIONI, type Stato } from "@/lib/workflow";
 
@@ -192,6 +193,8 @@ export default function Pagina() {
               </ul>
             </div>
           )}
+
+          <Rapportini ordineId={id} />
         </div>
 
         <div className="card h-fit p-5">

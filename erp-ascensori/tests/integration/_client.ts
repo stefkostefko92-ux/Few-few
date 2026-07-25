@@ -25,6 +25,11 @@ export interface Risposta<T = unknown> {
 export class Sessione {
   private cookies = new Map<string, string>();
 
+  /** Бисквитките като хедър — за заявки извън `richiesta` (напр. изтегляне на PDF). */
+  cookieHeader(): string {
+    return [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; ");
+  }
+
   async richiesta<T = Record<string, unknown>>(
     metodo: string,
     percorso: string,
