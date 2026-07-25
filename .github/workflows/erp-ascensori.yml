@@ -7,9 +7,26 @@ on:
   pull_request:
     paths: ["erp-ascensori/**", ".github/workflows/erp-ascensori.yml"]
 
+# Нов push отменя предишния пуск за същия клон: чакащи задачи по остарял код
+# горят минути и бавят обратната връзка.
+concurrency:
+  group: erp-ascensori-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Стойности само за билд и тестове. Реалните тайни живеят на сървъра (mode 600)
+  # и никога не минават през CI.
+  SESSION_SECRET: ci_build_only_session_secret_32_chars_min_0123456789
+  AUDIT_HMAC_KEY: ci_build_only_audit_hmac_key_32_chars_min_012345
+  HEALTH_TOKEN: ci_health_token
+  APP_URL: http://127.0.0.1:3021
+
 jobs:
   quality:
-    name: Lint · typecheck · test · build
+    name: Lint · typecheck · unit · build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,7 +44,150 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          # build-time стойности; реалните тайни живеят само на сървъра (mode 600)
-          SESSION_SECRET: ci_build_only_session_secret_32_chars_min_0123456789
-          AUDIT_HMAC_KEY: ci_build_only_audit_hmac_key_32_chars_min_012345
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+  migrazioni:
+    name: Дрейф между схема и миграции
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: npm ci
+      # Историята на миграциите ТРЯБВА да изгражда точно живата схема. Дрейфът
+      # се хваща тук, а не при клиента, където поправката е ръчна SQL операция
+      # върху продукционна база.
+      - name: Миграциите изграждат схемата дословно
+        run: |
+          npx prisma migrate deploy
+          npx prisma migrate diff \
+            --from-schema-datasource prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code && echo "✔ без дрейф"
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+  integrazione:
+    name: Интеграционен пакет (реална база)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: erp
+          POSTGRES_PASSWORD: erp
+          POSTGRES_DB: postgres
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U erp" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - run: npm ci
+      - run: npm run test:int
+        env:
+          TEST_PG_ADMIN_URL: postgresql://erp:erp@127.0.0.1:5433/postgres
+
+  e2e:
+    name: E2E през браузър
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: erp
+          POSTGRES_PASSWORD: erp
+          POSTGRES_DB: postgres
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U erp" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - run: npm ci
+      # Само Chromium: три браузъра тук са три пъти минути за същия сигнал.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          TEST_PG_ADMIN_URL: postgresql://erp:erp@127.0.0.1:5433/postgres
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: erp-ascensori/playwright-report/
+          retention-days: 7
+
+  fornitura:
+    name: Верига на доставка (SBOM + одит)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: npm ci
+      # SBOM-ът е за КЛИЕНТА: enterprise купувач иска списък на компонентите,
+      # преди да пусне софтуера в мрежата си.
+      - name: SBOM (CycloneDX)
+        run: npx --yes @cyclonedx/cyclonedx-npm@latest --output-file sbom.json --omit dev
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-erp-ascensori
+          path: erp-ascensori/sbom.json
+          retention-days: 90
+      # Гейт САМО върху продукционните зависимости: dev уязвимост в линтера не
+      # стига до клиента, а блокирането ѝ води до заглушаване на целия гейт.
+      #
+      # Прагът е `critical`, не `high`, заради ЕДИН документиран запис
+      # (`postcss`, вложен в next@15 — виж `.audit-eccezioni.md`). Високите пак
+      # се докладват; ако изключението отпадне, прагът се вдига обратно.
+      - name: Одит на продукционните зависимости (блокиращ)
+        run: npm audit --omit=dev --audit-level=critical
+      - name: Високи уязвимости (само доклад)
+        continue-on-error: true
+        run: |
+          npm audit --omit=dev --audit-level=high || {
+            echo "::warning::Има високи уязвимости в продукционните зависимости."
+            echo "Приетите изключения са в erp-ascensori/.audit-eccezioni.md."
+            exit 0
+          }

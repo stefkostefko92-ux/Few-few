@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Modale, Paginazione, Vuoto, FiltriStato, ScheletroTabella } from "@/components/ui";
+import Link from "next/link";
 import { IcoNuovo } from "@/components/icone";
 import { perInputData } from "@/lib/format";
 import { apiFetch } from "@/lib/fetch-client";
@@ -228,11 +229,32 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                       if (config.linkDettaglio) window.location.href = config.linkDettaglio(r);
                     }}
                   >
-                    {config.colonne.map((c) => (
-                      <td key={c.chiave} className={`px-3 py-2.5 ${c.className ?? ""}`}>
-                        {c.render ? c.render(r) : String(valoreAnnidato(r, c.chiave) ?? "—")}
-                      </td>
-                    ))}
+                    {config.colonne.map((c, i) => {
+                      const contenuto = c.render
+                        ? c.render(r)
+                        : String(valoreAnnidato(r, c.chiave) ?? "—");
+                      return (
+                        <td key={c.chiave} className={`px-3 py-2.5 ${c.className ?? ""}`}>
+                          {/* ПЪРВАТА клетка е истинска връзка, когато редът води
+                              към детайл. Кликът върху целия ред остава удобство,
+                              но той е `onClick` върху `<tr>` — с мишка работи, с
+                              клавиатура не съществува (WCAG 2.1.1, а EAA е закон
+                              в ЕС). Връзката дава фокус, Enter, среден бутон и
+                              „отвори в нов раздел". */}
+                          {i === 0 && config.linkDettaglio ? (
+                            <Link
+                              href={config.linkDettaglio(r)}
+                              className="rounded-sm outline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {contenuto}
+                            </Link>
+                          ) : (
+                            contenuto
+                          )}
+                        </td>
+                      );
+                    })}
                     {/* „Elimina" е разрушително и стои до „Modifica": целта за
                         докосване е 32 px и има отстояние, за да не се уцелва грешно. */}
                     <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>

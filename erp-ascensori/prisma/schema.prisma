@@ -596,6 +596,9 @@ model MovimentoMagazzino {
   ordineLavoro OrdineLavoro? @relation(fields: [ordineLavoroId], references: [id])
 
   @@index([tenantId])
+  /// Отчетът за рентабилност чете движенията ПО ОРДИН — без индекса това е
+  /// пълно сканиране на най-голямата таблица във фирмата.
+  @@index([ordineLavoroId])
   @@map("movimenti_magazzino")
 }
 

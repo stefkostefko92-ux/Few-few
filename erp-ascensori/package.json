@@ -42,7 +42,8 @@
     "contratti": "tsx --env-file-if-exists=.env scripts/contratti.ts",
     "test:int": "node scripts/test-integration.mjs",
     "verifica:backup": "node scripts/verifica-backup.mjs",
-    "webhook": "tsx --env-file-if-exists=.env scripts/webhook.ts"
+    "webhook": "tsx --env-file-if-exists=.env scripts/webhook.ts",
+    "test:e2e": "node scripts/test-e2e.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -60,6 +61,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.62.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.4",
@@ -67,10 +69,13 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.19",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.23",
     "prisma": "^6.2.1",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
+  },
+  "overrides": {
+    "sharp": "^0.35.3"
   }
 }

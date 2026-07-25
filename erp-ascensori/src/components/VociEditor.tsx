@@ -3,7 +3,7 @@
 // Редактор на редове (voci/righe) за preventivo, fattura и DDT.
 // Тоталите се преизчисляват от сървъра — тук само се показват.
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { euro } from "@/lib/format";
 import { IcoNuovoPiccolo } from "@/components/icone";
 import { apiFetch } from "@/lib/fetch-client";
@@ -43,6 +43,9 @@ export default function VociEditor({
    *  и тоталът на фактурата излиза с една позиция повече, без нищо да го спре. */
   const [inCorso, setInCorso] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
+  /** Стабилен между рендерите и уникален на екрана — иначе два редактора дават
+   *  еднакви `id` и етикетът сочи чуждото поле. */
+  const idForm = useId();
 
   function corpo(): Record<string, unknown> {
     const b: Record<string, unknown> = {
@@ -186,10 +189,17 @@ export default function VociEditor({
         </table>
       )}
 
+      {/* Етикетите БЕЗ `htmlFor` не са етикети: екранният четец обявява поле
+          без име, а щракването върху надписа не фокусира входа (WCAG 1.3.1 и
+          3.3.2 — а EAA е закон в ЕС). Префиксът идва от адреса на подресурса,
+          защото на един екран може да има два редактора. */}
       <form onSubmit={salva} className="flex flex-wrap items-end gap-2">
         <div className="min-w-64 flex-1">
-          <label className="label">Descrizione</label>
+          <label className="label" htmlFor={`descrizione-${idForm}`}>
+                Descrizione
+              </label>
           <input
+                id={`descrizione-${idForm}`}
             className="input"
             required
             value={form.descrizione}
@@ -197,8 +207,11 @@ export default function VociEditor({
           />
         </div>
         <div className="w-20">
-          <label className="label">Qtà</label>
+          <label className="label" htmlFor={`quantita-${idForm}`}>
+                Qtà
+              </label>
           <input
+                id={`quantita-${idForm}`}
             className="input font-mono"
             required
             inputMode="decimal"
@@ -209,8 +222,11 @@ export default function VociEditor({
         {conPrezzi ? (
           <>
             <div className="w-28">
-              <label className="label">Prezzo (€)</label>
+              <label className="label" htmlFor={`prezzoUnitario-${idForm}`}>
+                Prezzo (€)
+              </label>
               <input
+                id={`prezzoUnitario-${idForm}`}
                 className="input font-mono"
                 required
                 inputMode="decimal"
@@ -219,8 +235,11 @@ export default function VociEditor({
               />
             </div>
             <div className="w-20">
-              <label className="label">IVA %</label>
+              <label className="label" htmlFor={`aliquotaIva-${idForm}`}>
+                IVA %
+              </label>
               <input
+                id={`aliquotaIva-${idForm}`}
                 className="input font-mono"
                 inputMode="decimal"
                 value={form.aliquotaIva}
@@ -229,10 +248,15 @@ export default function VociEditor({
             </div>
             {Number((form.aliquotaIva || "22").replace(",", ".")) === 0 && (
               <div className="w-24">
-                <label className="label" title="Codice SDI dell'esenzione">
+                <label
+                  className="label"
+                  htmlFor={`naturaIva-${idForm}`}
+                  title="Codice SDI dell'esenzione"
+                >
                   Natura
                 </label>
                 <input
+                  id={`naturaIva-${idForm}`}
                   className="input font-mono"
                   required
                   placeholder="N2.2"
@@ -245,16 +269,22 @@ export default function VociEditor({
         ) : (
           <>
             <div className="w-20">
-              <label className="label">UM</label>
+              <label className="label" htmlFor={`um-${idForm}`}>
+                UM
+              </label>
               <input
+                id={`um-${idForm}`}
                 className="input"
                 value={form.um}
                 onChange={(e) => setForm({ ...form, um: e.target.value })}
               />
             </div>
             <div className="w-28">
-              <label className="label">Peso (kg)</label>
+              <label className="label" htmlFor={`peso-${idForm}`}>
+                Peso (kg)
+              </label>
               <input
+                id={`peso-${idForm}`}
                 className="input font-mono"
                 inputMode="decimal"
                 value={form.peso}
