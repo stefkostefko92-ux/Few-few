@@ -2,6 +2,7 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { firmaAudit } from "@/lib/audit-hmac";
+import { ipClient } from "@/lib/ip-client";
 
 export type AzioneAudit =
   | "CREATE"
@@ -34,10 +35,14 @@ export async function scriviAudit(
   db: ClienteAudit = prisma
 ): Promise<void> {
   const h = await headers();
+  // Минимизация (GDPR чл. 5(1)(в)): IP и userAgent се пазят САМО при събитията
+  // за сигурност (вход/изход). За „кой смени статуса на ордин 4711" мрежовият
+  // адрес не добавя нищо, а превръща бизнес одита в дневник на присъствието.
+  const eSicurezza = opts.azione === "LOGIN" || opts.azione === "LOGOUT";
   // Последният елемент е добавен от нашия единствен доверен proxy; водещите са
   // подадени от клиента и не бива да се вярват за rate-limit/одит ключ.
-  const ip = h.get("x-forwarded-for")?.split(",").pop()?.trim() ?? null;
-  const userAgent = h.get("user-agent");
+  const ip = eSicurezza ? ipClient(h) : null;
+  const userAgent = eSicurezza ? h.get("user-agent") : null;
   const createdAt = new Date();
   const riga = {
     azione: opts.azione,

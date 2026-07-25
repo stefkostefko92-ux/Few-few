@@ -14,11 +14,13 @@ import {
   type Sessione,
 } from "@/lib/auth";
 import type { Ruolo } from "@/lib/roles";
-import { consenti } from "@/lib/rate-limit";
+import { consenti, LIMITI } from "@/lib/rate-limit";
+import { ipClient } from "@/lib/ip-client";
 
 export const POST = gestito(async (req) => {
-  const ip = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ?? "sconosciuto";
-  if (!consenti(`refresh:${ip}`, 60, 15 * 60_000)) return errore(429, "Troppe richieste");
+  const ip = ipClient(req.headers);
+  if (!consenti(`refresh:${ip}`, LIMITI.refresh, LIMITI.finestraMs))
+    return errore(429, "Troppe richieste");
 
   const token = (await cookies()).get(REFRESH_COOKIE)?.value;
   if (!token) return errore(401, "Sessione scaduta");

@@ -7,6 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { statoAutomezzo } from "@/lib/scadenze-logic";
 
 // Приема точка ИЛИ запетая като десетичен разделител; нормализира към точка.
+// Таванът е 8 цифри (< 100 милиона): произведението количество × цена трябва да
+// се побере в Decimal(12,2) на схемата. При 10 цифри на всяко от двете полета
+// тоталът стига 10^20, прелива колоната и заявката гърми със 500.
 export const dec = z
   .string()
   .trim()
@@ -15,9 +18,21 @@ export const dec = z
     z
       .string()
       .regex(
-        /^\d{1,10}(\.\d{1,2})?$/,
-        "Importo non valido: usare il punto o la virgola come separatore decimale (max. 2 decimali)"
+        /^\d{1,8}(\.\d{1,2})?$/,
+        "Importo non valido: usare il punto o la virgola come separatore decimale (max. 2 decimali, max. 8 cifre intere)"
       )
+  );
+
+/** Количество/цена в редовете: по-строг таван, за да не прелее произведението. */
+export const decRiga = z
+  .string()
+  .trim()
+  .transform((v) => v.replace(",", "."))
+  .pipe(
+    z
+      .string()
+      .regex(/^\d{1,6}(\.\d{1,2})?$/, "Valore non valido (max. 6 cifre intere, 2 decimali)")
+      .refine((v) => Number(v) <= 999_999, "Valore troppo grande")
   );
 export const decOpt = dec.nullish();
 const str = z.string().trim().min(1).max(300);
@@ -213,6 +228,7 @@ export const impiantiMedia: CrudConfig = {
   model: "impiantoMedia",
   schemaCreate: mediaBase,
   schemaUpdate: mediaBase.partial(),
+  filterFields: ["impiantoId"],
 };
 
 const scadenzaBase = z.object({
@@ -229,6 +245,7 @@ export const scadenzeImpianti: CrudConfig = {
   schemaCreate: scadenzaBase,
   schemaUpdate: scadenzaBase.partial(),
   include: { impianto: { select: { matricola: true, marca: true, indirizzo: true } } },
+  filterFields: ["impiantoId"],
   orderBy: { dataScadenza: "asc" },
 };
 
@@ -247,6 +264,7 @@ export const assegnazioniTecnici: CrudConfig = {
   schemaCreate: assegnazioneBase,
   schemaUpdate: assegnazioneBase.partial(),
   ruoloScrittura: "RESPONSABILE",
+  filterFields: ["impiantoId", "dipendenteId"],
   include: { impianto: { select: { matricola: true } }, dipendente: true },
   orderBy: { dataInizio: "desc" },
 };
@@ -318,6 +336,7 @@ export const tenants: CrudConfig = {
   ruoloLettura: "ADMIN",
   ruoloScrittura: "ADMIN",
   ruoloCancellazione: "MASTER",
+  senzaTenant: true, // самата таблица с фирмите не се филтрира по фирма
   searchFields: ["slug", "ragioneSociale"],
 };
 
@@ -338,15 +357,15 @@ export const ddtSchema = { base: ddtBase };
 export const voceSchema = z.object({
   articoloId: uuidOpt,
   descrizione: str,
-  quantita: dec,
-  prezzoUnitario: dec,
+  quantita: decRiga,
+  prezzoUnitario: decRiga,
   aliquotaIva: dec.optional(),
   ordine: z.number().int().min(0).optional(),
 });
 
 export const rigaDdtSchema = z.object({
   descrizione: str,
-  quantita: dec,
+  quantita: decRiga,
   um: z.string().trim().max(10).nullish(),
   peso: decOpt,
   ordine: z.number().int().min(0).optional(),

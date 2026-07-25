@@ -47,3 +47,21 @@ test("грешен ключ не верифицира", () => {
 test("невалиден hex не хвърля", () => {
   assert.equal(verificaAudit(riga, "не-hex", CHIAVE), false);
 });
+
+test("подписът е устойчив на пренареждане на ключовете (Postgres jsonb)", () => {
+  // jsonb НЕ пази реда на вмъкване — прочетеният обект идва с друг ред.
+  const scritto = { ...riga, dettagli: { campi: ["a", "b"], valori: { x: 1 } } };
+  const letto = { ...riga, dettagli: { valori: { x: 1 }, campi: ["a", "b"] } };
+  const h = firmaAudit(scritto, CHIAVE);
+  assert.equal(
+    verificaAudit(letto, h, CHIAVE),
+    true,
+    "същото съдържание с друг ред на ключовете трябва да се верифицира"
+  );
+});
+
+test("вложените обекти също се канонизират", () => {
+  const a = { ...riga, dettagli: { v: { z: 1, a: { m: 1, b: 2 } } } };
+  const b = { ...riga, dettagli: { v: { a: { b: 2, m: 1 }, z: 1 } } };
+  assert.equal(verificaAudit(b, firmaAudit(a, CHIAVE), CHIAVE), true);
+});

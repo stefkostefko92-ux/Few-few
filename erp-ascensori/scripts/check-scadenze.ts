@@ -1,9 +1,9 @@
 // Cron задача (на 24 часа): node --env-file=.env скриптът пуска автоматизма.
 //   0 6 * * *  cd /opt/erp-ascensori && npm run scadenze:check
-import { controllaScadenze } from "../src/lib/scadenze-runner";
+import { controllaScadenzeTracciato } from "../src/lib/scadenze-runner";
 import { prisma } from "../src/lib/prisma";
 
-controllaScadenze()
+controllaScadenzeTracciato()
   .then((esito) => {
     console.log("[scadenze]", JSON.stringify(esito));
   })

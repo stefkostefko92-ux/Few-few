@@ -4,6 +4,8 @@ import { ZodError, type ZodSchema } from "zod";
 import { ErroreHttp } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 import { ETICHETTE_CAMPI } from "@/lib/zod-it"; // регистрира и IT error map
+import { log, descriviErrore, rottaModello } from "@/lib/log";
+import { randomUUID } from "node:crypto";
 
 export function ok(data: unknown, status = 200): NextResponse {
   return NextResponse.json(data, { status });
@@ -35,24 +37,67 @@ export async function corpoValidato<T>(req: Request, schema: ZodSchema<T>): Prom
   return parsed.data;
 }
 
-/** Обвива handler: превежда ErroreHttp/Zod/Prisma грешки в HTTP отговори. */
+/** Prisma кодове за недостъпна база — преходни, значи 503 (не 500). */
+const CODICI_DB_NON_DISPONIBILE = new Set(["P1001", "P1002", "P1008", "P1017"]);
+
+/** Обвива handler: превежда ErroreHttp/Zod/Prisma грешки в HTTP отговори.
+ *
+ *  Това е ЕДИНСТВЕНАТА точка за инструментация — всички API маршрути минават
+ *  оттук, значи един файл дава correlation id, времетраене и структуриран лог. */
 export function gestito(
   fn: (req: Request, ctx: { params: Promise<Record<string, string>> }) => Promise<NextResponse>
 ) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
+    const inizio = Date.now();
+    const reqId = req.headers.get("x-request-id") ?? randomUUID();
+    const rotta = rottaModello(new URL(req.url).pathname);
+    const base = { req_id: reqId, metodo: req.method, rotta };
+
+    const conTraccia = (res: NextResponse): NextResponse => {
+      res.headers.set("x-request-id", reqId);
+      return res;
+    };
+
     try {
-      return await fn(req, ctx);
+      const res = await fn(req, ctx);
+      log.info("richiesta", { ...base, stato: res.status, durata_ms: Date.now() - inizio });
+      return conTraccia(res);
     } catch (e) {
-      if (e instanceof ErroreHttp) return errore(e.status, e.message);
-      if (e instanceof ZodError) return errore(400, "Dati non validi");
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2002") return errore(409, "Valore già presente: il campo deve essere univoco");
-        if (e.code === "P2003")
-          return errore(409, "Record collegato ad altri documenti: non può essere eliminato, disattivarlo");
-        if (e.code === "P2025") return errore(404, "Record non trovato");
+      const durata_ms = Date.now() - inizio;
+      if (e instanceof ErroreHttp) {
+        log.info("richiesta", { ...base, stato: e.status, durata_ms });
+        return conTraccia(errore(e.status, e.message));
       }
-      console.error("[api]", e);
-      return errore(500, "Errore interno del server");
+      if (e instanceof ZodError) {
+        log.info("richiesta", { ...base, stato: 400, durata_ms });
+        return conTraccia(errore(400, "Dati non validi"));
+      }
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === "P2002")
+          return conTraccia(errore(409, "Valore già presente: il campo deve essere univoco"));
+        if (e.code === "P2003")
+          return conTraccia(
+            errore(409, "Record collegato ad altri documenti: non può essere eliminato, disattivarlo")
+          );
+        if (e.code === "P2025") return conTraccia(errore(404, "Record non trovato"));
+        if (CODICI_DB_NON_DISPONIBILE.has(e.code)) {
+          // Загубата на базата е ПРЕХОДНА → 503 + Retry-After, не 500.
+          log.error("base dati non raggiungibile", { ...base, durata_ms, ...descriviErrore(e) });
+          const res = errore(503, "Servizio temporaneamente non disponibile: riprovare tra poco");
+          res.headers.set("Retry-After", "15");
+          return conTraccia(res);
+        }
+      }
+      if (e instanceof Prisma.PrismaClientInitializationError) {
+        log.error("base dati non raggiungibile", { ...base, durata_ms, ...descriviErrore(e) });
+        const res = errore(503, "Servizio temporaneamente non disponibile: riprovare tra poco");
+        res.headers.set("Retry-After", "15");
+        return conTraccia(res);
+      }
+      // Никога не логваме e.message: съобщенията на Prisma носят аргументите
+      // на заявката, тоест личните данни от тялото.
+      log.error("errore non gestito", { ...base, stato: 500, durata_ms, ...descriviErrore(e) });
+      return conTraccia(errore(500, "Errore interno del server"));
     }
   };
 }

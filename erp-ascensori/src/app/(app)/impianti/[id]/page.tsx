@@ -58,26 +58,24 @@ export default function Pagina() {
   const [modaleAssegna, setModaleAssegna] = useState(false);
 
   const carica = useCallback(async () => {
-    // детайлът иска пълните релации → отделна заявка от списъчния include
+    // Филтрирането е СЪРВЪРНО (?impiantoId=…). Дърпането на цялата таблица и
+    // филтриране в браузъра тихо губеше записите след първата страница.
     const [ri, rm, rs, ra] = await Promise.all([
       fetch(`/api/impianti/${id}`),
-      fetch(`/api/impianti-media?size=200`),
-      fetch(`/api/scadenze?size=200`),
-      fetch(`/api/assegnazioni?size=200`),
+      fetch(`/api/impianti-media?impiantoId=${id}`),
+      fetch(`/api/scadenze?impiantoId=${id}`),
+      fetch(`/api/assegnazioni?impiantoId=${id}`),
     ]);
     if (!ri.ok) {
       setErrore("Impianto non trovato");
       return;
     }
     const base = await ri.json();
-    const media = rm.ok ? (await rm.json()).righe : [];
-    const scadenze = rs.ok ? (await rs.json()).righe : [];
-    const assegnazioni = ra.ok ? (await ra.json()).righe : [];
     setImp({
       ...base,
-      media: media.filter((m: { impiantoId: string }) => m.impiantoId === id),
-      scadenze: scadenze.filter((s: { impiantoId: string }) => s.impiantoId === id),
-      assegnazioni: assegnazioni.filter((a: { impiantoId: string }) => a.impiantoId === id),
+      media: rm.ok ? (await rm.json()).righe : [],
+      scadenze: rs.ok ? (await rs.json()).righe : [],
+      assegnazioni: ra.ok ? (await ra.json()).righe : [],
     });
   }, [id]);
 

@@ -15,6 +15,24 @@ export interface RigaAudit {
   createdAt: Date;
 }
 
+/** Детерминистична сериализация: ключовете се подреждат РЕКУРСИВНО.
+ *
+ *  Задължително е, защото Postgres `jsonb` НЕ пази реда на вмъкване — записва
+ *  ключовете в свой ред. Ако подписваме в реда на JS обекта, а проверяваме
+ *  прочетеното от базата, подписите се разминават и контролът за цялост дава
+ *  фалшива тревога върху напълно легитимни редове (а истинската манипулация
+ *  се скрива в шума). */
+export function serializzaStabile(v: unknown): string {
+  if (v === null || v === undefined) return "null";
+  if (Array.isArray(v)) return `[${v.map(serializzaStabile).join(",")}]`;
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    const chiavi = Object.keys(o).sort();
+    return `{${chiavi.map((k) => `${JSON.stringify(k)}:${serializzaStabile(o[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(v);
+}
+
 /** Каноничен низ на редицата — стабилен ред на полетата.
  *  Подписът покрива и ip/userAgent, за да не се променят в базата без следа. */
 export function canonico(r: RigaAudit): string {
@@ -22,7 +40,7 @@ export function canonico(r: RigaAudit): string {
     r.azione,
     r.entita,
     r.entitaId ?? "",
-    r.dettagli === undefined || r.dettagli === null ? "" : JSON.stringify(r.dettagli),
+    r.dettagli === undefined || r.dettagli === null ? "" : serializzaStabile(r.dettagli),
     r.ip ?? "",
     r.userAgent ?? "",
     r.utenteId ?? "",

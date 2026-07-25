@@ -1,5 +1,7 @@
-// Ограничение на честотата (sliding window, в паметта на процеса).
+// Ограничение на честотата (fixed window, в паметта на процеса).
 // Достатъчно за една инсталация; при клъстер се изнася в Redis.
+// ВНИМАНИЕ: при няколко процеса всеки има свой брояч → ефективният лимит
+// се умножава по броя процеси. Виж SECURITY.md.
 
 interface Finestra {
   count: number;
@@ -7,6 +9,18 @@ interface Finestra {
 }
 
 const finestre = new Map<string, Finestra>();
+
+/** Праговете са конфигурируеми, за да могат тестовете да ги вдигат. */
+export const LIMITI = {
+  login: Number(process.env.RATE_LIMIT_LOGIN ?? 20),
+  refresh: Number(process.env.RATE_LIMIT_REFRESH ?? 60),
+  finestraMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 15 * 60_000),
+};
+
+/** Само за тестове: нулира всички прозорци (иначе редът на тестовете влияе). */
+export function azzeraPerTest(): void {
+  finestre.clear();
+}
 
 /** Връща true, ако заявката Е позволена; false при надвишена честота. */
 export function consenti(chiave: string, limite: number, finestraMs: number): boolean {

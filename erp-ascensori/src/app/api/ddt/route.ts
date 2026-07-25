@@ -2,7 +2,9 @@
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
+import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
+import { dettagliCreazione } from "@/lib/audit-dettagli";
 import { conNumero, PREFISSI } from "@/lib/numerazione";
 import { ddtSchema } from "@/lib/entities";
 
@@ -12,19 +14,22 @@ const include = {
 };
 
 export const GET = gestito(async (req) => {
-  await richiedeRuolo("OPERATORE");
+  const s = await richiedeRuolo("OPERATORE");
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim();
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
   const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
-  const where = q
-    ? {
-        OR: [
-          { numero: { contains: q, mode: "insensitive" as const } },
-          { destinatario: { contains: q, mode: "insensitive" as const } },
-        ],
-      }
-    : {};
+  const where = {
+    ...filtroTenant(s),
+    ...(q
+      ? {
+          OR: [
+            { numero: { contains: q, mode: "insensitive" as const } },
+            { destinatario: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
   const [righe, totale] = await Promise.all([
     prisma.ddt.findMany({
       where,
@@ -52,6 +57,7 @@ export const POST = gestito(async (req) => {
         ordineLavoroId: data.ordineLavoroId ?? undefined,
         note: data.note ?? undefined,
         numero,
+        ...tenantDiCreazione(s),
       },
       include,
     })
@@ -60,7 +66,7 @@ export const POST = gestito(async (req) => {
     azione: "CREATE",
     entita: "ddt",
     entitaId: creato.id,
-    dettagli: { dopo: data },
+    dettagli: dettagliCreazione(data),
     utenteId: s.sub,
   });
   return ok(creato, 201);

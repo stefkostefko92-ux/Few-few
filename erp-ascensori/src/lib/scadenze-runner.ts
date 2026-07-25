@@ -4,12 +4,52 @@
 
 import { prisma } from "@/lib/prisma";
 import { sogliePendenti, statoAutomezzo } from "@/lib/scadenze-logic";
+import { log, descriviErrore } from "@/lib/log";
 
 export interface EsitoControllo {
   notificheScadenze: number;
   automezziAggiornati: number;
   preventiviScaduti: number;
   fattureScadute: number;
+}
+
+/**
+ * Пуска автоматизма и ЗАПИСВА следа от пускането.
+ *
+ * Без записа спрян cron или рестартирала машина остава невидим: срокът минава,
+ * никой не разбира. Следата е и източникът за dead-man проверката
+ * (`/api/healthz/automatismi`).
+ */
+export async function controllaScadenzeTracciato(oggi = new Date()): Promise<EsitoControllo> {
+  const run = await prisma.automatismoRun.create({ data: { nome: "scadenze" } });
+  const inizio = Date.now();
+  try {
+    const esito = await controllaScadenze(oggi);
+    await prisma.automatismoRun.update({
+      where: { id: run.id },
+      data: {
+        terminatoAt: new Date(),
+        esito: "OK",
+        durataMs: Date.now() - inizio,
+        dettagli: { ...esito },
+      },
+    });
+    log.info("automatismo scadenze", { esito: "OK", durata_ms: Date.now() - inizio });
+    return esito;
+  } catch (e) {
+    const err = descriviErrore(e);
+    await prisma.automatismoRun.update({
+      where: { id: run.id },
+      data: {
+        terminatoAt: new Date(),
+        esito: "ERRORE",
+        durataMs: Date.now() - inizio,
+        errore: `${err.err_tipo}:${err.err_codice}`,
+      },
+    });
+    log.error("automatismo scadenze fallito", { ...err, esito: "ERRORE" });
+    throw e;
+  }
 }
 
 export async function controllaScadenze(oggi = new Date()): Promise<EsitoControllo> {

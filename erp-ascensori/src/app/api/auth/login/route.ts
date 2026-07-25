@@ -5,7 +5,8 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, errore, corpoValidato, gestito } from "@/lib/api";
-import { consenti, puliziaSeNecessaria } from "@/lib/rate-limit";
+import { consenti, puliziaSeNecessaria, LIMITI } from "@/lib/rate-limit";
+import { ipClient } from "@/lib/ip-client";
 import { eBloccato, registraFallimento, registraSuccesso, BLOCCO_MINUTI } from "@/lib/lockout";
 import {
   creaAccessToken,
@@ -23,8 +24,8 @@ const schema = z.object({
 
 export const POST = gestito(async (req) => {
   puliziaSeNecessaria();
-  const ip = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ?? "sconosciuto";
-  if (!consenti(`login:${ip}`, 20, 15 * 60_000))
+  const ip = ipClient(req.headers);
+  if (!consenti(`login:${ip}`, LIMITI.login, LIMITI.finestraMs))
     return errore(429, "Troppe richieste: riprovare più tardi");
 
   const { email, password } = await corpoValidato(req, schema);
@@ -46,16 +47,24 @@ export const POST = gestito(async (req) => {
 
   const valida = await bcrypt.compare(password, utente.password);
   if (!valida) {
-    const esito = registraFallimento(
-      { tentativi: utente.tentativi, bloccatoFino: utente.bloccatoFino },
-      ora
-    );
-    await prisma.user.update({
-      where: { id: utente.id },
-      data: { tentativi: esito.tentativi, bloccatoFino: esito.bloccatoFino },
-    });
-    if (esito.bloccato)
+    // АТОМАРНО увеличение: чети-смятай-пиши позволява загубени обновления —
+    // при паралелни опити броячът изостава и блокадата се заобикаля.
+    // `increment` оставя решението за прага на базата, не на прочетена стойност.
+    const [aggiornato] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: utente.id },
+        data: { tentativi: { increment: 1 } },
+        select: { tentativi: true },
+      }),
+    ]);
+    const esito = registraFallimento({ tentativi: aggiornato.tentativi - 1, bloccatoFino: null }, ora);
+    if (esito.bloccato) {
+      await prisma.user.update({
+        where: { id: utente.id },
+        data: { bloccatoFino: esito.bloccatoFino },
+      });
       return errore(423, `Account bloccato per ${BLOCCO_MINUTI} minuti dopo troppi tentativi`);
+    }
     return errore(401, `Credenziali non valide. Tentativi rimasti: ${esito.tentativiRimasti}`);
   }
 

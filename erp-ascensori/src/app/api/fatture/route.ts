@@ -4,7 +4,9 @@
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
+import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
+import { dettagliCreazione } from "@/lib/audit-dettagli";
 import { conNumero, PREFISSI } from "@/lib/numerazione";
 import { fatturaSchema } from "@/lib/entities";
 
@@ -16,7 +18,7 @@ const include = {
 };
 
 export const GET = gestito(async (req) => {
-  await richiedeRuolo("DIREZIONE");
+  const s = await richiedeRuolo("DIREZIONE");
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim();
   const tipo = url.searchParams.get("tipo");
@@ -24,6 +26,7 @@ export const GET = gestito(async (req) => {
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
   const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
   const where = {
+    ...filtroTenant(s),
     ...(q
       ? {
           OR: [
@@ -64,6 +67,7 @@ export const POST = gestito(async (req) => {
         note: data.note ?? undefined,
         numero,
         utenteId: s.sub,
+        ...tenantDiCreazione(s),
       },
       include,
     })
@@ -72,7 +76,7 @@ export const POST = gestito(async (req) => {
     azione: "CREATE",
     entita: "fatture",
     entitaId: creato.id,
-    dettagli: { dopo: data },
+    dettagli: dettagliCreazione(data),
     utenteId: s.sub,
   });
   return ok(creato, 201);

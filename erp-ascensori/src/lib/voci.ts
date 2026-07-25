@@ -6,7 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
+import {
+  dettagliCreazione,
+  dettagliModifica,
+  dettagliCancellazione,
+} from "@/lib/audit-dettagli";
 import type { Ruolo } from "@/lib/roles";
+import type { ClientePrisma } from "@/lib/totali-db";
 
 interface DelegateVoce {
   create(args: object): Promise<unknown>;
@@ -21,7 +27,8 @@ export interface VociConfig {
   parentModel: string; // родителският модел
   parentField: string; // FK поле към родителя
   schema: ZodSchema;
-  ricalcola?: (parentId: string) => Promise<void>;
+  /** Преизчисление; приема транзакционен клиент, за да върви заедно с промяната. */
+  ricalcola?: (parentId: string, db?: ClientePrisma) => Promise<void>;
   /** минимална роля за писане (по подразбиране OPERATORE); фактурите искат DIREZIONE */
   ruolo?: Ruolo;
   /** състояния на родителя, в които редовете са променими (напр. само BOZZA) */
@@ -30,6 +37,11 @@ export interface VociConfig {
 
 function delegate(model: string): DelegateVoce {
   return (prisma as unknown as Record<string, DelegateVoce>)[model];
+}
+
+/** Същият delegate, но върху транзакционен клиент. */
+function delegateTx(tx: ClientePrisma, model: string): DelegateVoce {
+  return (tx as unknown as Record<string, DelegateVoce>)[model];
 }
 
 async function controllaParent(cfg: VociConfig, parentId: string): Promise<void> {
@@ -50,15 +62,21 @@ export function rottaVociCollezione(cfg: VociConfig) {
     const { id } = await ctx.params;
     await controllaParent(cfg, id);
     const data = await corpoValidato(req, cfg.schema);
-    const creato = await delegate(cfg.model).create({
-      data: { ...(data as object), [cfg.parentField]: id },
+    // Записът и преизчислението вървят ЗАЕДНО: иначе при провал на ricalcola
+    // редът остава в базата, тоталите не го включват и одит не се пише —
+    // документ с невидим ред без следа.
+    const creato = await prisma.$transaction(async (tx) => {
+      const r = await delegateTx(tx, cfg.model).create({
+        data: { ...(data as object), [cfg.parentField]: id },
+      });
+      if (cfg.ricalcola) await cfg.ricalcola(id, tx);
+      return r;
     });
-    if (cfg.ricalcola) await cfg.ricalcola(id);
     await scriviAudit({
       azione: "CREATE",
       entita: cfg.entita,
       entitaId: String((creato as { id: string }).id),
-      dettagli: { dopo: data },
+      dettagli: dettagliCreazione(data),
       utenteId: s.sub,
     });
     return ok(creato, 201);
@@ -80,13 +98,19 @@ export function rottaVoceElemento(cfg: VociConfig) {
     if (!prima || prima[cfg.parentField] !== id)
       throw new ErroreHttp(404, "Riga non trovata");
     const data = await corpoValidato(req, cfg.schema);
-    const dopo = await d.update({ where: { id: voceId }, data: data as object });
-    if (cfg.ricalcola) await cfg.ricalcola(id);
+    const dopo = await prisma.$transaction(async (tx) => {
+      const r = await delegateTx(tx, cfg.model).update({
+        where: { id: voceId },
+        data: data as object,
+      });
+      if (cfg.ricalcola) await cfg.ricalcola(id, tx);
+      return r;
+    });
     await scriviAudit({
       azione: "UPDATE",
       entita: cfg.entita,
       entitaId: voceId,
-      dettagli: { prima, dopo: data },
+      dettagli: dettagliModifica(prima, { ...(prima as object), ...(data as object) }),
       utenteId: s.sub,
     });
     return ok(dopo);
@@ -103,13 +127,15 @@ export function rottaVoceElemento(cfg: VociConfig) {
     > | null;
     if (!prima || prima[cfg.parentField] !== id)
       throw new ErroreHttp(404, "Riga non trovata");
-    await d.delete({ where: { id: voceId } });
-    if (cfg.ricalcola) await cfg.ricalcola(id);
+    await prisma.$transaction(async (tx) => {
+      await delegateTx(tx, cfg.model).delete({ where: { id: voceId } });
+      if (cfg.ricalcola) await cfg.ricalcola(id, tx);
+    });
     await scriviAudit({
       azione: "DELETE",
       entita: cfg.entita,
       entitaId: voceId,
-      dettagli: { prima },
+      dettagli: dettagliCancellazione(prima),
       utenteId: s.sub,
     });
     return ok({ ok: true });

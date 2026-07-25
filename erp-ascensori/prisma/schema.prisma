@@ -196,6 +196,7 @@ model Impianto {
   amministratoreId  String?       @db.Uuid
   note              String?
   attivo            Boolean       @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -207,6 +208,7 @@ model Impianto {
   preventivi     Preventivo[]
   ordiniLavoro   OrdineLavoro[]
 
+  @@index([tenantId])
   @@map("impianti")
 }
 
@@ -216,11 +218,13 @@ model ImpiantoMedia {
   tipo       String // foto, video, documento
   url        String
   nome       String?
+  tenantId  String?   @db.Uuid // изолация по фирма
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@map("impianti_media")
 }
 
@@ -235,12 +239,14 @@ model ScadenzaImpianto {
   notificato30 Boolean  @default(false)
   completata   Boolean  @default(false)
   note         String?
+  tenantId  String?   @db.Uuid // изолация по фирма
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
 
   @@index([dataScadenza])
+  @@index([tenantId])
   @@map("scadenze_impianti")
 }
 
@@ -252,12 +258,14 @@ model AssegnazioneTecnico {
   dataFine     DateTime?
   attiva       Boolean   @default(true)
   note         String?
+  tenantId  String?   @db.Uuid // изолация по фирма
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   impianto   Impianto   @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
   dipendente Dipendente @relation(fields: [dipendenteId], references: [id])
 
+  @@index([tenantId])
   @@map("assegnazioni_tecnici")
 }
 
@@ -273,12 +281,14 @@ model Condominio {
   amministratoreId String?  @db.Uuid
   note             String?
   attivo           Boolean  @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
   impianti       Impianto[]
 
+  @@index([tenantId])
   @@map("condomini")
 }
 
@@ -299,6 +309,7 @@ model Amministratore {
   cap            String?
   note           String?
   attivo         Boolean            @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -307,6 +318,7 @@ model Amministratore {
   preventivi Preventivo[]
   fatture    Fattura[]
 
+  @@index([tenantId])
   @@map("amministratori")
 }
 
@@ -323,6 +335,7 @@ model Dipendente {
   telefono         String?
   note             String?
   attivo           Boolean        @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
@@ -330,6 +343,7 @@ model Dipendente {
   assegnazioni AssegnazioneTecnico[]
   ordiniLavoro OrdineLavoro[]
 
+  @@index([tenantId])
   @@map("dipendenti")
 }
 
@@ -347,11 +361,13 @@ model Automezzo {
   conducenteId         String?   @unique @db.Uuid
   note                 String?
   attivo               Boolean   @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
   conducente Dipendente? @relation(fields: [conducenteId], references: [id])
 
+  @@index([tenantId])
   @@map("automezzi")
 }
 
@@ -365,12 +381,14 @@ model Cottimista {
   indirizzo      String?
   note           String?
   attivo         Boolean        @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   squadre      Squadra[]
   ordiniLavoro OrdineLavoro[]
 
+  @@index([tenantId])
   @@map("cottimisti")
 }
 
@@ -382,12 +400,14 @@ model Squadra {
   membri       String[] @default([])
   attiva       Boolean  @default(true)
   note         String?
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   cottimista   Cottimista     @relation(fields: [cottimistiId], references: [id])
   ordiniLavoro OrdineLavoro[]
 
+  @@index([tenantId])
   @@map("squadre")
 }
 
@@ -410,12 +430,14 @@ model ArticoloMagazzino {
   aliquotaIva    Decimal       @default(22) @db.Decimal(5, 2)
   note           String?
   attivo         Boolean       @default(true)
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   movimenti      MovimentoMagazzino[]
   vociPreventivo VocePreventivo[]
 
+  @@index([tenantId])
   @@map("articoli_magazzino")
 }
 
@@ -427,12 +449,14 @@ model MovimentoMagazzino {
   quantita   Int
   nota       String?
   ddtId      String?       @db.Uuid
+  tenantId  String?   @db.Uuid // изолация по фирма
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   articolo ArticoloMagazzino @relation(fields: [articoloId], references: [id])
   ddt      Ddt?              @relation(fields: [ddtId], references: [id])
 
+  @@index([tenantId])
   @@map("movimenti_magazzino")
 }
 
@@ -452,6 +476,7 @@ model Preventivo {
   amministratoreId String?         @db.Uuid
   utenteId         String?         @db.Uuid
   note             String?
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
@@ -461,6 +486,7 @@ model Preventivo {
   voci           VocePreventivo[]
   ordiniLavoro   OrdineLavoro[]
 
+  @@index([tenantId])
   @@map("preventivi")
 }
 
@@ -500,6 +526,7 @@ model OrdineLavoro {
   tecnicoId      String?        @db.Uuid
   cottimistiId   String?        @db.Uuid
   squadraId      String?        @db.Uuid
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -512,6 +539,7 @@ model OrdineLavoro {
   fatture    Fattura[]
   ddt        Ddt[]
 
+  @@index([tenantId])
   @@map("ordini_lavoro")
 }
 
@@ -547,6 +575,7 @@ model Fattura {
   ordineLavoroId   String?      @db.Uuid
   utenteId         String?      @db.Uuid
   note             String?
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
@@ -555,6 +584,7 @@ model Fattura {
   utente         User?           @relation(fields: [utenteId], references: [id])
   voci           VoceFattura[]
 
+  @@index([tenantId])
   @@map("fatture")
 }
 
@@ -586,6 +616,7 @@ model Ddt {
   vettore          String?
   ordineLavoroId   String?  @db.Uuid
   note             String?
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -593,6 +624,7 @@ model Ddt {
   righe        RigaDdt[]
   movimenti    MovimentoMagazzino[]
 
+  @@index([tenantId])
   @@map("ddt")
 }
 
@@ -620,10 +652,31 @@ model Documento {
   fileUrl   String?
   utenteId  String?       @db.Uuid
   note      String?
+  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   utente User? @relation(fields: [utenteId], references: [id])
 
+  @@index([tenantId])
   @@map("documenti")
+}
+
+// ─── Наблюдаемост на автоматизмите ──────────────────────────────────────────
+
+// Всяко пускане на автоматизъм оставя следа. Без нея спрян cron/рестартирала
+// машина означава пропуснат законов срок, за който никой не разбира.
+model AutomatismoRun {
+  id          String    @id @default(uuid()) @db.Uuid
+  nome        String // scadenze | retention
+  iniziatoAt  DateTime  @default(now())
+  terminatoAt DateTime?
+  esito       String    @default("IN_CORSO") // IN_CORSO | OK | ERRORE
+  durataMs    Int?
+  dettagli    Json? // агрегатни броячи, никога лични данни
+  errore      String? // тип + код, без съобщение
+  createdAt   DateTime  @default(now())
+
+  @@index([nome, iniziatoAt])
+  @@map("automatismi_run")
 }

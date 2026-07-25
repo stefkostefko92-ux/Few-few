@@ -5,7 +5,9 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
+import { dettagliCreazione } from "@/lib/audit-dettagli";
 
 const schema = z.object({
   articoloId: z.string().uuid(),
@@ -16,12 +18,12 @@ const schema = z.object({
 });
 
 export const GET = gestito(async (req) => {
-  await richiedeRuolo("OPERATORE");
+  const s = await richiedeRuolo("OPERATORE");
   const url = new URL(req.url);
   const articoloId = url.searchParams.get("articoloId");
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
   const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
-  const where = articoloId ? { articoloId } : {};
+  const where = { ...filtroTenant(s), ...(articoloId ? { articoloId } : {}) };
   const [righe, totale] = await Promise.all([
     prisma.movimentoMagazzino.findMany({
       where,
@@ -71,6 +73,7 @@ export const POST = gestito(async (req) => {
         quantita: data.quantita,
         nota: data.nota ?? undefined,
         ddtId: data.ddtId ?? undefined,
+        ...tenantDiCreazione(s),
       },
     });
   });
@@ -79,7 +82,7 @@ export const POST = gestito(async (req) => {
     azione: "CREATE",
     entita: "movimenti_magazzino",
     entitaId: movimento.id,
-    dettagli: { dopo: data },
+    dettagli: dettagliCreazione(data),
     utenteId: s.sub,
   });
   return ok(movimento, 201);
