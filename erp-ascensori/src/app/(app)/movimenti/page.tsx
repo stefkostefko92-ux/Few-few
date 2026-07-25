@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Modale, Paginazione, Vuoto } from "@/components/ui";
 import { dataOraIt } from "@/lib/format";
+import { IcoNuovo } from "@/components/icone";
 
 interface Movimento {
   id: string;
@@ -87,8 +88,9 @@ export default function Pagina() {
             La giacenza non si modifica mai a mano: si registra un movimento
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setAperto(true)}>
-          + Nuovo movimento
+        <button className="btn-primary inline-flex items-center gap-1.5" onClick={() => setAperto(true)}>
+          <IcoNuovo />
+          Nuovo movimento
         </button>
       </div>
 

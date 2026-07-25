@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Paginazione, Vuoto } from "@/components/ui";
+import { IcoAlterato, IcoIntegro } from "@/components/icone";
 import { dataOraIt } from "@/lib/format";
 
 interface RigaAudit {
@@ -34,7 +35,12 @@ export default function Pagina() {
   const [page, setPage] = useState(1);
   const [azione, setAzione] = useState("");
   const [errore, setErrore] = useState<string | null>(null);
-  const [verifica, setVerifica] = useState<string | null>(null);
+  /** Резултатът е СТРУКТУРА, не сглобен низ: така иконата, цветът и текстът
+   *  се избират отделно, вместо да се кодира състояние в самия текст. */
+  const [verifica, setVerifica] = useState<{
+    esito: "in-corso" | "integro" | "alterato" | "errore";
+    testo: string;
+  } | null>(null);
   const size = 50;
 
   const carica = useCallback(async () => {
@@ -55,20 +61,24 @@ export default function Pagina() {
   }, [carica]);
 
   async function verificaIntegrita() {
-    setVerifica("Verifica in corso…");
+    setVerifica({ esito: "in-corso", testo: "Verifica in corso…" });
     const res = await fetch("/api/audit/verifica", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ limite: 1000 }),
     });
     const d = await res.json();
-    setVerifica(
-      res.ok
-        ? d.integro
-          ? `✓ Integro: ${d.controllate} righe verificate, nessuna alterazione`
-          : `✗ ALTERAZIONE RILEVATA: ${d.corrotte.length} righe con firma non valida`
-        : (d.error ?? "Errore")
-    );
+    if (!res.ok) setVerifica({ esito: "errore", testo: d.error ?? "Errore" });
+    else if (d.integro)
+      setVerifica({
+        esito: "integro",
+        testo: `Integro: ${d.controllate} righe verificate, nessuna alterazione`,
+      });
+    else
+      setVerifica({
+        esito: "alterato",
+        testo: `ALTERAZIONE RILEVATA: ${d.corrotte.length} righe con firma non valida`,
+      });
   }
 
   if (errore) return <Vuoto messaggio={errore} />;
@@ -85,7 +95,25 @@ export default function Pagina() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {verifica && <span className="text-xs text-text-2">{verifica}</span>}
+          {/* Резултатът от проверката на целостта е критичен и идва асинхронно —
+              без `aria-live` потребител на екранен четец не научава за него. */}
+          <span className="flex items-center gap-1.5 text-xs" role="status" aria-live="polite">
+            {verifica?.esito === "integro" && <IcoIntegro />}
+            {verifica?.esito === "alterato" && <IcoAlterato />}
+            {verifica && (
+              <span
+                className={
+                  verifica.esito === "integro"
+                    ? "text-success-text"
+                    : verifica.esito === "alterato"
+                      ? "font-medium text-danger-text"
+                      : "text-text-2"
+                }
+              >
+                {verifica.testo}
+              </span>
+            )}
+          </span>
           <button className="btn-secondary" onClick={() => void verificaIntegrita()}>
             Verifica integrità
           </button>

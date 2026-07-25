@@ -5,6 +5,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
+import { ScheletroDettaglio } from "@/components/ui";
+import { IcoIndietro } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 
 interface DdtDettaglio {
@@ -45,12 +47,13 @@ export default function Pagina() {
   }, [carica]);
 
   if (errore) return <p className="text-text-3">{errore}</p>;
-  if (!d) return <p className="text-text-3">Caricamento…</p>;
+  if (!d) return <ScheletroDettaglio />;
 
   return (
     <div>
       <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/ddt")}>
-        ← DDT
+        <IcoIndietro />
+        DDT
       </button>
       <div className="mb-6">
         <h1 className="font-mono text-2xl font-semibold tracking-tight text-text-1">{d.numero}</h1>

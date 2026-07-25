@@ -4,7 +4,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Badge } from "@/components/ui";
+import { Badge, ScheletroDettaglio } from "@/components/ui";
+import { IcoIndietro, IcoTransizione, IcoVerso } from "@/components/icone";
 import { dataIt, dataOraIt } from "@/lib/format";
 import { TRANSIZIONI, type Stato } from "@/lib/workflow";
 
@@ -72,14 +73,15 @@ export default function Pagina() {
   }
 
   if (errore) return <p className="text-text-3">{errore}</p>;
-  if (!o) return <p className="text-text-3">Caricamento…</p>;
+  if (!o) return <ScheletroDettaglio />;
 
   const ammesse = TRANSIZIONI[o.stato] ?? [];
 
   return (
     <div>
       <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/ordini")}>
-        ← Ordini di lavoro
+        <IcoIndietro />
+        Ordini di lavoro
       </button>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -117,10 +119,11 @@ export default function Pagina() {
                   {ammesse.map((s) => (
                     <button
                       key={s}
-                      className={s === "ANNULLATO" ? "btn-danger" : "btn-primary"}
+                      className={`inline-flex items-center gap-1.5 ${s === "ANNULLATO" ? "btn-danger" : "btn-primary"}`}
                       onClick={() => void transizione(s)}
                     >
-                      → {s.replaceAll("_", " ")}
+                      <IcoTransizione />
+                      {s.replaceAll("_", " ")}
                     </button>
                   ))}
                 </div>
@@ -199,7 +202,9 @@ export default function Pagina() {
                   {s.statoPrecedente && (
                     <>
                       <Badge valore={s.statoPrecedente} />
-                      <span className="text-text-3">→</span>
+                      <span className="text-text-3">
+                        <IcoVerso />
+                      </span>
                     </>
                   )}
                   <Badge valore={s.statoNuovo} />

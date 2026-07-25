@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Modale, Vuoto } from "@/components/ui";
 import { dataOraIt } from "@/lib/format";
 import { RUOLI, RUOLO_LABEL, type Ruolo } from "@/lib/roles";
+import { IcoNuovo } from "@/components/icone";
 
 interface Utente {
   id: string;
@@ -67,8 +68,9 @@ export default function Pagina() {
             Sette livelli di accesso, verificati dal server a ogni richiesta
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setModale("crea")}>
-          + Nuovo utente
+        <button className="btn-primary inline-flex items-center gap-1.5" onClick={() => setModale("crea")}>
+          <IcoNuovo />
+          Nuovo utente
         </button>
       </div>
 

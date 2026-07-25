@@ -3,6 +3,7 @@
 // Дребни UI градивни блокове: модал, статус-бадж, странициране.
 
 import { useEffect, type ReactNode } from "react";
+import { IcoChiudi, IcoPrecedente, IcoSuccessiva, IcoVuoto } from "@/components/icone";
 
 // ── Бадж за статуси (цветове от дизайн системата) ───────────────────────────
 
@@ -90,7 +91,7 @@ export function Modale({
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-1">{titolo}</h2>
           <button className="btn-ghost h-8 px-2" onClick={onChiudi} aria-label="Chiudi">
-            ✕
+            <IcoChiudi />
           </button>
         </div>
         {children}
@@ -121,14 +122,16 @@ export function Paginazione({
       </span>
       <div className="flex gap-2">
         <button className="btn-secondary h-8 px-3" disabled={page <= 1} onClick={() => onPagina(page - 1)}>
-          ← Precedente
+          <IcoPrecedente />
+          Precedente
         </button>
         <button
           className="btn-secondary h-8 px-3"
           disabled={page >= pagine}
           onClick={() => onPagina(page + 1)}
         >
-          Successiva →
+          Successiva
+          <IcoSuccessiva />
         </button>
       </div>
     </div>
@@ -140,19 +143,83 @@ export function Vuoto({
   messaggio,
   azione,
   onAzione,
+  icona = true,
 }: {
   messaggio: string;
   azione?: string;
   onAzione?: () => void;
+  /** Иконата се маха, когато празнотата е ГРЕШКА, не липса на данни. */
+  icona?: boolean;
 }) {
   return (
     <div className="flex flex-col items-center gap-3 py-16 text-center">
+      {icona && <IcoVuoto />}
       <p className="text-sm text-text-2">{messaggio}</p>
       {azione && onAzione && (
-        <button className="btn-secondary" onClick={onAzione}>
+        <button className="btn-secondary inline-flex items-center gap-1.5" onClick={onAzione}>
           {azione}
         </button>
       )}
+    </div>
+  );
+}
+
+// ── Скелет при зареждане ────────────────────────────────────────────────────
+
+/** Сива лента с пулс — заема мястото на съдържанието, докато то върви.
+ *
+ *  Текстът „Caricamento…" вместо това е най-видимият белег на вътрешен
+ *  инструмент: съдържанието изскача, оформлението подскача и окото губи
+ *  мястото си. Скелетът пази геометрията от първия кадър.
+ *  `motion-reduce:animate-none` — пулсът е анимация, значи подлежи на
+ *  предпочитанието на потребителя. */
+export function Barra({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse rounded bg-surface-3 motion-reduce:animate-none ${className}`}
+      aria-hidden
+    />
+  );
+}
+
+/** Скелет на таблица: заглавен ред + N реда. */
+export function ScheletroTabella({ righe = 6, colonne = 5 }: { righe?: number; colonne?: number }) {
+  return (
+    <div className="p-3" role="status" aria-label="Caricamento in corso">
+      <div className="mb-3 flex gap-3 border-b border-border pb-3">
+        {Array.from({ length: colonne }).map((_, i) => (
+          <Barra key={i} className="h-3 flex-1" />
+        ))}
+      </div>
+      {Array.from({ length: righe }).map((_, r) => (
+        <div key={r} className="flex items-center gap-3 py-2.5">
+          {Array.from({ length: colonne }).map((_, c) => (
+            <Barra key={c} className={`h-3.5 flex-1 ${c === 0 ? "max-w-28" : ""}`} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Скелет на детайлна страница: заглавие + няколко картички. */
+export function ScheletroDettaglio({ carte = 3 }: { carte?: number }) {
+  return (
+    <div role="status" aria-label="Caricamento in corso">
+      <div className="mb-6">
+        <Barra className="h-7 w-64" />
+        <Barra className="mt-2 h-3 w-96" />
+      </div>
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        {Array.from({ length: carte }).map((_, i) => (
+          <div key={i} className="card space-y-3 p-5">
+            <Barra className="h-4 w-40" />
+            {Array.from({ length: 4 }).map((_, j) => (
+              <Barra key={j} className="h-3 w-full" />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 // Артикули на склада: giacenza-та се движи само чрез движения (не се редактира).
 
 import EntityPage, { type EntityConfig } from "@/components/EntityPage";
+import { IcoAttenzione } from "@/components/icone";
 import { euro } from "@/lib/format";
 import { TIPO_MAGAZZINO, etichetta } from "@/lib/enum-labels";
 
@@ -27,9 +28,7 @@ const config: EntityConfig = {
           // разваля дясното подравняване и цифрите престават да се четат в колона.
           // Текстът за екранни четци е задължителен — цвят + глиф не са сигнал.
           <span className="inline-flex items-center justify-end gap-1">
-            <span className="w-3 text-danger-text" aria-hidden="true">
-              {sotto ? "⚠" : ""}
-            </span>
+            <span className="flex w-3.5 justify-center">{sotto && <IcoAttenzione />}</span>
             <span className={sotto ? "font-semibold text-danger-text" : ""}>
               {String(r.quantita)}
             </span>

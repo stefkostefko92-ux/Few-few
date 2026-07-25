@@ -31,7 +31,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!ordine) throw new ErroreHttp(404, "Ordine non trovato");
     const da = ordine.stato as Stato;
     if (!transizioneAmmessa(da, stato))
-      throw new ErroreHttp(409, `Transizione non ammessa: ${da} → ${stato}`);
+      throw new ErroreHttp(409, `Transizione non ammessa: da «${da}» a «${stato}»`);
     // Условен запис: пази от състезание — ако друга заявка е сменила статуса
     // междувременно, count===0 и преходът се отказва (без невалиден скок).
     const upd = await tx.ordineLavoro.updateMany({

@@ -4,7 +4,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Badge, Modale } from "@/components/ui";
+import { Badge, Modale, ScheletroDettaglio } from "@/components/ui";
+import { IcoFatto, IcoIndietro, IcoNuovoPiccolo, IcoVerso } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 
 interface Impianto {
@@ -84,7 +85,7 @@ export default function Pagina() {
   }, [carica]);
 
   if (errore) return <p className="text-text-3">{errore}</p>;
-  if (!imp) return <p className="text-text-3">Caricamento…</p>;
+  if (!imp) return <ScheletroDettaglio />;
 
   const amministratore = imp.amministratore
     ? (imp.amministratore.ragioneSociale ??
@@ -94,7 +95,8 @@ export default function Pagina() {
   return (
     <div>
       <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/impianti")}>
-        ← Impianti
+        <IcoIndietro />
+        Impianti
       </button>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -145,23 +147,48 @@ export default function Pagina() {
                       completata
                     </span>
                   ) : (
-                    <span className="font-mono text-xs text-text-3">
-                      {s.notificato90 ? "90✓" : "90"} {s.notificato60 ? "60✓" : "60"}{" "}
-                      {s.notificato30 ? "30✓" : "30"}
+                    <span className="flex items-center gap-2 font-mono text-xs text-text-3">
+                      {([90, 60, 30] as const).map((giorni) => {
+                        const inviato =
+                          giorni === 90
+                            ? s.notificato90
+                            : giorni === 60
+                              ? s.notificato60
+                              : s.notificato30;
+                        return (
+                          <span key={giorni} className="inline-flex items-center gap-0.5">
+                            {giorni}
+                            {inviato && (
+                              <>
+                                <IcoFatto />
+                                <span className="sr-only">avviso inviato</span>
+                              </>
+                            )}
+                          </span>
+                        );
+                      })}
                     </span>
                   )}
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-3 text-xs text-text-3">Gestione completa → pagina «Scadenze»</p>
+          <p className="mt-3 inline-flex items-center gap-1 text-xs text-text-3">
+            Gestione completa
+            <IcoVerso />
+            pagina «Scadenze»
+          </p>
         </div>
 
         <div className="card p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-text-1">Tecnici assegnati</h2>
-            <button className="btn-secondary h-8 px-3 text-xs" onClick={() => setModaleAssegna(true)}>
-              + Assegna
+            <button
+              className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
+              onClick={() => setModaleAssegna(true)}
+            >
+              <IcoNuovoPiccolo />
+              Assegna
             </button>
           </div>
           {imp.assegnazioni.length === 0 ? (
@@ -174,7 +201,11 @@ export default function Pagina() {
                     {a.dipendente.cognome} {a.dipendente.nome}
                   </span>
                   <span className="text-xs text-text-3">
-                    {dataIt(a.dataInizio)} → {a.dataFine ? dataIt(a.dataFine) : "in corso"}
+                    <span className="inline-flex items-center gap-1">
+                      {dataIt(a.dataInizio)}
+                      <IcoVerso />
+                      {a.dataFine ? dataIt(a.dataFine) : "in corso"}
+                    </span>
                     {a.attiva && (
                       <span className="ml-1 rounded-sm bg-success-subtle px-1.5 text-success-text">
                         attiva
@@ -190,8 +221,12 @@ export default function Pagina() {
         <div className="card p-5 lg:col-span-3">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-text-1">Allegati</h2>
-            <button className="btn-secondary h-8 px-3 text-xs" onClick={() => setModaleMedia(true)}>
-              + Aggiungi
+            <button
+              className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
+              onClick={() => setModaleMedia(true)}
+            >
+              <IcoNuovoPiccolo />
+              Aggiungi
             </button>
           </div>
           {imp.media.length === 0 ? (

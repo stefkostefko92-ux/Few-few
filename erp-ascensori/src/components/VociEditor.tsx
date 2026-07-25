@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { euro } from "@/lib/format";
+import { IcoNuovoPiccolo } from "@/components/icone";
 
 export interface VoceRiga {
   id: string;
@@ -221,8 +222,9 @@ export default function VociEditor({
             </div>
           </>
         )}
-        <button type="submit" className="btn-primary">
-          {inModifica ? "Aggiorna riga" : "+ Aggiungi riga"}
+        <button type="submit" className="btn-primary inline-flex items-center gap-1.5">
+          {!inModifica && <IcoNuovoPiccolo />}
+          {inModifica ? "Aggiorna riga" : "Aggiungi riga"}
         </button>
         {inModifica && (
           <button

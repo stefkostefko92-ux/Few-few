@@ -26,7 +26,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!prima) throw new ErroreHttp(404, "Fattura non trovata");
     const da = prima.stato as StatoFattura;
     if (!transizioneFatturaAmmessa(da, stato))
-      throw new ErroreHttp(409, `Transizione non ammessa: ${da} → ${stato}`);
+      throw new ErroreHttp(409, `Transizione non ammessa: da «${da}» a «${stato}»`);
     // условен запис — пази от състезание между две едновременни промени
     const upd = await tx.fattura.updateMany({ where: { id, stato: da }, data: { stato } });
     if (upd.count === 0)

@@ -31,6 +31,7 @@ import {
   SignOut,
   CalendarCheck,
 } from "@phosphor-icons/react";
+import { DIM } from "@/components/icone";
 import { haPermesso, type Ruolo, RUOLO_LABEL, isRuolo } from "@/lib/roles";
 
 interface Voce {
@@ -48,54 +49,54 @@ interface Gruppo {
 const GRUPPI: Gruppo[] = [
   {
     label: null,
-    voci: [{ href: "/dashboard", label: "Dashboard", icona: <SquaresFour size={18} /> }],
+    voci: [{ href: "/dashboard", label: "Dashboard", icona: <SquaresFour size={DIM.navigazione} /> }],
   },
   {
     label: "Anagrafiche",
     voci: [
-      { href: "/impianti", label: "Impianti", icona: <Elevator size={18} /> },
-      { href: "/scadenze", label: "Scadenze", icona: <CalendarCheck size={18} /> },
-      { href: "/condomini", label: "Condomìni", icona: <Buildings size={18} /> },
-      { href: "/amministratori", label: "Amministratori", icona: <UserGear size={18} /> },
-      { href: "/dipendenti", label: "Dipendenti", icona: <Users size={18} /> },
-      { href: "/automezzi", label: "Automezzi", icona: <Truck size={18} /> },
-      { href: "/cottimisti", label: "Cottimisti", icona: <HardHat size={18} /> },
-      { href: "/squadre", label: "Squadre", icona: <UsersThree size={18} /> },
+      { href: "/impianti", label: "Impianti", icona: <Elevator size={DIM.navigazione} /> },
+      { href: "/scadenze", label: "Scadenze", icona: <CalendarCheck size={DIM.navigazione} /> },
+      { href: "/condomini", label: "Condomìni", icona: <Buildings size={DIM.navigazione} /> },
+      { href: "/amministratori", label: "Amministratori", icona: <UserGear size={DIM.navigazione} /> },
+      { href: "/dipendenti", label: "Dipendenti", icona: <Users size={DIM.navigazione} /> },
+      { href: "/automezzi", label: "Automezzi", icona: <Truck size={DIM.navigazione} /> },
+      { href: "/cottimisti", label: "Cottimisti", icona: <HardHat size={DIM.navigazione} /> },
+      { href: "/squadre", label: "Squadre", icona: <UsersThree size={DIM.navigazione} /> },
     ],
   },
   {
     label: "Magazzino",
     voci: [
-      { href: "/magazzino", label: "Articoli", icona: <Package size={18} /> },
-      { href: "/movimenti", label: "Movimenti", icona: <ArrowsLeftRight size={18} /> },
+      { href: "/magazzino", label: "Articoli", icona: <Package size={DIM.navigazione} /> },
+      { href: "/movimenti", label: "Movimenti", icona: <ArrowsLeftRight size={DIM.navigazione} /> },
     ],
   },
   {
     label: "Commesse",
     voci: [
-      { href: "/preventivi", label: "Preventivi", icona: <FileText size={18} /> },
-      { href: "/ordini", label: "Ordini di lavoro", icona: <Wrench size={18} /> },
+      { href: "/preventivi", label: "Preventivi", icona: <FileText size={DIM.navigazione} /> },
+      { href: "/ordini", label: "Ordini di lavoro", icona: <Wrench size={DIM.navigazione} /> },
     ],
   },
   {
     label: "Documentale",
     voci: [
-      { href: "/fatture", label: "Fatture", icona: <Receipt size={18} />, minimo: "DIREZIONE" },
-      { href: "/ddt", label: "DDT", icona: <FileArrowDown size={18} /> },
-      { href: "/documenti", label: "Documenti", icona: <Files size={18} /> },
+      { href: "/fatture", label: "Fatture", icona: <Receipt size={DIM.navigazione} />, minimo: "DIREZIONE" },
+      { href: "/ddt", label: "DDT", icona: <FileArrowDown size={DIM.navigazione} /> },
+      { href: "/documenti", label: "Documenti", icona: <Files size={DIM.navigazione} /> },
     ],
   },
   {
     label: "Sistema",
     voci: [
-      { href: "/utenti", label: "Utenti", icona: <UserCircle size={18} />, minimo: "ADMIN" },
+      { href: "/utenti", label: "Utenti", icona: <UserCircle size={DIM.navigazione} />, minimo: "ADMIN" },
       {
         href: "/audit",
         label: "Registro operazioni",
-        icona: <ClockCounterClockwise size={18} />,
+        icona: <ClockCounterClockwise size={DIM.navigazione} />,
         minimo: "ADMIN",
       },
-      { href: "/aziende", label: "Aziende", icona: <ShieldCheck size={18} />, minimo: "ADMIN" },
+      { href: "/aziende", label: "Aziende", icona: <ShieldCheck size={DIM.navigazione} />, minimo: "ADMIN" },
     ],
   },
 ];
@@ -136,8 +137,9 @@ export default function Sidebar() {
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface">
       <div className="flex items-center gap-2.5 px-4 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-sm font-bold text-text-inverse">
-          EA
+        {/* Същият знак като иконата в раздела на браузъра — една марка, не две. */}
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-text-inverse">
+          <Elevator size={DIM.navigazione} weight="light" aria-hidden />
         </div>
         <div>
           <div className="text-sm font-semibold leading-4 text-text-1">ERP Ascensori</div>
@@ -194,11 +196,11 @@ export default function Sidebar() {
             aria-label={scuro ? "Tema chiaro" : "Tema scuro"}
             title={scuro ? "Tema chiaro" : "Tema scuro"}
           >
-            {scuro ? <Sun size={16} /> : <Moon size={16} />}
+            {scuro ? <Sun size={DIM.bottone} /> : <Moon size={DIM.bottone} />}
           </button>
         </div>
         <button className="btn-secondary h-8 w-full text-xs" onClick={() => void esci()}>
-          <SignOut size={14} /> Esci
+          <SignOut size={DIM.bottone} /> Esci
         </button>
       </div>
     </aside>

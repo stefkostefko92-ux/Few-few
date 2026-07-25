@@ -4,7 +4,8 @@
 // форма за създаване/промяна + изтриване. Конфигурира се декларативно.
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Modale, Paginazione, Vuoto, FiltriStato } from "@/components/ui";
+import { Modale, Paginazione, Vuoto, FiltriStato, ScheletroTabella } from "@/components/ui";
+import { IcoNuovo } from "@/components/icone";
 import { perInputData } from "@/lib/format";
 
 export type Riga = Record<string, unknown>;
@@ -126,8 +127,12 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
         </div>
         <div className="flex items-center gap-2">
           {config.extraAzioni}
-          <button className="btn-primary" onClick={() => setModale({ modo: "crea" })}>
-            + Nuovo
+          <button
+            className="btn-primary inline-flex items-center gap-1.5"
+            onClick={() => setModale({ modo: "crea" })}
+          >
+            <IcoNuovo />
+            Nuovo
           </button>
         </div>
       </div>
@@ -163,13 +168,13 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
         </div>
 
         {errore ? (
-          <Vuoto messaggio={errore} />
+          <Vuoto messaggio={errore} icona={false} />
         ) : caricamento ? (
-          <Vuoto messaggio="Caricamento…" />
+          <ScheletroTabella colonne={config.colonne.length + 1} />
         ) : righe.length === 0 ? (
           <Vuoto
             messaggio={q || stato ? "Nessun risultato per i filtri attivi" : "Nessun record ancora"}
-            azione={q || stato ? "Azzera i filtri" : `+ Crea il primo`}
+            azione={q || stato ? "Azzera i filtri" : "Crea il primo"}
             onAzione={() => {
               if (q || stato) {
                 setQ("");
@@ -188,7 +193,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                       {c.label}
                     </th>
                   ))}
-                  <th className="w-24 px-3 py-2.5 text-right">Azioni</th>
+                  <th className="w-32 px-3 py-2.5 text-right">Azioni</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,21 +210,25 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                         {c.render ? c.render(r) : String(valoreAnnidato(r, c.chiave) ?? "—")}
                       </td>
                     ))}
-                    <td className="px-3 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        className="btn-ghost h-7 px-2 text-xs"
-                        onClick={() => setModale({ modo: "modifica", riga: r })}
-                      >
-                        Modifica
-                      </button>
-                      {config.eliminabile !== false && (
+                    {/* „Elimina" е разрушително и стои до „Modifica": целта за
+                        докосване е 32 px и има отстояние, за да не се уцелва грешно. */}
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
-                          className="btn-ghost h-7 px-2 text-xs text-danger-text"
-                          onClick={() => void elimina(r)}
+                          className="btn-ghost h-8 px-2.5 text-xs"
+                          onClick={() => setModale({ modo: "modifica", riga: r })}
                         >
-                          Elimina
+                          Modifica
                         </button>
-                      )}
+                        {config.eliminabile !== false && (
+                          <button
+                            className="btn-ghost h-8 px-2.5 text-xs text-danger-text"
+                            onClick={() => void elimina(r)}
+                          >
+                            Elimina
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -30,7 +30,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!prima) throw new ErroreHttp(404, "Preventivo non trovato");
     const da = prima.stato as StatoPreventivo;
     if (!transizionePreventivoAmmessa(da, stato))
-      throw new ErroreHttp(409, `Transizione non ammessa: ${da} → ${stato}`);
+      throw new ErroreHttp(409, `Transizione non ammessa: da «${da}» a «${stato}»`);
     const upd = await tx.preventivo.updateMany({ where: { id, stato: da }, data: { stato } });
     if (upd.count === 0)
       throw new ErroreHttp(409, "Stato modificato da un'altra operazione: riprovare");

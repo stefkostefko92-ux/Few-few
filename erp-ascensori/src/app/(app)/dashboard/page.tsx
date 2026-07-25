@@ -14,6 +14,8 @@ import {
   type PuntoCategoria,
   type PuntoSerie,
 } from "@/components/Grafico";
+import { Barra } from "@/components/ui";
+import { IcoChiudi, IcoGiu, IcoLarghezza, IcoSu } from "@/components/icone";
 import { euro, dataIt } from "@/lib/format";
 
 // ── Модел на конфигурацията ─────────────────────────────────────────────────
@@ -315,41 +317,45 @@ function WidgetCard({
               </>
             )}
             <button
-              className="btn-ghost h-8 px-2 text-xs"
+              className="btn-ghost inline-flex h-8 items-center gap-1 px-2 text-xs"
               onClick={() => onAggiorna({ larghezza: cfg.larghezza === 1 ? 2 : 1 })}
               title="Larghezza"
             >
-              {cfg.larghezza === 1 ? "⬌ Allarga" : "⬌ Restringi"}
+              <IcoLarghezza />
+              {cfg.larghezza === 1 ? "Allarga" : "Restringi"}
             </button>
             <button
-              className="btn-ghost h-8 px-2 text-xs"
+              className="btn-ghost inline-flex h-8 items-center gap-1 px-2 text-xs"
               disabled={primo}
               onClick={() => onSposta(-1)}
               aria-label="Sposta su"
             >
-              ↑
+              <IcoSu />
             </button>
             <button
-              className="btn-ghost h-8 px-2 text-xs"
+              className="btn-ghost inline-flex h-8 items-center gap-1 px-2 text-xs"
               disabled={ultimo}
               onClick={() => onSposta(1)}
               aria-label="Sposta giù"
             >
-              ↓
+              <IcoGiu />
             </button>
             <button
-              className="btn-ghost h-8 px-2 text-xs text-danger-text"
+              className="btn-ghost inline-flex h-8 items-center px-2 text-xs text-danger-text"
               onClick={onRimuovi}
               aria-label="Rimuovi widget"
             >
-              ✕
+              <IcoChiudi />
             </button>
           </div>
         )}
       </div>
 
       {!stats ? (
-        <div className="py-10 text-center text-sm text-text-3">Caricamento…</div>
+        <div className="space-y-3 py-4" role="status" aria-label="Caricamento in corso">
+          <Barra className="h-3 w-32" />
+          <Barra className="h-40 w-full" />
+        </div>
       ) : (
         <ContenutoWidget cfg={cfg} stats={stats} />
       )}

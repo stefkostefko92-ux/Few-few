@@ -4,7 +4,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Badge } from "@/components/ui";
+import { Badge, ScheletroDettaglio } from "@/components/ui";
+import { IcoIndietro } from "@/components/icone";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
 import { euro, dataIt } from "@/lib/format";
 
@@ -68,7 +69,7 @@ export default function Pagina() {
   }
 
   if (errore) return <p className="text-text-3">{errore}</p>;
-  if (!f) return <p className="text-text-3">Caricamento…</p>;
+  if (!f) return <ScheletroDettaglio />;
 
   const controparte = f.amministratore
     ? (f.amministratore.ragioneSociale ??
@@ -82,7 +83,8 @@ export default function Pagina() {
   return (
     <div>
       <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/fatture")}>
-        ← Fatture
+        <IcoIndietro />
+        Fatture
       </button>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
