@@ -46,7 +46,8 @@ if [ -f "$CONFIG" ]; then
   ok "Конфигът вече съществува (${CONFIG}) — не го пипам."
 else
   log "Създавам конфиг с генерирани тайни…"
-  mkdir -p "$CONFIG_DIR"
+  # 700 от самото начало: конфигът носи passwordHash, sessionSecret и peerToken.
+  install -d -m 700 "$CONFIG_DIR"
   ADMIN_PW="${CSD_ADMIN_PASSWORD:-}"
   if [ -z "$ADMIN_PW" ]; then
     if [ -t 0 ]; then
@@ -80,7 +81,9 @@ else
         paths: { stateDir: process.env.CSD_STATE_DIR, releasesDir: "/opt/few-few/releases",
           currentLink: "/opt/few-few/current", archiveDir: "/root", autodeploy: "" },
       };
-      require("fs").writeFileSync(process.env.CSD_OUT, JSON.stringify(cfg, null, 2));
+      // mode при СЪЗДАВАНЕТО, не след това — иначе има прозорец, в който
+      // конфигът (passwordHash + sessionSecret) е четим от всички.
+      require("fs").writeFileSync(process.env.CSD_OUT, JSON.stringify(cfg, null, 2), { mode: 0o600 });
     }).catch(e => { console.error(e); process.exit(1); });
   '
   chmod 600 "$CONFIG"

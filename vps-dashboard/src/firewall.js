@@ -89,8 +89,41 @@ export async function deleteRule(num, audit, user) {
   return { ok: true, output: out.trim() };
 }
 
-export async function setEnabled(enabled, audit, user) {
-  audit.log({ action: `firewall.${enabled ? 'enable' : 'disable'}`, user });
+// Кой SSH порт слуша реално (за да не се самозаключим при включване на ufw).
+async function sshPort() {
+  const r = await run('sshd', ['-T'], { timeout: 10000 });
+  const m = r.ok && r.stdout.match(/^port (\d+)$/m);
+  return m ? m[1] : '22';
+}
+
+// Проверява дали има добавено allow правило за даден порт. `ufw show added`
+// работи и когато стената е ИЗКЛЮЧЕНА (за разлика от `ufw status`, който тогава
+// не изброява правилата) — точно случаят преди първото включване.
+export async function hasAllowFor(port) {
+  const r = await run('ufw', ['show', 'added'], { timeout: 10000 });
+  if (!r.ok) return false;
+  return r.stdout
+    .split('\n')
+    .filter((l) => /\ballow\b/i.test(l))
+    .some((l) => new RegExp(`(^|[^\\d])${port}([^\\d]|$)`).test(l) || /\bssh\b/i.test(l));
+}
+
+export async function setEnabled(enabled, audit, user, { force = false } = {}) {
+  // ПРЕДПАЗИТЕЛ: включване на ufw без allow за SSH заключва собственика извън
+  // сървъра (и панела). Отказваме, освен ако не е поискано изрично.
+  if (enabled && !force) {
+    const port = await sshPort();
+    if (!(await hasAllowFor(port))) {
+      throw Object.assign(
+        new Error(
+          `Няма allow правило за SSH (порт ${port}) — включването на ufw ще те заключи извън сървъра. ` +
+            `Добави първо правило „allow ${port}/tcp“, или потвърди изрично.`
+        ),
+        { status: 409 }
+      );
+    }
+  }
+  audit.log({ action: `firewall.${enabled ? 'enable' : 'disable'}`, forced: force || undefined, user });
   const out = await runOk('ufw', enabled ? ['--force', 'enable'] : ['disable'], { timeout: 20000 });
   return { ok: true, enabled: Boolean(enabled), output: out.trim() };
 }

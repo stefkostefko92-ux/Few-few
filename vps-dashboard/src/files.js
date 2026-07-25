@@ -3,8 +3,38 @@
 // тайните файлове (mode 600 конфиги) се показват само по изричен път — одитирано.
 import fs from 'node:fs';
 import path from 'node:path';
+import { CONFIG_PATH } from './config.js';
 
 const VIEW_CAP = 256 * 1024; // 256KB преглед
+
+// Тайните на САМИЯ панел не бива да минават през браузъра. Открадната сесия иначе
+// вади sessionSecret → подправени сесии завинаги (преживяват смяна на паролата) и
+// peerToken → достъп до другия VPS. Root shell пак може да ги прочете — това не е
+// граница на привилегии, а стесняване на щетата от открадната сесия.
+const SECRET_KEYS = /("(?:passwordHash|sessionSecret|peerToken|secret|token|botToken|password|apiKey)"\s*:\s*)"[^"]*"/gi;
+const SENSITIVE_FILES = [/\/etc\/vps-dashboard\/config\.json$/, /\/etc\/vps-dashboard\/.*\.env$/];
+
+// Пътят на ЖИВИЯ конфиг (уважава CSD_CONFIG) — иначе преместен конфиг тихо
+// изпада от защитата и тайните му тръгват към браузъра.
+function isSensitive(fullPath) {
+  if (path.resolve(CONFIG_PATH) === fullPath) return true;
+  return SENSITIVE_FILES.some((rx) => rx.test(fullPath));
+}
+
+export function redactSecrets(fullPath, text) {
+  if (!isSensitive(fullPath)) return { text, changed: false };
+  let changed = false;
+  let out = text.replace(SECRET_KEYS, (_m, prefix) => {
+    changed = true;
+    return `${prefix}"«скрито — виж файла на сървъра»"`;
+  });
+  // .env форма: КЛЮЧ=стойност
+  out = out.replace(/^(\s*[\w.]*(?:SECRET|TOKEN|PASSWORD|KEY)[\w.]*\s*=).*$/gim, (_m, prefix) => {
+    changed = true;
+    return `${prefix}«скрито»`;
+  });
+  return { text: out, changed };
+}
 
 function safeResolve(p) {
   const full = path.resolve(String(p || '/'));
@@ -41,9 +71,24 @@ export function listDir(p) {
 // Запис на текстов файл. Пази копие на стария (.bak-<време>) — редакцията на
 // конфиг на сървъра трябва да е обратима. Не създава нови файлове по погрешка:
 // изисква файлът да съществува, освен при изричен create.
+export const REDACTED_MARK = '«скрито';
+
 export function writeFile(p, content, { create = false } = {}, audit, user) {
   const full = safeResolve(p);
   const text = String(content ?? '');
+  // Файловете с тайни се показват РЕДАКТИРАНИ (виж redactSecrets) — запис оттук би
+  // презаписал истинските тайни с плочки. Затова са само за четене през панела.
+  if (isSensitive(full)) {
+    throw Object.assign(
+      new Error('Този файл съдържа тайни и се показва скрит — редактирай го на сървъра (терминал), не оттук.'),
+      { status: 403 }
+    );
+  }
+  if (text.includes(REDACTED_MARK)) {
+    throw Object.assign(new Error('Съдържанието носи скрити стойности — записът е спрян, за да не изтрие тайни.'), {
+      status: 400,
+    });
+  }
   if (Buffer.byteLength(text, 'utf8') > VIEW_CAP) {
     throw Object.assign(new Error('Файлът е твърде голям за редакция през панела'), { status: 400 });
   }
@@ -77,12 +122,14 @@ export function readFilePreview(p, audit, user) {
     if (buf.subarray(0, 8000).includes(0)) {
       return { path: full, binary: true, sizeBytes: st.size };
     }
+    const redacted = redactSecrets(full, buf.toString('utf8'));
     return {
       path: full,
       binary: false,
       sizeBytes: st.size,
       truncated: st.size > VIEW_CAP,
-      content: buf.toString('utf8'),
+      redacted: redacted.changed,
+      content: redacted.text,
     };
   } finally {
     fs.closeSync(fd);

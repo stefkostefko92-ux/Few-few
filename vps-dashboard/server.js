@@ -14,7 +14,10 @@ import { serveStatic, sendError } from './src/httpd.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const cfg = loadConfig();
+// Fail-closed: DEV резервният режим (ефимерна парола) се допуска САМО при изричен
+// CSD_DEV=1. Иначе липсващ конфиг спира услугата вместо тихо да вдигне панела с
+// генерирана парола, отпечатана в journald.
+const cfg = loadConfig({ allowDev: Boolean(process.env.CSD_DEV) });
 const audit = new Audit(cfg.paths.stateDir);
 const jobs = new Jobs(audit);
 const metrics = new MetricsCollector();
@@ -48,6 +51,16 @@ const server = http.createServer(async (req, res) => {
   res.setTimeout(0);
   res.setHeader('referrer-policy', 'no-referrer');
   res.setHeader('x-frame-options', 'DENY');
+  res.setHeader('x-content-type-options', 'nosniff');
+  // Панелът не зарежда НИЩО отвън (нула CDN) → политиката е максимално стегната.
+  // Защита в дълбочина: дори при пропуснато място за екраниране, скрипт отвън не тръгва.
+  // style-src иска 'unsafe-inline' заради inline цветовете на терминалния рендер
+  // (ansi.js слага style атрибути на span-овете) — скриптовете остават само 'self'.
+  res.setHeader(
+    'content-security-policy',
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+      "connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'"
+  );
   let url;
   try {
     url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);

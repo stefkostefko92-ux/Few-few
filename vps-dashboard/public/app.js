@@ -858,9 +858,18 @@ async function renderFirewall() {
         class: `btn btn-sm ${fw.active ? 'btn-danger' : 'btn-primary'}`,
         text: fw.active ? 'Изключи firewall' : 'Включи firewall',
         onclick: async () => {
-          if (!confirm(fw.active ? 'ИЗКЛЮЧВАМ защитната стена — сървърът остава отворен. Сигурен ли си?' : 'Включвам ufw. Увери се, че SSH портът е разрешен, иначе се заключваш!')) return;
-          try { await api('/firewall/enabled', { method: 'POST', body: { enabled: !fw.active } }); toast('Готово'); go('firewall'); }
-          catch (e) { toast(e.message, 'bad'); }
+          if (!confirm(fw.active ? 'ИЗКЛЮЧВАМ защитната стена — сървърът остава отворен. Сигурен ли си?' : 'Включвам ufw.')) return;
+          try {
+            await api('/firewall/enabled', { method: 'POST', body: { enabled: !fw.active } });
+            toast('Готово'); go('firewall');
+          } catch (e) {
+            // Сървърът отказва включване без allow за SSH (предпазител срещу
+            // самозаключване). Питаме изрично, преди да го прескочим.
+            if (/заключи/.test(e.message) && confirm(e.message + '\n\nВСЕ ПАК да включа ufw?')) {
+              try { await api('/firewall/enabled', { method: 'POST', body: { enabled: true, force: true } }); toast('Включен (принудително)', 'warn'); go('firewall'); }
+              catch (e2) { toast(e2.message, 'bad'); }
+            } else { toast(e.message, 'bad'); }
+          }
         },
       }),
     ])

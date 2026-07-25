@@ -252,15 +252,19 @@ export function buildRouter(ctx) {
   r.get(
     '/api/stream/journal',
     guard((req, res, p, url) => {
+      // Валидирай ПРЕДИ да отвориш потока: щом SSE прати хедърите, всяка грешка
+      // след това не може да се върне като HTTP статус (виж sendJson).
+      const unit = url.searchParams.get('unit') || undefined;
+      const priority = url.searchParams.get('priority') ?? undefined;
+      if (unit) services.assertUnit(unit);
+      if (priority !== undefined && priority !== '') {
+        const pr = Number(priority);
+        if (!Number.isInteger(pr) || pr < 0 || pr > 7) {
+          return sendError(res, 400, 'Невалиден приоритет');
+        }
+      }
       const sse = openSse(res);
-      services.journalFollow(
-        {
-          unit: url.searchParams.get('unit') || undefined,
-          priority: url.searchParams.get('priority') ?? undefined,
-        },
-        sse,
-        res
-      );
+      services.journalFollow({ unit, priority }, sse, res);
     })
   );
 
@@ -495,7 +499,7 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => {
         const b = await readJson(req);
-        return firewall.setEnabled(Boolean(b.enabled), audit, req.user);
+        return firewall.setEnabled(Boolean(b.enabled), audit, req.user, { force: Boolean(b.force) });
       }),
       { mutating: true }
     )

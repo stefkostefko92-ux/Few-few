@@ -603,6 +603,29 @@ deploy_vpsdashboard() {
   install -m 644 "$VPSDASH_DIR/deploy/vps-dashboard.service" /etc/systemd/system/${VPSDASH_SERVICE}.service
   systemctl daemon-reload
   systemctl enable "$VPSDASH_SERVICE" >/dev/null 2>&1 || true
+
+  # ── Самодеплой: панелът обновява САМИЯ СЕБЕ СИ ──────────────────────────────
+  # Когато този скрипт е пуснат ОТ панела, той върви в cgroup-а на
+  # vps-dashboard.service. `systemctl restart` праща SIGTERM на целия cgroup
+  # (KillMode=control-group по подразбиране) → скриптът се самоубива тук и НИКОГА
+  # не стига до health/rollback, до `current` symlink-а и до чистенето. Затова при
+  # самодеплой рестартът се отлага в отделна преходна единица: скриптът довършва
+  # цикъла, панелът се вдига след няколко секунди.
+  if [ -n "${CSD_SELF_DEPLOY:-}" ] && command -v systemd-run >/dev/null; then
+    # Синтактична проверка на новия код ПРЕДИ да рестартираме (евтин предпазител —
+    # няма билд стъпка, но счупен файл не бива да сваля панела).
+    if ! ( cd "$VPSDASH_DIR" && node --check server.js ); then
+      deploy_failed=1
+      warn "vps-dashboard: новият код не минава node --check — НЕ рестартирам. Старият панел остава жив."
+      return
+    fi
+    systemd-run --quiet --on-active=5 --unit="csd-selfrestart-$TS" \
+      systemctl restart "$VPSDASH_SERVICE" \
+      && ok "vps-dashboard: рестартът е отложен с 5s (самодеплой) — панелът ще се вдигне сам." \
+      || { deploy_failed=1; warn "vps-dashboard: не успях да отложа рестарта."; }
+    return
+  fi
+
   systemctl restart "$VPSDASH_SERVICE"
   sleep 2
   # /api/ping без сесия връща 401 → това е „жив". health() приема само 2xx/3xx,

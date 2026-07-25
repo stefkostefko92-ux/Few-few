@@ -81,6 +81,12 @@ export async function sqliteCheck(file) {
 function assertSqlite(file) {
   const full = path.resolve(String(file || ''));
   if (!/\.(db|sqlite3?)$/.test(full)) throw Object.assign(new Error('Не е SQLite файл'), { status: 400 });
+  // Пътят влиза в shell низ при dump → нула метазнаци. Разширението и
+  // съществуването НЕ стигат: файл на име `x";touch /tmp/pwned;echo ".db`
+  // изкача от кавичките (а панелът може сам да създаде такъв файл).
+  if (!/^[\w./@ +-]+$/.test(full)) {
+    throw Object.assign(new Error('Пътят съдържа непозволени знаци'), { status: 400 });
+  }
   if (!fs.existsSync(full)) throw Object.assign(new Error('Няма такъв файл'), { status: 400 });
   return full;
 }

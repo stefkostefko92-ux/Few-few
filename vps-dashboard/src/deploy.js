@@ -93,6 +93,10 @@ export function deploySpec(cfg, { projects, archive, forceSeed }) {
     env.ARCHIVE = full;
   }
   if (forceSeed) env.FORCE_SEED = '1';
+  // Казваме на autodeploy.sh, че деплоят идва ОТ панела: тогава той отлага
+  // собствения си рестарт, за да не убие този скрипт заедно със себе си
+  // (общ systemd cgroup). Виж deploy_vpsdashboard() в autodeploy.sh.
+  env.CSD_SELF_DEPLOY = '1';
   return {
     title: `Деплой (${env.PROJECTS || 'всички проекти'})`,
     cmd: 'bash',

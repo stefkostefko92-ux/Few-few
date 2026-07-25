@@ -87,7 +87,7 @@ export function loadConfig({ configPath = CONFIG_PATH, allowDev = true } = {}) {
   }
 
   if (!raw) {
-    if (!allowDev && !process.env.CSD_DEV) {
+    if (!allowDev) {
       throw new Error(`Липсва конфиг ${configPath} — пусни deploy/install.sh веднъж на сървъра.`);
     }
     // Dev fallback: еднократна парола, ефимерни тайни, state в локална папка.

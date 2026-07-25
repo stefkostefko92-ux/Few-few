@@ -65,6 +65,7 @@ export class PtySessions {
     child.on('error', (err) => push(`\r\n[грешка: ${err.message}]\r\n`));
     child.on('close', (code) => {
       session.closed = true;
+      clearInterval(session.idleTimer); // иначе пазачът тиктака вечно след естествен изход
       for (const l of session.listeners) l('end', { code });
       session.listeners.clear();
       this.map.delete(id);
@@ -94,11 +95,25 @@ export class PtySessions {
     if (text.length > 8192) throw Object.assign(new Error('Твърде дълъг вход'), { status: 400 });
     s.lastActivity = Date.now();
     s.child.stdin.write(text);
-    // Одитираме РЕДОВЕТЕ (не всеки клавиш) — иначе дневникът става безполезен.
-    if (text.includes('\r') || text.includes('\n')) {
-      this.audit?.log({ action: 'pty.input', sessionId: id, data: text.replace(/[\r\n]+$/, '').slice(0, 300), user });
-    }
+    this.auditInput(s, text, user);
     return { ok: true };
+  }
+
+  // Одит на РЕДОВЕТЕ. Браузърът праща по един клавиш на заявка, затова редът се
+  // сглобява ТУК — иначе Enter пристига сам и в дневника влизат празни записи
+  // (т.е. интерактивният root shell остава без одит).
+  auditInput(s, text, user) {
+    s.lineBuf = (s.lineBuf || '') + text;
+    let i;
+    while ((i = s.lineBuf.search(/[\r\n]/)) !== -1) {
+      const line = stripEditing(s.lineBuf.slice(0, i));
+      s.lineBuf = s.lineBuf.slice(i + 1);
+      if (line.trim()) {
+        this.audit?.log({ action: 'pty.input', sessionId: s.id, data: line.slice(0, 300), user });
+      }
+    }
+    // Таван на недовършения ред — дълъг вход без Enter да не расте без край.
+    if (s.lineBuf.length > 4096) s.lineBuf = s.lineBuf.slice(-4096);
   }
 
   // Смяна на размера — `script` няма как да я предаде, затова пращаме
@@ -114,8 +129,8 @@ export class PtySessions {
 
   kill(id, user, reason = 'ръчно') {
     const s = this.map.get(id);
+    if (s) clearInterval(s.idleTimer); // чистим таймера дори при ранен изход
     if (!s) return { ok: true };
-    clearInterval(s.idleTimer);
     this.audit?.log({ action: 'pty.kill', sessionId: id, reason, user });
     try {
       s.child.kill('SIGHUP');
@@ -134,6 +149,19 @@ export class PtySessions {
   list() {
     return [...this.map.values()].map((s) => this.describe(s));
   }
+}
+
+// Прилага backspace/DEL и маха управляващите знаци, за да влезе в одита това,
+// което операторът наистина е изпълнил (а не суровите клавиши).
+export function stripEditing(raw) {
+  let out = '';
+  for (const ch of String(raw)) {
+    if (ch === '\x7f' || ch === '\b') out = out.slice(0, -1);
+    else if (ch === '\x1b') out += '^[';
+    else if (ch >= ' ' || ch === '\t') out += ch;
+    else out += `^${String.fromCharCode(64 + ch.charCodeAt(0))}`; // Ctrl+C → ^C
+  }
+  return out;
 }
 
 export function clampDim(v, min, max) {

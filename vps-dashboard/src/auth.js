@@ -66,7 +66,26 @@ export function tokenEqual(a, b) {
 // Лимит на login опитите: 5 провала / 10 мин на IP (в паметта — достатъчно за 1 админ).
 const FAIL_LIMIT = 5;
 const FAIL_WINDOW_MS = 10 * 60 * 1000;
+const FAIL_MAX_KEYS = 5000; // таван на картата — иначе подправени IP-та я растат без край
 const fails = new Map();
+
+// Изхвърля изтеклите записи и налага таван (най-старите падат първи).
+function pruneFails() {
+  const now = Date.now();
+  for (const [ip, times] of fails) {
+    const recent = times.filter((t) => now - t < FAIL_WINDOW_MS);
+    if (recent.length) fails.set(ip, recent);
+    else fails.delete(ip);
+  }
+  if (fails.size > FAIL_MAX_KEYS) {
+    const excess = fails.size - FAIL_MAX_KEYS;
+    let i = 0;
+    for (const ip of fails.keys()) {
+      if (i++ >= excess) break;
+      fails.delete(ip);
+    }
+  }
+}
 
 export function loginAllowed(ip) {
   const rec = fails.get(ip);
@@ -80,6 +99,12 @@ export function loginFailed(ip) {
   const rec = fails.get(ip) || [];
   rec.push(Date.now());
   fails.set(ip, rec);
+  pruneFails();
+}
+
+// Само за тестове — нулира състоянието на лимитера.
+export function _resetLoginLimiter() {
+  fails.clear();
 }
 
 export function loginSucceeded(ip) {

@@ -56,7 +56,11 @@ export class Router {
 }
 
 export function sendJson(res, status, data) {
-  if (res.writableEnded) return;
+  // headersSent, не само writableEnded: ако отговорът вече е започнал (напр. отворен
+  // SSE поток), повторният writeHead хвърля ERR_HTTP_HEADERS_SENT вътре в catch на
+  // async handler → unhandled rejection → Node сваля ПРОЦЕСА. Тук се затваря целият
+  // клас „грешка след като отговорът е тръгнал".
+  if (res.writableEnded || res.headersSent) return;
   const body = JSON.stringify(data);
   res.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
@@ -161,10 +165,21 @@ export function serveStatic(rootDir) {
   };
 }
 
+// Реалният клиентски IP зад прокси. ВНИМАНИЕ: най-левият елемент на
+// X-Forwarded-For е този, който КЛИЕНТЪТ е пратил — Nginx с
+// `$proxy_add_x_forwarded_for` само ДОБАВЯ реалния адрес отдясно. Ако лимитерът
+// на входа брои левия, всеки го заобикаля с ротиращ хедър. Затова: X-Real-IP
+// (нашият Nginx го слага от $remote_addr, клиентът не може да го подправи), иначе
+// НАЙ-ДЕСНИЯТ елемент на XFF — добавеният от нашето прокси.
 export function clientIp(req, trustProxy) {
   if (trustProxy) {
+    const real = req.headers['x-real-ip'];
+    if (real) return String(real).split(',').pop().trim();
     const xf = req.headers['x-forwarded-for'];
-    if (xf) return String(xf).split(',')[0].trim();
+    if (xf) {
+      const parts = String(xf).split(',');
+      return parts[parts.length - 1].trim();
+    }
   }
   return req.socket.remoteAddress || '?';
 }
