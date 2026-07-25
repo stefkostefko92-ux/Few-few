@@ -45,9 +45,11 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "^6.2.1",
+    "@types/pdfkit": "^0.17.6",
     "bcryptjs": "^2.4.3",
     "jose": "^5.9.6",
     "next": "^15.1.4",
+    "pdfkit": "^0.19.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.0",

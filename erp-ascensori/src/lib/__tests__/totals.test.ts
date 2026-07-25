@@ -1,13 +1,7 @@
 // Парична аритметика: цели центесими, half-up, преизчисление от редовете.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  toCents,
-  fromCents,
-  totaleVoce,
-  ivaVoce,
-  calcolaTotali,
-} from "../totals";
+import { toCents, fromCents, totaleVoce, ivaVoce, calcolaTotali, riepilogoIva, totaliDaRiepilogo } from "../totals";
 
 test("toCents/fromCents двупосочно", () => {
   assert.equal(toCents("123.45"), 12345);
@@ -77,4 +71,53 @@ test("различни ставки IVA по редове", () => {
   ]);
   assert.equal(t.totaleIva, "36.00");
   assert.equal(t.totaleLordo, "336.00");
+});
+
+// ── Обобщение по аликвота ───────────────────────────────────────────────────
+
+test("обобщението по аликвота групира и закръгля ВЕДНЪЖ на ставка", () => {
+  const voci = [
+    { quantita: "1", prezzoUnitario: "100.00", aliquotaIva: "22" },
+    { quantita: "2", prezzoUnitario: "50.00", aliquotaIva: "22" },
+    { quantita: "1", prezzoUnitario: "80.00", aliquotaIva: "10" },
+  ];
+  const r = riepilogoIva(voci);
+  assert.equal(r.length, 2);
+  // Подредено по ставка: първо 10 %, после 22 %.
+  assert.equal(r[0].aliquota, "10.00");
+  assert.equal(r[0].imponibile, "80.00");
+  assert.equal(r[0].imposta, "8.00");
+  assert.equal(r[1].aliquota, "22.00");
+  assert.equal(r[1].imponibile, "200.00");
+  assert.equal(r[1].imposta, "44.00");
+});
+
+test("сумирането по редове се разминава с обобщението — обобщението е вярното", () => {
+  // Три реда по 0,105 € с 22 %: по редове 3 × 0,02 = 0,06; по обобщение
+  // 0,32 × 22 % = 0,07. SDI отхвърля документ, чийто riepilogo не съвпада.
+  const voci = [
+    { quantita: "1", prezzoUnitario: "0.11", aliquotaIva: "22" },
+    { quantita: "1", prezzoUnitario: "0.11", aliquotaIva: "22" },
+    { quantita: "1", prezzoUnitario: "0.10", aliquotaIva: "22" },
+  ];
+  const perRighe = calcolaTotali(voci);
+  const perRiepilogo = totaliDaRiepilogo(voci);
+  assert.equal(perRighe.totaleNetto, perRiepilogo.totaleNetto);
+  assert.notEqual(perRighe.totaleIva, perRiepilogo.totaleIva);
+  assert.equal(perRiepilogo.totaleIva, "0.07");
+  assert.equal(perRighe.totaleIva, "0.06");
+});
+
+test("тоталите от обобщението се събират точно", () => {
+  const voci = [
+    { quantita: "3", prezzoUnitario: "19.99", aliquotaIva: "22" },
+    { quantita: "1", prezzoUnitario: "5.50", aliquotaIva: "4" },
+  ];
+  const t = totaliDaRiepilogo(voci);
+  assert.equal(t.totaleNetto, "65.47");
+  assert.equal(
+    toCents(t.totaleLordo),
+    toCents(t.totaleNetto) + toCents(t.totaleIva),
+    "тоталът не е сборът на облагаемото и данъка"
+  );
 });

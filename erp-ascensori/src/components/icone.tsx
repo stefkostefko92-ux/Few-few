@@ -30,6 +30,7 @@ import {
   Check,
   CheckCircle,
   Plus,
+  Printer,
   Tray,
   WarningCircle,
   X,
@@ -48,6 +49,7 @@ export const DIM = {
 
 export const IcoNuovo = () => <Plus size={DIM.bottone} weight="bold" aria-hidden />;
 export const IcoNuovoPiccolo = () => <Plus size={DIM.tabella} weight="bold" aria-hidden />;
+export const IcoStampa = () => <Printer size={DIM.tabella} weight="bold" aria-hidden />;
 export const IcoChiudi = () => <X size={DIM.bottone} weight="bold" aria-hidden />;
 export const IcoSu = () => <ArrowUp size={DIM.bottone} weight="bold" aria-hidden />;
 export const IcoGiu = () => <ArrowDown size={DIM.bottone} weight="bold" aria-hidden />;

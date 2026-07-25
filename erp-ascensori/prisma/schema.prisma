@@ -152,6 +152,39 @@ model Tenant {
   @@map("tenants")
 }
 
+/// Фискалната самоличност на ИЗДАВАЩАТА фирма (cedente/prestatore).
+///
+/// Отделно от `Tenant`, защото при еднофирмена инсталация `tenantId` е `null`
+/// и запис в `Tenant` изобщо няма — а данните на издателя трябват на всеки
+/// документ: чл. 1, ал. 3 D.P.R. 472/1996 иска generalità del cedente върху
+/// DDT, а бъдещият XML за SDI иска и повече. Един ред на фирма (вкл. `null`).
+model DatiAzienda {
+  id               String   @id @default(uuid()) @db.Uuid
+  ragioneSociale   String
+  partitaIva       String?
+  codiceFiscale    String?
+  indirizzo        String?
+  cap              String?
+  citta            String?
+  provincia        String?
+  telefono         String?
+  email            String?
+  pec              String?
+  /// Codice destinatario / codice SDI за е-фактурата.
+  codiceSdi        String?
+  iban             String?
+  /// Регистрация в търговския регистър (REA) — влиза в подписа на документите.
+  rea              String?
+  capitaleSociale  String?
+  /// Бележка под линия на печатните документи (условия на плащане и подобни).
+  notePiePagina    String?
+  tenantId         String?  @unique @db.Uuid
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("dati_azienda")
+}
+
 model User {
   id           String    @id @default(uuid()) @db.Uuid
   email        String    @unique
@@ -340,6 +373,8 @@ model Amministratore {
   indirizzo      String?
   citta          String?
   cap            String?
+  /// Част от фискалния адрес: иска се и на DDT, и в XML-а за SDI.
+  provincia      String?
   note           String?
   attivo         Boolean            @default(true)
   tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)

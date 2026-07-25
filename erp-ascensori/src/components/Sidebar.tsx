@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   UserCircle,
   ClockCounterClockwise,
+  Gear,
   Moon,
   Sun,
   SignOut,
@@ -100,6 +101,12 @@ const GRUPPI: Gruppo[] = [
         href: "/audit",
         label: "Registro operazioni",
         icona: <ClockCounterClockwise size={DIM.navigazione} />,
+        minimo: "ADMIN",
+      },
+      {
+        href: "/impostazioni",
+        label: "Dati aziendali",
+        icona: <Gear size={DIM.navigazione} />,
         minimo: "ADMIN",
       },
       {

@@ -52,6 +52,7 @@ const config: EntityConfig = {
     { name: "indirizzo", label: "Indirizzo (sede legale)", tipo: "text" },
     { name: "citta", label: "Città", tipo: "text" },
     { name: "cap", label: "CAP", tipo: "text" },
+    { name: "provincia", label: "Provincia (sigla)", tipo: "text" },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

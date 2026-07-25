@@ -75,3 +75,57 @@ export function calcolaTotali(voci: VoceInput[]): TotaliDocumento {
     totaliVoci: totali,
   };
 }
+
+// ── Обобщение по аликвота (riepilogo IVA) ───────────────────────────────────
+
+export interface RigaRiepilogo {
+  /** аликвота като низ с две десетични, напр. „22.00" */
+  aliquota: string;
+  imponibile: string;
+  imposta: string;
+}
+
+/**
+ * ДДС-то, сметнато ПО АЛИКВОТА, а не сумирано по редове.
+ *
+ * Това е разликата, която прави фактурата приемлива за Sistema di Interscambio.
+ * Сумирането по редове закръгля N пъти (веднъж на ред), обобщението — веднъж на
+ * ставка. При десет реда по 10 % разликата е до няколко цента, а SDI отхвърля
+ * документ, чийто `DatiRiepilogo` не съвпада с `ImportoTotaleDocumento`.
+ *
+ * Конкретно: 3 реда по 0,105 € с 22 % дават 0,02+0,02+0,02 = 0,06 по редове,
+ * но 0,32 × 22 % = 0,07 по обобщение. Правилното е второто.
+ */
+export function riepilogoIva(voci: VoceInput[]): RigaRiepilogo[] {
+  const perAliquota = new Map<number, number>();
+  for (const v of voci) {
+    const al = toCents(v.aliquotaIva);
+    perAliquota.set(al, (perAliquota.get(al) ?? 0) + totaleVoce(v));
+  }
+  return [...perAliquota.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([al, imponibile]) => ({
+      aliquota: fromCents(al),
+      imponibile: fromCents(imponibile),
+      // Закръглянето е ВЕДНЪЖ, върху сбора на облагаемото по тази ставка.
+      imposta: fromCents(ivaVoce(imponibile, fromCents(al))),
+    }));
+}
+
+/** Тоталите, изведени ОТ обобщението — формата, която SDI очаква. */
+export function totaliDaRiepilogo(voci: VoceInput[]): {
+  totaleNetto: string;
+  totaleIva: string;
+  totaleLordo: string;
+  riepilogo: RigaRiepilogo[];
+} {
+  const riepilogo = riepilogoIva(voci);
+  const netto = riepilogo.reduce((a, r) => a + toCents(r.imponibile), 0);
+  const iva = riepilogo.reduce((a, r) => a + toCents(r.imposta), 0);
+  return {
+    totaleNetto: fromCents(netto),
+    totaleIva: fromCents(iva),
+    totaleLordo: fromCents(netto + iva),
+    riepilogo,
+  };
+}

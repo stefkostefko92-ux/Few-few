@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
 import { ScheletroDettaglio } from "@/components/ui";
-import { IcoIndietro } from "@/components/icone";
+import { IcoIndietro, IcoStampa } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 
 interface DdtDettaglio {
@@ -55,7 +55,8 @@ export default function Pagina() {
         <IcoIndietro />
         DDT
       </button>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
         <h1 className="font-mono text-2xl font-semibold tracking-tight text-text-1">{d.numero}</h1>
         <p className="mt-1 text-xs text-text-3">
           {dataIt(d.data)} · {d.causale ?? "—"} · {d.destinatario ?? "—"}
@@ -63,6 +64,18 @@ export default function Pagina() {
           {d.vettore ?? "mittente"}
           {d.ordineLavoro ? ` · ordine ${d.ordineLavoro.numero}` : ""}
         </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            className="btn-secondary inline-flex items-center gap-1.5"
+            href={`/api/ddt/${id}/pdf`}
+            target="_blank"
+            rel="noopener"
+          >
+            <IcoStampa />
+            Stampa
+          </a>
+        </div>
       </div>
 
       <div className="card mb-6 p-5">

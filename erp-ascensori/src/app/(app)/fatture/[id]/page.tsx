@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
-import { IcoIndietro } from "@/components/icone";
+import { IcoIndietro, IcoStampa } from "@/components/icone";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
 import { euro, dataIt } from "@/lib/format";
 
@@ -99,6 +99,15 @@ export default function Pagina() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            className="btn-secondary inline-flex items-center gap-1.5"
+            href={`/api/fatture/${id}/pdf`}
+            target="_blank"
+            rel="noopener"
+          >
+            <IcoStampa />
+            Stampa
+          </a>
           <Badge valore={f.stato} />
           <select
             className="input w-40"
