@@ -35,10 +35,17 @@ export interface Campo {
     | "select"
     | "textarea"
     | "checkbox"
-    | "tags";
+    | "tags"
+    | "multiselect";
   opzioni?: Opzione[];
   /** зарежда опции от API: списъчен endpoint + функция за етикет */
   opzioniApi?: { url: string; etichetta: (r: Riga) => string };
+  /** при `multiselect`: кой ключ на вложения ред носи id-то (напр. „impiantoId") */
+  chiaveMulti?: string;
+  /** име на полето В ТЯЛОТО на заявката, ако се различава от `name`.
+   *  Нужно е, когато формата ЧЕТЕ от връзка (`impianti`), а API-то ПРИЕМА
+   *  списък с идентификатори (`impiantiIds`). */
+  inviaCome?: string;
   richiesto?: boolean;
   /** стойност по подразбиране при създаване */
   predefinito?: unknown;
@@ -279,6 +286,11 @@ function valoreIniziale(campo: Campo, riga?: Riga): unknown {
   if (v === null || v === undefined) return campo.tipo === "checkbox" ? false : "";
   if (campo.tipo === "date") return perInputData(v as string | Date);
   if (campo.tipo === "tags") return (v as string[]).join(", ");
+  // Многото стойности идват като списък от свързващи редове — вадим само id-тата.
+  if (campo.tipo === "multiselect")
+    return Array.isArray(v)
+      ? (v as Riga[]).map((x) => String(x[campo.chiaveMulti ?? "id"] ?? x))
+      : [];
   return v;
 }
 
@@ -336,13 +348,14 @@ export function FormEntity({
       if (campo.tipo === "textarea") v = typeof v === "string" && v.trim() === "" ? null : v;
       if (campo.tipo === "date") v = v === "" ? null : v;
       if (campo.tipo === "select") v = v === "" ? null : v;
+      if (campo.tipo === "multiselect") v = Array.isArray(v) ? v : [];
       if (campo.tipo === "tags")
         v = typeof v === "string"
           ? v.split(",").map((x) => x.trim()).filter(Boolean)
           : [];
       // при create не пращаме null за незадължителни празни полета
       if (modo === "crea" && v === null && !campo.richiesto) continue;
-      corpo[campo.name] = v;
+      corpo[campo.inviaCome ?? campo.name] = v;
     }
 
     const url = modo === "crea" ? config.api : `${config.api}/${riga!.id}`;
@@ -441,6 +454,37 @@ function CampoInput({
           ))}
         </select>
       );
+    case "multiselect": {
+      // Списък с отметки, не `<select multiple>`: последният е неоткриваем на
+      // тъч и изисква Ctrl, за да добавиш втори елемент.
+      const scelti = new Set(Array.isArray(valore) ? (valore as string[]) : []);
+      return (
+        <div
+          id={id}
+          role="group"
+          aria-label={campo.label}
+          className="max-h-48 space-y-1 overflow-y-auto rounded-md border border-border bg-bg p-2"
+        >
+          {opzioni.length === 0 && <p className="px-1 py-2 text-sm text-text-3">Nessuna opzione</p>}
+          {opzioni.map((o) => (
+            <label key={o.value} className="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={scelti.has(o.value)}
+                onChange={(e) => {
+                  const next = new Set(scelti);
+                  if (e.target.checked) next.add(o.value);
+                  else next.delete(o.value);
+                  onCambia([...next]);
+                }}
+              />
+              {o.label}
+            </label>
+          ))}
+        </div>
+      );
+    }
     case "textarea":
       return (
         <textarea

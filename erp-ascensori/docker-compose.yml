@@ -83,9 +83,10 @@ services:
     # Изчислява се спрямо стенния часовник, за да не се измества след рестарт.
     command:
       - |
-        echo "→ автоматизмите са активни (scadenze дневно 06:00, retention неделя 04:00)"
+        echo "→ автоматизмите са активни (contratti 05:00, scadenze 06:00, retention неделя 04:00)"
         while true; do
           ORA=$$(date +%H%M); GIORNO=$$(date +%u)
+          if [ "$$ORA" = "0500" ]; then npm run contratti || echo "✖ contratti"; fi
           if [ "$$ORA" = "0600" ]; then npm run scadenze:check || echo "✖ scadenze"; fi
           if [ "$$GIORNO" = "7" ] && [ "$$ORA" = "0400" ]; then npm run retention || echo "✖ retention"; fi
           sleep 60

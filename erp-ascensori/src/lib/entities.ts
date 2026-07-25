@@ -493,3 +493,47 @@ export const fatturaSchema = z.object({
   ordineLavoroId: uuidOpt,
   note: strOpt,
 });
+
+// ── Договори за поддръжка ───────────────────────────────────────────────────
+
+export const PERIODICITA_VALORI = [
+  "MENSILE",
+  "BIMESTRALE",
+  "TRIMESTRALE",
+  "QUADRIMESTRALE",
+  "SEMESTRALE",
+  "ANNUALE",
+] as const;
+
+/** Базата без проверката на срока — `.refine` връща `ZodEffects`, а маршрутите
+ *  искат `.partial()`. Затова проверката се слага НАКРАЯ, върху вече стеснената
+ *  схема (същият похват като при редовете на документите). */
+export const contrattoBase = z.object({
+    oggetto: str,
+    canone: dec,
+    aliquotaIva: aliquota.optional(),
+    periodicitaVisite: z.enum(PERIODICITA_VALORI).optional(),
+    periodicitaFatturazione: z.enum(PERIODICITA_VALORI).optional(),
+    dataInizio: z.coerce.date(),
+    dataFine: z.coerce.date(),
+    rinnovoAutomatico: z.boolean().optional(),
+    preavvisoMesi: z.number().int().min(0).max(24).optional(),
+    amministratoreId: uuidOpt,
+    condominioId: uuidOpt,
+    /** Импиантите, покрити от договора. */
+    impiantiIds: z.array(uuid).max(500).optional(),
+  note: strOpt,
+});
+
+/** Договор с край преди началото ражда безсмислен график и отрицателна
+ *  продължителност при подновяване. При частична промяна проверката важи само
+ *  ако и двете дати са подадени. */
+export function conPeriodoValido<T extends ZodTipo>(schema: T) {
+  return schema.refine(
+    (v: { dataInizio?: Date; dataFine?: Date }) =>
+      !v.dataInizio || !v.dataFine || v.dataFine > v.dataInizio,
+    { message: "La data di fine deve essere successiva alla data di inizio" },
+  );
+}
+
+export const contrattoSchema = conPeriodoValido(contrattoBase);

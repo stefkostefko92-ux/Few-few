@@ -19,6 +19,7 @@ import {
   Package,
   ArrowsLeftRight,
   FileText,
+  Handshake,
   Wrench,
   Receipt,
   FileArrowDown,
@@ -74,6 +75,11 @@ const GRUPPI: Gruppo[] = [
   {
     label: "Commesse",
     voci: [
+      {
+        href: "/contratti",
+        label: "Contratti",
+        icona: <Handshake size={DIM.navigazione} />,
+      },
       { href: "/preventivi", label: "Preventivi", icona: <FileText size={DIM.navigazione} /> },
       { href: "/ordini", label: "Ordini di lavoro", icona: <Wrench size={DIM.navigazione} /> },
     ],

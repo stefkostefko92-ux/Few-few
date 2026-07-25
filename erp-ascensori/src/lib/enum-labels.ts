@@ -77,6 +77,7 @@ export const STATO_LABEL: Record<string, string> = {
   MANUTENZIONE: "In manutenzione",
   FUORI_SERVIZIO: "Fuori servizio",
   DISMESSO: "Dismesso",
+  DISDETTO: "Disdetto",
   ORDINARIA: "Ordinaria",
   URGENTE: "Urgente",
   EMERGENZA: "Emergenza",

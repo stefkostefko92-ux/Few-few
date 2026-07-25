@@ -100,6 +100,27 @@ enum TipoMovimento {
   RETTIFICA
 }
 
+// Договорът за поддръжка е източникът на приходите на асансьорна фирма: тя
+// живее от canone, не от единични ордини.
+enum StatoContratto {
+  BOZZA
+  ATTIVO
+  SOSPESO
+  SCADUTO
+  DISDETTO
+}
+
+/// Периодичност — на посещенията и на фактурирането поотделно: типично е
+/// „две посещения годишно, фактура на тримесечие".
+enum Periodicita {
+  MENSILE
+  BIMESTRALE
+  TRIMESTRALE
+  QUADRIMESTRALE
+  SEMESTRALE
+  ANNUALE
+}
+
 enum TipoDocumento {
   CARTELLO_CANTIERE
   VERBALE_CANTIERE
@@ -217,6 +238,8 @@ model Impianto {
 
   @@index([tenantId])
   @@unique([tenantId, matricola])
+  contratti  ContrattoImpianto[]
+
   @@map("impianti")
 }
 
@@ -297,6 +320,8 @@ model Condominio {
   impianti       Impianto[]
 
   @@index([tenantId])
+  contratti  Contratto[]
+
   @@map("condomini")
 }
 
@@ -327,6 +352,8 @@ model Amministratore {
   fatture    Fattura[]
 
   @@index([tenantId])
+  contratti  Contratto[]
+
   @@map("amministratori")
 }
 
@@ -521,6 +548,70 @@ model VocePreventivo {
 }
 
 // Работата за изпълнение. Статусът минава само по позволените преходи.
+/// Договор за поддръжка: canone, обхванати импианти, периодичност на
+/// посещенията и на фактурирането, срок и автоматично подновяване.
+///
+/// От него се раждат ДВЕ неща, и двете автоматично:
+///   • ордини за периодичните посещения (`prossimaVisita`),
+///   • фактури за canone-то (`prossimaFattura`).
+/// Двете дати са „водачът" на автоматизма: местят се напред само след успешно
+/// раждане, така че спрян cron наваксва, вместо да прескача периоди.
+model Contratto {
+  id                String         @id @default(uuid()) @db.Uuid
+  numero            String
+  stato             StatoContratto @default(BOZZA)
+  oggetto           String
+  /// Такса за периода на фактуриране, БЕЗ ДДС.
+  canone            Decimal        @default(0) @db.Decimal(12, 2)
+  aliquotaIva       Decimal        @default(22) @db.Decimal(5, 2)
+  periodicitaVisite Periodicita    @default(SEMESTRALE)
+  periodicitaFatturazione Periodicita @default(TRIMESTRALE)
+  dataInizio        DateTime
+  dataFine          DateTime
+  /// Мълчаливо подновяване: при изтичане срокът се продължава с още толкова.
+  rinnovoAutomatico Boolean        @default(true)
+  /// Срок за предизвестие при отказ (месеци) — за напомнянето преди подновяване.
+  preavvisoMesi     Int            @default(3)
+  amministratoreId  String?        @db.Uuid
+  condominioId      String?        @db.Uuid
+  /// Кога автоматизмът трябва да роди следващия ордин / следващата фактура.
+  prossimaVisita    DateTime?
+  prossimaFattura   DateTime?
+  note              String?
+  tenantId          String?        @db.Uuid
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  amministratore Amministratore?    @relation(fields: [amministratoreId], references: [id])
+  condominio     Condominio?        @relation(fields: [condominioId], references: [id])
+  impianti       ContrattoImpianto[]
+  ordini         OrdineLavoro[]
+  fatture        Fattura[]
+
+  @@index([tenantId])
+  @@index([stato, prossimaVisita])
+  @@index([stato, prossimaFattura])
+  @@unique([tenantId, numero])
+  @@map("contratti")
+}
+
+/// Кои импианти покрива договорът. Отделна таблица, защото един договор
+/// обикновено покрива няколко импианта на един и същ кондоминиум, а един
+/// импиант може да смени договора си във времето.
+model ContrattoImpianto {
+  id          String   @id @default(uuid()) @db.Uuid
+  contrattoId String   @db.Uuid
+  impiantoId  String   @db.Uuid
+  createdAt   DateTime @default(now())
+
+  contratto Contratto @relation(fields: [contrattoId], references: [id], onDelete: Cascade)
+  impianto  Impianto  @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+
+  @@unique([contrattoId, impiantoId])
+  @@index([impiantoId])
+  @@map("contratti_impianti")
+}
+
 model OrdineLavoro {
   id             String         @id @default(uuid()) @db.Uuid
   numero         String
@@ -534,6 +625,8 @@ model OrdineLavoro {
   dataFine       DateTime?
   impiantoId     String?        @db.Uuid
   preventivoId   String?        @db.Uuid
+  /// Попълва се, когато ордина е роден от периодичното посещение по договор.
+  contrattoId    String?        @db.Uuid
   tecnicoId      String?        @db.Uuid
   cottimistiId   String?        @db.Uuid
   squadraId      String?        @db.Uuid
@@ -543,6 +636,7 @@ model OrdineLavoro {
 
   impianto   Impianto?     @relation(fields: [impiantoId], references: [id])
   preventivo Preventivo?   @relation(fields: [preventivoId], references: [id])
+  contratto  Contratto?    @relation(fields: [contrattoId], references: [id])
   tecnico    Dipendente?   @relation(fields: [tecnicoId], references: [id])
   cottimista Cottimista?   @relation(fields: [cottimistiId], references: [id])
   squadra    Squadra?      @relation(fields: [squadraId], references: [id])
@@ -585,6 +679,8 @@ model Fattura {
   totaleLordo      Decimal      @default(0) @db.Decimal(12, 2)
   amministratoreId String?      @db.Uuid
   ordineLavoroId   String?      @db.Uuid
+  /// Попълва се, когато фактурата е за canone по договор.
+  contrattoId      String?      @db.Uuid
   utenteId         String?      @db.Uuid
   note             String?
   tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
@@ -593,6 +689,7 @@ model Fattura {
 
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
   ordineLavoro   OrdineLavoro?   @relation(fields: [ordineLavoroId], references: [id])
+  contratto      Contratto?      @relation(fields: [contrattoId], references: [id])
   utente         User?           @relation(fields: [utenteId], references: [id])
   voci           VoceFattura[]
 

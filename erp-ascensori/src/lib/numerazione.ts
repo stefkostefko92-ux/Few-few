@@ -8,9 +8,15 @@
 
 import { prisma } from "@/lib/prisma";
 
-type ModelloNumerato = "preventivo" | "ordineLavoro" | "fattura" | "ddt";
+type ModelloNumerato =
+  | "preventivo"
+  | "ordineLavoro"
+  | "fattura"
+  | "ddt"
+  | "contratto";
 
 export const PREFISSI = {
+  contratto: "CTR",
   preventivo: "PRV",
   ordineLavoro: "ODL",
   fatturaEmessa: "FT",

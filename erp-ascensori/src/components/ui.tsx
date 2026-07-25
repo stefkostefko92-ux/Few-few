@@ -30,6 +30,8 @@ const STILE_BADGE: Record<string, string> = {
   PAGATA: "bg-success-subtle text-success-text",
   SCADUTA: "bg-danger-subtle text-danger-text",
   STORNATA: "bg-surface-2 text-text-3 line-through",
+  // StatoContratto
+  DISDETTO: "bg-surface-2 text-text-3 line-through",
   // StatoImpianto
   ATTIVO: "bg-success-subtle text-success-text",
   FERMO: "bg-warning-subtle text-warning-text",
