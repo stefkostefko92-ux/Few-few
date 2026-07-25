@@ -5,6 +5,7 @@ import {
   daEliminare,
   MESI_ACCESSO,
   ANNI_CONTABILE,
+  MESI_ORDINARIO,
   GIORNI_TELEMETRIA,
 } from "../retention-logic";
 
@@ -14,9 +15,11 @@ test("праговете следват законовите срокове", ()
   const s = soglie(OGGI);
   assert.equal(s.accesso.toISOString(), "2026-01-25T00:00:00.000Z"); // -6 месеца
   assert.equal(s.contabile.toISOString(), "2016-07-25T00:00:00.000Z"); // -10 години
+  assert.equal(s.ordinario.toISOString(), "2024-07-25T00:00:00.000Z"); // -24 месеца
   assert.equal(s.telemetria.toISOString(), "2026-04-26T00:00:00.000Z"); // -90 дни
   assert.equal(MESI_ACCESSO, 6);
   assert.equal(ANNI_CONTABILE, 10);
+  assert.equal(MESI_ORDINARIO, 24);
   assert.equal(GIORNI_TELEMETRIA, 90);
 });
 
@@ -37,28 +40,43 @@ test("вход отпреди 7 месеца се трие, отпреди 5 —
   );
 });
 
-test("счетоводната следа надживява 7 месеца и пада чак след 10 години", () => {
-  const preteVecchia = new Date("2025-12-25T00:00:00Z");
+test("фискалната следа надживява 7 месеца и пада чак след 10 години", () => {
+  const fattura = { azione: "CREATE", entita: "fatture" };
   assert.equal(
-    daEliminare({ azione: "CREATE", createdAt: preteVecchia }, OGGI),
+    daEliminare({ ...fattura, createdAt: new Date("2025-12-25T00:00:00Z") }, OGGI),
     false,
   );
   assert.equal(
-    daEliminare(
-      { azione: "CREATE", createdAt: new Date("2015-01-01T00:00:00Z") },
-      OGGI,
-    ),
+    daEliminare({ ...fattura, createdAt: new Date("2015-01-01T00:00:00Z") }, OGGI),
     true,
   );
 });
 
-test("непознато действие получава ДЪЛГИЯ срок (безопасната посока)", () => {
-  // Ново действие, добавено утре, не бива да изчезне тихо след 6 месеца.
-  const riga = {
-    azione: "FIRMA_DIGITALE",
-    createdAt: new Date("2025-12-25T00:00:00Z"),
-  };
-  assert.equal(daEliminare(riga, OGGI), false);
+test("НЕфискалната следа за служител пада след 24 месеца, не след 10 години", () => {
+  // „UPDATE dipendente" не е счетоводен запис: чл. 2220 c.c. не го покрива,
+  // а чл. 5(1)(в)+(д) GDPR не позволява да се пази десет години.
+  const riga = { azione: "UPDATE", entita: "dipendenti" };
+  assert.equal(
+    daEliminare({ ...riga, createdAt: new Date("2025-12-25T00:00:00Z") }, OGGI),
+    false,
+  );
+  assert.equal(
+    daEliminare({ ...riga, createdAt: new Date("2023-01-01T00:00:00Z") }, OGGI),
+    true,
+  );
+});
+
+test("непознато ентитет получава КРАТКИЯ срок (безопасната посока за данните)", () => {
+  // Ново ентитет, добавено утре, не бива да наследи десетгодишния фискален срок.
+  const riga = { azione: "CREATE", entita: "firme_digitali" };
+  assert.equal(
+    daEliminare({ ...riga, createdAt: new Date("2023-01-01T00:00:00Z") }, OGGI),
+    true,
+  );
+  assert.equal(
+    daEliminare({ ...riga, createdAt: new Date("2025-12-25T00:00:00Z") }, OGGI),
+    false,
+  );
 });
 
 test("точно на прага редът остава (строго по-малко)", () => {

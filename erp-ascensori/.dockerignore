@@ -1,0 +1,12 @@
+# Всичко, което няма работа в образа.
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+backup
+docs/*.pdf
+tests
+*.log
+.DS_Store

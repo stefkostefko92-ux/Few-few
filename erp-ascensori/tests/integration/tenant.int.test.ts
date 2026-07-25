@@ -220,3 +220,123 @@ describe("изолация в маршрутите извън CRUD фабрик�
     assert.equal(creato.status, 403);
   });
 });
+
+// Дупките, които червеният екип възпроизведе на живо. Всяка е отделен тест, за
+// да не може да се върне тихо при следваща промяна в тези маршрути.
+describe("изолация: табло, импорт, одит, номерация", () => {
+  test("таблото не брои и не показва данни на друга фирма", async () => {
+    const matricola = unico("MB-DASH");
+    await aziendaB.post("/api/impianti", { matricola, marca: "Otis", modello: "Gen2" });
+
+    const statsA = await aziendaA.get<{
+      kpi: { impiantiTotali: number };
+      scadenzeProssime: { impianto: { matricola: string } }[];
+    }>("/api/dashboard/stats");
+    assert.equal(statsA.status, 200);
+    assert.ok(
+      !statsA.dati.scadenzeProssime.some((s) => s.impianto?.matricola === matricola),
+      "фирма А вижда импиант на фирма Б в сроковете на таблото"
+    );
+
+    // Фирма А няма импианти → броячът трябва да е 0, не да брои чуждите.
+    const impiantiA = await aziendaA.get<{ totale: number }>("/api/impianti");
+    assert.equal(
+      statsA.dati.kpi.impiantiTotali,
+      impiantiA.dati.totale,
+      "KPI-то на таблото не съвпада със собствения списък — брои чужди редове"
+    );
+  });
+
+  test("масовият импорт записва редовете НА фирмата на автора", async () => {
+    const nome = unico("CondImport");
+    const esito = await aziendaB.post<{ importate: number }>("/api/import", {
+      entita: "condomini",
+      righe: [{ nome, indirizzo: "Via Import 1", citta: "Roma" }],
+    });
+    assert.equal(esito.status, 200, JSON.stringify(esito.dati));
+
+    // Вижда се от фирмата, която го е внесла…
+    const listaB = await aziendaB.get<{ righe: { nome: string }[] }>(
+      `/api/condomini?q=${encodeURIComponent(nome)}`
+    );
+    assert.ok(
+      listaB.dati.righe.some((r) => r.nome === nome),
+      "внесеният ред изчезна от списъка на фирмата, която го внесе"
+    );
+    // …и НЕ се вижда от друга.
+    const listaA = await aziendaA.get<{ righe: { nome: string }[] }>(
+      `/api/condomini?q=${encodeURIComponent(nome)}`
+    );
+    assert.ok(!listaA.dati.righe.some((r) => r.nome === nome));
+  });
+
+  test("регистърът на операциите е разделен между фирмите", async () => {
+    const nome = unico("CondAudit");
+    const creato = await aziendaB.post<{ id: string }>("/api/condomini", {
+      nome,
+      indirizzo: "Via Audit 1",
+      citta: "Roma",
+    });
+    assert.equal(creato.status, 201);
+
+    const auditA = await aziendaA.get<{ righe: { entitaId: string | null }[] }>(
+      "/api/audit?size=200"
+    );
+    assert.equal(auditA.status, 200);
+    assert.ok(
+      !auditA.dati.righe.some((r) => r.entitaId === creato.dati.id),
+      "фирма А чете одитната следа на фирма Б"
+    );
+
+    // MASTER е нивото на доставчика и вижда всичко.
+    const auditM = await master.get<{ righe: { entitaId: string | null }[] }>(
+      "/api/audit?size=200"
+    );
+    assert.ok(auditM.dati.righe.some((r) => r.entitaId === creato.dati.id));
+  });
+
+  test("номерацията на документите започва от 1 за всяка нова фирма", async () => {
+    const anno = new Date().getFullYear();
+
+    // Фирмите А и Б вече имат документи от предишните тестове — затова НОВА
+    // фирма е единственият детерминистичен начин да се провери поредицата.
+    const slug = unico("numerazione").toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const t = await master.post<{ id: string }>("/api/tenants", {
+      slug,
+      ragioneSociale: "Azienda numerazione",
+      email: `${slug}@test.local`,
+    });
+    assert.equal(t.status, 201);
+    const email = `${slug}-admin@test.local`;
+    assert.equal(
+      (
+        await master.post("/api/utenti", {
+          email,
+          password: PASSWORD,
+          nome: "Admin",
+          cognome: "Num",
+          ruolo: "ADMIN",
+          tenantId: t.dati.id,
+        })
+      ).status,
+      201
+    );
+    const nuova = new Sessione();
+    assert.equal(await nuova.entra(email), 200);
+
+    // Фирма А издава документ ПРЕДИ новата фирма…
+    const a = await aziendaA.post<{ numero: string }>("/api/preventivi", {
+      oggetto: unico("PrevNumA"),
+    });
+    assert.equal(a.status, 201);
+
+    // …и въпреки това новата започва от СВОЯТА единица. При глобална номерация
+    // тя би получила номера след фирма А (≥ 0002): дупки в собствения ѝ
+    // регистър и издаден обем на съседа (чл. 21, ал. 2, б. „б" D.P.R. 633/1972).
+    const b = await nuova.post<{ numero: string }>("/api/preventivi", {
+      oggetto: unico("PrevNumNuova"),
+    });
+    assert.equal(b.status, 201);
+    assert.equal(b.dati.numero, `PRV-${anno}-0001`);
+  });
+});

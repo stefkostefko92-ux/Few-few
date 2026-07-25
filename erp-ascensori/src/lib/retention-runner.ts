@@ -8,7 +8,7 @@
 // на партиди, със следа от самото прочистване.
 
 import { prisma } from "@/lib/prisma";
-import { soglie, AZIONI_ACCESSO } from "@/lib/retention-logic";
+import { soglie, AZIONI_ACCESSO, ENTITA_CONTABILI } from "@/lib/retention-logic";
 import { log, descriviErrore } from "@/lib/log";
 
 /** Максимален брой редове, изтривани в една партида (пази дългите заключвания). */
@@ -17,6 +17,7 @@ const PARTIDA = 5_000;
 export interface EsitoRetention {
   auditAccesso: number;
   auditContabile: number;
+  auditOrdinario: number;
   telemetria: number;
 }
 
@@ -91,20 +92,30 @@ export async function applicaRetention(
     createdAt: { lt: s.accesso },
   });
 
-  // 2) Останалият одит — 10 години (чл. 2220 Codice Civile).
-  //    `notIn` вместо втори филтър по действие: така НОВО действие, добавено в
-  //    кода утре, попада в дългия срок по подразбиране. Грешката в тази посока
-  //    е „пазим твърде дълго", а не „изтрихме доказателство" — при съмнение
-  //    искаме безопасната посока.
+  const contabili = [...ENTITA_CONTABILI];
+
+  // 2) Счетоводно относимите следи — 10 години (чл. 2220 Codice Civile).
+  //    БЯЛ списък по ентитет. Обратното („всичко освен входовете е счетоводно")
+  //    даваше десетгодишен срок и на „UPDATE dipendente" — следа за поведението
+  //    на служител, за която такова основание няма (чл. 5(1)(в)+(д) GDPR).
   const auditContabile = await eliminaAPartite({
     azione: { notIn: accesso },
+    entita: { in: contabili },
     createdAt: { lt: s.contabile },
   });
 
-  // 3) Оперативна телеметрия — 90 дни. Не е лична данна, но не е и вечна.
+  // 3) Всичко останало — 24 месеца. Тук попада и всяко НОВО действие или
+  //    ентитет, добавени в кода утре: при съмнение краткият срок, не дългият.
+  const auditOrdinario = await eliminaAPartite({
+    azione: { notIn: accesso },
+    entita: { notIn: contabili },
+    createdAt: { lt: s.ordinario },
+  });
+
+  // 4) Оперативна телеметрия — 90 дни. Не е лична данна, но не е и вечна.
   const { count: telemetria } = await prisma.automatismoRun.deleteMany({
     where: { iniziatoAt: { lt: s.telemetria } },
   });
 
-  return { auditAccesso, auditContabile, telemetria };
+  return { auditAccesso, auditContabile, auditOrdinario, telemetria };
 }

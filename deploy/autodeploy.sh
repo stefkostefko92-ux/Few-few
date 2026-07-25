@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali erp-ascensori}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -88,6 +88,12 @@ CADDY_SITES_DIR="${CADDY_SITES_DIR:-/etc/caddy/sites}"
 CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
+
+# erp-ascensori (ERP Ascensori Enterprise — Docker Compose) — app:3050 + postgres
+# във вътрешната мрежа на стека (базата БЕЗ публикуван порт), зад Nginx с TLS.
+# Тайните живеят в erp-ascensori/.env на сървъра (mode 600) и се пренасят при
+# всеки деплой. `readyz` проверява база + схема + наличието на ключовете.
+ERP_HEALTH_URL="${ERP_HEALTH_URL:-http://127.0.0.1:3050/api/readyz}"
 ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
@@ -542,7 +548,41 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
-# ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
+# ── 3h) erp-ascensori — Docker Compose ────────────────────────────────────────
+deploy_erp_ascensori() {
+  local d="$SRC/erp-ascensori"
+  [ -d "$d" ] || { warn "Няма erp-ascensori/ в архива — пропускам."; return; }
+  log "Разгръщам erp-ascensori (Docker Compose)…"
+
+  # Тайните живеят на сървъра, не в архива.
+  if [ -f "$CURRENT_LINK/erp-ascensori/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/erp-ascensori/.env" "$d/.env"; ok "Пренесох erp-ascensori/.env"
+  fi
+
+  # Пръв деплой: генерирай тайните с продуктовия скрипт (идемпотентен, mode 600).
+  # НЕ пускаме демо seed-а — той има публично известна парола. Първият MASTER се
+  # създава изрично, с показана веднъж случайна парола.
+  local primo=0
+  if [ ! -f "$d/.env" ]; then
+    primo=1
+    warn "Няма erp-ascensori/.env — генерирам тайните."
+    ( cd "$d" && bash scripts/setup-env.sh )
+    warn "Задай TRUSTED_PROXY_HOPS и BACKUP_AGE_RECIPIENT в erp-ascensori/.env."
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # Миграциите се прилагат от docker-entrypoint.sh при старта на контейнера.
+  ( cd "$d" && docker compose up -d --build )
+
+  if [ "$primo" = "1" ]; then
+    warn "Първо разгръщане: създай MASTER акаунта с"
+    warn "  cd $d && docker compose run --rm -e MASTER_EMAIL=<адрес> app node scripts/crea-master.mjs"
+  fi
+
+  health "$ERP_HEALTH_URL" "erp-ascensori" || deploy_failed=1
+}
+
+# ── 3i) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
 # import в главния Caddyfile). Валидира преди reload → нула downtime. Идемпотентно:
@@ -710,6 +750,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    erp-ascensori)        deploy_erp_ascensori ;;
     adblock)    deploy_adblock ;;
     *)          warn "Непознат проект: $p" ;;
   esac
