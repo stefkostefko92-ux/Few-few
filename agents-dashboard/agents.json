@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-24",
+    "updated": "2026-07-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -3480,6 +3480,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-25",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „evanitasport/ (нов продукт, one-page static local-business сайт) нямаше keywords/canoni…\" (+1)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
