@@ -96,7 +96,12 @@ const GRUPPI: Gruppo[] = [
         icona: <ClockCounterClockwise size={DIM.navigazione} />,
         minimo: "ADMIN",
       },
-      { href: "/aziende", label: "Aziende", icona: <ShieldCheck size={DIM.navigazione} />, minimo: "ADMIN" },
+      {
+        href: "/aziende",
+        label: "Aziende",
+        icona: <ShieldCheck size={DIM.navigazione} />,
+        minimo: "MASTER",
+      },
     ],
   },
 ];

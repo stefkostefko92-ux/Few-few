@@ -1,0 +1,123 @@
+# Продукционен стек: приложение + PostgreSQL 16 + автоматизми + бекъп.
+#
+# Тайните НЕ живеят тук. `${VAR:?…}` кара Compose да спре с ясно съобщение,
+# ако променливата липсва в `.env` — по-добре ранен отказ, отколкото сървър,
+# тръгнал с празен ключ.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER липсва в .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD липсва в .env}
+      POSTGRES_DB: ${POSTGRES_DB:-erp_ascensori}
+      # Италиански колации за правилна подредба на имена със знаци с ударение.
+      LANG: it_IT.utf8
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # БЕЗ публикуван порт: базата се вижда само от вътрешната мрежа на стека.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB:-erp_ascensori}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL липсва в .env}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET липсва в .env}
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?AUDIT_HMAC_KEY липсва в .env}
+      HEALTH_TOKEN: ${HEALTH_TOKEN:-}
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
+      ACCESS_TOKEN_TTL_MIN: ${ACCESS_TOKEN_TTL_MIN:-15}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-7}
+      AUTOMATISMI_SOGLIA_ORE: ${AUTOMATISMI_SOGLIA_ORE:-26}
+      NODE_ENV: production
+    # Само на localhost — навън се излиза през Nginx с TLS.
+    ports:
+      - "127.0.0.1:${APP_PORT:-3050}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Автоматизмите вървят в СЪЩИЯ образ, но като отделна услуга.
+  #
+  # Не са API маршрути по cron: `POST /api/scadenze/check` иска RESPONSABILE, а
+  # `POST /api/retention/esegui` — MASTER, и няма машинен токен. Сервизен акаунт
+  # с парола в crontab е точно това, което не искаме.
+  automatismi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL липсва в .env}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET липсва в .env}
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?AUDIT_HMAC_KEY липсва в .env}
+      NODE_ENV: production
+    entrypoint: ["/bin/sh", "-c"]
+    # Сроковете — дневно в 06:00; прочистването — в неделя в 04:00.
+    # Изчислява се спрямо стенния часовник, за да не се измества след рестарт.
+    command:
+      - |
+        echo "→ автоматизмите са активни (scadenze дневно 06:00, retention неделя 04:00)"
+        while true; do
+          ORA=$$(date +%H%M); GIORNO=$$(date +%u)
+          if [ "$$ORA" = "0600" ]; then npm run scadenze:check || echo "✖ scadenze"; fi
+          if [ "$$GIORNO" = "7" ] && [ "$$ORA" = "0400" ]; then npm run retention || echo "✖ retention"; fi
+          sleep 60
+        done
+
+  # Дневен криптиран дъмп. Частният ключ на age НЕ е на този сървър.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD липсва в .env}
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
+    volumes:
+      - ./backup:/backup
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache age >/dev/null 2>&1 || true
+        while true; do
+          if [ "$$(date +%H%M)" = "0300" ]; then
+            F=/backup/erp-$$(date +%Y%m%d).dump
+            pg_dump -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB:-erp_ascensori} -Fc -f "$$F" \
+              && if [ -n "$$BACKUP_AGE_RECIPIENT" ]; then age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F" && rm -f "$$F"; fi \
+              && find /backup -name 'erp-*' -mtime +31 -delete \
+              && echo "✔ бекъп $$F"
+          fi
+          sleep 60
+        done
+
+volumes:
+  db-data:

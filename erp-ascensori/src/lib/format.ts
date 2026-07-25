@@ -11,7 +11,11 @@ export function dataIt(v: string | Date | null | undefined): string {
   if (!v) return "—";
   const d = typeof v === "string" ? new Date(v) : v;
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return d.toLocaleDateString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 export function dataOraIt(v: string | Date | null | undefined): string {

@@ -7,6 +7,8 @@ import { dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
   titolo: "Aziende (multi-tenant)",
+  singolare: "azienda",
+  genere: "f",
   descrizione: "Aziende clienti con piano di licenza: oltre la scadenza l'accesso è rifiutato (402)",
   api: "/api/tenants",
   cerca: "Cerca per slug, ragione sociale…",

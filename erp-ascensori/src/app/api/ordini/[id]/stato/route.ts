@@ -21,17 +21,22 @@ export const PATCH = gestito(async (req, ctx) => {
   const { stato, nota } = await corpoValidato(req, schema);
   // ANNULLATO и CHIUSO са управленски решения → RESPONSABILE+; останалите — TECNICO+
   const s = await richiedeRuolo(
-    stato === "ANNULLATO" || stato === "CHIUSO" ? "RESPONSABILE" : "TECNICO"
+    stato === "ANNULLATO" || stato === "CHIUSO" ? "RESPONSABILE" : "TECNICO",
   );
   const { id } = await ctx.params;
 
   const dopo = await prisma.$transaction(async (tx) => {
     // с филтъра по фирма — иначе познат UUID сменя статуса на ЧУЖД ордин
-    const ordine = await tx.ordineLavoro.findFirst({ where: { id, ...filtroTenant(s) } });
+    const ordine = await tx.ordineLavoro.findFirst({
+      where: { id, ...filtroTenant(s) },
+    });
     if (!ordine) throw new ErroreHttp(404, "Ordine non trovato");
     const da = ordine.stato as Stato;
     if (!transizioneAmmessa(da, stato))
-      throw new ErroreHttp(409, `Transizione non ammessa: da «${da}» a «${stato}»`);
+      throw new ErroreHttp(
+        409,
+        `Transizione non ammessa: da «${da}» a «${stato}»`,
+      );
     // Условен запис: пази от състезание — ако друга заявка е сменила статуса
     // междувременно, count===0 и преходът се отказва (без невалиден скок).
     const upd = await tx.ordineLavoro.updateMany({
@@ -39,12 +44,19 @@ export const PATCH = gestito(async (req, ctx) => {
       data: {
         stato,
         // първото влизане в работа/приключване попълва реалния период
-        ...(stato === "IN_LAVORO" && !ordine.dataInizio ? { dataInizio: new Date() } : {}),
-        ...(stato === "COMPLETATO" && !ordine.dataFine ? { dataFine: new Date() } : {}),
+        ...(stato === "IN_LAVORO" && !ordine.dataInizio
+          ? { dataInizio: new Date() }
+          : {}),
+        ...(stato === "COMPLETATO" && !ordine.dataFine
+          ? { dataFine: new Date() }
+          : {}),
       },
     });
     if (upd.count === 0)
-      throw new ErroreHttp(409, "Stato modificato da un'altra operazione: riprovare");
+      throw new ErroreHttp(
+        409,
+        "Stato modificato da un'altra operazione: riprovare",
+      );
     await tx.storicoStato.create({
       data: {
         ordineLavoroId: id,
@@ -62,8 +74,9 @@ export const PATCH = gestito(async (req, ctx) => {
         entitaId: id,
         dettagli: { da, dopo: stato, nota },
         utenteId: s.sub,
+        tenantId: s.tenantId,
       },
-      tx
+      tx,
     );
     return tx.ordineLavoro.findUniqueOrThrow({ where: { id } });
   });

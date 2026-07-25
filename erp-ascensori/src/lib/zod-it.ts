@@ -8,25 +8,35 @@ export const erroreMapIt: z.ZodErrorMap = (issue, ctx) => {
         return { message: "Campo obbligatorio" };
       return { message: "Valore non valido" };
     case z.ZodIssueCode.invalid_string:
-      if (issue.validation === "email") return { message: "Indirizzo e-mail non valido" };
-      if (issue.validation === "uuid") return { message: "Identificativo non valido" };
+      if (issue.validation === "email")
+        return { message: "Indirizzo e-mail non valido" };
+      if (issue.validation === "uuid")
+        return { message: "Identificativo non valido" };
       return { message: "Formato non valido" };
     case z.ZodIssueCode.too_small:
       if (issue.type === "string")
         return issue.minimum === 1
           ? { message: "Campo obbligatorio" }
           : { message: `Minimo ${issue.minimum} caratteri` };
-      if (issue.type === "number") return { message: `Valore minimo: ${issue.minimum}` };
+      if (issue.type === "number")
+        return { message: `Valore minimo: ${issue.minimum}` };
       if (issue.type === "array") return { message: "Elenco vuoto" };
       return { message: "Valore troppo piccolo" };
     case z.ZodIssueCode.too_big:
-      if (issue.type === "string") return { message: `Massimo ${issue.maximum} caratteri` };
-      if (issue.type === "number") return { message: `Valore massimo: ${issue.maximum}` };
+      if (issue.type === "string")
+        return { message: `Massimo ${issue.maximum} caratteri` };
+      if (issue.type === "number")
+        return { message: `Valore massimo: ${issue.maximum}` };
       return { message: "Valore troppo grande" };
     case z.ZodIssueCode.invalid_enum_value:
       return { message: "Valore non ammesso" };
     default:
-      return { message: ctx.defaultError === "Invalid input" ? "Valore non valido" : ctx.defaultError };
+      return {
+        message:
+          ctx.defaultError === "Invalid input"
+            ? "Valore non valido"
+            : ctx.defaultError,
+      };
   }
 };
 

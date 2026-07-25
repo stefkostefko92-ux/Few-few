@@ -17,6 +17,12 @@ import type { ClientePrisma } from "@/lib/totali-db";
 import type { Sessione } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
 
+/** Минималният контракт, който `controllaParent` иска от родителския модел. */
+interface ContoParent {
+  updateMany(a: object): Promise<{ count: number }>;
+  findFirst(a: object): Promise<unknown | null>;
+}
+
 interface DelegateVoce {
   create(args: object): Promise<unknown>;
   update(args: object): Promise<unknown>;
@@ -54,20 +60,36 @@ function delegateTx(tx: ClientePrisma, model: ModelloPrisma): DelegateVoce {
  *      добави ред към чужда оферта);
  *   2. документът е в състояние, което приема промени по редовете.
  * `findFirst`, не `findUnique`: вторият не приема допълнително условие.
+ *
+ * Викa се ВЪТРЕ в транзакцията на промяната. Проверката отвън беше TOCTOU:
+ * между четенето на статуса и вписването на реда друга заявка успяваше да
+ * издаде документа, и редът влизаше в вече издадена фактура.
  */
 async function controllaParent(
+  tx: ClientePrisma,
   cfg: VociConfig,
   parentId: string,
-  s: Sessione
+  s: Sessione,
 ): Promise<void> {
-  const p = await (
-    prisma as unknown as Record<ModelloPrisma, { findFirst(a: object): Promise<unknown | null> }>
-  )[cfg.parentModel].findFirst({ where: { id: parentId, ...filtroTenant(s) } });
-  if (!p) throw new ErroreHttp(404, "Documento non trovato");
-  // фискална защита: издаден документ (не-BOZZA) не приема промени по редовете
-  const stato = (p as { stato?: string }).stato;
-  if (cfg.statiModificabili && stato && !cfg.statiModificabili.includes(stato))
-    throw new ErroreHttp(409, "Documento non modificabile in questo stato");
+  const d = (tx as unknown as Record<ModelloPrisma, ContoParent>)[cfg.parentModel];
+  // Условен запис вместо четене: `updateMany` с условие по статус или сработва,
+  // или връща 0 — и в двата случая под ключалката на реда, така че конкурентна
+  // смяна на статуса не може да се промъкне между проверката и вписването.
+  const esito = await d.updateMany({
+    where: {
+      id: parentId,
+      ...filtroTenant(s),
+      ...(cfg.statiModificabili ? { stato: { in: cfg.statiModificabili } } : {}),
+    },
+    data: { updatedAt: new Date() },
+  });
+  if (esito.count === 1) return;
+  // Нула засегнати редове: или документът не е наш/не съществува, или е в
+  // състояние, което не приема промени. Различаваме ги, за да не даваме 409 за
+  // чужд документ (това би издало съществуването му).
+  const esiste = await d.findFirst({ where: { id: parentId, ...filtroTenant(s) } });
+  if (!esiste) throw new ErroreHttp(404, "Documento non trovato");
+  throw new ErroreHttp(409, "Documento non modificabile in questo stato");
 }
 
 /** POST /:id/voci — добавя редица. */
@@ -75,12 +97,12 @@ export function rottaVociCollezione(cfg: VociConfig) {
   const POST = gestito(async (req, ctx) => {
     const s = await richiedeRuolo(cfg.ruolo ?? "OPERATORE");
     const { id } = await ctx.params;
-    await controllaParent(cfg, id, s);
     const data = await corpoValidato(req, cfg.schema);
     // Записът и преизчислението вървят ЗАЕДНО: иначе при провал на ricalcola
     // редът остава в базата, тоталите не го включват и одит не се пише —
     // документ с невидим ред без следа.
     const creato = await prisma.$transaction(async (tx) => {
+      await controllaParent(tx, cfg, id, s);
       const r = await delegateTx(tx, cfg.model).create({
         data: { ...(data as object), [cfg.parentField]: id },
       });
@@ -93,6 +115,7 @@ export function rottaVociCollezione(cfg: VociConfig) {
       entitaId: String((creato as { id: string }).id),
       dettagli: dettagliCreazione(data),
       utenteId: s.sub,
+      tenantId: s.tenantId,
     });
     return ok(creato, 201);
   });
@@ -104,7 +127,7 @@ export function rottaVoceElemento(cfg: VociConfig) {
   const PUT = gestito(async (req, ctx) => {
     const s = await richiedeRuolo(cfg.ruolo ?? "OPERATORE");
     const { id, voceId } = await ctx.params;
-    await controllaParent(cfg, id, s);
+    const data = await corpoValidato(req, cfg.schema);
     const d = delegate(cfg.model);
     const prima = (await d.findUnique({ where: { id: voceId } })) as Record<
       string,
@@ -112,8 +135,8 @@ export function rottaVoceElemento(cfg: VociConfig) {
     > | null;
     if (!prima || prima[cfg.parentField] !== id)
       throw new ErroreHttp(404, "Riga non trovata");
-    const data = await corpoValidato(req, cfg.schema);
     const dopo = await prisma.$transaction(async (tx) => {
+      await controllaParent(tx, cfg, id, s);
       const r = await delegateTx(tx, cfg.model).update({
         where: { id: voceId },
         data: data as object,
@@ -125,8 +148,12 @@ export function rottaVoceElemento(cfg: VociConfig) {
       azione: "UPDATE",
       entita: cfg.entita,
       entitaId: voceId,
-      dettagli: dettagliModifica(prima, { ...(prima as object), ...(data as object) }),
+      dettagli: dettagliModifica(prima, {
+        ...(prima as object),
+        ...(data as object),
+      }),
       utenteId: s.sub,
+      tenantId: s.tenantId,
     });
     return ok(dopo);
   });
@@ -134,7 +161,6 @@ export function rottaVoceElemento(cfg: VociConfig) {
   const DELETE = gestito(async (_req, ctx) => {
     const s = await richiedeRuolo(cfg.ruolo ?? "OPERATORE");
     const { id, voceId } = await ctx.params;
-    await controllaParent(cfg, id, s);
     const d = delegate(cfg.model);
     const prima = (await d.findUnique({ where: { id: voceId } })) as Record<
       string,
@@ -143,6 +169,7 @@ export function rottaVoceElemento(cfg: VociConfig) {
     if (!prima || prima[cfg.parentField] !== id)
       throw new ErroreHttp(404, "Riga non trovata");
     await prisma.$transaction(async (tx) => {
+      await controllaParent(tx, cfg, id, s);
       await delegateTx(tx, cfg.model).delete({ where: { id: voceId } });
       if (cfg.ricalcola) await cfg.ricalcola(id, tx);
     });
@@ -152,6 +179,7 @@ export function rottaVoceElemento(cfg: VociConfig) {
       entitaId: voceId,
       dettagli: dettagliCancellazione(prima),
       utenteId: s.sub,
+      tenantId: s.tenantId,
     });
     return ok({ ok: true });
   });

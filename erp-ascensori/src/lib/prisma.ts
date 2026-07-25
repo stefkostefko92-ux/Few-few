@@ -15,7 +15,10 @@ export const prisma =
   new PrismaClient({
     errorFormat: "minimal",
     // никога `query` в продукция — параметрите са лични данни
-    log: process.env.NODE_ENV === "production" ? ["warn", "error"] : ["warn", "error"],
+    log:
+      process.env.NODE_ENV === "production"
+        ? ["warn", "error"]
+        : ["warn", "error"],
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

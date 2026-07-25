@@ -15,13 +15,16 @@ export type AzioneAudit =
 
 function chiaveAudit(): string {
   const k = process.env.AUDIT_HMAC_KEY;
-  if (!k || k.length < 32) throw new Error("AUDIT_HMAC_KEY mancante o troppo corto (min 32)");
+  if (!k || k.length < 32)
+    throw new Error("AUDIT_HMAC_KEY mancante o troppo corto (min 32)");
   return k;
 }
 
 // Минимален контракт за клиента (позволява подаване на транзакционен tx).
 interface ClienteAudit {
-  auditLog: { create(args: { data: Record<string, unknown> }): Promise<unknown> };
+  auditLog: {
+    create(args: { data: Record<string, unknown> }): Promise<unknown>;
+  };
 }
 
 export async function scriviAudit(
@@ -31,8 +34,12 @@ export async function scriviAudit(
     entitaId?: string | null;
     dettagli?: unknown;
     utenteId?: string | null;
+    /** Фирмата, чиито данни е засегнала операцията. Подава се от сесията:
+     *  без нея регистърът не може да се филтрира и администраторът на една
+     *  фирма чете одита на друга. */
+    tenantId?: string | null;
   },
-  db: ClienteAudit = prisma
+  db: ClienteAudit = prisma,
 ): Promise<void> {
   const h = await headers();
   // Минимизация (GDPR чл. 5(1)(в)): IP и userAgent се пазят САМО при събитията
@@ -57,6 +64,10 @@ export async function scriviAudit(
   await db.auditLog.create({
     data: {
       ...riga,
+      // НЕ влиза в подписа: tenantId е класификация за достъп, не съдържание на
+      // операцията, и канонът вече е версиониран — промяна в него би обезсилила
+      // всички досегашни подписи.
+      tenantId: opts.tenantId ?? null,
       dettagli: riga.dettagli === null ? undefined : (riga.dettagli as object),
       hmac: firmaAudit(riga, chiaveAudit()),
     },

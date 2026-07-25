@@ -6,6 +6,8 @@ import { euro, dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
   titolo: "Preventivi",
+  singolare: "preventivo",
+  genere: "m",
   descrizione: "Offerte al cliente: i totali si ricalcolano automaticamente dalle voci",
   api: "/api/preventivi",
   cerca: "Cerca per numero, oggetto…",

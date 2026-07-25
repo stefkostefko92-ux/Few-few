@@ -6,6 +6,8 @@ import { TIPO_DIPENDENTE, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Dipendenti",
+  singolare: "dipendente",
+  genere: "m",
   descrizione: "Personale interno: tecnici, amministrativi, commerciali, magazzinieri",
   api: "/api/dipendenti",
   cerca: "Cerca per nome, cognome, codice fiscale…",

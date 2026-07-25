@@ -8,6 +8,8 @@ import { STATO_AUTOMEZZO, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Automezzi",
+  singolare: "automezzo",
+  genere: "m",
   descrizione: "Flotta aziendale: revisione, assicurazione e tagliando sotto controllo",
   api: "/api/automezzi",
   cerca: "Cerca per targa, marca, modello…",
@@ -35,7 +37,10 @@ const config: EntityConfig = {
       chiave: "chilometraggio",
       label: "Km",
       className: "font-mono",
-      render: (r) => Number(r.chilometraggio).toLocaleString("it-IT"),
+      render: (r) =>
+        r.chilometraggio === null || r.chilometraggio === undefined
+          ? "—"
+          : Number(r.chilometraggio).toLocaleString("it-IT"),
     },
     {
       chiave: "scadenzaRevisione",

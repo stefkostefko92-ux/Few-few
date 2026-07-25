@@ -20,8 +20,12 @@ export interface EsitoControllo {
  * никой не разбира. Следата е и източникът за dead-man проверката
  * (`/api/healthz/automatismi`).
  */
-export async function controllaScadenzeTracciato(oggi = new Date()): Promise<EsitoControllo> {
-  const run = await prisma.automatismoRun.create({ data: { nome: "scadenze" } });
+export async function controllaScadenzeTracciato(
+  oggi = new Date(),
+): Promise<EsitoControllo> {
+  const run = await prisma.automatismoRun.create({
+    data: { nome: "scadenze" },
+  });
   const inizio = Date.now();
   try {
     const esito = await controllaScadenze(oggi);
@@ -34,7 +38,10 @@ export async function controllaScadenzeTracciato(oggi = new Date()): Promise<Esi
         dettagli: { ...esito },
       },
     });
-    log.info("automatismo scadenze", { esito: "OK", durata_ms: Date.now() - inizio });
+    log.info("automatismo scadenze", {
+      esito: "OK",
+      durata_ms: Date.now() - inizio,
+    });
     return esito;
   } catch (e) {
     const err = descriviErrore(e);
@@ -52,11 +59,15 @@ export async function controllaScadenzeTracciato(oggi = new Date()): Promise<Esi
   }
 }
 
-export async function controllaScadenze(oggi = new Date()): Promise<EsitoControllo> {
+export async function controllaScadenze(
+  oggi = new Date(),
+): Promise<EsitoControllo> {
   let notificheScadenze = 0;
 
   // 1) Законови срокове на импиантите — флаговете се вдигат еднократно
-  const scadenze = await prisma.scadenzaImpianto.findMany({ where: { completata: false } });
+  const scadenze = await prisma.scadenzaImpianto.findMany({
+    where: { completata: false },
+  });
   for (const s of scadenze) {
     const soglie = sogliePendenti(s, oggi);
     if (soglie.length === 0) continue;
@@ -73,11 +84,13 @@ export async function controllaScadenze(oggi = new Date()): Promise<EsitoControl
 
   // 2) Цветен статус на автопарка
   let automezziAggiornati = 0;
-  const automezzi = await prisma.automezzo.findMany({ where: { attivo: true } });
+  const automezzi = await prisma.automezzo.findMany({
+    where: { attivo: true },
+  });
   for (const a of automezzi) {
     const stato = statoAutomezzo(
       [a.scadenzaRevisione, a.scadenzaAssicurazione, a.scadenzaTagliando],
-      oggi
+      oggi,
     );
     if (stato !== a.stato) {
       await prisma.automezzo.update({ where: { id: a.id }, data: { stato } });
@@ -86,12 +99,19 @@ export async function controllaScadenze(oggi = new Date()): Promise<EsitoControl
   }
 
   // 3) Preventivi: изпратени и извън validitaGiorni → SCADUTO
-  const inviati = await prisma.preventivo.findMany({ where: { stato: "INVIATO" } });
+  const inviati = await prisma.preventivo.findMany({
+    where: { stato: "INVIATO" },
+  });
   let preventiviScaduti = 0;
   for (const p of inviati) {
-    const limite = new Date(p.createdAt.getTime() + p.validitaGiorni * 86_400_000);
+    const limite = new Date(
+      p.createdAt.getTime() + p.validitaGiorni * 86_400_000,
+    );
     if (limite < oggi) {
-      await prisma.preventivo.update({ where: { id: p.id }, data: { stato: "SCADUTO" } });
+      await prisma.preventivo.update({
+        where: { id: p.id },
+        data: { stato: "SCADUTO" },
+      });
       preventiviScaduti++;
     }
   }
@@ -105,5 +125,10 @@ export async function controllaScadenze(oggi = new Date()): Promise<EsitoControl
     data: { stato: "SCADUTA" },
   });
 
-  return { notificheScadenze, automezziAggiornati, preventiviScaduti, fattureScadute };
+  return {
+    notificheScadenze,
+    automezziAggiornati,
+    preventiviScaduti,
+    fattureScadute,
+  };
 }

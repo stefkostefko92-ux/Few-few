@@ -5,7 +5,10 @@ import { dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
   titolo: "Documenti di trasporto",
-  descrizione: "DDT conformi al D.P.R. 472/1996, collegabili a ordini e movimenti",
+  singolare: "documento di trasporto",
+  genere: "m",
+  descrizione:
+    "Documenti di trasporto con i dati previsti dal D.P.R. 472/1996, collegabili a ordini e movimenti",
   api: "/api/ddt",
   cerca: "Cerca per numero, destinatario…",
   linkDettaglio: (r) => `/ddt/${r.id}`,

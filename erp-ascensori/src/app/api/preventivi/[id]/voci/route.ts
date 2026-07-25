@@ -1,7 +1,7 @@
 // Редове на preventivo — добавяне + автоматично преизчисление на тоталите.
 // Променими докато офертата не е финализирана (BOZZA/INVIATO).
 import { rottaVociCollezione } from "@/lib/voci";
-import { voceSchema } from "@/lib/entities";
+import { conLimiteImporto, voceSchema } from "@/lib/entities";
 import { ricalcolaPreventivo } from "@/lib/totali-db";
 
 export const { POST } = rottaVociCollezione({
@@ -9,7 +9,7 @@ export const { POST } = rottaVociCollezione({
   model: "vocePreventivo",
   parentModel: "preventivo",
   parentField: "preventivoId",
-  schema: voceSchema,
+  schema: conLimiteImporto(voceSchema),
   ricalcola: ricalcolaPreventivo,
   statiModificabili: ["BOZZA", "INVIATO"],
 });

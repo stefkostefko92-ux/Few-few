@@ -64,7 +64,7 @@ export function soglie(oggi: Date): Soglie {
  */
 export function daEliminare(
   riga: { azione: string; createdAt: Date },
-  oggi: Date
+  oggi: Date,
 ): boolean {
   const s = soglie(oggi);
   const eAccesso = (AZIONI_ACCESSO as readonly string[]).includes(riga.azione);

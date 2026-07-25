@@ -15,10 +15,15 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
   const { password } = await corpoValidato(req, schema);
-  const utente = await prisma.user.findFirst({ where: { id, ...filtroUtenti(s) } });
+  const utente = await prisma.user.findFirst({
+    where: { id, ...filtroUtenti(s) },
+  });
   if (!utente) throw new ErroreHttp(404, "Utente non trovato");
   if (utente.ruolo === "MASTER" && s.ruolo !== "MASTER")
-    throw new ErroreHttp(403, "Solo il livello MASTER può gestire utenti MASTER");
+    throw new ErroreHttp(
+      403,
+      "Solo il livello MASTER può gestire utenti MASTER",
+    );
   await prisma.user.update({
     where: { id },
     data: {
@@ -34,6 +39,7 @@ export const POST = gestito(async (req, ctx) => {
     entitaId: id,
     dettagli: { dopo: "password reimpostata" },
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok({ ok: true });
 });

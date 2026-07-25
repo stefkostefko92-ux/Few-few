@@ -1,7 +1,7 @@
 // Zod схеми + CRUD конфигурации за всички анагрифики.
 // Decimal стойностите пътуват като низове с ≤2 десетични — точност без float.
 
-import { z } from "zod";
+import { z, type ZodTypeAny as ZodTipo } from "zod";
 import type { CrudConfig } from "@/lib/crud";
 import { prisma } from "@/lib/prisma";
 import { statoAutomezzo } from "@/lib/scadenze-logic";
@@ -19,8 +19,25 @@ export const dec = z
       .string()
       .regex(
         /^\d{1,8}(\.\d{1,2})?$/,
-        "Importo non valido: usare il punto o la virgola come separatore decimale (max. 2 decimali, max. 8 cifre intere)"
-      )
+        "Importo non valido: usare il punto o la virgola come separatore decimale (max. 2 decimali, max. 8 cifre intere)",
+      ),
+  );
+
+/** Ставка на ДДС: колоната е `Decimal(5,2)`, тоест до 999,99.
+ *
+ *  Дотогава се ползваше `dec` (до 8 цели цифри): операторът напише „2200"
+ *  вместо „22", Postgres връща numeric field overflow, а кодът 22003 не е сред
+ *  обработваните и потребителят получава 500 „Errore interno" за собствената си
+ *  печатна грешка. Горната граница е и семантична — 100 % ДДС не съществува. */
+export const aliquota = z
+  .string()
+  .trim()
+  .transform((v) => v.replace(",", "."))
+  .pipe(
+    z
+      .string()
+      .regex(/^\d{1,2}(\.\d{1,2})?$/, "Aliquota IVA non valida (0–99, max. 2 decimali)")
+      .refine((v) => Number(v) <= 99, "Aliquota IVA non valida (0–99)"),
   );
 
 /** Количество/цена в редовете: по-строг таван, за да не прелее произведението. */
@@ -31,8 +48,11 @@ export const decRiga = z
   .pipe(
     z
       .string()
-      .regex(/^\d{1,6}(\.\d{1,2})?$/, "Valore non valido (max. 6 cifre intere, 2 decimali)")
-      .refine((v) => Number(v) <= 999_999, "Valore troppo grande")
+      .regex(
+        /^\d{1,6}(\.\d{1,2})?$/,
+        "Valore non valido (max. 6 cifre intere, 2 decimali)",
+      )
+      .refine((v) => Number(v) <= 999_999, "Valore troppo grande"),
   );
 export const decOpt = dec.nullish();
 const str = z.string().trim().min(1).max(300);
@@ -73,8 +93,20 @@ const amministratoreBase = z.object({
   ragioneSociale: strOpt,
   partitaIva: z.string().trim().max(20).nullish(),
   codiceFiscale: z.string().trim().max(20).nullish(),
-  pec: z.string().trim().email().max(200).nullish().or(z.literal("").transform(() => null)),
-  email: z.string().trim().email().max(200).nullish().or(z.literal("").transform(() => null)),
+  pec: z
+    .string()
+    .trim()
+    .email()
+    .max(200)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(200)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   telefono: strOpt,
   indirizzo: strOpt,
   citta: strOpt,
@@ -95,12 +127,20 @@ export const amministratori: CrudConfig = {
 const dipendenteBase = z.object({
   nome: str,
   cognome: str,
-  tipo: z.enum(["TECNICO", "AMMINISTRATIVO", "COMMERCIALE", "MAGAZZINIERE"]).optional(),
+  tipo: z
+    .enum(["TECNICO", "AMMINISTRATIVO", "COMMERCIALE", "MAGAZZINIERE"])
+    .optional(),
   codiceFiscale: strOpt,
   dataAssunzione: dataOpt,
   patente: strOpt,
   specializzazioni: z.array(z.string().trim().min(1).max(100)).optional(),
-  email: z.string().trim().email().max(200).nullish().or(z.literal("").transform(() => null)),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(200)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   telefono: strOpt,
   note: strOpt,
   attivo: z.boolean().optional(),
@@ -116,7 +156,12 @@ export const dipendenti: CrudConfig = {
 };
 
 const automezzoBase = z.object({
-  targa: z.string().trim().min(2).max(12).transform((v) => v.toUpperCase()),
+  targa: z
+    .string()
+    .trim()
+    .min(2)
+    .max(12)
+    .transform((v) => v.toUpperCase()),
   marca: str,
   modello: str,
   chilometraggio: z.number().int().min(0).optional(),
@@ -142,9 +187,10 @@ export const automezzi: CrudConfig = {
     if (!a) return;
     const stato = statoAutomezzo(
       [a.scadenzaRevisione, a.scadenzaAssicurazione, a.scadenzaTagliando],
-      new Date()
+      new Date(),
     );
-    if (stato !== a.stato) await prisma.automezzo.update({ where: { id }, data: { stato } });
+    if (stato !== a.stato)
+      await prisma.automezzo.update({ where: { id }, data: { stato } });
   },
 };
 
@@ -152,7 +198,13 @@ const cottimistaBase = z.object({
   ragioneSociale: str,
   tipo: z.enum(["DITTA_INDIVIDUALE", "COOPERATIVA", "AZIENDA"]).optional(),
   partitaIva: z.string().trim().max(20).nullish(),
-  email: z.string().trim().email().max(200).nullish().or(z.literal("").transform(() => null)),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(200)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   telefono: strOpt,
   indirizzo: strOpt,
   note: strOpt,
@@ -194,7 +246,9 @@ const impiantoBase = z.object({
   anno: z.number().int().min(1900).max(2100).nullish(),
   portata: z.number().int().min(0).nullish(),
   fermate: z.number().int().min(0).nullish(),
-  stato: z.enum(["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"]).optional(),
+  stato: z
+    .enum(["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"])
+    .optional(),
   indirizzo: strOpt,
   piano: strOpt,
   dataInstallazione: dataOpt,
@@ -244,7 +298,9 @@ export const scadenzeImpianti: CrudConfig = {
   model: "scadenzaImpianto",
   schemaCreate: scadenzaBase,
   schemaUpdate: scadenzaBase.partial(),
-  include: { impianto: { select: { matricola: true, marca: true, indirizzo: true } } },
+  include: {
+    impianto: { select: { matricola: true, marca: true, indirizzo: true } },
+  },
   filterFields: ["impiantoId"],
   orderBy: { dataScadenza: "asc" },
 };
@@ -281,7 +337,7 @@ const articoloBase = z.object({
   prezzoAcquisto: decOpt,
   prezzoVendita: decOpt,
   marginePerc: decOpt,
-  aliquotaIva: dec.optional(),
+  aliquotaIva: aliquota.optional(),
   note: strOpt,
   attivo: z.boolean().optional(),
   // quantita НЕ е тук: движи се само чрез движения
@@ -297,7 +353,13 @@ export const articoli: CrudConfig = {
 };
 
 const documentoBase = z.object({
-  tipo: z.enum(["CARTELLO_CANTIERE", "VERBALE_CANTIERE", "CERTIFICATO", "CONTRATTO", "ALTRO"]),
+  tipo: z.enum([
+    "CARTELLO_CANTIERE",
+    "VERBALE_CANTIERE",
+    "CERTIFICATO",
+    "CONTRATTO",
+    "ALTRO",
+  ]),
   titolo: str,
   contenuto: z.string().max(50000).nullish(),
   fileUrl: z.string().trim().max(1000).nullish(),
@@ -334,8 +396,12 @@ export const tenants: CrudConfig = {
   model: "tenant",
   schemaCreate: tenantBase,
   schemaUpdate: tenantBase.partial(),
-  ruoloLettura: "ADMIN",
-  ruoloScrittura: "ADMIN",
+  // САМО MASTER. `senzaTenant` изключва филтъра по фирма (crud.ts), затова с
+  // ниво ADMIN администраторът на един клиент четеше търговския списък с всички
+  // фирми, удължаваше собствения си абонамент (`scadenzaAbbonamento`) и можеше
+  // да деактивира конкурент. Служебна таблица = ниво на доставчика.
+  ruoloLettura: "MASTER",
+  ruoloScrittura: "MASTER",
   ruoloCancellazione: "MASTER",
   senzaTenant: true, // самата таблица с фирмите не се филтрира по фирма
   searchFields: ["slug", "ragioneSociale"],
@@ -355,14 +421,34 @@ export const ddtSchema = { base: ddtBase };
 
 // ── Редови схеми (voci / righe) ─────────────────────────────────────────────
 
+/** Таванът на самата колона `Decimal(12,2)`: 9 999 999 999,99. */
+const MAX_IMPORTO = 9_999_999_999;
+
 export const voceSchema = z.object({
   articoloId: uuidOpt,
   descrizione: str,
   quantita: decRiga,
   prezzoUnitario: decRiga,
-  aliquotaIva: dec.optional(),
+  aliquotaIva: aliquota.optional(),
   ordine: z.number().int().min(0).optional(),
 });
+
+/** Слага тавана на произведението върху вече оформена схема за редица.
+ *
+ *  Поотделно количеството и цената се събират в колоната; ПРОИЗВЕДЕНИЕТО им —
+ *  не: 999999 × 999999 ≈ 10¹² прелива `Decimal(12,2)`, Postgres връща 22003 и
+ *  потребителят получава 500 вместо 400. Помощникът е отделен, защото `.refine`
+ *  връща `ZodEffects` и маршрутите губят `.omit()`/`.partial()` — затова се
+ *  прилага НАКРАЯ, след като схемата е стеснена. */
+export function conLimiteImporto<T extends ZodTipo>(schema: T) {
+  return schema.refine(
+    (v: { quantita?: string; prezzoUnitario?: string }) =>
+      v.quantita === undefined ||
+      v.prezzoUnitario === undefined ||
+      Number(v.quantita) * Number(v.prezzoUnitario) <= MAX_IMPORTO,
+    { message: "Importo della riga troppo elevato: verificare quantità e prezzo" },
+  );
+}
 
 export const rigaDdtSchema = z.object({
   descrizione: str,

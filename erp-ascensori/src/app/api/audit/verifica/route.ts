@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, errore, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
+import { filtroTenant } from "@/lib/tenant";
 import { verificaAudit } from "@/lib/audit-hmac";
 
 const schema = z.object({
@@ -13,13 +14,17 @@ const schema = z.object({
 });
 
 export const POST = gestito(async (req) => {
-  await richiedeRuolo("ADMIN");
+  const s = await richiedeRuolo("ADMIN");
   const { limite = 500 } = await corpoValidato(req, schema);
   const chiave = process.env.AUDIT_HMAC_KEY;
   if (!chiave || chiave.length < 32)
-    return errore(500, "Chiave di verifica non configurata: contattare l'amministratore di sistema");
+    return errore(
+      500,
+      "Chiave di verifica non configurata: contattare l'amministratore di sistema",
+    );
 
   const righe = await prisma.auditLog.findMany({
+    where: s.ruolo === "MASTER" ? {} : filtroTenant(s),
     orderBy: { createdAt: "desc" },
     take: limite,
   });
@@ -38,9 +43,13 @@ export const POST = gestito(async (req) => {
       },
       r.hmac,
       chiave,
-      (r.versioneFirma === 1 ? 1 : 2) as 1 | 2
+      (r.versioneFirma === 1 ? 1 : 2) as 1 | 2,
     );
     if (!valida) corrotte.push(r.id);
   }
-  return ok({ controllate: righe.length, corrotte, integro: corrotte.length === 0 });
+  return ok({
+    controllate: righe.length,
+    corrotte,
+    integro: corrotte.length === 0,
+  });
 });

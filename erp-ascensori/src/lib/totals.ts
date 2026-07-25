@@ -48,7 +48,10 @@ export function totaleVoce(v: VoceInput): number {
 }
 
 /** ДДС на редица от вече сметнат тотал, half-up. */
-export function ivaVoce(totaleCents: number, aliquota: string | number): number {
+export function ivaVoce(
+  totaleCents: number,
+  aliquota: string | number,
+): number {
   const alCent = toCents(aliquota); // 22.00 → 2200
   const raw = totaleCents * alCent;
   return Math.sign(raw) * Math.round(Math.abs(raw) / 10000);

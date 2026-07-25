@@ -44,7 +44,7 @@ export function filtroUtenti(s: Sessione): { tenantId?: string | null } {
  */
 export function conTenant<T extends Record<string, unknown>>(
   where: T,
-  s: Sessione
+  s: Sessione,
 ): T & { tenantId: string | null } {
   return { ...where, ...filtroTenant(s) };
 }

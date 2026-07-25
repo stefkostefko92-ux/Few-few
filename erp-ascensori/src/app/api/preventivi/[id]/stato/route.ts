@@ -21,19 +21,32 @@ export const PATCH = gestito(async (req, ctx) => {
   await richiedeSessione();
   const { stato } = await corpoValidato(req, schema);
   // одобрението на оферта е координационно решение → минимум RESPONSABILE
-  const s = await richiedeRuolo(stato === "APPROVATO" ? "RESPONSABILE" : "OPERATORE");
+  const s = await richiedeRuolo(
+    stato === "APPROVATO" ? "RESPONSABILE" : "OPERATORE",
+  );
   const { id } = await ctx.params;
 
   const dopo = await prisma.$transaction(async (tx) => {
     // с филтъра по фирма — иначе познат UUID сменя статуса на ЧУЖД документ
-    const prima = await tx.preventivo.findFirst({ where: { id, ...filtroTenant(s) } });
+    const prima = await tx.preventivo.findFirst({
+      where: { id, ...filtroTenant(s) },
+    });
     if (!prima) throw new ErroreHttp(404, "Preventivo non trovato");
     const da = prima.stato as StatoPreventivo;
     if (!transizionePreventivoAmmessa(da, stato))
-      throw new ErroreHttp(409, `Transizione non ammessa: da «${da}» a «${stato}»`);
-    const upd = await tx.preventivo.updateMany({ where: { id, stato: da }, data: { stato } });
+      throw new ErroreHttp(
+        409,
+        `Transizione non ammessa: da «${da}» a «${stato}»`,
+      );
+    const upd = await tx.preventivo.updateMany({
+      where: { id, stato: da },
+      data: { stato },
+    });
     if (upd.count === 0)
-      throw new ErroreHttp(409, "Stato modificato da un'altra operazione: riprovare");
+      throw new ErroreHttp(
+        409,
+        "Stato modificato da un'altra operazione: riprovare",
+      );
     return tx.preventivo.findUniqueOrThrow({ where: { id } });
   });
 
@@ -43,6 +56,7 @@ export const PATCH = gestito(async (req, ctx) => {
     entitaId: id,
     dettagli: { valori: { stato: { a: stato } } },
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(dopo);
 });

@@ -1,7 +1,12 @@
 // Машина на състоянията: таблицата от документацията — дословно.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { STATI_ORDINE, TRANSIZIONI, transizioneAmmessa, statiFinali } from "../workflow";
+import {
+  STATI_ORDINE,
+  TRANSIZIONI,
+  transizioneAmmessa,
+  statiFinali,
+} from "../workflow";
 
 test("9 статуса, точно по документа", () => {
   assert.equal(STATI_ORDINE.length, 9);
@@ -10,8 +15,16 @@ test("9 статуса, точно по документа", () => {
 test("позволените преходи съвпадат с таблицата", () => {
   assert.deepEqual(TRANSIZIONI.BOZZA, ["EMESSO", "ANNULLATO"]);
   assert.deepEqual(TRANSIZIONI.EMESSO, ["CONFERMATO", "ANNULLATO"]);
-  assert.deepEqual(TRANSIZIONI.CONFERMATO, ["IN_LAVORO", "SOSPESO", "ANNULLATO"]);
-  assert.deepEqual(TRANSIZIONI.IN_LAVORO, ["COMPLETATO", "SOSPESO", "CONTESTATO"]);
+  assert.deepEqual(TRANSIZIONI.CONFERMATO, [
+    "IN_LAVORO",
+    "SOSPESO",
+    "ANNULLATO",
+  ]);
+  assert.deepEqual(TRANSIZIONI.IN_LAVORO, [
+    "COMPLETATO",
+    "SOSPESO",
+    "CONTESTATO",
+  ]);
   assert.deepEqual(TRANSIZIONI.SOSPESO, ["IN_LAVORO", "ANNULLATO"]);
   assert.deepEqual(TRANSIZIONI.COMPLETATO, ["CHIUSO", "CONTESTATO"]);
   assert.deepEqual(TRANSIZIONI.CONTESTATO, ["IN_LAVORO", "ANNULLATO"]);

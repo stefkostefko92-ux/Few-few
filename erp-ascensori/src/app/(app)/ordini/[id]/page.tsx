@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
 import { IcoIndietro, IcoTransizione, IcoVerso } from "@/components/icone";
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import { dataIt, dataOraIt } from "@/lib/format";
 import { TRANSIZIONI, type Stato } from "@/lib/workflow";
 
@@ -123,7 +124,7 @@ export default function Pagina() {
                       onClick={() => void transizione(s)}
                     >
                       <IcoTransizione />
-                      {s.replaceAll("_", " ")}
+                      {etichetta(STATO_LABEL, s)}
                     </button>
                   ))}
                 </div>

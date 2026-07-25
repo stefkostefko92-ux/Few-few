@@ -125,7 +125,8 @@ model Tenant {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  users User[]
+  users     User[]
+  auditLogs AuditLog[]
 
   @@map("tenants")
 }
@@ -168,12 +169,17 @@ model AuditLog {
   hmac      String // криптографски подпис на редицата
   versioneFirma Int   @default(2) // 1 = ред на вмъкване, 2 = сортирани ключове
   utenteId  String?  @db.Uuid
+  /// Фирмата, чиито данни е засегнала операцията. Без нея регистърът не може
+  /// да се филтрира и администраторът на една фирма чете одита на друга.
+  tenantId  String?  @db.Uuid
   createdAt DateTime @default(now())
 
-  utente User? @relation(fields: [utenteId], references: [id])
+  utente User?   @relation(fields: [utenteId], references: [id])
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   @@index([entita, entitaId])
   @@index([createdAt])
+  @@index([tenantId, createdAt])
   @@map("audit_log")
 }
 
@@ -181,7 +187,7 @@ model AuditLog {
 
 model Impianto {
   id                String        @id @default(uuid()) @db.Uuid
-  matricola         String        @unique
+  matricola         String
   marca             String
   modello           String
   anno              Int?
@@ -210,6 +216,7 @@ model Impianto {
   ordiniLavoro   OrdineLavoro[]
 
   @@index([tenantId])
+  @@unique([tenantId, matricola])
   @@map("impianti")
 }
 
@@ -351,7 +358,7 @@ model Dipendente {
 // Фирмен автопарк — трите дати определят цветния статус в списъка.
 model Automezzo {
   id                   String    @id @default(uuid()) @db.Uuid
-  targa                String    @unique
+  targa                String
   marca                String
   modello              String
   chilometraggio       Int       @default(0)
@@ -369,6 +376,7 @@ model Automezzo {
   conducente Dipendente? @relation(fields: [conducenteId], references: [id])
 
   @@index([tenantId])
+  @@unique([tenantId, targa])
   @@map("automezzi")
 }
 
@@ -416,7 +424,7 @@ model Squadra {
 
 model ArticoloMagazzino {
   id             String        @id @default(uuid()) @db.Uuid
-  codice         String        @unique
+  codice         String
   barcode        String?
   nome           String
   descrizione    String        @default("")
@@ -439,6 +447,7 @@ model ArticoloMagazzino {
   vociPreventivo VocePreventivo[]
 
   @@index([tenantId])
+  @@unique([tenantId, codice])
   @@map("articoli_magazzino")
 }
 
@@ -465,7 +474,7 @@ model MovimentoMagazzino {
 
 model Preventivo {
   id               String          @id @default(uuid()) @db.Uuid
-  numero           String          @unique
+  numero           String
   stato            StatoPreventivo @default(BOZZA)
   oggetto          String
   descrizione      String?
@@ -488,6 +497,7 @@ model Preventivo {
   ordiniLavoro   OrdineLavoro[]
 
   @@index([tenantId])
+  @@unique([tenantId, numero])
   @@map("preventivi")
 }
 
@@ -513,7 +523,7 @@ model VocePreventivo {
 // Работата за изпълнение. Статусът минава само по позволените преходи.
 model OrdineLavoro {
   id             String         @id @default(uuid()) @db.Uuid
-  numero         String         @unique
+  numero         String
   stato          StatoOrdine    @default(BOZZA)
   priorita       PrioritaOrdine @default(ORDINARIA)
   oggetto        String
@@ -541,6 +551,7 @@ model OrdineLavoro {
   ddt        Ddt[]
 
   @@index([tenantId])
+  @@unique([tenantId, numero])
   @@map("ordini_lavoro")
 }
 
@@ -563,7 +574,7 @@ model StoricoStato {
 
 model Fattura {
   id               String       @id @default(uuid()) @db.Uuid
-  numero           String       @unique
+  numero           String
   tipo             TipoFattura  @default(EMESSA)
   stato            StatoFattura @default(BOZZA)
   data             DateTime     @default(now())
@@ -586,6 +597,7 @@ model Fattura {
   voci           VoceFattura[]
 
   @@index([tenantId])
+  @@unique([tenantId, numero])
   @@map("fatture")
 }
 
@@ -609,7 +621,7 @@ model VoceFattura {
 // Транспортни документи по D.P.R. 472/1996.
 model Ddt {
   id               String   @id @default(uuid()) @db.Uuid
-  numero           String   @unique
+  numero           String
   data             DateTime @default(now())
   causale          String?
   destinatario     String?
@@ -626,6 +638,7 @@ model Ddt {
   movimenti    MovimentoMagazzino[]
 
   @@index([tenantId])
+  @@unique([tenantId, numero])
   @@map("ddt")
 }
 

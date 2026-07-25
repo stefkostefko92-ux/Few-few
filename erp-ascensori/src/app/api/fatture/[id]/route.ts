@@ -4,10 +4,7 @@ import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
-import {
-  dettagliModifica,
-  dettagliCancellazione
-} from "@/lib/audit-dettagli";
+import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { fatturaSchema } from "@/lib/entities";
 import { fatturaEliminabile } from "@/lib/regole-fiscali";
 
@@ -21,7 +18,10 @@ const include = {
 export const GET = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("DIREZIONE");
   const { id } = await ctx.params;
-  const r = await prisma.fattura.findFirst({ where: { id, ...filtroTenant(s) }, include });
+  const r = await prisma.fattura.findFirst({
+    where: { id, ...filtroTenant(s) },
+    include,
+  });
   if (!r) throw new ErroreHttp(404, "Fattura non trovata");
   return ok(r);
 });
@@ -30,7 +30,9 @@ export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("DIREZIONE");
   const { id } = await ctx.params;
   const data = await corpoValidato(req, fatturaSchema.partial());
-  const prima = await prisma.fattura.findFirst({ where: { id, ...filtroTenant(s) } });
+  const prima = await prisma.fattura.findFirst({
+    where: { id, ...filtroTenant(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Fattura non trovata");
   // Фискална защита: издадената фактура е непроменима и в ЗАГЛАВИЕТО, не само
   // в редовете. Иначе датата се пренаписва назад (антидатиране) и получателят
@@ -38,15 +40,19 @@ export const PUT = gestito(async (req, ctx) => {
   if (!fatturaEliminabile(prima.stato))
     throw new ErroreHttp(
       409,
-      "Fattura già emessa: non modificabile. Emettere una nota di credito o uno storno"
+      "Fattura già emessa: non modificabile. Emettere una nota di credito o uno storno",
     );
   const dopo = await prisma.fattura.update({ where: { id }, data, include });
   await scriviAudit({
     azione: "UPDATE",
     entita: "fatture",
     entitaId: id,
-    dettagli: dettagliModifica(prima, { ...(prima as object), ...(data as object) }),
+    dettagli: dettagliModifica(prima, {
+      ...(prima as object),
+      ...(data as object),
+    }),
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(dopo);
 });
@@ -54,11 +60,16 @@ export const PUT = gestito(async (req, ctx) => {
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("DIREZIONE");
   const { id } = await ctx.params;
-  const prima = await prisma.fattura.findFirst({ where: { id, ...filtroTenant(s) } });
+  const prima = await prisma.fattura.findFirst({
+    where: { id, ...filtroTenant(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Fattura non trovata");
   // фискална защита: издаден документ не се трие, а се сторнира (STORNATA)
   if (!fatturaEliminabile(prima.stato))
-    throw new ErroreHttp(409, "Solo le bozze possono essere eliminate: usare lo storno");
+    throw new ErroreHttp(
+      409,
+      "Solo le bozze possono essere eliminate: usare lo storno",
+    );
   await prisma.fattura.delete({ where: { id } });
   await scriviAudit({
     azione: "DELETE",
@@ -66,6 +77,7 @@ export const DELETE = gestito(async (_req, ctx) => {
     entitaId: id,
     dettagli: dettagliCancellazione(prima),
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok({ ok: true });
 });

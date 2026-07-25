@@ -9,6 +9,8 @@ import { TIPO_MAGAZZINO, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Articoli di magazzino",
+  singolare: "articolo",
+  genere: "m",
   descrizione: "Componenti tecnici e articoli in vendita: la giacenza si muove solo con i movimenti",
   api: "/api/articoli",
   cerca: "Cerca per codice, nome, barcode…",

@@ -31,7 +31,11 @@ export function azzeraPerTest(): void {
 }
 
 /** Връща true, ако заявката Е позволена; false при надвишена честота. */
-export function consenti(chiave: string, limite: number, finestraMs: number): boolean {
+export function consenti(
+  chiave: string,
+  limite: number,
+  finestraMs: number,
+): boolean {
   const ora = Date.now();
   const f = finestre.get(chiave);
   if (!f || f.resetAt <= ora) {

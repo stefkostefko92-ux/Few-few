@@ -21,11 +21,16 @@ export interface EsitoTentativo {
 
 /** Вярно, ако акаунтът е под активна блокада в момента `ora`. */
 export function eBloccato(stato: StatoAccesso, ora: Date): boolean {
-  return stato.bloccatoFino !== null && stato.bloccatoFino.getTime() > ora.getTime();
+  return (
+    stato.bloccatoFino !== null && stato.bloccatoFino.getTime() > ora.getTime()
+  );
 }
 
 /** Регистрира неуспешен опит и решава дали се стига до блокада. */
-export function registraFallimento(stato: StatoAccesso, ora: Date): EsitoTentativo {
+export function registraFallimento(
+  stato: StatoAccesso,
+  ora: Date,
+): EsitoTentativo {
   const tentativi = stato.tentativi + 1;
   if (tentativi >= MAX_TENTATIVI) {
     return {
@@ -43,6 +48,9 @@ export function registraFallimento(stato: StatoAccesso, ora: Date): EsitoTentati
 }
 
 /** Успешен вход — броячът се нулира. */
-export function registraSuccesso(): Pick<EsitoTentativo, "tentativi" | "bloccatoFino"> {
+export function registraSuccesso(): Pick<
+  EsitoTentativo,
+  "tentativi" | "bloccatoFino"
+> {
   return { tentativi: 0, bloccatoFino: null };
 }

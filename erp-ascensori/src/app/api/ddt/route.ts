@@ -18,7 +18,10 @@ export const GET = gestito(async (req) => {
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim();
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-  const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+  const size = Math.min(
+    200,
+    Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50),
+  );
   const where = {
     ...filtroTenant(s),
     ...(q
@@ -46,7 +49,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, ddtSchema.base);
-  const creato = await conNumero("ddt", PREFISSI.ddt, (numero) =>
+  const creato = await conNumero("ddt", PREFISSI.ddt, s.tenantId, (numero) =>
     prisma.ddt.create({
       data: {
         data: data.data,
@@ -60,7 +63,7 @@ export const POST = gestito(async (req) => {
         ...tenantDiCreazione(s),
       },
       include,
-    })
+    }),
   );
   await scriviAudit({
     azione: "CREATE",
@@ -68,6 +71,7 @@ export const POST = gestito(async (req) => {
     entitaId: creato.id,
     dettagli: dettagliCreazione(data),
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(creato, 201);
 });

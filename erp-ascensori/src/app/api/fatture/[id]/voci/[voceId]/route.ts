@@ -1,6 +1,6 @@
 // Редове на fattura — промяна/изтриване + преизчисление (DIREZIONE+, само BOZZA).
 import { rottaVoceElemento } from "@/lib/voci";
-import { voceSchema } from "@/lib/entities";
+import { conLimiteImporto, voceSchema } from "@/lib/entities";
 import { ricalcolaFattura } from "@/lib/totali-db";
 
 export const { PUT, DELETE } = rottaVoceElemento({
@@ -8,7 +8,7 @@ export const { PUT, DELETE } = rottaVoceElemento({
   model: "voceFattura",
   parentModel: "fattura",
   parentField: "fatturaId",
-  schema: voceSchema.omit({ articoloId: true }).partial(),
+  schema: conLimiteImporto(voceSchema.omit({ articoloId: true }).partial()),
   ricalcola: ricalcolaFattura,
   ruolo: "DIREZIONE",
   statiModificabili: ["BOZZA"],

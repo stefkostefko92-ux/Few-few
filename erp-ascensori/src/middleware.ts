@@ -21,7 +21,10 @@ export async function middleware(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (token && process.env.SESSION_SECRET) {
     try {
-      await jwtVerify(token, new TextEncoder().encode(process.env.SESSION_SECRET));
+      await jwtVerify(
+        token,
+        new TextEncoder().encode(process.env.SESSION_SECRET),
+      );
       return NextResponse.next();
     } catch {
       // изтекла/невалидна сесия → вход

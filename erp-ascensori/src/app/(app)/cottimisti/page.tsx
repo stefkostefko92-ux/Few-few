@@ -5,6 +5,8 @@ import { TIPO_COTTIMISTA, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Cottimisti",
+  singolare: "cottimista",
+  genere: "m",
   descrizione: "Ditte esterne abilitate all'assegnazione dei lavori",
   api: "/api/cottimisti",
   cerca: "Cerca per ragione sociale, P. IVA…",

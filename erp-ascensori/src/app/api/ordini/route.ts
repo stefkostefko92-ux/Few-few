@@ -25,7 +25,10 @@ export const GET = gestito(async (req) => {
   const stato = url.searchParams.get("stato");
   const priorita = url.searchParams.get("priorita");
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-  const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+  const size = Math.min(
+    200,
+    Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50),
+  );
   const where = {
     ...filtroTenant(s),
     ...(q
@@ -55,32 +58,36 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, ordineSchema);
-  const creato = await conNumero("ordineLavoro", PREFISSI.ordineLavoro, (numero) =>
-    prisma.$transaction(async (tx) => {
-      const o = await tx.ordineLavoro.create({
-        data: {
-          oggetto: data.oggetto,
-          priorita: data.priorita,
-          descrizione: data.descrizione ?? undefined,
-          noteInterne: data.noteInterne ?? undefined,
-          noteCommittente: data.noteCommittente ?? undefined,
-          dataInizio: data.dataInizio ?? undefined,
-          dataFine: data.dataFine ?? undefined,
-          impiantoId: data.impiantoId ?? undefined,
-          preventivoId: data.preventivoId ?? undefined,
-          tecnicoId: data.tecnicoId ?? undefined,
-          cottimistiId: data.cottimistiId ?? undefined,
-          squadraId: data.squadraId ?? undefined,
-          numero,
-          ...tenantDiCreazione(s),
-        },
-        include,
-      });
-      await tx.storicoStato.create({
-        data: { ordineLavoroId: o.id, statoNuovo: "BOZZA", utente: s.nome },
-      });
-      return o;
-    })
+  const creato = await conNumero(
+    "ordineLavoro",
+    PREFISSI.ordineLavoro,
+    s.tenantId,
+    (numero) =>
+      prisma.$transaction(async (tx) => {
+        const o = await tx.ordineLavoro.create({
+          data: {
+            oggetto: data.oggetto,
+            priorita: data.priorita,
+            descrizione: data.descrizione ?? undefined,
+            noteInterne: data.noteInterne ?? undefined,
+            noteCommittente: data.noteCommittente ?? undefined,
+            dataInizio: data.dataInizio ?? undefined,
+            dataFine: data.dataFine ?? undefined,
+            impiantoId: data.impiantoId ?? undefined,
+            preventivoId: data.preventivoId ?? undefined,
+            tecnicoId: data.tecnicoId ?? undefined,
+            cottimistiId: data.cottimistiId ?? undefined,
+            squadraId: data.squadraId ?? undefined,
+            numero,
+            ...tenantDiCreazione(s),
+          },
+          include,
+        });
+        await tx.storicoStato.create({
+          data: { ordineLavoroId: o.id, statoNuovo: "BOZZA", utente: s.nome },
+        });
+        return o;
+      }),
   );
   await scriviAudit({
     azione: "CREATE",
@@ -88,6 +95,7 @@ export const POST = gestito(async (req) => {
     entitaId: creato.id,
     dettagli: dettagliCreazione(data),
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(creato, 201);
 });

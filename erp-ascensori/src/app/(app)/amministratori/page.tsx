@@ -7,6 +7,8 @@ import { TIPO_AMMINISTRATORE, etichetta } from "@/lib/enum-labels";
 
 const config: EntityConfig = {
   titolo: "Amministratori",
+  singolare: "amministratore",
+  genere: "m",
   descrizione:
     "Controparte contrattuale e fiscale: dati incompleti bloccano la fattura elettronica",
   api: "/api/amministratori",

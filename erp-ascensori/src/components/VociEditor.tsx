@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { euro } from "@/lib/format";
 import { IcoNuovoPiccolo } from "@/components/icone";
+import { apiFetch } from "@/lib/fetch-client";
 
 export interface VoceRiga {
   id: string;
@@ -37,6 +38,9 @@ export default function VociEditor({
     : { descrizione: "", quantita: "1", um: "pz", peso: "" };
   const [form, setForm] = useState<Record<string, string>>(vuoto);
   const [inModifica, setInModifica] = useState<string | null>(null);
+  /** Без този пазач двойното щракване по бавна връзка вписва реда ДВА пъти —
+   *  и тоталът на фактурата излиза с една позиция повече, без нищо да го спре. */
+  const [inCorso, setInCorso] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
 
   function corpo(): Record<string, unknown> {
@@ -57,27 +61,40 @@ export default function VociEditor({
 
   async function salva(e: React.FormEvent) {
     e.preventDefault();
+    if (inCorso) return;
+    setInCorso(true);
     setErrore(null);
     const url = inModifica ? `${api}/${inModifica}` : api;
-    const res = await fetch(url, {
-      method: inModifica ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(corpo()),
-    });
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
-      return;
+    try {
+      const { ok, dati } = await apiFetch<{ error?: string }>(url, {
+        method: inModifica ? "PUT" : "POST",
+        body: JSON.stringify(corpo()),
+      });
+      if (!ok) {
+        setErrore(dati.error ?? "Errore di salvataggio");
+        return;
+      }
+      setForm(vuoto);
+      setInModifica(null);
+      onCambiato();
+    } finally {
+      setInCorso(false);
     }
-    setForm(vuoto);
-    setInModifica(null);
-    onCambiato();
   }
 
   async function elimina(id: string) {
-    if (!confirm("Eliminare la riga?")) return;
-    const res = await fetch(`${api}/${id}`, { method: "DELETE" });
-    if (res.ok) onCambiato();
+    if (!confirm("Eliminare definitivamente questa riga?")) return;
+    if (inCorso) return;
+    setInCorso(true);
+    try {
+      const { ok, dati } = await apiFetch<{ error?: string }>(`${api}/${id}`, {
+        method: "DELETE",
+      });
+      if (ok) onCambiato();
+      else setErrore(dati.error ?? "Errore di eliminazione");
+    } finally {
+      setInCorso(false);
+    }
   }
 
   return (
@@ -222,9 +239,13 @@ export default function VociEditor({
             </div>
           </>
         )}
-        <button type="submit" className="btn-primary inline-flex items-center gap-1.5">
+        <button
+          type="submit"
+          className="btn-primary inline-flex items-center gap-1.5"
+          disabled={inCorso}
+        >
           {!inModifica && <IcoNuovoPiccolo />}
-          {inModifica ? "Aggiorna riga" : "Aggiungi riga"}
+          {inCorso ? "Salvataggio…" : inModifica ? "Aggiorna riga" : "Aggiungi riga"}
         </button>
         {inModifica && (
           <button

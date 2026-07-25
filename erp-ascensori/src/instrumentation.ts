@@ -12,8 +12,10 @@ export async function register(): Promise<void> {
 
   const sessione = process.env.SESSION_SECRET;
   const audit = process.env.AUDIT_HMAC_KEY;
-  if (!sessione || sessione.length < 32) mancanti.push("SESSION_SECRET (min 32 знака)");
-  if (!audit || audit.length < 32) mancanti.push("AUDIT_HMAC_KEY (min 32 знака)");
+  if (!sessione || sessione.length < 32)
+    mancanti.push("SESSION_SECRET (min 32 знака)");
+  if (!audit || audit.length < 32)
+    mancanti.push("AUDIT_HMAC_KEY (min 32 знака)");
   if (sessione && audit && sessione === audit)
     mancanti.push("SESSION_SECRET и AUDIT_HMAC_KEY трябва да са РАЗЛИЧНИ");
   if (!process.env.DATABASE_URL) mancanti.push("DATABASE_URL");
@@ -21,7 +23,7 @@ export async function register(): Promise<void> {
   if (mancanti.length > 0) {
     // Не ползваме структурирания логер: това е фатално и трябва да е четимо.
     console.error(
-      `[avvio] конфигурацията е непълна — процесът спира:\n  - ${mancanti.join("\n  - ")}`
+      `[avvio] конфигурацията е непълна — процесът спира:\n  - ${mancanti.join("\n  - ")}`,
     );
     process.exit(1);
   }

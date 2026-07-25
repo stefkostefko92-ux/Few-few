@@ -47,14 +47,29 @@ export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
   const data = await corpoValidato(req, schemaUpdate);
-  const prima = await prisma.user.findFirst({ where: { id, ...filtroUtenti(s) } });
+  const prima = await prisma.user.findFirst({
+    where: { id, ...filtroUtenti(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Utente non trovato");
   // само MASTER може да пипа друг MASTER или да дава ролята MASTER
-  if ((prima.ruolo === "MASTER" || data.ruolo === "MASTER") && s.ruolo !== "MASTER")
-    throw new ErroreHttp(403, "Solo il livello MASTER può gestire utenti MASTER");
+  if (
+    (prima.ruolo === "MASTER" || data.ruolo === "MASTER") &&
+    s.ruolo !== "MASTER"
+  )
+    throw new ErroreHttp(
+      403,
+      "Solo il livello MASTER può gestire utenti MASTER",
+    );
   // и само MASTER мести потребител между фирми
-  if (s.ruolo !== "MASTER" && data.tenantId !== undefined && data.tenantId !== s.tenantId)
-    throw new ErroreHttp(403, "Impossibile assegnare l'utente a un'altra azienda");
+  if (
+    s.ruolo !== "MASTER" &&
+    data.tenantId !== undefined &&
+    data.tenantId !== s.tenantId
+  )
+    throw new ErroreHttp(
+      403,
+      "Impossibile assegnare l'utente a un'altra azienda",
+    );
   const dopo = await prisma.user.update({
     where: { id },
     data: {
@@ -69,8 +84,12 @@ export const PUT = gestito(async (req, ctx) => {
     azione: "UPDATE",
     entita: "users",
     entitaId: id,
-    dettagli: { prima: { ruolo: prima.ruolo, attivo: prima.attivo }, dopo: data },
+    dettagli: {
+      prima: { ruolo: prima.ruolo, attivo: prima.attivo },
+      dopo: data,
+    },
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(dopo);
 });
@@ -78,8 +97,11 @@ export const PUT = gestito(async (req, ctx) => {
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("MASTER");
   const { id } = await ctx.params;
-  if (id === s.sub) throw new ErroreHttp(409, "Impossibile eliminare il proprio account");
-  const prima = await prisma.user.findFirst({ where: { id, ...filtroUtenti(s) } });
+  if (id === s.sub)
+    throw new ErroreHttp(409, "Impossibile eliminare il proprio account");
+  const prima = await prisma.user.findFirst({
+    where: { id, ...filtroUtenti(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Utente non trovato");
   await prisma.user.delete({ where: { id } });
   await scriviAudit({
@@ -88,6 +110,7 @@ export const DELETE = gestito(async (_req, ctx) => {
     entitaId: id,
     dettagli: { prima: { email: prima.email, ruolo: prima.ruolo } },
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok({ ok: true });
 });

@@ -38,7 +38,10 @@ const CASI: Caso[] = [
   { nome: "табло", metodo: "GET", percorso: "/api/dashboard/stats", minimo: "OPERATORE" },
   { nome: "четене на потребители", metodo: "GET", percorso: "/api/utenti", minimo: "ADMIN" },
   { nome: "регистър на операциите", metodo: "GET", percorso: "/api/audit", minimo: "ADMIN" },
-  { nome: "фирми (multi-tenant)", metodo: "GET", percorso: "/api/tenants", minimo: "ADMIN" },
+  // САМО MASTER: `tenants` е служебна таблица без филтър по фирма, затова с
+  // ниво ADMIN администраторът на един клиент четеше списъка с всички фирми,
+  // удължаваше собствения си абонамент и деактивираше конкурент.
+  { nome: "фирми (multi-tenant)", metodo: "GET", percorso: "/api/tenants", minimo: "MASTER" },
   { nome: "четене на движения", metodo: "GET", percorso: "/api/movimenti", minimo: "OPERATORE" },
   {
     nome: "създаване на кондоминио",

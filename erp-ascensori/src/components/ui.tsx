@@ -4,6 +4,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { IcoChiudi, IcoPrecedente, IcoSuccessiva, IcoVuoto } from "@/components/icone";
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 
 // ── Бадж за статуси (цветове от дизайн системата) ───────────────────────────
 
@@ -49,7 +50,7 @@ export function Badge({ valore }: { valore: string }) {
   const stile = STILE_BADGE[valore] ?? "bg-surface-3 text-text-2";
   return (
     <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${stile}`}>
-      {valore.replaceAll("_", " ")}
+      {etichetta(STATO_LABEL, valore)}
     </span>
   );
 }
@@ -249,7 +250,7 @@ export function FiltriStato({
       </button>
       {valori.map((v) => (
         <button key={v} className={pillola(attivo === v)} onClick={() => onCambia(v)}>
-          {v.replaceAll("_", " ")}
+          {etichetta(STATO_LABEL, v)}
           {conteggi?.[v] !== undefined && (
             <span className="ml-1 font-mono text-text-3">{conteggi[v]}</span>
           )}

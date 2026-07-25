@@ -4,6 +4,8 @@ import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPag
 
 const config: EntityConfig = {
   titolo: "Squadre",
+  singolare: "squadra",
+  genere: "f",
   descrizione: "Squadre operative delle ditte esterne",
   api: "/api/squadre",
   cerca: "Cerca per nome, capocantiere…",

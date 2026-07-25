@@ -15,7 +15,8 @@ const REFRESH_TTL_DAYS = Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 7);
 
 function segreto(): Uint8Array {
   const s = process.env.SESSION_SECRET;
-  if (!s || s.length < 32) throw new Error("SESSION_SECRET mancante o troppo corto (min 32)");
+  if (!s || s.length < 32)
+    throw new Error("SESSION_SECRET mancante o troppo corto (min 32)");
   return new TextEncoder().encode(s);
 }
 
@@ -74,9 +75,15 @@ const COOKIE_BASE = {
   path: "/",
 };
 
-export async function scriviCookieSessione(access: string, refresh: string): Promise<void> {
+export async function scriviCookieSessione(
+  access: string,
+  refresh: string,
+): Promise<void> {
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, access, { ...COOKIE_BASE, maxAge: ACCESS_TTL_MIN * 60 });
+  jar.set(SESSION_COOKIE, access, {
+    ...COOKIE_BASE,
+    maxAge: ACCESS_TTL_MIN * 60,
+  });
   jar.set(REFRESH_COOKIE, refresh, {
     ...COOKIE_BASE,
     maxAge: REFRESH_TTL_DAYS * 86_400,
@@ -94,7 +101,7 @@ export async function cancellaCookieSessione(): Promise<void> {
 export class ErroreHttp extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
   ) {
     super(message);
   }
@@ -118,7 +125,8 @@ export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
   });
   if (!u || !u.attivo) throw new ErroreHttp(401, "Utente non attivo");
   const ruolo = u.ruolo as Ruolo;
-  if (!haPermesso(ruolo, minimo)) throw new ErroreHttp(403, "Permessi insufficienti");
+  if (!haPermesso(ruolo, minimo))
+    throw new ErroreHttp(403, "Permessi insufficienti");
   // мулти-фирма: изтекъл абонамент → 402 (проверка при наличен tenant)
   if (s.tenantId) {
     const t = await prisma.tenant.findUnique({ where: { id: s.tenantId } });

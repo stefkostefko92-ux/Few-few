@@ -1,7 +1,13 @@
 // Парична аритметика: цели центесими, half-up, преизчисление от редовете.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toCents, fromCents, totaleVoce, ivaVoce, calcolaTotali } from "../totals";
+import {
+  toCents,
+  fromCents,
+  totaleVoce,
+  ivaVoce,
+  calcolaTotali,
+} from "../totals";
 
 test("toCents/fromCents двупосочно", () => {
   assert.equal(toCents("123.45"), 12345);
@@ -21,11 +27,20 @@ test("toCents отказва невалиден вход", () => {
 
 test("тотал на редица: qty × prezzo с half-up", () => {
   // 3 × 9.99 = 29.97
-  assert.equal(totaleVoce({ quantita: "3", prezzoUnitario: "9.99", aliquotaIva: "22" }), 2997);
+  assert.equal(
+    totaleVoce({ quantita: "3", prezzoUnitario: "9.99", aliquotaIva: "22" }),
+    2997,
+  );
   // 0.5 × 0.03 = 0.015 → 0.02 (half-up)
-  assert.equal(totaleVoce({ quantita: "0.50", prezzoUnitario: "0.03", aliquotaIva: "22" }), 2);
+  assert.equal(
+    totaleVoce({ quantita: "0.50", prezzoUnitario: "0.03", aliquotaIva: "22" }),
+    2,
+  );
   // 1.33 × 7.77 = 10.3341 → 10.33
-  assert.equal(totaleVoce({ quantita: "1.33", prezzoUnitario: "7.77", aliquotaIva: "22" }), 1033);
+  assert.equal(
+    totaleVoce({ quantita: "1.33", prezzoUnitario: "7.77", aliquotaIva: "22" }),
+    1033,
+  );
 });
 
 test("ДДС на редица с half-up", () => {

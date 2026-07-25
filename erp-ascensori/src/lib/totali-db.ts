@@ -15,7 +15,7 @@ export type ClientePrisma = Prisma.TransactionClient | typeof prisma;
 async function ricalcola(
   db: ClientePrisma,
   tipo: "preventivo" | "fattura",
-  documentoId: string
+  documentoId: string,
 ): Promise<void> {
   const voci =
     tipo === "preventivo"
@@ -43,15 +43,21 @@ async function ricalcola(
   if (tipo === "preventivo") {
     await Promise.all(
       voci.map((v, i) =>
-        db.vocePreventivo.update({ where: { id: v.id }, data: { totale: t.totaliVoci[i] } })
-      )
+        db.vocePreventivo.update({
+          where: { id: v.id },
+          data: { totale: t.totaliVoci[i] },
+        }),
+      ),
     );
     await db.preventivo.update({ where: { id: documentoId }, data: totali });
   } else {
     await Promise.all(
       voci.map((v, i) =>
-        db.voceFattura.update({ where: { id: v.id }, data: { totale: t.totaliVoci[i] } })
-      )
+        db.voceFattura.update({
+          where: { id: v.id },
+          data: { totale: t.totaliVoci[i] },
+        }),
+      ),
     );
     await db.fattura.update({ where: { id: documentoId }, data: totali });
   }
@@ -59,13 +65,16 @@ async function ricalcola(
 
 export async function ricalcolaPreventivo(
   preventivoId: string,
-  db?: ClientePrisma
+  db?: ClientePrisma,
 ): Promise<void> {
   if (db) return ricalcola(db, "preventivo", preventivoId);
   await prisma.$transaction((tx) => ricalcola(tx, "preventivo", preventivoId));
 }
 
-export async function ricalcolaFattura(fatturaId: string, db?: ClientePrisma): Promise<void> {
+export async function ricalcolaFattura(
+  fatturaId: string,
+  db?: ClientePrisma,
+): Promise<void> {
   if (db) return ricalcola(db, "fattura", fatturaId);
   await prisma.$transaction((tx) => ricalcola(tx, "fattura", fatturaId));
 }

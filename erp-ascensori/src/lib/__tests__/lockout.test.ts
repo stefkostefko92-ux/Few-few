@@ -22,15 +22,21 @@ test("петият пореден неуспех блокира за 15 мину
   const esito = registraFallimento({ tentativi: 4, bloccatoFino: null }, ORA);
   assert.equal(esito.bloccato, true);
   assert.equal(esito.tentativi, 5);
-  assert.equal(esito.bloccatoFino?.getTime(), ORA.getTime() + BLOCCO_MINUTI * 60_000);
+  assert.equal(
+    esito.bloccatoFino?.getTime(),
+    ORA.getTime() + BLOCCO_MINUTI * 60_000,
+  );
 });
 
 test("блокадата е активна до изтичане и пада след това", () => {
   const fino = new Date(ORA.getTime() + 5 * 60_000);
   assert.equal(eBloccato({ tentativi: 5, bloccatoFino: fino }, ORA), true);
   assert.equal(
-    eBloccato({ tentativi: 5, bloccatoFino: fino }, new Date(fino.getTime() + 1)),
-    false
+    eBloccato(
+      { tentativi: 5, bloccatoFino: fino },
+      new Date(fino.getTime() + 1),
+    ),
+    false,
   );
 });
 

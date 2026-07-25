@@ -43,7 +43,9 @@ export function canonico(r: RigaAudit, versione: 1 | 2 = 2): string {
     r.azione,
     r.entita,
     r.entitaId ?? "",
-    r.dettagli === undefined || r.dettagli === null ? "" : serializza(r.dettagli),
+    r.dettagli === undefined || r.dettagli === null
+      ? ""
+      : serializza(r.dettagli),
     r.ip ?? "",
     r.userAgent ?? "",
     r.utenteId ?? "",
@@ -51,15 +53,21 @@ export function canonico(r: RigaAudit, versione: 1 | 2 = 2): string {
   ]);
 }
 
-export function firmaAudit(r: RigaAudit, chiave: string, versione: 1 | 2 = 2): string {
-  return createHmac("sha256", chiave).update(canonico(r, versione)).digest("hex");
+export function firmaAudit(
+  r: RigaAudit,
+  chiave: string,
+  versione: 1 | 2 = 2,
+): string {
+  return createHmac("sha256", chiave)
+    .update(canonico(r, versione))
+    .digest("hex");
 }
 
 export function verificaAudit(
   r: RigaAudit,
   hmac: string,
   chiave: string,
-  versione: 1 | 2 = 2
+  versione: 1 | 2 = 2,
 ): boolean {
   const atteso = Buffer.from(firmaAudit(r, chiave, versione), "hex");
   let dato: Buffer;

@@ -21,8 +21,12 @@ export interface EsitoRetention {
 }
 
 /** Пуска прочистването и записва следа от пускането (както при scadenze). */
-export async function applicaRetentionTracciato(oggi = new Date()): Promise<EsitoRetention> {
-  const run = await prisma.automatismoRun.create({ data: { nome: "retention" } });
+export async function applicaRetentionTracciato(
+  oggi = new Date(),
+): Promise<EsitoRetention> {
+  const run = await prisma.automatismoRun.create({
+    data: { nome: "retention" },
+  });
   const inizio = Date.now();
   try {
     const esito = await applicaRetention(oggi);
@@ -35,7 +39,11 @@ export async function applicaRetentionTracciato(oggi = new Date()): Promise<Esit
         dettagli: { ...esito },
       },
     });
-    log.info("automatismo retention", { esito: "OK", durata_ms: Date.now() - inizio, ...esito });
+    log.info("automatismo retention", {
+      esito: "OK",
+      durata_ms: Date.now() - inizio,
+      ...esito,
+    });
     return esito;
   } catch (e) {
     const err = descriviErrore(e);
@@ -71,7 +79,9 @@ async function eliminaAPartite(where: object): Promise<number> {
   }
 }
 
-export async function applicaRetention(oggi = new Date()): Promise<EsitoRetention> {
+export async function applicaRetention(
+  oggi = new Date(),
+): Promise<EsitoRetention> {
   const s = soglie(oggi);
   const accesso = [...AZIONI_ACCESSO];
 

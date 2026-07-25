@@ -8,7 +8,10 @@ import { dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
   titolo: "Impianti",
-  descrizione: "Ascensori e piattaforme gestite, con date di revisione e avvisi automatici",
+  singolare: "impianto",
+  genere: "m",
+  descrizione:
+    "Ascensori e piattaforme elevatrici in gestione, con scadenze di verifica e avvisi automatici",
   api: "/api/impianti",
   cerca: "Cerca per matricola, marca, indirizzo…",
   linkDettaglio: (r) => `/impianti/${r.id}`,

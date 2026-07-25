@@ -32,7 +32,9 @@ interface Delegate {
  *  („condomino" вместо „condominio") се откриваше чак по време на изпълнение —
  *  като 500 при първата заявка към маршрута. Сега е грешка при компилация. */
 export type ModelloPrisma = {
-  [K in keyof typeof prisma]: (typeof prisma)[K] extends { findMany: unknown } ? K : never;
+  [K in keyof typeof prisma]: (typeof prisma)[K] extends { findMany: unknown }
+    ? K
+    : never;
 }[keyof typeof prisma];
 
 export interface CrudConfig {
@@ -79,7 +81,9 @@ export function rottaCollezione(cfg: CrudConfig) {
     const { page, size, skip, take } = paginazione(url);
 
     // Изолация по фирма ПЪРВО — не се презаписва от клиентски параметър.
-    const where: Record<string, unknown> = cfg.senzaTenant ? {} : filtroTenant(s);
+    const where: Record<string, unknown> = cfg.senzaTenant
+      ? {}
+      : filtroTenant(s);
     if (q && cfg.searchFields?.length) {
       where.OR = cfg.searchFields.map((f) => ({
         [f]: { contains: q, mode: "insensitive" },
@@ -126,6 +130,7 @@ export function rottaCollezione(cfg: CrudConfig) {
       entitaId: id,
       dettagli: dettagliCreazione(data),
       utenteId: s.sub,
+      tenantId: s.tenantId,
     });
     return ok(creato, 201);
   });
@@ -155,14 +160,22 @@ export function rottaElemento(cfg: CrudConfig) {
       where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
     });
     if (!prima) throw new ErroreHttp(404, "Record non trovato");
-    const dopo = await d.update({ where: { id }, data: data as object, include: cfg.include });
+    const dopo = await d.update({
+      where: { id },
+      data: data as object,
+      include: cfg.include,
+    });
     if (cfg.afterWrite) await cfg.afterWrite(id);
     await scriviAudit({
       azione: "UPDATE",
       entita: cfg.entita,
       entitaId: id,
-      dettagli: dettagliModifica(prima, { ...(prima as object), ...(data as object) }),
+      dettagli: dettagliModifica(prima, {
+        ...(prima as object),
+        ...(data as object),
+      }),
       utenteId: s.sub,
+      tenantId: s.tenantId,
     });
     return ok(dopo);
   });
@@ -183,6 +196,7 @@ export function rottaElemento(cfg: CrudConfig) {
       entitaId: id,
       dettagli: dettagliCancellazione(prima),
       utenteId: s.sub,
+      tenantId: s.tenantId,
     });
     return ok({ ok: true });
   });

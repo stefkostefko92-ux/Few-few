@@ -7,7 +7,12 @@ import { prisma } from "@/lib/prisma";
 import { ok, errore, corpoValidato, gestito } from "@/lib/api";
 import { consenti, puliziaSeNecessaria, LIMITI } from "@/lib/rate-limit";
 import { ipClient } from "@/lib/ip-client";
-import { eBloccato, registraFallimento, registraSuccesso, BLOCCO_MINUTI } from "@/lib/lockout";
+import {
+  eBloccato,
+  registraFallimento,
+  registraSuccesso,
+  BLOCCO_MINUTI,
+} from "@/lib/lockout";
 import {
   creaAccessToken,
   generaRefreshToken,
@@ -30,13 +35,18 @@ export const POST = gestito(async (req) => {
   // не е надеждно (подправя се с хедър), а споделен ключ за всички би дал на
   // всеки анонимен възможност да заключи входа за цялата фирма с 20 заявки.
   // Брутфорсът по един акаунт се лови от блокадата 5/15 мин; това е втори слой.
-  if (!consenti(`login:${email.toLowerCase()}`, LIMITI.login, LIMITI.finestraMs))
+  if (
+    !consenti(`login:${email.toLowerCase()}`, LIMITI.login, LIMITI.finestraMs)
+  )
     return errore(429, "Troppe richieste: riprovare più tardi");
 
   // По IP пазим само глобален таван срещу разпръснат брутфорс — много по-висок,
   // за да не може един клиент да откаже услугата на останалите.
   const ip = ipClient(req.headers);
-  if (ip !== "diretto" && !consenti(`login-ip:${ip}`, LIMITI.login * 10, LIMITI.finestraMs))
+  if (
+    ip !== "diretto" &&
+    !consenti(`login-ip:${ip}`, LIMITI.login * 10, LIMITI.finestraMs)
+  )
     return errore(429, "Troppe richieste: riprovare più tardi");
   const utente = await prisma.user.findUnique({ where: { email } });
 
@@ -46,13 +56,24 @@ export const POST = gestito(async (req) => {
   const rifiuto = () => errore(401, "Credenziali non valide");
   if (!utente || !utente.attivo) {
     // изгаряме bcrypt време и при непознат имейл (timing еднаквост)
-    await bcrypt.compare(password, "$2a$10$C6UzMDM.H6dfI/f/IKcEeO7ZBpM1H1v6XG1L6c1J1a1a1a1a1a1a2");
+    await bcrypt.compare(
+      password,
+      "$2a$10$C6UzMDM.H6dfI/f/IKcEeO7ZBpM1H1v6XG1L6c1J1a1a1a1a1a1a2",
+    );
     return rifiuto();
   }
 
   const ora = new Date();
-  if (eBloccato({ tentativi: utente.tentativi, bloccatoFino: utente.bloccatoFino }, ora))
-    return errore(423, `Account bloccato per ${BLOCCO_MINUTI} minuti dopo troppi tentativi`);
+  if (
+    eBloccato(
+      { tentativi: utente.tentativi, bloccatoFino: utente.bloccatoFino },
+      ora,
+    )
+  )
+    return errore(
+      423,
+      `Account bloccato per ${BLOCCO_MINUTI} minuti dopo troppi tentativi`,
+    );
 
   const valida = await bcrypt.compare(password, utente.password);
   if (!valida) {
@@ -66,20 +87,31 @@ export const POST = gestito(async (req) => {
         select: { tentativi: true },
       }),
     ]);
-    const esito = registraFallimento({ tentativi: aggiornato.tentativi - 1, bloccatoFino: null }, ora);
+    const esito = registraFallimento(
+      { tentativi: aggiornato.tentativi - 1, bloccatoFino: null },
+      ora,
+    );
     if (esito.bloccato) {
       await prisma.user.update({
         where: { id: utente.id },
         data: { bloccatoFino: esito.bloccatoFino },
       });
-      return errore(423, `Account bloccato per ${BLOCCO_MINUTI} minuti dopo troppi tentativi`);
+      return errore(
+        423,
+        `Account bloccato per ${BLOCCO_MINUTI} minuti dopo troppi tentativi`,
+      );
     }
-    return errore(401, `Credenziali non valide. Tentativi rimasti: ${esito.tentativiRimasti}`);
+    return errore(
+      401,
+      `Credenziali non valide. Tentativi rimasti: ${esito.tentativiRimasti}`,
+    );
   }
 
   // мулти-фирма: неактивна фирма/изтекъл абонамент спират входа
   if (utente.tenantId) {
-    const t = await prisma.tenant.findUnique({ where: { id: utente.tenantId } });
+    const t = await prisma.tenant.findUnique({
+      where: { id: utente.tenantId },
+    });
     if (!t || !t.attivo) return errore(403, "Azienda disattivata");
     if (t.scadenzaAbbonamento && t.scadenzaAbbonamento < ora)
       return errore(402, "Abbonamento scaduto: contattare l'amministrazione");
@@ -99,7 +131,13 @@ export const POST = gestito(async (req) => {
     tenantId: utente.tenantId,
   };
   await scriviCookieSessione(await creaAccessToken(sessione), refresh);
-  await scriviAudit({ azione: "LOGIN", entita: "users", entitaId: utente.id, utenteId: utente.id });
+  await scriviAudit({
+    azione: "LOGIN",
+    entita: "users",
+    entitaId: utente.id,
+    utenteId: utente.id,
+    tenantId: utente.tenantId,
+  });
 
   return ok({
     id: utente.id,

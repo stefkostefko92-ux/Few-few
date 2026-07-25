@@ -6,6 +6,8 @@ import { dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
   titolo: "Ordini di lavoro",
+  singolare: "ordine di lavoro",
+  genere: "m",
   descrizione: "Il lavoro da eseguire: lo stato segue solo le transizioni ammesse",
   api: "/api/ordini",
   cerca: "Cerca per numero, oggetto…",

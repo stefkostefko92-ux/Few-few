@@ -30,10 +30,56 @@ export const TIPO_AMMINISTRATORE: Record<string, string> = {
   SOCIETA: "Società", // главните букви НЕ премахват акцента в италианския
 };
 
+/** Законовата проверка на асансьор се казва „verifica periodica" (чл. 13
+ *  D.P.R. 162/1999), не „revisione" — последното е автомобилната дума и издава
+ *  превод вместо роден софтуер. Ключовете остават предишните, за да не се пипат
+ *  вече записаните данни; сменя се само това, което вижда потребителят. */
 export const TIPO_SCADENZA: Record<string, string> = {
-  revisione: "Revisione",
+  revisione: "Verifica periodica",
   certificazione: "Certificazione",
-  manutenzione: "Manutenzione",
+  manutenzione: "Manutenzione programmata",
+};
+
+/** Действията в регистъра на операциите. Дотогава излизаха суровите английски
+ *  константи (CREATE, STATE_CHANGE) в изцяло италиански продукт. */
+export const AZIONE_AUDIT: Record<string, string> = {
+  CREATE: "Creazione",
+  UPDATE: "Modifica",
+  DELETE: "Eliminazione",
+  LOGIN: "Accesso",
+  LOGOUT: "Uscita",
+  STATE_CHANGE: "Cambio di stato",
+  IMPORT: "Importazione",
+};
+
+/** Статусите, показани извън баджовете (падащи менюта, съобщения). */
+export const STATO_LABEL: Record<string, string> = {
+  BOZZA: "Bozza",
+  EMESSO: "Emesso",
+  EMESSA: "Emessa",
+  CONFERMATO: "Confermato",
+  IN_LAVORO: "In lavorazione",
+  SOSPESO: "Sospeso",
+  COMPLETATO: "Completato",
+  CHIUSO: "Chiuso",
+  CONTESTATO: "Contestato",
+  ANNULLATO: "Annullato",
+  INVIATO: "Inviato",
+  INVIATA: "Inviata",
+  APPROVATO: "Approvato",
+  RIFIUTATO: "Rifiutato",
+  SCADUTO: "Scaduto",
+  SCADUTA: "Scaduta",
+  PAGATA: "Pagata",
+  STORNATA: "Stornata (nota di credito)",
+  ATTIVO: "Attivo",
+  FERMO: "Fermo",
+  MANUTENZIONE: "In manutenzione",
+  FUORI_SERVIZIO: "Fuori servizio",
+  DISMESSO: "Dismesso",
+  ORDINARIA: "Ordinaria",
+  URGENTE: "Urgente",
+  EMERGENZA: "Emergenza",
 };
 
 export const STATO_AUTOMEZZO: Record<string, string> = {

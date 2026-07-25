@@ -5,6 +5,25 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+/**
+ * Идемпотентно създаване по НЕуникален критерий.
+ *
+ * `upsert` вече не става за тези модели: уникалността им е съставна
+ * `[tenantId, numero]` (или `[tenantId, matricola]` и т.н.), а Prisma не приема
+ * съставен уникален ключ в `where`, когато част от него е `null` — а точно
+ * `null` е стойността при еднофирмената демо инсталация.
+ */
+async function creaSeMancante<T extends { id: string }>(
+  delegato: {
+    findFirst(a: { where: object }): Promise<T | null>;
+    create(a: { data: object }): Promise<T>;
+  },
+  where: object,
+  data: object
+): Promise<T> {
+  return (await delegato.findFirst({ where })) ?? (await delegato.create({ data }));
+}
+
 const prisma = new PrismaClient();
 
 const OGGI = new Date();
@@ -154,11 +173,7 @@ async function main() {
   const impianti = [];
   for (const i of datiImpianti) {
     impianti.push(
-      await prisma.impianto.upsert({
-        where: { matricola: i.matricola },
-        update: {},
-        create: i as never,
-      })
+      await creaSeMancante(prisma.impianto, { matricola: i.matricola, tenantId: null }, i)
     );
   }
 
@@ -203,10 +218,7 @@ async function main() {
       data: { impiantoId: impianti[0].id, dipendenteId: dipendenti[0].id },
     });
   }
-  await prisma.automezzo.upsert({
-    where: { targa: "GA123BC" },
-    update: {},
-    create: {
+  await creaSeMancante(prisma.automezzo, { targa: "GA123BC", tenantId: null }, {
       targa: "GA123BC",
       marca: "Fiat",
       modello: "Doblò",
@@ -216,8 +228,8 @@ async function main() {
       scadenzaTagliando: fraGiorni(10),
       stato: "rosso",
       conducenteId: dipendenti[0].id,
-    },
-  });
+    }
+  );
 
   // ── Cottimista + Squadra ─────────────────────────────────────────────────
   let cottimista = await prisma.cottimista.findFirst({
@@ -250,18 +262,14 @@ async function main() {
     { codice: "OLIO-H68", nome: "Olio idraulico ISO VG 68 (lt)", tipo: "COMPONENTI", categoria: "Idraulica", quantita: 45, sogliaMinima: 30, prezzoAcquisto: "6.80", prezzoVendita: "11.50" },
   ];
   for (const a of datiArticoli) {
-    await prisma.articoloMagazzino.upsert({
-      where: { codice: a.codice },
-      update: {},
-      create: { ...a, descrizione: a.nome } as never,
+    await creaSeMancante(prisma.articoloMagazzino, { codice: a.codice, tenantId: null }, {
+      ...a,
+      descrizione: a.nome,
     });
   }
 
   // ── Preventivo с voci ────────────────────────────────────────────────────
-  const preventivo = await prisma.preventivo.upsert({
-    where: { numero: "PRV-2026-0001" },
-    update: {},
-    create: {
+  const preventivo = await creaSeMancante(prisma.preventivo, { numero: "PRV-2026-0001", tenantId: null }, {
       numero: "PRV-2026-0001",
       stato: "APPROVATO",
       oggetto: "Sostituzione funi di trazione impianto MI-2024-0158",
@@ -272,8 +280,8 @@ async function main() {
       totaleNetto: "1148.00",
       totaleIva: "252.56",
       totaleLordo: "1400.56",
-    },
-  });
+    }
+  );
   const vociEsistenti = await prisma.vocePreventivo.count({
     where: { preventivoId: preventivo.id },
   });
@@ -288,10 +296,7 @@ async function main() {
   }
 
   // ── Ordine di lavoro + storico ───────────────────────────────────────────
-  const ordine = await prisma.ordineLavoro.upsert({
-    where: { numero: "ODL-2026-0001" },
-    update: {},
-    create: {
+  const ordine = await creaSeMancante(prisma.ordineLavoro, { numero: "ODL-2026-0001", tenantId: null }, {
       numero: "ODL-2026-0001",
       stato: "IN_LAVORO",
       priorita: "URGENTE",
@@ -301,8 +306,8 @@ async function main() {
       preventivoId: preventivo.id,
       tecnicoId: dipendenti[0].id,
       dataInizio: fraGiorni(-2),
-    },
-  });
+    }
+  );
   const storicoEsistente = await prisma.storicoStato.count({
     where: { ordineLavoroId: ordine.id },
   });
@@ -318,10 +323,7 @@ async function main() {
   }
 
   // ── Fattura + DDT ────────────────────────────────────────────────────────
-  const fattura = await prisma.fattura.upsert({
-    where: { numero: "FT-2026-0001" },
-    update: {},
-    create: {
+  const fattura = await creaSeMancante(prisma.fattura, { numero: "FT-2026-0001", tenantId: null }, {
       numero: "FT-2026-0001",
       tipo: "EMESSA",
       stato: "INVIATA",
@@ -334,8 +336,8 @@ async function main() {
       totaleNetto: "500.00",
       totaleIva: "110.00",
       totaleLordo: "610.00",
-    },
-  });
+    }
+  );
   if ((await prisma.voceFattura.count({ where: { fatturaId: fattura.id } })) === 0) {
     await prisma.voceFattura.create({
       data: {
@@ -349,18 +351,15 @@ async function main() {
       },
     });
   }
-  await prisma.ddt.upsert({
-    where: { numero: "DDT-2026-0001" },
-    update: {},
-    create: {
+  await creaSeMancante(prisma.ddt, { numero: "DDT-2026-0001", tenantId: null }, {
       numero: "DDT-2026-0001",
       data: fraGiorni(-3),
       causale: "vendita",
       destinatario: "Condominio Torre Aurora",
       indirizzoConsegna: "Via Torino 8, Milano",
       ordineLavoroId: ordine.id,
-    },
-  });
+    }
+  );
 
   console.log("Seed completato: демо данни на италиански заредени (idempotent).");
 }

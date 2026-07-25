@@ -1,6 +1,6 @@
 // Редове на preventivo — промяна/изтриване + преизчисление (BOZZA/INVIATO).
 import { rottaVoceElemento } from "@/lib/voci";
-import { voceSchema } from "@/lib/entities";
+import { conLimiteImporto, voceSchema } from "@/lib/entities";
 import { ricalcolaPreventivo } from "@/lib/totali-db";
 
 export const { PUT, DELETE } = rottaVoceElemento({
@@ -8,7 +8,7 @@ export const { PUT, DELETE } = rottaVoceElemento({
   model: "vocePreventivo",
   parentModel: "preventivo",
   parentField: "preventivoId",
-  schema: voceSchema.partial(),
+  schema: conLimiteImporto(voceSchema.partial()),
   ricalcola: ricalcolaPreventivo,
   statiModificabili: ["BOZZA", "INVIATO"],
 });

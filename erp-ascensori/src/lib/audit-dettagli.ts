@@ -31,7 +31,7 @@ function eOggetto(v: unknown): v is Record<string, unknown> {
 /** Кои полета реално се променят (плитко сравнение по JSON стойност). */
 export function campiModificati(
   prima: unknown,
-  dopo: unknown
+  dopo: unknown,
 ): { campi: string[]; valori: Record<string, unknown> } {
   const campi: string[] = [];
   const valori: Record<string, unknown> = {};
@@ -43,7 +43,8 @@ export function campiModificati(
     const b = JSON.stringify(dopo[chiave] ?? null);
     if (a === b) continue;
     campi.push(chiave);
-    if (VALORI_AMMESSI.has(chiave)) valori[chiave] = { da: prima[chiave], a: dopo[chiave] };
+    if (VALORI_AMMESSI.has(chiave))
+      valori[chiave] = { da: prima[chiave], a: dopo[chiave] };
   }
   return { campi, valori };
 }
@@ -58,7 +59,10 @@ export function dettagliCreazione(dati: unknown): Record<string, unknown> {
 }
 
 /** Детайли за UPDATE: имена на променените полета (+ стойности само за статуси). */
-export function dettagliModifica(prima: unknown, dopo: unknown): Record<string, unknown> {
+export function dettagliModifica(
+  prima: unknown,
+  dopo: unknown,
+): Record<string, unknown> {
   const { campi, valori } = campiModificati(prima, dopo);
   return Object.keys(valori).length > 0 ? { campi, valori } : { campi };
 }

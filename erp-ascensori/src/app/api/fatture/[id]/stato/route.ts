@@ -22,15 +22,26 @@ export const PATCH = gestito(async (req, ctx) => {
 
   const dopo = await prisma.$transaction(async (tx) => {
     // с филтъра по фирма — иначе познат UUID сменя статуса на ЧУЖД документ
-    const prima = await tx.fattura.findFirst({ where: { id, ...filtroTenant(s) } });
+    const prima = await tx.fattura.findFirst({
+      where: { id, ...filtroTenant(s) },
+    });
     if (!prima) throw new ErroreHttp(404, "Fattura non trovata");
     const da = prima.stato as StatoFattura;
     if (!transizioneFatturaAmmessa(da, stato))
-      throw new ErroreHttp(409, `Transizione non ammessa: da «${da}» a «${stato}»`);
+      throw new ErroreHttp(
+        409,
+        `Transizione non ammessa: da «${da}» a «${stato}»`,
+      );
     // условен запис — пази от състезание между две едновременни промени
-    const upd = await tx.fattura.updateMany({ where: { id, stato: da }, data: { stato } });
+    const upd = await tx.fattura.updateMany({
+      where: { id, stato: da },
+      data: { stato },
+    });
     if (upd.count === 0)
-      throw new ErroreHttp(409, "Stato modificato da un'altra operazione: riprovare");
+      throw new ErroreHttp(
+        409,
+        "Stato modificato da un'altra operazione: riprovare",
+      );
     return tx.fattura.findUniqueOrThrow({ where: { id } });
   });
 
@@ -40,6 +51,7 @@ export const PATCH = gestito(async (req, ctx) => {
     entitaId: id,
     dettagli: { valori: { stato: { a: stato } } },
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(dopo);
 });

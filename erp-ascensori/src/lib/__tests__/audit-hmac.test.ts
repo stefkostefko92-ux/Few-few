@@ -28,20 +28,30 @@ test("промяна на което и да е поле чупи подписа
   assert.equal(verificaAudit({ ...riga, entitaId: "xyz" }, h, CHIAVE), false);
   assert.equal(
     verificaAudit({ ...riga, dettagli: { prima: {}, dopo: {} } }, h, CHIAVE),
-    false
+    false,
   );
   assert.equal(
-    verificaAudit({ ...riga, createdAt: new Date("2026-07-25T10:00:01.000Z") }, h, CHIAVE),
-    false
+    verificaAudit(
+      { ...riga, createdAt: new Date("2026-07-25T10:00:01.000Z") },
+      h,
+      CHIAVE,
+    ),
+    false,
   );
   // ip/userAgent също са под подписа
   assert.equal(verificaAudit({ ...riga, ip: "10.0.0.1" }, h, CHIAVE), false);
-  assert.equal(verificaAudit({ ...riga, userAgent: "curl/8" }, h, CHIAVE), false);
+  assert.equal(
+    verificaAudit({ ...riga, userAgent: "curl/8" }, h, CHIAVE),
+    false,
+  );
 });
 
 test("грешен ключ не верифицира", () => {
   const h = firmaAudit(riga, CHIAVE);
-  assert.equal(verificaAudit(riga, h, "chiave-sbagliata-ma-abbastanza-lunga"), false);
+  assert.equal(
+    verificaAudit(riga, h, "chiave-sbagliata-ma-abbastanza-lunga"),
+    false,
+  );
 });
 
 test("невалиден hex не хвърля", () => {
@@ -50,13 +60,16 @@ test("невалиден hex не хвърля", () => {
 
 test("подписът е устойчив на пренареждане на ключовете (Postgres jsonb)", () => {
   // jsonb НЕ пази реда на вмъкване — прочетеният обект идва с друг ред.
-  const scritto = { ...riga, dettagli: { campi: ["a", "b"], valori: { x: 1 } } };
+  const scritto = {
+    ...riga,
+    dettagli: { campi: ["a", "b"], valori: { x: 1 } },
+  };
   const letto = { ...riga, dettagli: { valori: { x: 1 }, campi: ["a", "b"] } };
   const h = firmaAudit(scritto, CHIAVE);
   assert.equal(
     verificaAudit(letto, h, CHIAVE),
     true,
-    "същото съдържание с друг ред на ключовете трябва да се верифицира"
+    "същото съдържание с друг ред на ключовете трябва да се верифицира",
   );
 });
 

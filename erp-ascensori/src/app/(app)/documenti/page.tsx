@@ -13,6 +13,8 @@ const TIPI = [
 
 const config: EntityConfig = {
   titolo: "Documenti",
+  singolare: "documento",
+  genere: "m",
   descrizione: "Cartelli, verbali, certificati e contratti",
   api: "/api/documenti",
   cerca: "Cerca per titolo…",

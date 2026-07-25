@@ -14,7 +14,9 @@ export type Soglia = 90 | 60 | 30;
 /** Кои известия трябва да се изпратят сега (без повторения). */
 export function sogliePendenti(s: ScadenzaFlags, oggi: Date): Soglia[] {
   if (s.completata) return [];
-  const giorni = Math.ceil((s.dataScadenza.getTime() - oggi.getTime()) / 86_400_000);
+  const giorni = Math.ceil(
+    (s.dataScadenza.getTime() - oggi.getTime()) / 86_400_000,
+  );
   const out: Soglia[] = [];
   if (giorni <= 90 && !s.notificato90) out.push(90);
   if (giorni <= 60 && !s.notificato60) out.push(60);
@@ -30,7 +32,7 @@ export function giorniRimanenti(dataScadenza: Date, oggi: Date): number {
 /** Цветен статус на автомобил по най-близката от трите дати: verde/giallo/rosso. */
 export function statoAutomezzo(
   scadenze: Array<Date | null>,
-  oggi: Date
+  oggi: Date,
 ): "verde" | "giallo" | "rosso" {
   const date = scadenze.filter((d): d is Date => d !== null);
   if (date.length === 0) return "verde";

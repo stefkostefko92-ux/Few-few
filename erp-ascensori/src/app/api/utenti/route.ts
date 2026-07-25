@@ -63,12 +63,25 @@ export const POST = gestito(async (req) => {
   // по свой избор и влиза с него — пълна ескалация, която заобикаля и
   // „изтриване на потребител = само MASTER".
   if (data.ruolo === "MASTER" && s.ruolo !== "MASTER")
-    throw new ErroreHttp(403, "Solo il livello MASTER può gestire utenti MASTER");
+    throw new ErroreHttp(
+      403,
+      "Solo il livello MASTER può gestire utenti MASTER",
+    );
   // Само MASTER присвоява фирма свободно. ADMIN създава ЕДИНСТВЕНО в своята —
   // иначе си слага потребител в чужда фирма и оттам чете всичките ѝ данни.
-  const tenantId = s.ruolo === "MASTER" ? (data.tenantId ?? undefined) : (s.tenantId ?? undefined);
-  if (s.ruolo !== "MASTER" && data.tenantId !== undefined && data.tenantId !== s.tenantId)
-    throw new ErroreHttp(403, "Impossibile assegnare l'utente a un'altra azienda");
+  const tenantId =
+    s.ruolo === "MASTER"
+      ? (data.tenantId ?? undefined)
+      : (s.tenantId ?? undefined);
+  if (
+    s.ruolo !== "MASTER" &&
+    data.tenantId !== undefined &&
+    data.tenantId !== s.tenantId
+  )
+    throw new ErroreHttp(
+      403,
+      "Impossibile assegnare l'utente a un'altra azienda",
+    );
   const creato = await prisma.user.create({
     data: {
       email: data.email,
@@ -86,6 +99,7 @@ export const POST = gestito(async (req) => {
     entitaId: creato.id,
     dettagli: { dopo: { email: data.email, ruolo: data.ruolo ?? "OPERATORE" } },
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(creato, 201);
 });

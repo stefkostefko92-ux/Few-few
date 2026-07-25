@@ -1,7 +1,7 @@
 // Редове на fattura — добавяне + автоматично преизчисление на тоталите.
 // Икономически документ: писане само от DIREZIONE+, само при BOZZA (фискален архив).
 import { rottaVociCollezione } from "@/lib/voci";
-import { voceSchema } from "@/lib/entities";
+import { conLimiteImporto, voceSchema } from "@/lib/entities";
 import { ricalcolaFattura } from "@/lib/totali-db";
 
 export const { POST } = rottaVociCollezione({
@@ -9,7 +9,7 @@ export const { POST } = rottaVociCollezione({
   model: "voceFattura",
   parentModel: "fattura",
   parentField: "fatturaId",
-  schema: voceSchema.omit({ articoloId: true }),
+  schema: conLimiteImporto(voceSchema.omit({ articoloId: true })),
   ricalcola: ricalcolaFattura,
   ruolo: "DIREZIONE",
   statiModificabili: ["BOZZA"],

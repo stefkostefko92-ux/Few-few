@@ -7,7 +7,7 @@ test("7 нива, номерирани 1..7", () => {
   assert.equal(RUOLI.length, 7);
   assert.deepEqual(
     RUOLI.map((r) => LIVELLO[r]),
-    [1, 2, 3, 4, 5, 6, 7]
+    [1, 2, 3, 4, 5, 6, 7],
   );
 });
 

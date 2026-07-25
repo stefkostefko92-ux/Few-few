@@ -44,6 +44,8 @@ function BottoneControllo() {
 
 const config: EntityConfig = {
   titolo: "Scadenze di legge",
+  singolare: "scadenza",
+  genere: "f",
   descrizione: "Revisioni, certificazioni e manutenzioni con avvisi a 90 / 60 / 30 giorni",
   api: "/api/scadenze",
   extraAzioni: <BottoneControllo />,

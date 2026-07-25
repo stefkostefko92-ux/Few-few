@@ -20,8 +20,18 @@ describe("преходи на фактурата", () => {
   });
 
   test("издаденият документ не се връща в чернова", () => {
-    for (const da of ["EMESSA", "INVIATA", "PAGATA", "SCADUTA", "STORNATA"] as const) {
-      assert.equal(transizioneFatturaAmmessa(da, "BOZZA"), false, `${da} → BOZZA`);
+    for (const da of [
+      "EMESSA",
+      "INVIATA",
+      "PAGATA",
+      "SCADUTA",
+      "STORNATA",
+    ] as const) {
+      assert.equal(
+        transizioneFatturaAmmessa(da, "BOZZA"),
+        false,
+        `${da} → BOZZA`,
+      );
     }
   });
 

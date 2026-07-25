@@ -11,7 +11,9 @@ import { conNumero, PREFISSI } from "@/lib/numerazione";
 import { fatturaSchema } from "@/lib/entities";
 
 const include = {
-  amministratore: { select: { nome: true, cognome: true, ragioneSociale: true } },
+  amministratore: {
+    select: { nome: true, cognome: true, ragioneSociale: true },
+  },
   ordineLavoro: { select: { numero: true } },
   utente: { select: { nome: true, cognome: true } },
   _count: { select: { voci: true } },
@@ -24,7 +26,10 @@ export const GET = gestito(async (req) => {
   const tipo = url.searchParams.get("tipo");
   const stato = url.searchParams.get("stato");
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-  const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+  const size = Math.min(
+    200,
+    Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50),
+  );
   const where = {
     ...filtroTenant(s),
     ...(q
@@ -54,8 +59,11 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("DIREZIONE");
   const data = await corpoValidato(req, fatturaSchema);
-  const prefisso = data.tipo === "RICEVUTA" ? PREFISSI.fatturaRicevuta : PREFISSI.fatturaEmessa;
-  const creato = await conNumero("fattura", prefisso, (numero) =>
+  const prefisso =
+    data.tipo === "RICEVUTA"
+      ? PREFISSI.fatturaRicevuta
+      : PREFISSI.fatturaEmessa;
+  const creato = await conNumero("fattura", prefisso, s.tenantId, (numero) =>
     prisma.fattura.create({
       data: {
         tipo: data.tipo,
@@ -70,7 +78,7 @@ export const POST = gestito(async (req) => {
         ...tenantDiCreazione(s),
       },
       include,
-    })
+    }),
   );
   await scriviAudit({
     azione: "CREATE",
@@ -78,6 +86,7 @@ export const POST = gestito(async (req) => {
     entitaId: creato.id,
     dettagli: dettagliCreazione(data),
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(creato, 201);
 });

@@ -24,7 +24,9 @@ export async function GET() {
     });
 
     const limite = new Date(Date.now() - SOGLIA_ORE * 3_600_000);
-    const aggiornato = Boolean(ultimo?.terminatoAt && ultimo.terminatoAt > limite);
+    const aggiornato = Boolean(
+      ultimo?.terminatoAt && ultimo.terminatoAt > limite,
+    );
 
     return NextResponse.json(
       {
@@ -32,7 +34,7 @@ export async function GET() {
         ultimoSuccesso: ultimo?.terminatoAt ?? null,
         sogliaOre: SOGLIA_ORE,
       },
-      { status: aggiornato ? 200 : 503 }
+      { status: aggiornato ? 200 : 503 },
     );
   } catch (e) {
     log.error("healthz/automatismi fallito", descriviErrore(e));

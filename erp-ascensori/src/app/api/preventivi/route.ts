@@ -10,7 +10,9 @@ import { preventivoSchema } from "@/lib/entities";
 
 const include = {
   impianto: { select: { matricola: true, indirizzo: true } },
-  amministratore: { select: { nome: true, cognome: true, ragioneSociale: true } },
+  amministratore: {
+    select: { nome: true, cognome: true, ragioneSociale: true },
+  },
   utente: { select: { nome: true, cognome: true } },
   _count: { select: { voci: true } },
 };
@@ -21,7 +23,10 @@ export const GET = gestito(async (req) => {
   const q = url.searchParams.get("q")?.trim();
   const stato = url.searchParams.get("stato");
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-  const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+  const size = Math.min(
+    200,
+    Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50),
+  );
   const where = {
     ...filtroTenant(s),
     ...(q
@@ -50,7 +55,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, preventivoSchema);
-  const creato = await conNumero("preventivo", PREFISSI.preventivo, (numero) =>
+  const creato = await conNumero("preventivo", PREFISSI.preventivo, s.tenantId, (numero) =>
     prisma.preventivo.create({
       data: {
         ...data,
@@ -63,7 +68,7 @@ export const POST = gestito(async (req) => {
         ...tenantDiCreazione(s),
       },
       include,
-    })
+    }),
   );
   await scriviAudit({
     azione: "CREATE",
@@ -71,6 +76,7 @@ export const POST = gestito(async (req) => {
     entitaId: creato.id,
     dettagli: dettagliCreazione(data),
     utenteId: s.sub,
+    tenantId: s.tenantId,
   });
   return ok(creato, 201);
 });

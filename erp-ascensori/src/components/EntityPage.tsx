@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { Modale, Paginazione, Vuoto, FiltriStato, ScheletroTabella } from "@/components/ui";
 import { IcoNuovo } from "@/components/icone";
 import { perInputData } from "@/lib/format";
+import { apiFetch } from "@/lib/fetch-client";
 
 export type Riga = Record<string, unknown>;
 
@@ -46,6 +47,12 @@ export interface Campo {
 
 export interface EntityConfig {
   titolo: string;
+  /** Единствено число на същността, за заглавия и празни състояния.
+   *  Италианският иска съгласуване: шаблонът „Nuovo — ${titolo}" дава
+   *  „Nuovo — Fatture", което не е италиански. */
+  singolare?: string;
+  /** Родът на `singolare` — определя „Nuovo/Nuova" и „il primo/la prima". */
+  genere?: "m" | "f";
   descrizione?: string;
   api: string;
   colonne: Colonna[];
@@ -62,13 +69,11 @@ export interface EntityConfig {
   filtroStato?: { campo: string; valori: readonly string[] };
 }
 
+// Подновяването на сесията и мрежовите грешки живеят в `apiFetch` — тук само
+// стесняваме типа до редицата, с която работи страницата.
 async function apiJson(url: string, init?: RequestInit): Promise<{ ok: boolean; dati: Riga }> {
-  const res = await fetch(url, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-  });
-  const dati = (await res.json().catch(() => ({}))) as Riga;
-  return { ok: res.ok, dati };
+  const { ok, dati } = await apiFetch<Riga>(url, init);
+  return { ok, dati };
 }
 
 export function valoreAnnidato(r: Riga, chiave: string): unknown {
@@ -93,15 +98,20 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
     setCaricamento(true);
     const filtro = stato && config.filtroStato ? `&${config.filtroStato.campo}=${stato}` : "";
     const url = `${config.api}?page=${page}&size=${size}${q ? `&q=${encodeURIComponent(q)}` : ""}${filtro}`;
-    const { ok, dati } = await apiJson(url);
-    if (ok) {
-      setRighe((dati.righe as Riga[]) ?? []);
-      setTotale((dati.totale as number) ?? 0);
-      setErrore(null);
-    } else {
-      setErrore((dati.error as string) ?? "Errore di caricamento");
+    try {
+      const { ok, dati } = await apiJson(url);
+      if (ok) {
+        setRighe((dati.righe as Riga[]) ?? []);
+        setTotale((dati.totale as number) ?? 0);
+        setErrore(null);
+      } else {
+        setErrore((dati.error as string) ?? "Errore di caricamento");
+      }
+    } finally {
+      // Задължително в `finally`: при хвърляне таблицата оставаше на скелета,
+      // без начин потребителят да разбере какво е станало.
+      setCaricamento(false);
     }
-    setCaricamento(false);
   }, [config.api, page, q, stato, config.filtroStato]);
 
   useEffect(() => {
@@ -109,7 +119,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
   }, [carica]);
 
   async function elimina(r: Riga) {
-    if (!confirm("Eliminare definitivamente questo record?")) return;
+    if (!confirm("Eliminare definitivamente questa scheda?")) return;
     const { ok, dati } = await apiJson(`${config.api}/${r.id}`, { method: "DELETE" });
     if (!ok) {
       alert((dati.error as string) ?? "Errore");
@@ -132,7 +142,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
             onClick={() => setModale({ modo: "crea" })}
           >
             <IcoNuovo />
-            Nuovo
+            {config.genere === "f" ? "Nuova" : "Nuovo"} {config.singolare ?? ""}
           </button>
         </div>
       </div>
@@ -173,8 +183,14 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
           <ScheletroTabella colonne={config.colonne.length + 1} />
         ) : righe.length === 0 ? (
           <Vuoto
-            messaggio={q || stato ? "Nessun risultato per i filtri attivi" : "Nessun record ancora"}
-            azione={q || stato ? "Azzera i filtri" : "Crea il primo"}
+            messaggio={
+              q || stato ? "Nessun risultato per i filtri attivi" : "Nessun elemento presente"
+            }
+            azione={
+              q || stato
+                ? "Azzera i filtri"
+                : `Crea ${config.genere === "f" ? "la prima" : "il primo"} ${config.singolare ?? ""}`.trim()
+            }
             onAzione={() => {
               if (q || stato) {
                 setQ("");
@@ -330,21 +346,30 @@ export function FormEntity({
     }
 
     const url = modo === "crea" ? config.api : `${config.api}/${riga!.id}`;
-    const { ok, dati } = await apiJson(url, {
-      method: modo === "crea" ? "POST" : "PUT",
-      body: JSON.stringify(corpo),
-    });
-    setSalvataggio(false);
-    if (!ok) {
-      setErrore((dati.error as string) ?? "Errore di salvataggio");
-      return;
+    try {
+      const { ok, dati } = await apiJson(url, {
+        method: modo === "crea" ? "POST" : "PUT",
+        body: JSON.stringify(corpo),
+      });
+      if (!ok) {
+        setErrore((dati.error as string) ?? "Errore di salvataggio");
+        return;
+      }
+      onSalvato();
+    } finally {
+      // При хвърляне формата оставаше на „Salvataggio…" и въведеното беше
+      // недостъпно — най-лошият момент да заключиш потребителя.
+      setSalvataggio(false);
     }
-    onSalvato();
   }
 
   return (
     <Modale
-      titolo={modo === "crea" ? `Nuovo — ${config.titolo}` : `Modifica — ${config.titolo}`}
+      titolo={
+        modo === "crea"
+          ? `${config.genere === "f" ? "Nuova" : "Nuovo"} ${config.singolare ?? config.titolo.toLowerCase()}`
+          : `Modifica ${config.singolare ?? config.titolo.toLowerCase()}`
+      }
       aperto
       onChiudi={onChiudi}
       largo={config.campi.length > 6}
@@ -453,7 +478,7 @@ function CampoInput({
           id={id}
           type="text"
           inputMode="decimal"
-          placeholder="0.00"
+          placeholder="0,00"
           className="input font-mono"
           value={String(valore ?? "")}
           onChange={(e) => onCambia(e.target.value)}

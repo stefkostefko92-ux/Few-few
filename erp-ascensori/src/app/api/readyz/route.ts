@@ -29,7 +29,12 @@ function chiaviValide(): boolean {
 }
 
 async function controlla(): Promise<Esito> {
-  const esito: Esito = { pronto: false, db: false, schema: false, chiavi: chiaviValide() };
+  const esito: Esito = {
+    pronto: false,
+    db: false,
+    schema: false,
+    chiavi: chiaviValide(),
+  };
   try {
     await prisma.$queryRaw`SELECT 1`;
     esito.db = true;

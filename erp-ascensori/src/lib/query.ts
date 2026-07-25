@@ -30,12 +30,17 @@ export function paginazione(url: URL): Pagina {
   const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
   const size = Math.min(
     SIZE_MAX,
-    Math.max(1, Number(url.searchParams.get("size") ?? SIZE_PREDEFINITO) || SIZE_PREDEFINITO)
+    Math.max(
+      1,
+      Number(url.searchParams.get("size") ?? SIZE_PREDEFINITO) ||
+        SIZE_PREDEFINITO,
+    ),
   );
   return { page, size, skip: (page - 1) * size, take: size };
 }
 
-const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const RE_UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * UUID параметър — `undefined`, ако липсва; 400, ако е налице, но е сгрешен.
@@ -46,7 +51,8 @@ const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export function uuidParam(url: URL, nome: string): string | undefined {
   const v = url.searchParams.get(nome);
   if (v === null || v === "") return undefined;
-  if (!RE_UUID.test(v)) throw new ErroreHttp(400, `Parametro «${nome}» non valido`);
+  if (!RE_UUID.test(v))
+    throw new ErroreHttp(400, `Parametro «${nome}» non valido`);
   return v;
 }
 
@@ -65,7 +71,7 @@ export function testoParam(url: URL, nome = "q"): string | undefined {
 export function enumParam<T extends string>(
   url: URL,
   nome: string,
-  ammessi: readonly T[]
+  ammessi: readonly T[],
 ): T | undefined {
   const v = url.searchParams.get(nome)?.trim();
   if (!v) return undefined;
