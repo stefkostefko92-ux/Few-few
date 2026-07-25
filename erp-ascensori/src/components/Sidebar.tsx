@@ -25,6 +25,7 @@ import {
   FileArrowDown,
   Files,
   ShieldCheck,
+  QrCode,
   UserCircle,
   UserFocus,
   ClockCounterClockwise,
@@ -84,6 +85,12 @@ const GRUPPI: Gruppo[] = [
       },
       { href: "/preventivi", label: "Preventivi", icona: <FileText size={DIM.navigazione} /> },
       { href: "/ordini", label: "Ordini di lavoro", icona: <Wrench size={DIM.navigazione} /> },
+      {
+        href: "/impianti/etichette",
+        label: "Etichette QR",
+        icona: <QrCode size={DIM.navigazione} />,
+        minimo: "TECNICO",
+      },
     ],
   },
   {

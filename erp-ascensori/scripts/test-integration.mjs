@@ -20,6 +20,8 @@ const env = {
   AUDIT_HMAC_KEY: "integration_test_audit_hmac_key_32_chars_min",
   // Метриките са зад токен — пакетът трябва да има с какво да ги поиска.
   HEALTH_TOKEN: "integration_test_health_token",
+  // QR етикетите отказват да се генерират без публичен адрес — нарочно.
+  APP_URL: "http://127.0.0.1:3021",
   // тестовете правят десетки входа — вдигаме тавана, за да не удрят rate limit-а
   RATE_LIMIT_LOGIN: "10000",
   RATE_LIMIT_REFRESH: "10000",

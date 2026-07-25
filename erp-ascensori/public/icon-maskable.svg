@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="ERP Ascensori">
+  <!-- Вариант „maskable": знакът е свит в безопасната зона (80 %) и платното е
+       без закръгление — системата сама налага своята форма.
+       Знакът е иконата „Elevator" от Phosphor Icons (MIT) — не е рисуван на ръка.
+       Виж https://phosphoricons.com · лицензът е в LICENSES.md. -->
+  <rect width="256" height="256" rx="0" fill="#116bb5"/>
+  <g transform="translate(128 128) scale(0.54) translate(-128 -128)" fill="#ffffff">
+    <path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM112,56h32a8,8,0,0,1,0,16H112a8,8,0,0,1,0-16Zm8,152H64V96h56Zm72,0H136V96h56Z"/>
+  </g>
+</svg>

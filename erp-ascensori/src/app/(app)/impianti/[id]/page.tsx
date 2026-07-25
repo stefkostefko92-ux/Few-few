@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, Modale, ScheletroDettaglio } from "@/components/ui";
-import { IcoFatto, IcoIndietro, IcoNuovoPiccolo, IcoVerso } from "@/components/icone";
+import { IcoFatto, IcoIndietro, IcoNuovoPiccolo, IcoVerso, IcoQr } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 
 interface Impianto {
@@ -112,7 +112,19 @@ export default function Pagina() {
             {amministratore}
           </p>
         </div>
-        <Badge valore={imp.stato} />
+        <div className="flex items-center gap-2">
+          <a
+            className="btn-secondary inline-flex h-8 items-center gap-1.5 px-3 text-xs"
+            href={`/api/impianti/${id}/qr`}
+            target="_blank"
+            rel="noopener"
+            title="Etichetta da applicare in sala macchine"
+          >
+            <IcoQr />
+            QR
+          </a>
+          <Badge valore={imp.stato} />
+        </div>
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">

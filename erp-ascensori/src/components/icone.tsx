@@ -31,6 +31,7 @@ import {
   DownloadSimple,
   CheckCircle,
   Plus,
+  QrCode,
   Printer,
   Tray,
   WarningCircle,
@@ -51,6 +52,8 @@ export const DIM = {
 export const IcoNuovo = () => <Plus size={DIM.bottone} weight="bold" aria-hidden />;
 export const IcoNuovoPiccolo = () => <Plus size={DIM.tabella} weight="bold" aria-hidden />;
 export const IcoStampa = () => <Printer size={DIM.tabella} weight="bold" aria-hidden />;
+/** Етикетът с код за сканиране върху машината. */
+export const IcoQr = () => <QrCode size={DIM.tabella} weight="bold" aria-hidden />;
 /** Изнасяне на файл (XML за SDI) — различно действие от печата. */
 export const IcoEsporta = () => <DownloadSimple size={DIM.tabella} weight="bold" aria-hidden />;
 export const IcoChiudi = () => <X size={DIM.bottone} weight="bold" aria-hidden />;
