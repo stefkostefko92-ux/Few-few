@@ -81,6 +81,13 @@ export default function VociEditor({
 
   return (
     <div>
+      {/* Без този ред празният документ показва само гола форма и потребителят
+          не разбира дали редовете липсват, или още не са се заредили. */}
+      {voci.length === 0 && (
+        <p className="mb-4 rounded-md border border-dashed border-border px-3 py-4 text-center text-sm text-text-3">
+          Nessuna riga presente: compilare il modulo qui sotto per aggiungere la prima.
+        </p>
+      )}
       {voci.length > 0 && (
         <table className="mb-4 w-full text-sm">
           <thead>

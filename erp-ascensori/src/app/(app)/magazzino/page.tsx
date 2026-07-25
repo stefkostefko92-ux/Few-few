@@ -23,9 +23,17 @@ const config: EntityConfig = {
       render: (r) => {
         const sotto = Number(r.quantita) < Number(r.sogliaMinima);
         return (
-          <span className={sotto ? "font-semibold text-danger-text" : ""}>
-            {String(r.quantita)}
-            {sotto && " ⚠"}
+          // Иконата е в СОБСТВЕН слот с фиксирана ширина: залепена за числото тя
+          // разваля дясното подравняване и цифрите престават да се четат в колона.
+          // Текстът за екранни четци е задължителен — цвят + глиф не са сигнал.
+          <span className="inline-flex items-center justify-end gap-1">
+            <span className="w-3 text-danger-text" aria-hidden="true">
+              {sotto ? "⚠" : ""}
+            </span>
+            <span className={sotto ? "font-semibold text-danger-text" : ""}>
+              {String(r.quantita)}
+            </span>
+            {sotto && <span className="sr-only">sotto scorta</span>}
           </span>
         );
       },

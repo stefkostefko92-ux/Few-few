@@ -4,14 +4,14 @@
 import { prisma } from "@/lib/prisma";
 import { ok, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
+import { paginazione, testoParam } from "@/lib/query";
 
 export const GET = gestito(async (req) => {
   await richiedeRuolo("ADMIN");
   const url = new URL(req.url);
-  const entita = url.searchParams.get("entita");
-  const azione = url.searchParams.get("azione");
-  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-  const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+  const entita = testoParam(url, "entita");
+  const azione = testoParam(url, "azione");
+  const { page, size, skip, take } = paginazione(url);
   const where = {
     ...(entita ? { entita } : {}),
     ...(azione ? { azione } : {}),
@@ -21,8 +21,8 @@ export const GET = gestito(async (req) => {
       where,
       include: { utente: { select: { nome: true, cognome: true, email: true } } },
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * size,
-      take: size,
+      skip,
+      take,
     }),
     prisma.auditLog.count({ where }),
   ]);

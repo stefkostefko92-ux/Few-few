@@ -37,7 +37,8 @@ export const POST = gestito(async (req) => {
         createdAt: r.createdAt,
       },
       r.hmac,
-      chiave
+      chiave,
+      (r.versioneFirma === 1 ? 1 : 2) as 1 | 2
     );
     if (!valida) corrotte.push(r.id);
   }

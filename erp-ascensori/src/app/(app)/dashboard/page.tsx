@@ -179,43 +179,52 @@ export default function Dashboard() {
             Panoramica operativa · grafici completamente personalizzabili
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {modifica && (
-            <>
-              <select
-                className="input w-56"
-                value=""
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (!v) return;
-                  if (v === "kpi" || v === "scadenze" || v === "scorte") aggiungi(v as TipoWidget);
-                  else aggiungi("grafico", v);
-                }}
-                aria-label="Aggiungi widget"
-              >
-                <option value="">+ Aggiungi widget…</option>
-                {fontiDisponibili.map((f) => (
-                  <option key={f} value={f}>
-                    Grafico: {FONTI[f].label}
-                  </option>
-                ))}
-                <option value="kpi">Indicatori (KPI)</option>
-                <option value="scadenze">Elenco scadenze imminenti</option>
-                <option value="scorte">Articoli sotto scorta</option>
-              </select>
-              <button className="btn-secondary" onClick={() => salva(PREDEFINITO)}>
-                Ripristina
-              </button>
-            </>
-          )}
-          <button
-            className={modifica ? "btn-primary" : "btn-secondary"}
-            onClick={() => setModifica(!modifica)}
-          >
-            {modifica ? "Fine personalizzazione" : "Personalizza"}
-          </button>
-        </div>
+        {/* Само превключвателят стои в заглавието. Инструментите за редакция бяха
+            тук и при влизане в режима бутонът отскачаше наляво — мишката оставаше
+            върху друг контрол. Сега заглавието е неподвижно, а режимът се обявява
+            с отделна лента отдолу. */}
+        <button
+          className={modifica ? "btn-primary" : "btn-secondary"}
+          onClick={() => setModifica(!modifica)}
+        >
+          {modifica ? "Fine personalizzazione" : "Personalizza"}
+        </button>
       </div>
+
+      {modifica && (
+        <div className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-accent/30 bg-accent-subtle px-3 py-2.5">
+          <span className="mr-1 text-sm font-medium text-accent-text">
+            Modalità personalizzazione
+          </span>
+          <select
+            className="input w-56"
+            value=""
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!v) return;
+              if (v === "kpi" || v === "scadenze" || v === "scorte") aggiungi(v as TipoWidget);
+              else aggiungi("grafico", v);
+            }}
+            aria-label="Aggiungi widget"
+          >
+            <option value="">+ Aggiungi widget…</option>
+            {fontiDisponibili.map((f) => (
+              <option key={f} value={f}>
+                Grafico: {FONTI[f].label}
+              </option>
+            ))}
+            <option value="kpi">Indicatori (KPI)</option>
+            <option value="scadenze">Elenco scadenze imminenti</option>
+            <option value="scorte">Articoli sotto scorta</option>
+          </select>
+          <button className="btn-secondary" onClick={() => salva(PREDEFINITO)}>
+            Ripristina predefinito
+          </button>
+          <span className="ml-auto text-xs text-accent-text">
+            Le modifiche si salvano automaticamente su questo browser
+          </span>
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         {widgets.map((w, i) => (

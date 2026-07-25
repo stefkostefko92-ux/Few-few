@@ -10,11 +10,19 @@ interface Finestra {
 
 const finestre = new Map<string, Finestra>();
 
+/** Чете положително число от средата; при нечислова стойност пада на подразбиране.
+ *  Без това `Number("venti")` дава NaN, а `count >= NaN` е винаги false —
+ *  тоест печатна грешка в конфигурацията ИЗКЛЮЧВА ограничението мълчаливо. */
+function numero(v: string | undefined, predefinito: number): number {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : predefinito;
+}
+
 /** Праговете са конфигурируеми, за да могат тестовете да ги вдигат. */
 export const LIMITI = {
-  login: Number(process.env.RATE_LIMIT_LOGIN ?? 20),
-  refresh: Number(process.env.RATE_LIMIT_REFRESH ?? 60),
-  finestraMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 15 * 60_000),
+  login: numero(process.env.RATE_LIMIT_LOGIN, 20),
+  refresh: numero(process.env.RATE_LIMIT_REFRESH, 60),
+  finestraMs: numero(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60_000),
 };
 
 /** Само за тестове: нулира всички прозорци (иначе редът на тестовете влияе). */

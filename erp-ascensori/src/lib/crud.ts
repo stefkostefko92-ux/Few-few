@@ -2,7 +2,6 @@
 // Всяка операция минава през проверка на ролята (на сървъра!) и пише в audit.
 
 import type { ZodSchema } from "zod";
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
@@ -13,7 +12,9 @@ import {
   dettagliCancellazione,
 } from "@/lib/audit-dettagli";
 import type { Ruolo } from "@/lib/roles";
+import type { Sessione as SessioneAttiva } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
+import { paginazione, testoParam, booleanoParam, uuidParam } from "@/lib/query";
 
 interface Delegate {
   findMany(args?: object): Promise<unknown[]>;
@@ -25,11 +26,20 @@ interface Delegate {
   delete(args: object): Promise<unknown>;
 }
 
+/** Ключовете на Prisma клиента, които са МОДЕЛИ (имат `findMany`), а не `$transaction`.
+ *
+ *  Без този тип `model` беше просто `string` и печатна грешка в конфигурацията
+ *  („condomino" вместо „condominio") се откриваше чак по време на изпълнение —
+ *  като 500 при първата заявка към маршрута. Сега е грешка при компилация. */
+export type ModelloPrisma = {
+  [K in keyof typeof prisma]: (typeof prisma)[K] extends { findMany: unknown } ? K : never;
+}[keyof typeof prisma];
+
 export interface CrudConfig {
   /** име на таблицата за audit (напр. "condomini") */
   entita: string;
   /** Prisma delegate (prisma.condominio и т.н.) */
-  model: string;
+  model: ModelloPrisma;
   schemaCreate: ZodSchema;
   schemaUpdate: ZodSchema;
   ruoloLettura?: Ruolo; // по подразбиране OPERATORE
@@ -45,14 +55,14 @@ export interface CrudConfig {
   filterFields?: string[];
   /** Моделът НЯМА tenantId (напр. tenants сам, служебни таблици). */
   senzaTenant?: boolean;
+  /** полета от сесията, които се записват при създаване (напр. автор) */
+  campiSessione?: (s: SessioneAttiva) => Record<string, unknown>;
   /** hook след запис (напр. преизчисляване на тотали) */
   afterWrite?: (id: string) => Promise<void>;
 }
 
-function delegate(model: string): Delegate {
-  const d = (prisma as unknown as Record<string, Delegate>)[model];
-  if (!d) throw new Error(`Modello sconosciuto: ${model}`);
-  return d;
+function delegate(model: ModelloPrisma): Delegate {
+  return (prisma as unknown as Record<ModelloPrisma, Delegate>)[model];
 }
 
 function idRecord(r: unknown): string {
@@ -64,10 +74,9 @@ export function rottaCollezione(cfg: CrudConfig) {
   const GET = gestito(async (req) => {
     const s = await richiedeRuolo(cfg.ruoloLettura ?? "OPERATORE");
     const url = new URL(req.url);
-    const q = url.searchParams.get("q")?.trim();
-    const attivo = url.searchParams.get("attivo");
-    const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-    const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+    const q = testoParam(url);
+    const attivo = booleanoParam(url, "attivo");
+    const { page, size, skip, take } = paginazione(url);
 
     // Изолация по фирма ПЪРВО — не се презаписва от клиентски параметър.
     const where: Record<string, unknown> = cfg.senzaTenant ? {} : filtroTenant(s);
@@ -76,11 +85,12 @@ export function rottaCollezione(cfg: CrudConfig) {
         [f]: { contains: q, mode: "insensitive" },
       }));
     }
-    if (attivo === "true") where.attivo = true;
-    if (attivo === "false") where.attivo = false;
+    if (attivo !== undefined) where.attivo = attivo;
     for (const campo of cfg.filterFields ?? []) {
       const v = url.searchParams.get(campo);
-      if (v) where[campo] = v;
+      // Полетата с име на …Id са външни ключове: сгрешен UUID трябва да даде 400,
+      // не 500 от базата.
+      if (v) where[campo] = campo.endsWith("Id") ? uuidParam(url, campo) : v;
     }
 
     const d = delegate(cfg.model);
@@ -89,8 +99,8 @@ export function rottaCollezione(cfg: CrudConfig) {
         where,
         include: cfg.include,
         orderBy: cfg.orderBy ?? { createdAt: "desc" },
-        skip: (page - 1) * size,
-        take: size,
+        skip,
+        take,
       }),
       d.count({ where }),
     ]);
@@ -101,9 +111,11 @@ export function rottaCollezione(cfg: CrudConfig) {
     const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
     const data = await corpoValidato(req, cfg.schemaCreate);
     const creato = await delegate(cfg.model).create({
-      data: cfg.senzaTenant
-        ? (data as object)
-        : { ...(data as object), ...tenantDiCreazione(s) },
+      data: {
+        ...(data as object),
+        ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)),
+        ...(cfg.campiSessione?.(s) ?? {}),
+      },
       include: cfg.include,
     });
     const id = idRecord(creato);
@@ -177,5 +189,3 @@ export function rottaElemento(cfg: CrudConfig) {
 
   return { GET, PUT, DELETE };
 }
-
-export type { NextResponse };

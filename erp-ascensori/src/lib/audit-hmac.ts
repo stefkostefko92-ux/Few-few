@@ -35,12 +35,15 @@ export function serializzaStabile(v: unknown): string {
 
 /** Каноничен низ на редицата — стабилен ред на полетата.
  *  Подписът покрива и ip/userAgent, за да не се променят в базата без следа. */
-export function canonico(r: RigaAudit): string {
+export function canonico(r: RigaAudit, versione: 1 | 2 = 2): string {
+  // Версия 1 сериализираше в реда на вмъкване (преди да се разбере, че jsonb
+  // пренарежда ключовете). Пазим я, за да остане проверим и старият регистър.
+  const serializza = versione === 1 ? JSON.stringify : serializzaStabile;
   return JSON.stringify([
     r.azione,
     r.entita,
     r.entitaId ?? "",
-    r.dettagli === undefined || r.dettagli === null ? "" : serializzaStabile(r.dettagli),
+    r.dettagli === undefined || r.dettagli === null ? "" : serializza(r.dettagli),
     r.ip ?? "",
     r.userAgent ?? "",
     r.utenteId ?? "",
@@ -48,12 +51,17 @@ export function canonico(r: RigaAudit): string {
   ]);
 }
 
-export function firmaAudit(r: RigaAudit, chiave: string): string {
-  return createHmac("sha256", chiave).update(canonico(r)).digest("hex");
+export function firmaAudit(r: RigaAudit, chiave: string, versione: 1 | 2 = 2): string {
+  return createHmac("sha256", chiave).update(canonico(r, versione)).digest("hex");
 }
 
-export function verificaAudit(r: RigaAudit, hmac: string, chiave: string): boolean {
-  const atteso = Buffer.from(firmaAudit(r, chiave), "hex");
+export function verificaAudit(
+  r: RigaAudit,
+  hmac: string,
+  chiave: string,
+  versione: 1 | 2 = 2
+): boolean {
+  const atteso = Buffer.from(firmaAudit(r, chiave, versione), "hex");
   let dato: Buffer;
   try {
     dato = Buffer.from(hmac, "hex");

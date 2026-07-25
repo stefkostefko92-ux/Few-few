@@ -5,9 +5,10 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
-import { richiedeRuolo } from "@/lib/auth";
+import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { RUOLI } from "@/lib/roles";
+import { filtroUtenti } from "@/lib/tenant";
 
 const SELEZIONE_SICURA = {
   id: true,
@@ -33,19 +34,22 @@ const schemaCreate = z.object({
 });
 
 export const GET = gestito(async (req) => {
-  await richiedeRuolo("ADMIN");
+  const s = await richiedeRuolo("ADMIN");
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim();
   const righe = await prisma.user.findMany({
-    where: q
-      ? {
-          OR: [
-            { email: { contains: q, mode: "insensitive" } },
-            { nome: { contains: q, mode: "insensitive" } },
-            { cognome: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
+    where: {
+      ...filtroUtenti(s),
+      ...(q
+        ? {
+            OR: [
+              { email: { contains: q, mode: "insensitive" } },
+              { nome: { contains: q, mode: "insensitive" } },
+              { cognome: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     select: SELEZIONE_SICURA,
     orderBy: { cognome: "asc" },
   });
@@ -55,6 +59,16 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("ADMIN");
   const data = await corpoValidato(req, schemaCreate);
+  // Същата защита както при PUT: иначе ADMIN си създава MASTER акаунт с парола
+  // по свой избор и влиза с него — пълна ескалация, която заобикаля и
+  // „изтриване на потребител = само MASTER".
+  if (data.ruolo === "MASTER" && s.ruolo !== "MASTER")
+    throw new ErroreHttp(403, "Solo il livello MASTER può gestire utenti MASTER");
+  // Само MASTER присвоява фирма свободно. ADMIN създава ЕДИНСТВЕНО в своята —
+  // иначе си слага потребител в чужда фирма и оттам чете всичките ѝ данни.
+  const tenantId = s.ruolo === "MASTER" ? (data.tenantId ?? undefined) : (s.tenantId ?? undefined);
+  if (s.ruolo !== "MASTER" && data.tenantId !== undefined && data.tenantId !== s.tenantId)
+    throw new ErroreHttp(403, "Impossibile assegnare l'utente a un'altra azienda");
   const creato = await prisma.user.create({
     data: {
       email: data.email,
@@ -62,7 +76,7 @@ export const POST = gestito(async (req) => {
       nome: data.nome,
       cognome: data.cognome,
       ruolo: data.ruolo ?? "OPERATORE",
-      tenantId: data.tenantId ?? undefined,
+      tenantId,
     },
     select: SELEZIONE_SICURA,
   });

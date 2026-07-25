@@ -24,16 +24,35 @@ const env = {
   NODE_ENV: "production",
 };
 
+// Предпазител: DROP DATABASE върви срещу СЪЩИЯ Postgres, на който е dev базата.
+// Една сгрешена променлива и `erp_ascensori` изчезва безвъзвратно.
+if (!/_test$/.test(DB)) {
+  console.error(`✗ TEST_PG_DB трябва да завършва на "_test" (получено: ${DB})`);
+  process.exit(1);
+}
+
 function psql(sql, url = ADMIN_URL) {
   execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], { stdio: "pipe" });
 }
 
 let server;
 async function fermaServer() {
-  if (!server || server.killed) return;
-  server.kill("SIGTERM");
-  await sleep(500);
-  if (!server.killed) server.kill("SIGKILL");
+  if (!server || server.exitCode !== null) return;
+  const fine = new Promise((res) => server.once("close", res));
+  try {
+    process.kill(-server.pid, "SIGTERM"); // цялата процесна група
+  } catch {
+    server.kill("SIGTERM");
+  }
+  await Promise.race([fine, sleep(5000)]);
+  if (server.exitCode === null) {
+    try {
+      process.kill(-server.pid, "SIGKILL");
+    } catch {
+      server.kill("SIGKILL");
+    }
+    await Promise.race([fine, sleep(2000)]);
+  }
 }
 
 async function main() {
@@ -52,7 +71,13 @@ async function main() {
   execFileSync("npx", ["next", "build"], { env, stdio: "pipe" });
 
   console.log(`▸ вдигам сървър на ${BASE}`);
-  server = spawn("npx", ["next", "start", "-p", String(PORT)], { env, stdio: "pipe" });
+  // detached: npx е обвивка — SIGTERM към нея не стига до внука `next-server`,
+  // който остава сирак, заема порта и следващият пуск тества СТАР билд.
+  server = spawn("node", ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)], {
+    env,
+    stdio: "pipe",
+    detached: true,
+  });
   server.stdout.on("data", (b) => process.env.TEST_VERBOSE && process.stdout.write(b));
   server.stderr.on("data", (b) => process.stderr.write(b));
 

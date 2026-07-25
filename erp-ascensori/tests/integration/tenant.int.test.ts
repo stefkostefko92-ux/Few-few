@@ -128,3 +128,95 @@ describe("изолация на данните между фирми", () => {
     );
   });
 });
+
+// Маршрутите ИЗВЪН CRUD фабриката имат своя логика — значи и свой шанс да
+// пропуснат филтъра. Всеки от тях се проверява поотделно: познат UUID не бива
+// да отваря нищо на чужда фирма.
+describe("изолация в маршрутите извън CRUD фабриката", () => {
+  test("смяна на статус на чужда оферта връща 404", async () => {
+    const prevB = await aziendaB.post<{ id: string }>("/api/preventivi", {
+      oggetto: unico("PrevStatoB"),
+    });
+    assert.equal(prevB.status, 201);
+    const cambio = await aziendaA.patch(`/api/preventivi/${prevB.dati.id}/stato`, {
+      stato: "INVIATO",
+    });
+    assert.equal(cambio.status, 404, "фирма А не бива да мърда документ на фирма Б");
+
+    const verifica = await aziendaB.get<{ stato: string }>(`/api/preventivi/${prevB.dati.id}`);
+    assert.equal(verifica.dati.stato, "BOZZA", "статусът наистина не е променен");
+  });
+
+  test("смяна на статус на чужд ордин връща 404", async () => {
+    const ordB = await aziendaB.post<{ id: string }>("/api/ordini", { oggetto: unico("OrdB") });
+    assert.equal(ordB.status, 201);
+    const cambio = await aziendaA.patch(`/api/ordini/${ordB.dati.id}/stato`, { stato: "EMESSO" });
+    assert.equal(cambio.status, 404);
+  });
+
+  test("редове по чужд документ не се добавят", async () => {
+    const prevB = await aziendaB.post<{ id: string }>("/api/preventivi", {
+      oggetto: unico("PrevVociB"),
+    });
+    const voce = await aziendaA.post(`/api/preventivi/${prevB.dati.id}/voci`, {
+      descrizione: "Riga intrusa",
+      quantita: "1",
+      prezzoUnitario: "100",
+    });
+    assert.equal(voce.status, 404, "фирма А не бива да пише редове в документ на фирма Б");
+  });
+
+  test("движение по чужд артикул се отказва", async () => {
+    const artB = await aziendaB.post<{ id: string }>("/api/articoli", {
+      codice: unico("ARTMOV"),
+      nome: "Articolo movimento",
+    });
+    assert.equal(artB.status, 201);
+    const mov = await aziendaA.post("/api/movimenti", {
+      articoloId: artB.dati.id,
+      tipo: "ENTRATA",
+      quantita: 10,
+    });
+    assert.equal(mov.status, 404, "фирма А не бива да движи склада на фирма Б");
+  });
+
+  test("администраторът на фирма А не вижда потребителите на фирма Б", async () => {
+    const lista = await aziendaA.get<{ righe: { email: string }[] }>("/api/utenti");
+    assert.equal(lista.status, 200);
+    assert.ok(
+      !lista.dati.righe.some((r) => r.email.includes("beta")),
+      "имейлите на чужда фирма не бива да излизат в списъка"
+    );
+    // MASTER, обратно, обслужва всички инсталации и вижда всичко
+    const listaMaster = await master.get<{ righe: { email: string }[] }>("/api/utenti");
+    assert.ok(listaMaster.dati.righe.length > lista.dati.righe.length);
+  });
+
+  test("администраторът на фирма А не сменя паролата на чужд потребител", async () => {
+    const lista = await master.get<{ righe: { id: string; email: string }[] }>("/api/utenti");
+    // имейлът е `<slug>-admin@test.local`, а slug-ът носи уникалната добавка
+    const utenteB = lista.dati.righe.find(
+      (r) => r.email.includes("beta") && r.email.includes("-admin@")
+    );
+    assert.ok(utenteB, "потребителят на фирма Б съществува");
+    const reset = await aziendaA.post(`/api/utenti/${utenteB.id}/password`, {
+      password: "NuovaPassword!2026",
+    });
+    assert.equal(reset.status, 404);
+  });
+
+  test("администраторът не създава потребител в чужда фирма", async () => {
+    const tenants = await master.get<{ righe: { id: string; slug: string }[] }>("/api/tenants");
+    const beta = tenants.dati.righe.find((t) => t.slug.includes("beta"));
+    assert.ok(beta, "фирма Б съществува");
+    const creato = await aziendaA.post("/api/utenti", {
+      email: `${unico("intruso")}@test.local`,
+      password: PASSWORD,
+      nome: "Intruso",
+      cognome: "Test",
+      ruolo: "OPERATORE",
+      tenantId: beta.id,
+    });
+    assert.equal(creato.status, 403);
+  });
+});

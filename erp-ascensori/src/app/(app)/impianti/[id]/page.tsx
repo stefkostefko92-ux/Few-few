@@ -113,7 +113,7 @@ export default function Pagina() {
         <Badge valore={imp.stato} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="card p-5">
           <h2 className="mb-3 text-lg font-semibold text-text-1">Dati tecnici</h2>
           <dl className="space-y-2 text-sm">

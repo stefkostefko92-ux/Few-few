@@ -89,6 +89,7 @@ CREATE TABLE "audit_log" (
     "ip" TEXT,
     "userAgent" TEXT,
     "hmac" TEXT NOT NULL,
+    "versioneFirma" INTEGER NOT NULL DEFAULT 2,
     "utenteId" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

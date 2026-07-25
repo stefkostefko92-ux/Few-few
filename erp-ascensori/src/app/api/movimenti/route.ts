@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { paginazione, uuidParam } from "@/lib/query";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { dettagliCreazione } from "@/lib/audit-dettagli";
@@ -20,17 +21,16 @@ const schema = z.object({
 export const GET = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const url = new URL(req.url);
-  const articoloId = url.searchParams.get("articoloId");
-  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1) || 1);
-  const size = Math.min(200, Math.max(1, Number(url.searchParams.get("size") ?? 50) || 50));
+  const articoloId = uuidParam(url, "articoloId");
+  const { page, size, skip, take } = paginazione(url);
   const where = { ...filtroTenant(s), ...(articoloId ? { articoloId } : {}) };
   const [righe, totale] = await Promise.all([
     prisma.movimentoMagazzino.findMany({
       where,
       include: { articolo: { select: { codice: true, nome: true } } },
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * size,
-      take: size,
+      skip,
+      take,
     }),
     prisma.movimentoMagazzino.count({ where }),
   ]);
@@ -47,7 +47,10 @@ export const POST = gestito(async (req) => {
     throw new ErroreHttp(400, "La rettifica non può essere zero");
 
   const movimento = await prisma.$transaction(async (tx) => {
-    const articolo = await tx.articoloMagazzino.findUnique({ where: { id: data.articoloId } });
+    // с филтъра по фирма — иначе се движи наличността на ЧУЖД склад
+    const articolo = await tx.articoloMagazzino.findFirst({
+      where: { id: data.articoloId, ...filtroTenant(s) },
+    });
     if (!articolo) throw new ErroreHttp(404, "Articolo non trovato");
 
     const delta =

@@ -197,7 +197,7 @@ export function GraficoCategorie({
     return (
       <ResponsiveContainer width="100%" height={240}>
         <Contenitore data={ordinati} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
           <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
           <YAxis {...ASSI} allowDecimals={false} />
           <Tooltip content={<TooltipCard />} />
@@ -229,7 +229,7 @@ export function GraficoCategorie({
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={ordinati} margin={{ top: 8, right: 8, bottom: 8, left: -16 }} barCategoryGap="25%">
-        <CartesianGrid stroke="var(--border)" vertical={false} />
+        <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
         <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
         <YAxis {...ASSI} allowDecimals={false} />
         <Tooltip content={<TooltipCard />} cursor={{ fill: "var(--surface-2)" }} />
@@ -264,7 +264,7 @@ export function GraficoSerie({
     <div>
       <ResponsiveContainer width="100%" height={240}>
         <Contenitore data={dati} margin={{ top: 8, right: 8, bottom: 0, left: -8 }} barCategoryGap="25%">
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
           <XAxis dataKey="nome" {...ASSI} />
           <YAxis {...ASSI} />
           <Tooltip content={<TooltipCard />} cursor={tipo === "bar" ? { fill: "var(--surface-2)" } : undefined} />

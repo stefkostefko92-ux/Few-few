@@ -24,11 +24,20 @@ const schema = z.object({
 
 export const POST = gestito(async (req) => {
   puliziaSeNecessaria();
-  const ip = ipClient(req.headers);
-  if (!consenti(`login:${ip}`, LIMITI.login, LIMITI.finestraMs))
+  const { email, password } = await corpoValidato(req, schema);
+
+  // Ограничението е ПО АКАУНТ, не по IP. Причината: без доверено прокси IP-то
+  // не е надеждно (подправя се с хедър), а споделен ключ за всички би дал на
+  // всеки анонимен възможност да заключи входа за цялата фирма с 20 заявки.
+  // Брутфорсът по един акаунт се лови от блокадата 5/15 мин; това е втори слой.
+  if (!consenti(`login:${email.toLowerCase()}`, LIMITI.login, LIMITI.finestraMs))
     return errore(429, "Troppe richieste: riprovare più tardi");
 
-  const { email, password } = await corpoValidato(req, schema);
+  // По IP пазим само глобален таван срещу разпръснат брутфорс — много по-висок,
+  // за да не може един клиент да откаже услугата на останалите.
+  const ip = ipClient(req.headers);
+  if (ip !== "diretto" && !consenti(`login-ip:${ip}`, LIMITI.login * 10, LIMITI.finestraMs))
+    return errore(429, "Troppe richieste: riprovare più tardi");
   const utente = await prisma.user.findUnique({ where: { email } });
 
   // Документацията изисква „indicazione dei tentativi rimanenti prima del blocco"

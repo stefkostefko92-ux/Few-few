@@ -28,10 +28,6 @@ export const TRANSIZIONI: Record<Stato, readonly Stato[]> = {
   ANNULLATO: [], // финално
 };
 
-export function isStatoOrdine(v: unknown): v is Stato {
-  return typeof v === "string" && (STATI_ORDINE as readonly string[]).includes(v);
-}
-
 export function transizioneAmmessa(da: Stato, a: Stato): boolean {
   return TRANSIZIONI[da].includes(a);
 }

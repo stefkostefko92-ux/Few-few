@@ -166,6 +166,7 @@ model AuditLog {
   ip        String?
   userAgent String?
   hmac      String // криптографски подпис на редицата
+  versioneFirma Int   @default(2) // 1 = ред на вмъкване, 2 = сортирани ключове
   utenteId  String?  @db.Uuid
   createdAt DateTime @default(now())
 

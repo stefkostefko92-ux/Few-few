@@ -311,6 +311,7 @@ export const documenti: CrudConfig = {
   schemaUpdate: documentoBase.partial(),
   searchFields: ["titolo"],
   include: { utente: { select: { nome: true, cognome: true } } },
+  campiSessione: (s) => ({ utenteId: s.sub }),
 };
 
 const tenantBase = z.object({

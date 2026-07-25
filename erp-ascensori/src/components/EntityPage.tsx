@@ -4,7 +4,8 @@
 // форма за създаване/промяна + изтриване. Конфигурира се декларативно.
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Modale, Paginazione, Vuoto } from "@/components/ui";
+import { Modale, Paginazione, Vuoto, FiltriStato } from "@/components/ui";
+import { perInputData } from "@/lib/format";
 
 export type Riga = Record<string, unknown>;
 
@@ -56,6 +57,8 @@ export interface EntityConfig {
   linkDettaglio?: (r: Riga) => string;
   /** допълнителни бутони в заглавието */
   extraAzioni?: ReactNode;
+  /** филтър-хапчета по статус (име на полето + възможните стойности) */
+  filtroStato?: { campo: string; valori: readonly string[] };
 }
 
 async function apiJson(url: string, init?: RequestInit): Promise<{ ok: boolean; dati: Riga }> {
@@ -79,6 +82,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
   const [totale, setTotale] = useState(0);
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
+  const [stato, setStato] = useState("");
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState<string | null>(null);
   const [modale, setModale] = useState<{ modo: "crea" | "modifica"; riga?: Riga } | null>(null);
@@ -86,7 +90,8 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
 
   const carica = useCallback(async () => {
     setCaricamento(true);
-    const url = `${config.api}?page=${page}&size=${size}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+    const filtro = stato && config.filtroStato ? `&${config.filtroStato.campo}=${stato}` : "";
+    const url = `${config.api}?page=${page}&size=${size}${q ? `&q=${encodeURIComponent(q)}` : ""}${filtro}`;
     const { ok, dati } = await apiJson(url);
     if (ok) {
       setRighe((dati.righe as Riga[]) ?? []);
@@ -96,7 +101,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
       setErrore((dati.error as string) ?? "Errore di caricamento");
     }
     setCaricamento(false);
-  }, [config.api, page, q]);
+  }, [config.api, page, q, stato, config.filtroStato]);
 
   useEffect(() => {
     void carica();
@@ -128,16 +133,33 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
       </div>
 
       <div className="card overflow-hidden">
-        <div className="border-b border-border p-3">
-          <input
-            className="input max-w-sm"
-            placeholder={config.cerca ?? "Cerca…"}
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(1);
-            }}
-          />
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              className="input w-64"
+              placeholder={config.cerca ?? "Cerca…"}
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
+            />
+            {config.filtroStato && (
+              <FiltriStato
+                valori={config.filtroStato.valori}
+                attivo={stato}
+                onCambia={(v) => {
+                  setStato(v);
+                  setPage(1);
+                }}
+              />
+            )}
+          </div>
+          {!caricamento && !errore && (
+            <span className="text-xs text-text-3">
+              {totale} {totale === 1 ? "risultato" : "risultati"}
+            </span>
+          )}
         </div>
 
         {errore ? (
@@ -145,12 +167,22 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
         ) : caricamento ? (
           <Vuoto messaggio="Caricamento…" />
         ) : righe.length === 0 ? (
-          <Vuoto messaggio="Nessun record trovato" />
+          <Vuoto
+            messaggio={q || stato ? "Nessun risultato per i filtri attivi" : "Nessun record ancora"}
+            azione={q || stato ? "Azzera i filtri" : `+ Crea il primo`}
+            onAzione={() => {
+              if (q || stato) {
+                setQ("");
+                setStato("");
+                setPage(1);
+              } else setModale({ modo: "crea" });
+            }}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
+                <tr className="border-b border-border-strong bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
                   {config.colonne.map((c) => (
                     <th key={c.chiave} className={`px-3 py-2.5 ${c.className ?? ""}`}>
                       {c.label}
@@ -220,7 +252,7 @@ function valoreIniziale(campo: Campo, riga?: Riga): unknown {
   if (!riga) return campo.predefinito ?? (campo.tipo === "checkbox" ? true : "");
   const v = riga[campo.name];
   if (v === null || v === undefined) return campo.tipo === "checkbox" ? false : "";
-  if (campo.tipo === "date") return String(v).slice(0, 10);
+  if (campo.tipo === "date") return perInputData(v as string | Date);
   if (campo.tipo === "tags") return (v as string[]).join(", ");
   return v;
 }

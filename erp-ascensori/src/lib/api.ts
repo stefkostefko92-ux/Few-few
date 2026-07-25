@@ -73,13 +73,23 @@ export function gestito(
         return conTraccia(errore(400, "Dati non validi"));
       }
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        // Известните кодове са ОЧАКВАНИ изходи, не аварии — логват се като
+        // обикновена заявка с техния статус, за да не давят истинските грешки.
+        const noto = (stato: number, messaggio: string) => {
+          log.info("richiesta", { ...base, stato, durata_ms });
+          return conTraccia(errore(stato, messaggio));
+        };
         if (e.code === "P2002")
-          return conTraccia(errore(409, "Valore già presente: il campo deve essere univoco"));
+          return noto(409, "Valore già presente: il campo deve essere univoco");
         if (e.code === "P2003")
-          return conTraccia(
-            errore(409, "Record collegato ad altri documenti: non può essere eliminato, disattivarlo")
+          return noto(
+            409,
+            "Record collegato ad altri documenti: non può essere eliminato, disattivarlo"
           );
-        if (e.code === "P2025") return conTraccia(errore(404, "Record non trovato"));
+        if (e.code === "P2025") return noto(404, "Record non trovato");
+        // P2023 = невалидна стойност за колоната (напр. UUID параметър „pippo").
+        // Това е грешка на ЗАЯВКАТА, не на сървъра → 400, не 500.
+        if (e.code === "P2023") return noto(400, "Parametro non valido");
         if (CODICI_DB_NON_DISPONIBILE.has(e.code)) {
           // Загубата на базата е ПРЕХОДНА → 503 + Retry-After, не 500.
           log.error("base dati non raggiungibile", { ...base, durata_ms, ...descriviErrore(e) });

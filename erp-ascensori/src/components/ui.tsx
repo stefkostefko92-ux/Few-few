@@ -135,6 +135,59 @@ export function Paginazione({
   );
 }
 
-export function Vuoto({ messaggio }: { messaggio: string }) {
-  return <div className="p-10 text-center text-sm text-text-3">{messaggio}</div>;
+/** Празно състояние с действие до текста — окото не пътува до бутона горе-дясно. */
+export function Vuoto({
+  messaggio,
+  azione,
+  onAzione,
+}: {
+  messaggio: string;
+  azione?: string;
+  onAzione?: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <p className="text-sm text-text-2">{messaggio}</p>
+      {azione && onAzione && (
+        <button className="btn-secondary" onClick={onAzione}>
+          {azione}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Филтър-хапчета по статус — без тях филтрирането не съществува за потребителя. */
+export function FiltriStato({
+  valori,
+  attivo,
+  conteggi,
+  onCambia,
+}: {
+  valori: readonly string[];
+  attivo: string;
+  conteggi?: Record<string, number>;
+  onCambia: (v: string) => void;
+}) {
+  const pillola = (selezionato: boolean) =>
+    `rounded-full border px-3 py-1 text-xs transition-colors duration-150 ${
+      selezionato
+        ? "border-transparent bg-accent-subtle font-medium text-accent-text"
+        : "border-border text-text-2 hover:bg-surface-2"
+    }`;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <button className={pillola(attivo === "")} onClick={() => onCambia("")}>
+        Tutti
+      </button>
+      {valori.map((v) => (
+        <button key={v} className={pillola(attivo === v)} onClick={() => onCambia(v)}>
+          {v.replaceAll("_", " ")}
+          {conteggi?.[v] !== undefined && (
+            <span className="ml-1 font-mono text-text-3">{conteggi[v]}</span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
 }

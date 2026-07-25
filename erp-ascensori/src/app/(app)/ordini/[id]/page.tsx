@@ -99,7 +99,7 @@ export default function Pagina() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="card p-5">
             <h2 className="mb-3 text-lg font-semibold text-text-1">Flusso di lavoro</h2>

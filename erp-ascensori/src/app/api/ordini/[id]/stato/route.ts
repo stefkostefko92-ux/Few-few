@@ -4,7 +4,8 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
-import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { richiedeSessione, richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { STATI_ORDINE, transizioneAmmessa, type Stato } from "@/lib/workflow";
 
@@ -14,6 +15,9 @@ const schema = z.object({
 });
 
 export const PATCH = gestito(async (req, ctx) => {
+  // Сесията се иска ПРЕДИ да се чете тялото: иначе анонимен клиент кара сървъра
+  // да разбира и валидира произволен JSON, преди да получи 401.
+  await richiedeSessione();
   const { stato, nota } = await corpoValidato(req, schema);
   // ANNULLATO и CHIUSO са управленски решения → RESPONSABILE+; останалите — TECNICO+
   const s = await richiedeRuolo(
@@ -22,7 +26,8 @@ export const PATCH = gestito(async (req, ctx) => {
   const { id } = await ctx.params;
 
   const dopo = await prisma.$transaction(async (tx) => {
-    const ordine = await tx.ordineLavoro.findUnique({ where: { id } });
+    // с филтъра по фирма — иначе познат UUID сменя статуса на ЧУЖД ордин
+    const ordine = await tx.ordineLavoro.findFirst({ where: { id, ...filtroTenant(s) } });
     if (!ordine) throw new ErroreHttp(404, "Ordine non trovato");
     const da = ordine.stato as Stato;
     if (!transizioneAmmessa(da, stato))

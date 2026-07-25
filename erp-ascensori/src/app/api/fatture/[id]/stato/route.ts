@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import {
   STATI_FATTURA,
@@ -20,7 +21,8 @@ export const PATCH = gestito(async (req, ctx) => {
   const { id } = await ctx.params;
 
   const dopo = await prisma.$transaction(async (tx) => {
-    const prima = await tx.fattura.findUnique({ where: { id } });
+    // с филтъра по фирма — иначе познат UUID сменя статуса на ЧУЖД документ
+    const prima = await tx.fattura.findFirst({ where: { id, ...filtroTenant(s) } });
     if (!prima) throw new ErroreHttp(404, "Fattura non trovata");
     const da = prima.stato as StatoFattura;
     if (!transizioneFatturaAmmessa(da, stato))

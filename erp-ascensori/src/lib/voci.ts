@@ -12,7 +12,10 @@ import {
   dettagliCancellazione,
 } from "@/lib/audit-dettagli";
 import type { Ruolo } from "@/lib/roles";
+import type { ModelloPrisma } from "@/lib/crud";
 import type { ClientePrisma } from "@/lib/totali-db";
+import type { Sessione } from "@/lib/auth";
+import { filtroTenant } from "@/lib/tenant";
 
 interface DelegateVoce {
   create(args: object): Promise<unknown>;
@@ -23,8 +26,8 @@ interface DelegateVoce {
 
 export interface VociConfig {
   entita: string; // за audit
-  model: string; // редовият модел
-  parentModel: string; // родителският модел
+  model: ModelloPrisma; // редовият модел
+  parentModel: ModelloPrisma; // родителският модел
   parentField: string; // FK поле към родителя
   schema: ZodSchema;
   /** Преизчисление; приема транзакционен клиент, за да върви заедно с промяната. */
@@ -35,19 +38,31 @@ export interface VociConfig {
   statiModificabili?: readonly string[];
 }
 
-function delegate(model: string): DelegateVoce {
-  return (prisma as unknown as Record<string, DelegateVoce>)[model];
+function delegate(model: ModelloPrisma): DelegateVoce {
+  return (prisma as unknown as Record<ModelloPrisma, DelegateVoce>)[model];
 }
 
 /** Същият delegate, но върху транзакционен клиент. */
-function delegateTx(tx: ClientePrisma, model: string): DelegateVoce {
-  return (tx as unknown as Record<string, DelegateVoce>)[model];
+function delegateTx(tx: ClientePrisma, model: ModelloPrisma): DelegateVoce {
+  return (tx as unknown as Record<ModelloPrisma, DelegateVoce>)[model];
 }
 
-async function controllaParent(cfg: VociConfig, parentId: string): Promise<void> {
+/**
+ * Пази ДВА инварианта наведнъж — затова е една функция, викана от всеки маршрут:
+ *   1. документът е на СВОЯТА фирма (иначе редовите подресурси заобикалят
+ *      изолацията, която CRUD фабриката пази — познат UUID стигаше, за да се
+ *      добави ред към чужда оферта);
+ *   2. документът е в състояние, което приема промени по редовете.
+ * `findFirst`, не `findUnique`: вторият не приема допълнително условие.
+ */
+async function controllaParent(
+  cfg: VociConfig,
+  parentId: string,
+  s: Sessione
+): Promise<void> {
   const p = await (
-    prisma as unknown as Record<string, { findUnique(a: object): Promise<unknown | null> }>
-  )[cfg.parentModel].findUnique({ where: { id: parentId } });
+    prisma as unknown as Record<ModelloPrisma, { findFirst(a: object): Promise<unknown | null> }>
+  )[cfg.parentModel].findFirst({ where: { id: parentId, ...filtroTenant(s) } });
   if (!p) throw new ErroreHttp(404, "Documento non trovato");
   // фискална защита: издаден документ (не-BOZZA) не приема промени по редовете
   const stato = (p as { stato?: string }).stato;
@@ -60,7 +75,7 @@ export function rottaVociCollezione(cfg: VociConfig) {
   const POST = gestito(async (req, ctx) => {
     const s = await richiedeRuolo(cfg.ruolo ?? "OPERATORE");
     const { id } = await ctx.params;
-    await controllaParent(cfg, id);
+    await controllaParent(cfg, id, s);
     const data = await corpoValidato(req, cfg.schema);
     // Записът и преизчислението вървят ЗАЕДНО: иначе при провал на ricalcola
     // редът остава в базата, тоталите не го включват и одит не се пише —
@@ -89,7 +104,7 @@ export function rottaVoceElemento(cfg: VociConfig) {
   const PUT = gestito(async (req, ctx) => {
     const s = await richiedeRuolo(cfg.ruolo ?? "OPERATORE");
     const { id, voceId } = await ctx.params;
-    await controllaParent(cfg, id);
+    await controllaParent(cfg, id, s);
     const d = delegate(cfg.model);
     const prima = (await d.findUnique({ where: { id: voceId } })) as Record<
       string,
@@ -119,7 +134,7 @@ export function rottaVoceElemento(cfg: VociConfig) {
   const DELETE = gestito(async (_req, ctx) => {
     const s = await richiedeRuolo(cfg.ruolo ?? "OPERATORE");
     const { id, voceId } = await ctx.params;
-    await controllaParent(cfg, id);
+    await controllaParent(cfg, id, s);
     const d = delegate(cfg.model);
     const prima = (await d.findUnique({ where: { id: voceId } })) as Record<
       string,
