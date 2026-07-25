@@ -8,8 +8,10 @@ import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { filtroUtenti } from "@/lib/tenant";
+import { validaPassword, mfaObbligatorio } from "@/lib/password-policy";
+import { revocaTutte } from "@/lib/sessioni";
 
-const schema = z.object({ password: z.string().min(10).max(200) });
+const schema = z.object({ password: z.string().min(1).max(200) });
 
 export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
@@ -24,6 +26,17 @@ export const POST = gestito(async (req, ctx) => {
       403,
       "Solo il livello MASTER può gestire utenti MASTER",
     );
+
+  // Политиката е ТУК, а не в Zod: зависи от ролята и от собствените данни на
+  // потребителя, които схемата не вижда.
+  const esito = validaPassword(password, {
+    privilegiata: mfaObbligatorio(utente.ruolo),
+    email: utente.email,
+    nome: utente.nome,
+    cognome: utente.cognome,
+  });
+  if (!esito.valida) throw new ErroreHttp(400, esito.errore ?? "Password non valida");
+
   await prisma.user.update({
     where: { id },
     data: {
@@ -31,8 +44,12 @@ export const POST = gestito(async (req, ctx) => {
       refreshToken: null,
       tentativi: 0,
       bloccatoFino: null,
+      passwordCambiataAt: new Date(),
     },
   });
+  // Смяната на парола сваля всички устройства: това е смисълът ѝ, когато е
+  // направена, защото старата е компрометирана.
+  await revocaTutte(id);
   await scriviAudit({
     azione: "UPDATE",
     entita: "users",

@@ -21,15 +21,21 @@ import {
 } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import type { Ruolo } from "@/lib/roles";
+import { verifica as verificaTotp } from "@/lib/totp";
+import { consumaCodiceRecupero } from "@/lib/mfa";
+import { apriSessione } from "@/lib/sessioni";
+import { mfaObbligatorio, passwordScaduta } from "@/lib/password-policy";
 
 const schema = z.object({
   email: z.string().email().max(200),
   password: z.string().min(1).max(200),
+  /** Код от приложението за втори фактор или резервен код. */
+  codice: z.string().trim().max(20).optional(),
 });
 
 export const POST = gestito(async (req) => {
   puliziaSeNecessaria();
-  const { email, password } = await corpoValidato(req, schema);
+  const { email, password, codice } = await corpoValidato(req, schema);
 
   // Ограничението е ПО АКАУНТ, не по IP. Причината: без доверено прокси IP-то
   // не е надеждно (подправя се с хедър), а споделен ключ за всички би дал на
@@ -107,6 +113,27 @@ export const POST = gestito(async (req) => {
     );
   }
 
+  // ── Втори фактор ────────────────────────────────────────────────────────
+  // Проверява се СЛЕД паролата: иначе маршрутът издава кои акаунти имат MFA.
+  if (utente.totpAttivo && utente.totpSegreto) {
+    if (!codice)
+      // Отделен код, за да може интерфейсът да покаже полето, без да третира
+      // това като неуспешен вход.
+      return errore(428, "Codice di verifica richiesto");
+
+    const okTotp = verificaTotp(utente.totpSegreto, codice);
+    const okRecupero = okTotp ? false : await consumaCodiceRecupero(utente.id, codice);
+    if (!okTotp && !okRecupero) {
+      // Грешният втори фактор брои към същата блокада като грешната парола —
+      // иначе кодът се отгатва неограничено, щом паролата е известна.
+      await prisma.user.update({
+        where: { id: utente.id },
+        data: { tentativi: { increment: 1 } },
+      });
+      return errore(401, "Codice di verifica non valido");
+    }
+  }
+
   // мулти-фирма: неактивна фирма/изтекъл абонамент спират входа
   if (utente.tenantId) {
     const t = await prisma.tenant.findUnique({
@@ -122,6 +149,12 @@ export const POST = gestito(async (req) => {
   await prisma.user.update({
     where: { id: utente.id },
     data: { ...azzeramento, ultimoAccesso: ora, refreshToken: hash },
+  });
+  // Всеки вход отваря СВОЯ сесия: вход от втори компютър вече не изхвърля
+  // първия, а списъкът показва откъде е влизано.
+  await apriSessione(utente.id, refresh, {
+    userAgent: req.headers.get("user-agent"),
+    ip: ip === "diretto" ? null : ip,
   });
 
   const sessione: Sessione = {
@@ -144,5 +177,9 @@ export const POST = gestito(async (req) => {
     nome: utente.nome,
     cognome: utente.cognome,
     ruolo: utente.ruolo,
+    // Интерфейсът показва подсещане, вместо потребителят да разбере при
+    // отказан достъп някъде другаде.
+    mfaRichiesto: mfaObbligatorio(utente.ruolo) && !utente.totpAttivo,
+    passwordScaduta: passwordScaduta(utente.passwordCambiataAt, ora),
   });
 });

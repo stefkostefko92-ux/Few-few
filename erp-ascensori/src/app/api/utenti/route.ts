@@ -9,6 +9,7 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { RUOLI } from "@/lib/roles";
 import { filtroUtenti } from "@/lib/tenant";
+import { validaPassword, mfaObbligatorio } from "@/lib/password-policy";
 
 const SELEZIONE_SICURA = {
   id: true,
@@ -26,7 +27,7 @@ const SELEZIONE_SICURA = {
 
 const schemaCreate = z.object({
   email: z.string().trim().email().max(200),
-  password: z.string().min(10).max(200),
+  password: z.string().min(1).max(200),
   nome: z.string().trim().min(1).max(100),
   cognome: z.string().trim().min(1).max(100),
   ruolo: z.enum(RUOLI).optional(),
@@ -82,6 +83,16 @@ export const POST = gestito(async (req) => {
       403,
       "Impossibile assegnare l'utente a un'altra azienda",
     );
+  // Политиката е тук, а не в Zod: зависи от РОЛЯТА и от собствените данни на
+  // потребителя, които схемата не вижда.
+  const esitoPwd = validaPassword(data.password, {
+    privilegiata: mfaObbligatorio(data.ruolo ?? "OPERATORE"),
+    email: data.email,
+    nome: data.nome,
+    cognome: data.cognome,
+  });
+  if (!esitoPwd.valida) throw new ErroreHttp(400, esitoPwd.errore ?? "Password non valida");
+
   const creato = await prisma.user.create({
     data: {
       email: data.email,
@@ -90,6 +101,7 @@ export const POST = gestito(async (req) => {
       cognome: data.cognome,
       ruolo: data.ruolo ?? "OPERATORE",
       tenantId,
+      passwordCambiataAt: new Date(),
     },
     select: SELEZIONE_SICURA,
   });

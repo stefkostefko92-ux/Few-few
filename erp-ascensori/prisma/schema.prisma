@@ -205,12 +205,23 @@ model User {
   bloccatoFino DateTime? // заключен до този момент
   ultimoAccesso DateTime?
   refreshToken String? // нулира се при изход
+  /// Втори фактор (TOTP). Тайната е в чист вид, защото алгоритъмът я иска, за
+  /// да сметне кода — затова достъпът до базата вече значи компрометиран втори
+  /// фактор, и точно затова той е ДОПЪЛНЕНИЕ към паролата, не заместител.
+  totpSegreto  String?
+  totpAttivo   Boolean   @default(false)
+  /// Резервни кодове (bcrypt хешове). Без тях загубен телефон = загубен акаунт,
+  /// а единственият изход би бил администраторска вратичка около мярката.
+  codiciRecupero String[] @default([])
+  /// Кога паролата е сменяна за последно — за политиката за срок.
+  passwordCambiataAt DateTime?
   tenantId     String?   @db.Uuid
   note         String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   tenant     Tenant?     @relation(fields: [tenantId], references: [id])
+  sessioni   SessioneAttiva[]
   auditLogs  AuditLog[]
   preventivi Preventivo[]
   fatture    Fattura[]
@@ -220,6 +231,31 @@ model User {
 }
 
 // Неизменяем регистър: всяка редица е подписана с HMAC-SHA256.
+/// Активните сесии на един потребител.
+///
+/// Досега refresh token-ът беше ЕДИН хеш върху `User`: вход от втори
+/// компютър мълчаливо изхвърляше първия, никой не можеше да види откъде е
+/// влизано, а „прекрати всички сесии" при уволнен служител не съществуваше.
+model SessioneAttiva {
+  id           String   @id @default(uuid()) @db.Uuid
+  utenteId     String   @db.Uuid
+  /// SHA-256 на refresh token-а — самият токен не се пази никъде.
+  tokenHash    String   @unique
+  /// Груб отпечатък на устройството, за да е разпознаваемо в списъка.
+  userAgent    String?
+  ip           String?
+  ultimoUso    DateTime @default(now())
+  scadenza     DateTime
+  revocataAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  utente User @relation(fields: [utenteId], references: [id], onDelete: Cascade)
+
+  @@index([utenteId, revocataAt])
+  @@index([scadenza])
+  @@map("sessioni_attive")
+}
+
 model AuditLog {
   id        String   @id @default(uuid()) @db.Uuid
   azione    String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, STATE_CHANGE, IMPORT
