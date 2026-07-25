@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ERP Ascensori">
+  <rect width="32" height="32" rx="7" fill="#116bb5"/>
+  <!-- направляващите спират над и под кабината — така се чете шахта, не кутия -->
+  <rect x="7" y="8" width="3" height="18" rx="1.5" fill="#ffffff" opacity=".62"/>
+  <rect x="22" y="8" width="3" height="18" rx="1.5" fill="#ffffff" opacity=".62"/>
+  <!-- кабина с процеп между вратите -->
+  <rect x="11" y="12" width="10" height="12" rx="1" fill="#ffffff"/>
+  <rect x="15" y="12" width="2" height="12" fill="#116bb5"/>
+  <!-- посока на движение, отделена от кабината -->
+  <path d="M16 4l5 5H11z" fill="#ffffff"/>
+  <path d="M16 31l-4-4h8z" fill="#ffffff"/>
+</svg>
