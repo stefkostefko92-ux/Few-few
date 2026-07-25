@@ -1,0 +1,17 @@
+{
+  "id": "traj-cicd",
+  "agent": "konveyera",
+  "task": "Води промяна по CI/CD пайплайна по каноничния поток (_orchestration.md „CI/CD пайплайн\"). Отчети веригата и крайното състояние.",
+  "expect": [
+    { "any": ["path", "филтр", "paths:"], "label": "path-филтриран workflow (монорепо)" },
+    { "any": ["SHA", "пинв", "pin"], "label": "actions пиннати по SHA" },
+    { "any": ["permissions", "least privilege", "минимални права", "OIDC"], "label": "least-privilege токен" },
+    { "none": ["дълготраен ключ в CI", "секрет в workflow файла"], "label": "капан: дълготрайна тайна в CI" }
+  ],
+  "trajectory": {
+    "flow": "CI/CD пайплайн",
+    "path": ["konveyera", "kodadjiyata", "vps-adjiyata"],
+    "forbid": ["razbivacha"],
+    "maxSteps": 5
+  }
+}

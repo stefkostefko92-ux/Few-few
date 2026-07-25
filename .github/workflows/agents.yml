@@ -66,6 +66,10 @@ jobs:
         run: node tools/agents/consistency-audit.mjs --check
       - name: Loop-audit (readiness на автоматизациите — автономия-стълба)
         run: node tools/agents/loops/loop-audit.mjs
+      - name: Recovery-audit (стълбата провал→възстановяване е цяла; всеки loop с конкретна стратегия — fail-closed)
+        run: node tools/agents/recovery-audit.mjs
+      - name: Trajectory-audit (пътят на оркестрацията спрямо ground-truth; празен дневник = нищо за съдене)
+        run: node tools/agents/trajectory-audit.mjs --check
       - name: Error-ledger (всяка реална грешка носи регресионен spec — fail-closed)
         run: node tools/agents/error-ledger.mjs --check
       - name: Токен-бюджет (гейт срещу разбягване на дефиниция; печат за логовете)
