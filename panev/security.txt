@@ -1,11 +1,11 @@
 # PANEV ASCENSORI — Security Policy
-# https://www.panevascensori.it/.well-known/security.txt
+# https://panevascensori.it/.well-known/security.txt
 
 Contact: mailto:info@panevascensori.it
 Expires: 2027-01-01T00:00:00.000Z
 Preferred-Languages: it, en
-Policy: https://www.panevascensori.it/privacy.html
-Canonical: https://www.panevascensori.it/.well-known/security.txt
+Policy: https://panevascensori.it/privacy.html
+Canonical: https://panevascensori.it/.well-known/security.txt
 
 # If you discover a security vulnerability, please report it responsibly.
 # We will respond within 72 hours on business days.
