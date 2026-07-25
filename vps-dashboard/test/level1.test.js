@@ -77,16 +77,18 @@ test('история: запис, четене, прореждане', () => {
   assert.equal(h.maybeAppend(snap(Date.now(), 20)), false);
   assert.equal(h.read().length, 1);
 
-  // Прореждане: 100 точки → най-много 10.
+  // Прореждане: 100 точки (на 1s една от друга) → най-много 10.
+  const t0 = Date.now();
   fs.writeFileSync(
     h.file,
-    Array.from({ length: 100 }, (_, i) => JSON.stringify({ ts: Date.now() - i * 1000, cpu: i })).join('\n') + '\n'
+    Array.from({ length: 100 }, (_, i) => JSON.stringify({ ts: t0 - i * 1000, cpu: i })).join('\n') + '\n'
   );
   assert.ok(h.range(RANGES['24h'], 10).length <= 10);
-  // Точки извън прозореца не влизат: 500ms прозорец хваща само най-новата точка
-  // (останалите са на секунда една от друга назад във времето).
-  assert.equal(h.range(500).length, 1);
-  assert.equal(h.range(5000).length, 5);
+  // Точки извън прозореца не влизат. Прозорците са нарочно на 500ms от точка,
+  // за да не зависи броят от милисекундите между записа и четенето (иначе тестът
+  // е flaky точно на границата).
+  assert.equal(h.range(500).length, 1); // само най-новата (следващата е на -1000ms)
+  assert.equal(h.range(5500).length, 6); // точките на 0…-5000ms
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
