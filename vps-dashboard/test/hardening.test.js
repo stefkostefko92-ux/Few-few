@@ -128,3 +128,68 @@ test('SSE: \\r и \\n оцеляват (иначе терминалът се р�
   assert.equal(JSON.parse(body), 'ред1\r\nред2\rвърнат', 'след JSON.parse байтовете са същите');
   sse.close();
 });
+
+// ── Котва на одиторската верига ───────────────────────────────────────────────
+// Веригата сама покрива само СРЕДАТА: последният ред няма следващ, който да го
+// провери, а изтритите редове в края оставят вътрешно последователна верига.
+// Точно отрязването е класическият ход — махаш редовете със своите действия.
+test('котвата хваща отрязване и подмяна на последния запис', async () => {
+  const { Audit } = await import('../src/audit.js');
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-chain-'));
+  const audit = new Audit(dir);
+  for (let i = 0; i < 6; i++) audit.log({ action: 'test.action', n: i });
+  const file = path.join(dir, 'audit.jsonl');
+  const orig = fs.readFileSync(file, 'utf8');
+  const lines = orig.split('\n').filter(Boolean);
+  assert.equal(lines.length, 6);
+  assert.equal(audit.verify().ok, true, 'чистият дневник минава');
+  assert.equal(audit.verify().anchored, true, 'котвата съществува');
+
+  // 1) Подмяна по средата — хваща се от самата верига.
+  const mid = [...lines];
+  mid[2] = JSON.stringify({ ...JSON.parse(mid[2]), action: 'подменено' });
+  fs.writeFileSync(file, mid.join('\n') + '\n');
+  const m = audit.verify();
+  assert.equal(m.ok, false);
+  assert.equal(m.brokenAt, 4, 'посочва първия ред, който вече не съвпада');
+
+  // 2) Подмяна на ПОСЛЕДНИЯ — веригата не я вижда, котвата да.
+  const last = [...lines];
+  last[5] = JSON.stringify({ ...JSON.parse(last[5]), action: 'подменено' });
+  fs.writeFileSync(file, last.join('\n') + '\n');
+  const l = audit.verify();
+  assert.equal(l.ok, false);
+  assert.match(l.reason, /ПОСЛЕДЕН/);
+
+  // 3) Отрязване на края — без котва това беше НЕВИДИМО.
+  fs.writeFileSync(file, lines.slice(0, 3).join('\n') + '\n');
+  const t = audit.verify();
+  assert.equal(t.ok, false);
+  assert.equal(t.truncated, true);
+  assert.equal(t.missing, 3);
+  assert.equal(t.expected, 6);
+
+  // 4) Възстановяване → пак чисто (проверката не „помни" обвинения).
+  fs.writeFileSync(file, orig);
+  assert.equal(audit.verify().ok, true);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('ротацията НЕ вдига фалшива тревога за отрязване', async () => {
+  const { Audit } = await import('../src/audit.js');
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot-'));
+  const audit = new Audit(dir);
+  audit.log({ action: 'преди.ротация' });
+  // Симулираме прага: ротацията е ЗАКОННО скъсване — новият файл е от нула.
+  fs.renameSync(path.join(dir, 'audit.jsonl'), path.join(dir, 'audit.jsonl.1'));
+  audit.count = 0;
+  audit.log({ action: 'след.ротация' });
+  assert.equal(audit.verify().ok, true, 'ротацията не е подправяне');
+  fs.rmSync(dir, { recursive: true, force: true });
+});

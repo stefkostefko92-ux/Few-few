@@ -13,9 +13,41 @@ export function hashLine(line) {
 export class Audit {
   constructor(stateDir) {
     this.file = path.join(stateDir, 'audit.jsonl');
+    // Котва на веригата: брой записи + хеш на последния, в ОТДЕЛЕН файл.
+    // Без нея отрязването на последните редове е НЕВИДИМО — веригата остава
+    // вътрешно последователна и проверката казва „наред". А точно отрязването е
+    // класическият ход: махаш редовете със своите действия и си тръгваш чист.
+    this.headFile = path.join(stateDir, 'audit.head.json');
     this.prevHash = this.loadLastHash();
+    this.count = this.loadCount();
     this.writeFailures = 0;
     this.onWriteFailure = null; // сървърът закача аларма — провалът да е шумен
+  }
+
+  loadCount() {
+    try {
+      return fs.readFileSync(this.file, 'utf8').split('\n').filter(Boolean).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  readHead() {
+    try {
+      return JSON.parse(fs.readFileSync(this.headFile, 'utf8'));
+    } catch {
+      return null;
+    }
+  }
+
+  writeHead() {
+    try {
+      const tmp = `${this.headFile}.tmp`;
+      fs.writeFileSync(tmp, JSON.stringify({ count: this.count, lastHash: this.prevHash, at: new Date().toISOString() }), { mode: 0o600 });
+      fs.renameSync(tmp, this.headFile);
+    } catch {
+      /* котвата е допълнение, не бива да чупи одита */
+    }
   }
 
   // Хеш-верига: всеки ред носи хеша на предишния. Изтрит или подменен ред къса
@@ -42,12 +74,17 @@ export class Audit {
       try {
         if (fs.statSync(this.file).size > MAX_BYTES) {
           fs.renameSync(this.file, this.file + '.1');
+          // Ротацията е ЗАКОННО скъсване: новият файл започва от нула. Без
+          // нулиране котвата щеше да гърми фалшиво след всяка ротация.
+          this.count = 0;
         }
       } catch {
         /* няма файл още */
       }
       fs.appendFileSync(this.file, line + '\n', { mode: 0o600 });
       this.prevHash = hashLine(line);
+      this.count++;
+      this.writeHead();
     } catch (err) {
       // Одитът никога не чупи действието, но мълчаливият провал прави дневника
       // безполезен точно когато трябва — затова се вика аларма.
@@ -137,7 +174,33 @@ export class Audit {
       }
       prev = hashLine(lines[i]);
     }
-    return { ok: true, checked: lines.length, writeFailures: this.writeFailures };
+    // Веригата е вътрешно последователна — но това НЕ значи, че е цяла.
+    // Котвата сверява края: липсващи редове накрая иначе са невидими.
+    const head = this.readHead();
+    if (head) {
+      if (lines.length < head.count) {
+        return {
+          ok: false,
+          checked: lines.length,
+          truncated: true,
+          expected: head.count,
+          missing: head.count - lines.length,
+          reason: `отрязани ${head.count - lines.length} записа от края (котвата помни ${head.count})`,
+          writeFailures: this.writeFailures,
+        };
+      }
+      const lastHash = lines.length ? hashLine(lines[lines.length - 1]) : 'GENESIS';
+      if (lines.length === head.count && lastHash !== head.lastHash) {
+        return {
+          ok: false,
+          checked: lines.length,
+          brokenAt: lines.length,
+          reason: 'подменен ПОСЛЕДЕН запис (веригата не го покрива — котвата да)',
+          writeFailures: this.writeFailures,
+        };
+      }
+    }
+    return { ok: true, checked: lines.length, anchored: Boolean(head), writeFailures: this.writeFailures };
   }
 
   tail(limit = 200) {

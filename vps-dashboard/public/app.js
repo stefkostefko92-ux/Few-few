@@ -3135,7 +3135,7 @@ async function renderRedis() {
 // поискал СВЕТЪТ и колко е чакал — без него „сайтът е бавен" няма адрес.
 async function renderTraffic() {
   const view = document.getElementById('view');
-  const d = await api('/accesslog');
+  const [d, files] = await Promise.all([api('/accesslog'), api('/accesslog/files').catch(() => ({ files: [] }))]);
   view.innerHTML = '';
   if (!d.available) {
     view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: d.note })]));
@@ -3145,6 +3145,10 @@ async function renderTraffic() {
     `${d.total} нови заявки от последния анализ (${d.botPct}% ботове, ${fmtBytes(d.bytes)} трафик). ` +
     'Всяко зареждане чете само НОВОТО — ротацията се разпознава по inode, за да не се броят редове двойно. ' +
     'Адресите са групирани по форма (/order/8123 и /order/9044 са един адрес).' }));
+  if (files.files?.length) {
+    view.appendChild(el('div', { class: 'metric-sub', style: 'margin-bottom:10px', text:
+      'Четени файлове: ' + files.files.map((f) => `${f.path} (${fmtBytes(f.sizeBytes)})`).join(' · ') }));
+  }
 
   if (d.timingHint) {
     view.appendChild(
@@ -3826,7 +3830,7 @@ async function renderTerminal() {
 // ── Агенти ────────────────────────────────────────────────────────────────────────
 async function renderAgents() {
   const view = document.getElementById('view');
-  const [fleet, tools] = await Promise.all([api('/agents/fleet'), api('/agents/tools')]);
+  const [fleet, tools, mem] = await Promise.all([api('/agents/fleet'), api('/agents/tools'), api('/agents/memories').catch(() => ({ memories: [] }))]);
   view.innerHTML = '';
   if (!fleet.available) {
     view.appendChild(el('div', { class: 'empty', text: fleet.error || 'Флотът е недостъпен.' }));
@@ -3878,6 +3882,26 @@ async function renderAgents() {
       }))
     );
   }
+
+  // Паметта на агентите е самонаучаващият се слой — ако файлът за някой агент
+  // спре да расте, неговият цикъл е спрял и това не се вижда никъде другаде.
+  if (mem.memories?.length) {
+    view.appendChild(el('h3', { class: 'muted', text: `Памет на агентите (${mem.memories.length} файла)`, style: 'margin:22px 0 10px' }));
+    view.appendChild(
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Файл', 'Размер', 'Последна промяна'], mem.memories
+          .slice()
+          .sort((a, b) => b.mtime.localeCompare(a.mtime))
+          .map((m) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: m.file }),
+              el('td', { text: fmtBytes(m.sizeBytes) }),
+              el('td', { class: 'muted', text: fmtWhen(m.mtime) }),
+            ])
+          )),
+      ])
+    );
+  }
 }
 
 // ── Задачи ────────────────────────────────────────────────────────────────────────
@@ -3907,9 +3931,89 @@ async function renderJobs() {
 // ── Одит ──────────────────────────────────────────────────────────────────────────
 async function renderAudit() {
   const view = document.getElementById('view');
-  const data = await api('/audit?limit=300');
+  const [data, chain, ship] = await Promise.all([
+    api('/audit?limit=300'),
+    api('/audit/verify').catch(() => null),
+    api('/audit/ship').catch(() => null),
+  ]);
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text: 'Одиторски дневник — всяко мутиращо действие (append-only, без тайни).' }));
+
+  // Веригата има смисъл само ако някой я ПРОВЕРЯВА. Досега тя се строеше вярно,
+  // но нямаше как да я сверши човек от панела — тоест беше защита на хартия.
+  if (chain) {
+    const broken = chain.brokenAt != null;
+    view.appendChild(
+      el('div', { class: 'grid grid-2', style: 'margin-bottom:16px' }, [
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-head' }, [
+            el('h3', { text: 'Цялост на дневника' }),
+            pill(broken ? 'bad' : 'ok', broken ? 'СКЪСАНА' : 'непрекъсната'),
+          ]),
+          el('div', { class: 'metric-sub', text:
+            broken
+              ? `Веригата се къса на ред ${chain.brokenAt}: ${chain.reason}. Оттам нататък записите са подменени или изтрити.`
+              : chain.note
+                ? chain.note
+                : `${chain.checked} проверени записа — всеки носи хеша на предишния, затова изтрит или подменен ред щеше да се види.` }),
+          chain.writeFailures
+            ? el('div', { class: 'metric-sub', style: 'color:var(--danger)', text:
+                `⚠ ${chain.writeFailures} неуспешни записа в дневника — действия без следа.` })
+            : '',
+          el('div', { class: 'metric-sub', text:
+            'Веригата ОТКРИВА подправяне, но не го спира: root може да пренапише целия файл. Истинската защита е копие извън машината.' }),
+          el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+            el('button', {
+              class: 'btn btn-sm', text: '⛨ Провери отново',
+              onclick: async (e) => {
+                e.target.disabled = true;
+                try {
+                  const r = await api('/audit/verify');
+                  toast(r.brokenAt != null ? `Веригата е скъсана на ред ${r.brokenAt}` : 'Веригата е непрекъсната', r.brokenAt != null ? 'bad' : 'ok');
+                  go('audit');
+                } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+              },
+            }),
+          ]),
+        ]),
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-head' }, [
+            el('h3', { text: 'Копие извън машината' }),
+            pill(ship?.enabled ? 'ok' : 'dim', ship?.enabled ? 'включено' : 'изключено'),
+          ]),
+          ship?.enabled
+            ? kv({
+                Каданс: `на ${ship.intervalSec} секунди`,
+                'Докъде е стигнало': Object.keys(ship.cursors || {}).length
+                  ? Object.entries(ship.cursors).map(([id, h]) => `${id}: …${String(h).slice(-8)}`).join(' · ')
+                  : 'още нищо не е изнесено',
+                'Огледала ТУК': (ship.mirrors || []).length
+                  ? ship.mirrors.map((m) => `${m.node} (${fmtBytes(m.sizeBytes)}, ${fmtWhen(m.mtime)})`).join(' · ')
+                  : 'няма — този възел не е получавал чужд одит',
+              })
+            : el('div', { class: 'metric-sub', text:
+                'Изключено. Хеш-веригата открива подправяне, но root може да пренапише файла целия. Копие на другия VPS („auditShip" в конфига) е единственото, което прави следите неунищожими от тази машина.' }),
+          ship?.enabled
+            ? el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+                el('button', {
+                  class: 'btn btn-sm', text: '⇪ Изнеси сега',
+                  onclick: async (e) => {
+                    e.target.disabled = true;
+                    try {
+                      const r = await api('/audit/ship/now', { method: 'POST' });
+                      const okN = (r.results || []).filter((x) => x.ok).length;
+                      const bad = (r.results || []).filter((x) => !x.ok);
+                      toast(bad.length ? `${okN} успешни, ${bad.length} провалени: ${bad[0].error || ''}` : `Изнесено към ${okN} възела`, bad.length ? 'warn' : 'ok');
+                      go('audit');
+                    } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+                  },
+                }),
+              ])
+            : '',
+        ]),
+      ])
+    );
+  }
   view.appendChild(
     el('div', { class: 'table-wrap' }, [
       tableEl(['Кога', 'Действие', 'Детайли', 'Потребител'], data.entries.slice().reverse().map((e) =>
