@@ -10193,9 +10193,20 @@
           "date": "2026-07-25",
           "event": "v13.7 — учене",
           "detail": "Научи: erp-ascensori (Phosphor вече инсталиран, само в Sidebar.tsx): текстови глифове ← → ↑ ↓ … (+1 още)"
+        },
+        {
+          "version": "13.9.0",
+          "date": "2026-07-26",
+          "event": "v13.9 — учене",
+          "detail": "Научи: erp-ascensori: `--text-3` промяната (globals.css) пази ≥4.5:1 срещу всяка повърхност (c… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-26",
+          "type": "learning",
+          "summary": "Научи: „erp-ascensori: `--text-3` промяната (globals.css) пази ≥4.5:1 срещу всяка повърхност (c…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-25",
           "type": "learning",
