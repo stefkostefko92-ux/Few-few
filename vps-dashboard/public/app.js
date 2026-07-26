@@ -55,7 +55,7 @@ function askSudo() {
   sudoPending = new Promise((resolve) => {
     const pass = el('input', { type: 'password', placeholder: 'парола', autocomplete: 'current-password' });
     const code = el('input', { type: 'text', placeholder: 'код от приложението (ако имаш 2FA)', autocomplete: 'one-time-code', inputmode: 'numeric' });
-    const err = el('div', { class: 'metric-sub', style: 'color:var(--bad)' });
+    const err = el('div', { class: 'metric-sub', style: 'color:var(--danger)' });
     const btn = el('button', { class: 'btn btn-primary', text: 'Потвърди' });
     const dlg = el('dialog', { class: 'confirm-dlg' }, [
       el('h3', { text: '🔐 Потвърди самоличността си' }),
@@ -169,6 +169,7 @@ const SECTIONS = [
   { id: 'slo', ico: '◑', label: 'Надеждност', render: renderSlo },
   { id: 'alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
   { id: 'diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
+  { id: 'investigate', ico: '🔍', label: 'Разследване', render: renderInvestigate },
   { id: 'services', ico: '⚙', label: 'Услуги', render: renderServices },
   { id: 'docker', ico: '⬢', label: 'Docker', render: renderDocker },
   { id: 'compose', ico: '⧉', label: 'Compose', render: renderCompose },
@@ -278,6 +279,7 @@ const SECTION_ALIASES = {
   overview: 'обзор начало dashboard',
   products: 'продукти сайтове health',
   slo: 'надеждност slo бюджет за грешки error budget burn rate наличност sre',
+  investigate: 'разследване инцидент какво се случи промяна времева линия incident',
   alerts: 'аларми известия notifications telegram ntfy',
   services: 'услуги сервизи systemd unit',
   docker: 'докер контейнери containers',
@@ -1198,12 +1200,29 @@ async function renderServices() {
   }
   const filter = searchBox('Филтър по име… (натисни /)');
   const onlyActive = el('input', { type: 'checkbox' });
+  const selected = new Set();
+  const { bar, sync: syncBulk } = bulkBar('услуги', selected, (action, unit) =>
+    api('/services/action', { method: 'POST', body: { unit, action } })
+  );
   view.appendChild(
     el('div', { class: 'toolbar' }, [
       filter,
       el('label', { class: 'muted' }, [onlyActive, document.createTextNode(' само активни')]),
+      el('button', {
+        class: 'btn btn-sm', text: 'Избери видимите',
+        onclick: () => {
+          // Само ВИДИМИТЕ — иначе филтърът лъже: избираш 5 реда, а действието
+          // хваща 300.
+          for (const cb of view.querySelectorAll('tbody tr:not([hidden]) .bulk-pick')) {
+            cb.checked = true;
+            selected.add(cb.value);
+          }
+          syncBulk();
+        },
+      }),
     ])
   );
+  view.appendChild(bar);
   const body = el('div', { class: 'table-wrap' });
   view.appendChild(body);
 
@@ -1234,6 +1253,15 @@ async function renderServices() {
       .slice(0, 400)
       .map((s) =>
         el('tr', {}, [
+          el('td', {}, [el('input', {
+            type: 'checkbox', class: 'bulk-pick', value: s.unit,
+            checked: selected.has(s.unit),
+            onchange: (e) => {
+              if (e.target.checked) selected.add(s.unit);
+              else selected.delete(s.unit);
+              syncBulk();
+            },
+          })]),
           el('td', { class: 'mono', text: s.unit }),
           el('td', {}, [pill(s.active === 'active' ? 'ok' : s.active === 'failed' ? 'bad' : 'dim', s.sub || s.active)]),
           // Памет по cgroup — стабилна през рестартите на процеса, за разлика от ps.
@@ -1249,11 +1277,70 @@ async function renderServices() {
         ])
       );
     body.innerHTML = '';
-    body.appendChild(tableEl(['Услуга', 'Състояние', 'Памет', 'Автостарт', 'Описание', ''], rows));
+    body.appendChild(tableEl(['', 'Услуга', 'Състояние', 'Памет', 'Автостарт', 'Описание', ''], rows));
   };
   filter.oninput = draw;
   onlyActive.onchange = draw;
   draw();
+}
+
+// ── Групови действия ──────────────────────────────────────────────────────────────
+// „Рестартирай тези пет" без пет клика и пет чакания. Групово СПИРАНЕ минава през
+// потвърждаване с изписване: сгрешен филтър + един бутон сваля половин сървър.
+function bulkBar(kind, selected, run) {
+  const count = el('span', { class: 'muted' });
+  const bar = el('div', { class: 'toolbar bulk-bar', style: 'display:none' });
+  const btn = (action, label, cls = 'btn-sm', danger = false) =>
+    el('button', {
+      class: `btn btn-sm ${cls}`,
+      text: label,
+      onclick: async () => {
+        const items = [...selected];
+        if (!items.length) return;
+        if (danger) {
+          const ok = await confirmDanger({
+            title: `${label} · ${items.length} ${kind}`,
+            what: [items.slice(0, 8).join(', ') + (items.length > 8 ? ` … и още ${items.length - 8}` : ''),
+              'Действието се прилага върху ВСИЧКИ избрани.'],
+            expect: String(items.length),
+            confirmLabel: label,
+          });
+          if (!ok) return;
+        }
+        // Последователно, не наведнъж: паралелен рестарт на пет услуги прави
+        // причината за евентуален провал неразличима.
+        let ok = 0;
+        const failed = [];
+        for (const item of items) {
+          try {
+            await run(action, item);
+            ok++;
+          } catch (e) {
+            failed.push(`${item}: ${e.message}`);
+          }
+        }
+        toast(failed.length ? `${ok} успешни, ${failed.length} провалени — ${failed[0]}` : `${ok} × ${label.toLowerCase()}`, failed.length ? 'warn' : 'ok');
+        selected.clear();
+        go(state.section);
+      },
+    });
+  bar.append(count, btn('restart', 'Рестартирай'), btn('start', 'Пусни'), btn('stop', 'Спри', 'btn-danger', true),
+    el('button', { class: 'btn btn-sm', text: 'Изчисти избора', onclick: () => { selected.clear(); go(state.section); } }));
+  const sync = () => {
+    // Изборът ОЦЕЛЯВА филтрирането (иначе „избери, филтрирай, действай" губи
+    // половината). Но тогава броячът трябва да е честен: скритите пак влизат в
+    // действието и мълчаливото „5 избрани", докато се вижда един ред, е капан.
+    // Броим от ИЗБОРА, не от DOM-а: едни секции скриват редовете с `hidden`,
+    // други изобщо не ги рисуват при филтър. Само разликата хваща и двете.
+    const root = bar.parentElement;
+    const onScreen = new Set(
+      [...(root?.querySelectorAll('tbody tr:not([hidden]) .bulk-pick') || [])].map((cb) => cb.value)
+    );
+    const hidden = [...selected].filter((v) => !onScreen.has(v)).length;
+    count.textContent = hidden ? `${selected.size} избрани (${hidden} скрити от филтъра)` : `${selected.size} избрани`;
+    bar.style.display = selected.size ? '' : 'none';
+  };
+  return { bar, sync };
 }
 
 function svcBtn(action, unit, label, cls = 'btn-sm') {
@@ -1366,15 +1453,42 @@ async function renderDocker() {
     return;
   }
   const statMap = new Map((stats.stats || []).map((s) => [s.name, s]));
+  const selected = new Set();
+  const { bar, sync: syncBulk } = bulkBar('контейнера', selected, (action, id) =>
+    api('/docker/action', { method: 'POST', body: { id, action } })
+  );
   view.appendChild(el('h3', { class: 'muted', text: `Контейнери (${ov.containers.length})`, style: 'margin:4px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-sm', text: 'Избери всички',
+        onclick: () => {
+          for (const cb of view.querySelectorAll('tbody tr:not([hidden]) .bulk-pick')) {
+            cb.checked = true;
+            selected.add(cb.value);
+          }
+          syncBulk();
+        },
+      }),
+    ])
+  );
+  view.appendChild(bar);
   view.appendChild(
     el('div', { class: 'table-wrap' }, [
       tableEl(
-        ['Име', 'Образ', 'Състояние', 'CPU', 'Памет', 'Портове', ''],
+        ['', 'Име', 'Образ', 'Състояние', 'CPU', 'Памет', 'Портове', ''],
         ov.containers.map((c) => {
           const st = statMap.get(c.name);
           const running = c.state === 'running';
           return el('tr', {}, [
+            el('td', {}, [el('input', {
+              type: 'checkbox', class: 'bulk-pick', value: c.id,
+              onchange: (e) => {
+                if (e.target.checked) selected.add(c.id);
+                else selected.delete(c.id);
+                syncBulk();
+              },
+            })]),
             el('td', { class: 'mono', text: c.name }),
             el('td', { class: 'muted', text: (c.image || '').slice(0, 40) }),
             el('td', {}, [pill(running ? 'ok' : c.state === 'exited' ? 'dim' : 'warn', c.status || c.state)]),
@@ -1385,6 +1499,7 @@ async function renderDocker() {
               el('button', { class: 'btn btn-sm', text: 'Лог', onclick: () => showDockerLogs(c.id, c.name) }),
               dockerBtn('restart', c.id, 'Рестарт'),
               running ? dockerBtn('stop', c.id, 'Спри', 'btn-danger') : dockerBtn('start', c.id, 'Пусни'),
+              el('button', { class: 'btn btn-sm', text: '⚖ Лимити', onclick: () => showDockerLimits(c.name) }),
             ]),
           ]);
         })
@@ -1409,6 +1524,36 @@ async function renderDocker() {
       ])
     );
   }
+}
+
+// Лимити на ЖИВ контейнер (без рестарт). Compose ги презаписва при следващия
+// „up" — затова диалогът го казва изрично.
+function showDockerLimits(name) {
+  openModal(`Лимити · ${name}`);
+  const mem = el('input', { type: 'text', placeholder: '512m или 2g', class: 'mono' });
+  const cpus = el('input', { type: 'text', placeholder: '1.5', class: 'mono' });
+  const out = document.getElementById('modal-out');
+  out.textContent = '';
+  out.appendChild(
+    el('div', {}, [
+      kvInputs([['Памет (--memory)', mem], ['Ядра (--cpus)', cpus]]),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        el('button', {
+          class: 'btn btn-primary', text: 'Приложи',
+          onclick: async (e) => {
+            e.target.disabled = true;
+            try {
+              const r = await api('/limits/docker', { method: 'POST', body: { container: name, memory: mem.value, cpus: cpus.value } });
+              toast(r.note, 'ok');
+              closeModal();
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+      ]),
+      el('div', { class: 'metric-sub', text: 'Прилага се веднага, без рестарт. Сложи същото и в compose файла — иначе следващият „up" го връща.' }),
+    ])
+  );
 }
 
 function dockerBtn(action, id, label, cls = 'btn-sm') {
@@ -2326,7 +2471,7 @@ async function renderSecurity() {
         barEl(post.score),
         el('div', { class: 'metric-sub', text: `${post.problems.length} находки от ${post.checks} проверки. ${post.note}` }),
         ...post.problems.map((p) =>
-          el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim') + ')' }, [
+          el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'danger' : p.severity === 'high' ? 'warn' : 'txt-dim') + ')' }, [
             el('div', {}, [pill(p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim', p.severity), document.createTextNode(' '), el('strong', { text: p.title })]),
             el('div', { class: 'metric-sub', text: p.why }),
             p.fix ? el('div', { class: 'mono metric-sub', text: '→ ' + p.fix }) : '',
@@ -2579,6 +2724,206 @@ async function showTimerHistory(unit, container) {
     container.innerHTML = '';
     toast(e.message, 'bad');
   }
+}
+
+// ── Разследване ───────────────────────────────────────────────────────────────────
+// Въпросът при инцидент не е „колко е процесорът", а „КАКВО СЕ ПРОМЕНИ". Тук
+// метриките, одитът, деплоите и задачите стоят на една времева линия около
+// момента. Съвпадение по време ≠ причина — това е написано и на екрана.
+async function renderInvestigate(at = null, windowMin = 30) {
+  const view = document.getElementById('view');
+  const params = new URLSearchParams({ window: String(windowMin) });
+  if (at) params.set('at', at);
+  const d = await api('/investigate?' + params);
+  view.innerHTML = '';
+
+  const when = el('input', { type: 'datetime-local', value: toLocalInput(d.at) });
+  const win = el('select', {}, [15, 30, 60, 180, 720].map((m) =>
+    el('option', { value: String(m), text: m < 60 ? `± ${m} мин` : `± ${m / 60} ч`, selected: m === d.windowMin })
+  ));
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      el('span', { class: 'muted', text: 'Момент:' }),
+      when,
+      win,
+      el('button', { class: 'btn btn-sm', text: 'Покажи', onclick: () => renderInvestigate(fromLocalInput(when.value), Number(win.value)) }),
+      el('button', { class: 'btn btn-sm', text: '⌕ Намери сам', onclick: () => renderInvestigate(null, Number(win.value)) }),
+      el('button', { class: 'btn btn-sm', text: '⟲ Сега', onclick: () => renderInvestigate(new Date().toISOString(), Number(win.value)) }),
+    ])
+  );
+
+  view.appendChild(
+    el('div', { class: 'card', style: 'margin-top:12px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: d.autoDetected ? 'Автоматично намерен момент' : 'Избран момент' }),
+        d.auto && d.auto.corroborated.length > 1
+          ? pill('warn', `${d.auto.corroborated.length} серии заедно`)
+          : d.autoDetected ? pill('warn', d.auto.label) : pill('dim', 'ръчно'),
+      ]),
+      el('div', { class: 'metric-sub', text: d.summary }),
+    ])
+  );
+
+  // Графика с всички серии + маркери за събитията.
+  const cv = el('canvas', { class: 'chart-big', id: 'inv-chart', style: 'width:100%;height:220px;display:block' });
+  const tip = el('div', { class: 'chart-tip', id: 'inv-tip', style: 'display:none' });
+  view.appendChild(el('div', { class: 'card', style: 'margin-top:12px;position:relative' }, [
+    el('h3', { text: 'Метрики около момента' }),
+    cv,
+    tip,
+    el('div', { class: 'metric-sub', text: 'Вертикалната линия е моментът. Точките отдолу са събития — мини с мишката по графиката за стойности.' }),
+  ]));
+  drawInvestigateChart(cv, tip, d);
+
+  view.appendChild(
+    el('div', { class: 'table-wrap', style: 'margin-top:12px' }, [
+      tableEl(['Кога', 'Какво', 'Действие', 'Детайл'], d.events.map((e) =>
+        el('tr', { class: e.before ? 'row-before' : '' }, [
+          el('td', { class: e.before ? 'mono' : 'mono muted', text: e.when }),
+          el('td', {}, [pill(
+            e.kind === 'аларма' ? 'bad' : e.kind === 'деплой' ? 'warn' : e.failed ? 'bad' : e.kind === 'възстановено' ? 'ok' : 'dim',
+            e.kind
+          )]),
+          el('td', { class: 'mono', text: e.title }),
+          el('td', { class: 'muted', text: [e.detail, e.user && `от ${e.user}`].filter(Boolean).join(' · ') || '—' }),
+        ])
+      )),
+    ])
+  );
+  if (d.events.length) {
+    view.appendChild(el('p', { class: 'section-desc', text:
+      'Редовете ПРЕДИ момента са уликите — те са могли да го причинят. Редовете след него обикновено са следствие (аларми, рестарти). ' +
+      'Панелът не твърди причинност: показва съвпадения и оставя заключението на теб.' }));
+  }
+}
+
+function toLocalInput(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromLocalInput(v) {
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+// Многосерийна графика с hover. Нула библиотеки — същият подход като sparkline,
+// но с оси, легенда и маркер за момента.
+function drawInvestigateChart(cv, tip, d) {
+  const series = Object.entries(d.series).filter(([, s]) => s.points.length > 1);
+  const colors = { cpu: '#3ddc97', memory: '#6ea8fe', disk: '#ffb454', load: '#ff6b81' };
+  const center = new Date(d.at).getTime();
+  const half = d.windowMin * 60000;
+  const from = center - half;
+  const to = center + half;
+
+  const draw = () => {
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.clientWidth || 800;
+    const h = cv.clientHeight || 220;
+    cv.width = w * dpr;
+    cv.height = h * dpr;
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const pad = { l: 38, r: 8, t: 10, b: 22 };
+    const iw = w - pad.l - pad.r;
+    const ih = h - pad.t - pad.b;
+    const x = (t) => pad.l + ((t - from) / (to - from)) * iw;
+    // Всички серии са в 0–100 без „натоварване" — него мащабираме по своя максимум,
+    // иначе load 2.5 е невидима линия до дъното.
+    const loadMax = Math.max(1, ...(d.series.load?.points || []).map((p) => p.y));
+    const y = (v, key) => pad.t + ih - (Math.min(1, (key === 'load' ? v / loadMax : v / 100))) * ih;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const gy = pad.t + (ih / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(pad.l, gy);
+      ctx.lineTo(w - pad.r, gy);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = '10px ui-monospace, monospace';
+      ctx.fillText(String(100 - i * 25), 6, gy + 3);
+    }
+
+    for (const [key, s] of series) {
+      ctx.strokeStyle = colors[key] || '#888';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      s.points.forEach((p, i) => (i ? ctx.lineTo(x(p.x), y(p.y, key)) : ctx.moveTo(x(p.x), y(p.y, key))));
+      ctx.stroke();
+    }
+
+    // Моментът.
+    ctx.strokeStyle = '#ff6b81';
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x(center), pad.t);
+    ctx.lineTo(x(center), pad.t + ih);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Събитията като точки на дъното — така се вижда „деплой точно тук".
+    for (const e of d.events) {
+      const ex = x(new Date(e.ts).getTime());
+      if (ex < pad.l || ex > w - pad.r) continue;
+      ctx.fillStyle = e.kind === 'деплой' ? '#ffb454' : e.kind === 'аларма' || e.failed ? '#ff6b81' : '#6ea8fe';
+      ctx.beginPath();
+      ctx.arc(ex, pad.t + ih + 8, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Легенда.
+    let lx = pad.l;
+    ctx.font = '11px system-ui, sans-serif';
+    for (const [key, s] of series) {
+      ctx.fillStyle = colors[key] || '#888';
+      ctx.fillRect(lx, 2, 8, 3);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText(s.label + (key === 'load' ? ` (макс ${loadMax.toFixed(1)})` : ''), lx + 12, 7);
+      lx += ctx.measureText(s.label).width + 60;
+    }
+    return { x, pad, iw, ih, w, h };
+  };
+
+  let geom = draw();
+  window.addEventListener('resize', () => { geom = draw(); }, { passive: true });
+
+  // Hover: точна стойност на всяка серия в този момент — без него графиката е
+  // само форма, а при разследване трябват числа.
+  cv.onmousemove = (ev) => {
+    const rect = cv.getBoundingClientRect();
+    const px = ev.clientX - rect.left;
+    if (px < geom.pad.l || px > geom.w - geom.pad.r) return (tip.style.display = 'none');
+    const t = from + ((px - geom.pad.l) / geom.iw) * (to - from);
+    const rows = [];
+    for (const [key, s] of series) {
+      let best = null;
+      for (const p of s.points) if (!best || Math.abs(p.x - t) < Math.abs(best.x - t)) best = p;
+      if (best) rows.push(`${s.label}: ${best.y.toFixed(1)}${s.unit}`);
+    }
+    const near = d.events
+      .filter((e) => Math.abs(new Date(e.ts).getTime() - t) < (to - from) / 40)
+      .slice(0, 3)
+      .map((e) => `• ${e.kind}: ${e.title}`);
+    tip.textContent = [new Date(t).toLocaleTimeString('bg-BG'), ...rows, ...near].join('\n');
+    tip.style.display = 'block';
+    tip.style.left = Math.min(px + 12, geom.w - 190) + 'px';
+    tip.style.top = '28px';
+  };
+  cv.onmouseleave = () => { tip.style.display = 'none'; };
+  // Клик по графиката = „разследвай точно този момент" — най-бързият начин да
+  // преместиш прозореца там, където линията се чупи.
+  cv.onclick = (ev) => {
+    const rect = cv.getBoundingClientRect();
+    const px = ev.clientX - rect.left;
+    if (px < geom.pad.l || px > geom.w - geom.pad.r) return;
+    const t = from + ((px - geom.pad.l) / geom.iw) * (to - from);
+    renderInvestigate(new Date(t).toISOString(), d.windowMin);
+  };
 }
 
 // ── Целост на /etc ────────────────────────────────────────────────────────────────
@@ -2971,7 +3316,7 @@ async function renderDomains() {
               issueBtn.disabled = !lastPreflight.ready;
             } catch (err) {
               out.innerHTML = '';
-              out.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--bad)', text: '⚠ ' + err.message }));
+              out.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: '⚠ ' + err.message }));
               issueBtn.disabled = true;
             }
             e.target.disabled = false;
@@ -3003,7 +3348,7 @@ function renderPreflight(container, pf) {
     'Порт 80 отвън': pf.wildcard ? 'не се проверява (DNS-01)' : pf.http?.status != null ? `отговаря (${pf.http.status})` : 'няма отговор',
   }));
   for (const p of pf.problems) {
-    container.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--bad)', text: '⚠ ' + p }));
+    container.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: '⚠ ' + p }));
   }
 }
 

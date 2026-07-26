@@ -311,3 +311,25 @@ tbody tr { content-visibility: auto; contain-intrinsic-size: auto 38px; }
   .sidebar.open { transform: translateX(0); }
   #menu-toggle { display: block; }
 }
+
+/* ── Разследване: интерактивна графика ─────────────────────────────────────── */
+.chart-big { border-radius: 6px; cursor: crosshair; }
+.chart-tip {
+  position: absolute;
+  z-index: 5;
+  padding: 6px 9px;
+  background: rgba(12, 16, 22, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: 11px/1.5 var(--mono);
+  color: var(--txt);
+  white-space: pre;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+/* Редовете ПРЕДИ момента са уликите — открояват се от следствията след него. */
+tr.row-before td { background: rgba(255, 180, 84, 0.05); }
+
+/* Групови действия — лентата се появява само когато има избрано. */
+.bulk-bar { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; margin: 8px 0; }
+.bulk-pick { cursor: pointer; }

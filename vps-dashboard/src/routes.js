@@ -37,6 +37,7 @@ import * as cronedit from './cronedit.js';
 import * as domains from './domains.js';
 import { readRaw, handleGithub } from './webhook.js';
 import * as posture from './posture.js';
+import * as investigate from './investigate.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -1193,6 +1194,44 @@ export function buildRouter(ctx) {
         return jobs.start(spec, { user: req.user });
       }),
       { mutating: true }
+    )
+  );
+
+  // ── Разследване ────────────────────────────────────────────────────────────
+  // Сглобява вече събраното (метрики, одит, деплои, задачи, аларми) в ЕДНА
+  // времева линия около момента. Отговаря на „какво се промени", не „колко е
+  // процесорът" — и съзнателно не твърди причинност.
+  r.get(
+    '/api/investigate',
+    guard(
+      J(async (req, res, p, url) => {
+        const windowMin = Math.min(720, Math.max(5, Number(url.searchParams.get('window')) || 30));
+        const windowMs = windowMin * 60000;
+        // Прозорецът за търсене на момента е по-широк от този за линията —
+        // иначе не можеш да намериш нещо, започнало преди половин час.
+        const points = ctx.history.range(Math.max(6 * 3600000, windowMs * 6), 800);
+        const atParam = url.searchParams.get('at');
+        const auto = investigate.findIncident(points);
+        const at = atParam || auto?.at || new Date().toISOString();
+        const state = deploy.deployState(cfg);
+        const events = investigate.timeline({
+          at,
+          windowMs,
+          audit: audit.tail(1500),
+          alerts: ctx.alerts?.log || [],
+          releases: state.releases || [],
+          jobs: jobs.list(),
+        });
+        return {
+          at,
+          auto: auto || null,
+          autoDetected: !atParam && Boolean(auto),
+          windowMin,
+          events,
+          series: investigate.seriesAround(points, at, windowMs),
+          summary: investigate.summarize(atParam ? null : auto, events),
+        };
+      })
     )
   );
 

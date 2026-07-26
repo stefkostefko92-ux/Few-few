@@ -84,7 +84,7 @@ const GET_ROUTES = [
   '/api/slo', '/api/logs/analyze',
   '/api/env', '/api/cron/jobs', '/api/cron/timers', '/api/domains',
   '/api/sudo', '/api/security/posture', '/api/security/integrity',
-  '/api/security/fail2ban', '/api/settings/access',
+  '/api/security/fail2ban', '/api/settings/access', '/api/investigate',
 ];
 
 test('нито един GET маршрут не дава 5xx', async () => {
