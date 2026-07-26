@@ -47,20 +47,23 @@ test('formatValue цитира, когато трябва — иначе сто�
 
 test('маскирането не изтича стойността', () => {
   assert.equal(maskValue('abcd'), '••••');
-  const m = maskValue('sk_live_51H8xYzQwErTyUiOp');
-  assert.match(m, /^sk••••Op \(25 знака\)$/);
-  assert.doesNotMatch(m, /51H8xYz/);
+  // Съзнателно НЕ пишем реалистичен ключ дори като фикстура — secret-scan гейтът
+  // няма как да различи „това е тест" и е прав да не опитва.
+  const fake = 'ab' + 'щ'.repeat(20) + 'yz';
+  const m = maskValue(fake);
+  assert.equal(m, 'ab••••yz (24 знака)');
+  assert.doesNotMatch(m, /щщщ/, 'средата не изтича');
   assert.ok(isSecretKey('STRIPE_SECRET_KEY') && isSecretKey('DATABASE_URL') && isSecretKey('ADMIN_PW'));
   assert.equal(isSecretKey('PORT'), false);
 });
 
 test('readEnv скрива тайните по подразбиране и ги разкрива само изрично', () => {
-  const { dir, file, cfg } = tmpEnv('PORT=3000\nSTRIPE_SECRET_KEY=sk_live_тайна123\n');
+  const { dir, file, cfg } = tmpEnv('PORT=3000\nSTRIPE_SECRET_KEY=фиктивна-стойност-123\n');
   const hidden = readEnv(cfg, file, {}, auditStub, 'тест');
   assert.equal(hidden.vars.find((v) => v.key === 'PORT').value, '3000');
-  assert.doesNotMatch(hidden.vars.find((v) => v.key === 'STRIPE_SECRET_KEY').value, /тайна123/);
+  assert.doesNotMatch(hidden.vars.find((v) => v.key === 'STRIPE_SECRET_KEY').value, /стойност-123/);
   const shown = readEnv(cfg, file, { reveal: true }, auditStub, 'тест');
-  assert.equal(shown.vars.find((v) => v.key === 'STRIPE_SECRET_KEY').value, 'sk_live_тайна123');
+  assert.equal(shown.vars.find((v) => v.key === 'STRIPE_SECRET_KEY').value, 'фиктивна-стойност-123');
   // Разкриването е събитие за одита — иначе открадната сесия чете всичко тихо.
   assert.ok(auditStub.entries.some((e) => e.action === 'env.reveal'));
   fs.rmSync(dir, { recursive: true, force: true });
