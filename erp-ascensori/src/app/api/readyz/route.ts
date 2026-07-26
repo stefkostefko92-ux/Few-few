@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { rlsAttiva } from "@/lib/rls";
+import { archivioScrivibile } from "@/lib/allegati/archivio";
 import { log, descriviErrore } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,13 @@ interface Esito {
    *  ВИЖДА: суперпотребителска роля прави политиките украса, без нищо в лога. */
   rls: boolean;
   rlsMotivo?: string;
+  /** Хранилището на прикачените файлове — записваемо ли е.
+   *
+   *  Не спира трафика: приложението работи и без него, само качването отказва.
+   *  Но операторът трябва да го ВИДИ веднага — непримонтиран том значи, че
+   *  качените документи изчезват при следващото пресъздаване на контейнера. */
+  archivio: boolean;
+  archivioMotivo?: string;
 }
 
 let cache: { esito: Esito; scadenza: number } | null = null;
@@ -40,6 +48,7 @@ async function controlla(): Promise<Esito> {
     schema: false,
     chiavi: chiaviValide(),
     rls: false,
+    archivio: false,
   };
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -53,6 +62,13 @@ async function controlla(): Promise<Esito> {
   } catch (e) {
     log.warn("readyz: controllo fallito", descriviErrore(e));
   }
+  const a = await archivioScrivibile();
+  esito.archivio = a.ok;
+  if (a.motivo) esito.archivioMotivo = a.motivo;
+  if (!esito.archivio)
+    log.warn(
+      `readyz: archivio allegati non scrivibile — ${esito.archivioMotivo ?? "?"}`,
+    );
   if (!esito.rls)
     log.warn(`readyz: RLS non attiva — ${esito.rlsMotivo ?? "motivo ignoto"}`);
   esito.pronto = esito.db && esito.schema && esito.chiavi;

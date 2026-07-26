@@ -61,7 +61,15 @@ services:
       ACCESS_TOKEN_TTL_MIN: ${ACCESS_TOKEN_TTL_MIN:-15}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-7}
       AUTOMATISMI_SOGLIA_ORE: ${AUTOMATISMI_SOGLIA_ORE:-26}
+      # Коренът на прикачените файлове. ИЗВЪН публичната папка нарочно: под
+      # `public/` всеки качен сертификат би бил свободно достъпен на познат
+      # адрес, а тук се качват протоколи с лични данни.
+      STORAGE_DIR: /var/lib/erp-ascensori/allegati
       NODE_ENV: production
+    volumes:
+      # Първият том с ДАННИ на приложението. Влиза в бекъпа: база без файловете
+      # е половин архив, а протоколът от проверката е доказателство.
+      - allegati:/var/lib/erp-ascensori/allegati
     # Само на localhost — навън се излиза през Nginx с TLS.
     ports:
       - "127.0.0.1:${APP_PORT:-3050}:3000"
@@ -122,6 +130,9 @@ services:
       BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
     volumes:
       - ./backup:/backup
+      # Само за четене: задачата на тази услуга е да ЗАПАЗВА файловете, не да
+      # ги мени. Компрометиран бекъп контейнер не бива да може да ги изтрие.
+      - allegati:/allegati:ro
     entrypoint: ["/bin/sh", "-c"]
     # ДВЕТЕ добавки при pg_dump не са по избор, откакто има RLS:
     #   • `--enable-row-security` — иначе pg_dump ОТКАЗВА да дъмпне таблица с
@@ -137,14 +148,23 @@ services:
         while true; do
           if [ "$$(date +%H%M)" = "0300" ]; then
             F=/backup/erp-$$(date +%Y%m%d).dump
+            A=/backup/allegati-$$(date +%Y%m%d).tar.gz
             PGOPTIONS="-c app.tenant_id=*" pg_dump --enable-row-security \
               -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB:-erp_ascensori} -Fc -f "$$F" \
-              && if [ -n "$$BACKUP_AGE_RECIPIENT" ]; then age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F" && rm -f "$$F"; fi \
+              && tar -czf "$$A" -C /allegati . \
+              && if [ -n "$$BACKUP_AGE_RECIPIENT" ]; then \
+                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F" && rm -f "$$F"; \
+                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$A.age" "$$A" && rm -f "$$A"; \
+                 fi \
               && find /backup -name 'erp-*' -mtime +31 -delete \
-              && echo "✔ бекъп $$F"
+              && find /backup -name 'allegati-*' -mtime +31 -delete \
+              && echo "✔ бекъп $$F + $$A"
           fi
           sleep 60
         done
 
 volumes:
   db-data:
+  # Прикачените файлове. Без него всяко пресъздаване на контейнера трие
+  # сертификатите и протоколите — данни, които по чл. 2220 c.c. се пазят 10 г.
+  allegati:

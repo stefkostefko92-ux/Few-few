@@ -13,3 +13,6 @@ playwright-report/
 blob-report/
 .playwright/
 schermate/
+
+# Прикачените файлове от интеграционните тестове (истински файлове по диска).
+.test-allegati/

@@ -504,6 +504,39 @@ model VerificaImpianto {
   @@map("verifiche_impianti")
 }
 
+/// Прикачен файл — сертификат, протокол, снимка от обекта.
+///
+/// Дотук продуктът пазеше само ПЪТИЩА (`impianti_media.url`), тоест сочеше към
+/// нещо, което не съществува. Сега файлът наистина се съхранява.
+///
+/// Връзката е свободна (`entita` + `entitaId`), а не външен ключ: един и същ
+/// механизъм обслужва уредби, проверки, поръчки и рапортички, а добавянето на
+/// пета е конфигурация, не миграция. Цената е, че целостта се пази от
+/// приложението — затова четенето ВИНАГИ минава през проверка на собственика.
+model Allegato {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Коя таблица („impianti“, „verifiche_impianti“, „rapportini“…).
+  entita    String
+  entitaId  String   @db.Uuid
+  /// Оригиналното име — САМО за показване. На диска не отива никога.
+  nome      String
+  /// Типът, ПОДУШЕН от съдържанието; не този, който браузърът е обявил.
+  mimeType  String
+  dimensione Int
+  /// Пътят спрямо корена на хранилището. Строи се от UUID, не от името.
+  percorso  String
+  /// SHA-256 на съдържанието: разпознава дубликати и доказва, че файлът не е
+  /// подменян след качването.
+  sha256    String
+  utenteId  String?  @db.Uuid
+  tenantId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([entita, entitaId])
+  @@map("allegati")
+}
+
 model ImpiantoMedia {
   id         String   @id @default(uuid()) @db.Uuid
   impiantoId String   @db.Uuid

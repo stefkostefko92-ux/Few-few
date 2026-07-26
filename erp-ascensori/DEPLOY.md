@@ -141,8 +141,20 @@ curl -fsS http://127.0.0.1:3050/api/healthz/automatismi   # 503 = не е мин
 е реално включена. Отговорът с валиден хедър изглежда така:
 
 ```json
-{ "pronto": true, "db": true, "schema": true, "chiavi": true, "rls": true }
+{
+  "pronto": true,
+  "db": true,
+  "schema": true,
+  "chiavi": true,
+  "rls": true,
+  "archivio": true
+}
 ```
+
+`"archivio": false` значи, че томът с прикачените файлове не е примонтиран
+или не е записваем: качването отказва, а вече качените документи изчезват при
+следващото пресъздаване на контейнера. Проверява се с
+`docker compose exec app ls -la /var/lib/erp-ascensori/allegati`.
 
 `"rls": false` с `rlsMotivo: "il ruolo applicativo è superuser"` значи, че
 политиките са там, но Postgres ги подминава: суперпотребителят ги заобикаля
@@ -189,8 +201,20 @@ docker compose exec -T db psql -U postgres -d erp_ascensori \
 Услугата `backup` прави дневен `pg_dump -Fc` в 03:00, криптира го с `age` и
 пази 31 дни. Частният ключ **не е на този сървър**.
 
-Какво се бекъпва: базата и `.env`. Приложението не пише по файловата система
-(`impianti_media` пази пътища, не съдържание), затова том за качени файлове няма.
+Какво се бекъпва: базата, **прикачените файлове** и `.env`.
+
+> **Промяна от версията с прикачените файлове.** Дотук приложението не пишеше
+> по файловата система и том за качени файлове нямаше. Вече има: томът
+> `allegati` носи сертификатите, протоколите от проверките и снимките от
+> обекта. Той се архивира ВСЯКА нощ заедно с базата (`allegati-YYYYMMDD.tar.gz`)
+> и се криптира със същия ключ. **База без файловете е половин архив**: редът в
+> `allegati` сочи към документ, който вече не съществува, а протоколът от
+> законовата проверка е доказателство пред контролния орган.
+>
+> Коренът е `STORAGE_DIR` (по подразбиране `/var/lib/erp-ascensori/allegati`) и
+> е ИЗВЪН публичната папка нарочно — под `public/` всеки качен документ би бил
+> свободно достъпен на познат адрес. Раздаването минава през маршрут, който
+> проверява ролята и фирмата.
 
 **Възстановяване — редът има значение:**
 
@@ -203,6 +227,10 @@ docker compose up -d db
 # `--exit-on-error`: без него pg_restore изрежда грешките и пак излиза с код 0
 docker compose exec -T db pg_restore -U erp -d erp_ascensori --clean --if-exists \
   --exit-on-error < /tmp/erp.dump
+# 2б) и прикачените файлове — редовете в базата сочат към тях
+age -d -i /trezor/age.key allegati-20260725.tar.gz.age > /tmp/allegati.tar.gz
+docker run --rm -v erp-ascensori_allegati:/dati -v /tmp:/in alpine \
+  sh -c 'tar -xzf /in/allegati.tar.gz -C /dati'
 docker compose up -d
 # 3) и накрая доказателството, че одитът е цял
 curl -s -X POST -H 'Content-Type: application/json' -d '{"limite":1000}' \
@@ -223,6 +251,25 @@ BACKUP_SORGENTE_URL="$DATABASE_URL" npm run verifica:backup -- /backup/erp-20260
 Проверява четири неща: таблиците не са празни · броят редове съвпада с източника
 (защитата от **частичен** дъмп) · веригата на одита е цяла · политиките
 `tenant_isolation` са налице.
+
+**Файловете се проверяват отделно** — редът в базата не доказва, че документът
+е там:
+
+```bash
+docker compose exec -T app node -e '
+  const { PrismaClient } = require("@prisma/client");
+  const { access } = require("node:fs/promises");
+  const { join } = require("node:path");
+  const p = new PrismaClient();
+  const radice = process.env.STORAGE_DIR;
+  const righe = await p.allegato.findMany({ select: { id: true, percorso: true } });
+  let mancanti = 0;
+  for (const r of righe)
+    await access(join(radice, r.percorso)).catch(() => { mancanti++; console.log("✗", r.id, r.percorso); });
+  console.log(`${righe.length - mancanti}/${righe.length} allegati presenti`);
+  process.exit(mancanti ? 1 : 0);
+'
+```
 
 **Две неща около RLS, които чупят бекъпа тихо:**
 

@@ -14,6 +14,7 @@ import {
   IcoQr,
 } from "@/components/icone";
 import { dataIt } from "@/lib/format";
+import Allegati from "@/components/Allegati";
 import {
   problemiConformita,
   ESITI_VERIFICA,
@@ -302,6 +303,14 @@ export default function Pagina() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="mb-6">
+        <Allegati
+          entita="impianti"
+          entitaId={imp.id}
+          titolo="Documentazione dell'impianto"
+        />
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">

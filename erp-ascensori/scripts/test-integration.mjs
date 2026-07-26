@@ -9,7 +9,9 @@ import { setTimeout as sleep } from "node:timers/promises";
 const PORT = Number(process.env.TEST_PORT ?? 3021);
 const BASE = `http://127.0.0.1:${PORT}`;
 // Административна връзка (за DROP/CREATE DATABASE) и име на тестовата база.
-const ADMIN_URL = process.env.TEST_PG_ADMIN_URL ?? "postgresql://erp:erp@127.0.0.1:5433/postgres";
+const ADMIN_URL =
+  process.env.TEST_PG_ADMIN_URL ??
+  "postgresql://erp:erp@127.0.0.1:5433/postgres";
 const DB = process.env.TEST_PG_DB ?? "erp_ascensori_test";
 const DB_URL = ADMIN_URL.replace(/\/[^/]*$/, `/${DB}`);
 
@@ -22,6 +24,9 @@ const env = {
   HEALTH_TOKEN: "integration_test_health_token",
   // QR етикетите отказват да се генерират без публичен адрес — нарочно.
   APP_URL: "http://127.0.0.1:3021",
+  // Хранилището на прикачените файлове — в папката на пакета, не в системната:
+  // тестът пише реални файлове и ги трие след себе си.
+  STORAGE_DIR: process.env.TEST_STORAGE_DIR ?? ".test-allegati",
   // тестовете правят десетки входа — вдигаме тавана, за да не удрят rate limit-а
   RATE_LIMIT_LOGIN: "10000",
   RATE_LIMIT_REFRESH: "10000",
@@ -36,7 +41,9 @@ if (!/_test$/.test(DB)) {
 }
 
 function psql(sql, url = ADMIN_URL) {
-  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], { stdio: "pipe" });
+  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], {
+    stdio: "pipe",
+  });
 }
 
 let server;
@@ -68,7 +75,10 @@ async function main() {
   // изгражда точно живата схема (drift се хваща тук, не при клиента), и че
   // политиките за RLS реално се появяват — `db push` не изпълнява SQL миграции.
   console.log("▸ схема (миграции) + демо данни");
-  execFileSync("npx", ["prisma", "migrate", "deploy"], { env, stdio: "inherit" });
+  execFileSync("npx", ["prisma", "migrate", "deploy"], {
+    env,
+    stdio: "inherit",
+  });
   execFileSync("npx", ["tsx", "prisma/seed.ts"], { env, stdio: "inherit" });
 
   console.log("▸ билд");
@@ -77,12 +87,19 @@ async function main() {
   console.log(`▸ вдигам сървър на ${BASE}`);
   // detached: npx е обвивка — SIGTERM към нея не стига до внука `next-server`,
   // който остава сирак, заема порта и следващият пуск тества СТАР билд.
-  server = spawn("node", ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)], {
-    env,
-    stdio: "pipe",
-    detached: true,
-  });
-  server.stdout.on("data", (b) => process.env.TEST_VERBOSE && process.stdout.write(b));
+  server = spawn(
+    "node",
+    ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)],
+    {
+      env,
+      stdio: "pipe",
+      detached: true,
+    },
+  );
+  server.stdout.on(
+    "data",
+    (b) => process.env.TEST_VERBOSE && process.stdout.write(b),
+  );
   server.stderr.on("data", (b) => process.stderr.write(b));
 
   const scadenza = Date.now() + 60_000;
@@ -101,7 +118,7 @@ async function main() {
   const test = spawn(
     "npx",
     ["tsx", "--test", "tests/integration/*.int.test.ts"],
-    { env: { ...env, TEST_BASE_URL: BASE }, stdio: "inherit" }
+    { env: { ...env, TEST_BASE_URL: BASE }, stdio: "inherit" },
   );
   const codice = await new Promise((res) => test.on("close", res));
 
