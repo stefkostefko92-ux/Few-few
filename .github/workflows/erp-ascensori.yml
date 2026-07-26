@@ -211,13 +211,17 @@ jobs:
       # Прагът е `critical`, не `high`, заради ЕДИН документиран запис
       # (`postcss`, вложен в next@15 — виж `.audit-eccezioni.md`). Високите пак
       # се докладват; ако изключението отпадне, прагът се вдига обратно.
+      #
+      # НЕ `npm audit`: от юли 2026 г. командата пита ретирания „quick" endpoint
+      # на registry-то и излиза с код 1 („Invalid package tree") независимо дали
+      # има уязвимости — тоест не проверява нищо, но спира всяко вливане. Нашият
+      # скрипт пита РАБОТЕЩИЯ „bulk" endpoint; източникът на съветите е същият.
       - name: Одит на продукционните зависимости (блокиращ)
-        run: npm audit --omit=dev --audit-level=critical
+        working-directory: .
+        run: node tools/security/audit-deps.mjs erp-ascensori --soglia critical
       - name: Високи уязвимости (само доклад)
+        working-directory: .
         continue-on-error: true
         run: |
-          npm audit --omit=dev --audit-level=high || {
-            echo "::warning::Има високи уязвимости в продукционните зависимости."
-            echo "Приетите изключения са в erp-ascensori/.audit-eccezioni.md."
-            exit 0
-          }
+          node tools/security/audit-deps.mjs erp-ascensori --soglia high --solo-report \
+            || echo "::warning::Има високи уязвимости в продукционните зависимости. Приетите изключения са в erp-ascensori/.audit-eccezioni.md."
