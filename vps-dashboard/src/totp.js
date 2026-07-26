@@ -76,6 +76,44 @@ export function verifyTotp(secretB32, code, { atMs = Date.now(), window = 1 } = 
   return null;
 }
 
+// ── Резервни кодове ───────────────────────────────────────────────────────────
+// Загубен телефон = заключен си извън СОБСТВЕНИЯ си сървър. Затова: 10 еднократни
+// кода. Пазят се ХЕШИРАНИ (NIST SP 800-63B иска look-up secrets да не стоят в
+// чист вид) — открадне ли някой конфига, кодовете не му вършат работа наготово.
+const RECOVERY_COUNT = 10;
+
+export function generateRecoveryCodes(count = RECOVERY_COUNT) {
+  const codes = [];
+  for (let i = 0; i < count; i++) {
+    // 4 групи по 4 = 64 бита ентропия, четимо и преписваемо на ръка.
+    const raw = crypto.randomBytes(8).toString('hex').toUpperCase();
+    codes.push(raw.match(/.{1,4}/g).join('-'));
+  }
+  return codes;
+}
+
+export function hashRecoveryCode(code) {
+  return crypto.createHash('sha256').update(normalizeRecovery(code)).digest('base64url').slice(0, 32);
+}
+
+export function normalizeRecovery(code) {
+  return String(code || '').toUpperCase().replace(/[^0-9A-F]/g, '');
+}
+
+// Проверява код срещу списъка хешове. Връща индекса (за да го изразходваме) или
+// -1. Сравнението е времево-константно.
+export function verifyRecoveryCode(code, hashes) {
+  const normalized = normalizeRecovery(code);
+  if (normalized.length < 8) return -1;
+  const candidate = Buffer.from(hashRecoveryCode(normalized));
+  let found = -1;
+  for (let i = 0; i < (hashes || []).length; i++) {
+    const stored = Buffer.from(String(hashes[i] || ''));
+    if (stored.length === candidate.length && crypto.timingSafeEqual(stored, candidate)) found = i;
+  }
+  return found;
+}
+
 // otpauth:// URI за Google Authenticator/Aegis/1Password (ръчно или през QR).
 export function otpauthUri(secretB32, { issuer = 'Carbon Stealth VPS', account = 'admin' } = {}) {
   const label = encodeURIComponent(`${issuer}:${account}`);

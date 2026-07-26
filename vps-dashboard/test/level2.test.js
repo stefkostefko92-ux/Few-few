@@ -96,3 +96,70 @@ test('файлове: записът прави копие и не създав�
   assert.equal(fs.statSync(perm).mode & 0o777, 0o600);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('резервни кодове: хеширани, еднократни, времево-константна проверка', async () => {
+  const { generateRecoveryCodes, hashRecoveryCode, verifyRecoveryCode, normalizeRecovery } = await import('../src/totp.js');
+  const codes = generateRecoveryCodes();
+  assert.equal(codes.length, 10);
+  assert.match(codes[0], /^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/);
+  const hashes = codes.map(hashRecoveryCode);
+  // Хешовете не съдържат самия код — открадне ли някой конфига, няма готови ключове.
+  assert.ok(!hashes.some((h, i) => h.includes(normalizeRecovery(codes[i]))));
+
+  assert.equal(verifyRecoveryCode(codes[3], hashes), 3);
+  // Толерира форматиране (интервали, малки букви, без тирета).
+  assert.equal(verifyRecoveryCode(codes[3].toLowerCase().replace(/-/g, ' '), hashes), 3);
+  assert.equal(verifyRecoveryCode('AAAA-BBBB-CCCC-DDDD', hashes), -1);
+  assert.equal(verifyRecoveryCode('', hashes), -1);
+  assert.equal(verifyRecoveryCode(codes[0], []), -1);
+
+  // След изразходване същият код вече не минава.
+  const remaining = hashes.filter((_, i) => i !== 3);
+  assert.equal(verifyRecoveryCode(codes[3], remaining), -1);
+});
+
+test('възстановяване: валидира името на снимката и целта', async () => {
+  const { assertDumpName, restoreApplySpec } = await import('../src/backups.js');
+  for (const bad of ['../etc/passwd.sqlite.gz', 'x.sh.gz', 'x.sqlite', 'x.gz', '']) {
+    assert.throws(() => assertDumpName(bad), `трябваше да отхвърли: ${bad}`);
+  }
+  // Цел с метазнаци и грешно разширение падат.
+  assert.throws(() => restoreApplySpec('няма.sqlite.gz', '/tmp/x.db')); // липсва файлът
+});
+
+test('проба: фазите и проверката на съдържание', async () => {
+  const { probe, diffDns } = await import('../src/probe.js');
+  const bad = await probe({ name: 'няма', url: 'http://127.0.0.1:1/', });
+  assert.equal(bad.up, false);
+  assert.ok(bad.error, 'недостъпният адрес трябва да носи грешка');
+  const invalid = await probe({ name: 'лош', url: 'не-е-url' });
+  assert.equal(invalid.up, false);
+  // Промяна в DNS записа се засича (отвлечен домейн / изтекла регистрация).
+  assert.equal(diffDns(null, { a: ['1.1.1.1'] }), null);
+  assert.equal(diffDns({ a: ['1.1.1.1'], aaaa: [] }, { a: ['1.1.1.1'], aaaa: [] }), null);
+  assert.deepEqual(diffDns({ a: ['1.1.1.1'], aaaa: [] }, { a: ['9.9.9.9'], aaaa: [] }), { before: '1.1.1.1', after: '9.9.9.9' });
+});
+
+test('одит огледало: приема от възел, пази отделно, валидира името', async () => {
+  const { Audit } = await import('../src/audit.js');
+  const fsx = await import('node:fs');
+  const dir = fsx.mkdtempSync(path.join(os.tmpdir(), 'csd-mirror-'));
+  const a = new Audit(dir);
+  a.log({ action: 'login.ok', user: 'admin' });
+  a.log({ action: 'terminal.run', cmd: 'ls' });
+
+  // Изнасяне: „какво има след този хеш".
+  const batch = a.since('GENESIS', 10);
+  assert.equal(batch.entries.length, 2);
+  assert.ok(batch.lastHash && batch.lastHash !== 'GENESIS');
+  assert.equal(a.since(batch.lastHash).entries.length, 0, 'след курсора няма нови');
+
+  // Приемане от друг възел — в ОТДЕЛЕН файл, за да не мърси нашата верига.
+  const r = a.acceptMirror('vps2', batch.entries);
+  assert.equal(r.accepted, 2);
+  assert.equal(a.verify().ok, true, 'собствената верига остава цяла');
+  assert.equal(a.mirrors().length, 1);
+  assert.equal(a.mirrors()[0].node, 'vps2');
+  assert.throws(() => a.acceptMirror('../зло', []));
+  fsx.rmSync(dir, { recursive: true, force: true });
+});

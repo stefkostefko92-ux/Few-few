@@ -493,9 +493,9 @@ function markFresh() {
 // ── Продукти (health) ───────────────────────────────────────────────────────────
 async function renderProducts() {
   const view = document.getElementById('view');
-  const data = await api('/health/products');
+  const [data, targets] = await Promise.all([api('/health/products'), api('/probe/targets').catch(() => ({ peers: [] }))]);
   view.innerHTML = '';
-  view.appendChild(el('p', { class: 'section-desc', text: 'Живо здраве на всеки продукт от монорепото (локални health URL-и).' }));
+  view.appendChild(el('p', { class: 'section-desc', text: 'Живо здраве на всеки продукт (локални health URL-и). Локалната проба тръгва ОТВЪТРЕ — не хваща паднал Nginx, счупен DNS или мрежата на доставчика. За това служат кръстосаните проби долу.' }));
   view.appendChild(
     el('div', { class: 'grid grid-metrics' }, data.map((p) =>
       el('div', { class: 'card' }, [
@@ -508,6 +508,71 @@ async function renderProducts() {
       ])
     ))
   );
+
+  // ── Кръстосани проби: другият VPS гледа НАШИТЕ публични адреси ─────────────
+  view.appendChild(el('h3', { class: 'muted', text: 'Външна гледна точка (кръстосани проби)', style: 'margin:24px 0 10px' }));
+  const peers = targets.peers || [];
+  if (!peers.length) {
+    view.appendChild(
+      el('div', { class: 'card' }, [
+        el('div', { class: 'metric-sub', text: 'Няма конфигурирани peer-и. Добавиш ли втория VPS с "probeTargets" в неговия запис, всеки сървър ще сондира публичните адреси на другия — истинска външна проверка без облачна услуга.' }),
+      ])
+    );
+  }
+  for (const peer of peers) {
+    const box = el('div', { class: 'card', style: 'margin-bottom:12px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: `Сондирам ${peer.name} (${peer.targets.length} адреса)` }),
+        el('button', {
+          class: 'btn btn-sm', text: '▶ Провери сега',
+          onclick: async (e) => {
+            e.target.disabled = true;
+            try {
+              const r = await api(`/nodes/${peer.id}/crossprobe`);
+              renderProbeResults(box, r.targets, r.note);
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+      ]),
+      el('div', { class: 'metric-sub', text: peer.targets.map((t) => t.url).join(' · ') || 'няма зададени probeTargets' }),
+    ]);
+    view.appendChild(box);
+  }
+}
+
+// Показва пробата по ФАЗИ — „бавно" може да е DNS, TCP, TLS или приложението.
+function renderProbeResults(container, results, note) {
+  container.querySelectorAll('.probe-results').forEach((n) => n.remove());
+  const wrap = el('div', { class: 'probe-results', style: 'margin-top:10px' });
+  if (note) wrap.appendChild(el('div', { class: 'metric-sub', text: note }));
+  if (results?.length) {
+    wrap.appendChild(
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Адрес', 'Статус', 'DNS', 'TCP', 'TLS', 'Първи байт', 'Общо', 'Сертификат'], results.map((r) =>
+          el('tr', {}, [
+            el('td', { class: 'mono', text: r.name || r.url }),
+            el('td', {}, [pill(r.up ? 'ok' : 'bad', r.up ? r.status || 'OK' : r.error || r.contentError || 'DOWN')]),
+            el('td', { class: 'mono', text: ms(r.phases?.dnsMs) }),
+            el('td', { class: 'mono', text: ms(r.phases?.connectMs) }),
+            el('td', { class: 'mono', text: ms(r.phases?.tlsMs) }),
+            el('td', { class: 'mono', text: ms(r.phases?.ttfbMs) }),
+            el('td', { class: 'mono', text: ms(r.totalMs) }),
+            el('td', {}, [
+              r.tls
+                ? pill(r.tls.authorized === false ? 'bad' : r.tls.minDaysLeft <= 14 ? 'warn' : 'ok',
+                    r.tls.authorized === false ? 'невалиден' : `${r.tls.minDaysLeft} дни`)
+                : el('span', { class: 'muted', text: '—' }),
+            ]),
+          ])
+        )),
+      ])
+    );
+  }
+  container.appendChild(wrap);
+}
+function ms(v) {
+  return v == null ? '—' : `${Math.round(v)} ms`;
 }
 
 // ── Диагностика: сигналите от ядрото + прогнозите ─────────────────────────────
@@ -868,6 +933,27 @@ async function renderSettings() {
   view.appendChild(box);
 
   if (me.totpEnabled) {
+    // Колко резервни кода остават — свършат ли, загубен телефон значи заключен сървър.
+    box.appendChild(
+      el('div', { class: 'metric-sub' }, [
+        `Резервни кодове: ${me.recoveryLeft ?? 0}`,
+        me.recoveryLeft === 0 ? ' — ⚠ НЯМА нито един. Загубиш ли телефона, губиш достъпа. Генерирай нови.' : '',
+      ])
+    );
+    const pwRegen = el('input', { type: 'password', placeholder: 'парола' });
+    box.appendChild(el('div', { class: 'toolbar' }, [
+      pwRegen,
+      el('button', {
+        class: 'btn btn-sm', text: 'Нови резервни кодове',
+        onclick: async () => {
+          if (!confirm('Старите резервни кодове спират да работят. Продължавам?')) return;
+          try {
+            const r = await api('/totp/recovery/regenerate', { method: 'POST', body: { password: pwRegen.value } });
+            showRecoveryCodes(box, r.recoveryCodes);
+          } catch (err) { toast(err.message, 'bad'); }
+        },
+      }),
+    ]));
     const pw = el('input', { type: 'password', placeholder: 'парола за потвърждение' });
     box.appendChild(el('div', { class: 'toolbar' }, [pw, el('button', {
       class: 'btn btn-danger btn-sm', text: 'Изключи 2FA',
@@ -892,8 +978,12 @@ async function renderSettings() {
             el('div', { class: 'toolbar' }, [code, el('button', {
               class: 'btn btn-primary btn-sm', text: 'Потвърди и включи',
               onclick: async () => {
-                try { await api('/totp/enable', { method: 'POST', body: { code: code.value } }); toast('2FA е включена'); go('settings'); }
-                catch (err) { toast(err.message, 'bad'); }
+                try {
+                  const r = await api('/totp/enable', { method: 'POST', body: { code: code.value } });
+                  toast('2FA е включена');
+                  // Резервните кодове се показват САМО ТУК и никога повече.
+                  showRecoveryCodes(box, r.recoveryCodes);
+                } catch (err) { toast(err.message, 'bad'); }
               },
             })]),
           ]));
@@ -901,6 +991,38 @@ async function renderSettings() {
       },
     }));
   }
+}
+
+// Показва резервните кодове ЕДИН ПЪТ. В конфига стоят само хешовете им, така че
+// втори шанс няма — затова са едри, за копиране и с ясно предупреждение.
+function showRecoveryCodes(container, codes) {
+  if (!codes?.length) return;
+  const text = codes.join('\n');
+  container.appendChild(
+    el('div', { class: 'card', style: 'margin-top:14px;border-color:var(--warn)' }, [
+      el('h3', { text: '⚠ Резервни кодове — записва се СЕГА' }),
+      el('div', { class: 'metric-sub', text: 'Показват се само този път (в конфига стоят само хешовете им). Всеки код работи веднъж. Пази ги там, където НЕ е телефонът с приложението.' }),
+      el('pre', { class: 'term-out', style: 'user-select:all;font-size:15px;line-height:1.8', text }),
+      el('div', { class: 'toolbar' }, [
+        el('button', {
+          class: 'btn btn-sm', text: '⧉ Копирай',
+          onclick: async () => {
+            try { await navigator.clipboard.writeText(text); toast('Копирани'); }
+            catch { toast('Копирането не мина — маркирай ги на ръка', 'warn'); }
+          },
+        }),
+        el('button', {
+          class: 'btn btn-sm', text: '⬇ Изтегли',
+          onclick: () => {
+            const blob = new Blob([`Carbon Stealth VPS — резервни кодове за 2FA\n${new Date().toLocaleString('bg-BG')}\n\n${text}\n`], { type: 'text/plain' });
+            const a = el('a', { href: URL.createObjectURL(blob), download: 'vps-резервни-кодове.txt' });
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+          },
+        }),
+      ]),
+    ])
+  );
 }
 
 // ── Услуги ───────────────────────────────────────────────────────────────────────
@@ -1224,14 +1346,68 @@ async function renderDatabases() {
     );
   }
 
-  view.appendChild(el('h3', { class: 'muted', text: `Снимки (${bk.dir})`, style: 'margin:22px 0 10px' }));
+  view.appendChild(el('h3', { class: 'muted', text: `Снимки и възстановяване (${bk.dir})`, style: 'margin:22px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'metric-sub', text: 'Възстановяването е на ДВЕ стъпки: първо „Преглед" (разопакова в /tmp и показва какво има вътре — нищо живо не се пипа), после „Възстанови" (прави снимка на текущото състояние и чак тогава презаписва).' })
+  );
   view.appendChild(
     el('div', { class: 'table-wrap' }, [
-      tableEl(['Файл', 'Размер', 'Кога'], (bk.dumps || []).map((d) =>
-        el('tr', {}, [el('td', { class: 'mono', text: d.name }), el('td', { text: fmtBytes(d.sizeBytes) }), el('td', { class: 'muted', text: fmtWhen(d.mtime) })])
+      tableEl(['Файл', 'Размер', 'Кога', ''], (bk.dumps || []).map((d) =>
+        el('tr', {}, [
+          el('td', { class: 'mono', text: d.name }),
+          el('td', { text: fmtBytes(d.sizeBytes) }),
+          el('td', { class: 'muted', text: fmtWhen(d.mtime) }),
+          el('td', {}, [
+            el('button', {
+              class: 'btn btn-sm', text: '👁 Преглед',
+              onclick: () => runJob('/backups/restore/preview', { name: d.name }, 'Преглед на ' + d.name),
+            }),
+            el('button', {
+              class: 'btn btn-sm btn-danger', text: '↺ Възстанови',
+              onclick: () => restoreDialog(d, db),
+            }),
+          ]),
+        ])
       )),
     ])
   );
+}
+
+// Възстановяването е най-опасното действие в панела: иска изрично изписване на
+// целта и обяснява какво точно ще стане.
+async function restoreDialog(dump, db) {
+  const isSqlite = dump.name.endsWith('.sqlite.gz');
+  let target;
+  if (isSqlite) {
+    const files = (db.sqlite || []).map((s) => s.file);
+    target = prompt(`Върху КОЙ файл да възстановя ${dump.name}?\n\nНамерени бази:\n${files.join('\n') || '(няма)'}`, files[0] || '');
+    if (!target) return;
+  } else {
+    const inst = (db.postgres?.instances || [])[0];
+    if (!inst) { toast('Няма Postgres контейнер за възстановяване', 'bad'); return; }
+    const dbName = prompt(`В коя база в контейнера ${inst.container} да възстановя ${dump.name}?`, inst.databases[0]?.name || '');
+    if (!dbName) return;
+    target = { container: inst.container, database: dbName };
+  }
+  const label = isSqlite ? target : `${target.container}/${target.database}`;
+  const ok = await confirmDanger({
+    title: 'Възстановяване на база',
+    what: [
+      `Снимка: ${dump.name} (${fmtWhen(dump.mtime)})`,
+      `Цел: ${label}`,
+      'Текущото състояние ще бъде записано като снимка ПРЕДИ презаписа.',
+      'Данните, въведени след тази снимка, ще изчезнат.',
+      'След това рестартирай услугата, която ползва базата.',
+    ],
+    expect: isSqlite ? String(target).split('/').pop() : target.database,
+    confirmLabel: 'Възстанови',
+    delayMs: 2000,
+  });
+  if (!ok) return;
+  try {
+    const job = await api('/backups/restore/apply', { method: 'POST', body: { name: dump.name, target } });
+    streamJob(job.id, job.title);
+  } catch (e) { toast(e.message, 'bad'); }
 }
 
 // ── Firewall ───────────────────────────────────────────────────────────────────
@@ -1492,7 +1668,51 @@ async function renderPty() {
     ]),
     screen
   );
+  // Лента с модификатори — виртуалната клавиатура на телефона НЯМА Ctrl, Esc,
+  // Tab и стрелки. Без тези бутони терминалът на телефон е неизползваем.
+  const keyBtn = (label, seq, title) =>
+    el('button', {
+      class: 'btn btn-sm keycap',
+      text: label,
+      title: title || label,
+      onclick: (e) => {
+        e.preventDefault();
+        if (session) send(seq);
+        screen.focus();
+      },
+    });
+  view.appendChild(
+    el('div', { class: 'keybar' }, [
+      keyBtn('Esc', '\x1b'),
+      keyBtn('Tab', '\t'),
+      keyBtn('Ctrl+C', '\x03', 'прекъсва текущата команда'),
+      keyBtn('Ctrl+D', '\x04', 'изход от обвивката'),
+      keyBtn('Ctrl+Z', '\x1a'),
+      keyBtn('Ctrl+L', '\x0c', 'изчиства екрана'),
+      keyBtn('↑', '\x1b[A'),
+      keyBtn('↓', '\x1b[B'),
+      keyBtn('←', '\x1b[D'),
+      keyBtn('→', '\x1b[C'),
+      keyBtn('Home', '\x1b[H'),
+      keyBtn('End', '\x1b[F'),
+      keyBtn('|', '|'),
+      keyBtn('~', '~'),
+      keyBtn('/', '/'),
+      keyBtn('Enter', '\r'),
+    ])
+  );
   view.appendChild(el('div', { class: 'metric-sub', text: 'Щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
+
+  // На телефон клавиатурата покрива екрана — свиваме терминала до видимата част.
+  if (window.visualViewport) {
+    const fit = () => {
+      const vh = window.visualViewport.height;
+      if (vh < window.innerHeight - 80) screen.style.height = `${Math.max(180, vh - 260)}px`;
+      else screen.style.height = '64vh';
+    };
+    window.visualViewport.addEventListener('resize', fit);
+    view.addEventListener('DOMNodeRemoved', () => window.visualViewport.removeEventListener('resize', fit), { once: true });
+  }
   paint();
 }
 

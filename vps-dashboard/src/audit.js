@@ -61,6 +61,61 @@ export class Audit {
     return entry;
   }
 
+  // Записи след даден хеш — за изпращане към другия VPS (виж audit-ship.js).
+  since(afterHash, limit = 500) {
+    let lines = [];
+    try {
+      lines = fs.readFileSync(this.file, 'utf8').split('\n').filter(Boolean);
+    } catch {
+      return { entries: [], lastHash: 'GENESIS' };
+    }
+    let start = 0;
+    if (afterHash && afterHash !== 'GENESIS') {
+      const idx = lines.findIndex((l) => hashLine(l) === afterHash);
+      if (idx >= 0) start = idx + 1;
+    }
+    const slice = lines.slice(start, start + limit);
+    return {
+      entries: slice.map((l) => {
+        try {
+          return JSON.parse(l);
+        } catch {
+          return { corrupt: true };
+        }
+      }),
+      lastHash: slice.length ? hashLine(slice[slice.length - 1]) : afterHash || 'GENESIS',
+      remaining: Math.max(0, lines.length - start - slice.length),
+    };
+  }
+
+  // Приема копие от друг възел. Пази се ОТДЕЛНО — не се смесва с нашия дневник,
+  // за да не може чужд възел да замърси собствената ни верига.
+  acceptMirror(nodeId, entries) {
+    if (!/^[\w-]{1,40}$/.test(String(nodeId || ''))) {
+      throw Object.assign(new Error('Невалиден възел'), { status: 400 });
+    }
+    const file = path.join(path.dirname(this.file), `audit-mirror-${nodeId}.jsonl`);
+    const lines = (entries || []).map((e) => JSON.stringify(e)).join('\n');
+    if (!lines) return { accepted: 0 };
+    fs.appendFileSync(file, lines + '\n', { mode: 0o600 });
+    return { accepted: entries.length, file };
+  }
+
+  mirrors() {
+    const dir = path.dirname(this.file);
+    try {
+      return fs
+        .readdirSync(dir)
+        .filter((f) => f.startsWith('audit-mirror-'))
+        .map((f) => {
+          const st = fs.statSync(path.join(dir, f));
+          return { node: f.replace(/^audit-mirror-|\.jsonl$/g, ''), sizeBytes: st.size, mtime: st.mtime.toISOString() };
+        });
+    } catch {
+      return [];
+    }
+  }
+
   // Проверка на веригата: връща първия ред, който не съвпада.
   verify() {
     let lines = [];

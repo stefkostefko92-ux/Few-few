@@ -23,11 +23,12 @@ import * as webserver from './webserver.js';
 import * as compose from './compose.js';
 import * as databases from './databases.js';
 import * as backups from './backups.js';
-import { verifyTotp, generateSecret, otpauthUri } from './totp.js';
+import { verifyTotp, generateSecret, otpauthUri, generateRecoveryCodes, hashRecoveryCode, verifyRecoveryCode } from './totp.js';
 import { saveConfig } from './config.js';
 import { configuredChannels } from './notify.js';
 import { RANGES, diskSeries, knownMounts } from './history.js';
 import { forecastToLimit, detectAnomaly, changePoint, fmtDuration } from './forecast.js';
+import { probe, resolveHost } from './probe.js';
 
 const COOKIE = 'csd_sess';
 export const VERSION = '0.1.0';
@@ -45,7 +46,12 @@ export const PEER_DENY = [
   /^\/api\/agents\/tools\/run$/,
   /^\/api\/totp\//,
   /^\/api\/alerts\/settings$/,
+  /^\/api\/backups\/restore\//,
 ];
+
+// Изключения: маршрути, които peer-ът ТРЯБВА да ползва въпреки обхвата „read" —
+// огледалото на одита се ПРАЩА от него по дизайн (това е целта на изнасянето).
+export const PEER_ALLOW = [/^\/api\/audit\/mirror$/];
 
 export function buildRouter(ctx) {
   const { cfg, audit, jobs, metrics } = ctx;
@@ -94,6 +100,7 @@ export function buildRouter(ctx) {
   // втори VPS иначе получава root shell на първия през /api/nodes/<id>/…
   // Разрешава се изрично с "peerScope": "full" в конфига.
   const peerAllowed = (req, url) => {
+    if (PEER_ALLOW.some((rx) => rx.test(url.pathname))) return true;
     if ((cfg.peerScope || 'read') === 'full') return true;
     if (req.method !== 'GET') return false;
     return !PEER_DENY.some((rx) => rx.test(url.pathname));
@@ -157,12 +164,22 @@ export function buildRouter(ctx) {
     // Втори фактор (ако е включен). Стъпката се пази, за да не мине същият код два пъти.
     if (cfg.totp?.enabled && cfg.totp?.secret) {
       const step = verifyTotp(cfg.totp.secret, body.code);
-      if (step === null || step === ctx.lastTotpStep) {
-        loginFailed(ip);
-        audit.log({ action: 'login.fail2fa', ip });
-        return sendError(res, 401, body.code ? 'Грешен код от приложението.' : 'Нужен е код (2FA).');
+      if (step !== null && step !== ctx.lastTotpStep) {
+        ctx.lastTotpStep = step;
+      } else {
+        // Резервен код — за когато телефонът го няма. Еднократен: изразходва се
+        // веднага и се маха от конфига, за да не може да се ползва пак.
+        const idx = verifyRecoveryCode(body.code, cfg.totp.recoveryHashes || []);
+        if (idx < 0) {
+          loginFailed(ip);
+          audit.log({ action: 'login.fail2fa', ip });
+          return sendError(res, 401, body.code ? 'Грешен код от приложението.' : 'Нужен е код (2FA).');
+        }
+        const remaining = (cfg.totp.recoveryHashes || []).filter((_, i) => i !== idx);
+        saveConfig(cfg, { totp: { ...cfg.totp, recoveryHashes: remaining } });
+        audit.log({ action: 'login.recovery', ip, remaining: remaining.length });
+        ctx.recoveryUsed = { at: Date.now(), remaining: remaining.length };
       }
-      ctx.lastTotpStep = step;
     }
     loginSucceeded(ip);
     const absoluteMs = (cfg.sessionTtlHours || 12) * 3600 * 1000;
@@ -256,6 +273,7 @@ export function buildRouter(ctx) {
         version: VERSION,
         peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name })),
         totpEnabled: Boolean(cfg.totp?.enabled),
+        recoveryLeft: (cfg.totp?.recoveryHashes || []).length,
       }))
     )
   );
@@ -287,10 +305,15 @@ export function buildRouter(ctx) {
         if (verifyTotp(secret, b.code) === null) {
           throw Object.assign(new Error('Кодът не съвпада — провери часовника на телефона.'), { status: 400 });
         }
-        saveConfig(cfg, { totp: { enabled: true, secret } });
+        // Резервните кодове се показват ЕДИН ПЪТ, тук. В конфига влизат само
+        // хешовете им — открадне ли някой конфига, не получава работещи кодове.
+        const codes = generateRecoveryCodes();
+        saveConfig(cfg, {
+          totp: { enabled: true, secret, recoveryHashes: codes.map(hashRecoveryCode) },
+        });
         ctx.pendingTotp = null;
-        audit.log({ action: 'totp.enable', user: req.user });
-        return { enabled: true };
+        audit.log({ action: 'totp.enable', user: req.user, recoveryCodes: codes.length });
+        return { enabled: true, recoveryCodes: codes };
       }),
       { mutating: true }
     )
@@ -304,9 +327,28 @@ export function buildRouter(ctx) {
         if (!verifyPassword(String(b.password || ''), cfg.passwordHash)) {
           throw Object.assign(new Error('Грешна парола.'), { status: 401 });
         }
-        saveConfig(cfg, { totp: { enabled: false, secret: '' } });
+        saveConfig(cfg, { totp: { enabled: false, secret: '', recoveryHashes: [] } });
         audit.log({ action: 'totp.disable', user: req.user });
         return { enabled: false };
+      }),
+      { mutating: true }
+    )
+  );
+  // Нови резервни кодове (старите падат). Иска паролата — открадната сесия да не
+  // може да си извади свеж комплект ключове.
+  r.post(
+    '/api/totp/recovery/regenerate',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        if (!verifyPassword(String(b.password || ''), cfg.passwordHash)) {
+          throw Object.assign(new Error('Грешна парола.'), { status: 401 });
+        }
+        if (!cfg.totp?.enabled) throw Object.assign(new Error('2FA не е включена.'), { status: 400 });
+        const codes = generateRecoveryCodes();
+        saveConfig(cfg, { totp: { ...cfg.totp, recoveryHashes: codes.map(hashRecoveryCode) } });
+        audit.log({ action: 'totp.recoveryRegenerate', user: req.user });
+        return { recoveryCodes: codes };
       }),
       { mutating: true }
     )
@@ -895,6 +937,84 @@ export function buildRouter(ctx) {
 
   // ── Одит ───────────────────────────────────────────────────────────────────
   r.get('/api/audit', guard(J((req, res, p, url) => ({ entries: audit.tail(Number(url.searchParams.get('limit')) || 200) }))));
+
+  // ── Възстановяване от бекъп (две стъпки) ───────────────────────────────────
+  r.post(
+    '/api/backups/restore/preview',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        audit.log({ action: 'backup.restorePreview', name: b.name, user: req.user });
+        return jobs.start(backups.restorePreviewSpec(b.name), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/backups/restore/apply',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = backups.restoreApplySpec(b.name, b.target);
+        // Възстановяването е най-опасното действие в панела — записва се едро.
+        audit.log({ action: 'backup.restoreApply', name: b.name, target: b.target, user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Синтетични проби (по фази) ─────────────────────────────────────────────
+  r.get(
+    '/api/probe',
+    guard(
+      J(async (req, res, p, url) => {
+        const target = url.searchParams.get('url');
+        if (!target) throw Object.assign(new Error('Липсва url'), { status: 400 });
+        const expectText = url.searchParams.get('expect') || undefined;
+        const result = await probe({ name: url.searchParams.get('name') || target, url: target, expectText });
+        let dnsInfo = null;
+        try {
+          dnsInfo = await resolveHost(new URL(target).hostname);
+        } catch {
+          /* невалиден URL вече е обработен в probe */
+        }
+        return { ...result, dns: dnsInfo };
+      })
+    )
+  );
+  // Кръстосана проба: НИЕ сондираме публичните адреси на другия възел — външна
+  // гледна точка, каквато локалната проба по дефиниция не може да даде.
+  r.get(
+    '/api/nodes/:id/crossprobe',
+    guard(J(async (req, res, params) => nodes.crossProbe(cfg, params.id)))
+  );
+  r.get('/api/probe/targets', guard(J(() => ({ own: nodes.ownProbeTargets(cfg), peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name, targets: p.probeTargets || [] })) }))));
+
+  // ── Огледало на одита (приемане от друг възел) ─────────────────────────────
+  r.post(
+    '/api/audit/mirror',
+    guard(
+      J(async (req) => {
+        // Само peer праща огледало; локалният админ няма причина да го вика.
+        const b = await readJson(req);
+        return audit.acceptMirror(b.node, b.entries);
+      }),
+      { mutating: true }
+    )
+  );
+  r.get('/api/audit/ship', guard(J(() => (ctx.shipper ? ctx.shipper.status() : { enabled: false }))));
+  r.post(
+    '/api/audit/ship/now',
+    guard(
+      J(async (req) => {
+        if (!ctx.shipper) throw Object.assign(new Error('Изнасянето не е включено'), { status: 400 });
+        audit.log({ action: 'audit.shipNow', user: req.user });
+        return { results: await ctx.shipper.shipAll() };
+      }),
+      { mutating: true }
+    )
+  );
 
   // ── Federation ─────────────────────────────────────────────────────────────
   r.get('/api/nodes', guard(J(() => nodes.nodesStatus(cfg))));

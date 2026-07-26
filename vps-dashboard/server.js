@@ -9,6 +9,7 @@ import { MetricsCollector } from './src/metrics.js';
 import { MetricsHistory } from './src/history.js';
 import { AlertEngine } from './src/alerts.js';
 import { PtySessions } from './src/pty.js';
+import { AuditShipper } from './src/audit-ship.js';
 import { buildRouter } from './src/routes.js';
 import { serveStatic, sendError } from './src/httpd.js';
 
@@ -44,6 +45,11 @@ jobs.onEnd = (job) => {
 
 const pty = new PtySessions(audit);
 
+// Копие на одита към другия VPS (ако е включено) — хеш-веригата открива
+// подправяне, но само копие извън машината го прави безполезно.
+const shipper = new AuditShipper({ cfg, audit });
+shipper.start();
+
 // Провалът на одита е шумен: дневник, който тихо не пише, е по-лош от липсващ.
 audit.onWriteFailure = (err) => {
   alerts
@@ -64,6 +70,7 @@ const router = buildRouter({
   history,
   alerts,
   pty,
+  shipper,
   sessions: new Map(), // активни сесии (jti → метаданни)
   revokedSessions: new Set(), // поименно отменени до изтичането им
 });

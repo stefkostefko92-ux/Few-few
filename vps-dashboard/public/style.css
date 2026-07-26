@@ -175,6 +175,15 @@ td.mono, .mono { font-family: var(--mono); }
 /* Лентата в таблична клетка няма собствено съдържание → без минимална ширина
    се смачква до точка. */
 td .bar { min-width: 110px; }
+
+/* Модификатори за терминала — задължителни на телефон (виртуалната клавиатура
+   няма Ctrl/Esc/Tab/стрелки), полезни и на десктоп. */
+.keybar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.keycap { font-family: var(--mono); min-width: 44px; min-height: 34px; }
+@media (max-width: 820px) {
+  /* Палец-зона: лентата да е достъпна с една ръка. */
+  .keycap { min-width: 52px; min-height: 44px; font-size: 13px; }
+}
 .term-in {
   display: flex; gap: 8px; margin-top: 10px;
 }

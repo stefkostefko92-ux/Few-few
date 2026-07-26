@@ -3,6 +3,7 @@
 // Така единият панел управлява и двата VPS-а от един интерфейс (вкл. SSE).
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
+import { probe } from './probe.js';
 
 const HOP_BY_HOP = new Set([
   'connection',
@@ -75,6 +76,26 @@ export function proxyToPeer(peer, req, res, restPath, search) {
   });
   req.pipe(upstream);
   res.on('close', () => upstream.destroy());
+}
+
+// ── Кръстосани проби ──────────────────────────────────────────────────────────
+// Локална проба от същата машина НЕ хваща паднал Nginx, счупен DNS или мрежата
+// на доставчика — тя тръгва отвътре. Затова всеки VPS сондира ПУБЛИЧНИТЕ URL-и
+// на другия: външна гледна точка на нулева цена, без облачна услуга.
+export async function crossProbe(cfg, peerId) {
+  const peer = findPeer(cfg, peerId);
+  if (!peer) throw Object.assign(new Error('Непознат възел'), { status: 404 });
+  const targets = peer.probeTargets || [];
+  if (!targets.length) {
+    return { peer: peer.id, targets: [], note: 'Няма зададени probeTargets за този peer в конфига.' };
+  }
+  const results = await Promise.all(targets.map((t) => probe(t)));
+  return { peer: peer.id, peerName: peer.name, targets: results, from: cfg.nodeId };
+}
+
+// Какво този възел трябва да сондира ЗА другите — четем го от собствения конфиг.
+export function ownProbeTargets(cfg) {
+  return cfg.probeTargets || [];
 }
 
 // Бърз статус на всички възли (за превключвателя в интерфейса).
