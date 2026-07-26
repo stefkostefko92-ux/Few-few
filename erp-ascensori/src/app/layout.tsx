@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import RegistraSw from "@/components/RegistraSw";
 
@@ -44,16 +45,22 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Nonce-ът идва от middleware-а. Четенето на хедър прави дървото динамично —
+  // и трябва да е така: предрисуван HTML би носил nonce от времето на билда,
+  // който браузърът НЯМА да приеме, тоест приложението не би тръгнало изобщо.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <html lang="it" suppressHydrationWarning>
       <body>
         {/* тъмна/светла тема преди първия paint — без мигане */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem("ea:tema");if(t==="dark"||(t===null&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}`,
           }}

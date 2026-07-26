@@ -98,6 +98,8 @@ const AIUTO: Record<string, string> = {
   erp_richieste_totale: "Numero di richieste HTTP servite",
   erp_richieste_durata_secondi: "Durata delle richieste HTTP",
   erp_errori_totale: "Errori non gestiti (HTTP 5xx)",
+  erp_csp_violazioni_totale:
+    "Violazioni della Content-Security-Policy segnalate dai browser",
 };
 
 /**
