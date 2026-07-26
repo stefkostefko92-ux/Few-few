@@ -198,6 +198,17 @@ async function main() {
       indirizzo: "Via Torino 8, Milano",
       piano: "Locale macchine in copertura",
       dataInstallazione: new Date("2018-05-14"),
+      // Правната самоличност: номерът от Общината е този, който контролният
+      // орган търси — вътрешният ни номер не му говори нищо.
+      matricolaComune: "MI-2018-04412",
+      comune: "Milano",
+      dataComunicazione: new Date("2018-05-22"),
+      tipo: "ASCENSORE",
+      regime: "DIRETTIVA_2014_33",
+      persone: 8,
+      velocita: "1.000",
+      organismoNotificato: "Organismo Notificato 0407",
+      manutentoreDal: new Date("2018-06-01"),
       ultimaRevisione: fraGiorni(-320),
       prossimaRevisione: fraGiorni(45),
       condominioId: condomini[0].id,
@@ -227,6 +238,11 @@ async function main() {
       indirizzo: "Viale dei Giardini 25, Monza",
       condominioId: condomini[1].id,
       amministratoreId: amministratori[1].id,
+      // Заварена уредба: за нея важи преходният режим, не директивата.
+      regime: "PREESISTENTE",
+      matricolaComune: "MB-1998-00219",
+      comune: "Monza",
+      organismoNotificato: "ASL Monza e Brianza",
       prossimaRevisione: fraGiorni(160),
     },
   ];
@@ -577,6 +593,45 @@ async function main() {
       ordineLavoroId: ordine.id,
     },
   );
+
+  // ── Законова проверка (чл. 13 D.P.R. 162/1999) ───────────────────────────
+  // Демото показва и двата случая: изрядна проверка и такава с предписания.
+  if (
+    (await prisma.verificaImpianto.count({
+      where: { impiantoId: impianti[0].id },
+    })) === 0
+  ) {
+    await prisma.verificaImpianto.create({
+      data: {
+        impiantoId: impianti[0].id,
+        tipo: "PERIODICA",
+        data: fraGiorni(-320),
+        esito: "POSITIVO",
+        organismo: "Organismo Notificato 0407",
+        numeroVerbale: "VP-2025-1187",
+        prossimaVerifica: fraGiorni(45),
+      },
+    });
+  }
+  if (
+    (await prisma.verificaImpianto.count({
+      where: { impiantoId: impianti[2].id },
+    })) === 0
+  ) {
+    await prisma.verificaImpianto.create({
+      data: {
+        impiantoId: impianti[2].id,
+        tipo: "PERIODICA",
+        data: fraGiorni(-200),
+        esito: "CON_PRESCRIZIONI",
+        organismo: "ASL Monza e Brianza",
+        numeroVerbale: "VP-2025-0442",
+        prescrizioni: "Ripristinare l'illuminazione di emergenza in cabina.",
+        scadenzaPrescrizioni: fraGiorni(-140),
+        prossimaVerifica: fraGiorni(530),
+      },
+    });
+  }
 
   console.log(
     "Seed completato: демо данни на италиански заредени (idempotent).",

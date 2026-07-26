@@ -8,6 +8,13 @@ import { statoAutomezzo } from "@/lib/scadenze-logic";
 import { TIPI_RITENUTA, CAUSALI_RITENUTA } from "@/lib/fiscale/ritenuta";
 import { modalitaValida, condizioneValida } from "@/lib/fiscale/pagamenti";
 import { TIPI_NOTIFICA } from "@/lib/fiscale/sdi-stato";
+import {
+  TIPI_VERIFICA,
+  ESITI_VERIFICA,
+  CONTROLLI_ART15,
+} from "@/lib/normativa/verifiche";
+import { TIPI_INTERVENTO } from "@/lib/normativa/interventi";
+import { TIPI_IMPIANTO, REGIMI_IMPIANTO } from "@/lib/normativa/impianti";
 
 // Приема точка ИЛИ запетая като десетичен разделител; нормализира към точка.
 // Таванът е 8 цифри (< 100 милиона): произведението количество × цена трябва да
@@ -282,17 +289,44 @@ export const squadre: CrudConfig = {
 
 const impiantoBase = z.object({
   matricola: str,
+  /// Номерът от ОБЩИНАТА (чл. 12 D.P.R. 162/1999) — официалната самоличност на
+  /// уредбата и това, което се изписва на табелата в кабината.
+  matricolaComune: strOpt,
+  comune: strOpt,
+  dataComunicazione: dataOpt,
+  tipo: z.enum(TIPI_IMPIANTO).optional(),
+  regime: z.enum(REGIMI_IMPIANTO).optional(),
   marca: str,
   modello: str,
   anno: z.number().int().min(1900).max(2100).nullish(),
   portata: z.number().int().min(0).nullish(),
+  persone: z.number().int().min(0).max(200).nullish(),
+  velocita: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(",", "."))
+    .pipe(
+      z
+        .string()
+        .regex(
+          /^\d{1,2}(\.\d{1,3})?$/,
+          "Velocità non valida (m/s, max 3 decimali)",
+        ),
+    )
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   fermate: z.number().int().min(0).nullish(),
+  /// `FERMO_AMMINISTRATIVO` НЕ е тук нарочно: то се налага само от отрицателна
+  /// проверка и се вдига само от нова положителна. Изборът му от падащо меню
+  /// би направил състоянието безсмислено. Проверката е и сървърна.
   stato: z
     .enum(["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"])
     .optional(),
   indirizzo: strOpt,
   piano: strOpt,
   dataInstallazione: dataOpt,
+  organismoNotificato: strOpt,
+  manutentoreDal: dataOpt,
   ultimaRevisione: dataOpt,
   prossimaRevisione: dataOpt,
   condominioId: uuidOpt,
@@ -301,14 +335,45 @@ const impiantoBase = z.object({
   attivo: z.boolean().optional(),
 });
 
+/** Законова проверка от трета страна (чл. 13/14). */
+export const verificaImpiantoSchema = z.object({
+  tipo: z.enum(TIPI_VERIFICA).optional(),
+  data: z.coerce.date(),
+  esito: z.enum(ESITI_VERIFICA),
+  organismo: strOpt,
+  numeroVerbale: strOpt,
+  prescrizioni: strOpt,
+  scadenzaPrescrizioni: dataOpt,
+  /// Изричният срок надделява над законовия: органът може да даде по-кратък.
+  prossimaVerifica: dataOpt,
+  documentoId: uuidOpt,
+  note: strOpt,
+});
+
 export const impianti: CrudConfig = {
   entita: "impianti",
   model: "impianto",
   schemaCreate: impiantoBase,
   schemaUpdate: impiantoBase.partial(),
-  searchFields: ["matricola", "marca", "modello", "indirizzo"],
+  searchFields: [
+    "matricola",
+    "marca",
+    "modello",
+    "indirizzo",
+    "matricolaComune",
+  ],
   include: { condominio: true, amministratore: true },
   orderBy: { matricola: "asc" },
+  // Административното спиране се вдига САМО с нова положителна проверка
+  // (чл. 14, ал. 2 D.P.R. 162/1999). Ако падащото меню може да го махне,
+  // състоянието не значи нищо — а то трябва да значи именно забрана.
+  vincoloModifica: (prima, data) => {
+    const p = prima as { stato?: string };
+    const d = data as { stato?: string };
+    if (p.stato !== "FERMO_AMMINISTRATIVO" || !d.stato || d.stato === p.stato)
+      return null;
+    return "Impianto in fermo amministrativo: può essere rimesso in servizio solo registrando una nuova verifica con esito positivo (art. 14 c.2 D.P.R. 162/1999).";
+  },
 };
 
 const mediaBase = z.object({
@@ -695,9 +760,18 @@ export const rapportinoSchema = z.object({
     .optional(),
   descrizione: z.string().trim().min(1).max(4000),
   esito: z.enum(ESITI_INTERVENTO).optional(),
+  tipoIntervento: z.enum(TIPI_INTERVENTO).optional(),
   materiali: strOpt,
   noteInterne: strOpt,
   tecnicoId: uuidOpt,
+  /// Проверките по чл. 15, ал. 4 D.P.R. 162/1999.
+  ///
+  /// `nullable`, не `boolean`: „не е гледано" и „гледано, не е наред" са
+  /// различни неща, а при злополука разликата е между небрежност и открита
+  /// неизправност. `undefined` при промяна значи „не пипай“.
+  ...Object.fromEntries(
+    CONTROLLI_ART15.map((c) => [c.campo, z.boolean().nullish()]),
+  ),
 });
 
 export const firmaSchema = z.object({

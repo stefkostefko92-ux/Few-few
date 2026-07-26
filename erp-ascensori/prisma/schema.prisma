@@ -399,16 +399,41 @@ model AuditLog {
 
 model Impianto {
   id                String        @id @default(uuid()) @db.Uuid
+  /// Вътрешният номер на фирмата.
   matricola         String
+  /// Номерът, който ОБЩИНАТА дава при съобщението по чл. 12 D.P.R. 162/1999.
+  ///
+  /// Той е официалният идентификатор на уредбата и се изписва на табелата в
+  /// кабината. Без него уредбата формално не е в служба — а точно по него
+  /// проверяващият орган я търси. Дотук продуктът пазеше само своя номер.
+  matricolaComune   String?
+  /// Коя община го е дала. Един и същ номер се повтаря между общините.
+  comune            String?
+  /// Кога е подадено съобщението по чл. 12 (срок: 10 дни от декларацията за
+  /// съответствие).
+  dataComunicazione DateTime?
+  tipo              TipoImpianto   @default(ASCENSORE)
+  /// По кой правен режим е пусната в служба — определя коя уредба важи.
+  regime            RegimeImpianto @default(DIRETTIVA_2014_33)
   marca             String
   modello           String
   anno              Int?
   portata           Int? // kg
+  /// Брой лица по табелата — реквизит на самата табела.
+  persone           Int?
+  /// m/s, с три десетични: 0,63 · 1,00 · 1,60.
+  velocita          Decimal?      @db.Decimal(5, 3)
   fermate           Int?
   stato             StatoImpianto @default(ATTIVO)
   indirizzo         String?
   piano             String?
   dataInstallazione DateTime?
+  /// Органът, който прави двугодишната проверка по чл. 13 (нотифициран орган,
+  /// ASL или ARPA). Собственикът го избира; ние само го знаем.
+  organismoNotificato String?
+  /// Откога поддръжката е поверена на нас (чл. 15, ал. 1). Определя откога
+  /// отговаряме за шестмесечните проверки.
+  manutentoreDal    DateTime?
   ultimaRevisione   DateTime?
   prossimaRevisione DateTime? // генерира автоматичните известия
   condominioId      String?       @db.Uuid
@@ -422,6 +447,8 @@ model Impianto {
   condominio     Condominio?           @relation(fields: [condominioId], references: [id])
   amministratore Amministratore?       @relation(fields: [amministratoreId], references: [id])
   media          ImpiantoMedia[]
+  verifiche      VerificaImpianto[]
+  rapportini     Rapportino[]
   scadenze       ScadenzaImpianto[]
   assegnazioni   AssegnazioneTecnico[]
   preventivi     Preventivo[]
@@ -432,6 +459,49 @@ model Impianto {
   contratti  ContrattoImpianto[]
 
   @@map("impianti")
+}
+
+/// Законовата проверка на уредбата — чл. 13 и 14 D.P.R. 162/1999.
+///
+/// НЕ е нашата поддръжка. Тази проверка я прави ТРЕТА страна (нотифициран
+/// орган, ASL или ARPA) на всеки две години, а собственикът я поръчва. Ние
+/// вписваме резултата, защото от него зависи дали уредбата изобщо може да
+/// работи — и защото при отрицателен изход поддържащата фирма е първата, която
+/// разбира.
+///
+/// Дотук продуктът пазеше само дата „prossimaRevisione" — число без протокол,
+/// без орган, без предписания и без начин да се докаже, че проверката е минала.
+model VerificaImpianto {
+  id         String        @id @default(uuid()) @db.Uuid
+  impiantoId String        @db.Uuid
+  tipo       TipoVerifica  @default(PERIODICA)
+  data       DateTime
+  esito      EsitoVerifica
+  /// Кой я е извършил.
+  organismo  String?
+  /// Номерът на протокола — по него се доказва пред контролния орган.
+  numeroVerbale String?
+  /// Предписанията при `CON_PRESCRIZIONI` и срокът за изпълнението им.
+  prescrizioni  String?
+  scadenzaPrescrizioni DateTime?
+  /// Кога е следващата. Извежда се от датата, но се пази явно: органът може да
+  /// определи по-кратък срок.
+  prossimaVerifica DateTime?
+  /// Сканираният протокол. `SetNull`: изтрит документ не бива да отнася със
+  /// себе си доказателството, че проверката е минала.
+  documentoId String?  @db.Uuid
+  documento   Documento? @relation(fields: [documentoId], references: [id], onDelete: SetNull)
+  note        String?
+  utenteId    String?  @db.Uuid
+  tenantId    String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([impiantoId])
+  @@map("verifiche_impianti")
 }
 
 model ImpiantoMedia {
@@ -892,12 +962,36 @@ model Rapportino {
   id              String          @id @default(uuid()) @db.Uuid
   numero          String
   ordineLavoroId  String          @db.Uuid
+  /// Уредбата ПРЯКО, не само през ордина.
+  ///
+  /// Историята на една уредба е нейна, не на поръчката: при смяна на
+  /// администратора или при проверка се иска всичко правено по ТАЗИ уредба, а
+  /// стигането дотам през ордините е и бавно, и непълно.
+  impiantoId      String?         @db.Uuid
   tecnicoId       String?         @db.Uuid
   dataOra         DateTime        @default(now())
+  tipoIntervento  TipoIntervento  @default(MANUTENZIONE_ORDINARIA)
   /// Отработени часове, с четвъртинки (1.25 = час и петнайсет).
   oreLavoro       Decimal         @default(0) @db.Decimal(6, 2)
   descrizione     String
   esito           EsitoIntervento @default(RISOLTO)
+
+  // ── Проверките по чл. 15, ал. 4 D.P.R. 162/1999 ───────────────────────────
+  //
+  // Законът изброява какво поддържащата фирма е ДЛЪЖНА да провери периодично.
+  // Свободният текст „всичко наред" не доказва нищо: при злополука се пита кое
+  // точно е проверено и кога. Затова са отделни полета — `null` значи „не е
+  // проверено на този визит", а не „наред".
+  vFuni              Boolean?
+  vParacadute        Boolean?
+  vLimitatoreVelocita Boolean?
+  vIsolamentoElettrico Boolean?
+  vMessaTerra        Boolean?
+  vPorteSerrature    Boolean?
+  vIlluminazioneEmergenza Boolean?
+  /// Двупосочната връзка от кабината (UNI EN 81-28). Неработеща значи, че
+  /// блокиран човек не може да повика помощ — това е спиране, не забележка.
+  vCitofonoAllarme   Boolean?
   /// Вложени материали като свободен текст; движението по склада е отделно и
   /// остава единственият източник на истината за наличността.
   materiali       String?
@@ -912,10 +1006,12 @@ model Rapportino {
   updatedAt       DateTime        @updatedAt
 
   ordineLavoro OrdineLavoro @relation(fields: [ordineLavoroId], references: [id], onDelete: Cascade)
+  impianto     Impianto?    @relation(fields: [impiantoId], references: [id])
   tecnico      Dipendente?  @relation(fields: [tecnicoId], references: [id])
 
   @@index([tenantId])
   @@index([ordineLavoroId])
+  @@index([impiantoId])
   @@unique([tenantId, numero])
   @@map("rapportini")
 }
@@ -1162,7 +1258,8 @@ model Documento {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  utente User? @relation(fields: [utenteId], references: [id])
+  utente    User?              @relation(fields: [utenteId], references: [id])
+  verifiche VerificaImpianto[]
 
   @@index([tenantId])
   @@map("documenti")

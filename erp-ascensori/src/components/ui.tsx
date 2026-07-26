@@ -49,11 +49,18 @@ const STILE_BADGE: Record<string, string> = {
   PARZIALE: "bg-warning-subtle text-warning-text",
   // StatoContratto
   DISDETTO: "bg-surface-2 text-text-3 line-through",
+  // EsitoVerifica — законовата проверка на уредбата
+  POSITIVO: "bg-success-subtle text-success-text",
+  CON_PRESCRIZIONI: "bg-warning-subtle text-warning-text",
+  NEGATIVO: "bg-danger-subtle text-danger-text border border-danger/30",
   // StatoImpianto
   ATTIVO: "bg-success-subtle text-success-text",
   FERMO: "bg-warning-subtle text-warning-text",
   MANUTENZIONE: "bg-accent-subtle text-accent-text",
   FUORI_SERVIZIO: "bg-danger-subtle text-danger-text",
+  // Спряна ПО ЗАКОН — по-силен сигнал от обикновена повреда.
+  FERMO_AMMINISTRATIVO:
+    "bg-danger-subtle text-danger-text border border-danger/30",
   DISMESSO: "bg-surface-2 text-text-3",
   // Automezzi
   verde: "bg-success-subtle text-success-text",

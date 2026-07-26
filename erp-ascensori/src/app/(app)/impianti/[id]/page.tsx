@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, Modale, ScheletroDettaglio } from "@/components/ui";
 import {
+  IcoAttenzione,
   IcoFatto,
   IcoIndietro,
   IcoNuovoPiccolo,
@@ -13,22 +14,55 @@ import {
   IcoQr,
 } from "@/components/icone";
 import { dataIt } from "@/lib/format";
+import {
+  problemiConformita,
+  ESITI_VERIFICA,
+  TIPI_VERIFICA,
+} from "@/lib/normativa/verifiche";
+import {
+  TIPO_IMPIANTO_LABEL,
+  REGIME_IMPIANTO_LABEL,
+  type TipoImpianto,
+  type RegimeImpianto,
+} from "@/lib/normativa/impianti";
+
+interface Verifica {
+  id: string;
+  tipo: string;
+  data: string;
+  esito: string;
+  organismo: string | null;
+  numeroVerbale: string | null;
+  prescrizioni: string | null;
+  scadenzaPrescrizioni: string | null;
+  prossimaVerifica: string | null;
+}
 
 interface Impianto {
   id: string;
   matricola: string;
+  matricolaComune: string | null;
+  comune: string | null;
+  dataComunicazione: string | null;
+  tipo: string;
+  regime: string;
   marca: string;
   modello: string;
   anno: number | null;
   portata: number | null;
+  persone: number | null;
+  velocita: string | null;
   fermate: number | null;
   stato: string;
   indirizzo: string | null;
   piano: string | null;
   dataInstallazione: string | null;
+  organismoNotificato: string | null;
+  manutentoreDal: string | null;
   ultimaRevisione: string | null;
   prossimaRevisione: string | null;
   note: string | null;
+  verifiche: Verifica[];
   condominio: { id: string; nome: string; citta: string } | null;
   amministratore: {
     id: string;
@@ -63,15 +97,17 @@ export default function Pagina() {
   const [errore, setErrore] = useState<string | null>(null);
   const [modaleMedia, setModaleMedia] = useState(false);
   const [modaleAssegna, setModaleAssegna] = useState(false);
+  const [modaleVerifica, setModaleVerifica] = useState(false);
 
   const carica = useCallback(async () => {
     // Филтрирането е СЪРВЪРНО (?impiantoId=…). Дърпането на цялата таблица и
     // филтриране в браузъра тихо губеше записите след първата страница.
-    const [ri, rm, rs, ra] = await Promise.all([
+    const [ri, rm, rs, ra, rv] = await Promise.all([
       fetch(`/api/impianti/${id}`),
       fetch(`/api/impianti-media?impiantoId=${id}`),
       fetch(`/api/scadenze?impiantoId=${id}`),
       fetch(`/api/assegnazioni?impiantoId=${id}`),
+      fetch(`/api/impianti/${id}/verifiche`),
     ]);
     if (!ri.ok) {
       setErrore("Impianto non trovato");
@@ -83,6 +119,7 @@ export default function Pagina() {
       media: rm.ok ? (await rm.json()).righe : [],
       scadenze: rs.ok ? (await rs.json()).righe : [],
       assegnazioni: ra.ok ? (await ra.json()).righe : [],
+      verifiche: rv.ok ? (await rv.json()).righe : [],
     });
   }, [id]);
 
@@ -92,6 +129,17 @@ export default function Pagina() {
 
   if (errore) return <p className="text-text-3">{errore}</p>;
   if (!imp) return <ScheletroDettaglio />;
+
+  // Същата проверка като на сървъра — една истина за това какво липсва.
+  const problemiNorma = problemiConformita({
+    matricolaComune: imp.matricolaComune,
+    comune: imp.comune,
+    dataComunicazione: imp.dataComunicazione
+      ? new Date(imp.dataComunicazione)
+      : null,
+    regime: imp.regime,
+    organismoNotificato: imp.organismoNotificato,
+  });
 
   const amministratore = imp.amministratore
     ? (imp.amministratore.ragioneSociale ??
@@ -136,6 +184,126 @@ export default function Pagina() {
         </div>
       </div>
 
+      {/* Правната самоличност на уредбата. Стои НАД техническите данни,
+          защото без нея уредбата формално не е в служба — а именно това
+          проверява контролният орган, не марката на редуктора. */}
+      <div className="card mb-6 p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold text-text-1">
+            Conformità normativa
+          </h2>
+          <button
+            className="btn-secondary inline-flex items-center gap-1.5"
+            onClick={() => setModaleVerifica(true)}
+          >
+            <IcoNuovoPiccolo />
+            Registra verifica
+          </button>
+        </div>
+
+        {imp.stato === "FERMO_AMMINISTRATIVO" && (
+          <p
+            role="status"
+            aria-label="Fermo amministrativo"
+            className="mb-3 flex items-start gap-2 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+          >
+            <IcoAttenzione />
+            <span>
+              <strong>Impianto in fermo amministrativo.</strong> A seguito di
+              verifica con esito negativo l&apos;impianto è stato messo fuori
+              servizio (art. 14 c.2 D.P.R. 162/1999). Può tornare in servizio
+              solo registrando una nuova verifica con esito positivo.
+            </span>
+          </p>
+        )}
+
+        {problemiNorma.length > 0 && (
+          <ul className="mb-3 list-disc space-y-0.5 rounded-md bg-warning-subtle px-3 py-2 pl-7 text-sm text-warning-text">
+            {problemiNorma.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        )}
+
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-4">
+          <div>
+            <dt className="text-text-3">Matricola Comune</dt>
+            <dd className="font-mono">{imp.matricolaComune ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-text-3">Comune</dt>
+            <dd>{imp.comune ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-text-3">Comunicazione art. 12</dt>
+            <dd>{dataIt(imp.dataComunicazione)}</dd>
+          </div>
+          <div>
+            <dt className="text-text-3">Tipologia</dt>
+            <dd>{TIPO_IMPIANTO_LABEL[imp.tipo as TipoImpianto] ?? imp.tipo}</dd>
+          </div>
+          <div className="col-span-2">
+            <dt className="text-text-3">Regime</dt>
+            <dd>
+              {REGIME_IMPIANTO_LABEL[imp.regime as RegimeImpianto] ??
+                imp.regime}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-text-3">Verifiche periodiche</dt>
+            <dd>{imp.organismoNotificato ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-text-3">In manutenzione da</dt>
+            <dd>{dataIt(imp.manutentoreDal)}</dd>
+          </div>
+        </dl>
+
+        <h3 className="mt-4 mb-2 text-sm font-semibold text-text-2">
+          Verifiche periodiche (art. 13 D.P.R. 162/1999)
+        </h3>
+        {imp.verifiche.length === 0 ? (
+          <p className="text-sm text-text-3">
+            Nessuna verifica registrata. La verifica biennale è a carico del
+            proprietario ed è eseguita da un organismo notificato, dall&apos;ASL
+            o dall&apos;ARPA — non dalla ditta di manutenzione.
+          </p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {imp.verifiche.map((v) => (
+              <li key={v.id} className="flex flex-wrap items-baseline gap-2">
+                <span className="font-mono text-xs text-text-3">
+                  {dataIt(v.data)}
+                </span>
+                <Badge valore={v.esito} />
+                <span className="text-text-2">
+                  {v.tipo === "PERIODICA"
+                    ? "Periodica"
+                    : v.tipo === "STRAORDINARIA"
+                      ? "Straordinaria"
+                      : "Messa in servizio"}
+                  {v.organismo ? ` · ${v.organismo}` : ""}
+                  {v.numeroVerbale ? ` · verbale ${v.numeroVerbale}` : ""}
+                </span>
+                {v.prossimaVerifica && (
+                  <span className="text-xs text-text-3">
+                    prossima: {dataIt(v.prossimaVerifica)}
+                  </span>
+                )}
+                {v.prescrizioni && (
+                  <span className="w-full text-xs text-warning-text">
+                    Prescrizioni: {v.prescrizioni}
+                    {v.scadenzaPrescrizioni
+                      ? ` (entro il ${dataIt(v.scadenzaPrescrizioni)})`
+                      : ""}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="card p-5">
           <h2 className="mb-3 text-lg font-semibold text-text-1">
@@ -145,6 +313,11 @@ export default function Pagina() {
             <Riga
               label="Portata"
               valore={imp.portata ? `${imp.portata} kg` : "—"}
+            />
+            <Riga label="Persone" valore={imp.persone ?? "—"} />
+            <Riga
+              label="Velocità"
+              valore={imp.velocita ? `${Number(imp.velocita)} m/s` : "—"}
             />
             <Riga label="Fermate" valore={imp.fermate ?? "—"} />
             <Riga label="Locale macchine" valore={imp.piano ?? "—"} />
@@ -316,7 +489,228 @@ export default function Pagina() {
           }}
         />
       )}
+      {modaleVerifica && (
+        <FormVerifica
+          impiantoId={imp.id}
+          onChiudi={() => setModaleVerifica(false)}
+          onSalvato={() => {
+            setModaleVerifica(false);
+            void carica();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+/**
+ * Вписване на законовата проверка.
+ *
+ * Формата казва изрично какво ще стане при отрицателен изход: операторът не
+ * бива да научава от списъка, че уредбата е спряна.
+ */
+function FormVerifica({
+  impiantoId,
+  onChiudi,
+  onSalvato,
+}: {
+  impiantoId: string;
+  onChiudi: () => void;
+  onSalvato: () => void;
+}) {
+  const oggi = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    tipo: "PERIODICA",
+    data: oggi,
+    esito: "POSITIVO",
+    organismo: "",
+    numeroVerbale: "",
+    prescrizioni: "",
+    scadenzaPrescrizioni: "",
+    note: "",
+  });
+  const [errore, setErrore] = useState<string | null>(null);
+  const [salvataggio, setSalvataggio] = useState(false);
+
+  async function salva(e: React.FormEvent) {
+    e.preventDefault();
+    setSalvataggio(true);
+    try {
+      const res = await fetch(`/api/impianti/${impiantoId}/verifiche`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: form.tipo,
+          data: form.data,
+          esito: form.esito,
+          organismo: form.organismo || null,
+          numeroVerbale: form.numeroVerbale || null,
+          prescrizioni: form.prescrizioni || null,
+          scadenzaPrescrizioni: form.scadenzaPrescrizioni || null,
+          note: form.note || null,
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        setErrore(d.error ?? "Errore");
+        return;
+      }
+      onSalvato();
+    } finally {
+      setSalvataggio(false);
+    }
+  }
+
+  const ETICHETTA_ESITO: Record<string, string> = {
+    POSITIVO: "Positivo",
+    CON_PRESCRIZIONI: "Positivo con prescrizioni",
+    NEGATIVO: "Negativo — fermo dell'impianto",
+  };
+  const ETICHETTA_TIPO: Record<string, string> = {
+    PERIODICA: "Periodica (biennale, art. 13)",
+    STRAORDINARIA: "Straordinaria (art. 14)",
+    MESSA_IN_SERVIZIO: "Messa in servizio",
+  };
+
+  return (
+    <Modale titolo="Registra verifica" aperto onChiudi={onChiudi} largo>
+      <form onSubmit={salva}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="v-tipo">
+              Tipo di verifica
+            </label>
+            <select
+              id="v-tipo"
+              className="input"
+              value={form.tipo}
+              onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+            >
+              {TIPI_VERIFICA.map((t) => (
+                <option key={t} value={t}>
+                  {ETICHETTA_TIPO[t]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="v-data">
+              Data
+            </label>
+            <input
+              id="v-data"
+              type="date"
+              className="input"
+              required
+              value={form.data}
+              onChange={(e) => setForm({ ...form, data: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="v-esito">
+              Esito
+            </label>
+            <select
+              id="v-esito"
+              className="input"
+              value={form.esito}
+              aria-describedby="v-esito-aiuto"
+              onChange={(e) => setForm({ ...form, esito: e.target.value })}
+            >
+              {ESITI_VERIFICA.map((x) => (
+                <option key={x} value={x}>
+                  {ETICHETTA_ESITO[x]}
+                </option>
+              ))}
+            </select>
+            <p id="v-esito-aiuto" className="mt-1 text-xs text-text-3">
+              {form.esito === "NEGATIVO"
+                ? "L'impianto sarà messo in fermo amministrativo: potrà tornare in servizio solo con una nuova verifica positiva (art. 14 c.2 D.P.R. 162/1999)."
+                : "La prossima verifica sarà fissata a due anni dalla data indicata."}
+            </p>
+          </div>
+          <div>
+            <label className="label" htmlFor="v-organismo">
+              Organismo verificatore
+            </label>
+            <input
+              id="v-organismo"
+              className="input"
+              placeholder="Organismo notificato, ASL, ARPA…"
+              value={form.organismo}
+              onChange={(e) => setForm({ ...form, organismo: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="v-verbale">
+              Numero verbale
+            </label>
+            <input
+              id="v-verbale"
+              className="input font-mono"
+              value={form.numeroVerbale}
+              onChange={(e) =>
+                setForm({ ...form, numeroVerbale: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="v-scadenza">
+              Termine per le prescrizioni
+            </label>
+            <input
+              id="v-scadenza"
+              type="date"
+              className="input"
+              value={form.scadenzaPrescrizioni}
+              onChange={(e) =>
+                setForm({ ...form, scadenzaPrescrizioni: e.target.value })
+              }
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="v-prescrizioni">
+              Prescrizioni
+            </label>
+            <textarea
+              id="v-prescrizioni"
+              className="input min-h-20 py-2"
+              value={form.prescrizioni}
+              onChange={(e) =>
+                setForm({ ...form, prescrizioni: e.target.value })
+              }
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="v-note">
+              Note
+            </label>
+            <textarea
+              id="v-note"
+              className="input min-h-16 py-2"
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+            />
+          </div>
+        </div>
+        {errore && (
+          <p
+            role="alert"
+            className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+          >
+            {errore}
+          </p>
+        )}
+        <div className="mt-6 flex justify-end gap-2">
+          <button type="button" className="btn-secondary" onClick={onChiudi}>
+            Annulla
+          </button>
+          <button type="submit" className="btn-primary" disabled={salvataggio}>
+            {salvataggio ? "Salvataggio…" : "Salva"}
+          </button>
+        </div>
+      </form>
+    </Modale>
   );
 }
 

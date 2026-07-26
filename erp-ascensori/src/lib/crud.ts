@@ -63,6 +63,15 @@ export interface CrudConfig {
   campiSessione?: (s: SessioneAttiva) => Record<string, unknown>;
   /** hook след запис (напр. преизчисляване на тотали) */
   afterWrite?: (id: string) => Promise<void>;
+  /**
+   * Проверка ПРЕДИ промяна, върху заварения ред и подадените данни.
+   *
+   * Връща съобщение на италиански, когато промяната не бива да мине (409), или
+   * `null`. Нужна е за инварианти, които схемата не може да изрази, защото
+   * зависят от ТЕКУЩОТО състояние на реда — напр. че административно спряна
+   * уредба не се пуска с падащо меню.
+   */
+  vincoloModifica?: (prima: unknown, data: unknown) => string | null;
 }
 
 /** Делегатът върху ТРАНЗАКЦИОНЕН клиент — за да важи наложеният обхват (RLS). */
@@ -177,6 +186,8 @@ export function rottaElemento(cfg: CrudConfig) {
         where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
       });
       if (!prima) throw new ErroreHttp(404, "Record non trovato");
+      const vietato = cfg.vincoloModifica?.(prima, data);
+      if (vietato) throw new ErroreHttp(409, vietato);
       const dopo = await d.update({
         where: { id },
         data: data as object,

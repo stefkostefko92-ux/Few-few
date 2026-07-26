@@ -85,6 +85,12 @@ export const STATO_LABEL: Record<string, string> = {
   PARZIALE: "Parzialmente pagata",
   ATTIVO: "Attivo",
   FERMO: "Fermo",
+  // Спряна по закон след отрицателна проверка (чл. 14, ал. 2 D.P.R. 162/1999).
+  FERMO_AMMINISTRATIVO: "Fermo amministrativo",
+  // EsitoVerifica
+  POSITIVO: "Positivo",
+  CON_PRESCRIZIONI: "Con prescrizioni",
+  NEGATIVO: "Negativo",
   MANUTENZIONE: "In manutenzione",
   FUORI_SERVIZIO: "Fuori servizio",
   DISMESSO: "Dismesso",
