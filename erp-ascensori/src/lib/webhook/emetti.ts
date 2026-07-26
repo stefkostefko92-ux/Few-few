@@ -9,6 +9,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { log, descriviErrore } from "@/lib/log";
+import { postEsterno } from "@/lib/rete";
 import {
   firmaCorpo,
   prossimoTentativo,
@@ -103,20 +104,23 @@ export async function consegnaInAttesa(limite = 100): Promise<EsitoConsegne> {
     let stato: number | null = null;
     let errore: string | null = null;
     try {
-      const res = await fetch(c.webhook.url, {
-        method: "POST",
-        headers: {
+      // НЕ `fetch`: той следва пренасочвания, тоест публичен получател може да
+      // отговори `302` към `http://169.254.169.254/` и цялата проверка за
+      // вътрешен адрес да бъде заобиколена. `postEsterno` проверява РЕЗОЛВНИЯ
+      // адрес в мига на свързването и не следва пренасочване (`lib/rete.ts`).
+      const res = await postEsterno(c.webhook.url, {
+        intestazioni: {
           "Content-Type": "application/json",
           [HEADER_EVENTO]: c.evento,
           [HEADER_CONSEGNA]: c.id,
           [HEADER_TIMESTAMP]: String(timestamp),
           [HEADER_FIRMA]: firmaCorpo(corpo, c.webhook.segreto, timestamp),
         },
-        body: corpo,
+        corpo,
         // Без таймаут един увиснал получател държи процеса до безкрай.
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        timeoutMs: TIMEOUT_MS,
       });
-      stato = res.status;
+      stato = res.stato;
     } catch (e) {
       // Само тип и код — тялото на грешката може да носи адреси и заглавия.
       errore = descriviErrore(e).err_tipo || "errore di rete";

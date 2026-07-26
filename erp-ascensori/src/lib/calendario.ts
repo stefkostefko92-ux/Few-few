@@ -20,8 +20,6 @@ export interface Impegno {
   /** Кой го изпълнява; `null` = още неразпределено, и това се вижда. */
   tecnicoId: string | null;
   tecnico: string | null;
-  /** Очаквани часове — от тях се смята натоварването на деня. */
-  ore: number;
   tipo: "ordine" | "visita" | "verifica";
   priorita?: string | null;
   impianto?: string | null;
@@ -34,7 +32,6 @@ export interface Giorno {
   /** Извън търсения месец: показва се сиво, за да не се къса мрежата. */
   fuoriPeriodo: boolean;
   impegni: Impegno[];
-  oreTotali: number;
 }
 
 /** Италиански кратки имена на дните, от понеделник. */
@@ -86,9 +83,19 @@ export function grigliaMese(anno: number, mese: number): Date[] {
   const inizio = lunediDi(primo);
   const fine = lunediDi(ultimo);
   const giorni: Date[] = [];
+  // СТЪПКАТА Е ПО КАЛЕНДАР, НЕ ПО МИЛИСЕКУНДИ. Денят на връщането на часа
+  // (последната неделя на октомври в Италия) е 25 ЧАСА: `+86 400 000` спира
+  // на 23:00 от СЪЩИЯ ден и мрежата получава 25 октомври два пъти, а всичко
+  // след него се измества с една колона — понеделник застава под „Domenica".
+  // `setDate(+1)` пита календара, не аритметиката.
+  const fineT = fine.getTime() + 6 * GIORNO;
   // Шест седмици покриват всеки възможен месец; спираме на последната нужна.
-  for (let t = inizio.getTime(); t <= fine.getTime() + 6 * GIORNO; t += GIORNO)
-    giorni.push(new Date(t));
+  for (
+    const d = new Date(inizio);
+    d.getTime() <= fineT;
+    d.setDate(d.getDate() + 1)
+  )
+    giorni.push(new Date(d));
   return giorni;
 }
 
@@ -119,7 +126,6 @@ export function distribuisci(
       data: d,
       fuoriPeriodo: d.getMonth() + 1 !== mese,
       impegni: lista,
-      oreTotali: lista.reduce((s, i) => s + i.ore, 0),
     };
   });
 }
@@ -143,22 +149,26 @@ export function ordinaImpegni(a: Impegno, b: Impegno): number {
 export interface CaricoTecnico {
   tecnicoId: string;
   tecnico: string;
-  ore: number;
   interventi: number;
   /** Над договорения дневен капацитет. */
   sovraccarico: boolean;
 }
 
 /**
- * Натоварването по техник за даден ден.
+ * Натоварването по техник за даден ден — в БРОЙ ангажименти, не в часове.
  *
- * `capacitaOre` идва отвън: осем часа са предположение, а не закон — има фирми
- * с шестчасови смени и такива с дежурства. Стойност `0` или по-малка изключва
- * проверката, вместо да обяви всичко за претоварено.
+ * ЗАЩО НЕ ЧАСОВЕ. Часовете на един ордин не се знаят предварително: те се
+ * научават от рапортино-то СЛЕД намесата. Мярка, която стои на неизвестно
+ * число, е или измислена, или винаги нула — и в двата случая ръчката
+ * „капацитет" не прави нищо, а инсталаторът я открива при клиента. Броят
+ * посещения е това, което диспечерът наистина знае сутринта.
+ *
+ * `capacita` идва отвън: шест посещения са предположение, а не закон. Стойност
+ * `0` или по-малка изключва проверката, вместо да обяви всичко за претоварено.
  */
 export function caricoDelGiorno(
   giorno: Giorno,
-  capacitaOre: number,
+  capacita: number,
 ): CaricoTecnico[] {
   const m = new Map<string, CaricoTecnico>();
   for (const i of giorno.impegni) {
@@ -168,16 +178,16 @@ export function caricoDelGiorno(
       v = {
         tecnicoId: id,
         tecnico: i.tecnico ?? "Non assegnato",
-        ore: 0,
         interventi: 0,
         sovraccarico: false,
       };
       m.set(id, v);
     }
-    v.ore += i.ore;
     v.interventi += 1;
   }
   for (const v of m.values())
-    v.sovraccarico = capacitaOre > 0 && v.ore > capacitaOre;
-  return [...m.values()].sort((a, b) => b.ore - a.ore);
+    // Неразпределеното (`tecnicoId` празен) не е ничие натоварване: то е
+    // купчина за разпределяне, а не претоварен човек.
+    v.sovraccarico = !!v.tecnicoId && capacita > 0 && v.interventi > capacita;
+  return [...m.values()].sort((a, b) => b.interventi - a.interventi);
 }

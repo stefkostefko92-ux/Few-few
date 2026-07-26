@@ -86,8 +86,14 @@ export const GET = gestito(async (req) => {
   const scartate: string[] = [];
 
   for (const f of fatture) {
-    const dati = await fatturaPerSdi(f.id, s.tenantId ?? null);
-    if (!dati) continue;
+    const dati = await fatturaPerSdi(f.id, s.tenantId ?? null, azienda);
+    // Изчезнала между двете заявки: това пак е документ, който НЕ влиза в
+    // пратката — мълчаливото `continue` беше точно поведението, което
+    // коментарът отдолу забранява.
+    if (!dati) {
+      scartate.push(f.numero);
+      continue;
+    }
     // Документ, който НЕ минава проверката, не влиза мълчаливо: пратка, в която
     // част от документите са негодни, изглежда пълна и не е.
     if (validaPerSdi(dati).length) {
@@ -114,7 +120,7 @@ export const GET = gestito(async (req) => {
   if (documenti.length === 0)
     return errore(
       422,
-      `Nessuna fattura conforme nel periodo: ${scartate.length} documenti non superano i controlli SDI e vanno corretti prima del versamento.`,
+      `Nessuna fattura conforme nel periodo: ${scartate.length} ${scartate.length === 1 ? "documento non supera" : "documenti non superano"} i controlli dello SdI e ${scartate.length === 1 ? "va corretto" : "vanno corretti"} prima del versamento.`,
     );
 
   const pacchetto = creaPacchetto(

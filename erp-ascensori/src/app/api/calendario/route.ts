@@ -18,8 +18,14 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** Дневен капацитет на техник в часове; 0 изключва проверката. */
-const CAPACITA_ORE = Number(process.env.CAPACITA_ORE_TECNICO ?? 8);
+/**
+ * Колко посещения на ден е разумно за един техник; `0` изключва проверката.
+ *
+ * В ПОСЕЩЕНИЯ, НЕ В ЧАСОВЕ: часовете на един ордин се научават от рапортино-то
+ * СЛЕД намесата, тоест сутринта не съществуват. Мярка върху несъществуващо
+ * число прави ръчката безмълвна, а инсталаторът я открива при клиента.
+ */
+const CAPACITA = Number(process.env.CAPACITA_INTERVENTI_TECNICO ?? 6);
 
 function intero(v: string | null, predefinito: number): number {
   const n = Number(v);
@@ -101,9 +107,6 @@ export const GET = gestito(async (req) => {
       titolo: `${o.numero} · ${o.oggetto}`,
       tecnicoId: o.tecnicoId,
       tecnico: o.tecnico ? `${o.tecnico.nome} ${o.tecnico.cognome}` : null,
-      // Часовете на ордина не се знаят предварително: не се измисля число,
-      // което после да прави натоварването да изглежда точно.
-      ore: 0,
       tipo: "ordine" as const,
       priorita: o.priorita,
       impianto: o.impianto?.matricola ?? null,
@@ -114,7 +117,6 @@ export const GET = gestito(async (req) => {
       titolo: `Visita · ${c.condominio?.nome ?? c.oggetto}`,
       tecnicoId: null,
       tecnico: null,
-      ore: 0,
       tipo: "visita" as const,
       priorita: "ORDINARIA",
       impianto: null,
@@ -125,7 +127,6 @@ export const GET = gestito(async (req) => {
       titolo: `Scadenza · ${v.tipo}`,
       tecnicoId: null,
       tecnico: null,
-      ore: 0,
       tipo: "verifica" as const,
       // Изтичащ нормативен срок не е „обикновено": пропуснат, той спира уредбата.
       priorita: "URGENTE",
@@ -140,9 +141,9 @@ export const GET = gestito(async (req) => {
     mese,
     giorni: distribuiti.map((g) => ({
       ...g,
-      carico: caricoDelGiorno(g, CAPACITA_ORE),
+      carico: caricoDelGiorno(g, CAPACITA),
     })),
-    capacitaOre: CAPACITA_ORE,
+    capacita: CAPACITA,
     totale: impegni.length,
   });
 });

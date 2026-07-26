@@ -20,6 +20,16 @@ export type RegimeInteressi = "COMMERCIALE" | "LEGALE" | "CONTRATTUALE";
 export interface TassoPeriodo {
   /** От тази дата включително (полунощ UTC). */
   dal: string;
+  /**
+   * До тази дата ИЗКЛЮЧИТЕЛНО.
+   *
+   * Изричен край, а не „до следващия ред": така последният ред КАЗВА докъде
+   * знае таблицата. Без него функцията би върнала последната известна ставка
+   * за всяка бъдеща дата — а точно този механизъм вкара 2,00 % в 2026 г.,
+   * когато декретът беше сложил 1,60 %. Мълчаливо продължена ставка е
+   * измислено число в покана за плащане.
+   */
+  al: string;
   /** Годишният процент в стотни (5,00 % → 500). */
   tasso: number;
 }
@@ -32,12 +42,13 @@ export interface TassoPeriodo {
  * покана за плащане.
  */
 export const TASSI_LEGALI: TassoPeriodo[] = [
-  { dal: "2021-01-01", tasso: 1 }, // 0,01 %
-  { dal: "2022-01-01", tasso: 125 }, // 1,25 %
-  { dal: "2023-01-01", tasso: 500 }, // 5,00 %
-  { dal: "2024-01-01", tasso: 250 }, // 2,50 %
-  { dal: "2025-01-01", tasso: 200 }, // 2,00 %
-  { dal: "2026-01-01", tasso: 200 }, // 2,00 %
+  { dal: "2021-01-01", al: "2022-01-01", tasso: 1 }, // 0,01 %
+  { dal: "2022-01-01", al: "2023-01-01", tasso: 125 }, // 1,25 %
+  { dal: "2023-01-01", al: "2024-01-01", tasso: 500 }, // 5,00 %
+  { dal: "2024-01-01", al: "2025-01-01", tasso: 250 }, // 2,50 %
+  { dal: "2025-01-01", al: "2026-01-01", tasso: 200 }, // 2,00 %
+  // D.M. MEF 10.12.2025, G.U. n. 289 del 13.12.2025.
+  { dal: "2026-01-01", al: "2027-01-01", tasso: 160 }, // 1,60 %
 ];
 
 /**
@@ -45,15 +56,21 @@ export const TASSI_LEGALI: TassoPeriodo[] = [
  *
  * Стойностите са вече сборът: базата се обявява на 1 януари и 1 юли и важи за
  * цялото полугодие.
+ *
+ * ТАБЛИЦАТА СВЪРШВА НА 30.06.2026 НАРОЧНО. Съобщението на МФ за второто
+ * полугодие се обнародва в ГУ през юли; докато го няма, тук няма ред. Ставка
+ * за непокрит период не се екстраполира — искането по-долу отчита дните без
+ * ставка отделно и отказва да ги остойности.
  */
 export const TASSI_COMMERCIALI: TassoPeriodo[] = [
-  { dal: "2023-01-01", tasso: 1050 }, // 2,50 + 8
-  { dal: "2023-07-01", tasso: 1200 }, // 4,00 + 8
-  { dal: "2024-01-01", tasso: 1250 }, // 4,50 + 8
-  { dal: "2024-07-01", tasso: 1225 }, // 4,25 + 8
-  { dal: "2025-01-01", tasso: 1115 }, // 3,15 + 8
-  { dal: "2025-07-01", tasso: 1035 }, // 2,35 + 8
-  { dal: "2026-01-01", tasso: 1015 }, // 2,15 + 8
+  { dal: "2023-01-01", al: "2023-07-01", tasso: 1050 }, // 2,50 + 8
+  { dal: "2023-07-01", al: "2024-01-01", tasso: 1200 }, // 4,00 + 8
+  { dal: "2024-01-01", al: "2024-07-01", tasso: 1250 }, // 4,50 + 8
+  { dal: "2024-07-01", al: "2025-01-01", tasso: 1225 }, // 4,25 + 8
+  { dal: "2025-01-01", al: "2025-07-01", tasso: 1115 }, // 3,15 + 8
+  // Comunicato MEF, G.U. n. 161 del 14.07.2025.
+  { dal: "2025-07-01", al: "2026-01-01", tasso: 1015 }, // 2,15 + 8
+  { dal: "2026-01-01", al: "2026-07-01", tasso: 1015 }, // 2,15 + 8
 ];
 
 /** Ставката, важала на дадена дата; `null`, когато таблицата не я покрива. */
@@ -62,30 +79,58 @@ export function tassoVigente(
   data: Date,
 ): number | null {
   const iso = data.toISOString().slice(0, 10);
-  let trovato: number | null = null;
-  for (const r of tabella) {
-    if (r.dal <= iso) trovato = r.tasso;
-    else break;
-  }
-  return trovato;
+  const r = tabella.find((x) => x.dal <= iso && iso < x.al);
+  return r ? r.tasso : null;
+}
+
+/** Един отрязък с ЕДНА ставка — така се показва в поканата за плащане. */
+export interface TrattoInteressi {
+  dal: string;
+  /** Включително — така го чете длъжникът, не „до, без да броим". */
+  al: string;
+  giorni: number;
+  tasso: number;
+  importo: number;
 }
 
 export interface CalcoloInteressi {
   regime: RegimeInteressi;
   giorni: number;
-  /** Годишният процент в стотни; `null` значи, че не е известен за периода. */
+  /**
+   * Ставката, действала в НАЧАЛОТО на забавата; `null`, когато не е известна.
+   *
+   * Само за заглавие. Сметката е в `tratti` — при забава през нова година
+   * едно число не описва нищо.
+   */
   tasso: number | null;
   /** Начислената лихва в центесими; нула, когато ставката е неизвестна. */
   importo: number;
+  /** Разбивката по периоди на действие на ставката. */
+  tratti: TrattoInteressi[];
+  /** Дни от забавата, за които таблицата няма ставка. */
+  giorniNonCoperti: number;
   /** Кратко обяснение на италиански — влиза в поканата за плащане. */
   motivazione: string;
+}
+
+const GIORNO_MS = 86_400_000;
+
+function iso(t: number): string {
+  return new Date(t).toISOString().slice(0, 10);
 }
 
 /**
  * Лихвата за забава.
  *
+ * ПО ПЕРИОДИ, НЕ ПО ЕДНА СТАВКА. Ставката се сменя всяка година (законната) и
+ * всяко полугодие (търговската), а лихвата тече по онази, която е ДЕЙСТВАЛА
+ * през съответните дни. Фактура с падеж 15.01.2023, олихвена цялата с 5 %,
+ * иска към днешна дата около два пъти повече от дължимото — и това е точно
+ * сумата, която влиза в „messa in mora" и се защитава после в съда.
+ *
  * `giorni` са календарни, годината е 365 дни (обичайната търговска практика в
- * Италия). При неизвестна ставка връща нула и го КАЗВА, вместо да предполага.
+ * Италия). При неизвестна ставка връща нула за тези дни и го КАЗВА, вместо да
+ * предполага.
  */
 export function calcolaInteressi(opts: {
   capitale: number;
@@ -96,7 +141,7 @@ export function calcolaInteressi(opts: {
   tassoContrattuale?: number | null;
 }): CalcoloInteressi {
   const giorni = Math.floor(
-    (opts.oggi.getTime() - opts.scadenza.getTime()) / 86_400_000,
+    (opts.oggi.getTime() - opts.scadenza.getTime()) / GIORNO_MS,
   );
   if (giorni <= 0)
     return {
@@ -104,40 +149,90 @@ export function calcolaInteressi(opts: {
       giorni: 0,
       tasso: null,
       importo: 0,
+      tratti: [],
+      giorniNonCoperti: 0,
       motivazione:
         "Nessun ritardo: il termine di pagamento non è ancora scaduto.",
     };
 
-  let tasso: number | null;
-  let motivazione: string;
-  if (opts.regime === "CONTRATTUALE") {
-    tasso = opts.tassoContrattuale ?? null;
-    motivazione = "Interessi al tasso convenuto in contratto.";
-  } else if (opts.regime === "COMMERCIALE") {
-    tasso = tassoVigente(TASSI_COMMERCIALI, opts.scadenza);
-    motivazione =
-      "Interessi di mora ex D.Lgs. 231/2002 (tasso BCE maggiorato di 8 punti) — transazioni commerciali e pubblica amministrazione.";
-  } else {
-    tasso = tassoVigente(TASSI_LEGALI, opts.scadenza);
-    motivazione =
-      "Interessi legali ex art. 1284 c.c. — il condominio non è un'impresa, quindi non si applica il D.Lgs. 231/2002.";
-  }
+  const capitale = Math.round(opts.capitale);
+  const inizio = opts.scadenza.getTime();
+  const fine = inizio + giorni * GIORNO_MS;
 
-  if (tasso === null)
+  // Уговореният процент няма таблица: той важи за целия период по договор.
+  if (opts.regime === "CONTRATTUALE") {
+    const tasso = opts.tassoContrattuale ?? null;
+    const motivazione = "Interessi al tasso convenuto in contratto.";
+    if (tasso === null || tasso <= 0)
+      return {
+        regime: opts.regime,
+        giorni,
+        tasso: null,
+        importo: 0,
+        tratti: [],
+        giorniNonCoperti: giorni,
+        motivazione: motivazione + " " + MANCA_TASSO,
+      };
+    const importo = quota(capitale, tasso, giorni);
     return {
       regime: opts.regime,
       giorni,
-      tasso: null,
-      importo: 0,
-      motivazione:
-        motivazione +
-        " Tasso non disponibile per il periodo: aggiornare la tabella prima di emettere il sollecito.",
+      tasso,
+      importo,
+      tratti: [{ dal: iso(inizio), al: iso(fine), giorni, tasso, importo }],
+      giorniNonCoperti: 0,
+      motivazione,
     };
+  }
 
-  // capitale (cent) × tasso (centesimi di punto) × giorni / (10 000 × 365)
-  const raw = Math.round(opts.capitale) * tasso * giorni;
-  const importo = Math.sign(raw) * Math.round(Math.abs(raw) / 3_650_000);
-  return { regime: opts.regime, giorni, tasso, importo, motivazione };
+  const commerciale = opts.regime === "COMMERCIALE";
+  const tabella = commerciale ? TASSI_COMMERCIALI : TASSI_LEGALI;
+  let motivazione = commerciale
+    ? "Interessi di mora ex D.Lgs. 231/2002 (tasso BCE maggiorato di 8 punti) — transazioni commerciali e pubblica amministrazione."
+    : "Interessi legali ex art. 1284 c.c. — il condominio non è un'impresa, quindi non si applica il D.Lgs. 231/2002.";
+
+  const tratti: TrattoInteressi[] = [];
+  let coperti = 0;
+  for (const r of tabella) {
+    const da = Math.max(inizio, Date.parse(r.dal + "T00:00:00Z"));
+    const a = Math.min(fine, Date.parse(r.al + "T00:00:00Z"));
+    const g = Math.floor((a - da) / GIORNO_MS);
+    if (g <= 0) continue;
+    coperti += g;
+    tratti.push({
+      dal: iso(da),
+      al: iso(a),
+      giorni: g,
+      tasso: r.tasso,
+      importo: quota(capitale, r.tasso, g),
+    });
+  }
+
+  // Сборът е от отрязъците, не отделна сметка: поканата показва разбивката и
+  // тя трябва да дава точно тоталa, иначе длъжникът има основание за спор.
+  const importo = tratti.reduce((s, t) => s + t.importo, 0);
+  const giorniNonCoperti = giorni - coperti;
+  if (giorniNonCoperti > 0) motivazione += " " + MANCA_TASSO;
+
+  return {
+    regime: opts.regime,
+    giorni,
+    tasso: tratti.length ? tratti[0].tasso : null,
+    importo,
+    tratti,
+    giorniNonCoperti,
+    motivazione,
+  };
+}
+
+/** Едно и също изречение навсякъде: операторът трябва да го разпознава. */
+const MANCA_TASSO =
+  "Tasso non disponibile per l'intero periodo: aggiornare la tabella dei saggi prima di emettere il sollecito.";
+
+/** capitale (cent) × tasso (стотни от пункт) × giorni / (10 000 × 365). */
+function quota(capitale: number, tasso: number, giorni: number): number {
+  const raw = capitale * tasso * giorni;
+  return Math.sign(raw) * Math.round(Math.abs(raw) / 3_650_000);
 }
 
 /**

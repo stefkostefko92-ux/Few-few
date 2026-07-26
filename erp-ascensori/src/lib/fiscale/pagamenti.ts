@@ -10,6 +10,8 @@
 // още едно място за разминаване.
 
 /** Начини на плащане по кодировката на FatturaPA. */
+import { toCents } from "@/lib/totals";
+
 export const MODALITA_PAGAMENTO: Record<string, string> = {
   MP01: "Contanti",
   MP02: "Assegno",
@@ -95,4 +97,40 @@ export function residuo(daIncassare: number, incassato: number): number {
 export function giorniRitardo(scadenza: Date, oggi: Date): number {
   const ms = oggi.getTime() - scadenza.getTime();
   return Math.floor(ms / 86_400_000);
+}
+
+/** Каквото Prisma връща за `Decimal`, плюс обикновените числа и низове. */
+type Decimalish = string | number | { toString(): string };
+
+/**
+ * Остатъкът за събиране по ЕДНА фактура, от полетата ѝ както са в базата.
+ *
+ * ЗАЩО Е ТУК. Същите шест реда стояха дословно на три места (справката за
+ * вземания и двата края на поканите за плащане) — а това не е съвпадение, а
+ * едно правно правило: какво реално влиза в касата след удържането по чл.
+ * 25-ter D.P.R. 600/1973 и разделеното плащане по чл. 17-ter D.P.R. 633/1972.
+ * Решението „липсващо удържане значи нула" също трябва да е взето веднъж.
+ * Четвърто приспадане утре се добавя на едно място, не на три — иначе
+ * забравената точка е покана за плащане към клиент, който не дължи.
+ *
+ * НЕ ЗАМЕСТВА `totali-db.ts`: там удържането се ИЗЧИСЛЯВА от ставката, тук се
+ * ЧЕТЕ вече записаното. Едното е източникът, другото — четенето му.
+ */
+export function residuoFattura(f: {
+  totaleNetto: Decimalish;
+  totaleIva: Decimalish;
+  ritenutaImporto: Decimalish | null;
+  splitPayment: boolean;
+  pagamenti: { importo: Decimalish }[];
+}): number {
+  const daIncassare = importoDaIncassare({
+    imponibile: toCents(f.totaleNetto),
+    imposta: toCents(f.totaleIva),
+    ritenuta: toCents(f.ritenutaImporto ?? 0),
+    splitPayment: f.splitPayment,
+  });
+  return residuo(
+    daIncassare,
+    f.pagamenti.reduce((a, p) => a + toCents(p.importo), 0),
+  );
 }

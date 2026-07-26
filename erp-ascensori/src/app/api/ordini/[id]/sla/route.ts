@@ -86,16 +86,14 @@ export const PATCH = gestito(async (req, ctx) => {
   // да са те повикали. Без проверката един объркан час прави отчета за времената
   // безсмислен — и то мълчаливо.
   const dopo = {
-    segnalatoAt: dati.segnalatoAt !== undefined ? dati.segnalatoAt : prima.segnalatoAt,
+    segnalatoAt:
+      dati.segnalatoAt !== undefined ? dati.segnalatoAt : prima.segnalatoAt,
     arrivoAt: dati.arrivoAt !== undefined ? dati.arrivoAt : prima.arrivoAt,
     ripristinoAt:
       dati.ripristinoAt !== undefined ? dati.ripristinoAt : prima.ripristinoAt,
   };
   if (dopo.arrivoAt && dopo.segnalatoAt && dopo.arrivoAt < dopo.segnalatoAt)
-    throw new ErroreHttp(
-      400,
-      "L'arrivo non può precedere la segnalazione",
-    );
+    throw new ErroreHttp(400, "L'arrivo non può precedere la segnalazione");
   if (
     dopo.ripristinoAt &&
     dopo.segnalatoAt &&

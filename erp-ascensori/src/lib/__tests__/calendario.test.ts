@@ -18,7 +18,6 @@ const imp = (over: Partial<Impegno> = {}): Impegno => ({
   titolo: "Manutenzione",
   tecnicoId: "t1",
   tecnico: "Marco Rossi",
-  ore: 2,
   tipo: "ordine",
   ...over,
 });
@@ -96,7 +95,6 @@ describe("разпределението", () => {
     const g = distribuisci(giorni, [imp({ data: new Date(2026, 6, 15) })], 7);
     const quindici = g.find((x) => x.chiave === "2026-07-15");
     assert.equal(quindici?.impegni.length, 1);
-    assert.equal(quindici?.oreTotali, 2);
   });
 
   test("дните извън месеца се маркират, не се махат", () => {
@@ -106,16 +104,9 @@ describe("разпределението", () => {
     assert.ok(fuori.every((x) => x.data.getMonth() + 1 !== 7));
   });
 
-  test("часовете на деня се сумират", () => {
-    const g = distribuisci(
-      giorni,
-      [
-        imp({ id: "a", ore: 3 }),
-        imp({ id: "b", ore: 4.5 }),
-      ],
-      7,
-    );
-    assert.equal(g.find((x) => x.chiave === "2026-07-15")?.oreTotali, 7.5);
+  test("ангажиментите на един ден се събират в неговата клетка", () => {
+    const g = distribuisci(giorni, [imp({ id: "a" }), imp({ id: "b" })], 7);
+    assert.equal(g.find((x) => x.chiave === "2026-07-15")?.impegni.length, 2);
   });
 });
 
@@ -157,42 +148,49 @@ describe("натоварването по техник", () => {
   const giorno = distribuisci(
     grigliaMese(2026, 7),
     [
-      imp({ id: "a", tecnicoId: "t1", tecnico: "Marco", ore: 5 }),
-      imp({ id: "b", tecnicoId: "t1", tecnico: "Marco", ore: 4 }),
-      imp({ id: "c", tecnicoId: "t2", tecnico: "Luca", ore: 3 }),
+      imp({ id: "a", tecnicoId: "t1", tecnico: "Marco" }),
+      imp({ id: "b", tecnicoId: "t1", tecnico: "Marco" }),
+      imp({ id: "c", tecnicoId: "t2", tecnico: "Luca" }),
     ],
     7,
   ).find((g) => g.chiave === "2026-07-15")!;
 
-  test("сумира часовете и брои намесите", () => {
-    const c = caricoDelGiorno(giorno, 8);
+  test("брои намесите по техник, най-натовареният е първи", () => {
+    const c = caricoDelGiorno(giorno, 6);
     assert.equal(c[0].tecnico, "Marco");
-    assert.equal(c[0].ore, 9);
     assert.equal(c[0].interventi, 2);
+    assert.equal(c[1].interventi, 1);
   });
 
   test("над капацитета се обявява", () => {
-    assert.equal(caricoDelGiorno(giorno, 8)[0].sovraccarico, true);
+    assert.equal(caricoDelGiorno(giorno, 1)[0].sovraccarico, true);
     assert.equal(
-      caricoDelGiorno(giorno, 8).find((x) => x.tecnico === "Luca")
+      caricoDelGiorno(giorno, 1).find((x) => x.tecnico === "Luca")
         ?.sovraccarico,
       false,
     );
   });
 
   test("нулев капацитет ИЗКЛЮЧВА проверката, вместо да оцвети всичко в червено", () => {
-    // Осем часа са предположение, не закон: има фирми с шестчасови смени и
-    // такива с дежурства.
+    // Шест посещения са предположение, не закон: има фирми с дежурства и
+    // такива с дълги планови обиколки.
     assert.ok(caricoDelGiorno(giorno, 0).every((x) => !x.sovraccarico));
   });
 
-  test("неразпределеното се вижда като отделен ред", () => {
+  test("неразпределеното се вижда като отделен ред, но не е претоварен ЧОВЕК", () => {
     const g = distribuisci(
       grigliaMese(2026, 7),
-      [imp({ tecnicoId: null, tecnico: null, ore: 2 })],
+      [
+        imp({ id: "x", tecnicoId: null, tecnico: null }),
+        imp({ id: "y", tecnicoId: null, tecnico: null }),
+      ],
       7,
     ).find((x) => x.chiave === "2026-07-15")!;
-    assert.equal(caricoDelGiorno(g, 8)[0].tecnico, "Non assegnato");
+    const c = caricoDelGiorno(g, 1);
+    assert.equal(c[0].tecnico, "Non assegnato");
+    // Купчина за разпределяне не е претоварен техник: тя иска решение, не
+    // тревога за нечие работно време.
+    assert.equal(c[0].sovraccarico, false);
   });
 });
 
@@ -203,4 +201,42 @@ test("имената на месеците са дванайсет, на ита�
   assert.equal(MESI_IT[0], "Gennaio");
   assert.equal(MESI_IT[11], "Dicembre");
   assert.equal(new Set(MESI_IT).size, 12);
+});
+
+// РЕГРЕСИЯ: мрежата се строеше със стъпка от фиксирани 86 400 000 ms. Денят на
+// връщането на часа в Италия (последната неделя на октомври) е 25 ЧАСА, тоест
+// стъпката спираше на 23:00 от СЪЩИЯ ден: 25 октомври се появяваше два пъти, а
+// всичко след него се изместваше с една колона — понеделник заставаше под
+// „Domenica". Проверката е по КЛЮЧОВЕ, не по брой: дублиран ключ е и дублиран
+// React ключ, и двойно броене на ангажиментите за този ден.
+//
+// ЗОНАТА СЕ ЗАДАВА ИЗРИЧНО. В UTC преход няма и тестът би бил празен точно в
+// средата, където CI го пуска — а продуктът работи в Италия.
+test("мрежата не дублира и не изяжда ден при смяна на часа", () => {
+  const originale = process.env.TZ;
+  process.env.TZ = "Europe/Rome";
+  try {
+    for (const [anno, mese] of [
+      [2026, 10], // есенен преход — денят е 25 часа
+      [2026, 3], // пролетен преход — денят е 23 часа
+      [2027, 10],
+      [2025, 10],
+    ] as const) {
+      const date = grigliaMese(anno, mese);
+      const g = date.map(chiaveGiorno);
+      assert.equal(new Set(g).size, g.length, `дублиран ден в ${anno}-${mese}`);
+      assert.equal(g.length % 7, 0, `непълна седмица в ${anno}-${mese}`);
+      assert.equal(date[0].getDay(), 1); // понеделник
+      assert.equal(date[date.length - 1].getDay(), 0); // неделя
+      const ultimo = new Date(anno, mese, 0).getDate();
+      for (let d = 1; d <= ultimo; d++)
+        assert.ok(
+          g.includes(chiaveGiorno(new Date(anno, mese - 1, d))),
+          `липсва ${anno}-${mese}-${d}`,
+        );
+    }
+  } finally {
+    if (originale === undefined) delete process.env.TZ;
+    else process.env.TZ = originale;
+  }
 });

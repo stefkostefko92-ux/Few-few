@@ -7,6 +7,28 @@ import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { ddtSchema } from "@/lib/entities";
 
+/**
+ * DDT, закачен за фактура, е ЗАМРАЗЕН.
+ *
+ * ЗАЩО ТУК, А НЕ САМО В `/api/fatture/[id]/ddt`. XML-ът за SDI не се пази —
+ * ражда се наново от живите редове при всяко четене (`sdi/carica.ts`), а типът
+ * на документа се ИЗВЕЖДА: фактура с прикачени DDT е `TD24`, без тях — `TD01`.
+ * Значи промяна на датата на DDT сменя `<DataDDT>` във вече подадена фактура,
+ * а изтриването му я връща на `TD01` без `<DatiDDT>` — със същия номер и същия
+ * `progressivoInvio`. Архивът за conservazione тогава предава документ,
+ * РАЗЛИЧЕН от издадения, при README, който твърди обратното.
+ *
+ * Специализираният маршрут пази връзката „само в BOZZA"; тук се пази самият
+ * DDT, защото това е другият вход към същите данни.
+ */
+function esigiScollegato(prima: { fatturaId: string | null }): void {
+  if (prima.fatturaId)
+    throw new ErroreHttp(
+      409,
+      "DDT collegato a una fattura: scollegarlo dalla fattura (possibile solo in bozza) prima di modificarlo o eliminarlo.",
+    );
+}
+
 const include = {
   ordineLavoro: { select: { numero: true, oggetto: true } },
   righe: { orderBy: { ordine: "asc" as const } },
@@ -34,6 +56,7 @@ export const PUT = gestito(async (req, ctx) => {
     where: { id, ...filtroTenant(s) },
   });
   if (!prima) throw new ErroreHttp(404, "DDT non trovato");
+  esigiScollegato(prima);
   const dopo = await prisma.ddt.update({ where: { id }, data, include });
   await scriviAudit({
     azione: "UPDATE",
@@ -56,6 +79,7 @@ export const DELETE = gestito(async (_req, ctx) => {
     where: { id, ...filtroTenant(s) },
   });
   if (!prima) throw new ErroreHttp(404, "DDT non trovato");
+  esigiScollegato(prima);
   await prisma.ddt.delete({ where: { id } });
   await scriviAudit({
     azione: "DELETE",

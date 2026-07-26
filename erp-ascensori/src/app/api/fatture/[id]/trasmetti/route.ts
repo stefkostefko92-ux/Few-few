@@ -22,6 +22,7 @@ import { fatturaPerSdi } from "@/lib/sdi/carica";
 import { xmlFatturaPa, validaPerSdi, nomeFileSdi } from "@/lib/sdi/fatturapa";
 import { configTrasmissione, controllaInvio } from "@/lib/sdi/trasmissione";
 import { consenti } from "@/lib/rate-limit";
+import { giaTrasmessa } from "@/lib/fiscale/sdi-stato";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -67,7 +68,10 @@ export const POST = gestito(async (_req, ctx) => {
   });
   if (!f) throw new ErroreHttp(404, "Fattura non trovata");
   if (f.tipo !== "EMESSA")
-    throw new ErroreHttp(400, "Solo le fatture emesse si trasmettono a SDI");
+    throw new ErroreHttp(
+      400,
+      "Si possono trasmettere allo SdI solo le fatture emesse.",
+    );
   // Черновата не се подава: подаден документ е издаден и номерът му е
   // изразходван. Това е причината, не подредбата на състоянията.
   if (f.stato === "BOZZA")
@@ -78,10 +82,10 @@ export const POST = gestito(async (_req, ctx) => {
   // ЕДИН ФАЙЛ СЕ ПОДАВА ВЕДНЪЖ. SDI отхвърля повторно име като дубликат
   // независимо от съдържанието; повторното натискане след мрежова грешка е
   // най-обикновеното нещо на света.
-  if (["INVIATA", "CONSEGNATA", "MANCATA_CONSEGNA", "ACCETTATA"].includes(f.statoSdi))
+  if (giaTrasmessa(f.statoSdi))
     throw new ErroreHttp(
       409,
-      `Fattura già trasmessa (stato ${f.statoSdi}): una nuova trasmissione sarebbe respinta da SDI come duplicato`,
+      `Fattura già trasmessa (stato ${f.statoSdi}): una nuova trasmissione sarebbe respinta dallo SdI come duplicato.`,
     );
 
   const dati = await fatturaPerSdi(id, s.tenantId ?? null);
@@ -112,10 +116,20 @@ export const POST = gestito(async (_req, ctx) => {
   // системата не знае, че е тръгнала — а следващото натискане прави ВТОРО
   // подаване на същия файл. По-добре „подадена, но не сме сигурни" (човек го
   // проверява) отколкото тихо двойно подаване.
-  await prisma.fattura.updateMany({
+  const upd = await prisma.fattura.updateMany({
     where: { id, statoSdi: f.statoSdi },
     data: { statoSdi: "INVIATA", dataInvioSdi: new Date() },
   });
+  // РЕЗУЛТАТЪТ ОТ УСЛОВНИЯ ЗАПИС СЕ ЧЕТЕ. Без това двоен клик по бавна връзка
+  // минава два пъти: вторият запис не променя нищо, но пише ВТОРИ ред в
+  // неизменимия одит („da GENERATA a INVIATA", което не се е случило) и
+  // отговаря „подадена". В деня, в който под този ред застане реален канал,
+  // същият пропуск е двойно подаване към SDI.
+  if (upd.count === 0)
+    throw new ErroreHttp(
+      409,
+      "Stato SDI modificato da un'altra operazione: ricaricare la fattura.",
+    );
   await scriviAudit({
     azione: "STATE_CHANGE",
     entita: "fatture",
@@ -142,6 +156,6 @@ export const POST = gestito(async (_req, ctx) => {
     nomeFile,
     // Честно съобщение: системата НЕ твърди, че SDI е приел документа. Това се
     // научава от известието, не от успешно изпращане.
-    messaggio: `Fattura ${f.numero} preparata e marcata come trasmessa tramite ${cfg.etichetta}. L'esito arriverà con la notifica di SDI (RC, NS o MC).`,
+    messaggio: `Fattura ${f.numero} preparata e marcata come trasmessa tramite ${cfg.etichetta}. L'esito arriverà con la notifica dello SdI (RC, NS o MC).`,
   });
 });

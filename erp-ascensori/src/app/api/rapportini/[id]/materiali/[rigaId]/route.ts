@@ -10,21 +10,13 @@ import { ok, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
+import { rapportinoModificabile } from "@/lib/rapportini-guardie";
 
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id, rigaId } = await ctx.params;
 
-  const rapportino = await prisma.rapportino.findFirst({
-    where: { id, ...filtroTenant(s) },
-    select: { id: true, numero: true, firmatoAt: true, ordineLavoroId: true },
-  });
-  if (!rapportino) throw new ErroreHttp(404, "Rapportino non trovato");
-  if (rapportino.firmatoAt)
-    throw new ErroreHttp(
-      409,
-      "Rapportino già firmato: i materiali non sono più modificabili",
-    );
+  const rapportino = await rapportinoModificabile(id, s);
 
   const riga = await prisma.materialeRapportino.findFirst({
     where: { id: rigaId, rapportinoId: id, ...filtroTenant(s) },
@@ -35,8 +27,10 @@ export const DELETE = gestito(async (_req, ctx) => {
   await prisma.$transaction(async (tx) => {
     // Изтриването на РЕДА е условно: две едновременни изтривания не могат да
     // върнат количеството два пъти.
-    const via = await tx.materialeRapportino.deleteMany({ where: { id: rigaId } });
-    if (via.count === 0) throw new ErroreHttp(409, "Riga già rimossa");
+    const via = await tx.materialeRapportino.deleteMany({
+      where: { id: rigaId },
+    });
+    if (via.count === 0) throw new ErroreHttp(409, "Riga già rimossa.");
 
     await tx.articoloMagazzino.update({
       where: { id: riga.articoloId },

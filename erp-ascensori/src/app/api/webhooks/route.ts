@@ -7,6 +7,7 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { EVENTI } from "@/lib/webhook/firma";
+import { hostInterno } from "@/lib/rete";
 
 const schema = z.object({
   url: z
@@ -18,7 +19,14 @@ const schema = z.object({
   eventi: z.array(z.enum(EVENTI)).min(1, "Selezionare almeno un evento"),
 });
 
-/** Известието носи бизнес данни — адресът трябва да е ВЪН, не към нас самите. */
+/**
+ * Известието носи бизнес данни — адресът трябва да е ВЪН, не към нас самите.
+ *
+ * Тази проверка е само УДОБСТВО: тя връща грешка веднага, докато човекът е още
+ * на формата, вместо мълчаливо провалени доставки часове по-късно. Истинската
+ * защита срещу SSRF е при СВЪРЗВАНЕТО (`lookupSicuro` в `lib/rete.ts`), защото
+ * име, проверено днес, утре може да сочи навътре.
+ */
 function indirizzoAmmesso(url: string): boolean {
   let u: URL;
   try {
@@ -26,19 +34,7 @@ function indirizzoAmmesso(url: string): boolean {
   } catch {
     return false;
   }
-  const host = u.hostname.toLowerCase();
-  // Забраната е срещу SSRF: иначе абонамент към `http://169.254.169.254` или
-  // към вътрешен адрес превръща нашия сървър в четец на чужди мрежи.
-  if (
-    host === "localhost" ||
-    host.endsWith(".localhost") ||
-    host.endsWith(".internal")
-  )
-    return false;
-  if (/^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(host)) return false;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
-  if (host === "::1" || host === "[::1]") return false;
-  return true;
+  return !hostInterno(u.hostname);
 }
 
 export const GET = gestito(async () => {

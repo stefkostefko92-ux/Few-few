@@ -23,6 +23,8 @@
 //   3. НЕУСПЕХЪТ Е СЪСТОЯНИЕ, НЕ ИЗКЛЮЧЕНИЕ. „Не тръгна" се вижда в списъка и
 //      се пробва пак; не изчезва в лог, който никой не чете.
 
+import { hostInterno } from "@/lib/rete";
+
 /** Каналите, които продуктът разпознава. */
 export type Canale =
   /** Изключено: файлът се сваля и се подава на ръка. Подразбирането. */
@@ -130,9 +132,7 @@ export function controllaInvio(
   if (!invio.nomeFile.trim()) problemi.push("Nome file mancante.");
   // Името е ключът за идемпотентност в SDI: повторно име = отхвърлен дубликат.
   else if (!/^IT[A-Z0-9]{11,16}_[A-Z0-9]{5}\.xml$/i.test(invio.nomeFile))
-    problemi.push(
-      `Nome file non conforme alle regole SDI: ${invio.nomeFile}`,
-    );
+    problemi.push(`Nome file non conforme alle regole SDI: ${invio.nomeFile}`);
 
   if (!invio.xml.trim()) problemi.push("XML vuoto.");
   else if (!invio.xml.includes("<p:FatturaElettronica"))
@@ -171,22 +171,16 @@ export function controllaInvio(
 /**
  * Вътрешен ли е адресът.
  *
- * Същата проверка като при webhook-ите: без нея конфигурация с
- * `https://169.254.169.254/...` кара сървъра да изпрати фактурата — и всичко
- * останало, до което стигне — на метаданните на облака.
+ * Същата проверка като при webhook-ите — и буквално същият код: тя живее в
+ * `lib/rete.ts`, защото едно правило за „навън" не бива да има два различни
+ * списъка. Без нея конфигурация с `https://169.254.169.254/...` кара сървъра
+ * да изпрати фактурата — и всичко останало, до което стигне — на метаданните
+ * на облака.
+ *
+ * Пази се като име, защото се вика от проверката на конфигурацията: там се
+ * съди по това, което е ЗАПИСАНО. Самото изпращане минава през `postEsterno`,
+ * който проверява резолвния адрес в мига на свързването.
  */
 export function indirizzoInterno(hostname: string): boolean {
-  const h = hostname.toLowerCase();
-  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".internal"))
-    return true;
-  if (h === "0.0.0.0" || h === "::1" || h === "[::1]") return true;
-  const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
-  if (!ipv4) return false;
-  const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
-  if (a === 10 || a === 127) return true;
-  if (a === 172 && b >= 16 && b <= 31) return true;
-  if (a === 192 && b === 168) return true;
-  // Link-local: точно 169.254.169.254 е метаданните на повечето облаци.
-  if (a === 169 && b === 254) return true;
-  return false;
+  return hostInterno(hostname);
 }

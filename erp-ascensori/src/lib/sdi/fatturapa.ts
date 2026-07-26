@@ -338,7 +338,10 @@ export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
   // на доставката, а „кой месец" зависи от датата — оставяме преценката на
   // човека, вместо да отказваме документ, който може да е законен.
   if (f.tipoDocumento === "TD24" && ddt.length > 0) {
-    const piuVecchio = ddt.reduce((m, d) => (d.data < m ? d.data : m), ddt[0].data);
+    const piuVecchio = ddt.reduce(
+      (m, d) => (d.data < m ? d.data : m),
+      ddt[0].data,
+    );
     const limite = new Date(
       Date.UTC(piuVecchio.getUTCFullYear(), piuVecchio.getUTCMonth() + 1, 15),
     );
@@ -577,7 +580,10 @@ export function xmlFatturaPa(f: FatturaSdi): string {
       (d) => `      <DatiDDT>
         <NumeroDDT>${esc(d.numero)}</NumeroDDT>
         <DataDDT>${dataSdi(d.data)}</DataDDT>${(d.righeRiferite ?? [])
-          .map((n) => `\n        <RiferimentoNumeroLinea>${n}</RiferimentoNumeroLinea>`)
+          .map(
+            (n) =>
+              `\n        <RiferimentoNumeroLinea>${n}</RiferimentoNumeroLinea>`,
+          )
           .join("")}
       </DatiDDT>`,
     )

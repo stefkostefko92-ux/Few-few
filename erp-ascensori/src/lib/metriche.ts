@@ -42,13 +42,40 @@ export function escapaEtichetta(v: string): string {
     .replace(/\n/g, "\\n");
 }
 
+/**
+ * Таван на броя редици — предпазителят срещу „cardinality bomb".
+ *
+ * ЗАЩО СЪЩЕСТВУВА, СЛЕД КАТО ЕТИКЕТИТЕ СА ЗАТВОРЕНИ. Защото са затворени
+ * ДНЕС. Регистърът е Map в паметта на процеса и нищо не го чисти: един етикет
+ * със свободна стойност, добавен утре по невнимание, го надува, докато
+ * `/api/metrics` стане толкова голям, че скрейпът изтича — тоест наблюдаемостта
+ * пада точно когато е най-нужна. Тук границата е конструктивна, а не разчита
+ * на дисциплината на следващия, който пипне етикет.
+ *
+ * Числото е с голям запас: продуктът излага под сто редици.
+ */
+export const MAX_SERIE = 5_000;
+
+/** Колко редици са отказани заради тавана — сам по себе си сигнал. */
+let scartate = 0;
+
 export function incrementa(
   nome: string,
   etichette: Record<string, string> = {},
   di = 1,
 ): void {
   const k = chiave(nome, etichette);
+  const esiste = contatori.has(k);
+  if (!esiste && contatori.size >= MAX_SERIE) {
+    scartate += 1;
+    return;
+  }
   contatori.set(k, (contatori.get(k) ?? 0) + di);
+}
+
+/** Броят отказани редици — излага се като метрика, за да се види таванът. */
+export function serieScartate(): number {
+  return scartate;
 }
 
 export function osserva(
@@ -59,6 +86,10 @@ export function osserva(
   const k = chiave(nome, etichette);
   let h = istogrammi.get(k);
   if (!h) {
+    if (istogrammi.size >= MAX_SERIE) {
+      scartate += 1;
+      return;
+    }
     h = {
       conteggi: new Array(BUCKET_SECONDI.length).fill(0),
       somma: 0,
@@ -76,6 +107,7 @@ export function osserva(
 export function azzera(): void {
   contatori.clear();
   istogrammi.clear();
+  scartate = 0;
 }
 
 /** Разделя `nome{a="1"}` обратно на име и етикети — за изхода на хистограмата. */
@@ -100,6 +132,8 @@ const AIUTO: Record<string, string> = {
   erp_errori_totale: "Errori non gestiti (HTTP 5xx)",
   erp_csp_violazioni_totale:
     "Violazioni della Content-Security-Policy segnalate dai browser",
+  erp_metriche_serie_scartate_totale:
+    "Serie rifiutate per superamento del limite di cardinalità",
 };
 
 /**
@@ -111,6 +145,16 @@ const AIUTO: Record<string, string> = {
  */
 export function esporta(extra: MetricaExtra[] = []): string {
   const righe: string[] = [];
+  // Таванът се вижда: нула тук значи, че регистърът е в границите си.
+  extra = [
+    ...extra,
+    {
+      nome: "erp_metriche_serie_scartate_totale",
+      aiuto: AIUTO.erp_metriche_serie_scartate_totale,
+      tipo: "counter",
+      valore: scartate,
+    },
+  ];
   const visti = new Set<string>();
 
   const intestazione = (nome: string, tipo: string, aiuto?: string) => {

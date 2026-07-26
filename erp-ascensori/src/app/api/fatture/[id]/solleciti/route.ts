@@ -15,8 +15,8 @@ import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
-import { toCents, fromCents } from "@/lib/totals";
-import { importoDaIncassare, residuo } from "@/lib/fiscale/pagamenti";
+import { fromCents } from "@/lib/totals";
+import { residuoFattura } from "@/lib/fiscale/pagamenti";
 import { calcolaInteressi, regimePerDebitore } from "@/lib/fiscale/interessi";
 import {
   giorniTra,
@@ -56,16 +56,7 @@ export const GET = gestito(async (_req, ctx) => {
   });
   if (!f) throw new ErroreHttp(404, "Fattura non trovata");
 
-  const daIncassare = importoDaIncassare({
-    imponibile: toCents(f.totaleNetto),
-    imposta: toCents(f.totaleIva),
-    ritenuta: toCents(f.ritenutaImporto ?? 0),
-    splitPayment: f.splitPayment,
-  });
-  const res = residuo(
-    daIncassare,
-    f.pagamenti.reduce((a, p) => a + toCents(p.importo), 0),
-  );
+  const res = residuoFattura(f);
   const giorni = giorniTra(f.dataScadenza ?? f.data, new Date());
   const inviati = f.solleciti.length;
 
@@ -89,32 +80,25 @@ export const POST = gestito(async (req, ctx) => {
   });
   if (!f) throw new ErroreHttp(404, "Fattura non trovata");
   if (f.tipo !== "EMESSA")
-    throw new ErroreHttp(400, "Solo le fatture emesse si sollecitano");
+    throw new ErroreHttp(400, "Si possono sollecitare solo le fatture emesse.");
   if (f.stato === "BOZZA" || f.stato === "STORNATA")
     throw new ErroreHttp(
       409,
-      "Fattura in bozza o stornata: non c'è nulla da sollecitare",
+      "Fattura in bozza o stornata: non c'è nulla da sollecitare.",
     );
 
-  const daIncassare = importoDaIncassare({
-    imponibile: toCents(f.totaleNetto),
-    imposta: toCents(f.totaleIva),
-    ritenuta: toCents(f.ritenutaImporto ?? 0),
-    splitPayment: f.splitPayment,
-  });
-  const res = residuo(
-    daIncassare,
-    f.pagamenti.reduce((a, p) => a + toCents(p.importo), 0),
-  );
+  const res = residuoFattura(f);
   // Покана за платена фактура е грешка, която струва отношения. По-добре 409
   // отколкото писмо до клиент, който не дължи нищо.
   if (res <= 0)
-    throw new ErroreHttp(409, "Fattura già saldata: nessun sollecito dovuto");
+    throw new ErroreHttp(
+      409,
+      "Fattura già saldata: non c'è nulla da sollecitare.",
+    );
 
   const scadenza = f.dataScadenza ?? f.data;
   const giorni = giorniTra(scadenza, new Date());
-  if (giorni < 1)
-    throw new ErroreHttp(409, "Fattura non ancora scaduta");
+  if (giorni < 1) throw new ErroreHttp(409, "Fattura non ancora scaduta.");
 
   const inviati = f.solleciti.length;
   const atteso = livelloSuggerito(giorni, inviati);
@@ -124,8 +108,8 @@ export const POST = gestito(async (req, ctx) => {
     throw new ErroreHttp(
       409,
       atteso === null
-        ? "Nessun sollecito previsto in questo momento"
-        : `Il prossimo sollecito previsto è il livello ${atteso}`,
+        ? "Nessun sollecito previsto in questo momento."
+        : `Il prossimo passo previsto è: ${LIVELLI_SOLLECITO.find((l) => l.livello === atteso)!.etichetta}.`,
     );
 
   const def = LIVELLI_SOLLECITO.find((l) => l.livello === dati.livello)!;
@@ -142,12 +126,22 @@ export const POST = gestito(async (req, ctx) => {
       partitaIva:
         f.condominio?.partitaIva ?? f.amministratore?.partitaIva ?? null,
     });
-    interessi = calcolaInteressi({
+    const calcolo = calcolaInteressi({
       capitale: res,
       scadenza,
       oggi: new Date(),
       regime,
-    }).importo;
+    });
+    // ЛИХВАТА СЕ ЗАМРАЗЯВА В РЕДА. Щом таблицата не покрива част от забавата,
+    // замразяването би вписало число, по-малко от дължимото — завинаги, защото
+    // таблицата е само-добавяща. Отказът е по-евтин от покана с грешна сума:
+    // тя отива на хартия у длъжника и се защитава после.
+    if (calcolo.giorniNonCoperti > 0)
+      throw new ErroreHttp(
+        409,
+        `Saggio d'interesse non disponibile per ${calcolo.giorniNonCoperti} giorni del periodo: aggiornare la tabella dei saggi prima di registrare questo sollecito.`,
+      );
+    interessi = calcolo.importo;
   }
 
   const riga = await prisma.sollecito.create({

@@ -115,9 +115,23 @@ function destinatario(
   };
 }
 
+/**
+ * Данните на фирмата — веднъж прочетени, се ПОДАВАТ.
+ *
+ * Пратката за conservazione минава през тази функция до две хиляди пъти
+ * подред; без параметъра всяко минаване чете наново един и същ ред от
+ * `dati_azienda`, тоест две хиляди излишни обиколки до базата за едно
+ * натискане.
+ */
+export type DatiAziendaSdi = { tenantId: string | null } & Record<
+  string,
+  unknown
+>;
+
 export async function fatturaPerSdi(
   id: string,
   tenantId: string | null,
+  aziendaGia?: Awaited<ReturnType<typeof prisma.datiAzienda.findFirst>>,
 ): Promise<FatturaSdi | null> {
   const f = await prisma.fattura.findFirst({
     where: { id, tenantId },
@@ -125,7 +139,8 @@ export async function fatturaPerSdi(
   });
   if (!f) return null;
 
-  const a = await prisma.datiAzienda.findFirst({ where: { tenantId } });
+  const a =
+    aziendaGia ?? (await prisma.datiAzienda.findFirst({ where: { tenantId } }));
 
   return {
     numero: f.numero,

@@ -302,7 +302,7 @@ describe("лихва при забава", () => {
     const legale = calcolaInteressi({ ...base, regime: "LEGALE" });
     const commerciale = calcolaInteressi({ ...base, regime: "COMMERCIALE" });
     assert.equal(legale.giorni, 30);
-    assert.equal(legale.tasso, 200); // 2,00 %
+    assert.equal(legale.tasso, 160); // 1,60 % — D.M. MEF 10.12.2025
     assert.equal(commerciale.tasso, 1015); // 10,15 %
     assert.ok(commerciale.importo > legale.importo * 4);
     assert.match(legale.motivazione, /1284/);
@@ -373,7 +373,10 @@ describe("плащания: закъснение и публични табли�
   });
 
   test("трите състояния на плащането и само те", () => {
-    assert.deepEqual([...STATI_PAGAMENTO], ["NON_PAGATA", "PARZIALE", "PAGATA"]);
+    assert.deepEqual(
+      [...STATI_PAGAMENTO],
+      ["NON_PAGATA", "PARZIALE", "PAGATA"],
+    );
     // Всяко състояние трябва да е достижимо от сметката, иначе е мъртво.
     assert.equal(statoDaIncassi(1000, 0), "NON_PAGATA");
     assert.equal(statoDaIncassi(1000, 400), "PARZIALE");
@@ -443,7 +446,61 @@ describe("лихви: договорният режим", () => {
       assert.ok(TASSI_COMMERCIALI[i].dal > TASSI_COMMERCIALI[i - 1].dal);
     for (let i = 1; i < TASSI_LEGALI.length; i++)
       assert.ok(TASSI_LEGALI[i].dal > TASSI_LEGALI[i - 1].dal);
-    assert.equal(tassoVigente(TASSI_COMMERCIALI, new Date("2025-08-01T00:00:00Z")), 1035);
+    // Comunicato MEF, G.U. n. 161 del 14.07.2025 — 2,15 % + 8.
+    assert.equal(
+      tassoVigente(TASSI_COMMERCIALI, new Date("2025-08-01T00:00:00Z")),
+      1015,
+    );
+    // ТАБЛИЦАТА КАЗВА ДОКЪДЕ ЗНАЕ. Ставка за непокрит период е измислено
+    // число в покана за плащане — по-добре „не знам" отколкото продължена
+    // мълчаливо последна стойност. Точно този механизъм вкара 2,00 % в 2026 г.
+    for (let i = 1; i < TASSI_COMMERCIALI.length; i++)
+      assert.equal(TASSI_COMMERCIALI[i].dal, TASSI_COMMERCIALI[i - 1].al);
+    for (let i = 1; i < TASSI_LEGALI.length; i++)
+      assert.equal(TASSI_LEGALI[i].dal, TASSI_LEGALI[i - 1].al);
+    const ultimo = TASSI_COMMERCIALI[TASSI_COMMERCIALI.length - 1];
+    assert.equal(tassoVigente(TASSI_COMMERCIALI, new Date(ultimo.al)), null);
+  });
+
+  // РЕГРЕСИЯ: ставката се вземаше КЪМ ПАДЕЖА и се прилагаше за целия период.
+  // Фактура с падеж 15.01.2023, оставена да тече, получаваше 5,00 % за три
+  // години вместо 5 %(2023) + 2,5 %(2024) + 2 %(2025) + 1,6 %(2026) — тоест
+  // около двойно повече от дължимото, замразено после в „messa in mora".
+  test("лихвата тече по ставката на всеки период, не по тази при падежа", () => {
+    const r = calcolaInteressi({
+      capitale: 1_000_000, // 10 000,00 €
+      scadenza: new Date("2023-01-15T00:00:00Z"),
+      oggi: new Date("2026-01-15T00:00:00Z"),
+      regime: "LEGALE",
+    });
+    assert.equal(r.giorniNonCoperti, 0);
+    assert.deepEqual(
+      r.tratti.map((t) => t.tasso),
+      [500, 250, 200, 160],
+    );
+    // Сборът на отрязъците Е тоталът: поканата показва разбивката и тя трябва
+    // да дава точно числото отдолу.
+    assert.equal(
+      r.importo,
+      r.tratti.reduce((s, t) => s + t.importo, 0),
+    );
+    // Старото поведение (5 % за целия период) би дало около 150 000 центесими.
+    const vecchio = Math.round((1_000_000 * 500 * r.giorni) / 3_650_000);
+    assert.ok(r.importo < vecchio * 0.75, `${r.importo} vs ${vecchio}`);
+  });
+
+  test("непокрит период НЕ се остойностява мълчаливо", () => {
+    const ultimo = TASSI_COMMERCIALI[TASSI_COMMERCIALI.length - 1];
+    const r = calcolaInteressi({
+      capitale: 1_000_000,
+      scadenza: new Date(ultimo.dal),
+      oggi: new Date(Date.parse(ultimo.al) + 30 * 86_400_000),
+      regime: "COMMERCIALE",
+    });
+    assert.equal(r.giorniNonCoperti, 30);
+    assert.match(r.motivazione, /aggiornare la tabella/);
+    // Покритата част СЕ смята: отказ на всичко би скрил и известното.
+    assert.ok(r.importo > 0);
   });
 });
 

@@ -1,9 +1,17 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { costruisciCsp, generaNonce, nomeHeaderCsp,
+import {
+  costruisciCsp,
+  generaNonce,
+  nomeHeaderCsp,
   soloRapporto,
 } from "../csp";
-import { leggiRapporto, DIRETTIVE_NOTE } from "../csp-rapporto";
+import {
+  leggiRapporto,
+  DIRETTIVE_NOTE,
+  ORIGINI,
+  MAX_RAPPORTI,
+} from "../csp-rapporto";
 
 function direttive(csp: string): Map<string, string> {
   return new Map(
@@ -90,10 +98,7 @@ describe("поетапно въвеждане", () => {
     );
     assert.equal(nomeHeaderCsp({}), "Content-Security-Policy");
     // Нищо друго не се мени: иначе наблюдаваното не е това, което ще влезе.
-    assert.equal(
-      costruisciCsp({ nonce: "A" }),
-      costruisciCsp({ nonce: "A" }),
-    );
+    assert.equal(costruisciCsp({ nonce: "A" }), costruisciCsp({ nonce: "A" }));
   });
 });
 
@@ -121,7 +126,7 @@ describe("докладът от браузъра е външен вход", () =
           "blocked-uri": "https://evil.example/x.js?token=segreto",
         },
       }),
-      [{ direttiva: "script-src-elem", origine: "https://evil.example" }],
+      [{ direttiva: "script-src-elem", origine: "esterno-https" }],
     );
   });
 
@@ -144,8 +149,9 @@ describe("докладът от браузъра е външен вход", () =
         "blocked-uri": "https://x.it/api/fatture/9f3a?chiave=abc",
       },
     });
-    assert.equal(v.origine, "https://x.it");
-    assert.equal(/fatture|chiave|abc/.test(JSON.stringify(v)), false);
+    // Нито пътят, нито ХОСТЪТ излизат: етикетът е категория, не адрес.
+    assert.equal(v.origine, "esterno-https");
+    assert.equal(/fatture|chiave|abc|x\.it/.test(JSON.stringify(v)), false);
   });
 
   test("измислена директива НЕ става етикет на метрика", () => {
@@ -158,7 +164,15 @@ describe("докладът от браузъра е външен вход", () =
   });
 
   test("боклук не гърми", () => {
-    for (const c of [null, undefined, 42, "stringa", [], {}, { "csp-report": 1 }])
+    for (const c of [
+      null,
+      undefined,
+      42,
+      "stringa",
+      [],
+      {},
+      { "csp-report": 1 },
+    ])
       assert.ok(Array.isArray(leggiRapporto(c)));
   });
 });
@@ -169,19 +183,70 @@ describe("произходът на блокирания ресурс", () => {
     // маршрутът за доклади трябва да преглъща всичко и да отговаря еднакво.
     for (const v of ["ciao mondo", "http://", "://x", "]["])
       assert.deepEqual(
-        leggiRapporto({ "csp-report": { "violated-directive": "img-src", "blocked-uri": v } }),
+        leggiRapporto({
+          "csp-report": { "violated-directive": "img-src", "blocked-uri": v },
+        }),
         [{ direttiva: "img-src", origine: "altro" }],
         v,
       );
   });
 
-  test("схема без хост става самата схема", () => {
-    assert.equal(
-      leggiRapporto({
-        "csp-report": { "violated-directive": "img-src", "blocked-uri": "data:image/png;base64,AA" },
-      })[0].origine,
-      "data",
+  test("схема без хост се брои като схема, без съдържанието ѝ", () => {
+    const [v] = leggiRapporto({
+      "csp-report": {
+        "violated-directive": "img-src",
+        "blocked-uri": "data:image/png;base64,AA",
+      },
+    });
+    assert.equal(v.origine, "schema");
+    assert.equal(/base64|AA/.test(JSON.stringify(v)), false);
+  });
+
+  // ЗАЩО Е ТЕСТ, А НЕ КОМЕНТАР. Етикетът на метрика идва от анонимен вход по
+  // маршрут без сесия, а регистърът в `metriche.ts` е Map, която нищо не чисти.
+  // Свободна стойност тук значи нови времеви редици при всяка заявка, докато
+  // паметта свърши — и тогава наблюдаемостта пада точно по време на атаката.
+  test("произходът НИКОГА не излиза извън затвореното множество", () => {
+    const cattivi = Array.from(
+      { length: 50 },
+      (_, i) => `https://evil-${i}.attacker.example/a?b=${i}`,
     );
+    for (const b of [
+      ...cattivi,
+      "http://10.0.0.1/x",
+      "blob:https://x.it/uuid",
+      "data:text/html,<script>",
+      "javascript:alert(1)",
+      "ciao",
+      "",
+    ]) {
+      const [v] = leggiRapporto({
+        "csp-report": { "violated-directive": "img-src", "blocked-uri": b },
+      });
+      assert.ok(ORIGINI.has(v.origine), `${b} → ${v.origine}`);
+    }
+  });
+
+  test("наш ресурс се различава от чужд", () => {
+    const env = { APP_URL: "https://erp.esempio.it" };
+    const leggi = (uri: string) =>
+      leggiRapporto(
+        {
+          "csp-report": { "violated-directive": "img-src", "blocked-uri": uri },
+        },
+        env,
+      )[0].origine;
+    assert.equal(leggi("https://erp.esempio.it/logo.svg"), "proprio");
+    assert.equal(leggi("https://cdn.altro.it/logo.svg"), "esterno-https");
+    assert.equal(leggi("http://cdn.altro.it/logo.svg"), "esterno-http");
+  });
+
+  test("едно тяло не може да роди повече от MAX_RAPPORTI редици", () => {
+    const corpo = Array.from({ length: 200 }, (_, i) => ({
+      type: "csp-violation",
+      body: { effectiveDirective: "img-src", blockedURL: `https://x${i}.io/a` },
+    }));
+    assert.equal(leggiRapporto(corpo).length, MAX_RAPPORTI);
   });
 
   test("всяка директива от политиката ни е в затворения списък", () => {

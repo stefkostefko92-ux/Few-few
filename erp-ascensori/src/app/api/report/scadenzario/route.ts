@@ -10,8 +10,8 @@ import { prisma } from "@/lib/prisma";
 import { ok, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
-import { fromCents, toCents } from "@/lib/totals";
-import { importoDaIncassare, residuo } from "@/lib/fiscale/pagamenti";
+import { fromCents } from "@/lib/totals";
+import { residuoFattura } from "@/lib/fiscale/pagamenti";
 import {
   componiScadenzario,
   totaliPerFascia,
@@ -64,17 +64,7 @@ export const GET = gestito(async () => {
     // Дължимото НЕ е брутото: удържането по чл. 25-ter плаща получателят на
     // данъчната администрация, а при split payment ДДС-то също не минава през
     // нас. Търсенето на брутото е искане на пари, които никой не ни дължи.
-    const daIncassare = importoDaIncassare({
-      imponibile: toCents(f.totaleNetto),
-      imposta: toCents(f.totaleIva),
-      ritenuta: toCents(f.ritenutaImporto ?? 0),
-      splitPayment: f.splitPayment,
-    });
-    const incassato = f.pagamenti.reduce(
-      (acc, p) => acc + toCents(p.importo),
-      0,
-    );
-    const res = residuo(daIncassare, incassato);
+    const res = residuoFattura(f);
     if (res <= 0) continue;
 
     const debitoreId = f.condominioId ?? f.amministratoreId ?? "senza";

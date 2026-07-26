@@ -115,6 +115,22 @@ export function numeroAncoraLibero(stato: StatoSdi): boolean {
   );
 }
 
+/**
+ * Файлът вече е тръгнал към SDI — повторно подаване би било дубликат.
+ *
+ * ОТДЕЛЕН ПРЕДИКАТ ОТ `documentoEmesso`. Двата списъка си приличат, но питат
+ * различни неща: този пита „да пращам ли пак" (SDI отхвърля повторно ИМЕ на
+ * файл, независимо от съдържанието), а другият — „стигна ли документът до
+ * получателя". `RIFIUTATA` и `DECORSI_TERMINI` са достижими само СЛЕД
+ * `CONSEGNATA`, тоест файлът е тръгнал и при тях; `SCARTATA` е обратното —
+ * SDI не е приел файла, номерът е свободен и подаването се повтаря.
+ */
+export function giaTrasmessa(stato: StatoSdi): boolean {
+  return (
+    stato !== "NON_INVIATA" && stato !== "GENERATA" && stato !== "SCARTATA"
+  );
+}
+
 /** Документът стигнал ли е фискално до получателя (пряко или през кутията в AdE). */
 export function documentoEmesso(stato: StatoSdi): boolean {
   return (

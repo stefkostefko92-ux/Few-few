@@ -16,31 +16,13 @@ import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
-import type { Sessione } from "@/lib/auth";
+import { rapportinoModificabile } from "@/lib/rapportini-guardie";
 import { scriviAudit } from "@/lib/audit";
 
 const schema = z.object({
   articoloId: z.string().uuid(),
   quantita: z.number().int().positive().max(100_000),
 });
-
-/** Общото за двата маршрута: отчетът съществува, наш е и НЕ е подписан. */
-async function rapportinoModificabile(id: string, s: Sessione) {
-  const r = await prisma.rapportino.findFirst({
-    where: { id, ...filtroTenant(s) },
-    select: { id: true, numero: true, firmatoAt: true, ordineLavoroId: true },
-  });
-  if (!r) throw new ErroreHttp(404, "Rapportino non trovato");
-  // Подписаният отчет е заключен. Иначе подписът не доказва нищо: съдържанието
-  // под него може да се смени после — включително вложеното, което клиентът
-  // плаща.
-  if (r.firmatoAt)
-    throw new ErroreHttp(
-      409,
-      "Rapportino già firmato: i materiali non sono più modificabili",
-    );
-  return r;
-}
 
 export const GET = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("TECNICO");

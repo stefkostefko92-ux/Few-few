@@ -12,7 +12,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
-import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { richiedeRuolo, ErroreHttp, type Sessione } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 
@@ -21,9 +21,9 @@ const schema = z.object({
   ddtIds: z.array(z.string().uuid()).max(500),
 });
 
-async function fatturaModificabile(id: string, s: { tenantId: string | null }) {
+async function fatturaModificabile(id: string, s: Sessione) {
   const f = await prisma.fattura.findFirst({
-    where: { id, tenantId: s.tenantId ?? null },
+    where: { id, ...filtroTenant(s) },
     select: { id: true, numero: true, stato: true },
   });
   if (!f) throw new ErroreHttp(404, "Fattura non trovata");

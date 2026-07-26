@@ -1511,6 +1511,11 @@ model Sollecito {
 
   fattura Fattura @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
 
+  /// ЕДНА СТЕПЕН — ЕДНА ПОКАНА. Проверката „следващата степен е N" се прави в
+  /// маршрута, но между четенето и записа има прозорец: двоен клик по бавна
+  /// връзка ражда два реда „primo sollecito". Таблицата е само-добавяща, тоест
+  /// грешката не се поправя после — затова правилото стои и в базата.
+  @@unique([fatturaId, livello])
   @@index([tenantId])
   @@index([fatturaId])
   @@map("solleciti")
