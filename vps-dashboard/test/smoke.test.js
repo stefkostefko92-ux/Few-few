@@ -85,6 +85,13 @@ const GET_ROUTES = [
   '/api/env', '/api/cron/jobs', '/api/cron/timers', '/api/domains',
   '/api/sudo', '/api/security/posture', '/api/security/integrity',
   '/api/security/fail2ban', '/api/settings/access', '/api/investigate',
+  // Маршрути с ЗАДЪЛЖИТЕЛЕН параметър — точно те са най-склонни да гръмнат с 500
+  // при липсващ/невалиден вход, затова влизат с попълнен параметър.
+  '/api/auth/info', '/api/limits?unit=cron.service', '/api/cron/history?unit=cron.service',
+  '/api/compose/ps?project=demo', '/api/docker/logs?id=demo&lines=5',
+  '/api/databases/sqlite/check?file=/tmp/csd-smoke-няма.db',
+  // `/api/domains/preflight` съзнателно НЕ влиза: прави реален DNS + HTTP навън и
+  // би направил теста зависим от мрежата в CI. Проверява се ръчно/в браузър.
 ];
 
 test('нито един GET маршрут не дава 5xx', async () => {
