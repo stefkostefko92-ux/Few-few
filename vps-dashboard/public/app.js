@@ -96,6 +96,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 const SECTIONS = [
   { id: 'overview', ico: '▤', label: 'Обзор', render: renderOverview },
   { id: 'products', ico: '❤', label: 'Продукти', render: renderProducts },
+  { id: 'slo', ico: '◑', label: 'Надеждност', render: renderSlo },
   { id: 'alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
   { id: 'diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
   { id: 'services', ico: '⚙', label: 'Услуги', render: renderServices },
@@ -201,6 +202,7 @@ function showSkeleton(rows = 5) {
 const SECTION_ALIASES = {
   overview: 'обзор начало dashboard',
   products: 'продукти сайтове health',
+  slo: 'надеждност slo бюджет за грешки error budget burn rate наличност sre',
   alerts: 'аларми известия notifications telegram ntfy',
   services: 'услуги сервизи systemd unit',
   docker: 'докер контейнери containers',
@@ -539,6 +541,86 @@ async function renderProducts() {
     ]);
     view.appendChild(box);
   }
+}
+
+// ── Надеждност: SLO, бюджет за грешки, скорост на изгаряне ────────────────────────
+// Показва отговора на въпроса „колко право на грешка ми остава", а не „има ли
+// грешка сега". Бюджетът е разрешението да рискуваш: пълен бюджет → пускай;
+// изчерпан → замразявай промените и гаси.
+async function renderSlo() {
+  const view = document.getElementById('view');
+  const data = await api('/slo');
+  view.innerHTML = '';
+  if (data.enabled === false) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: 'SLO е изключен в конфига („slo.enabled": false).' })]));
+    return;
+  }
+  const targetPct = (data.target * 100).toFixed(data.target >= 0.999 ? 2 : 1);
+  view.appendChild(
+    el('p', { class: 'section-desc', text:
+      `Цел ${targetPct}% наличност за 30 дни. Бюджетът за грешки е допустимият престой — ` +
+      `изразходваш ли го, спираш промените, докато не се възстанови. „Скорост на изгаряне" 1× значи, ` +
+      `че точно ще стигне за 30 дни; 14.4× значи, че за час гориш 2% от бюджета. Алармата иска ` +
+      `И ДВАТА прозореца (дълъг + къс) над прага — късият я гаси бързо след като спре проблемът.` }));
+
+  if (!data.products?.length) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: 'Още няма събрани проби. Панелът пише по един агрегат на минута на продукт — данните се появяват след първите проверки.' })]));
+    return;
+  }
+
+  view.appendChild(
+    el('div', { class: 'grid grid-metrics' }, data.products.map((p) => {
+      const b = p.budget || {};
+      const left = Number(b.remainingPct ?? 100);
+      const kind = left <= 0 ? 'bad' : left < 25 ? 'warn' : 'ok';
+      return el('div', { class: 'card' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: p.name }),
+          pill(kind, `бюджет ${left}%`),
+        ]),
+        el('div', { class: 'metric-val', text: b.availabilityPct != null ? `${b.availabilityPct.toFixed(3)}%` : '—' }),
+        barEl(Number(b.spentPct) || 0),
+        el('div', { class: 'metric-sub', text:
+          b.total ? `${b.bad} лоши от ${b.total} проби · допустими ${b.allowedBad} · p95 ${b.p95Ms ?? '—'} ms` : 'няма проби за 30 дни' }),
+        p.burn
+          ? el('div', { class: 'metric-sub' }, [pill(p.burn.severity === 'critical' ? 'bad' : 'warn', `${p.burn.longBurn}× изгаряне`), document.createTextNode(' ' + p.burn.label)])
+          : el('div', { class: 'metric-sub', text: 'скоростта на изгаряне е под праговете' }),
+      ]);
+    }))
+  );
+
+  view.appendChild(el('h3', { class: 'muted', text: 'Прозорци', style: 'margin:24px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(
+        ['Продукт', 'Проби 1ч', 'Грешки 1ч', 'Бавни 1ч', 'p95 1ч', 'Проби 24ч', 'Грешки 24ч', 'Бавни 24ч', 'p95 24ч'],
+        data.products.map((p) => {
+          const h = p.last1h || {};
+          const d = p.last24h || {};
+          return el('tr', {}, [
+            el('td', { text: p.name }),
+            el('td', { text: String(h.total ?? 0) }),
+            el('td', { text: pctText(h.errorRate, h.total) }),
+            el('td', { text: pctText(h.slowRate, h.total) }),
+            el('td', { class: 'mono', text: h.p95Ms != null ? `${h.p95Ms} ms` : '—' }),
+            el('td', { text: String(d.total ?? 0) }),
+            el('td', { text: pctText(d.errorRate, d.total) }),
+            el('td', { text: pctText(d.slowRate, d.total) }),
+            el('td', { class: 'mono', text: d.p95Ms != null ? `${d.p95Ms} ms` : '—' }),
+          ]);
+        })
+      ),
+    ])
+  );
+  view.appendChild(el('p', { class: 'section-desc', text:
+    `„Бавно" (над ${data.latencyTargetMs} ms) е ОТДЕЛЕН показател от „недостъпно" — сайт, който отговаря за 9 секунди, ` +
+    'формално е наличен, но на практика е паднал. Затова двете колони не се сливат в един процент.' }));
+}
+
+function pctText(rate, total) {
+  if (!total) return '—';
+  const p = (Number(rate) || 0) * 100;
+  return p === 0 ? '0%' : p < 0.1 ? '<0.1%' : `${p.toFixed(p < 10 ? 2 : 1)}%`;
 }
 
 // Показва пробата по ФАЗИ — „бавно" може да е DNS, TCP, TLS или приложението.
@@ -1804,10 +1886,67 @@ async function renderLogs() {
       prio,
       el('label', { class: 'muted' }, [follow, document.createTextNode(' на живо')]),
       el('button', { class: 'btn', text: 'Зареди', onclick: load }),
+      el('button', { class: 'btn', text: '🔎 Анализ', onclick: analyze }),
     ])
   );
+  const analysis = el('div', { id: 'log-analysis' });
+  view.appendChild(analysis);
   const out = el('pre', { class: 'log-out', text: 'Зареди логове…' });
   view.appendChild(out);
+
+  // Групиране по отпечатък: 4200 реда „connection refused" са ЕДНА грешка,
+  // повторена 4200 пъти. Най-полезният сигнал е „това е НОВА грешка".
+  async function analyze(e) {
+    const btn = e?.target;
+    if (btn) btn.disabled = true;
+    analysis.innerHTML = '';
+    analysis.appendChild(el('div', { class: 'metric-sub', text: 'Анализирам журнала…' }));
+    try {
+      const params = new URLSearchParams();
+      if (prio.value) params.set('priority', prio.value);
+      const r = await api('/logs/analyze' + (params.toString() ? '?' + params : ''));
+      analysis.innerHTML = '';
+      if (!r.available) {
+        analysis.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: r.error || 'journalctl не е достъпен на този сървър.' })]));
+        return;
+      }
+      analysis.appendChild(el('p', { class: 'section-desc', text:
+        `${r.scannedLines} нови реда след последния анализ · ${r.groups.length} различни грешки · ${r.newCount} НОВИ. ` +
+        'Съобщенията са маскирани (пътища, IP, имейли, токени) — така отпечатъкът е стабилен и нищо чувствително не изтича в известие.' }));
+      if (r.byUnit?.length) {
+        analysis.appendChild(
+          el('div', { class: 'table-wrap' }, [
+            tableEl(['Unit', 'Грешки', 'Различни', 'Грешки/мин'], r.byUnit.map((u) =>
+              el('tr', {}, [
+                el('td', { class: 'mono', text: u.unit }),
+                el('td', { text: String(u.errors) }),
+                el('td', { text: String(u.distinct) }),
+                el('td', { text: u.perMinute != null ? u.perMinute.toFixed(2) : '—' }),
+              ])
+            )),
+          ])
+        );
+      }
+      analysis.appendChild(
+        el('div', { class: 'table-wrap', style: 'margin-top:12px' }, [
+          tableEl(['', 'Брой', 'Unit', 'Шаблон', 'Последно'], r.groups.slice(0, 60).map((g) =>
+            el('tr', {}, [
+              el('td', {}, [g.isNew ? pill('bad', 'НОВА') : pill(g.priority <= 3 ? 'warn' : 'ok', 'p' + g.priority)]),
+              el('td', { text: String(g.count) }),
+              el('td', { class: 'mono', text: g.unit }),
+              el('td', { class: 'mono', text: g.pattern }),
+              el('td', { text: g.lastTs ? fmtWhen(g.lastTs) : '—' }),
+            ])
+          )),
+        ])
+      );
+    } catch (err) {
+      analysis.innerHTML = '';
+      toast(err.message, 'bad');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
 
   async function load() {
     closeSectionStream(); // потокът се затваря и при навигация (go)

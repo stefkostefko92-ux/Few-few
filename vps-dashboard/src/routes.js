@@ -29,6 +29,8 @@ import { configuredChannels } from './notify.js';
 import { RANGES, diskSeries, knownMounts } from './history.js';
 import { forecastToLimit, detectAnomaly, changePoint, fmtDuration } from './forecast.js';
 import { probe, resolveHost } from './probe.js';
+import { evaluateBurn, budgetRemaining, windowStats } from './slo.js';
+import { LogMiner } from './logmine.js';
 
 const COOKIE = 'csd_sess';
 export const VERSION = '0.1.0';
@@ -937,6 +939,47 @@ export function buildRouter(ctx) {
 
   // ── Одит ───────────────────────────────────────────────────────────────────
   r.get('/api/audit', guard(J((req, res, p, url) => ({ entries: audit.tail(Number(url.searchParams.get('limit')) || 200) }))));
+
+  // ── SLO и бюджет за грешки ─────────────────────────────────────────────────
+  r.get(
+    '/api/slo',
+    guard(
+      J(async () => {
+        if (!ctx.slo) return { enabled: false };
+        const target = Number(cfg.slo?.target) || 0.999;
+        const rows = ctx.slo.read(Date.now() - 31 * 86400000);
+        const names = [...new Set(rows.map((x) => x.name))];
+        return {
+          enabled: cfg.slo?.enabled !== false,
+          target,
+          latencyTargetMs: cfg.slo?.latencyTargetMs || 800,
+          products: names.map((name) => ({
+            name,
+            budget: budgetRemaining(rows, name, target),
+            burn: evaluateBurn(rows, name, target, { minBadShort: cfg.slo?.minBadShort || 3 }),
+            last1h: windowStats(rows, name, 3600_000),
+            last24h: windowStats(rows, name, 86400_000),
+          })),
+        };
+      })
+    )
+  );
+
+  // ── Аналитика на журнала ───────────────────────────────────────────────────
+  r.get(
+    '/api/logs/analyze',
+    guard(
+      J(async (req, res, p, url) => {
+        if (!ctx.logminer) return { available: false };
+        const priority = Number(url.searchParams.get('priority') ?? cfg.logmine?.priority ?? 4);
+        const r2 = await ctx.logminer.collect({ priority: Number.isInteger(priority) && priority >= 0 && priority <= 7 ? priority : 4 });
+        return {
+          ...r2,
+          byUnit: r2.groups ? LogMiner.ratesByUnit(r2.groups, 60) : [],
+        };
+      })
+    )
+  );
 
   // ── Възстановяване от бекъп (две стъпки) ───────────────────────────────────
   r.post(

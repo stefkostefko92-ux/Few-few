@@ -12,13 +12,16 @@ import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts } from './history.js';
+import { evaluateBurn } from './slo.js';
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer }) {
     this.cfg = cfg;
     this.metrics = metrics;
+    this.logminer = logminer; // за „нова грешка в журнала"
     this.audit = audit;
     this.history = history; // за прогнозите
+    this.slo = slo; // за burn-rate алармите
     this.file = path.join(cfg.paths.stateDir, 'alerts.json');
     this.active = new Map(); // key → { since, lastNotified, severity, title, body }
     this.streaks = new Map(); // key → колко последователни проверки е активно
@@ -55,10 +58,42 @@ export class AlertEngine {
     setTimeout(tick, 10000); // първата проверка след 10s (метриките да се напълнят)
     this.timer = setInterval(tick, every);
     this.timer.unref?.();
+
+    // Журналът се копае на ОТДЕЛЕН, по-рядък каданс — `journalctl -o json` е скъп
+    // и няма смисъл да върви на всеки 60s заедно с останалите проверки.
+    if (this.logminer && this.cfg.logmine?.enabled !== false) {
+      const lm = Math.max(60, Number(this.cfg.logmine?.intervalSec) || 300) * 1000;
+      const mine = () => this.newErrorCheck().catch(() => {});
+      setTimeout(mine, 45000);
+      this.logTimer = setInterval(mine, lm);
+      this.logTimer.unref?.();
+    }
   }
 
   stop() {
     if (this.timer) clearInterval(this.timer);
+    if (this.logTimer) clearInterval(this.logTimer);
+  }
+
+  // „Тази грешка не се е случвала преди" — най-полезният сигнал след деплой.
+  // Еднократно събитие (не състояние): грешка, която веднъж е избила, не се
+  // „възстановява" — затова минава през event(), не през активните аларми.
+  async newErrorCheck() {
+    const priority = Number(this.cfg.logmine?.priority ?? 4);
+    const r = await this.logminer.collect({ priority: priority >= 0 && priority <= 7 ? priority : 4 });
+    if (!r.available) return;
+    // Само НОВИ и само истински грешки (p≤3) — warning-ите шумят твърде много.
+    const fresh = r.groups.filter((g) => g.isNew && g.priority <= 3);
+    if (!fresh.length) return;
+    const top = fresh.slice(0, 5);
+    await this.event({
+      key: 'logmine:new',
+      severity: 'warning',
+      title: `Нова грешка в журнала (${fresh.length})`,
+      // Шаблоните са МАСКИРАНИ (пътища, IP, имейли, токени) — известието тръгва
+      // навън през Telegram/ntfy, сурово съобщение не бива да го напуска.
+      body: top.map((g) => `• ${g.unit}: ${g.pattern} (×${g.count})`).join('\n'),
+    });
   }
 
   // Събира текущо активните условия. Всяко: {key, severity, title, body, sustain?}
@@ -198,6 +233,8 @@ export class AlertEngine {
     }
 
     for (const p of await productHealth(this.cfg)) {
+      // Всяка проба влиза в SLO историята — оттам идват burn-rate алармите.
+      this.slo?.record(p.name, { up: p.up, ms: p.ms, latencyTargetMs: this.cfg.slo?.latencyTargetMs });
       if (!p.up) {
         out.push({
           key: `product:${p.name}`,
@@ -207,6 +244,8 @@ export class AlertEngine {
         });
       }
     }
+
+    for (const b of this.burnChecks()) out.push(b);
 
     if (t.certDays) {
       for (const c of await tlsCerts()) {
@@ -274,6 +313,29 @@ export class AlertEngine {
         severity: etaDays <= 1 ? 'critical' : 'warning',
         title: `Дискът ${mount} ще се напълни`,
         body: `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) ${mount} стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
+      });
+    }
+    return out;
+  }
+
+  // Burn-rate: алармира по СКОРОСТТА на харчене на бюджета за грешки, не по
+  // „има ли грешка сега". Кратко мигване не буди никого; устойчиво влошаване —
+  // да. Двата прозореца гасят алармата бързо, след като проблемът спре.
+  burnChecks() {
+    const out = [];
+    if (!this.slo || this.cfg.slo?.enabled === false) return out;
+    const target = Number(this.cfg.slo?.target) || 0.999;
+    const rows = this.slo.read(Date.now() - 4 * 86400000);
+    if (!rows.length) return out;
+    const names = [...new Set(rows.map((r) => r.name))];
+    for (const name of names) {
+      const hit = evaluateBurn(rows, name, target, { minBadShort: Number(this.cfg.slo?.minBadShort) || 3 });
+      if (!hit) continue;
+      out.push({
+        key: `slo:${name}`,
+        severity: hit.severity,
+        title: `${name}: харчи бюджета за грешки твърде бързо`,
+        body: `Скорост ${hit.longBurn}× (праг ${hit.factor}×) — ${hit.label}. ${hit.badLong} лоши от ${hit.totalLong} проби за последните ${fmtDuration(hit.longWindowMs)}.`,
       });
     }
     return out;

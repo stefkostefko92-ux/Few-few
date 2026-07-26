@@ -10,6 +10,8 @@ import { MetricsHistory } from './src/history.js';
 import { AlertEngine } from './src/alerts.js';
 import { PtySessions } from './src/pty.js';
 import { AuditShipper } from './src/audit-ship.js';
+import { SloStore } from './src/slo.js';
+import { LogMiner } from './src/logmine.js';
 import { buildRouter } from './src/routes.js';
 import { serveStatic, sendError } from './src/httpd.js';
 
@@ -26,8 +28,15 @@ const history = new MetricsHistory(cfg.paths.stateDir);
 metrics.listeners.add((snap) => history.maybeAppend(snap));
 metrics.startSampling();
 
-const alerts = new AlertEngine({ cfg, metrics, audit, history });
+const slo = new SloStore(cfg.paths.stateDir);
+const logminer = new LogMiner(cfg.paths.stateDir);
+const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer });
 alerts.start();
+
+// SLO дневникът расте по един ред на продукт на минута — режем го на 35 дни
+// (30-дневният прозорец + запас) веднъж на ден, иначе за година става 500 MB.
+const sloCompact = setInterval(() => slo.compact(), 24 * 3600 * 1000);
+sloCompact.unref?.();
 
 // Провалена системна задача (деплой/ъпдейт/бекъп) вдига известие веднага —
 // иначе научаваш за счупен деплой чак когато продуктът падне.
@@ -71,6 +80,8 @@ const router = buildRouter({
   alerts,
   pty,
   shipper,
+  slo,
+  logminer,
   sessions: new Map(), // активни сесии (jti → метаданни)
   revokedSessions: new Set(), // поименно отменени до изтичането им
 });
