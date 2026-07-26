@@ -111,6 +111,8 @@ const SECTIONS = [
   { id: 'firewall', ico: '🛡', label: 'Firewall', render: renderFirewall },
   { id: 'webserver', ico: '🌐', label: 'Уеб сървър', render: renderWebserver },
   { id: 'backups', ico: '⇩', label: 'Бекъпи', render: renderBackups },
+  { id: 'env', ico: '🗝', label: 'Променливи (.env)', render: renderEnv },
+  { id: 'domains', ico: '🔒', label: 'Домейни и TLS', render: renderDomains },
   { id: 'cron', ico: '◷', label: 'Крон/таймери', render: renderCron },
   { id: 'files', ico: '🗀', label: 'Файлове', render: renderFiles },
   { id: 'terminal', ico: '⌘', label: 'Терминал', render: renderPty },
@@ -216,7 +218,9 @@ const SECTION_ALIASES = {
   firewall: 'файъруол защитна стена ufw правила',
   webserver: 'уеб сървър нгинкс nginx caddy vhost certbot',
   backups: 'бекъпи архиви restic снимки',
-  cron: 'крон таймери timers разписание',
+  env: 'променливи env среда secrets тайни конфигурация ключове',
+  domains: 'домейни dns tls сертификати certbot lets encrypt ssl',
+  cron: 'крон таймери timers разписание пусни сега история',
   files: 'файлове файлов браузър',
   terminal: 'терминал конзола shell bash ssh',
   runonce: 'команда еднократна run',
@@ -1164,6 +1168,7 @@ async function renderServices() {
             svcBtn('restart', s.unit, 'Рестарт'),
             s.active === 'active' ? svcBtn('stop', s.unit, 'Спри', 'btn-danger') : svcBtn('start', s.unit, 'Пусни'),
             el('button', { class: 'btn btn-sm', text: 'Статус', onclick: () => showServiceStatus(s.unit) }),
+            el('button', { class: 'btn btn-sm', text: '⚖ Лимити', onclick: () => showLimits(s.unit) }),
           ]),
         ])
       );
@@ -1191,6 +1196,78 @@ function svcBtn(action, unit, label, cls = 'btn-sm') {
       }
     },
   });
+}
+
+// Ресурсни лимити на unit. Смисълът им е един: продукт, който изтече памет, да
+// падне САМ, вместо ядрото да избере жертва на OOM и да събори целия сървър.
+async function showLimits(unit) {
+  openModal(`Ресурсни лимити · ${unit}`);
+  const out = document.getElementById('modal-out');
+  let cur;
+  try {
+    cur = await api('/limits?unit=' + encodeURIComponent(unit));
+  } catch (e) {
+    setModalOut('Грешка: ' + e.message);
+    return;
+  }
+  const bytes = (v) => (v == null ? '' : typeof v === 'number' ? `${Math.round(v / 1048576)}M` : String(v));
+  const memMax = el('input', { type: 'text', value: bytes(cur.memoryMax), placeholder: 'напр. 1G — празно маха лимита', class: 'mono' });
+  const memHigh = el('input', { type: 'text', value: bytes(cur.memoryHigh), placeholder: 'мек праг, напр. 800M', class: 'mono' });
+  const quota = el('input', { type: 'text', value: cur.cpuQuotaPct ? `${cur.cpuQuotaPct}%` : '', placeholder: '150% = 1.5 ядра', class: 'mono' });
+  const tasks = el('input', { type: 'text', value: cur.tasksMax == null ? '' : String(cur.tasksMax), placeholder: 'максимум процеси/нишки', class: 'mono' });
+
+  out.textContent = '';
+  out.appendChild(
+    el('div', {}, [
+      el('div', { class: 'metric-sub', text:
+        `Сега: памет ${cur.memoryCurrent != null ? fmtBytes(cur.memoryCurrent) : '—'} · процеси ${cur.tasksCurrent ?? '—'} · ` +
+        (cur.managedByPanel ? 'лимитите се управляват от панела' : 'няма лимити от панела') }),
+      kvInputs([
+        ['MemoryMax (твърд таван — над него услугата пада)', memMax],
+        ['MemoryHigh (мек — ядрото я забавя, но не я убива)', memHigh],
+        ['CPUQuota (100% = ЕДНО ядро)', quota],
+        ['TasksMax', tasks],
+      ]),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        el('button', {
+          class: 'btn btn-primary', text: 'Приложи',
+          onclick: async (e) => {
+            e.target.disabled = true;
+            try {
+              const r = await api('/limits', {
+                method: 'POST',
+                body: { unit, memoryMax: memMax.value, memoryHigh: memHigh.value, cpuQuota: quota.value, tasksMax: tasks.value },
+              });
+              toast(r.note, 'ok');
+              closeModal();
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+        el('button', {
+          class: 'btn btn-sm', text: 'Махни лимитите',
+          onclick: async () => {
+            try {
+              const r = await api('/limits', { method: 'POST', body: { unit, clear: true } });
+              toast(r.note, 'ok');
+              closeModal();
+            } catch (err) { toast(err.message, 'bad'); }
+          },
+        }),
+      ]),
+      el('div', { class: 'metric-sub', text:
+        'Записва се като drop-in (/etc/systemd/system/<unit>.d/) — деплоят подменя unit файла, лимитът оцелява. „systemctl revert <unit>" го маха ръчно. CPUQuota влиза в сила при следващия рестарт.' }),
+    ])
+  );
+}
+
+function kvInputs(pairs) {
+  const dl = el('dl', { class: 'kv' });
+  for (const [label, input] of pairs) {
+    dl.appendChild(el('dt', { text: label }));
+    dl.appendChild(el('dd', {}, [input]));
+  }
+  return dl;
 }
 
 async function showServiceStatus(unit) {
@@ -2242,29 +2319,413 @@ async function renderBackups() {
 // ── Крон ──────────────────────────────────────────────────────────────────────────
 async function renderCron() {
   const view = document.getElementById('view');
-  const c = await api('/cron');
+  const [c, timers, jobs] = await Promise.all([
+    api('/cron'),
+    api('/cron/timers').catch(() => ({ timers: [] })),
+    api('/cron/jobs').catch(() => ({ jobs: [] })),
+  ]);
   view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text:
+    '„Пусни сега" стартира услугата зад таймера — не чакаш до 3 сутринта, за да разбереш дали задачата работи. ' +
+    'Колоната „Последно" показва РЕЗУЛТАТА от последното пускане, а историята — изхода точно от него (не последните редове наслуки).' }));
+
+  const detail = el('div', { id: 'cron-detail', style: 'margin-top:16px' });
+
   view.appendChild(
     el('div', { class: 'card', style: 'margin-bottom:16px' }, [
       el('h3', { text: 'systemd таймери' }),
       el('div', { class: 'table-wrap' }, [
-        tableEl(['Таймер', 'Активира', 'Следващо', 'Последно'], (c.timers || []).map((t) =>
+        tableEl(['Таймер', 'Активира', 'Следващо', 'Последно', 'Резултат', ''], (timers.timers || []).map((t) =>
           el('tr', {}, [
             el('td', { class: 'mono', text: t.unit }),
-            el('td', { class: 'muted', text: t.activates }),
+            el('td', { class: 'muted', text: t.activates || '—' }),
             el('td', { text: t.next || '—' }),
             el('td', { class: 'muted', text: t.last || '—' }),
+            el('td', {}, [
+              t.ok == null
+                ? el('span', { class: 'muted', text: '—' })
+                : pill(t.ok ? 'ok' : 'bad', t.ok ? 'успех' : `${t.result}${t.exitStatus ? ' (' + t.exitStatus + ')' : ''}`),
+            ]),
+            el('td', {}, [
+              el('button', {
+                class: 'btn btn-sm', text: '▶ Пусни сега',
+                onclick: async (e) => {
+                  e.target.disabled = true;
+                  try {
+                    const r = await api('/cron/run', { method: 'POST', body: { unit: t.unit } });
+                    toast(r.note, 'ok');
+                    setTimeout(() => showTimerHistory(t.unit, detail), 3000);
+                  } catch (err) { toast(err.message, 'bad'); }
+                  e.target.disabled = false;
+                },
+              }),
+              el('button', { class: 'btn btn-sm', text: '☰ История', onclick: () => showTimerHistory(t.unit, detail) }),
+            ]),
           ])
         )),
       ]),
     ])
   );
+  view.appendChild(detail);
+
+  // ── root crontab: редакция ──
+  const sched = el('input', { type: 'text', placeholder: '0 3 * * *  или  @daily', class: 'mono', style: 'min-width:170px' });
+  const cmd = el('input', { type: 'text', placeholder: '/usr/local/bin/backup.sh', class: 'mono', style: 'min-width:320px' });
+  const note = el('input', { type: 'text', placeholder: 'коментар (по избор)' });
+
   view.appendChild(
-    el('div', { class: 'grid grid-2' }, [
-      el('div', { class: 'card' }, [el('h3', { text: 'root crontab' }), el('pre', { class: 'term-out', text: c.rootCrontab || '(празен)' })]),
-      el('div', { class: 'card' }, [el('h3', { text: '/etc/crontab' }), el('pre', { class: 'term-out', text: (c.etcCrontab || []).join('\n') || '(празен)' })]),
+    el('div', { class: 'card', style: 'margin-top:16px' }, [
+      el('h3', { text: 'root crontab' }),
+      jobs.available === false
+        ? el('div', { class: 'metric-sub', text: 'На тази машина няма инсталиран cron — работи се само със systemd таймери.' })
+        : '',
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Разписание', 'Команда', ''], (jobs.jobs || []).map((j) =>
+          el('tr', {}, [
+            el('td', { class: 'mono', text: j.schedule }),
+            el('td', { class: 'mono', text: j.command }),
+            el('td', {}, [
+              el('button', {
+                class: 'btn btn-sm btn-danger', text: 'Изтрий',
+                onclick: async () => {
+                  const ok = await confirmDanger({
+                    title: 'Изтриване на планирана задача',
+                    what: [`${j.schedule} ${j.command}`, 'Няма стъпка „сигурен ли си" в cron — задачата спира веднага.'],
+                    expect: 'изтрий',
+                    confirmLabel: 'Изтрий реда',
+                  });
+                  if (!ok) return;
+                  try {
+                    await api('/cron/remove', { method: 'POST', body: { index: j.index } });
+                    toast('Редът е изтрит', 'ok');
+                    renderCron();
+                  } catch (e) { toast(e.message, 'bad'); }
+                },
+              }),
+            ]),
+          ])
+        )),
+      ]),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        sched,
+        cmd,
+        note,
+        el('button', {
+          class: 'btn btn-primary', text: '+ Добави задача',
+          onclick: async (e) => {
+            e.target.disabled = true;
+            try {
+              await api('/cron/add', {
+                method: 'POST',
+                body: { schedule: sched.value, command: cmd.value, comment: note.value },
+              });
+              toast('Задачата е добавена', 'ok');
+              renderCron();
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+      ]),
+      el('div', { class: 'metric-sub', text:
+        'В crontab „%" значи нов ред — за дати пиши date +\\%F, иначе задачата тихо не работи. Разписанието е 5 полета: минута час ден месец седмица.' }),
     ])
   );
+
+  view.appendChild(
+    el('div', { class: 'card', style: 'margin-top:16px' }, [
+      el('h3', { text: '/etc/crontab (само преглед)' }),
+      el('pre', { class: 'term-out', text: (c.etcCrontab || []).join('\n') || '(празен)' }),
+    ])
+  );
+}
+
+async function showTimerHistory(unit, container) {
+  container.innerHTML = '';
+  container.appendChild(el('div', { class: 'metric-sub', text: 'Чета историята…' }));
+  try {
+    const h = await api('/cron/history?unit=' + encodeURIComponent(unit));
+    container.innerHTML = '';
+    container.appendChild(
+      el('div', { class: 'card' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: h.unit }),
+          pill(h.ok ? 'ok' : h.result ? 'bad' : 'warn', h.result || 'без данни'),
+        ]),
+        kv({
+          Резултат: h.result || '—',
+          'Код на изход': h.exitStatus ?? '—',
+          Състояние: h.activeState || '—',
+          Стартирано: h.startedAt || '—',
+          Приключило: h.finishedAt || '—',
+          Рестарти: h.restarts,
+        }),
+        el('pre', { class: 'log-out', text: h.output || '(няма изход от последното пускане)' }),
+      ])
+    );
+  } catch (e) {
+    container.innerHTML = '';
+    toast(e.message, 'bad');
+  }
+}
+
+// ── Променливи на средата (.env) ──────────────────────────────────────────────────
+// Стойностите на тайните ключове стоят скрити, докато не ги поискаш изрично —
+// открадната сесия иначе изнася всички ключове на продукцията с едно зареждане.
+async function renderEnv() {
+  const view = document.getElementById('view');
+  const { files } = await api('/env');
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text:
+    'Редакторът пипа САМО дадения ключ — не презаписва целия файл, коментарите оцеляват и всяка промяна оставя копие (.bak). ' +
+    'Тайните са скрити по подразбиране; разкриването се записва в одита.' }));
+  if (!files.length) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: 'Не са намерени .env файлове. Добави ги изрично в „envFiles" в конфига (с „unit", ако искаш и бутон за рестарт).' })]));
+    return;
+  }
+  const list = el('div', { class: 'grid grid-metrics' });
+  const detail = el('div', { id: 'env-detail', style: 'margin-top:16px' });
+  for (const f of files) {
+    list.appendChild(
+      el('div', { class: 'card', style: 'cursor:pointer', onclick: () => openEnv(f, detail) }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: f.name }),
+          f.worldReadable ? pill('bad', 'права 0644') : pill('ok', f.mode),
+        ]),
+        el('div', { class: 'metric-sub mono', text: f.path }),
+        el('div', { class: 'metric-sub', text: `${fmtBytes(f.sizeBytes)} · променен ${fmtWhen(f.mtime)}${f.unit ? ' · ' + f.unit : ''}` }),
+      ])
+    );
+  }
+  view.appendChild(list);
+  view.appendChild(detail);
+  if (files.length === 1) openEnv(files[0], detail);
+}
+
+async function openEnv(file, detail, reveal = false) {
+  detail.innerHTML = '';
+  detail.appendChild(el('div', { class: 'metric-sub', text: 'Зареждам…' }));
+  let data;
+  try {
+    data = await api(`/env/file?path=${encodeURIComponent(file.path)}${reveal ? '&reveal=1' : ''}`);
+  } catch (e) {
+    detail.innerHTML = '';
+    toast(e.message, 'bad');
+    return;
+  }
+  detail.innerHTML = '';
+  const pending = new Map(); // ключ → нова стойност
+  const removals = new Set();
+  const saveBtn = el('button', { class: 'btn btn-primary', text: 'Запази промените', disabled: true });
+  const status = el('span', { class: 'muted' });
+  const refreshState = () => {
+    saveBtn.disabled = pending.size === 0 && removals.size === 0;
+    status.textContent = saveBtn.disabled ? '' : `${pending.size + removals.size} промени, незаписани`;
+  };
+
+  const rows = data.vars.map((v) => {
+    const input = el('input', {
+      type: 'text',
+      value: v.value,
+      class: 'mono',
+      // Скритата стойност не се редактира — иначе „поправям само тук" изтрива тайната.
+      disabled: v.secret && !data.revealed,
+      oninput: (e) => {
+        pending.set(v.key, e.target.value);
+        refreshState();
+      },
+    });
+    const row = el('tr', {}, [
+      el('td', { class: 'mono' }, [document.createTextNode(v.key), v.secret ? pill('warn', 'тайна') : '']),
+      el('td', { style: 'width:60%' }, [input]),
+      el('td', {}, [
+        el('button', {
+          class: 'btn btn-sm btn-danger', text: 'Изтрий',
+          onclick: () => {
+            removals.add(v.key);
+            pending.delete(v.key);
+            row.style.opacity = '0.4';
+            input.disabled = true;
+            refreshState();
+          },
+        }),
+      ]),
+    ]);
+    return row;
+  });
+
+  const newKey = el('input', { type: 'text', placeholder: 'НОВ_КЛЮЧ', class: 'mono' });
+  const newVal = el('input', { type: 'text', placeholder: 'стойност', class: 'mono' });
+
+  detail.appendChild(
+    el('div', { class: 'card' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: file.name + ' — ' + data.path }),
+        data.revealed
+          ? pill('bad', 'тайните са видими')
+          : el('button', {
+              class: 'btn btn-sm', text: '👁 Покажи тайните',
+              onclick: () => openEnv(file, detail, true),
+            }),
+      ]),
+      el('div', { class: 'table-wrap' }, [tableEl(['Ключ', 'Стойност', ''], rows)]),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        newKey,
+        newVal,
+        el('button', {
+          class: 'btn btn-sm', text: '+ Добави',
+          onclick: () => {
+            const k = newKey.value.trim();
+            if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)) return toast('Името може да е само букви, цифри и „_"', 'bad');
+            pending.set(k, newVal.value);
+            newKey.value = '';
+            newVal.value = '';
+            refreshState();
+            toast(`${k} ще бъде добавен при запис`, 'ok');
+          },
+        }),
+      ]),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        saveBtn,
+        status,
+        file.unit
+          ? el('button', {
+              class: 'btn btn-sm', text: `⟳ Рестартирай ${file.unit}`,
+              onclick: async () => {
+                try {
+                  await api('/services/action', { method: 'POST', body: { unit: file.unit, action: 'restart' } });
+                  toast(`${file.unit} рестартиран`, 'ok');
+                } catch (e) { toast(e.message, 'bad'); }
+              },
+            })
+          : el('span', { class: 'muted', text: 'Промяната влиза в сила при рестарт на продукта.' }),
+      ]),
+    ])
+  );
+
+  saveBtn.onclick = async () => {
+    saveBtn.disabled = true;
+    try {
+      const r = await api('/env/file', {
+        method: 'POST',
+        body: { path: data.path, changes: Object.fromEntries(pending), remove: [...removals] },
+      });
+      toast(`Записано: ${r.changed.join(', ')} · копие ${r.backup ? '✓' : '—'}`, 'ok');
+      openEnv(file, detail, data.revealed);
+    } catch (e) {
+      toast(e.message, 'bad');
+      saveBtn.disabled = false;
+    }
+  };
+}
+
+// ── Домейни и TLS ─────────────────────────────────────────────────────────────────
+// Проверката на DNS върви ПРЕДИ certbot по една причина: Let's Encrypt гори лимита
+// от 5 провала на час и после отказва дори при вече верен DNS.
+async function renderDomains() {
+  const view = document.getElementById('view');
+  const data = await api('/domains');
+  view.innerHTML = '';
+  const addr = [data.server.v4, data.server.v6].filter(Boolean).join(' / ');
+  view.appendChild(el('p', { class: 'section-desc', text:
+    (addr ? `Този сървър е ${addr}. ` : 'Адресът на сървъра не можа да се определи (липсва „ip" команда) — сравнението с DNS ще се пропусне. ') +
+    (data.server.note || 'Преди издаване панелът проверява дали домейнът сочи насам, дали порт 80 отговаря отвън и дали CAA записът позволява Let\'s Encrypt.') }));
+
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(['Сертификат', 'Домейни', 'Изтича', 'Остават'], (data.certs || []).map((c) =>
+        el('tr', {}, [
+          el('td', { class: 'mono', text: c.name }),
+          el('td', { class: 'mono', text: c.domains.join(', ') || '—' }),
+          el('td', { text: c.expiresAt ? fmtWhen(c.expiresAt) : '—' }),
+          el('td', {}, [c.daysLeft == null ? '—' : pill(c.daysLeft <= 7 ? 'bad' : c.daysLeft <= 21 ? 'warn' : 'ok', `${c.daysLeft} дни`)]),
+        ])
+      )),
+    ])
+  );
+
+  // Смениш ли домейна, проверката вече не важи за него — бутонът се заключва
+  // отново. Иначе „провери A → напиши Б → издай" изглежда одобрено, а не е.
+  const domain = el('input', {
+    type: 'text', placeholder: 'example.com или *.example.com', class: 'mono', style: 'min-width:260px',
+    oninput: () => {
+      issueBtn.disabled = true;
+      out.innerHTML = '';
+    },
+  });
+  const email = el('input', { type: 'text', placeholder: 'имейл за ACME (по избор)', value: data.acmeEmail || '' });
+  const plugin = el('input', { type: 'text', placeholder: 'DNS плъгин (за wildcard), напр. dns-cloudflare', class: 'mono' });
+  const out = el('div', { style: 'margin-top:12px' });
+  let lastPreflight = null;
+
+  const issueBtn = el('button', {
+    class: 'btn btn-primary', text: '🔒 Издай сертификат', disabled: true,
+    onclick: () => doIssue(false),
+  });
+  const stagingBtn = el('button', {
+    class: 'btn btn-sm', text: 'Пробно издаване (staging)',
+    onclick: () => doIssue(true),
+  });
+
+  function doIssue(staging) {
+    runJob(
+      '/domains/issue',
+      { domain: domain.value.trim(), email: email.value.trim(), dnsPlugin: plugin.value.trim(), staging },
+      staging ? 'certbot (проба)' : 'certbot'
+    );
+  }
+
+  view.appendChild(
+    el('div', { class: 'card', style: 'margin-top:20px' }, [
+      el('h3', { text: 'Нов сертификат' }),
+      el('div', { class: 'toolbar' }, [
+        domain,
+        email,
+        el('button', {
+          class: 'btn', text: '⌕ Провери DNS',
+          onclick: async (e) => {
+            e.target.disabled = true;
+            out.innerHTML = '';
+            out.appendChild(el('div', { class: 'metric-sub', text: 'Проверявам DNS, CAA и порт 80…' }));
+            try {
+              lastPreflight = await api('/domains/preflight?domain=' + encodeURIComponent(domain.value.trim()));
+              renderPreflight(out, lastPreflight);
+              issueBtn.disabled = !lastPreflight.ready;
+            } catch (err) {
+              out.innerHTML = '';
+              out.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--bad)', text: '⚠ ' + err.message }));
+              issueBtn.disabled = true;
+            }
+            e.target.disabled = false;
+          },
+        }),
+      ]),
+      el('div', { class: 'toolbar' }, [plugin]),
+      out,
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [issueBtn, stagingBtn]),
+      el('div', { class: 'metric-sub', text:
+        'Пробното издаване минава през staging средата на Let\'s Encrypt — сертификатът не е валиден за браузър, но НЕ харчи бойния лимит. Ползвай го, когато проверката не минава, а си сигурен в настройката.' }),
+    ])
+  );
+}
+
+function renderPreflight(container, pf) {
+  container.innerHTML = '';
+  container.appendChild(
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: pf.domain }),
+      pill(pf.ready ? 'ok' : 'bad', pf.ready ? 'готов за издаване' : `${pf.problems.length} пречки`),
+    ])
+  );
+  container.appendChild(kv({
+    'A записи': pf.a.join(', ') || '—',
+    'AAAA записи': pf.aaaa.join(', ') || '—',
+    CAA: pf.caa.map((c) => `${c.issue || c.issuewild || JSON.stringify(c)}`).join(', ') || 'няма (всеки издател е позволен)',
+    'Сочи ли насам': pf.matches == null ? 'неизвестно' : pf.matches ? 'да' : 'НЕ',
+    'Порт 80 отвън': pf.wildcard ? 'не се проверява (DNS-01)' : pf.http?.status != null ? `отговаря (${pf.http.status})` : 'няма отговор',
+  }));
+  for (const p of pf.problems) {
+    container.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--bad)', text: '⚠ ' + p }));
+  }
 }
 
 // ── Файлове ───────────────────────────────────────────────────────────────────────

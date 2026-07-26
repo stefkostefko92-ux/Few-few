@@ -82,6 +82,7 @@ const GET_ROUTES = [
   '/api/alerts', '/api/nodes', '/api/sessions', '/api/pty', '/api/probe/targets',
   '/api/probe?url=http%3A%2F%2F127.0.0.1%3A7788%2Fapi%2Fping',
   '/api/slo', '/api/logs/analyze',
+  '/api/env', '/api/cron/jobs', '/api/cron/timers', '/api/domains',
 ];
 
 test('нито един GET маршрут не дава 5xx', async () => {

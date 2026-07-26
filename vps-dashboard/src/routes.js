@@ -31,6 +31,11 @@ import { forecastToLimit, detectAnomaly, changePoint, fmtDuration } from './fore
 import { probe, resolveHost } from './probe.js';
 import { evaluateBurn, budgetRemaining, windowStats } from './slo.js';
 import { LogMiner } from './logmine.js';
+import * as env from './env.js';
+import * as limits from './limits.js';
+import * as cronedit from './cronedit.js';
+import * as domains from './domains.js';
+import { readRaw, handleGithub } from './webhook.js';
 
 const COOKIE = 'csd_sess';
 export const VERSION = '0.1.0';
@@ -49,6 +54,10 @@ export const PEER_DENY = [
   /^\/api\/totp\//,
   /^\/api\/alerts\/settings$/,
   /^\/api\/backups\/restore\//,
+  /^\/api\/env(\/|$)/, // тайните на продуктите не тръгват към съседа
+  /^\/api\/limits(\/|$)/,
+  /^\/api\/cron\//,
+  /^\/api\/domains\/issue$/,
 ];
 
 // Изключения: маршрути, които peer-ът ТРЯБВА да ползва въпреки обхвата „read" —
@@ -980,6 +989,142 @@ export function buildRouter(ctx) {
       })
     )
   );
+
+  // ── .env редактор ──────────────────────────────────────────────────────────
+  r.get('/api/env', guard(J(() => ({ files: env.discover(cfg) }))));
+  r.get(
+    '/api/env/file',
+    guard(
+      J((req, res, p, url) => {
+        const reveal = url.searchParams.get('reveal') === '1';
+        return env.readEnv(cfg, url.searchParams.get('path'), { reveal }, audit, req.user);
+      })
+    )
+  );
+  r.post(
+    '/api/env/file',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return env.writeEnv(cfg, b.path, { changes: b.changes, remove: b.remove }, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Ресурсни лимити ────────────────────────────────────────────────────────
+  r.get('/api/limits', guard(J((req, res, p, url) => limits.readLimits(url.searchParams.get('unit')))));
+  r.post(
+    '/api/limits',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return b.clear ? limits.clearLimits(b.unit, audit, req.user) : limits.setLimits(b.unit, b, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/limits/docker',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return limits.setDockerLimits(b.container, { memory: b.memory, cpus: b.cpus }, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Планирани задачи: редакция, „пусни сега", история ──────────────────────
+  r.get('/api/cron/jobs', guard(J(() => cronedit.parseCrontab())));
+  r.get('/api/cron/timers', guard(J(() => cronedit.timersWithResults().then((timers) => ({ timers })))));
+  r.get('/api/cron/history', guard(J((req, res, p, url) => cronedit.timerHistory(url.searchParams.get('unit')))));
+  r.post(
+    '/api/cron/add',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return cronedit.addCronJob(b, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/cron/remove',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return cronedit.removeCronJob(b.index, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/cron/run',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return cronedit.timerRunNow(b.unit, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Домейни и сертификати ──────────────────────────────────────────────────
+  r.get(
+    '/api/domains',
+    guard(
+      J(async () => {
+        const [certs, addr] = await Promise.all([domains.certificates(), domains.publicAddresses()]);
+        return { certs, server: addr, acmeEmail: cfg.acmeEmail || '' };
+      })
+    )
+  );
+  r.get('/api/domains/preflight', guard(J((req, res, p, url) => domains.preflight(url.searchParams.get('domain')))));
+  r.post(
+    '/api/domains/issue',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const list = Array.isArray(b.domains) ? b.domains : [b.domain];
+        // Проверката е ЗАДЪЛЖИТЕЛНА, не съвет: Let's Encrypt гори лимита от 5
+        // провала на час и после не пуска дори при верен DNS. Единственият
+        // байпас е пробното издаване (--staging), което не пипа бойния лимит.
+        if (!b.staging) {
+          for (const d of list) {
+            const pf = await domains.preflight(d);
+            if (!pf.ready) {
+              throw Object.assign(
+                new Error(`Проверката за ${d} не мина:\n• ${pf.problems.join('\n• ')}\n\nОправи това или пусни пробно издаване.`),
+                { status: 400 }
+              );
+            }
+          }
+        }
+        const spec = domains.issueSpec(list, {
+          email: b.email || cfg.acmeEmail,
+          webroot: b.webroot,
+          dnsPlugin: b.dnsPlugin,
+          staging: Boolean(b.staging),
+        });
+        audit.log({ action: 'domains.issue', domains: list, staging: Boolean(b.staging), user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Webhook от GitHub (БЕЗ сесия — носи защитата си сам) ────────────────────
+  // Единственият маршрут без guard(). Подписът е автентикацията; тялото е ДАННИ.
+  r.post('/api/webhook/github', async (req, res) => {
+    try {
+      const raw = await readRaw(req);
+      const out = await handleGithub(req, raw, cfg, ctx.alerts, audit);
+      sendJson(res, 200, out);
+    } catch (err) {
+      sendError(res, Number(err.status) || 500, err.message);
+    }
+  });
 
   // ── Възстановяване от бекъп (две стъпки) ───────────────────────────────────
   r.post(
