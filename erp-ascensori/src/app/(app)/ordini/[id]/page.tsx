@@ -8,6 +8,7 @@ import { Badge, ScheletroDettaglio } from "@/components/ui";
 import { IcoIndietro, IcoTransizione, IcoVerso } from "@/components/icone";
 import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import Rapportini from "@/components/Rapportini";
+import TempiIntervento from "@/components/TempiIntervento";
 import { dataIt, dataOraIt } from "@/lib/format";
 import { TRANSIZIONI, type Stato } from "@/lib/workflow";
 
@@ -205,6 +206,8 @@ export default function Pagina() {
               </ul>
             </div>
           )}
+
+          <TempiIntervento ordineId={id} />
 
           <Rapportini ordineId={id} />
         </div>

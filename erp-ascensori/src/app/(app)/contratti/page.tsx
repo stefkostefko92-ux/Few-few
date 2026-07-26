@@ -154,6 +154,23 @@ const config: EntityConfig = {
       tipo: "number",
       predefinito: 3,
     },
+    // Празно = не е договорено и НЕ се мери. Затова няма подразбиране тук:
+    // мълчаливо попълнено число би направило фирмата длъжник по обещание,
+    // което никой не е поел.
+    {
+      name: "slaInterventoMin",
+      label: "Tempo di intervento concordato (minuti)",
+      tipo: "number",
+      aiuto:
+        "Dalla segnalazione all'arrivo del tecnico. Vuoto = non concordato, non misurato. Valore commerciale tipico: 60.",
+    },
+    {
+      name: "slaRipristinoOre",
+      label: "Tempo di ripristino concordato (ore)",
+      tipo: "number",
+      aiuto:
+        "Dalla segnalazione al rientro in servizio. Vuoto = non concordato, non misurato. Valore commerciale tipico: 24.",
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

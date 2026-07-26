@@ -23,6 +23,7 @@ import {
   IcoElimina,
 } from "@/components/icone";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
+import DdtFattura from "@/components/DdtFattura";
 import { euro, dataIt } from "@/lib/format";
 import { MODALITA_PAGAMENTO } from "@/lib/fiscale/pagamenti";
 import { azioneRichiesta, type StatoSdi } from "@/lib/fiscale/sdi-stato";
@@ -447,6 +448,14 @@ export default function Pagina() {
           </p>
         )}
       </div>
+
+      {/* Свързването на DDT сменя типа за SDI (TD01 → TD24) — затова стои до
+          редовете, а не в друг таб. */}
+      {f.tipo === "EMESSA" && (
+        <div className="mb-6">
+          <DdtFattura fatturaId={id} onCambio={() => void carica()} />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Постъпления ─────────────────────────────────────────────── */}

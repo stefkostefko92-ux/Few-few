@@ -83,6 +83,7 @@ for (const [nome, percorso] of [
   ["табло с графиките", "/dashboard"],
   ["списък с данни", "/impianti"],
   ["страница с форма", "/condomini"],
+  ["календар (мрежа с връзки)", "/calendario"],
 ] as const) {
   test(`${nome} се зарежда БЕЗ нито едно нарушение`, async ({ page }) => {
     const console_ = await raccogliViolazioni(page);

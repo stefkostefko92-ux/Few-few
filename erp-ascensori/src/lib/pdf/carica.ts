@@ -265,6 +265,10 @@ export async function pdfRapportino(
           impianto: { select: { matricola: true, indirizzo: true } },
         },
       },
+      materialiUsati: {
+        include: { articolo: { select: { codice: true, nome: true } } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
   if (!r) return null;
@@ -284,15 +288,25 @@ export async function pdfRapportino(
     azienda: await datiAzienda(tenantId),
     destinatario: null,
     corpo: r.descrizione,
-    // Материалите са свободен текст: движението по склада остава единственият
-    // източник на истината за наличността, тук е само какво е вложено на място.
-    righe: r.materiali
-      ? r.materiali
-          .split("\n")
-          .map((x) => x.trim())
-          .filter(Boolean)
-          .map((descrizione) => ({ descrizione, quantita: "" }))
-      : [],
+    // Вложеното — първо артикулите ОТ СКЛАДА (с количество; те са свалили
+    // наличността), после свободният текст за онова, което не е складов артикул.
+    //
+    // Листът трябва да казва СЪЩОТО, което казва системата: клиентът подписва
+    // тази хартия, а „взети две части" срещу „вписана една" е спор, който после
+    // никой не може да разреши.
+    righe: [
+      ...r.materialiUsati.map((m) => ({
+        descrizione: `${m.articolo.codice} — ${m.articolo.nome}`,
+        quantita: String(m.quantita),
+      })),
+      ...(r.materiali
+        ? r.materiali
+            .split("\n")
+            .map((x) => x.trim())
+            .filter(Boolean)
+            .map((descrizione) => ({ descrizione, quantita: "" }))
+        : []),
+    ],
     conPrezzi: false,
     dettagli: [
       { label: "Ordine di lavoro", valore: r.ordineLavoro.numero },

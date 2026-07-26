@@ -61,6 +61,7 @@ const includeSdi = {
   amministratore: true,
   voci: { orderBy: { ordine: "asc" as const } },
   pagamenti: { orderBy: { data: "asc" as const } },
+  ddt: { orderBy: { data: "asc" as const } },
 };
 
 /**
@@ -130,8 +131,14 @@ export async function fatturaPerSdi(
     numero: f.numero,
     data: f.data,
     dataScadenza: f.dataScadenza,
-    // Сторното НЕ е фактура с отрицателен знак, а nota di credito: TD04.
-    tipoDocumento: f.stato === "STORNATA" ? "TD04" : "TD01",
+    // Типът се ИЗВЕЖДА от фактите, не от отметка, която някой забравя да сложи:
+    //   • сторното НЕ е фактура с отрицателен знак, а nota di credito → TD04;
+    //   • фактура, която покрива доставки с DDT, Е отложена по чл. 21, ал. 4,
+    //     б. „а" D.P.R. 633/1972 → TD24.
+    // Ред на проверката: сторно на отложена фактура пак е сторно.
+    tipoDocumento:
+      f.stato === "STORNATA" ? "TD04" : f.ddt.length > 0 ? "TD24" : "TD01",
+    ddt: f.ddt.map((d) => ({ numero: d.numero, data: d.data })),
     causale: f.oggetto,
     azienda: {
       ragioneSociale: a?.ragioneSociale ?? "",

@@ -272,63 +272,63 @@ model Tenant {
 /// документ: чл. 1, ал. 3 D.P.R. 472/1996 иска generalità del cedente върху
 /// DDT, а бъдещият XML за SDI иска и повече. Един ред на фирма (вкл. `null`).
 model DatiAzienda {
-  id               String   @id @default(uuid()) @db.Uuid
-  ragioneSociale   String
-  partitaIva       String?
-  codiceFiscale    String?
-  indirizzo        String?
-  cap              String?
-  citta            String?
-  provincia        String?
-  telefono         String?
-  email            String?
-  pec              String?
+  id              String   @id @default(uuid()) @db.Uuid
+  ragioneSociale  String
+  partitaIva      String?
+  codiceFiscale   String?
+  indirizzo       String?
+  cap             String?
+  citta           String?
+  provincia       String?
+  telefono        String?
+  email           String?
+  pec             String?
   /// Codice destinatario / codice SDI за е-фактурата.
-  codiceSdi        String?
+  codiceSdi       String?
   /// Данъчен режим по кодировката на SDI (RF01 = обикновен, RF19 = forfettario).
   /// Задължителен реквизит на `CedentePrestatore` — без него XML-ът се отхвърля.
-  regimeFiscale    String   @default("RF01")
-  iban             String?
+  regimeFiscale   String   @default("RF01")
+  iban            String?
   /// Регистрация в търговския регистър (REA) — влиза в подписа на документите.
-  rea              String?
-  capitaleSociale  String?
+  rea             String?
+  capitaleSociale String?
   /// Бележка под линия на печатните документи (условия на плащане и подобни).
-  notePiePagina    String?
-  tenantId         String?  @unique @db.Uuid
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  notePiePagina   String?
+  tenantId        String?  @unique @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("dati_azienda")
 }
 
 model User {
-  id           String    @id @default(uuid()) @db.Uuid
-  email        String    @unique
-  password     String // bcrypt hash, 10 rounds — никога в чист вид
-  nome         String
-  cognome      String
-  ruolo        UserRole  @default(OPERATORE)
-  attivo       Boolean   @default(true)
-  tentativi    Int       @default(0) // поредни неуспешни входа
-  bloccatoFino DateTime? // заключен до този момент
-  ultimoAccesso DateTime?
-  refreshToken String? // нулира се при изход
+  id                 String    @id @default(uuid()) @db.Uuid
+  email              String    @unique
+  password           String // bcrypt hash, 10 rounds — никога в чист вид
+  nome               String
+  cognome            String
+  ruolo              UserRole  @default(OPERATORE)
+  attivo             Boolean   @default(true)
+  tentativi          Int       @default(0) // поредни неуспешни входа
+  bloccatoFino       DateTime? // заключен до този момент
+  ultimoAccesso      DateTime?
+  refreshToken       String? // нулира се при изход
   /// Втори фактор (TOTP). Тайната е в чист вид, защото алгоритъмът я иска, за
   /// да сметне кода — затова достъпът до базата вече значи компрометиран втори
   /// фактор, и точно затова той е ДОПЪЛНЕНИЕ към паролата, не заместител.
-  totpSegreto  String?
-  totpAttivo   Boolean   @default(false)
+  totpSegreto        String?
+  totpAttivo         Boolean   @default(false)
   /// Резервни кодове (bcrypt хешове). Без тях загубен телефон = загубен акаунт,
   /// а единственият изход би бил администраторска вратичка около мярката.
-  codiciRecupero String[] @default([])
+  codiciRecupero     String[]  @default([])
   /// Кога паролата е сменяна за последно — за политиката за срок.
   passwordCambiataAt DateTime?
-  tenantId     String?   @db.Uuid
-  note         String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  tenantId           String?   @db.Uuid
+  note               String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  tenant     Tenant?     @relation(fields: [tenantId], references: [id])
+  tenant     Tenant?          @relation(fields: [tenantId], references: [id])
   sessioni   SessioneAttiva[]
   auditLogs  AuditLog[]
   preventivi Preventivo[]
@@ -345,17 +345,17 @@ model User {
 /// компютър мълчаливо изхвърляше първия, никой не можеше да види откъде е
 /// влизано, а „прекрати всички сесии" при уволнен служител не съществуваше.
 model SessioneAttiva {
-  id           String   @id @default(uuid()) @db.Uuid
-  utenteId     String   @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  utenteId   String    @db.Uuid
   /// SHA-256 на refresh token-а — самият токен не се пази никъде.
-  tokenHash    String   @unique
+  tokenHash  String    @unique
   /// Груб отпечатък на устройството, за да е разпознаваемо в списъка.
-  userAgent    String?
-  ip           String?
-  ultimoUso    DateTime @default(now())
-  scadenza     DateTime
-  revocataAt   DateTime?
-  createdAt    DateTime @default(now())
+  userAgent  String?
+  ip         String?
+  ultimoUso  DateTime  @default(now())
+  scadenza   DateTime
+  revocataAt DateTime?
+  createdAt  DateTime  @default(now())
 
   utente User @relation(fields: [utenteId], references: [id], onDelete: Cascade)
 
@@ -365,26 +365,26 @@ model SessioneAttiva {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid()) @db.Uuid
+  id             String   @id @default(uuid()) @db.Uuid
   /// Монотонен ред на вписване. `createdAt` НЕ става за подредба на веригата:
   /// две операции в една и съща милисекунда се сортират произволно и проверката
   /// би обявила счупена верига там, където няма такава.
-  seq       BigInt   @unique @default(autoincrement())
-  azione    String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, STATE_CHANGE, IMPORT
-  entita    String
-  entitaId  String?
-  dettagli  Json?
-  ip        String?
-  userAgent String?
-  hmac      String // криптографски подпис на редицата
+  seq            BigInt   @unique @default(autoincrement())
+  azione         String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, STATE_CHANGE, IMPORT
+  entita         String
+  entitaId       String?
+  dettagli       Json?
+  ip             String?
+  userAgent      String?
+  hmac           String // криптографски подпис на редицата
   /// Подписът на ПРЕДХОДНИЯ ред — веригата, която лови ИЗТРИВАНЕ на ред.
   hmacPrecedente String?
-  versioneFirma Int   @default(3) // 1 = ред на вмъкване · 2 = сортирани ключове · 3 = + верига
-  utenteId  String?  @db.Uuid
+  versioneFirma  Int      @default(3) // 1 = ред на вмъкване · 2 = сортирани ключове · 3 = + верига
+  utenteId       String?  @db.Uuid
   /// Фирмата, чиито данни е засегнала операцията. Без нея регистърът не може
   /// да се филтрира и администраторът на една фирма чете одита на друга.
-  tenantId  String?  @db.Uuid
-  createdAt DateTime @default(now())
+  tenantId       String?  @db.Uuid
+  createdAt      DateTime @default(now())
 
   utente User?   @relation(fields: [utenteId], references: [id])
   tenant Tenant? @relation(fields: [tenantId], references: [id])
@@ -398,51 +398,51 @@ model AuditLog {
 // ─── Анагрифики ─────────────────────────────────────────────────────────────
 
 model Impianto {
-  id                String        @id @default(uuid()) @db.Uuid
+  id                  String         @id @default(uuid()) @db.Uuid
   /// Вътрешният номер на фирмата.
-  matricola         String
+  matricola           String
   /// Номерът, който ОБЩИНАТА дава при съобщението по чл. 12 D.P.R. 162/1999.
   ///
   /// Той е официалният идентификатор на уредбата и се изписва на табелата в
   /// кабината. Без него уредбата формално не е в служба — а точно по него
   /// проверяващият орган я търси. Дотук продуктът пазеше само своя номер.
-  matricolaComune   String?
+  matricolaComune     String?
   /// Коя община го е дала. Един и същ номер се повтаря между общините.
-  comune            String?
+  comune              String?
   /// Кога е подадено съобщението по чл. 12 (срок: 10 дни от декларацията за
   /// съответствие).
-  dataComunicazione DateTime?
-  tipo              TipoImpianto   @default(ASCENSORE)
+  dataComunicazione   DateTime?
+  tipo                TipoImpianto   @default(ASCENSORE)
   /// По кой правен режим е пусната в служба — определя коя уредба важи.
-  regime            RegimeImpianto @default(DIRETTIVA_2014_33)
-  marca             String
-  modello           String
-  anno              Int?
-  portata           Int? // kg
+  regime              RegimeImpianto @default(DIRETTIVA_2014_33)
+  marca               String
+  modello             String
+  anno                Int?
+  portata             Int? // kg
   /// Брой лица по табелата — реквизит на самата табела.
-  persone           Int?
+  persone             Int?
   /// m/s, с три десетични: 0,63 · 1,00 · 1,60.
-  velocita          Decimal?      @db.Decimal(5, 3)
-  fermate           Int?
-  stato             StatoImpianto @default(ATTIVO)
-  indirizzo         String?
-  piano             String?
-  dataInstallazione DateTime?
+  velocita            Decimal?       @db.Decimal(5, 3)
+  fermate             Int?
+  stato               StatoImpianto  @default(ATTIVO)
+  indirizzo           String?
+  piano               String?
+  dataInstallazione   DateTime?
   /// Органът, който прави двугодишната проверка по чл. 13 (нотифициран орган,
   /// ASL или ARPA). Собственикът го избира; ние само го знаем.
   organismoNotificato String?
   /// Откога поддръжката е поверена на нас (чл. 15, ал. 1). Определя откога
   /// отговаряме за шестмесечните проверки.
-  manutentoreDal    DateTime?
-  ultimaRevisione   DateTime?
-  prossimaRevisione DateTime? // генерира автоматичните известия
-  condominioId      String?       @db.Uuid
-  amministratoreId  String?       @db.Uuid
-  note              String?
-  attivo            Boolean       @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  manutentoreDal      DateTime?
+  ultimaRevisione     DateTime?
+  prossimaRevisione   DateTime? // генерира автоматичните известия
+  condominioId        String?        @db.Uuid
+  amministratoreId    String?        @db.Uuid
+  note                String?
+  attivo              Boolean        @default(true)
+  tenantId            String?        @db.Uuid // изолация по фирма (мулти-инсталация)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
   condominio     Condominio?           @relation(fields: [condominioId], references: [id])
   amministratore Amministratore?       @relation(fields: [amministratoreId], references: [id])
@@ -453,11 +453,10 @@ model Impianto {
   assegnazioni   AssegnazioneTecnico[]
   preventivi     Preventivo[]
   ordiniLavoro   OrdineLavoro[]
+  contratti      ContrattoImpianto[]
 
-  @@index([tenantId, matricola])
   @@unique([tenantId, matricola])
-  contratti  ContrattoImpianto[]
-
+  @@index([tenantId, matricola])
   @@map("impianti")
 }
 
@@ -472,30 +471,30 @@ model Impianto {
 /// Дотук продуктът пазеше само дата „prossimaRevisione" — число без протокол,
 /// без орган, без предписания и без начин да се докаже, че проверката е минала.
 model VerificaImpianto {
-  id         String        @id @default(uuid()) @db.Uuid
-  impiantoId String        @db.Uuid
-  tipo       TipoVerifica  @default(PERIODICA)
-  data       DateTime
-  esito      EsitoVerifica
+  id                   String        @id @default(uuid()) @db.Uuid
+  impiantoId           String        @db.Uuid
+  tipo                 TipoVerifica  @default(PERIODICA)
+  data                 DateTime
+  esito                EsitoVerifica
   /// Кой я е извършил.
-  organismo  String?
+  organismo            String?
   /// Номерът на протокола — по него се доказва пред контролния орган.
-  numeroVerbale String?
+  numeroVerbale        String?
   /// Предписанията при `CON_PRESCRIZIONI` и срокът за изпълнението им.
-  prescrizioni  String?
+  prescrizioni         String?
   scadenzaPrescrizioni DateTime?
   /// Кога е следващата. Извежда се от датата, но се пази явно: органът може да
   /// определи по-кратък срок.
-  prossimaVerifica DateTime?
+  prossimaVerifica     DateTime?
   /// Сканираният протокол. `SetNull`: изтрит документ не бива да отнася със
   /// себе си доказателството, че проверката е минала.
-  documentoId String?  @db.Uuid
-  documento   Documento? @relation(fields: [documentoId], references: [id], onDelete: SetNull)
-  note        String?
-  utenteId    String?  @db.Uuid
-  tenantId    String?  @db.Uuid
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  documentoId          String?       @db.Uuid
+  documento            Documento?    @relation(fields: [documentoId], references: [id], onDelete: SetNull)
+  note                 String?
+  utenteId             String?       @db.Uuid
+  tenantId             String?       @db.Uuid
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
 
@@ -514,23 +513,23 @@ model VerificaImpianto {
 /// пета е конфигурация, не миграция. Цената е, че целостта се пази от
 /// приложението — затова четенето ВИНАГИ минава през проверка на собственика.
 model Allegato {
-  id        String   @id @default(uuid()) @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   /// Коя таблица („impianti“, „verifiche_impianti“, „rapportini“…).
-  entita    String
-  entitaId  String   @db.Uuid
+  entita     String
+  entitaId   String   @db.Uuid
   /// Оригиналното име — САМО за показване. На диска не отива никога.
-  nome      String
+  nome       String
   /// Типът, ПОДУШЕН от съдържанието; не този, който браузърът е обявил.
-  mimeType  String
+  mimeType   String
   dimensione Int
   /// Пътят спрямо корена на хранилището. Строи се от UUID, не от името.
-  percorso  String
+  percorso   String
   /// SHA-256 на съдържанието: разпознава дубликати и доказва, че файлът не е
   /// подменян след качването.
-  sha256    String
-  utenteId  String?  @db.Uuid
-  tenantId  String?  @db.Uuid
-  createdAt DateTime @default(now())
+  sha256     String
+  utenteId   String?  @db.Uuid
+  tenantId   String?  @db.Uuid
+  createdAt  DateTime @default(now())
 
   @@index([tenantId])
   @@index([entita, entitaId])
@@ -543,7 +542,7 @@ model ImpiantoMedia {
   tipo       String // foto, video, documento
   url        String
   nome       String?
-  tenantId  String?   @db.Uuid // изолация по фирма
+  tenantId   String?  @db.Uuid // изолация по фирма
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -564,7 +563,7 @@ model ScadenzaImpianto {
   notificato30 Boolean  @default(false)
   completata   Boolean  @default(false)
   note         String?
-  tenantId  String?   @db.Uuid // изолация по фирма
+  tenantId     String?  @db.Uuid // изолация по фирма
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -585,7 +584,7 @@ model AssegnazioneTecnico {
   dataFine     DateTime?
   attiva       Boolean   @default(true)
   note         String?
-  tenantId  String?   @db.Uuid // изолация по фирма
+  tenantId     String?   @db.Uuid // изолация по фирма
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -619,17 +618,16 @@ model Condominio {
   amministratoreId String?  @db.Uuid
   note             String?
   attivo           Boolean  @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId         String?  @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
   impianti       Impianto[]
   fatture        Fattura[]
+  contratti      Contratto[]
 
   @@index([tenantId])
-  contratti  Contratto[]
-
   @@map("condomini")
 }
 
@@ -656,7 +654,7 @@ model Amministratore {
   provincia      String?
   note           String?
   attivo         Boolean            @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId       String?            @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -664,10 +662,9 @@ model Amministratore {
   impianti   Impianto[]
   preventivi Preventivo[]
   fatture    Fattura[]
-
-  @@index([tenantId])
   contratti  Contratto[]
 
+  @@index([tenantId])
   @@map("amministratori")
 }
 
@@ -688,42 +685,41 @@ model Dipendente {
   telefono         String?
   note             String?
   attivo           Boolean        @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId         String?        @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
   automezzo    Automezzo?
   assegnazioni AssegnazioneTecnico[]
   ordiniLavoro OrdineLavoro[]
+  rapportini   Rapportino[]
 
   @@index([tenantId])
-  rapportini Rapportino[]
-
   @@map("dipendenti")
 }
 
 // Фирмен автопарк — трите дати определят цветния статус в списъка.
 model Automezzo {
-  id                   String    @id @default(uuid()) @db.Uuid
-  targa                String
-  marca                String
-  modello              String
-  chilometraggio       Int       @default(0)
-  scadenzaRevisione    DateTime?
+  id                    String    @id @default(uuid()) @db.Uuid
+  targa                 String
+  marca                 String
+  modello               String
+  chilometraggio        Int       @default(0)
+  scadenzaRevisione     DateTime?
   scadenzaAssicurazione DateTime?
-  scadenzaTagliando    DateTime?
-  stato                String    @default("verde") // verde, giallo, rosso
-  conducenteId         String?   @unique @db.Uuid
-  note                 String?
-  attivo               Boolean   @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  scadenzaTagliando     DateTime?
+  stato                 String    @default("verde") // verde, giallo, rosso
+  conducenteId          String?   @unique @db.Uuid
+  note                  String?
+  attivo                Boolean   @default(true)
+  tenantId              String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   conducente Dipendente? @relation(fields: [conducenteId], references: [id])
 
-  @@index([tenantId])
   @@unique([tenantId, targa])
+  @@index([tenantId])
   @@map("automezzi")
 }
 
@@ -737,7 +733,7 @@ model Cottimista {
   indirizzo      String?
   note           String?
   attivo         Boolean        @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId       String?        @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -756,7 +752,7 @@ model Squadra {
   membri       String[] @default([])
   attiva       Boolean  @default(true)
   note         String?
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId     String?  @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -786,36 +782,38 @@ model ArticoloMagazzino {
   aliquotaIva    Decimal       @default(22) @db.Decimal(5, 2)
   note           String?
   attivo         Boolean       @default(true)
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId       String?       @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  movimenti      MovimentoMagazzino[]
-  vociPreventivo VocePreventivo[]
+  movimenti           MovimentoMagazzino[]
+  vociPreventivo      VocePreventivo[]
+  materialiRapportino MaterialeRapportino[]
 
-  @@index([tenantId])
   @@unique([tenantId, codice])
+  @@index([tenantId])
   @@map("articoli_magazzino")
 }
 
 // Хронологичен регистър — quantita никога не се пипа директно.
 model MovimentoMagazzino {
-  id         String        @id @default(uuid()) @db.Uuid
-  articoloId String        @db.Uuid
-  tipo       TipoMovimento
-  quantita   Int
-  nota       String?
-  ddtId      String?       @db.Uuid
+  id             String        @id @default(uuid()) @db.Uuid
+  articoloId     String        @db.Uuid
+  tipo           TipoMovimento
+  quantita       Int
+  nota           String?
+  ddtId          String?       @db.Uuid
   /// Ордина, за който е излязъл материалът. Без тази връзка вложеното не може
   /// да се отнесе към договор или импиант и отчетът брои само труда.
-  ordineLavoroId String?    @db.Uuid
-  tenantId  String?   @db.Uuid // изолация по фирма
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  ordineLavoroId String?       @db.Uuid
+  tenantId       String?       @db.Uuid // изолация по фирма
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  articolo ArticoloMagazzino @relation(fields: [articoloId], references: [id])
-  ddt      Ddt?              @relation(fields: [ddtId], references: [id])
-  ordineLavoro OrdineLavoro? @relation(fields: [ordineLavoroId], references: [id])
+  articolo            ArticoloMagazzino    @relation(fields: [articoloId], references: [id])
+  ddt                 Ddt?                 @relation(fields: [ddtId], references: [id])
+  ordineLavoro        OrdineLavoro?        @relation(fields: [ordineLavoroId], references: [id])
+  materialeRapportino MaterialeRapportino?
 
   @@index([tenantId])
   /// Отчетът за рентабилност чете движенията ПО ОРДИН — без индекса това е
@@ -840,7 +838,7 @@ model Preventivo {
   amministratoreId String?         @db.Uuid
   utenteId         String?         @db.Uuid
   note             String?
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId         String?         @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
@@ -850,8 +848,8 @@ model Preventivo {
   voci           VocePreventivo[]
   ordiniLavoro   OrdineLavoro[]
 
-  @@index([tenantId])
   @@unique([tenantId, numero])
+  @@index([tenantId])
   @@map("preventivi")
 }
 
@@ -887,41 +885,52 @@ model VocePreventivo {
 /// Двете дати са „водачът" на автоматизма: местят се напред само след успешно
 /// раждане, така че спрян cron наваксва, вместо да прескача периоди.
 model Contratto {
-  id                String         @id @default(uuid()) @db.Uuid
-  numero            String
-  stato             StatoContratto @default(BOZZA)
-  oggetto           String
+  id                      String         @id @default(uuid()) @db.Uuid
+  numero                  String
+  stato                   StatoContratto @default(BOZZA)
+  oggetto                 String
   /// Такса за периода на фактуриране, БЕЗ ДДС.
-  canone            Decimal        @default(0) @db.Decimal(12, 2)
-  aliquotaIva       Decimal        @default(22) @db.Decimal(5, 2)
-  periodicitaVisite Periodicita    @default(SEMESTRALE)
-  periodicitaFatturazione Periodicita @default(TRIMESTRALE)
-  dataInizio        DateTime
-  dataFine          DateTime
+  canone                  Decimal        @default(0) @db.Decimal(12, 2)
+  aliquotaIva             Decimal        @default(22) @db.Decimal(5, 2)
+  periodicitaVisite       Periodicita    @default(SEMESTRALE)
+  periodicitaFatturazione Periodicita    @default(TRIMESTRALE)
+  dataInizio              DateTime
+  dataFine                DateTime
   /// Мълчаливо подновяване: при изтичане срокът се продължава с още толкова.
-  rinnovoAutomatico Boolean        @default(true)
+  rinnovoAutomatico       Boolean        @default(true)
   /// Срок за предизвестие при отказ (месеци) — за напомнянето преди подновяване.
-  preavvisoMesi     Int            @default(3)
-  amministratoreId  String?        @db.Uuid
-  condominioId      String?        @db.Uuid
-  /// Кога автоматизмът трябва да роди следващия ордин / следващата фактура.
-  prossimaVisita    DateTime?
-  prossimaFattura   DateTime?
-  note              String?
-  tenantId          String?        @db.Uuid
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  preavvisoMesi           Int            @default(3)
 
-  amministratore Amministratore?    @relation(fields: [amministratoreId], references: [id])
-  condominio     Condominio?        @relation(fields: [condominioId], references: [id])
+  // ── Договорените времена за отзив ─────────────────────────────────────────
+  //
+  // Праговете са ДОГОВОРНИ, не нормативни. UNI EN 81-28 е платен стандарт и
+  // точните му числа НЕ са възпроизведени тук; това, което се мери, е обещаното
+  // на клиента. `null` значи „не е договорено", тоест не се мери — а не
+  // мълчаливо наложено задължение, каквото фирмата не е поела.
+  /// Минути от сигнала до пристигане.
+  slaInterventoMin Int?
+  /// Часове от сигнала до връщане в служба.
+  slaRipristinoOre Int?
+  amministratoreId String?   @db.Uuid
+  condominioId     String?   @db.Uuid
+  /// Кога автоматизмът трябва да роди следващия ордин / следващата фактура.
+  prossimaVisita   DateTime?
+  prossimaFattura  DateTime?
+  note             String?
+  tenantId         String?   @db.Uuid
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  amministratore Amministratore?     @relation(fields: [amministratoreId], references: [id])
+  condominio     Condominio?         @relation(fields: [condominioId], references: [id])
   impianti       ContrattoImpianto[]
   ordini         OrdineLavoro[]
   fatture        Fattura[]
 
+  @@unique([tenantId, numero])
   @@index([tenantId])
   @@index([stato, prossimaVisita])
   @@index([stato, prossimaFattura])
-  @@unique([tenantId, numero])
   @@map("contratti")
 }
 
@@ -943,43 +952,62 @@ model ContrattoImpianto {
 }
 
 model OrdineLavoro {
-  id             String         @id @default(uuid()) @db.Uuid
-  numero         String
-  stato          StatoOrdine    @default(BOZZA)
-  priorita       PrioritaOrdine @default(ORDINARIA)
-  oggetto        String
-  descrizione    String?
-  noteInterne    String? // никога не се печатат
+  id              String         @id @default(uuid()) @db.Uuid
+  numero          String
+  stato           StatoOrdine    @default(BOZZA)
+  priorita        PrioritaOrdine @default(ORDINARIA)
+  oggetto         String
+  descrizione     String?
+  noteInterne     String? // никога не се печатат
   noteCommittente String?
   /// Платено на котимиста / външен изпълнител за този ордин, без ДДС.
-  costoEsterno   Decimal?       @db.Decimal(12, 2)
-  dataInizio     DateTime?
-  dataFine       DateTime?
-  impiantoId     String?        @db.Uuid
-  preventivoId   String?        @db.Uuid
+  costoEsterno    Decimal?       @db.Decimal(12, 2)
+  dataInizio      DateTime?
+  dataFine        DateTime?
+
+  // ── Времената за отзив (само за спешните приоритети) ──────────────────────
+  //
+  // Асансьорна фирма се продава по две неща: цената на canone-то и колко бързо
+  // идва при повикване. Второто дотук не се мереше никъде — казваше се на думи
+  // в офертата и никой не можеше да го докаже нито пред клиента, нито пред
+  // себе си.
+  //
+  // Началото е СИГНАЛЪТ, не `createdAt`: записът в системата се прави след
+  // обаждането, понякога часове по-късно, а клиентът чака от обаждането.
+  /// Кога е постъпил сигналът (обаждане или аларма от кабината).
+  segnalatoAt  DateTime?
+  /// Кога техникът е стъпил на място.
+  arrivoAt     DateTime?
+  /// Кога уредбата е върната в служба (или блокираният е освободен).
+  /// РАЗЛИЧНО от `arrivoAt`: техникът може да е дошъл за 30 минути и да чака
+  /// резервна част три дни. Един показател би скрил точно това.
+  ripristinoAt DateTime?
+
+  impiantoId   String?  @db.Uuid
+  preventivoId String?  @db.Uuid
   /// Попълва се, когато ордина е роден от периодичното посещение по договор.
-  contrattoId    String?        @db.Uuid
-  tecnicoId      String?        @db.Uuid
-  cottimistiId   String?        @db.Uuid
-  squadraId      String?        @db.Uuid
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  contrattoId  String?  @db.Uuid
+  tecnicoId    String?  @db.Uuid
+  cottimistiId String?  @db.Uuid
+  squadraId    String?  @db.Uuid
+  tenantId     String?  @db.Uuid // изолация по фирма (мулти-инсталация)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  impianto   Impianto?     @relation(fields: [impiantoId], references: [id])
-  preventivo Preventivo?   @relation(fields: [preventivoId], references: [id])
-  contratto  Contratto?    @relation(fields: [contrattoId], references: [id])
-  tecnico    Dipendente?   @relation(fields: [tecnicoId], references: [id])
-  cottimista Cottimista?   @relation(fields: [cottimistiId], references: [id])
-  squadra    Squadra?      @relation(fields: [squadraId], references: [id])
-  storico     StoricoStato[]
-  movimenti   MovimentoMagazzino[]
-  fatture     Fattura[]
-  ddt         Ddt[]
-  rapportini  Rapportino[]
+  impianto   Impianto?            @relation(fields: [impiantoId], references: [id])
+  preventivo Preventivo?          @relation(fields: [preventivoId], references: [id])
+  contratto  Contratto?           @relation(fields: [contrattoId], references: [id])
+  tecnico    Dipendente?          @relation(fields: [tecnicoId], references: [id])
+  cottimista Cottimista?          @relation(fields: [cottimistiId], references: [id])
+  squadra    Squadra?             @relation(fields: [squadraId], references: [id])
+  storico    StoricoStato[]
+  movimenti  MovimentoMagazzino[]
+  fatture    Fattura[]
+  ddt        Ddt[]
+  rapportini Rapportino[]
 
-  @@index([tenantId])
   @@unique([tenantId, numero])
+  @@index([tenantId])
   @@map("ordini_lavoro")
 }
 
@@ -994,22 +1022,22 @@ model OrdineLavoro {
 /// по eIDAS и не претендира да е такъв — той е доказателство за приемане на
 /// работата, каквото е и подписът върху хартиения лист.
 model Rapportino {
-  id              String          @id @default(uuid()) @db.Uuid
-  numero          String
-  ordineLavoroId  String          @db.Uuid
+  id             String          @id @default(uuid()) @db.Uuid
+  numero         String
+  ordineLavoroId String          @db.Uuid
   /// Уредбата ПРЯКО, не само през ордина.
   ///
   /// Историята на една уредба е нейна, не на поръчката: при смяна на
   /// администратора или при проверка се иска всичко правено по ТАЗИ уредба, а
   /// стигането дотам през ордините е и бавно, и непълно.
-  impiantoId      String?         @db.Uuid
-  tecnicoId       String?         @db.Uuid
-  dataOra         DateTime        @default(now())
-  tipoIntervento  TipoIntervento  @default(MANUTENZIONE_ORDINARIA)
+  impiantoId     String?         @db.Uuid
+  tecnicoId      String?         @db.Uuid
+  dataOra        DateTime        @default(now())
+  tipoIntervento TipoIntervento  @default(MANUTENZIONE_ORDINARIA)
   /// Отработени часове, с четвъртинки (1.25 = час и петнайсет).
-  oreLavoro       Decimal         @default(0) @db.Decimal(6, 2)
-  descrizione     String
-  esito           EsitoIntervento @default(RISOLTO)
+  oreLavoro      Decimal         @default(0) @db.Decimal(6, 2)
+  descrizione    String
+  esito          EsitoIntervento @default(RISOLTO)
 
   // ── Проверките по чл. 15, ал. 4 D.P.R. 162/1999 ───────────────────────────
   //
@@ -1017,38 +1045,78 @@ model Rapportino {
   // Свободният текст „всичко наред" не доказва нищо: при злополука се пита кое
   // точно е проверено и кога. Затова са отделни полета — `null` значи „не е
   // проверено на този визит", а не „наред".
-  vFuni              Boolean?
-  vParacadute        Boolean?
-  vLimitatoreVelocita Boolean?
-  vIsolamentoElettrico Boolean?
-  vMessaTerra        Boolean?
-  vPorteSerrature    Boolean?
+  vFuni                   Boolean?
+  vParacadute             Boolean?
+  vLimitatoreVelocita     Boolean?
+  vIsolamentoElettrico    Boolean?
+  vMessaTerra             Boolean?
+  vPorteSerrature         Boolean?
   vIlluminazioneEmergenza Boolean?
   /// Двупосочната връзка от кабината (UNI EN 81-28). Неработеща значи, че
   /// блокиран човек не може да повика помощ — това е спиране, не забележка.
-  vCitofonoAllarme   Boolean?
-  /// Вложени материали като свободен текст; движението по склада е отделно и
-  /// остава единственият източник на истината за наличността.
-  materiali       String?
-  noteInterne     String?
+  vCitofonoAllarme        Boolean?
+  /// Свободен текст за вложеното, което НЕ е артикул от склада (купено на
+  /// място, чуждо, дребно). За артикулите от склада има редове — виж
+  /// `MaterialeRapportino`; те и само те движат наличността.
+  materiali               String?
+  noteInterne             String?
   /// PNG (data URL) на подписа. Празно = още неподписан.
-  firmaCliente    String?
-  firmatarioNome  String?
-  firmatarioRuolo String?
-  firmatoAt       DateTime?
-  tenantId        String?         @db.Uuid
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  firmaCliente            String?
+  firmatarioNome          String?
+  firmatarioRuolo         String?
+  firmatoAt               DateTime?
+  tenantId                String?   @db.Uuid
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   ordineLavoro OrdineLavoro @relation(fields: [ordineLavoroId], references: [id], onDelete: Cascade)
   impianto     Impianto?    @relation(fields: [impiantoId], references: [id])
   tecnico      Dipendente?  @relation(fields: [tecnicoId], references: [id])
 
+  materialiUsati MaterialeRapportino[]
+
+  @@unique([tenantId, numero])
   @@index([tenantId])
   @@index([ordineLavoroId])
   @@index([impiantoId])
-  @@unique([tenantId, numero])
   @@map("rapportini")
+}
+
+/// Вложен артикул от склада — редът, който ЗАДЪЛЖИТЕЛНО движи наличността.
+///
+/// Дотук вложеното живееше като свободен текст в `Rapportino.materiali`.
+/// Последицата не е разкрасяване: техникът слага контактор, наличността в
+/// системата не мърда, а следващият вижда „има един" и тръгва без резервна
+/// част. Отделно вложеното не влизаше в рентабилността и всеки договор
+/// изглеждаше по-печеливш, отколкото е.
+///
+/// РЕДЪТ И ДВИЖЕНИЕТО СЕ РАЖДАТ ЗАЕДНО, в една транзакция. `movimentoId` е
+/// задължителен и уникален — тоест ред без движение е невъзможен по СХЕМА, а
+/// не по добра воля на маршрута.
+///
+/// Моментът е ДОБАВЯНЕТО, не подписването. Частта е излязла от склада, когато
+/// техникът я е взел; а подписването е най-лошият възможен момент за отказ
+/// „недостатъчна наличност" — човекът е пред клиента, с отворен капак на
+/// шахтата. Махнат ред преди подписа връща количеството с обратно движение.
+model MaterialeRapportino {
+  id           String   @id @default(uuid()) @db.Uuid
+  rapportinoId String   @db.Uuid
+  articoloId   String   @db.Uuid
+  quantita     Int
+  /// Изходящото движение. Едно към едно: складът и отчетът не могат да се
+  /// разминат, защото са един и същ запис, видян от две страни.
+  movimentoId  String   @unique @db.Uuid
+  tenantId     String?  @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  rapportino Rapportino         @relation(fields: [rapportinoId], references: [id], onDelete: Cascade)
+  articolo   ArticoloMagazzino  @relation(fields: [articoloId], references: [id])
+  movimento  MovimentoMagazzino @relation(fields: [movimentoId], references: [id])
+
+  @@index([tenantId])
+  @@index([rapportinoId])
+  @@map("materiali_rapportino")
 }
 
 // Пише се автоматично при всяка смяна на статус.
@@ -1109,26 +1177,26 @@ model Fattura {
   // ── Ritenuta d'acconto ──────────────────────────────────────────────────
   /// Чл. 25-ter D.P.R. 600/1973: кондоминиумът удържа 4 % върху
   /// възнагражденията по договор за изработка и ги внася вместо изпълнителя.
-  ritenuta         Boolean @default(false)
-  ritenutaAliquota Decimal @default(4) @db.Decimal(5, 2)
-  ritenutaImporto  Decimal @default(0) @db.Decimal(12, 2)
+  ritenuta         Boolean   @default(false)
+  ritenutaAliquota Decimal   @default(4) @db.Decimal(5, 2)
+  ritenutaImporto  Decimal   @default(0) @db.Decimal(12, 2)
   /// RT01 = физическо лице · RT02 = юридическо лице.
-  ritenutaTipo     String  @default("RT02")
+  ritenutaTipo     String    @default("RT02")
   /// Причина по кодировката на модел 770; „W" е чл. 25-ter.
-  ritenutaCausale  String  @default("W")
+  ritenutaCausale  String    @default("W")
   /// Дата на внасяне (F24) — попълва се, когато удържаното е преведено.
   ritenutaVersata  DateTime?
 
   // ── Плащане ─────────────────────────────────────────────────────────────
   statoPagamento      StatoPagamentoFattura @default(NON_PAGATA)
-  totalePagato        Decimal @default(0) @db.Decimal(12, 2)
+  totalePagato        Decimal               @default(0) @db.Decimal(12, 2)
   /// Кодировката на SDI: MP01 контанти, MP05 банков превод, MP08 карта…
-  modalitaPagamento   String  @default("MP05")
+  modalitaPagamento   String                @default("MP05")
   /// TP01 на вноски · TP02 наведнъж · TP03 авансово.
-  condizioniPagamento String  @default("TP02")
+  condizioniPagamento String                @default("TP02")
   /// Чл. 17-ter D.P.R. 633/1972: ДДС-то се внася от публичния получател, не от
   /// доставчика. `EsigibilitaIVA=S`, а платимото е само облагаемата основа.
-  splitPayment        Boolean @default(false)
+  splitPayment        Boolean               @default(false)
   /// Обществена поръчка — задължителни при доставка към PA (закон 136/2010).
   cig                 String?
   cup                 String?
@@ -1137,9 +1205,9 @@ model Fattura {
   /// важи само до стойността на престацията, остатъкът е 22 %.
   regimeBeniSignificativi Boolean @default(false)
 
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  tenantId  String?  @db.Uuid // изолация по фирма (мулти-инсталация)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   condominio     Condominio?     @relation(fields: [condominioId], references: [id])
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
@@ -1149,7 +1217,11 @@ model Fattura {
   voci           VoceFattura[]
   pagamenti      Pagamento[]
   notificheSdi   NotificaSdi[]
+  solleciti      Sollecito[]
+  /// Съпровождащите доставки при отложено фактуриране (TD24).
+  ddt            Ddt[]
 
+  @@unique([tenantId, numero])
   // Съставни, не едноколонни. Измерено с 50 000 фактури: `@@index([tenantId])`
   // сам НЕ покрива подредбата — планировчикът намира редовете, но после
   // сортира всичките и избира последователно сканиране. С реда на подредбата в
@@ -1158,7 +1230,6 @@ model Fattura {
   @@index([tenantId, statoSdi, data(sort: Desc)])
   @@index([tenantId, statoPagamento, dataScadenza])
   @@index([condominioId])
-  @@unique([tenantId, numero])
   @@map("fatture")
 }
 
@@ -1223,23 +1294,23 @@ model ContatoreSdi {
 }
 
 model VoceFattura {
-  id             String   @id @default(uuid()) @db.Uuid
-  fatturaId      String   @db.Uuid
-  descrizione    String
-  quantita       Decimal  @default(1) @db.Decimal(12, 2)
-  prezzoUnitario Decimal  @default(0) @db.Decimal(12, 2)
-  aliquotaIva    Decimal  @default(22) @db.Decimal(5, 2)
+  id                String   @id @default(uuid()) @db.Uuid
+  fatturaId         String   @db.Uuid
+  descrizione       String
+  quantita          Decimal  @default(1) @db.Decimal(12, 2)
+  prezzoUnitario    Decimal  @default(0) @db.Decimal(12, 2)
+  aliquotaIva       Decimal  @default(22) @db.Decimal(5, 2)
   /// „Natura" по кодировката на SDI (N1…N7). ЗАДЪЛЖИТЕЛНА, когато ставката е 0:
   /// без нея SDI не може да различи освободена доставка от забравена ставка.
-  naturaIva      String?
+  naturaIva         String?
   /// „Значимо благо" по D.M. 29.12.1999. Асансьорите и подемниците са изрично
   /// в списъка: при поддръжка на жилищна сграда ставката 10 % важи за тях само
   /// до стойността на престацията, а надвишението е с 22 %.
-  beneSignificativo Boolean @default(false)
-  totale         Decimal  @default(0) @db.Decimal(12, 2)
-  ordine         Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  beneSignificativo Boolean  @default(false)
+  totale            Decimal  @default(0) @db.Decimal(12, 2)
+  ordine            Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   fattura Fattura @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
 
@@ -1248,25 +1319,36 @@ model VoceFattura {
 
 // Транспортни документи по D.P.R. 472/1996.
 model Ddt {
-  id               String   @id @default(uuid()) @db.Uuid
-  numero           String
-  data             DateTime @default(now())
-  causale          String?
-  destinatario     String?
+  id                String   @id @default(uuid()) @db.Uuid
+  numero            String
+  data              DateTime @default(now())
+  causale           String?
+  destinatario      String?
   indirizzoConsegna String?
-  vettore          String?
-  ordineLavoroId   String?  @db.Uuid
-  note             String?
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  vettore           String?
+  ordineLavoroId    String?  @db.Uuid
+  /// Фактурата, която е обхванала тази доставка (отложено фактуриране).
+  ///
+  /// Един DDT се фактурира НАЙ-МНОГО веднъж; една фактура покрива много DDT.
+  /// От тази връзка се извежда и типът на документа за SDI: наличието на
+  /// съпровождащи документи ПРАВИ фактурата отложена (TD24). Отделно поле
+  /// „differita" би било втора истина, която някой ден ще се разминава с тази.
+  fatturaId         String?  @db.Uuid
+  note              String?
+  tenantId          String?  @db.Uuid // изолация по фирма (мулти-инсталация)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   ordineLavoro OrdineLavoro?        @relation(fields: [ordineLavoroId], references: [id])
+  fattura      Fattura?             @relation(fields: [fatturaId], references: [id])
   righe        RigaDdt[]
   movimenti    MovimentoMagazzino[]
 
-  @@index([tenantId])
   @@unique([tenantId, numero])
+  @@index([tenantId])
+  /// „Кои доставки чакат фактуриране" е основната справка в края на месеца —
+  /// без индекса тя сканира цялата таблица.
+  @@index([fatturaId])
   @@map("ddt")
 }
 
@@ -1294,7 +1376,7 @@ model Documento {
   fileUrl   String?
   utenteId  String?       @db.Uuid
   note      String?
-  tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  tenantId  String?       @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -1353,18 +1435,18 @@ model ApiKey {
 
 /// Абонамент за събития. Външната система получава известие, вместо да пита.
 model Webhook {
-  id         String    @id @default(uuid()) @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   url        String
   /// Тайна за подписа на доставката. Виждала се е само при създаване.
   segreto    String
   /// Кои събития. Празно = никакви (затворено по подразбиране).
-  eventi     String[]  @default([])
-  attivo     Boolean   @default(true)
+  eventi     String[] @default([])
+  attivo     Boolean  @default(true)
   /// Поредни неуспехи; след тавана абонаментът се спира сам.
-  fallimenti Int       @default(0)
-  tenantId   String?   @db.Uuid
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  fallimenti Int      @default(0)
+  tenantId   String?  @db.Uuid
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   consegne WebhookConsegna[]
 
@@ -1375,26 +1457,61 @@ model Webhook {
 /// Опашката на доставките. Отделна таблица, защото доставката се ПОВТАРЯ:
 /// получателят може да е недостъпен, а събитието не бива да се губи.
 model WebhookConsegna {
-  id            String    @id @default(uuid()) @db.Uuid
-  webhookId     String    @db.Uuid
-  evento        String
+  id                String    @id @default(uuid()) @db.Uuid
+  webhookId         String    @db.Uuid
+  evento            String
   /// Тялото се замразява при пораждането: препращане на „текущото състояние"
   /// би пратило по-късна стойност и получателят би видял събитие, което не се е
   /// случило така.
-  corpo         Json
-  stato         String    @default("IN_ATTESA") // IN_ATTESA | CONSEGNATO | FALLITO
-  tentativi     Int       @default(0)
-  prossimoTentativo DateTime @default(now())
-  ultimoErrore  String?
-  rispostaStato Int?
-  consegnatoAt  DateTime?
-  tenantId      String?   @db.Uuid
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  corpo             Json
+  stato             String    @default("IN_ATTESA") // IN_ATTESA | CONSEGNATO | FALLITO
+  tentativi         Int       @default(0)
+  prossimoTentativo DateTime  @default(now())
+  ultimoErrore      String?
+  rispostaStato     Int?
+  consegnatoAt      DateTime?
+  tenantId          String?   @db.Uuid
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([stato, prossimoTentativo])
   @@index([tenantId])
   @@map("webhook_consegne")
+}
+
+/// Изпратена покана за плащане.
+///
+/// Записът е ДОКАЗАТЕЛСТВОТО, че поканата е тръгнала: при спор се пита кога и
+/// какво е поискано, а „мисля, че писах имейл" не е отговор. Затова редът е
+/// само за добавяне — маршрути за промяна и изтриване няма, точно както при
+/// одита.
+///
+/// Лихвата се ЗАМРАЗЯВА в момента на изпращането. Пресмятане наново по-късно
+/// би дало друго число от това, което клиентът е получил на хартия.
+model Sollecito {
+  id                 String   @id @default(uuid()) @db.Uuid
+  fatturaId          String   @db.Uuid
+  /// 1 = първа покана · 2 = втора · 3 = покана за забава (messa in mora).
+  livello            Int
+  /// Дни закъснение към момента на изпращането — не се преизчислява.
+  giorniRitardo      Int
+  /// Дължимата главница в центесими към момента на изпращането.
+  importoCentesimi   Int
+  /// Начислената лихва в центесими; 0 при първа покана.
+  interessiCentesimi Int      @default(0)
+  /// Как е тръгнала: „email", „pec", „posta", „consegna" — свободен текст,
+  /// защото пътищата са различни при всяка фирма и не си струва енумерация.
+  canale             String?
+  note               String?
+  utenteId           String?  @db.Uuid
+  tenantId           String?  @db.Uuid
+  createdAt          DateTime @default(now())
+
+  fattura Fattura @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([fatturaId])
+  @@map("solleciti")
 }

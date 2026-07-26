@@ -74,6 +74,8 @@ for (const [nome, percorso] of [
   ["фактурите", "/fatture"],
   ["магазинът", "/magazzino"],
   ["сроковете", "/scadenze"],
+  ["падежите на вземанията", "/scadenzario"],
+  ["календарът на обиколките", "/calendario"],
 ] as const) {
   test(`${nome} е достъпна`, async ({ page }) => {
     await entra(page, UTENTI.ADMIN);

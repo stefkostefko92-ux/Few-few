@@ -20,6 +20,7 @@ import {
   IcoAttenzione,
 } from "@/components/icone";
 import Firma from "@/components/Firma";
+import MaterialiRapportino from "@/components/MaterialiRapportino";
 import { apiFetch } from "@/lib/fetch-client";
 import { dataOraIt } from "@/lib/format";
 
@@ -196,9 +197,15 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
               </p>
               {r.materiali && (
                 <p className="mt-1 whitespace-pre-wrap text-xs text-text-3">
-                  Materiali: {r.materiali}
+                  Altri materiali: {r.materiali}
                 </p>
               )}
+              {/* Артикулите ОТ СКЛАДА са отделни редове: те движат наличността,
+                  свободният текст отгоре — не. */}
+              <MaterialiRapportino
+                rapportinoId={r.id}
+                bloccato={!!r.firmatoAt}
+              />
             </li>
           ))}
         </ul>

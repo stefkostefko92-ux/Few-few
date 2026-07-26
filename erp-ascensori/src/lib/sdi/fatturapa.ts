@@ -80,12 +80,36 @@ export interface RitenutaSdi {
   aliquota: number;
 }
 
+/** Едно съпровождащо DDT: номер и дата на доставката. */
+export interface DdtSdi {
+  numero: string;
+  data: Date;
+  /** Кои редове на фактурата идват от това DDT. Празно = всички. */
+  righeRiferite?: number[];
+}
+
 export interface FatturaSdi {
   numero: string;
   data: Date;
   dataScadenza?: Date | null;
-  /** TD01 = fattura · TD04 = nota di credito (сторно). */
-  tipoDocumento: "TD01" | "TD04";
+  /**
+   * TD01 = обикновена фактура · TD04 = кредитно известие (сторно) ·
+   * TD24 = ОТЛОЖЕНА фактура.
+   *
+   * TD24 не е удобство, а РЕЖИМ по чл. 21, ал. 4, б. „а" D.P.R. 633/1972:
+   * доставките, придружени с DDT, се фактурират до 15-о число на месеца СЛЕД
+   * доставката. Точно така работи асансьорна фирма — вози части през целия
+   * месец и издава една фактура. Подадена като TD01, тя носи дата след
+   * доставката без обяснение, а това е реквизит, не форматност.
+   */
+  tipoDocumento: "TD01" | "TD04" | "TD24";
+  /**
+   * Съпровождащите документи (DDT) — задължителни при TD24.
+   *
+   * Те са ВРЪЗКАТА между датата на доставката и датата на фактурата. Без тях
+   * отложената фактура не доказва защо е издадена по-късно.
+   */
+  ddt?: DdtSdi[] | null;
   causale?: string | null;
   azienda: AziendaSdi;
   cliente: ClienteSdi;
@@ -289,6 +313,44 @@ export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
     problemi.push("Fattura: il numero supera i 20 caratteri.");
   if (f.righe.length === 0)
     problemi.push("Fattura: nessuna riga da fatturare.");
+
+  // TD24 БЕЗ съпровождащ документ е невалиден по същество, не по форма:
+  // отложената фактура се държи на чл. 21, ал. 4, б. „а" D.P.R. 633/1972, а
+  // основанието ѝ е самото DDT. Без него документът твърди отложен режим,
+  // който не може да докаже.
+  const ddt = f.ddt ?? [];
+  if (f.tipoDocumento === "TD24" && ddt.length === 0)
+    problemi.push(
+      "Fattura differita (TD24): serve almeno un DDT di riferimento (art. 21, comma 4, lett. a, D.P.R. 633/1972).",
+    );
+  ddt.forEach((d, i) => {
+    if (!testo(d.numero)) problemi.push(`DDT ${i + 1}: manca il numero.`);
+    if (!(d.data instanceof Date) || Number.isNaN(d.data.getTime()))
+      problemi.push(`DDT ${i + 1}: data non valida.`);
+    // Доставка СЛЕД фактурата обръща причината и следствието: отложената
+    // фактура покрива вече извършени доставки.
+    else if (d.data > f.data)
+      problemi.push(
+        `DDT ${i + 1}: la data del DDT è successiva alla data della fattura.`,
+      );
+  });
+  // Обратното също е дефект, но само предупреждение: срокът се брои по месеца
+  // на доставката, а „кой месец" зависи от датата — оставяме преценката на
+  // човека, вместо да отказваме документ, който може да е законен.
+  if (f.tipoDocumento === "TD24" && ddt.length > 0) {
+    const piuVecchio = ddt.reduce((m, d) => (d.data < m ? d.data : m), ddt[0].data);
+    const limite = new Date(
+      Date.UTC(piuVecchio.getUTCFullYear(), piuVecchio.getUTCMonth() + 1, 15),
+    );
+    if (f.data > limite)
+      avvisi.push(
+        "Fattura differita emessa oltre il 15 del mese successivo alla consegna più vecchia: verificare i termini (art. 21, comma 4, lett. a, D.P.R. 633/1972).",
+      );
+  }
+  if (f.tipoDocumento !== "TD24" && ddt.length > 0)
+    avvisi.push(
+      "Sono indicati dei DDT ma il documento non è di tipo TD24 (fattura differita): verificare il tipo documento.",
+    );
 
   f.righe.forEach((r, i) => {
     if (!testo(r.descrizione))
@@ -504,6 +566,23 @@ export function xmlFatturaPa(f: FatturaSdi): string {
       </DatiOrdineAcquisto>\n`
       : "";
 
+  // `DatiDDT` — блокът, който прави отложената фактура законна. Редът е фиксиран
+  // от схемата на SDI: `NumeroDDT`, `DataDDT`, после (по избор) кои линии.
+  //
+  // `RiferimentoNumeroLinea` се подава САМО когато е ясно кои редове идват от
+  // кое DDT. Измислена връзка е по-лоша от липсваща: тя твърди нещо конкретно
+  // за произхода на реда пред данъчната администрация.
+  const datiDdt = (f.ddt ?? [])
+    .map(
+      (d) => `      <DatiDDT>
+        <NumeroDDT>${esc(d.numero)}</NumeroDDT>
+        <DataDDT>${dataSdi(d.data)}</DataDDT>${(d.righeRiferite ?? [])
+          .map((n) => `\n        <RiferimentoNumeroLinea>${n}</RiferimentoNumeroLinea>`)
+          .join("")}
+      </DatiDDT>`,
+    )
+    .join("\n");
+
   const anagraficaCliente =
     c.persona && testo(c.nome) && testo(c.cognome)
       ? `          <Nome>${esc(c.nome)}</Nome>
@@ -619,7 +698,7 @@ ${datiRitenuta}        <ImportoTotaleDocumento>${fromCents(t.importoTotaleDocume
     testo(f.causale) ? `\n        <Causale>${esc(f.causale)}</Causale>` : ""
   }
       </DatiGeneraliDocumento>
-${datiOrdine}    </DatiGenerali>
+${datiOrdine}${datiDdt ? `${datiDdt}\n` : ""}    </DatiGenerali>
     <DatiBeniServizi>
 ${linee}
 ${riepiloghi}

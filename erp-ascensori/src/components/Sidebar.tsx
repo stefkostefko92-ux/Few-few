@@ -26,6 +26,7 @@ import {
   Files,
   ShieldCheck,
   ChartLineUp,
+  Coins,
   PlugsConnected,
   QrCode,
   UserCircle,
@@ -36,6 +37,7 @@ import {
   Sun,
   SignOut,
   CalendarCheck,
+  CalendarBlank,
 } from "@phosphor-icons/react";
 import { DIM } from "@/components/icone";
 import { haPermesso, type Ruolo, RUOLO_LABEL, isRuolo } from "@/lib/roles";
@@ -167,6 +169,17 @@ const GRUPPI: Gruppo[] = [
         href: "/documenti",
         label: "Documenti",
         icona: <Files size={DIM.navigazione} />,
+      },
+      {
+        href: "/calendario",
+        label: "Calendario",
+        icona: <CalendarBlank size={DIM.navigazione} />,
+      },
+      {
+        href: "/scadenzario",
+        label: "Scadenzario",
+        icona: <Coins size={DIM.navigazione} />,
+        minimo: "DIREZIONE",
       },
       {
         href: "/redditivita",

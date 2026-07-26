@@ -719,6 +719,10 @@ export const contrattoBase = z.object({
   dataFine: z.coerce.date(),
   rinnovoAutomatico: z.boolean().optional(),
   preavvisoMesi: z.number().int().min(0).max(24).optional(),
+  /** Договорените времена за отзив. `null` = не е договорено, тоест не се мери
+   *  — а не мълчаливо задължение, каквото фирмата не е поела. */
+  slaInterventoMin: z.number().int().min(0).max(10_080).nullish(),
+  slaRipristinoOre: z.number().int().min(0).max(720).nullish(),
   amministratoreId: uuidOpt,
   condominioId: uuidOpt,
   /** Импиантите, покрити от договора. */
