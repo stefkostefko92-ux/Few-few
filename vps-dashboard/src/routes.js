@@ -41,6 +41,8 @@ import * as investigate from './investigate.js';
 import { AccessLogReader, discoverLogs } from './accesslog.js';
 import { drillSpec, backupAge } from './drill.js';
 import * as health from './health.js';
+import * as redis from './redis.js';
+import * as volumes from './volumes.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -1209,6 +1211,44 @@ export function buildRouter(ctx) {
         const limit = Math.min(100, Math.max(5, Number(url.searchParams.get('limit')) || 25));
         return (ctx.accesslog || new AccessLogReader(cfg.paths.stateDir)).analyze({ limit });
       })
+    )
+  );
+
+  // ── Redis ──────────────────────────────────────────────────────────────────
+  r.get('/api/redis', guard(J(() => redis.overview())));
+  r.post(
+    '/api/redis/save',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        audit.log({ action: 'redis.save', container: b.container, user: req.user });
+        return jobs.start(redis.saveSpec(b.container), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Томове и качени файлове ────────────────────────────────────────────────
+  // Дъмпът на базата не покрива тома с качванията — при restore получаваш цели
+  // данни и счупени препратки. Затова томовете са отделно, изрично действие.
+  r.get('/api/volumes', guard(J(() => volumes.discover())));
+  r.post(
+    '/api/volumes/backup',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const found = await volumes.discover();
+        if (!found.available) throw Object.assign(new Error(found.error || 'docker недостъпен'), { status: 400 });
+        if (b.all) {
+          audit.log({ action: 'volumes.backupAll', count: found.items.length, user: req.user });
+          return jobs.start(volumes.backupAllVolumesSpec(found.items), { user: req.user });
+        }
+        const item = found.items.find((i) => i.id === b.id);
+        if (!item) throw Object.assign(new Error('Няма такъв том/папка'), { status: 400 });
+        audit.log({ action: 'volumes.backup', id: item.id, user: req.user });
+        return jobs.start(volumes.volumeBackupSpec(item), { user: req.user });
+      }),
+      { mutating: true }
     )
   );
 

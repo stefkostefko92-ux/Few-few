@@ -150,11 +150,16 @@ export async function productHealth(cfg) {
             return;
           }
           const reqFn = u.protocol === 'https:' ? httpsRequest : httpRequest;
-          const req = reqFn(u, { method: 'GET', timeout: 5000 }, (res) => {
+          // `host` е нужен за статичните сайтове зад Caddy/Nginx: те се
+          // разпознават по домейн, не по порт. Заявка към 127.0.0.1 без правилен
+          // Host попада в сайта по подразбиране и „проверката" мери чужд сайт.
+          const headers = c.host ? { host: String(c.host).slice(0, 253) } : undefined;
+          const req = reqFn(u, { method: 'GET', timeout: 5000, headers }, (res) => {
             res.resume();
             resolve({
               name: c.name,
               url: c.url,
+              host: c.host || null,
               up: res.statusCode >= 200 && res.statusCode < 400,
               status: res.statusCode,
               ms: Date.now() - started,

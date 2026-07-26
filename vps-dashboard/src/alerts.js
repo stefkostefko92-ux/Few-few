@@ -15,6 +15,7 @@ import { diskSeries, knownMounts } from './history.js';
 import { evaluateBurn } from './slo.js';
 import { backupChecks } from './drill.js';
 import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from './health.js';
+import { overview as redisOverview, evictionChecks } from './redis.js';
 
 export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill }) {
@@ -252,6 +253,7 @@ export class AlertEngine {
     for (const b of backupChecks(this.cfg, this.drill)) out.push(b);
     for (const b of await this.flappingChecks()) out.push(b);
     for (const b of await this.domainChecks()) out.push(b);
+    for (const b of await this.redisChecks()) out.push(b);
 
     if (t.certDays) {
       for (const c of await tlsCerts()) {
@@ -435,6 +437,23 @@ export class AlertEngine {
       }
     }
     this.lastDomainResults = out;
+    return out;
+  }
+
+  // Redis изхвърля ключове ТИХО: няма грешка, няма ред в лога, услугата е жива.
+  // Единственият видим белег е броячът, който расте — затова се мери разликата.
+  async redisChecks() {
+    if (this.cfg.redis?.enabled === false) return [];
+    let now;
+    try {
+      const r = await redisOverview();
+      if (!r.available) return [];
+      now = r.instances;
+    } catch {
+      return [];
+    }
+    const out = evictionChecks(this.lastRedis, now, { memPct: Number(this.cfg.redis?.memPct) || 90 });
+    this.lastRedis = now;
     return out;
   }
 

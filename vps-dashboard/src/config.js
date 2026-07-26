@@ -79,6 +79,9 @@ const DEFAULTS = {
     latencyTargetMs: 800, // над това пробата е „бавна" (ОТДЕЛЕН SLI от „долу")
     minBadShort: 3, // пази от „една лоша проба = страница" при малко проби
   },
+  // Redis: праг за заетост на паметта. Изхвърлените ключове се следят по
+  // РАЗЛИКА и нямат праг — всяко ново изхвърляне е тиха загуба на данни.
+  redis: { enabled: true, memPct: 90 },
   // Аналитика на журнала: групиране по отпечатък и откриване на НОВИ грешки.
   logmine: { enabled: true, priority: 4, intervalSec: 300 },
   // Бекъпи: аларма по ВЪЗРАСТТА на най-новия (спрял крон не вдига грешка сам) и
@@ -124,6 +127,9 @@ const DEFAULTS = {
     { name: 'supreme', url: 'http://127.0.0.1:8080/' },
     { name: 'eternaltouch', url: 'http://127.0.0.1:4300/healthz' },
     { name: 'ospedali', url: 'http://127.0.0.1:8788/healthz' },
+    // Статичен сайт зад Caddy (root /var/www/adblock) — няма собствен процес,
+    // затова проверката минава през самия Caddy с правилния Host.
+    { name: 'adblock', url: 'http://127.0.0.1/', host: 'adblock.carbonstealth.eu' },
   ],
 };
 

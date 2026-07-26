@@ -174,6 +174,7 @@ const SECTIONS = [
   { id: 'docker', ico: '⬢', label: 'Docker', render: renderDocker },
   { id: 'compose', ico: '⧉', label: 'Compose', render: renderCompose },
   { id: 'databases', ico: '⛁', label: 'Бази', render: renderDatabases },
+  { id: 'redis', ico: '⚡', label: 'Redis', render: renderRedis },
   { id: 'processes', ico: '≡', label: 'Процеси', render: renderProcesses },
   { id: 'logs', ico: '☰', label: 'Логове', render: renderLogs },
   { id: 'traffic', ico: '📶', label: 'Трафик', render: renderTraffic },
@@ -303,6 +304,7 @@ const SECTION_ALIASES = {
   docker: 'докер контейнери containers',
   compose: 'композе стек stack',
   databases: 'бази данни sqlite postgres дъмп dump',
+  redis: 'редис redis кеш памет ключове eviction изхвърлени сесии опашки',
   processes: 'процеси ps top kill',
   logs: 'логове дневник journal journalctl',
   traffic: 'трафик access log nginx бавни адреси endpoint заявки ботове грешки',
@@ -2565,7 +2567,11 @@ async function renderSecurity() {
 // ── Бекъпи ────────────────────────────────────────────────────────────────────────
 async function renderBackups() {
   const view = document.getElementById('view');
-  const [b, h] = await Promise.all([api('/backups'), api('/backups/health').catch(() => null)]);
+  const [b, h, vols] = await Promise.all([
+    api('/backups'),
+    api('/backups/health').catch(() => null),
+    api('/volumes').catch(() => null),
+  ]);
   view.innerHTML = '';
 
   // Двата тихи провала на бекъпите: спрял е (никой не забелязва липсата на файл)
@@ -2619,6 +2625,51 @@ async function renderBackups() {
               ])
             : '',
         ]),
+      ])
+    );
+  }
+
+  // Томовете са отделна секция, защото са отделна ДУПКА: pg_dump хваща базата,
+  // но записът в нея сочи към файл в том „uploads", който не се архивира никъде.
+  // При възстановяване получаваш цели данни и счупени препратки.
+  if (vols?.available && vols.items.length) {
+    const worth = vols.items.filter((i) => !i.skip);
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: 'Томове и качени файлове' }),
+          pill(worth.length ? 'warn' : 'ok', `${worth.length} за архивиране`),
+        ]),
+        el('div', { class: 'metric-sub', text:
+          'Дъмпът на базата НЕ покрива тези томове. Ако продукт пази качени файлове в том, при възстановяване ще имаш ' +
+          'записи в базата, сочещи към несъществуващи файлове. Базите се пропускат нарочно — за тях логическият дъмп е ' +
+          'последователен, а суров tar на жива база не е.' }),
+        el('div', { class: 'table-wrap' }, [
+          tableEl(['Том / папка', 'Вид', 'Размер', 'Ползва се от', ''], vols.items.map((i) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: i.name || i.source }),
+              el('td', { class: 'muted', text: i.type === 'volume' ? 'том' : 'папка' }),
+              el('td', { text: i.sizeBytes != null ? fmtBytes(i.sizeBytes) : '—' }),
+              el('td', { class: 'muted', text: i.containers.join(', ') }),
+              el('td', {}, [
+                i.skip
+                  ? el('span', { class: 'muted', text: i.skip })
+                  : el('button', {
+                      class: 'btn btn-sm', text: '⇩ Архивирай',
+                      onclick: () => runJob('/volumes/backup', { id: i.id }, `Архив ${i.name || i.source}`),
+                    }),
+              ]),
+            ])
+          )),
+        ]),
+        worth.length
+          ? el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+              el('button', {
+                class: 'btn btn-primary', text: `⇩ Архивирай всички (${worth.length})`,
+                onclick: () => runJob('/volumes/backup', { all: true }, 'Архив на томовете'),
+              }),
+            ])
+          : '',
       ])
     );
   }
@@ -2999,6 +3050,84 @@ function drawInvestigateChart(cv, tip, d) {
     const t = from + ((px - geom.pad.l) / geom.iw) * (to - from);
     renderInvestigate(new Date(t).toISOString(), d.windowMin);
   };
+}
+
+// ── Redis ─────────────────────────────────────────────────────────────────────────
+// Числото, което не бива да пропуснеш, е „изхвърлени ключове". При политика
+// allkeys-lru и опрян таван Redis прави място, като ТРИЕ — без грешка, без ред в
+// лога, без падаща услуга. Ако там стоят сесии или опашки, това е реален отказ.
+async function renderRedis() {
+  const view = document.getElementById('view');
+  const d = await api('/redis');
+  view.innerHTML = '';
+  if (!d.available) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: d.error || 'Docker не отговаря — Redis се открива през контейнерите.' })]));
+    return;
+  }
+  if (!d.instances.length) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: 'Няма работещ Redis/Valkey контейнер на този сървър.' })]));
+    return;
+  }
+  view.appendChild(el('p', { class: 'section-desc', text:
+    'При политика „allkeys-lru" и опрян таван Redis освобождава памет, като ТРИЕ ключове — тихо, без грешка и без ред в лога. ' +
+    'Затова „изхвърлени ключове" се следи по разлика между проверките: всяко ново изхвърляне е загуба на данни точно сега.' }));
+
+  for (const i of d.instances) {
+    if (!i.ok) {
+      view.appendChild(el('div', { class: 'card', style: 'margin-bottom:12px' }, [
+        el('div', { class: 'card-head' }, [el('h3', { text: i.name }), pill('bad', 'недостъпен')]),
+        el('div', { class: 'metric-sub', text: i.error }),
+      ]));
+      continue;
+    }
+    const memKind = i.memoryPct == null ? 'dim' : i.memoryPct >= 90 ? 'bad' : i.memoryPct >= 70 ? 'warn' : 'ok';
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: `${i.name} · Redis ${i.version || '?'}` }),
+          el('span', {}, [
+            pill(memKind, i.memoryPct != null ? `${i.memoryPct}% памет` : i.usedMemoryHuman || '—'),
+            document.createTextNode(' '),
+            pill(i.persistence === 'НЯМА' ? 'bad' : 'ok', i.persistence),
+          ]),
+        ]),
+        i.maxMemory ? barEl(i.memoryPct || 0) : '',
+        kv({
+          Памет: `${i.usedMemoryHuman || '—'}${i.maxMemory ? ` от ${Math.round(i.maxMemory / 1048576)} MB` : ' (без таван)'}`,
+          Политика: i.policy || '—',
+          Ключове: `${i.totalKeys} (${i.keyspace.map((k) => `${k.db}: ${k.keys}`).join(', ') || 'празно'})`,
+          'Изхвърлени ключове': i.evictedKeys,
+          'Изтекли ключове': i.expiredKeys,
+          'Успеваемост на кеша': i.hitRate != null ? `${i.hitRate}%` : '—',
+          Клиенти: `${i.connectedClients ?? '—'}${i.blockedClients ? ` (${i.blockedClients} блокирани)` : ''}`,
+          'Отказани връзки': i.rejectedConnections,
+          'Последна снимка': i.rdbLastSaveTime ? fmtWhen(new Date(i.rdbLastSaveTime * 1000).toISOString()) : '—',
+          'Промени след снимка': i.rdbChangesSinceSave ?? '—',
+          Том: i.volume ? `${i.volume.name || i.volume.source} (${i.volume.type})` : 'няма /data том',
+        }),
+        i.evictedKeys > 0
+          ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
+              `⚠ ${i.evictedKeys} ключа са били изхвърлени от старта. Ако това расте, губиш данни — вдигни maxmemory или намали какво пазиш там.` })
+          : '',
+        i.persistence === 'НЯМА' && i.totalKeys > 0
+          ? el('div', { class: 'metric-sub', style: 'color:var(--danger)', text:
+              `⚠ Няма нито AOF, нито RDB — ${i.totalKeys} ключа живеят само в паметта и рестартът ги изтрива.` })
+          : '',
+        el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+          el('button', {
+            class: 'btn btn-sm', text: '💾 Снимка сега (BGSAVE)',
+            onclick: () => runJob('/redis/save', { container: i.name }, `BGSAVE ${i.name}`),
+          }),
+          i.volume?.name
+            ? el('button', {
+                class: 'btn btn-sm', text: '⇩ Архивирай тома',
+                onclick: () => runJob('/volumes/backup', { id: `volume:${i.volume.name}` }, `Архив ${i.volume.name}`),
+              })
+            : '',
+        ]),
+      ])
+    );
+  }
 }
 
 // ── Трафик (access log) ───────────────────────────────────────────────────────────
