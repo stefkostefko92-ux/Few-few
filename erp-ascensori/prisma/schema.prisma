@@ -454,7 +454,7 @@ model Impianto {
   preventivi     Preventivo[]
   ordiniLavoro   OrdineLavoro[]
 
-  @@index([tenantId])
+  @@index([tenantId, matricola])
   @@unique([tenantId, matricola])
   contratti  ContrattoImpianto[]
 
@@ -571,7 +571,9 @@ model ScadenzaImpianto {
   impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
 
   @@index([dataScadenza])
-  @@index([tenantId])
+  // Автоматизмът минава по НЕЗАВЪРШЕНИТЕ, подредени по дата — всяка нощ, по
+  // всички уредби. Точно тази комбинация иска съставен индекс.
+  @@index([tenantId, completata, dataScadenza])
   @@map("scadenze_impianti")
 }
 
@@ -1148,9 +1150,14 @@ model Fattura {
   pagamenti      Pagamento[]
   notificheSdi   NotificaSdi[]
 
-  @@index([tenantId])
+  // Съставни, не едноколонни. Измерено с 50 000 фактури: `@@index([tenantId])`
+  // сам НЕ покрива подредбата — планировчикът намира редовете, но после
+  // сортира всичките и избира последователно сканиране. С реда на подредбата в
+  // самия индекс базата минава по него и спира след петдесетия ред.
+  @@index([tenantId, data(sort: Desc)])
+  @@index([tenantId, statoSdi, data(sort: Desc)])
+  @@index([tenantId, statoPagamento, dataScadenza])
   @@index([condominioId])
-  @@index([statoSdi])
   @@unique([tenantId, numero])
   @@map("fatture")
 }

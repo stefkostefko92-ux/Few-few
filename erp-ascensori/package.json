@@ -44,7 +44,8 @@
     "verifica:backup": "node scripts/verifica-backup.mjs",
     "webhook": "tsx --env-file-if-exists=.env scripts/webhook.ts",
     "test:e2e": "node scripts/test-e2e.mjs",
-    "schermate": "node scripts/schermate.mjs"
+    "schermate": "node scripts/schermate.mjs",
+    "misura:scala": "tsx scripts/misura-scala.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
