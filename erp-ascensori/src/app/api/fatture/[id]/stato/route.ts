@@ -49,7 +49,12 @@ export const PATCH = gestito(async (req, ctx) => {
     if (stato === "EMESSA" || stato === "PAGATA")
       await emettiEvento(
         stato === "EMESSA" ? "fattura.emessa" : "fattura.pagata",
-        { id, numero: dopo.numero, stato, totaleLordo: String(dopo.totaleLordo) },
+        {
+          id,
+          numero: dopo.numero,
+          stato,
+          totaleLordo: String(dopo.totaleLordo),
+        },
         s.tenantId ?? null,
         tx,
       );

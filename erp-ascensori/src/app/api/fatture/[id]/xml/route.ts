@@ -10,10 +10,18 @@
 
 import { gestito, errore, ok } from "@/lib/api";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { richiedeRuolo } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
-import { fatturaPerSdi } from "@/lib/sdi/carica";
-import { validaPerSdi, xmlFatturaPa, nomeFileSdi } from "@/lib/sdi/fatturapa";
+import { fatturaPerSdi, prossimoProgressivo } from "@/lib/sdi/carica";
+import {
+  controllaPerSdi,
+  xmlFatturaPa,
+  nomeFileSdi,
+  totaliSdi,
+} from "@/lib/sdi/fatturapa";
+import { transizioneSdiAmmessa, type StatoSdi } from "@/lib/fiscale/sdi-stato";
+import { fromCents } from "@/lib/totals";
 
 export const GET = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("DIREZIONE");
@@ -21,18 +29,60 @@ export const GET = gestito(async (req, ctx) => {
   const f = await fatturaPerSdi(id, s.tenantId ?? null);
   if (!f) return errore(404, "Fattura non trovata");
 
-  const problemi = validaPerSdi(f);
+  const { problemi, avvisi } = controllaPerSdi(f);
+  const t = totaliSdi(f);
   const soloControllo = new URL(req.url).searchParams.get("controlla") === "1";
-  if (soloControllo) return ok({ pronta: problemi.length === 0, problemi });
+  if (soloControllo)
+    return ok({
+      pronta: problemi.length === 0,
+      problemi,
+      avvisi,
+      totali: {
+        imponibile: fromCents(t.imponibile),
+        imposta: fromCents(t.imposta),
+        ritenuta: fromCents(t.ritenuta),
+        totaleDocumento: fromCents(t.importoTotaleDocumento),
+        daPagare: fromCents(t.importoPagamento),
+      },
+    });
 
   if (problemi.length)
     // 422: заявката е разбрана, документът просто още не е годен за подаване.
     return NextResponse.json(
-      { error: "Fattura non pronta per lo SDI", problemi },
+      { error: "Fattura non pronta per lo SDI", problemi, avvisi },
       { status: 422 },
     );
 
-  const nomeFile = nomeFileSdi(f.azienda.partitaIva ?? "", f.progressivoInvio);
+  // Прогресивният код се тегли ВЕДНЪЖ и остава върху документа. Преиздаването
+  // след отказ трябва да носи същото име на файл — иначе SDI вижда нов
+  // документ, а не поправения стар.
+  const progressivo =
+    f.progressivoInvio ||
+    (await prisma.$transaction(async (tx) => {
+      const attuale = await tx.fattura.findUniqueOrThrow({
+        where: { id },
+        select: { progressivoInvio: true, statoSdi: true },
+      });
+      // Второ четене вътре в транзакцията: между проверката горе и тук друга
+      // заявка може вече да е замразила кода.
+      if (attuale.progressivoInvio) return attuale.progressivoInvio;
+      const nuovo = await prossimoProgressivo(s.tenantId ?? null, tx);
+      const da = attuale.statoSdi as StatoSdi;
+      await tx.fattura.update({
+        where: { id },
+        data: {
+          progressivoInvio: nuovo,
+          // Само когато преходът е позволен: вече доставен документ не се
+          // връща в „генериран" от повторно сваляне на файла.
+          ...(transizioneSdiAmmessa(da, "GENERATA")
+            ? { statoSdi: "GENERATA" as const }
+            : {}),
+        },
+      });
+      return nuovo;
+    }));
+
+  const nomeFile = nomeFileSdi(f.azienda.partitaIva ?? "", progressivo);
   // Изнасянето на фискален документ е събитие: то предхожда подаването и е
   // единствената следа, ако после възникне спор кога е изготвен файлът.
   await scriviAudit({
@@ -44,7 +94,7 @@ export const GET = gestito(async (req, ctx) => {
     tenantId: s.tenantId,
   });
 
-  const xml = xmlFatturaPa(f);
+  const xml = xmlFatturaPa({ ...f, progressivoInvio: progressivo });
   return new NextResponse(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",

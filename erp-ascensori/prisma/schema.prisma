@@ -62,6 +62,49 @@ enum TipoFattura {
   RICEVUTA
 }
 
+/// Пътят на документа през Sistema di Interscambio — РАЗЛИЧЕН от `StatoFattura`.
+///
+/// Смесването на двете е скъпа грешка: „изпратена" не значи „платена", а
+/// SCARTATA значи, че документът НИКОГА не е бил издаден — номерът остава
+/// свободен и същият се преиздава в 5-дневен срок (циркуляр 13/E от 2018 г.
+/// на Agenzia delle Entrate).
+enum StatoSdi {
+  NON_INVIATA
+  /// XML-ът е издаден, чака подаване.
+  GENERATA
+  INVIATA
+  /// RC — доставена на получателя.
+  CONSEGNATA
+  /// MC — SDI не намери канала. Документът Е издаден: стои в кутията на
+  /// получателя в AdE, а подателят е длъжен да го уведоми по друг път.
+  MANCATA_CONSEGNA
+  /// NS — отхвърлена. Не е издадена; 5 дни за преиздаване със СЪЩИЯ номер.
+  SCARTATA
+  /// NE + EC01 (само публична администрация).
+  ACCETTATA
+  /// NE + EC02 (само публична администрация).
+  RIFIUTATA
+  /// DT — PA не се произнесе в 15 дни; равносилно на приемане.
+  DECORSI_TERMINI
+}
+
+enum TipoNotificaSdi {
+  RC
+  NS
+  MC
+  NE
+  DT
+  AT
+}
+
+/// Плащането е ОТДЕЛНО измерение от жизнения цикъл на документа: фактура може
+/// да е доставена през SDI и неплатена, или платена частично.
+enum StatoPagamentoFattura {
+  NON_PAGATA
+  PARZIALE
+  PAGATA
+}
+
 enum StatoFattura {
   BOZZA
   EMESSA
@@ -394,6 +437,17 @@ model Condominio {
   cap              String?
   provincia        String?
   codiceFiscale    String?
+  /// Кондоминиумът е самостоятелен фискален субект и ПОЛУЧАТЕЛ на фактурата —
+  /// администраторът само го представлява. Затова адресът за доставка на
+  /// е-фактурата е негов, не на студиото.
+  pec              String?
+  /// Codice destinatario на кондоминиума (7 знака). Празно + празна PEC значи
+  /// `0000000`: документът е валиден и стои в кутията на получателя в AdE.
+  codiceSdi        String?
+  /// Кондоминиумът е заместник по данъка по закон (чл. 25-ter D.P.R. 600/1973)
+  /// и удържа 4 % върху възнагражденията по договор за изработка. Изключение
+  /// има само при кондоминиум без данъчен номер — рядко и се маркира ръчно.
+  sostitutoImposta Boolean  @default(true)
   unitaImmobiliari Int?
   amministratoreId String?  @db.Uuid
   note             String?
@@ -404,6 +458,7 @@ model Condominio {
 
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
   impianti       Impianto[]
+  fatture        Fattura[]
 
   @@index([tenantId])
   contratti  Contratto[]
@@ -831,25 +886,142 @@ model Fattura {
   totaleNetto      Decimal      @default(0) @db.Decimal(12, 2)
   totaleIva        Decimal      @default(0) @db.Decimal(12, 2)
   totaleLordo      Decimal      @default(0) @db.Decimal(12, 2)
+  /// ПОЛУЧАТЕЛЯТ на фактурата, когато работата е за кондоминиум. Той е
+  /// фискалният субект (свой данъчен номер, свой адрес); администраторът е
+  /// само представител. Фактура, издадена на студиото вместо на кондоминиума,
+  /// е издадена на грешно лице — разходът не се приспада, а удържането не е
+  /// направено от този, който дължи.
+  condominioId     String?      @db.Uuid
   amministratoreId String?      @db.Uuid
   ordineLavoroId   String?      @db.Uuid
   /// Попълва се, когато фактурата е за canone по договор.
   contrattoId      String?      @db.Uuid
   utenteId         String?      @db.Uuid
   note             String?
+
+  // ── Пътят през SDI ──────────────────────────────────────────────────────
+  statoSdi          StatoSdi  @default(NON_INVIATA)
+  /// Идентификаторът, който SDI дава на подаването — по него се връзват всички
+  /// известия и по него се спори при проверка.
+  identificativoSdi String?
+  dataInvioSdi      DateTime?
+  /// При SCARTATA: докога документът може да бъде преиздаден със СЪЩИЯ номер
+  /// и същата дата (5 дни от известието — циркуляр 13/E от 2018 г.).
+  scadenzaRinvioSdi DateTime?
+  /// Замразява се при първото генериране на XML. Преди беше извеждан от броя
+  /// фактури при всяко натискане на бутона — тоест се менеше след поправка и
+  /// SDI виждаше нов файл вместо преиздаден.
+  progressivoInvio  String?
+
+  // ── Ritenuta d'acconto ──────────────────────────────────────────────────
+  /// Чл. 25-ter D.P.R. 600/1973: кондоминиумът удържа 4 % върху
+  /// възнагражденията по договор за изработка и ги внася вместо изпълнителя.
+  ritenuta         Boolean @default(false)
+  ritenutaAliquota Decimal @default(4) @db.Decimal(5, 2)
+  ritenutaImporto  Decimal @default(0) @db.Decimal(12, 2)
+  /// RT01 = физическо лице · RT02 = юридическо лице.
+  ritenutaTipo     String  @default("RT02")
+  /// Причина по кодировката на модел 770; „W" е чл. 25-ter.
+  ritenutaCausale  String  @default("W")
+  /// Дата на внасяне (F24) — попълва се, когато удържаното е преведено.
+  ritenutaVersata  DateTime?
+
+  // ── Плащане ─────────────────────────────────────────────────────────────
+  statoPagamento      StatoPagamentoFattura @default(NON_PAGATA)
+  totalePagato        Decimal @default(0) @db.Decimal(12, 2)
+  /// Кодировката на SDI: MP01 контанти, MP05 банков превод, MP08 карта…
+  modalitaPagamento   String  @default("MP05")
+  /// TP01 на вноски · TP02 наведнъж · TP03 авансово.
+  condizioniPagamento String  @default("TP02")
+  /// Чл. 17-ter D.P.R. 633/1972: ДДС-то се внася от публичния получател, не от
+  /// доставчика. `EsigibilitaIVA=S`, а платимото е само облагаемата основа.
+  splitPayment        Boolean @default(false)
+  /// Обществена поръчка — задължителни при доставка към PA (закон 136/2010).
+  cig                 String?
+  cup                 String?
+
+  /// Режимът на „значимите блага" (D.M. 29.12.1999): при него ставката 10 %
+  /// важи само до стойността на престацията, остатъкът е 22 %.
+  regimeBeniSignificativi Boolean @default(false)
+
   tenantId  String?   @db.Uuid // изолация по фирма (мулти-инсталация)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
+  condominio     Condominio?     @relation(fields: [condominioId], references: [id])
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
   ordineLavoro   OrdineLavoro?   @relation(fields: [ordineLavoroId], references: [id])
   contratto      Contratto?      @relation(fields: [contrattoId], references: [id])
   utente         User?           @relation(fields: [utenteId], references: [id])
   voci           VoceFattura[]
+  pagamenti      Pagamento[]
+  notificheSdi   NotificaSdi[]
 
   @@index([tenantId])
+  @@index([condominioId])
+  @@index([statoSdi])
   @@unique([tenantId, numero])
   @@map("fatture")
+}
+
+/// Получено плащане по фактура. Отделна таблица, а не поле „платена да/не":
+/// частичните плащания са правило при кондоминиумите, а датата на всяко от тях
+/// е нужна и за лихвата при забава, и за касовия отчет.
+model Pagamento {
+  id          String   @id @default(uuid()) @db.Uuid
+  fatturaId   String   @db.Uuid
+  data        DateTime @default(now())
+  importo     Decimal  @db.Decimal(12, 2)
+  /// Кодировката на SDI (MP01…MP23) — същата, която влиза в XML-а.
+  modalita    String   @default("MP05")
+  /// CRO на превода, номер на чек и подобни — следата към банката.
+  riferimento String?
+  note        String?
+  utenteId    String?  @db.Uuid
+  tenantId    String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fattura Fattura @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([fatturaId])
+  @@map("pagamenti")
+}
+
+/// Известие от Sistema di Interscambio. Пазим ги ВСИЧКИ и непроменени: при
+/// проверка тежи известието, не какво пише в нашата таблица.
+model NotificaSdi {
+  id                String          @id @default(uuid()) @db.Uuid
+  fatturaId         String          @db.Uuid
+  tipo              TipoNotificaSdi
+  identificativoSdi String?
+  dataOra           DateTime        @default(now())
+  descrizione       String?
+  /// Списъкът с кодове и описания от известието за отхвърляне (само при NS).
+  errori            Json?
+  nomeFile          String?
+  tenantId          String?         @db.Uuid
+  createdAt         DateTime        @default(now())
+
+  fattura Fattura @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([fatturaId])
+  @@map("notifiche_sdi")
+}
+
+/// Последователността на подаванията към SDI — по фирма, монотонна, без дупки
+/// надолу. Преди прогресивният код се извеждаше от БРОЯ фактури; при повече от
+/// 9999 документа и при преиздаване това дава повтарящо се име на файл, а SDI
+/// отхвърля повторено име като дубликат независимо от съдържанието.
+model ContatoreSdi {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String?  @unique @db.Uuid
+  ultimo    Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("contatori_sdi")
 }
 
 model VoceFattura {
@@ -862,6 +1034,10 @@ model VoceFattura {
   /// „Natura" по кодировката на SDI (N1…N7). ЗАДЪЛЖИТЕЛНА, когато ставката е 0:
   /// без нея SDI не може да различи освободена доставка от забравена ставка.
   naturaIva      String?
+  /// „Значимо благо" по D.M. 29.12.1999. Асансьорите и подемниците са изрично
+  /// в списъка: при поддръжка на жилищна сграда ставката 10 % важи за тях само
+  /// до стойността на престацията, а надвишението е с 22 %.
+  beneSignificativo Boolean @default(false)
   totale         Decimal  @default(0) @db.Decimal(12, 2)
   ordine         Int      @default(0)
   createdAt      DateTime @default(now())

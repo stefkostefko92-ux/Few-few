@@ -5,6 +5,9 @@ import { z, type ZodTypeAny as ZodTipo } from "zod";
 import type { CrudConfig } from "@/lib/crud";
 import { prisma } from "@/lib/prisma";
 import { statoAutomezzo } from "@/lib/scadenze-logic";
+import { TIPI_RITENUTA, CAUSALI_RITENUTA } from "@/lib/fiscale/ritenuta";
+import { modalitaValida, condizioneValida } from "@/lib/fiscale/pagamenti";
+import { TIPI_NOTIFICA } from "@/lib/fiscale/sdi-stato";
 
 // Приема точка ИЛИ запетая като десетичен разделител; нормализира към точка.
 // Таванът е 8 цифри (< 100 милиона): произведението количество × цена трябва да
@@ -70,6 +73,24 @@ const condominioBase = z.object({
   cap: strOpt,
   provincia: z.string().trim().max(4).nullish(),
   codiceFiscale: strOpt,
+  /// Адресът за е-фактурата е НА КОНДОМИНИУМА: получателят е той, не студиото.
+  pec: z
+    .string()
+    .trim()
+    .email("PEC non valida")
+    .max(200)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
+  codiceSdi: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6,7}$/, "Codice destinatario non valido (6 o 7 caratteri)")
+    .nullish()
+    .or(z.literal("").transform(() => null)),
+  /// Изключва се само за кондоминиум без данъчен номер — иначе удържането по
+  /// чл. 25-ter се дължи по закон и отметката не е избор на фирмата.
+  sostitutoImposta: z.boolean().optional(),
   unitaImmobiliari: z.number().int().min(0).nullish(),
   amministratoreId: uuidOpt,
   note: strOpt,
@@ -449,6 +470,9 @@ export const voceSchema = z.object({
     .regex(/^N[1-7](\.[0-9])?$/, "Natura non valida (N1…N7, es. N2.2)")
     .nullish()
     .or(z.literal("").transform(() => null)),
+  /// „Значимо благо" по D.M. 29.12.1999 — асансьорите са първи в списъка.
+  /// Отметката решава дали редът влиза в облекчената основа или в горницата.
+  beneSignificativo: z.boolean().optional(),
   ordine: z.number().int().min(0).optional(),
 });
 
@@ -510,9 +534,81 @@ export const fatturaSchema = z.object({
   data: z.coerce.date().optional(),
   dataScadenza: dataOpt,
   oggetto: strOpt,
+  /// ПОЛУЧАТЕЛЯТ, когато работата е за кондоминиум. Има предимство пред
+  /// администратора: той е фискалният субект, администраторът — представител.
+  condominioId: uuidOpt,
   amministratoreId: uuidOpt,
   ordineLavoroId: uuidOpt,
   note: strOpt,
+
+  // ── Фискален режим ────────────────────────────────────────────────────
+  ritenuta: z.boolean().optional(),
+  ritenutaAliquota: aliquota.optional(),
+  ritenutaTipo: z.enum(TIPI_RITENUTA).optional(),
+  ritenutaCausale: z.enum(CAUSALI_RITENUTA).optional(),
+  splitPayment: z.boolean().optional(),
+  regimeBeniSignificativi: z.boolean().optional(),
+  modalitaPagamento: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine(modalitaValida, "Modalità di pagamento non prevista (MP01…MP23)")
+    .optional(),
+  condizioniPagamento: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine(condizioneValida, "Condizione di pagamento non valida (TP01, TP02, TP03)")
+    .optional(),
+  cig: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{10}$/, "CIG non valido: 10 caratteri alfanumerici")
+    .nullish()
+    .or(z.literal("").transform(() => null)),
+  cup: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{15}$/, "CUP non valido: 15 caratteri alfanumerici")
+    .nullish()
+    .or(z.literal("").transform(() => null)),
+});
+
+/** Получено плащане по фактура. */
+export const pagamentoSchema = z.object({
+  data: z.coerce.date().optional(),
+  importo: dec,
+  modalita: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine(modalitaValida, "Modalità di pagamento non prevista (MP01…MP23)")
+    .optional(),
+  riferimento: strOpt,
+  note: strOpt,
+});
+
+/** Известие от SDI, въведено ръчно или подадено от посредника. */
+export const notificaSdiSchema = z.object({
+  tipo: z.enum(TIPI_NOTIFICA),
+  identificativoSdi: strOpt,
+  dataOra: z.coerce.date().optional(),
+  descrizione: strOpt,
+  /// Само при NE: EC01 приета, EC02 отказана от публичната администрация.
+  esito: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^EC0[12]$/, "Esito non valido (EC01 o EC02)")
+    .nullish()
+    .or(z.literal("").transform(() => null)),
+  errori: z
+    .array(z.object({ codice: strOpt, descrizione: strOpt }))
+    .max(50)
+    .nullish(),
+  nomeFile: strOpt,
 });
 
 // ── Договори за поддръжка ───────────────────────────────────────────────────

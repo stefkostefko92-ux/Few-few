@@ -8,7 +8,15 @@
 // Модулът е ЧИСТ: вход — обикновени данни, изход — низ. Така реквизитите носят
 // тестове, а не коментари, и правилата се четат на едно място.
 
-import { riepilogoIva, totaleVoce, toCents, fromCents, type VoceInput } from "@/lib/totals";
+import {
+  riepilogoIva,
+  totaleVoce,
+  toCents,
+  fromCents,
+  type VoceInput,
+} from "@/lib/totals";
+import { calcolaRitenuta, problemiRitenuta } from "@/lib/fiscale/ritenuta";
+import { modalitaValida, condizioneValida } from "@/lib/fiscale/pagamenti";
 
 export interface AziendaSdi {
   ragioneSociale: string;
@@ -36,11 +44,40 @@ export interface ClienteSdi {
   provincia: string | null;
   codiceSdi: string | null;
   pec: string | null;
+  /**
+   * Получателят кондоминиум ли е.
+   *
+   * Не е козметика: кондоминиумът няма данъчен номер по ДДС, а само данъчен
+   * номер (единайсет цифри, които ЛИЧАТ като P.IVA). Ако тази стойност влезе в
+   * `IdFiscaleIVA`, SDI приема документа, но получателят е обявен като
+   * данъчнозадължено лице — което не е. Оттук идва и удържането по чл. 25-ter.
+   */
+  condominio?: boolean;
 }
 
 export interface RigaSdi extends VoceInput {
   descrizione: string;
   naturaIva?: string | null;
+  /** Влиза ли редът в базата за удържането по чл. 25-ter. */
+  ritenuta?: boolean | null;
+}
+
+/** Един падеж от плана за плащане. При `TP01` са няколко. */
+export interface ScadenzaSdi {
+  data?: Date | null;
+  /** Сумата в центесими. */
+  importo: number;
+  /** MP01…MP23; празно значи модалността на документа. */
+  modalita?: string | null;
+}
+
+export interface RitenutaSdi {
+  /** RT01 физическо лице · RT02 юридическо лице. */
+  tipo: string;
+  /** Причина по модел 770; „W" е чл. 25-ter. */
+  causale: string;
+  /** Годишният процент в стотни (4,00 % → 400). */
+  aliquota: number;
 }
 
 export interface FatturaSdi {
@@ -55,6 +92,20 @@ export interface FatturaSdi {
   righe: RigaSdi[];
   /** Пореден номер на подаването — влиза и в името на файла. */
   progressivoInvio: string;
+
+  /** Удържане по чл. 25-ter D.P.R. 600/1973; `null` = няма. */
+  ritenuta?: RitenutaSdi | null;
+  /** Чл. 17-ter D.P.R. 633/1972 — ДДС-то се внася от публичния получател. */
+  splitPayment?: boolean;
+  /** Обществена поръчка (закон 136/2010) — задължителни към PA. */
+  cig?: string | null;
+  cup?: string | null;
+  /** TP01 на вноски · TP02 наведнъж · TP03 авансово. */
+  condizioniPagamento?: string | null;
+  /** MP01…MP23. */
+  modalitaPagamento?: string | null;
+  /** Планът за плащане. Празен = един падеж за цялата сума. */
+  scadenze?: ScadenzaSdi[];
 }
 
 /** Кодът по подразбиране: документът отива в кутията на получателя в AdE. */
@@ -79,15 +130,17 @@ function testo(v: unknown): string {
  * отхвърлен от SDI, не „грозен".
  */
 export function esc(v: unknown): string {
-  return testo(v)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;")
-    // Контролните знаци са невалидни в XML 1.0 ДОРИ екранирани — един залепен
-    // при копи-пейст знак прави целия документ неразбираем за парсера.
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+  return (
+    testo(v)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;")
+      // Контролните знаци са невалидни в XML 1.0 ДОРИ екранирани — един залепен
+      // при копи-пейст знак прави целия документ неразбираем за парсера.
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+  );
 }
 
 /** Дата във формата, който SDI иска (`AAAA-MM-GG`, без час и без часова зона). */
@@ -106,26 +159,101 @@ function quantita(v: unknown): string {
   return num(String(v ?? "1"));
 }
 
+export interface TotaliSdi {
+  /** Облагаема основа, сборувана ПО СТАВКА. */
+  imponibile: number;
+  imposta: number;
+  /** Удържаното по чл. 25-ter; нула, когато няма. */
+  ritenuta: number;
+  /**
+   * `ImportoTotaleDocumento` — БРУТО, включително ДДС и БЕЗ приспадане на
+   * удържаното.
+   *
+   * Това е практиката, която SDI приема и която ползва по-голямата част от
+   * италианския софтуер: удържаното не намалява документа, а само плащането.
+   * Техническите указания на Agenzia delle Entrate допускат и двете четения,
+   * затова стойността е изведена на едно място — ако счетоводителят на клиента
+   * иска другото, се сменя ТУК, а не на пет места.
+   */
+  importoTotaleDocumento: number;
+  /** `ImportoPagamento` — това, което получателят реално превежда. */
+  importoPagamento: number;
+}
+
+/**
+ * Тоталите на документа — едно място за истината.
+ *
+ * Валидаторът и генераторът смятат от ТУК. Досега генераторът си правеше
+ * сметките наум, а валидаторът гледаше други полета: разминаването между двете
+ * е точно грешката, която SDI хваща като „ImportoTotaleDocumento non coerente".
+ */
+export function totaliSdi(f: FatturaSdi): TotaliSdi {
+  const riepilogo = riepilogoIva(f.righe);
+  const imponibile = riepilogo.reduce((s, r) => s + toCents(r.imponibile), 0);
+  const imposta = riepilogo.reduce((s, r) => s + toCents(r.imposta), 0);
+
+  // Базата за удържането са само редовете, които го носят. По подразбиране —
+  // всички: удържането по чл. 25-ter е върху цялото възнаграждение по договора.
+  const marcati = f.righe.filter((r) => r.ritenuta);
+  const baseRitenuta = f.ritenuta
+    ? marcati.length
+      ? riepilogoIva(marcati).reduce((s, r) => s + toCents(r.imponibile), 0)
+      : imponibile
+    : 0;
+  const ritenuta = f.ritenuta
+    ? calcolaRitenuta(baseRitenuta, imposta, f.ritenuta.aliquota).importo
+    : 0;
+
+  // Split payment: ДДС-то се внася от публичния получател — той не ни го плаща.
+  const ivaIncassata = f.splitPayment ? 0 : imposta;
+  return {
+    imponibile,
+    imposta,
+    ritenuta,
+    importoTotaleDocumento: imponibile + imposta,
+    importoPagamento: imponibile + ivaIncassata - ritenuta,
+  };
+}
+
+export interface EsitoValidazione {
+  /** Блокиращи: с тях документът не бива да тръгва. */
+  problemi: string[];
+  /** Приема се, но операторът трябва да знае. */
+  avvisi: string[];
+}
+
 /**
  * Реквизитите, които липсват. Празен списък = документът може да тръгне.
  *
  * Съобщенията са на ИТАЛИАНСКИ и сочат КЪДЕ се поправя: администраторът, който
  * ги чете, не е този, който е писал кода. Проверката е предварителна — SDI
  * връща отказ чак след дни, а до тогава фактурата се счита за неиздадена.
+ *
+ * Разделянето на блокиращи и предупреждения не е козметика: липсваща PEC при
+ * получател без codice destinatario беше третирана като грешка и спираше
+ * съвършено валидни фактури към кондоминиуми. `0000000` е ЗАКОНЕН адрес —
+ * документът отива в кутията на получателя в Agenzia delle Entrate.
  */
-export function validaPerSdi(f: FatturaSdi): string[] {
+export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
   const problemi: string[] = [];
+  const avvisi: string[] = [];
   const a = f.azienda;
   const c = f.cliente;
 
-  if (!testo(a.ragioneSociale)) problemi.push("Impostazioni: manca la ragione sociale.");
+  if (!testo(a.ragioneSociale))
+    problemi.push("Impostazioni: manca la ragione sociale.");
   if (!RE_PIVA.test(testo(a.partitaIva)))
     problemi.push("Impostazioni: la partita IVA deve essere di 11 cifre.");
   if (!testo(a.indirizzo) || !testo(a.citta))
-    problemi.push("Impostazioni: manca l'indirizzo della sede (indirizzo e comune).");
-  if (!RE_CAP.test(testo(a.cap))) problemi.push("Impostazioni: il CAP deve essere di 5 cifre.");
+    problemi.push(
+      "Impostazioni: manca l'indirizzo della sede (indirizzo e comune).",
+    );
+  if (!RE_CAP.test(testo(a.cap)))
+    problemi.push("Impostazioni: il CAP deve essere di 5 cifre.");
   if (!RE_PROVINCIA.test(testo(a.provincia).toUpperCase()))
-    problemi.push("Impostazioni: la provincia deve essere la sigla di 2 lettere (es. MI).");
+    problemi.push(
+      "Impostazioni: la provincia deve essere la sigla di 2 lettere (es. MI).",
+    );
   if (!/^RF\d{2}$/.test(testo(a.regimeFiscale)))
     problemi.push("Impostazioni: regime fiscale non valido (es. RF01).");
 
@@ -133,26 +261,38 @@ export function validaPerSdi(f: FatturaSdi): string[] {
     problemi.push("Cliente: manca la denominazione (o nome e cognome).");
   if (!RE_PIVA.test(testo(c.partitaIva)) && !testo(c.codiceFiscale))
     problemi.push("Cliente: serve la partita IVA o il codice fiscale.");
+  if (c.condominio && RE_PIVA.test(testo(c.partitaIva)))
+    problemi.push(
+      "Condominio con partita IVA: il condominio non è soggetto IVA. Il codice di 11 cifre va indicato come codice fiscale, non come partita IVA.",
+    );
   if (!testo(c.indirizzo) || !testo(c.citta))
     problemi.push("Cliente: manca l'indirizzo (indirizzo e comune).");
-  if (!RE_CAP.test(testo(c.cap))) problemi.push("Cliente: il CAP deve essere di 5 cifre.");
+  if (!RE_CAP.test(testo(c.cap)))
+    problemi.push("Cliente: il CAP deve essere di 5 cifre.");
   if (!RE_PROVINCIA.test(testo(c.provincia).toUpperCase()))
-    problemi.push("Cliente: la provincia deve essere la sigla di 2 lettere (es. RM).");
-  // Без адрес за доставка документът се приема, но не стига до клиента.
+    problemi.push(
+      "Cliente: la provincia deve essere la sigla di 2 lettere (es. RM).",
+    );
   const codice = testo(c.codiceSdi) || CODICE_SDI_GENERICO;
   if (!RE_CODICE_SDI.test(codice.toUpperCase()))
     problemi.push("Cliente: codice destinatario non valido (6 o 7 caratteri).");
+  // `0000000` е ЗАКОНЕН адрес: документът се приема и стои в кутията на
+  // получателя в Agenzia delle Entrate. Не стига обаче до пощата му — затова
+  // предупреждение, не отказ.
   if (codice === CODICE_SDI_GENERICO && !testo(c.pec))
-    problemi.push(
-      "Cliente: senza codice destinatario serve la PEC, altrimenti la fattura resta nel cassetto fiscale.",
+    avvisi.push(
+      "Cliente senza codice destinatario né PEC: la fattura sarà valida ma resterà nel cassetto fiscale. Va comunicata al destinatario con altro mezzo (copia di cortesia).",
     );
 
   if (!testo(f.numero)) problemi.push("Fattura: manca il numero.");
-  if (testo(f.numero).length > 20) problemi.push("Fattura: il numero supera i 20 caratteri.");
-  if (f.righe.length === 0) problemi.push("Fattura: nessuna riga da fatturare.");
+  if (testo(f.numero).length > 20)
+    problemi.push("Fattura: il numero supera i 20 caratteri.");
+  if (f.righe.length === 0)
+    problemi.push("Fattura: nessuna riga da fatturare.");
 
   f.righe.forEach((r, i) => {
-    if (!testo(r.descrizione)) problemi.push(`Riga ${i + 1}: manca la descrizione.`);
+    if (!testo(r.descrizione))
+      problemi.push(`Riga ${i + 1}: manca la descrizione.`);
     const aliquota = toCents(r.aliquotaIva);
     const natura = testo(r.naturaIva).toUpperCase();
     if (aliquota === 0 && !natura)
@@ -160,11 +300,85 @@ export function validaPerSdi(f: FatturaSdi): string[] {
         `Riga ${i + 1}: con aliquota 0 % è obbligatoria la natura (N1…N7): senza, l'esenzione non è dichiarata.`,
       );
     if (aliquota > 0 && natura)
-      problemi.push(`Riga ${i + 1}: la natura si indica solo con aliquota 0 %.`);
-    if (natura && !RE_NATURA.test(natura)) problemi.push(`Riga ${i + 1}: natura «${natura}» non valida.`);
+      problemi.push(
+        `Riga ${i + 1}: la natura si indica solo con aliquota 0 %.`,
+      );
+    if (natura && !RE_NATURA.test(natura))
+      problemi.push(`Riga ${i + 1}: natura «${natura}» non valida.`);
   });
 
-  return problemi;
+  // ── Удържане ─────────────────────────────────────────────────────────────
+  if (f.ritenuta)
+    problemi.push(
+      ...problemiRitenuta({
+        ritenuta: true,
+        ritenutaTipo: f.ritenuta.tipo,
+        ritenutaCausale: f.ritenuta.causale,
+        aliquota: f.ritenuta.aliquota,
+        destinatarioCondominio: c.condominio === true,
+      }),
+    );
+  else if (c.condominio)
+    // Не блокира: има кондоминиуми без данъчен номер, а има и доставки, които
+    // не са договор за изработка. Но мълчаливото пропускане е по-скъпо.
+    avvisi.push(
+      "Destinatario condominio senza ritenuta d'acconto: verificare l'art. 25-ter D.P.R. 600/1973 — il condominio è sostituto d'imposta e trattiene il 4 % sui corrispettivi d'appalto.",
+    );
+
+  // ── Плащане ──────────────────────────────────────────────────────────────
+  const modalita = testo(f.modalitaPagamento) || "MP05";
+  if (!modalitaValida(modalita))
+    problemi.push(
+      `Pagamento: modalità «${modalita}» non prevista dal tracciato (MP01…MP23).`,
+    );
+  const condizione = testo(f.condizioniPagamento) || "TP02";
+  if (!condizioneValida(condizione))
+    problemi.push(
+      `Pagamento: condizione «${condizione}» non valida (TP01, TP02, TP03).`,
+    );
+
+  const t = totaliSdi(f);
+  if (f.scadenze?.length) {
+    const somma = f.scadenze.reduce((s, r) => s + Math.round(r.importo), 0);
+    if (somma !== t.importoPagamento)
+      problemi.push(
+        `Piano di pagamento: la somma delle rate (${fromCents(somma)} €) non corrisponde all'importo da pagare (${fromCents(t.importoPagamento)} €).`,
+      );
+    if (f.scadenze.length > 1 && condizione !== "TP01")
+      problemi.push(
+        "Più rate indicate: la condizione di pagamento deve essere TP01.",
+      );
+  }
+
+  // ── Split payment и обществени поръчки ───────────────────────────────────
+  if (f.splitPayment && t.imposta === 0)
+    avvisi.push(
+      "Scissione dei pagamenti indicata su una fattura senza IVA: verificare.",
+    );
+  if (testo(f.cig) && !/^[A-Z0-9]{10}$/i.test(testo(f.cig)))
+    problemi.push("CIG non valido: sono 10 caratteri alfanumerici.");
+  if (testo(f.cup) && !/^[A-Z0-9]{15}$/i.test(testo(f.cup)))
+    problemi.push("CUP non valido: sono 15 caratteri alfanumerici.");
+
+  if (
+    !testo(a.iban) &&
+    (modalita === "MP05" || modalita === "MP19" || modalita === "MP21")
+  )
+    avvisi.push(
+      "Modalità di pagamento bancaria senza IBAN in Impostazioni: il destinatario non saprà dove pagare.",
+    );
+
+  return { problemi, avvisi };
+}
+
+/**
+ * Само блокиращите проблеми.
+ *
+ * Запазено за извикващите, които се интересуват единствено от „може ли да
+ * тръгне"; предупрежденията се четат през `controllaPerSdi`.
+ */
+export function validaPerSdi(f: FatturaSdi): string[] {
+  return controllaPerSdi(f).problemi;
 }
 
 /**
@@ -179,7 +393,11 @@ export function nomeFileSdi(partitaIva: string, progressivo: string): string {
 
 /** Пореден код от 5 знака в base36 — стига за 60 милиона подавания. */
 export function progressivoDaNumero(n: number): string {
-  return Math.max(0, Math.floor(n)).toString(36).toUpperCase().padStart(5, "0").slice(-5);
+  return Math.max(0, Math.floor(n))
+    .toString(36)
+    .toUpperCase()
+    .padStart(5, "0")
+    .slice(-5);
 }
 
 function bloccoSede(x: {
@@ -213,8 +431,13 @@ export function xmlFatturaPa(f: FatturaSdi): string {
   // Обобщението по аликвота, не сумиране по редове: SDI сверява
   // `ImportoTotaleDocumento` с `DatiRiepilogo` и отхвърля разлика от един цент.
   const riepilogo = riepilogoIva(f.righe);
-  const imponibile = riepilogo.reduce((s, r) => s + toCents(r.imponibile), 0);
-  const imposta = riepilogo.reduce((s, r) => s + toCents(r.imposta), 0);
+  const t = totaliSdi(f);
+
+  // Чл. 17-ter D.P.R. 633/1972: при разцепено плащане ДДС-то е дължимо от
+  // публичния получател. `S` вместо `I` — без него PA не може да го внесе.
+  const esigibilita = f.splitPayment ? "S" : "I";
+  // Редовете, които влизат в базата за удържането. Празно значи „всички".
+  const ritenutaSuTutte = f.ritenuta && !f.righe.some((r) => r.ritenuta);
 
   // Natura-та важи за цялата ставка: групираме я по аликвота от редовете.
   const naturaPerAliquota = new Map<string, string>();
@@ -234,8 +457,12 @@ export function xmlFatturaPa(f: FatturaSdi): string {
           <PrezzoUnitario>${num(String(r.prezzoUnitario))}</PrezzoUnitario>
           <PrezzoTotale>${fromCents(totaleVoce(r))}</PrezzoTotale>
           <AliquotaIVA>${num(String(r.aliquotaIva))}</AliquotaIVA>${
-            nat ? `\n          <Natura>${esc(nat)}</Natura>` : ""
-          }
+            // Редът, върху който тече удържането. Редът в XML-а е по схемата:
+            // `Ritenuta` идва СЛЕД `AliquotaIVA` и ПРЕДИ `Natura`.
+            f.ritenuta && (ritenutaSuTutte || r.ritenuta)
+              ? "\n          <Ritenuta>SI</Ritenuta>"
+              : ""
+          }${nat ? `\n          <Natura>${esc(nat)}</Natura>` : ""}
         </DettaglioLinee>`;
     })
     .join("\n");
@@ -247,10 +474,35 @@ export function xmlFatturaPa(f: FatturaSdi): string {
           <AliquotaIVA>${r.aliquota}</AliquotaIVA>${nat ? `\n          <Natura>${esc(nat)}</Natura>` : ""}
           <ImponibileImporto>${r.imponibile}</ImponibileImporto>
           <Imposta>${r.imposta}</Imposta>
-          <EsigibilitaIVA>I</EsigibilitaIVA>
+          <EsigibilitaIVA>${esigibilita}</EsigibilitaIVA>
         </DatiRiepilogo>`;
     })
     .join("\n");
+
+  // Удържането е в заглавието на документа, не по редовете: там стоят само
+  // отметките кои редове го носят.
+  const datiRitenuta = f.ritenuta
+    ? `        <DatiRitenuta>
+          <TipoRitenuta>${esc(f.ritenuta.tipo)}</TipoRitenuta>
+          <ImportoRitenuta>${fromCents(t.ritenuta)}</ImportoRitenuta>
+          <AliquotaRitenuta>${fromCents(f.ritenuta.aliquota)}</AliquotaRitenuta>
+          <CausalePagamento>${esc(f.ritenuta.causale)}</CausalePagamento>
+        </DatiRitenuta>\n`
+    : "";
+
+  // CIG/CUP влизат в `DatiOrdineAcquisto`: без тях PA не може да плати, а
+  // проследимостта на паричния поток по закон 136/2010 е нарушена.
+  const datiOrdine =
+    testo(f.cig) || testo(f.cup)
+      ? `      <DatiOrdineAcquisto>
+        <RiferimentoNumeroLinea>1</RiferimentoNumeroLinea>
+        <IdDocumento>${esc(f.numero)}</IdDocumento>${
+          testo(f.cup)
+            ? `\n        <CodiceCUP>${esc(testo(f.cup).toUpperCase())}</CodiceCUP>`
+            : ""
+        }${testo(f.cig) ? `\n        <CodiceCIG>${esc(testo(f.cig).toUpperCase())}</CodiceCIG>` : ""}
+      </DatiOrdineAcquisto>\n`
+      : "";
 
   const anagraficaCliente =
     c.persona && testo(c.nome) && testo(c.cognome)
@@ -258,30 +510,61 @@ export function xmlFatturaPa(f: FatturaSdi): string {
           <Cognome>${esc(c.cognome)}</Cognome>`
       : `          <Denominazione>${esc(c.denominazione)}</Denominazione>`;
 
-  const idFiscaleCliente = RE_PIVA.test(testo(c.partitaIva))
-    ? `        <IdFiscaleIVA>
+  // Втора линия срещу най-скъпата грешка: единайсетцифреният код на един
+  // кондоминиум е ДАНЪЧЕН НОМЕР, не номер по ДДС. Влезе ли в `IdFiscaleIVA`,
+  // документът обявява получателя за данъчнозадължено лице — а той не е.
+  // Валидацията вече го спира; тук се спира и когато някой я е заобиколил.
+  const idFiscaleCliente =
+    !c.condominio && RE_PIVA.test(testo(c.partitaIva))
+      ? `        <IdFiscaleIVA>
           <IdPaese>IT</IdPaese>
           <IdCodice>${esc(c.partitaIva)}</IdCodice>
         </IdFiscaleIVA>\n`
-    : "";
+      : "";
   const cfCliente = testo(c.codiceFiscale)
     ? `        <CodiceFiscale>${esc(testo(c.codiceFiscale).toUpperCase())}</CodiceFiscale>\n`
     : "";
 
-  const pagamento = testo(a.iban)
-    ? `      <DatiPagamento>
-        <CondizioniPagamento>TP02</CondizioniPagamento>
-        <DettaglioPagamento>
-          <ModalitaPagamento>MP05</ModalitaPagamento>${
-            f.dataScadenza
-              ? `\n          <DataScadenzaPagamento>${dataSdi(f.dataScadenza)}</DataScadenzaPagamento>`
+  // Планът за плащане. Досега имаше един твърдо зашит падеж за брутото и
+  // блокът изобщо не се появяваше без IBAN — тоест фактура в брой оставаше без
+  // указание как се плаща.
+  const modalitaDoc = testo(f.modalitaPagamento) || "MP05";
+  const condizione = testo(f.condizioniPagamento) || "TP02";
+  const iban = testo(a.iban).toUpperCase().replace(/\s+/g, "");
+  /** IBAN се посочва само при банковите начини; в брой е безсмислен. */
+  const MODALITA_BANCARIE = ["MP05", "MP19", "MP21", "MP12", "MP09"];
+
+  const rate: ScadenzaSdi[] = f.scadenze?.length
+    ? f.scadenze
+    : [
+        {
+          data: f.dataScadenza ?? null,
+          importo: t.importoPagamento,
+          modalita: modalitaDoc,
+        },
+      ];
+
+  const dettagliPagamento = rate
+    .map((r) => {
+      const mod = testo(r.modalita) || modalitaDoc;
+      const ibanRata = iban && MODALITA_BANCARIE.includes(mod) ? iban : "";
+      return `        <DettaglioPagamento>
+          <ModalitaPagamento>${esc(mod)}</ModalitaPagamento>${
+            r.data
+              ? `\n          <DataScadenzaPagamento>${dataSdi(r.data)}</DataScadenzaPagamento>`
               : ""
           }
-          <ImportoPagamento>${fromCents(imponibile + imposta)}</ImportoPagamento>
-          <IBAN>${esc(testo(a.iban).toUpperCase().replace(/\s+/g, ""))}</IBAN>
-        </DettaglioPagamento>
-      </DatiPagamento>\n`
-    : "";
+          <ImportoPagamento>${fromCents(r.importo)}</ImportoPagamento>${
+            ibanRata ? `\n          <IBAN>${esc(ibanRata)}</IBAN>` : ""
+          }
+        </DettaglioPagamento>`;
+    })
+    .join("\n");
+
+  const pagamento = `      <DatiPagamento>
+        <CondizioniPagamento>${esc(condizione)}</CondizioniPagamento>
+${dettagliPagamento}
+      </DatiPagamento>\n`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <p:FatturaElettronica versione="${formato}" xmlns:p="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2 http://www.fatturapa.gov.it/export/fatturazione/sdi/fatturapa/v1.2.2/Schema_del_file_xml_FatturaPA_v1.2.2.xsd">
@@ -332,11 +615,11 @@ ${bloccoSede(c)}
         <Divisa>EUR</Divisa>
         <Data>${dataSdi(f.data)}</Data>
         <Numero>${esc(f.numero)}</Numero>
-        <ImportoTotaleDocumento>${fromCents(imponibile + imposta)}</ImportoTotaleDocumento>${
-          testo(f.causale) ? `\n        <Causale>${esc(f.causale)}</Causale>` : ""
-        }
+${datiRitenuta}        <ImportoTotaleDocumento>${fromCents(t.importoTotaleDocumento)}</ImportoTotaleDocumento>${
+    testo(f.causale) ? `\n        <Causale>${esc(f.causale)}</Causale>` : ""
+  }
       </DatiGeneraliDocumento>
-    </DatiGenerali>
+${datiOrdine}    </DatiGenerali>
     <DatiBeniServizi>
 ${linee}
 ${riepiloghi}

@@ -7,12 +7,16 @@ import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { fatturaSchema } from "@/lib/entities";
 import { fatturaEliminabile } from "@/lib/regole-fiscali";
+import { ricalcolaPagamenti } from "@/lib/totali-db";
 
 const include = {
+  condominio: true,
   amministratore: true,
   ordineLavoro: { select: { numero: true, oggetto: true } },
   utente: { select: { nome: true, cognome: true } },
   voci: { orderBy: { ordine: "asc" as const } },
+  pagamenti: { orderBy: { data: "asc" as const } },
+  notificheSdi: { orderBy: { dataOra: "asc" as const } },
 };
 
 export const GET = gestito(async (_req, ctx) => {
@@ -42,7 +46,13 @@ export const PUT = gestito(async (req, ctx) => {
       409,
       "Fattura già emessa: non modificabile. Emettere una nota di credito o uno storno",
     );
-  const dopo = await prisma.fattura.update({ where: { id }, data, include });
+  const dopo = await prisma.$transaction(async (tx) => {
+    await tx.fattura.update({ where: { id }, data });
+    // Промяната на фискалния режим мени и удържаното, и очакваното
+    // постъпление — иначе фактурата остава със сума от предишния режим.
+    await ricalcolaPagamenti(id, tx);
+    return tx.fattura.findUniqueOrThrow({ where: { id }, include });
+  });
   await scriviAudit({
     azione: "UPDATE",
     entita: "fatture",

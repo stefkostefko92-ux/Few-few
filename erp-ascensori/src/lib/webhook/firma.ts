@@ -52,6 +52,11 @@ export const EVENTI = [
   "ordine.stato_cambiato",
   "fattura.emessa",
   "fattura.pagata",
+  // Отхвърлена от SDI: получателят има 5 дни да я поправи и преподаде със
+  // същия номер. Външното счетоводство трябва да го научи веднага, не при
+  // месечната сверка.
+  "fattura.scartata",
+  "fattura.consegnata",
   "contratto.attivato",
   "scadenza.imminente",
 ] as const;
