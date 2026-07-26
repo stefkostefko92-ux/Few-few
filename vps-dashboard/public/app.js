@@ -97,6 +97,7 @@ const SECTIONS = [
   { id: 'overview', ico: '▤', label: 'Обзор', render: renderOverview },
   { id: 'products', ico: '❤', label: 'Продукти', render: renderProducts },
   { id: 'alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
+  { id: 'diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
   { id: 'services', ico: '⚙', label: 'Услуги', render: renderServices },
   { id: 'docker', ico: '⬢', label: 'Docker', render: renderDocker },
   { id: 'compose', ico: '⧉', label: 'Compose', render: renderCompose },
@@ -509,6 +510,198 @@ async function renderProducts() {
   );
 }
 
+// ── Диагностика: сигналите от ядрото + прогнозите ─────────────────────────────
+// Тук стои разликата между „таблото показва" и „таблото обяснява": натиск (PSI)
+// казва дали БОЛИ, steal — чия е вината, диск I/O и опашките — къде е тясното.
+async function renderDiagnostics() {
+  const view = document.getElementById('view');
+  const [k, f] = await Promise.all([api('/kernel'), api('/forecast')]);
+  view.innerHTML = '';
+
+  // ── Натиск (PSI) ───────────────────────────────────────────────────────────
+  if (k.pressure?.available) {
+    const psiCard = (name, label, data) =>
+      el('div', { class: 'card' }, [
+        el('div', { class: 'card-head' }, [el('h3', { text: label }), pill(psiClass(data?.some?.avg60), 'натиск')]),
+        el('div', { class: 'metric-val', html: `${(data?.some?.avg60 ?? 0).toFixed(1)}<small>%</small>` }),
+        el('div', { class: 'metric-sub', text: `10s: ${(data?.some?.avg10 ?? 0).toFixed(1)}% · 5мин: ${(data?.some?.avg300 ?? 0).toFixed(1)}%` }),
+        el('div', { class: 'metric-sub', text: name === 'cpu' ? 'колко % от времето задачи са чакали процесор' : name === 'io' ? 'колко % от времето задачи са чакали диска' : 'колко % от времето системата е чакала памет' }),
+      ]);
+    view.appendChild(el('h3', { class: 'muted', text: 'Натиск върху ресурсите (PSI) — това е болката', style: 'margin:4px 0 10px' }));
+    view.appendChild(
+      el('div', { class: 'grid grid-metrics' }, [
+        psiCard('cpu', 'Процесор', k.pressure.cpu),
+        psiCard('io', 'Диск', k.pressure.io),
+        psiCard('memory', 'Памет', k.pressure.memory),
+      ])
+    );
+  } else {
+    view.appendChild(
+      el('div', { class: 'toast warn', style: 'position:static;margin-bottom:14px' }, [
+        'ⓘ Ядрото не подава PSI (/proc/pressure). Алармите падат обратно към праговете по CPU/памет, което е по-шумно. Включва се с psi=1 на kernel cmdline.',
+      ])
+    );
+  }
+
+  // ── CPU по режими (steal!) ─────────────────────────────────────────────────
+  if (k.cpuModes) {
+    const m = k.cpuModes;
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-top:16px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: 'Процесор по режими' }),
+          m.steal >= 10 ? pill('bad', 'хостерът краде време') : m.steal >= 2 ? pill('warn', 'умерен steal') : pill('ok', 'нормално'),
+        ]),
+        el('div', { class: 'table-wrap' }, [
+          tableEl(['Режим', '%', 'Какво значи'], [
+            ['потребителски', m.user, 'нашите приложения'],
+            ['системен', m.system, 'ядрото по наша заявка'],
+            ['iowait', m.iowait, 'чака диска'],
+            ['steal', m.steal, 'ХОСТЕРЪТ дава времето на друга машина'],
+            ['прекъсвания', m.irq, 'мрежа/устройства'],
+            ['свободен', m.idle, '—'],
+          ].map(([name, val, what]) =>
+            el('tr', {}, [
+              el('td', { text: name }),
+              el('td', { class: 'mono', text: (val ?? 0).toFixed(1) }),
+              el('td', { class: 'muted', text: what }),
+            ])
+          )),
+        ]),
+        m.steal >= 2
+          ? el('div', { class: 'metric-sub', text: 'Steal над 10% устойчиво е основание за тикет към доставчика — не е проблем, който можеш да поправиш ти.' })
+          : el('span'),
+      ])
+    );
+  }
+
+  // ── Прогнози ───────────────────────────────────────────────────────────────
+  view.appendChild(el('h3', { class: 'muted', text: 'Прогнози', style: 'margin:22px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'card' }, [
+      el('div', { class: 'metric-sub', text: `Върху ${f.basedOnPoints} точки история. Мълчи, ако трендът не е статистически значим — по-добре нищо, отколкото фалшива тревога.` }),
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Дял', 'Прогноза', 'Темп', 'Основа'], (f.disks || []).map((d) =>
+          el('tr', {}, [
+            el('td', { class: 'mono', text: d.mount }),
+            el('td', {}, [
+              d.ok
+                ? pill(d.etaMs < 2 * 86400000 ? 'bad' : d.etaMs < 7 * 86400000 ? 'warn' : 'dim', `пълен след ${d.human}`)
+                : el('span', { class: 'muted', text: d.reason || '—' }),
+            ]),
+            el('td', { class: 'mono', text: d.ok && d.slopePerDay != null ? `${d.slopePerDay.toFixed(2)} %/ден` : '—' }),
+            el('td', { class: 'muted', text: `${d.points} точки` }),
+          ])
+        )),
+      ]),
+    ])
+  );
+
+  // ── Аномалии и момент на промяната ────────────────────────────────────────
+  const anomCard = (label, a) =>
+    el('div', { class: 'card' }, [
+      el('div', { class: 'card-head' }, [el('h3', { text: label }), pill(a?.anomaly ? 'bad' : 'ok', a?.anomaly ? 'нетипично' : 'нормално')]),
+      el('div', { class: 'metric-sub', text: a?.reason ? a.reason : `текущо ${a?.current?.toFixed?.(1) ?? '—'} · база ${a?.baseline ?? '—'} · z=${a?.z ?? '—'} · гласове ${a?.votes ?? 0}/2` }),
+    ]);
+  view.appendChild(el('h3', { class: 'muted', text: 'Аномалии', style: 'margin:22px 0 10px' }));
+  view.appendChild(el('div', { class: 'grid grid-2' }, [anomCard('Процесор', f.anomalies?.cpu), anomCard('Памет', f.anomalies?.memory)]));
+  if (f.changePoint) {
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-top:12px' }, [
+        el('h3', { text: 'Поведението се е променило' }),
+        el('div', { text: `Засечена промяна около ${fmtWhen(f.changePoint.at)} (${new Date(f.changePoint.at).toLocaleString('bg-BG')}).` }),
+        el('div', { class: 'metric-sub', text: 'Сравни с одита и деплоите около този час — това обикновено е причината.' }),
+      ])
+    );
+  }
+
+  // ── Диск I/O ───────────────────────────────────────────────────────────────
+  if ((k.diskIo || []).length) {
+    view.appendChild(el('h3', { class: 'muted', text: 'Диск I/O', style: 'margin:22px 0 10px' }));
+    view.appendChild(
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Устройство', 'Четене', 'Запис', 'Закъснение чет.', 'Закъснение зап.', 'Заетост', 'В опашка'], k.diskIo.map((d) =>
+          el('tr', {}, [
+            el('td', { class: 'mono', text: d.name }),
+            el('td', { text: `${d.readIops.toFixed(0)}/s · ${fmtBytes(d.readBps)}/s` }),
+            el('td', { text: `${d.writeIops.toFixed(0)}/s · ${fmtBytes(d.writeBps)}/s` }),
+            el('td', {}, [awaitPill(d.readAwaitMs)]),
+            el('td', {}, [awaitPill(d.writeAwaitMs)]),
+            el('td', {}, [barEl(d.utilPct)]),
+            el('td', { class: 'mono', text: d.inFlight }),
+          ])
+        )),
+      ])
+    );
+  }
+
+  // ── Мрежа, TCP, дескриптори, inode-и ──────────────────────────────────────
+  view.appendChild(el('h3', { class: 'muted', text: 'Мрежа и лимити', style: 'margin:22px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'grid grid-2' }, [
+      el('div', { class: 'card' }, [
+        el('h3', { text: 'Интерфейси' }),
+        el('div', { class: 'table-wrap' }, [
+          tableEl(['Интерфейс', 'Вход', 'Изход', 'Изпуснати', 'Грешки'], (k.net || []).map((n) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: n.iface }),
+              el('td', { text: fmtBps(n.rxBps) }),
+              el('td', { text: fmtBps(n.txBps) }),
+              el('td', {}, [n.rxDrop + n.txDrop > 0 ? pill('warn', n.rxDrop + n.txDrop) : el('span', { class: 'muted', text: '0' })]),
+              el('td', {}, [n.rxErrs + n.txErrs > 0 ? pill('bad', n.rxErrs + n.txErrs) : el('span', { class: 'muted', text: '0' })]),
+            ])
+          )),
+        ]),
+      ]),
+      el('div', { class: 'card' }, [
+        el('h3', { text: 'Връзки и лимити' }),
+        kv({
+          'TCP в употреба': k.tcp ? k.tcp.inuse : '—',
+          TIME_WAIT: k.tcp ? k.tcp.timeWait : '—',
+          'Сокети общо': k.tcp?.socketsUsed ?? '—',
+          'Препълнена опашка': k.listen ? `${k.listen.listenOverflows} (drops ${k.listen.listenDrops})` : '—',
+          'Файлови дескриптори': k.fds ? `${k.fds.allocated} / ${k.fds.max} (${k.fds.usePercent.toFixed(1)}%)` : '—',
+          conntrack: k.conntrack ? `${k.conntrack.count} / ${k.conntrack.max}` : 'няма',
+          'Процеси в изчакване (D)': k.sched?.blocked ?? '—',
+          'Убити от OOM': k.oomKillTotal ?? '—',
+        }),
+      ]),
+    ])
+  );
+
+  view.appendChild(el('h3', { class: 'muted', text: 'Inode-и', style: 'margin:22px 0 10px' }));
+  view.appendChild(
+    el('div', { class: 'table-wrap' }, [
+      tableEl(['Дял', 'Ползвани', 'Свободни', '%'], (k.inodes || []).map((i) =>
+        el('tr', {}, [
+          el('td', { class: 'mono', text: i.mount }),
+          el('td', { text: i.used.toLocaleString('bg-BG') }),
+          el('td', { text: i.free.toLocaleString('bg-BG') }),
+          el('td', {}, [barEl(i.usePercent)]),
+        ])
+      )),
+    ])
+  );
+  if ((k.readOnlyAll || []).length) {
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-top:12px' }, [
+        el('h3', { text: 'Само за четене' }),
+        el('div', { class: 'metric-sub', text: 'Аларма се вдига само ако дял, който Е БИЛ записваем, стане ro (истинска авария). Изброените тук може да са нарочно ro.' }),
+        el('div', { class: 'crumbs', text: k.readOnlyAll.map((r) => `${r.mount} (${r.type})`).join('  ·  ') }),
+      ])
+    );
+  }
+}
+
+function psiClass(v) {
+  if (v == null) return 'dim';
+  return v >= 40 ? 'bad' : v >= 10 ? 'warn' : 'ok';
+}
+function awaitPill(ms) {
+  const v = Number(ms) || 0;
+  return pill(v >= 100 ? 'bad' : v >= 20 ? 'warn' : 'ok', `${v.toFixed(1)} ms`);
+}
+
 // ── Аларми ────────────────────────────────────────────────────────────────────
 async function renderAlerts() {
   const view = document.getElementById('view');
@@ -759,6 +952,8 @@ async function renderServices() {
         el('tr', {}, [
           el('td', { class: 'mono', text: s.unit }),
           el('td', {}, [pill(s.active === 'active' ? 'ok' : s.active === 'failed' ? 'bad' : 'dim', s.sub || s.active)]),
+          // Памет по cgroup — стабилна през рестартите на процеса, за разлика от ps.
+          el('td', { class: 'mono', text: s.memoryBytes != null ? fmtBytes(s.memoryBytes) : '—', title: s.oomKills ? `убит от OOM ${s.oomKills} пъти` : '' }),
           el('td', { text: s.enabled || '—' }),
           el('td', { class: 'muted', text: (s.description || '').slice(0, 60) }),
           el('td', {}, [
@@ -769,7 +964,7 @@ async function renderServices() {
         ])
       );
     body.innerHTML = '';
-    body.appendChild(tableEl(['Услуга', 'Състояние', 'Автостарт', 'Описание', ''], rows));
+    body.appendChild(tableEl(['Услуга', 'Състояние', 'Памет', 'Автостарт', 'Описание', ''], rows));
   };
   filter.oninput = draw;
   onlyActive.onchange = draw;

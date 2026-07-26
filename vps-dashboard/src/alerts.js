@@ -10,7 +10,7 @@ import { notify } from './notify.js';
 import { failedServices, tlsCerts } from './system.js';
 import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
-import { forecastToLimit, fmtDuration } from './forecast.js';
+import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts } from './history.js';
 
 export class AlertEngine {
@@ -182,6 +182,9 @@ export class AlertEngine {
       for (const f of this.diskForecasts()) {
         out.push(f);
       }
+      for (const a of this.anomalyChecks()) {
+        out.push(a);
+      }
     }
 
     for (const unit of await failedServices()) {
@@ -271,6 +274,41 @@ export class AlertEngine {
         severity: etaDays <= 1 ? 'critical' : 'warning',
         title: `Дискът ${mount} ще се напълни`,
         body: `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) ${mount} стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
+      });
+    }
+    return out;
+  }
+
+  // Аномалии: „нетипично за този сървър", не „над праг". Съзнателно са с
+  // тежест „info" и НЕ будят човек — аларма по аномалия е класическият източник
+  // на умора от известия. Служат за контекст при разследване.
+  anomalyChecks() {
+    const out = [];
+    if (!this.history || this.cfg.alerts?.anomalies === false) return out;
+    let points;
+    try {
+      points = this.history.range(6 * 3600 * 1000, 400);
+    } catch {
+      return out;
+    }
+    if (points.length < 30) return out;
+
+    const series = {
+      cpu: { values: points.map((p) => p.cpu).filter((v) => typeof v === 'number'), label: 'процесора' },
+      memory: {
+        values: points.map((p) => (p.memTotal ? (p.memUsed / p.memTotal) * 100 : null)).filter((v) => v !== null),
+        label: 'паметта',
+      },
+    };
+    for (const [key, s] of Object.entries(series)) {
+      if (s.values.length < 30) continue;
+      const a = detectAnomaly(s.values);
+      if (!a.anomaly) continue;
+      out.push({
+        key: `anomaly:${key}`,
+        severity: 'info',
+        title: `Нетипично поведение на ${s.label}`,
+        body: `Текущо ${a.current?.toFixed(1)} спрямо обичайното ${a.baseline} за последните 6 часа (z=${a.z}). Не е задължително проблем — просто не е както обикновено.`,
       });
     }
     return out;

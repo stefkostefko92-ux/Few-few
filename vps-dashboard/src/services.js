@@ -1,6 +1,7 @@
 // systemd услуги + journal логове. Всичко през execFile (без shell).
 import { run, runOk } from './exec.js';
 import { spawn } from 'node:child_process';
+import { readCgroupStats } from './kernel.js';
 
 const UNIT_RX = /^[\w@.\\-]+$/; // валидни имена на unit-и — нищо друго не стига до systemctl
 const ACTIONS = new Set(['start', 'stop', 'restart', 'reload', 'enable', 'disable']);
@@ -38,14 +39,24 @@ export async function listServices() {
       /* по-стар systemd */
     }
   }
-  const services = units.map((u) => ({
-    unit: u.unit,
-    load: u.load,
-    active: u.active,
-    sub: u.sub,
-    description: u.description,
-    enabled: enabledMap.get(u.unit) || null,
-  }));
+  const services = units.map((u) => {
+    // Ресурси по cgroup — „кой изяде паметта" се вижда стабилно по unit, докато
+    // per-process числата се губят при всеки рестарт на процеса.
+    const cg = u.active === 'active' ? readCgroupStats(u.unit) : null;
+    return {
+      unit: u.unit,
+      load: u.load,
+      active: u.active,
+      sub: u.sub,
+      description: u.description,
+      enabled: enabledMap.get(u.unit) || null,
+      memoryBytes: cg?.memoryBytes ?? null,
+      memoryPeak: cg?.memoryPeak ?? null,
+      oomKills: cg?.oomKills ?? null,
+      pids: cg?.pids ?? null,
+      throttledUsec: cg?.throttledUsec ?? null,
+    };
+  });
   return { available: true, services };
 }
 
