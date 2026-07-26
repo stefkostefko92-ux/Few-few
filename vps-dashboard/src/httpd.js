@@ -124,12 +124,18 @@ export function openSse(res) {
   const ping = setInterval(() => {
     if (!res.writableEnded) res.write(':ping\n\n');
   }, 25000);
+  ping.unref?.(); // да не държи процеса жив само заради поддържащия сигнал
   res.on('close', () => clearInterval(ping));
   return {
+    // ВСИЧКО се праща като JSON — включително обикновените низове.
+    // Причината: в SSE „\r" е валиден край на ред, затова суровият текст губи
+    // carriage return-ите по пътя. За терминала това е фатално (курсорът никога
+    // не се връща в началото на реда и TUI изгледът се разпада); за логовете и
+    // изхода на задачите чупи лентите за напредък. JSON екранира \r и \n, така
+    // че байтовете стигат непокътнати. Клиентът винаги прави JSON.parse.
     send(event, data) {
       if (res.writableEnded) return;
-      const payload = typeof data === 'string' ? data : JSON.stringify(data);
-      res.write(`event: ${event}\ndata: ${payload.replace(/\n/g, '\ndata: ')}\n\n`);
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     },
     close() {
       clearInterval(ping);

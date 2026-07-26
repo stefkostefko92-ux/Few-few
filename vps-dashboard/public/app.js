@@ -569,15 +569,24 @@ async function renderAlerts() {
   view.appendChild(
     el('div', { class: 'card', style: 'margin-top:18px' }, [
       el('h3', { text: 'Прагове' }),
+      el('div', { class: 'metric-sub', text: 'Симптоми (натиск = колко % от времето задачите са ЧАКАЛИ ресурс). Това е болката — CPU 90% при доволни потребители не е проблем.' }),
       el('div', { class: 'toolbar' }, [
-        thRow('cpuPct', 'CPU', '%'),
-        thRow('memPct', 'Памет', '%'),
+        thRow('psiCpu', 'Натиск CPU', '%'),
+        thRow('psiIo', 'Натиск диск', '%'),
+        thRow('psiMem', 'Натиск памет', '%'),
+        thRow('stealPct', 'Steal (хостерът)', '%'),
+      ]),
+      el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Капацитет и срокове:' }),
+      el('div', { class: 'toolbar' }, [
         thRow('diskPct', 'Диск', '%'),
-        thRow('load1PerCore', 'Load/ядро', ''),
+        thRow('diskEtaDays', 'Пълен до', 'дни'),
+        thRow('inodePct', 'Inode-и', '%'),
         thRow('certDays', 'Сертификат', 'дни'),
       ]),
+      el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Резерва, ако ядрото не подава PSI:' }),
+      el('div', { class: 'toolbar' }, [thRow('cpuPct', 'CPU', '%'), thRow('memPct', 'Памет', '%')]),
       el('div', { class: 'metric-sub', text: `Праг трябва да се задържи ${a.sustainSamples} проверки (на ${a.checkIntervalSec}s); повторно известие най-рано след ${a.cooldownMin} мин.` }),
-      el('button', { class: 'btn btn-primary btn-sm', text: 'Запази праговете', onclick: async (e) => {
+      el('div', { class: 'toolbar' }, [el('button', { class: 'btn btn-primary btn-sm', text: 'Запази праговете', onclick: async (e) => {
         e.target.disabled = true;
         const thresholds = {};
         for (const [k, i] of Object.entries(inputs)) {
@@ -586,7 +595,7 @@ async function renderAlerts() {
         }
         try { await api('/alerts/settings', { method: 'POST', body: { alerts: { thresholds } } }); toast('Праговете са запазени'); go('alerts'); }
         catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
-      } }),
+      } })]),
     ])
   );
 
@@ -629,7 +638,7 @@ function notifyChannelsCard(a) {
     el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'ntfy' }), inp('ntfyServer', 'https://ntfy.sh'), inp('ntfyTopic', 'тема (topic)'), inp('ntfyToken', 'токен (по избор)')]),
     el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Webhook' }), inp('hook', 'https://…')]),
     el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Имейл' }), inp('mailTo', 'до: адрес (иска sendmail на сървъра)')]),
-    el('button', {
+    el('div', { class: 'toolbar' }, [el('button', {
       class: 'btn btn-primary btn-sm',
       text: 'Запази каналите',
       onclick: async (e) => {
@@ -646,7 +655,7 @@ function notifyChannelsCard(a) {
         try { await api('/alerts/settings', { method: 'POST', body: { notify } }); toast('Каналите са запазени'); go('alerts'); }
         catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
       },
-    }),
+    })]),
   ]);
 }
 
@@ -1198,9 +1207,12 @@ async function renderPty() {
   view.appendChild(el('p', { class: 'section-desc', text: 'Истински интерактивен терминал (PTY): htop, nano, sudo, цветове, Ctrl+C. Всеки въведен ред влиза в одита.' }));
 
   const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px' });
-  const screen = el('pre', { class: 'log-out', tabindex: '0', style: 'height:64vh;outline:none' });
+  const screen = el('pre', { class: 'log-out term-screen', tabindex: '0', style: 'height:64vh;outline:none' });
   const status = el('span', { class: 'muted', text: 'няма сесия' });
-  const cols = Math.max(60, Math.min(200, Math.floor((window.innerWidth - 320) / 8.4)));
+  // Броят колони се МЕРИ, а не се гадае: сгрешена ширина значи, че всяка TUI
+  // програма рисува в грешни колони и изгледът се разпада.
+  view.appendChild(screen);
+  const cols = measureCols(screen);
   const rows = 30;
   const term = new Terminal(cols, rows);
   let session = null;
@@ -1221,7 +1233,7 @@ async function renderPty() {
     status.textContent = `сесия ${session.id.slice(0, 8)} · ${cols}×${rows}`;
     es = new EventSource(sseUrl(`/pty/${session.id}/stream`));
     state.sectionEs = es;
-    es.addEventListener('data', (ev) => { term.write(ev.data); paint(); });
+    es.addEventListener('data', (ev) => { term.write(JSON.parse(ev.data)); paint(); });
     es.addEventListener('end', () => { status.textContent = 'сесията приключи'; es.close(); session = null; });
     screen.focus();
   };
@@ -1235,32 +1247,70 @@ async function renderPty() {
     status.textContent = 'няма сесия';
   };
 
-  screen.addEventListener('keydown', async (e) => {
+  // Опашка за вход: по една заявка в движение, останалите клавиши се трупат и
+  // тръгват накуп. Без това всеки клавиш е отделен POST и заявките се
+  // надпреварват — „top" пристига като „tpo" (наблюдавано на живо).
+  let pending = '';
+  let sending = false;
+  const flush = async () => {
+    if (sending || !pending || !session) return;
+    sending = true;
+    const chunk = pending;
+    pending = '';
+    try {
+      await api(`/pty/${session.id}/input`, { method: 'POST', body: { data: chunk } });
+    } catch (err) {
+      toast(err.message, 'bad');
+    } finally {
+      sending = false;
+      if (pending) flush();
+    }
+  };
+  const send = (data) => {
+    pending += data;
+    flush();
+  };
+
+  screen.addEventListener('keydown', (e) => {
     if (!session) return;
     // Пускаме браузърните комбинации за копиране/поставяне.
     if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key.toLowerCase()) && window.getSelection().toString()) return;
     const seq = keyToSequence(e);
     if (seq === null) return;
     e.preventDefault();
-    try { await api(`/pty/${session.id}/input`, { method: 'POST', body: { data: seq } }); }
-    catch (err) { toast(err.message, 'bad'); }
+    send(seq);
   });
-  screen.addEventListener('paste', async (e) => {
+  screen.addEventListener('paste', (e) => {
     if (!session) return;
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text');
-    if (text) await api(`/pty/${session.id}/input`, { method: 'POST', body: { data: text } });
+    if (text) send(text);
   });
 
-  view.appendChild(el('div', { class: 'toolbar' }, [
-    el('span', { class: 'muted', text: 'папка:' }), cwd,
-    el('button', { class: 'btn btn-primary btn-sm', text: '▶ Отвори сесия', onclick: open }),
-    el('button', { class: 'btn btn-sm btn-danger', text: '✕ Затвори', onclick: async () => { await close(); paint(); } }),
-    status,
-  ]));
-  view.appendChild(screen);
+  // Тулбарът се вмъква ПРЕДИ екрана (екранът вече е в изгледа заради меренето).
+  view.insertBefore(
+    el('div', { class: 'toolbar' }, [
+      el('span', { class: 'muted', text: 'папка:' }), cwd,
+      el('button', { class: 'btn btn-primary btn-sm', text: '▶ Отвори сесия', onclick: open }),
+      el('button', { class: 'btn btn-sm btn-danger', text: '✕ Затвори', onclick: async () => { await close(); paint(); } }),
+      status,
+    ]),
+    screen
+  );
   view.appendChild(el('div', { class: 'metric-sub', text: 'Щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
   paint();
+}
+
+// Мери реалната ширина на един знак в моноширинния шрифт и връща колко цели
+// колони се побират. Ако мерим погрешно, редовете се пренасят и TUI се разпада.
+function measureCols(container) {
+  const probe = el('span', { text: '0'.repeat(100), style: 'position:absolute;visibility:hidden;white-space:pre' });
+  container.appendChild(probe);
+  const charWidth = probe.getBoundingClientRect().width / 100;
+  probe.remove();
+  const usable = container.clientWidth - 26; // padding + място за скролбара
+  if (!charWidth || !usable) return 100;
+  return Math.max(60, Math.min(240, Math.floor(usable / charWidth)));
 }
 
 // ── Процеси ────────────────────────────────────────────────────────────────────────
@@ -1354,7 +1404,7 @@ async function renderLogs() {
       const es = new EventSource(sseUrl('/stream/journal?' + params.toString()));
       state.sectionEs = es;
       es.addEventListener('line', (e) => {
-        out.textContent += e.data;
+        out.textContent += JSON.parse(e.data); // SSE носи JSON, за да оцелеят \r
         out.scrollTop = out.scrollHeight;
       });
       es.onerror = () => toast('Потокът прекъсна', 'warn');
@@ -1768,7 +1818,7 @@ async function renderTerminal() {
       const job = await api('/terminal/run', { method: 'POST', body: { cmd, cwd: cwd.value || '/root' } });
       const es = new EventSource(sseUrl(`/jobs/${job.id}/stream`));
       es.addEventListener('data', (ev) => {
-        out.textContent += ev.data;
+        out.textContent += JSON.parse(ev.data);
         out.scrollTop = out.scrollHeight;
       });
       es.addEventListener('end', (ev) => {
@@ -1970,7 +2020,7 @@ function streamJob(id, title) {
   const es = new EventSource(sseUrl(`/jobs/${id}/stream`));
   modalEs = es;
   es.addEventListener('data', (e) => {
-    out.textContent += e.data;
+    out.textContent += JSON.parse(e.data);
     out.scrollTop = out.scrollHeight;
   });
   es.addEventListener('end', (e) => {

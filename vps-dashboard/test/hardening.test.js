@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { clientIp, sendJson } from '../src/httpd.js';
+import { clientIp, sendJson, openSse } from '../src/httpd.js';
 import { loginAllowed, loginFailed, _resetLoginLimiter } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
 import { redactSecrets, writeFile, readFilePreview } from '../src/files.js';
@@ -112,4 +112,19 @@ test('preview на конфига минава през редакция', () =>
   assert.equal(r.redacted, false);
   assert.equal(r.content, 'нищо тайно\n');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('SSE: \\r и \\n оцеляват (иначе терминалът се разпада)', () => {
+  // Симулираме openSse и гледаме какво реално тръгва по кабела.
+  let wire = '';
+  const res = { writableEnded: false, writeHead() {}, write(s) { wire += s; }, end() {}, on() {} };
+  const sse = openSse(res);
+  wire = '';
+  sse.send('data', 'ред1\r\nред2\rвърнат');
+  // В SSE „\r" е валиден край на ред → суровият текст губи carriage return-ите.
+  // Затова пращаме JSON: в кабела няма нито един истински \r или \n в тялото.
+  const body = wire.match(/^data: (.*)$/m)[1];
+  assert.doesNotMatch(body, /[\r\n]/, 'тялото не бива да съдържа сурови нови редове');
+  assert.equal(JSON.parse(body), 'ред1\r\nред2\rвърнат', 'след JSON.parse байтовете са същите');
+  sse.close();
 });

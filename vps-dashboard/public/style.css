@@ -163,6 +163,18 @@ td.mono, .mono { font-family: var(--mono); }
   padding: 12px; overflow: auto; white-space: pre-wrap; word-break: break-word;
 }
 .log-out { height: 60vh; }
+
+/* Терминалният екран НЕ пренася редове — пренесеният ред разваля подредбата на
+   всяка TUI програма (htop/top рисуват в колони). Вместо това се скролва. */
+.term-screen {
+  white-space: pre;
+  overflow: auto;
+  line-height: 1.35;
+}
+
+/* Лентата в таблична клетка няма собствено съдържание → без минимална ширина
+   се смачква до точка. */
+td .bar { min-width: 110px; }
 .term-in {
   display: flex; gap: 8px; margin-top: 10px;
 }
