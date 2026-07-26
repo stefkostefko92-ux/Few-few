@@ -1,6 +1,9 @@
 "use client";
 
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { Badge } from "@/components/ui";
 import { dataIt } from "@/lib/format";
 
@@ -8,14 +11,19 @@ const config: EntityConfig = {
   titolo: "Ordini di lavoro",
   singolare: "ordine di lavoro",
   genere: "m",
-  descrizione: "Il lavoro da eseguire: lo stato segue solo le transizioni ammesse",
+  descrizione:
+    "Il lavoro da eseguire: lo stato segue solo le transizioni ammesse",
   api: "/api/ordini",
   cerca: "Cerca per numero, oggetto…",
   linkDettaglio: (r) => `/ordini/${r.id}`,
   colonne: [
     { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
     { chiave: "oggetto", label: "Oggetto" },
-    { chiave: "stato", label: "Stato", render: (r) => <Badge valore={String(r.stato)} /> },
+    {
+      chiave: "stato",
+      label: "Stato",
+      render: (r) => <Badge valore={String(r.stato)} />,
+    },
     {
       chiave: "priorita",
       label: "Priorità",
@@ -34,10 +42,20 @@ const config: EntityConfig = {
         return t ? `${t.cognome} ${t.nome}` : "—";
       },
     },
-    { chiave: "createdAt", label: "Creato", render: (r) => dataIt(r.createdAt as string) },
+    {
+      chiave: "createdAt",
+      label: "Creato",
+      render: (r) => dataIt(r.createdAt as string),
+    },
   ],
   campi: [
-    { name: "oggetto", label: "Oggetto", tipo: "text", richiesto: true, colSpan2: true },
+    {
+      name: "oggetto",
+      label: "Oggetto",
+      tipo: "text",
+      richiesto: true,
+      colSpan2: true,
+    },
     {
       name: "priorita",
       label: "Priorità",
@@ -62,19 +80,28 @@ const config: EntityConfig = {
       name: "preventivoId",
       label: "Preventivo di origine",
       tipo: "select",
-      opzioniApi: { url: "/api/preventivi", etichetta: (r) => `${r.numero} — ${r.oggetto}` },
+      opzioniApi: {
+        url: "/api/preventivi",
+        etichetta: (r) => `${r.numero} — ${r.oggetto}`,
+      },
     },
     {
       name: "tecnicoId",
       label: "Tecnico incaricato",
       tipo: "select",
-      opzioniApi: { url: "/api/dipendenti", etichetta: (r) => `${r.cognome} ${r.nome}` },
+      opzioniApi: {
+        url: "/api/dipendenti",
+        etichetta: (r) => `${r.cognome} ${r.nome}`,
+      },
     },
     {
       name: "cottimistiId",
       label: "Ditta esterna",
       tipo: "select",
-      opzioniApi: { url: "/api/cottimisti", etichetta: (r) => String(r.ragioneSociale) },
+      opzioniApi: {
+        url: "/api/cottimisti",
+        etichetta: (r) => String(r.ragioneSociale),
+      },
     },
     {
       name: "squadraId",
@@ -82,9 +109,24 @@ const config: EntityConfig = {
       tipo: "select",
       opzioniApi: { url: "/api/squadre", etichetta: (r) => String(r.nome) },
     },
-    { name: "descrizione", label: "Dettaglio dei lavori", tipo: "textarea", colSpan2: true },
-    { name: "noteInterne", label: "Note interne (mai stampate)", tipo: "textarea", colSpan2: true },
-    { name: "noteCommittente", label: "Note del committente", tipo: "textarea", colSpan2: true },
+    {
+      name: "descrizione",
+      label: "Dettaglio dei lavori",
+      tipo: "textarea",
+      colSpan2: true,
+    },
+    {
+      name: "noteInterne",
+      label: "Note interne (mai stampate)",
+      tipo: "textarea",
+      colSpan2: true,
+    },
+    {
+      name: "noteCommittente",
+      label: "Note del committente",
+      tipo: "textarea",
+      colSpan2: true,
+    },
   ],
 };
 

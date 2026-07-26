@@ -3,7 +3,10 @@
 // Законови срокове по импианти + бутон за ръчно пускане на автоматизма.
 
 import { useState } from "react";
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { dataIt } from "@/lib/format";
 import { TIPO_SCADENZA, etichetta } from "@/lib/enum-labels";
 
@@ -12,7 +15,9 @@ function FlagNotifica({ attivo, label }: { attivo: boolean; label: string }) {
     <span
       title={`Avviso a ${label} giorni ${attivo ? "inviato" : "non inviato"}`}
       className={`inline-block rounded-sm px-1.5 py-0.5 font-mono text-[11px] ${
-        attivo ? "bg-success-subtle text-success-text" : "bg-surface-3 text-text-3"
+        attivo
+          ? "bg-success-subtle text-success-text"
+          : "bg-surface-3 text-text-3"
       }`}
     >
       {label}
@@ -29,7 +34,7 @@ function BottoneControllo() {
     setEsito(
       res.ok
         ? `Avvisi generati: ${d.notificheScadenze} · automezzi aggiornati: ${d.automezziAggiornati} · preventivi scaduti: ${d.preventiviScaduti} · fatture scadute: ${d.fattureScadute}`
-        : (d.error ?? "Errore")
+        : (d.error ?? "Errore"),
     );
   }
   return (
@@ -46,7 +51,8 @@ const config: EntityConfig = {
   titolo: "Scadenze di legge",
   singolare: "scadenza",
   genere: "f",
-  descrizione: "Revisioni, certificazioni e manutenzioni con avvisi a 90 / 60 / 30 giorni",
+  descrizione:
+    "Revisioni, certificazioni e manutenzioni con avvisi a 90 / 60 / 30 giorni",
   api: "/api/scadenze",
   extraAzioni: <BottoneControllo />,
   colonne: [
@@ -56,7 +62,11 @@ const config: EntityConfig = {
       className: "font-mono font-medium",
       render: (r) => String((r.impianto as Riga | null)?.matricola ?? "—"),
     },
-    { chiave: "tipo", label: "Tipo", render: (r) => etichetta(TIPO_SCADENZA, String(r.tipo)) },
+    {
+      chiave: "tipo",
+      label: "Tipo",
+      render: (r) => etichetta(TIPO_SCADENZA, String(r.tipo)),
+    },
     {
       chiave: "dataScadenza",
       label: "Scadenza",
@@ -102,8 +112,18 @@ const config: EntityConfig = {
         { value: "manutenzione", label: "Manutenzione" },
       ],
     },
-    { name: "dataScadenza", label: "Data di scadenza", tipo: "date", richiesto: true },
-    { name: "completata", label: "Scadenza adempiuta", tipo: "checkbox", predefinito: false },
+    {
+      name: "dataScadenza",
+      label: "Data di scadenza",
+      tipo: "date",
+      richiesto: true,
+    },
+    {
+      name: "completata",
+      label: "Scadenza adempiuta",
+      tipo: "checkbox",
+      predefinito: false,
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

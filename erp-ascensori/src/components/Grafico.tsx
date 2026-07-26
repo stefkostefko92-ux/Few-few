@@ -67,7 +67,13 @@ const ORDINE_CANONICO: Record<string, string[]> = {
   ],
   ordiniPerPriorita: ["ORDINARIA", "URGENTE", "EMERGENZA"],
   preventiviPerStato: ["BOZZA", "INVIATO", "APPROVATO", "RIFIUTATO", "SCADUTO"],
-  impiantiPerStato: ["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"],
+  impiantiPerStato: [
+    "ATTIVO",
+    "FERMO",
+    "MANUTENZIONE",
+    "FUORI_SERVIZIO",
+    "DISMESSO",
+  ],
   automezziPerStato: ["verde", "giallo", "rosso"],
 };
 
@@ -75,19 +81,25 @@ export function coloreCategoria(
   fonte: string,
   nome: string,
   indice: number,
-  colore: "multi" | number
+  colore: "multi" | number,
 ): string {
-  if (fonte === "automezziPerStato") return COLORI_STATUS[nome] ?? COLORI_GRAFICO[7];
+  if (fonte === "automezziPerStato")
+    return COLORI_STATUS[nome] ?? COLORI_GRAFICO[7];
   if (colore !== "multi") return COLORI_GRAFICO[(colore - 1) % 8];
   const canonico = ORDINE_CANONICO[fonte];
   const pos = canonico ? canonico.indexOf(nome) : indice;
   return COLORI_GRAFICO[(pos >= 0 ? pos : indice) % 8];
 }
 
-export function ordinaCanonico(fonte: string, dati: PuntoCategoria[]): PuntoCategoria[] {
+export function ordinaCanonico(
+  fonte: string,
+  dati: PuntoCategoria[],
+): PuntoCategoria[] {
   const canonico = ORDINE_CANONICO[fonte];
   if (!canonico) return dati;
-  return [...dati].sort((a, b) => canonico.indexOf(a.nome) - canonico.indexOf(b.nome));
+  return [...dati].sort(
+    (a, b) => canonico.indexOf(a.nome) - canonico.indexOf(b.nome),
+  );
 }
 
 function TooltipCard({
@@ -110,7 +122,8 @@ function TooltipCard({
             style={{ background: p.color }}
             aria-hidden
           />
-          {p.name}: <span className="font-mono font-medium text-text-1">{p.value}</span>
+          {p.name}:{" "}
+          <span className="font-mono font-medium text-text-1">{p.value}</span>
         </div>
       ))}
     </div>
@@ -169,7 +182,10 @@ export function GraficoCategorie({
               isAnimationActive={false}
             >
               {ordinati.map((p, i) => (
-                <Cell key={p.nome} fill={coloreCategoria(fonte, p.nome, i, colore)} />
+                <Cell
+                  key={p.nome}
+                  fill={coloreCategoria(fonte, p.nome, i, colore)}
+                />
               ))}
             </Pie>
           </PieChart>
@@ -177,13 +193,19 @@ export function GraficoCategorie({
         {/* легенда: идентичността никога не е само по цвят */}
         <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 px-2">
           {ordinati.map((p, i) => (
-            <span key={p.nome} className="flex items-center gap-1.5 text-xs text-text-2">
+            <span
+              key={p.nome}
+              className="flex items-center gap-1.5 text-xs text-text-2"
+            >
               <span
                 className="inline-block h-2 w-2 shrink-0 rounded-full"
-                style={{ background: coloreCategoria(fonte, p.nome, i, colore) }}
+                style={{
+                  background: coloreCategoria(fonte, p.nome, i, colore),
+                }}
                 aria-hidden
               />
-              {etichettaAsse(p.nome)} <span className="font-mono text-text-1">{p.valore}</span>
+              {etichettaAsse(p.nome)}{" "}
+              <span className="font-mono text-text-1">{p.valore}</span>
             </span>
           ))}
         </div>
@@ -192,11 +214,15 @@ export function GraficoCategorie({
   }
 
   if (tipo === "line" || tipo === "area") {
-    const c = colore === "multi" ? COLORI_GRAFICO[0] : COLORI_GRAFICO[(colore - 1) % 8];
+    const c =
+      colore === "multi" ? COLORI_GRAFICO[0] : COLORI_GRAFICO[(colore - 1) % 8];
     const Contenitore = tipo === "line" ? LineChart : AreaChart;
     return (
       <ResponsiveContainer width="100%" height={240}>
-        <Contenitore data={ordinati} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
+        <Contenitore
+          data={ordinati}
+          margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
+        >
           <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
           <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
           <YAxis {...ASSI} allowDecimals={false} />
@@ -228,14 +254,30 @@ export function GraficoCategorie({
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={ordinati} margin={{ top: 8, right: 8, bottom: 8, left: -16 }} barCategoryGap="25%">
+      <BarChart
+        data={ordinati}
+        margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
+        barCategoryGap="25%"
+      >
         <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
         <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
         <YAxis {...ASSI} allowDecimals={false} />
-        <Tooltip content={<TooltipCard />} cursor={{ fill: "var(--surface-2)" }} />
-        <Bar dataKey="valore" name="valore" radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false}>
+        <Tooltip
+          content={<TooltipCard />}
+          cursor={{ fill: "var(--surface-2)" }}
+        />
+        <Bar
+          dataKey="valore"
+          name="valore"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={36}
+          isAnimationActive={false}
+        >
           {ordinati.map((p, i) => (
-            <Cell key={p.nome} fill={coloreCategoria(fonte, p.nome, i, colore)} />
+            <Cell
+              key={p.nome}
+              fill={coloreCategoria(fonte, p.nome, i, colore)}
+            />
           ))}
         </Bar>
       </BarChart>
@@ -256,18 +298,28 @@ export function GraficoSerie({
   colore: "multi" | number;
 }) {
   const colori = serie.map((_, i) =>
-    colore === "multi" ? COLORI_GRAFICO[i % 8] : COLORI_GRAFICO[((colore - 1) + i) % 8]
+    colore === "multi"
+      ? COLORI_GRAFICO[i % 8]
+      : COLORI_GRAFICO[(colore - 1 + i) % 8],
   );
-  const Contenitore = tipo === "line" ? LineChart : tipo === "area" ? AreaChart : BarChart;
+  const Contenitore =
+    tipo === "line" ? LineChart : tipo === "area" ? AreaChart : BarChart;
 
   return (
     <div>
       <ResponsiveContainer width="100%" height={240}>
-        <Contenitore data={dati} margin={{ top: 8, right: 8, bottom: 0, left: -8 }} barCategoryGap="25%">
+        <Contenitore
+          data={dati}
+          margin={{ top: 8, right: 8, bottom: 0, left: -8 }}
+          barCategoryGap="25%"
+        >
           <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
           <XAxis dataKey="nome" {...ASSI} />
           <YAxis {...ASSI} />
-          <Tooltip content={<TooltipCard />} cursor={tipo === "bar" ? { fill: "var(--surface-2)" } : undefined} />
+          <Tooltip
+            content={<TooltipCard />}
+            cursor={tipo === "bar" ? { fill: "var(--surface-2)" } : undefined}
+          />
           {serie.map((s, i) =>
             tipo === "line" ? (
               <Line
@@ -300,15 +352,22 @@ export function GraficoSerie({
                 maxBarSize={24}
                 isAnimationActive={false}
               />
-            )
+            ),
           )}
         </Contenitore>
       </ResponsiveContainer>
       {/* легенда: ≥2 серии → винаги присъства */}
       <div className="mt-2 flex flex-wrap gap-4 px-2">
         {serie.map((s, i) => (
-          <span key={s.chiave} className="flex items-center gap-1.5 text-xs text-text-2">
-            <span className="inline-block h-2 w-2 rounded-full" style={{ background: colori[i] }} aria-hidden />
+          <span
+            key={s.chiave}
+            className="flex items-center gap-1.5 text-xs text-text-2"
+          >
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ background: colori[i] }}
+              aria-hidden
+            />
             {s.label}
           </span>
         ))}

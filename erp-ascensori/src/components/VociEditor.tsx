@@ -35,7 +35,13 @@ export default function VociEditor({
   onCambiato: () => void;
 }) {
   const vuoto: Record<string, string> = conPrezzi
-    ? { descrizione: "", quantita: "1", prezzoUnitario: "", aliquotaIva: "22", naturaIva: "" }
+    ? {
+        descrizione: "",
+        quantita: "1",
+        prezzoUnitario: "",
+        aliquotaIva: "22",
+        naturaIva: "",
+      }
     : { descrizione: "", quantita: "1", um: "pz", peso: "" };
   const [form, setForm] = useState<Record<string, string>>(vuoto);
   const [inModifica, setInModifica] = useState<string | null>(null);
@@ -58,7 +64,10 @@ export default function VociEditor({
       b.aliquotaIva = form.aliquotaIva || "22";
       // Natura се подава САМО при нулева ставка: при ненулева тя е противоречие
       // и маршрутът я отхвърля (същото правило пази и XML-а за SDI).
-      b.naturaIva = Number(form.aliquotaIva.replace(",", ".")) === 0 ? form.naturaIva || null : null;
+      b.naturaIva =
+        Number(form.aliquotaIva.replace(",", ".")) === 0
+          ? form.naturaIva || null
+          : null;
     } else {
       b.um = form.um || null;
       b.peso = form.peso || null;
@@ -110,7 +119,8 @@ export default function VociEditor({
           не разбира дали редовете липсват, или още не са се заредили. */}
       {voci.length === 0 && (
         <p className="mb-4 rounded-md border border-dashed border-border px-3 py-4 text-center text-sm text-text-3">
-          Nessuna riga presente: compilare il modulo qui sotto per aggiungere la prima.
+          Nessuna riga presente: compilare il modulo qui sotto per aggiungere la
+          prima.
         </p>
       )}
       {voci.length > 0 && (
@@ -141,11 +151,15 @@ export default function VociEditor({
                 <td className="py-2 pr-3 text-right font-mono">{v.quantita}</td>
                 {conPrezzi ? (
                   <>
-                    <td className="py-2 pr-3 text-right font-mono">{euro(v.prezzoUnitario)}</td>
+                    <td className="py-2 pr-3 text-right font-mono">
+                      {euro(v.prezzoUnitario)}
+                    </td>
                     <td className="py-2 pr-3 text-right font-mono">
                       {v.aliquotaIva}
                       {v.naturaIva ? (
-                        <span className="ml-1 text-xs text-text-3">{v.naturaIva}</span>
+                        <span className="ml-1 text-xs text-text-3">
+                          {v.naturaIva}
+                        </span>
                       ) : null}
                     </td>
                     <td className="py-2 pr-3 text-right font-mono font-medium">
@@ -155,7 +169,9 @@ export default function VociEditor({
                 ) : (
                   <>
                     <td className="py-2 pr-3">{v.um ?? "—"}</td>
-                    <td className="py-2 pr-3 text-right font-mono">{v.peso ?? "—"}</td>
+                    <td className="py-2 pr-3 text-right font-mono">
+                      {v.peso ?? "—"}
+                    </td>
                   </>
                 )}
                 <td className="py-2 text-right">
@@ -196,10 +212,10 @@ export default function VociEditor({
       <form onSubmit={salva} className="flex flex-wrap items-end gap-2">
         <div className="min-w-64 flex-1">
           <label className="label" htmlFor={`descrizione-${idForm}`}>
-                Descrizione
-              </label>
+            Descrizione
+          </label>
           <input
-                id={`descrizione-${idForm}`}
+            id={`descrizione-${idForm}`}
             className="input"
             required
             value={form.descrizione}
@@ -208,10 +224,10 @@ export default function VociEditor({
         </div>
         <div className="w-20">
           <label className="label" htmlFor={`quantita-${idForm}`}>
-                Qtà
-              </label>
+            Qtà
+          </label>
           <input
-                id={`quantita-${idForm}`}
+            id={`quantita-${idForm}`}
             className="input font-mono"
             required
             inputMode="decimal"
@@ -231,7 +247,9 @@ export default function VociEditor({
                 required
                 inputMode="decimal"
                 value={form.prezzoUnitario}
-                onChange={(e) => setForm({ ...form, prezzoUnitario: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, prezzoUnitario: e.target.value })
+                }
               />
             </div>
             <div className="w-20">
@@ -243,7 +261,9 @@ export default function VociEditor({
                 className="input font-mono"
                 inputMode="decimal"
                 value={form.aliquotaIva}
-                onChange={(e) => setForm({ ...form, aliquotaIva: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, aliquotaIva: e.target.value })
+                }
               />
             </div>
             {Number((form.aliquotaIva || "22").replace(",", ".")) === 0 && (
@@ -261,7 +281,9 @@ export default function VociEditor({
                   required
                   placeholder="N2.2"
                   value={form.naturaIva}
-                  onChange={(e) => setForm({ ...form, naturaIva: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, naturaIva: e.target.value })
+                  }
                 />
               </div>
             )}
@@ -299,7 +321,11 @@ export default function VociEditor({
           disabled={inCorso}
         >
           {!inModifica && <IcoNuovoPiccolo />}
-          {inCorso ? "Salvataggio…" : inModifica ? "Aggiorna riga" : "Aggiungi riga"}
+          {inCorso
+            ? "Salvataggio…"
+            : inModifica
+              ? "Aggiorna riga"
+              : "Aggiungi riga"}
         </button>
         {inModifica && (
           <button
@@ -315,7 +341,10 @@ export default function VociEditor({
         )}
       </form>
       {errore && (
-        <p role="alert" className="mt-3 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+        <p
+          role="alert"
+          className="mt-3 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+        >
           {errore}
         </p>
       )}

@@ -74,7 +74,10 @@ export default function Pagina() {
 
   return (
     <div>
-      <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/preventivi")}>
+      <button
+        className="btn-ghost mb-4 h-8 px-2 text-xs"
+        onClick={() => router.push("/preventivi")}
+      >
         <IcoIndietro />
         Preventivi
       </button>

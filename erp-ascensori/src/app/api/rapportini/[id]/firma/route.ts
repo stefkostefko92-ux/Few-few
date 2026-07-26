@@ -14,15 +14,24 @@ import { validaFirma } from "@/lib/firma";
 export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id } = await ctx.params;
-  const { firmaCliente, firmatarioNome, firmatarioRuolo } = await corpoValidato(req, firmaSchema);
+  const { firmaCliente, firmatarioNome, firmatarioRuolo } = await corpoValidato(
+    req,
+    firmaSchema,
+  );
 
   const esito = validaFirma(firmaCliente);
-  if (!esito.valida) throw new ErroreHttp(400, esito.errore ?? "Firma non valida");
+  if (!esito.valida)
+    throw new ErroreHttp(400, esito.errore ?? "Firma non valida");
 
-  const prima = await prisma.rapportino.findFirst({ where: { id, ...filtroTenant(s) } });
+  const prima = await prisma.rapportino.findFirst({
+    where: { id, ...filtroTenant(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Rapportino non trovato");
   if (prima.firmatoAt)
-    throw new ErroreHttp(409, "Rapportino già firmato: non può essere firmato di nuovo");
+    throw new ErroreHttp(
+      409,
+      "Rapportino già firmato: non può essere firmato di nuovo",
+    );
 
   // Условен запис: две едновременни подписвания не могат да успеят и двете.
   const upd = await prisma.rapportino.updateMany({

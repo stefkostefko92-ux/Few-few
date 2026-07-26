@@ -54,7 +54,18 @@ export async function trovaSessione(token: string) {
       revocataAt: null,
       scadenza: { gt: new Date() },
     },
-    include: { utente: { select: { id: true, attivo: true, ruolo: true, nome: true, cognome: true, tenantId: true } } },
+    include: {
+      utente: {
+        select: {
+          id: true,
+          attivo: true,
+          ruolo: true,
+          nome: true,
+          cognome: true,
+          tenantId: true,
+        },
+      },
+    },
   });
 }
 
@@ -74,7 +85,10 @@ export async function ruotaSessione(
   });
 }
 
-export async function revocaSessione(id: string, utenteId: string): Promise<boolean> {
+export async function revocaSessione(
+  id: string,
+  utenteId: string,
+): Promise<boolean> {
   const { count } = await prisma.sessioneAttiva.updateMany({
     where: { id, utenteId, revocataAt: null },
     data: { revocataAt: new Date() },
@@ -89,7 +103,11 @@ export async function revocaTutte(
   db: Db = prisma,
 ): Promise<number> {
   const { count } = await db.sessioneAttiva.updateMany({
-    where: { utenteId, revocataAt: null, ...(eccetto ? { id: { not: eccetto } } : {}) },
+    where: {
+      utenteId,
+      revocataAt: null,
+      ...(eccetto ? { id: { not: eccetto } } : {}),
+    },
     data: { revocataAt: new Date() },
   });
   return count;
@@ -100,6 +118,12 @@ export async function elencoSessioni(utenteId: string) {
     where: { utenteId, revocataAt: null, scadenza: { gt: new Date() } },
     orderBy: { ultimoUso: "desc" },
     // Хешът на токена НЕ излиза навън — с него се подменя сесия.
-    select: { id: true, userAgent: true, ip: true, ultimoUso: true, createdAt: true },
+    select: {
+      id: true,
+      userAgent: true,
+      ip: true,
+      ultimoUso: true,
+      createdAt: true,
+    },
   });
 }

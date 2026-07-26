@@ -35,7 +35,11 @@ export interface ChiaveGenerata {
 export function generaChiave(): ChiaveGenerata {
   const segreto = randomBytes(32).toString("base64url");
   const chiave = `${PREFISSO}${segreto}`;
-  return { chiave, prefisso: `${PREFISSO}${segreto.slice(0, 8)}`, chiaveHash: hashChiave(chiave) };
+  return {
+    chiave,
+    prefisso: `${PREFISSO}${segreto.slice(0, 8)}`,
+    chiaveHash: hashChiave(chiave),
+  };
 }
 
 /**
@@ -81,15 +85,23 @@ export type EsitoChiave =
  * Празният списък права значи НИЩО, не „всичко": ключ, създаден без изричен
  * избор, не бива да отваря системата.
  */
-export function autorizza(chiave: StatoChiave, ambito: Ambito, ora = new Date()): EsitoChiave {
+export function autorizza(
+  chiave: StatoChiave,
+  ambito: Ambito,
+  ora = new Date(),
+): EsitoChiave {
   if (chiave.revocataAt) return { valida: false, motivo: "revocata" };
   if (chiave.scadenza && chiave.scadenza.getTime() <= ora.getTime())
     return { valida: false, motivo: "scaduta" };
-  if (!chiave.ambiti.includes(ambito)) return { valida: false, motivo: "ambito" };
+  if (!chiave.ambiti.includes(ambito))
+    return { valida: false, motivo: "ambito" };
   return { valida: true };
 }
 
 /** Само познати права влизат в базата — печатна грешка иначе е тих отказ. */
 export function ambitiValidi(ambiti: string[]): boolean {
-  return ambiti.length > 0 && ambiti.every((a) => (AMBITI as readonly string[]).includes(a));
+  return (
+    ambiti.length > 0 &&
+    ambiti.every((a) => (AMBITI as readonly string[]).includes(a))
+  );
 }

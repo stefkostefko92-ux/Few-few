@@ -26,25 +26,29 @@ before(async () => {
 });
 
 async function creaContratto(extra: Record<string, unknown> = {}) {
-  return master.post<{ id: string; numero: string; stato: string }>("/api/contratti", {
-    oggetto: unico("Manutenzione"),
-    canone: "250.00",
-    dataInizio: fraGiorni(-400),
-    dataFine: fraGiorni(-10),
-    periodicitaVisite: "SEMESTRALE",
-    periodicitaFatturazione: "TRIMESTRALE",
-    impiantiIds: [impiantoId],
-    ...extra,
-  });
+  return master.post<{ id: string; numero: string; stato: string }>(
+    "/api/contratti",
+    {
+      oggetto: unico("Manutenzione"),
+      canone: "250.00",
+      dataInizio: fraGiorni(-400),
+      dataFine: fraGiorni(-10),
+      periodicitaVisite: "SEMESTRALE",
+      periodicitaFatturazione: "TRIMESTRALE",
+      impiantiIds: [impiantoId],
+      ...extra,
+    },
+  );
 }
 
 describe("договори за поддръжка", () => {
   test("създаването зарежда и двата графика", async () => {
     const c = await creaContratto();
     assert.equal(c.status, 201, JSON.stringify(c.dati));
-    const d = await master.get<{ prossimaVisita: string; prossimaFattura: string }>(
-      `/api/contratti/${c.dati.id}`
-    );
+    const d = await master.get<{
+      prossimaVisita: string;
+      prossimaFattura: string;
+    }>(`/api/contratti/${c.dati.id}`);
     // Без заредени дати автоматизмът няма от какво да тръгне и договорът
     // стои „активен", без нищо да се случва.
     assert.ok(d.dati.prossimaVisita, "prossimaVisita не е заредена");
@@ -52,7 +56,10 @@ describe("договори за поддръжка", () => {
   });
 
   test("край преди началото се отказва", async () => {
-    const c = await creaContratto({ dataInizio: fraGiorni(10), dataFine: fraGiorni(5) });
+    const c = await creaContratto({
+      dataInizio: fraGiorni(10),
+      dataFine: fraGiorni(5),
+    });
     assert.equal(c.status, 400);
   });
 
@@ -68,30 +75,60 @@ describe("договори за поддръжка", () => {
 
   test("активният договор не се променя, спреният — да", async () => {
     const c = await creaContratto();
-    assert.equal((await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" })).status, 200);
+    assert.equal(
+      (
+        await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+          stato: "ATTIVO",
+        })
+      ).status,
+      200,
+    );
 
-    const mod = await master.put(`/api/contratti/${c.dati.id}`, { canone: "999.00" });
+    const mod = await master.put(`/api/contratti/${c.dati.id}`, {
+      canone: "999.00",
+    });
     assert.equal(mod.status, 409, "активният договор прие промяна на canone");
 
-    assert.equal((await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "SOSPESO" })).status, 200);
-    const mod2 = await master.put(`/api/contratti/${c.dati.id}`, { canone: "999.00" });
+    assert.equal(
+      (
+        await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+          stato: "SOSPESO",
+        })
+      ).status,
+      200,
+    );
+    const mod2 = await master.put(`/api/contratti/${c.dati.id}`, {
+      canone: "999.00",
+    });
     assert.equal(mod2.status, 200);
   });
 
   test("прекратеният е финален", async () => {
     const c = await creaContratto();
-    assert.equal((await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "DISDETTO" })).status, 200);
-    const r = await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" });
+    assert.equal(
+      (
+        await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+          stato: "DISDETTO",
+        })
+      ).status,
+      200,
+    );
+    const r = await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+      stato: "ATTIVO",
+    });
     assert.equal(r.status, 409);
   });
 
   test("автоматизмът ражда ордин и фактура за изтеклите периоди", async () => {
     const c = await creaContratto();
-    await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" });
+    await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+      stato: "ATTIVO",
+    });
 
-    const esito = await master.post<{ ordiniCreati: number; fattureCreate: number }>(
-      "/api/contratti/elabora"
-    );
+    const esito = await master.post<{
+      ordiniCreati: number;
+      fattureCreate: number;
+    }>("/api/contratti/elabora");
     assert.equal(esito.status, 200, JSON.stringify(esito.dati));
 
     const d = await master.get<{
@@ -109,15 +146,17 @@ describe("договори за поддръжка", () => {
 
   test("повторното пускане НЕ дублира документите", async () => {
     const c = await creaContratto();
-    await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" });
+    await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+      stato: "ATTIVO",
+    });
     await master.post("/api/contratti/elabora");
 
     const primo = await master.get<{ ordini: unknown[]; fatture: unknown[] }>(
-      `/api/contratti/${c.dati.id}`
+      `/api/contratti/${c.dati.id}`,
     );
     await master.post("/api/contratti/elabora");
     const secondo = await master.get<{ ordini: unknown[]; fatture: unknown[] }>(
-      `/api/contratti/${c.dati.id}`
+      `/api/contratti/${c.dati.id}`,
     );
 
     assert.equal(secondo.dati.ordini.length, primo.dati.ordini.length);
@@ -126,7 +165,9 @@ describe("договори за поддръжка", () => {
 
   test("договор с документи не се трие — прекратява се", async () => {
     const c = await creaContratto();
-    await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" });
+    await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+      stato: "ATTIVO",
+    });
     await master.post("/api/contratti/elabora");
     const canc = await master.del(`/api/contratti/${c.dati.id}`);
     assert.equal(canc.status, 409);
@@ -134,24 +175,32 @@ describe("договори за поддръжка", () => {
 
   test("без автоматично подновяване изтеклият договор минава в SCADUTO", async () => {
     const c = await creaContratto({ rinnovoAutomatico: false });
-    await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" });
+    await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+      stato: "ATTIVO",
+    });
     await master.post("/api/contratti/elabora");
-    const d = await master.get<{ stato: string }>(`/api/contratti/${c.dati.id}`);
+    const d = await master.get<{ stato: string }>(
+      `/api/contratti/${c.dati.id}`,
+    );
     assert.equal(d.dati.stato, "SCADUTO");
   });
 
   test("с автоматично подновяване срокът се мести напред", async () => {
     const c = await creaContratto({ rinnovoAutomatico: true });
-    await master.patch(`/api/contratti/${c.dati.id}/stato`, { stato: "ATTIVO" });
-    const prima = await master.get<{ dataFine: string }>(`/api/contratti/${c.dati.id}`);
+    await master.patch(`/api/contratti/${c.dati.id}/stato`, {
+      stato: "ATTIVO",
+    });
+    const prima = await master.get<{ dataFine: string }>(
+      `/api/contratti/${c.dati.id}`,
+    );
     await master.post("/api/contratti/elabora");
     const dopo = await master.get<{ dataFine: string; stato: string }>(
-      `/api/contratti/${c.dati.id}`
+      `/api/contratti/${c.dati.id}`,
     );
     assert.equal(dopo.dati.stato, "ATTIVO");
     assert.ok(
       new Date(dopo.dati.dataFine) > new Date(prima.dati.dataFine),
-      "срокът не е преместен напред"
+      "срокът не е преместен напред",
     );
   });
 });

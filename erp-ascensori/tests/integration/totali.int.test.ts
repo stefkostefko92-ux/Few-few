@@ -22,7 +22,9 @@ interface Doc {
 }
 
 async function nuovoPreventivo(): Promise<string> {
-  const { status, dati } = await master.post<Doc>("/api/preventivi", { oggetto: unico("Prev") });
+  const { status, dati } = await master.post<Doc>("/api/preventivi", {
+    oggetto: unico("Prev"),
+  });
   assert.equal(status, 201);
   return dati.id;
 }
@@ -54,21 +56,31 @@ describe("преизчисляване на тоталите", () => {
 
   test("промяна на количеството преизчислява (без остатъчен кеш)", async () => {
     const id = await nuovoPreventivo();
-    const creata = await master.post<{ id: string }>(`/api/preventivi/${id}/voci`, {
-      descrizione: "Manodopera",
-      quantita: "10.00",
-      prezzoUnitario: "48.00",
-      aliquotaIva: "22.00",
-    });
+    const creata = await master.post<{ id: string }>(
+      `/api/preventivi/${id}/voci`,
+      {
+        descrizione: "Manodopera",
+        quantita: "10.00",
+        prezzoUnitario: "48.00",
+        aliquotaIva: "22.00",
+      },
+    );
     let d = await leggi(id);
     assert.equal(d.dati.totaleNetto, "480");
 
-    const agg = await master.put(`/api/preventivi/${id}/voci/${creata.dati.id}`, {
-      quantita: "12.00",
-    });
+    const agg = await master.put(
+      `/api/preventivi/${id}/voci/${creata.dati.id}`,
+      {
+        quantita: "12.00",
+      },
+    );
     assert.equal(agg.status, 200);
     d = await leggi(id);
-    assert.equal(d.dati.totaleNetto, "576", "тоталът трябва да следва новото количество");
+    assert.equal(
+      d.dati.totaleNetto,
+      "576",
+      "тоталът трябва да следва новото количество",
+    );
   });
 
   test("изтриването на редица намалява тотала точно", async () => {
@@ -128,7 +140,11 @@ describe("преизчисляване на тоталите", () => {
       totaleLordo: "999999.00",
     });
     const d = await leggi(id);
-    assert.equal(d.dati.totaleNetto, "10", "сървърът остойностява, не клиентът");
+    assert.equal(
+      d.dati.totaleNetto,
+      "10",
+      "сървърът остойностява, не клиентът",
+    );
   });
 });
 
@@ -136,11 +152,19 @@ describe("фискална защита на редовете", () => {
   test("одобрена оферта не приема нови редове", async () => {
     const id = await nuovoPreventivo();
     // легалният път е BOZZA → INVIATO → APPROVATO (прескачането се отказва)
-    const salto = await master.patch(`/api/preventivi/${id}/stato`, { stato: "APPROVATO" });
-    assert.equal(salto.status, 409, "не се прескача направо от чернова в одобрена");
+    const salto = await master.patch(`/api/preventivi/${id}/stato`, {
+      stato: "APPROVATO",
+    });
+    assert.equal(
+      salto.status,
+      409,
+      "не се прескача направо от чернова в одобрена",
+    );
 
     await master.patch(`/api/preventivi/${id}/stato`, { stato: "INVIATO" });
-    const approvato = await master.patch(`/api/preventivi/${id}/stato`, { stato: "APPROVATO" });
+    const approvato = await master.patch(`/api/preventivi/${id}/stato`, {
+      stato: "APPROVATO",
+    });
     assert.equal(approvato.status, 200);
 
     const { status } = await master.post(`/api/preventivi/${id}/voci`, {
@@ -153,7 +177,9 @@ describe("фискална защита на редовете", () => {
   });
 
   test("издадена фактура не приема промени по редовете и не се трие", async () => {
-    const f = await master.post<{ id: string }>("/api/fatture", { tipo: "EMESSA" });
+    const f = await master.post<{ id: string }>("/api/fatture", {
+      tipo: "EMESSA",
+    });
     const id = f.dati.id;
     const voce = await master.post<{ id: string }>(`/api/fatture/${id}/voci`, {
       descrizione: "Acconto",
@@ -173,17 +199,26 @@ describe("фискална защита на редовете", () => {
     });
     assert.equal(nuova.status, 409);
 
-    const modifica = await master.put(`/api/fatture/${id}/voci/${voce.dati.id}`, {
-      prezzoUnitario: "1.00",
-    });
+    const modifica = await master.put(
+      `/api/fatture/${id}/voci/${voce.dati.id}`,
+      {
+        prezzoUnitario: "1.00",
+      },
+    );
     assert.equal(modifica.status, 409);
 
     const cancella = await master.del(`/api/fatture/${id}`);
-    assert.equal(cancella.status, 409, "издадена фактура се сторнира, не се трие");
+    assert.equal(
+      cancella.status,
+      409,
+      "издадена фактура се сторнира, не се трие",
+    );
   });
 
   test("OPERATORE не може да пипа редовете на фактура (икономически данни)", async () => {
-    const f = await master.post<{ id: string }>("/api/fatture", { tipo: "EMESSA" });
+    const f = await master.post<{ id: string }>("/api/fatture", {
+      tipo: "EMESSA",
+    });
     const { status } = await operatore.post(`/api/fatture/${f.dati.id}/voci`, {
       descrizione: "опит",
       quantita: "1",

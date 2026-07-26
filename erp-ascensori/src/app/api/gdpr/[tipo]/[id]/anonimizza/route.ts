@@ -8,7 +8,11 @@ import { z } from "zod";
 import { gestito, ok, errore, corpoValidato } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { anonimizza } from "@/lib/gdpr/dati";
-import { pianoAnonimizzazione, TIPI_SOGGETTO, type TipoSoggetto } from "@/lib/gdpr/piano";
+import {
+  pianoAnonimizzazione,
+  TIPI_SOGGETTO,
+  type TipoSoggetto,
+} from "@/lib/gdpr/piano";
 
 function tipoValido(tipo: string): TipoSoggetto {
   if (!(TIPI_SOGGETTO as readonly string[]).includes(tipo))
@@ -36,10 +40,16 @@ export const POST = gestito(async (req, ctx) => {
   const t = tipoValido(tipo);
   await corpoValidato(req, schema);
 
-  const esito = await anonimizza(t, id, s.tenantId ?? null, s.ruolo === "MASTER", {
-    sub: s.sub,
-    tenantId: s.tenantId ?? null,
-  });
+  const esito = await anonimizza(
+    t,
+    id,
+    s.tenantId ?? null,
+    s.ruolo === "MASTER",
+    {
+      sub: s.sub,
+      tenantId: s.tenantId ?? null,
+    },
+  );
   if (!esito) return errore(404, "Soggetto non trovato");
   // Остатъчно поле значи, че някой е добавил лични данни без да обнови плана —
   // а ние вече сме казали на лицето „заличено". Това не бива да мине тихо.

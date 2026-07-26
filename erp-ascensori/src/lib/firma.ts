@@ -28,9 +28,14 @@ export function validaFirma(dataUrl: string): EsitoFirma {
     return { valida: false, errore: "Formato della firma non valido" };
 
   const byte = Math.floor((base64.length * 3) / 4);
-  if (byte > MAX_BYTE_FIRMA) return { valida: false, errore: "Firma troppo grande" };
+  if (byte > MAX_BYTE_FIRMA)
+    return { valida: false, errore: "Firma troppo grande" };
   // Празното платно дава няколкостотин байта; изискваме нещо реално нарисувано.
-  if (byte < 200) return { valida: false, errore: "Firma assente: firmare nello spazio indicato" };
+  if (byte < 200)
+    return {
+      valida: false,
+      errore: "Firma assente: firmare nello spazio indicato",
+    };
 
   // Проверка на самия PNG подпис (\x89PNG\r\n\x1a\n) — разширението и типът в
   // data URL-а са само твърдение на клиента.
@@ -43,6 +48,8 @@ export function validaFirma(dataUrl: string): EsitoFirma {
 }
 
 /** Подписаният отчет не се променя — това е смисълът на подписа. */
-export function rapportinoModificabile(firmatoAt: Date | null | undefined): boolean {
+export function rapportinoModificabile(
+  firmatoAt: Date | null | undefined,
+): boolean {
   return !firmatoAt;
 }

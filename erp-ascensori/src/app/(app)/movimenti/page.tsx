@@ -35,7 +35,12 @@ export default function Pagina() {
   const [page, setPage] = useState(1);
   const [aperto, setAperto] = useState(false);
   const [articoli, setArticoli] = useState<Articolo[]>([]);
-  const [form, setForm] = useState({ articoloId: "", tipo: "ENTRATA", quantita: "", nota: "" });
+  const [form, setForm] = useState({
+    articoloId: "",
+    tipo: "ENTRATA",
+    quantita: "",
+    nota: "",
+  });
   const [errore, setErrore] = useState<string | null>(null);
   const size = 50;
 
@@ -88,7 +93,10 @@ export default function Pagina() {
             La giacenza non si modifica mai a mano: si registra un movimento
           </p>
         </div>
-        <button className="btn-primary inline-flex items-center gap-1.5" onClick={() => setAperto(true)}>
+        <button
+          className="btn-primary inline-flex items-center gap-1.5"
+          onClick={() => setAperto(true)}
+        >
           <IcoNuovo />
           Nuovo movimento
         </button>
@@ -110,10 +118,16 @@ export default function Pagina() {
             </thead>
             <tbody>
               {righe.map((m) => (
-                <tr key={m.id} className="border-b border-border last:border-0 hover:bg-surface-2">
-                  <td className="px-3 py-2.5 text-text-2">{dataOraIt(m.createdAt)}</td>
+                <tr
+                  key={m.id}
+                  className="border-b border-border last:border-0 hover:bg-surface-2"
+                >
+                  <td className="px-3 py-2.5 text-text-2">
+                    {dataOraIt(m.createdAt)}
+                  </td>
                   <td className="px-3 py-2.5">
-                    <span className="font-mono">{m.articolo.codice}</span> · {m.articolo.nome}
+                    <span className="font-mono">{m.articolo.codice}</span> ·{" "}
+                    {m.articolo.nome}
                   </td>
                   <td className="px-3 py-2.5">
                     <span
@@ -123,7 +137,11 @@ export default function Pagina() {
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-right font-mono">
-                    {m.tipo === "USCITA" ? "−" : m.tipo === "ENTRATA" ? "+" : "±"}
+                    {m.tipo === "USCITA"
+                      ? "−"
+                      : m.tipo === "ENTRATA"
+                        ? "+"
+                        : "±"}
                     {m.quantita}
                   </td>
                   <td className="px-3 py-2.5 text-text-2">{m.nota ?? "—"}</td>
@@ -132,10 +150,19 @@ export default function Pagina() {
             </tbody>
           </table>
         )}
-        <Paginazione page={page} size={size} totale={totale} onPagina={setPage} />
+        <Paginazione
+          page={page}
+          size={size}
+          totale={totale}
+          onPagina={setPage}
+        />
       </div>
 
-      <Modale titolo="Nuovo movimento" aperto={aperto} onChiudi={() => setAperto(false)}>
+      <Modale
+        titolo="Nuovo movimento"
+        aperto={aperto}
+        onChiudi={() => setAperto(false)}
+      >
         <form onSubmit={salva}>
           <label className="label">Articolo *</label>
           <select
@@ -176,12 +203,19 @@ export default function Pagina() {
             onChange={(e) => setForm({ ...form, nota: e.target.value })}
           />
           {errore && (
-            <p role="alert" className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+            <p
+              role="alert"
+              className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+            >
               {errore}
             </p>
           )}
           <div className="flex justify-end gap-2">
-            <button type="button" className="btn-secondary" onClick={() => setAperto(false)}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setAperto(false)}
+            >
               Annulla
             </button>
             <button type="submit" className="btn-primary">

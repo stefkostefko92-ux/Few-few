@@ -9,7 +9,8 @@ const config: EntityConfig = {
   titolo: "Aziende (multi-tenant)",
   singolare: "azienda",
   genere: "f",
-  descrizione: "Aziende clienti con piano di licenza: oltre la scadenza l'accesso è rifiutato (402)",
+  descrizione:
+    "Aziende clienti con piano di licenza: oltre la scadenza l'accesso è rifiutato (402)",
   api: "/api/tenants",
   cerca: "Cerca per slug, ragione sociale…",
   colonne: [
@@ -22,12 +23,31 @@ const config: EntityConfig = {
       label: "Scadenza abbonamento",
       render: (r) => dataIt(r.scadenzaAbbonamento as string | null),
     },
-    { chiave: "attivo", label: "Attiva", render: (r) => (r.attivo ? "Sì" : "No") },
+    {
+      chiave: "attivo",
+      label: "Attiva",
+      render: (r) => (r.attivo ? "Sì" : "No"),
+    },
   ],
   campi: [
-    { name: "slug", label: "Slug (sottodominio)", tipo: "text", richiesto: true },
-    { name: "ragioneSociale", label: "Ragione sociale", tipo: "text", richiesto: true },
-    { name: "email", label: "Email amministrativa", tipo: "email", richiesto: true },
+    {
+      name: "slug",
+      label: "Slug (sottodominio)",
+      tipo: "text",
+      richiesto: true,
+    },
+    {
+      name: "ragioneSociale",
+      label: "Ragione sociale",
+      tipo: "text",
+      richiesto: true,
+    },
+    {
+      name: "email",
+      label: "Email amministrativa",
+      tipo: "email",
+      richiesto: true,
+    },
     {
       name: "piano",
       label: "Piano",
@@ -38,7 +58,11 @@ const config: EntityConfig = {
         label: v,
       })),
     },
-    { name: "scadenzaAbbonamento", label: "Scadenza abbonamento", tipo: "date" },
+    {
+      name: "scadenzaAbbonamento",
+      label: "Scadenza abbonamento",
+      tipo: "date",
+    },
     { name: "attivo", label: "Accesso attivo", tipo: "checkbox" },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],

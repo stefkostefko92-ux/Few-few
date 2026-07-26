@@ -11,23 +11,40 @@ import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { contrattoBase, conPeriodoValido } from "@/lib/entities";
-import { contrattoModificabile, contrattoEliminabile } from "@/lib/regole-contratti";
+import {
+  contrattoModificabile,
+  contrattoEliminabile,
+} from "@/lib/regole-contratti";
 
 const include = {
   amministratore: true,
   condominio: true,
   impianti: {
     include: {
-      impianto: { select: { id: true, matricola: true, marca: true, indirizzo: true } },
+      impianto: {
+        select: { id: true, matricola: true, marca: true, indirizzo: true },
+      },
     },
   },
   ordini: {
-    select: { id: true, numero: true, stato: true, dataInizio: true, oggetto: true },
+    select: {
+      id: true,
+      numero: true,
+      stato: true,
+      dataInizio: true,
+      oggetto: true,
+    },
     orderBy: { dataInizio: "desc" as const },
     take: 20,
   },
   fatture: {
-    select: { id: true, numero: true, stato: true, data: true, totaleLordo: true },
+    select: {
+      id: true,
+      numero: true,
+      stato: true,
+      data: true,
+      totaleLordo: true,
+    },
     orderBy: { data: "desc" as const },
     take: 20,
   },
@@ -36,7 +53,10 @@ const include = {
 export const GET = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("OPERATORE");
   const { id } = await ctx.params;
-  const r = await prisma.contratto.findFirst({ where: { id, ...filtroTenant(s) }, include });
+  const r = await prisma.contratto.findFirst({
+    where: { id, ...filtroTenant(s) },
+    include,
+  });
   if (!r) throw new ErroreHttp(404, "Contratto non trovato");
   return ok(r);
 });
@@ -44,9 +64,14 @@ export const GET = gestito(async (_req, ctx) => {
 export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("RESPONSABILE");
   const { id } = await ctx.params;
-  const { impiantiIds, ...data } = await corpoValidato(req, conPeriodoValido(contrattoBase.partial()));
+  const { impiantiIds, ...data } = await corpoValidato(
+    req,
+    conPeriodoValido(contrattoBase.partial()),
+  );
 
-  const prima = await prisma.contratto.findFirst({ where: { id, ...filtroTenant(s) } });
+  const prima = await prisma.contratto.findFirst({
+    where: { id, ...filtroTenant(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Contratto non trovato");
   if (!contrattoModificabile(prima.stato))
     throw new ErroreHttp(
@@ -61,7 +86,10 @@ export const PUT = gestito(async (req, ctx) => {
       await tx.contrattoImpianto.deleteMany({ where: { contrattoId: id } });
       if (impiantiIds.length)
         await tx.contrattoImpianto.createMany({
-          data: impiantiIds.map((impiantoId: string) => ({ contrattoId: id, impiantoId })),
+          data: impiantiIds.map((impiantoId: string) => ({
+            contrattoId: id,
+            impiantoId,
+          })),
         });
     }
     return tx.contratto.update({ where: { id }, data, include });

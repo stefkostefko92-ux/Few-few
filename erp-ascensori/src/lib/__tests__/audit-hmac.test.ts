@@ -1,7 +1,13 @@
 // HMAC подпис на audit редовете: детерминизъм + откриване на манипулация.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { firmaAudit, verificaAudit, type RigaAudit, verificaConRotazione, VERSIONE_CORRENTE } from "../audit-hmac";
+import {
+  firmaAudit,
+  verificaAudit,
+  type RigaAudit,
+  verificaConRotazione,
+  VERSIONE_CORRENTE,
+} from "../audit-hmac";
 
 const CHIAVE = "test-chiave-hmac-abbastanza-lunga-32+";
 const riga: RigaAudit = {
@@ -162,7 +168,10 @@ test("ротацията приема стария ключ при ПРОВЕР�
   assert.equal(esito.conChiavePrecedente, true);
 
   // Без конфигуриран стар ключ — пак невалиден (не се приема мълчаливо).
-  assert.equal(verificaConRotazione(r, firmatoConVecchia, { corrente: CHIAVE }).valida, false);
+  assert.equal(
+    verificaConRotazione(r, firmatoConVecchia, { corrente: CHIAVE }).valida,
+    false,
+  );
 });
 
 test("текущата версия на канона е 3", () => {

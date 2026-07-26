@@ -5,7 +5,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, Modale, ScheletroDettaglio } from "@/components/ui";
-import { IcoFatto, IcoIndietro, IcoNuovoPiccolo, IcoVerso, IcoQr } from "@/components/icone";
+import {
+  IcoFatto,
+  IcoIndietro,
+  IcoNuovoPiccolo,
+  IcoVerso,
+  IcoQr,
+} from "@/components/icone";
 import { dataIt } from "@/lib/format";
 
 interface Impianto {
@@ -94,7 +100,10 @@ export default function Pagina() {
 
   return (
     <div>
-      <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/impianti")}>
+      <button
+        className="btn-ghost mb-4 h-8 px-2 text-xs"
+        onClick={() => router.push("/impianti")}
+      >
         <IcoIndietro />
         Impianti
       </button>
@@ -108,8 +117,8 @@ export default function Pagina() {
             {imp.anno ? ` · ${imp.anno}` : ""}
           </p>
           <p className="mt-1 text-xs text-text-3">
-            {imp.indirizzo ?? "—"} · {imp.condominio?.nome ?? "—"} · amministratore:{" "}
-            {amministratore}
+            {imp.indirizzo ?? "—"} · {imp.condominio?.nome ?? "—"} ·
+            amministratore: {amministratore}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -129,28 +138,51 @@ export default function Pagina() {
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="card p-5">
-          <h2 className="mb-3 text-lg font-semibold text-text-1">Dati tecnici</h2>
+          <h2 className="mb-3 text-lg font-semibold text-text-1">
+            Dati tecnici
+          </h2>
           <dl className="space-y-2 text-sm">
-            <Riga label="Portata" valore={imp.portata ? `${imp.portata} kg` : "—"} />
+            <Riga
+              label="Portata"
+              valore={imp.portata ? `${imp.portata} kg` : "—"}
+            />
             <Riga label="Fermate" valore={imp.fermate ?? "—"} />
             <Riga label="Locale macchine" valore={imp.piano ?? "—"} />
-            <Riga label="Installazione" valore={dataIt(imp.dataInstallazione)} />
-            <Riga label="Ultima revisione" valore={dataIt(imp.ultimaRevisione)} />
-            <Riga label="Prossima revisione" valore={dataIt(imp.prossimaRevisione)} />
+            <Riga
+              label="Installazione"
+              valore={dataIt(imp.dataInstallazione)}
+            />
+            <Riga
+              label="Ultima revisione"
+              valore={dataIt(imp.ultimaRevisione)}
+            />
+            <Riga
+              label="Prossima revisione"
+              valore={dataIt(imp.prossimaRevisione)}
+            />
           </dl>
-          {imp.note && <p className="mt-3 whitespace-pre-wrap text-sm text-text-2">{imp.note}</p>}
+          {imp.note && (
+            <p className="mt-3 whitespace-pre-wrap text-sm text-text-2">
+              {imp.note}
+            </p>
+          )}
         </div>
 
         <div className="card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-text-1">Scadenze di legge</h2>
+            <h2 className="text-lg font-semibold text-text-1">
+              Scadenze di legge
+            </h2>
           </div>
           {imp.scadenze.length === 0 ? (
             <p className="text-sm text-text-3">Nessuna scadenza registrata.</p>
           ) : (
             <ul className="space-y-2 text-sm">
               {imp.scadenze.map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-2">
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-2"
+                >
                   <span>
                     {s.tipo} · {dataIt(s.dataScadenza)}
                   </span>
@@ -168,7 +200,10 @@ export default function Pagina() {
                               ? s.notificato60
                               : s.notificato30;
                         return (
-                          <span key={giorni} className="inline-flex items-center gap-0.5">
+                          <span
+                            key={giorni}
+                            className="inline-flex items-center gap-0.5"
+                          >
                             {giorni}
                             {inviato && (
                               <>
@@ -194,7 +229,9 @@ export default function Pagina() {
 
         <div className="card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-text-1">Tecnici assegnati</h2>
+            <h2 className="text-lg font-semibold text-text-1">
+              Tecnici assegnati
+            </h2>
             <button
               className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
               onClick={() => setModaleAssegna(true)}
@@ -208,7 +245,10 @@ export default function Pagina() {
           ) : (
             <ul className="space-y-2 text-sm">
               {imp.assegnazioni.map((a) => (
-                <li key={a.id} className="flex items-center justify-between gap-2">
+                <li
+                  key={a.id}
+                  className="flex items-center justify-between gap-2"
+                >
                   <span>
                     {a.dipendente.cognome} {a.dipendente.nome}
                   </span>
@@ -365,7 +405,9 @@ function FormAssegnazione({
   onChiudi: () => void;
   onSalvato: () => void;
 }) {
-  const [dipendenti, setDipendenti] = useState<{ id: string; nome: string; cognome: string }[]>([]);
+  const [dipendenti, setDipendenti] = useState<
+    { id: string; nome: string; cognome: string }[]
+  >([]);
   const [dipendenteId, setDipendenteId] = useState("");
   const [errore, setErrore] = useState<string | null>(null);
 

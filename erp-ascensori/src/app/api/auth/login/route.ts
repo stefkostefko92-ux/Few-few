@@ -122,7 +122,9 @@ export const POST = gestito(async (req) => {
       return errore(428, "Codice di verifica richiesto");
 
     const okTotp = verificaTotp(utente.totpSegreto, codice);
-    const okRecupero = okTotp ? false : await consumaCodiceRecupero(utente.id, codice);
+    const okRecupero = okTotp
+      ? false
+      : await consumaCodiceRecupero(utente.id, codice);
     if (!okTotp && !okRecupero) {
       // Грешният втори фактор брои към същата блокада като грешната парола —
       // иначе кодът се отгатва неограничено, щом паролата е известна.

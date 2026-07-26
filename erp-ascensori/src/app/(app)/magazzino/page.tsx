@@ -11,13 +11,18 @@ const config: EntityConfig = {
   titolo: "Articoli di magazzino",
   singolare: "articolo",
   genere: "m",
-  descrizione: "Componenti tecnici e articoli in vendita: la giacenza si muove solo con i movimenti",
+  descrizione:
+    "Componenti tecnici e articoli in vendita: la giacenza si muove solo con i movimenti",
   api: "/api/articoli",
   cerca: "Cerca per codice, nome, barcode…",
   colonne: [
     { chiave: "codice", label: "Codice", className: "font-mono font-medium" },
     { chiave: "nome", label: "Nome" },
-    { chiave: "tipo", label: "Tipo", render: (r) => etichetta(TIPO_MAGAZZINO, String(r.tipo)) },
+    {
+      chiave: "tipo",
+      label: "Tipo",
+      render: (r) => etichetta(TIPO_MAGAZZINO, String(r.tipo)),
+    },
     { chiave: "categoria", label: "Categoria" },
     {
       chiave: "quantita",
@@ -30,7 +35,9 @@ const config: EntityConfig = {
           // разваля дясното подравняване и цифрите престават да се четат в колона.
           // Текстът за екранни четци е задължителен — цвят + глиф не са сигнал.
           <span className="inline-flex items-center justify-end gap-1">
-            <span className="flex w-3.5 justify-center">{sotto && <IcoAttenzione />}</span>
+            <span className="flex w-3.5 justify-center">
+              {sotto && <IcoAttenzione />}
+            </span>
             <span className={sotto ? "font-semibold text-danger-text" : ""}>
               {String(r.quantita)}
             </span>
@@ -39,7 +46,11 @@ const config: EntityConfig = {
         );
       },
     },
-    { chiave: "sogliaMinima", label: "Soglia", className: "text-right font-mono" },
+    {
+      chiave: "sogliaMinima",
+      label: "Soglia",
+      className: "text-right font-mono",
+    },
     {
       chiave: "prezzoVendita",
       label: "Prezzo",
@@ -66,8 +77,18 @@ const config: EntityConfig = {
     { name: "sogliaMinima", label: "Soglia minima (riordino)", tipo: "number" },
     { name: "prezzoAcquisto", label: "Prezzo acquisto (€)", tipo: "decimal" },
     { name: "prezzoVendita", label: "Prezzo vendita (€)", tipo: "decimal" },
-    { name: "aliquotaIva", label: "Aliquota IVA (%)", tipo: "decimal", predefinito: "22" },
-    { name: "descrizione", label: "Descrizione tecnica", tipo: "textarea", colSpan2: true },
+    {
+      name: "aliquotaIva",
+      label: "Aliquota IVA (%)",
+      tipo: "decimal",
+      predefinito: "22",
+    },
+    {
+      name: "descrizione",
+      label: "Descrizione tecnica",
+      tipo: "textarea",
+      colSpan2: true,
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

@@ -8,7 +8,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Modale, Vuoto } from "@/components/ui";
-import { IcoNuovoPiccolo, IcoStampa, IcoIntegro, IcoAttenzione } from "@/components/icone";
+import {
+  IcoNuovoPiccolo,
+  IcoStampa,
+  IcoIntegro,
+  IcoAttenzione,
+} from "@/components/icone";
 import Firma from "@/components/Firma";
 import { apiFetch } from "@/lib/fetch-client";
 import { dataOraIt } from "@/lib/format";
@@ -33,7 +38,12 @@ const ESITI = [
   { value: "NON_RISOLVIBILE", label: "Non risolvibile" },
 ];
 
-const vuoto = { descrizione: "", oreLavoro: "1", esito: "RISOLTO", materiali: "" };
+const vuoto = {
+  descrizione: "",
+  oreLavoro: "1",
+  esito: "RISOLTO",
+  materiali: "",
+};
 
 export default function Rapportini({ ordineId }: { ordineId: string }) {
   const [righe, setRighe] = useState<Rapportino[]>([]);
@@ -68,7 +78,10 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
     try {
       const { ok, dati } = await apiFetch<{ error?: string }>(
         `/api/ordini/${ordineId}/rapportini`,
-        { method: "POST", body: JSON.stringify({ ...form, materiali: form.materiali || null }) },
+        {
+          method: "POST",
+          body: JSON.stringify({ ...form, materiali: form.materiali || null }),
+        },
       );
       if (!ok) {
         setErrore(dati.error ?? "Errore di salvataggio");
@@ -85,7 +98,9 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
   return (
     <div className="card p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-1">Rapportini di intervento</h2>
+        <h2 className="text-lg font-semibold text-text-1">
+          Rapportini di intervento
+        </h2>
         <button
           className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
           onClick={() => setModale("crea")}
@@ -109,11 +124,15 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
             <li key={r.id} className="rounded-md border border-border p-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <span className="font-mono text-sm font-medium">{r.numero}</span>
+                  <span className="font-mono text-sm font-medium">
+                    {r.numero}
+                  </span>
                   <span className="ml-2 text-xs text-text-3">
                     {dataOraIt(r.dataOra)} · {r.oreLavoro} h ·{" "}
                     {ESITI.find((e) => e.value === r.esito)?.label ?? r.esito}
-                    {r.tecnico ? ` · ${r.tecnico.nome} ${r.tecnico.cognome}` : ""}
+                    {r.tecnico
+                      ? ` · ${r.tecnico.nome} ${r.tecnico.cognome}`
+                      : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -147,7 +166,9 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
                   </a>
                 </div>
               </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-text-2">{r.descrizione}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-text-2">
+                {r.descrizione}
+              </p>
               {r.materiali && (
                 <p className="mt-1 whitespace-pre-wrap text-xs text-text-3">
                   Materiali: {r.materiali}
@@ -158,19 +179,27 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
         </ul>
       )}
 
-      <Modale titolo="Nuovo rapportino" aperto={modale === "crea"} onChiudi={() => setModale(null)} largo>
+      <Modale
+        titolo="Nuovo rapportino"
+        aperto={modale === "crea"}
+        onChiudi={() => setModale(null)}
+        largo
+      >
         <form onSubmit={crea}>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="label" htmlFor="r-descrizione">
-                Descrizione dell&apos;intervento <span className="text-danger-text">*</span>
+                Descrizione dell&apos;intervento{" "}
+                <span className="text-danger-text">*</span>
               </label>
               <textarea
                 id="r-descrizione"
                 className="input min-h-24 py-2"
                 required
                 value={form.descrizione}
-                onChange={(e) => setForm({ ...form, descrizione: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, descrizione: e.target.value })
+                }
               />
             </div>
             <div>
@@ -182,7 +211,9 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
                 className="input font-mono"
                 inputMode="decimal"
                 value={form.oreLavoro}
-                onChange={(e) => setForm({ ...form, oreLavoro: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, oreLavoro: e.target.value })
+                }
               />
             </div>
             <div>
@@ -210,21 +241,30 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
                 id="r-materiali"
                 className="input min-h-20 py-2"
                 value={form.materiali}
-                onChange={(e) => setForm({ ...form, materiali: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, materiali: e.target.value })
+                }
               />
               <p className="mt-1 text-xs text-text-3">
-                La giacenza si muove solo con i movimenti di magazzino: qui si annota cosa è
-                stato impiegato sul posto.
+                La giacenza si muove solo con i movimenti di magazzino: qui si
+                annota cosa è stato impiegato sul posto.
               </p>
             </div>
           </div>
           {errore && (
-            <p role="alert" className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+            <p
+              role="alert"
+              className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+            >
               {errore}
             </p>
           )}
           <div className="mt-6 flex justify-end gap-2">
-            <button type="button" className="btn-secondary" onClick={() => setModale(null)}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setModale(null)}
+            >
               Annulla
             </button>
             <button type="submit" className="btn-primary" disabled={inCorso}>
@@ -295,7 +335,12 @@ function FirmaModale({
   }
 
   return (
-    <Modale titolo={`Firma del rapportino ${rapportino.numero}`} aperto onChiudi={onChiudi} largo>
+    <Modale
+      titolo={`Firma del rapportino ${rapportino.numero}`}
+      aperto
+      onChiudi={onChiudi}
+      largo
+    >
       <form onSubmit={invia}>
         <p className="mb-4 rounded-md bg-surface-2 px-3 py-2 text-sm text-text-2">
           {rapportino.descrizione}
@@ -303,7 +348,8 @@ function FirmaModale({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="f-nome">
-              Nome e cognome di chi firma <span className="text-danger-text">*</span>
+              Nome e cognome di chi firma{" "}
+              <span className="text-danger-text">*</span>
             </label>
             <input
               id="f-nome"
@@ -331,7 +377,10 @@ function FirmaModale({
           <Firma onCambia={setFirma} />
         </div>
         {errore && (
-          <p role="alert" className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+          <p
+            role="alert"
+            className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+          >
             {errore}
           </p>
         )}

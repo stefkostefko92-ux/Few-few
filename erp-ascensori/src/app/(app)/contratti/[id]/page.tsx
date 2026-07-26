@@ -33,14 +33,35 @@ interface Contratto {
   prossimaVisita: string | null;
   prossimaFattura: string | null;
   note: string | null;
-  amministratore: { ragioneSociale: string | null; nome: string; cognome: string | null } | null;
+  amministratore: {
+    ragioneSociale: string | null;
+    nome: string;
+    cognome: string | null;
+  } | null;
   condominio: { nome: string; citta: string } | null;
   impianti: {
     id: string;
-    impianto: { id: string; matricola: string; marca: string; indirizzo: string | null };
+    impianto: {
+      id: string;
+      matricola: string;
+      marca: string;
+      indirizzo: string | null;
+    };
   }[];
-  ordini: { id: string; numero: string; stato: string; dataInizio: string | null; oggetto: string }[];
-  fatture: { id: string; numero: string; stato: string; data: string; totaleLordo: string }[];
+  ordini: {
+    id: string;
+    numero: string;
+    stato: string;
+    dataInizio: string | null;
+    oggetto: string;
+  }[];
+  fatture: {
+    id: string;
+    numero: string;
+    stato: string;
+    data: string;
+    totaleLordo: string;
+  }[];
 }
 
 export default function Pagina() {
@@ -50,7 +71,9 @@ export default function Pagina() {
   const [errore, setErrore] = useState<string | null>(null);
 
   const carica = useCallback(async () => {
-    const { ok, dati } = await apiFetch<Contratto & { error?: string }>(`/api/contratti/${id}`);
+    const { ok, dati } = await apiFetch<Contratto & { error?: string }>(
+      `/api/contratti/${id}`,
+    );
     if (ok) setC(dati);
     else setErrore(dati.error ?? "Errore di caricamento");
   }, [id]);
@@ -60,10 +83,13 @@ export default function Pagina() {
   }, [carica]);
 
   async function transizione(stato: StatoContratto) {
-    const { ok, dati } = await apiFetch<{ error?: string }>(`/api/contratti/${id}/stato`, {
-      method: "PATCH",
-      body: JSON.stringify({ stato }),
-    });
+    const { ok, dati } = await apiFetch<{ error?: string }>(
+      `/api/contratti/${id}/stato`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ stato }),
+      },
+    );
     if (!ok) {
       alert(dati.error ?? "Errore");
       return;
@@ -98,8 +124,10 @@ export default function Pagina() {
           <p className="mt-1 text-sm text-text-2">{c.oggetto}</p>
           <p className="mt-1 inline-flex items-center gap-1 text-xs text-text-3">
             {cliente}
-            {c.condominio ? ` · ${c.condominio.nome}, ${c.condominio.citta}` : ""} ·{" "}
-            {dataIt(c.dataInizio)}
+            {c.condominio
+              ? ` · ${c.condominio.nome}, ${c.condominio.citta}`
+              : ""}{" "}
+            · {dataIt(c.dataInizio)}
             <IcoVerso />
             {dataIt(c.dataFine)}
           </p>
@@ -110,7 +138,9 @@ export default function Pagina() {
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="card p-5">
-            <h2 className="mb-3 text-lg font-semibold text-text-1">Ciclo di vita</h2>
+            <h2 className="mb-3 text-lg font-semibold text-text-1">
+              Ciclo di vita
+            </h2>
             {ammesse.length === 0 ? (
               <p className="text-sm text-text-3">
                 Stato finale: non sono previsti altri passaggi.
@@ -152,7 +182,9 @@ export default function Pagina() {
                     <span className="text-text-3">
                       {" "}
                       · {ci.impianto.marca}
-                      {ci.impianto.indirizzo ? ` · ${ci.impianto.indirizzo}` : ""}
+                      {ci.impianto.indirizzo
+                        ? ` · ${ci.impianto.indirizzo}`
+                        : ""}
                     </span>
                   </li>
                 ))}
@@ -161,7 +193,9 @@ export default function Pagina() {
           </div>
 
           <div className="card p-5">
-            <h2 className="mb-3 text-lg font-semibold text-text-1">Documenti generati</h2>
+            <h2 className="mb-3 text-lg font-semibold text-text-1">
+              Documenti generati
+            </h2>
             {c.ordini.length === 0 && c.fatture.length === 0 ? (
               <p className="text-sm text-text-3">
                 Nessun documento ancora: le visite e le fatture vengono generate
@@ -175,14 +209,19 @@ export default function Pagina() {
                   </h3>
                   <ul className="space-y-1 text-sm">
                     {c.ordini.map((o) => (
-                      <li key={o.id} className="flex items-center justify-between gap-2">
+                      <li
+                        key={o.id}
+                        className="flex items-center justify-between gap-2"
+                      >
                         <Link
                           href={`/ordini/${o.id}`}
                           className="font-mono text-accent-text hover:underline"
                         >
                           {o.numero}
                         </Link>
-                        <span className="text-xs text-text-3">{dataIt(o.dataInizio)}</span>
+                        <span className="text-xs text-text-3">
+                          {dataIt(o.dataInizio)}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -193,14 +232,19 @@ export default function Pagina() {
                   </h3>
                   <ul className="space-y-1 text-sm">
                     {c.fatture.map((f) => (
-                      <li key={f.id} className="flex items-center justify-between gap-2">
+                      <li
+                        key={f.id}
+                        className="flex items-center justify-between gap-2"
+                      >
                         <Link
                           href={`/fatture/${f.id}`}
                           className="font-mono text-accent-text hover:underline"
                         >
                           {f.numero}
                         </Link>
-                        <span className="font-mono text-xs">{euro(f.totaleLordo)}</span>
+                        <span className="font-mono text-xs">
+                          {euro(f.totaleLordo)}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -211,7 +255,9 @@ export default function Pagina() {
         </div>
 
         <div className="card p-5">
-          <h2 className="mb-3 text-lg font-semibold text-text-1">Condizioni economiche</h2>
+          <h2 className="mb-3 text-lg font-semibold text-text-1">
+            Condizioni economiche
+          </h2>
           <dl className="space-y-2 text-sm">
             <Riga label="Canone per periodo" valore={euro(c.canone)} />
             <Riga label="Aliquota IVA" valore={`${c.aliquotaIva} %`} />
@@ -219,10 +265,17 @@ export default function Pagina() {
               label="Fatturazione"
               valore={PERIODICITA_LABEL[c.periodicitaFatturazione] ?? "—"}
             />
-            <Riga label="Visite" valore={PERIODICITA_LABEL[c.periodicitaVisite] ?? "—"} />
+            <Riga
+              label="Visite"
+              valore={PERIODICITA_LABEL[c.periodicitaVisite] ?? "—"}
+            />
             <Riga
               label="Rinnovo tacito"
-              valore={c.rinnovoAutomatico ? `Sì, preavviso ${c.preavvisoMesi} mesi` : "No"}
+              valore={
+                c.rinnovoAutomatico
+                  ? `Sì, preavviso ${c.preavvisoMesi} mesi`
+                  : "No"
+              }
             />
           </dl>
 
@@ -239,14 +292,24 @@ export default function Pagina() {
             </p>
           )}
 
-          {c.note && <p className="mt-4 whitespace-pre-wrap text-sm text-text-2">{c.note}</p>}
+          {c.note && (
+            <p className="mt-4 whitespace-pre-wrap text-sm text-text-2">
+              {c.note}
+            </p>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function Riga({ label, valore }: { label: string; valore: string | number | null }) {
+function Riga({
+  label,
+  valore,
+}: {
+  label: string;
+  valore: string | number | null;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt className="text-text-3">{label}</dt>

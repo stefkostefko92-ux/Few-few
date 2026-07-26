@@ -16,9 +16,13 @@ test("всеки вид субект има план", () => {
   for (const t of TIPI_SOGGETTO) {
     const p = pianoAnonimizzazione(t, ID);
     assert.ok(p.campi.length > 0, `${t}: празен план`);
-    assert.ok(p.conservati.length > 0, `${t}: нищо не се пази — това не е вярно`);
+    assert.ok(
+      p.conservati.length > 0,
+      `${t}: нищо не се пази — това не е вярно`,
+    );
     // Всяко запазено нещо носи разпоредбата си: „защото така" не е основание.
-    for (const c of p.conservati) assert.ok(c.base.length > 10, `${t}: липсва основание`);
+    for (const c of p.conservati)
+      assert.ok(c.base.length > 10, `${t}: липсва основание`);
   }
 });
 
@@ -60,7 +64,10 @@ test("проверката за остатъци лови непочистено
   assert.deepEqual(residuiPersonali(p, dopo), []);
 
   // Някой е добавил поле и е забравил плана — или записът просто не е минал.
-  assert.deepEqual(residuiPersonali(p, { ...dopo, telefono: "+39 333 1112223" }), ["telefono"]);
+  assert.deepEqual(
+    residuiPersonali(p, { ...dopo, telefono: "+39 333 1112223" }),
+    ["telefono"],
+  );
   assert.deepEqual(residuiPersonali(p, { ...dopo, nome: "Mario" }), ["nome"]);
 });
 

@@ -35,7 +35,8 @@ export const POST = gestito(async (req, ctx) => {
     nome: utente.nome,
     cognome: utente.cognome,
   });
-  if (!esito.valida) throw new ErroreHttp(400, esito.errore ?? "Password non valida");
+  if (!esito.valida)
+    throw new ErroreHttp(400, esito.errore ?? "Password non valida");
 
   await prisma.user.update({
     where: { id },

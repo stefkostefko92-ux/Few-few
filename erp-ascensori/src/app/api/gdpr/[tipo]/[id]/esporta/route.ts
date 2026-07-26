@@ -16,7 +16,12 @@ export const GET = gestito(async (_req, ctx) => {
   if (!(TIPI_SOGGETTO as readonly string[]).includes(tipo))
     throw new ErroreHttp(400, "Tipo di soggetto non valido");
 
-  const dati = await esporta(tipo as TipoSoggetto, id, s.tenantId ?? null, s.ruolo === "MASTER");
+  const dati = await esporta(
+    tipo as TipoSoggetto,
+    id,
+    s.tenantId ?? null,
+    s.ruolo === "MASTER",
+  );
   if (!dati) return errore(404, "Soggetto non trovato");
 
   // Самото упражняване на правото е събитие: чл. 30(2) иска да се знае кой е

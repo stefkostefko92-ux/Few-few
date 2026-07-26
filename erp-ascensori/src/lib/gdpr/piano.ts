@@ -18,7 +18,11 @@
 // какво остава и по каква разпоредба".
 
 /** Видовете субекти, за които маршрутът работи. */
-export const TIPI_SOGGETTO = ["utente", "dipendente", "amministratore"] as const;
+export const TIPI_SOGGETTO = [
+  "utente",
+  "dipendente",
+  "amministratore",
+] as const;
 export type TipoSoggetto = (typeof TIPI_SOGGETTO)[number];
 
 export const ETICHETTA_SOGGETTO: Record<TipoSoggetto, string> = {
@@ -79,7 +83,10 @@ const CONSERVATI_COMUNI: Conservato[] = [
  *
  * `id` влиза само за да се построи уникалният подменен адрес.
  */
-export function pianoAnonimizzazione(tipo: TipoSoggetto, id: string): PianoAnonimizzazione {
+export function pianoAnonimizzazione(
+  tipo: TipoSoggetto,
+  id: string,
+): PianoAnonimizzazione {
   switch (tipo) {
     case "utente":
       return {
@@ -150,7 +157,9 @@ export function pianoAnonimizzazione(tipo: TipoSoggetto, id: string): PianoAnoni
 }
 
 /** Полетата като обект за записа — редът е без значение, стойностите не. */
-export function datiAnonimizzati(piano: PianoAnonimizzazione): Record<string, string | null> {
+export function datiAnonimizzati(
+  piano: PianoAnonimizzazione,
+): Record<string, string | null> {
   const out: Record<string, string | null> = {};
   for (const c of piano.campi) out[c.campo] = c.valore;
   return out;
@@ -171,7 +180,8 @@ export function residuiPersonali(
   const residui: string[] = [];
   for (const [campo, valore] of Object.entries(attesi)) {
     const attuale = record[campo];
-    if (valore === null && attuale !== null && attuale !== undefined) residui.push(campo);
+    if (valore === null && attuale !== null && attuale !== undefined)
+      residui.push(campo);
     if (valore !== null && attuale !== valore) residui.push(campo);
   }
   return residui;

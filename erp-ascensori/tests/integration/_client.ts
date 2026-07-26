@@ -33,11 +33,15 @@ export class Sessione {
   async richiesta<T = Record<string, unknown>>(
     metodo: string,
     percorso: string,
-    corpo?: unknown
+    corpo?: unknown,
   ): Promise<Risposta<T>> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     if (this.cookies.size > 0) {
-      headers.Cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; ");
+      headers.Cookie = [...this.cookies]
+        .map(([k, v]) => `${k}=${v}`)
+        .join("; ");
     }
     const res = await fetch(BASE + percorso, {
       method: metodo,
@@ -64,10 +68,14 @@ export class Sessione {
   }
 
   get = <T = Record<string, unknown>>(p: string) => this.richiesta<T>("GET", p);
-  post = <T = Record<string, unknown>>(p: string, b?: unknown) => this.richiesta<T>("POST", p, b);
-  put = <T = Record<string, unknown>>(p: string, b?: unknown) => this.richiesta<T>("PUT", p, b);
-  patch = <T = Record<string, unknown>>(p: string, b?: unknown) => this.richiesta<T>("PATCH", p, b);
-  del = <T = Record<string, unknown>>(p: string) => this.richiesta<T>("DELETE", p);
+  post = <T = Record<string, unknown>>(p: string, b?: unknown) =>
+    this.richiesta<T>("POST", p, b);
+  put = <T = Record<string, unknown>>(p: string, b?: unknown) =>
+    this.richiesta<T>("PUT", p, b);
+  patch = <T = Record<string, unknown>>(p: string, b?: unknown) =>
+    this.richiesta<T>("PATCH", p, b);
+  del = <T = Record<string, unknown>>(p: string) =>
+    this.richiesta<T>("DELETE", p);
 
   async entra(email: string, password = PASSWORD): Promise<number> {
     const { status } = await this.post("/api/auth/login", { email, password });
@@ -79,7 +87,8 @@ export class Sessione {
 export async function comeRuolo(ruolo: Ruolo): Promise<Sessione> {
   const s = new Sessione();
   const status = await s.entra(UTENTI[ruolo]);
-  if (status !== 200) throw new Error(`Вход като ${ruolo} се провали: HTTP ${status}`);
+  if (status !== 200)
+    throw new Error(`Вход като ${ruolo} се провали: HTTP ${status}`);
   return s;
 }
 

@@ -103,8 +103,12 @@ export function sogliaPerRiga(
   oggi: Date,
 ): Date {
   const s = soglie(oggi);
-  if ((AZIONI_ACCESSO as readonly string[]).includes(riga.azione)) return s.accesso;
-  if (riga.entita && (ENTITA_CONTABILI as readonly string[]).includes(riga.entita))
+  if ((AZIONI_ACCESSO as readonly string[]).includes(riga.azione))
+    return s.accesso;
+  if (
+    riga.entita &&
+    (ENTITA_CONTABILI as readonly string[]).includes(riga.entita)
+  )
     return s.contabile;
   return s.ordinario;
 }

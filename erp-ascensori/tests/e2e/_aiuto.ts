@@ -12,12 +12,18 @@ export const UTENTI = {
 } as const;
 
 /** Влиза през ФОРМАТА, не през API: смисълът на този слой е самата форма. */
-export async function entra(page: Page, email: string, password = PASSWORD): Promise<void> {
+export async function entra(
+  page: Page,
+  email: string,
+  password = PASSWORD,
+): Promise<void> {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Accedi" }).click();
-  await page.waitForURL(/\/(dashboard|impianti|ordini|i\/)/, { timeout: 15_000 });
+  await page.waitForURL(/\/(dashboard|impianti|ordini|i\/)/, {
+    timeout: 15_000,
+  });
 }
 
 /** Уникален суфикс — фикстурите не се сблъскват между пусковете. */

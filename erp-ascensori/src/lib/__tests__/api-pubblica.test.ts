@@ -69,7 +69,11 @@ test("празни права значат НИЩО, не всичко", () => {
 test("отменен и изтекъл ключ не работят", () => {
   const ora = new Date("2026-07-25T12:00:00Z");
   assert.equal(
-    autorizza({ ambiti: ["impianti:read"], revocataAt: ora }, "impianti:read", ora).valida,
+    autorizza(
+      { ambiti: ["impianti:read"], revocataAt: ora },
+      "impianti:read",
+      ora,
+    ).valida,
     false,
   );
   const scaduto = autorizza(
@@ -110,11 +114,20 @@ test("получателят проверява подписа и прозоре
   assert.equal(alterato.valida, false);
   assert.equal(alterato.valida === false && alterato.motivo, "firma");
   // Извън прозореца — преиграване.
-  const vecchio = verificaFirma(corpo, "segreto", firma, ts, ts + TOLLERANZA_SECONDI + 1);
+  const vecchio = verificaFirma(
+    corpo,
+    "segreto",
+    firma,
+    ts,
+    ts + TOLLERANZA_SECONDI + 1,
+  );
   assert.equal(vecchio.valida, false);
   assert.equal(vecchio.valida === false && vecchio.motivo, "timestamp");
   // И в двете посоки: часовник напред също е подозрителен.
-  assert.equal(verificaFirma(corpo, "segreto", firma, ts, ts - 400).valida, false);
+  assert.equal(
+    verificaFirma(corpo, "segreto", firma, ts, ts - 400).valida,
+    false,
+  );
 });
 
 test("изчакването расте, но има таван и разсейване", () => {
@@ -127,14 +140,21 @@ test("изчакването расте, но има таван и разсей�
   assert.equal(t20, 3_600_000);
   // Разсейване: хиляда доставки, паднали заедно, не бива да тръгнат в една
   // и съща секунда и да съборят получателя повторно.
-  assert.notEqual(prossimoTentativo(3, ora, 0).getTime(), prossimoTentativo(3, ora, 1).getTime());
+  assert.notEqual(
+    prossimoTentativo(3, ora, 0).getTime(),
+    prossimoTentativo(3, ora, 1).getTime(),
+  );
 });
 
 test("повтаря се само това, което има смисъл", () => {
   assert.equal(vaRiprovato(null, 0), true, "мрежова грешка е преходна");
   assert.equal(vaRiprovato(500, 0), true);
   assert.equal(vaRiprovato(503, 3), true);
-  assert.equal(vaRiprovato(429, 3), true, "ограничение — изчакай и пробвай пак");
+  assert.equal(
+    vaRiprovato(429, 3),
+    true,
+    "ограничение — изчакай и пробвай пак",
+  );
   assert.equal(vaRiprovato(408, 3), true);
   // „Не искам това" не се повтаря: шум за двете страни.
   assert.equal(vaRiprovato(400, 0), false);

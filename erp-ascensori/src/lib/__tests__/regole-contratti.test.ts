@@ -10,12 +10,17 @@ import {
 } from "../regole-contratti";
 
 test("таблицата на преходите покрива всяко състояние", () => {
-  for (const s of STATI_CONTRATTO) assert.ok(TRANSIZIONI_CONTRATTO[s], `липсва ${s}`);
+  for (const s of STATI_CONTRATTO)
+    assert.ok(TRANSIZIONI_CONTRATTO[s], `липсва ${s}`);
 });
 
 test("прекратеният договор е финален — не се съживява", () => {
   for (const a of STATI_CONTRATTO)
-    assert.equal(transizioneContrattoAmmessa("DISDETTO", a), false, `DISDETTO → ${a}`);
+    assert.equal(
+      transizioneContrattoAmmessa("DISDETTO", a),
+      false,
+      `DISDETTO → ${a}`,
+    );
 });
 
 test("изтеклият може да се поднови ръчно", () => {

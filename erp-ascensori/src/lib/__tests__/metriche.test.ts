@@ -13,11 +13,22 @@ import {
 beforeEach(() => azzera());
 
 test("броячът излиза с име, етикети и стойност", () => {
-  incrementa("erp_richieste_totale", { rotta: "/api/impianti", metodo: "GET", stato: "2xx" });
-  incrementa("erp_richieste_totale", { rotta: "/api/impianti", metodo: "GET", stato: "2xx" });
+  incrementa("erp_richieste_totale", {
+    rotta: "/api/impianti",
+    metodo: "GET",
+    stato: "2xx",
+  });
+  incrementa("erp_richieste_totale", {
+    rotta: "/api/impianti",
+    metodo: "GET",
+    stato: "2xx",
+  });
   const out = esporta();
   assert.match(out, /# TYPE erp_richieste_totale counter/);
-  assert.match(out, /erp_richieste_totale\{metodo="GET",rotta="\/api\/impianti",stato="2xx"\} 2/);
+  assert.match(
+    out,
+    /erp_richieste_totale\{metodo="GET",rotta="\/api\/impianti",stato="2xx"\} 2/,
+  );
 });
 
 test("редът на етикетите НЕ зависи от извикващия", () => {

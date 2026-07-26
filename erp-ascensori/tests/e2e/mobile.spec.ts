@@ -7,13 +7,17 @@ test("QR стикерът отваря точно този импиант сле
   // Първо вземаме една матрикола, както би направил сканиращият.
   await entra(page, UTENTI.TECNICO);
   await page.goto("/impianti");
-  const matricola = (await page.locator("table tbody tr td").first().innerText()).trim();
+  const matricola = (
+    await page.locator("table tbody tr td").first().innerText()
+  ).trim();
   expect(matricola.length).toBeGreaterThan(0);
 
   // Сканирането води на кратък адрес; той пренасочва към импианта.
   await page.goto(`/i/${encodeURIComponent(matricola)}`);
   await expect(page).toHaveURL(/\/impianti\/[0-9a-f-]{36}/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(matricola);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    matricola,
+  );
 
   // И самият код се дава като SVG.
   //
@@ -34,7 +38,9 @@ test("интерфейсът не се разлива хоризонтално �
   // Хоризонталният скрол на цялата страница е класическият дефект на „мобилна"
   // версия, направена само с media queries.
   const scorre = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(scorre).toBe(false);
 });
@@ -42,7 +48,10 @@ test("интерфейсът не се разлива хоризонтално �
 test("PWA обвивката е инсталируема", async ({ request }) => {
   const m = await request.get("/manifest.webmanifest");
   expect(m.status()).toBe(200);
-  const manifest = (await m.json()) as { display: string; icons: { purpose?: string }[] };
+  const manifest = (await m.json()) as {
+    display: string;
+    icons: { purpose?: string }[];
+  };
   expect(manifest.display).toBe("standalone");
   expect(manifest.icons.some((i) => i.purpose === "maskable")).toBe(true);
 

@@ -8,7 +8,8 @@ const config: EntityConfig = {
   titolo: "Dipendenti",
   singolare: "dipendente",
   genere: "m",
-  descrizione: "Personale interno: tecnici, amministrativi, commerciali, magazzinieri",
+  descrizione:
+    "Personale interno: tecnici, amministrativi, commerciali, magazzinieri",
   api: "/api/dipendenti",
   cerca: "Cerca per nome, cognome, codice fiscale…",
   colonne: [
@@ -18,7 +19,11 @@ const config: EntityConfig = {
       className: "font-medium",
       render: (r) => `${r.cognome} ${r.nome}`,
     },
-    { chiave: "tipo", label: "Tipo", render: (r) => etichetta(TIPO_DIPENDENTE, String(r.tipo)) },
+    {
+      chiave: "tipo",
+      label: "Tipo",
+      render: (r) => etichetta(TIPO_DIPENDENTE, String(r.tipo)),
+    },
     {
       chiave: "specializzazioni",
       label: "Specializzazioni",
@@ -30,7 +35,11 @@ const config: EntityConfig = {
       label: "Assunzione",
       render: (r) => dataIt(r.dataAssunzione as string | null),
     },
-    { chiave: "attivo", label: "In forza", render: (r) => (r.attivo ? "Sì" : "No") },
+    {
+      chiave: "attivo",
+      label: "In forza",
+      render: (r) => (r.attivo ? "Sì" : "No"),
+    },
   ],
   campi: [
     { name: "nome", label: "Nome", tipo: "text", richiesto: true },
@@ -40,10 +49,12 @@ const config: EntityConfig = {
       label: "Tipo",
       tipo: "select",
       predefinito: "TECNICO",
-      opzioni: ["TECNICO", "AMMINISTRATIVO", "COMMERCIALE", "MAGAZZINIERE"].map((v) => ({
-        value: v,
-        label: v.charAt(0) + v.slice(1).toLowerCase(),
-      })),
+      opzioni: ["TECNICO", "AMMINISTRATIVO", "COMMERCIALE", "MAGAZZINIERE"].map(
+        (v) => ({
+          value: v,
+          label: v.charAt(0) + v.slice(1).toLowerCase(),
+        }),
+      ),
     },
     { name: "codiceFiscale", label: "Codice fiscale", tipo: "text" },
     { name: "dataAssunzione", label: "Data assunzione", tipo: "date" },

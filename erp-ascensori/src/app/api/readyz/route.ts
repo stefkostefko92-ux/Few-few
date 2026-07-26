@@ -53,7 +53,8 @@ async function controlla(): Promise<Esito> {
   } catch (e) {
     log.warn("readyz: controllo fallito", descriviErrore(e));
   }
-  if (!esito.rls) log.warn(`readyz: RLS non attiva — ${esito.rlsMotivo ?? "motivo ignoto"}`);
+  if (!esito.rls)
+    log.warn(`readyz: RLS non attiva — ${esito.rlsMotivo ?? "motivo ignoto"}`);
   esito.pronto = esito.db && esito.schema && esito.chiavi;
   return esito;
 }

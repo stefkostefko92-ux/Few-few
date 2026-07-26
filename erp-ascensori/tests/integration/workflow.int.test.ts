@@ -14,9 +14,12 @@ before(async () => {
 });
 
 async function nuovoOrdine(s: Sessione): Promise<string> {
-  const { status, dati } = await s.post<{ id: string; stato: string }>("/api/ordini", {
-    oggetto: unico("Ordine"),
-  });
+  const { status, dati } = await s.post<{ id: string; stato: string }>(
+    "/api/ordini",
+    {
+      oggetto: unico("Ordine"),
+    },
+  );
   assert.equal(status, 201);
   assert.equal(dati.stato, "BOZZA");
   return dati.id;
@@ -33,7 +36,11 @@ describe("преходи на състоянието", () => {
 
     const det = await master.get<{
       stato: string;
-      storico: { statoPrecedente: string | null; statoNuovo: string; nota: string | null }[];
+      storico: {
+        statoPrecedente: string | null;
+        statoNuovo: string;
+        nota: string | null;
+      }[];
     }>(`/api/ordini/${id}`);
     assert.equal(det.dati.stato, "EMESSO");
     // първата редица е при създаване (BOZZA), втората е преходът
@@ -45,14 +52,21 @@ describe("преходи на състоянието", () => {
 
   test("непозволеният преход се отказва с 409 и НЕ променя нищо", async () => {
     const id = await nuovoOrdine(master);
-    const { status, dati } = await master.patch<{ error: string }>(`/api/ordini/${id}/stato`, {
-      stato: "COMPLETATO",
-    });
+    const { status, dati } = await master.patch<{ error: string }>(
+      `/api/ordini/${id}/stato`,
+      {
+        stato: "COMPLETATO",
+      },
+    );
     assert.equal(status, 409);
     assert.match(dati.error, /Transizione non ammessa/);
 
     const det = await master.get<{ stato: string }>(`/api/ordini/${id}`);
-    assert.equal(det.dati.stato, "BOZZA", "състоянието не бива да се е променило");
+    assert.equal(
+      det.dati.stato,
+      "BOZZA",
+      "състоянието не бива да се е променило",
+    );
   });
 
   test("финалното състояние не приема повече преходи", async () => {
@@ -77,8 +91,14 @@ describe("преходи на състоянието", () => {
 
     await master.patch(`/api/ordini/${id}/stato`, { stato: "SOSPESO" });
     await master.patch(`/api/ordini/${id}/stato`, { stato: "IN_LAVORO" });
-    const secondo = await master.get<{ dataInizio: string }>(`/api/ordini/${id}`);
-    assert.equal(secondo.dati.dataInizio, primo.dati.dataInizio, "не бива да се презаписва");
+    const secondo = await master.get<{ dataInizio: string }>(
+      `/api/ordini/${id}`,
+    );
+    assert.equal(
+      secondo.dati.dataInizio,
+      primo.dati.dataInizio,
+      "не бива да се презаписва",
+    );
   });
 });
 
@@ -88,19 +108,35 @@ describe("ролева порта върху преходите", () => {
     await master.patch(`/api/ordini/${id}/stato`, { stato: "EMESSO" });
     await master.patch(`/api/ordini/${id}/stato`, { stato: "CONFERMATO" });
 
-    const inLavoro = await tecnico.patch(`/api/ordini/${id}/stato`, { stato: "IN_LAVORO" });
-    assert.equal(inLavoro.status, 200, "TECNICO трябва да може да влезе в работа");
+    const inLavoro = await tecnico.patch(`/api/ordini/${id}/stato`, {
+      stato: "IN_LAVORO",
+    });
+    assert.equal(
+      inLavoro.status,
+      200,
+      "TECNICO трябва да може да влезе в работа",
+    );
 
-    const completato = await tecnico.patch(`/api/ordini/${id}/stato`, { stato: "COMPLETATO" });
+    const completato = await tecnico.patch(`/api/ordini/${id}/stato`, {
+      stato: "COMPLETATO",
+    });
     assert.equal(completato.status, 200);
 
-    const chiuso = await tecnico.patch(`/api/ordini/${id}/stato`, { stato: "CHIUSO" });
-    assert.equal(chiuso.status, 403, "CHIUSO е управленско решение — RESPONSABILE+");
+    const chiuso = await tecnico.patch(`/api/ordini/${id}/stato`, {
+      stato: "CHIUSO",
+    });
+    assert.equal(
+      chiuso.status,
+      403,
+      "CHIUSO е управленско решение — RESPONSABILE+",
+    );
   });
 
   test("TECNICO не може да анулира", async () => {
     const id = await nuovoOrdine(master);
-    const { status } = await tecnico.patch(`/api/ordini/${id}/stato`, { stato: "ANNULLATO" });
+    const { status } = await tecnico.patch(`/api/ordini/${id}/stato`, {
+      stato: "ANNULLATO",
+    });
     assert.equal(status, 403);
   });
 });
@@ -116,12 +152,17 @@ describe("състезание", () => {
       master.patch(`/api/ordini/${id}/stato`, { stato: "SOSPESO" }),
     ]);
     const successi = [a, b].filter((r) => r.status === 200).length;
-    assert.equal(successi, 1, "точно един преход бива да мине (оптимистично заключване)");
+    assert.equal(
+      successi,
+      1,
+      "точно един преход бива да мине (оптимистично заключване)",
+    );
 
     // и историята трябва да е консистентна: последният запис = текущото състояние
-    const det = await master.get<{ stato: string; storico: { statoNuovo: string }[] }>(
-      `/api/ordini/${id}`
-    );
+    const det = await master.get<{
+      stato: string;
+      storico: { statoNuovo: string }[];
+    }>(`/api/ordini/${id}`);
     assert.equal(det.dati.storico[0].statoNuovo, det.dati.stato);
   });
 });

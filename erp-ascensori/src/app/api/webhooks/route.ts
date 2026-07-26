@@ -29,7 +29,11 @@ function indirizzoAmmesso(url: string): boolean {
   const host = u.hostname.toLowerCase();
   // Забраната е срещу SSRF: иначе абонамент към `http://169.254.169.254` или
   // към вътрешен адрес превръща нашия сървър в четец на чужди мрежи.
-  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal"))
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".internal")
+  )
     return false;
   if (/^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(host)) return false;
   if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
@@ -60,11 +64,19 @@ export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("ADMIN");
   const dati = await corpoValidato(req, schema);
   if (!indirizzoAmmesso(dati.url))
-    throw new ErroreHttp(400, "Indirizzo non ammesso: deve essere pubblico e raggiungibile");
+    throw new ErroreHttp(
+      400,
+      "Indirizzo non ammesso: deve essere pubblico e raggiungibile",
+    );
 
   const segreto = randomBytes(32).toString("base64url");
   const creato = await prisma.webhook.create({
-    data: { url: dati.url, eventi: dati.eventi, segreto, ...tenantDiCreazione(s) },
+    data: {
+      url: dati.url,
+      eventi: dati.eventi,
+      segreto,
+      ...tenantDiCreazione(s),
+    },
     select: { id: true, url: true, eventi: true, attivo: true },
   });
 
@@ -77,5 +89,8 @@ export const POST = gestito(async (req) => {
     tenantId: s.tenantId,
   });
 
-  return ok({ ...creato, segreto, avviso: "Copiare ora: non sarà più visibile." }, 201);
+  return ok(
+    { ...creato, segreto, avviso: "Copiare ora: non sarà più visibile." },
+    201,
+  );
 });

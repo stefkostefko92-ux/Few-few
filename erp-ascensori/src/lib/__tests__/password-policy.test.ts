@@ -20,7 +20,10 @@ test("привилегированите роли искат повече", () =
   const p = "x".repeat(LUNGHEZZA_MINIMA) + "aBcD";
   const corta = "abcdefghijklm"; // 13 знака
   assert.equal(validaPassword(corta + "XY").valida, true);
-  assert.equal(validaPassword("abcdefghijklm", { privilegiata: true }).valida, false);
+  assert.equal(
+    validaPassword("abcdefghijklm", { privilegiata: true }).valida,
+    false,
+  );
   assert.equal(validaPassword(p, { privilegiata: true }).valida, true);
   assert.equal(LUNGHEZZA_MINIMA_PRIVILEGIATA > LUNGHEZZA_MINIMA, true);
 });
@@ -37,15 +40,23 @@ test("повтарящ се знак не носи ентропия", () => {
 });
 
 test("собствените данни в паролата се отказват", () => {
-  const r = validaPassword("mariorossi2026!", { nome: "Mario", cognome: "Rossi" });
+  const r = validaPassword("mariorossi2026!", {
+    nome: "Mario",
+    cognome: "Rossi",
+  });
   assert.equal(r.valida, false);
   assert.match(r.errore ?? "", /nome/);
   assert.equal(
-    validaPassword("amministrazione2026", { email: "amministrazione@azienda.it" }).valida,
+    validaPassword("amministrazione2026", {
+      email: "amministrazione@azienda.it",
+    }).valida,
     false,
   );
   // Къса част (под 4 знака) не блокира: иначе име „Li" забранява всяка парола с „li".
-  assert.equal(validaPassword("collina tranquilla", { nome: "Li" }).valida, true);
+  assert.equal(
+    validaPassword("collina tranquilla", { nome: "Li" }).valida,
+    true,
+  );
 });
 
 test("прекалено дълга парола се отказва", () => {

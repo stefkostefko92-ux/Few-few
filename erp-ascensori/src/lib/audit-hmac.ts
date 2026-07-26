@@ -51,7 +51,10 @@ export type VersioneFirma = 1 | 2 | 3;
  *            ред, но не и ИЗТРИВАНЕ на цял ред: махнеш ли редица, останалите
  *            се проверяват успешно и липсата е невидима. С веригата всеки ред
  *            сочи предходния, и изваденото звено се вижда веднага. */
-export function canonico(r: RigaAudit, versione: VersioneFirma = VERSIONE_CORRENTE): string {
+export function canonico(
+  r: RigaAudit,
+  versione: VersioneFirma = VERSIONE_CORRENTE,
+): string {
   const serializza = versione === 1 ? JSON.stringify : serializzaStabile;
   const campi = [
     r.azione,

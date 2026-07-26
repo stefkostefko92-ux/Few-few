@@ -9,7 +9,9 @@ test("влизане с валидни данни отваря таблото", 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 
-test("грешна парола дава ЧЕТИМО съобщение, не празна страница", async ({ page }) => {
+test("грешна парола дава ЧЕТИМО съобщение, не празна страница", async ({
+  page,
+}) => {
   await page.goto("/login");
   await page.getByLabel("Email").fill(UTENTI.ADMIN);
   await page.getByLabel("Password").fill("sbagliata-non-valida-2026");

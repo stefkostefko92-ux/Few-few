@@ -34,7 +34,10 @@ interface WidgetCfg {
 
 const CHIAVE_LS = "ea:dashboard:v1";
 
-const FONTI: Record<string, { label: string; serie?: { chiave: string; label: string }[] }> = {
+const FONTI: Record<
+  string,
+  { label: string; serie?: { chiave: string; label: string }[] }
+> = {
   ordiniPerStato: { label: "Ordini per stato" },
   ordiniPerPriorita: { label: "Ordini aperti per priorità" },
   preventiviPerStato: { label: "Preventivi per stato" },
@@ -51,10 +54,38 @@ const FONTI: Record<string, { label: string; serie?: { chiave: string; label: st
 
 const PREDEFINITO: WidgetCfg[] = [
   { id: "w1", tipo: "kpi", larghezza: 2 },
-  { id: "w2", tipo: "grafico", fonte: "ordiniPerStato", grafico: "bar", colore: "multi", larghezza: 2 },
-  { id: "w3", tipo: "grafico", fonte: "fatturatoMensile", grafico: "area", colore: "multi", larghezza: 2 },
-  { id: "w4", tipo: "grafico", fonte: "preventiviPerStato", grafico: "donut", colore: "multi", larghezza: 1 },
-  { id: "w5", tipo: "grafico", fonte: "impiantiPerStato", grafico: "donut", colore: "multi", larghezza: 1 },
+  {
+    id: "w2",
+    tipo: "grafico",
+    fonte: "ordiniPerStato",
+    grafico: "bar",
+    colore: "multi",
+    larghezza: 2,
+  },
+  {
+    id: "w3",
+    tipo: "grafico",
+    fonte: "fatturatoMensile",
+    grafico: "area",
+    colore: "multi",
+    larghezza: 2,
+  },
+  {
+    id: "w4",
+    tipo: "grafico",
+    fonte: "preventiviPerStato",
+    grafico: "donut",
+    colore: "multi",
+    larghezza: 1,
+  },
+  {
+    id: "w5",
+    tipo: "grafico",
+    fonte: "impiantiPerStato",
+    grafico: "donut",
+    colore: "multi",
+    larghezza: 1,
+  },
   { id: "w6", tipo: "scadenze", larghezza: 1 },
   { id: "w7", tipo: "scorte", larghezza: 1 },
 ];
@@ -94,7 +125,13 @@ interface Stats {
     dataScadenza: string;
     impianto: { matricola: string; indirizzo: string | null };
   }[];
-  sottoScorta: { id: string; codice: string; nome: string; quantita: number; sogliaMinima: number }[];
+  sottoScorta: {
+    id: string;
+    codice: string;
+    nome: string;
+    quantita: number;
+    sogliaMinima: number;
+  }[];
   fatturatoMensile?: PuntoSerie[];
   insoluti?: { numero: number; totale: number };
 }
@@ -124,7 +161,7 @@ export default function Dashboard() {
   const aggiorna = useCallback(
     (id: string, patch: Partial<WidgetCfg>) =>
       salva(widgets.map((w) => (w.id === id ? { ...w, ...patch } : w))),
-    [widgets, salva]
+    [widgets, salva],
   );
 
   const sposta = useCallback(
@@ -136,12 +173,12 @@ export default function Dashboard() {
       [nuovi[i], nuovi[j]] = [nuovi[j], nuovi[i]];
       salva(nuovi);
     },
-    [widgets, salva]
+    [widgets, salva],
   );
 
   const rimuovi = useCallback(
     (id: string) => salva(widgets.filter((w) => w.id !== id)),
-    [widgets, salva]
+    [widgets, salva],
   );
 
   const aggiungi = useCallback(
@@ -159,15 +196,16 @@ export default function Dashboard() {
         },
       ]);
     },
-    [widgets, salva]
+    [widgets, salva],
   );
 
   const fontiDisponibili = useMemo(
     () =>
       Object.keys(FONTI).filter(
-        (f) => f !== "fatturatoMensile" || stats?.fatturatoMensile !== undefined
+        (f) =>
+          f !== "fatturatoMensile" || stats?.fatturatoMensile !== undefined,
       ),
-    [stats]
+    [stats],
   );
 
   if (!pronto) return null;
@@ -176,7 +214,9 @@ export default function Dashboard() {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-1">Dashboard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+            Dashboard
+          </h1>
           <p className="mt-1 text-sm text-text-3">
             Panoramica operativa · grafici completamente personalizzabili
           </p>
@@ -204,7 +244,8 @@ export default function Dashboard() {
             onChange={(e) => {
               const v = e.target.value;
               if (!v) return;
-              if (v === "kpi" || v === "scadenze" || v === "scorte") aggiungi(v as TipoWidget);
+              if (v === "kpi" || v === "scadenze" || v === "scorte")
+                aggiungi(v as TipoWidget);
               else aggiungi("grafico", v);
             }}
             aria-label="Aggiungi widget"
@@ -302,7 +343,9 @@ function WidgetCard({
                 <select
                   className="input h-8 w-24 text-xs"
                   value={cfg.grafico}
-                  onChange={(e) => onAggiorna({ grafico: e.target.value as TipoGrafico })}
+                  onChange={(e) =>
+                    onAggiorna({ grafico: e.target.value as TipoGrafico })
+                  }
                   aria-label="Tipo grafico"
                 >
                   <option value="bar">Barre</option>
@@ -318,7 +361,9 @@ function WidgetCard({
             )}
             <button
               className="btn-ghost inline-flex h-8 items-center gap-1 px-2 text-xs"
-              onClick={() => onAggiorna({ larghezza: cfg.larghezza === 1 ? 2 : 1 })}
+              onClick={() =>
+                onAggiorna({ larghezza: cfg.larghezza === 1 ? 2 : 1 })
+              }
               title="Larghezza"
             >
               <IcoLarghezza />
@@ -352,7 +397,11 @@ function WidgetCard({
       </div>
 
       {!stats ? (
-        <div className="space-y-3 py-4" role="status" aria-label="Caricamento in corso">
+        <div
+          className="space-y-3 py-4"
+          role="status"
+          aria-label="Caricamento in corso"
+        >
           <Barra className="h-3 w-32" />
           <Barra className="h-40 w-full" />
         </div>
@@ -371,7 +420,11 @@ function ScegliColore({
   onCambia: (v: "multi" | number) => void;
 }) {
   return (
-    <div className="flex items-center gap-1" role="radiogroup" aria-label="Colore">
+    <div
+      className="flex items-center gap-1"
+      role="radiogroup"
+      aria-label="Colore"
+    >
       <button
         role="radio"
         aria-checked={valore === "multi"}
@@ -429,7 +482,11 @@ function ContenutoWidget({ cfg, stats }: { cfg: WidgetCfg; stats: Stats }) {
 
   const dati = stats[fonte as keyof Stats] as PuntoCategoria[] | undefined;
   if (!dati?.length)
-    return <p className="py-8 text-center text-sm text-text-3">Nessun dato disponibile</p>;
+    return (
+      <p className="py-8 text-center text-sm text-text-3">
+        Nessun dato disponibile
+      </p>
+    );
   return (
     <GraficoCategorie
       fonte={fonte}
@@ -442,10 +499,19 @@ function ContenutoWidget({ cfg, stats }: { cfg: WidgetCfg; stats: Stats }) {
 
 function RigaKpi({ stats }: { stats: Stats }) {
   const k = stats.kpi;
-  const voci: { label: string; valore: number | string; href: string; critico?: boolean }[] = [
+  const voci: {
+    label: string;
+    valore: number | string;
+    href: string;
+    critico?: boolean;
+  }[] = [
     { label: "Impianti gestiti", valore: k.impiantiTotali, href: "/impianti" },
     { label: "Ordini aperti", valore: k.ordiniAperti, href: "/ordini" },
-    { label: "Preventivi in attesa", valore: k.preventiviInAttesa, href: "/preventivi" },
+    {
+      label: "Preventivi in attesa",
+      valore: k.preventiviInAttesa,
+      href: "/preventivi",
+    },
     {
       label: "Scadenze entro 30 gg",
       valore: k.scadenze30gg,
@@ -495,13 +561,22 @@ function RigaKpi({ stats }: { stats: Stats }) {
 
 function ListaScadenze({ stats }: { stats: Stats }) {
   if (stats.scadenzeProssime.length === 0)
-    return <p className="py-8 text-center text-sm text-text-3">Nessuna scadenza nei prossimi 30 giorni</p>;
+    return (
+      <p className="py-8 text-center text-sm text-text-3">
+        Nessuna scadenza nei prossimi 30 giorni
+      </p>
+    );
   return (
     <ul className="space-y-2">
       {stats.scadenzeProssime.map((s) => (
-        <li key={s.id} className="flex items-center justify-between gap-2 text-sm">
+        <li
+          key={s.id}
+          className="flex items-center justify-between gap-2 text-sm"
+        >
           <span>
-            <span className="font-mono font-medium">{s.impianto.matricola}</span>
+            <span className="font-mono font-medium">
+              {s.impianto.matricola}
+            </span>
             <span className="text-text-2"> · {s.tipo}</span>
             {s.impianto.indirizzo && (
               <span className="text-text-3"> · {s.impianto.indirizzo}</span>
@@ -518,11 +593,18 @@ function ListaScadenze({ stats }: { stats: Stats }) {
 
 function ListaScorte({ stats }: { stats: Stats }) {
   if (stats.sottoScorta.length === 0)
-    return <p className="py-8 text-center text-sm text-text-3">Tutte le giacenze sopra soglia</p>;
+    return (
+      <p className="py-8 text-center text-sm text-text-3">
+        Tutte le giacenze sopra soglia
+      </p>
+    );
   return (
     <ul className="space-y-2">
       {stats.sottoScorta.map((a) => (
-        <li key={a.id} className="flex items-center justify-between gap-2 text-sm">
+        <li
+          key={a.id}
+          className="flex items-center justify-between gap-2 text-sm"
+        >
           <span>
             <span className="font-mono font-medium">{a.codice}</span>
             <span className="text-text-2"> · {a.nome}</span>

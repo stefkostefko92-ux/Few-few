@@ -37,7 +37,10 @@ export default function Pagina() {
   const [scelto, setScelto] = useState<Soggetto | null>(null);
   const [piano, setPiano] = useState<Piano | null>(null);
   const [inCorso, setInCorso] = useState(false);
-  const [esito, setEsito] = useState<{ tipo: "ok" | "errore"; testo: string } | null>(null);
+  const [esito, setEsito] = useState<{
+    tipo: "ok" | "errore";
+    testo: string;
+  } | null>(null);
 
   async function cerca(e: React.FormEvent) {
     e.preventDefault();
@@ -64,19 +67,27 @@ export default function Pagina() {
     setInCorso(true);
     setEsito(null);
     try {
-      const { ok, dati } = await apiFetch<{ error?: string; sessioniRevocate?: number }>(
-        `/api/gdpr/${scelto.tipo}/${scelto.id}/anonimizza`,
-        { method: "POST", body: JSON.stringify({ conferma: true }) },
-      );
+      const { ok, dati } = await apiFetch<{
+        error?: string;
+        sessioniRevocate?: number;
+      }>(`/api/gdpr/${scelto.tipo}/${scelto.id}/anonimizza`, {
+        method: "POST",
+        body: JSON.stringify({ conferma: true }),
+      });
       setEsito(
         ok
           ? {
               tipo: "ok",
               testo: `Soggetto anonimizzato.${
-                dati.sessioniRevocate ? ` Sessioni chiuse: ${dati.sessioniRevocate}.` : ""
+                dati.sessioniRevocate
+                  ? ` Sessioni chiuse: ${dati.sessioniRevocate}.`
+                  : ""
               }`,
             }
-          : { tipo: "errore", testo: dati.error ?? "Errore durante l'anonimizzazione" },
+          : {
+              tipo: "errore",
+              testo: dati.error ?? "Errore durante l'anonimizzazione",
+            },
       );
       if (ok) {
         setScelto(null);
@@ -95,12 +106,15 @@ export default function Pagina() {
           Diritti dell&apos;interessato
         </h1>
         <p className="mt-1 text-sm text-text-3">
-          Accesso e portabilità (artt. 15 e 20) · cancellazione (art. 17). La risposta è dovuta
-          entro un mese dalla richiesta (art. 12, par. 3).
+          Accesso e portabilità (artt. 15 e 20) · cancellazione (art. 17). La
+          risposta è dovuta entro un mese dalla richiesta (art. 12, par. 3).
         </p>
       </div>
 
-      <form onSubmit={cerca} className="card mb-6 flex flex-wrap items-end gap-2 p-5">
+      <form
+        onSubmit={cerca}
+        className="card mb-6 flex flex-wrap items-end gap-2 p-5"
+      >
         <div className="min-w-64 flex-1">
           <label className="label" htmlFor="q">
             Nome, cognome, ragione sociale o e-mail
@@ -149,14 +163,21 @@ export default function Pagina() {
             </thead>
             <tbody>
               {righe.map((r) => (
-                <tr key={`${r.tipo}-${r.id}`} className="border-b border-border/60 last:border-0">
+                <tr
+                  key={`${r.tipo}-${r.id}`}
+                  className="border-b border-border/60 last:border-0"
+                >
                   <td className="py-2">
                     {r.etichetta}
                     {r.anonimizzato && (
-                      <span className="ml-2 text-xs text-text-3">(già anonimizzato)</span>
+                      <span className="ml-2 text-xs text-text-3">
+                        (già anonimizzato)
+                      </span>
                     )}
                   </td>
-                  <td className="py-2 text-text-2">{ETICHETTA[r.tipo] ?? r.tipo}</td>
+                  <td className="py-2 text-text-2">
+                    {ETICHETTA[r.tipo] ?? r.tipo}
+                  </td>
                   <td className="py-2 text-right">
                     <a
                       className="btn-secondary mr-2 inline-flex h-7 items-center gap-1.5 px-2 text-xs"
@@ -186,13 +207,15 @@ export default function Pagina() {
             Anonimizzazione di „{scelto.etichetta}“
           </h2>
           <p className="mt-1 text-sm text-danger-text">
-            Operazione irreversibile. Non è una cancellazione: i dati che la legge impone di
-            conservare restano, senza la persona.
+            Operazione irreversibile. Non è una cancellazione: i dati che la
+            legge impone di conservare restano, senza la persona.
           </p>
 
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             <div>
-              <h3 className="mb-2 text-sm font-medium text-text-1">Viene rimosso</h3>
+              <h3 className="mb-2 text-sm font-medium text-text-1">
+                Viene rimosso
+              </h3>
               <ul className="space-y-1 text-sm text-text-2">
                 {piano.campi.map((c) => (
                   <li key={c.campo} className="font-mono text-xs">
@@ -203,12 +226,16 @@ export default function Pagina() {
                   </li>
                 ))}
                 {piano.revocaSessioni && (
-                  <li className="text-xs text-text-3">+ tutte le sessioni attive</li>
+                  <li className="text-xs text-text-3">
+                    + tutte le sessioni attive
+                  </li>
                 )}
               </ul>
             </div>
             <div>
-              <h3 className="mb-2 text-sm font-medium text-text-1">Resta, per obbligo di legge</h3>
+              <h3 className="mb-2 text-sm font-medium text-text-1">
+                Resta, per obbligo di legge
+              </h3>
               <ul className="space-y-2 text-sm text-text-2">
                 {piano.conservati.map((c) => (
                   <li key={c.cosa}>
@@ -221,7 +248,11 @@ export default function Pagina() {
           </div>
 
           <div className="mt-5 flex gap-2">
-            <button className="btn-danger" disabled={inCorso} onClick={() => void conferma()}>
+            <button
+              className="btn-danger"
+              disabled={inCorso}
+              onClick={() => void conferma()}
+            >
               {inCorso ? "In corso…" : "Confermo: anonimizza"}
             </button>
             <button

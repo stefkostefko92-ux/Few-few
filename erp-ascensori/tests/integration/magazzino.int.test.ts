@@ -37,31 +37,50 @@ const giacenza = async (id: string): Promise<number> =>
 describe("движения", () => {
   test("ENTRATA увеличава точно", async () => {
     const a = await nuovoArticolo();
-    await master.post("/api/movimenti", { articoloId: a.id, tipo: "ENTRATA", quantita: 25 });
+    await master.post("/api/movimenti", {
+      articoloId: a.id,
+      tipo: "ENTRATA",
+      quantita: 25,
+    });
     assert.equal(await giacenza(a.id), 25);
   });
 
   test("USCITA намалява точно", async () => {
     const a = await nuovoArticolo(30);
-    await master.post("/api/movimenti", { articoloId: a.id, tipo: "USCITA", quantita: 12 });
+    await master.post("/api/movimenti", {
+      articoloId: a.id,
+      tipo: "USCITA",
+      quantita: 12,
+    });
     assert.equal(await giacenza(a.id), 18);
   });
 
   test("USCITA над наличността се отказва и НЕ променя giacenza", async () => {
     const a = await nuovoArticolo(5);
-    const { status, dati } = await master.post<{ error: string }>("/api/movimenti", {
-      articoloId: a.id,
-      tipo: "USCITA",
-      quantita: 6,
-    });
+    const { status, dati } = await master.post<{ error: string }>(
+      "/api/movimenti",
+      {
+        articoloId: a.id,
+        tipo: "USCITA",
+        quantita: 6,
+      },
+    );
     assert.equal(status, 409);
     assert.match(dati.error, /Giacenza insufficiente/);
-    assert.equal(await giacenza(a.id), 5, "наличността трябва да е непокътната");
+    assert.equal(
+      await giacenza(a.id),
+      5,
+      "наличността трябва да е непокътната",
+    );
   });
 
   test("RETTIFICA приема отрицателна стойност, но не нула", async () => {
     const a = await nuovoArticolo(10);
-    await master.post("/api/movimenti", { articoloId: a.id, tipo: "RETTIFICA", quantita: -3 });
+    await master.post("/api/movimenti", {
+      articoloId: a.id,
+      tipo: "RETTIFICA",
+      quantita: -3,
+    });
     assert.equal(await giacenza(a.id), 7);
 
     const zero = await master.post("/api/movimenti", {
@@ -91,14 +110,25 @@ describe("движения", () => {
         tipo: "USCITA",
         quantita,
       });
-      assert.equal(status, 400, `количество ${quantita} трябваше да бъде отказано`);
+      assert.equal(
+        status,
+        400,
+        `количество ${quantita} трябваше да бъде отказано`,
+      );
     }
   });
 
   test("количеството не се променя през CRUD на артикула", async () => {
     const a = await nuovoArticolo(40);
-    await master.put(`/api/articoli/${a.id}`, { quantita: 9999, nome: "Опит за подмяна" });
-    assert.equal(await giacenza(a.id), 40, "giacenza се движи САМО през движения");
+    await master.put(`/api/articoli/${a.id}`, {
+      quantita: 9999,
+      nome: "Опит за подмяна",
+    });
+    assert.equal(
+      await giacenza(a.id),
+      40,
+      "giacenza се движи САМО през движения",
+    );
   });
 });
 
@@ -106,8 +136,16 @@ describe("състезание — инвариантът е неотрицат�
   test("две паралелни USCITA със сбор над наличността: минава само едната", async () => {
     const a = await nuovoArticolo(5);
     const [x, y] = await Promise.all([
-      master.post("/api/movimenti", { articoloId: a.id, tipo: "USCITA", quantita: 5 }),
-      master.post("/api/movimenti", { articoloId: a.id, tipo: "USCITA", quantita: 5 }),
+      master.post("/api/movimenti", {
+        articoloId: a.id,
+        tipo: "USCITA",
+        quantita: 5,
+      }),
+      master.post("/api/movimenti", {
+        articoloId: a.id,
+        tipo: "USCITA",
+        quantita: 5,
+      }),
     ]);
     const successi = [x, y].filter((r) => r.status === 201).length;
     assert.equal(successi, 1, "точно едно движение бива да мине");
@@ -118,12 +156,20 @@ describe("състезание — инвариантът е неотрицат�
     const a = await nuovoArticolo(10);
     const esiti = await Promise.all(
       Array.from({ length: 8 }, () =>
-        master.post("/api/movimenti", { articoloId: a.id, tipo: "USCITA", quantita: 3 })
-      )
+        master.post("/api/movimenti", {
+          articoloId: a.id,
+          tipo: "USCITA",
+          quantita: 3,
+        }),
+      ),
     );
     const passati = esiti.filter((r) => r.status === 201).length;
     const finale = await giacenza(a.id);
     assert.ok(finale >= 0, `наличността падна под нула: ${finale}`);
-    assert.equal(finale, 10 - passati * 3, "наличността трябва да отговаря на успелите движения");
+    assert.equal(
+      finale,
+      10 - passati * 3,
+      "наличността трябва да отговаря на успелите движения",
+    );
   });
 });

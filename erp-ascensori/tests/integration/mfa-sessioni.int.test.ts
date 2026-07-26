@@ -75,9 +75,11 @@ describe("втори фактор", () => {
   test("подготовка, включване и вход с код", async () => {
     const u = await nuovoUtente();
 
-    const setup = await u.sessione.get<{ segreto: string; uri: string; attivo: boolean }>(
-      "/api/auth/mfa",
-    );
+    const setup = await u.sessione.get<{
+      segreto: string;
+      uri: string;
+      attivo: boolean;
+    }>("/api/auth/mfa");
     assert.equal(setup.status, 200);
     assert.equal(setup.dati.attivo, false);
     assert.match(setup.dati.uri, /^otpauth:\/\/totp\//);
@@ -87,9 +89,12 @@ describe("втори фактор", () => {
     assert.equal(male.status === 400 || male.status === 200, true);
     if (male.status === 200) return; // 000000 случайно е верният код
 
-    const attiva = await u.sessione.post<{ codiciRecupero: string[] }>("/api/auth/mfa", {
-      codice: codiceTotp(setup.dati.segreto),
-    });
+    const attiva = await u.sessione.post<{ codiciRecupero: string[] }>(
+      "/api/auth/mfa",
+      {
+        codice: codiceTotp(setup.dati.segreto),
+      },
+    );
     assert.equal(attiva.status, 200, JSON.stringify(attiva.dati));
     assert.equal(attiva.dati.codiciRecupero.length, 8);
 
@@ -110,9 +115,12 @@ describe("втори фактор", () => {
   test("резервният код работи ВЕДНЪЖ", async () => {
     const u = await nuovoUtente();
     const setup = await u.sessione.get<{ segreto: string }>("/api/auth/mfa");
-    const attiva = await u.sessione.post<{ codiciRecupero: string[] }>("/api/auth/mfa", {
-      codice: codiceTotp(setup.dati.segreto),
-    });
+    const attiva = await u.sessione.post<{ codiciRecupero: string[] }>(
+      "/api/auth/mfa",
+      {
+        codice: codiceTotp(setup.dati.segreto),
+      },
+    );
     assert.equal(attiva.status, 200);
     const recupero = attiva.dati.codiciRecupero[0];
 
@@ -145,9 +153,13 @@ describe("втори фактор", () => {
   test("ADMIN не може да си изключи задължителния втори фактор", async () => {
     const u = await nuovoUtente("ADMIN");
     const setup = await u.sessione.get<{ segreto: string }>("/api/auth/mfa");
-    await u.sessione.post("/api/auth/mfa", { codice: codiceTotp(setup.dati.segreto) });
+    await u.sessione.post("/api/auth/mfa", {
+      codice: codiceTotp(setup.dati.segreto),
+    });
 
-    const off = await u.sessione.richiesta("DELETE", "/api/auth/mfa", { password: PASSWORD });
+    const off = await u.sessione.richiesta("DELETE", "/api/auth/mfa", {
+      password: PASSWORD,
+    });
     assert.equal(off.status, 403);
   });
 });
@@ -162,14 +174,18 @@ describe("активни сесии", () => {
     const me = await u.sessione.get("/api/me");
     assert.equal(me.status, 200);
 
-    const lista = await u.sessione.get<{ righe: { id: string }[] }>("/api/sessioni");
+    const lista = await u.sessione.get<{ righe: { id: string }[] }>(
+      "/api/sessioni",
+    );
     assert.equal(lista.status, 200);
     assert.ok(lista.dati.righe.length >= 2, "втората сесия не е записана");
   });
 
   test("списъкът НЕ издава отпечатъка на токена", async () => {
     const u = await nuovoUtente();
-    const lista = await u.sessione.get<{ righe: Record<string, unknown>[] }>("/api/sessioni");
+    const lista = await u.sessione.get<{ righe: Record<string, unknown>[] }>(
+      "/api/sessioni",
+    );
     for (const r of lista.dati.righe)
       assert.equal("tokenHash" in r, false, "хешът на токена излиза навън");
   });
@@ -190,7 +206,9 @@ describe("активни сесии", () => {
   test("чужда сесия не се прекратява с познат идентификатор", async () => {
     const a = await nuovoUtente();
     const b = await nuovoUtente();
-    const listaB = await b.sessione.get<{ righe: { id: string }[] }>("/api/sessioni");
+    const listaB = await b.sessione.get<{ righe: { id: string }[] }>(
+      "/api/sessioni",
+    );
     const idB = listaB.dati.righe[0].id;
 
     const r = await a.sessione.richiesta("DELETE", `/api/sessioni/${idB}`);
@@ -201,7 +219,11 @@ describe("активни сесии", () => {
     const u = await nuovoUtente();
     const nuovaPwd = "TrentaTreTrentini!2026";
     assert.equal(
-      (await master.post(`/api/utenti/${u.id}/password`, { password: nuovaPwd })).status,
+      (
+        await master.post(`/api/utenti/${u.id}/password`, {
+          password: nuovaPwd,
+        })
+      ).status,
       200,
     );
     const rinnovo = await u.sessione.richiesta("POST", "/api/auth/refresh");
@@ -212,16 +234,27 @@ describe("активни сесии", () => {
 test("политиката важи и при нулиране на парола от администратор", async () => {
   const u = await nuovoUtente();
   // Къса — отказва се.
-  assert.equal((await master.post(`/api/utenti/${u.id}/password`, { password: "Corta1!" })).status, 400);
+  assert.equal(
+    (await master.post(`/api/utenti/${u.id}/password`, { password: "Corta1!" }))
+      .status,
+    400,
+  );
   // Съдържаща собственото име — също.
   assert.equal(
-    (await master.post(`/api/utenti/${u.id}/password`, { password: "utenteprova2026" })).status,
+    (
+      await master.post(`/api/utenti/${u.id}/password`, {
+        password: "utenteprova2026",
+      })
+    ).status,
     400,
   );
   // Валидна — минава.
   assert.equal(
-    (await master.post(`/api/utenti/${u.id}/password`, { password: "collina tranquilla 26" }))
-      .status,
+    (
+      await master.post(`/api/utenti/${u.id}/password`, {
+        password: "collina tranquilla 26",
+      })
+    ).status,
     200,
   );
 });

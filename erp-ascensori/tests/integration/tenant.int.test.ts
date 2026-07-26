@@ -14,7 +14,9 @@ before(async () => {
 
   // Две фирми, всяка със свой ADMIN
   const creaAzienda = async (etichetta: string) => {
-    const slug = unico(etichetta).toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const slug = unico(etichetta)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-");
     const t = await master.post<{ id: string }>("/api/tenants", {
       slug,
       ragioneSociale: `Azienda ${etichetta}`,
@@ -50,11 +52,13 @@ describe("изолация на данните между фирми", () => {
     });
     assert.equal(creato.status, 201);
 
-    const listaA = await aziendaA.get<{ righe: { id: string; nome: string }[] }>("/api/condomini");
+    const listaA = await aziendaA.get<{
+      righe: { id: string; nome: string }[];
+    }>("/api/condomini");
     assert.equal(listaA.status, 200);
     assert.ok(
       !listaA.dati.righe.some((r) => r.id === creato.dati.id),
-      "фирма А вижда запис на фирма Б в списъка"
+      "фирма А вижда запис на фирма Б в списъка",
     );
   });
 
@@ -65,7 +69,11 @@ describe("изолация на данните между фирми", () => {
       citta: "Roma",
     });
     const letto = await aziendaA.get(`/api/condomini/${creato.dati.id}`);
-    assert.equal(letto.status, 404, "чуждият запис не бива дори да съществува за фирма А");
+    assert.equal(
+      letto.status,
+      404,
+      "чуждият запис не бива дори да съществува за фирма А",
+    );
   });
 
   test("промяна и изтриване на чужд запис се отказват", async () => {
@@ -74,13 +82,17 @@ describe("изолация на данните между фирми", () => {
       indirizzo: "Via B 3",
       citta: "Roma",
     });
-    const mod = await aziendaA.put(`/api/condomini/${creato.dati.id}`, { citta: "Milano" });
+    const mod = await aziendaA.put(`/api/condomini/${creato.dati.id}`, {
+      citta: "Milano",
+    });
     assert.equal(mod.status, 404);
     const canc = await aziendaA.del(`/api/condomini/${creato.dati.id}`);
     assert.equal(canc.status, 404);
 
     // и наистина не е променен
-    const verifica = await aziendaB.get<{ citta: string }>(`/api/condomini/${creato.dati.id}`);
+    const verifica = await aziendaB.get<{ citta: string }>(
+      `/api/condomini/${creato.dati.id}`,
+    );
     assert.equal(verifica.dati.citta, "Roma");
   });
 
@@ -91,7 +103,9 @@ describe("изолация на данните между фирми", () => {
       modello: "X",
     });
     assert.equal(impB.status, 201);
-    const listaA = await aziendaA.get<{ righe: { id: string }[] }>("/api/impianti");
+    const listaA = await aziendaA.get<{ righe: { id: string }[] }>(
+      "/api/impianti",
+    );
     assert.ok(!listaA.dati.righe.some((r) => r.id === impB.dati.id));
   });
 
@@ -100,9 +114,14 @@ describe("изолация на данните между фирми", () => {
       oggetto: unico("PrevB"),
     });
     assert.equal(prevB.status, 201);
-    const listaA = await aziendaA.get<{ righe: { id: string }[] }>("/api/preventivi");
+    const listaA = await aziendaA.get<{ righe: { id: string }[] }>(
+      "/api/preventivi",
+    );
     assert.ok(!listaA.dati.righe.some((r) => r.id === prevB.dati.id));
-    assert.equal((await aziendaA.get(`/api/preventivi/${prevB.dati.id}`)).status, 404);
+    assert.equal(
+      (await aziendaA.get(`/api/preventivi/${prevB.dati.id}`)).status,
+      404,
+    );
   });
 
   test("складът е разделен", async () => {
@@ -110,7 +129,9 @@ describe("изолация на данните между фирми", () => {
       codice: unico("ARTB"),
       nome: "Articolo B",
     });
-    const listaA = await aziendaA.get<{ righe: { id: string }[] }>("/api/articoli");
+    const listaA = await aziendaA.get<{ righe: { id: string }[] }>(
+      "/api/articoli",
+    );
     assert.ok(!listaA.dati.righe.some((r) => r.id === artB.dati.id));
   });
 
@@ -121,10 +142,12 @@ describe("изолация на данните между фирми", () => {
       indirizzo: "Via 0",
       citta: "Milano",
     });
-    const listaA = await aziendaA.get<{ righe: { id: string }[] }>("/api/condomini");
+    const listaA = await aziendaA.get<{ righe: { id: string }[] }>(
+      "/api/condomini",
+    );
     assert.ok(
       !listaA.dati.righe.some((r) => r.id === senzaTenant.dati.id),
-      "фирма А не бива да вижда записите без фирма"
+      "фирма А не бива да вижда записите без фирма",
     );
   });
 });
@@ -138,19 +161,36 @@ describe("изолация в маршрутите извън CRUD фабрик�
       oggetto: unico("PrevStatoB"),
     });
     assert.equal(prevB.status, 201);
-    const cambio = await aziendaA.patch(`/api/preventivi/${prevB.dati.id}/stato`, {
-      stato: "INVIATO",
-    });
-    assert.equal(cambio.status, 404, "фирма А не бива да мърда документ на фирма Б");
+    const cambio = await aziendaA.patch(
+      `/api/preventivi/${prevB.dati.id}/stato`,
+      {
+        stato: "INVIATO",
+      },
+    );
+    assert.equal(
+      cambio.status,
+      404,
+      "фирма А не бива да мърда документ на фирма Б",
+    );
 
-    const verifica = await aziendaB.get<{ stato: string }>(`/api/preventivi/${prevB.dati.id}`);
-    assert.equal(verifica.dati.stato, "BOZZA", "статусът наистина не е променен");
+    const verifica = await aziendaB.get<{ stato: string }>(
+      `/api/preventivi/${prevB.dati.id}`,
+    );
+    assert.equal(
+      verifica.dati.stato,
+      "BOZZA",
+      "статусът наистина не е променен",
+    );
   });
 
   test("смяна на статус на чужд ордин връща 404", async () => {
-    const ordB = await aziendaB.post<{ id: string }>("/api/ordini", { oggetto: unico("OrdB") });
+    const ordB = await aziendaB.post<{ id: string }>("/api/ordini", {
+      oggetto: unico("OrdB"),
+    });
     assert.equal(ordB.status, 201);
-    const cambio = await aziendaA.patch(`/api/ordini/${ordB.dati.id}/stato`, { stato: "EMESSO" });
+    const cambio = await aziendaA.patch(`/api/ordini/${ordB.dati.id}/stato`, {
+      stato: "EMESSO",
+    });
     assert.equal(cambio.status, 404);
   });
 
@@ -163,7 +203,11 @@ describe("изолация в маршрутите извън CRUD фабрик�
       quantita: "1",
       prezzoUnitario: "100",
     });
-    assert.equal(voce.status, 404, "фирма А не бива да пише редове в документ на фирма Б");
+    assert.equal(
+      voce.status,
+      404,
+      "фирма А не бива да пише редове в документ на фирма Б",
+    );
   });
 
   test("движение по чужд артикул се отказва", async () => {
@@ -181,22 +225,28 @@ describe("изолация в маршрутите извън CRUD фабрик�
   });
 
   test("администраторът на фирма А не вижда потребителите на фирма Б", async () => {
-    const lista = await aziendaA.get<{ righe: { email: string }[] }>("/api/utenti");
+    const lista = await aziendaA.get<{ righe: { email: string }[] }>(
+      "/api/utenti",
+    );
     assert.equal(lista.status, 200);
     assert.ok(
       !lista.dati.righe.some((r) => r.email.includes("beta")),
-      "имейлите на чужда фирма не бива да излизат в списъка"
+      "имейлите на чужда фирма не бива да излизат в списъка",
     );
     // MASTER, обратно, обслужва всички инсталации и вижда всичко
-    const listaMaster = await master.get<{ righe: { email: string }[] }>("/api/utenti");
+    const listaMaster = await master.get<{ righe: { email: string }[] }>(
+      "/api/utenti",
+    );
     assert.ok(listaMaster.dati.righe.length > lista.dati.righe.length);
   });
 
   test("администраторът на фирма А не сменя паролата на чужд потребител", async () => {
-    const lista = await master.get<{ righe: { id: string; email: string }[] }>("/api/utenti");
+    const lista = await master.get<{ righe: { id: string; email: string }[] }>(
+      "/api/utenti",
+    );
     // имейлът е `<slug>-admin@test.local`, а slug-ът носи уникалната добавка
     const utenteB = lista.dati.righe.find(
-      (r) => r.email.includes("beta") && r.email.includes("-admin@")
+      (r) => r.email.includes("beta") && r.email.includes("-admin@"),
     );
     assert.ok(utenteB, "потребителят на фирма Б съществува");
     const reset = await aziendaA.post(`/api/utenti/${utenteB.id}/password`, {
@@ -206,7 +256,9 @@ describe("изолация в маршрутите извън CRUD фабрик�
   });
 
   test("администраторът не създава потребител в чужда фирма", async () => {
-    const tenants = await master.get<{ righe: { id: string; slug: string }[] }>("/api/tenants");
+    const tenants = await master.get<{ righe: { id: string; slug: string }[] }>(
+      "/api/tenants",
+    );
     const beta = tenants.dati.righe.find((t) => t.slug.includes("beta"));
     assert.ok(beta, "фирма Б съществува");
     const creato = await aziendaA.post("/api/utenti", {
@@ -226,7 +278,11 @@ describe("изолация в маршрутите извън CRUD фабрик�
 describe("изолация: табло, импорт, одит, номерация", () => {
   test("таблото не брои и не показва данни на друга фирма", async () => {
     const matricola = unico("MB-DASH");
-    await aziendaB.post("/api/impianti", { matricola, marca: "Otis", modello: "Gen2" });
+    await aziendaB.post("/api/impianti", {
+      matricola,
+      marca: "Otis",
+      modello: "Gen2",
+    });
 
     const statsA = await aziendaA.get<{
       kpi: { impiantiTotali: number };
@@ -234,8 +290,10 @@ describe("изолация: табло, импорт, одит, номераци
     }>("/api/dashboard/stats");
     assert.equal(statsA.status, 200);
     assert.ok(
-      !statsA.dati.scadenzeProssime.some((s) => s.impianto?.matricola === matricola),
-      "фирма А вижда импиант на фирма Б в сроковете на таблото"
+      !statsA.dati.scadenzeProssime.some(
+        (s) => s.impianto?.matricola === matricola,
+      ),
+      "фирма А вижда импиант на фирма Б в сроковете на таблото",
     );
 
     // Фирма А няма импианти → броячът трябва да е 0, не да брои чуждите.
@@ -243,7 +301,7 @@ describe("изолация: табло, импорт, одит, номераци
     assert.equal(
       statsA.dati.kpi.impiantiTotali,
       impiantiA.dati.totale,
-      "KPI-то на таблото не съвпада със собствения списък — брои чужди редове"
+      "KPI-то на таблото не съвпада със собствения списък — брои чужди редове",
     );
   });
 
@@ -257,15 +315,15 @@ describe("изолация: табло, импорт, одит, номераци
 
     // Вижда се от фирмата, която го е внесла…
     const listaB = await aziendaB.get<{ righe: { nome: string }[] }>(
-      `/api/condomini?q=${encodeURIComponent(nome)}`
+      `/api/condomini?q=${encodeURIComponent(nome)}`,
     );
     assert.ok(
       listaB.dati.righe.some((r) => r.nome === nome),
-      "внесеният ред изчезна от списъка на фирмата, която го внесе"
+      "внесеният ред изчезна от списъка на фирмата, която го внесе",
     );
     // …и НЕ се вижда от друга.
     const listaA = await aziendaA.get<{ righe: { nome: string }[] }>(
-      `/api/condomini?q=${encodeURIComponent(nome)}`
+      `/api/condomini?q=${encodeURIComponent(nome)}`,
     );
     assert.ok(!listaA.dati.righe.some((r) => r.nome === nome));
   });
@@ -280,17 +338,17 @@ describe("изолация: табло, импорт, одит, номераци
     assert.equal(creato.status, 201);
 
     const auditA = await aziendaA.get<{ righe: { entitaId: string | null }[] }>(
-      "/api/audit?size=200"
+      "/api/audit?size=200",
     );
     assert.equal(auditA.status, 200);
     assert.ok(
       !auditA.dati.righe.some((r) => r.entitaId === creato.dati.id),
-      "фирма А чете одитната следа на фирма Б"
+      "фирма А чете одитната следа на фирма Б",
     );
 
     // MASTER е нивото на доставчика и вижда всичко.
     const auditM = await master.get<{ righe: { entitaId: string | null }[] }>(
-      "/api/audit?size=200"
+      "/api/audit?size=200",
     );
     assert.ok(auditM.dati.righe.some((r) => r.entitaId === creato.dati.id));
   });
@@ -300,7 +358,9 @@ describe("изолация: табло, импорт, одит, номераци
 
     // Фирмите А и Б вече имат документи от предишните тестове — затова НОВА
     // фирма е единственият детерминистичен начин да се провери поредицата.
-    const slug = unico("numerazione").toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const slug = unico("numerazione")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-");
     const t = await master.post<{ id: string }>("/api/tenants", {
       slug,
       ragioneSociale: "Azienda numerazione",
@@ -319,7 +379,7 @@ describe("изолация: табло, импорт, одит, номераци
           tenantId: t.dati.id,
         })
       ).status,
-      201
+      201,
     );
     const nuova = new Sessione();
     assert.equal(await nuova.entra(email), 200);

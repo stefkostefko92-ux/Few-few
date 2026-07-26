@@ -56,7 +56,10 @@ export const POST = gestito(async (req) => {
       // Без tenantDiCreazione редовете се раждат с tenantId = null и изчезват от
       // списъците на фирмата, която току-що ги е внесла („2000 importate", празен списък).
       await d.create({
-        data: { ...(parsed.data as object), ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)) },
+        data: {
+          ...(parsed.data as object),
+          ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)),
+        },
       });
       importate++;
     } catch (e) {

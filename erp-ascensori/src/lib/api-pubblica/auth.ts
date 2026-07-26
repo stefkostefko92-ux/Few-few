@@ -6,7 +6,12 @@
 
 import { prisma } from "@/lib/prisma";
 import { ErroreHttp } from "@/lib/auth";
-import { chiaveDaHeader, hashChiave, autorizza, type Ambito } from "@/lib/api-pubblica/chiavi";
+import {
+  chiaveDaHeader,
+  hashChiave,
+  autorizza,
+  type Ambito,
+} from "@/lib/api-pubblica/chiavi";
 
 export interface ContestoApi {
   chiaveId: string;
@@ -21,13 +26,22 @@ export interface ContestoApi {
  * дисциплина като при входа, където отговорът е еднакъв, за да не се изброяват
  * съществуващи акаунти.
  */
-export async function richiedeChiave(req: Request, ambito: Ambito): Promise<ContestoApi> {
+export async function richiedeChiave(
+  req: Request,
+  ambito: Ambito,
+): Promise<ContestoApi> {
   const chiave = chiaveDaHeader(req.headers.get("authorization"));
   if (!chiave) throw new ErroreHttp(401, "Chiave API mancante o non valida");
 
   const riga = await prisma.apiKey.findUnique({
     where: { chiaveHash: hashChiave(chiave) },
-    select: { id: true, tenantId: true, ambiti: true, scadenza: true, revocataAt: true },
+    select: {
+      id: true,
+      tenantId: true,
+      ambiti: true,
+      scadenza: true,
+      revocataAt: true,
+    },
   });
   if (!riga) throw new ErroreHttp(401, "Chiave API mancante o non valida");
 
@@ -36,7 +50,10 @@ export async function richiedeChiave(req: Request, ambito: Ambito): Promise<Cont
     // Липсващото ПРАВО е 403: ключът е истински, просто не може това. Отменен и
     // изтекъл остават 401 — те не са въпрос на права.
     if (esito.motivo === "ambito")
-      throw new ErroreHttp(403, `Ambito «${ambito}» non concesso a questa chiave`);
+      throw new ErroreHttp(
+        403,
+        `Ambito «${ambito}» non concesso a questa chiave`,
+      );
     throw new ErroreHttp(401, "Chiave API mancante o non valida");
   }
 

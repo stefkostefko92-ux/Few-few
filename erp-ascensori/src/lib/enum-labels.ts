@@ -72,6 +72,17 @@ export const STATO_LABEL: Record<string, string> = {
   SCADUTA: "Scaduta",
   PAGATA: "Pagata",
   STORNATA: "Stornata (nota di credito)",
+  // StatoSdi — на италиански, с думите на самите известия.
+  NON_INVIATA: "Non trasmessa",
+  GENERATA: "XML generato",
+  CONSEGNATA: "Consegnata",
+  MANCATA_CONSEGNA: "Mancata consegna (nel cassetto fiscale)",
+  SCARTATA: "Scartata dallo SdI",
+  ACCETTATA: "Accettata dalla PA",
+  DECORSI_TERMINI: "Decorrenza termini",
+  // StatoPagamentoFattura
+  NON_PAGATA: "Non pagata",
+  PARZIALE: "Parzialmente pagata",
   ATTIVO: "Attivo",
   FERMO: "Fermo",
   MANUTENZIONE: "In manutenzione",

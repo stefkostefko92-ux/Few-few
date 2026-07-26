@@ -1,6 +1,9 @@
 "use client";
 
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { dataIt } from "@/lib/format";
 
 const TIPI = [
@@ -23,7 +26,8 @@ const config: EntityConfig = {
     {
       chiave: "tipo",
       label: "Tipo",
-      render: (r) => TIPI.find((t) => t.value === r.tipo)?.label ?? String(r.tipo),
+      render: (r) =>
+        TIPI.find((t) => t.value === r.tipo)?.label ?? String(r.tipo),
     },
     {
       chiave: "utente",
@@ -33,10 +37,21 @@ const config: EntityConfig = {
         return u ? `${u.nome} ${u.cognome}` : "—";
       },
     },
-    { chiave: "createdAt", label: "Creato", render: (r) => dataIt(r.createdAt as string) },
+    {
+      chiave: "createdAt",
+      label: "Creato",
+      render: (r) => dataIt(r.createdAt as string),
+    },
   ],
   campi: [
-    { name: "tipo", label: "Tipo", tipo: "select", richiesto: true, predefinito: "ALTRO", opzioni: TIPI },
+    {
+      name: "tipo",
+      label: "Tipo",
+      tipo: "select",
+      richiesto: true,
+      predefinito: "ALTRO",
+      opzioni: TIPI,
+    },
     { name: "titolo", label: "Titolo", tipo: "text", richiesto: true },
     { name: "fileUrl", label: "Percorso file allegato", tipo: "text" },
     { name: "contenuto", label: "Contenuto", tipo: "textarea", colSpan2: true },

@@ -45,23 +45,42 @@ export interface EsitoPassword {
 
 export function validaPassword(
   password: string,
-  opzioni: { privilegiata?: boolean; email?: string; nome?: string; cognome?: string } = {},
+  opzioni: {
+    privilegiata?: boolean;
+    email?: string;
+    nome?: string;
+    cognome?: string;
+  } = {},
 ): EsitoPassword {
-  const minima = opzioni.privilegiata ? LUNGHEZZA_MINIMA_PRIVILEGIATA : LUNGHEZZA_MINIMA;
+  const minima = opzioni.privilegiata
+    ? LUNGHEZZA_MINIMA_PRIVILEGIATA
+    : LUNGHEZZA_MINIMA;
   if (password.length < minima)
-    return { valida: false, errore: `La password deve avere almeno ${minima} caratteri` };
+    return {
+      valida: false,
+      errore: `La password deve avere almeno ${minima} caratteri`,
+    };
   // Горна граница срещу претоварване: bcrypt и без това реже на 72 байта.
   if (password.length > 200)
-    return { valida: false, errore: "La password non può superare i 200 caratteri" };
+    return {
+      valida: false,
+      errore: "La password non può superare i 200 caratteri",
+    };
 
   const basso = password.toLowerCase();
   if (PROIBITE.has(basso))
-    return { valida: false, errore: "Password troppo comune: sceglierne un'altra" };
+    return {
+      valida: false,
+      errore: "Password troppo comune: sceglierne un'altra",
+    };
 
   // Един и същи знак повторен цялата дължина („aaaaaaaaaaaa") минава проверката
   // за дължина, но не носи никаква ентропия.
   if (new Set(password).size < 5)
-    return { valida: false, errore: "Password troppo ripetitiva: variare i caratteri" };
+    return {
+      valida: false,
+      errore: "Password troppo ripetitiva: variare i caratteri",
+    };
 
   // Част от собствените данни в паролата е първото, което се пробва.
   const parti = [opzioni.email?.split("@")[0], opzioni.nome, opzioni.cognome]
@@ -77,9 +96,14 @@ export function validaPassword(
 }
 
 /** Изтекла ли е паролата. `null` = никога не е сменяна → иска смяна. */
-export function passwordScaduta(cambiataAt: Date | null | undefined, oggi = new Date()): boolean {
+export function passwordScaduta(
+  cambiataAt: Date | null | undefined,
+  oggi = new Date(),
+): boolean {
   if (!cambiataAt) return false; // сийднат акаунт: не блокираме първия вход
-  const scadenza = new Date(cambiataAt.getTime() + GIORNI_SCADENZA * 86_400_000);
+  const scadenza = new Date(
+    cambiataAt.getTime() + GIORNI_SCADENZA * 86_400_000,
+  );
   return oggi > scadenza;
 }
 

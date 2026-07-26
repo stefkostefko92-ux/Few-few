@@ -14,5 +14,7 @@ export const GET = gestito(async (req) => {
   const s = await richiedeRuolo("ADMIN");
   const q = testoParam(new URL(req.url));
   if (!q || q.length < 2) return ok({ righe: [] });
-  return ok({ righe: await cercaSoggetti(q, s.tenantId ?? null, s.ruolo === "MASTER") });
+  return ok({
+    righe: await cercaSoggetti(q, s.tenantId ?? null, s.ruolo === "MASTER"),
+  });
 });

@@ -11,7 +11,11 @@ const config: EntityConfig = {
   api: "/api/cottimisti",
   cerca: "Cerca per ragione sociale, P. IVA…",
   colonne: [
-    { chiave: "ragioneSociale", label: "Ragione sociale", className: "font-medium" },
+    {
+      chiave: "ragioneSociale",
+      label: "Ragione sociale",
+      className: "font-medium",
+    },
     {
       chiave: "tipo",
       label: "Tipo",
@@ -20,10 +24,19 @@ const config: EntityConfig = {
     { chiave: "partitaIva", label: "P. IVA", className: "font-mono" },
     { chiave: "telefono", label: "Telefono" },
     { chiave: "email", label: "Email" },
-    { chiave: "attivo", label: "Abilitato", render: (r) => (r.attivo ? "Sì" : "No") },
+    {
+      chiave: "attivo",
+      label: "Abilitato",
+      render: (r) => (r.attivo ? "Sì" : "No"),
+    },
   ],
   campi: [
-    { name: "ragioneSociale", label: "Ragione sociale", tipo: "text", richiesto: true },
+    {
+      name: "ragioneSociale",
+      label: "Ragione sociale",
+      tipo: "text",
+      richiesto: true,
+    },
     {
       name: "tipo",
       label: "Tipo",

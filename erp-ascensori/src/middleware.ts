@@ -57,7 +57,9 @@ export async function middleware(req: NextRequest) {
   // ръка и отворен капак на шахтата. Стойността се проверява при ПОЛЗВАНЕ
   // (`ritornoSicuro`), не тук: отвореното пренасочване се спира на изхода.
   url.search =
-    pathname === "/" ? "" : `?da=${encodeURIComponent(pathname + req.nextUrl.search)}`;
+    pathname === "/"
+      ? ""
+      : `?da=${encodeURIComponent(pathname + req.nextUrl.search)}`;
   return NextResponse.redirect(url);
 }
 

@@ -71,7 +71,9 @@ async function controllaParent(
   parentId: string,
   s: Sessione,
 ): Promise<void> {
-  const d = (tx as unknown as Record<ModelloPrisma, ContoParent>)[cfg.parentModel];
+  const d = (tx as unknown as Record<ModelloPrisma, ContoParent>)[
+    cfg.parentModel
+  ];
   // Условен запис вместо четене: `updateMany` с условие по статус или сработва,
   // или връща 0 — и в двата случая под ключалката на реда, така че конкурентна
   // смяна на статуса не може да се промъкне между проверката и вписването.
@@ -79,7 +81,9 @@ async function controllaParent(
     where: {
       id: parentId,
       ...filtroTenant(s),
-      ...(cfg.statiModificabili ? { stato: { in: cfg.statiModificabili } } : {}),
+      ...(cfg.statiModificabili
+        ? { stato: { in: cfg.statiModificabili } }
+        : {}),
     },
     data: { updatedAt: new Date() },
   });
@@ -87,7 +91,9 @@ async function controllaParent(
   // Нула засегнати редове: или документът не е наш/не съществува, или е в
   // състояние, което не приема промени. Различаваме ги, за да не даваме 409 за
   // чужд документ (това би издало съществуването му).
-  const esiste = await d.findFirst({ where: { id: parentId, ...filtroTenant(s) } });
+  const esiste = await d.findFirst({
+    where: { id: parentId, ...filtroTenant(s) },
+  });
   if (!esiste) throw new ErroreHttp(404, "Documento non trovato");
   throw new ErroreHttp(409, "Documento non modificabile in questo stato");
 }

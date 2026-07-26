@@ -8,7 +8,10 @@ import { prisma } from "@/lib/prisma";
  * Еднократността е цялата разлика между резервен код и втора парола: без нея
  * записан на хартия код върши работа завинаги.
  */
-export async function consumaCodiceRecupero(utenteId: string, fornito: string): Promise<boolean> {
+export async function consumaCodiceRecupero(
+  utenteId: string,
+  fornito: string,
+): Promise<boolean> {
   const u = await prisma.user.findUnique({
     where: { id: utenteId },
     select: { codiciRecupero: true },

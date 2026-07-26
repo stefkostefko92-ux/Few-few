@@ -10,7 +10,12 @@ import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeSessione, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
-import { generaSegreto, uriOtpauth, verifica, generaCodiciRecupero } from "@/lib/totp";
+import {
+  generaSegreto,
+  uriOtpauth,
+  verifica,
+  generaCodiciRecupero,
+} from "@/lib/totp";
 import { hashCodiciRecupero } from "@/lib/mfa";
 import { mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
@@ -29,7 +34,10 @@ export const GET = gestito(async () => {
   // след презареждане на страницата.
   const segreto = u.totpSegreto ?? generaSegreto();
   if (!u.totpSegreto)
-    await prisma.user.update({ where: { id: s.sub }, data: { totpSegreto: segreto } });
+    await prisma.user.update({
+      where: { id: s.sub },
+      data: { totpSegreto: segreto },
+    });
 
   return ok({ attivo: false, segreto, uri: uriOtpauth(segreto, u.email) });
 });
@@ -45,15 +53,23 @@ export const POST = gestito(async (req) => {
     where: { id: s.sub },
     select: { totpSegreto: true, totpAttivo: true },
   });
-  if (u.totpAttivo) throw new ErroreHttp(409, "Verifica in due passaggi già attiva");
-  if (!u.totpSegreto) throw new ErroreHttp(409, "Avviare prima la configurazione");
+  if (u.totpAttivo)
+    throw new ErroreHttp(409, "Verifica in due passaggi già attiva");
+  if (!u.totpSegreto)
+    throw new ErroreHttp(409, "Avviare prima la configurazione");
   if (!verifica(u.totpSegreto, codice))
-    throw new ErroreHttp(400, "Codice non valido: verificare l'orario del dispositivo");
+    throw new ErroreHttp(
+      400,
+      "Codice non valido: verificare l'orario del dispositivo",
+    );
 
   const codici = generaCodiciRecupero();
   await prisma.user.update({
     where: { id: s.sub },
-    data: { totpAttivo: true, codiciRecupero: await hashCodiciRecupero(codici) },
+    data: {
+      totpAttivo: true,
+      codiciRecupero: await hashCodiciRecupero(codici),
+    },
   });
   await scriviAudit({
     azione: "STATE_CHANGE",

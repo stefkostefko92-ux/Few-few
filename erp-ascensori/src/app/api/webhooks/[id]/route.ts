@@ -8,7 +8,9 @@ import { scriviAudit } from "@/lib/audit";
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
-  const { count } = await prisma.webhook.deleteMany({ where: { id, ...filtroTenant(s) } });
+  const { count } = await prisma.webhook.deleteMany({
+    where: { id, ...filtroTenant(s) },
+  });
   if (count === 0) return errore(404, "Webhook non trovato");
   await scriviAudit({
     azione: "DELETE",

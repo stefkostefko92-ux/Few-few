@@ -64,19 +64,37 @@ export const GET = gestito(async () => {
     prisma.preventivo.groupBy({ by: ["stato"], _count: true, where: t }),
     prisma.preventivo.count({ where: { stato: "INVIATO", ...t } }),
     prisma.scadenzaImpianto.findMany({
-      where: { completata: false, dataScadenza: { lte: fra30 }, impianto: { is: t } },
+      where: {
+        completata: false,
+        dataScadenza: { lte: fra30 },
+        impianto: { is: t },
+      },
       include: { impianto: { select: { matricola: true, indirizzo: true } } },
       orderBy: { dataScadenza: "asc" },
       take: 10,
     }),
     prisma.scadenzaImpianto.count({
-      where: { completata: false, dataScadenza: { lte: fra30 }, impianto: { is: t } },
+      where: {
+        completata: false,
+        dataScadenza: { lte: fra30 },
+        impianto: { is: t },
+      },
     }),
     // Беше суров SQL без обхват по фирма. През Prisma правилото за изолация
     // стои на едно място и не може да се пропусне при следваща промяна.
     prisma.articoloMagazzino.findMany({
-      where: { attivo: true, quantita: { lt: prisma.articoloMagazzino.fields.sogliaMinima }, ...t },
-      select: { id: true, codice: true, nome: true, quantita: true, sogliaMinima: true },
+      where: {
+        attivo: true,
+        quantita: { lt: prisma.articoloMagazzino.fields.sogliaMinima },
+        ...t,
+      },
+      select: {
+        id: true,
+        codice: true,
+        nome: true,
+        quantita: true,
+        sogliaMinima: true,
+      },
       orderBy: { quantita: "asc" },
       take: 20,
     }),

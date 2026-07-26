@@ -22,8 +22,14 @@ export const TOLLERANZA_SECONDI = 300;
  * нападателят презаписва старо, валидно подписано известие с нова отметка и
  * получателят го приема отново („фактурата е платена" — два пъти).
  */
-export function firmaCorpo(corpo: string, segreto: string, timestamp: number): string {
-  return createHmac("sha256", segreto).update(`${timestamp}.${corpo}`).digest("hex");
+export function firmaCorpo(
+  corpo: string,
+  segreto: string,
+  timestamp: number,
+): string {
+  return createHmac("sha256", segreto)
+    .update(`${timestamp}.${corpo}`)
+    .digest("hex");
 }
 
 export type EsitoVerifica =
@@ -38,11 +44,13 @@ export function verificaFirma(
   timestamp: number,
   ora = Math.floor(Date.now() / 1000),
 ): EsitoVerifica {
-  if (Math.abs(ora - timestamp) > TOLLERANZA_SECONDI) return { valida: false, motivo: "timestamp" };
+  if (Math.abs(ora - timestamp) > TOLLERANZA_SECONDI)
+    return { valida: false, motivo: "timestamp" };
   const atteso = firmaCorpo(corpo, segreto, timestamp);
   const a = Buffer.from(atteso);
   const b = Buffer.from(firma);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return { valida: false, motivo: "firma" };
+  if (a.length !== b.length || !timingSafeEqual(a, b))
+    return { valida: false, motivo: "firma" };
   return { valida: true };
 }
 
@@ -63,7 +71,10 @@ export const EVENTI = [
 export type Evento = (typeof EVENTI)[number];
 
 export function eventiValidi(eventi: string[]): boolean {
-  return eventi.length > 0 && eventi.every((e) => (EVENTI as readonly string[]).includes(e));
+  return (
+    eventi.length > 0 &&
+    eventi.every((e) => (EVENTI as readonly string[]).includes(e))
+  );
 }
 
 /** След толкова поредни неуспеха абонаментът се спира сам. */

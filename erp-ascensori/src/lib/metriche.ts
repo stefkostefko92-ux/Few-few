@@ -10,7 +10,9 @@
 // затова тук няма опит за споделено състояние.
 
 /** Границите са в СЕКУНДИ и са подбрани около целта: p95 < 500 ms. */
-export const BUCKET_SECONDI = [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10] as const;
+export const BUCKET_SECONDI = [
+  0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10,
+] as const;
 
 interface Istogramma {
   conteggi: number[];
@@ -34,10 +36,17 @@ function chiave(nome: string, etichette: Record<string, string>): string {
 
 /** Prometheus не понася сурови кавички, наклонени черти и нов ред в етикет. */
 export function escapaEtichetta(v: string): string {
-  return String(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+  return String(v)
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n");
 }
 
-export function incrementa(nome: string, etichette: Record<string, string> = {}, di = 1): void {
+export function incrementa(
+  nome: string,
+  etichette: Record<string, string> = {},
+  di = 1,
+): void {
   const k = chiave(nome, etichette);
   contatori.set(k, (contatori.get(k) ?? 0) + di);
 }
@@ -50,7 +59,11 @@ export function osserva(
   const k = chiave(nome, etichette);
   let h = istogrammi.get(k);
   if (!h) {
-    h = { conteggi: new Array(BUCKET_SECONDI.length).fill(0), somma: 0, totale: 0 };
+    h = {
+      conteggi: new Array(BUCKET_SECONDI.length).fill(0),
+      somma: 0,
+      totale: 0,
+    };
     istogrammi.set(k, h);
   }
   h.somma += secondi;
@@ -113,11 +126,16 @@ export function esporta(extra: MetricaExtra[] = []): string {
   for (const [k, h] of [...istogrammi].sort()) {
     const { nome, etichette } = scomponi(k);
     intestazione(nome, "histogram");
-    const con = (extraEt: string) => (etichette ? `${etichette},${extraEt}` : extraEt);
+    const con = (extraEt: string) =>
+      etichette ? `${etichette},${extraEt}` : extraEt;
     for (let i = 0; i < BUCKET_SECONDI.length; i++)
-      righe.push(`${nome}_bucket{${con(`le="${BUCKET_SECONDI[i]}"`)}} ${h.conteggi[i]}`);
+      righe.push(
+        `${nome}_bucket{${con(`le="${BUCKET_SECONDI[i]}"`)}} ${h.conteggi[i]}`,
+      );
     righe.push(`${nome}_bucket{${con('le="+Inf"')}} ${h.totale}`);
-    righe.push(`${nome}_sum${etichette ? `{${etichette}}` : ""} ${h.somma.toFixed(6)}`);
+    righe.push(
+      `${nome}_sum${etichette ? `{${etichette}}` : ""} ${h.somma.toFixed(6)}`,
+    );
     righe.push(`${nome}_count${etichette ? `{${etichette}}` : ""} ${h.totale}`);
   }
 
@@ -126,7 +144,11 @@ export function esporta(extra: MetricaExtra[] = []): string {
     righe.push(`${chiave(m.nome, m.etichette ?? {})} ${m.valore}`);
   }
 
-  intestazione("erp_uptime_secondi", "gauge", "Secondi dall'avvio del processo");
+  intestazione(
+    "erp_uptime_secondi",
+    "gauge",
+    "Secondi dall'avvio del processo",
+  );
   righe.push(`erp_uptime_secondi ${Math.floor((Date.now() - AVVIO) / 1000)}`);
 
   return righe.join("\n") + "\n";

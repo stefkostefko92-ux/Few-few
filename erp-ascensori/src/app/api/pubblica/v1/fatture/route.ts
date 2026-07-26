@@ -8,7 +8,14 @@ import { richiedeChiave, filtroChiave } from "@/lib/api-pubblica/auth";
 
 export const dynamic = "force-dynamic";
 
-const STATI = ["BOZZA", "EMESSA", "INVIATA", "PAGATA", "SCADUTA", "STORNATA"] as const;
+const STATI = [
+  "BOZZA",
+  "EMESSA",
+  "INVIATA",
+  "PAGATA",
+  "SCADUTA",
+  "STORNATA",
+] as const;
 
 export const GET = gestito(async (req) => {
   const c = await richiedeChiave(req, "fatture:read");
@@ -20,7 +27,9 @@ export const GET = gestito(async (req) => {
   const where = {
     ...filtroChiave(c),
     ...(stato ? { stato } : {}),
-    ...(da && !Number.isNaN(new Date(da).getTime()) ? { data: { gte: new Date(da) } } : {}),
+    ...(da && !Number.isNaN(new Date(da).getTime())
+      ? { data: { gte: new Date(da) } }
+      : {}),
   };
   const [righe, totale] = await Promise.all([
     prisma.fattura.findMany({
@@ -38,7 +47,12 @@ export const GET = gestito(async (req) => {
         totaleLordo: true,
         amministratore: { select: { ragioneSociale: true, partitaIva: true } },
         voci: {
-          select: { descrizione: true, quantita: true, prezzoUnitario: true, aliquotaIva: true },
+          select: {
+            descrizione: true,
+            quantita: true,
+            prezzoUnitario: true,
+            aliquotaIva: true,
+          },
         },
       },
       orderBy: { data: "desc" },

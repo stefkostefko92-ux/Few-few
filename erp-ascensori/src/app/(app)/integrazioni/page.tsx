@@ -46,9 +46,10 @@ export default function Pagina() {
   const [ambiti, setAmbiti] = useState<string[]>([]);
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [eventi, setEventi] = useState<string[]>([]);
-  const [nuovoSegreto, setNuovoSegreto] = useState<{ testo: string; etichetta: string } | null>(
-    null,
-  );
+  const [nuovoSegreto, setNuovoSegreto] = useState<{
+    testo: string;
+    etichetta: string;
+  } | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
 
   const [etichetta, setEtichetta] = useState("");
@@ -59,7 +60,9 @@ export default function Pagina() {
   const carica = useCallback(async () => {
     const [k, w] = await Promise.all([
       apiFetch<{ righe: Chiave[]; ambitiDisponibili: string[] }>("/api/chiavi"),
-      apiFetch<{ righe: Webhook[]; eventiDisponibili: string[] }>("/api/webhooks"),
+      apiFetch<{ righe: Webhook[]; eventiDisponibili: string[] }>(
+        "/api/webhooks",
+      ),
     ]);
     if (k.ok) {
       setChiavi(k.dati.righe);
@@ -78,10 +81,13 @@ export default function Pagina() {
   async function creaChiave(e: React.FormEvent) {
     e.preventDefault();
     setErrore(null);
-    const { ok, dati } = await apiFetch<{ chiave?: string; error?: string }>("/api/chiavi", {
-      method: "POST",
-      body: JSON.stringify({ etichetta, ambiti: ambitiScelti }),
-    });
+    const { ok, dati } = await apiFetch<{ chiave?: string; error?: string }>(
+      "/api/chiavi",
+      {
+        method: "POST",
+        body: JSON.stringify({ etichetta, ambiti: ambitiScelti }),
+      },
+    );
     if (!ok) return setErrore(dati.error ?? "Errore");
     setNuovoSegreto({ testo: dati.chiave ?? "", etichetta: "Chiave API" });
     setEtichetta("");
@@ -92,12 +98,18 @@ export default function Pagina() {
   async function creaWebhook(e: React.FormEvent) {
     e.preventDefault();
     setErrore(null);
-    const { ok, dati } = await apiFetch<{ segreto?: string; error?: string }>("/api/webhooks", {
-      method: "POST",
-      body: JSON.stringify({ url, eventi: eventiScelti }),
-    });
+    const { ok, dati } = await apiFetch<{ segreto?: string; error?: string }>(
+      "/api/webhooks",
+      {
+        method: "POST",
+        body: JSON.stringify({ url, eventi: eventiScelti }),
+      },
+    );
     if (!ok) return setErrore(dati.error ?? "Errore");
-    setNuovoSegreto({ testo: dati.segreto ?? "", etichetta: "Segreto di firma" });
+    setNuovoSegreto({
+      testo: dati.segreto ?? "",
+      etichetta: "Segreto di firma",
+    });
     setUrl("");
     setEventiScelti([]);
     void carica();
@@ -109,10 +121,12 @@ export default function Pagina() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-1">Integrazioni</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+          Integrazioni
+        </h1>
         <p className="mt-1 text-sm text-text-3">
-          Chiavi per leggere i dati da un altro software · webhook per ricevere gli eventi senza
-          interrogare.
+          Chiavi per leggere i dati da un altro software · webhook per ricevere
+          gli eventi senza interrogare.
         </p>
       </div>
 
@@ -123,7 +137,12 @@ export default function Pagina() {
         </div>
       )}
 
-      {nuovoSegreto && <Segreto valore={nuovoSegreto.testo} etichetta={nuovoSegreto.etichetta} />}
+      {nuovoSegreto && (
+        <Segreto
+          valore={nuovoSegreto.testo}
+          etichetta={nuovoSegreto.etichetta}
+        />
+      )}
 
       <section className="card mt-6 p-5">
         <h2 className="mb-4 text-lg font-semibold text-text-1">Chiavi API</h2>
@@ -143,10 +162,17 @@ export default function Pagina() {
             </thead>
             <tbody>
               {chiavi.map((k) => (
-                <tr key={k.id} className="border-b border-border/60 last:border-0">
+                <tr
+                  key={k.id}
+                  className="border-b border-border/60 last:border-0"
+                >
                   <td className="py-2">{k.etichetta}</td>
-                  <td className="py-2 font-mono text-xs text-text-2">{k.prefisso}…</td>
-                  <td className="py-2 text-xs text-text-2">{k.ambiti.join(", ")}</td>
+                  <td className="py-2 font-mono text-xs text-text-2">
+                    {k.prefisso}…
+                  </td>
+                  <td className="py-2 text-xs text-text-2">
+                    {k.ambiti.join(", ")}
+                  </td>
                   <td className="py-2 text-text-3">
                     {k.ultimoUso ? dataIt(k.ultimoUso) : "mai usata"}
                   </td>
@@ -154,7 +180,9 @@ export default function Pagina() {
                     <button
                       className="btn-ghost h-7 px-2 text-xs text-danger-text"
                       onClick={async () => {
-                        await apiFetch(`/api/chiavi/${k.id}`, { method: "DELETE" });
+                        await apiFetch(`/api/chiavi/${k.id}`, {
+                          method: "DELETE",
+                        });
                         void carica();
                       }}
                     >
@@ -181,15 +209,24 @@ export default function Pagina() {
                 onChange={(e) => setEtichetta(e.target.value)}
               />
             </div>
-            <button className="btn-primary" type="submit" disabled={!ambitiScelti.length}>
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={!ambitiScelti.length}
+            >
               Crea chiave
             </button>
           </div>
           <fieldset className="mt-3">
-            <legend className="label">Ambiti (nessuno selezionato = nessun accesso)</legend>
+            <legend className="label">
+              Ambiti (nessuno selezionato = nessun accesso)
+            </legend>
             <div className="flex flex-wrap gap-3">
               {ambiti.map((a) => (
-                <label key={a} className="flex items-center gap-1.5 text-sm text-text-2">
+                <label
+                  key={a}
+                  className="flex items-center gap-1.5 text-sm text-text-2"
+                >
                   <input
                     type="checkbox"
                     checked={ambitiScelti.includes(a)}
@@ -207,7 +244,9 @@ export default function Pagina() {
         <h2 className="mb-4 text-lg font-semibold text-text-1">Webhook</h2>
 
         {webhooks.length === 0 ? (
-          <p className="mb-4 text-sm text-text-3">Nessun webhook configurato.</p>
+          <p className="mb-4 text-sm text-text-3">
+            Nessun webhook configurato.
+          </p>
         ) : (
           <table className="mb-5 w-full text-sm">
             <thead className="border-b border-border text-left text-xs uppercase text-text-3">
@@ -221,9 +260,16 @@ export default function Pagina() {
             </thead>
             <tbody>
               {webhooks.map((w) => (
-                <tr key={w.id} className="border-b border-border/60 last:border-0">
-                  <td className="max-w-xs truncate py-2 font-mono text-xs">{w.url}</td>
-                  <td className="py-2 text-xs text-text-2">{w.eventi.join(", ")}</td>
+                <tr
+                  key={w.id}
+                  className="border-b border-border/60 last:border-0"
+                >
+                  <td className="max-w-xs truncate py-2 font-mono text-xs">
+                    {w.url}
+                  </td>
+                  <td className="py-2 text-xs text-text-2">
+                    {w.eventi.join(", ")}
+                  </td>
                   <td className="py-2">
                     {w.attivo ? (
                       <span className="inline-flex items-center gap-1 text-success-text">
@@ -237,12 +283,16 @@ export default function Pagina() {
                       </span>
                     )}
                   </td>
-                  <td className="py-2 text-right font-mono text-text-2">{w._count.consegne}</td>
+                  <td className="py-2 text-right font-mono text-text-2">
+                    {w._count.consegne}
+                  </td>
                   <td className="py-2 text-right">
                     <button
                       className="btn-ghost h-7 px-2 text-xs text-danger-text"
                       onClick={async () => {
-                        await apiFetch(`/api/webhooks/${w.id}`, { method: "DELETE" });
+                        await apiFetch(`/api/webhooks/${w.id}`, {
+                          method: "DELETE",
+                        });
                         void carica();
                       }}
                     >
@@ -271,7 +321,11 @@ export default function Pagina() {
                 onChange={(e) => setUrl(e.target.value)}
               />
             </div>
-            <button className="btn-primary" type="submit" disabled={!eventiScelti.length}>
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={!eventiScelti.length}
+            >
               Crea webhook
             </button>
           </div>
@@ -279,7 +333,10 @@ export default function Pagina() {
             <legend className="label">Eventi</legend>
             <div className="flex flex-wrap gap-3">
               {eventi.map((e) => (
-                <label key={e} className="flex items-center gap-1.5 text-sm text-text-2">
+                <label
+                  key={e}
+                  className="flex items-center gap-1.5 text-sm text-text-2"
+                >
                   <input
                     type="checkbox"
                     checked={eventiScelti.includes(e)}
@@ -293,10 +350,13 @@ export default function Pagina() {
         </form>
 
         <p className="mt-4 text-xs text-text-3">
-          Ogni consegna è firmata: <code className="font-mono">x-erp-signature</code> è
-          l&apos;HMAC-SHA256 di <code className="font-mono">timestamp.corpo</code> con il segreto.
-          Verificare sempre firma e <code className="font-mono">x-erp-timestamp</code> (tolleranza
-          5 minuti) prima di fidarsi del contenuto.
+          Ogni consegna è firmata:{" "}
+          <code className="font-mono">x-erp-signature</code> è
+          l&apos;HMAC-SHA256 di{" "}
+          <code className="font-mono">timestamp.corpo</code> con il segreto.
+          Verificare sempre firma e{" "}
+          <code className="font-mono">x-erp-timestamp</code> (tolleranza 5
+          minuti) prima di fidarsi del contenuto.
         </p>
       </section>
     </div>

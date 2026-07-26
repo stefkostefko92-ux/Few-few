@@ -11,7 +11,14 @@ let ordineId: string;
 
 /** Валиден PNG, достатъчно голям да мине проверката за „нарисувано". */
 const firmaValida = `data:image/png;base64,${Buffer.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  0x89,
+  0x50,
+  0x4e,
+  0x47,
+  0x0d,
+  0x0a,
+  0x1a,
+  0x0a,
   ...new Array(400).fill(0x42),
 ]).toString("base64")}`;
 
@@ -19,12 +26,17 @@ before(async () => {
   master = await comeRuolo("MASTER");
   tecnico = await comeRuolo("TECNICO");
   cliente = await comeRuolo("CLIENTE");
-  const o = await master.post<{ id: string }>("/api/ordini", { oggetto: unico("OrdRap") });
+  const o = await master.post<{ id: string }>("/api/ordini", {
+    oggetto: unico("OrdRap"),
+  });
   assert.equal(o.status, 201);
   ordineId = o.dati.id;
 });
 
-async function creaRapportino(s: Sessione = tecnico, extra: Record<string, unknown> = {}) {
+async function creaRapportino(
+  s: Sessione = tecnico,
+  extra: Record<string, unknown> = {},
+) {
   return s.post<{ id: string; numero: string; firmatoAt: string | null }>(
     `/api/ordini/${ordineId}/rapportini`,
     {
@@ -75,8 +87,14 @@ describe("rapportino di intervento", () => {
       firmaCliente: firmaValida,
       firmatarioNome: "Mario Rossi",
     };
-    assert.equal((await tecnico.post(`/api/rapportini/${r.dati.id}/firma`, corpo)).status, 200);
-    const secondo = await tecnico.post(`/api/rapportini/${r.dati.id}/firma`, corpo);
+    assert.equal(
+      (await tecnico.post(`/api/rapportini/${r.dati.id}/firma`, corpo)).status,
+      200,
+    );
+    const secondo = await tecnico.post(
+      `/api/rapportini/${r.dati.id}/firma`,
+      corpo,
+    );
     assert.equal(secondo.status, 409);
   });
 
@@ -113,9 +131,12 @@ describe("rapportino di intervento", () => {
   });
 
   test("отчет на чужд ордин не се създава", async () => {
-    const r = await tecnico.post(`/api/ordini/${"00000000-0000-4000-8000-000000000000"}/rapportini`, {
-      descrizione: "Intervento su ordine inesistente",
-    });
+    const r = await tecnico.post(
+      `/api/ordini/${"00000000-0000-4000-8000-000000000000"}/rapportini`,
+      {
+        descrizione: "Intervento su ordine inesistente",
+      },
+    );
     assert.equal(r.status, 404);
   });
 });

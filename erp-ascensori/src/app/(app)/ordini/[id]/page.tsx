@@ -81,7 +81,10 @@ export default function Pagina() {
 
   return (
     <div>
-      <button className="btn-ghost mb-4 h-8 px-2 text-xs" onClick={() => router.push("/ordini")}>
+      <button
+        className="btn-ghost mb-4 h-8 px-2 text-xs"
+        onClick={() => router.push("/ordini")}
+      >
         <IcoIndietro />
         Ordini di lavoro
       </button>
@@ -106,9 +109,13 @@ export default function Pagina() {
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="card p-5">
-            <h2 className="mb-3 text-lg font-semibold text-text-1">Flusso di lavoro</h2>
+            <h2 className="mb-3 text-lg font-semibold text-text-1">
+              Flusso di lavoro
+            </h2>
             {ammesse.length === 0 ? (
-              <p className="text-sm text-text-3">Stato finale: nessuna transizione possibile.</p>
+              <p className="text-sm text-text-3">
+                Stato finale: nessuna transizione possibile.
+              </p>
             ) : (
               <>
                 <input
@@ -138,7 +145,9 @@ export default function Pagina() {
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-text-3">Tecnico</dt>
-                <dd>{o.tecnico ? `${o.tecnico.cognome} ${o.tecnico.nome}` : "—"}</dd>
+                <dd>
+                  {o.tecnico ? `${o.tecnico.cognome} ${o.tecnico.nome}` : "—"}
+                </dd>
               </div>
               <div>
                 <dt className="text-text-3">Ditta esterna / squadra</dt>
@@ -178,11 +187,14 @@ export default function Pagina() {
 
           {(o.fatture.length > 0 || o.ddt.length > 0) && (
             <div className="card p-5">
-              <h2 className="mb-3 text-lg font-semibold text-text-1">Documenti collegati</h2>
+              <h2 className="mb-3 text-lg font-semibold text-text-1">
+                Documenti collegati
+              </h2>
               <ul className="space-y-1 text-sm">
                 {o.fatture.map((f) => (
                   <li key={f.id} className="flex items-center gap-2">
-                    <span className="font-mono">{f.numero}</span> <Badge valore={f.stato} />
+                    <span className="font-mono">{f.numero}</span>{" "}
+                    <Badge valore={f.stato} />
                   </li>
                 ))}
                 {o.ddt.map((d) => (
@@ -198,7 +210,9 @@ export default function Pagina() {
         </div>
 
         <div className="card h-fit p-5">
-          <h2 className="mb-3 text-lg font-semibold text-text-1">Storico stati</h2>
+          <h2 className="mb-3 text-lg font-semibold text-text-1">
+            Storico stati
+          </h2>
           <ol className="space-y-3">
             {o.storico.map((s) => (
               <li key={s.id} className="border-l-2 border-border pl-3 text-sm">
@@ -216,7 +230,9 @@ export default function Pagina() {
                 <div className="mt-1 text-xs text-text-3">
                   {dataOraIt(s.createdAt)} · {s.utente}
                 </div>
-                {s.nota && <div className="mt-0.5 text-xs text-text-2">{s.nota}</div>}
+                {s.nota && (
+                  <div className="mt-0.5 text-xs text-text-2">{s.nota}</div>
+                )}
               </li>
             ))}
           </ol>

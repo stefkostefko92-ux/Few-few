@@ -33,12 +33,18 @@ export async function cercaSoggetti(
   const contiene = { contains: q, mode: "insensitive" as const };
   const [utenti, dipendenti, amministratori] = await Promise.all([
     prisma.user.findMany({
-      where: { ...dove, OR: [{ nome: contiene }, { cognome: contiene }, { email: contiene }] },
+      where: {
+        ...dove,
+        OR: [{ nome: contiene }, { cognome: contiene }, { email: contiene }],
+      },
       select: { id: true, nome: true, cognome: true, email: true },
       take: 20,
     }),
     prisma.dipendente.findMany({
-      where: { ...dove, OR: [{ nome: contiene }, { cognome: contiene }, { email: contiene }] },
+      where: {
+        ...dove,
+        OR: [{ nome: contiene }, { cognome: contiene }, { email: contiene }],
+      },
       select: { id: true, nome: true, cognome: true, email: true },
       take: 20,
     }),
@@ -52,7 +58,13 @@ export async function cercaSoggetti(
           { email: contiene },
         ],
       },
-      select: { id: true, nome: true, cognome: true, ragioneSociale: true, email: true },
+      select: {
+        id: true,
+        nome: true,
+        cognome: true,
+        ragioneSociale: true,
+        email: true,
+      },
       take: 20,
     }),
   ]);
@@ -139,7 +151,13 @@ export async function esporta(
   if (tipo === "utente") {
     collegati.sessioni = await prisma.sessioneAttiva.findMany({
       where: { utenteId: id },
-      select: { id: true, userAgent: true, ip: true, ultimoUso: true, createdAt: true },
+      select: {
+        id: true,
+        userAgent: true,
+        ip: true,
+        ultimoUso: true,
+        createdAt: true,
+      },
     });
     // Само СОБСТВЕНИТЕ действия. `dettagli` не влиза: то съдържа стойности от
     // чужди записи, а чл. 15(4) пази правата на другите.
@@ -154,16 +172,33 @@ export async function esporta(
   if (tipo === "dipendente") {
     collegati.assegnazioni = await prisma.assegnazioneTecnico.findMany({
       where: { dipendenteId: id },
-      select: { impiantoId: true, dataInizio: true, dataFine: true, attiva: true },
+      select: {
+        impiantoId: true,
+        dataInizio: true,
+        dataFine: true,
+        attiva: true,
+      },
     });
     collegati.ordini = await prisma.ordineLavoro.findMany({
       where: { tecnicoId: id },
-      select: { numero: true, oggetto: true, stato: true, dataInizio: true, dataFine: true },
+      select: {
+        numero: true,
+        oggetto: true,
+        stato: true,
+        dataInizio: true,
+        dataFine: true,
+      },
       orderBy: { createdAt: "desc" },
     });
     collegati.rapportini = await prisma.rapportino.findMany({
       where: { tecnicoId: id },
-      select: { numero: true, dataOra: true, oreLavoro: true, esito: true, descrizione: true },
+      select: {
+        numero: true,
+        dataOra: true,
+        oreLavoro: true,
+        esito: true,
+        descrizione: true,
+      },
       orderBy: { dataOra: "desc" },
     });
   }
@@ -180,7 +215,13 @@ export async function esporta(
     });
     collegati.preventivi = await prisma.preventivo.findMany({
       where: { amministratoreId: id },
-      select: { numero: true, oggetto: true, stato: true, totaleLordo: true, createdAt: true },
+      select: {
+        numero: true,
+        oggetto: true,
+        stato: true,
+        totaleLordo: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
   }
@@ -222,37 +263,51 @@ export async function anonimizza(
   const piano = pianoAnonimizzazione(tipo, id);
   const dati = datiAnonimizzati(piano);
 
-  const { aggiornato, sessioniRevocate } = await prisma.$transaction(async (tx) => {
-    const delegato: Record<TipoSoggetto, { update(a: object): Promise<unknown> }> = {
-      utente: tx.user,
-      dipendente: tx.dipendente,
-      amministratore: tx.amministratore,
-    };
-    const aggiornato = (await delegato[tipo].update({
-      where: { id },
-      data: { ...dati, attivo: false },
-    })) as Record<string, unknown>;
+  const { aggiornato, sessioniRevocate } = await prisma.$transaction(
+    async (tx) => {
+      const delegato: Record<
+        TipoSoggetto,
+        { update(a: object): Promise<unknown> }
+      > = {
+        utente: tx.user,
+        dipendente: tx.dipendente,
+        amministratore: tx.amministratore,
+      };
+      const aggiornato = (await delegato[tipo].update({
+        where: { id },
+        data: { ...dati, attivo: false },
+      })) as Record<string, unknown>;
 
-    const sessioniRevocate = piano.revocaSessioni ? await revocaTutte(id, undefined, tx) : 0;
+      const sessioniRevocate = piano.revocaSessioni
+        ? await revocaTutte(id, undefined, tx)
+        : 0;
 
-    // Одитът записва СЪБИТИЕТО, не съдържанието: вписването на старите стойности
-    // тук би върнало обратно точно данните, които току-що махнахме.
-    await scriviAudit(
-      {
-        azione: "DELETE",
-        entita: `gdpr:${tipo}`,
-        entitaId: id,
-        dettagli: { campi: piano.campi.map((c) => c.campo), sessioniRevocate },
-        utenteId: attore.sub,
-        tenantId: attore.tenantId,
-      },
-      tx,
-    );
+      // Одитът записва СЪБИТИЕТО, не съдържанието: вписването на старите стойности
+      // тук би върнало обратно точно данните, които току-що махнахме.
+      await scriviAudit(
+        {
+          azione: "DELETE",
+          entita: `gdpr:${tipo}`,
+          entitaId: id,
+          dettagli: {
+            campi: piano.campi.map((c) => c.campo),
+            sessioniRevocate,
+          },
+          utenteId: attore.sub,
+          tenantId: attore.tenantId,
+        },
+        tx,
+      );
 
-    return { aggiornato, sessioniRevocate };
-  });
+      return { aggiornato, sessioniRevocate };
+    },
+  );
 
-  return { piano, sessioniRevocate, residui: residuiPersonali(piano, aggiornato) };
+  return {
+    piano,
+    sessioniRevocate,
+    residui: residuiPersonali(piano, aggiornato),
+  };
 }
 
 /** Типизиран поглед към транзакционния клиент — само за четимост горе. */

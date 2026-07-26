@@ -92,7 +92,8 @@ export async function scriviAudit(
         // операцията, и канонът вече е версиониран — промяна в него би обезсилила
         // всички досегашни подписи.
         tenantId,
-        dettagli: riga.dettagli === null ? undefined : (riga.dettagli as object),
+        dettagli:
+          riga.dettagli === null ? undefined : (riga.dettagli as object),
         hmac: firmaAudit(rigaFirmata, chiaveAudit()),
       },
     });

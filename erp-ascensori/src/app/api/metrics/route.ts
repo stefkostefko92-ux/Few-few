@@ -32,21 +32,26 @@ function autorizzato(req: Request): boolean {
 async function daBaseDati(): Promise<MetricaExtra[]> {
   const ora = new Date();
   const fra30 = new Date(ora.getTime() + 30 * 86_400_000);
-  const [ordiniAperti, fattureScadute, scadenzeVicine, ultimoRun, rls] = await Promise.all([
-    prisma.ordineLavoro.count({ where: { stato: { in: ["EMESSO", "CONFERMATO", "IN_LAVORO"] } } }),
-    prisma.fattura.count({ where: { stato: "SCADUTA" } }),
-    // Приключените не са срок: те стоят в базата завинаги и иначе гейджът расте
-    // монотонно, докато алармата не почне да звъни постоянно и не я заглушат.
-    prisma.scadenzaImpianto.count({ where: { dataScadenza: { lte: fra30 }, completata: false } }),
-    // Само УСПЕШНО завършил пуск: „започнал и умрял" не е доказателство, че
-    // автоматизмът работи, а точно това dead-man-ът трябва да улови.
-    prisma.automatismoRun.findFirst({
-      where: { esito: "OK" },
-      orderBy: { terminatoAt: "desc" },
-      select: { terminatoAt: true },
-    }),
-    rlsAttiva(),
-  ]);
+  const [ordiniAperti, fattureScadute, scadenzeVicine, ultimoRun, rls] =
+    await Promise.all([
+      prisma.ordineLavoro.count({
+        where: { stato: { in: ["EMESSO", "CONFERMATO", "IN_LAVORO"] } },
+      }),
+      prisma.fattura.count({ where: { stato: "SCADUTA" } }),
+      // Приключените не са срок: те стоят в базата завинаги и иначе гейджът расте
+      // монотонно, докато алармата не почне да звъни постоянно и не я заглушат.
+      prisma.scadenzaImpianto.count({
+        where: { dataScadenza: { lte: fra30 }, completata: false },
+      }),
+      // Само УСПЕШНО завършил пуск: „започнал и умрял" не е доказателство, че
+      // автоматизмът работи, а точно това dead-man-ът трябва да улови.
+      prisma.automatismoRun.findFirst({
+        where: { esito: "OK" },
+        orderBy: { terminatoAt: "desc" },
+        select: { terminatoAt: true },
+      }),
+      rlsAttiva(),
+    ]);
 
   return [
     {
@@ -79,7 +84,8 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
     },
     {
       nome: "erp_rls_attiva",
-      aiuto: "1 se le policy di isolamento per azienda sono realmente in vigore",
+      aiuto:
+        "1 se le policy di isolamento per azienda sono realmente in vigore",
       tipo: "gauge",
       valore: rls.attiva ? 1 : 0,
     },

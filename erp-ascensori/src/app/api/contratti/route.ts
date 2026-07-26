@@ -17,7 +17,9 @@ import { paginazione, testoParam, enumParam } from "@/lib/query";
 import { STATI_CONTRATTO } from "@/lib/regole-contratti";
 
 const include = {
-  amministratore: { select: { nome: true, cognome: true, ragioneSociale: true } },
+  amministratore: {
+    select: { nome: true, cognome: true, ragioneSociale: true },
+  },
   condominio: { select: { nome: true, citta: true } },
   _count: { select: { impianti: true, ordini: true, fatture: true } },
 };
@@ -74,7 +76,13 @@ export const POST = gestito(async (req) => {
         prossimaVisita: data.dataInizio,
         prossimaFattura: data.dataInizio,
         ...(impiantiIds?.length
-          ? { impianti: { create: impiantiIds.map((impiantoId: string) => ({ impiantoId })) } }
+          ? {
+              impianti: {
+                create: impiantiIds.map((impiantoId: string) => ({
+                  impiantoId,
+                })),
+              },
+            }
           : {}),
         ...tenantDiCreazione(s),
       },

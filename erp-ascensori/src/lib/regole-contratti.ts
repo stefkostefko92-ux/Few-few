@@ -4,10 +4,19 @@
 // „изтекъл" не се съживява в „активен" без ново разглеждане, а прекратен
 // договор е финален.
 
-export const STATI_CONTRATTO = ["BOZZA", "ATTIVO", "SOSPESO", "SCADUTO", "DISDETTO"] as const;
+export const STATI_CONTRATTO = [
+  "BOZZA",
+  "ATTIVO",
+  "SOSPESO",
+  "SCADUTO",
+  "DISDETTO",
+] as const;
 export type StatoContratto = (typeof STATI_CONTRATTO)[number];
 
-export const TRANSIZIONI_CONTRATTO: Record<StatoContratto, readonly StatoContratto[]> = {
+export const TRANSIZIONI_CONTRATTO: Record<
+  StatoContratto,
+  readonly StatoContratto[]
+> = {
   BOZZA: ["ATTIVO", "DISDETTO"],
   ATTIVO: ["SOSPESO", "SCADUTO", "DISDETTO"],
   // Спрян договор се връща в работа или се прекратява; не изтича директно —
@@ -18,7 +27,10 @@ export const TRANSIZIONI_CONTRATTO: Record<StatoContratto, readonly StatoContrat
   DISDETTO: [], // финално — прекратеното не се съживява
 };
 
-export function transizioneContrattoAmmessa(da: StatoContratto, a: StatoContratto): boolean {
+export function transizioneContrattoAmmessa(
+  da: StatoContratto,
+  a: StatoContratto,
+): boolean {
   return TRANSIZIONI_CONTRATTO[da].includes(a);
 }
 
@@ -33,6 +45,9 @@ export function contrattoModificabile(stato: string): boolean {
 }
 
 /** Договор с история не се трие — прекратява се. */
-export function contrattoEliminabile(stato: string, documenti: number): boolean {
+export function contrattoEliminabile(
+  stato: string,
+  documenti: number,
+): boolean {
   return stato === "BOZZA" && documenti === 0;
 }

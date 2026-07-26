@@ -17,7 +17,15 @@ interface RigaAudit {
   utente: { nome: string; cognome: string; email: string } | null;
 }
 
-const AZIONI = ["CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "STATE_CHANGE", "IMPORT"];
+const AZIONI = [
+  "CREATE",
+  "UPDATE",
+  "DELETE",
+  "LOGIN",
+  "LOGOUT",
+  "STATE_CHANGE",
+  "IMPORT",
+];
 
 const STILE_AZIONE: Record<string, string> = {
   CREATE: "bg-success-subtle text-success-text",
@@ -45,7 +53,7 @@ export default function Pagina() {
 
   const carica = useCallback(async () => {
     const res = await fetch(
-      `/api/audit?page=${page}&size=${size}${azione ? `&azione=${azione}` : ""}`
+      `/api/audit?page=${page}&size=${size}${azione ? `&azione=${azione}` : ""}`,
     );
     const d = await res.json();
     if (!res.ok) {
@@ -91,13 +99,18 @@ export default function Pagina() {
             Registro operazioni
           </h1>
           <p className="mt-1 text-sm text-text-3">
-            Traccia immutabile firmata HMAC-SHA256 · in sola lettura: nessun livello può modificarla
+            Traccia immutabile firmata HMAC-SHA256 · in sola lettura: nessun
+            livello può modificarla
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Резултатът от проверката на целостта е критичен и идва асинхронно —
               без `aria-live` потребител на екранен четец не научава за него. */}
-          <span className="flex items-center gap-1.5 text-xs" role="status" aria-live="polite">
+          <span
+            className="flex items-center gap-1.5 text-xs"
+            role="status"
+            aria-live="polite"
+          >
             {verifica?.esito === "integro" && <IcoIntegro />}
             {verifica?.esito === "alterato" && <IcoAlterato />}
             {verifica && (
@@ -114,7 +127,10 @@ export default function Pagina() {
               </span>
             )}
           </span>
-          <button className="btn-secondary" onClick={() => void verificaIntegrita()}>
+          <button
+            className="btn-secondary"
+            onClick={() => void verificaIntegrita()}
+          >
             Verifica integrità
           </button>
         </div>
@@ -156,7 +172,10 @@ export default function Pagina() {
               </thead>
               <tbody>
                 {righe.map((r) => (
-                  <tr key={r.id} className="border-b border-border last:border-0 hover:bg-surface-2">
+                  <tr
+                    key={r.id}
+                    className="border-b border-border last:border-0 hover:bg-surface-2"
+                  >
                     <td className="px-3 py-2.5 font-mono text-xs text-text-2">
                       {dataOraIt(r.createdAt)}
                     </td>
@@ -174,14 +193,21 @@ export default function Pagina() {
                     <td className="px-3 py-2.5">
                       {r.utente ? `${r.utente.nome} ${r.utente.cognome}` : "—"}
                     </td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-text-3">{r.ip ?? "—"}</td>
+                    <td className="px-3 py-2.5 font-mono text-xs text-text-3">
+                      {r.ip ?? "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-        <Paginazione page={page} size={size} totale={totale} onPagina={setPage} />
+        <Paginazione
+          page={page}
+          size={size}
+          totale={totale}
+          onPagina={setPage}
+        />
       </div>
     </div>
   );

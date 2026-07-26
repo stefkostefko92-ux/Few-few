@@ -25,10 +25,19 @@ export const POST = gestito(async (req) => {
   // „diretto" за всички и споделеният ключ означава един общ таван за цялата
   // инсталация — щом интерфейсът започне да подновява сесии (а сега го прави),
   // това е отказ на услуга още при десетина едновременни потребители.
-  if (!consenti(`refresh:${hashRefresh(token)}`, LIMITI.refresh, LIMITI.finestraMs))
+  if (
+    !consenti(
+      `refresh:${hashRefresh(token)}`,
+      LIMITI.refresh,
+      LIMITI.finestraMs,
+    )
+  )
     return errore(429, "Troppe richieste: riprovare più tardi");
   const ip = ipClient(req.headers);
-  if (ip !== "diretto" && !consenti(`refresh-ip:${ip}`, LIMITI.refresh * 10, LIMITI.finestraMs))
+  if (
+    ip !== "diretto" &&
+    !consenti(`refresh-ip:${ip}`, LIMITI.refresh * 10, LIMITI.finestraMs)
+  )
     return errore(429, "Troppe richieste: riprovare più tardi");
 
   // Сесията се търси в собствената си таблица: така всяко устройство има

@@ -22,11 +22,16 @@ export const PATCH = gestito(async (req, ctx) => {
   const { id } = await ctx.params;
 
   const dopo = await prisma.$transaction(async (tx) => {
-    const prima = await tx.contratto.findFirst({ where: { id, ...filtroTenant(s) } });
+    const prima = await tx.contratto.findFirst({
+      where: { id, ...filtroTenant(s) },
+    });
     if (!prima) throw new ErroreHttp(404, "Contratto non trovato");
     const da = prima.stato as StatoContratto;
     if (!transizioneContrattoAmmessa(da, stato))
-      throw new ErroreHttp(409, `Passaggio non consentito: da «${da}» a «${stato}»`);
+      throw new ErroreHttp(
+        409,
+        `Passaggio non consentito: da «${da}» a «${stato}»`,
+      );
 
     // Активирането зарежда графиците, ако още са празни (договор, създаден
     // като чернова преди месеци). Без това автоматизмът няма от какво да тръгне.
@@ -36,12 +41,18 @@ export const PATCH = gestito(async (req, ctx) => {
       data: {
         stato,
         ...(stato === "ATTIVO" && graficiVuoti
-          ? { prossimaVisita: prima.dataInizio, prossimaFattura: prima.dataInizio }
+          ? {
+              prossimaVisita: prima.dataInizio,
+              prossimaFattura: prima.dataInizio,
+            }
           : {}),
       },
     });
     if (upd.count === 0)
-      throw new ErroreHttp(409, "Stato modificato da un'altra operazione: riprovare");
+      throw new ErroreHttp(
+        409,
+        "Stato modificato da un'altra operazione: riprovare",
+      );
     return tx.contratto.findUniqueOrThrow({ where: { id } });
   });
 

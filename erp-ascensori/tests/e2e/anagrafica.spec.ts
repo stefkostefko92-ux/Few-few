@@ -11,7 +11,10 @@ test("създаване на кондоминиум и намирането м�
   await expect(page).toHaveURL(/\/condomini/);
 
   const nome = unico("Condominio");
-  await page.getByRole("button", { name: /Nuov[oa]/i }).first().click();
+  await page
+    .getByRole("button", { name: /Nuov[oa]/i })
+    .first()
+    .click();
   await page.getByLabel(/^Nome/).fill(nome);
   await page.getByLabel(/^Indirizzo/).fill("Via E2E 1");
   await page.getByLabel(/^Citt/).fill("Milano");
@@ -23,7 +26,10 @@ test("създаване на кондоминиум и намирането м�
 test("грешката от сървъра се ПОКАЗВА, не се преглъща", async ({ page }) => {
   await entra(page, UTENTI.OPERATORE);
   await page.goto("/condomini");
-  await page.getByRole("button", { name: /Nuov[oa]/i }).first().click();
+  await page
+    .getByRole("button", { name: /Nuov[oa]/i })
+    .first()
+    .click();
   // Празно задължително поле: формата не бива да праща и да мълчи.
   await page.getByLabel(/^Indirizzo/).fill("Via Senza Nome");
   await page.getByRole("button", { name: "Salva", exact: true }).click();

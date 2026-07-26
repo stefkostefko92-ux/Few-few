@@ -43,11 +43,17 @@ test("вход отпреди 7 месеца се трие, отпреди 5 —
 test("фискалната следа надживява 7 месеца и пада чак след 10 години", () => {
   const fattura = { azione: "CREATE", entita: "fatture" };
   assert.equal(
-    daEliminare({ ...fattura, createdAt: new Date("2025-12-25T00:00:00Z") }, OGGI),
+    daEliminare(
+      { ...fattura, createdAt: new Date("2025-12-25T00:00:00Z") },
+      OGGI,
+    ),
     false,
   );
   assert.equal(
-    daEliminare({ ...fattura, createdAt: new Date("2015-01-01T00:00:00Z") }, OGGI),
+    daEliminare(
+      { ...fattura, createdAt: new Date("2015-01-01T00:00:00Z") },
+      OGGI,
+    ),
     true,
   );
 });

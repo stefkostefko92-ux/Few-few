@@ -39,7 +39,10 @@ export const aliquota = z
   .pipe(
     z
       .string()
-      .regex(/^\d{1,2}(\.\d{1,2})?$/, "Aliquota IVA non valida (0–99, max. 2 decimali)")
+      .regex(
+        /^\d{1,2}(\.\d{1,2})?$/,
+        "Aliquota IVA non valida (0–99, max. 2 decimali)",
+      )
       .refine((v) => Number(v) <= 99, "Aliquota IVA non valida (0–99)"),
   );
 
@@ -85,7 +88,10 @@ const condominioBase = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z0-9]{6,7}$/, "Codice destinatario non valido (6 o 7 caratteri)")
+    .regex(
+      /^[A-Z0-9]{6,7}$/,
+      "Codice destinatario non valido (6 o 7 caratteri)",
+    )
     .nullish()
     .or(z.literal("").transform(() => null)),
   /// Изключва се само за кондоминиум без данъчен номер — иначе удържането по
@@ -126,7 +132,10 @@ const amministratoreBase = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z0-9]{6,7}$/, "Codice destinatario: 6 o 7 caratteri alfanumerici")
+    .regex(
+      /^[A-Z0-9]{6,7}$/,
+      "Codice destinatario: 6 o 7 caratteri alfanumerici",
+    )
     .nullish()
     .or(z.literal("").transform(() => null)),
   email: z
@@ -489,7 +498,10 @@ export function conLimiteImporto<T extends ZodTipo>(schema: T) {
       v.quantita === undefined ||
       v.prezzoUnitario === undefined ||
       Number(v.quantita) * Number(v.prezzoUnitario) <= MAX_IMPORTO,
-    { message: "Importo della riga troppo elevato: verificare quantità e prezzo" },
+    {
+      message:
+        "Importo della riga troppo elevato: verificare quantità e prezzo",
+    },
   );
 }
 
@@ -558,7 +570,10 @@ export const fatturaSchema = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .refine(condizioneValida, "Condizione di pagamento non valida (TP01, TP02, TP03)")
+    .refine(
+      condizioneValida,
+      "Condizione di pagamento non valida (TP01, TP02, TP03)",
+    )
     .optional(),
   cig: z
     .string()
@@ -626,19 +641,19 @@ export const PERIODICITA_VALORI = [
  *  искат `.partial()`. Затова проверката се слага НАКРАЯ, върху вече стеснената
  *  схема (същият похват като при редовете на документите). */
 export const contrattoBase = z.object({
-    oggetto: str,
-    canone: dec,
-    aliquotaIva: aliquota.optional(),
-    periodicitaVisite: z.enum(PERIODICITA_VALORI).optional(),
-    periodicitaFatturazione: z.enum(PERIODICITA_VALORI).optional(),
-    dataInizio: z.coerce.date(),
-    dataFine: z.coerce.date(),
-    rinnovoAutomatico: z.boolean().optional(),
-    preavvisoMesi: z.number().int().min(0).max(24).optional(),
-    amministratoreId: uuidOpt,
-    condominioId: uuidOpt,
-    /** Импиантите, покрити от договора. */
-    impiantiIds: z.array(uuid).max(500).optional(),
+  oggetto: str,
+  canone: dec,
+  aliquotaIva: aliquota.optional(),
+  periodicitaVisite: z.enum(PERIODICITA_VALORI).optional(),
+  periodicitaFatturazione: z.enum(PERIODICITA_VALORI).optional(),
+  dataInizio: z.coerce.date(),
+  dataFine: z.coerce.date(),
+  rinnovoAutomatico: z.boolean().optional(),
+  preavvisoMesi: z.number().int().min(0).max(24).optional(),
+  amministratoreId: uuidOpt,
+  condominioId: uuidOpt,
+  /** Импиантите, покрити от договора. */
+  impiantiIds: z.array(uuid).max(500).optional(),
   note: strOpt,
 });
 

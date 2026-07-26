@@ -11,7 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "ERP Ascensori Enterprise",
     short_name: "ERP Ascensori",
-    description: "Gestionale per imprese di manutenzione e installazione ascensori",
+    description:
+      "Gestionale per imprese di manutenzione e installazione ascensori",
     // Езикът е на ПРОДУКТА, не на браузъра: интерфейсът е изцяло италиански.
     lang: "it-IT",
     dir: "ltr",

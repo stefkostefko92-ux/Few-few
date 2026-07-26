@@ -1,7 +1,15 @@
 // Парична аритметика: цели центесими, half-up, преизчисление от редовете.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toCents, fromCents, totaleVoce, ivaVoce, calcolaTotali, riepilogoIva, totaliDaRiepilogo } from "../totals";
+import {
+  toCents,
+  fromCents,
+  totaleVoce,
+  ivaVoce,
+  calcolaTotali,
+  riepilogoIva,
+  totaliDaRiepilogo,
+} from "../totals";
 
 test("toCents/fromCents двупосочно", () => {
   assert.equal(toCents("123.45"), 12345);
@@ -118,6 +126,6 @@ test("тоталите от обобщението се събират точн�
   assert.equal(
     toCents(t.totaleLordo),
     toCents(t.totaleNetto) + toCents(t.totaleIva),
-    "тоталът не е сборът на облагаемото и данъка"
+    "тоталът не е сборът на облагаемото и данъка",
   );
 });

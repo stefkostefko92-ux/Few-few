@@ -91,19 +91,30 @@ export function codice(segretoBase32: string, perMs = Date.now()): string {
  * Сравнението е с постоянно време: обикновеното `===` върху низове излиза
  * рано при първата различна цифра и издава колко от кода е познат.
  */
-export function verifica(segretoBase32: string, fornito: string, perMs = Date.now()): boolean {
+export function verifica(
+  segretoBase32: string,
+  fornito: string,
+  perMs = Date.now(),
+): boolean {
   const pulito = fornito.replace(/\s/g, "");
   if (!/^\d{6}$/.test(pulito)) return false;
   const atteso = Buffer.from(pulito, "utf8");
   for (let d = -FINESTRA; d <= FINESTRA; d++) {
-    const c = Buffer.from(codice(segretoBase32, perMs + d * PASSO_SECONDI * 1000), "utf8");
+    const c = Buffer.from(
+      codice(segretoBase32, perMs + d * PASSO_SECONDI * 1000),
+      "utf8",
+    );
     if (c.length === atteso.length && timingSafeEqual(c, atteso)) return true;
   }
   return false;
 }
 
 /** URI за QR кода, който приложението сканира. */
-export function uriOtpauth(segreto: string, email: string, emittente = "ERP Ascensori"): string {
+export function uriOtpauth(
+  segreto: string,
+  email: string,
+  emittente = "ERP Ascensori",
+): string {
   const e = encodeURIComponent(emittente);
   return `otpauth://totp/${e}:${encodeURIComponent(email)}?secret=${segreto}&issuer=${e}&algorithm=SHA1&digits=${CIFRE}&period=${PASSO_SECONDI}`;
 }
@@ -117,6 +128,10 @@ export function uriOtpauth(segreto: string, email: string, emittente = "ERP Asce
  */
 export function generaCodiciRecupero(quanti = 8): string[] {
   return Array.from({ length: quanti }, () =>
-    randomBytes(5).toString("hex").toUpperCase().match(/.{1,5}/g)!.join("-"),
+    randomBytes(5)
+      .toString("hex")
+      .toUpperCase()
+      .match(/.{1,5}/g)!
+      .join("-"),
   );
 }

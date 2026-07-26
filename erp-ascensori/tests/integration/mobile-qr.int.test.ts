@@ -12,9 +12,9 @@ let matricola: string;
 before(async () => {
   tecnico = await comeRuolo("TECNICO");
   master = await comeRuolo("MASTER");
-  const lista = await tecnico.get<{ righe: { id: string; matricola: string }[] }>(
-    "/api/impianti?size=1",
-  );
+  const lista = await tecnico.get<{
+    righe: { id: string; matricola: string }[];
+  }>("/api/impianti?size=1");
   assert.equal(lista.status, 200);
   assert.ok(lista.dati.righe.length, "сийдът трябва да е създал импианти");
   impiantoId = lista.dati.righe[0].id;
@@ -42,11 +42,16 @@ describe("QR етикет", () => {
 
   test("под нивото на техника кодът не се дава", async () => {
     const cliente = await comeRuolo("CLIENTE");
-    assert.equal((await grezza(`/api/impianti/${impiantoId}/qr`, cliente)).status, 403);
+    assert.equal(
+      (await grezza(`/api/impianti/${impiantoId}/qr`, cliente)).status,
+      403,
+    );
   });
 
   test("чужд импиант не дава код с познат идентификатор", async () => {
-    const slug = unico("qr-t").toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const slug = unico("qr-t")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-");
     const t = await master.post<{ id: string }>("/api/tenants", {
       slug,
       ragioneSociale: "Altra QR",
@@ -69,7 +74,10 @@ describe("QR етикет", () => {
     );
     const altra = new Sessione();
     assert.equal(await altra.entra(email), 200);
-    assert.equal((await grezza(`/api/impianti/${impiantoId}/qr`, altra)).status, 404);
+    assert.equal(
+      (await grezza(`/api/impianti/${impiantoId}/qr`, altra)).status,
+      404,
+    );
   });
 });
 
@@ -90,7 +98,10 @@ describe("дълбока връзка от стикера", () => {
   test("със сесия отваря точно този импиант", async () => {
     const r = await grezza(`/i/${encodeURIComponent(matricola)}`, tecnico);
     assert.equal(r.status, 307);
-    assert.match(r.headers.get("location") ?? "", new RegExp(`/impianti/${impiantoId}$`));
+    assert.match(
+      r.headers.get("location") ?? "",
+      new RegExp(`/impianti/${impiantoId}$`),
+    );
   });
 
   test("непозната матрикола дава 404, не изтичане", async () => {
@@ -112,7 +123,10 @@ describe("PWA обвивка", () => {
     assert.equal(m.display, "standalone");
     assert.ok(m.start_url.startsWith("/"));
     // Без maskable вариант Android изрязва иконата в кръг и отхапва краищата.
-    assert.ok(m.icons.some((i) => i.purpose === "maskable"), "липсва maskable икона");
+    assert.ok(
+      m.icons.some((i) => i.purpose === "maskable"),
+      "липсва maskable икона",
+    );
   });
 
   test("service worker-ът НЕ кешира API", async () => {

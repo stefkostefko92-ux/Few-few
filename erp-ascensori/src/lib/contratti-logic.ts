@@ -56,7 +56,9 @@ export function aggiungiMesi(base: Date, mesi: number): Date {
       base.getUTCMilliseconds(),
     ),
   );
-  const ultimoDelMese = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  const ultimoDelMese = new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0),
+  ).getUTCDate();
   d.setUTCDate(Math.min(giorno, ultimoDelMese));
   return d;
 }
@@ -72,7 +74,11 @@ export function prossimaScadenza(da: Date, periodicita: Periodicita): Date {
  * Нужно е, защото автоматизмът може да е спрял: при рестарт след две седмици
  * трябва да навакса, а не да прескочи периодите. Връща 0, ако още не е дошло.
  */
-export function periodiScaduti(prossima: Date, oggi: Date, periodicita: Periodicita): number {
+export function periodiScaduti(
+  prossima: Date,
+  oggi: Date,
+  periodicita: Periodicita,
+): number {
   let n = 0;
   let d = prossima;
   // Таванът пази от безкраен цикъл при абсурдно стара дата (повредени данни).
@@ -117,12 +123,17 @@ const giornoPrima = (d: Date) => new Date(d.getTime() - GIORNO_MS);
 /** Цели месеци между две дати (поне 1). */
 export function mesiTra(da: Date, a: Date): number {
   const m =
-    (a.getUTCFullYear() - da.getUTCFullYear()) * 12 + (a.getUTCMonth() - da.getUTCMonth());
+    (a.getUTCFullYear() - da.getUTCFullYear()) * 12 +
+    (a.getUTCMonth() - da.getUTCMonth());
   return Math.max(1, a.getUTCDate() >= da.getUTCDate() ? m : m - 1);
 }
 
 /** Дали трябва да се предупреди за наближаващо подновяване/изтичане. */
-export function inPreavviso(dataFine: Date, preavvisoMesi: number, oggi: Date): boolean {
+export function inPreavviso(
+  dataFine: Date,
+  preavvisoMesi: number,
+  oggi: Date,
+): boolean {
   const soglia = aggiungiMesi(dataFine, -preavvisoMesi);
   return oggi >= soglia && oggi <= dataFine;
 }
@@ -133,8 +144,13 @@ export function inPreavviso(dataFine: Date, preavvisoMesi: number, oggi: Date): 
  * Клиентът трябва да вижда ЗА КОЙ период плаща; „Canone di manutenzione" без
  * период е първата причина за оспорена фактура.
  */
-export function descrizionePeriodo(inizio: Date, periodicita: Periodicita): string {
-  const fine = new Date(prossimaScadenza(inizio, periodicita).getTime() - 86_400_000);
+export function descrizionePeriodo(
+  inizio: Date,
+  periodicita: Periodicita,
+): string {
+  const fine = new Date(
+    prossimaScadenza(inizio, periodicita).getTime() - 86_400_000,
+  );
   const f = (d: Date) =>
     `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
   return `${f(inizio)} – ${f(fine)}`;

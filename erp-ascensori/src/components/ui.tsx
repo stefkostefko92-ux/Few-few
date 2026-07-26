@@ -3,7 +3,12 @@
 // Дребни UI градивни блокове: модал, статус-бадж, странициране.
 
 import { useEffect, type ReactNode } from "react";
-import { IcoChiudi, IcoPrecedente, IcoSuccessiva, IcoVuoto } from "@/components/icone";
+import {
+  IcoChiudi,
+  IcoPrecedente,
+  IcoSuccessiva,
+  IcoVuoto,
+} from "@/components/icone";
 import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 
 // ── Бадж за статуси (цветове от дизайн системата) ───────────────────────────
@@ -30,6 +35,18 @@ const STILE_BADGE: Record<string, string> = {
   PAGATA: "bg-success-subtle text-success-text",
   SCADUTA: "bg-danger-subtle text-danger-text",
   STORNATA: "bg-surface-2 text-text-3 line-through",
+  // StatoSdi — пътят през Sistema di Interscambio. SCARTATA е ЧЕРВЕНО, а не
+  // просто „внимание": документът се смята за НЕИЗДАДЕН и часовникът тече.
+  NON_INVIATA: "bg-surface-3 text-text-2",
+  GENERATA: "bg-warning-subtle text-warning-text",
+  CONSEGNATA: "bg-success-subtle text-success-text",
+  MANCATA_CONSEGNA: "bg-warning-subtle text-warning-text",
+  SCARTATA: "bg-danger-subtle text-danger-text border border-danger/30",
+  ACCETTATA: "bg-success-subtle text-success-text",
+  DECORSI_TERMINI: "bg-success-subtle text-success-text",
+  // StatoPagamentoFattura
+  NON_PAGATA: "bg-surface-3 text-text-2",
+  PARZIALE: "bg-warning-subtle text-warning-text",
   // StatoContratto
   DISDETTO: "bg-surface-2 text-text-3 line-through",
   // StatoImpianto
@@ -51,7 +68,9 @@ const STILE_BADGE: Record<string, string> = {
 export function Badge({ valore }: { valore: string }) {
   const stile = STILE_BADGE[valore] ?? "bg-surface-3 text-text-2";
   return (
-    <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${stile}`}>
+    <span
+      className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${stile}`}
+    >
       {etichetta(STATO_LABEL, valore)}
     </span>
   );
@@ -93,7 +112,11 @@ export function Modale({
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-1">{titolo}</h2>
-          <button className="btn-ghost h-8 px-2" onClick={onChiudi} aria-label="Chiudi">
+          <button
+            className="btn-ghost h-8 px-2"
+            onClick={onChiudi}
+            aria-label="Chiudi"
+          >
             <IcoChiudi />
           </button>
         </div>
@@ -124,7 +147,11 @@ export function Paginazione({
         {totale} risultati · pagina {page} di {pagine}
       </span>
       <div className="flex gap-2">
-        <button className="btn-secondary h-8 px-3" disabled={page <= 1} onClick={() => onPagina(page - 1)}>
+        <button
+          className="btn-secondary h-8 px-3"
+          disabled={page <= 1}
+          onClick={() => onPagina(page - 1)}
+        >
           <IcoPrecedente />
           Precedente
         </button>
@@ -159,7 +186,10 @@ export function Vuoto({
       {icona && <IcoVuoto />}
       <p className="text-sm text-text-2">{messaggio}</p>
       {azione && onAzione && (
-        <button className="btn-secondary inline-flex items-center gap-1.5" onClick={onAzione}>
+        <button
+          className="btn-secondary inline-flex items-center gap-1.5"
+          onClick={onAzione}
+        >
           {azione}
         </button>
       )}
@@ -186,7 +216,13 @@ export function Barra({ className = "" }: { className?: string }) {
 }
 
 /** Скелет на таблица: заглавен ред + N реда. */
-export function ScheletroTabella({ righe = 6, colonne = 5 }: { righe?: number; colonne?: number }) {
+export function ScheletroTabella({
+  righe = 6,
+  colonne = 5,
+}: {
+  righe?: number;
+  colonne?: number;
+}) {
   return (
     <div className="p-3" role="status" aria-label="Caricamento in corso">
       <div className="mb-3 flex gap-3 border-b border-border pb-3">
@@ -197,7 +233,10 @@ export function ScheletroTabella({ righe = 6, colonne = 5 }: { righe?: number; c
       {Array.from({ length: righe }).map((_, r) => (
         <div key={r} className="flex items-center gap-3 py-2.5">
           {Array.from({ length: colonne }).map((_, c) => (
-            <Barra key={c} className={`h-3.5 flex-1 ${c === 0 ? "max-w-28" : ""}`} />
+            <Barra
+              key={c}
+              className={`h-3.5 flex-1 ${c === 0 ? "max-w-28" : ""}`}
+            />
           ))}
         </div>
       ))}
@@ -251,7 +290,11 @@ export function FiltriStato({
         Tutti
       </button>
       {valori.map((v) => (
-        <button key={v} className={pillola(attivo === v)} onClick={() => onCambia(v)}>
+        <button
+          key={v}
+          className={pillola(attivo === v)}
+          onClick={() => onCambia(v)}
+        >
           {etichetta(STATO_LABEL, v)}
           {conteggi?.[v] !== undefined && (
             <span className="ml-1 font-mono text-text-3">{conteggi[v]}</span>

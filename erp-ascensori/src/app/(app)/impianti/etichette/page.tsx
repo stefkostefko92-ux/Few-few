@@ -48,10 +48,13 @@ export default async function Pagina({
   return (
     <div>
       <div className="mb-6 print:hidden">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-1">Etichette QR</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+          Etichette QR
+        </h1>
         <p className="mt-1 text-sm text-text-3">
-          Da applicare in sala macchine. Il tecnico inquadra il codice e apre direttamente
-          l&apos;impianto: nessuna ricerca per matricola sul telefono.
+          Da applicare in sala macchine. Il tecnico inquadra il codice e apre
+          direttamente l&apos;impianto: nessuna ricerca per matricola sul
+          telefono.
         </p>
 
         <form className="mt-4 flex flex-wrap items-end gap-2">
@@ -68,15 +71,16 @@ export default async function Pagina({
 
         {!base && (
           <p className="mt-4 rounded-md bg-danger-subtle px-4 py-3 text-sm text-danger-text">
-            <strong>APP_URL non configurato.</strong> Senza indirizzo pubblico le etichette
-            porterebbero a un link non valido: sono quattrocento adesivi da rifare. Impostarlo
-            sul server prima di stampare.
+            <strong>APP_URL non configurato.</strong> Senza indirizzo pubblico
+            le etichette porterebbero a un link non valido: sono quattrocento
+            adesivi da rifare. Impostarlo sul server prima di stampare.
           </p>
         )}
 
         {impianti.length === 200 && (
           <p className="mt-4 text-sm text-text-3">
-            Mostrati i primi 200 impianti. Usare il filtro per stampare il resto.
+            Mostrati i primi 200 impianti. Usare il filtro per stampare il
+            resto.
           </p>
         )}
       </div>
@@ -93,12 +97,19 @@ export default async function Pagina({
                 // SVG-то се сглобява на сървъра от нашата функция върху данни от
                 // базата; няма потребителски вход в него.
                 dangerouslySetInnerHTML={{
-                  __html: qrSvg(urlImpianto(base, i.matricola), { modulo: 3, margine: 2 }),
+                  __html: qrSvg(urlImpianto(base, i.matricola), {
+                    modulo: 3,
+                    margine: 2,
+                  }),
                 }}
               />
               <div className="min-w-0 text-xs leading-tight">
-                <p className="font-mono text-sm font-semibold text-text-1">{i.matricola}</p>
-                <p className="truncate text-text-2">{i.condominio?.nome ?? "—"}</p>
+                <p className="font-mono text-sm font-semibold text-text-1">
+                  {i.matricola}
+                </p>
+                <p className="truncate text-text-2">
+                  {i.condominio?.nome ?? "—"}
+                </p>
                 <p className="truncate text-text-3">
                   {i.condominio?.indirizzo ?? ""}
                   {i.condominio?.citta ? `, ${i.condominio.citta}` : ""}
@@ -111,7 +122,9 @@ export default async function Pagina({
       )}
 
       {impianti.length === 0 && (
-        <p className="text-sm text-text-3 print:hidden">Nessun impianto corrisponde al filtro.</p>
+        <p className="text-sm text-text-3 print:hidden">
+          Nessun impianto corrisponde al filtro.
+        </p>
       )}
     </div>
   );

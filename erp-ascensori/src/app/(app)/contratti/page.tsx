@@ -3,13 +3,18 @@
 // Договорите за поддръжка: от тях автоматизмът ражда периодичните посещения
 // и фактурите за canone. Това е повтарящият се приход на фирмата.
 
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { Badge } from "@/components/ui";
 import { euro, dataIt } from "@/lib/format";
 import { PERIODICITA_LABEL, type Periodicita } from "@/lib/contratti-logic";
 import { STATI_CONTRATTO } from "@/lib/regole-contratti";
 
-const opzioniPeriodicita = (Object.keys(PERIODICITA_LABEL) as Periodicita[]).map((v) => ({
+const opzioniPeriodicita = (
+  Object.keys(PERIODICITA_LABEL) as Periodicita[]
+).map((v) => ({
   value: v,
   label: PERIODICITA_LABEL[v],
 }));
@@ -27,13 +32,19 @@ const config: EntityConfig = {
   colonne: [
     { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
     { chiave: "oggetto", label: "Oggetto" },
-    { chiave: "stato", label: "Stato", render: (r) => <Badge valore={String(r.stato)} /> },
+    {
+      chiave: "stato",
+      label: "Stato",
+      render: (r) => <Badge valore={String(r.stato)} />,
+    },
     {
       chiave: "amministratore",
       label: "Cliente",
       render: (r) => {
         const a = r.amministratore as Riga | null;
-        return a ? String(a.ragioneSociale ?? `${a.nome} ${a.cognome ?? ""}`) : "—";
+        return a
+          ? String(a.ragioneSociale ?? `${a.nome} ${a.cognome ?? ""}`)
+          : "—";
       },
     },
     {
@@ -51,7 +62,8 @@ const config: EntityConfig = {
     {
       chiave: "periodicitaFatturazione",
       label: "Fatturazione",
-      render: (r) => PERIODICITA_LABEL[r.periodicitaFatturazione as Periodicita] ?? "—",
+      render: (r) =>
+        PERIODICITA_LABEL[r.periodicitaFatturazione as Periodicita] ?? "—",
     },
     {
       chiave: "dataFine",
@@ -60,11 +72,32 @@ const config: EntityConfig = {
     },
   ],
   campi: [
-    { name: "oggetto", label: "Oggetto", tipo: "text", richiesto: true, colSpan2: true },
-    { name: "dataInizio", label: "Data di inizio", tipo: "date", richiesto: true },
+    {
+      name: "oggetto",
+      label: "Oggetto",
+      tipo: "text",
+      richiesto: true,
+      colSpan2: true,
+    },
+    {
+      name: "dataInizio",
+      label: "Data di inizio",
+      tipo: "date",
+      richiesto: true,
+    },
     { name: "dataFine", label: "Data di fine", tipo: "date", richiesto: true },
-    { name: "canone", label: "Canone per periodo (€)", tipo: "decimal", richiesto: true },
-    { name: "aliquotaIva", label: "Aliquota IVA (%)", tipo: "decimal", predefinito: "22" },
+    {
+      name: "canone",
+      label: "Canone per periodo (€)",
+      tipo: "decimal",
+      richiesto: true,
+    },
+    {
+      name: "aliquotaIva",
+      label: "Aliquota IVA (%)",
+      tipo: "decimal",
+      predefinito: "22",
+    },
     {
       name: "periodicitaVisite",
       label: "Periodicità delle visite",
@@ -85,7 +118,8 @@ const config: EntityConfig = {
       tipo: "select",
       opzioniApi: {
         url: "/api/amministratori",
-        etichetta: (r) => String(r.ragioneSociale ?? `${r.nome} ${r.cognome ?? ""}`),
+        etichetta: (r) =>
+          String(r.ragioneSociale ?? `${r.nome} ${r.cognome ?? ""}`),
       },
     },
     {
@@ -109,8 +143,17 @@ const config: EntityConfig = {
         etichetta: (r) => `${r.matricola} — ${r.marca} ${r.modello}`,
       },
     },
-    { name: "rinnovoAutomatico", label: "Rinnovo tacito alla scadenza", tipo: "checkbox" },
-    { name: "preavvisoMesi", label: "Preavviso di disdetta (mesi)", tipo: "number", predefinito: 3 },
+    {
+      name: "rinnovoAutomatico",
+      label: "Rinnovo tacito alla scadenza",
+      tipo: "checkbox",
+    },
+    {
+      name: "preavvisoMesi",
+      label: "Preavviso di disdetta (mesi)",
+      tipo: "number",
+      predefinito: 3,
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

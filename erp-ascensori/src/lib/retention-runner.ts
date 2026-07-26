@@ -8,7 +8,11 @@
 // на партиди, със следа от самото прочистване.
 
 import { prisma } from "@/lib/prisma";
-import { soglie, AZIONI_ACCESSO, ENTITA_CONTABILI } from "@/lib/retention-logic";
+import {
+  soglie,
+  AZIONI_ACCESSO,
+  ENTITA_CONTABILI,
+} from "@/lib/retention-logic";
 import { log, descriviErrore } from "@/lib/log";
 
 /** Максимален брой редове, изтривани в една партида (пази дългите заключвания). */

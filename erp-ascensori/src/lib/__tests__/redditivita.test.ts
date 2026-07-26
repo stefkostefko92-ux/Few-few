@@ -16,7 +16,10 @@ test("празната сметка е нула, не NaN", () => {
 test("приход минус трите вида разход", () => {
   const r = calcolaRedditivita({
     ricaviNetti: ["1000.00"],
-    ore: [{ ore: "8", costoOrario: "25.00" }, { ore: "2.5", costoOrario: "25.00" }],
+    ore: [
+      { ore: "8", costoOrario: "25.00" },
+      { ore: "2.5", costoOrario: "25.00" },
+    ],
     materiali: [{ quantita: 3, prezzoAcquisto: "40.00" }],
     costiEsterni: ["150.00"],
   });
@@ -43,7 +46,10 @@ test("маржът е спрямо ПРИХОДА, не надценка спр�
 test("липсващата цена е НЕИЗВЕСТНА, не нула", () => {
   const r = calcolaRedditivita({
     ricaviNetti: ["500.00"],
-    ore: [{ ore: "10", costoOrario: null }, { ore: "2", costoOrario: "30.00" }],
+    ore: [
+      { ore: "10", costoOrario: null },
+      { ore: "2", costoOrario: "30.00" },
+    ],
     materiali: [{ quantita: 5 }, { quantita: 1, prezzoAcquisto: "10.00" }],
     costiEsterni: [],
   });
@@ -58,7 +64,10 @@ test("липсващата цена е НЕИЗВЕСТНА, не нула", () 
 });
 
 test("празен низ се брои като липсваща цена, не като нула", () => {
-  const r = calcolaRedditivita({ ...VUOTO, ore: [{ ore: "4", costoOrario: "" }] });
+  const r = calcolaRedditivita({
+    ...VUOTO,
+    ore: [{ ore: "4", costoOrario: "" }],
+  });
   assert.equal(r.costoManodopera, "0.00");
   assert.equal(r.oreSenzaCosto, "4.00");
   assert.equal(r.completo, false);
@@ -76,14 +85,21 @@ test("отрицателният марж излиза като отрицате
 
 test("центесимите не се разминават с фактурата", () => {
   // Час и петнайсет по 33,33 €: с плаваща запетая се получава 41,662499…
-  const r = calcolaRedditivita({ ...VUOTO, ore: [{ ore: "1.25", costoOrario: "33.33" }] });
+  const r = calcolaRedditivita({
+    ...VUOTO,
+    ore: [{ ore: "1.25", costoOrario: "33.33" }],
+  });
   assert.equal(r.costoManodopera, "41.66");
 });
 
 test("входът приема запетая за десетичен знак (IT)", () => {
   // Разделител за хиляди НЕ се поддържа (и не се твърди никъде): „1.234,56"
   // е двусмислен без локал, затова `toCents` го отказва вместо да гадае.
-  const r = calcolaRedditivita({ ...VUOTO, ricaviNetti: ["1234,56"], costiEsterni: ["234,56"] });
+  const r = calcolaRedditivita({
+    ...VUOTO,
+    ricaviNetti: ["1234,56"],
+    costiEsterni: ["234,56"],
+  });
   assert.equal(r.ricavi, "1234.56");
   assert.equal(r.margine, "1000.00");
 });

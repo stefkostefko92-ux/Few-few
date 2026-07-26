@@ -26,7 +26,11 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, ...(codice ? { codice } : {}) }),
+        body: JSON.stringify({
+          email,
+          password,
+          ...(codice ? { codice } : {}),
+        }),
       });
       const dati = await res.json();
 
@@ -121,8 +125,8 @@ export default function LoginPage() {
                 required
               />
               <p className="mb-4 -mt-2 text-xs text-text-3">
-                Codice a 6 cifre dall&apos;app di autenticazione, oppure uno dei codici di
-                recupero.
+                Codice a 6 cifre dall&apos;app di autenticazione, oppure uno dei
+                codici di recupero.
               </p>
             </>
           )}
@@ -135,7 +139,11 @@ export default function LoginPage() {
               {errore}
             </p>
           )}
-          <button type="submit" className="btn-primary w-full" disabled={caricamento}>
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            disabled={caricamento}
+          >
             {caricamento ? "Accesso in corso…" : "Accedi"}
           </button>
         </form>

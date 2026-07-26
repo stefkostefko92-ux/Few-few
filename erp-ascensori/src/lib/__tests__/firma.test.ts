@@ -5,8 +5,22 @@ import { validaFirma, rapportinoModificabile, MAX_BYTE_FIRMA } from "../firma";
 /** Минимален валиден PNG (1×1 прозрачен), допълнен до нужния размер. */
 function pngFinto(byteExtra = 0): string {
   const png = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, // подпис
-    0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, // IHDR
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a, // подпис
+    0x00,
+    0x00,
+    0x00,
+    0x0d,
+    0x49,
+    0x48,
+    0x44,
+    0x52, // IHDR
     ...new Array(byteExtra).fill(0x42),
   ]);
   return `data:image/png;base64,${png.toString("base64")}`;
@@ -17,7 +31,10 @@ test("валиден PNG подпис минава", () => {
 });
 
 test("друг формат се отказва", () => {
-  assert.equal(validaFirma("data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=").valida, false);
+  assert.equal(
+    validaFirma("data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=").valida,
+    false,
+  );
   assert.equal(validaFirma("data:image/jpeg;base64,/9j/4AAQ").valida, false);
   assert.equal(validaFirma("https://esempio.it/firma.png").valida, false);
 });
@@ -42,7 +59,10 @@ test("прекалено голям подпис се отказва", () => {
 });
 
 test("невалиден base64 се отказва, без да гърми", () => {
-  assert.equal(validaFirma("data:image/png;base64,!!!не-е-base64!!!").valida, false);
+  assert.equal(
+    validaFirma("data:image/png;base64,!!!не-е-base64!!!").valida,
+    false,
+  );
   assert.equal(validaFirma("data:image/png;base64,").valida, false);
 });
 

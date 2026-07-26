@@ -2,7 +2,10 @@
 
 // Автопарк — цветният статус (verde/giallo/rosso) идва от най-близката дата.
 
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { dataIt } from "@/lib/format";
 import { STATO_AUTOMEZZO, etichetta } from "@/lib/enum-labels";
 
@@ -10,12 +13,17 @@ const config: EntityConfig = {
   titolo: "Automezzi",
   singolare: "automezzo",
   genere: "m",
-  descrizione: "Flotta aziendale: revisione, assicurazione e tagliando sotto controllo",
+  descrizione:
+    "Flotta aziendale: revisione, assicurazione e tagliando sotto controllo",
   api: "/api/automezzi",
   cerca: "Cerca per targa, marca, modello…",
   colonne: [
     { chiave: "targa", label: "Targa", className: "font-mono font-medium" },
-    { chiave: "marca", label: "Veicolo", render: (r) => `${r.marca} ${r.modello}` },
+    {
+      chiave: "marca",
+      label: "Veicolo",
+      render: (r) => `${r.marca} ${r.modello}`,
+    },
     {
       chiave: "stato",
       label: "Stato",
@@ -67,13 +75,20 @@ const config: EntityConfig = {
     { name: "modello", label: "Modello", tipo: "text", richiesto: true },
     { name: "chilometraggio", label: "Chilometraggio", tipo: "number" },
     { name: "scadenzaRevisione", label: "Scadenza revisione", tipo: "date" },
-    { name: "scadenzaAssicurazione", label: "Scadenza assicurazione", tipo: "date" },
+    {
+      name: "scadenzaAssicurazione",
+      label: "Scadenza assicurazione",
+      tipo: "date",
+    },
     { name: "scadenzaTagliando", label: "Scadenza tagliando", tipo: "date" },
     {
       name: "conducenteId",
       label: "Conducente (un veicolo per dipendente)",
       tipo: "select",
-      opzioniApi: { url: "/api/dipendenti", etichetta: (r) => `${r.cognome} ${r.nome}` },
+      opzioniApi: {
+        url: "/api/dipendenti",
+        etichetta: (r) => `${r.cognome} ${r.nome}`,
+      },
     },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],

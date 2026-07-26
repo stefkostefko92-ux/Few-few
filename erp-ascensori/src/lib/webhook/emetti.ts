@@ -80,10 +80,19 @@ export async function consegnaInAttesa(limite = 100): Promise<EsitoConsegne> {
     where: { stato: "IN_ATTESA", prossimoTentativo: { lte: ora } },
     orderBy: { prossimoTentativo: "asc" },
     take: limite,
-    include: { webhook: { select: { id: true, url: true, segreto: true, fallimenti: true } } },
+    include: {
+      webhook: {
+        select: { id: true, url: true, segreto: true, fallimenti: true },
+      },
+    },
   });
 
-  const esito: EsitoConsegne = { tentate: 0, riuscite: 0, fallite: 0, webhookDisattivati: 0 };
+  const esito: EsitoConsegne = {
+    tentate: 0,
+    riuscite: 0,
+    fallite: 0,
+    webhookDisattivati: 0,
+  };
 
   for (const c of daFare) {
     esito.tentate += 1;
@@ -118,11 +127,19 @@ export async function consegnaInAttesa(limite = 100): Promise<EsitoConsegne> {
       await prisma.$transaction([
         prisma.webhookConsegna.update({
           where: { id: c.id },
-          data: { stato: "CONSEGNATO", tentativi, rispostaStato: stato, consegnatoAt: new Date() },
+          data: {
+            stato: "CONSEGNATO",
+            tentativi,
+            rispostaStato: stato,
+            consegnatoAt: new Date(),
+          },
         }),
         // Успехът НУЛИРА брояча: получател, паднал веднъж миналия месец, не бива
         // да бъде спрян заради стара история.
-        prisma.webhook.update({ where: { id: c.webhook.id }, data: { fallimenti: 0 } }),
+        prisma.webhook.update({
+          where: { id: c.webhook.id },
+          data: { fallimenti: 0 },
+        }),
       ]);
       continue;
     }
@@ -136,7 +153,9 @@ export async function consegnaInAttesa(limite = 100): Promise<EsitoConsegne> {
         tentativi,
         rispostaStato: stato,
         ultimoErrore: errore ?? (stato ? `HTTP ${stato}` : null),
-        prossimoTentativo: riprova ? prossimoTentativo(tentativi) : c.prossimoTentativo,
+        prossimoTentativo: riprova
+          ? prossimoTentativo(tentativi)
+          : c.prossimoTentativo,
       },
     });
 
@@ -151,10 +170,9 @@ export async function consegnaInAttesa(limite = 100): Promise<EsitoConsegne> {
         data: { fallimenti, ...(spegni ? { attivo: false } : {}) },
       });
       if (spegni)
-        log.warn(
-          `webhook disattivato dopo ${fallimenti} consegne fallite`,
-          { conteggio: fallimenti },
-        );
+        log.warn(`webhook disattivato dopo ${fallimenti} consegne fallite`, {
+          conteggio: fallimenti,
+        });
     }
   }
 

@@ -114,8 +114,8 @@ export default function Firma({
         )}
       </div>
       <p className="mt-1 text-xs text-text-3">
-        La firma vale come accettazione dell&apos;intervento descritto. Non è una firma
-        elettronica qualificata.
+        La firma vale come accettazione dell&apos;intervento descritto. Non è
+        una firma elettronica qualificata.
       </p>
     </div>
   );

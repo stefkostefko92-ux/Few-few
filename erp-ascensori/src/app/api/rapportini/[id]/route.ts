@@ -27,7 +27,9 @@ export const PUT = gestito(async (req, ctx) => {
   const { id } = await ctx.params;
   const data = await corpoValidato(req, rapportinoSchema.partial());
 
-  const prima = await prisma.rapportino.findFirst({ where: { id, ...filtroTenant(s) } });
+  const prima = await prisma.rapportino.findFirst({
+    where: { id, ...filtroTenant(s) },
+  });
   if (!prima) throw new ErroreHttp(404, "Rapportino non trovato");
   // Подписаното не се променя — иначе подписът не доказва нищо.
   if (!rapportinoModificabile(prima.firmatoAt))

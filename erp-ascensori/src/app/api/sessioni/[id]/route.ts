@@ -9,7 +9,8 @@ export const DELETE = gestito(async (_req, ctx) => {
   const { id } = await ctx.params;
   // Обхватът по потребител е в самата заявка: чужда сесия не се прекратява
   // дори с познат идентификатор.
-  if (!(await revocaSessione(id, s.sub))) throw new ErroreHttp(404, "Sessione non trovata");
+  if (!(await revocaSessione(id, s.sub)))
+    throw new ErroreHttp(404, "Sessione non trovata");
   await scriviAudit({
     azione: "STATE_CHANGE",
     entita: "sessioni_attive",

@@ -4,8 +4,14 @@
 // а заявките да се преизползват от бъдещия експорт за SDI.
 
 import { prisma } from "@/lib/prisma";
-import { riepilogoIva } from "@/lib/totals";
-import type { Azienda, Controparte, DocumentoPdf, RigaDocumento } from "@/lib/pdf/documento";
+import { riepilogoIva, toCents, fromCents } from "@/lib/totals";
+import { calcolaRitenuta } from "@/lib/fiscale/ritenuta";
+import type {
+  Azienda,
+  Controparte,
+  DocumentoPdf,
+  RigaDocumento,
+} from "@/lib/pdf/documento";
 
 /**
  * Данните на издаващата фирма.
@@ -24,17 +30,19 @@ export async function datiAzienda(tenantId: string | null): Promise<Azienda> {
   };
 }
 
-function controparte(a: {
-  ragioneSociale: string | null;
-  nome: string;
-  cognome: string | null;
-  indirizzo: string | null;
-  cap: string | null;
-  citta: string | null;
-  provincia: string | null;
-  partitaIva: string | null;
-  codiceFiscale: string | null;
-} | null): Controparte | null {
+function controparte(
+  a: {
+    ragioneSociale: string | null;
+    nome: string;
+    cognome: string | null;
+    indirizzo: string | null;
+    cap: string | null;
+    citta: string | null;
+    provincia: string | null;
+    partitaIva: string | null;
+    codiceFiscale: string | null;
+  } | null,
+): Controparte | null {
   if (!a) return null;
   return {
     denominazione: a.ragioneSociale ?? `${a.nome} ${a.cognome ?? ""}`.trim(),
@@ -48,7 +56,13 @@ function controparte(a: {
 }
 
 const righeConPrezzi = (
-  voci: { descrizione: string; quantita: unknown; prezzoUnitario: unknown; aliquotaIva: unknown; totale: unknown }[],
+  voci: {
+    descrizione: string;
+    quantita: unknown;
+    prezzoUnitario: unknown;
+    aliquotaIva: unknown;
+    totale: unknown;
+  }[],
 ): RigaDocumento[] =>
   voci.map((v) => ({
     descrizione: v.descrizione,
@@ -59,10 +73,17 @@ const righeConPrezzi = (
   }));
 
 /** Оферта. */
-export async function pdfPreventivo(id: string, tenantId: string | null): Promise<DocumentoPdf | null> {
+export async function pdfPreventivo(
+  id: string,
+  tenantId: string | null,
+): Promise<DocumentoPdf | null> {
   const p = await prisma.preventivo.findFirst({
     where: { id, tenantId },
-    include: { amministratore: true, voci: { orderBy: { ordine: "asc" } }, impianto: true },
+    include: {
+      amministratore: true,
+      voci: { orderBy: { ordine: "asc" } },
+      impianto: true,
+    },
   });
   if (!p) return null;
   const voci = p.voci.map((v) => ({
@@ -85,17 +106,27 @@ export async function pdfPreventivo(id: string, tenantId: string | null): Promis
     totaleLordo: p.totaleLordo.toString(),
     dettagli: [
       { label: "Validità", valore: `${p.validitaGiorni} giorni` },
-      ...(p.impianto ? [{ label: "Impianto", valore: p.impianto.matricola }] : []),
+      ...(p.impianto
+        ? [{ label: "Impianto", valore: p.impianto.matricola }]
+        : []),
     ],
     note: p.note,
   };
 }
 
 /** Фактура. */
-export async function pdfFattura(id: string, tenantId: string | null): Promise<DocumentoPdf | null> {
+export async function pdfFattura(
+  id: string,
+  tenantId: string | null,
+): Promise<DocumentoPdf | null> {
   const f = await prisma.fattura.findFirst({
     where: { id, tenantId },
-    include: { amministratore: true, voci: { orderBy: { ordine: "asc" } }, ordineLavoro: true },
+    include: {
+      condominio: true,
+      amministratore: true,
+      voci: { orderBy: { ordine: "asc" } },
+      ordineLavoro: true,
+    },
   });
   if (!f) return null;
   const voci = f.voci.map((v) => ({
@@ -103,24 +134,68 @@ export async function pdfFattura(id: string, tenantId: string | null): Promise<D
     prezzoUnitario: v.prezzoUnitario.toString(),
     aliquotaIva: v.aliquotaIva.toString(),
   }));
+
+  const imponibile = toCents(f.totaleNetto);
+  const imposta = toCents(f.totaleIva);
+  const r = f.ritenuta
+    ? calcolaRitenuta(imponibile, imposta, toCents(f.ritenutaAliquota))
+    : null;
+
   return {
     tipo: f.tipo === "EMESSA" ? "Documento contabile" : "Fattura ricevuta",
     numero: f.numero,
     data: f.data,
     oggetto: f.oggetto,
     azienda: await datiAzienda(tenantId),
-    destinatario: controparte(f.amministratore),
+    // Получателят е кондоминиумът, когато го има: администраторът само го
+    // представлява и НЕ е страна по документа.
+    destinatario: f.condominio
+      ? {
+          denominazione: f.condominio.nome,
+          indirizzo: f.condominio.indirizzo,
+          cap: f.condominio.cap,
+          citta: f.condominio.citta,
+          provincia: f.condominio.provincia,
+          partitaIva: null,
+          codiceFiscale: f.condominio.codiceFiscale,
+        }
+      : controparte(f.amministratore),
     righe: righeConPrezzi(f.voci),
     conPrezzi: true,
     riepilogo: riepilogoIva(voci),
     totaleNetto: f.totaleNetto.toString(),
     totaleIva: f.totaleIva.toString(),
     totaleLordo: f.totaleLordo.toString(),
+    ritenuta: r
+      ? {
+          aliquota: f.ritenutaAliquota.toString(),
+          importo: fromCents(r.importo),
+          netto: fromCents(f.splitPayment ? imponibile - r.importo : r.netto),
+        }
+      : null,
+    splitPayment: f.splitPayment,
     dettagli: [
       ...(f.dataScadenza
-        ? [{ label: "Scadenza", valore: f.dataScadenza.toISOString().slice(0, 10) }]
+        ? [
+            {
+              label: "Scadenza",
+              valore: f.dataScadenza.toISOString().slice(0, 10),
+            },
+          ]
         : []),
-      ...(f.ordineLavoro ? [{ label: "Ordine", valore: f.ordineLavoro.numero }] : []),
+      ...(f.ordineLavoro
+        ? [{ label: "Ordine", valore: f.ordineLavoro.numero }]
+        : []),
+      ...(f.condominio && f.amministratore
+        ? [
+            {
+              label: "Amministratore",
+              valore:
+                f.amministratore.ragioneSociale ??
+                `${f.amministratore.nome} ${f.amministratore.cognome ?? ""}`.trim(),
+            },
+          ]
+        : []),
       { label: "Stato", valore: f.stato },
     ],
     note: f.note,
@@ -135,7 +210,10 @@ export async function pdfFattura(id: string, tenantId: string | null): Promise<D
 }
 
 /** DDT — реквизитите по чл. 1, ал. 3 D.P.R. 472/1996. */
-export async function pdfDdt(id: string, tenantId: string | null): Promise<DocumentoPdf | null> {
+export async function pdfDdt(
+  id: string,
+  tenantId: string | null,
+): Promise<DocumentoPdf | null> {
   const d = await prisma.ddt.findFirst({
     where: { id, tenantId },
     include: { righe: { orderBy: { ordine: "asc" } }, ordineLavoro: true },
@@ -148,7 +226,9 @@ export async function pdfDdt(id: string, tenantId: string | null): Promise<Docum
     oggetto: null,
     azienda: await datiAzienda(tenantId),
     // Получателят на DDT е свободен текст в модела — показва се както е въведен.
-    destinatario: d.destinatario ? { denominazione: d.destinatario, indirizzo: d.indirizzoConsegna } : null,
+    destinatario: d.destinatario
+      ? { denominazione: d.destinatario, indirizzo: d.indirizzoConsegna }
+      : null,
     righe: d.righe.map((r) => ({
       descrizione: r.descrizione,
       quantita: String(r.quantita),
@@ -159,7 +239,9 @@ export async function pdfDdt(id: string, tenantId: string | null): Promise<Docum
     dettagli: [
       { label: "Causale del trasporto", valore: d.causale ?? "—" },
       { label: "Trasporto a cura di", valore: d.vettore ?? "mittente" },
-      ...(d.ordineLavoro ? [{ label: "Ordine", valore: d.ordineLavoro.numero }] : []),
+      ...(d.ordineLavoro
+        ? [{ label: "Ordine", valore: d.ordineLavoro.numero }]
+        : []),
     ],
     note: d.note,
     avvertenza:
@@ -219,12 +301,17 @@ export async function pdfRapportino(
             {
               label: "Impianto",
               valore: `${r.ordineLavoro.impianto.matricola}${
-                r.ordineLavoro.impianto.indirizzo ? ` — ${r.ordineLavoro.impianto.indirizzo}` : ""
+                r.ordineLavoro.impianto.indirizzo
+                  ? ` — ${r.ordineLavoro.impianto.indirizzo}`
+                  : ""
               }`,
             },
           ]
         : []),
-      { label: "Tecnico", valore: r.tecnico ? `${r.tecnico.nome} ${r.tecnico.cognome}` : "—" },
+      {
+        label: "Tecnico",
+        valore: r.tecnico ? `${r.tecnico.nome} ${r.tecnico.cognome}` : "—",
+      },
       { label: "Ore di lavoro", valore: r.oreLavoro.toString() },
       { label: "Esito", valore: ESITO[r.esito] ?? r.esito },
     ],

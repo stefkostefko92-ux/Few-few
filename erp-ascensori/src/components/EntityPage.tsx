@@ -3,8 +3,20 @@
 // Generic страница за анагрифика: таблица + търсене + странициране + модална
 // форма за създаване/промяна + изтриване. Конфигурира се декларативно.
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Modale, Paginazione, Vuoto, FiltriStato, ScheletroTabella } from "@/components/ui";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  Modale,
+  Paginazione,
+  Vuoto,
+  FiltriStato,
+  ScheletroTabella,
+} from "@/components/ui";
 import Link from "next/link";
 import { IcoNuovo } from "@/components/icone";
 import { perInputData } from "@/lib/format";
@@ -51,6 +63,15 @@ export interface Campo {
   /** стойност по подразбиране при създаване */
   predefinito?: unknown;
   colSpan2?: boolean;
+  /**
+   * Кратко обяснение под полето, на италиански.
+   *
+   * Нужно е там, където етикетът не стига: фискалните полета (получател,
+   * разцепено плащане, CIG) носят правни последици, а операторът не бива да
+   * научава за тях от отказ на SDI седмица по-късно. Свързано е с полето през
+   * `aria-describedby`, не е просто сив текст.
+   */
+  aiuto?: string;
 }
 
 export interface EntityConfig {
@@ -79,7 +100,10 @@ export interface EntityConfig {
 
 // Подновяването на сесията и мрежовите грешки живеят в `apiFetch` — тук само
 // стесняваме типа до редицата, с която работи страницата.
-async function apiJson(url: string, init?: RequestInit): Promise<{ ok: boolean; dati: Riga }> {
+async function apiJson(
+  url: string,
+  init?: RequestInit,
+): Promise<{ ok: boolean; dati: Riga }> {
   const { ok, dati } = await apiFetch<Riga>(url, init);
   return { ok, dati };
 }
@@ -99,12 +123,18 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
   const [stato, setStato] = useState("");
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState<string | null>(null);
-  const [modale, setModale] = useState<{ modo: "crea" | "modifica"; riga?: Riga } | null>(null);
+  const [modale, setModale] = useState<{
+    modo: "crea" | "modifica";
+    riga?: Riga;
+  } | null>(null);
   const size = 50;
 
   const carica = useCallback(async () => {
     setCaricamento(true);
-    const filtro = stato && config.filtroStato ? `&${config.filtroStato.campo}=${stato}` : "";
+    const filtro =
+      stato && config.filtroStato
+        ? `&${config.filtroStato.campo}=${stato}`
+        : "";
     const url = `${config.api}?page=${page}&size=${size}${q ? `&q=${encodeURIComponent(q)}` : ""}${filtro}`;
     try {
       const { ok, dati } = await apiJson(url);
@@ -128,7 +158,9 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
 
   async function elimina(r: Riga) {
     if (!confirm("Eliminare definitivamente questa scheda?")) return;
-    const { ok, dati } = await apiJson(`${config.api}/${r.id}`, { method: "DELETE" });
+    const { ok, dati } = await apiJson(`${config.api}/${r.id}`, {
+      method: "DELETE",
+    });
     if (!ok) {
       alert((dati.error as string) ?? "Errore");
       return;
@@ -140,8 +172,12 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-1">{config.titolo}</h1>
-          {config.descrizione && <p className="mt-1 text-sm text-text-3">{config.descrizione}</p>}
+          <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+            {config.titolo}
+          </h1>
+          {config.descrizione && (
+            <p className="mt-1 text-sm text-text-3">{config.descrizione}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {config.extraAzioni}
@@ -192,7 +228,9 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
         ) : righe.length === 0 ? (
           <Vuoto
             messaggio={
-              q || stato ? "Nessun risultato per i filtri attivi" : "Nessun elemento presente"
+              q || stato
+                ? "Nessun risultato per i filtri attivi"
+                : "Nessun elemento presente"
             }
             azione={
               q || stato
@@ -213,7 +251,10 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
               <thead>
                 <tr className="border-b border-border-strong bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
                   {config.colonne.map((c) => (
-                    <th key={c.chiave} className={`px-3 py-2.5 ${c.className ?? ""}`}>
+                    <th
+                      key={c.chiave}
+                      className={`px-3 py-2.5 ${c.className ?? ""}`}
+                    >
                       {c.label}
                     </th>
                   ))}
@@ -226,7 +267,8 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                     key={String(r.id)}
                     className={`border-b border-border last:border-0 hover:bg-surface-2 ${config.linkDettaglio ? "cursor-pointer" : ""}`}
                     onClick={() => {
-                      if (config.linkDettaglio) window.location.href = config.linkDettaglio(r);
+                      if (config.linkDettaglio)
+                        window.location.href = config.linkDettaglio(r);
                     }}
                   >
                     {config.colonne.map((c, i) => {
@@ -234,7 +276,10 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                         ? c.render(r)
                         : String(valoreAnnidato(r, c.chiave) ?? "—");
                       return (
-                        <td key={c.chiave} className={`px-3 py-2.5 ${c.className ?? ""}`}>
+                        <td
+                          key={c.chiave}
+                          className={`px-3 py-2.5 ${c.className ?? ""}`}
+                        >
                           {/* ПЪРВАТА клетка е истинска връзка, когато редът води
                               към детайл. Кликът върху целия ред остава удобство,
                               но той е `onClick` върху `<tr>` — с мишка работи, с
@@ -257,11 +302,16 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                     })}
                     {/* „Elimina" е разрушително и стои до „Modifica": целта за
                         докосване е 32 px и има отстояние, за да не се уцелва грешно. */}
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-3 py-2.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           className="btn-ghost h-8 px-2.5 text-xs"
-                          onClick={() => setModale({ modo: "modifica", riga: r })}
+                          onClick={() =>
+                            setModale({ modo: "modifica", riga: r })
+                          }
                         >
                           Modifica
                         </button>
@@ -281,7 +331,12 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
             </table>
           </div>
         )}
-        <Paginazione page={page} size={size} totale={totale} onPagina={setPage} />
+        <Paginazione
+          page={page}
+          size={size}
+          totale={totale}
+          onPagina={setPage}
+        />
       </div>
 
       {modale && (
@@ -303,9 +358,11 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
 // ── Формата (create/edit) ───────────────────────────────────────────────────
 
 function valoreIniziale(campo: Campo, riga?: Riga): unknown {
-  if (!riga) return campo.predefinito ?? (campo.tipo === "checkbox" ? true : "");
+  if (!riga)
+    return campo.predefinito ?? (campo.tipo === "checkbox" ? true : "");
   const v = riga[campo.name];
-  if (v === null || v === undefined) return campo.tipo === "checkbox" ? false : "";
+  if (v === null || v === undefined)
+    return campo.tipo === "checkbox" ? false : "";
   if (campo.tipo === "date") return perInputData(v as string | Date);
   if (campo.tipo === "tags") return (v as string[]).join(", ");
   // Многото стойности идват като списък от свързващи редове — вадим само id-тата.
@@ -330,7 +387,9 @@ export function FormEntity({
   onSalvato: () => void;
 }) {
   const [valori, setValori] = useState<Record<string, unknown>>(() =>
-    Object.fromEntries(config.campi.map((c) => [c.name, valoreIniziale(c, riga)]))
+    Object.fromEntries(
+      config.campi.map((c) => [c.name, valoreIniziale(c, riga)]),
+    ),
   );
   const [errore, setErrore] = useState<string | null>(null);
   const [salvataggio, setSalvataggio] = useState(false);
@@ -338,20 +397,22 @@ export function FormEntity({
 
   const campiFk = useMemo(
     () => config.campi.filter((c) => c.opzioniApi),
-    [config.campi]
+    [config.campi],
   );
 
   useEffect(() => {
     for (const campo of campiFk) {
       const { url, etichetta } = campo.opzioniApi!;
-      void apiJson(`${url}${url.includes("?") ? "&" : "?"}size=200`).then(({ ok, dati }) => {
-        if (!ok) return;
-        const lista = ((dati.righe as Riga[]) ?? []).map((r) => ({
-          value: String(r.id),
-          label: etichetta(r),
-        }));
-        setOpzioniFk((prev) => ({ ...prev, [campo.name]: lista }));
-      });
+      void apiJson(`${url}${url.includes("?") ? "&" : "?"}size=200`).then(
+        ({ ok, dati }) => {
+          if (!ok) return;
+          const lista = ((dati.righe as Riga[]) ?? []).map((r) => ({
+            value: String(r.id),
+            label: etichetta(r),
+          }));
+          setOpzioniFk((prev) => ({ ...prev, [campo.name]: lista }));
+        },
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -364,17 +425,27 @@ export function FormEntity({
     const corpo: Record<string, unknown> = {};
     for (const campo of config.campi) {
       let v = valori[campo.name];
-      if (campo.tipo === "number") v = v === "" || v === null ? null : Number(v);
-      if (campo.tipo === "decimal" || campo.tipo === "text" || campo.tipo === "email")
+      if (campo.tipo === "number")
+        v = v === "" || v === null ? null : Number(v);
+      if (
+        campo.tipo === "decimal" ||
+        campo.tipo === "text" ||
+        campo.tipo === "email"
+      )
         v = typeof v === "string" && v.trim() === "" ? null : v;
-      if (campo.tipo === "textarea") v = typeof v === "string" && v.trim() === "" ? null : v;
+      if (campo.tipo === "textarea")
+        v = typeof v === "string" && v.trim() === "" ? null : v;
       if (campo.tipo === "date") v = v === "" ? null : v;
       if (campo.tipo === "select") v = v === "" ? null : v;
       if (campo.tipo === "multiselect") v = Array.isArray(v) ? v : [];
       if (campo.tipo === "tags")
-        v = typeof v === "string"
-          ? v.split(",").map((x) => x.trim()).filter(Boolean)
-          : [];
+        v =
+          typeof v === "string"
+            ? v
+                .split(",")
+                .map((x) => x.trim())
+                .filter(Boolean)
+            : [];
       // при create не пращаме null за незадължителни празни полета
       if (modo === "crea" && v === null && !campo.richiesto) continue;
       corpo[campo.inviaCome ?? campo.name] = v;
@@ -410,9 +481,14 @@ export function FormEntity({
       largo={config.campi.length > 6}
     >
       <form onSubmit={salva}>
-        <div className={`grid gap-4 ${config.campi.length > 6 ? "sm:grid-cols-2" : ""}`}>
+        <div
+          className={`grid gap-4 ${config.campi.length > 6 ? "sm:grid-cols-2" : ""}`}
+        >
           {config.campi.map((campo) => (
-            <div key={campo.name} className={campo.colSpan2 ? "sm:col-span-2" : ""}>
+            <div
+              key={campo.name}
+              className={campo.colSpan2 ? "sm:col-span-2" : ""}
+            >
               <label className="label" htmlFor={`f-${campo.name}`}>
                 {campo.label}
                 {campo.richiesto && <span className="text-danger"> *</span>}
@@ -421,13 +497,23 @@ export function FormEntity({
                 campo={campo}
                 valore={valori[campo.name]}
                 opzioniFk={opzioniFk[campo.name]}
-                onCambia={(v) => setValori((prev) => ({ ...prev, [campo.name]: v }))}
+                onCambia={(v) =>
+                  setValori((prev) => ({ ...prev, [campo.name]: v }))
+                }
               />
+              {campo.aiuto && (
+                <p id={`a-${campo.name}`} className="mt-1 text-xs text-text-3">
+                  {campo.aiuto}
+                </p>
+              )}
             </div>
           ))}
         </div>
         {errore && (
-          <p role="alert" className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+          <p
+            role="alert"
+            className="mt-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+          >
             {errore}
           </p>
         )}
@@ -457,12 +543,18 @@ function CampoInput({
 }) {
   const id = `f-${campo.name}`;
   const opzioni = campo.opzioni ?? opzioniFk ?? [];
+  // Обяснението под полето трябва да е СВЪРЗАНО с контрола, не просто да стои
+  // до него: екранният четец го изчита само през `aria-describedby`.
+  const descritto = campo.aiuto
+    ? { "aria-describedby": `a-${campo.name}` }
+    : {};
 
   switch (campo.tipo) {
     case "select":
       return (
         <select
           id={id}
+          {...descritto}
           className="input"
           value={String(valore ?? "")}
           onChange={(e) => onCambia(e.target.value)}
@@ -483,13 +575,19 @@ function CampoInput({
       return (
         <div
           id={id}
+          {...descritto}
           role="group"
           aria-label={campo.label}
           className="max-h-48 space-y-1 overflow-y-auto rounded-md border border-border bg-bg p-2"
         >
-          {opzioni.length === 0 && <p className="px-1 py-2 text-sm text-text-3">Nessuna opzione</p>}
+          {opzioni.length === 0 && (
+            <p className="px-1 py-2 text-sm text-text-3">Nessuna opzione</p>
+          )}
           {opzioni.map((o) => (
-            <label key={o.value} className="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm">
+            <label
+              key={o.value}
+              className="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm"
+            >
               <input
                 type="checkbox"
                 className="h-4 w-4"
@@ -511,6 +609,7 @@ function CampoInput({
       return (
         <textarea
           id={id}
+          {...descritto}
           className="input min-h-20 py-2"
           value={String(valore ?? "")}
           onChange={(e) => onCambia(e.target.value)}
@@ -521,6 +620,7 @@ function CampoInput({
       return (
         <input
           id={id}
+          {...descritto}
           type="checkbox"
           className="h-5 w-5 accent-[var(--accent)]"
           checked={Boolean(valore)}
@@ -531,6 +631,7 @@ function CampoInput({
       return (
         <input
           id={id}
+          {...descritto}
           type="number"
           className="input"
           value={valore === null || valore === undefined ? "" : String(valore)}
@@ -542,6 +643,7 @@ function CampoInput({
       return (
         <input
           id={id}
+          {...descritto}
           type="text"
           inputMode="decimal"
           placeholder="0,00"
@@ -555,6 +657,7 @@ function CampoInput({
       return (
         <input
           id={id}
+          {...descritto}
           type="date"
           className="input"
           value={String(valore ?? "")}
@@ -566,6 +669,7 @@ function CampoInput({
       return (
         <input
           id={id}
+          {...descritto}
           type={campo.tipo === "email" ? "email" : "text"}
           className="input"
           value={String(valore ?? "")}

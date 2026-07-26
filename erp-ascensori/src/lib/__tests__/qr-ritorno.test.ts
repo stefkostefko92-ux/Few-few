@@ -20,7 +20,9 @@ test("по-дълги данни дават по-голям код", () => {
 test("тихата зона е част от платното", () => {
   // Под 4 модула много четци не хващат кода — затова е стойност по подразбиране.
   const conMargine = Number(qrSvg("test").match(/viewBox="0 0 (\d+)/)![1]);
-  const senza = Number(qrSvg("test", { margine: 0 }).match(/viewBox="0 0 (\d+)/)![1]);
+  const senza = Number(
+    qrSvg("test", { margine: 0 }).match(/viewBox="0 0 (\d+)/)![1],
+  );
   assert.equal(conMargine - senza, 8 * 4, "по 4 модула от двете страни");
 });
 
@@ -29,7 +31,10 @@ test("празни данни се отказват, вместо да дада�
 });
 
 test("адресът сочи матриколата и е екраниран", () => {
-  assert.equal(urlImpianto("https://erp.it", "ASC-001"), "https://erp.it/i/ASC-001");
+  assert.equal(
+    urlImpianto("https://erp.it", "ASC-001"),
+    "https://erp.it/i/ASC-001",
+  );
   // Наклонена черта в матрикола иначе би отворила друг път.
   assert.equal(urlImpianto("https://erp.it", "A/B"), "https://erp.it/i/A%2FB");
   // Двойна черта от небрежна конфигурация не бива да стига до стикера.

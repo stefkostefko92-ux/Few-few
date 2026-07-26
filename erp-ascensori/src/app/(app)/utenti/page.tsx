@@ -51,7 +51,12 @@ export default function Pagina() {
   }
 
   async function elimina(u: Utente) {
-    if (!confirm(`Eliminare DEFINITIVAMENTE ${u.email}? Operazione riservata al MASTER.`)) return;
+    if (
+      !confirm(
+        `Eliminare DEFINITIVAMENTE ${u.email}? Operazione riservata al MASTER.`,
+      )
+    )
+      return;
     const res = await fetch(`/api/utenti/${u.id}`, { method: "DELETE" });
     if (!res.ok) alert((await res.json()).error ?? "Errore");
     void carica();
@@ -63,12 +68,17 @@ export default function Pagina() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-1">Utenti</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+            Utenti
+          </h1>
           <p className="mt-1 text-sm text-text-3">
             Sette livelli di accesso, verificati dal server a ogni richiesta
           </p>
         </div>
-        <button className="btn-primary inline-flex items-center gap-1.5" onClick={() => setModale("crea")}>
+        <button
+          className="btn-primary inline-flex items-center gap-1.5"
+          onClick={() => setModale("crea")}
+        >
           <IcoNuovo />
           Nuovo utente
         </button>
@@ -88,7 +98,10 @@ export default function Pagina() {
           </thead>
           <tbody>
             {righe.map((u) => (
-              <tr key={u.id} className="border-b border-border last:border-0 hover:bg-surface-2">
+              <tr
+                key={u.id}
+                className="border-b border-border last:border-0 hover:bg-surface-2"
+              >
                 <td className="px-3 py-2.5 font-medium">
                   {u.cognome} {u.nome}
                 </td>
@@ -109,12 +122,20 @@ export default function Pagina() {
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-text-2">{dataOraIt(u.ultimoAccesso)}</td>
+                <td className="px-3 py-2.5 text-text-2">
+                  {dataOraIt(u.ultimoAccesso)}
+                </td>
                 <td className="px-3 py-2.5 text-right">
-                  <button className="btn-ghost h-7 px-2 text-xs" onClick={() => setModale(u)}>
+                  <button
+                    className="btn-ghost h-7 px-2 text-xs"
+                    onClick={() => setModale(u)}
+                  >
                     Modifica
                   </button>
-                  <button className="btn-ghost h-7 px-2 text-xs" onClick={() => setReset(u)}>
+                  <button
+                    className="btn-ghost h-7 px-2 text-xs"
+                    onClick={() => setReset(u)}
+                  >
                     Password
                   </button>
                   <button
@@ -196,7 +217,11 @@ function FormUtente({
   }
 
   return (
-    <Modale titolo={utente ? "Modifica utente" : "Nuovo utente"} aperto onChiudi={onChiudi}>
+    <Modale
+      titolo={utente ? "Modifica utente" : "Nuovo utente"}
+      aperto
+      onChiudi={onChiudi}
+    >
       <form onSubmit={salva}>
         {!utente && (
           <>
@@ -208,7 +233,9 @@ function FormUtente({
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
-            <label className="label">Password iniziale (min. 10 caratteri) *</label>
+            <label className="label">
+              Password iniziale (min. 10 caratteri) *
+            </label>
             <input
               type="password"
               className="input mb-4"
@@ -252,7 +279,10 @@ function FormUtente({
           ))}
         </select>
         {errore && (
-          <p role="alert" className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+          <p
+            role="alert"
+            className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+          >
             {errore}
           </p>
         )}
@@ -297,13 +327,19 @@ function FormPassword({
   }
 
   return (
-    <Modale titolo={`Reimposta password — ${utente.email}`} aperto onChiudi={onChiudi}>
+    <Modale
+      titolo={`Reimposta password — ${utente.email}`}
+      aperto
+      onChiudi={onChiudi}
+    >
       <form onSubmit={salva}>
         <p className="mb-4 text-sm text-text-2">
-          Nessuno può leggere la password attuale: è possibile solo assegnarne una nuova. Le
-          sessioni attive dell&apos;utente verranno chiuse.
+          Nessuno può leggere la password attuale: è possibile solo assegnarne
+          una nuova. Le sessioni attive dell&apos;utente verranno chiuse.
         </p>
-        <label className="label">Nuova password temporanea (min. 10 caratteri)</label>
+        <label className="label">
+          Nuova password temporanea (min. 10 caratteri)
+        </label>
         <input
           type="password"
           className="input mb-4"
@@ -313,7 +349,10 @@ function FormPassword({
           onChange={(e) => setPassword(e.target.value)}
         />
         {errore && (
-          <p role="alert" className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
+          <p
+            role="alert"
+            className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+          >
             {errore}
           </p>
         )}

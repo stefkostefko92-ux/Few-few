@@ -55,26 +55,72 @@ interface Gruppo {
 const GRUPPI: Gruppo[] = [
   {
     label: null,
-    voci: [{ href: "/dashboard", label: "Dashboard", icona: <SquaresFour size={DIM.navigazione} /> }],
+    voci: [
+      {
+        href: "/dashboard",
+        label: "Dashboard",
+        icona: <SquaresFour size={DIM.navigazione} />,
+      },
+    ],
   },
   {
     label: "Anagrafiche",
     voci: [
-      { href: "/impianti", label: "Impianti", icona: <Elevator size={DIM.navigazione} /> },
-      { href: "/scadenze", label: "Scadenze", icona: <CalendarCheck size={DIM.navigazione} /> },
-      { href: "/condomini", label: "Condomìni", icona: <Buildings size={DIM.navigazione} /> },
-      { href: "/amministratori", label: "Amministratori", icona: <UserGear size={DIM.navigazione} /> },
-      { href: "/dipendenti", label: "Dipendenti", icona: <Users size={DIM.navigazione} /> },
-      { href: "/automezzi", label: "Automezzi", icona: <Truck size={DIM.navigazione} /> },
-      { href: "/cottimisti", label: "Cottimisti", icona: <HardHat size={DIM.navigazione} /> },
-      { href: "/squadre", label: "Squadre", icona: <UsersThree size={DIM.navigazione} /> },
+      {
+        href: "/impianti",
+        label: "Impianti",
+        icona: <Elevator size={DIM.navigazione} />,
+      },
+      {
+        href: "/scadenze",
+        label: "Scadenze",
+        icona: <CalendarCheck size={DIM.navigazione} />,
+      },
+      {
+        href: "/condomini",
+        label: "Condomìni",
+        icona: <Buildings size={DIM.navigazione} />,
+      },
+      {
+        href: "/amministratori",
+        label: "Amministratori",
+        icona: <UserGear size={DIM.navigazione} />,
+      },
+      {
+        href: "/dipendenti",
+        label: "Dipendenti",
+        icona: <Users size={DIM.navigazione} />,
+      },
+      {
+        href: "/automezzi",
+        label: "Automezzi",
+        icona: <Truck size={DIM.navigazione} />,
+      },
+      {
+        href: "/cottimisti",
+        label: "Cottimisti",
+        icona: <HardHat size={DIM.navigazione} />,
+      },
+      {
+        href: "/squadre",
+        label: "Squadre",
+        icona: <UsersThree size={DIM.navigazione} />,
+      },
     ],
   },
   {
     label: "Magazzino",
     voci: [
-      { href: "/magazzino", label: "Articoli", icona: <Package size={DIM.navigazione} /> },
-      { href: "/movimenti", label: "Movimenti", icona: <ArrowsLeftRight size={DIM.navigazione} /> },
+      {
+        href: "/magazzino",
+        label: "Articoli",
+        icona: <Package size={DIM.navigazione} />,
+      },
+      {
+        href: "/movimenti",
+        label: "Movimenti",
+        icona: <ArrowsLeftRight size={DIM.navigazione} />,
+      },
     ],
   },
   {
@@ -85,8 +131,16 @@ const GRUPPI: Gruppo[] = [
         label: "Contratti",
         icona: <Handshake size={DIM.navigazione} />,
       },
-      { href: "/preventivi", label: "Preventivi", icona: <FileText size={DIM.navigazione} /> },
-      { href: "/ordini", label: "Ordini di lavoro", icona: <Wrench size={DIM.navigazione} /> },
+      {
+        href: "/preventivi",
+        label: "Preventivi",
+        icona: <FileText size={DIM.navigazione} />,
+      },
+      {
+        href: "/ordini",
+        label: "Ordini di lavoro",
+        icona: <Wrench size={DIM.navigazione} />,
+      },
       {
         href: "/impianti/etichette",
         label: "Etichette QR",
@@ -98,9 +152,22 @@ const GRUPPI: Gruppo[] = [
   {
     label: "Documentale",
     voci: [
-      { href: "/fatture", label: "Fatture", icona: <Receipt size={DIM.navigazione} />, minimo: "DIREZIONE" },
-      { href: "/ddt", label: "DDT", icona: <FileArrowDown size={DIM.navigazione} /> },
-      { href: "/documenti", label: "Documenti", icona: <Files size={DIM.navigazione} /> },
+      {
+        href: "/fatture",
+        label: "Fatture",
+        icona: <Receipt size={DIM.navigazione} />,
+        minimo: "DIREZIONE",
+      },
+      {
+        href: "/ddt",
+        label: "DDT",
+        icona: <FileArrowDown size={DIM.navigazione} />,
+      },
+      {
+        href: "/documenti",
+        label: "Documenti",
+        icona: <Files size={DIM.navigazione} />,
+      },
       {
         href: "/redditivita",
         label: "Redditività",
@@ -112,7 +179,12 @@ const GRUPPI: Gruppo[] = [
   {
     label: "Sistema",
     voci: [
-      { href: "/utenti", label: "Utenti", icona: <UserCircle size={DIM.navigazione} />, minimo: "ADMIN" },
+      {
+        href: "/utenti",
+        label: "Utenti",
+        icona: <UserCircle size={DIM.navigazione} />,
+        minimo: "ADMIN",
+      },
       {
         href: "/audit",
         label: "Registro operazioni",
@@ -150,7 +222,9 @@ const GRUPPI: Gruppo[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [utente, setUtente] = useState<{ nome: string; ruolo: Ruolo } | null>(null);
+  const [utente, setUtente] = useState<{ nome: string; ruolo: Ruolo } | null>(
+    null,
+  );
   const [scuro, setScuro] = useState(false);
 
   useEffect(() => {
@@ -188,7 +262,9 @@ export default function Sidebar() {
           <Elevator size={DIM.navigazione} weight="light" aria-hidden />
         </div>
         <div>
-          <div className="text-sm font-semibold leading-4 text-text-1">ERP Ascensori</div>
+          <div className="text-sm font-semibold leading-4 text-text-1">
+            ERP Ascensori
+          </div>
           <div className="text-[11px] text-text-3">Enterprise</div>
         </div>
       </div>
@@ -196,7 +272,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-2 pb-4">
         {GRUPPI.map((g, i) => {
           const visibili = g.voci.filter(
-            (v) => !v.minimo || (ruolo && haPermesso(ruolo, v.minimo))
+            (v) => !v.minimo || (ruolo && haPermesso(ruolo, v.minimo)),
           );
           if (visibili.length === 0) return null;
           return (
@@ -207,7 +283,8 @@ export default function Sidebar() {
                 </div>
               )}
               {visibili.map((v) => {
-                const attiva = pathname === v.href || pathname.startsWith(v.href + "/");
+                const attiva =
+                  pathname === v.href || pathname.startsWith(v.href + "/");
                 return (
                   <Link
                     key={v.href}
@@ -231,7 +308,9 @@ export default function Sidebar() {
       <div className="border-t border-border p-3">
         <div className="mb-2 flex items-center justify-between px-1">
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-text-1">{utente?.nome ?? "…"}</div>
+            <div className="truncate text-sm font-medium text-text-1">
+              {utente?.nome ?? "…"}
+            </div>
             <div className="text-[11px] text-text-3">
               {ruolo ? RUOLO_LABEL[ruolo] : ""}
             </div>
@@ -245,7 +324,10 @@ export default function Sidebar() {
             {scuro ? <Sun size={DIM.bottone} /> : <Moon size={DIM.bottone} />}
           </button>
         </div>
-        <button className="btn-secondary h-8 w-full text-xs" onClick={() => void esci()}>
+        <button
+          className="btn-secondary h-8 w-full text-xs"
+          onClick={() => void esci()}
+        >
           <SignOut size={DIM.bottone} /> Esci
         </button>
       </div>

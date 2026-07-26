@@ -12,7 +12,9 @@ import {
 } from "../totp";
 
 // Тестовите вектори от RFC 6238, приложение B. Тайната е ASCII „12345678901234567890".
-const SEGRETO_RFC = base32Codifica(Buffer.from("12345678901234567890", "ascii"));
+const SEGRETO_RFC = base32Codifica(
+  Buffer.from("12345678901234567890", "ascii"),
+);
 
 test("векторите от RFC 6238 съвпадат", () => {
   // Стойностите са от самия RFC — ако тук се счупи нещо, приложенията на
@@ -51,7 +53,10 @@ test("толерансът покрива ±1 стъпка, но не повеч
   assert.equal(verifica(s, codice(s, ora - PASSO_SECONDI * 1000), ora), true);
   assert.equal(verifica(s, codice(s, ora + PASSO_SECONDI * 1000), ora), true);
   // Две стъпки назад вече не се приема — прозорецът не се разтяга.
-  assert.equal(verifica(s, codice(s, ora - 2 * PASSO_SECONDI * 1000), ora), false);
+  assert.equal(
+    verifica(s, codice(s, ora - 2 * PASSO_SECONDI * 1000), ora),
+    false,
+  );
 });
 
 test("грешен и зле оформен код се отхвърлят", () => {
@@ -84,7 +89,10 @@ test("URI-то за QR носи всичко нужно на приложени�
   assert.match(u, /digits=6/);
   assert.match(u, /period=30/);
   // Имейлът се кодира — иначе „+" в адреса чупи URI-то.
-  assert.match(uriOtpauth("A", "mario+test@azienda.it"), /mario%2Btest%40azienda\.it/);
+  assert.match(
+    uriOtpauth("A", "mario+test@azienda.it"),
+    /mario%2Btest%40azienda\.it/,
+  );
 });
 
 test("резервните кодове са различни и с четим формат", () => {

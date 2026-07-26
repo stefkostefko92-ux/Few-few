@@ -17,7 +17,9 @@ let aziendaA: { sessione: Sessione; tenantId: string };
 let aziendaB: { sessione: Sessione; tenantId: string };
 
 async function creaAzienda(etichetta: string) {
-  const slug = unico(etichetta).toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  const slug = unico(etichetta)
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-");
   const t = await master.post<{ id: string }>("/api/tenants", {
     slug,
     ragioneSociale: `Azienda ${etichetta}`,
@@ -44,7 +46,10 @@ async function creaAzienda(etichetta: string) {
 }
 
 /** Брои редове в даден обхват, БЕЗ приложен филтър — само това, което базата пуска. */
-async function conteggioNelloScope(scope: string, tenantIdCercato: string): Promise<number> {
+async function conteggioNelloScope(
+  scope: string,
+  tenantIdCercato: string,
+): Promise<number> {
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT set_config('app.tenant_id', ${scope}, true)`;
     const r = await tx.$queryRaw<{ n: bigint }[]>`
@@ -80,11 +85,14 @@ describe("Row-Level Security", () => {
   });
 
   test("сурова заявка без приложен филтър не вижда чужди редове", async () => {
-    const creato = await aziendaB.sessione.post<{ id: string }>("/api/condomini", {
-      nome: unico("CondRls"),
-      indirizzo: "Via B 1",
-      citta: "Roma",
-    });
+    const creato = await aziendaB.sessione.post<{ id: string }>(
+      "/api/condomini",
+      {
+        nome: unico("CondRls"),
+        indirizzo: "Via B 1",
+        citta: "Roma",
+      },
+    );
     assert.equal(creato.status, 201, JSON.stringify(creato.dati));
 
     // Точно този SQL би изтекъл данни, ако изолацията беше само приложна:
@@ -100,12 +108,17 @@ describe("Row-Level Security", () => {
       "политиката скри и собствените редове",
     );
     // Нивото на доставчика вижда всичко — съзнателната вратичка.
-    assert.ok((await conteggioNelloScope(OBHVAT_TUTTI, aziendaB.tenantId)) >= 1);
+    assert.ok(
+      (await conteggioNelloScope(OBHVAT_TUTTI, aziendaB.tenantId)) >= 1,
+    );
   });
 
   test("непознат обхват не вижда нищо", async () => {
     assert.equal(
-      await conteggioNelloScope("00000000-0000-0000-0000-000000000000", aziendaB.tenantId),
+      await conteggioNelloScope(
+        "00000000-0000-0000-0000-000000000000",
+        aziendaB.tenantId,
+      ),
       0,
     );
   });

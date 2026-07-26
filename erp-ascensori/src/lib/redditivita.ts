@@ -57,14 +57,23 @@ export interface Redditivita {
 
 /** Часове × цена на час, в центесими. Часовете също са с две десетични. */
 function costoOre(r: RigaOre): number | null {
-  if (r.costoOrario === null || r.costoOrario === undefined || r.costoOrario === "") return null;
+  if (
+    r.costoOrario === null ||
+    r.costoOrario === undefined ||
+    r.costoOrario === ""
+  )
+    return null;
   // (часове×100) × (цена×100) / 100 = центесими, със закръгляне half-up НАКРАЯ.
   const prodotto = (toCents(r.ore) * toCents(r.costoOrario)) / 100;
   return Math.round(prodotto);
 }
 
 function costoMateriale(r: RigaMateriale): number | null {
-  if (r.prezzoAcquisto === null || r.prezzoAcquisto === undefined || r.prezzoAcquisto === "")
+  if (
+    r.prezzoAcquisto === null ||
+    r.prezzoAcquisto === undefined ||
+    r.prezzoAcquisto === ""
+  )
     return null;
   return Math.round(r.quantita * toCents(r.prezzoAcquisto));
 }
@@ -108,7 +117,10 @@ export function calcolaRedditivita(i: IngressiRedditivita): Redditivita {
     margine: fromCents(margine),
     // Процент спрямо ПРИХОДА (марж), не спрямо разхода (надценка) — двете се
     // бъркат постоянно и дават различни числа за една и съща сделка.
-    marginePerc: ricavi === 0 ? null : (Math.round((margine / ricavi) * 10000) / 100).toFixed(2),
+    marginePerc:
+      ricavi === 0
+        ? null
+        : (Math.round((margine / ricavi) * 10000) / 100).toFixed(2),
     oreSenzaCosto: fromCents(oreSenzaCosto),
     materialiSenzaCosto,
     completo: oreSenzaCosto === 0 && materialiSenzaCosto === 0,
@@ -116,6 +128,10 @@ export function calcolaRedditivita(i: IngressiRedditivita): Redditivita {
 }
 
 /** Подредба: първо най-губещото — то е причината да се гледа този отчет. */
-export function ordinaPerMargine<T extends { redditivita: Redditivita }>(righe: T[]): T[] {
-  return [...righe].sort((a, b) => toCents(a.redditivita.margine) - toCents(b.redditivita.margine));
+export function ordinaPerMargine<T extends { redditivita: Redditivita }>(
+  righe: T[],
+): T[] {
+  return [...righe].sort(
+    (a, b) => toCents(a.redditivita.margine) - toCents(b.redditivita.margine),
+  );
 }

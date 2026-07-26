@@ -30,12 +30,23 @@ test("графикът не се измества при последовате�
     x = aggiungiMesi(d("2026-01-31"), i + 1);
     mesi.push(iso(x));
   }
-  assert.deepEqual(mesi, ["2026-02-28", "2026-03-31", "2026-04-30", "2026-05-31"]);
+  assert.deepEqual(mesi, [
+    "2026-02-28",
+    "2026-03-31",
+    "2026-04-30",
+    "2026-05-31",
+  ]);
 });
 
 test("периодичността дава верния брой месеци", () => {
-  assert.equal(iso(prossimaScadenza(d("2026-01-01"), "TRIMESTRALE")), "2026-04-01");
-  assert.equal(iso(prossimaScadenza(d("2026-01-01"), "SEMESTRALE")), "2026-07-01");
+  assert.equal(
+    iso(prossimaScadenza(d("2026-01-01"), "TRIMESTRALE")),
+    "2026-04-01",
+  );
+  assert.equal(
+    iso(prossimaScadenza(d("2026-01-01"), "SEMESTRALE")),
+    "2026-07-01",
+  );
   assert.equal(iso(prossimaScadenza(d("2026-01-01"), "ANNUALE")), "2027-01-01");
   assert.equal(MESI_PERIODO.QUADRIMESTRALE, 4);
 });
@@ -51,7 +62,10 @@ test("спрял автоматизъм НАВАКСВА пропуснатит�
 
 test("наваксването има таван срещу повредени данни", () => {
   // Дата отпреди 50 години не бива да върти цикъла безкрайно.
-  assert.equal(periodiScaduti(d("1976-01-01"), d("2026-01-01"), "MENSILE"), 120);
+  assert.equal(
+    periodiScaduti(d("1976-01-01"), d("2026-01-01"), "MENSILE"),
+    120,
+  );
 });
 
 test("подновяването пази годишнината, не тръгва от днес", () => {
@@ -79,6 +93,12 @@ test("предизвестието се вдига в срока преди из
 });
 
 test("описанието на периода показва ЗА КОГА е фактурата", () => {
-  assert.equal(descrizionePeriodo(d("2026-01-01"), "TRIMESTRALE"), "01/01/2026 – 31/03/2026");
-  assert.equal(descrizionePeriodo(d("2026-07-01"), "SEMESTRALE"), "01/07/2026 – 31/12/2026");
+  assert.equal(
+    descrizionePeriodo(d("2026-01-01"), "TRIMESTRALE"),
+    "01/01/2026 – 31/03/2026",
+  );
+  assert.equal(
+    descrizionePeriodo(d("2026-07-01"), "SEMESTRALE"),
+    "01/07/2026 – 31/12/2026",
+  );
 });

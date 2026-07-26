@@ -15,7 +15,9 @@ describe("метрики", () => {
   });
 
   test("сгрешен токен също дава 404", async () => {
-    const res = await fetch(`${BASE}/api/metrics`, { headers: { "x-health-token": "sbagliato" } });
+    const res = await fetch(`${BASE}/api/metrics`, {
+      headers: { "x-health-token": "sbagliato" },
+    });
     assert.equal(res.status, 404);
   });
 
@@ -25,7 +27,9 @@ describe("метрики", () => {
     const s = await comeRuolo("ADMIN");
     assert.equal((await s.get("/api/impianti?size=1")).status, 200);
 
-    const res = await fetch(`${BASE}/api/metrics`, { headers: { "x-health-token": TOKEN } });
+    const res = await fetch(`${BASE}/api/metrics`, {
+      headers: { "x-health-token": TOKEN },
+    });
     assert.equal(res.status, 200);
     assert.match(res.headers.get("content-type") ?? "", /text\/plain/);
     const corpo = await res.text();

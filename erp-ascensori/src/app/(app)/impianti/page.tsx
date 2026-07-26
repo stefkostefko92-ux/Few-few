@@ -2,7 +2,10 @@
 
 // Импианти — сърцето на системата.
 
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { Badge } from "@/components/ui";
 import { dataIt } from "@/lib/format";
 
@@ -16,13 +19,21 @@ const config: EntityConfig = {
   cerca: "Cerca per matricola, marca, indirizzo…",
   linkDettaglio: (r) => `/impianti/${r.id}`,
   colonne: [
-    { chiave: "matricola", label: "Matricola", className: "font-mono font-medium" },
+    {
+      chiave: "matricola",
+      label: "Matricola",
+      className: "font-mono font-medium",
+    },
     {
       chiave: "marca",
       label: "Marca / Modello",
       render: (r) => `${r.marca} ${r.modello}`,
     },
-    { chiave: "stato", label: "Stato", render: (r) => <Badge valore={String(r.stato)} /> },
+    {
+      chiave: "stato",
+      label: "Stato",
+      render: (r) => <Badge valore={String(r.stato)} />,
+    },
     { chiave: "indirizzo", label: "Indirizzo" },
     {
       chiave: "condominio.nome",
@@ -44,7 +55,13 @@ const config: EntityConfig = {
       label: "Stato",
       tipo: "select",
       predefinito: "ATTIVO",
-      opzioni: ["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"].map((v) => ({
+      opzioni: [
+        "ATTIVO",
+        "FERMO",
+        "MANUTENZIONE",
+        "FUORI_SERVIZIO",
+        "DISMESSO",
+      ].map((v) => ({
         value: v,
         label: v.replaceAll("_", " "),
       })),
@@ -69,7 +86,8 @@ const config: EntityConfig = {
       tipo: "select",
       opzioniApi: {
         url: "/api/amministratori",
-        etichetta: (r) => String(r.ragioneSociale ?? `${r.nome} ${r.cognome ?? ""}`),
+        etichetta: (r) =>
+          String(r.ragioneSociale ?? `${r.nome} ${r.cognome ?? ""}`),
       },
     },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },

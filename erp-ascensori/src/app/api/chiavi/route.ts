@@ -38,7 +38,8 @@ export const GET = gestito(async () => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("ADMIN");
   const dati = await corpoValidato(req, schema);
-  if (!ambitiValidi(dati.ambiti)) throw new ErroreHttp(400, "Ambiti non validi");
+  if (!ambitiValidi(dati.ambiti))
+    throw new ErroreHttp(400, "Ambiti non validi");
 
   const k = generaChiave();
   const creata = await prisma.apiKey.create({
@@ -53,7 +54,13 @@ export const POST = gestito(async (req) => {
       creataDaId: s.sub,
       ...tenantDiCreazione(s),
     },
-    select: { id: true, prefisso: true, etichetta: true, ambiti: true, scadenza: true },
+    select: {
+      id: true,
+      prefisso: true,
+      etichetta: true,
+      ambiti: true,
+      scadenza: true,
+    },
   });
 
   await scriviAudit({
@@ -68,5 +75,12 @@ export const POST = gestito(async (req) => {
   });
 
   // Единственият момент, в който ключът съществува в четим вид.
-  return ok({ ...creata, chiave: k.chiave, avviso: "Copiare ora: non sarà più visibile." }, 201);
+  return ok(
+    {
+      ...creata,
+      chiave: k.chiave,
+      avviso: "Copiare ora: non sarà più visibile.",
+    },
+    201,
+  );
 });

@@ -55,20 +55,24 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, preventivoSchema);
-  const creato = await conNumero("preventivo", PREFISSI.preventivo, s.tenantId, (numero) =>
-    prisma.preventivo.create({
-      data: {
-        ...data,
-        descrizione: data.descrizione ?? undefined,
-        note: data.note ?? undefined,
-        impiantoId: data.impiantoId ?? undefined,
-        amministratoreId: data.amministratoreId ?? undefined,
-        numero,
-        utenteId: s.sub,
-        ...tenantDiCreazione(s),
-      },
-      include,
-    }),
+  const creato = await conNumero(
+    "preventivo",
+    PREFISSI.preventivo,
+    s.tenantId,
+    (numero) =>
+      prisma.preventivo.create({
+        data: {
+          ...data,
+          descrizione: data.descrizione ?? undefined,
+          note: data.note ?? undefined,
+          impiantoId: data.impiantoId ?? undefined,
+          amministratoreId: data.amministratoreId ?? undefined,
+          numero,
+          utenteId: s.sub,
+          ...tenantDiCreazione(s),
+        },
+        include,
+      }),
   );
   await scriviAudit({
     azione: "CREATE",

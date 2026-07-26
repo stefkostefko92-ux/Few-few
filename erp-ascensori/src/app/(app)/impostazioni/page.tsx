@@ -11,7 +11,12 @@ import { apiFetch } from "@/lib/fetch-client";
 
 type Dati = Record<string, string | null>;
 
-const CAMPI: { name: string; label: string; aiuto?: string; largo?: boolean }[] = [
+const CAMPI: {
+  name: string;
+  label: string;
+  aiuto?: string;
+  largo?: boolean;
+}[] = [
   { name: "ragioneSociale", label: "Ragione sociale", largo: true },
   { name: "partitaIva", label: "Partita IVA" },
   { name: "codiceFiscale", label: "Codice fiscale" },
@@ -22,7 +27,11 @@ const CAMPI: { name: string; label: string; aiuto?: string; largo?: boolean }[] 
   { name: "telefono", label: "Telefono" },
   { name: "email", label: "E-mail" },
   { name: "pec", label: "PEC" },
-  { name: "codiceSdi", label: "Codice destinatario (SDI)", aiuto: "Per la fatturazione elettronica" },
+  {
+    name: "codiceSdi",
+    label: "Codice destinatario (SDI)",
+    aiuto: "Per la fatturazione elettronica",
+  },
   {
     name: "regimeFiscale",
     label: "Regime fiscale",
@@ -35,7 +44,13 @@ const CAMPI: { name: string; label: string; aiuto?: string; largo?: boolean }[] 
 ];
 
 /** Реквизитите, без които печатният документ не е редовен. */
-const OBBLIGATORI = ["ragioneSociale", "partitaIva", "indirizzo", "cap", "citta"];
+const OBBLIGATORI = [
+  "ragioneSociale",
+  "partitaIva",
+  "indirizzo",
+  "cap",
+  "citta",
+];
 
 /** Реквизити, които печатният документ търпи, но SDI — не. */
 const OBBLIGATORI_SDI = ["provincia", "regimeFiscale"];
@@ -43,7 +58,10 @@ const OBBLIGATORI_SDI = ["provincia", "regimeFiscale"];
 export default function Pagina() {
   const [dati, setDati] = useState<Dati | null>(null);
   const [salvataggio, setSalvataggio] = useState(false);
-  const [esito, setEsito] = useState<{ tipo: "ok" | "errore"; testo: string } | null>(null);
+  const [esito, setEsito] = useState<{
+    tipo: "ok" | "errore";
+    testo: string;
+  } | null>(null);
 
   const carica = useCallback(async () => {
     const { ok, dati: d } = await apiFetch<Dati>("/api/dati-azienda");
@@ -61,11 +79,15 @@ export default function Pagina() {
     setEsito(null);
     try {
       const corpo: Dati = {};
-      for (const c of CAMPI) corpo[c.name] = (dati[c.name] ?? "") === "" ? null : dati[c.name];
-      const { ok, dati: r } = await apiFetch<{ error?: string }>("/api/dati-azienda", {
-        method: "PUT",
-        body: JSON.stringify(corpo),
-      });
+      for (const c of CAMPI)
+        corpo[c.name] = (dati[c.name] ?? "") === "" ? null : dati[c.name];
+      const { ok, dati: r } = await apiFetch<{ error?: string }>(
+        "/api/dati-azienda",
+        {
+          method: "PUT",
+          body: JSON.stringify(corpo),
+        },
+      );
       setEsito(
         ok
           ? { tipo: "ok", testo: "Dati salvati." }
@@ -85,9 +107,12 @@ export default function Pagina() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-1">Dati aziendali</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+          Dati aziendali
+        </h1>
         <p className="mt-1 text-sm text-text-3">
-          Compaiono in testa a preventivi, documenti contabili e documenti di trasporto
+          Compaiono in testa a preventivi, documenti contabili e documenti di
+          trasporto
         </p>
       </div>
 
@@ -105,9 +130,12 @@ export default function Pagina() {
             <>
               Dati obbligatori mancanti:{" "}
               <strong>
-                {mancanti.map((m) => CAMPI.find((c) => c.name === m)?.label).join(", ")}
+                {mancanti
+                  .map((m) => CAMPI.find((c) => c.name === m)?.label)
+                  .join(", ")}
               </strong>
-              . Sono richiesti sul documento di trasporto dall&apos;art. 1, comma 3, D.P.R. 472/1996.
+              . Sono richiesti sul documento di trasporto dall&apos;art. 1,
+              comma 3, D.P.R. 472/1996.
             </>
           ) : (
             "Tutti i dati obbligatori per la stampa sono compilati."
@@ -124,10 +152,12 @@ export default function Pagina() {
           <span>
             La stampa funziona, la fattura elettronica no. Mancano:{" "}
             <strong>
-              {mancantiSdi.map((m) => CAMPI.find((c) => c.name === m)?.label).join(", ")}
+              {mancantiSdi
+                .map((m) => CAMPI.find((c) => c.name === m)?.label)
+                .join(", ")}
             </strong>
-            . Senza questi dati il file XML viene rifiutato dallo SDI e la fattura risulta
-            non emessa.
+            . Senza questi dati il file XML viene rifiutato dallo SDI e la
+            fattura risulta non emessa.
           </span>
         </div>
       )}
@@ -138,9 +168,14 @@ export default function Pagina() {
             <div key={c.name} className={c.largo ? "sm:col-span-2" : ""}>
               <label className="label" htmlFor={`f-${c.name}`}>
                 {c.label}
-                {OBBLIGATORI.includes(c.name) && <span className="ml-1 text-danger-text">*</span>}
+                {OBBLIGATORI.includes(c.name) && (
+                  <span className="ml-1 text-danger-text">*</span>
+                )}
                 {OBBLIGATORI_SDI.includes(c.name) && (
-                  <span className="ml-1 text-warning-text" title="Richiesto per la fattura elettronica">
+                  <span
+                    className="ml-1 text-warning-text"
+                    title="Richiesto per la fattura elettronica"
+                  >
                     *
                   </span>
                 )}

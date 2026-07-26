@@ -32,17 +32,57 @@ interface Caso {
 }
 
 const CASI: Caso[] = [
-  { nome: "четене на импианти", metodo: "GET", percorso: "/api/impianti", minimo: "OPERATORE" },
-  { nome: "четене на ордини", metodo: "GET", percorso: "/api/ordini", minimo: "TECNICO" },
-  { nome: "четене на фактури", metodo: "GET", percorso: "/api/fatture", minimo: "DIREZIONE" },
-  { nome: "табло", metodo: "GET", percorso: "/api/dashboard/stats", minimo: "OPERATORE" },
-  { nome: "четене на потребители", metodo: "GET", percorso: "/api/utenti", minimo: "ADMIN" },
-  { nome: "регистър на операциите", metodo: "GET", percorso: "/api/audit", minimo: "ADMIN" },
+  {
+    nome: "четене на импианти",
+    metodo: "GET",
+    percorso: "/api/impianti",
+    minimo: "OPERATORE",
+  },
+  {
+    nome: "четене на ордини",
+    metodo: "GET",
+    percorso: "/api/ordini",
+    minimo: "TECNICO",
+  },
+  {
+    nome: "четене на фактури",
+    metodo: "GET",
+    percorso: "/api/fatture",
+    minimo: "DIREZIONE",
+  },
+  {
+    nome: "табло",
+    metodo: "GET",
+    percorso: "/api/dashboard/stats",
+    minimo: "OPERATORE",
+  },
+  {
+    nome: "четене на потребители",
+    metodo: "GET",
+    percorso: "/api/utenti",
+    minimo: "ADMIN",
+  },
+  {
+    nome: "регистър на операциите",
+    metodo: "GET",
+    percorso: "/api/audit",
+    minimo: "ADMIN",
+  },
   // САМО MASTER: `tenants` е служебна таблица без филтър по фирма, затова с
   // ниво ADMIN администраторът на един клиент четеше списъка с всички фирми,
   // удължаваше собствения си абонамент и деактивираше конкурент.
-  { nome: "фирми (multi-tenant)", metodo: "GET", percorso: "/api/tenants", minimo: "MASTER" },
-  { nome: "четене на движения", metodo: "GET", percorso: "/api/movimenti", minimo: "OPERATORE" },
+  {
+    nome: "фирми (multi-tenant)",
+    metodo: "GET",
+    percorso: "/api/tenants",
+    minimo: "MASTER",
+  },
+  {
+    nome: "четене на движения",
+    metodo: "GET",
+    percorso: "/api/movimenti",
+    minimo: "OPERATORE",
+  },
   {
     nome: "създаване на кондоминио",
     metodo: "POST",
@@ -62,7 +102,10 @@ const CASI: Caso[] = [
     metodo: "POST",
     percorso: "/api/import",
     minimo: "ADMIN",
-    corpo: { entita: "condomini", righe: [{ nome: "A", indirizzo: "B", citta: "C" }] },
+    corpo: {
+      entita: "condomini",
+      righe: [{ nome: "A", indirizzo: "B", citta: "C" }],
+    },
   },
   {
     nome: "проверка на целостта на audit",
@@ -92,13 +135,21 @@ describe("RBAC матрица през HTTP", () => {
         const { status } = await s.richiesta(caso.metodo, caso.percorso, corpo);
 
         if (trebvaDaMine) {
-          assert.notEqual(status, 403, `${ruolo} трябваше да мине ${caso.percorso}, но получи 403`);
-          assert.notEqual(status, 401, `${ruolo} трябваше да е автентикиран за ${caso.percorso}`);
+          assert.notEqual(
+            status,
+            403,
+            `${ruolo} трябваше да мине ${caso.percorso}, но получи 403`,
+          );
+          assert.notEqual(
+            status,
+            401,
+            `${ruolo} трябваше да е автентикиран за ${caso.percorso}`,
+          );
         } else {
           assert.equal(
             status,
             403,
-            `${ruolo} НЕ трябваше да стигне ${caso.metodo} ${caso.percorso} (получи ${status})`
+            `${ruolo} НЕ трябваше да стигне ${caso.metodo} ${caso.percorso} (получи ${status})`,
           );
         }
       });
@@ -110,8 +161,16 @@ describe("без сесия", () => {
   test("всеки защитен маршрут връща 401, не пренасочване", async () => {
     const anonimo = new Sessione();
     for (const caso of CASI) {
-      const { status } = await anonimo.richiesta(caso.metodo, caso.percorso, caso.corpo);
-      assert.equal(status, 401, `${caso.metodo} ${caso.percorso} върна ${status} вместо 401`);
+      const { status } = await anonimo.richiesta(
+        caso.metodo,
+        caso.percorso,
+        caso.corpo,
+      );
+      assert.equal(
+        status,
+        401,
+        `${caso.metodo} ${caso.percorso} върна ${status} вместо 401`,
+      );
     }
   });
 });
@@ -130,10 +189,18 @@ describe("операции, запазени за най-високите нив
     assert.equal(creato.status, 201);
 
     const daAdmin = await admin.del(`/api/utenti/${creato.dati.id}`);
-    assert.equal(daAdmin.status, 403, "ADMIN не бива да може да трие потребители");
+    assert.equal(
+      daAdmin.status,
+      403,
+      "ADMIN не бива да може да трие потребители",
+    );
 
     const daMaster = await master.del(`/api/utenti/${creato.dati.id}`);
-    assert.equal(daMaster.status, 200, "MASTER трябва да може да трие потребители");
+    assert.equal(
+      daMaster.status,
+      200,
+      "MASTER трябва да може да трие потребители",
+    );
   });
 
   test("MASTER не може да изтрие собствения си акаунт", async () => {
@@ -145,9 +212,15 @@ describe("операции, запазени за най-високите нив
 
   test("ADMIN не може да вдигне някого до MASTER", async () => {
     const admin = sessioni.get("ADMIN")!;
-    const lista = await admin.get<{ righe: { id: string; email: string }[] }>("/api/utenti");
-    const operatore = lista.dati.righe.find((u) => u.email === UTENTI.OPERATORE)!;
-    const { status } = await admin.put(`/api/utenti/${operatore.id}`, { ruolo: "MASTER" });
+    const lista = await admin.get<{ righe: { id: string; email: string }[] }>(
+      "/api/utenti",
+    );
+    const operatore = lista.dati.righe.find(
+      (u) => u.email === UTENTI.OPERATORE,
+    )!;
+    const { status } = await admin.put(`/api/utenti/${operatore.id}`, {
+      ruolo: "MASTER",
+    });
     assert.equal(status, 403, "само MASTER раздава ролята MASTER");
   });
 });

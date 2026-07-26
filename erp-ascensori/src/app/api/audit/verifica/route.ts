@@ -59,7 +59,9 @@ export const POST = gestito(async (req) => {
 
   for (const r of righe) {
     const chiaveTenant = r.tenantId ?? "";
-    const versione = (r.versioneFirma === 1 ? 1 : r.versioneFirma === 2 ? 2 : 3) as VersioneFirma;
+    const versione = (
+      r.versioneFirma === 1 ? 1 : r.versioneFirma === 2 ? 2 : 3
+    ) as VersioneFirma;
     const esito = verificaConRotazione(
       {
         azione: r.azione,

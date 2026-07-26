@@ -45,7 +45,10 @@ export async function apiFetch<T = Record<string, unknown>>(
   init?: RequestInit,
 ): Promise<Risposta<T>> {
   const esegui = () =>
-    fetch(url, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
+    fetch(url, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...init?.headers },
+    });
 
   let res: Response;
   try {
@@ -55,7 +58,9 @@ export async function apiFetch<T = Record<string, unknown>>(
     return {
       ok: false,
       stato: 0,
-      dati: { error: "Errore di rete. Verificare la connessione e riprovare." } as T,
+      dati: {
+        error: "Errore di rete. Verificare la connessione e riprovare.",
+      } as T,
     };
   }
 

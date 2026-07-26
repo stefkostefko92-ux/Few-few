@@ -27,8 +27,12 @@ export interface EsitoContratti {
 }
 
 /** Пуска автоматизма и записва следа (както при scadenze и retention). */
-export async function elaboraContrattiTracciato(oggi = new Date()): Promise<EsitoContratti> {
-  const run = await prisma.automatismoRun.create({ data: { nome: "contratti" } });
+export async function elaboraContrattiTracciato(
+  oggi = new Date(),
+): Promise<EsitoContratti> {
+  const run = await prisma.automatismoRun.create({
+    data: { nome: "contratti" },
+  });
   const inizio = Date.now();
   try {
     const esito = await elaboraContratti(oggi);
@@ -41,7 +45,11 @@ export async function elaboraContrattiTracciato(oggi = new Date()): Promise<Esit
         dettagli: { ...esito },
       },
     });
-    log.info("automatismo contratti", { esito: "OK", durata_ms: Date.now() - inizio, ...esito });
+    log.info("automatismo contratti", {
+      esito: "OK",
+      durata_ms: Date.now() - inizio,
+      ...esito,
+    });
     return esito;
   } catch (e) {
     const err = descriviErrore(e);
@@ -59,7 +67,9 @@ export async function elaboraContrattiTracciato(oggi = new Date()): Promise<Esit
   }
 }
 
-export async function elaboraContratti(oggi = new Date()): Promise<EsitoContratti> {
+export async function elaboraContratti(
+  oggi = new Date(),
+): Promise<EsitoContratti> {
   const esito: EsitoContratti = {
     ordiniCreati: 0,
     fattureCreate: 0,
@@ -69,13 +79,21 @@ export async function elaboraContratti(oggi = new Date()): Promise<EsitoContratt
 
   const attivi = await prisma.contratto.findMany({
     where: { stato: "ATTIVO" },
-    include: { impianti: { include: { impianto: { select: { id: true, matricola: true } } } } },
+    include: {
+      impianti: {
+        include: { impianto: { select: { id: true, matricola: true } } },
+      },
+    },
   });
 
   for (const c of attivi) {
     // 1) Периодични посещения → по един ордин на импиант, на период.
     if (c.prossimaVisita) {
-      const dovuti = periodiScaduti(c.prossimaVisita, oggi, c.periodicitaVisite as Periodicita);
+      const dovuti = periodiScaduti(
+        c.prossimaVisita,
+        oggi,
+        c.periodicitaVisite as Periodicita,
+      );
       let data = c.prossimaVisita;
       for (let i = 0; i < dovuti; i++) {
         for (const ci of c.impianti) {
@@ -119,7 +137,9 @@ export async function elaboraContratti(oggi = new Date()): Promise<EsitoContratt
           azione: "STATE_CHANGE",
           entita: "contratti",
           entitaId: c.id,
-          dettagli: { valori: { rinnovo: { a: r.dataFine.toISOString().slice(0, 10) } } },
+          dettagli: {
+            valori: { rinnovo: { a: r.dataFine.toISOString().slice(0, 10) } },
+          },
           tenantId: c.tenantId,
         });
       } else {
@@ -142,7 +162,9 @@ export async function elaboraContratti(oggi = new Date()): Promise<EsitoContratt
   return esito;
 }
 
-type ContrattoDb = Awaited<ReturnType<typeof prisma.contratto.findMany>>[number];
+type ContrattoDb = Awaited<
+  ReturnType<typeof prisma.contratto.findMany>
+>[number];
 
 /** Ордин за периодично посещение. Идемпотентно: един на импиант, на дата. */
 async function creaOrdineVisita(
@@ -191,7 +213,10 @@ async function creaFatturaCanone(c: ContrattoDb, data: Date): Promise<number> {
   });
   if (esistente) return 0;
 
-  const periodo = descrizionePeriodo(data, c.periodicitaFatturazione as Periodicita);
+  const periodo = descrizionePeriodo(
+    data,
+    c.periodicitaFatturazione as Periodicita,
+  );
   const numero = await prossimoNumero("fattura", "FT", c.tenantId);
 
   // Заглавието и редът вървят в една транзакция с преизчислението: иначе

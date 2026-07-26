@@ -81,10 +81,18 @@ export function gestito(
     /** Логът и метриката тръгват ЗАЕДНО — иначе едното мълчи за случай, който
      *  другото брои, и графиката не съвпада с разследването по `req_id`. */
     const misura = (stato: number, durata_ms: number) => {
-      const etichette = { rotta, metodo: req.method, stato: classeStato(stato) };
+      const etichette = {
+        rotta,
+        metodo: req.method,
+        stato: classeStato(stato),
+      };
       incrementa("erp_richieste_totale", etichette);
-      osserva("erp_richieste_durata_secondi", durata_ms / 1000, { rotta, metodo: req.method });
-      if (stato >= 500) incrementa("erp_errori_totale", { rotta, metodo: req.method });
+      osserva("erp_richieste_durata_secondi", durata_ms / 1000, {
+        rotta,
+        metodo: req.method,
+      });
+      if (stato >= 500)
+        incrementa("erp_errori_totale", { rotta, metodo: req.method });
     };
 
     try {

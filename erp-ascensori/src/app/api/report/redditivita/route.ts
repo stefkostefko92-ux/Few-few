@@ -7,7 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { ok, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
-import { calcolaRedditivita, ordinaPerMargine, type IngressiRedditivita } from "@/lib/redditivita";
+import {
+  calcolaRedditivita,
+  ordinaPerMargine,
+  type IngressiRedditivita,
+} from "@/lib/redditivita";
 import { riepilogoIva } from "@/lib/totals";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +23,8 @@ const STATI_RICAVO = ["EMESSA", "INVIATA", "PAGATA", "SCADUTA"] as const;
 export const GET = gestito(async (req) => {
   const s = await richiedeRuolo("DIREZIONE");
   const url = new URL(req.url);
-  const per = url.searchParams.get("per") === "impianto" ? "impianto" : "contratto";
+  const per =
+    url.searchParams.get("per") === "impianto" ? "impianto" : "contratto";
   const da = url.searchParams.get("da");
   const a = url.searchParams.get("a");
 
@@ -46,7 +51,9 @@ export const GET = gestito(async (req) => {
       contrattoId: true,
       impiantoId: true,
       contratto: { select: { numero: true, oggetto: true } },
-      impianto: { select: { matricola: true, condominio: { select: { nome: true } } } },
+      impianto: {
+        select: { matricola: true, condominio: { select: { nome: true } } },
+      },
       rapportini: {
         select: {
           oreLavoro: true,
@@ -56,11 +63,18 @@ export const GET = gestito(async (req) => {
       movimenti: {
         // Само изходите: входът е зареждане на склада, не разход по работата.
         where: { tipo: "USCITA" },
-        select: { quantita: true, articolo: { select: { prezzoAcquisto: true } } },
+        select: {
+          quantita: true,
+          articolo: { select: { prezzoAcquisto: true } },
+        },
       },
       fatture: {
         where: { stato: { in: [...STATI_RICAVO] }, tipo: "EMESSA" },
-        select: { voci: { select: { quantita: true, prezzoUnitario: true, aliquotaIva: true } } },
+        select: {
+          voci: {
+            select: { quantita: true, prezzoUnitario: true, aliquotaIva: true },
+          },
+        },
       },
     },
   });
@@ -78,13 +92,21 @@ export const GET = gestito(async (req) => {
     },
     select: {
       contrattoId: true,
-      voci: { select: { quantita: true, prezzoUnitario: true, aliquotaIva: true } },
+      voci: {
+        select: { quantita: true, prezzoUnitario: true, aliquotaIva: true },
+      },
     },
   });
 
   /** Нето от редовете, не `totaleNetto`: така ДДС никога не влиза за приход, а
    *  обобщението по аликвота е същото, което сверява и SDI. */
-  const netto = (voci: { quantita: unknown; prezzoUnitario: unknown; aliquotaIva: unknown }[]) =>
+  const netto = (
+    voci: {
+      quantita: unknown;
+      prezzoUnitario: unknown;
+      aliquotaIva: unknown;
+    }[],
+  ) =>
     riepilogoIva(
       voci.map((v) => ({
         quantita: String(v.quantita),
@@ -93,11 +115,17 @@ export const GET = gestito(async (req) => {
       })),
     ).map((r) => r.imponibile);
 
-  const gruppi = new Map<string, { etichetta: string; ingressi: IngressiRedditivita }>();
+  const gruppi = new Map<
+    string,
+    { etichetta: string; ingressi: IngressiRedditivita }
+  >();
   const prendi = (chiave: string, etichetta: string) => {
     let g = gruppi.get(chiave);
     if (!g) {
-      g = { etichetta, ingressi: { ricaviNetti: [], ore: [], materiali: [], costiEsterni: [] } };
+      g = {
+        etichetta,
+        ingressi: { ricaviNetti: [], ore: [], materiali: [], costiEsterni: [] },
+      };
       gruppi.set(chiave, g);
     }
     return g;
@@ -115,12 +143,16 @@ export const GET = gestito(async (req) => {
     for (const r of o.rapportini)
       g.ingressi.ore.push({
         ore: String(r.oreLavoro),
-        costoOrario: r.tecnico?.costoOrario ? String(r.tecnico.costoOrario) : null,
+        costoOrario: r.tecnico?.costoOrario
+          ? String(r.tecnico.costoOrario)
+          : null,
       });
     for (const m of o.movimenti)
       g.ingressi.materiali.push({
         quantita: m.quantita,
-        prezzoAcquisto: m.articolo.prezzoAcquisto ? String(m.articolo.prezzoAcquisto) : null,
+        prezzoAcquisto: m.articolo.prezzoAcquisto
+          ? String(m.articolo.prezzoAcquisto)
+          : null,
       });
     if (o.costoEsterno) g.ingressi.costiEsterni.push(String(o.costoEsterno));
     for (const f of o.fatture) g.ingressi.ricaviNetti.push(...netto(f.voci));

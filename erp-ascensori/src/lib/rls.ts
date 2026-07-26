@@ -90,8 +90,13 @@ export async function conRls<T>(
  * нищо в лога да го подскаже. Затова проверката е явна и се вижда в здравния
  * маршрут.
  */
-export async function rlsAttiva(): Promise<{ attiva: boolean; motivo?: string }> {
-  const [r] = await prisma.$queryRaw<{ super: boolean; bypass: boolean; policy: bigint }[]>`
+export async function rlsAttiva(): Promise<{
+  attiva: boolean;
+  motivo?: string;
+}> {
+  const [r] = await prisma.$queryRaw<
+    { super: boolean; bypass: boolean; policy: bigint }[]
+  >`
     SELECT
       r.rolsuper       AS "super",
       r.rolbypassrls   AS "bypass",
@@ -100,9 +105,12 @@ export async function rlsAttiva(): Promise<{ attiva: boolean; motivo?: string }>
     WHERE r.rolname = current_user
   `;
   if (!r) return { attiva: false, motivo: "ruolo applicativo non trovato" };
-  if (Number(r.policy) === 0) return { attiva: false, motivo: "policy tenant_isolation assente" };
-  if (r.super) return { attiva: false, motivo: "il ruolo applicativo è superuser" };
-  if (r.bypass) return { attiva: false, motivo: "il ruolo applicativo ha BYPASSRLS" };
+  if (Number(r.policy) === 0)
+    return { attiva: false, motivo: "policy tenant_isolation assente" };
+  if (r.super)
+    return { attiva: false, motivo: "il ruolo applicativo è superuser" };
+  if (r.bypass)
+    return { attiva: false, motivo: "il ruolo applicativo ha BYPASSRLS" };
   return { attiva: true };
 }
 

@@ -30,9 +30,13 @@ import {
   Check,
   DownloadSimple,
   CheckCircle,
+  Info,
+  PaperPlaneTilt,
   Plus,
   QrCode,
   Printer,
+  Receipt,
+  Trash,
   Tray,
   WarningCircle,
   X,
@@ -49,41 +53,107 @@ export const DIM = {
 
 // ── Действия (bold) ─────────────────────────────────────────────────────────
 
-export const IcoNuovo = () => <Plus size={DIM.bottone} weight="bold" aria-hidden />;
-export const IcoNuovoPiccolo = () => <Plus size={DIM.tabella} weight="bold" aria-hidden />;
-export const IcoStampa = () => <Printer size={DIM.tabella} weight="bold" aria-hidden />;
+export const IcoNuovo = () => (
+  <Plus size={DIM.bottone} weight="bold" aria-hidden />
+);
+export const IcoNuovoPiccolo = () => (
+  <Plus size={DIM.tabella} weight="bold" aria-hidden />
+);
+export const IcoStampa = () => (
+  <Printer size={DIM.tabella} weight="bold" aria-hidden />
+);
 /** Етикетът с код за сканиране върху машината. */
-export const IcoQr = () => <QrCode size={DIM.tabella} weight="bold" aria-hidden />;
+export const IcoQr = () => (
+  <QrCode size={DIM.tabella} weight="bold" aria-hidden />
+);
 /** Изнасяне на файл (XML за SDI) — различно действие от печата. */
-export const IcoEsporta = () => <DownloadSimple size={DIM.tabella} weight="bold" aria-hidden />;
-export const IcoChiudi = () => <X size={DIM.bottone} weight="bold" aria-hidden />;
-export const IcoSu = () => <ArrowUp size={DIM.bottone} weight="bold" aria-hidden />;
-export const IcoGiu = () => <ArrowDown size={DIM.bottone} weight="bold" aria-hidden />;
-export const IcoLarghezza = () => <ArrowsHorizontal size={DIM.tabella} weight="bold" aria-hidden />;
-export const IcoTransizione = () => <ArrowRight size={DIM.tabella} weight="bold" aria-hidden />;
+export const IcoEsporta = () => (
+  <DownloadSimple size={DIM.tabella} weight="bold" aria-hidden />
+);
+export const IcoChiudi = () => (
+  <X size={DIM.bottone} weight="bold" aria-hidden />
+);
+export const IcoSu = () => (
+  <ArrowUp size={DIM.bottone} weight="bold" aria-hidden />
+);
+export const IcoGiu = () => (
+  <ArrowDown size={DIM.bottone} weight="bold" aria-hidden />
+);
+export const IcoLarghezza = () => (
+  <ArrowsHorizontal size={DIM.tabella} weight="bold" aria-hidden />
+);
+export const IcoTransizione = () => (
+  <ArrowRight size={DIM.tabella} weight="bold" aria-hidden />
+);
+/** Подаване към Sistema di Interscambio — различно от изнасянето на файла. */
+export const IcoInvia = () => (
+  <PaperPlaneTilt size={DIM.tabella} weight="bold" aria-hidden />
+);
+/** Вписване на получено плащане. */
+export const IcoIncasso = () => (
+  <Receipt size={DIM.tabella} weight="bold" aria-hidden />
+);
+export const IcoElimina = () => (
+  <Trash size={DIM.tabella} weight="bold" aria-hidden />
+);
 
 // ── Навигация (regular) ─────────────────────────────────────────────────────
 
 export const IcoIndietro = () => <ArrowLeft size={DIM.tabella} aria-hidden />;
 /** Листането е ДРУГО от навигацията — оттам различният знак. */
-export const IcoPrecedente = () => <CaretLeft size={DIM.tabella} weight="bold" aria-hidden />;
-export const IcoSuccessiva = () => <CaretRight size={DIM.tabella} weight="bold" aria-hidden />;
+export const IcoPrecedente = () => (
+  <CaretLeft size={DIM.tabella} weight="bold" aria-hidden />
+);
+export const IcoSuccessiva = () => (
+  <CaretRight size={DIM.tabella} weight="bold" aria-hidden />
+);
 /** Разделител между две стойности („от → до", „статус → статус"). */
-export const IcoVerso = () => <ArrowRight size={DIM.testo} className="shrink-0" aria-hidden />;
+export const IcoVerso = () => (
+  <ArrowRight size={DIM.testo} className="shrink-0" aria-hidden />
+);
 
 // ── Статус (fill) ───────────────────────────────────────────────────────────
 
 export const IcoIntegro = () => (
-  <CheckCircle size={DIM.tabella} weight="fill" className="text-success-text" aria-hidden />
+  <CheckCircle
+    size={DIM.tabella}
+    weight="fill"
+    className="text-success-text"
+    aria-hidden
+  />
 );
 export const IcoAlterato = () => (
-  <XCircle size={DIM.tabella} weight="fill" className="text-danger-text" aria-hidden />
+  <XCircle
+    size={DIM.tabella}
+    weight="fill"
+    className="text-danger-text"
+    aria-hidden
+  />
 );
 export const IcoAttenzione = () => (
-  <WarningCircle size={DIM.tabella} weight="fill" className="text-danger-text" aria-hidden />
+  <WarningCircle
+    size={DIM.tabella}
+    weight="fill"
+    className="text-danger-text"
+    aria-hidden
+  />
+);
+/** Бележка, която не е тревога: „приема се, но знай това". */
+export const IcoNota = () => (
+  <Info
+    size={DIM.tabella}
+    weight="fill"
+    className="text-warning-text"
+    aria-hidden
+  />
 );
 export const IcoFatto = () => (
-  <Check size={DIM.testo} weight="bold" className="text-success-text" aria-hidden />
+  <Check
+    size={DIM.testo}
+    weight="bold"
+    className="text-success-text"
+    aria-hidden
+  />
 );
 export const IcoVuoto = () => (
   <Tray size={32} className="text-text-3" aria-hidden />

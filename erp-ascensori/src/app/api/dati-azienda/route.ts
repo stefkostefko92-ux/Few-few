@@ -41,7 +41,9 @@ const schema = z.object({
 export const GET = gestito(async () => {
   // Всеки вижда данните: те са на самите документи, които и без това чете.
   const s = await richiedeRuolo("OPERATORE");
-  const d = await prisma.datiAzienda.findFirst({ where: { tenantId: s.tenantId ?? null } });
+  const d = await prisma.datiAzienda.findFirst({
+    where: { tenantId: s.tenantId ?? null },
+  });
   return ok(d ?? {});
 });
 
@@ -60,7 +62,9 @@ export const PUT = gestito(async (req) => {
     azione: "UPDATE",
     entita: "dati_azienda",
     entitaId: dopo.id,
-    dettagli: prima ? dettagliModifica(prima, { ...prima, ...data }) : { creazione: true },
+    dettagli: prima
+      ? dettagliModifica(prima, { ...prima, ...data })
+      : { creazione: true },
     utenteId: s.sub,
     tenantId,
   });

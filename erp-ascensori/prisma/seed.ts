@@ -19,9 +19,11 @@ async function creaSeMancante<T extends { id: string }>(
     create(a: { data: object }): Promise<T>;
   },
   where: object,
-  data: object
+  data: object,
 ): Promise<T> {
-  return (await delegato.findFirst({ where })) ?? (await delegato.create({ data }));
+  return (
+    (await delegato.findFirst({ where })) ?? (await delegato.create({ data }))
+  );
 }
 
 const prisma = new PrismaClient();
@@ -63,23 +65,28 @@ async function main() {
   // ── Dati azienda (cedente/prestatore) ────────────────────────────────────
   // Без тях демото прави PDF, но не и електронна фактура — а именно XML-ът е
   // това, което прави фактурата издадена.
-  await creaSeMancante(prisma.datiAzienda, { tenantId: null }, {
-    ragioneSociale: "Ascensori Demo S.r.l.",
-    partitaIva: "12345678903",
-    codiceFiscale: "12345678903",
-    regimeFiscale: "RF01",
-    indirizzo: "Via dell'Industria 7",
-    cap: "20090",
-    citta: "Segrate",
-    provincia: "MI",
-    telefono: "+39 02 9876543",
-    email: "amministrazione@ascensoridemo.it",
-    pec: "ascensoridemo@pec.it",
-    iban: "IT60X0542811101000000123456",
-    rea: "MI-1234567",
-    capitaleSociale: "50.000,00 €",
-    notePiePagina: "Pagamento a 30 giorni data fattura. Interessi di mora ex D.Lgs. 231/2002.",
-  });
+  await creaSeMancante(
+    prisma.datiAzienda,
+    { tenantId: null },
+    {
+      ragioneSociale: "Ascensori Demo S.r.l.",
+      partitaIva: "12345678903",
+      codiceFiscale: "12345678903",
+      regimeFiscale: "RF01",
+      indirizzo: "Via dell'Industria 7",
+      cap: "20090",
+      citta: "Segrate",
+      provincia: "MI",
+      telefono: "+39 02 9876543",
+      email: "amministrazione@ascensoridemo.it",
+      pec: "ascensoridemo@pec.it",
+      iban: "IT60X0542811101000000123456",
+      rea: "MI-1234567",
+      capitaleSociale: "50.000,00 €",
+      notePiePagina:
+        "Pagamento a 30 giorni data fattura. Interessi di mora ex D.Lgs. 231/2002.",
+    },
+  );
 
   // ── Amministratori ───────────────────────────────────────────────────────
   const datiAmministratori = [
@@ -140,18 +147,41 @@ async function main() {
             provincia: a.provincia,
             codiceSdi: a.codiceSdi,
           },
-        }))
+        })),
     );
   }
 
   // ── Condomini ────────────────────────────────────────────────────────────
   const datiCondomini = [
-    { nome: "Condominio Torre Aurora", indirizzo: "Via Torino 8", citta: "Milano", cap: "20123", provincia: "MI", unitaImmobiliari: 42, amministratoreId: amministratori[0].id },
-    { nome: "Residenza Parco Verde", indirizzo: "Viale dei Giardini 25", citta: "Monza", cap: "20900", provincia: "MB", unitaImmobiliari: 18, amministratoreId: amministratori[1].id },
+    // Данъчният номер и адресът за е-фактурата са НА КОНДОМИНИУМА: той е
+    // получателят, студиото само го представлява.
+    {
+      nome: "Condominio Torre Aurora",
+      indirizzo: "Via Torino 8",
+      citta: "Milano",
+      cap: "20123",
+      provincia: "MI",
+      codiceFiscale: "97123456789",
+      pec: "torreaurora@pec.it",
+      unitaImmobiliari: 42,
+      amministratoreId: amministratori[0].id,
+    },
+    {
+      nome: "Residenza Parco Verde",
+      indirizzo: "Viale dei Giardini 25",
+      citta: "Monza",
+      cap: "20900",
+      provincia: "MB",
+      codiceFiscale: "97987654321",
+      unitaImmobiliari: 18,
+      amministratoreId: amministratori[1].id,
+    },
   ];
   const condomini = [];
   for (const c of datiCondomini) {
-    const esistente = await prisma.condominio.findFirst({ where: { nome: c.nome } });
+    const esistente = await prisma.condominio.findFirst({
+      where: { nome: c.nome },
+    });
     condomini.push(esistente ?? (await prisma.condominio.create({ data: c })));
   }
 
@@ -203,7 +233,11 @@ async function main() {
   const impianti = [];
   for (const i of datiImpianti) {
     impianti.push(
-      await creaSeMancante(prisma.impianto, { matricola: i.matricola, tenantId: null }, i)
+      await creaSeMancante(
+        prisma.impianto,
+        { matricola: i.matricola, tenantId: null },
+        i,
+      ),
     );
   }
 
@@ -225,9 +259,29 @@ async function main() {
 
   // ── Dipendenti ───────────────────────────────────────────────────────────
   const datiDipendenti = [
-    { nome: "Giuseppe", cognome: "Esposito", tipo: "TECNICO", patente: "B", specializzazioni: ["Schindler", "KONE"], dataAssunzione: new Date("2019-03-01") },
-    { nome: "Luca", cognome: "Moretti", tipo: "TECNICO", patente: "B", specializzazioni: ["Otis"], dataAssunzione: new Date("2021-09-15") },
-    { nome: "Elena", cognome: "Gallo", tipo: "MAGAZZINIERE", specializzazioni: [], dataAssunzione: new Date("2020-01-10") },
+    {
+      nome: "Giuseppe",
+      cognome: "Esposito",
+      tipo: "TECNICO",
+      patente: "B",
+      specializzazioni: ["Schindler", "KONE"],
+      dataAssunzione: new Date("2019-03-01"),
+    },
+    {
+      nome: "Luca",
+      cognome: "Moretti",
+      tipo: "TECNICO",
+      patente: "B",
+      specializzazioni: ["Otis"],
+      dataAssunzione: new Date("2021-09-15"),
+    },
+    {
+      nome: "Elena",
+      cognome: "Gallo",
+      tipo: "MAGAZZINIERE",
+      specializzazioni: [],
+      dataAssunzione: new Date("2020-01-10"),
+    },
   ];
   const dipendenti = [];
   for (const d of datiDipendenti) {
@@ -235,7 +289,7 @@ async function main() {
       where: { nome: d.nome, cognome: d.cognome },
     });
     dipendenti.push(
-      esistente ?? (await prisma.dipendente.create({ data: d as never }))
+      esistente ?? (await prisma.dipendente.create({ data: d as never })),
     );
   }
 
@@ -248,7 +302,10 @@ async function main() {
       data: { impiantoId: impianti[0].id, dipendenteId: dipendenti[0].id },
     });
   }
-  await creaSeMancante(prisma.automezzo, { targa: "GA123BC", tenantId: null }, {
+  await creaSeMancante(
+    prisma.automezzo,
+    { targa: "GA123BC", tenantId: null },
+    {
       targa: "GA123BC",
       marca: "Fiat",
       modello: "Doblò",
@@ -258,7 +315,7 @@ async function main() {
       scadenzaTagliando: fraGiorni(10),
       stato: "rosso",
       conducenteId: dipendenti[0].id,
-    }
+    },
   );
 
   // ── Cottimista + Squadra ─────────────────────────────────────────────────
@@ -273,7 +330,9 @@ async function main() {
       telefono: "+39 02 7654321",
     },
   });
-  const squadra = await prisma.squadra.findFirst({ where: { nome: "Squadra Nord" } });
+  const squadra = await prisma.squadra.findFirst({
+    where: { nome: "Squadra Nord" },
+  });
   if (!squadra) {
     await prisma.squadra.create({
       data: {
@@ -287,19 +346,53 @@ async function main() {
 
   // ── Magazzino ────────────────────────────────────────────────────────────
   const datiArticoli = [
-    { codice: "FUNE-D10", nome: "Fune d'acciaio Ø10 mm (metro)", tipo: "COMPONENTI", categoria: "Funi", quantita: 120, sogliaMinima: 50, prezzoAcquisto: "4.20", prezzoVendita: "7.90" },
-    { codice: "PULS-LED", nome: "Pulsante di piano LED", tipo: "COMPONENTI", categoria: "Pulsantiere", quantita: 8, sogliaMinima: 20, prezzoAcquisto: "12.50", prezzoVendita: "24.00" },
-    { codice: "OLIO-H68", nome: "Olio idraulico ISO VG 68 (lt)", tipo: "COMPONENTI", categoria: "Idraulica", quantita: 45, sogliaMinima: 30, prezzoAcquisto: "6.80", prezzoVendita: "11.50" },
+    {
+      codice: "FUNE-D10",
+      nome: "Fune d'acciaio Ø10 mm (metro)",
+      tipo: "COMPONENTI",
+      categoria: "Funi",
+      quantita: 120,
+      sogliaMinima: 50,
+      prezzoAcquisto: "4.20",
+      prezzoVendita: "7.90",
+    },
+    {
+      codice: "PULS-LED",
+      nome: "Pulsante di piano LED",
+      tipo: "COMPONENTI",
+      categoria: "Pulsantiere",
+      quantita: 8,
+      sogliaMinima: 20,
+      prezzoAcquisto: "12.50",
+      prezzoVendita: "24.00",
+    },
+    {
+      codice: "OLIO-H68",
+      nome: "Olio idraulico ISO VG 68 (lt)",
+      tipo: "COMPONENTI",
+      categoria: "Idraulica",
+      quantita: 45,
+      sogliaMinima: 30,
+      prezzoAcquisto: "6.80",
+      prezzoVendita: "11.50",
+    },
   ];
   for (const a of datiArticoli) {
-    await creaSeMancante(prisma.articoloMagazzino, { codice: a.codice, tenantId: null }, {
-      ...a,
-      descrizione: a.nome,
-    });
+    await creaSeMancante(
+      prisma.articoloMagazzino,
+      { codice: a.codice, tenantId: null },
+      {
+        ...a,
+        descrizione: a.nome,
+      },
+    );
   }
 
   // ── Preventivo с voci ────────────────────────────────────────────────────
-  const preventivo = await creaSeMancante(prisma.preventivo, { numero: "PRV-2026-0001", tenantId: null }, {
+  const preventivo = await creaSeMancante(
+    prisma.preventivo,
+    { numero: "PRV-2026-0001", tenantId: null },
+    {
       numero: "PRV-2026-0001",
       stato: "APPROVATO",
       oggetto: "Sostituzione funi di trazione impianto MI-2024-0158",
@@ -310,7 +403,7 @@ async function main() {
       totaleNetto: "1148.00",
       totaleIva: "252.56",
       totaleLordo: "1400.56",
-    }
+    },
   );
   const vociEsistenti = await prisma.vocePreventivo.count({
     where: { preventivoId: preventivo.id },
@@ -318,25 +411,53 @@ async function main() {
   if (vociEsistenti === 0) {
     await prisma.vocePreventivo.createMany({
       data: [
-        { preventivoId: preventivo.id, descrizione: "Fune d'acciaio Ø10 mm", quantita: "60.00", prezzoUnitario: "7.90", aliquotaIva: "22.00", totale: "474.00", ordine: 0 },
-        { preventivoId: preventivo.id, descrizione: "Manodopera specializzata (ore)", quantita: "12.00", prezzoUnitario: "48.00", aliquotaIva: "22.00", totale: "576.00", ordine: 1 },
-        { preventivoId: preventivo.id, descrizione: "Smaltimento funi esauste", quantita: "1.00", prezzoUnitario: "98.00", aliquotaIva: "22.00", totale: "98.00", ordine: 2 },
+        {
+          preventivoId: preventivo.id,
+          descrizione: "Fune d'acciaio Ø10 mm",
+          quantita: "60.00",
+          prezzoUnitario: "7.90",
+          aliquotaIva: "22.00",
+          totale: "474.00",
+          ordine: 0,
+        },
+        {
+          preventivoId: preventivo.id,
+          descrizione: "Manodopera specializzata (ore)",
+          quantita: "12.00",
+          prezzoUnitario: "48.00",
+          aliquotaIva: "22.00",
+          totale: "576.00",
+          ordine: 1,
+        },
+        {
+          preventivoId: preventivo.id,
+          descrizione: "Smaltimento funi esauste",
+          quantita: "1.00",
+          prezzoUnitario: "98.00",
+          aliquotaIva: "22.00",
+          totale: "98.00",
+          ordine: 2,
+        },
       ],
     });
   }
 
   // ── Ordine di lavoro + storico ───────────────────────────────────────────
-  const ordine = await creaSeMancante(prisma.ordineLavoro, { numero: "ODL-2026-0001", tenantId: null }, {
+  const ordine = await creaSeMancante(
+    prisma.ordineLavoro,
+    { numero: "ODL-2026-0001", tenantId: null },
+    {
       numero: "ODL-2026-0001",
       stato: "IN_LAVORO",
       priorita: "URGENTE",
       oggetto: "Sostituzione funi di trazione",
-      descrizione: "Sostituzione completa delle funi come da preventivo approvato.",
+      descrizione:
+        "Sostituzione completa delle funi come da preventivo approvato.",
       impiantoId: impianti[0].id,
       preventivoId: preventivo.id,
       tecnicoId: dipendenti[0].id,
       dataInizio: fraGiorni(-2),
-    }
+    },
   );
   const storicoEsistente = await prisma.storicoStato.count({
     where: { ordineLavoroId: ordine.id },
@@ -344,31 +465,94 @@ async function main() {
   if (storicoEsistente === 0) {
     await prisma.storicoStato.createMany({
       data: [
-        { ordineLavoroId: ordine.id, statoNuovo: "BOZZA", utente: "Marco Ferrari" },
-        { ordineLavoroId: ordine.id, statoPrecedente: "BOZZA", statoNuovo: "EMESSO", utente: "Marco Ferrari" },
-        { ordineLavoroId: ordine.id, statoPrecedente: "EMESSO", statoNuovo: "CONFERMATO", utente: "Laura Greco" },
-        { ordineLavoroId: ordine.id, statoPrecedente: "CONFERMATO", statoNuovo: "IN_LAVORO", utente: "Giuseppe Esposito", nota: "Inizio lavori in cantiere" },
+        {
+          ordineLavoroId: ordine.id,
+          statoNuovo: "BOZZA",
+          utente: "Marco Ferrari",
+        },
+        {
+          ordineLavoroId: ordine.id,
+          statoPrecedente: "BOZZA",
+          statoNuovo: "EMESSO",
+          utente: "Marco Ferrari",
+        },
+        {
+          ordineLavoroId: ordine.id,
+          statoPrecedente: "EMESSO",
+          statoNuovo: "CONFERMATO",
+          utente: "Laura Greco",
+        },
+        {
+          ordineLavoroId: ordine.id,
+          statoPrecedente: "CONFERMATO",
+          statoNuovo: "IN_LAVORO",
+          utente: "Giuseppe Esposito",
+          nota: "Inizio lavori in cantiere",
+        },
       ],
     });
   }
 
   // ── Fattura + DDT ────────────────────────────────────────────────────────
-  const fattura = await creaSeMancante(prisma.fattura, { numero: "FT-2026-0001", tenantId: null }, {
+  const fattura = await creaSeMancante(
+    prisma.fattura,
+    { numero: "FT-2026-0001", tenantId: null },
+    {
       numero: "FT-2026-0001",
       tipo: "EMESSA",
       stato: "INVIATA",
       data: fraGiorni(-10),
       dataScadenza: fraGiorni(20),
       oggetto: "Acconto lavori sostituzione funi",
+      // ПОЛУЧАТЕЛЯТ е кондоминиумът; администраторът остава за връзка.
+      condominioId: condomini[0].id,
       amministratoreId: amministratori[0].id,
       ordineLavoroId: ordine.id,
       utenteId: master.id,
+      // Кондоминиумът е заместник по данъка: удържа 4 % и внася вместо нас.
+      ritenuta: true,
+      ritenutaAliquota: "4.00",
+      ritenutaTipo: "RT02",
+      ritenutaCausale: "W",
+      ritenutaImporto: "20.00",
+      statoSdi: "CONSEGNATA",
+      statoPagamento: "PARZIALE",
+      totalePagato: "300.00",
       totaleNetto: "500.00",
       totaleIva: "110.00",
       totaleLordo: "610.00",
-    }
+    },
   );
-  if ((await prisma.voceFattura.count({ where: { fatturaId: fattura.id } })) === 0) {
+  // Частично постъпление — за да личи, че „платена" не е двоично състояние.
+  if (
+    (await prisma.pagamento.count({ where: { fatturaId: fattura.id } })) === 0
+  ) {
+    await prisma.pagamento.create({
+      data: {
+        fatturaId: fattura.id,
+        data: fraGiorni(-2),
+        importo: "300.00",
+        modalita: "MP05",
+        riferimento: "CRO 2026030412345",
+      },
+    });
+  }
+  if (
+    (await prisma.notificaSdi.count({ where: { fatturaId: fattura.id } })) === 0
+  ) {
+    await prisma.notificaSdi.create({
+      data: {
+        fatturaId: fattura.id,
+        tipo: "RC",
+        dataOra: fraGiorni(-9),
+        identificativoSdi: "1234567890",
+        descrizione: "Ricevuta di consegna",
+      },
+    });
+  }
+  if (
+    (await prisma.voceFattura.count({ where: { fatturaId: fattura.id } })) === 0
+  ) {
     await prisma.voceFattura.create({
       data: {
         fatturaId: fattura.id,
@@ -381,17 +565,22 @@ async function main() {
       },
     });
   }
-  await creaSeMancante(prisma.ddt, { numero: "DDT-2026-0001", tenantId: null }, {
+  await creaSeMancante(
+    prisma.ddt,
+    { numero: "DDT-2026-0001", tenantId: null },
+    {
       numero: "DDT-2026-0001",
       data: fraGiorni(-3),
       causale: "vendita",
       destinatario: "Condominio Torre Aurora",
       indirizzoConsegna: "Via Torino 8, Milano",
       ordineLavoroId: ordine.id,
-    }
+    },
   );
 
-  console.log("Seed completato: демо данни на италиански заредени (idempotent).");
+  console.log(
+    "Seed completato: демо данни на италиански заредени (idempotent).",
+  );
 }
 
 main()

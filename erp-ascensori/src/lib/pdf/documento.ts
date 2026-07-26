@@ -73,13 +73,27 @@ export interface DocumentoPdf {
   totaleNetto?: string | null;
   totaleIva?: string | null;
   totaleLordo?: string | null;
+  /**
+   * Удържането по чл. 25-ter D.P.R. 600/1973.
+   *
+   * Печата се, защото получателят превежда НЕТНОТО: без реда фактурата казва
+   * една сума, а по банка идва друга, и разликата се търси от две счетоводства.
+   */
+  ritenuta?: { aliquota: string; importo: string; netto: string } | null;
+  /** Чл. 17-ter: ДДС-то се внася от публичния получател, не от нас. */
+  splitPayment?: boolean;
   /** Допълнителни редове в заглавната част (causale, vettore, scadenza…). */
   dettagli?: { label: string; valore: string }[];
   note?: string | null;
   /** Текст, който документът ЗАДЪЛЖИТЕЛНО носи (напр. че не е е-фактура). */
   avvertenza?: string | null;
   /** Блок за подпис: PNG (data URL) + кой е подписал. */
-  firma?: { immagine: string; nome: string; ruolo?: string | null; data: Date } | null;
+  firma?: {
+    immagine: string;
+    nome: string;
+    ruolo?: string | null;
+    data: Date;
+  } | null;
   /** Свободен текст под таблицата (описание на намесата). */
   corpo?: string | null;
 }
@@ -92,7 +106,10 @@ const ACCENTO = "#116bb5";
 const numeroIt = (v?: string | null) =>
   v === null || v === undefined
     ? "—"
-    : Number(v).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    : Number(v).toLocaleString("it-IT", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 
 const euro = (v?: string | null) =>
   v === null || v === undefined
@@ -104,10 +121,14 @@ const dataIt = (d: Date) =>
 
 /** Връща готовия PDF като буфер. */
 export function generaPdf(doc: DocumentoPdf): Promise<Buffer> {
-  const pdf = new PDFDocument({ size: "A4", margin: MARGINE, info: {
-    Title: `${doc.tipo} ${doc.numero}`,
-    Author: doc.azienda.ragioneSociale,
-  } });
+  const pdf = new PDFDocument({
+    size: "A4",
+    margin: MARGINE,
+    info: {
+      Title: `${doc.tipo} ${doc.numero}`,
+      Author: doc.azienda.ragioneSociale,
+    },
+  });
 
   const chunks: Buffer[] = [];
   const fine = new Promise<Buffer>((risolvi, rifiuta) => {
@@ -130,63 +151,117 @@ export function generaPdf(doc: DocumentoPdf): Promise<Buffer> {
 
 function intestazione(pdf: PDFKit.PDFDocument, doc: DocumentoPdf) {
   const a = doc.azienda;
-  pdf.fillColor(SCURO).fontSize(16).font("Helvetica-Bold").text(a.ragioneSociale, MARGINE, MARGINE);
+  pdf
+    .fillColor(SCURO)
+    .fontSize(16)
+    .font("Helvetica-Bold")
+    .text(a.ragioneSociale, MARGINE, MARGINE);
 
   const righeAzienda = [
-    [a.indirizzo, [a.cap, a.citta, a.provincia && `(${a.provincia})`].filter(Boolean).join(" ")]
+    [
+      a.indirizzo,
+      [a.cap, a.citta, a.provincia && `(${a.provincia})`]
+        .filter(Boolean)
+        .join(" "),
+    ]
       .filter(Boolean)
       .join(" — "),
-    [a.partitaIva && `P. IVA ${a.partitaIva}`, a.codiceFiscale && `C.F. ${a.codiceFiscale}`]
+    [
+      a.partitaIva && `P. IVA ${a.partitaIva}`,
+      a.codiceFiscale && `C.F. ${a.codiceFiscale}`,
+    ]
       .filter(Boolean)
       .join(" · "),
     [a.telefono, a.email, a.pec].filter(Boolean).join(" · "),
   ].filter((r) => r && r.length > 0);
 
   pdf.fontSize(8).font("Helvetica").fillColor(GRIGIO);
-  for (const r of righeAzienda) pdf.text(r as string, MARGINE, pdf.y, { width: 320 });
+  for (const r of righeAzienda)
+    pdf.text(r as string, MARGINE, pdf.y, { width: 320 });
 
   // Тип и номер горе вдясно — първото, което окото търси.
   const destra = pdf.page.width - MARGINE - 180;
-  pdf.fillColor(ACCENTO).fontSize(14).font("Helvetica-Bold")
-    .text(doc.tipo.toUpperCase(), destra, MARGINE, { width: 180, align: "right" });
-  pdf.fillColor(SCURO).fontSize(12).text(doc.numero, destra, pdf.y, { width: 180, align: "right" });
-  pdf.fillColor(GRIGIO).fontSize(9).font("Helvetica")
-    .text(`del ${dataIt(doc.data)}`, destra, pdf.y + 2, { width: 180, align: "right" });
+  pdf
+    .fillColor(ACCENTO)
+    .fontSize(14)
+    .font("Helvetica-Bold")
+    .text(doc.tipo.toUpperCase(), destra, MARGINE, {
+      width: 180,
+      align: "right",
+    });
+  pdf
+    .fillColor(SCURO)
+    .fontSize(12)
+    .text(doc.numero, destra, pdf.y, { width: 180, align: "right" });
+  pdf
+    .fillColor(GRIGIO)
+    .fontSize(9)
+    .font("Helvetica")
+    .text(`del ${dataIt(doc.data)}`, destra, pdf.y + 2, {
+      width: 180,
+      align: "right",
+    });
 
-  pdf.moveTo(MARGINE, 118).lineTo(pdf.page.width - MARGINE, 118).strokeColor("#e5e7eb").stroke();
+  pdf
+    .moveTo(MARGINE, 118)
+    .lineTo(pdf.page.width - MARGINE, 118)
+    .strokeColor("#e5e7eb")
+    .stroke();
 }
 
 function controparti(pdf: PDFKit.PDFDocument, doc: DocumentoPdf): number {
   let y = 132;
   if (doc.destinatario) {
     const d = doc.destinatario;
-    pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica").text("DESTINATARIO", MARGINE, y);
-    pdf.fillColor(SCURO).fontSize(10).font("Helvetica-Bold").text(d.denominazione, MARGINE, y + 12);
+    pdf
+      .fillColor(GRIGIO)
+      .fontSize(8)
+      .font("Helvetica")
+      .text("DESTINATARIO", MARGINE, y);
+    pdf
+      .fillColor(SCURO)
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .text(d.denominazione, MARGINE, y + 12);
     const righe = [
-      [d.indirizzo, [d.cap, d.citta, d.provincia && `(${d.provincia})`].filter(Boolean).join(" ")]
+      [
+        d.indirizzo,
+        [d.cap, d.citta, d.provincia && `(${d.provincia})`]
+          .filter(Boolean)
+          .join(" "),
+      ]
         .filter(Boolean)
         .join(" — "),
-      [d.partitaIva && `P. IVA ${d.partitaIva}`, d.codiceFiscale && `C.F. ${d.codiceFiscale}`]
+      [
+        d.partitaIva && `P. IVA ${d.partitaIva}`,
+        d.codiceFiscale && `C.F. ${d.codiceFiscale}`,
+      ]
         .filter(Boolean)
         .join(" · "),
     ].filter((r) => r && r.length > 0);
     pdf.fontSize(9).font("Helvetica").fillColor(SCURO);
-    for (const r of righe) pdf.text(r as string, MARGINE, pdf.y, { width: 260 });
+    for (const r of righe)
+      pdf.text(r as string, MARGINE, pdf.y, { width: 260 });
     y = Math.max(y + 50, pdf.y + 6);
   }
 
   if (doc.oggetto) {
     pdf.fillColor(GRIGIO).fontSize(8).text("OGGETTO", MARGINE, y);
-    pdf.fillColor(SCURO).fontSize(10).text(doc.oggetto, MARGINE, y + 11, {
-      width: pdf.page.width - MARGINE * 2,
-    });
+    pdf
+      .fillColor(SCURO)
+      .fontSize(10)
+      .text(doc.oggetto, MARGINE, y + 11, {
+        width: pdf.page.width - MARGINE * 2,
+      });
     y = pdf.y + 8;
   }
 
   if (doc.dettagli?.length) {
     pdf.fontSize(9).font("Helvetica");
     for (const d of doc.dettagli) {
-      pdf.fillColor(GRIGIO).text(`${d.label}: `, MARGINE, y, { continued: true });
+      pdf
+        .fillColor(GRIGIO)
+        .text(`${d.label}: `, MARGINE, y, { continued: true });
       pdf.fillColor(SCURO).text(d.valore);
       y = pdf.y + 2;
     }
@@ -195,7 +270,11 @@ function controparti(pdf: PDFKit.PDFDocument, doc: DocumentoPdf): number {
   return y + 6;
 }
 
-function tabellaRighe(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): number {
+function tabellaRighe(
+  pdf: PDFKit.PDFDocument,
+  doc: DocumentoPdf,
+  yInizio: number,
+): number {
   const larghezza = pdf.page.width - MARGINE * 2;
   const colonne = doc.conPrezzi
     ? [
@@ -235,7 +314,13 @@ function tabellaRighe(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: numbe
       pdf.font("Helvetica").fontSize(9);
     }
     const valori = doc.conPrezzi
-      ? [r.descrizione, r.quantita, euro(r.prezzoUnitario), r.aliquotaIva ?? "—", euro(r.totale)]
+      ? [
+          r.descrizione,
+          r.quantita,
+          euro(r.prezzoUnitario),
+          r.aliquotaIva ?? "—",
+          euro(r.totale),
+        ]
       : [r.descrizione, r.quantita, r.um ?? "—", r.peso ?? "—"];
 
     const altezza = Math.max(
@@ -245,32 +330,58 @@ function tabellaRighe(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: numbe
     let x = MARGINE + 4;
     pdf.fillColor(SCURO);
     for (let i = 0; i < colonne.length; i++) {
-      pdf.text(valori[i], x, y, { width: colonne[i].w - 8, align: colonne[i].a });
+      pdf.text(valori[i], x, y, {
+        width: colonne[i].w - 8,
+        align: colonne[i].a,
+      });
       x += colonne[i].w;
     }
     y += altezza;
-    pdf.moveTo(MARGINE, y - 2).lineTo(MARGINE + larghezza, y - 2).strokeColor("#f3f4f6").stroke();
+    pdf
+      .moveTo(MARGINE, y - 2)
+      .lineTo(MARGINE + larghezza, y - 2)
+      .strokeColor("#f3f4f6")
+      .stroke();
   }
 
   if (doc.righe.length === 0) {
-    pdf.fillColor(GRIGIO).fontSize(9).text("Nessuna riga", MARGINE + 4, y);
+    pdf
+      .fillColor(GRIGIO)
+      .fontSize(9)
+      .text("Nessuna riga", MARGINE + 4, y);
     y += 16;
   }
   return y + 10;
 }
 
 /** Описателният текст между заглавната част и таблицата. */
-function testoCorpo(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): number {
+function testoCorpo(
+  pdf: PDFKit.PDFDocument,
+  doc: DocumentoPdf,
+  yInizio: number,
+): number {
   if (!doc.corpo) return yInizio;
-  pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Bold").text("DESCRIZIONE", MARGINE, yInizio);
-  pdf.fillColor(SCURO).fontSize(9).font("Helvetica").text(doc.corpo, MARGINE, yInizio + 12, {
-    width: pdf.page.width - MARGINE * 2,
-  });
+  pdf
+    .fillColor(GRIGIO)
+    .fontSize(8)
+    .font("Helvetica-Bold")
+    .text("DESCRIZIONE", MARGINE, yInizio);
+  pdf
+    .fillColor(SCURO)
+    .fontSize(9)
+    .font("Helvetica")
+    .text(doc.corpo, MARGINE, yInizio + 12, {
+      width: pdf.page.width - MARGINE * 2,
+    });
   return pdf.y + 12;
 }
 
 /** Подписът на клиента — доказателството, че работата е приета. */
-function bloccoFirma(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number) {
+function bloccoFirma(
+  pdf: PDFKit.PDFDocument,
+  doc: DocumentoPdf,
+  yInizio: number,
+) {
   if (!doc.firma) return;
   let y = yInizio + 10;
   // Блокът е висок ~110 px; ако не се събира, отива на нова страница цял —
@@ -279,27 +390,48 @@ function bloccoFirma(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number
     pdf.addPage();
     y = MARGINE;
   }
-  pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Bold")
+  pdf
+    .fillColor(GRIGIO)
+    .fontSize(8)
+    .font("Helvetica-Bold")
     .text("FIRMA DEL CLIENTE PER ACCETTAZIONE", MARGINE, y);
   y += 12;
   try {
     pdf.image(doc.firma.immagine, MARGINE, y, { fit: [220, 70] });
   } catch {
     // Повреден подпис не бива да проваля целия документ.
-    pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Oblique")
+    pdf
+      .fillColor(GRIGIO)
+      .fontSize(8)
+      .font("Helvetica-Oblique")
       .text("(firma non disponibile)", MARGINE, y);
   }
   y += 74;
-  pdf.moveTo(MARGINE, y).lineTo(MARGINE + 220, y).strokeColor("#9ca3af").stroke();
-  pdf.fillColor(SCURO).fontSize(9).font("Helvetica-Bold")
+  pdf
+    .moveTo(MARGINE, y)
+    .lineTo(MARGINE + 220, y)
+    .strokeColor("#9ca3af")
+    .stroke();
+  pdf
+    .fillColor(SCURO)
+    .fontSize(9)
+    .font("Helvetica-Bold")
     .text(doc.firma.nome, MARGINE, y + 4, { width: 220 });
   const sotto = [doc.firma.ruolo, `firmato il ${dataIt(doc.firma.data)}`]
     .filter(Boolean)
     .join(" · ");
-  pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica").text(sotto, MARGINE, pdf.y, { width: 260 });
+  pdf
+    .fillColor(GRIGIO)
+    .fontSize(8)
+    .font("Helvetica")
+    .text(sotto, MARGINE, pdf.y, { width: 260 });
 }
 
-function totali(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): number {
+function totali(
+  pdf: PDFKit.PDFDocument,
+  doc: DocumentoPdf,
+  yInizio: number,
+): number {
   if (!doc.conPrezzi) return yInizio;
   let y = yInizio;
   if (y > pdf.page.height - 160) {
@@ -310,7 +442,11 @@ function totali(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): nu
   // Riepilogo IVA по аликвота — това е формата, която фискът очаква, и
   // основата на бъдещия XML за SDI. Сумиране по редове дава ±1 цент разлика.
   if (doc.riepilogo?.length) {
-    pdf.fillColor(GRIGIO).fontSize(8).font("Helvetica-Bold").text("RIEPILOGO IVA", MARGINE, y);
+    pdf
+      .fillColor(GRIGIO)
+      .fontSize(8)
+      .font("Helvetica-Bold")
+      .text("RIEPILOGO IVA", MARGINE, y);
     y += 12;
     pdf.font("Helvetica").fontSize(8).fillColor(SCURO);
     for (const r of doc.riepilogo) {
@@ -326,16 +462,47 @@ function totali(pdf: PDFKit.PDFDocument, doc: DocumentoPdf, yInizio: number): nu
 
   const destra = pdf.page.width - MARGINE - 200;
   const riga = (label: string, valore: string, grassetto = false) => {
-    pdf.font(grassetto ? "Helvetica-Bold" : "Helvetica").fontSize(grassetto ? 11 : 9);
-    pdf.fillColor(grassetto ? SCURO : GRIGIO).text(label, destra, y, { width: 100 });
-    pdf.fillColor(SCURO).text(valore, destra + 100, y, { width: 100, align: "right" });
+    pdf
+      .font(grassetto ? "Helvetica-Bold" : "Helvetica")
+      .fontSize(grassetto ? 11 : 9);
+    pdf
+      .fillColor(grassetto ? SCURO : GRIGIO)
+      .text(label, destra, y, { width: 100 });
+    pdf
+      .fillColor(SCURO)
+      .text(valore, destra + 100, y, { width: 100, align: "right" });
     y += grassetto ? 16 : 13;
   };
   riga("Imponibile", euro(doc.totaleNetto));
-  riga("IVA", euro(doc.totaleIva));
-  pdf.moveTo(destra, y).lineTo(destra + 200, y).strokeColor("#e5e7eb").stroke();
+  riga(
+    doc.splitPayment ? "IVA (scissione dei pagamenti)" : "IVA",
+    euro(doc.totaleIva),
+  );
+  pdf
+    .moveTo(destra, y)
+    .lineTo(destra + 200, y)
+    .strokeColor("#e5e7eb")
+    .stroke();
   y += 4;
   riga("TOTALE", euro(doc.totaleLordo), true);
+
+  // Удържането и нетното за плащане. Без тях получателят вижда една сума, а
+  // превежда друга — и двете счетоводства търсят разликата.
+  if (doc.ritenuta) {
+    riga(
+      `Ritenuta d'acconto ${numeroIt(doc.ritenuta.aliquota)} %`,
+      `− ${euro(doc.ritenuta.importo)}`,
+    );
+    pdf
+      .moveTo(destra, y)
+      .lineTo(destra + 200, y)
+      .strokeColor("#e5e7eb")
+      .stroke();
+    y += 4;
+    riga("NETTO A PAGARE", euro(doc.ritenuta.netto), true);
+  } else if (doc.splitPayment) {
+    riga("NETTO A PAGARE", euro(doc.totaleNetto), true);
+  }
   return y;
 }
 
@@ -355,7 +522,11 @@ function piePagina(pdf: PDFKit.PDFDocument, doc: DocumentoPdf) {
       ? pdf.heightOfString(doc.azienda.notePiePagina, { width: 460 }) + 2
       : 0);
   const y = pdf.page.height - MARGINE - 18 - hNote - hAvvertenza;
-  pdf.moveTo(MARGINE, y).lineTo(pdf.page.width - MARGINE, y).strokeColor("#e5e7eb").stroke();
+  pdf
+    .moveTo(MARGINE, y)
+    .lineTo(pdf.page.width - MARGINE, y)
+    .strokeColor("#e5e7eb")
+    .stroke();
 
   const parti = [
     doc.azienda.iban && `IBAN ${doc.azienda.iban}`,
@@ -364,7 +535,8 @@ function piePagina(pdf: PDFKit.PDFDocument, doc: DocumentoPdf) {
   ].filter(Boolean);
 
   pdf.fontSize(7).font("Helvetica").fillColor(GRIGIO);
-  if (parti.length) pdf.text(parti.join("  ·  "), MARGINE, y + 6, { width: 460 });
+  if (parti.length)
+    pdf.text(parti.join("  ·  "), MARGINE, y + 6, { width: 460 });
   if (doc.note) pdf.text(doc.note, MARGINE, pdf.y + 2, { width: 460 });
   if (doc.azienda.notePiePagina)
     pdf.text(doc.azienda.notePiePagina, MARGINE, pdf.y + 2, { width: 460 });
@@ -372,13 +544,17 @@ function piePagina(pdf: PDFKit.PDFDocument, doc: DocumentoPdf) {
   // Предупреждението не е козметика: документ, който НЕ е минал през SDI, не
   // бива да изглежда като издадена електронна фактура.
   if (doc.avvertenza) {
-    pdf.fillColor("#b45309").fontSize(7).font("Helvetica-Oblique").text(
-      doc.avvertenza,
-      MARGINE,
-      pdf.y + 3,
-      // `lineBreak` + изрична височина: текстът се събира тук, вместо да
-      // отвори нова страница.
-      { width: larghezza, height: hAvvertenza, lineBreak: true },
-    );
+    pdf
+      .fillColor("#b45309")
+      .fontSize(7)
+      .font("Helvetica-Oblique")
+      .text(
+        doc.avvertenza,
+        MARGINE,
+        pdf.y + 3,
+        // `lineBreak` + изрична височина: текстът се събира тук, вместо да
+        // отвори нова страница.
+        { width: larghezza, height: hAvvertenza, lineBreak: true },
+      );
   }
 }

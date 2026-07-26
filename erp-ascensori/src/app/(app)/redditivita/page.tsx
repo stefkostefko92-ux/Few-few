@@ -34,7 +34,9 @@ export default function Pagina() {
   const [per, setPer] = useState<"contratto" | "impianto">("contratto");
   const [da, setDa] = useState("");
   const [a, setA] = useState("");
-  const [dati, setDati] = useState<{ righe: Riga[]; nota: string } | null>(null);
+  const [dati, setDati] = useState<{ righe: Riga[]; nota: string } | null>(
+    null,
+  );
   const [caricamento, setCaricamento] = useState(true);
 
   const carica = useCallback(async () => {
@@ -53,14 +55,18 @@ export default function Pagina() {
     void carica();
   }, [carica]);
 
-  const incompleti = dati?.righe.filter((r) => !r.redditivita.completo).length ?? 0;
+  const incompleti =
+    dati?.righe.filter((r) => !r.redditivita.completo).length ?? 0;
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-1">Redditività</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+          Redditività
+        </h1>
         <p className="mt-1 text-sm text-text-3">
-          Ricavi fatturati contro costi diretti: manodopera, materiali, terzisti.
+          Ricavi fatturati contro costi diretti: manodopera, materiali,
+          terzisti.
         </p>
       </div>
 
@@ -83,13 +89,25 @@ export default function Pagina() {
           <label className="label" htmlFor="da">
             Dal
           </label>
-          <input id="da" type="date" className="input w-40" value={da} onChange={(e) => setDa(e.target.value)} />
+          <input
+            id="da"
+            type="date"
+            className="input w-40"
+            value={da}
+            onChange={(e) => setDa(e.target.value)}
+          />
         </div>
         <div>
           <label className="label" htmlFor="a">
             Al
           </label>
-          <input id="a" type="date" className="input w-40" value={a} onChange={(e) => setA(e.target.value)} />
+          <input
+            id="a"
+            type="date"
+            className="input w-40"
+            value={a}
+            onChange={(e) => setA(e.target.value)}
+          />
         </div>
       </div>
 
@@ -103,9 +121,9 @@ export default function Pagina() {
             {incompleti === 1
               ? "Una riga ha costi incompleti"
               : `${incompleti} righe hanno costi incompleti`}
-            : ore senza costo orario del dipendente o materiali senza prezzo di acquisto. Il
-            costo mancante <strong>non</strong> è considerato zero, ma il margine mostrato è
-            più alto di quello reale.
+            : ore senza costo orario del dipendente o materiali senza prezzo di
+            acquisto. Il costo mancante <strong>non</strong> è considerato zero,
+            ma il margine mostrato è più alto di quello reale.
           </span>
         </div>
       )}
@@ -114,14 +132,17 @@ export default function Pagina() {
         <ScheletroTabella righe={6} />
       ) : !dati?.righe.length ? (
         <p className="text-sm text-text-3">
-          Nessun dato nel periodo. Servono ordini collegati a un contratto o a un impianto.
+          Nessun dato nel periodo. Servono ordini collegati a un contratto o a
+          un impianto.
         </p>
       ) : (
         <div className="card overflow-x-auto p-5">
           <table className="w-full min-w-[52rem] text-sm">
             <thead className="border-b border-border text-left text-xs uppercase text-text-3">
               <tr>
-                <th className="pb-2">{per === "contratto" ? "Contratto" : "Impianto"}</th>
+                <th className="pb-2">
+                  {per === "contratto" ? "Contratto" : "Impianto"}
+                </th>
                 <th className="pb-2 text-right">Ricavi</th>
                 <th className="pb-2 text-right">Manodopera</th>
                 <th className="pb-2 text-right">Materiali</th>
@@ -134,14 +155,21 @@ export default function Pagina() {
               {dati.righe.map((r) => {
                 const negativo = r.redditivita.margine.startsWith("-");
                 return (
-                  <tr key={r.id} className="border-b border-border/60 last:border-0">
+                  <tr
+                    key={r.id}
+                    className="border-b border-border/60 last:border-0"
+                  >
                     <td className="py-2 pr-3">
                       {r.etichetta}
                       {!r.redditivita.completo && (
-                        <span className="ml-2 text-xs text-warning-text">costi incompleti</span>
+                        <span className="ml-2 text-xs text-warning-text">
+                          costi incompleti
+                        </span>
                       )}
                     </td>
-                    <td className="py-2 pr-3 text-right font-mono">{euro(r.redditivita.ricavi)}</td>
+                    <td className="py-2 pr-3 text-right font-mono">
+                      {euro(r.redditivita.ricavi)}
+                    </td>
                     <td className="py-2 pr-3 text-right font-mono text-text-2">
                       {euro(r.redditivita.costoManodopera)}
                     </td>
@@ -164,7 +192,9 @@ export default function Pagina() {
                       }`}
                     >
                       {/* Знакът НЕ носи смисъла сам: числото е отрицателно и се чете. */}
-                      {r.redditivita.marginePerc === null ? "—" : `${r.redditivita.marginePerc} %`}
+                      {r.redditivita.marginePerc === null
+                        ? "—"
+                        : `${r.redditivita.marginePerc} %`}
                     </td>
                   </tr>
                 );
@@ -174,7 +204,9 @@ export default function Pagina() {
         </div>
       )}
 
-      {dati?.nota && <p className="mt-4 max-w-3xl text-xs text-text-3">{dati.nota}</p>}
+      {dati?.nota && (
+        <p className="mt-4 max-w-3xl text-xs text-text-3">{dati.nota}</p>
+      )}
     </div>
   );
 }

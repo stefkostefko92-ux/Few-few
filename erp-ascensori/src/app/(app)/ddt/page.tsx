@@ -1,6 +1,9 @@
 "use client";
 
-import EntityPage, { type EntityConfig, type Riga } from "@/components/EntityPage";
+import EntityPage, {
+  type EntityConfig,
+  type Riga,
+} from "@/components/EntityPage";
 import { dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
@@ -17,7 +20,11 @@ const config: EntityConfig = {
     { chiave: "data", label: "Data", render: (r) => dataIt(r.data as string) },
     { chiave: "causale", label: "Causale" },
     { chiave: "destinatario", label: "Destinatario" },
-    { chiave: "vettore", label: "Vettore", render: (r) => String(r.vettore ?? "mittente") },
+    {
+      chiave: "vettore",
+      label: "Vettore",
+      render: (r) => String(r.vettore ?? "mittente"),
+    },
     {
       chiave: "ordineLavoro",
       label: "Ordine",
@@ -48,7 +55,10 @@ const config: EntityConfig = {
       name: "ordineLavoroId",
       label: "Ordine di lavoro",
       tipo: "select",
-      opzioniApi: { url: "/api/ordini", etichetta: (r) => `${r.numero} — ${r.oggetto}` },
+      opzioniApi: {
+        url: "/api/ordini",
+        etichetta: (r) => `${r.numero} — ${r.oggetto}`,
+      },
     },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
