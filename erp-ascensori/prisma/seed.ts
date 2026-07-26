@@ -531,7 +531,13 @@ async function main() {
       ritenutaTipo: "RT02",
       ritenutaCausale: "W",
       ritenutaImporto: "20.00",
+      // Съгласувано демо: доставен документ ИМА прогресивен код, идентификатор
+      // от SDI и дата на подаване. Иначе картата показва „Consegnata" с три
+      // тирета и учи оператора, че полетата са без значение.
       statoSdi: "CONSEGNATA",
+      progressivoInvio: "00001",
+      identificativoSdi: "1234567890",
+      dataInvioSdi: fraGiorni(-9),
       statoPagamento: "PARZIALE",
       totalePagato: "300.00",
       totaleNetto: "500.00",
@@ -631,6 +637,12 @@ async function main() {
         prossimaVerifica: fraGiorni(530),
       },
     });
+  }
+
+  // Броячът трябва да е след издадения код: иначе следващата фактура получава
+  // 00001 наново и SDI я отхвърля като дубликат.
+  if ((await prisma.contatoreSdi.count({ where: { tenantId: null } })) === 0) {
+    await prisma.contatoreSdi.create({ data: { tenantId: null, ultimo: 1 } });
   }
 
   console.log(

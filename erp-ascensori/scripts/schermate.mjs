@@ -24,6 +24,8 @@ const env = {
   SESSION_SECRET: "schermate_session_secret_32_chars_minimum",
   AUDIT_HMAC_KEY: "schermate_audit_hmac_key_32_chars_minimum",
   HEALTH_TOKEN: "schermate_health_token",
+  // Прикачените файлове искат хранилище; в снимките е временно и се трие с базата.
+  STORAGE_DIR: ".schermate-allegati",
   APP_URL: BASE,
   RATE_LIMIT_LOGIN: "10000",
   NODE_ENV: "production",

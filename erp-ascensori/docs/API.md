@@ -15,15 +15,15 @@
 
 Йерархични, по-ниското число включва правата на по-високото:
 
-| № | Роля | Италиански етикет |
-|---|------|-------------------|
-| 1 | `MASTER` | Master |
-| 2 | `ADMIN` | Amministratore di sistema |
-| 3 | `DIREZIONE` | Direzione |
-| 4 | `RESPONSABILE` | Responsabile |
-| 5 | `TECNICO` | Tecnico |
-| 6 | `OPERATORE` | Operatore |
-| 7 | `CLIENTE` | Cliente |
+| №   | Роля           | Италиански етикет         |
+| --- | -------------- | ------------------------- |
+| 1   | `MASTER`       | Master                    |
+| 2   | `ADMIN`        | Amministratore di sistema |
+| 3   | `DIREZIONE`    | Direzione                 |
+| 4   | `RESPONSABILE` | Responsabile              |
+| 5   | `TECNICO`      | Tecnico                   |
+| 6   | `OPERATORE`    | Operatore                 |
+| 7   | `CLIENTE`      | Cliente                   |
 
 „Изисква `RESPONSABILE`“ по-долу означава `RESPONSABILE` **или по-високо**
 (`DIREZIONE`, `ADMIN`, `MASTER`).
@@ -35,20 +35,20 @@
 
 ### Кодове на отговор
 
-| Код | Кога |
-|-----|------|
-| `200` | успех |
-| `201` | създаден запис |
-| `400` | невалидно тяло (Zod) — `{ "error": "…" }` с италианско съобщение |
-| `401` | липсва / изтекла сесия, грешни данни за вход |
-| `402` | изтекъл абонамент на фирмата |
-| `403` | недостатъчно ниво на достъп, деактивирана фирма |
-| `404` | записът не съществува **или** е на друга фирма (нарочно неразличими) |
+| Код   | Кога                                                                         |
+| ----- | ---------------------------------------------------------------------------- |
+| `200` | успех                                                                        |
+| `201` | създаден запис                                                               |
+| `400` | невалидно тяло (Zod) — `{ "error": "…" }` с италианско съобщение             |
+| `401` | липсва / изтекла сесия, грешни данни за вход                                 |
+| `402` | изтекъл абонамент на фирмата                                                 |
+| `403` | недостатъчно ниво на достъп, деактивирана фирма                              |
+| `404` | записът не съществува **или** е на друга фирма (нарочно неразличими)         |
 | `409` | конфликт: недопустим преход, дублиран уникален ключ, референциран запис (FK) |
-| `423` | заключен акаунт след 5 неуспешни опита |
-| `429` | превишен rate limit |
-| `500` | вътрешна грешка (тялото никога не издава детайли) |
-| `503` | базата не отговаря — с `Retry-After` |
+| `423` | заключен акаунт след 5 неуспешни опита                                       |
+| `429` | превишен rate limit                                                          |
+| `500` | вътрешна грешка (тялото никога не издава детайли)                            |
+| `503` | базата не отговаря — с `Retry-After`                                         |
 
 Всеки отговор носи `x-request-id`; същият идентификатор е в сървърния лог, така че
 сигнал от потребител се проследява без да се търси „по време“.
@@ -70,12 +70,12 @@ GET /api/<entita>?q=<текст>&page=1&size=50&attivo=true
 
 ## 2. Автентикация
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/auth/login` | `POST` | публичен | `{ email, password }`. Слага бисквитките. 5 неуспеха → блокада 15 мин (`423`). Отговорът при съществуващ акаунт показва оставащите опити. |
-| `/api/auth/refresh` | `POST` | бисквитка | Ротира refresh token-а (старият престава да важи). |
-| `/api/auth/logout` | `POST` | сесия | Изтрива бисквитките и нулира refresh token-а в базата. |
-| `/api/me` | `GET` | сесия | Текущият потребител: id, име, роля, фирма. |
+| Маршрут             | Метод  | Достъп    | Описание                                                                                                                                  |
+| ------------------- | ------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/auth/login`   | `POST` | публичен  | `{ email, password }`. Слага бисквитките. 5 неуспеха → блокада 15 мин (`423`). Отговорът при съществуващ акаунт показва оставащите опити. |
+| `/api/auth/refresh` | `POST` | бисквитка | Ротира refresh token-а (старият престава да важи).                                                                                        |
+| `/api/auth/logout`  | `POST` | сесия     | Изтрива бисквитките и нулира refresh token-а в базата.                                                                                    |
+| `/api/me`           | `GET`  | сесия     | Текущият потребител: id, име, роля, фирма.                                                                                                |
 
 Rate limit при вход е **по акаунт** (`login:<email>`), не по IP — без доверено
 прокси IP-то се подправя с хедър, а споделен ключ би позволил на анонимен клиент да
@@ -94,21 +94,21 @@ PUT    /api/<entita>/:id      редакция (OPERATORE)
 DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 ```
 
-| Entity | Търсене по | Бележки |
-|--------|-----------|---------|
-| `condomini` | nome, indirizzo, citta | връща и брой импианти |
-| `amministratori` | ragioneSociale, nome, cognome | фискални данни за е-фактура |
-| `dipendenti` | nome, cognome | специализации |
-| `automezzi` | targa, marca, modello | цветен статус по срокове |
-| `cottimisti` | ragioneSociale, nome | външни изпълнители |
-| `squadre` | nome | |
-| `impianti` | matricola, marca, modello | ядрото на домейна |
-| `impianti-media` | — | прикачени файлове към импиант |
-| `scadenze` | — | срокове по закон |
-| `assegnazioni` | — | писане от `RESPONSABILE` |
-| `articoli` | codice, descrizione | **`giacenza` не се пише тук** |
-| `documenti` | titolo | документи по обект |
-| `tenants` | slug, ragioneSociale | четене/писане `ADMIN`, изтриване `MASTER` |
+| Entity           | Търсене по                    | Бележки                                   |
+| ---------------- | ----------------------------- | ----------------------------------------- |
+| `condomini`      | nome, indirizzo, citta        | връща и брой импианти                     |
+| `amministratori` | ragioneSociale, nome, cognome | фискални данни за е-фактура               |
+| `dipendenti`     | nome, cognome                 | специализации                             |
+| `automezzi`      | targa, marca, modello         | цветен статус по срокове                  |
+| `cottimisti`     | ragioneSociale, nome          | външни изпълнители                        |
+| `squadre`        | nome                          |                                           |
+| `impianti`       | matricola, marca, modello     | ядрото на домейна                         |
+| `impianti-media` | —                             | прикачени файлове към импиант             |
+| `scadenze`       | —                             | срокове по закон                          |
+| `assegnazioni`   | —                             | писане от `RESPONSABILE`                  |
+| `articoli`       | codice, descrizione           | **`giacenza` не се пише тук**             |
+| `documenti`      | titolo                        | документи по обект                        |
+| `tenants`        | slug, ragioneSociale          | четене/писане `ADMIN`, изтриване `MASTER` |
 
 **Изтриването на референциран запис връща `409`, не `500`** — базата го пази с FK.
 Правилното действие е деактивиране (`attivo: false`), не изтриване. Издадена фактура
@@ -118,13 +118,13 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ### Preventivi
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/preventivi` | `GET`/`POST` | OPERATORE | |
-| `/api/preventivi/:id` | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE | |
-| `/api/preventivi/:id/voci` | `GET`/`POST` | OPERATORE | редове; тоталите се преизчисляват |
-| `/api/preventivi/:id/voci/:voceId` | `PUT`/`DELETE` | OPERATORE | |
-| `/api/preventivi/:id/stato` | `PATCH` | RESPONSABILE | `{ stato }` |
+| Маршрут                            | Метод                | Достъп                   | Описание                          |
+| ---------------------------------- | -------------------- | ------------------------ | --------------------------------- |
+| `/api/preventivi`                  | `GET`/`POST`         | OPERATORE                |                                   |
+| `/api/preventivi/:id`              | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |                                   |
+| `/api/preventivi/:id/voci`         | `GET`/`POST`         | OPERATORE                | редове; тоталите се преизчисляват |
+| `/api/preventivi/:id/voci/:voceId` | `PUT`/`DELETE`       | OPERATORE                |                                   |
+| `/api/preventivi/:id/stato`        | `PATCH`              | RESPONSABILE             | `{ stato }`                       |
 
 Преходи: `BOZZA → INVIATO`; `INVIATO → APPROVATO | RIFIUTATO | SCADUTO`;
 `SCADUTO → INVIATO` (преиздаване); `APPROVATO` и `RIFIUTATO` са финални.
@@ -132,25 +132,40 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ### Ordini di lavoro
 
-| Маршрут | Метод | Достъп |
-|---------|-------|--------|
-| `/api/ordini` | `GET`/`POST` | OPERATORE |
-| `/api/ordini/:id` | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |
-| `/api/ordini/:id/stato` | `PATCH` | `TECNICO`; за `ANNULLATO` и `CHIUSO` — `RESPONSABILE` |
+| Маршрут                      | Метод                | Достъп                                                |
+| ---------------------------- | -------------------- | ----------------------------------------------------- |
+| `/api/ordini`                | `GET`/`POST`         | OPERATORE                                             |
+| `/api/ordini/:id`            | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE                              |
+| `/api/ordini/:id/stato`      | `PATCH`              | `TECNICO`; за `ANNULLATO` и `CHIUSO` — `RESPONSABILE` |
+| `/api/ordini/:id/rapportini` | `GET`/`POST`         | TECNICO                                               |
+| `/api/rapportini/:id`        | `GET`/`PUT`          | TECNICO                                               |
+| `/api/rapportini/:id/firma`  | `POST`               | TECNICO                                               |
+| `/api/rapportini/:id/pdf`    | `GET`                | TECNICO                                               |
+
+Рапортичката се създава от ТЕХНИКА на място — това е неговият документ и неговите
+часове. След подпис на клиента е НЕПРОМЕНИМА (`409`): иначе подписът не доказва
+нищо. Тя носи и проверките по чл. 15, ал. 4 (виж гл. 6) и сочи уредбата пряко —
+историята на един асансьор е негова, не на поръчката.
+
+| Маршрут                                 | Метод                               | Достъп                   |
+| --------------------------------------- | ----------------------------------- | ------------------------ |
+| `/api/contratti` · `/api/contratti/:id` | `GET`/`POST` · `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |
+| `/api/contratti/:id/stato`              | `PATCH`                             | RESPONSABILE             |
+| `/api/contratti/elabora`                | `POST`                              | RESPONSABILE             |
 
 Тяло: `{ stato, nota? }`. Позволените преходи са таблицата от документацията,
 дословно:
 
-| От | Към |
-|----|-----|
-| `BOZZA` | `EMESSO`, `ANNULLATO` |
-| `EMESSO` | `CONFERMATO`, `ANNULLATO` |
-| `CONFERMATO` | `IN_LAVORO`, `SOSPESO`, `ANNULLATO` |
-| `IN_LAVORO` | `COMPLETATO`, `SOSPESO`, `CONTESTATO` |
-| `SOSPESO` | `IN_LAVORO`, `ANNULLATO` |
-| `COMPLETATO` | `CHIUSO`, `CONTESTATO` |
-| `CONTESTATO` | `IN_LAVORO`, `ANNULLATO` |
-| `CHIUSO`, `ANNULLATO` | — (финални) |
+| От                    | Към                                   |
+| --------------------- | ------------------------------------- |
+| `BOZZA`               | `EMESSO`, `ANNULLATO`                 |
+| `EMESSO`              | `CONFERMATO`, `ANNULLATO`             |
+| `CONFERMATO`          | `IN_LAVORO`, `SOSPESO`, `ANNULLATO`   |
+| `IN_LAVORO`           | `COMPLETATO`, `SOSPESO`, `CONTESTATO` |
+| `SOSPESO`             | `IN_LAVORO`, `ANNULLATO`              |
+| `COMPLETATO`          | `CHIUSO`, `CONTESTATO`                |
+| `CONTESTATO`          | `IN_LAVORO`, `ANNULLATO`              |
+| `CHIUSO`, `ANNULLATO` | — (финални)                           |
 
 Недопустим преход → `409`. Успешният преход пише ред в `storico_stati` **и** одит
 `STATE_CHANGE` в същата транзакция. Записът е условен (`updateMany` по текущия
@@ -159,20 +174,42 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ### Fatture и DDT
 
-| Маршрут | Метод | Достъп |
-|---------|-------|--------|
-| `/api/fatture` | `GET`/`POST` | OPERATORE |
-| `/api/fatture/:id` | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |
-| `/api/fatture/:id/voci` · `/voci/:voceId` | `GET`/`POST` · `PUT`/`DELETE` | OPERATORE |
-| `/api/fatture/:id/stato` | `PATCH` | RESPONSABILE |
-| `/api/ddt` · `/api/ddt/:id` | `GET`/`POST` · `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |
-| `/api/ddt/:id/righe` · `/righe/:voceId` | `GET`/`POST` · `PUT`/`DELETE` | OPERATORE |
+| Маршрут                                        | Метод                               | Достъп                   |
+| ---------------------------------------------- | ----------------------------------- | ------------------------ |
+| `/api/fatture`                                 | `GET`/`POST`                        | OPERATORE                |
+| `/api/fatture/:id`                             | `GET`/`PUT`/`DELETE`                | OPERATORE / RESPONSABILE |
+| `/api/fatture/:id/voci` · `/voci/:voceId`      | `GET`/`POST` · `PUT`/`DELETE`       | OPERATORE                |
+| `/api/fatture/:id/stato`                       | `PATCH`                             | RESPONSABILE             |
+| `/api/fatture/:id/pdf` · `/xml`                | `GET`                               | DIREZIONE                |
+| `/api/fatture/:id/sdi`                         | `PATCH`                             | DIREZIONE                |
+| `/api/fatture/:id/notifiche`                   | `GET`/`POST`                        | DIREZIONE                |
+| `/api/fatture/:id/pagamenti` · `/:pagamentoId` | `GET`/`POST` · `DELETE`             | DIREZIONE                |
+| `/api/fatture/:id/beni-significativi`          | `GET`/`POST`                        | DIREZIONE                |
+| `/api/ddt` · `/api/ddt/:id`                    | `GET`/`POST` · `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |
+| `/api/ddt/:id/righe` · `/righe/:voceId`        | `GET`/`POST` · `PUT`/`DELETE`       | OPERATORE                |
 
-Преходи на фактура: `BOZZA → EMESSA`; `EMESSA → INVIATA | PAGATA | SCADUTA | STORNATA`;
-`INVIATA → PAGATA | SCADUTA | STORNATA`; `SCADUTA → PAGATA | STORNATA`;
-`PAGATA → STORNATA` (само сторно след плащане); `STORNATA` е финално.
+**ТРИ отделни статуса, не един.** Смесването им беше дефект: „изпратена“ не
+казваше изпратена къде, а „платена“ не различаваше частичното постъпление.
+
+- `stato` — жизненият цикъл на документа: `BOZZA → EMESSA`;
+  `EMESSA → INVIATA | PAGATA | SCADUTA | STORNATA`;
+  `INVIATA → PAGATA | SCADUTA | STORNATA`; `SCADUTA → PAGATA | STORNATA`;
+  `PAGATA → STORNATA` (само сторно след плащане); `STORNATA` е финално.
+- `statoSdi` — пътят през Sistema di Interscambio:
+  `NON_INVIATA → GENERATA → INVIATA → CONSEGNATA | MANCATA_CONSEGNA | SCARTATA`,
+  а за публичната администрация `CONSEGNATA → ACCETTATA | RIFIUTATA | DECORSI_TERMINI`.
+  **`SCARTATA` НЕ гори номера**: документът се смята за неиздаден и същият номер
+  се преиздава в 5 дни от известието (`scadenzaRinvioSdi`).
+- `statoPagamento` — `NON_PAGATA | PARZIALE | PAGATA`, ИЗВЕДЕН от постъпленията.
+  Очакваното НЕ е брутото: удържането по чл. 25-ter и разцепеното плащане по
+  чл. 17-ter не минават през нас.
+
 Редовете са променими само в `BOZZA`; изтриване на фактура е допустимо също само в
 `BOZZA` — издаденото се сторнира.
+
+**Получателят е кондоминиумът**, когато `condominioId` е попълнен: той е
+фискалният субект, администраторът е само представител. Данъчният му номер е
+единайсет цифри, но НЕ е номер по ДДС и не влиза в `IdFiscaleIVA`.
 
 **Тоталите не се пишат от клиента.** Всяка промяна на ред вика
 `ricalcolaPreventivo` / `ricalcolaFattura` **в същата транзакция**. Виж
@@ -180,9 +217,9 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ## 5. Магазин
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/movimenti` | `GET` | OPERATORE | движения с филтри |
+| Маршрут          | Метод  | Достъп    | Описание                            |
+| ---------------- | ------ | --------- | ----------------------------------- |
+| `/api/movimenti` | `GET`  | OPERATORE | движения с филтри                   |
 | `/api/movimenti` | `POST` | OPERATORE | `{ articoloId, tipo, quantita, … }` |
 
 `tipo` е `ENTRATA`, `USCITA` или `RETTIFICA`. **Наличността се движи само оттук** —
@@ -192,10 +229,38 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ## 6. Срокове и автоматизми
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/scadenze` · `/api/scadenze/:id` | CRUD | OPERATORE / RESPONSABILE | |
-| `/api/scadenze/check` | `POST` | RESPONSABILE | ръчно пускане на автоматизма |
+| Маршрут                               | Метод          | Достъп                   | Описание                        |
+| ------------------------------------- | -------------- | ------------------------ | ------------------------------- |
+| `/api/scadenze` · `/api/scadenze/:id` | CRUD           | OPERATORE / RESPONSABILE |                                 |
+| `/api/scadenze/check`                 | `POST`         | RESPONSABILE             | ръчно пускане на автоматизма    |
+| `/api/impianti/:id/verifiche`         | `GET` · `POST` | OPERATORE · RESPONSABILE | законовите проверки (чл. 13/14) |
+| `/api/impianti/:id/libretto`          | `GET`          | OPERATORE                | досието на уредбата в PDF       |
+
+**Законовата проверка мени правния статус на уредбата.** Вписването на
+отрицателен изход я слага във `FERMO_AMMINISTRATIVO` (чл. 14, ал. 2
+D.P.R. 162/1999) — състояние, което НЕ се вдига през `PUT /api/impianti/:id`
+(отговор `409`), а само с нова положителна проверка. Положителната проверка мести
+законовия срок с две години и вдига праговете 90/60/30 наново.
+
+Проверката по чл. 13 е на ТРЕТА страна и я поръчва собственикът; шестмесечните по
+чл. 15, ал. 4 са на поддържащата фирма и се вписват в рапортичка като отделни
+тристойностни полета (`vFuni`, `vParacadute`, … — `null` значи „не е гледано“, не
+„наред“). Критична неизправност спира уредбата.
+
+### Прикачени файлове
+
+| Маршрут                           | Метод            | Достъп                   | Описание                                            |
+| --------------------------------- | ---------------- | ------------------------ | --------------------------------------------------- |
+| `/api/allegati?entita=&entitaId=` | `GET`            | OPERATORE                | списък по запис                                     |
+| `/api/allegati`                   | `POST`           | TECNICO                  | `multipart/form-data`: `file`, `entita`, `entitaId` |
+| `/api/allegati/:id`               | `GET` · `DELETE` | OPERATORE · RESPONSABILE | сваляне · изтриване                                 |
+
+Приемат се САМО PDF, JPEG, PNG и WebP, разпознати по СЪДЪРЖАНИЕ — `Content-Type`
+и разширението са под контрола на изпращача. Таван 20 MB. Името на потребителя
+не отива на диска: пътят е `обхват/година/месец/UUID.разширение`. Свалянето носи
+`Content-Disposition: attachment`, `X-Content-Type-Options: nosniff` и
+`Content-Security-Policy: sandbox` — качен файл не бива да се изпълни в нашия
+домейн. Хранилището е `STORAGE_DIR`, извън публичната папка, и **влиза в бекъпа**.
 
 Автоматизмът (`npm run scadenze:check`, cron на 24 ч) вдига флагове на 90/60/30 дни
 (еднократно за праг), маркира просрочените preventivi като `SCADUTO` и fatture като
@@ -203,30 +268,30 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ## 7. Одит
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/audit` | `GET` | ADMIN | преглед с филтри |
-| `/api/audit/verifica` | `POST` | ADMIN | `{ limite?: 1..10000 }` → `{ controllate, corrotte[], integro }` |
+| Маршрут               | Метод  | Достъп | Описание                                                         |
+| --------------------- | ------ | ------ | ---------------------------------------------------------------- |
+| `/api/audit`          | `GET`  | ADMIN  | преглед с филтри                                                 |
+| `/api/audit/verifica` | `POST` | ADMIN  | `{ limite?: 1..10000 }` → `{ controllate, corrotte[], integro }` |
 
 Маршрути за промяна или изтриване на отделен ред **не съществуват**. Виж
 [ADR 0002](adr/0002-nezimenim-odit-hmac.md).
 
 ### Срок на съхранение
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/retention/esegui` | `GET` | ADMIN | праговите дати — преглед, без да пипа нищо |
-| `/api/retention/esegui` | `POST` | **MASTER** | прилага политиката |
+| Маршрут                 | Метод  | Достъп     | Описание                                   |
+| ----------------------- | ------ | ---------- | ------------------------------------------ |
+| `/api/retention/esegui` | `GET`  | ADMIN      | праговите дати — преглед, без да пипа нищо |
+| `/api/retention/esegui` | `POST` | **MASTER** | прилага политиката                         |
 
 Автоматизмът (`npm run retention`, cron седмично) е **единственият** път, по който
 редове напускат одита, и сам оставя следа в `automatismi_run`. Сроковете:
 
-| Какво | Срок | Основание |
-|-------|------|-----------|
-| `LOGIN` / `LOGOUT` | 6 месеца | Provv. Garante 27 ноември 2008 (amministratori di sistema), в сила по чл. 22, ал. 4 D.Lgs. 101/2018 |
-| Следи по **фискални** ентитети (fatture, ddt, preventivi, ordini, склад) | 10 години | чл. 2220 Codice Civile, чл. 22 D.P.R. 600/1973 |
-| Всичко останало | 24 месеца | чл. 5(1)(д) GDPR — ограничение на съхранението |
-| Пускания на автоматизми | 90 дни | оперативна телеметрия, не лични данни |
+| Какво                                                                    | Срок      | Основание                                                                                           |
+| ------------------------------------------------------------------------ | --------- | --------------------------------------------------------------------------------------------------- |
+| `LOGIN` / `LOGOUT`                                                       | 6 месеца  | Provv. Garante 27 ноември 2008 (amministratori di sistema), в сила по чл. 22, ал. 4 D.Lgs. 101/2018 |
+| Следи по **фискални** ентитети (fatture, ddt, preventivi, ordini, склад) | 10 години | чл. 2220 Codice Civile, чл. 22 D.P.R. 600/1973                                                      |
+| Всичко останало                                                          | 24 месеца | чл. 5(1)(д) GDPR — ограничение на съхранението                                                      |
+| Пускания на автоматизми                                                  | 90 дни    | оперативна телеметрия, не лични данни                                                               |
 
 Ентитет, който кодът не познава, попада в **краткия** срок. Обратното правило
 („всичко освен входовете е счетоводно“) даваше десетгодишен срок и на
@@ -240,12 +305,12 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ## 8. Потребители
 
-| Маршрут | Метод | Достъп |
-|---------|-------|--------|
-| `/api/utenti` | `GET`/`POST` | ADMIN |
-| `/api/utenti/:id` | `GET`/`PUT` | ADMIN |
-| `/api/utenti/:id` | `DELETE` | MASTER |
-| `/api/utenti/:id/password` | `PUT` | ADMIN |
+| Маршрут                    | Метод        | Достъп |
+| -------------------------- | ------------ | ------ |
+| `/api/utenti`              | `GET`/`POST` | ADMIN  |
+| `/api/utenti/:id`          | `GET`/`PUT`  | ADMIN  |
+| `/api/utenti/:id`          | `DELETE`     | MASTER |
+| `/api/utenti/:id/password` | `PUT`        | ADMIN  |
 
 Създаването или присвояването на роля `MASTER` изисква самият извикващ да е
 `MASTER` — иначе `ADMIN` си създава `MASTER` акаунт с парола по свой избор и
@@ -256,18 +321,18 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ## 9. Табло и внос
 
-| Маршрут | Метод | Достъп | Описание |
-|---------|-------|--------|----------|
-| `/api/dashboard/stats` | `GET` | OPERATORE | икономическите редове се връщат **само** за `DIREZIONE`+ |
-| `/api/import` | `POST` | ADMIN | внос на анагрифики |
+| Маршрут                | Метод  | Достъп    | Описание                                                 |
+| ---------------------- | ------ | --------- | -------------------------------------------------------- |
+| `/api/dashboard/stats` | `GET`  | OPERATORE | икономическите редове се връщат **само** за `DIREZIONE`+ |
+| `/api/import`          | `POST` | ADMIN     | внос на анагрифики                                       |
 
 ## 10. Здраве
 
-| Маршрут | Достъп | Описание |
-|---------|--------|----------|
-| `/api/healthz` | публичен | liveness — процесът диша; **не** пипа базата |
-| `/api/readyz` | публичен (детайли с `x-health-token`) | readiness — база, схема, ключове; кеширан 5 s |
-| `/api/healthz/automatismi` | публичен | dead-man: `503`, ако автоматизмът не е минал успешно през последните 26 ч |
+| Маршрут                    | Достъп                                | Описание                                                                  |
+| -------------------------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| `/api/healthz`             | публичен                              | liveness — процесът диша; **не** пипа базата                              |
+| `/api/readyz`              | публичен (детайли с `x-health-token`) | readiness — база, схема, ключове; кеширан 5 s                             |
+| `/api/healthz/automatismi` | публичен                              | dead-man: `503`, ако автоматизмът не е минал успешно през последните 26 ч |
 
 Без токен `readyz` връща само `ok`/`degraded` — вътрешната диагностика не е за
 пред публиката.
@@ -287,6 +352,7 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
    **Границата за продажбата стои.** Продуктът „изготвя файла за подаване"; той
    не „издава електронни фактури" — виж [`docs/legale/README.md`](legale/README.md).
+
 2. **Съдържание, генерирано от ИИ** (описания на оферти, автоматични обобщения),
    е споменато в документацията, но не е реализирано — липсва решение за доставчик
    и за GDPR-разкриването пред клиента.
@@ -305,11 +371,20 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
    (с `x-health-token`) показва `rls` и причината, ако не е активна.
 5. **Известяване по е-поща/PEC** при задействан праг на срок — автоматизмът вдига
    флаговете и таблото ги показва, но изходящо съобщение не се изпраща.
-6. **Печат/PDF на документите.** Няма генератор: DDT и фактурите се преглеждат в
-   интерфейса и се печатат от браузъра. За DDT, който придружава стока, това е
-   ограничение — реквизитите по чл. 1 D.P.R. 472/1996 (данни на cedente, час на
-   започване на превоза) още не са структурирани полета.
-7. ~~**Ротация на `AUDIT_HMAC_KEY`**~~ — реализирана: `AUDIT_HMAC_KEY_PRECEDENTE`
+6. ~~**Печат/PDF на документите**~~ — реализирано: `GET /api/{fatture,ddt,preventivi,
+rapportini}/[id]/pdf` дават сървърно генериран документ (`src/lib/pdf/`), а
+   `GET /api/impianti/[id]/libretto` — цялото досие на уредбата. Остава ЕДНО
+   ограничение: часът на започване на превоза по чл. 1 D.P.R. 472/1996 още не е
+   структурирано поле на DDT.
+7. **Подаване към SDI.** Продуктът генерира и проверява XML-а и води пътя на
+   документа (`statoSdi`, известия RC/NS/MC/NE/DT, петдневният срок за
+   преиздаване), но НЕ подава сам: каналът (PEC, посредник или порталът на
+   Agenzia delle Entrate) е избор на клиента и на неговия счетоводител.
+   Подаването се вписва през `PATCH /api/fatture/[id]/sdi`.
+8. **Пакет за conservazione sostitutiva.** Задължителното десетгодишно
+   съхранение по чл. 39 D.P.R. 633/1972 минава през акредитиран доставчик;
+   продуктът пази документите и одита, но не произвежда пакета за него.
+9. ~~**Ротация на `AUDIT_HMAC_KEY`**~~ — реализирана: `AUDIT_HMAC_KEY_PRECEDENTE`
    се приема САМО при проверка (никога при подписване), а проверката отчита кои
    редове още стоят на стария ключ (`conChiaveVecchia`).
 
@@ -335,13 +410,13 @@ Authorization: Bearer ea_live_…
 стои само SHA-256 отпечатък. Правата (`ambiti`) са изричен избор; празен списък
 значи **нищо**, не „всичко".
 
-| Ambito | Дава |
-|---|---|
-| `impianti:read` | `GET /api/pubblica/v1/impianti` |
-| `ordini:read` | `GET /api/pubblica/v1/ordini` |
-| `fatture:read` | `GET /api/pubblica/v1/fatture` |
-| `contratti:read` | (запазен) |
-| `webhook:manage` | (запазен) |
+| Ambito           | Дава                            |
+| ---------------- | ------------------------------- |
+| `impianti:read`  | `GET /api/pubblica/v1/impianti` |
+| `ordini:read`    | `GET /api/pubblica/v1/ordini`   |
+| `fatture:read`   | `GET /api/pubblica/v1/fatture`  |
+| `contratti:read` | (запазен)                       |
+| `webhook:manage` | (запазен)                       |
 
 Разликата между **401** и **403** е нарочна: 401 значи „ключът не е валиден"
 (непознат, отменен, изтекъл — нарочно неразличими, за да не се изброяват
@@ -351,18 +426,20 @@ Authorization: Bearer ea_live_…
 
 Абонамент за събитие вместо периодично питане. Всяка доставка носи:
 
-| Заглавие | Съдържа |
-|---|---|
-| `x-erp-event` | името на събитието |
-| `x-erp-delivery` | идентификатор на доставката (за идемпотентност) |
-| `x-erp-timestamp` | Unix секунди |
-| `x-erp-signature` | HMAC-SHA256 на `timestamp.corpo` с тайната |
+| Заглавие          | Съдържа                                         |
+| ----------------- | ----------------------------------------------- |
+| `x-erp-event`     | името на събитието                              |
+| `x-erp-delivery`  | идентификатор на доставката (за идемпотентност) |
+| `x-erp-timestamp` | Unix секунди                                    |
+| `x-erp-signature` | HMAC-SHA256 на `timestamp.corpo` с тайната      |
 
 Проверката отстрани:
 
 ```js
-const atteso = crypto.createHmac("sha256", segreto)
-  .update(`${timestamp}.${corpoGrezzo}`).digest("hex");
+const atteso = crypto
+  .createHmac("sha256", segreto)
+  .update(`${timestamp}.${corpoGrezzo}`)
+  .digest("hex");
 // timingSafeEqual + прозорец от 5 минути срещу преиграване
 ```
 
