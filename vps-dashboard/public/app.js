@@ -19,7 +19,7 @@ function apiBase() {
   return state.node && state.node !== 'local' ? `/api/nodes/${state.node}` : '/api';
 }
 
-async function api(pathname, { method = 'GET', body } = {}) {
+async function api(pathname, { method = 'GET', body, _retry = false } = {}) {
   const opts = { method, headers: {} };
   if (method !== 'GET') {
     opts.headers['x-csd'] = '1';
@@ -33,10 +33,80 @@ async function api(pathname, { method = 'GET', body } = {}) {
     showLogin();
     throw new Error('Не си вписан');
   }
+  // 428 = действието иска повторно потвърждаване. Питаме тук веднъж и повтаряме
+  // заявката — иначе всяко извикващо място трябва да помни да го обработи.
+  if (res.status === 428 && !_retry) {
+    const ok = await askSudo();
+    if (!ok) throw new Error('Действието е отказано.');
+    return api(pathname, { method, body, _retry: true });
+  }
   const ct = res.headers.get('content-type') || '';
   const data = ct.includes('json') ? await res.json() : await res.text();
   if (!res.ok) throw new Error((data && data.error) || `HTTP ${res.status}`);
   return data;
+}
+
+// Повторна автентикация точно преди необратимото. Разликата, която прави: с
+// открадната сесия „изтрий/възстанови/изключи" вече иска и паролата.
+let sudoPending = null;
+function askSudo() {
+  // Няколко заявки наведнъж → един диалог, не пет наслагани.
+  if (sudoPending) return sudoPending;
+  sudoPending = new Promise((resolve) => {
+    const pass = el('input', { type: 'password', placeholder: 'парола', autocomplete: 'current-password' });
+    const code = el('input', { type: 'text', placeholder: 'код от приложението (ако имаш 2FA)', autocomplete: 'one-time-code', inputmode: 'numeric' });
+    const err = el('div', { class: 'metric-sub', style: 'color:var(--bad)' });
+    const btn = el('button', { class: 'btn btn-primary', text: 'Потвърди' });
+    const dlg = el('dialog', { class: 'confirm-dlg' }, [
+      el('h3', { text: '🔐 Потвърди самоличността си' }),
+      el('div', { class: 'confirm-what' }, [
+        el('div', { text: '• Това действие е необратимо или дава контрол над машината.' }),
+        el('div', { text: '• Разрешението важи 5 минути и само за този браузър.' }),
+      ]),
+      pass, code, err,
+      el('div', { class: 'toolbar' }, [
+        btn,
+        el('button', { class: 'btn btn-sm', text: 'Откажи', onclick: () => finish(false) }),
+      ]),
+    ]);
+    const finish = (ok) => {
+      dlg.close();
+      dlg.remove();
+      sudoPending = null;
+      resolve(ok);
+    };
+    btn.onclick = async () => {
+      btn.disabled = true;
+      err.textContent = '';
+      try {
+        const res = await fetch(apiBase() + '/sudo', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-csd': '1' },
+          body: JSON.stringify({ password: pass.value, code: code.value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        if (data.usedRecovery) toast(`Използва се резервен код — остават ${data.recoveryLeft}`, 'warn');
+        finish(true);
+      } catch (e) {
+        err.textContent = e.message;
+        pass.value = '';
+        btn.disabled = false;
+        pass.focus();
+      }
+    };
+    pass.onkeydown = code.onkeydown = (e) => {
+      if (e.key === 'Enter') btn.click();
+    };
+    dlg.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      finish(false);
+    });
+    document.body.appendChild(dlg);
+    dlg.showModal();
+    pass.focus();
+  });
+  return sudoPending;
 }
 
 function sseUrl(pathname) {
@@ -109,6 +179,9 @@ const SECTIONS = [
   { id: 'updates', ico: '⟳', label: 'Ъпдейти', render: renderUpdates },
   { id: 'security', ico: '⛨', label: 'Сигурност', render: renderSecurity },
   { id: 'firewall', ico: '🛡', label: 'Firewall', render: renderFirewall },
+  { id: 'integrity', ico: '⛨', label: 'Целост на /etc', render: renderIntegrity },
+  { id: 'fail2ban', ico: '⛔', label: 'fail2ban', render: renderFail2ban },
+  { id: 'access', ico: '🔑', label: 'Достъп по IP', render: renderAccess },
   { id: 'webserver', ico: '🌐', label: 'Уеб сървър', render: renderWebserver },
   { id: 'backups', ico: '⇩', label: 'Бекъпи', render: renderBackups },
   { id: 'env', ico: '🗝', label: 'Променливи (.env)', render: renderEnv },
@@ -216,6 +289,9 @@ const SECTION_ALIASES = {
   updates: 'ъпдейти обновявания apt upgrade',
   security: 'сигурност портове ssh tls сертификати',
   firewall: 'файъруол защитна стена ufw правила',
+  integrity: 'целост отпечатък baseline промени etc конфигурация',
+  fail2ban: 'фейлтубан банове блокирани ip jail забрана',
+  access: 'достъп ip allowlist разрешени адреси sudo режим',
   webserver: 'уеб сървър нгинкс nginx caddy vhost certbot',
   backups: 'бекъпи архиви restic снимки',
   env: 'променливи env среда secrets тайни конфигурация ключове',
@@ -2233,8 +2309,45 @@ async function renderUpdates() {
 // ── Сигурност ───────────────────────────────────────────────────────────────────────
 async function renderSecurity() {
   const view = document.getElementById('view');
-  const s = await api('/security');
+  const [s, post] = await Promise.all([api('/security'), api('/security/posture').catch(() => null)]);
   view.innerHTML = '';
+
+  // ── Оценка ──
+  // Целта е не число, а списък от конкретни поправки. Затова всяка находка носи
+  // командата за оправяне — оценка без „ето как" е само чувство за вина.
+  if (post) {
+    const kind = post.score >= 90 ? 'ok' : post.score >= 60 ? 'warn' : 'bad';
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: 'Оценка за сигурност' }),
+          pill(kind, `${post.score}/100 · ${post.grade}`),
+        ]),
+        barEl(post.score),
+        el('div', { class: 'metric-sub', text: `${post.problems.length} находки от ${post.checks} проверки. ${post.note}` }),
+        ...post.problems.map((p) =>
+          el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim') + ')' }, [
+            el('div', {}, [pill(p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim', p.severity), document.createTextNode(' '), el('strong', { text: p.title })]),
+            el('div', { class: 'metric-sub', text: p.why }),
+            p.fix ? el('div', { class: 'mono metric-sub', text: '→ ' + p.fix }) : '',
+            p.note ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: '⚠ ' + p.note }) : '',
+          ])
+        ),
+        post.good.length
+          ? el('div', { class: 'metric-sub', style: 'margin-top:12px', text: 'Наред: ' + post.good.map((g) => g.title).join(' · ') })
+          : '',
+      ])
+    );
+  }
+
+  view.appendChild(
+    el('div', { class: 'toolbar', style: 'margin-bottom:12px' }, [
+      el('button', { class: 'btn btn-sm', text: '⛨ Целост на /etc', onclick: () => go('integrity') }),
+      el('button', { class: 'btn btn-sm', text: '⛔ fail2ban', onclick: () => go('fail2ban') }),
+      el('button', { class: 'btn btn-sm', text: '🔑 Достъп по IP', onclick: () => go('access') }),
+    ])
+  );
+
   view.appendChild(
     el('div', { class: 'grid grid-2' }, [
       el('div', { class: 'card' }, [
@@ -2466,6 +2579,172 @@ async function showTimerHistory(unit, container) {
     container.innerHTML = '';
     toast(e.message, 'bad');
   }
+}
+
+// ── Целост на /etc ────────────────────────────────────────────────────────────────
+// Това НЕ е откриване на прониквания (root може да пренапише и отпечатъка). Целта
+// е много по-честият случай: „вчера работеше, днес не" — кой файл е мръднал.
+async function renderIntegrity() {
+  const view = document.getElementById('view');
+  const d = await api('/security/integrity');
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text:
+    'Отпечатък на важните файлове в /etc (SSH, sudoers, fstab, systemd units, Nginx sites, cron). ' +
+    'Не е антивирус — root може да пренапише и самия отпечатък. Отговаря на въпроса „какво се е променило, откакто работеше".' }));
+
+  const snapBtn = el('button', {
+    class: 'btn btn-primary', text: d.hasBaseline ? '↻ Направи нов отпечатък' : '⛨ Направи отпечатък',
+    onclick: async () => {
+      const ok = !d.hasBaseline || await confirmDanger({
+        title: 'Нов отпечатък',
+        what: ['Текущото състояние става новата „истина".', 'Ако нещо е било променено без твое знание, промяната ще бъде приета за нормална.'],
+        expect: 'отпечатък',
+        confirmLabel: 'Направи нов',
+      });
+      if (!ok) return;
+      try {
+        const r = await api('/security/integrity/baseline', { method: 'POST' });
+        toast(`Отпечатък от ${r.count} файла`, 'ok');
+        go('integrity');
+      } catch (e) { toast(e.message, 'bad'); }
+    },
+  });
+
+  if (!d.hasBaseline) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'metric-sub', text: d.note }),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [snapBtn]),
+    ]));
+    return;
+  }
+
+  const total = d.added.length + d.removed.length + d.changed.length;
+  view.appendChild(
+    el('div', { class: 'card' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: `Отпечатък от ${fmtWhen(d.takenAt)} · ${d.tracked} файла` }),
+        pill(d.clean ? 'ok' : 'warn', d.clean ? 'няма промени' : `${total} промени`),
+      ]),
+      d.clean
+        ? el('div', { class: 'metric-sub', text: 'Нищо не се е променило от отпечатъка насам.' })
+        : el('div', { class: 'table-wrap' }, [
+            tableEl(['Какво', 'Файл', 'Детайл'], [
+              ...d.changed.map((c) => el('tr', {}, [
+                el('td', {}, [pill('warn', c.onlyMode ? 'права' : 'променен')]),
+                el('td', { class: 'mono', text: c.path }),
+                el('td', { class: 'muted', text: c.onlyMode ? `${c.modeBefore} → ${c.modeAfter}` : `${c.sizeBefore} → ${c.sizeAfter} байта` }),
+              ])),
+              ...d.added.map((a) => el('tr', {}, [
+                el('td', {}, [pill('ok', 'добавен')]),
+                el('td', { class: 'mono', text: a.path }),
+                el('td', { class: 'muted', text: a.mode }),
+              ])),
+              ...d.removed.map((r) => el('tr', {}, [
+                el('td', {}, [pill('bad', 'изтрит')]),
+                el('td', { class: 'mono', text: r.path }),
+                el('td', { class: 'muted', text: '—' }),
+              ])),
+            ]),
+          ]),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [snapBtn]),
+    ])
+  );
+}
+
+// ── fail2ban ──────────────────────────────────────────────────────────────────────
+async function renderFail2ban() {
+  const view = document.getElementById('view');
+  const d = await api('/security/fail2ban');
+  view.innerHTML = '';
+  if (!d.available) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'metric-sub', text: 'fail2ban не е инсталиран или не отговаря. Инсталирай го с „apt install fail2ban && systemctl enable --now fail2ban".' }),
+    ]));
+    return;
+  }
+  view.appendChild(el('p', { class: 'section-desc', text:
+    'Кой е блокиран и защо. При SSH само с ключове fail2ban не е задължителен — реже шума и спира упорити скенери. ' +
+    'Ако сам се заключиш, разблокирането оттук е по-бързо от терминал през конзолата на хостера.' }));
+  for (const j of d.jails) {
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:12px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: j.name }),
+          pill(j.currentlyBanned ? 'warn' : 'ok', `${j.currentlyBanned} блокирани сега`),
+        ]),
+        el('div', { class: 'metric-sub', text: `общо блокирани ${j.totalBanned} · провалени опити сега ${j.currentlyFailed} / общо ${j.totalFailed}` }),
+        j.banned.length
+          ? el('div', { class: 'table-wrap' }, [
+              tableEl(['Адрес', ''], j.banned.map((ip) =>
+                el('tr', {}, [
+                  el('td', { class: 'mono', text: ip }),
+                  el('td', {}, [
+                    el('button', {
+                      class: 'btn btn-sm', text: 'Разблокирай',
+                      onclick: async (e) => {
+                        e.target.disabled = true;
+                        try {
+                          await api('/security/fail2ban', { method: 'POST', body: { jail: j.name, ip, action: 'unbanip' } });
+                          toast(`${ip} е разблокиран`, 'ok');
+                          go('fail2ban');
+                        } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+                      },
+                    }),
+                  ]),
+                ])
+              )),
+            ])
+          : el('div', { class: 'metric-sub', text: 'няма блокирани адреси' }),
+      ])
+    );
+  }
+}
+
+// ── Достъп по IP + режим „sudo" ───────────────────────────────────────────────────
+async function renderAccess() {
+  const view = document.getElementById('view');
+  const d = await api('/settings/access');
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text:
+    'Втора врата ПРЕД паролата: адрес извън списъка не вижда дори формата за вход. Празен списък = изключено. ' +
+    (d.trustProxy
+      ? 'Зад прокси адресът се чете от X-Real-IP — увери се, че Nginx го ПРЕЗАПИСВА, иначе списъкът се заобикаля с един хедър.'
+      : 'Панелът чете адреса директно от връзката. Ако сложиш reverse proxy, включи „trustProxy" — иначе всички заявки изглеждат от 127.0.0.1.') }));
+
+  const list = el('textarea', {
+    rows: 6, class: 'mono', style: 'width:100%',
+    placeholder: 'по един на ред, напр.\n93.123.45.67\n10.0.0.0/8\n2001:db8::/32',
+  });
+  list.value = (d.allowIps || []).join('\n');
+  const sudoOn = el('input', { type: 'checkbox' });
+  sudoOn.checked = d.sudoMode;
+
+  view.appendChild(
+    el('div', { class: 'card' }, [
+      el('h3', { text: 'Разрешени адреси' }),
+      el('div', { class: 'metric-sub', text: `Твоят адрес сега: ${d.yourIp}` }),
+      list,
+      el('div', { class: 'metric-sub', text:
+        'Панелът отказва да запише непразен списък, който НЕ включва текущия ти адрес — това е единствената защита срещу заключване извън собствения ти сървър. Ако адресът ти е динамичен, ползвай мрежата на доставчика (напр. 93.123.0.0/16) или остави списъка празен.' }),
+      el('h3', { text: 'Режим „sudo"', style: 'margin-top:16px' }),
+      el('label', { class: 'muted' }, [sudoOn, document.createTextNode(' искай парола отново преди необратимите действия (захранване, терминал, деплой, възстановяване, .env, firewall)')]),
+      el('div', { class: 'metric-sub', text: 'Разрешението важи 5 минути и само за текущия браузър. Това е разликата между „някой има сесията ти" и „някой е ТИ".' }),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        el('button', {
+          class: 'btn btn-primary', text: 'Запази',
+          onclick: async (e) => {
+            e.target.disabled = true;
+            try {
+              const entries = list.value.split('\n').map((l) => l.trim()).filter(Boolean);
+              const r = await api('/settings/access', { method: 'POST', body: { allowIps: entries, sudoMode: sudoOn.checked } });
+              toast(r.allowIps.length ? `Записани ${r.allowIps.length} адреса` : 'Списъкът е празен (изключен)', 'ok');
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+      ]),
+    ])
+  );
 }
 
 // ── Променливи на средата (.env) ──────────────────────────────────────────────────

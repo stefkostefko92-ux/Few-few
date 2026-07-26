@@ -15,25 +15,34 @@ import { verifyTotp, verifyRecoveryCode } from './totp.js';
 
 export const SUDO_TTL_MS = 5 * 60 * 1000;
 
-// Кои пътища искат sudo. Тежките, необратимите и тези, които дават код на машината.
-export const SUDO_REQUIRED = [
-  /^\/api\/power$/,
-  /^\/api\/terminal\/run$/,
+// Два списъка, защото „опасно" не значи „мутация".
+//
+// ВСЯКА заявка (вкл. GET): пътища, които дават контрол над машината дори при
+// четене — жив терминал по SSE е изпълнение на код, не преглед.
+export const SUDO_ALWAYS = [
+  /^\/api\/terminal\//,
   /^\/api\/pty(\/|$)/,
+];
+
+// САМО мутации: четенето им е безобидно (кой е списъкът с адреси, какви лимити
+// има). Ако и четенето искаше парола, панелът щеше да пита на всяка втора
+// секция — а изморената защита се изключва.
+export const SUDO_ON_WRITE = [
+  /^\/api\/power$/,
   /^\/api\/backups\/restore\/apply$/,
-  /^\/api\/deploy\/run$/,
-  /^\/api\/deploy\/rollback$/,
+  /^\/api\/deploy\/(run|rollback)$/,
   /^\/api\/env\/file$/, // запис на тайни на продукцията
   /^\/api\/agents\/tools\/run$/,
   /^\/api\/firewall\//,
-  /^\/api\/security\/sshd$/,
   /^\/api\/totp\/(enable|disable)$/,
   /^\/api\/settings\/access$/,
+  /^\/api\/limits(\/|$)/,
 ];
 
-export function needsSudo(pathname, cfg) {
+export function needsSudo(pathname, cfg, { mutating = false } = {}) {
   if (cfg?.sudoMode?.enabled === false) return false;
-  return SUDO_REQUIRED.some((rx) => rx.test(pathname));
+  if (SUDO_ALWAYS.some((rx) => rx.test(pathname))) return true;
+  return mutating && SUDO_ON_WRITE.some((rx) => rx.test(pathname));
 }
 
 export class SudoGrants {

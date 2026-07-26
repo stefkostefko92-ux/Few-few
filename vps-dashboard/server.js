@@ -12,8 +12,9 @@ import { PtySessions } from './src/pty.js';
 import { AuditShipper } from './src/audit-ship.js';
 import { SloStore } from './src/slo.js';
 import { LogMiner } from './src/logmine.js';
-import { buildRouter } from './src/routes.js';
-import { serveStatic, sendError } from './src/httpd.js';
+import { buildRouter, ipGateAllows } from './src/routes.js';
+import { SudoGrants } from './src/sudo.js';
+import { serveStatic, sendError, clientIp } from './src/httpd.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -82,6 +83,7 @@ const router = buildRouter({
   shipper,
   slo,
   logminer,
+  sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
   revokedSessions: new Set(), // поименно отменени до изтичането им
 });
@@ -107,6 +109,13 @@ const server = http.createServer(async (req, res) => {
     url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   } catch {
     return sendError(res, 400, 'Невалиден URL');
+  }
+
+  // Списъкът с разрешени адреси е ПРЕД всичко — включително статиката и входа.
+  // Скенер, попаднал на панела, не вижда дори формата за вход. Празен списък =
+  // изключено (иначе едно погрешно записване заключва собственика отвън).
+  if (!ipGateAllows(req, cfg, url.pathname, clientIp)) {
+    return sendError(res, 403, 'Достъпът от този адрес не е разрешен.');
   }
 
   try {

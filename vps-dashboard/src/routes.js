@@ -36,6 +36,11 @@ import * as limits from './limits.js';
 import * as cronedit from './cronedit.js';
 import * as domains from './domains.js';
 import { readRaw, handleGithub } from './webhook.js';
+import * as posture from './posture.js';
+import {
+  SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
+  sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
+} from './sudo.js';
 
 const COOKIE = 'csd_sess';
 export const VERSION = '0.1.0';
@@ -64,9 +69,21 @@ export const PEER_DENY = [
 // огледалото на одита се ПРАЩА от него по дизайн (това е целта на изнасянето).
 export const PEER_ALLOW = [/^\/api\/audit\/mirror$/];
 
+// Единственото изключение от списъка с разрешени адреси: GitHub чука отвън и
+// адресите му не са наши. Маршрутът носи защитата си сам (HMAC подпис).
+export const IP_ALLOWLIST_EXEMPT = [/^\/api\/webhook\//];
+
+// Пази се на едно място, за да важи и за статиката, и за входа — иначе „скенер
+// не стига до формата за вход" е просто невярно.
+export function ipGateAllows(req, cfg, pathname, clientIpFn) {
+  if (IP_ALLOWLIST_EXEMPT.some((rx) => rx.test(pathname))) return true;
+  return ipAllowed(clientIpFn(req, cfg.trustProxy), cfg.allowIps);
+}
+
 export function buildRouter(ctx) {
   const { cfg, audit, jobs, metrics } = ctx;
   const r = new Router();
+  const sudo = ctx.sudo || new SudoGrants();
 
   // ── Помощници ──────────────────────────────────────────────────────────────
   const auth = (req) => {
@@ -143,7 +160,16 @@ export function buildRouter(ctx) {
         audit.log({ action: 'peer.denied', path: url.pathname, method: req.method });
         return sendError(res, 403, 'Peer-ът има само достъп за четене (peerScope).');
       }
+      // Режим „sudo": повторна автентикация точно преди необратимото. Открадната
+      // сесия вече не е достатъчна за изтрит продукт или изключен сървър.
+      // Peer-ът е изключен — той няма браузър, който да покаже диалога, а
+      // достъпът му и без това е ограничен от peerScope.
+      if (!who.peer && needsSudo(url.pathname, cfg, { mutating }) && !sudo.has(who.sess?.jti)) {
+        audit.log({ action: 'sudo.required', path: url.pathname, user: who.user });
+        return sendError(res, 428, 'Това действие иска повторно потвърждаване с парола.');
+      }
       req.user = who.user;
+      req.jti = who.sess?.jti || null;
       slideSession(req, res, who);
       return handler(req, res, params, url);
     };
@@ -286,6 +312,57 @@ export function buildRouter(ctx) {
         totpEnabled: Boolean(cfg.totp?.enabled),
         recoveryLeft: (cfg.totp?.recoveryHashes || []).length,
       }))
+    )
+  );
+
+  // ── Режим „sudo" ───────────────────────────────────────────────────────────
+  r.get(
+    '/api/sudo',
+    guard(
+      J((req) => ({
+        enabled: cfg.sudoMode?.enabled !== false,
+        active: sudo.has(req.jti),
+        remainingMs: sudo.remaining(req.jti),
+        ttlMs: SUDO_TTL_MS,
+        needsCode: Boolean(cfg.totp?.enabled),
+      }))
+    )
+  );
+  r.post(
+    '/api/sudo',
+    guard(
+      J(async (req, res) => {
+        const jti = req.jti;
+        // Без ограничител екранът за потвърждаване става оракул за налучкване на
+        // паролата — с валидна (открадната) сесия и неограничени опити.
+        if (!sudoAllowed(jti)) {
+          audit.log({ action: 'sudo.throttled', user: req.user });
+          throw Object.assign(new Error('Твърде много опити — изчакай 10 минути.'), { status: 429 });
+        }
+        const b = await readJson(req);
+        const r2 = confirmSudo(cfg, { password: b.password, code: b.code }, saveConfig);
+        if (!r2.ok) {
+          sudoFailed(jti);
+          audit.log({ action: 'sudo.failed', user: req.user });
+          throw Object.assign(new Error(r2.error), { status: 401 });
+        }
+        sudoSucceeded(jti);
+        const until = sudo.grant(jti);
+        audit.log({ action: 'sudo.granted', user: req.user, usedRecovery: Boolean(r2.usedRecovery) });
+        return { ok: true, until, remainingMs: SUDO_TTL_MS, usedRecovery: Boolean(r2.usedRecovery), recoveryLeft: r2.recoveryLeft };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/sudo/revoke',
+    guard(
+      J((req) => {
+        sudo.revoke(req.jti);
+        audit.log({ action: 'sudo.revoked', user: req.user });
+        return { ok: true };
+      }),
+      { mutating: true }
     )
   );
 
@@ -997,6 +1074,11 @@ export function buildRouter(ctx) {
     guard(
       J((req, res, p, url) => {
         const reveal = url.searchParams.get('reveal') === '1';
+        // Разкриването е GET, но е точно това, срещу което съществува sudo:
+        // открадната сесия иначе изнася всички ключове на продукцията наведнъж.
+        if (reveal && cfg.sudoMode?.enabled !== false && !sudo.has(req.jti)) {
+          throw Object.assign(new Error('Показването на тайните иска повторно потвърждаване с парола.'), { status: 428 });
+        }
         return env.readEnv(cfg, url.searchParams.get('path'), { reveal }, audit, req.user);
       })
     )
@@ -1109,6 +1191,67 @@ export function buildRouter(ctx) {
         });
         audit.log({ action: 'domains.issue', domains: list, staging: Boolean(b.staging), user: req.user });
         return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Оценка за сигурност, целост на /etc, fail2ban ──────────────────────────
+  r.get('/api/security/posture', guard(J(() => posture.posture())));
+  r.get('/api/security/integrity', guard(J(() => posture.diffEtc(cfg.paths.stateDir))));
+  r.post(
+    '/api/security/integrity/baseline',
+    guard(
+      J((req) => {
+        const snap = posture.snapshotEtc();
+        audit.log({ action: 'integrity.baseline', files: Object.keys(snap.files).length, user: req.user });
+        return posture.saveBaseline(cfg.paths.stateDir, snap);
+      }),
+      { mutating: true }
+    )
+  );
+  r.get('/api/security/fail2ban', guard(J(() => posture.fail2banStatus())));
+  r.post(
+    '/api/security/fail2ban',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return posture.fail2banAction(b.jail, b.ip, b.action, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Списък с разрешени адреси ──────────────────────────────────────────────
+  r.get(
+    '/api/settings/access',
+    guard(
+      J((req) => ({
+        allowIps: cfg.allowIps || [],
+        sudoMode: cfg.sudoMode?.enabled !== false,
+        yourIp: clientIp(req, cfg.trustProxy),
+        trustProxy: Boolean(cfg.trustProxy),
+      }))
+    )
+  );
+  r.post(
+    '/api/settings/access',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const list = validateAllowlist(b.allowIps || []);
+        const me = clientIp(req, cfg.trustProxy);
+        // Единствената защита срещу „заключих се извън собствения си сървър":
+        // непразен списък, който НЕ включва текущия адрес, се отказва.
+        if (list.length && !ipAllowed(me, list)) {
+          throw Object.assign(
+            new Error(`Списъкът не включва текущия ти адрес (${me}) — това би те заключило отвън. Добави го или остави списъка празен.`),
+            { status: 400 }
+          );
+        }
+        saveConfig(cfg, { allowIps: list, sudoMode: { enabled: b.sudoMode !== false } });
+        audit.log({ action: 'settings.access', entries: list.length, sudoMode: b.sudoMode !== false, user: req.user });
+        return { ok: true, allowIps: list, sudoMode: b.sudoMode !== false };
       }),
       { mutating: true }
     )
