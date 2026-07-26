@@ -16,6 +16,7 @@ const config: EntityConfig = {
   descrizione:
     "Ascensori e piattaforme elevatrici in gestione, con scadenze di verifica e avvisi automatici",
   api: "/api/impianti",
+  moduloAi: "impianti",
   cerca: "Cerca per matricola, marca, indirizzo…",
   linkDettaglio: (r) => `/impianti/${r.id}`,
   colonne: [

@@ -7,7 +7,7 @@
 // в срока по чл. 12(3) (един месец), не бива да обхожда три модула, за да
 // разбере къде е записано.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/fetch-client";
 import { IcoAttenzione, IcoEsporta, IcoIntegro } from "@/components/icone";
 
@@ -110,6 +110,11 @@ export default function Pagina() {
           risposta è dovuta entro un mese dalla richiesta (art. 12, par. 3).
         </p>
       </div>
+
+      {/* Разкриването на AI функцията стои ТУК, при правата на субекта, а не в
+          настройките: чл. 13, ал. 1, б. „д“ иска получателите на личните данни
+          да са известни на лицето, а получател е и доставчикът на модела. */}
+      <TrattamentoAi />
 
       <form
         onSubmit={cerca}
@@ -266,6 +271,77 @@ export default function Pagina() {
             </button>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Какво излиза навън, когато функцията е включена.
+ *
+ * Чете ЖИВОТО състояние вместо да описва намерение: разкритие, което твърди
+ * едно, а конфигурацията прави друго, е по-лошо от липсващо. Когато функцията е
+ * изключена, това също се казва — операторът има право да знае, че документите
+ * му НЕ излизат никъде.
+ */
+function TrattamentoAi() {
+  const [stato, setStato] = useState<{
+    attiva: boolean;
+    fornitore: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    void fetch("/api/ai/estrai")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => vivo && setStato(d))
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  if (!stato) return null;
+  return (
+    <div className="card mb-6 p-5">
+      <h2 className="text-lg font-semibold text-text-1">
+        Lettura dei documenti con l&apos;AI
+      </h2>
+      {stato.attiva ? (
+        <>
+          <p className="mt-1 text-sm text-text-2">
+            La funzione «Compila da un documento» è <strong>attiva</strong>. Il
+            documento caricato viene trasmesso a{" "}
+            <strong>{stato.fornitore}</strong>, che lo elabora per conto del
+            titolare e ne restituisce i dati estratti. Il documento può
+            contenere dati personali (nomi, codici fiscali, indirizzi).
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-2">
+            <li>
+              Il trasferimento avviene solo quando un operatore carica un
+              documento: non c&apos;è alcun invio automatico.
+            </li>
+            <li>
+              Nel registro delle operazioni resta traccia dell&apos;invio (chi,
+              quando, quale scheda, impronta del file) ma <strong>non</strong>{" "}
+              il contenuto del documento.
+            </li>
+            <li>
+              I dati estratti sono una proposta: nulla viene salvato senza
+              conferma di una persona.
+            </li>
+            <li>
+              Il fornitore agisce come responsabile del trattamento (art. 28
+              GDPR): l&apos;accordo con lui e l&apos;informativa ai clienti sono
+              a carico del titolare.
+            </li>
+          </ul>
+        </>
+      ) : (
+        <p className="mt-1 text-sm text-text-2">
+          La funzione è <strong>disattivata</strong>: nessun documento lascia
+          questo server.
+        </p>
       )}
     </div>
   );

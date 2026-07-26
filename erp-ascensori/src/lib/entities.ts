@@ -156,6 +156,10 @@ const amministratoreBase = z.object({
   indirizzo: strOpt,
   citta: strOpt,
   cap: strOpt,
+  /// Част от фискалния адрес. Колоната и XML-ът за SDI я искат от самото
+  /// начало, но схемата я нямаше — формата я показваше, Zod я изхвърляше
+  /// мълчаливо, а експортът после се оплакваше, че липсва.
+  provincia: z.string().trim().max(4).nullish(),
   note: strOpt,
   attivo: z.boolean().optional(),
 });
@@ -779,3 +783,145 @@ export const firmaSchema = z.object({
   firmatarioNome: z.string().trim().min(1).max(200),
   firmatarioRuolo: z.string().trim().max(200).nullish(),
 });
+
+// ── Схеми за попълване от документ (AI) ─────────────────────────────────────
+//
+// НЕ са нови правила: всяка е `.pick()` + `.partial()` върху схемата на самата
+// форма. Едно място решава дали „22/13/2026“ е валидна дата — иначе AI пътят и
+// ръчният биха приемали различни неща, а разликата щеше да изплува чак в
+// отхвърлена от SDI фактура.
+//
+// Всички полета са незадължителни, защото извличането е ЧАСТИЧНО по природа:
+// документът рядко носи всичко, а липсващото се дописва на ръка.
+
+export const condominioSchemaAi = condominioBase
+  .pick({
+    nome: true,
+    indirizzo: true,
+    citta: true,
+    cap: true,
+    provincia: true,
+    codiceFiscale: true,
+    pec: true,
+    codiceSdi: true,
+    unitaImmobiliari: true,
+  })
+  .partial();
+
+export const amministratoreSchemaAi = amministratoreBase
+  .pick({
+    ragioneSociale: true,
+    nome: true,
+    cognome: true,
+    partitaIva: true,
+    codiceFiscale: true,
+    pec: true,
+    codiceSdi: true,
+    email: true,
+    telefono: true,
+    indirizzo: true,
+    citta: true,
+    cap: true,
+    provincia: true,
+  })
+  .partial();
+
+export const impiantoSchemaAi = impiantoBase
+  .pick({
+    matricolaComune: true,
+    comune: true,
+    dataComunicazione: true,
+    tipo: true,
+    regime: true,
+    marca: true,
+    modello: true,
+    anno: true,
+    portata: true,
+    persone: true,
+    velocita: true,
+    fermate: true,
+    indirizzo: true,
+    piano: true,
+    dataInstallazione: true,
+    organismoNotificato: true,
+  })
+  .partial();
+
+export const verificaSchemaAi = verificaImpiantoSchema
+  .pick({
+    data: true,
+    esito: true,
+    organismo: true,
+    numeroVerbale: true,
+    prescrizioni: true,
+    scadenzaPrescrizioni: true,
+    tipo: true,
+  })
+  .partial();
+
+export const fatturaSchemaAi = fatturaSchema
+  .pick({
+    data: true,
+    dataScadenza: true,
+    oggetto: true,
+    cig: true,
+    cup: true,
+    modalitaPagamento: true,
+    condizioniPagamento: true,
+  })
+  .partial();
+
+export const preventivoSchemaAi = preventivoSchema
+  .pick({ oggetto: true, descrizione: true, validitaGiorni: true, note: true })
+  .partial();
+
+export const articoloSchemaAi = articoloBase
+  .pick({
+    codice: true,
+    barcode: true,
+    nome: true,
+    descrizione: true,
+    categoria: true,
+    prezzoAcquisto: true,
+    prezzoVendita: true,
+    aliquotaIva: true,
+    sogliaMinima: true,
+    ubicazione: true,
+  })
+  .partial();
+
+export const dipendenteSchemaAi = dipendenteBase
+  .pick({
+    nome: true,
+    cognome: true,
+    codiceFiscale: true,
+    email: true,
+    telefono: true,
+    dataAssunzione: true,
+    patente: true,
+    specializzazioni: true,
+  })
+  .partial();
+
+export const automezzoSchemaAi = automezzoBase
+  .pick({
+    targa: true,
+    marca: true,
+    modello: true,
+    chilometraggio: true,
+    scadenzaAssicurazione: true,
+    scadenzaRevisione: true,
+    scadenzaTagliando: true,
+  })
+  .partial();
+
+export const cottimistaSchemaAi = cottimistaBase
+  .pick({
+    ragioneSociale: true,
+    tipo: true,
+    partitaIva: true,
+    email: true,
+    telefono: true,
+    indirizzo: true,
+  })
+  .partial();

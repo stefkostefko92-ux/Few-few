@@ -11,6 +11,7 @@ const config: EntityConfig = {
   genere: "m",
   descrizione: "Edifici serviti e relativi amministratori",
   api: "/api/condomini",
+  moduloAi: "condomini",
   cerca: "Cerca per nome, indirizzo, città…",
   colonne: [
     { chiave: "nome", label: "Nome", className: "font-medium" },

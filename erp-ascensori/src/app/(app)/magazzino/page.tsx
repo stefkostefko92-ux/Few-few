@@ -14,6 +14,7 @@ const config: EntityConfig = {
   descrizione:
     "Componenti tecnici e articoli in vendita: la giacenza si muove solo con i movimenti",
   api: "/api/articoli",
+  moduloAi: "articoli",
   cerca: "Cerca per codice, nome, barcode…",
   colonne: [
     { chiave: "codice", label: "Codice", className: "font-mono font-medium" },

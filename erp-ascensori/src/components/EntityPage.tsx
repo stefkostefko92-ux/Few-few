@@ -21,6 +21,7 @@ import Link from "next/link";
 import { IcoNuovo } from "@/components/icone";
 import { perInputData } from "@/lib/format";
 import { apiFetch } from "@/lib/fetch-client";
+import CompilaConAi from "@/components/CompilaConAi";
 
 export type Riga = Record<string, unknown>;
 
@@ -96,6 +97,15 @@ export interface EntityConfig {
   extraAzioni?: ReactNode;
   /** филтър-хапчета по статус (име на полето + възможните стойности) */
   filtroStato?: { campo: string; valori: readonly string[] };
+  /**
+   * Име на модула в сървърния регистър за попълване от документ
+   * (`src/lib/ai/moduli.ts`). Празно значи, че формата няма такъв — тогава
+   * блокът просто не се показва.
+   *
+   * Етикетите за прегледа се вземат от `campi`, а не се пишат втори път: така
+   * преименуването на поле не оставя два различни надписа за едно и също нещо.
+   */
+  moduloAi?: string;
 }
 
 // Подновяването на сесията и мрежовите грешки живеят в `apiFetch` — тук само
@@ -481,6 +491,16 @@ export function FormEntity({
       largo={config.campi.length > 6}
     >
       <form onSubmit={salva}>
+        {config.moduloAi && (
+          <CompilaConAi
+            modulo={config.moduloAi}
+            etichette={Object.fromEntries(
+              config.campi.map((c) => [c.name, c.label]),
+            )}
+            valoriAttuali={valori}
+            onCompila={(campi) => setValori((prev) => ({ ...prev, ...campi }))}
+          />
+        )}
         <div
           className={`grid gap-4 ${config.campi.length > 6 ? "sm:grid-cols-2" : ""}`}
         >

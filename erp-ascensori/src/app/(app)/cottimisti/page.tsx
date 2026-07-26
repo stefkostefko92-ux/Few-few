@@ -9,6 +9,7 @@ const config: EntityConfig = {
   genere: "m",
   descrizione: "Ditte esterne abilitate all'assegnazione dei lavori",
   api: "/api/cottimisti",
+  moduloAi: "cottimisti",
   cerca: "Cerca per ragione sociale, P. IVA…",
   colonne: [
     {

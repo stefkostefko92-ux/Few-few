@@ -16,6 +16,7 @@ const config: EntityConfig = {
   descrizione:
     "Flotta aziendale: revisione, assicurazione e tagliando sotto controllo",
   api: "/api/automezzi",
+  moduloAi: "automezzi",
   cerca: "Cerca per targa, marca, modello…",
   colonne: [
     { chiave: "targa", label: "Targa", className: "font-mono font-medium" },

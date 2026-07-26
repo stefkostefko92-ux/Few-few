@@ -14,6 +14,7 @@ const config: EntityConfig = {
   descrizione:
     "Offerte al cliente: i totali si ricalcolano automaticamente dalle voci",
   api: "/api/preventivi",
+  moduloAi: "preventivi",
   cerca: "Cerca per numero, oggetto…",
   linkDettaglio: (r) => `/preventivi/${r.id}`,
   colonne: [

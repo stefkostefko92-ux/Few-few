@@ -12,6 +12,7 @@ const config: EntityConfig = {
   descrizione:
     "Controparte contrattuale e fiscale: dati incompleti bloccano la fattura elettronica",
   api: "/api/amministratori",
+  moduloAi: "amministratori",
   cerca: "Cerca per nome, ragione sociale, email…",
   colonne: [
     {

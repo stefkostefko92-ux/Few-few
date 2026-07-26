@@ -16,6 +16,7 @@ import {
 } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 import Allegati from "@/components/Allegati";
+import CompilaConAi from "@/components/CompilaConAi";
 import {
   problemiConformita,
   ESITI_VERIFICA,
@@ -595,6 +596,29 @@ function FormVerifica({
   return (
     <Modale titolo="Registra verifica" aperto onChiudi={onChiudi} largo>
       <form onSubmit={salva}>
+        {/* Най-полезното приложение на четенето: протоколът от проверката е
+            плътен документ, а всяко негово поле има правна тежест. */}
+        <CompilaConAi
+          modulo="verifiche"
+          etichette={{
+            data: "Data della verifica",
+            esito: "Esito",
+            organismo: "Organismo verificatore",
+            numeroVerbale: "Numero del verbale",
+            prescrizioni: "Prescrizioni",
+            scadenzaPrescrizioni: "Termine per le prescrizioni",
+            tipo: "Tipo di verifica",
+          }}
+          valoriAttuali={form}
+          onCompila={(campi) =>
+            setForm((prev) => ({
+              ...prev,
+              ...Object.fromEntries(
+                Object.entries(campi).map(([k, v]) => [k, String(v ?? "")]),
+              ),
+            }))
+          }
+        />
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="v-tipo">

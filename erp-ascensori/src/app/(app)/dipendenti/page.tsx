@@ -11,6 +11,7 @@ const config: EntityConfig = {
   descrizione:
     "Personale interno: tecnici, amministrativi, commerciali, magazzinieri",
   api: "/api/dipendenti",
+  moduloAi: "dipendenti",
   cerca: "Cerca per nome, cognome, codice fiscale…",
   colonne: [
     {

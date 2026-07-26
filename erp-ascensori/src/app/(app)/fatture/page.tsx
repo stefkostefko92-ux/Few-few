@@ -19,6 +19,7 @@ const config: EntityConfig = {
   descrizione:
     "Ciclo attivo (emesse) e passivo (ricevute), con dati strutturati per la fatturazione elettronica",
   api: "/api/fatture",
+  moduloAi: "fatture",
   cerca: "Cerca per numero, oggetto…",
   linkDettaglio: (r) => `/fatture/${r.id}`,
   colonne: [
