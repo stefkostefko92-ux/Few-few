@@ -6,7 +6,7 @@
 
 import { test, describe, before } from "node:test";
 import assert from "node:assert/strict";
-import { comeRuolo, Sessione, unico } from "./_client";
+import { comeRuolo, Sessione, BASE, unico } from "./_client";
 
 let responsabile: Sessione;
 let tecnico: Sessione;
@@ -333,5 +333,81 @@ describe("проверките по чл. 15, ал. 4 в рапортичкат�
       "FERMO_AMMINISTRATIVO",
       "по-силното състояние не се презаписва",
     );
+  });
+});
+
+describe("libretto d'impianto", () => {
+  test("досието излиза като PDF и носи законовите раздели", async () => {
+    const i = await nuovoImpianto({
+      matricolaComune: "MI-2026-99001",
+      comune: "Milano",
+      dataComunicazione: "2026-01-15",
+      organismoNotificato: "Organismo Notificato 0407",
+    });
+    await responsabile.post(`/api/impianti/${i.id}/verifiche`, {
+      data: "2026-02-01",
+      esito: "CON_PRESCRIZIONI",
+      organismo: "Organismo Notificato 0407",
+      numeroVerbale: "VP-2026-777",
+      prescrizioni: "Ripristinare l'illuminazione di emergenza.",
+    });
+
+    const res = await fetch(`${BASE}/api/impianti/${i.id}/libretto`, {
+      headers: { Cookie: responsabile.cookieHeader() },
+    });
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-type") ?? "", /application\/pdf/);
+    const pdf = Buffer.from(await res.arrayBuffer());
+    // Истински PDF, не празен отговор.
+    assert.equal(pdf.subarray(0, 4).toString(), "%PDF");
+    assert.ok(
+      pdf.length > 2000,
+      `досието изглежда празно: ${pdf.length} байта`,
+    );
+  });
+
+  test("чуждо досие не се изнася с познат идентификатор", async () => {
+    const i = await nuovoImpianto();
+    const operatoreAltro = new Sessione();
+    const master2 = await comeRuolo("MASTER");
+    const slug = unico("lib-t")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-");
+    const t = await master2.post<{ id: string }>("/api/tenants", {
+      slug,
+      ragioneSociale: "Terza Ditta",
+      email: `${slug}@test.local`,
+    });
+    const email = `${slug}-op@test.local`;
+    await master2.post("/api/utenti", {
+      email,
+      password: "collina tranquilla 2026",
+      nome: "Op",
+      cognome: "Terza",
+      ruolo: "RESPONSABILE",
+      tenantId: t.dati.id,
+    });
+    assert.equal(
+      await operatoreAltro.entra(email, "collina tranquilla 2026"),
+      200,
+    );
+    const res = await fetch(`${BASE}/api/impianti/${i.id}/libretto`, {
+      headers: { Cookie: operatoreAltro.cookieHeader() },
+    });
+    assert.equal(res.status, 404);
+  });
+
+  test("изнасянето оставя следа в регистъра", async () => {
+    const i = await nuovoImpianto();
+    await fetch(`${BASE}/api/impianti/${i.id}/libretto`, {
+      headers: { Cookie: responsabile.cookieHeader() },
+    });
+    const admin = await comeRuolo("ADMIN");
+    const reg = await admin.get<{
+      righe: { entitaId: string; dettagli: unknown }[];
+    }>("/api/audit?entita=impianti&azione=STATE_CHANGE&size=50");
+    const riga = reg.dati.righe.find((r) => r.entitaId === i.id);
+    assert.ok(riga, "изнасянето трябва да е записано");
+    assert.match(JSON.stringify(riga.dettagli), /libretto/);
   });
 });

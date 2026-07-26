@@ -12,6 +12,7 @@ import {
   IcoNuovoPiccolo,
   IcoVerso,
   IcoQr,
+  IcoStampa,
 } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 import Allegati from "@/components/Allegati";
@@ -171,6 +172,16 @@ export default function Pagina() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            className="btn-secondary inline-flex h-8 items-center gap-1.5 px-3 text-xs"
+            href={`/api/impianti/${id}/libretto`}
+            target="_blank"
+            rel="noopener"
+            title="Fascicolo completo dell'impianto: identificazione, verifiche, interventi"
+          >
+            <IcoStampa />
+            Libretto
+          </a>
           <a
             className="btn-secondary inline-flex h-8 items-center gap-1.5 px-3 text-xs"
             href={`/api/impianti/${id}/qr`}

@@ -7,6 +7,11 @@
 // помещение, не е реалистично.
 
 import { useCallback, useEffect, useState } from "react";
+import { CONTROLLI_ART15 } from "@/lib/normativa/verifiche";
+import {
+  TIPI_INTERVENTO,
+  TIPO_INTERVENTO_LABEL,
+} from "@/lib/normativa/interventi";
 import { Modale, Vuoto } from "@/components/ui";
 import {
   IcoNuovoPiccolo,
@@ -38,11 +43,18 @@ const ESITI = [
   { value: "NON_RISOLVIBILE", label: "Non risolvibile" },
 ];
 
+/** Отметките са ТРИСТОЙНОСТНИ: празно значи „не е гледано“, не „наред“. */
+type Controllo = "" | "si" | "no";
+
 const vuoto = {
   descrizione: "",
   oreLavoro: "1",
   esito: "RISOLTO",
+  tipoIntervento: "MANUTENZIONE_ORDINARIA",
   materiali: "",
+  controlli: Object.fromEntries(
+    CONTROLLI_ART15.map((c) => [c.campo, "" as Controllo]),
+  ) as Record<string, Controllo>,
 };
 
 export default function Rapportini({ ordineId }: { ordineId: string }) {
@@ -80,7 +92,20 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
         `/api/ordini/${ordineId}/rapportini`,
         {
           method: "POST",
-          body: JSON.stringify({ ...form, materiali: form.materiali || null }),
+          body: JSON.stringify({
+            descrizione: form.descrizione,
+            oreLavoro: form.oreLavoro,
+            esito: form.esito,
+            tipoIntervento: form.tipoIntervento,
+            materiali: form.materiali || null,
+            // Празното НЕ се праща като `false`: сървърът пази разликата между
+            // „не е проверено“ и „проверено, не е наред“.
+            ...Object.fromEntries(
+              Object.entries(form.controlli)
+                .filter(([, v]) => v !== "")
+                .map(([k, v]) => [k, v === "si"]),
+            ),
+          }),
         },
       );
       if (!ok) {
@@ -217,6 +242,25 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
               />
             </div>
             <div>
+              <label className="label" htmlFor="r-tipo">
+                Tipo di intervento
+              </label>
+              <select
+                id="r-tipo"
+                className="input"
+                value={form.tipoIntervento}
+                onChange={(e) =>
+                  setForm({ ...form, tipoIntervento: e.target.value })
+                }
+              >
+                {TIPI_INTERVENTO.map((t) => (
+                  <option key={t} value={t}>
+                    {TIPO_INTERVENTO_LABEL[t]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="label" htmlFor="r-esito">
                 Esito
               </label>
@@ -233,6 +277,73 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
                 ))}
               </select>
             </div>
+            <fieldset className="sm:col-span-2">
+              <legend className="label mb-1">
+                Controlli art. 15 c.4 D.P.R. 162/1999
+              </legend>
+              <p className="mb-2 text-xs text-text-3">
+                Lasciare in bianco ciò che non è stato controllato: «non
+                verificato» e «non conforme» sono cose diverse. Un controllo
+                critico non conforme mette l&apos;impianto fuori servizio.
+              </p>
+              <div className="space-y-1">
+                {CONTROLLI_ART15.map((c) => (
+                  <div
+                    key={c.campo}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md px-2 py-1 odd:bg-surface-2"
+                  >
+                    <span className="text-sm">
+                      {c.etichetta}
+                      {c.critico && (
+                        <span className="ml-1 text-xs text-text-3">
+                          (critico)
+                        </span>
+                      )}
+                    </span>
+                    <div
+                      role="radiogroup"
+                      aria-label={c.etichetta}
+                      className="flex items-center gap-1"
+                    >
+                      {(
+                        [
+                          ["si", "Conforme"],
+                          ["no", "Non conforme"],
+                          ["", "Non verificato"],
+                        ] as const
+                      ).map(([v, etichetta]) => (
+                        <label
+                          key={v || "vuoto"}
+                          className={`cursor-pointer rounded-sm px-2 py-0.5 text-xs ${
+                            form.controlli[c.campo] === v
+                              ? v === "si"
+                                ? "bg-success-subtle text-success-text"
+                                : v === "no"
+                                  ? "bg-danger-subtle text-danger-text"
+                                  : "bg-surface-3 text-text-2"
+                              : "text-text-3"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            className="sr-only"
+                            name={`c-${c.campo}`}
+                            checked={form.controlli[c.campo] === v}
+                            onChange={() =>
+                              setForm({
+                                ...form,
+                                controlli: { ...form.controlli, [c.campo]: v },
+                              })
+                            }
+                          />
+                          {etichetta}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
             <div className="sm:col-span-2">
               <label className="label" htmlFor="r-materiali">
                 Materiali impiegati (uno per riga)
