@@ -10,7 +10,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/fetch-client";
-import { dataIt } from "@/lib/format";
+import { dataIt, euro } from "@/lib/format";
+import {
+  fasciaPerRitardo,
+  LIVELLI_SOLLECITO,
+  type ChiaveFascia,
+} from "@/lib/fiscale/scadenzario";
 import { Vuoto } from "@/components/ui";
 import { IcoAttenzione } from "@/components/icone";
 
@@ -37,7 +42,7 @@ interface Riga {
   residuo: string;
   debitore: string;
   giorniRitardo: number;
-  fascia: string;
+  fascia: ChiaveFascia;
   sollecitiInviati: number;
   prossimoSollecito: number | null;
 }
@@ -49,12 +54,26 @@ interface Dati {
   totale: string;
 }
 
-/** Цветът не носи смисъла сам: до него винаги стои и числото в дни. */
-function stileRitardo(giorni: number): string {
-  if (giorni < 0) return "text-text-3";
-  if (giorni <= 30) return "text-text-2";
-  if (giorni <= 90) return "text-warning-text";
-  return "text-danger-text";
+/**
+ * Цветът не носи смисъла сам: до него винаги стои и числото в дни.
+ *
+ * ПО КОФА, НЕ ПО ПРАГ. Праговете 30/90 стояха и тук, преписани от
+ * `fiscale/scadenzario.ts` — а сървърът вече праща `fascia`. Промяна на
+ * кофите там оцветяваше таблицата по стария праг, тихо и без падащ тест;
+ * това е екранът, по който се решава на кого да се звънне. Сега ключът е
+ * типизиран: нова кофа гърми при компилация.
+ */
+const STILE_FASCIA: Record<ChiaveFascia, string> = {
+  corrente: "text-text-3",
+  g0_30: "text-text-2",
+  g31_60: "text-warning-text",
+  g61_90: "text-warning-text",
+  oltre90: "text-danger-text",
+};
+
+/** Дните до падежа не са „закъснение" — колоната казва от кога е просрочено. */
+function ritardoIt(giorni: number): string {
+  return giorni < 0 ? `fra ${-giorni} gg` : `${giorni} gg`;
 }
 
 export default function Pagina() {
@@ -110,7 +129,8 @@ export default function Pagina() {
         <h1 className="text-2xl font-semibold text-text-1">Scadenzario</h1>
         <p className="mt-1 text-sm text-text-3">
           Crediti aperti per anzianità. Gli importi sono al netto della ritenuta
-          d&apos;acconto e dello split payment: è quanto l&apos;azienda incassa
+          d&apos;acconto e dell&apos;IVA in regime di scissione dei pagamenti
+          (art. 17-ter D.P.R. 633/1972): è quanto l&apos;azienda incassa
           davvero.
         </p>
       </header>
@@ -120,7 +140,7 @@ export default function Pagina() {
           <div key={f.chiave} className="card p-4">
             <div className="text-xs text-text-3">{f.etichetta}</div>
             <div className="mt-1 font-mono text-lg font-semibold text-text-1">
-              {f.totale} €
+              {euro(f.totale)}
             </div>
             <div className="text-xs text-text-3">
               {f.documenti} {f.documenti === 1 ? "documento" : "documenti"}
@@ -150,40 +170,60 @@ export default function Pagina() {
                     <span className="block truncate text-text-1">
                       {x.debitore}
                     </span>
-                    <span className={`text-xs ${stileRitardo(x.ritardoMassimo)}`}>
-                      {x.ritardoMassimo} giorni · {x.documenti}{" "}
+                    <span
+                      className={`text-xs ${STILE_FASCIA[fasciaPerRitardo(x.ritardoMassimo)]}`}
+                    >
+                      {ritardoIt(x.ritardoMassimo)} · {x.documenti}{" "}
                       {x.documenti === 1 ? "documento" : "documenti"}
                     </span>
                   </span>
                   <span className="shrink-0 font-mono text-text-1">
-                    {x.totale} €
+                    {euro(x.totale)}
                   </span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section className="card overflow-x-auto p-5 lg:col-span-2" aria-label="Documenti">
+          <section
+            className="card overflow-x-auto p-5 lg:col-span-2"
+            aria-label="Documenti"
+          >
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-text-1">Documenti</h2>
               <span className="font-mono text-sm text-text-1">
-                {d.totale} €
+                {euro(d.totale)}
               </span>
             </div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-text-3">
-                  <th scope="col" className="pb-2">Numero</th>
-                  <th scope="col" className="pb-2">Debitore</th>
-                  <th scope="col" className="pb-2">Scadenza</th>
-                  <th scope="col" className="pb-2 text-right">Ritardo</th>
-                  <th scope="col" className="pb-2 text-right">Residuo</th>
-                  <th scope="col" className="pb-2 text-right">Sollecito</th>
+                  <th scope="col" className="pb-2">
+                    Numero
+                  </th>
+                  <th scope="col" className="pb-2">
+                    Debitore
+                  </th>
+                  <th scope="col" className="pb-2">
+                    Scadenza
+                  </th>
+                  <th scope="col" className="pb-2 text-right">
+                    Scaduto da
+                  </th>
+                  <th scope="col" className="pb-2 text-right">
+                    Residuo
+                  </th>
+                  <th scope="col" className="pb-2 text-right">
+                    Sollecito
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {d.righe.map((r) => (
-                  <tr key={r.fatturaId} className="border-b border-border last:border-0">
+                  <tr
+                    key={r.fatturaId}
+                    className="border-b border-border last:border-0"
+                  >
                     <td className="py-2">
                       <Link
                         className="font-mono text-xs text-accent-text hover:underline"
@@ -198,27 +238,38 @@ export default function Pagina() {
                     <td className="py-2 text-xs text-text-3">
                       {r.dataScadenza ? dataIt(r.dataScadenza) : "—"}
                     </td>
-                    <td className={`py-2 text-right text-xs ${stileRitardo(r.giorniRitardo)}`}>
-                      {r.giorniRitardo > 90 && (
-                        <IcoAttenzione />
-                      )}{" "}
-                      {r.giorniRitardo} gg
+                    <td
+                      className={`py-2 text-right text-xs ${STILE_FASCIA[r.fascia]}`}
+                    >
+                      {r.fascia === "oltre90" && <IcoAttenzione />}{" "}
+                      {ritardoIt(r.giorniRitardo)}
                     </td>
-                    <td className="py-2 text-right font-mono">{r.residuo} €</td>
+                    <td className="py-2 text-right font-mono">
+                      {euro(r.residuo)}
+                    </td>
                     <td className="py-2 text-right">
                       {r.prossimoSollecito === null ? (
                         <span className="text-xs text-text-3">
-                          {r.sollecitiInviati > 0
-                            ? `${r.sollecitiInviati} inviati`
-                            : "—"}
+                          {r.sollecitiInviati === 0
+                            ? "—"
+                            : r.sollecitiInviati === 1
+                              ? "1 inviato"
+                              : `${r.sollecitiInviati} inviati`}
                         </span>
                       ) : (
                         <button
-                          className="btn-secondary h-7 px-2 text-xs"
+                          className="btn-secondary h-9 px-2 text-xs"
                           disabled={inCorso}
                           onClick={() => void sollecita(r)}
                         >
-                          Registra {r.prossimoSollecito}º
+                          {/* Етикетът, не вътрешният номер на степента:
+                              третата не е „покана", а messa in mora — правен
+                              акт с други последици. */}
+                          Registra{" "}
+                          {LIVELLI_SOLLECITO.find(
+                            (l) => l.livello === r.prossimoSollecito,
+                          )?.etichetta.toLowerCase() ??
+                            `${r.prossimoSollecito}°`}
                         </button>
                       )}
                     </td>

@@ -26,15 +26,21 @@ const fetchVero = globalThis.fetch;
 const envVero = { ...process.env };
 
 /** Подменя `fetch` с отговор по избор и записва какво е било изпратено. */
-function stubFetch(risposta: { stato?: number; corpo?: unknown; testo?: string }) {
-  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+function stubFetch(risposta: {
+  stato?: number;
+  corpo?: unknown;
+  testo?: string;
+}) {
+  globalThis.fetch = (async (
+    url: string | URL | Request,
+    init?: RequestInit,
+  ) => {
     chiamate.push({
       url: String(url),
       init: init ?? {},
       corpo: JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>,
     });
-    const testo =
-      risposta.testo ?? JSON.stringify(risposta.corpo ?? {});
+    const testo = risposta.testo ?? JSON.stringify(risposta.corpo ?? {});
     return new Response(testo, { status: risposta.stato ?? 200 });
   }) as typeof fetch;
 }
@@ -70,11 +76,14 @@ const RICHIESTA = {
 describe("изключената функция", () => {
   test("не праща НИЩО навън", async () => {
     stubFetch({ corpo: {} });
-    await assert.rejects(() => chiedi(RICHIESTA), (e: unknown) => {
-      assert.ok(e instanceof ErroreAi);
-      assert.equal(e.stato, 503);
-      return true;
-    });
+    await assert.rejects(
+      () => chiedi(RICHIESTA),
+      (e: unknown) => {
+        assert.ok(e instanceof ErroreAi);
+        assert.equal(e.stato, 503);
+        return true;
+      },
+    );
     // Най-важното твърдение във файла: без конфигурация мрежата не се пипа.
     assert.equal(chiamate.length, 0);
   });
@@ -122,7 +131,9 @@ describe("Gemini", () => {
     conProvider("gemini");
     stubFetch({
       corpo: {
-        candidates: [{ content: { parts: [{ text: "{" }, { text: '"a":1}' }] } }],
+        candidates: [
+          { content: { parts: [{ text: "{" }, { text: '"a":1}' }] } },
+        ],
       },
     });
     assert.equal(await chiedi(RICHIESTA), '{"a":1}');
@@ -134,7 +145,9 @@ describe("Gemini", () => {
 
   test("част БЕЗ текст не чупи слепването", async () => {
     conProvider("gemini");
-    stubFetch({ corpo: { candidates: [{ content: { parts: [{}, { text: "x" }] } }] } });
+    stubFetch({
+      corpo: { candidates: [{ content: { parts: [{}, { text: "x" }] } }] },
+    });
     assert.equal(await chiedi(RICHIESTA), "x");
   });
 
@@ -146,7 +159,10 @@ describe("Gemini", () => {
     stubFetch({ corpo: { candidates: [] } });
     await chiedi(RICHIESTA);
     // Наклонената черта накрая се маха: иначе адресът става с двойна черта.
-    assert.match(chiamate[0].url, /^https:\/\/eu-proxy\.example\.it\/v1beta\/models\//);
+    assert.match(
+      chiamate[0].url,
+      /^https:\/\/eu-proxy\.example\.it\/v1beta\/models\//,
+    );
     assert.match(chiamate[0].url, /gemini-custom/);
   });
 });
@@ -157,7 +173,9 @@ describe("Anthropic", () => {
     stubFetch({ corpo: { content: [{ type: "text", text: "ok" }] } });
 
     await chiedi(RICHIESTA);
-    let msg = (chiamate[0].corpo.messages as { content: { type: string }[] }[])[0];
+    let msg = (
+      chiamate[0].corpo.messages as { content: { type: string }[] }[]
+    )[0];
     assert.equal(msg.content[0].type, "document");
 
     chiamate = [];
@@ -229,7 +247,9 @@ describe("OpenAI", () => {
     await chiedi(RICHIESTA);
     const h = chiamate[0].init.headers as Record<string, string>;
     assert.equal(h.Authorization, "Bearer chiave-di-prova");
-    assert.deepEqual(chiamate[0].corpo.response_format, { type: "json_object" });
+    assert.deepEqual(chiamate[0].corpo.response_format, {
+      type: "json_object",
+    });
   });
 
   test("липсващ избор дава празен низ", async () => {
@@ -266,25 +286,31 @@ describe("грешките се превеждат, суровият текст 
           error: { message: "internal-detail: user@example.com" },
         }),
       });
-      await assert.rejects(() => chiedi(RICHIESTA), (e: unknown) => {
-        assert.ok(e instanceof ErroreAi);
-        assert.equal(e.stato, atteso);
-        assert.match(e.message, testo);
-        // Суровият текст на доставчика издава вътрешни подробности и понякога
-        // част от подадените данни. Не бива да стига до оператора.
-        assert.equal(/internal-detail|user@example/.test(e.message), false);
-        return true;
-      });
+      await assert.rejects(
+        () => chiedi(RICHIESTA),
+        (e: unknown) => {
+          assert.ok(e instanceof ErroreAi);
+          assert.equal(e.stato, atteso);
+          assert.match(e.message, testo);
+          // Суровият текст на доставчика издава вътрешни подробности и понякога
+          // част от подадените данни. Не бива да стига до оператора.
+          assert.equal(/internal-detail|user@example/.test(e.message), false);
+          return true;
+        },
+      );
     });
 
   test("нечетим отговор е 502, не 500", async () => {
     conProvider("gemini");
     stubFetch({ testo: "<html>502 Bad Gateway</html>" });
-    await assert.rejects(() => chiedi(RICHIESTA), (e: unknown) => {
-      assert.ok(e instanceof ErroreAi);
-      assert.equal(e.stato, 502);
-      return true;
-    });
+    await assert.rejects(
+      () => chiedi(RICHIESTA),
+      (e: unknown) => {
+        assert.ok(e instanceof ErroreAi);
+        assert.equal(e.stato, 502);
+        return true;
+      },
+    );
   });
 
   test("мрежова грешка и таймаут изглеждат еднакво отвън", async () => {
@@ -292,24 +318,30 @@ describe("грешките се превеждат, суровият текст 
     globalThis.fetch = (async () => {
       throw new Error("ECONNREFUSED");
     }) as typeof fetch;
-    await assert.rejects(() => chiedi(RICHIESTA), (e: unknown) => {
-      assert.ok(e instanceof ErroreAi);
-      assert.equal(e.stato, 504);
-      // Съобщението не издава дали адресът съществува.
-      assert.equal(/ECONNREFUSED/.test(e.message), false);
-      return true;
-    });
+    await assert.rejects(
+      () => chiedi(RICHIESTA),
+      (e: unknown) => {
+        assert.ok(e instanceof ErroreAi);
+        assert.equal(e.stato, 504);
+        // Съобщението не издава дали адресът съществува.
+        assert.equal(/ECONNREFUSED/.test(e.message), false);
+        return true;
+      },
+    );
   });
 
   test("вече преведената грешка НЕ се превежда втори път", async () => {
     conProvider("gemini");
     stubFetch({ stato: 429 });
-    await assert.rejects(() => chiedi(RICHIESTA), (e: unknown) => {
-      // Иначе 429 би станала 504 и операторът би чакал вместо да намали
-      // натоварването.
-      assert.equal((e as ErroreAi).stato, 429);
-      return true;
-    });
+    await assert.rejects(
+      () => chiedi(RICHIESTA),
+      (e: unknown) => {
+        // Иначе 429 би станала 504 и операторът би чакал вместо да намали
+        // натоварването.
+        assert.equal((e as ErroreAi).stato, 429);
+        return true;
+      },
+    );
   });
 });
 

@@ -303,5 +303,8 @@ test("липсващата дата на съобщението до Общин�
     dataInstallazione: new Date("2020-01-01T00:00:00Z"),
     regime: "DIRETTIVA_2014_33",
   });
-  assert.equal(q.some((x) => /comunicazione al Comune/i.test(x)), false);
+  assert.equal(
+    q.some((x) => /comunicazione al Comune/i.test(x)),
+    false,
+  );
 });

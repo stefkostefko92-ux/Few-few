@@ -109,6 +109,23 @@ export async function rlsAttiva(): Promise<{
     WHERE r.rolname = current_user
   `;
   if (!r) return { attiva: false, motivo: "ruolo applicativo non trovato" };
+  // ПОКРИТИЕТО СЕ СВЕРЯВА СРЕЩУ СПИСЪКА, не срещу нула. `count(*) > 0` не
+  // доказва нищо: една нова таблица, пусната без политика, минава незабелязано
+  // — а точно тя е дупката в изолацията между фирмите. Тук се пита кои от
+  // ИЗРИЧНО изброените таблици нямат политика, и те се назовават.
+  const scoperte = await prisma.$queryRaw<{ t: string }[]>`
+    SELECT x.tabella AS t
+    FROM unnest(${[...TABELLE_CON_TENANT]}::text[]) AS x(tabella)
+    WHERE NOT EXISTS (
+      SELECT 1 FROM pg_policies p
+      WHERE p.policyname = 'tenant_isolation' AND p.tablename = x.tabella
+    )
+  `;
+  if (scoperte.length)
+    return {
+      attiva: false,
+      motivo: `policy tenant_isolation assente su: ${scoperte.map((x) => x.t).join(", ")}`,
+    };
   if (Number(r.policy) === 0)
     return { attiva: false, motivo: "policy tenant_isolation assente" };
   if (r.super)

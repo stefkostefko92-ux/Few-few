@@ -132,7 +132,9 @@ export function controllaInvio(
   if (!invio.nomeFile.trim()) problemi.push("Nome file mancante.");
   // Името е ключът за идемпотентност в SDI: повторно име = отхвърлен дубликат.
   else if (!/^IT[A-Z0-9]{11,16}_[A-Z0-9]{5}\.xml$/i.test(invio.nomeFile))
-    problemi.push(`Nome file non conforme alle regole SDI: ${invio.nomeFile}`);
+    problemi.push(
+      `Nome file non conforme alle regole di denominazione dello SdI: ${invio.nomeFile}`,
+    );
 
   if (!invio.xml.trim()) problemi.push("XML vuoto.");
   else if (!invio.xml.includes("<p:FatturaElettronica"))

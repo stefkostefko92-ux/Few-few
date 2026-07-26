@@ -10,6 +10,7 @@ import {
   ipInterno,
   hostInterno,
   lookupSicuro,
+  valutaIndirizzi,
   postEsterno,
   ErroreIndirizzoInterno,
 } from "../rete";
@@ -65,6 +66,9 @@ describe("литерален адрес", () => {
       assert.equal(ipInterno(ip), true, ip);
     assert.equal(ipInterno("::ffff:8.8.8.8"), false);
     assert.equal(ipInterno("::ffff:808:808"), false);
+    // Опашка, която не е нито IPv4, нито две шестнайсетични групи: fail-closed.
+    assert.equal(ipInterno("::ffff:zzzz"), true);
+    assert.equal(ipInterno("::ffff:1:2:3"), true);
   });
 
   test("останалите вътрешни IPv6 обхвати", () => {
@@ -153,6 +157,26 @@ describe("резолвирането пази при свързването", ()
       assert.ok(err instanceof ErroreIndirizzoInterno);
       done();
     });
+  });
+
+  // РЕШЕНИЕТО, взето отделно от резолвирането — тук е цялото правило.
+  test("публични адреси минават; един вътрешен между тях спира всичко", () => {
+    const pub = [
+      { address: "8.8.8.8", family: 4 },
+      { address: "2a00:1450:4001::1", family: 6 },
+    ];
+    assert.equal(valutaIndirizzi("esempio.it", pub), null);
+
+    // Подписът на rebinding: част публични, част навътре. Не се филтрира —
+    // отказва се, защото името вече е доказало, че сочи и навътре.
+    const misto = [...pub, { address: "169.254.169.254", family: 4 }];
+    const e = valutaIndirizzi("esempio.it", misto);
+    assert.ok(e instanceof ErroreIndirizzoInterno);
+    assert.equal((e as NodeJS.ErrnoException).code, "EACCES");
+
+    // Празен отговор не е „разрешено": fail-closed.
+    const vuoto = valutaIndirizzi("esempio.it", []);
+    assert.equal(vuoto?.code, "ENOTFOUND");
   });
 });
 

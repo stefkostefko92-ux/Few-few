@@ -29,6 +29,7 @@ import {
   modalitaValida,
   condizioneValida,
   giorniRitardo,
+  residuoFattura,
   MODALITA_PAGAMENTO,
   CONDIZIONI_PAGAMENTO,
   STATI_PAGAMENTO,
@@ -38,6 +39,7 @@ import {
   scadenzaRinvio,
   numeroAncoraLibero,
   documentoEmesso,
+  giaTrasmessa,
   transizioneSdiAmmessa,
   azioneRichiesta,
   STATI_SDI,
@@ -523,5 +525,73 @@ describe("beni significativi: недопустима ставка", () => {
       p.some((x) => /10 %|22 %/.test(x)),
       p.join(" | "),
     );
+  });
+});
+
+describe("остатъкът по фактура — едно правило, едно място", () => {
+  const base = {
+    totaleNetto: "1000.00",
+    totaleIva: "220.00",
+    ritenutaImporto: null,
+    splitPayment: false,
+    pagamenti: [] as { importo: string }[],
+  };
+
+  test("обикновена фактура: брутото минус платеното", () => {
+    assert.equal(residuoFattura(base), 122_000);
+    assert.equal(
+      residuoFattura({ ...base, pagamenti: [{ importo: "500" }] }),
+      72_000,
+    );
+    // Надплатена фактура не дава отрицателно вземане.
+    assert.equal(
+      residuoFattura({ ...base, pagamenti: [{ importo: "2000" }] }),
+      0,
+    );
+  });
+
+  test("удържането по чл. 25-ter НЕ се търси от клиента", () => {
+    // 4 % върху 1000 = 40 €: тях получателят плаща на данъчната администрация.
+    assert.equal(
+      residuoFattura({ ...base, ritenutaImporto: "40.00" }),
+      118_000,
+    );
+  });
+
+  test("при разделено плащане ДДС-то не минава през нас", () => {
+    assert.equal(residuoFattura({ ...base, splitPayment: true }), 100_000);
+  });
+
+  test("липсващо удържане значи нула, не грешка", () => {
+    // Решението е взето ВЕДНЪЖ: преди това `?? 0` стоеше на три места.
+    assert.equal(
+      residuoFattura({ ...base, ritenutaImporto: null }),
+      residuoFattura({ ...base, ritenutaImporto: "0" }),
+    );
+  });
+});
+
+describe("файлът вече е тръгнал към SDI", () => {
+  test("повторно подаване се спира, а отхвърленото — не", () => {
+    // SDI отхвърля повторно ИМЕ на файл независимо от съдържанието.
+    for (const s of [
+      "INVIATA",
+      "CONSEGNATA",
+      "MANCATA_CONSEGNA",
+      "ACCETTATA",
+      "RIFIUTATA",
+      "DECORSI_TERMINI",
+    ] as const)
+      assert.equal(giaTrasmessa(s), true, s);
+    // `SCARTATA` е обратното: файлът НЕ е приет, номерът е свободен и
+    // подаването се повтаря след поправка.
+    for (const s of ["NON_INVIATA", "GENERATA", "SCARTATA"] as const)
+      assert.equal(giaTrasmessa(s), false, s);
+  });
+
+  test("покрива всеки статус от изброяването", () => {
+    // Нов статус утре трябва да мине СЪЗНАТЕЛНО през това решение, а не да
+    // попадне в „още не е тръгнала" по подразбиране.
+    for (const s of STATI_SDI) assert.equal(typeof giaTrasmessa(s), "boolean");
   });
 });

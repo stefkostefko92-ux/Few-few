@@ -139,11 +139,35 @@ const RE_CAP = /^\d{5}$/;
 const RE_PROVINCIA = /^[A-Z]{2}$/;
 const RE_PIVA = /^\d{11}$/;
 const RE_CODICE_SDI = /^[A-Z0-9]{6,7}$/;
-/** N1…N7 с подкодове (N2.1, N6.9 и т.н.) — кодировката след 2021 г. */
-const RE_NATURA = /^N[1-7](\.[0-9])?$/;
+/**
+ * Кодовете „natura" — само тези, които SDI приема ДНЕС.
+ *
+ * ОБЩИТЕ N2, N3 и N6 СА ПРЕМАХНАТИ от 01.01.2021: файл с гол код се връща със
+ * scarto. Досегашният израз ги приемаше, а съобщението до оператора казваше
+ * „(N1…N7)" — тоест системата го караше да въведе точно това, което после
+ * бива отхвърлено, без да разбере защо.
+ */
+const RE_NATURA = /^(N1|N2\.[12]|N3\.[1-6]|N4|N5|N6\.[1-9]|N7)$/;
+
+/** Списъкът, както се показва на човека — веднъж, за да не се разминава. */
+const NATURE_AMMESSE = "N1, N2.1, N2.2, N3.1…N3.6, N4, N5, N6.1…N6.9, N7";
 
 function testo(v: unknown): string {
   return String(v ?? "").trim();
+}
+
+/**
+ * Пари в италиански формат за СЪОБЩЕНИЯТА към човека.
+ *
+ * `fromCents` дава „1234.56" — точка, без разделител на хилядите. Това е
+ * форматът за XML-а и е правилен там; на екрана обаче го чете commercialista,
+ * докато сверява план за плащане, и веднага го разпознава като чужд софтуер.
+ */
+function euroIt(centesimi: number): string {
+  return (centesimi / 100).toLocaleString("it-IT", {
+    style: "currency",
+    currency: "EUR",
+  });
 }
 
 /**
@@ -321,7 +345,7 @@ export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
   const ddt = f.ddt ?? [];
   if (f.tipoDocumento === "TD24" && ddt.length === 0)
     problemi.push(
-      "Fattura differita (TD24): serve almeno un DDT di riferimento (art. 21, comma 4, lett. a, D.P.R. 633/1972).",
+      "Fattura differita (TD24): serve almeno un DDT di riferimento (art. 21, comma 4, lett. a), del D.P.R. 633/1972).",
     );
   ddt.forEach((d, i) => {
     if (!testo(d.numero)) problemi.push(`DDT ${i + 1}: manca il numero.`);
@@ -347,7 +371,7 @@ export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
     );
     if (f.data > limite)
       avvisi.push(
-        "Fattura differita emessa oltre il 15 del mese successivo alla consegna più vecchia: verificare i termini (art. 21, comma 4, lett. a, D.P.R. 633/1972).",
+        "Fattura differita emessa oltre il 15 del mese successivo alla consegna più vecchia: verificare i termini (art. 21, comma 4, lett. a), del D.P.R. 633/1972).",
       );
   }
   if (f.tipoDocumento !== "TD24" && ddt.length > 0)
@@ -362,7 +386,11 @@ export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
     const natura = testo(r.naturaIva).toUpperCase();
     if (aliquota === 0 && !natura)
       problemi.push(
-        `Riga ${i + 1}: con aliquota 0 % è obbligatoria la natura (N1…N7): senza, l'esenzione non è dichiarata.`,
+        `Riga ${i + 1}: con aliquota 0 % è obbligatoria la natura (${NATURE_AMMESSE}): senza, l'esenzione non è dichiarata.`,
+      );
+    if (natura && !RE_NATURA.test(natura))
+      problemi.push(
+        `Riga ${i + 1}: natura «${natura}» non ammessa. I codici generici N2, N3 e N6 sono aboliti dal 01.01.2021: usare un sottocodice (${NATURE_AMMESSE}).`,
       );
     if (aliquota > 0 && natura)
       problemi.push(
@@ -407,7 +435,7 @@ export function controllaPerSdi(f: FatturaSdi): EsitoValidazione {
     const somma = f.scadenze.reduce((s, r) => s + Math.round(r.importo), 0);
     if (somma !== t.importoPagamento)
       problemi.push(
-        `Piano di pagamento: la somma delle rate (${fromCents(somma)} €) non corrisponde all'importo da pagare (${fromCents(t.importoPagamento)} €).`,
+        `Piano di pagamento: la somma delle rate (${euroIt(somma)}) non corrisponde all'importo da pagare (${euroIt(t.importoPagamento)}).`,
       );
     if (f.scadenze.length > 1 && condizione !== "TP01")
       problemi.push(

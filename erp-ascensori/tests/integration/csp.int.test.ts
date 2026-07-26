@@ -49,9 +49,15 @@ describe("хедърите на страниците", () => {
   test("свалянето на прикачен файл пази СВОЯТА, по-строга политика", async () => {
     // Общата политика НЕ бива да стига до `/api`: там `sandbox` е единственото,
     // което спира качен HTML да се изпълни в нашия произход.
-    const res = await fetch(`${BASE}/api/allegati/00000000-0000-0000-0000-000000000000`);
+    const res = await fetch(
+      `${BASE}/api/allegati/00000000-0000-0000-0000-000000000000`,
+    );
     // Без сесия е 401 — важното е, че общата политика не е налепена отгоре.
-    assert.equal(res.headers.get("content-security-policy")?.includes("strict-dynamic") ?? false, false);
+    assert.equal(
+      res.headers.get("content-security-policy")?.includes("strict-dynamic") ??
+        false,
+      false,
+    );
   });
 });
 

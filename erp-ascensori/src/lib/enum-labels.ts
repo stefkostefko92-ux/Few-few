@@ -106,6 +106,14 @@ export const STATO_AUTOMEZZO: Record<string, string> = {
   rosso: "Scaduto",
 };
 
+/** Приоритетите на ордин — за графиките и скритата им таблица. */
+export const PRIORITA_LABEL: Record<string, string> = {
+  EMERGENZA: "Emergenza",
+  URGENTE: "Urgente",
+  ORDINARIA: "Ordinaria",
+  PROGRAMMATA: "Programmata",
+};
+
 export function etichetta(mappa: Record<string, string>, v: string): string {
   return mappa[v] ?? v;
 }

@@ -11,7 +11,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/fetch-client";
-import { durataIt, ETICHETTA_SLA, type EsitoSla, type StatoSla } from "@/lib/sla";
+import {
+  durataIt,
+  ETICHETTA_SLA,
+  type EsitoSla,
+  type StatoSla,
+} from "@/lib/sla";
 import { dataOraIt } from "@/lib/format";
 import { IcoIntegro, IcoAttenzione } from "@/components/icone";
 
@@ -23,28 +28,49 @@ interface Tempi {
 
 type Campo = keyof Tempi;
 
+// Наборът е от ПРИЧАСТИЯ, не от изречения в първо лице: същия бутон натиска и
+// диспечерът в офиса, за когото „sono arrivato" е невярно. И събитието е
+// „rimessa in servizio" — „rientro in servizio" на италиански се казва за
+// човек, който се връща на работа, а „messa in servizio" е първоначалното
+// пускане на уредбата и вече е заето.
 const PASSI: { campo: Campo; label: string; azione: string }[] = [
   { campo: "segnalatoAt", label: "Segnalazione", azione: "Segnalato ora" },
-  { campo: "arrivoAt", label: "Arrivo sul posto", azione: "Sono arrivato" },
-  { campo: "ripristinoAt", label: "Rientro in servizio", azione: "Ripristinato" },
+  { campo: "arrivoAt", label: "Arrivo sul posto", azione: "Arrivato ora" },
+  {
+    campo: "ripristinoAt",
+    label: "Rimessa in servizio",
+    azione: "Ripristinato ora",
+  },
 ];
 
-/** Цветът НЕ носи смисъла сам: до него винаги стои и текстът на състоянието. */
+/**
+ * Цветът НЕ носи смисъла сам: до него винаги стои и текстът на състоянието.
+ *
+ * СЪСТОЯНИЕТО Е CHIP, не оцветена дума. Продуктът има готов визуален речник за
+ * статус (`Badge`) и го ползва навсякъде другаде; тук екранът се гледа за
+ * секунда, от телефон, при отворена шахта — тогава тежестта на петна цвят се
+ * вижда, а 12-пикселова дума се чете.
+ */
 const STILE: Record<StatoSla, string> = {
-  non_applicabile: "text-text-3",
-  in_corso: "text-text-2",
-  a_rischio: "text-warning-text",
-  rispettato: "text-success-text",
-  violato: "text-danger-text",
+  non_applicabile: "bg-surface-2 text-text-3",
+  in_corso: "bg-surface-2 text-text-2",
+  a_rischio: "bg-warning-subtle text-warning-text",
+  rispettato: "bg-success-subtle text-success-text",
+  violato: "bg-danger-subtle text-danger-text",
 };
 
-function Misura({
-  titolo,
-  m,
-}: {
-  titolo: string;
-  m: EsitoSla["intervento"];
-}) {
+/** `AAAA-MM-GGTHH:MM` по ЛОКАЛЕН календар — форматът на `datetime-local`. */
+function oraLocale(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const due = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}T${due(
+    d.getHours(),
+  )}:${due(d.getMinutes())}`;
+}
+
+function Misura({ titolo, m }: { titolo: string; m: EsitoSla["intervento"] }) {
   if (m.stato === "non_applicabile")
     return (
       <div className="text-xs text-text-3">
@@ -54,8 +80,14 @@ function Misura({
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="text-text-2">{titolo}:</span>
-      <span className={`inline-flex items-center gap-1 font-medium ${STILE[m.stato]}`}>
-        {m.stato === "violato" ? <IcoAttenzione /> : m.concluso ? <IcoIntegro /> : null}
+      <span
+        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-medium ${STILE[m.stato]}`}
+      >
+        {m.stato === "violato" ? (
+          <IcoAttenzione />
+        ) : m.concluso ? (
+          <IcoIntegro />
+        ) : null}
         {ETICHETTA_SLA[m.stato]}
       </span>
       <span className="font-mono text-text-1">{durataIt(m.trascorsiMin)}</span>
@@ -99,7 +131,8 @@ export default function TempiIntervento({ ordineId }: { ordineId: string }) {
   useEffect(() => {
     if (!sla) return;
     const attivo =
-      (!sla.intervento.concluso && sla.intervento.stato !== "non_applicabile") ||
+      (!sla.intervento.concluso &&
+        sla.intervento.stato !== "non_applicabile") ||
       (!sla.ripristino.concluso && sla.ripristino.stato !== "non_applicabile");
     if (!attivo) return;
     const t = setInterval(() => void carica(), 60_000);
@@ -155,7 +188,7 @@ export default function TempiIntervento({ ordineId }: { ordineId: string }) {
               {tempi[p.campo] ? (
                 <button
                   type="button"
-                  className="btn-ghost h-7 px-2 text-xs"
+                  className="btn-ghost h-9 px-2 text-xs"
                   disabled={inCorso}
                   onClick={() => void segna(p.campo, null)}
                 >
@@ -164,7 +197,7 @@ export default function TempiIntervento({ ordineId }: { ordineId: string }) {
               ) : (
                 <button
                   type="button"
-                  className="btn-primary h-7 px-3 text-xs"
+                  className="btn-primary h-9 px-3 text-xs"
                   disabled={inCorso}
                   onClick={() => void segna(p.campo, new Date().toISOString())}
                 >
@@ -177,16 +210,17 @@ export default function TempiIntervento({ ordineId }: { ordineId: string }) {
               <input
                 id={`t-${p.campo}-${ordineId}`}
                 type="datetime-local"
-                className="input h-7 w-44 text-xs"
-                value={
-                  tempi[p.campo]
-                    ? new Date(tempi[p.campo]!).toISOString().slice(0, 16)
-                    : ""
-                }
+                className="input h-9 w-44 text-xs"
+                // ЛОКАЛНО ВРЕМЕ, НЕ UTC. `toISOString()` дава zulu: полето
+                // показваше 08:30 под текст, който казва 10:30 — на екрана, с
+                // който се доказва договорното време за отзив.
+                value={oraLocale(tempi[p.campo])}
                 onChange={(e) =>
                   void segna(
                     p.campo,
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 disabled={inCorso}

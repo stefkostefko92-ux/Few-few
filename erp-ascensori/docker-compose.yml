@@ -65,6 +65,26 @@ services:
       # `public/` всеки качен сертификат би бил свободно достъпен на познат
       # адрес, а тук се качват протоколи с лични данни.
       STORAGE_DIR: /var/lib/erp-ascensori/allegati
+      # ОТ ТУК НАДОЛУ: всяка променлива, която кодът чете, ТРЯБВА да е в този
+      # списък. Услугата няма `env_file`, тоест липсващо име не гърми — просто
+      # остава на подразбирането, а функцията изглежда включена в `.env` и не
+      # работи. Точно така AI асистентът и каналът към SDI биха замълчали.
+      SDI_CANALE: ${SDI_CANALE:-manuale}
+      SDI_PEC_DESTINATARIO: ${SDI_PEC_DESTINATARIO:-}
+      SDI_INTERMEDIARIO_URL: ${SDI_INTERMEDIARIO_URL:-}
+      CAPACITA_INTERVENTI_TECNICO: ${CAPACITA_INTERVENTI_TECNICO:-6}
+      CSP_REPORT_ONLY: ${CSP_REPORT_ONLY:-0}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-20}
+      RATE_LIMIT_REFRESH: ${RATE_LIMIT_REFRESH:-60}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_SDI: ${RATE_LIMIT_SDI:-120}
+      RATE_LIMIT_CSP: ${RATE_LIMIT_CSP:-120}
+      RATE_LIMIT_AI: ${RATE_LIMIT_AI:-60}
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_FORNITORE_ETICHETTA: ${AI_FORNITORE_ETICHETTA:-}
       NODE_ENV: production
     volumes:
       # Първият том с ДАННИ на приложението. Влиза в бекъпа: база без файловете
@@ -144,7 +164,10 @@ services:
     # редове възстановено-срещу-източник.
     command:
       - |
-        apk add --no-cache age >/dev/null 2>&1 || true
+        # `age` СЕ ИСКА, не се пробва. С `|| true` липсата минаваше тихо, а
+        # долу веригата `age … && rm -f "$$F"` тогава оставя НЕкриптирания
+        # дъмп с всички лични данни на диска — точно обратното на целта.
+        apk add --no-cache age >/dev/null 2>&1 || { echo "✖ age не се инсталира — бекъпът спира"; exit 1; }
         while true; do
           if [ "$$(date +%H%M)" = "0300" ]; then
             F=/backup/erp-$$(date +%Y%m%d).dump
@@ -153,11 +176,15 @@ services:
               -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB:-erp_ascensori} -Fc -f "$$F" \
               && tar -czf "$$A" -C /allegati . \
               && if [ -n "$$BACKUP_AGE_RECIPIENT" ]; then \
-                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F" && rm -f "$$F"; \
-                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$A.age" "$$A" && rm -f "$$A"; \
+                   # Чистият файл се маха БЕЗУСЛОВНО: провалено криптиране не
+                   # бива да оставя дъмпа четим на диска.
+                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F"; e1=$$?; rm -f "$$F"; \
+                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$A.age" "$$A"; e2=$$?; rm -f "$$A"; \
+                   [ $$e1 -eq 0 ] && [ $$e2 -eq 0 ]; \
                  fi \
               && find /backup -name 'erp-*' -mtime +31 -delete \
               && find /backup -name 'allegati-*' -mtime +31 -delete \
+              && date +%s > /backup/.ultimo-ok \
               && echo "✔ бекъп $$F + $$A"
           fi
           sleep 60

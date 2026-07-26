@@ -9,7 +9,13 @@
 
 import { test, describe, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, existsSync, writeFileSync, chmodSync } from "node:fs";
+import {
+  mkdtempSync,
+  rmSync,
+  existsSync,
+  writeFileSync,
+  chmodSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -61,7 +67,10 @@ describe("коренът", () => {
 
 describe("пътят не излиза от корена", () => {
   test("нормалният път се разрешава под корена", () => {
-    assert.equal(percorsoAssoluto("2026/07/abc.pdf"), join(dir, "2026/07/abc.pdf"));
+    assert.equal(
+      percorsoAssoluto("2026/07/abc.pdf"),
+      join(dir, "2026/07/abc.pdf"),
+    );
   });
 
   test("самият корен е позволен", () => {
@@ -80,7 +89,9 @@ describe("пътят не излиза от корена", () => {
     // Класическата грешка: `startsWith(radice)` без разделителя приема
     // `/var/lib/erp-ascensori-altro` за път вътре в `/var/lib/erp-ascensori`.
     process.env.STORAGE_DIR = dir;
-    assert.throws(() => percorsoAssoluto("../" + dir.split("/").pop() + "-altro/x"));
+    assert.throws(() =>
+      percorsoAssoluto("../" + dir.split("/").pop() + "-altro/x"),
+    );
   });
 });
 
@@ -90,11 +101,17 @@ describe("отпечатъкът", () => {
   });
 
   test("същите байтове дават същия отпечатък", () => {
-    assert.equal(impronta(DATI), impronta(new TextEncoder().encode("contenuto di prova")));
+    assert.equal(
+      impronta(DATI),
+      impronta(new TextEncoder().encode("contenuto di prova")),
+    );
   });
 
   test("един различен байт го променя изцяло", () => {
-    assert.notEqual(impronta(DATI), impronta(new TextEncoder().encode("contenuto di provb")));
+    assert.notEqual(
+      impronta(DATI),
+      impronta(new TextEncoder().encode("contenuto di provb")),
+    );
   });
 
   test("празният вход не гърми", () => {
@@ -113,13 +130,18 @@ describe("запис и четене", () => {
     // Пътят носи UUID, тоест сблъсък не се очаква — а ако все пак стане,
     // по-добре грешка, отколкото тихо изгубено доказателство.
     await salva("a.pdf", DATI);
-    await assert.rejects(() => salva("a.pdf", new TextEncoder().encode("altro")));
+    await assert.rejects(() =>
+      salva("a.pdf", new TextEncoder().encode("altro")),
+    );
     // И старото съдържание е непокътнато.
     assert.deepEqual(new Uint8Array(await leggi("a.pdf")), DATI);
   });
 
   test("записът извън корена се отказва, преди да пипне диска", async () => {
-    await assert.rejects(() => salva("../fuori.pdf", DATI), /fuori dall'archivio/);
+    await assert.rejects(
+      () => salva("../fuori.pdf", DATI),
+      /fuori dall'archivio/,
+    );
     assert.equal(existsSync(join(dir, "..", "fuori.pdf")), false);
   });
 
@@ -155,7 +177,10 @@ describe("изтриване", () => {
     const fuori = join(dir, "..", "vittima.txt");
     writeFileSync(fuori, "non toccare");
     try {
-      await assert.rejects(() => elimina("../vittima.txt"), /fuori dall'archivio/);
+      await assert.rejects(
+        () => elimina("../vittima.txt"),
+        /fuori dall'archivio/,
+      );
       assert.ok(existsSync(fuori));
     } finally {
       rmSync(fuori, { force: true });

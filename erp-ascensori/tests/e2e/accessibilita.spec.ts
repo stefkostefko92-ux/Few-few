@@ -76,6 +76,8 @@ for (const [nome, percorso] of [
   ["сроковете", "/scadenze"],
   ["падежите на вземанията", "/scadenzario"],
   ["календарът на обиколките", "/calendario"],
+  ["пратката за счетоводителя", "/conservazione"],
+  ["правата на субекта", "/privacy"],
 ] as const) {
   test(`${nome} е достъпна`, async ({ page }) => {
     await entra(page, UTENTI.ADMIN);
@@ -93,7 +95,10 @@ test("формата с отворен диалог е достъпна", async 
   // затворен той не съществува в дървото.
   await entra(page, UTENTI.ADMIN);
   await page.goto("/condomini");
-  await page.getByRole("button", { name: /Nuovo|Aggiungi/i }).first().click();
+  await page
+    .getByRole("button", { name: /Nuovo|Aggiungi/i })
+    .first()
+    .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   const v = await analizza(page);
   expect(v.length, `нарушения в диалога:${descrivi(v)}`).toBe(0);

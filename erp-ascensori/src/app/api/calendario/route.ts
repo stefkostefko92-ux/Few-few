@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { ok, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
+import { etichetta, TIPO_SCADENZA } from "@/lib/enum-labels";
 import {
   grigliaMese,
   distribuisci,
@@ -114,7 +115,9 @@ export const GET = gestito(async (req) => {
     ...contratti.map((c) => ({
       id: c.id,
       data: c.prossimaVisita!,
-      titolo: `Visita · ${c.condominio?.nome ?? c.oggetto}`,
+      // САМО името: видът се пише от интерфейса (`ETICHETTA_TIPO`), иначе
+      // клетката излиза „Visita Visita · Condominio Rossi".
+      titolo: c.condominio?.nome ?? c.oggetto,
       tecnicoId: null,
       tecnico: null,
       tipo: "visita" as const,
@@ -124,7 +127,9 @@ export const GET = gestito(async (req) => {
     ...verifiche.map((v) => ({
       id: v.id,
       data: v.dataScadenza,
-      titolo: `Scadenza · ${v.tipo}`,
+      // Преведеният етикет, не суровата константа: „revisione" е автомобилната
+      // дума, а законният термин е „Verifica periodica" (чл. 13 D.P.R. 162/1999).
+      titolo: etichetta(TIPO_SCADENZA, v.tipo),
       tecnicoId: null,
       tecnico: null,
       tipo: "verifica" as const,

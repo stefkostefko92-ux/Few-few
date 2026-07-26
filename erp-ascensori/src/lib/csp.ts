@@ -95,9 +95,7 @@ export function costruisciCsp({ nonce, sviluppo = false }: OpzioniCsp): string {
   if (!sviluppo) direttive.push(["upgrade-insecure-requests", ""]);
   direttive.push(["report-uri", RAPPORTI]);
 
-  return direttive
-    .map(([k, v]) => (v ? `${k} ${v}` : k))
-    .join("; ");
+  return direttive.map(([k, v]) => (v ? `${k} ${v}` : k)).join("; ");
 }
 
 /**

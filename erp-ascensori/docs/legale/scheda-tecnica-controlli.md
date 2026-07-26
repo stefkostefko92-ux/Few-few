@@ -1,6 +1,6 @@
 # Scheda tecnica dei controlli — ERP Ascensori Enterprise
 
-**Allegato al contratto di fornitura · versione 1.0 · 25 luglio 2026**
+**Allegato al contratto di fornitura · versione 1.1 · 26 luglio 2026**
 Carbon Stealth VCC — *fornitore del software*
 
 ---
@@ -73,6 +73,41 @@ Oltre al registro, questi dati permettono di ricostruire l'attività:
 | `ordini_lavoro` | `dataInizio` / `dataFine` effettivi, tecnico, squadra |
 | `storico_stati` | ogni passaggio di stato, con autore e istante |
 
+### 1.5 Tempi di intervento (chiamate di emergenza e urgenti)
+
+Su un ordine di lavoro con priorità `EMERGENZA` o `URGENTE` il sistema registra
+tre marcature temporali:
+
+| Campo | Che cosa segna | Chi lo compila |
+|---|---|---|
+| `segnalatoAt` | la chiamata o l'allarme | il tecnico dal telefono, o il dispatcher |
+| `arrivoAt` | il tecnico è sul posto | idem |
+| `ripristinoAt` | l'impianto è rimesso in servizio | idem |
+
+Da queste marcature il sistema calcola due tempi (arrivo e ripristino) e li
+confronta con le soglie **concordate nel contratto di manutenzione**
+(`Contratto.slaInterventoMin`, `Contratto.slaRipristinoOre`). L'esito è
+mostrato sull'ordine come «Rispettato» o «Fuori termine».
+
+**Finalità:** dimostrare al committente il rispetto dei tempi promessi, e
+riconoscere le penali dove previste. La misura è **per intervento**, non per
+persona.
+
+**Il sistema non produce** alcun indicatore individuale, media, classifica o
+statistica per tecnico: non esiste una schermata, un'esportazione né un
+endpoint che aggreghi questi tempi per lavoratore. La dichiarazione al § 2
+(«nessuna misurazione della produttività») resta quindi valida — e se in futuro
+una tale aggregazione venisse introdotta, **questo documento va riscritto prima
+del codice**.
+
+**Avvertenza al Cliente.** Questi dati sono comunque riconducibili al singolo
+lavoratore. Il loro trattamento rientra nell'art. 4 L. 300/1970 e richiede al
+Cliente, in qualità di titolare e datore di lavoro: accordo sindacale o
+autorizzazione dell'Ispettorato dove necessario (comma 1), e in ogni caso
+l'informativa preventiva sulle modalità d'uso e sui controlli (comma 3). Senza
+l'informativa i dati **non sono utilizzabili a fini connessi al rapporto di
+lavoro**.
+
 ---
 
 ## 2. Cosa NON viene registrato
@@ -88,11 +123,50 @@ Dichiarazione esplicita, verificabile nel codice sorgente:
   rendimento, non classifica i lavoratori, non produce graduatorie.
 - **Nessuna decisione automatizzata** ai sensi dell'art. 22 GDPR. Nessuna
   decisione che riguardi il lavoratore viene presa dal sistema.
-- **Nessuna intelligenza artificiale.** Il prodotto non contiene modelli di IA e
-  non invia dati a servizi di IA.
-- **Nessun trasferimento fuori dall'Unione europea.** L'installazione è su
-  server nell'UE; alla data di questo documento non sono presenti
-  sub-responsabili esterni oltre all'hosting.
+> **Le dichiarazioni di questo paragrafo valgono con la funzione di lettura
+> assistita dei documenti disattivata** (`AI_PROVIDER` non impostato, che è la
+> configurazione predefinita). Con la funzione attiva vale in aggiunta il § 2-bis
+> e il foglio d'installazione allegato, che riporta la configurazione reale alla
+> data della firma.
+
+- **Nessuna decisione automatizzata** ai sensi dell'art. 22 GDPR — vale in ogni
+  configurazione: nessuna decisione che riguardi il lavoratore viene presa dal
+  sistema, e la lettura assistita **propone** valori che una persona conferma.
+
+---
+
+## 2-bis. Lettura assistita dei documenti (disattivata per impostazione predefinita)
+
+Il prodotto contiene una funzione facoltativa: l'operatore carica un documento
+(per esempio una dichiarazione di conformità o un verbale) e un servizio di
+terze parti ne estrae i campi, che vengono **proposti** nel modulo. Nessun
+valore viene salvato senza conferma di una persona.
+
+**Stato predefinito: disattivata.** Senza la variabile `AI_PROVIDER` il prodotto
+funziona integralmente e nessun dato lascia il server.
+
+**Quando è attiva, ed è la ragione per cui questo paragrafo esiste:**
+
+- il documento caricato — con i dati personali che contiene — **viene inviato al
+  fornitore del modello**, che diventa così responsabile del trattamento (art. 28
+  GDPR) o sub-responsabile, secondo la configurazione;
+- i fornitori supportati (Google, OpenAI, Anthropic) hanno endpoint **fuori
+  dall'Unione europea**, salvo indicazione di un endpoint regionale tramite
+  `AI_BASE_URL`. In tal caso il trasferimento richiede uno strumento dell'art. 46
+  GDPR e va documentato nell'accordo;
+- la scelta se attivarla, con quale fornitore e con quale chiave, è del
+  **Cliente**: il fornitore del software non la attiva né la configura per conto
+  suo.
+
+Il prodotto mostra all'utente, **prima del caricamento**, a quale fornitore sarà
+inviato il documento, e ne dà conto nella pagina «Diritti dell'interessato».
+
+Per la valutazione d'impatto (art. 35 GDPR), il fornitore mette a disposizione
+su richiesta la scheda «AI — input per la DPIA» con il dettaglio del flusso.
+
+**Nessun trasferimento fuori dall'Unione europea** con la funzione disattivata:
+l'installazione è su server nell'UE e non sono presenti sub-responsabili esterni
+oltre all'hosting.
 
 ---
 

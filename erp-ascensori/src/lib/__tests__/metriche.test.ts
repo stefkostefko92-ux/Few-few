@@ -1,4 +1,4 @@
-import test, { beforeEach } from "node:test";
+import test, { beforeEach, describe } from "node:test";
 import assert from "node:assert/strict";
 import {
   incrementa,
@@ -8,6 +8,8 @@ import {
   classeStato,
   escapaEtichetta,
   BUCKET_SECONDI,
+  MAX_SERIE,
+  serieScartate,
 } from "../metriche";
 
 beforeEach(() => azzera());
@@ -97,4 +99,36 @@ test("заглавието на серия се изписва ВЕДНЪЖ", ()
 test("изходът винаги завършва с нов ред", () => {
   incrementa("x");
   assert.match(esporta(), /\n$/);
+});
+
+// ТАВАНЪТ Е КОНСТРУКТИВЕН, не по дисциплина. Етикетите днес са затворени
+// множества, но регистърът е Map в паметта на процеса и нищо не го чисти:
+// един етикет със свободна стойност, добавен утре, го надува, докато
+// `/api/metrics` стане толкова голям, че скрейпът изтича — тоест
+// наблюдаемостта пада точно когато е най-нужна.
+describe("таван на кардиналността", () => {
+  test("над MAX_SERIE нови редици не се раждат, а се броят", () => {
+    azzera();
+    for (let i = 0; i < MAX_SERIE + 25; i++)
+      incrementa("erp_prova_totale", { chiave: String(i) });
+    assert.equal(serieScartate(), 25);
+    // Вече съществуващите редици продължават да се броят — таванът спира
+    // РАЖДАНЕТО на нови, не измерването.
+    incrementa("erp_prova_totale", { chiave: "0" });
+    incrementa("erp_prova_totale", { chiave: "0" });
+    assert.ok(esporta().includes('erp_prova_totale{chiave="0"} 3'));
+    assert.equal(serieScartate(), 25);
+    // Броячът се вижда в изхода: таван без сигнал е тиха загуба на данни.
+    assert.ok(esporta().includes("erp_metriche_serie_scartate_totale 25"));
+    azzera();
+    assert.equal(serieScartate(), 0);
+  });
+
+  test("същото важи и за хистограмите", () => {
+    azzera();
+    for (let i = 0; i < MAX_SERIE + 3; i++)
+      osserva("erp_prova_durata_secondi", 0.1, { chiave: String(i) });
+    assert.equal(serieScartate(), 3);
+    azzera();
+  });
 });

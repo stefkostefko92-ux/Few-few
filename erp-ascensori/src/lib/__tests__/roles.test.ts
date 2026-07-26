@@ -1,9 +1,7 @@
 // Йерархия на 7-те нива: по-ниското число включва правата на по-високото.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { RUOLI, LIVELLO, haPermesso, isRuolo,
-  RUOLO_LABEL,
-} from "../roles";
+import { RUOLI, LIVELLO, haPermesso, isRuolo, RUOLO_LABEL } from "../roles";
 
 test("7 нива, номерирани 1..7", () => {
   assert.equal(RUOLI.length, 7);

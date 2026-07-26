@@ -43,9 +43,15 @@ COPY --from=build /app/tsconfig.json ./tsconfig.json
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/next.config.ts ./next.config.ts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
+# ПЪТЯТ НА ТОМА СЕ СЪЗДАВА ТУК, НЕ ОТ DOCKER. Именуван том, монтиран на път,
+# който не съществува в образа, се създава `root:root 0755` — процесът върви
+# като uid 1001 и първото качване на сертификат гърми с `EACCES`, при това
+# `/api/readyz` продължава да е зелен. Правата се пренасят от образа само ако
+# пътят вече е там.
 RUN chmod +x ./docker-entrypoint.sh \
   && useradd --system --uid 1001 --home /app erp \
-  && chown -R erp:erp /app
+  && mkdir -p /var/lib/erp-ascensori/allegati \
+  && chown -R erp:erp /app /var/lib/erp-ascensori
 USER erp
 
 EXPOSE 3000

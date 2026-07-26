@@ -52,7 +52,8 @@ const GIORNO = 86_400_000;
  * 08:00 сутринта, а разлика в милисекунди би я направила „1 ден закъснение".
  */
 export function giorniTra(da: Date, a: Date): number {
-  const g = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  const g = (d: Date) =>
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   return Math.round((g(a) - g(da)) / GIORNO);
 }
 
@@ -74,15 +75,17 @@ export function componiScadenzario(
   crediti: Credito[],
   oggi: Date,
 ): RigaScadenzario[] {
-  return crediti
-    .filter((c) => c.residuoCentesimi > 0)
-    .map((c) => {
-      const scadenza = c.dataScadenza ?? c.data;
-      const giorniRitardo = giorniTra(scadenza, oggi);
-      return { ...c, giorniRitardo, fascia: fasciaPerRitardo(giorniRitardo) };
-    })
-    // Най-старото просрочие най-горе: това е редът, по който се звъни.
-    .sort((a, b) => b.giorniRitardo - a.giorniRitardo);
+  return (
+    crediti
+      .filter((c) => c.residuoCentesimi > 0)
+      .map((c) => {
+        const scadenza = c.dataScadenza ?? c.data;
+        const giorniRitardo = giorniTra(scadenza, oggi);
+        return { ...c, giorniRitardo, fascia: fasciaPerRitardo(giorniRitardo) };
+      })
+      // Най-старото просрочие най-горе: това е редът, по който се звъни.
+      .sort((a, b) => b.giorniRitardo - a.giorniRitardo)
+  );
 }
 
 export interface TotaliFascia {

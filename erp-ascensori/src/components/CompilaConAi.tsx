@@ -151,6 +151,16 @@ export default function CompilaConAi({
             Compila da un documento
           </p>
           <p className="text-xs text-text-3">{info.documentoAtteso}</p>
+          {/* РАЗКРИВАНЕТО Е ПРЕДИ КАЧВАНЕТО, не след него. Дотук изречението
+              „Documento inviato a …" се появяваше чак в блока с резултата —
+              тоест документът вече беше излязъл от сървъра, когато човекът
+              научава къде отива. Прозрачността по чл. 5(1)(а) и чл. 12(1)
+              ОРЗД е ПРЕДИ обработката. */}
+          {stato.fornitore && (
+            <p className="mt-1 text-xs text-warning-text">
+              Il documento sarà inviato a {stato.fornitore} per la lettura.
+            </p>
+          )}
         </div>
         <input
           type="file"

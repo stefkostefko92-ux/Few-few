@@ -13,8 +13,7 @@ import {
 } from "../fiscale/scadenzario";
 
 const OGGI = new Date("2026-07-26T09:00:00Z");
-const giorniFa = (n: number) =>
-  new Date(OGGI.getTime() - n * 86_400_000);
+const giorniFa = (n: number) => new Date(OGGI.getTime() - n * 86_400_000);
 
 const credito = (over: Partial<Credito> = {}): Credito => ({
   fatturaId: "f1",
@@ -62,7 +61,10 @@ describe("кофите по възраст", () => {
 
   test("дните се броят по КАЛЕНДАР, не по 24 часа", () => {
     assert.equal(
-      giorniTra(new Date("2026-07-25T23:59:00Z"), new Date("2026-07-26T00:01:00Z")),
+      giorniTra(
+        new Date("2026-07-25T23:59:00Z"),
+        new Date("2026-07-26T00:01:00Z"),
+      ),
       1,
     );
   });
@@ -115,9 +117,21 @@ describe("кое влиза в списъка", () => {
 describe("сумите", () => {
   const righe = componiScadenzario(
     [
-      credito({ fatturaId: "a", dataScadenza: giorniFa(5), residuoCentesimi: 10_000 }),
-      credito({ fatturaId: "b", dataScadenza: giorniFa(45), residuoCentesimi: 20_000 }),
-      credito({ fatturaId: "c", dataScadenza: giorniFa(200), residuoCentesimi: 30_000 }),
+      credito({
+        fatturaId: "a",
+        dataScadenza: giorniFa(5),
+        residuoCentesimi: 10_000,
+      }),
+      credito({
+        fatturaId: "b",
+        dataScadenza: giorniFa(45),
+        residuoCentesimi: 20_000,
+      }),
+      credito({
+        fatturaId: "c",
+        dataScadenza: giorniFa(200),
+        residuoCentesimi: 30_000,
+      }),
     ],
     OGGI,
   );
@@ -225,7 +239,9 @@ test("кофите и степените са подредени и без ду�
   // Степените растат и по номер, и по срок; лихва има чак от втората.
   for (let i = 1; i < LIVELLI_SOLLECITO.length; i++) {
     assert.ok(LIVELLI_SOLLECITO[i].livello > LIVELLI_SOLLECITO[i - 1].livello);
-    assert.ok(LIVELLI_SOLLECITO[i].daGiorni > LIVELLI_SOLLECITO[i - 1].daGiorni);
+    assert.ok(
+      LIVELLI_SOLLECITO[i].daGiorni > LIVELLI_SOLLECITO[i - 1].daGiorni,
+    );
   }
   assert.equal(LIVELLI_SOLLECITO[0].conInteressi, false);
 });

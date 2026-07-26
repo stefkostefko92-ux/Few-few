@@ -86,7 +86,14 @@ test("вторият фактор е ЗАДЪЛЖИТЕЛЕН за нивата 
   // на такава парола е кражба на цялата инсталация; за останалите нива вторият
   // фактор е избор.
   assert.deepEqual([...RUOLI_MFA_OBBLIGATORIO], ["MASTER", "ADMIN"]);
-  for (const r of ["MASTER", "ADMIN"]) assert.equal(mfaObbligatorio(r), true, r);
-  for (const r of ["DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE", "CLIENTE"])
+  for (const r of ["MASTER", "ADMIN"])
+    assert.equal(mfaObbligatorio(r), true, r);
+  for (const r of [
+    "DIREZIONE",
+    "RESPONSABILE",
+    "TECNICO",
+    "OPERATORE",
+    "CLIENTE",
+  ])
     assert.equal(mfaObbligatorio(r), false, r);
 });

@@ -71,7 +71,11 @@ async function controlla(): Promise<Esito> {
     );
   if (!esito.rls)
     log.warn(`readyz: RLS non attiva — ${esito.rlsMotivo ?? "motivo ignoto"}`);
-  esito.pronto = esito.db && esito.schema && esito.chiavi;
+  // ХРАНИЛИЩЕТО ВЛИЗА В „ГОТОВ". Здравната проверка на деплоя гледа само
+  // статуса на този маршрут: без това контейнер без монтиран (или само за
+  // четене) том минава за жив, autodeploy рапортува успех, а качването на
+  // сертификати и протоколи не работи от първия ден.
+  esito.pronto = esito.db && esito.schema && esito.chiavi && esito.archivio;
   return esito;
 }
 

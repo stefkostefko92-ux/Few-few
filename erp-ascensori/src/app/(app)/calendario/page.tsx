@@ -14,7 +14,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/fetch-client";
 import { GIORNI_IT, MESI_IT } from "@/lib/calendario";
-import { IcoIndietro, IcoVerso, IcoAttenzione } from "@/components/icone";
+import { IcoIndietro, IcoVerso, IcoNota } from "@/components/icone";
+import { Modale } from "@/components/ui";
 
 interface Impegno {
   id: string;
@@ -27,7 +28,6 @@ interface Impegno {
 
 interface Carico {
   tecnico: string;
-  ore: number;
   interventi: number;
   sovraccarico: boolean;
 }
@@ -53,6 +53,9 @@ const ETICHETTA_TIPO: Record<Impegno["tipo"], string> = {
   verifica: "Scadenza",
 };
 
+/** Колко реда се побират в клетката, без тя да порасне. */
+const VISIBILI = 4;
+
 const STILE_TIPO: Record<Impegno["tipo"], string> = {
   ordine: "border-l-accent",
   visita: "border-l-chart-3",
@@ -64,6 +67,7 @@ export default function Pagina() {
   const [anno, setAnno] = useState(oggi.getFullYear());
   const [mese, setMese] = useState(oggi.getMonth() + 1);
   const [d, setD] = useState<Dati | null>(null);
+  const [giornoAperto, setGiornoAperto] = useState<Giorno | null>(null);
 
   const carica = useCallback(async () => {
     const { ok, dati } = await apiFetch<Dati>(
@@ -175,16 +179,22 @@ export default function Pagina() {
                           {numero}
                         </span>
                         {sovraccarico && (
-                          <span
-                            className="inline-flex items-center text-warning-text"
-                            title="Giornata sovraccarica"
-                          >
-                            <IcoAttenzione />
+                          // `IcoNota`, НЕ `IcoAttenzione`: навсякъде другаде в
+                          // продукта червената икона значи блокиращ проблем
+                          // (невалиден XML, наличност под прага). Претоварен ден
+                          // е ПЛАНОВ сигнал — „знай това", не „спри".
+                          // Текстът е скрит, а не само в `title`: на тъч няма
+                          // hover, а иконата не носи смисъл сама.
+                          <span className="inline-flex items-center">
+                            <IcoNota />
+                            <span className="sr-only">
+                              Giornata sovraccarica
+                            </span>
                           </span>
                         )}
                       </div>
                       <ul className="space-y-1">
-                        {g.impegni.slice(0, 4).map((i) => (
+                        {g.impegni.slice(0, VISIBILI).map((i) => (
                           <li key={`${i.tipo}-${i.id}`}>
                             <Link
                               href={
@@ -206,9 +216,20 @@ export default function Pagina() {
                             </Link>
                           </li>
                         ))}
-                        {g.impegni.length > 4 && (
-                          <li className="pl-1.5 text-[11px] text-text-3">
-                            +{g.impegni.length - 4} altri
+                        {g.impegni.length > VISIBILI && (
+                          <li>
+                            {/* Задънена улица точно в деня, който има значение:
+                                претоварените дни са именно тези с повече от
+                                четири ангажимента. */}
+                            <button
+                              type="button"
+                              onClick={() => setGiornoAperto(g)}
+                              className="pl-1.5 text-[11px] text-text-2 underline hover:text-text-1"
+                            >
+                              {g.impegni.length - VISIBILI === 1
+                                ? "+1 altro"
+                                : `+${g.impegni.length - VISIBILI} altri`}
+                            </button>
                           </li>
                         )}
                       </ul>
@@ -220,12 +241,50 @@ export default function Pagina() {
           </div>
 
           <p className="mt-4 text-xs text-text-3">
-            {d.totale} impegni nel mese. Le ore stimate per ordine non sono
-            note in anticipo: il carico giornaliero segnala solo il numero di
-            interventi assegnati, non un monte ore.
+            {d.totale === 1 ? "1 impegno" : `${d.totale} impegni`} nel mese. Il
+            carico giornaliero si misura in numero di interventi assegnati: le
+            ore di un ordine si conoscono dal rapportino, cioè dopo
+            l&apos;intervento.
           </p>
         </>
       )}
+
+      <Modale
+        titolo={
+          giornoAperto
+            ? `Impegni del ${giornoAperto.chiave.split("-").reverse().join("/")}`
+            : ""
+        }
+        aperto={!!giornoAperto}
+        onChiudi={() => setGiornoAperto(null)}
+      >
+        <ul className="space-y-2">
+          {(giornoAperto?.impegni ?? []).map((i) => (
+            <li key={`${i.tipo}-${i.id}`}>
+              <Link
+                href={
+                  i.tipo === "ordine"
+                    ? `/ordini/${i.id}`
+                    : i.tipo === "visita"
+                      ? `/contratti`
+                      : `/scadenze`
+                }
+                onClick={() => setGiornoAperto(null)}
+                className={`block border-l-2 py-1 pl-2 text-sm hover:underline ${STILE_TIPO[i.tipo]}`}
+              >
+                <span className="text-text-3">{ETICHETTA_TIPO[i.tipo]}</span>{" "}
+                <span className="text-text-1">{i.titolo}</span>
+                {i.tecnico && (
+                  <span className="text-text-3"> · {i.tecnico}</span>
+                )}
+                {i.impianto && (
+                  <span className="text-text-3"> · {i.impianto}</span>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Modale>
     </div>
   );
 }

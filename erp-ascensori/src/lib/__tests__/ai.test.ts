@@ -254,7 +254,10 @@ describe("включена ли е функцията изобщо", () => {
 
   test("списъкът доставчици започва с „off“ — подразбирането е изключено", () => {
     assert.equal(PROVIDER_AI[0], "off");
-    assert.deepEqual([...PROVIDER_AI], ["off", "gemini", "anthropic", "openai"]);
+    assert.deepEqual(
+      [...PROVIDER_AI],
+      ["off", "gemini", "anthropic", "openai"],
+    );
   });
 });
 
@@ -275,6 +278,9 @@ describe("вторият опит за изкопаване на JSON", () => {
   test("блок { … }, който НЕ е валиден JSON, дава null", () => {
     // Първият опит гърми, вторият изрязва блока и пак гърми — резултатът е
     // `null`, а операторът попълва на ръка. По-добре от полуразбрани данни.
-    assert.equal(estraiJson("Ecco: {nome: Verdi, senza: virgolette} fine"), null);
+    assert.equal(
+      estraiJson("Ecco: {nome: Verdi, senza: virgolette} fine"),
+      null,
+    );
   });
 });

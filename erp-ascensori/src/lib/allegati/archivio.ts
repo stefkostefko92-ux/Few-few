@@ -9,7 +9,7 @@
 // тук се качват сертификати и протоколи с лични данни. Раздаването минава през
 // маршрут, който проверява ролята и фирмата.
 
-import { mkdir, writeFile, readFile, unlink } from "node:fs/promises";
+import { mkdir, writeFile, readFile, unlink, rm } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { dirname, join, resolve, sep } from "node:path";
 
@@ -72,16 +72,28 @@ export async function elimina(relativo: string): Promise<void> {
   }
 }
 
-/** Готово ли е хранилището за писане — влиза в здравния маршрут. */
+/**
+ * Готово ли е хранилището за писане — влиза в здравния маршрут.
+ *
+ * ПИШЕ СЕ ИСТИНСКИ ФАЙЛ. Дотук стоеше `mkdir(recursive: true)`, а той връща
+ * УСПЕХ върху вече съществуваща папка, без да опита каквото и да е — тоест
+ * след първото успешно пускане проверката беше празна завинаги: пълен диск и
+ * презакачен само за четене том минаваха за здрави, а качването гърмеше с
+ * `ENOSPC`. Името носи `pid`, за да не се бият две инстанции.
+ */
 export async function archivioScrivibile(): Promise<{
   ok: boolean;
   motivo?: string;
 }> {
   const radice = radiceArchivio();
+  const prova = join(radice, `.prova-${process.pid}`);
   try {
-    await mkdir(join(radice, ".prova"), { recursive: true });
+    await mkdir(radice, { recursive: true });
+    await writeFile(prova, "ok");
     return { ok: true };
   } catch (e) {
     return { ok: false, motivo: (e as Error).message };
+  } finally {
+    await rm(prova, { force: true }).catch(() => {});
   }
 }

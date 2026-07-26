@@ -6,6 +6,12 @@
 // текстът винаги в текстови токени, tooltip навсякъде, без анимации.
 
 import {
+  STATO_LABEL,
+  PRIORITA_LABEL,
+  TIPO_SCADENZA,
+  STATO_AUTOMEZZO,
+} from "@/lib/enum-labels";
+import {
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -136,9 +142,22 @@ const ASSI = {
   tickLine: false as const,
 };
 
-/** Пълен четим етикет: IN_LAVORO → „IN LAVORO" (без рязане на знаци). */
+/**
+ * Етикетът на категория — СЪЩИЯТ, който се вижда на екрана.
+ *
+ * ЗАЩО НЕ САМО МАХАНЕ НА ДОЛНА ЧЕРТА. Скритата таблица Е графиката за
+ * незрящия оператор; тя му четеше вътрешни константи („IN LAVORO", „FUORI
+ * SERVIZIO"), докато видимият интерфейс до нея е на италиански. Достъпният
+ * път беше непреведен, а axe не вижда това. Замяната на долните черти остава
+ * като резервен вариант за стойност извън речника.
+ */
 export function etichettaAsse(v: string): string {
-  return String(v).replaceAll("_", " ");
+  const noto =
+    STATO_LABEL[v] ??
+    PRIORITA_LABEL[v] ??
+    STATO_AUTOMEZZO[v] ??
+    TIPO_SCADENZA[v];
+  return noto ?? String(v).replaceAll("_", " ");
 }
 
 /**
@@ -216,7 +235,8 @@ export function GraficoCategorie({
   const tabella = (
     <TabellaAlternativa
       titolo={titolo}
-      colonne={["Voce", "Valore"]}
+      // Не „Voce": в този продукт „voce" вече значи ред от фактура/оферта.
+      colonne={["Categoria", "Valore"]}
       righe={ordinati.map((p) => [etichettaAsse(p.nome), p.valore])}
     />
   );
@@ -301,7 +321,7 @@ export function GraficoCategorie({
               {tipo === "line" ? (
                 <Line
                   dataKey="valore"
-                  name="valore"
+                  name="Valore"
                   stroke={c}
                   strokeWidth={2}
                   dot={{ r: 3, fill: c, strokeWidth: 0 }}
@@ -310,7 +330,7 @@ export function GraficoCategorie({
               ) : (
                 <Area
                   dataKey="valore"
-                  name="valore"
+                  name="Valore"
                   stroke={c}
                   strokeWidth={2}
                   fill={c}
@@ -344,7 +364,7 @@ export function GraficoCategorie({
             />
             <Bar
               dataKey="valore"
-              name="valore"
+              name="Valore"
               radius={[4, 4, 0, 0]}
               maxBarSize={36}
               isAnimationActive={false}

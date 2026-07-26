@@ -88,7 +88,7 @@ export default function DdtFattura({
       <p className="mb-3 text-xs text-text-3">
         Collegando dei DDT la fattura diventa <strong>differita</strong>: il
         documento viene emesso come TD24 e i riferimenti entrano nell&apos;XML
-        (art. 21, comma 4, lett. a, D.P.R. 633/1972).
+        (art. 21, comma 4, lett. a), del D.P.R. 633/1972).
       </p>
 
       {tutti.length === 0 ? (

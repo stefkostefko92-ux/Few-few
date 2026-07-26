@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   ChartLineUp,
   Coins,
+  Archive,
   PlugsConnected,
   QrCode,
   UserCircle,
@@ -179,6 +180,12 @@ const GRUPPI: Gruppo[] = [
         href: "/scadenzario",
         label: "Scadenzario",
         icona: <Coins size={DIM.navigazione} />,
+        minimo: "DIREZIONE",
+      },
+      {
+        href: "/conservazione",
+        label: "Versamento",
+        icona: <Archive size={DIM.navigazione} />,
         minimo: "DIREZIONE",
       },
       {

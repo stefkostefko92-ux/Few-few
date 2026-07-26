@@ -82,7 +82,8 @@ describe("ZIP-ът е истински ZIP", () => {
       try {
         execFileSync("unzip", ["-l", join(dir, "t.zip")], { encoding: "utf8" });
       } catch (e) {
-        uscita = String((e as { stderr?: string; stdout?: string }).stderr ?? "") +
+        uscita =
+          String((e as { stderr?: string; stdout?: string }).stderr ?? "") +
           String((e as { stdout?: string }).stdout ?? "");
       }
       assert.match(uscita, /zipfile is empty/);
@@ -114,7 +115,11 @@ describe("имената в архива", () => {
 });
 
 describe("пакетът за предаване", () => {
-  const p = creaPacchetto([DOC("2026/0001", "00001"), DOC("2026/0002", "00002")], PRODUTTORE, QUANDO);
+  const p = creaPacchetto(
+    [DOC("2026/0001", "00001"), DOC("2026/0002", "00002")],
+    PRODUTTORE,
+    QUANDO,
+  );
 
   test("носи индекс с ред за всеки документ", () => {
     assert.equal(p.indice.documenti.length, 2);

@@ -40,7 +40,12 @@ describe("имената на заглавията са ДОГОВОР с пол
   });
 
   test("са с малки букви — HTTP/2 не приема главни", () => {
-    for (const h of [HEADER_FIRMA, HEADER_TIMESTAMP, HEADER_EVENTO, HEADER_CONSEGNA])
+    for (const h of [
+      HEADER_FIRMA,
+      HEADER_TIMESTAMP,
+      HEADER_EVENTO,
+      HEADER_CONSEGNA,
+    ])
       assert.equal(h, h.toLowerCase(), h);
   });
 
@@ -55,7 +60,10 @@ describe("имената на заглавията са ДОГОВОР с пол
 
 describe("подписът", () => {
   test("е стабилен за едни и същи входове", () => {
-    assert.equal(firmaCorpo(CORPO, SEGRETO, TS), firmaCorpo(CORPO, SEGRETO, TS));
+    assert.equal(
+      firmaCorpo(CORPO, SEGRETO, TS),
+      firmaCorpo(CORPO, SEGRETO, TS),
+    );
     assert.match(firmaCorpo(CORPO, SEGRETO, TS), /^[0-9a-f]{64}$/);
   });
 
@@ -64,7 +72,10 @@ describe("подписът", () => {
     // заглавие, нападателят би презаписал старо валидно известие с нова
     // отметка и получателят би го приел повторно — „фактурата е платена"
     // два пъти.
-    assert.notEqual(firmaCorpo(CORPO, SEGRETO, TS), firmaCorpo(CORPO, SEGRETO, TS + 1));
+    assert.notEqual(
+      firmaCorpo(CORPO, SEGRETO, TS),
+      firmaCorpo(CORPO, SEGRETO, TS + 1),
+    );
   });
 
   test("смяната на един знак в тялото сменя подписа", () => {
@@ -75,13 +86,19 @@ describe("подписът", () => {
   });
 
   test("различна тайна дава различен подпис", () => {
-    assert.notEqual(firmaCorpo(CORPO, SEGRETO, TS), firmaCorpo(CORPO, "altro", TS));
+    assert.notEqual(
+      firmaCorpo(CORPO, SEGRETO, TS),
+      firmaCorpo(CORPO, "altro", TS),
+    );
   });
 
   test("отметка и тяло не могат да се разменят", () => {
     // Разделителят („.") пази от подвеждане: без него „12" + „34" и „1" + „234"
     // биха дали един и същ подписан низ.
-    assert.notEqual(firmaCorpo("34", SEGRETO, 12), firmaCorpo("234", SEGRETO, 1));
+    assert.notEqual(
+      firmaCorpo("34", SEGRETO, 12),
+      firmaCorpo("234", SEGRETO, 1),
+    );
   });
 });
 
@@ -112,11 +129,13 @@ describe("проверката, която прави получателят", (
       true,
     );
     assert.equal(
-      verificaFirma(CORPO, SEGRETO, firma, TS, TS + TOLLERANZA_SECONDI + 1).valida,
+      verificaFirma(CORPO, SEGRETO, firma, TS, TS + TOLLERANZA_SECONDI + 1)
+        .valida,
       false,
     );
     assert.equal(
-      verificaFirma(CORPO, SEGRETO, firma, TS, TS - TOLLERANZA_SECONDI - 1).valida,
+      verificaFirma(CORPO, SEGRETO, firma, TS, TS - TOLLERANZA_SECONDI - 1)
+        .valida,
       false,
     );
   });
@@ -168,8 +187,10 @@ describe("списъкът със събития", () => {
 
 describe("кога се опитва пак", () => {
   test("успехът е 2xx и само той", () => {
-    for (const s of [200, 201, 204, 299]) assert.equal(consegnaRiuscita(s), true, String(s));
-    for (const s of [199, 300, 301, 400, 500]) assert.equal(consegnaRiuscita(s), false, String(s));
+    for (const s of [200, 201, 204, 299])
+      assert.equal(consegnaRiuscita(s), true, String(s));
+    for (const s of [199, 300, 301, 400, 500])
+      assert.equal(consegnaRiuscita(s), false, String(s));
   });
 
   test("мрежовата грешка е преходна", () => {

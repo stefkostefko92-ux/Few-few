@@ -133,14 +133,37 @@ type Richiamo = (
 ) => void;
 
 /**
- * `lookup` за сокета: резолвира и ОТКАЗВА, ако ПОНЕ един адрес сочи навътре.
+ * РЕШЕНИЕТО, отделено от резолвирането.
  *
- * Отказ при „поне един", не филтриране на лошите: име, което връща и публичен, и
- * вътрешен адрес, е точно подписът на rebinding атака. Тук не се търси
+ * Изнесено като чиста функция нарочно: „кои адреси допускаме" е правилото,
+ * което трябва да носи тестове, а `dns.lookup` е вход-изход, който в тест
+ * може само да бъде имитиран. Така проверимата част е цялата, а обвивката
+ * отдолу е три реда, които не решават нищо.
+ *
+ * Отказ при „ПОНЕ ЕДИН вътрешен", не филтриране на лошите: име, което връща и
+ * публичен, и вътрешен адрес, е точно подписът на rebinding. Тук не се търси
  * работещият път, а честният отговор — а той е отказ.
+ */
+export function valutaIndirizzi(
+  hostname: string,
+  indirizzi: LookupAddress[],
+): NodeJS.ErrnoException | null {
+  if (!indirizzi.length)
+    return Object.assign(new Error(`nessun indirizzo per ${hostname}`), {
+      code: "ENOTFOUND",
+    });
+  if (indirizzi.some((i) => ipInterno(i.address)))
+    return Object.assign(new ErroreIndirizzoInterno(hostname), {
+      code: "EACCES",
+    });
+  return null;
+}
+
+/**
+ * `lookup` за сокета: резолвира и предава решението на `valutaIndirizzi`.
  *
- * Подписът следва `dns.lookup`, защото Node го подава на `net.connect` както си
- * е (включително `all: true`, което Node ≥ 20 ползва за happy eyeballs).
+ * Подписът следва `dns.lookup`, защото Node го подава на `net.connect` както
+ * си е (включително `all: true`, което Node ≥ 20 ползва за happy eyeballs).
  */
 export function lookupSicuro(
   hostname: string,
@@ -153,22 +176,14 @@ export function lookupSicuro(
       : ((opzioni ?? {}) as Record<string, unknown>);
   lookupDns(hostname, { ...o, all: true }, (err, indirizzi) => {
     if (err) return callback(err, "");
-    if (!indirizzi.length)
-      return callback(
-        Object.assign(new Error(`nessun indirizzo per ${hostname}`), {
-          code: "ENOTFOUND",
-        }),
-        "",
-      );
-    if (indirizzi.some((i) => ipInterno(i.address)))
-      return callback(
-        Object.assign(new ErroreIndirizzoInterno(hostname), {
-          code: "EACCES",
-        }),
-        "",
-      );
+    const rifiuto = valutaIndirizzi(hostname, indirizzi);
+    if (rifiuto) return callback(rifiuto, "");
+    /* c8 ignore start -- успешният път иска име, което се резолвира до
+       ПУБЛИЧЕН адрес, тоест реален DNS: тест, който излиза навън, пада,
+       когато мрежата кихне. Решението е в `valutaIndirizzi` и е тествано. */
     if (o.all) return callback(null, indirizzi);
     callback(null, indirizzi[0].address, indirizzi[0].family);
+    /* c8 ignore stop */
   });
 }
 
@@ -202,6 +217,11 @@ export function postEsterno(
     if (hostInterno(u.hostname))
       return rifiuta(new ErroreIndirizzoInterno(u.hostname));
 
+    /* c8 ignore start -- От тук нататък се иска РЕАЛЕН външен хост: всичко
+       локално (127.0.0.1, localhost) е отказано преди това от самата защита,
+       а тест, който излиза в интернет, е тест, който пада, когато мрежата
+       кихне. Проверимите решения — схема, вътрешен адрес, резолвиране — са
+       над този ред и всички носят тестове (`__tests__/rete.test.ts`). */
     const req = requestHttps(
       u,
       {
@@ -222,5 +242,6 @@ export function postEsterno(
     req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", rifiuta);
     req.end(opzioni.corpo);
+    /* c8 ignore stop */
   });
 }

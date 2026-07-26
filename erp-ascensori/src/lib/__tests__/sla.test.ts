@@ -71,7 +71,11 @@ describe("часовникът за пристигане", () => {
   });
 
   test("приключено късно си остава нарушение завинаги", () => {
-    const r = calcolaSla({ segnalatoAt: T0, arrivoAt: dopo(90) }, SOGLIE, dopo(91));
+    const r = calcolaSla(
+      { segnalatoAt: T0, arrivoAt: dopo(90) },
+      SOGLIE,
+      dopo(91),
+    );
     assert.equal(r.intervento.stato, "violato");
     assert.equal(r.intervento.rimanentiMin, -30);
   });
@@ -115,7 +119,11 @@ describe("когато часовник НЕ тече", () => {
     // Липсващият праг НЕ пада на подразбирането тук: подразбирането е
     // ПРЕДЛОЖЕНИЕ при съставяне на договора, а не мълчаливо задължение,
     // наложено на фирма, която не го е поела.
-    const r = calcolaSla({ segnalatoAt: T0 }, { interventoMin: null }, dopo(9999));
+    const r = calcolaSla(
+      { segnalatoAt: T0 },
+      { interventoMin: null },
+      dopo(9999),
+    );
     assert.equal(r.intervento.stato, "non_applicabile");
     assert.equal(r.violato, false);
   });

@@ -143,11 +143,14 @@ export default function MaterialiRapportino({
                 {!bloccato && (
                   <button
                     type="button"
-                    className="btn-ghost inline-flex h-6 items-center gap-1 px-1.5"
+                    // 24 px е под всеки разумен праг за пръст (WCAG 2.5.5
+                    // иска 44), а действието е ДЕСТРУКТИВНО и без потвърждение,
+                    // в поток, който се изпълнява от телефон пред уредбата.
+                    className="btn-ghost inline-flex h-9 items-center gap-1 px-2"
                     onClick={() => void rimuovi(r.id)}
                     disabled={inCorso}
                     // Иконата сама не носи смисъл: действието е и в текста.
-                    aria-label={`Rimuovi ${r.articolo.codice} e riportarlo a magazzino`}
+                    aria-label={`Rimuovi ${r.articolo.codice} e riportalo in magazzino`}
                   >
                     <IcoElimina />
                   </button>
@@ -173,10 +176,10 @@ export default function MaterialiRapportino({
               value={articoloId}
               onChange={(e) => setArticoloId(e.target.value)}
             >
-              <option value="">— selezionare —</option>
+              <option value="">—</option>
               {articoli.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.codice} · {a.nome} (disp. {a.quantita})
+                  {a.codice} · {a.nome} (giacenza {a.quantita})
                 </option>
               ))}
             </select>

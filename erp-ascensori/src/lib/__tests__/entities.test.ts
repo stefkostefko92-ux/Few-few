@@ -53,7 +53,10 @@ import {
 /** Помощник: стойността минава ли, и каква става. */
 function ok<T extends z.ZodTypeAny>(s: T, v: unknown): z.infer<T> {
   const r = s.safeParse(v);
-  assert.ok(r.success, `отхвърлено: ${JSON.stringify(v)} — ${r.error?.issues[0]?.message}`);
+  assert.ok(
+    r.success,
+    `отхвърлено: ${JSON.stringify(v)} — ${r.error?.issues[0]?.message}`,
+  );
   return r.data;
 }
 
@@ -213,7 +216,11 @@ describe("периодът на договора", () => {
       dataInizio: "2026-01-01",
       dataFine: "2027-01-01",
     };
-    ok(contrattoBase, { ...base, slaInterventoMin: null, slaRipristinoOre: null });
+    ok(contrattoBase, {
+      ...base,
+      slaInterventoMin: null,
+      slaRipristinoOre: null,
+    });
     ok(contrattoBase, { ...base, slaInterventoMin: 60, slaRipristinoOre: 24 });
     ko(contrattoBase, { ...base, slaInterventoMin: 10_081 });
     ko(contrattoBase, { ...base, slaRipristinoOre: 721 });
@@ -244,7 +251,12 @@ describe("празният низ при поле с проверка на фо�
       { nome: "A", indirizzo: "Via Verdi 12", citta: "Milano" },
       "codiceSdi",
     ],
-    ["amministratori.pec", amministratori.schemaCreate, { nome: "Studio" }, "pec"],
+    [
+      "amministratori.pec",
+      amministratori.schemaCreate,
+      { nome: "Studio" },
+      "pec",
+    ],
     [
       "amministratori.codiceSdi",
       amministratori.schemaCreate,
@@ -269,7 +281,12 @@ describe("празният низ при поле с проверка на фо�
       { nome: "M", cognome: "R" },
       "costoOrario",
     ],
-    ["cottimisti.email", cottimisti.schemaCreate, { ragioneSociale: "D" }, "email"],
+    [
+      "cottimisti.email",
+      cottimisti.schemaCreate,
+      { ragioneSociale: "D" },
+      "email",
+    ],
     [
       "impianti.velocita",
       impianti.schemaCreate,
@@ -280,7 +297,10 @@ describe("празният низ при поле с проверка на фо�
 
   for (const [nome, schema, minimo, campo] of casi)
     test(nome, () => {
-      const r = ok(schema, { ...minimo, [campo]: "" }) as Record<string, unknown>;
+      const r = ok(schema, { ...minimo, [campo]: "" }) as Record<
+        string,
+        unknown
+      >;
       assert.equal(r[campo], null, nome);
     });
 
@@ -327,7 +347,10 @@ describe("минималният валиден запис за всяка ан�
     [
       "squadre",
       squadre.schemaCreate,
-      { nome: "Squadra 1", cottimistiId: "33333333-3333-4333-8333-333333333333" },
+      {
+        nome: "Squadra 1",
+        cottimistiId: "33333333-3333-4333-8333-333333333333",
+      },
     ],
     [
       "impianti",
@@ -365,7 +388,11 @@ describe("минималният валиден запис за всяка ан�
         dipendenteId: "22222222-2222-4222-8222-222222222222",
       },
     ],
-    ["articoli", articoli.schemaCreate, { codice: "ART-1", nome: "Contattore" }],
+    [
+      "articoli",
+      articoli.schemaCreate,
+      { codice: "ART-1", nome: "Contattore" },
+    ],
     [
       "documenti",
       documenti.schemaCreate,
@@ -436,7 +463,10 @@ describe("правилата, които не са очевидни", () => {
       /fermo amministrativo/i,
     );
     // Същото състояние не е промяна.
-    assert.equal(v({ stato: "FERMO_AMMINISTRATIVO" }, { stato: "FERMO_AMMINISTRATIVO" }), null);
+    assert.equal(
+      v({ stato: "FERMO_AMMINISTRATIVO" }, { stato: "FERMO_AMMINISTRATIVO" }),
+      null,
+    );
     // Промяна без ново състояние не се пипа.
     assert.equal(v({ stato: "FERMO_AMMINISTRATIVO" }, { note: "x" }), null);
     // Уредба, която НЕ е спряна, се мени свободно.
@@ -526,7 +556,10 @@ describe("отчетът за намесата", () => {
 
   test("проверките по чл. 15 са ТРИСТОЙНОСТНИ", () => {
     // Празно значи „не е гледано", не „наред" — точно това пази при злополука.
-    const r = ok(rapportinoSchema, { ...minimo, vFuni: null }) as Record<string, unknown>;
+    const r = ok(rapportinoSchema, { ...minimo, vFuni: null }) as Record<
+      string,
+      unknown
+    >;
     assert.equal(r.vFuni, null);
     ok(rapportinoSchema, { ...minimo, vFuni: true });
     ok(rapportinoSchema, { ...minimo, vFuni: false });

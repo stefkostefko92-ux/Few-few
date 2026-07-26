@@ -12,7 +12,7 @@
 // cron и в мониторинга.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -190,9 +190,20 @@ function main() {
   const politiche = Number(
     psql(`SELECT count(*) FROM pg_policies WHERE policyname = 'tenant_isolation'`, DB_URL),
   );
-  console.log(`  политики за изолация: ${politiche}`);
+  // Броят се сверява със СПИСЪКА в `src/lib/rls.ts`, не с нула: една таблица
+  // без политика е дупка в изолацията между фирмите, а `count > 0` я пропуска.
+  const attese = (
+    readFileSync(new URL("../src/lib/rls.ts", import.meta.url), "utf8").match(
+      /TABELLE_CON_TENANT[\s\S]*?\]/,
+    )?.[0] ?? ""
+  ).match(/"[a-z_]+"/g)?.length;
+  console.log(`  политики за изолация: ${politiche}${attese ? ` (очаквани ${attese})` : ""}`);
   if (politiche === 0)
     problemi.push("политиките tenant_isolation липсват — възстановената база няма изолация");
+  else if (attese && politiche < attese)
+    problemi.push(
+      `политики tenant_isolation: ${politiche} от ${attese} — има таблица без изолация`,
+    );
 
   if (problemi.length) {
     console.error("\n✖ Бекъпът НЕ е годен:");

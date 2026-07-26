@@ -59,7 +59,9 @@ test("хедърът е налице и е строгият, не наблюда
 test("nonce-ът е РАЗЛИЧЕН на всяка заявка", async ({ page }) => {
   const nonce = async () => {
     const res = await page.goto("/login");
-    return res?.headers()["content-security-policy"]?.match(/'nonce-([^']+)'/)?.[1];
+    return res
+      ?.headers()
+      ["content-security-policy"]?.match(/'nonce-([^']+)'/)?.[1];
   };
   const a = await nonce();
   const b = await nonce();
@@ -133,7 +135,7 @@ test("скрипт, вмъкнат в HTML-а, НЕ се изпълнява — 
   ).toBe(false);
   // И нарушението е ДОКЛАДВАНО: иначе политиката би пазела мълчаливо и никой
   // не би разбрал, че е имало опит.
-  expect([...violazioni, ...(await violazioniDellaPagina(page))].join("\n")).toMatch(
-    /script-src/,
-  );
+  expect(
+    [...violazioni, ...(await violazioniDellaPagina(page))].join("\n"),
+  ).toMatch(/script-src/);
 });

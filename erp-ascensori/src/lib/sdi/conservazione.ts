@@ -86,11 +86,17 @@ COSA CONTIENE
 
 COME VERIFICARE L'INTEGRITÀ
   Per ogni documento, l'impronta SHA-256 del file deve coincidere con il campo
-  "sha256" della riga corrispondente in indice.json. Su Linux o macOS:
+  "sha256" della riga corrispondente in indice.json.
 
-      sha256sum IT01234567890_00001.xml
+      Linux o macOS:  sha256sum fatture/IT01234567890_00001.xml
+      Windows:        certutil -hashfile fatture\IT01234567890_00001.xml SHA256
 
   Un solo byte diverso produce un'impronta completamente diversa.
+
+  L'indice ha una propria impronta, nel campo "sha256Indice": è calcolata sul
+  contenuto dell'indice PRIVATO di quel campo. Per verificarla, togliere la
+  riga "sha256Indice" dal file, salvare il resto e calcolarne lo SHA-256: se
+  coincide, dall'elenco non è stato tolto né aggiunto alcun documento.
 
 CHE COSA QUESTO PACCHETTO NON È
   Questo NON è un sistema di conservazione a norma. La conservazione a norma è
@@ -101,6 +107,14 @@ CHE COSA QUESTO PACCHETTO NON È
 
   I file NON sono firmati digitalmente da questo software. La firma, dove
   richiesta, è apposta dal legale rappresentante o dall'intermediario.
+
+  Questo pacchetto non contiene le ricevute dello SdI né i metadati previsti
+  dall'Allegato 5 delle Linee guida AgID sul documento informatico: li produce
+  il conservatore.
+
+  L'obbligo di conservazione resta in capo al contribuente (art. 39 D.P.R.
+  633/1972 e art. 2220 c.c.); le regole tecniche sono quelle del D.M.
+  17.06.2014 e delle Linee guida AgID in vigore dal 01.01.2022.
 `;
 
 export interface EsitoPacchetto {

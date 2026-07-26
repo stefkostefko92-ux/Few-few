@@ -25,7 +25,10 @@ describe("конфигурацията", () => {
   test("непознат канал НЕ се приема — пада на ръчното", () => {
     // Печатна грешка в конфигурацията не бива да произвежда неопределено
     // поведение върху фискален документ.
-    assert.equal(configTrasmissione({ SDI_CANALE: "carta-piccione" }).canale, "manuale");
+    assert.equal(
+      configTrasmissione({ SDI_CANALE: "carta-piccione" }).canale,
+      "manuale",
+    );
   });
 
   test("PEC без изричен адрес пада на публично известния за ПЪРВО подаване", () => {
@@ -64,12 +67,18 @@ describe("проверките на входа", () => {
   test("името на файла е КЛЮЧ за идемпотентност, не украса", () => {
     // SDI отхвърля повторно име като дубликат независимо от съдържанието.
     const p = controllaInvio({ ...INVIO, nomeFile: "fattura.xml" }, manuale);
-    assert.ok(p.some((x) => /Nome file/i.test(x)), p.join(" | "));
+    assert.ok(
+      p.some((x) => /Nome file/i.test(x)),
+      p.join(" | "),
+    );
   });
 
   test("съдържание, което не е фактура, се отказва", () => {
     const p = controllaInvio({ ...INVIO, xml: "<html>ciao</html>" }, manuale);
-    assert.ok(p.some((x) => /fattura elettronica/i.test(x)), p.join(" | "));
+    assert.ok(
+      p.some((x) => /fattura elettronica/i.test(x)),
+      p.join(" | "),
+    );
   });
 
   test("проверките се правят и когато каналът е ИЗКЛЮЧЕН", () => {
@@ -85,7 +94,10 @@ describe("PEC", () => {
       destinatarioPec: "не-е-адрес",
       etichetta: "PEC",
     });
-    assert.ok(p.some((x) => /PEC/i.test(x)), p.join(" | "));
+    assert.ok(
+      p.some((x) => /PEC/i.test(x)),
+      p.join(" | "),
+    );
   });
 });
 
@@ -102,14 +114,23 @@ describe("посредник — това е SSRF повърхност", () => {
 
   test("HTTP се отказва: фискален документ не пътува в чист вид", () => {
     const p = controllaInvio(INVIO, con("http://fatture.example.it/api"));
-    assert.ok(p.some((x) => /HTTPS/i.test(x)), p.join(" | "));
+    assert.ok(
+      p.some((x) => /HTTPS/i.test(x)),
+      p.join(" | "),
+    );
   });
 
   test("метаданните на облака се отказват", () => {
     // Класическият SSRF: сървърът праща фактурата — и всичко, до което стигне —
     // на 169.254.169.254.
-    const p = controllaInvio(INVIO, con("https://169.254.169.254/latest/meta-data/"));
-    assert.ok(p.some((x) => /interno/i.test(x)), p.join(" | "));
+    const p = controllaInvio(
+      INVIO,
+      con("https://169.254.169.254/latest/meta-data/"),
+    );
+    assert.ok(
+      p.some((x) => /interno/i.test(x)),
+      p.join(" | "),
+    );
   });
 
   test("валиден външен адрес минава", () => {
@@ -172,9 +193,15 @@ describe("напълно неразбираем адрес", () => {
       urlIntermediario: "questo-non-e-un-url",
       etichetta: "Intermediario",
     });
-    assert.ok(p.some((x) => /non valido/i.test(x)), p.join(" | "));
+    assert.ok(
+      p.some((x) => /non valido/i.test(x)),
+      p.join(" | "),
+    );
     // И НЕ се добавят подвеждащи оплаквания за HTTPS върху нещо, което дори не
     // е адрес.
-    assert.equal(p.some((x) => /HTTPS/.test(x)), false);
+    assert.equal(
+      p.some((x) => /HTTPS/.test(x)),
+      false,
+    );
   });
 });

@@ -24,6 +24,8 @@ set -euo pipefail
 PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali erp-ascensori}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
+# Каквото трябва да преживее прочистването на старите издания.
+SHARED_DIR="${SHARED_DIR:-/opt/few-few/shared}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
 
@@ -164,10 +166,10 @@ deploy_zabobovdol() {
   fi
   # Бекъпите живеят на СТАБИЛЕН път извън releases — иначе умират с прочистването
   # на старите releases (KEEP_RELEASES) и историята се губи при всеки деплой.
-  mkdir -p /opt/few-few/shared/zabobovdol/backups
+  mkdir -p "$SHARED_DIR/zabobovdol/backups"
   rm -rf "$d/backups"
-  ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
-  ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
+  ln -sfnT "$SHARED_DIR/zabobovdol/backups" "$d/backups"
+  ok "zabobovdol/backups -> $SHARED_DIR/zabobovdol/backups"
   ( cd "$d"
     if [ -f .env ]; then
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)
@@ -570,6 +572,24 @@ deploy_erp_ascensori() {
     warn "Задай TRUSTED_PROXY_HOPS и BACKUP_AGE_RECIPIENT в erp-ascensori/.env."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
+
+  # БЕКЪПИТЕ ИЗЛИЗАТ ОТ ПАПКАТА НА ИЗДАНИЕТО.
+  #
+  # `docker-compose.yml` монтира `./backup`, тоест при този поток бекъпите се
+  # пишат ВЪТРЕ в `/opt/few-few/releases/<час>/erp-ascensori/`. Прочистването
+  # по-долу пази последните $KEEP_RELEASES издания — на шестото разгръщане
+  # цялата история от дъмпове и архиви на файловете изчезва. Същият symlink
+  # решава същия проблем при zabobovdol.
+  local backups="$SHARED_DIR/erp-ascensori/backups"
+  mkdir -p "$backups"
+  chmod 700 "$backups"
+  if [ -d "$d/backup" ] && [ ! -L "$d/backup" ]; then
+    # Ако разгръщането е минало веднъж без symlink, пренасяме намереното.
+    cp -an "$d/backup/." "$backups/" 2>/dev/null || true
+    rm -rf "$d/backup"
+  fi
+  ln -sfnT "$backups" "$d/backup"
+  ok "erp-ascensori/backup -> $backups"
 
   # Миграциите се прилагат от docker-entrypoint.sh при старта на контейнера.
   ( cd "$d" && docker compose up -d --build )

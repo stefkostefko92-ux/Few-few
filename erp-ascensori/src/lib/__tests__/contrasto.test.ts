@@ -22,7 +22,11 @@ const CSS = readFileSync(
 );
 
 /** OKLCH → sRGB по CSS Color 4 (матриците на Ottosson). */
-function oklchSuRgb(L: number, C: number, hGradi: number): [number, number, number] {
+function oklchSuRgb(
+  L: number,
+  C: number,
+  hGradi: number,
+): [number, number, number] {
   const h = (hGradi * Math.PI) / 180;
   const a = C * Math.cos(h);
   const b = C * Math.sin(h);
@@ -35,12 +39,16 @@ function oklchSuRgb(L: number, C: number, hGradi: number): [number, number, numb
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ];
   return lineare.map((v) =>
-    Math.min(1, Math.max(0, v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)),
+    Math.min(
+      1,
+      Math.max(0, v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055),
+    ),
   ) as [number, number, number];
 }
 
 function luminanza([r, g, b]: [number, number, number]): number {
-  const f = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const f = (v: number) =>
+    v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 }
 
@@ -82,6 +90,30 @@ for (const [tema, selettore] of [
 ] as const) {
   describe(`${tema} тема`, () => {
     const b = blocco(selettore);
+
+    // ЙЕРАРХИЯТА МЕЖДУ НИВАТА, не само спрямо фона.
+    //
+    // Мрежата отдолу мери текст срещу ПОВЪРХНОСТ и е сляпа за друг вид
+    // регресия: затъмняване на `--text-3` до 51 % задържа 4,79:1 срещу фона,
+    // но свали разликата спрямо `--text-2` от 1,98:1 на 1,47:1 — и съседни
+    // етикети на 11 px (типът и заглавието в клетка на календара) престанаха
+    // да се различават. Прагът е скромен нарочно: това е въпрос на видима
+    // стъпка, не на четимост, и по-строг праг би карал някого да чупи
+    // истинското изискване, за да го изпълни.
+    test("трите нива на текст остават РАЗЛИЧИМИ помежду си", () => {
+      const min = 1.6;
+      for (const [a, c] of [
+        ["text-1", "text-2"],
+        ["text-2", "text-3"],
+      ] as const) {
+        const r = contrasto(token(b, a), token(b, c));
+        assert.ok(
+          r >= min,
+          `--${a} срещу --${c} дава ${r.toFixed(2)}:1 (иска се ${min}:1)`,
+        );
+      }
+    });
+
     for (const t of TESTI)
       for (const s of SUPERFICI)
         test(`${t} върху ${s} ≥ ${SOGLIA}:1`, () => {
