@@ -13,7 +13,9 @@ import { chromium } from "@playwright/test";
 
 const PORT = Number(process.env.SHOT_PORT ?? 3023);
 const BASE = `http://127.0.0.1:${PORT}`;
-const ADMIN_URL = process.env.TEST_PG_ADMIN_URL ?? "postgresql://erp:erp@127.0.0.1:5433/postgres";
+const ADMIN_URL =
+  process.env.TEST_PG_ADMIN_URL ??
+  "postgresql://erp:erp@127.0.0.1:5433/postgres";
 const DB = "erp_ascensori_schermate_test";
 const DB_URL = ADMIN_URL.replace(/\/[^/]*$/, `/${DB}`);
 const FUORI = process.env.SHOT_DIR ?? "schermate";
@@ -84,7 +86,9 @@ async function fermaServer() {
 }
 
 function psql(sql, url = ADMIN_URL) {
-  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], { stdio: "pipe" });
+  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], {
+    stdio: "pipe",
+  });
 }
 
 /** Влиза през формата — същият път като на човек. */
@@ -129,11 +133,15 @@ async function main() {
   execFileSync("npx", ["next", "build"], { env, stdio: "pipe" });
 
   console.log(`▸ сървър на ${BASE}`);
-  server = spawn("node", ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)], {
-    env,
-    stdio: "pipe",
-    detached: true,
-  });
+  server = spawn(
+    "node",
+    ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)],
+    {
+      env,
+      stdio: "pipe",
+      detached: true,
+    },
+  );
   server.stderr.on("data", (b) => process.stderr.write(b));
 
   const scadenza = Date.now() + 60_000;
@@ -151,7 +159,9 @@ async function main() {
   mkdirSync(FUORI, { recursive: true });
 
   const browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    executablePath:
+      process.env.CHROMIUM_PATH ??
+      "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
   });
 
   console.log("\n▸ настолен изглед");

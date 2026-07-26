@@ -69,9 +69,49 @@ groups:
 
   - name: erp-ascensori-integrita
     rules:
-      - alert: ErpAutomatismiFermi
+      # ПО ИМЕ, С РАЗЛИЧНИ ПРАГОВЕ. Общата възраст се държеше свежа от дневния
+      # `contratti` и маскираше провал на `scadenze` — точно случаят, за който
+      # dead-man съществува. И един праг не важи за всички: седмичното
+      # прочистване под 26 часа би звъняло всеки ден.
+      - alert: ErpAutomatismoFermoGiornaliero
         # 26 ч, не 24: автоматизмът е дневен и трябва да има място за забавяне
         # при рестарт, без да звъни. `-1` значи „никога не е минавал".
+        expr: >-
+          erp_automatismo_eta_secondi{nome=~"scadenze|contratti"} > 93600
+          or erp_automatismo_eta_secondi{nome=~"scadenze|contratti"} == -1
+        for: 10m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: l'automatismo {{ $labels.nome }} non gira da oltre 26 ore"
+          description: >-
+            `scadenze` ha effetti di sicurezza (art. 13 D.P.R. 162/1999);
+            `contratti` genera i canoni, cioè il fatturato ricorrente.
+
+      - alert: ErpRetentionFerma
+        # Седмичен каданс: прагът е 11 дни, не 26 часа.
+        expr: >-
+          erp_automatismo_eta_secondi{nome="retention"} > 950400
+          or erp_automatismo_eta_secondi{nome="retention"} == -1
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: la cancellazione periodica non gira da oltre 11 giorni"
+          description: "Effetto legale (art. 5(1)(e) GDPR), non operativo."
+
+      - alert: ErpWebhookFermo
+        # Каданс от пет минути: шест пропуснати цикъла значи спрян процес.
+        expr: erp_automatismo_eta_secondi{nome="webhook"} > 1800
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: le consegne webhook non partono da oltre 30 minuti"
+          description: "Le integrazioni del cliente smettono di ricevere eventi."
+
+      - alert: ErpAutomatismiFermi
+        # Остава като мрежа за случаите, в които изобщо НИЩО не минава.
         expr: erp_automatismi_eta_secondi > 93600 or erp_automatismi_eta_secondi == -1
         for: 10m
         labels:

@@ -43,12 +43,15 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
       prisma.scadenzaImpianto.count({
         where: { dataScadenza: { lte: fra30 }, completata: false },
       }),
-      // Само УСПЕШНО завършил пуск: „започнал и умрял" не е доказателство, че
-      // автоматизмът работи, а точно това dead-man-ът трябва да улови.
-      prisma.automatismoRun.findFirst({
+      // ПО ИМЕ, НЕ ОБЩО. Само УСПЕШНО завършил пуск: „започнал и умрял" не е
+      // доказателство, че автоматизмът работи. И задължително отделно за всеки:
+      // общият „най-нов успешен пуск" се държеше свеж от `contratti` (всяка
+      // сутрин) и МАСКИРАШЕ провал на `scadenze` — а именно `scadenze` носи
+      // законовата функция на продукта (просрочена проверка спира уредба).
+      prisma.automatismoRun.groupBy({
+        by: ["nome"],
         where: { esito: "OK" },
-        orderBy: { terminatoAt: "desc" },
-        select: { terminatoAt: true },
+        _max: { terminatoAt: true },
       }),
       rlsAttiva(),
     ]);
@@ -72,15 +75,35 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
       tipo: "gauge",
       valore: scadenzeVicine,
     },
+    // Възрастта, не времевата отметка: алармата се пише на едно място
+    // („> 26 часа"), а не с аритметика в правилото. Праговете са РАЗЛИЧНИ по
+    // име, защото каданси са различни — седмичното прочистване под праг от 26
+    // часа би звъняло всеки ден, а под общ праг не звъни изобщо.
+    ...AUTOMATISMI.map((nome) => {
+      const r = ultimoRun.find((x) => x.nome === nome);
+      return {
+        nome: "erp_automatismo_eta_secondi",
+        aiuto:
+          "Secondi dall'ultima esecuzione riuscita dell'automatismo (dead-man)",
+        tipo: "gauge" as const,
+        etichette: { nome },
+        valore: r?._max.terminatoAt
+          ? Math.floor((ora.getTime() - r._max.terminatoAt.getTime()) / 1000)
+          : -1,
+      };
+    }),
     {
-      // Възрастта, не времевата отметка: алармата се пише на едно място
-      // („> 26 часа"), а не с аритметика в правилото.
+      // Общият остава за съвместимост с вече написаните правила, но алармата
+      // трябва да седи на разбивката отгоре.
       nome: "erp_automatismi_eta_secondi",
       aiuto: "Secondi dall'ultima esecuzione di un automatismo (dead-man)",
       tipo: "gauge",
-      valore: ultimoRun?.terminatoAt
-        ? Math.floor((ora.getTime() - ultimoRun.terminatoAt.getTime()) / 1000)
-        : -1,
+      valore: ultimoRun.reduce((min, r) => {
+        const t = r._max.terminatoAt;
+        if (!t) return min;
+        const eta = Math.floor((ora.getTime() - t.getTime()) / 1000);
+        return min === -1 ? eta : Math.min(min, eta);
+      }, -1),
     },
     {
       nome: "erp_rls_attiva",
@@ -91,6 +114,14 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
     },
   ];
 }
+
+/**
+ * Автоматизмите, за които се очаква dead-man.
+ *
+ * Изричен списък: автоматизъм, който никога не е минавал, трябва да се вижда
+ * като `-1`, а не да липсва от изхода — липсваща редица не вдига аларма.
+ */
+const AUTOMATISMI = ["scadenze", "contratti", "retention", "webhook"] as const;
 
 export async function GET(req: Request) {
   if (!autorizzato(req)) return new NextResponse("Not Found", { status: 404 });

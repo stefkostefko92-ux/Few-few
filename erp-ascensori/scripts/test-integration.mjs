@@ -30,6 +30,14 @@ const env = {
   // тестовете правят десетки входа — вдигаме тавана, за да не удрят rate limit-а
   RATE_LIMIT_LOGIN: "10000",
   RATE_LIMIT_REFRESH: "10000",
+  RATE_LIMIT_SDI: "10000",
+  // Канал за подаване към SDI: изключен по подразбиране (и правилно), но
+  // тогава маршрутът връща 503 ПРЕДИ всяка друга проверка — и правилата за
+  // идемпотентност, състояние и дублиране остават непроверени. Тук се задава
+  // адрес на посредник, който НЕ се вика: изпращач още няма, а маршрутът само
+  // подготвя файла и маркира състоянието.
+  SDI_CANALE: "intermediario",
+  SDI_INTERMEDIARIO_URL: "https://intermediario.esempio.it/api",
   NODE_ENV: "production",
 };
 
@@ -117,7 +125,14 @@ async function main() {
 
   const test = spawn(
     "npx",
-    ["tsx", "--test", "tests/integration/*.int.test.ts"],
+    [
+      "tsx",
+      "--test",
+      // Един файл наведнъж, когато се разследва провал: `TEST_SOLO=nuovi-moduli`.
+      process.env.TEST_SOLO
+        ? `tests/integration/${process.env.TEST_SOLO}.int.test.ts`
+        : "tests/integration/*.int.test.ts",
+    ],
     { env: { ...env, TEST_BASE_URL: BASE }, stdio: "inherit" },
   );
   const codice = await new Promise((res) => test.on("close", res));

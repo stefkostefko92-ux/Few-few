@@ -17,7 +17,8 @@ const prisma = new PrismaClient();
 
 /** Парола, генерирана от криптографски източник; без двусмислени знаци. */
 function generaPassword(lunghezza = 24) {
-  const alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%*+-";
+  const alfabeto =
+    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%*+-";
   const b = randomBytes(lunghezza);
   return Array.from(b, (x) => alfabeto[x % alfabeto.length]).join("");
 }
@@ -26,7 +27,9 @@ async function main() {
   const email = (process.env.MASTER_EMAIL ?? "").trim().toLowerCase();
   if (!email || !email.includes("@")) {
     console.error("✖ Задай MASTER_EMAIL (валиден адрес). Пример:");
-    console.error("  MASTER_EMAIL=admin@azienda.it node scripts/crea-master.mjs");
+    console.error(
+      "  MASTER_EMAIL=admin@azienda.it node scripts/crea-master.mjs",
+    );
     process.exit(1);
   }
 
@@ -44,7 +47,9 @@ async function main() {
   const esistente = await prisma.user.findUnique({ where: { email } });
   if (esistente) {
     // Идемпотентно: повторно пускане не пипа паролата на жив акаунт.
-    console.log(`= Акаунтът ${email} вече съществува (роля ${esistente.ruolo}). Нищо не е променено.`);
+    console.log(
+      `= Акаунтът ${email} вече съществува (роля ${esistente.ruolo}). Нищо не е променено.`,
+    );
     return;
   }
 

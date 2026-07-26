@@ -94,6 +94,16 @@ export const POST = gestito(async (_req, ctx) => {
   if (problemi.length)
     return errore(422, `Fattura non conforme: ${problemi.join(" ")}`);
 
+  // ПРОГРЕСИВНИЯТ НОМЕР СЕ РАЖДА ПРИ ГЕНЕРИРАНЕТО НА ФАЙЛА, не при издаването.
+  // Без него името излиза `IT…_.xml` и проверката по-долу обвинява
+  // КОНФИГУРАЦИЯТА НА КАНАЛА за нещо, което няма нищо общо с нея — операторът
+  // тръгва да поправя настройка вместо да натисне „Genera XML".
+  if (!String(dati.progressivoInvio ?? "").trim())
+    throw new ErroreHttp(
+      409,
+      "XML non ancora generato: scaricare prima il file della fattura, poi trasmetterlo.",
+    );
+
   const nomeFile = nomeFileSdi(
     dati.azienda.partitaIva ?? "",
     dati.progressivoInvio,

@@ -26,7 +26,9 @@ if (!existsSync(dump)) {
   process.exit(1);
 }
 
-const ADMIN_URL = process.env.BACKUP_PG_ADMIN_URL ?? "postgresql://erp:erp@127.0.0.1:5433/postgres";
+const ADMIN_URL =
+  process.env.BACKUP_PG_ADMIN_URL ??
+  "postgresql://erp:erp@127.0.0.1:5433/postgres";
 // Името носи времева отметка, за да не се сблъскат две едновременни проверки.
 const DB = `erp_verifica_${Date.now().toString(36)}`;
 const DB_URL = ADMIN_URL.replace(/\/[^/]*$/, `/${DB}`);
@@ -71,7 +73,8 @@ function tabelle(url) {
 
 function conteggi(url) {
   const out = {};
-  for (const t of tabelle(url)) out[t] = Number(psql(`SELECT count(*) FROM "${t}"`, url));
+  for (const t of tabelle(url))
+    out[t] = Number(psql(`SELECT count(*) FROM "${t}"`, url));
   return out;
 }
 
@@ -104,13 +107,17 @@ function main() {
   if (dump.endsWith(".age")) {
     const chiave = process.env.BACKUP_AGE_KEY;
     if (!chiave) {
-      console.error("✖ BACKUP_AGE_KEY не е зададен — криптираният дъмп не може да се отвори.");
+      console.error(
+        "✖ BACKUP_AGE_KEY не е зададен — криптираният дъмп не може да се отвори.",
+      );
       process.exit(1);
     }
     temp = mkdtempSync(join(tmpdir(), "verifica-backup-"));
     file = join(temp, "erp.dump");
     console.log("▸ разшифроване");
-    execFileSync("age", ["-d", "-i", chiave, "-o", file, dump], { stdio: "inherit" });
+    execFileSync("age", ["-d", "-i", chiave, "-o", file, dump], {
+      stdio: "inherit",
+    });
   }
 
   console.log(`▸ проверочна база ${DB}`);
@@ -122,7 +129,9 @@ function main() {
   // от очакваното", а не точно равенство, и празната таблица е твърд провал.
   const sorgente = SORGENTE_URL ? conteggi(SORGENTE_URL) : null;
   if (!sorgente)
-    console.log("⚠ BACKUP_SORGENTE_URL не е зададен — пропускам сверяването с източника");
+    console.log(
+      "⚠ BACKUP_SORGENTE_URL не е зададен — пропускам сверяването с източника",
+    );
 
   console.log("▸ възстановяване");
   // `--no-owner`: дъмпът носи собственика от продукцията, който на проверочната
@@ -132,22 +141,30 @@ function main() {
   // грешките, накрая пише „errors ignored on restore: 3" и излиза с код НУЛА.
   // Без този флаг частично възстановена база минава за успешна — точно
   // обратното на това, за което съществува скриптът.
-  execFileSync("pg_restore", ["-d", DB_URL, "--no-owner", "--no-privileges", "--exit-on-error", file], {
-    env: OPZIONI_SCOPE,
-    stdio: ["ignore", "pipe", "inherit"],
-  });
+  execFileSync(
+    "pg_restore",
+    ["-d", DB_URL, "--no-owner", "--no-privileges", "--exit-on-error", file],
+    {
+      env: OPZIONI_SCOPE,
+      stdio: ["ignore", "pipe", "inherit"],
+    },
+  );
 
   console.log("▸ съдържание");
   const problemi = [];
   for (const [tabella, minimo] of Object.entries(ATTESI_MINIMI)) {
-    const esiste = psql(`SELECT to_regclass('public.${tabella}') IS NOT NULL`, DB_URL);
+    const esiste = psql(
+      `SELECT to_regclass('public.${tabella}') IS NOT NULL`,
+      DB_URL,
+    );
     if (esiste !== "t") {
       problemi.push(`таблица ${tabella} липсва`);
       continue;
     }
     const n = Number(psql(`SELECT count(*) FROM "${tabella}"`, DB_URL));
     console.log(`  ${tabella}: ${n}`);
-    if (n < minimo) problemi.push(`${tabella}: ${n} реда, очаквани поне ${minimo}`);
+    if (n < minimo)
+      problemi.push(`${tabella}: ${n} реда, очаквани поне ${minimo}`);
   }
 
   if (sorgente) {
@@ -161,10 +178,13 @@ function main() {
       }
       // Празна при непразен източник = частичен дъмп. Точно това прави RLS,
       // когато дъмпът е пуснат без обхват.
-      if (n > 0 && r === 0) problemi.push(`${t}: източник ${n} реда, възстановено 0`);
+      if (n > 0 && r === 0)
+        problemi.push(`${t}: източник ${n} реда, възстановено 0`);
       // Под 90 % също не е „почти същото": липсва цяла фирма.
       else if (n > 0 && r < n * 0.9)
-        problemi.push(`${t}: източник ${n}, възстановено ${r} — дъмпът е частичен`);
+        problemi.push(
+          `${t}: източник ${n}, възстановено ${r} — дъмпът е частичен`,
+        );
     }
   }
 
@@ -183,12 +203,17 @@ function main() {
   // а „катастрофално много". Нула би вдигала аларма при всяко retention.
   const soglia = Number(process.env.BACKUP_MAX_CATENA_ROTTA ?? 5);
   if (Number(catena) > soglia)
-    problemi.push(`веригата на одита е прекъсната ${catena} пъти (праг ${soglia})`);
+    problemi.push(
+      `веригата на одита е прекъсната ${catena} пъти (праг ${soglia})`,
+    );
 
   // Политиките за изолация НЕ пътуват в `pg_dump -Fc`, ако е правен само на
   // данни — проверяваме дали ги има, преди някой да пусне възстановената база.
   const politiche = Number(
-    psql(`SELECT count(*) FROM pg_policies WHERE policyname = 'tenant_isolation'`, DB_URL),
+    psql(
+      `SELECT count(*) FROM pg_policies WHERE policyname = 'tenant_isolation'`,
+      DB_URL,
+    ),
   );
   // Броят се сверява със СПИСЪКА в `src/lib/rls.ts`, не с нула: една таблица
   // без политика е дупка в изолацията между фирмите, а `count > 0` я пропуска.
@@ -197,9 +222,13 @@ function main() {
       /TABELLE_CON_TENANT[\s\S]*?\]/,
     )?.[0] ?? ""
   ).match(/"[a-z_]+"/g)?.length;
-  console.log(`  политики за изолация: ${politiche}${attese ? ` (очаквани ${attese})` : ""}`);
+  console.log(
+    `  политики за изолация: ${politiche}${attese ? ` (очаквани ${attese})` : ""}`,
+  );
   if (politiche === 0)
-    problemi.push("политиките tenant_isolation липсват — възстановената база няма изолация");
+    problemi.push(
+      "политиките tenant_isolation липсват — възстановената база няма изолация",
+    );
   else if (attese && politiche < attese)
     problemi.push(
       `политики tenant_isolation: ${politiche} от ${attese} — има таблица без изолация`,

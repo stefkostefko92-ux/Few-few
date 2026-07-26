@@ -10,7 +10,9 @@ import { setTimeout as sleep } from "node:timers/promises";
 
 const PORT = Number(process.env.E2E_PORT ?? 3022);
 const BASE = `http://127.0.0.1:${PORT}`;
-const ADMIN_URL = process.env.TEST_PG_ADMIN_URL ?? "postgresql://erp:erp@127.0.0.1:5433/postgres";
+const ADMIN_URL =
+  process.env.TEST_PG_ADMIN_URL ??
+  "postgresql://erp:erp@127.0.0.1:5433/postgres";
 const DB = process.env.E2E_PG_DB ?? "erp_ascensori_e2e_test";
 const DB_URL = ADMIN_URL.replace(/\/[^/]*$/, `/${DB}`);
 
@@ -35,7 +37,9 @@ if (!/_test$/.test(DB)) {
 }
 
 function psql(sql, url = ADMIN_URL) {
-  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], { stdio: "pipe" });
+  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], {
+    stdio: "pipe",
+  });
 }
 
 let server;
@@ -64,19 +68,29 @@ async function main() {
   psql(`CREATE DATABASE ${DB}`);
 
   console.log("▸ схема (миграции) + демо данни");
-  execFileSync("npx", ["prisma", "migrate", "deploy"], { env, stdio: "inherit" });
+  execFileSync("npx", ["prisma", "migrate", "deploy"], {
+    env,
+    stdio: "inherit",
+  });
   execFileSync("npx", ["tsx", "prisma/seed.ts"], { env, stdio: "inherit" });
 
   console.log("▸ билд");
   execFileSync("npx", ["next", "build"], { env, stdio: "pipe" });
 
   console.log(`▸ вдигам сървър на ${BASE}`);
-  server = spawn("node", ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)], {
-    env,
-    stdio: "pipe",
-    detached: true,
-  });
-  server.stdout.on("data", (b) => process.env.TEST_VERBOSE && process.stdout.write(b));
+  server = spawn(
+    "node",
+    ["node_modules/next/dist/bin/next", "start", "-p", String(PORT)],
+    {
+      env,
+      stdio: "pipe",
+      detached: true,
+    },
+  );
+  server.stdout.on(
+    "data",
+    (b) => process.env.TEST_VERBOSE && process.stdout.write(b),
+  );
   server.stderr.on("data", (b) => process.stderr.write(b));
 
   const scadenza = Date.now() + 60_000;
@@ -92,7 +106,10 @@ async function main() {
   console.log("▸ сървърът е готов — пускам браузъра\n");
 
   const argomenti = ["playwright", "test", ...process.argv.slice(2)];
-  const test = spawn("npx", argomenti, { env: { ...env, E2E_BASE_URL: BASE }, stdio: "inherit" });
+  const test = spawn("npx", argomenti, {
+    env: { ...env, E2E_BASE_URL: BASE },
+    stdio: "inherit",
+  });
   const codice = await new Promise((res) => test.on("close", res));
 
   await fermaServer();

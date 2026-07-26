@@ -11,6 +11,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -30,6 +31,15 @@ const schema = z.object({
   note: z.string().trim().max(1000).nullish(),
 });
 
+/**
+ * Полетата, които и двата маршрута четат.
+ *
+ * ТИПЪТ Е ИЗРИЧЕН И ТОВА НЕ Е УКРАСА. Изнесен `select` без анотация губи
+ * проверката за излишно поле: TypeScript го приема, а Prisma го отхвърля чак
+ * по време на работа — целият маршрут връщаше 500 при всяко извикване заради
+ * едно несъществуващо поле. `satisfies Prisma.FatturaSelect` премества същата
+ * грешка в компилацията.
+ */
 const CON_FATTURA = {
   id: true,
   numero: true,
@@ -41,11 +51,16 @@ const CON_FATTURA = {
   splitPayment: true,
   stato: true,
   tipo: true,
-  condominio: { select: { nome: true, partitaIva: true } },
+  // КОНДОМИНИУМЪТ НЯМА ДАНЪЧЕН НОМЕР В СХЕМАТА — има данъчен код. Заявката
+  // искаше несъществуващо поле и Prisma отхвърляше ЦЕЛИЯ маршрут: и GET, и
+  // POST връщаха 500 при всяко извикване, тоест поканите за плащане не са
+  // работили нито веднъж. Нищо в модулните тестове не може да види това —
+  // затова маршрутът вече носи интеграционни (`nuovi-moduli.int.test.ts`).
+  condominio: { select: { nome: true, codiceFiscale: true } },
   amministratore: { select: { ragioneSociale: true, partitaIva: true } },
   pagamenti: { select: { importo: true } },
   solleciti: { orderBy: { createdAt: "desc" as const } },
-} as const;
+} satisfies Prisma.FatturaSelect;
 
 export const GET = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("DIREZIONE");
@@ -123,8 +138,10 @@ export const POST = gestito(async (req, ctx) => {
     // търговската по D.Lgs. 231/2002. Разликата е няколко пъти.
     const regime = regimePerDebitore({
       condominio: !!f.condominio,
-      partitaIva:
-        f.condominio?.partitaIva ?? f.amministratore?.partitaIva ?? null,
+      // За кондоминиум режимът е решен от `condominio: true` (краен
+      // потребител, чл. 1284 c.c.); данъчният номер тук е този на
+      // администратора, когато фактурата е издадена на СТУДИОТО.
+      partitaIva: f.amministratore?.partitaIva ?? null,
     });
     const calcolo = calcolaInteressi({
       capitale: res,
