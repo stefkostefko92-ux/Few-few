@@ -7,6 +7,8 @@ import {
   type RigaAudit,
   verificaConRotazione,
   VERSIONE_CORRENTE,
+  canonico,
+  serializzaStabile,
 } from "../audit-hmac";
 
 const CHIAVE = "test-chiave-hmac-abbastanza-lunga-32+";
@@ -176,4 +178,44 @@ test("ротацията приема стария ключ при ПРОВЕР�
 
 test("текущата версия на канона е 3", () => {
   assert.equal(VERSIONE_CORRENTE, 3);
+});
+
+test("подпис, който изобщо НЕ е низ, се отказва вместо да гърми", () => {
+  // Стойността идва от колона в базата. Типът обещава низ, но ред отпреди
+  // въвеждането на веригата може да носи `null` — а проверката на целостта е
+  // точно това, което НЕ бива да пада с 500: тя се вика от маршрута, който
+  // отговаря на въпроса „непокътнат ли е регистърът".
+  // Редът на аргументите е (ред, ПОДПИС, ключ) — подписът е вторият.
+  for (const cattivo of [undefined, null, 42, {}])
+    assert.equal(
+      verificaAudit(riga, cattivo as unknown as string, CHIAVE),
+      false,
+      String(cattivo),
+    );
+  // И празният низ: дължината не съвпада, сравнението не се прави.
+  assert.equal(verificaAudit(riga, "", CHIAVE), false);
+});
+
+test("каноничният запис е СТАБИЛЕН при разбъркан ред на ключовете", () => {
+  // Подписът покрива този низ. Ако сериализацията зависи от реда, в който
+  // JavaScript изброява ключовете, същият ред получава два различни подписа —
+  // и проверката на целостта обявява непокътнат регистър за подправен.
+  assert.equal(
+    serializzaStabile({ b: 1, a: 2, c: { z: 1, y: 2 } }),
+    serializzaStabile({ c: { y: 2, z: 1 }, a: 2, b: 1 }),
+  );
+  // Масивите ЗАПАЗВАТ реда си — там редът е част от смисъла.
+  assert.notEqual(serializzaStabile([1, 2]), serializzaStabile([2, 1]));
+  // Различните стойности дават различен запис.
+  assert.notEqual(serializzaStabile({ a: 1 }), serializzaStabile({ a: 2 }));
+});
+
+test("каноничният вид на реда включва всичко подписано", () => {
+  const c = canonico(riga, VERSIONE_CORRENTE);
+  for (const parte of [riga.azione, riga.entita, riga.entitaId, riga.utenteId])
+    assert.ok(c.includes(String(parte)), String(parte));
+  // Адресът и браузърът СА част от подписа: без тях следата може да се
+  // пренапише с друг произход, без подписът да се промени.
+  assert.ok(c.includes(riga.ip!));
+  assert.ok(c.includes(riga.userAgent!));
 });

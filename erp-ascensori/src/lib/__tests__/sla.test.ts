@@ -6,6 +6,7 @@ import {
   sogliaSiApplica,
   SOGLIE_PREDEFINITE,
   ETICHETTA_SLA,
+  PRIORITA_CON_SLA,
 } from "../sla";
 
 const T0 = new Date("2026-07-26T08:00:00Z");
@@ -186,4 +187,8 @@ describe("четимост на числото", () => {
     ] as const)
       assert.ok(ETICHETTA_SLA[s].length > 0, s);
   });
+});
+
+test("часовникът важи само за спешните приоритети — затворен списък", () => {
+  assert.deepEqual([...PRIORITA_CON_SLA], ["EMERGENZA", "URGENTE"]);
 });

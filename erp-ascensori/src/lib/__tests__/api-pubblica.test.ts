@@ -8,6 +8,7 @@ import {
   ambitiValidi,
   confrontaHash,
   PREFISSO,
+  AMBITI,
 } from "../api-pubblica/chiavi";
 import {
   firmaCorpo,
@@ -176,4 +177,12 @@ test("само познати събития се записват", () => {
   assert.equal(eventiValidi(["fattura.pagata"]), true);
   assert.equal(eventiValidi([]), false);
   assert.equal(eventiValidi(["fattura.pagate"]), false);
+});
+
+test("обхватите са затворен списък — празно значи НИЩО", () => {
+  // Ключ без изрично избран обхват не бива да може нищо: обратното прави
+  // „забравих да отметна" равносилно на пълен достъп.
+  assert.ok(AMBITI.length > 0);
+  assert.equal(new Set(AMBITI).size, AMBITI.length);
+  for (const a of AMBITI) assert.match(a, /^[a-z_.:]+$/);
 });

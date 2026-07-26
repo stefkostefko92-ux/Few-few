@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { qrSvg, urlImpianto } from "../qr";
+import { qrSvg, urlImpianto, basePubblica } from "../qr";
 import { ritornoSicuro, RITORNO_PREDEFINITO } from "../ritorno";
 
 test("QR-ът е валиден SVG с квадратно платно", () => {
@@ -59,4 +59,28 @@ test("отвореното пренасочване се спира", () => {
   assert.equal(ritornoSicuro("/login"), RITORNO_PREDEFINITO);
   assert.equal(ritornoSicuro(null), RITORNO_PREDEFINITO);
   assert.equal(ritornoSicuro(""), RITORNO_PREDEFINITO);
+});
+
+// ── Публичната база на адресите ─────────────────────────────────────────────
+
+test("базата идва от APP_URL и НЕ носи наклонена черта накрая", () => {
+  // Сгрешена база значи стотици преправени стикери: адресът е отпечатан върху
+  // лепенка на уредбата, не се сменя от екрана.
+  const vecchio = process.env.APP_URL;
+  try {
+    process.env.APP_URL = "https://erp.azienda.it/";
+    assert.equal(basePubblica(), "https://erp.azienda.it");
+    process.env.APP_URL = "https://erp.azienda.it///";
+    assert.equal(basePubblica(), "https://erp.azienda.it");
+    process.env.APP_URL = "https://erp.azienda.it";
+    assert.equal(basePubblica(), "https://erp.azienda.it");
+    // Липсваща стойност дава ОТНОСИТЕЛЕН адрес — работи в разработка и личи
+    // веднага, вместо да отпечата „undefined/i/ASC-001".
+    delete process.env.APP_URL;
+    assert.equal(basePubblica(), "");
+    assert.equal(urlImpianto(basePubblica(), "ASC-001"), "/i/ASC-001");
+  } finally {
+    if (vecchio === undefined) delete process.env.APP_URL;
+    else process.env.APP_URL = vecchio;
+  }
 });

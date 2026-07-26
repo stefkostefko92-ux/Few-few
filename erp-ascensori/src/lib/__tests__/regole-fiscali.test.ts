@@ -10,6 +10,8 @@ import {
   quantitaValida,
   TRANSIZIONI_FATTURA,
   TRANSIZIONI_PREVENTIVO,
+  STATI_FATTURA,
+  STATI_PREVENTIVO,
 } from "../regole-fiscali";
 
 describe("преходи на фактурата", () => {
@@ -105,4 +107,15 @@ describe("склад", () => {
     assert.equal(quantitaValida("RETTIFICA", 0), false);
     assert.equal(quantitaValida("ENTRATA", 1.5), false);
   });
+});
+
+test("списъците със състояния са пълни и без дубли", () => {
+  // От тях се строят падащите менюта и проверките за променимост: дубъл значи
+  // два еднакви реда в менюто, липса значи документ, който не може да се смени.
+  for (const lista of [STATI_FATTURA, STATI_PREVENTIVO]) {
+    assert.ok(lista.length > 0);
+    assert.equal(new Set(lista).size, lista.length);
+  }
+  assert.ok((STATI_FATTURA as readonly string[]).includes("STORNATA"));
+  assert.ok((STATI_PREVENTIVO as readonly string[]).includes("SCADUTO"));
 });

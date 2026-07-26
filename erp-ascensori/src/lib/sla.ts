@@ -56,6 +56,15 @@ export type StatoSla =
   /** Просрочено (тече или приключено късно) — двете НЕ се сливат. */
   | "violato";
 
+/** Етикетите на италиански — един източник за интерфейса и за PDF-а. */
+export const ETICHETTA_SLA: Record<StatoSla, string> = {
+  non_applicabile: "Non applicabile",
+  in_corso: "In corso",
+  a_rischio: "A rischio",
+  rispettato: "Rispettato",
+  violato: "Fuori termine",
+};
+
 export interface MisuraSla {
   stato: StatoSla;
   /** Изтеклите минути; `null`, когато часовник не тече. */
@@ -191,12 +200,3 @@ export function durataIt(minuti: number | null): string {
   const oreResto = ore % 24;
   return oreResto ? `${segno}${giorni}g ${oreResto}h` : `${segno}${giorni}g`;
 }
-
-/** Етикетите на италиански — един източник за интерфейса и за PDF-а. */
-export const ETICHETTA_SLA: Record<StatoSla, string> = {
-  non_applicabile: "Non applicabile",
-  in_corso: "In corso",
-  a_rischio: "A rischio",
-  rispettato: "Rispettato",
-  violato: "Fuori termine",
-};

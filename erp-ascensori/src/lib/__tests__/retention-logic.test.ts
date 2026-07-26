@@ -7,6 +7,9 @@ import {
   ANNI_CONTABILE,
   MESI_ORDINARIO,
   GIORNI_TELEMETRIA,
+  AZIONI_ACCESSO,
+  ENTITA_CONTABILI,
+  sogliaPerRiga,
 } from "../retention-logic";
 
 const OGGI = new Date("2026-07-25T00:00:00.000Z");
@@ -98,4 +101,28 @@ test("точно на прага редът остава (строго по-ма
     ),
     true,
   );
+});
+
+test("списъците, които решават срока, са затворени и непразни", () => {
+  // Непознат ентитет получава КРАТКИЯ срок: за личните данни безопасната посока
+  // е обратната на фискалната. Затова списъкът на фискалните е бял, не черен.
+  assert.deepEqual([...AZIONI_ACCESSO], ["LOGIN", "LOGOUT"]);
+  assert.ok(ENTITA_CONTABILI.length > 0);
+  assert.equal(new Set(ENTITA_CONTABILI).size, ENTITA_CONTABILI.length);
+});
+
+test("прагът се смята за реда, не се предполага", () => {
+  const oggi = new Date("2026-07-26T00:00:00Z");
+  const per = (azione: string, entita: string) =>
+    sogliaPerRiga({ azione, entita }, oggi).getTime();
+
+  // Вход/изход: шест месеца (Provv. Garante 27.11.2008).
+  const accesso = per("LOGIN", "users");
+  // Фискална следа: десет години (чл. 2220 c.c.).
+  const contabile = per("UPDATE", ENTITA_CONTABILI[0]);
+  // Непознато: двайсет и четири месеца (чл. 5(1)(д) GDPR).
+  const altro = per("UPDATE", "entita_mai_vista");
+
+  assert.ok(accesso > altro, "входът се пази НАЙ-КРАТКО");
+  assert.ok(altro > contabile, "фискалното се пази НАЙ-ДЪЛГО");
 });

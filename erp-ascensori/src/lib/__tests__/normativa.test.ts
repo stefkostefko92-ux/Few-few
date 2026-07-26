@@ -13,7 +13,23 @@ import {
   richiedeFermo,
   problemiConformita,
   CONTROLLI_ART15,
+  MESI_VERIFICA_PERIODICA,
+  MESI_VERIFICA_SEMESTRALE,
+  GIORNI_COMUNICAZIONE_COMUNE,
 } from "../normativa/verifiche";
+import {
+  TIPI_INTERVENTO,
+  TIPO_INTERVENTO_LABEL,
+  contaPerTempiDiRisposta,
+  richiedeControlliCompleti,
+} from "../normativa/interventi";
+import {
+  TIPI_IMPIANTO,
+  TIPO_IMPIANTO_LABEL,
+  REGIMI_IMPIANTO,
+  REGIME_IMPIANTO_LABEL,
+  STATO_IMPIANTO_LABEL,
+} from "../normativa/impianti";
 
 describe("срокове", () => {
   test("двугодишният срок тече от датата на проверката", () => {
@@ -190,4 +206,102 @@ describe("правна изрядност на уредбата", () => {
       ),
     );
   });
+});
+
+// ── Видовете намеса и етикетите на уредбата ─────────────────────────────────
+
+describe("кои намеси влизат във времената за отзив", () => {
+  test("само спешните и спасителните", () => {
+    // Освобождаването на блокирани хора се мери в минути; смесено със средното
+    // по всички визити, показателят става безсмислен.
+    assert.equal(contaPerTempiDiRisposta("SOCCORSO"), true);
+    assert.equal(contaPerTempiDiRisposta("EMERGENZA"), true);
+    for (const t of [
+      "MANUTENZIONE_ORDINARIA",
+      "VERIFICA_SEMESTRALE",
+      "RIPARAZIONE",
+      "SOSTITUZIONE_COMPONENTI",
+      "",
+      "СОCCORSO",
+    ])
+      assert.equal(contaPerTempiDiRisposta(t), false, t);
+  });
+
+  test("пълният списък проверки иска САМО шестмесечната", () => {
+    // Чл. 15, ал. 4 D.P.R. 162/1999 говори за периодичната проверка от
+    // поддържащия; ремонтът не я замества.
+    assert.equal(richiedeControlliCompleti("VERIFICA_SEMESTRALE"), true);
+    for (const t of ["MANUTENZIONE_ORDINARIA", "RIPARAZIONE", "EMERGENZA", ""])
+      assert.equal(richiedeControlliCompleti(t), false, t);
+  });
+
+  test("всеки вид намеса има италиански етикет", () => {
+    for (const t of TIPI_INTERVENTO)
+      assert.ok((TIPO_INTERVENTO_LABEL[t] ?? "").length > 0, t);
+  });
+});
+
+describe("етикетите на уредбата", () => {
+  test("всеки вид и режим има етикет", () => {
+    for (const t of TIPI_IMPIANTO)
+      assert.ok((TIPO_IMPIANTO_LABEL[t] ?? "").length > 0, t);
+    for (const r of REGIMI_IMPIANTO)
+      assert.ok((REGIME_IMPIANTO_LABEL[r] ?? "").length > 0, r);
+  });
+
+  test("административното спиране НЕ се чете като обикновено спиране", () => {
+    // За оператора разликата е между „ще го оправим" и „не можем да го пуснем".
+    assert.match(STATO_IMPIANTO_LABEL.FERMO, /guasto/i);
+    assert.match(STATO_IMPIANTO_LABEL.FERMO_AMMINISTRATIVO, /amministrativo/i);
+    assert.notEqual(
+      STATO_IMPIANTO_LABEL.FERMO,
+      STATO_IMPIANTO_LABEL.FERMO_AMMINISTRATIVO,
+    );
+    for (const s of [
+      "ATTIVO",
+      "FERMO",
+      "MANUTENZIONE",
+      "FUORI_SERVIZIO",
+      "FERMO_AMMINISTRATIVO",
+      "DISMESSO",
+    ])
+      assert.ok((STATO_IMPIANTO_LABEL[s] ?? "").length > 0, s);
+  });
+});
+
+test("нормативните срокове са тези от закона, не кръгли числа", () => {
+  // 24 месеца за периодичната проверка (чл. 13 D.P.R. 162/1999), 6 месеца за
+  // проверката от поддържащия (чл. 15, ал. 4) и 10 дни за съобщението до
+  // Общината от декларацията за съответствие (чл. 12). Числата решават кога
+  // уредбата става незаконна — затова се заковават тук, а не се помнят.
+  assert.equal(MESI_VERIFICA_PERIODICA, 24);
+  assert.equal(MESI_VERIFICA_SEMESTRALE, 6);
+  assert.equal(GIORNI_COMUNICAZIONE_COMUNE, 10);
+});
+
+test("липсващата дата на съобщението до Общината се обявява", () => {
+  // Чл. 12 D.P.R. 162/1999: без съобщението уредбата няма матрикола и работи
+  // незаконно. Липсва ли датата, ние не можем да докажем, че сме съобщили.
+  const p = problemiConformita({
+    matricolaComune: "MI-12345",
+    comune: "Milano",
+    dataComunicazione: null,
+    organismoNotificato: "0051",
+    dataInstallazione: new Date("2020-01-01T00:00:00Z"),
+    regime: "DIRETTIVA_2014_33",
+  });
+  assert.ok(
+    p.some((x) => /comunicazione al Comune/i.test(x)),
+    p.join(" | "),
+  );
+  // А когато е налице — това оплакване го няма.
+  const q = problemiConformita({
+    matricolaComune: "MI-12345",
+    comune: "Milano",
+    dataComunicazione: new Date("2020-01-05T00:00:00Z"),
+    organismoNotificato: "0051",
+    dataInstallazione: new Date("2020-01-01T00:00:00Z"),
+    regime: "DIRETTIVA_2014_33",
+  });
+  assert.equal(q.some((x) => /comunicazione al Comune/i.test(x)), false);
 });

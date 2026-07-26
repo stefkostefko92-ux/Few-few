@@ -12,11 +12,15 @@ import {
   baseImponibili,
   righeRipartite,
   problemiBeniSignificativi,
+  ALIQUOTA_AGEVOLATA,
+  ALIQUOTA_ORDINARIA,
 } from "../fiscale/beni-significativi";
 import {
   calcolaRitenuta,
   ritenutaDovuta,
   problemiRitenuta,
+  aliquotaRitenuta,
+  ALIQUOTA_RITENUTA_APPALTI,
 } from "../fiscale/ritenuta";
 import {
   importoDaIncassare,
@@ -24,6 +28,10 @@ import {
   residuo,
   modalitaValida,
   condizioneValida,
+  giorniRitardo,
+  MODALITA_PAGAMENTO,
+  CONDIZIONI_PAGAMENTO,
+  STATI_PAGAMENTO,
 } from "../fiscale/pagamenti";
 import {
   statoDaNotifica,
@@ -32,12 +40,16 @@ import {
   documentoEmesso,
   transizioneSdiAmmessa,
   azioneRichiesta,
+  STATI_SDI,
+  TRANSIZIONI_SDI,
+  GIORNI_RINVIO_DOPO_SCARTO,
 } from "../fiscale/sdi-stato";
 import {
   calcolaInteressi,
   regimePerDebitore,
   tassoVigente,
   TASSI_LEGALI,
+  TASSI_COMMERCIALI,
 } from "../fiscale/interessi";
 
 describe("значими блага (D.M. 29.12.1999)", () => {
@@ -318,5 +330,141 @@ describe("лихва при забава", () => {
     assert.equal(r.importo, 0);
     assert.match(r.motivazione, /aggiornare la tabella/);
     assert.equal(tassoVigente(TASSI_LEGALI, new Date("2015-01-01")), null);
+  });
+});
+
+// ── Затваряне на последните пътища ─────────────────────────────────────────
+
+describe("удържането: ставка и таблици", () => {
+  test("ставката по чл. 25-ter е 4,00 % и се пази в центесими", () => {
+    // Числото влиза в XML-а като „4.00": закръгляне на плаваща запетая тук
+    // означава отхвърлен документ.
+    assert.equal(ALIQUOTA_RITENUTA_APPALTI, 400);
+    assert.equal(aliquotaRitenuta("4.00"), 400);
+    assert.equal(aliquotaRitenuta(4), 400);
+    assert.equal(aliquotaRitenuta("4,00"), 400);
+    // Decimal от Prisma идва като обект с `toString`.
+    assert.equal(aliquotaRitenuta({ toString: () => "4.00" }), 400);
+  });
+});
+
+describe("плащания: закъснение и публични таблици", () => {
+  test("дните закъснение се броят НАДОЛУ, не се закръглят", () => {
+    const sc = new Date("2026-03-01T00:00:00Z");
+    assert.equal(giorniRitardo(sc, new Date("2026-03-01T23:59:00Z")), 0);
+    assert.equal(giorniRitardo(sc, new Date("2026-03-02T00:00:00Z")), 1);
+    assert.equal(giorniRitardo(sc, new Date("2026-03-31T00:00:00Z")), 30);
+    // Ненастъпил падеж дава отрицателно, а не нула: „минус три дни" е
+    // информация, „нула" изглежда като „днес".
+    assert.equal(giorniRitardo(sc, new Date("2026-02-26T00:00:00Z")), -3);
+  });
+
+  test("кодовете MP и TP имат етикет — иначе в интерфейса излиза суровият код", () => {
+    for (const [c, etichetta] of Object.entries(MODALITA_PAGAMENTO)) {
+      assert.match(c, /^MP\d{2}$/);
+      assert.ok(etichetta.length > 0, c);
+      assert.equal(modalitaValida(c), true, c);
+    }
+    for (const [c, etichetta] of Object.entries(CONDIZIONI_PAGAMENTO)) {
+      assert.match(c, /^TP\d{2}$/);
+      assert.ok(etichetta.length > 0, c);
+      assert.equal(condizioneValida(c), true, c);
+    }
+  });
+
+  test("трите състояния на плащането и само те", () => {
+    assert.deepEqual([...STATI_PAGAMENTO], ["NON_PAGATA", "PARZIALE", "PAGATA"]);
+    // Всяко състояние трябва да е достижимо от сметката, иначе е мъртво.
+    assert.equal(statoDaIncassi(1000, 0), "NON_PAGATA");
+    assert.equal(statoDaIncassi(1000, 400), "PARZIALE");
+    assert.equal(statoDaIncassi(1000, 1000), "PAGATA");
+  });
+});
+
+describe("SDI: пълнота на таблицата с преходи", () => {
+  test("всяко състояние има ред в таблицата", () => {
+    // Липсващ ред би дал `undefined.includes` — 500 при обикновена смяна на
+    // състояние.
+    for (const s of STATI_SDI) assert.ok(Array.isArray(TRANSIZIONI_SDI[s]), s);
+    assert.equal(Object.keys(TRANSIZIONI_SDI).length, STATI_SDI.length);
+  });
+
+  test("всяка цел на преход е познато състояние", () => {
+    for (const [da, verso] of Object.entries(TRANSIZIONI_SDI))
+      for (const a of verso)
+        assert.ok((STATI_SDI as readonly string[]).includes(a), `${da}→${a}`);
+  });
+
+  test("удостоверяването на подаването НЕ мени съдбата на документа", () => {
+    // AT казва „SDI получи файла", не „получателят го има".
+    assert.equal(statoDaNotifica("AT"), "INVIATA");
+  });
+
+  test("срокът за преиздаване е пет дни", () => {
+    assert.equal(GIORNI_RINVIO_DOPO_SCARTO, 5);
+    const s = scadenzaRinvio(new Date("2026-03-10T00:00:00Z"));
+    assert.equal(s.toISOString().slice(0, 10), "2026-03-15");
+  });
+});
+
+describe("лихви: договорният режим", () => {
+  const scadenza = new Date("2026-01-01T00:00:00Z");
+  const oggi = new Date("2026-07-01T00:00:00Z");
+
+  test("уговореният процент се ползва такъв, какъвто е", () => {
+    const r = calcolaInteressi({
+      capitale: 100_000,
+      scadenza,
+      oggi,
+      regime: "CONTRATTUALE",
+      tassoContrattuale: 800,
+    });
+    assert.equal(r.tasso, 800);
+    assert.ok(r.importo > 0);
+    assert.match(r.motivazione, /contratt/i);
+  });
+
+  test("договорен режим БЕЗ уговорен процент не измисля число", () => {
+    // Измислена лихва в покана за плащане е искане на пари без основание.
+    const r = calcolaInteressi({
+      capitale: 100_000,
+      scadenza,
+      oggi,
+      regime: "CONTRATTUALE",
+    });
+    assert.equal(r.tasso, null);
+    assert.equal(r.importo, 0);
+  });
+
+  test("търговската таблица е подредена и покрива полугодията", () => {
+    // Стойностите се обявяват на 1 януари и 1 юли; несортирана таблица би
+    // върнала ставка от грешно полугодие.
+    for (let i = 1; i < TASSI_COMMERCIALI.length; i++)
+      assert.ok(TASSI_COMMERCIALI[i].dal > TASSI_COMMERCIALI[i - 1].dal);
+    for (let i = 1; i < TASSI_LEGALI.length; i++)
+      assert.ok(TASSI_LEGALI[i].dal > TASSI_LEGALI[i - 1].dal);
+    assert.equal(tassoVigente(TASSI_COMMERCIALI, new Date("2025-08-01T00:00:00Z")), 1035);
+  });
+});
+
+describe("beni significativi: недопустима ставка", () => {
+  test("в този режим минават САМО 10 % и 22 %", () => {
+    // Режимът е изключение по D.M. 29.12.1999: трета ставка в него значи, че
+    // документът е сглобен по друго правило и разцепването не важи.
+    assert.equal(ALIQUOTA_AGEVOLATA, 1000);
+    assert.equal(ALIQUOTA_ORDINARIA, 2200);
+    const p = problemiBeniSignificativi([
+      {
+        descrizione: "Quadro di manovra",
+        quantita: "1",
+        prezzoUnitario: "1000.00",
+        aliquotaIva: "4",
+        beneSignificativo: true,
+      },
+    ]);
+    assert.ok(
+      p.some((x) => /10 %|22 %/.test(x)),
+      p.join(" | "),
+    );
   });
 });

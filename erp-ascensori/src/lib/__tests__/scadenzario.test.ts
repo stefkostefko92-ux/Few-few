@@ -8,6 +8,8 @@ import {
   giorniTra,
   livelloSuggerito,
   type Credito,
+  FASCE,
+  LIVELLI_SOLLECITO,
 } from "../fiscale/scadenzario";
 
 const OGGI = new Date("2026-07-26T09:00:00Z");
@@ -211,4 +213,19 @@ describe("коя покана е редна", () => {
     assert.equal(livelloSuggerito(400, 3), null);
     assert.equal(livelloSuggerito(400, 9), null);
   });
+});
+
+test("кофите и степените са подредени и без дупки", () => {
+  // Ако горната граница на една кофа не е точно под долната на следващата, ден
+  // просрочие изчезва между тях и вземането не се вижда никъде.
+  for (let i = 1; i < FASCE.length; i++)
+    assert.equal(FASCE[i].da, FASCE[i - 1].a + 1, FASCE[i].chiave);
+  assert.equal(FASCE[FASCE.length - 1].a, Infinity);
+
+  // Степените растат и по номер, и по срок; лихва има чак от втората.
+  for (let i = 1; i < LIVELLI_SOLLECITO.length; i++) {
+    assert.ok(LIVELLI_SOLLECITO[i].livello > LIVELLI_SOLLECITO[i - 1].livello);
+    assert.ok(LIVELLI_SOLLECITO[i].daGiorni > LIVELLI_SOLLECITO[i - 1].daGiorni);
+  }
+  assert.equal(LIVELLI_SOLLECITO[0].conInteressi, false);
 });

@@ -9,6 +9,9 @@ import {
   inPreavviso,
   descrizionePeriodo,
   MESI_PERIODO,
+  PERIODICITA,
+  PERIODICITA_LABEL,
+  eScaduto,
 } from "../contratti-logic";
 
 const d = (s: string) => new Date(`${s}T00:00:00.000Z`);
@@ -101,4 +104,24 @@ test("описанието на периода показва ЗА КОГА е �
     descrizionePeriodo(d("2026-07-01"), "SEMESTRALE"),
     "01/07/2026 – 31/12/2026",
   );
+});
+
+// ── Изтичане и публични таблици ─────────────────────────────────────────────
+
+test("изтекъл ли е договорът — границата е ТОЧНО денят на изтичане", () => {
+  // Договор, който изтича днес, още важи днес: обратното би спряло посещение,
+  // което е дължимо, и би отменило покритие ден по-рано от уговореното.
+  assert.equal(eScaduto(d("2026-06-30"), d("2026-06-30")), false);
+  assert.equal(eScaduto(d("2026-06-30"), d("2026-07-01")), true);
+  assert.equal(eScaduto(d("2026-06-30"), d("2026-06-29")), false);
+});
+
+test("периодичностите и етикетите им са пълни и съгласувани", () => {
+  // Липсващ етикет излиза в интерфейса като суровата стойност от базата
+  // („QUADRIMESTRALE") — четимо за нас, не за клиента.
+  for (const p of PERIODICITA) {
+    assert.ok(MESI_PERIODO[p] > 0, p);
+    assert.ok((PERIODICITA_LABEL[p] ?? "").length > 0, p);
+  }
+  assert.equal(PERIODICITA.length, Object.keys(MESI_PERIODO).length);
 });

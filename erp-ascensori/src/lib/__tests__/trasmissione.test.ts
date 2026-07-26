@@ -5,6 +5,7 @@ import {
   controllaInvio,
   indirizzoInterno,
   PEC_SDI_PRIMO_INVIO,
+  ErroreTrasmissione,
   type ConfigTrasmissione,
 } from "../sdi/trasmissione";
 
@@ -147,5 +148,33 @@ describe("кои адреси са вътрешни", () => {
       "11.0.0.1",
     ])
       assert.equal(indirizzoInterno(h), false, h);
+  });
+});
+
+describe("грешката на канала", () => {
+  test("носи HTTP състояние и се разпознава по тип", () => {
+    // Маршрутът я превежда 1:1 в отговор към оператора; без състоянието всяка
+    // грешка на канала би станала 500.
+    const e = new ErroreTrasmissione(504, "Il canale non risponde");
+    assert.ok(e instanceof Error);
+    assert.equal(e.name, "ErroreTrasmissione");
+    assert.equal(e.stato, 504);
+    assert.equal(e.message, "Il canale non risponde");
+  });
+});
+
+describe("напълно неразбираем адрес", () => {
+  test("не гърми, а се отказва с обяснение", () => {
+    // `new URL` хвърля; без прихващането конфигурационна печатна грешка би
+    // дала 500 при опит за подаване на фактура.
+    const p = controllaInvio(INVIO, {
+      canale: "intermediario",
+      urlIntermediario: "questo-non-e-un-url",
+      etichetta: "Intermediario",
+    });
+    assert.ok(p.some((x) => /non valido/i.test(x)), p.join(" | "));
+    // И НЕ се добавят подвеждащи оплаквания за HTTPS върху нещо, което дори не
+    // е адрес.
+    assert.equal(p.some((x) => /HTTPS/.test(x)), false);
   });
 });

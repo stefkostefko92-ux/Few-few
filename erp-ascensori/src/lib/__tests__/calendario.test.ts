@@ -8,6 +8,7 @@ import {
   caricoDelGiorno,
   ordinaImpegni,
   GIORNI_IT,
+  MESI_IT,
   type Impegno,
 } from "../calendario";
 
@@ -193,4 +194,13 @@ describe("натоварването по техник", () => {
     ).find((x) => x.chiave === "2026-07-15")!;
     assert.equal(caricoDelGiorno(g, 8)[0].tecnico, "Non assegnato");
   });
+});
+
+test("имената на месеците са дванайсет, на италиански, по ред", () => {
+  // Сгрешен ред тук значи заглавие „Marzo" над мрежата на април — грешка, която
+  // никой тест за дати не хваща.
+  assert.equal(MESI_IT.length, 12);
+  assert.equal(MESI_IT[0], "Gennaio");
+  assert.equal(MESI_IT[11], "Dicembre");
+  assert.equal(new Set(MESI_IT).size, 12);
 });

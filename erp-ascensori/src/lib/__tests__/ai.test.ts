@@ -6,9 +6,9 @@
 
 import test, { describe } from "node:test";
 import assert from "node:assert/strict";
-import { risolviConfigAi } from "../ai/config";
+import { risolviConfigAi, aiAttiva, PROVIDER_AI } from "../ai/config";
 import { estraiJson } from "../ai/fornitore";
-import { validaEstrazione, campiPerForm } from "../ai/valida";
+import { validaEstrazione, campiPerForm, perForm } from "../ai/valida";
 import { MODULI_AI, moduloValido, istruzione } from "../ai/moduli";
 import { condominioSchemaAi, impiantoSchemaAi } from "../entities";
 
@@ -211,5 +211,70 @@ describe("указанието към модела", () => {
     assert.equal(moduloValido("condomini"), true);
     assert.equal(moduloValido("users"), false);
     assert.equal(moduloValido("../../etc"), false);
+  });
+});
+
+describe("включена ли е функцията изобщо", () => {
+  const vecchio = { ...process.env };
+  const ripristina = () => {
+    process.env = { ...vecchio };
+  };
+
+  test("без доставчик е изключена", () => {
+    try {
+      delete process.env.AI_PROVIDER;
+      delete process.env.AI_API_KEY;
+      assert.equal(aiAttiva(), false);
+    } finally {
+      ripristina();
+    }
+  });
+
+  test("с доставчик, но БЕЗ ключ, пак е изключена", () => {
+    // Заявка към доставчик без ключ дава 401 и объркващо съобщение — по-честно
+    // е бутонът изобщо да не се показва.
+    try {
+      process.env.AI_PROVIDER = "gemini";
+      delete process.env.AI_API_KEY;
+      assert.equal(aiAttiva(), false);
+    } finally {
+      ripristina();
+    }
+  });
+
+  test("с доставчик и ключ е включена", () => {
+    try {
+      process.env.AI_PROVIDER = "gemini";
+      process.env.AI_API_KEY = "chiave";
+      assert.equal(aiAttiva(), true);
+    } finally {
+      ripristina();
+    }
+  });
+
+  test("списъкът доставчици започва с „off“ — подразбирането е изключено", () => {
+    assert.equal(PROVIDER_AI[0], "off");
+    assert.deepEqual([...PROVIDER_AI], ["off", "gemini", "anthropic", "openai"]);
+  });
+});
+
+describe("стойността, както влиза във формата", () => {
+  test("датата става AAAA-MM-GG", () => {
+    // Zod вече е превърнал датата в `Date`, а полето иска низ: без това
+    // извличането изглежда провалено точно там, където най-често е вярно.
+    assert.equal(perForm(new Date("2026-03-15T10:30:00Z")), "2026-03-15");
+  });
+
+  test("останалите стойности минават непокътнати", () => {
+    for (const v of ["Verdi", 42, true, null, undefined])
+      assert.equal(perForm(v), v);
+  });
+});
+
+describe("вторият опит за изкопаване на JSON", () => {
+  test("блок { … }, който НЕ е валиден JSON, дава null", () => {
+    // Първият опит гърми, вторият изрязва блока и пак гърми — резултатът е
+    // `null`, а операторът попълва на ръка. По-добре от полуразбрани данни.
+    assert.equal(estraiJson("Ecco: {nome: Verdi, senza: virgolette} fine"), null);
   });
 });

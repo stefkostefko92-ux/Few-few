@@ -233,7 +233,13 @@ export const automezzi: CrudConfig = {
   searchFields: ["targa", "marca", "modello"],
   include: { conducente: true },
   orderBy: { targa: "asc" },
-  // цветният статус се преизчислява при всеки запис по най-близката дата
+  // Цветният статус се преизчислява при всеки запис по най-близката дата.
+  //
+  // Единственото място в този файл, което пипа базата. РЕШЕНИЕТО е чисто и е
+  // тествано отделно (`statoAutomezzo` в `scadenze-logic.ts`); тук остава само
+  // подредбата на двете заявки, а тя се проверява от интеграционния пакет —
+  // `tests/integration/*`, където има реална база и реален сървър.
+  /* c8 ignore start -- оркестрация към базата: покрито от `npm run test:int` */
   afterWrite: async (id) => {
     const a = await prisma.automezzo.findUnique({ where: { id } });
     if (!a) return;
@@ -244,6 +250,7 @@ export const automezzi: CrudConfig = {
     if (stato !== a.stato)
       await prisma.automezzo.update({ where: { id }, data: { stato } });
   },
+  /* c8 ignore stop */
 };
 
 const cottimistaBase = z.object({

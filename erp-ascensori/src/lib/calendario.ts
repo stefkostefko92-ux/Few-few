@@ -37,6 +37,24 @@ export interface Giorno {
   oreTotali: number;
 }
 
+/** Италиански кратки имена на дните, от понеделник. */
+export const GIORNI_IT = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+
+export const MESI_IT = [
+  "Gennaio",
+  "Febbraio",
+  "Marzo",
+  "Aprile",
+  "Maggio",
+  "Giugno",
+  "Luglio",
+  "Agosto",
+  "Settembre",
+  "Ottobre",
+  "Novembre",
+  "Dicembre",
+];
+
 const GIORNO = 86_400_000;
 
 /** Ключ на деня по КАЛЕНДАР, не по UTC отместване. */
@@ -163,21 +181,3 @@ export function caricoDelGiorno(
     v.sovraccarico = capacitaOre > 0 && v.ore > capacitaOre;
   return [...m.values()].sort((a, b) => b.ore - a.ore);
 }
-
-/** Италиански кратки имена на дните, от понеделник. */
-export const GIORNI_IT = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-
-export const MESI_IT = [
-  "Gennaio",
-  "Febbraio",
-  "Marzo",
-  "Aprile",
-  "Maggio",
-  "Giugno",
-  "Luglio",
-  "Agosto",
-  "Settembre",
-  "Ottobre",
-  "Novembre",
-  "Dicembre",
-];

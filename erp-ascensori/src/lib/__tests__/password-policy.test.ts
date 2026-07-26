@@ -7,6 +7,7 @@ import {
   LUNGHEZZA_MINIMA,
   LUNGHEZZA_MINIMA_PRIVILEGIATA,
   GIORNI_SCADENZA,
+  RUOLI_MFA_OBBLIGATORIO,
 } from "../password-policy";
 
 test("дължината е основното изискване", () => {
@@ -78,4 +79,14 @@ test("вторият фактор е задължителен за привил�
   assert.equal(mfaObbligatorio("ADMIN"), true);
   assert.equal(mfaObbligatorio("DIREZIONE"), false);
   assert.equal(mfaObbligatorio("TECNICO"), false);
+});
+
+test("вторият фактор е ЗАДЪЛЖИТЕЛЕН за нивата с ключове от системата", () => {
+  // MASTER вижда всички фирми, ADMIN държи потребителите и настройките. Кражба
+  // на такава парола е кражба на цялата инсталация; за останалите нива вторият
+  // фактор е избор.
+  assert.deepEqual([...RUOLI_MFA_OBBLIGATORIO], ["MASTER", "ADMIN"]);
+  for (const r of ["MASTER", "ADMIN"]) assert.equal(mfaObbligatorio(r), true, r);
+  for (const r of ["DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE", "CLIENTE"])
+    assert.equal(mfaObbligatorio(r), false, r);
 });

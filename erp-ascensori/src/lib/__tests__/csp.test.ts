@@ -1,7 +1,9 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { costruisciCsp, generaNonce, nomeHeaderCsp } from "../csp";
-import { leggiRapporto } from "../csp-rapporto";
+import { costruisciCsp, generaNonce, nomeHeaderCsp,
+  soloRapporto,
+} from "../csp";
+import { leggiRapporto, DIRETTIVE_NOTE } from "../csp-rapporto";
 
 function direttive(csp: string): Map<string, string> {
   return new Map(
@@ -159,4 +161,50 @@ describe("докладът от браузъра е външен вход", () =
     for (const c of [null, undefined, 42, "stringa", [], {}, { "csp-report": 1 }])
       assert.ok(Array.isArray(leggiRapporto(c)));
   });
+});
+
+describe("произходът на блокирания ресурс", () => {
+  test("текст, който НЕ е адрес, дава „altro“ вместо да гърми", () => {
+    // Стойността идва от браузър на непознат посетител. `new URL` хвърля, а
+    // маршрутът за доклади трябва да преглъща всичко и да отговаря еднакво.
+    for (const v of ["ciao mondo", "http://", "://x", "]["])
+      assert.deepEqual(
+        leggiRapporto({ "csp-report": { "violated-directive": "img-src", "blocked-uri": v } }),
+        [{ direttiva: "img-src", origine: "altro" }],
+        v,
+      );
+  });
+
+  test("схема без хост става самата схема", () => {
+    assert.equal(
+      leggiRapporto({
+        "csp-report": { "violated-directive": "img-src", "blocked-uri": "data:image/png;base64,AA" },
+      })[0].origine,
+      "data",
+    );
+  });
+
+  test("всяка директива от политиката ни е в затворения списък", () => {
+    // Иначе собственото ни нарушение би се отчело като „altro" и броячът не би
+    // казал по коя директива е сработило.
+    for (const d of [
+      "script-src",
+      "style-src-elem",
+      "style-src-attr",
+      "img-src",
+      "connect-src",
+      "form-action",
+      "frame-ancestors",
+    ])
+      assert.ok(DIRETTIVE_NOTE.has(d), d);
+  });
+});
+
+test("режимът само за наблюдение се чете от обкръжението", () => {
+  // Стойност, различна от точно „1", НЕ включва наблюдението: политика, която
+  // мълчаливо спира да блокира заради печатна грешка, е по-лоша от липсваща.
+  assert.equal(soloRapporto({ CSP_REPORT_ONLY: "1" }), true);
+  for (const v of ["0", "true", "si", "", undefined])
+    assert.equal(soloRapporto({ CSP_REPORT_ONLY: v }), false, String(v));
+  assert.equal(soloRapporto({}), false);
 });

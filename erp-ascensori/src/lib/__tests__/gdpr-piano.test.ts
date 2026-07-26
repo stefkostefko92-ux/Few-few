@@ -8,6 +8,7 @@ import {
   TIPI_SOGGETTO,
   ANONIMO,
   DOMINIO_ANONIMO,
+  ETICHETTA_SOGGETTO,
 } from "../gdpr/piano";
 
 const ID = "0f7c2a91-4b3d-4e55-9a12-7c8e6d5f4321";
@@ -78,5 +79,14 @@ test("одитът се пази с разпоредба, не мълчалив�
       p.conservati.some((c) => /audit|registro/i.test(c.cosa)),
       `${t}: регистърът трябва да е обявен като запазен`,
     );
+  }
+});
+
+test("всеки вид субект има етикет за човека", () => {
+  // Планът се ПОКАЗВА на човек преди натискане: „CONDOMINIO" не е обяснение
+  // какво ще се случи с данните на кондоминиума.
+  for (const [k, v] of Object.entries(ETICHETTA_SOGGETTO)) {
+    assert.ok(v.length > 0, k);
+    assert.notEqual(v, k);
   }
 });
