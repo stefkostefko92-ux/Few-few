@@ -141,6 +141,53 @@ export function etichettaAsse(v: string): string {
   return String(v).replaceAll("_", " ");
 }
 
+/**
+ * Данните на графиката като таблица — скрита за окото, видима за четеца.
+ *
+ * Графиката е ГЛЕДКА към числата, а не самите числа. За екранен четец SVG-то е
+ * шум: Recharts маркира секторите с `role="img"` без име, тоест дори добре
+ * поставеният етикет би прочел осем безименни картинки. Затова платното се
+ * скрива изцяло (`aria-hidden`), а тук минава текстовият еквивалент по WCAG
+ * 1.1.1 — истинска таблица със заглавия, не изречение с изброени числа.
+ *
+ * Заглавието се подава отвън: „Ordini per stato" и „Fatturato" водят до
+ * различни таблици и еднакво име би направило втората неоткриваема.
+ */
+function TabellaAlternativa({
+  titolo,
+  colonne,
+  righe,
+}: {
+  titolo: string;
+  colonne: string[];
+  righe: (string | number)[][];
+}) {
+  return (
+    <table className="sr-only">
+      <caption>{titolo}</caption>
+      <thead>
+        <tr>
+          {colonne.map((c) => (
+            <th key={c} scope="col">
+              {c}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {righe.map((r) => (
+          <tr key={String(r[0])}>
+            <th scope="row">{r[0]}</th>
+            {r.slice(1).map((v, i) => (
+              <td key={colonne[i + 1]}>{v}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 // Наклонени етикети по X — 9-те статуса се събират без застъпване и без отрязване.
 const ASSE_X_CATEGORIE = {
   interval: 0 as const,
@@ -153,61 +200,82 @@ const ASSE_X_CATEGORIE = {
 /** Категорийна графика (една стойност по категория). */
 export function GraficoCategorie({
   fonte,
+  titolo,
   dati,
   tipo,
   colore,
 }: {
   fonte: string;
+  /** Заглавието на графиката — става `<caption>` на скритата таблица. */
+  titolo: string;
   dati: PuntoCategoria[];
   tipo: TipoGrafico;
   colore: "multi" | number;
 }) {
   const ordinati = ordinaCanonico(fonte, dati);
+  const tabella = (
+    <TabellaAlternativa
+      titolo={titolo}
+      colonne={["Voce", "Valore"]}
+      righe={ordinati.map((p) => [etichettaAsse(p.nome), p.valore])}
+    />
+  );
 
   if (tipo === "donut") {
     return (
       <div>
-        <ResponsiveContainer width="100%" height={200}>
-          <PieChart>
-            <Tooltip content={<TooltipCard />} />
-            <Pie
-              data={ordinati}
-              dataKey="valore"
-              nameKey="nome"
-              innerRadius="55%"
-              outerRadius="85%"
-              paddingAngle={2}
-              stroke="var(--surface)"
-              strokeWidth={2}
-              isAnimationActive={false}
-            >
-              {ordinati.map((p, i) => (
-                <Cell
-                  key={p.nome}
-                  fill={coloreCategoria(fonte, p.nome, i, colore)}
-                />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-        {/* легенда: идентичността никога не е само по цвят */}
-        <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 px-2">
-          {ordinati.map((p, i) => (
-            <span
-              key={p.nome}
-              className="flex items-center gap-1.5 text-xs text-text-2"
-            >
+        {tabella}
+        {/* Платното е ГЛЕДКА към същите числа: за четеца е дубликат, а без
+            `aria-hidden` Recharts би му подал безименни `role="img"` сектори. */}
+        <div aria-hidden>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Tooltip content={<TooltipCard />} />
+              <Pie
+                data={ordinati}
+                dataKey="valore"
+                nameKey="nome"
+                innerRadius="55%"
+                outerRadius="85%"
+                paddingAngle={2}
+                stroke="var(--surface)"
+                strokeWidth={2}
+                isAnimationActive={false}
+                // Recharts слага `tabindex="0"` на кръга — и слуша СОБСТВЕНОТО
+                // си свойство `rootTabIndex`, не `tabIndex`. Вътре в скрито за
+                // четеца поддърво фокусируемият кръг е капан: табулацията спира
+                // на нещо, което не се обявява с нищо. Числата и без това са в
+                // таблицата над платното.
+                rootTabIndex={-1}
+              >
+                {ordinati.map((p, i) => (
+                  <Cell
+                    key={p.nome}
+                    fill={coloreCategoria(fonte, p.nome, i, colore)}
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+          {/* легенда: идентичността никога не е само по цвят */}
+          <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 px-2">
+            {ordinati.map((p, i) => (
               <span
-                className="inline-block h-2 w-2 shrink-0 rounded-full"
-                style={{
-                  background: coloreCategoria(fonte, p.nome, i, colore),
-                }}
-                aria-hidden
-              />
-              {etichettaAsse(p.nome)}{" "}
-              <span className="font-mono text-text-1">{p.valore}</span>
-            </span>
-          ))}
+                key={p.nome}
+                className="flex items-center gap-1.5 text-xs text-text-2"
+              >
+                <span
+                  className="inline-block h-2 w-2 shrink-0 rounded-full"
+                  style={{
+                    background: coloreCategoria(fonte, p.nome, i, colore),
+                  }}
+                  aria-hidden
+                />
+                {etichettaAsse(p.nome)}{" "}
+                <span className="font-mono text-text-1">{p.valore}</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -218,80 +286,93 @@ export function GraficoCategorie({
       colore === "multi" ? COLORI_GRAFICO[0] : COLORI_GRAFICO[(colore - 1) % 8];
     const Contenitore = tipo === "line" ? LineChart : AreaChart;
     return (
-      <ResponsiveContainer width="100%" height={240}>
-        <Contenitore
-          data={ordinati}
-          margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
-        >
-          <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-          <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
-          <YAxis {...ASSI} allowDecimals={false} />
-          <Tooltip content={<TooltipCard />} />
-          {tipo === "line" ? (
-            <Line
-              dataKey="valore"
-              name="valore"
-              stroke={c}
-              strokeWidth={2}
-              dot={{ r: 3, fill: c, strokeWidth: 0 }}
-              isAnimationActive={false}
-            />
-          ) : (
-            <Area
-              dataKey="valore"
-              name="valore"
-              stroke={c}
-              strokeWidth={2}
-              fill={c}
-              fillOpacity={0.15}
-              isAnimationActive={false}
-            />
-          )}
-        </Contenitore>
-      </ResponsiveContainer>
+      <div>
+        {tabella}
+        <div aria-hidden>
+          <ResponsiveContainer width="100%" height={240}>
+            <Contenitore
+              data={ordinati}
+              margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
+            >
+              <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+              <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
+              <YAxis {...ASSI} allowDecimals={false} />
+              <Tooltip content={<TooltipCard />} />
+              {tipo === "line" ? (
+                <Line
+                  dataKey="valore"
+                  name="valore"
+                  stroke={c}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: c, strokeWidth: 0 }}
+                  isAnimationActive={false}
+                />
+              ) : (
+                <Area
+                  dataKey="valore"
+                  name="valore"
+                  stroke={c}
+                  strokeWidth={2}
+                  fill={c}
+                  fillOpacity={0.15}
+                  isAnimationActive={false}
+                />
+              )}
+            </Contenitore>
+          </ResponsiveContainer>
+        </div>
+      </div>
     );
   }
 
   return (
-    <ResponsiveContainer width="100%" height={240}>
-      <BarChart
-        data={ordinati}
-        margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
-        barCategoryGap="25%"
-      >
-        <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-        <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
-        <YAxis {...ASSI} allowDecimals={false} />
-        <Tooltip
-          content={<TooltipCard />}
-          cursor={{ fill: "var(--surface-2)" }}
-        />
-        <Bar
-          dataKey="valore"
-          name="valore"
-          radius={[4, 4, 0, 0]}
-          maxBarSize={36}
-          isAnimationActive={false}
-        >
-          {ordinati.map((p, i) => (
-            <Cell
-              key={p.nome}
-              fill={coloreCategoria(fonte, p.nome, i, colore)}
+    <div>
+      {tabella}
+      <div aria-hidden>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart
+            data={ordinati}
+            margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
+            barCategoryGap="25%"
+          >
+            <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+            <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
+            <YAxis {...ASSI} allowDecimals={false} />
+            <Tooltip
+              content={<TooltipCard />}
+              cursor={{ fill: "var(--surface-2)" }}
             />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+            <Bar
+              dataKey="valore"
+              name="valore"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={36}
+              isAnimationActive={false}
+            >
+              {ordinati.map((p, i) => (
+                <Cell
+                  key={p.nome}
+                  fill={coloreCategoria(fonte, p.nome, i, colore)}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
 
 /** Времева графика с няколко серии (fatturato: emesso / incassato). */
 export function GraficoSerie({
+  titolo,
   dati,
   serie,
   tipo,
   colore,
 }: {
+  /** Заглавието на графиката — става `<caption>` на скритата таблица. */
+  titolo: string;
   dati: PuntoSerie[];
   serie: { chiave: string; label: string }[];
   tipo: TipoGrafico;
@@ -307,70 +388,80 @@ export function GraficoSerie({
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={240}>
-        <Contenitore
-          data={dati}
-          margin={{ top: 8, right: 8, bottom: 0, left: -8 }}
-          barCategoryGap="25%"
-        >
-          <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-          <XAxis dataKey="nome" {...ASSI} />
-          <YAxis {...ASSI} />
-          <Tooltip
-            content={<TooltipCard />}
-            cursor={tipo === "bar" ? { fill: "var(--surface-2)" } : undefined}
-          />
-          {serie.map((s, i) =>
-            tipo === "line" ? (
-              <Line
-                key={s.chiave}
-                dataKey={s.chiave}
-                name={s.label}
-                stroke={colori[i]}
-                strokeWidth={2}
-                dot={{ r: 3, fill: colori[i], strokeWidth: 0 }}
-                isAnimationActive={false}
-              />
-            ) : tipo === "area" ? (
-              <Area
-                key={s.chiave}
-                dataKey={s.chiave}
-                name={s.label}
-                stroke={colori[i]}
-                strokeWidth={2}
-                fill={colori[i]}
-                fillOpacity={0.15}
-                isAnimationActive={false}
-              />
-            ) : (
-              <Bar
-                key={s.chiave}
-                dataKey={s.chiave}
-                name={s.label}
-                fill={colori[i]}
-                radius={[4, 4, 0, 0]}
-                maxBarSize={24}
-                isAnimationActive={false}
-              />
-            ),
-          )}
-        </Contenitore>
-      </ResponsiveContainer>
-      {/* легенда: ≥2 серии → винаги присъства */}
-      <div className="mt-2 flex flex-wrap gap-4 px-2">
-        {serie.map((s, i) => (
-          <span
-            key={s.chiave}
-            className="flex items-center gap-1.5 text-xs text-text-2"
+      <TabellaAlternativa
+        titolo={titolo}
+        colonne={["Periodo", ...serie.map((s) => s.label)]}
+        righe={dati.map((p) => [
+          String(p.nome),
+          ...serie.map((s) => p[s.chiave] ?? 0),
+        ])}
+      />
+      <div aria-hidden>
+        <ResponsiveContainer width="100%" height={240}>
+          <Contenitore
+            data={dati}
+            margin={{ top: 8, right: 8, bottom: 0, left: -8 }}
+            barCategoryGap="25%"
           >
-            <span
-              className="inline-block h-2 w-2 rounded-full"
-              style={{ background: colori[i] }}
-              aria-hidden
+            <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+            <XAxis dataKey="nome" {...ASSI} />
+            <YAxis {...ASSI} />
+            <Tooltip
+              content={<TooltipCard />}
+              cursor={tipo === "bar" ? { fill: "var(--surface-2)" } : undefined}
             />
-            {s.label}
-          </span>
-        ))}
+            {serie.map((s, i) =>
+              tipo === "line" ? (
+                <Line
+                  key={s.chiave}
+                  dataKey={s.chiave}
+                  name={s.label}
+                  stroke={colori[i]}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: colori[i], strokeWidth: 0 }}
+                  isAnimationActive={false}
+                />
+              ) : tipo === "area" ? (
+                <Area
+                  key={s.chiave}
+                  dataKey={s.chiave}
+                  name={s.label}
+                  stroke={colori[i]}
+                  strokeWidth={2}
+                  fill={colori[i]}
+                  fillOpacity={0.15}
+                  isAnimationActive={false}
+                />
+              ) : (
+                <Bar
+                  key={s.chiave}
+                  dataKey={s.chiave}
+                  name={s.label}
+                  fill={colori[i]}
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={24}
+                  isAnimationActive={false}
+                />
+              ),
+            )}
+          </Contenitore>
+        </ResponsiveContainer>
+        {/* легенда: ≥2 серии → винаги присъства */}
+        <div className="mt-2 flex flex-wrap gap-4 px-2">
+          {serie.map((s, i) => (
+            <span
+              key={s.chiave}
+              className="flex items-center gap-1.5 text-xs text-text-2"
+            >
+              <span
+                className="inline-block h-2 w-2 rounded-full"
+                style={{ background: colori[i] }}
+                aria-hidden
+              />
+              {s.label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

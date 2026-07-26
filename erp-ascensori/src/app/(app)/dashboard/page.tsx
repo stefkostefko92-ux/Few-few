@@ -472,6 +472,7 @@ function ContenutoWidget({ cfg, stats }: { cfg: WidgetCfg; stats: Stats }) {
       );
     return (
       <GraficoSerie
+        titolo={def.label}
         dati={dati}
         serie={def.serie}
         tipo={cfg.grafico === "donut" ? "bar" : (cfg.grafico ?? "area")}
@@ -490,6 +491,7 @@ function ContenutoWidget({ cfg, stats }: { cfg: WidgetCfg; stats: Stats }) {
   return (
     <GraficoCategorie
       fonte={fonte}
+      titolo={def.label}
       dati={dati}
       tipo={cfg.grafico ?? "bar"}
       colore={cfg.colore ?? "multi"}
