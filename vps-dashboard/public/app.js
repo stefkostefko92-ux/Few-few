@@ -176,6 +176,7 @@ const SECTIONS = [
   { id: 'databases', ico: '⛁', label: 'Бази', render: renderDatabases },
   { id: 'processes', ico: '≡', label: 'Процеси', render: renderProcesses },
   { id: 'logs', ico: '☰', label: 'Логове', render: renderLogs },
+  { id: 'traffic', ico: '📶', label: 'Трафик', render: renderTraffic },
   { id: 'deploy', ico: '⇧', label: 'Деплой', render: renderDeploy },
   { id: 'updates', ico: '⟳', label: 'Ъпдейти', render: renderUpdates },
   { id: 'security', ico: '⛨', label: 'Сигурност', render: renderSecurity },
@@ -304,6 +305,7 @@ const SECTION_ALIASES = {
   databases: 'бази данни sqlite postgres дъмп dump',
   processes: 'процеси ps top kill',
   logs: 'логове дневник journal journalctl',
+  traffic: 'трафик access log nginx бавни адреси endpoint заявки ботове грешки',
   deploy: 'деплой разгръщане release rollback архив zip',
   updates: 'ъпдейти обновявания apt upgrade',
   security: 'сигурност портове ssh tls сертификати',
@@ -2563,8 +2565,64 @@ async function renderSecurity() {
 // ── Бекъпи ────────────────────────────────────────────────────────────────────────
 async function renderBackups() {
   const view = document.getElementById('view');
-  const b = await api('/backups');
+  const [b, h] = await Promise.all([api('/backups'), api('/backups/health').catch(() => null)]);
   view.innerHTML = '';
+
+  // Двата тихи провала на бекъпите: спрял е (никой не забелязва липсата на файл)
+  // и е боклук (файлът е там, но не се възстановява). Затова здравето е най-горе.
+  if (h) {
+    const age = h.backup || {};
+    const ageKind = !age.hasBackup ? 'bad' : age.suspiciouslySmall ? 'bad' : age.ageDays > h.maxAgeDays ? 'warn' : 'ok';
+    const drillKind = !h.lastOkAt ? 'warn' : h.lastResult && !h.lastResult.ok ? 'bad' : 'ok';
+    view.appendChild(
+      el('div', { class: 'grid grid-2', style: 'margin-bottom:16px' }, [
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-head' }, [
+            el('h3', { text: 'Възраст на бекъпа' }),
+            pill(ageKind, age.hasBackup ? `${age.ageDays} дни` : 'НЯМА'),
+          ]),
+          el('div', { class: 'metric-sub', text: age.hasBackup
+            ? `Най-нов: ${age.newest} · ${fmtBytes(age.sizeBytes)} · ${fmtWhen(age.at)}`
+            : 'В папката с дъмпове няма нищо. Спрял крон не вдига грешка сам — затова се следи възрастта.' }),
+          el('div', { class: 'metric-sub', text: `Праг за аларма: ${h.maxAgeDays} дни.` }),
+          age.suspiciouslySmall
+            ? el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: '⚠ Файлът е практически празен — по-опасно от липсващ, защото изглежда като успех.' })
+            : '',
+        ]),
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-head' }, [
+            el('h3', { text: 'Проба за възстановяване' }),
+            pill(drillKind, h.lastOkAt ? `преди ${h.lastOkAgeDays} дни` : 'никога'),
+          ]),
+          el('div', { class: 'metric-sub', text:
+            'Бекъп, който никога не си възстановявал, е обещание, не гаранция. Пробата разопакова най-новия дъмп в /tmp, ' +
+            'проверява целостта и брои таблиците — живото остава недокоснато.' }),
+          el('div', { class: 'metric-sub', text: `Каданс: на ${h.drillIntervalDays} дни${h.due ? ' · дължи се сега' : ''}.` }),
+          h.lastResult && !h.lastResult.ok
+            ? el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: `⚠ Последната проба се провали (${fmtWhen(h.lastResult.ts)}).` })
+            : '',
+          el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+            el('button', {
+              class: 'btn btn-sm', text: '▶ Пробвай сега',
+              onclick: () => runJob('/backups/drill', {}, 'Проба за възстановяване'),
+            }),
+          ]),
+          h.history?.length
+            ? el('div', { class: 'table-wrap', style: 'margin-top:10px' }, [
+                tableEl(['Кога', 'Резултат', 'Дъмп'], h.history.map((e) =>
+                  el('tr', {}, [
+                    el('td', { class: 'muted', text: fmtWhen(e.ts) }),
+                    el('td', {}, [pill(e.ok ? 'ok' : 'bad', e.ok ? 'мина' : `изход ${e.code ?? '?'}`)]),
+                    el('td', { class: 'mono', text: e.dump || '—' }),
+                  ])
+                )),
+              ])
+            : '',
+        ]),
+      ])
+    );
+  }
+
   view.appendChild(el('p', { class: 'section-desc', text: 'Открити бекъп папки + история на releases (за rollback).' }));
   if (!b.spots.length) view.appendChild(el('div', { class: 'empty', text: 'Няма известни бекъп папки на този VPS.' }));
   for (const spot of b.spots) {
@@ -2943,6 +3001,95 @@ function drawInvestigateChart(cv, tip, d) {
   };
 }
 
+// ── Трафик (access log) ───────────────────────────────────────────────────────────
+// Журналът казва какво се е оплакало приложението. Този екран казва какво е
+// поискал СВЕТЪТ и колко е чакал — без него „сайтът е бавен" няма адрес.
+async function renderTraffic() {
+  const view = document.getElementById('view');
+  const d = await api('/accesslog');
+  view.innerHTML = '';
+  if (!d.available) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: d.note })]));
+    return;
+  }
+  view.appendChild(el('p', { class: 'section-desc', text:
+    `${d.total} нови заявки от последния анализ (${d.botPct}% ботове, ${fmtBytes(d.bytes)} трафик). ` +
+    'Всяко зареждане чете само НОВОТО — ротацията се разпознава по inode, за да не се броят редове двойно. ' +
+    'Адресите са групирани по форма (/order/8123 и /order/9044 са един адрес).' }));
+
+  if (d.timingHint) {
+    view.appendChild(
+      el('div', { class: 'card', style: 'margin-bottom:12px;border-left:3px solid var(--warn)' }, [
+        el('strong', { text: '⚠ Логът не съдържа време за заявка' }),
+        el('div', { class: 'metric-sub', text: 'Без него „кой адрес е бавен" не може да се отговори. Добави в nginx конфига:' }),
+        el('pre', { class: 'term-out', style: 'max-height:110px', text: d.timingHint.replace(/^.*?nginx: /, '') }),
+      ])
+    );
+  }
+
+  const st = d.byStatus || {};
+  view.appendChild(
+    el('div', { class: 'grid grid-metrics' }, [
+      ['2xx', 'ok'], ['3xx', 'dim'], ['4xx', 'warn'], ['5xx', 'bad'],
+    ].map(([cls, kind]) =>
+      el('div', { class: 'card' }, [
+        el('div', { class: 'card-head' }, [el('h3', { text: cls }), pill(kind, st[cls] ? String(st[cls]) : '0')]),
+        el('div', { class: 'metric-sub', text: d.total ? `${(((st[cls] || 0) / d.total) * 100).toFixed(1)}% от заявките` : '—' }),
+      ])
+    ))
+  );
+
+  const table = (title, rows, extra) =>
+    el('div', { style: 'margin-top:20px' }, [
+      el('h3', { class: 'muted', text: title, style: 'margin:0 0 8px' }),
+      extra ? el('div', { class: 'metric-sub', style: 'margin-bottom:8px', text: extra }) : '',
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Адрес', 'Брой', 'p50', 'p95', 'макс', 'грешки', 'ботове'], rows.map((p) =>
+          el('tr', {}, [
+            el('td', { class: 'mono', text: `${p.method} ${p.path}` }),
+            el('td', { text: String(p.count) }),
+            el('td', { class: 'mono', text: p.p50 != null ? `${p.p50}s` : '—' }),
+            el('td', { class: 'mono', text: p.p95 != null ? `${p.p95}s` : '—' }),
+            el('td', { class: 'mono', text: p.max != null ? `${p.max}s` : '—' }),
+            el('td', {}, [p.errorPct ? pill(p.errorPct > 20 ? 'bad' : 'warn', `${p.errorPct}%`) : el('span', { class: 'muted', text: '—' })]),
+            el('td', { class: 'muted', text: `${p.botPct}%` }),
+          ])
+        )),
+      ]),
+    ]);
+
+  if (d.hasTiming) {
+    view.appendChild(table('Най-бавни адреси', d.topBySlow,
+      'Подредени по p95, не по средно: средното се удавя от бързите заявки, а потребителят усеща точно опашката.'));
+  }
+  view.appendChild(table('Най-искани адреси', d.topByCount));
+  if (d.topByErrors.length) view.appendChild(table('Най-много грешки', d.topByErrors));
+
+  view.appendChild(
+    el('div', { class: 'grid grid-2', style: 'margin-top:20px' }, [
+      el('div', { class: 'card' }, [
+        el('h3', { text: 'Най-активни адреси' }),
+        el('div', { class: 'metric-sub', text: 'IP-тата се показват на живо за сигурност, но НЕ се записват на диска — състоянието пази само отмествания в лога.' }),
+        el('div', { class: 'table-wrap' }, [
+          tableEl(['IP', 'Заявки', 'Грешки'], d.topIps.map((i) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: i.ip }),
+              el('td', { text: String(i.count) }),
+              el('td', { text: i.errors ? String(i.errors) : '—' }),
+            ])
+          )),
+        ]),
+      ]),
+      el('div', { class: 'card' }, [
+        el('h3', { text: 'Последни 5xx' }),
+        d.serverErrors.length
+          ? el('pre', { class: 'log-out', style: 'max-height:280px', text: d.serverErrors.map((e) => `${e.ts ? new Date(e.ts).toLocaleTimeString('bg-BG') : '—'}  ${e.status}  ${e.method} ${e.path}`).join('\n') })
+          : el('div', { class: 'metric-sub', text: 'няма сървърни грешки в този прозорец' }),
+      ]),
+    ])
+  );
+}
+
 // ── Целост на /etc ────────────────────────────────────────────────────────────────
 // Това НЕ е откриване на прониквания (root може да пренапише и отпечатъка). Целта
 // е много по-честият случай: „вчера работеше, днес не" — кой файл е мръднал.
@@ -3286,6 +3433,44 @@ async function renderDomains() {
 
   // Смениш ли домейна, проверката вече не важи за него — бутонът се заключва
   // отново. Иначе „провери A → напиши Б → издай" изглежда одобрено, а не е.
+  // Изтичане на РЕГИСТРАЦИЯТА. Сертификатът е безполезен при паднал домейн, а
+  // домейнът пада по-тихо и се връща много по-скъпо.
+  const regBox = el('div', { style: 'margin-top:20px' });
+  view.appendChild(regBox);
+  loadPanel(regBox, '/domains/registration', 'Регистрация на домейните (RDAP)',
+    'Следим и регистрацията, не само сертификата. „hold" значи, че домейнът вече НЕ резолвва — сайтът е недостъпен, макар сървърът да работи.',
+    (r) => tableEl(['Домейн', 'Изтича', 'Остават', 'Статус'], (r.domains || []).map((d) =>
+      el('tr', {}, [
+        el('td', { class: 'mono', text: d.domain }),
+        el('td', { class: 'muted', text: d.expiresAt ? fmtWhen(d.expiresAt) : d.error || '—' }),
+        el('td', {}, [d.daysLeft == null ? el('span', { class: 'muted', text: '—' })
+          : pill(d.daysLeft <= 7 ? 'bad' : d.daysLeft <= 30 ? 'warn' : 'ok', `${d.daysLeft} дни`)]),
+        el('td', {}, [d.onHold ? pill('bad', 'HOLD') : el('span', { class: 'muted mono', text: (d.status || []).join(', ') || '—' })]),
+      ])
+    )));
+
+  // Заглавки за сигурност — проверява се това, което браузърът РЕАЛНО получава.
+  const hdrBox = el('div', { style: 'margin-top:20px' });
+  view.appendChild(hdrBox);
+  loadPanel(hdrBox, '/security/headers', 'Заглавки за сигурност',
+    'Проверява се отговорът на живия сайт, не конфигът — двете се разминават при прокси, кеш или забравен add_header в друг блок.',
+    (r) => el('div', {}, (r.sites || []).map((s) =>
+      el('div', { style: 'margin-bottom:12px' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: s.url }),
+          s.ok ? pill(s.score >= 90 ? 'ok' : s.score >= 60 ? 'warn' : 'bad', `${s.score}/100`) : pill('dim', s.error),
+        ]),
+        ...(s.findings || []).map((f) =>
+          el('div', { class: 'metric-sub' }, [
+            pill(f.severity === 'high' ? 'bad' : f.severity === 'medium' ? 'warn' : 'dim', f.severity),
+            document.createTextNode(` ${f.title} — ${f.why}`),
+            el('div', { class: 'mono metric-sub', text: '→ ' + f.fix }),
+          ])
+        ),
+        s.ok && !(s.findings || []).length ? el('div', { class: 'metric-sub', text: 'всички очаквани заглавки са налице' }) : '',
+      ])
+    )));
+
   const domain = el('input', {
     type: 'text', placeholder: 'example.com или *.example.com', class: 'mono', style: 'min-width:260px',
     oninput: () => {
@@ -3347,6 +3532,25 @@ async function renderDomains() {
         'Пробното издаване минава през staging средата на Let\'s Encrypt — сертификатът не е валиден за браузър, но НЕ харчи бойния лимит. Ползвай го, когато проверката не минава, а си сигурен в настройката.' }),
     ])
   );
+}
+
+// Панел, който се дозарежда САМ и не бави секцията. RDAP и HEAD заявките към
+// живите сайтове излизат в интернет — синхронното им чакане би направило цялата
+// секция бавна заради нещо, което е само допълнение.
+async function loadPanel(box, endpoint, title, desc, render) {
+  box.innerHTML = '';
+  box.appendChild(el('h3', { class: 'muted', text: title, style: 'margin:0 0 8px' }));
+  const body = el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: 'Проверявам…' })]);
+  box.appendChild(body);
+  try {
+    const r = await api(endpoint);
+    body.innerHTML = '';
+    body.appendChild(el('div', { class: 'metric-sub', style: 'margin-bottom:8px', text: desc }));
+    body.appendChild(render(r));
+  } catch (e) {
+    body.innerHTML = '';
+    body.appendChild(el('div', { class: 'metric-sub', text: 'Не можа да се провери: ' + e.message }));
+  }
 }
 
 function renderPreflight(container, pf) {

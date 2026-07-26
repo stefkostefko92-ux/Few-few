@@ -38,6 +38,9 @@ import * as domains from './domains.js';
 import { readRaw, handleGithub } from './webhook.js';
 import * as posture from './posture.js';
 import * as investigate from './investigate.js';
+import { AccessLogReader, discoverLogs } from './accesslog.js';
+import { drillSpec, backupAge } from './drill.js';
+import * as health from './health.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -1194,6 +1197,72 @@ export function buildRouter(ctx) {
         return jobs.start(spec, { user: req.user });
       }),
       { mutating: true }
+    )
+  );
+
+  // ── Access log: кой адрес е бавен и кой връща грешки ───────────────────────
+  r.get('/api/accesslog/files', guard(J(() => ({ files: discoverLogs() }))));
+  r.get(
+    '/api/accesslog',
+    guard(
+      J((req, res, p, url) => {
+        const limit = Math.min(100, Math.max(5, Number(url.searchParams.get('limit')) || 25));
+        return (ctx.accesslog || new AccessLogReader(cfg.paths.stateDir)).analyze({ limit });
+      })
+    )
+  );
+
+  // ── Бекъпи: възраст + проба за възстановяване ──────────────────────────────
+  r.get('/api/backups/health', guard(J(() => ctx.drill.status(cfg))));
+  r.post(
+    '/api/backups/drill',
+    guard(
+      J(async (req) => {
+        const spec = drillSpec();
+        audit.log({ action: 'backup.drill', dump: spec.dumpName, user: req.user });
+        const job = jobs.start(spec, { user: req.user });
+        // Резултатът се записва при приключване — така „последна успешна проба"
+        // е факт от изпълнението, не намерение.
+        ctx.watchDrill?.(job.id, spec.dumpName);
+        return job;
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Домейни: изтичане на РЕГИСТРАЦИЯТА (RDAP) ──────────────────────────────
+  r.get(
+    '/api/domains/registration',
+    guard(
+      J(async (req, res, p, url) => {
+        const one = url.searchParams.get('domain');
+        let names = one ? [one] : cfg.watchDomains || [];
+        if (!names.length) {
+          const certs = await system.tlsCerts();
+          names = [...new Set(certs.map((c) => c.domain))];
+        }
+        const out = [];
+        for (const n of [...new Set(names)].slice(0, 20)) out.push(await health.domainExpiry(n));
+        return { domains: out };
+      })
+    )
+  );
+
+  // ── Заглавки за сигурност на живите сайтове ────────────────────────────────
+  r.get(
+    '/api/security/headers',
+    guard(
+      J(async (req, res, p, url) => {
+        const one = url.searchParams.get('url');
+        let targets = one ? [one] : cfg.headerTargets || [];
+        if (!targets.length) {
+          const certs = await system.tlsCerts();
+          targets = certs.map((c) => `https://${c.domain}/`);
+        }
+        const out = [];
+        for (const t of [...new Set(targets)].slice(0, 20)) out.push(await health.checkSiteHeaders(t));
+        return { sites: out };
+      })
     )
   );
 

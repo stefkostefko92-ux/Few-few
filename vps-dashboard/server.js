@@ -12,6 +12,8 @@ import { PtySessions } from './src/pty.js';
 import { AuditShipper } from './src/audit-ship.js';
 import { SloStore } from './src/slo.js';
 import { LogMiner } from './src/logmine.js';
+import { AccessLogReader } from './src/accesslog.js';
+import { DrillStore, drillSpec } from './src/drill.js';
 import { buildRouter, ipGateAllows } from './src/routes.js';
 import { SudoGrants } from './src/sudo.js';
 import { serveStatic, sendError, clientIp } from './src/httpd.js';
@@ -31,8 +33,58 @@ metrics.startSampling();
 
 const slo = new SloStore(cfg.paths.stateDir);
 const logminer = new LogMiner(cfg.paths.stateDir);
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer });
+const accesslog = new AccessLogReader(cfg.paths.stateDir);
+const drill = new DrillStore(cfg.paths.stateDir);
+const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill });
 alerts.start();
+
+// Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
+// време — таймер за 30 дни не преживява рестарт, а сървър, който се рестартира
+// веднъж месечно, никога не би пуснал пробата.
+function runDrill(reason) {
+  let spec;
+  try {
+    spec = drillSpec();
+  } catch (err) {
+    // „Няма какво да се пробва" е находка, не мълчалив пропуск — но алармата за
+    // липсващ бекъп вече го казва, затова тук само отбелязваме.
+    drill.record({ ok: false, name: null, output: err.message, code: null });
+    return;
+  }
+  const job = jobs.start(spec, { user: reason });
+  watchDrill(job.id, spec.dumpName);
+}
+
+// Резултатът се записва при ПРИКЛЮЧВАНЕ — „последна успешна проба" трябва да е
+// факт от изпълнението, не намерение.
+function watchDrill(jobId, dumpName) {
+  const iv = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    const entry = drill.record({ ok: j.code === 0, name: dumpName, output: j.output, code: j.code });
+    if (!entry.ok) {
+      alerts
+        .event({
+          key: 'backup:drill',
+          severity: 'critical',
+          title: 'Пробата за възстановяване се провали',
+          body: `Дъмп „${dumpName}" не мина проверката (изход ${j.code}).\n${String(j.output || '').slice(-600)}`,
+        })
+        .catch(() => {});
+    }
+  }, 3000);
+  iv.unref?.();
+}
+
+if (cfg.backups?.drillEnabled !== false) {
+  const check = () => {
+    if (drill.due(Number(cfg.backups?.drillIntervalDays ?? 30))) runDrill('планирана проба');
+  };
+  setTimeout(check, 5 * 60000).unref?.(); // не на самия старт — сървърът да се вдигне
+  const drillTimer = setInterval(check, 3600 * 1000);
+  drillTimer.unref?.();
+}
 
 // SLO дневникът расте по един ред на продукт на минута — режем го на 35 дни
 // (30-дневният прозорец + запас) веднъж на ден, иначе за година става 500 MB.
@@ -83,6 +135,9 @@ const router = buildRouter({
   shipper,
   slo,
   logminer,
+  accesslog,
+  drill,
+  watchDrill,
   sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
   revokedSessions: new Set(), // поименно отменени до изтичането им

@@ -13,9 +13,12 @@ import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts } from './history.js';
 import { evaluateBurn } from './slo.js';
+import { backupChecks } from './drill.js';
+import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from './health.js';
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history, slo, logminer }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer, drill }) {
+    this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.cfg = cfg;
     this.metrics = metrics;
     this.logminer = logminer; // за „нова грешка в журнала"
@@ -246,6 +249,9 @@ export class AlertEngine {
     }
 
     for (const b of this.burnChecks()) out.push(b);
+    for (const b of backupChecks(this.cfg, this.drill)) out.push(b);
+    for (const b of await this.flappingChecks()) out.push(b);
+    for (const b of await this.domainChecks()) out.push(b);
 
     if (t.certDays) {
       for (const c of await tlsCerts()) {
@@ -338,6 +344,97 @@ export class AlertEngine {
         body: `Скорост ${hit.longBurn}× (праг ${hit.factor}×) — ${hit.label}. ${hit.badLong} лоши от ${hit.totalLong} проби за последните ${fmtDuration(hit.longWindowMs)}.`,
       });
     }
+    return out;
+  }
+
+  // Услуга в рестарт-цикъл. systemd я показва „active" — защото тя наистина е
+  // активна, за трети път през последната минута. Това е ПО-ЛОШО от спряна:
+  // изглежда жива, не вдига „failed" и никой не поглежда. Единственият видим
+  // белег е NRestarts, който расте — затова следим РАЗЛИКАТА между проверките.
+  async flappingChecks() {
+    const out = [];
+    if (this.cfg.alerts?.flapping === false) return out;
+    let units = [];
+    try {
+      const { listServices } = await import('./services.js');
+      const r = await listServices();
+      units = (r.services || [])
+        .filter((s) => s.active === 'active' || s.active === 'activating' || s.active === 'failed')
+        .map((s) => s.unit);
+    } catch {
+      return out;
+    }
+    if (!units.length) return out;
+    let now;
+    try {
+      now = await restartCounts(units);
+    } catch {
+      return out;
+    }
+    const threshold = Number(this.cfg.alerts?.flappingRestarts) || 3;
+    for (const f of detectFlapping(this.lastRestarts, now, { threshold })) {
+      out.push({
+        key: `flap:${f.unit}`,
+        severity: 'critical',
+        title: `${f.unit} се рестартира в цикъл`,
+        body:
+          `${f.delta} рестарта от последната проверка (общо ${f.total}). systemd я показва като жива, ` +
+          `защото тя наистина се вдига — и пада отново. Виж защо: journalctl -u ${f.unit} -n 100`,
+        sustain: false,
+      });
+    }
+    this.lastRestarts = now;
+    return out;
+  }
+
+  // Изтичаща РЕГИСТРАЦИЯ на домейн. Сертификатът е безполезен, ако домейнът
+  // падне — а домейнът пада по-тихо и се връща много по-скъпо. RDAP се пита
+  // рядко (веднъж на 12 часа): това е външна услуга, не наша.
+  async domainChecks() {
+    const out = [];
+    const days = Number(this.cfg.domainExpiryDays) || 30;
+    if (!days) return out;
+    const now = Date.now();
+    if (this.lastDomainCheck && now - this.lastDomainCheck < 12 * 3600000) return this.lastDomainResults || [];
+    this.lastDomainCheck = now;
+
+    let names = (this.cfg.watchDomains || []).map(registrableDomain);
+    if (!names.length) {
+      // Без изричен списък следим домейните, за които вече имаме сертификат.
+      try {
+        names = [...new Set((await tlsCerts()).map((c) => registrableDomain(c.domain)))];
+      } catch {
+        return out;
+      }
+    }
+    for (const name of [...new Set(names.filter(Boolean))].slice(0, 20)) {
+      let info;
+      try {
+        info = await domainExpiry(name);
+      } catch {
+        continue;
+      }
+      if (!info.available) continue; // RDAP не отговаря за всяка зона — мълчим
+      if (info.onHold) {
+        out.push({
+          key: `domain-hold:${name}`,
+          severity: 'critical',
+          title: `Домейнът ${name} е задържан (hold)`,
+          body: `Статус: ${info.status.join(', ')}. При „hold" домейнът НЕ резолвва — сайтът е недостъпен, независимо че сървърът работи.`,
+          sustain: false,
+        });
+      }
+      if (info.daysLeft != null && info.daysLeft <= days) {
+        out.push({
+          key: `domain:${name}`,
+          severity: info.daysLeft <= 7 ? 'critical' : 'warning',
+          title: `Регистрацията на ${name} изтича след ${info.daysLeft} дни`,
+          body: `Изтича на ${info.expiresAt}. Сертификатът не помага — при изтекъл домейн сайтът просто изчезва, а връщането е скъпо и бавно.`,
+          sustain: false,
+        });
+      }
+    }
+    this.lastDomainResults = out;
     return out;
   }
 
