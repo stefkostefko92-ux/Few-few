@@ -248,17 +248,34 @@ function searchBox(placeholder = 'Филтрирай…') {
   return el('input', { type: 'search', placeholder, class: 'grow', 'aria-label': placeholder });
 }
 
+// Поколение на навигацията. Бавна секция (напр. „Ъпдейти", която чака apt) си
+// дорисува ЗАКЪСНЯЛО и презаписва секцията, към която вече си отишъл — видяно на
+// живо: отваряш „Задачи", а вътре стои списъкът с пакети. Затова всеки render се
+// сверява с поколението си, преди да пипне екрана.
+let navGen = 0;
+function isCurrentRender(gen) {
+  return gen === navGen;
+}
+
 function go(id) {
+  const gen = ++navGen;
   state.section = id;
   stopMetrics();
   closeSectionStream();
   for (const b of document.querySelectorAll('#nav button')) b.classList.toggle('active', b.dataset.id === id);
   const s = SECTIONS.find((x) => x.id === id);
   document.getElementById('section-title').textContent = s.label;
+  // Всяка навигация получава СВЕЖ #view възел. Закъснялата секция държи стария
+  // (вече откачен) възел и пише в нищото — вместо да замаже новата. Работи за
+  // всичките 32 секции наведнъж, защото всяка взема `view` ПРЕДИ първото await.
+  const old = document.getElementById('view');
+  const fresh = old.cloneNode(false);
+  old.replaceWith(fresh);
   showSkeleton();
   document.querySelector('.sidebar').classList.remove('open');
   clearCommands('section'); // командите на предишната секция си отиват с нея
   s.render().catch((e) => {
+    if (!isCurrentRender(gen)) return; // закъсняла грешка от изоставена секция
     document.getElementById('view').innerHTML = `<div class="empty">Грешка: ${escapeHtml(e.message)}</div>`;
   });
 }
