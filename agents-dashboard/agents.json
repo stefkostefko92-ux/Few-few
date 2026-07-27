@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-25",
+    "updated": "2026-07-27",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -13136,6 +13136,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „vps-dashboard: SLO се храни от productHealth (deploy.js:138) — гол GET със статус 200-3…\" (+6)"
+        },
         {
           "date": "2026-07-25",
           "type": "quarantine",
