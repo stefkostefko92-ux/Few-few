@@ -5833,9 +5833,20 @@
           "date": "2026-07-24",
           "event": "v14.4 — учене",
           "detail": "Научи: pg_dump: 'directory' формат (-Fd) е ЕДИНСТВЕНИЯТ, който поддържа паралелни дъмпове (-j … (+15 още)"
+        },
+        {
+          "version": "15.1.0",
+          "date": "2026-07-27",
+          "event": "v15.1 — учене",
+          "detail": "Научи: ReadWritePaths=/root НЕ отменя ProtectHome=read-only за СЪЩИЯ път. При равни пътища sys… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-27",
+          "type": "learning",
+          "summary": "Научи: „ReadWritePaths=/root НЕ отменя ProtectHome=read-only за СЪЩИЯ път. При равни пътища sys…\" (+6 още)"
+        },
         {
           "date": "2026-07-27",
           "type": "quarantine",
