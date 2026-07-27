@@ -387,21 +387,6 @@ export const impianti: CrudConfig = {
   },
 };
 
-const mediaBase = z.object({
-  impiantoId: uuid,
-  tipo: z.enum(["foto", "video", "documento"]),
-  url: z.string().trim().min(1).max(1000),
-  nome: strOpt,
-});
-
-export const impiantiMedia: CrudConfig = {
-  entita: "impianti_media",
-  model: "impiantoMedia",
-  schemaCreate: mediaBase,
-  schemaUpdate: mediaBase.partial(),
-  filterFields: ["impiantoId"],
-};
-
 const scadenzaBase = z.object({
   impiantoId: uuid,
   tipo: z.enum(["revisione", "certificazione", "manutenzione"]),

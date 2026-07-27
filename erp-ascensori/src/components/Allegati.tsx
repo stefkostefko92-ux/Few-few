@@ -20,6 +20,18 @@ interface Allegato {
   createdAt: string;
 }
 
+/**
+ * Снимка ли е — по типа, ПОДУШЕН на сървъра, не по разширението в името.
+ *
+ * ЗАЩО ИЗОБЩО. За асансьорна фирма прикаченото най-често е СНИМКА: табелката с
+ * матриколата, скъсаното въже, повредата, за която се спори кой я е причинил.
+ * Списък с имена на файлове иска отваряне на всеки поотделно — на телефон, в
+ * машинното, с една ръка. Решетка от миниатюри е самата функция.
+ */
+function eImmagine(mimeType: string): boolean {
+  return mimeType.startsWith("image/");
+}
+
 /** Размер за човек: „1,4 MB“, не „1468006“. */
 function dimensione(byte: number): string {
   if (byte < 1024) return `${byte} B`;
@@ -54,16 +66,16 @@ export default function Allegati({
     void carica();
   }, [carica]);
 
-  async function invia(file: File) {
+  async function invia(file: File): Promise<boolean> {
     setErrore(null);
     // Проверката пред качването е УДОБСТВО, не защита: сървърът я прави пак и
     // по СЪДЪРЖАНИЕ. Тук само спестява на техника 20 MB през мобилна мрежа,
     // за да получи после отказ.
     if (file.size > DIMENSIONE_MASSIMA) {
       setErrore(
-        `File troppo grande: massimo ${Math.floor(DIMENSIONE_MASSIMA / 1048576)} MB.`,
+        `«${file.name}» è troppo grande: massimo ${Math.floor(DIMENSIONE_MASSIMA / 1048576)} MB.`,
       );
-      return;
+      return false;
     }
     setCaricamento(true);
     try {
@@ -75,13 +87,24 @@ export default function Allegati({
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         setErrore(d.error ?? "Errore durante il caricamento");
-        return;
+        return false;
       }
       await carica();
-      if (input.current) input.current.value = "";
+      return true;
     } finally {
       setCaricamento(false);
     }
+  }
+
+  /** Едно по едно, не паралелно: сървърът пише файл + ред, а мобилната мрежа
+   *  не обича шест едновременни качвания. Първата грешка спира останалите —
+   *  иначе човекът вижда едно съобщение и не знае кои са минали. */
+  async function inviaTutti(files: File[]) {
+    for (const f of files) {
+      const ok = await invia(f);
+      if (!ok) break;
+    }
+    if (input.current) input.current.value = "";
   }
 
   async function rimuovi(a: Allegato) {
@@ -96,16 +119,61 @@ export default function Allegati({
   }
 
   const accettati = TIPI_PERMESSI.map((t) => t.mime).join(",");
+  const immagini = righe.filter((a) => eImmagine(a.mimeType));
+  const documenti = righe.filter((a) => !eImmagine(a.mimeType));
 
   return (
     <div className="card p-5">
       <h2 className="mb-3 text-lg font-semibold text-text-1">{titolo}</h2>
 
-      {righe.length === 0 ? (
+      {righe.length === 0 && (
         <p className="mb-3 text-sm text-text-3">Nessun allegato.</p>
-      ) : (
+      )}
+
+      {immagini.length > 0 && (
+        <ul className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {immagini.map((a) => (
+            <li key={a.id} className="group relative">
+              <a
+                href={`/api/allegati/${a.id}?anteprima=1`}
+                target="_blank"
+                rel="noopener"
+                className="block overflow-hidden rounded-md border border-border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                {/* Не `next/image`: файлът минава през маршрут с проверка на
+                    роля и фирма, тоест не е статичен ресурс, който
+                    оптимизаторът може да вземе. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/allegati/${a.id}?anteprima=1`}
+                  alt={a.nome}
+                  loading="lazy"
+                  className="aspect-4/3 w-full bg-surface-2 object-cover"
+                />
+              </a>
+              <div className="mt-1 flex items-start justify-between gap-1">
+                <span className="truncate text-xs text-text-2" title={a.nome}>
+                  {a.nome}
+                </span>
+                {!soloLettura && (
+                  <button
+                    className="btn-ghost -mt-1 h-8 shrink-0 px-1"
+                    aria-label={`Elimina ${a.nome}`}
+                    onClick={() => void rimuovi(a)}
+                  >
+                    <IcoElimina />
+                  </button>
+                )}
+              </div>
+              <span className="text-xs text-text-3">{dataIt(a.createdAt)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {documenti.length > 0 && (
         <ul className="mb-3 space-y-1 text-sm">
-          {righe.map((a) => (
+          {documenti.map((a) => (
             <li key={a.id} className="flex items-center justify-between gap-2">
               <a
                 className="inline-flex items-center gap-1.5 text-accent-text hover:underline"
@@ -120,7 +188,7 @@ export default function Allegati({
                 <span>{dataIt(a.createdAt)}</span>
                 {!soloLettura && (
                   <button
-                    className="btn-ghost h-6 px-1"
+                    className="btn-ghost h-8 px-1"
                     aria-label={`Elimina ${a.nome}`}
                     onClick={() => void rimuovi(a)}
                   >
@@ -154,11 +222,14 @@ export default function Allegati({
             type="file"
             className="input py-1.5"
             accept={accettati}
+            // НЯКОЛКО НАВЕДНЪЖ. Техникът снима шест кадъра в машинното; шест
+            // отделни качвания на мобилна мрежа са шест повода да се откаже.
+            multiple
             disabled={caricamento}
             aria-describedby={`file-aiuto-${entitaId}`}
             onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) void invia(f);
+              const f = Array.from(e.target.files ?? []);
+              if (f.length) void inviaTutti(f);
             }}
           />
           <p id={`file-aiuto-${entitaId}`} className="mt-1 text-xs text-text-3">

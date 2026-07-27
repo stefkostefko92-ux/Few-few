@@ -74,7 +74,6 @@ interface Impianto {
     ragioneSociale: string | null;
     telefono: string | null;
   } | null;
-  media: { id: string; tipo: string; url: string; nome: string | null }[];
   scadenze: {
     id: string;
     tipo: string;
@@ -98,16 +97,14 @@ export default function Pagina() {
   const router = useRouter();
   const [imp, setImp] = useState<Impianto | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
-  const [modaleMedia, setModaleMedia] = useState(false);
   const [modaleAssegna, setModaleAssegna] = useState(false);
   const [modaleVerifica, setModaleVerifica] = useState(false);
 
   const carica = useCallback(async () => {
     // Филтрирането е СЪРВЪРНО (?impiantoId=…). Дърпането на цялата таблица и
     // филтриране в браузъра тихо губеше записите след първата страница.
-    const [ri, rm, rs, ra, rv] = await Promise.all([
+    const [ri, rs, ra, rv] = await Promise.all([
       fetch(`/api/impianti/${id}`),
-      fetch(`/api/impianti-media?impiantoId=${id}`),
       fetch(`/api/scadenze?impiantoId=${id}`),
       fetch(`/api/assegnazioni?impiantoId=${id}`),
       fetch(`/api/impianti/${id}/verifiche`),
@@ -119,7 +116,6 @@ export default function Pagina() {
     const base = await ri.json();
     setImp({
       ...base,
-      media: rm.ok ? (await rm.json()).righe : [],
       scadenze: rs.ok ? (await rs.json()).righe : [],
       assegnazioni: ra.ok ? (await ra.json()).righe : [],
       verifiche: rv.ok ? (await rv.json()).righe : [],
@@ -311,6 +307,17 @@ export default function Pagina() {
                       : ""}
                   </span>
                 )}
+                {/* САМИЯТ ВЕРБАЛ. Дотук се пазеше само НОМЕРЪТ му — а при
+                    проверка се иска документът, не номерът. Той идва от
+                    организма на хартия или в PDF и трябва да стои закачен за
+                    проверката, не в чужда папка. */}
+                <div className="w-full">
+                  <Allegati
+                    entita="verifiche_impianti"
+                    entitaId={v.id}
+                    titolo="Verbale e allegati della verifica"
+                  />
+                </div>
               </li>
             ))}
           </ul>
@@ -464,42 +471,8 @@ export default function Pagina() {
           )}
         </div>
 
-        <div className="card p-5 lg:col-span-3">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-text-1">Allegati</h2>
-            <button
-              className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
-              onClick={() => setModaleMedia(true)}
-            >
-              <IcoNuovoPiccolo />
-              Aggiungi
-            </button>
-          </div>
-          {imp.media.length === 0 ? (
-            <p className="text-sm text-text-3">Nessun allegato.</p>
-          ) : (
-            <ul className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
-              {imp.media.map((m) => (
-                <li key={m.id} className="rounded-md border border-border p-3">
-                  <div className="text-xs uppercase text-text-3">{m.tipo}</div>
-                  <div className="truncate font-medium">{m.nome ?? m.url}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       </div>
 
-      {modaleMedia && (
-        <FormMedia
-          impiantoId={imp.id}
-          onChiudi={() => setModaleMedia(false)}
-          onSalvato={() => {
-            setModaleMedia(false);
-            void carica();
-          }}
-        />
-      )}
       {modaleAssegna && (
         <FormAssegnazione
           impiantoId={imp.id}
@@ -764,73 +737,6 @@ function Riga({ label, valore }: { label: string; valore: React.ReactNode }) {
       <dt className="text-text-3">{label}</dt>
       <dd className="text-right">{valore}</dd>
     </div>
-  );
-}
-
-function FormMedia({
-  impiantoId,
-  onChiudi,
-  onSalvato,
-}: {
-  impiantoId: string;
-  onChiudi: () => void;
-  onSalvato: () => void;
-}) {
-  const [form, setForm] = useState({ tipo: "documento", url: "", nome: "" });
-  const [errore, setErrore] = useState<string | null>(null);
-
-  async function salva(e: React.FormEvent) {
-    e.preventDefault();
-    const res = await fetch("/api/impianti-media", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, impiantoId, nome: form.nome || null }),
-    });
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
-      return;
-    }
-    onSalvato();
-  }
-
-  return (
-    <Modale titolo="Nuovo allegato" aperto onChiudi={onChiudi}>
-      <form onSubmit={salva}>
-        <label className="label">Tipo</label>
-        <select
-          className="input mb-4"
-          value={form.tipo}
-          onChange={(e) => setForm({ ...form, tipo: e.target.value })}
-        >
-          <option value="foto">Foto</option>
-          <option value="video">Video</option>
-          <option value="documento">Documento</option>
-        </select>
-        <label className="label">Percorso file / URL *</label>
-        <input
-          className="input mb-4"
-          required
-          value={form.url}
-          onChange={(e) => setForm({ ...form, url: e.target.value })}
-        />
-        <label className="label">Nome descrittivo</label>
-        <input
-          className="input mb-4"
-          value={form.nome}
-          onChange={(e) => setForm({ ...form, nome: e.target.value })}
-        />
-        {errore && <p className="mb-4 text-sm text-danger-text">{errore}</p>}
-        <div className="flex justify-end gap-2">
-          <button type="button" className="btn-secondary" onClick={onChiudi}>
-            Annulla
-          </button>
-          <button type="submit" className="btn-primary">
-            Salva
-          </button>
-        </div>
-      </form>
-    </Modale>
   );
 }
 

@@ -17,6 +17,14 @@ const PDF = new Uint8Array([
   0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37, 0x0a, 0x25,
 ]);
 
+/** Най-малкият валиден PNG: сигнатура + IHDR. Само първите байтове значат нещо
+ *  за подушването, но файлът трябва да е разпознаваем и от браузър. */
+const PNG = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49,
+  0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06,
+  0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
+]);
+
 before(async () => {
   responsabile = await comeRuolo("RESPONSABILE");
   tecnico = await comeRuolo("TECNICO");
@@ -210,5 +218,71 @@ describe("достъп", () => {
     assert.equal(l.status, 200);
     assert.ok(l.dati.righe.length > 0);
     for (const r of l.dati.righe) assert.equal("percorso" in r, false);
+  });
+});
+
+describe("снимки: показване вместо сваляне", () => {
+  test("снимката се ПОКАЗВА при `?anteprima=1`, документът — не", async () => {
+    // ЗАЩО ИЗОБЩО. За асансьорна фирма прикаченото най-често е снимка:
+    // табелката, скъсаното въже, повредата, за която се спори. Списък с имена
+    // на файлове иска отваряне на всеки поотделно — на телефон, в машинното.
+    // Затова снимките имат режим на показване, но той е ТЯСЪН: само растерни
+    // образи от затворения списък, и само при изрично поискване.
+    const foto = await carica(tecnico, PNG, "quadro.png");
+    assert.equal(foto.status, 201, JSON.stringify(foto.dati));
+    assert.equal(foto.dati.mimeType, "image/png");
+
+    const res = await fetch(
+      `${BASE}/api/allegati/${foto.dati.id}?anteprima=1`,
+      { headers: { Cookie: tecnico.cookieHeader() } },
+    );
+    assert.equal(res.status, 200);
+    assert.match(String(res.headers.get("content-disposition")), /^inline;/);
+    assert.equal(res.headers.get("content-type"), "image/png");
+    // Предпазителите ОСТАВАТ и в режим на показване.
+    assert.equal(res.headers.get("x-content-type-options"), "nosniff");
+    assert.match(
+      String(res.headers.get("content-security-policy")),
+      /sandbox/,
+    );
+    assert.equal(
+      res.headers.get("cross-origin-resource-policy"),
+      "same-origin",
+    );
+  });
+
+  test("PDF НЕ се показва, дори при поискване", async () => {
+    // PDF се отваря от вграден четец и носи собствена повърхност. SVG изобщо
+    // не се приема на входа (той е XML и носи `<script>`).
+    const doc = await carica(tecnico, PDF, "verbale.pdf");
+    const res = await fetch(`${BASE}/api/allegati/${doc.dati.id}?anteprima=1`, {
+      headers: { Cookie: tecnico.cookieHeader() },
+    });
+    assert.equal(res.status, 200);
+    assert.match(
+      String(res.headers.get("content-disposition")),
+      /^attachment;/,
+    );
+  });
+
+  test("без параметъра снимката пак се СВАЛЯ", async () => {
+    const foto = await carica(tecnico, PNG, "cabina.png");
+    const d = await scarica(tecnico, String(foto.dati.id));
+    assert.equal(d.status, 200);
+    assert.match(
+      String(d.headers.get("content-disposition")),
+      /^attachment;/,
+    );
+    assert.deepEqual(new Uint8Array(d.corpo), PNG);
+  });
+
+  test("чужда фирма не вижда снимката и в режим на показване", async () => {
+    // Режимът мени САМО хедърите. Проверката за роля и фирма е преди него.
+    const foto = await carica(tecnico, PNG, "privata.png");
+    const res = await fetch(
+      `${BASE}/api/allegati/${foto.dati.id}?anteprima=1`,
+      { headers: {} },
+    );
+    assert.equal(res.status, 401);
   });
 });

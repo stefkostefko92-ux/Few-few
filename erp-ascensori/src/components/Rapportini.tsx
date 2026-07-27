@@ -21,6 +21,7 @@ import {
 } from "@/components/icone";
 import Firma from "@/components/Firma";
 import MaterialiRapportino from "@/components/MaterialiRapportino";
+import Allegati from "@/components/Allegati";
 import { apiFetch } from "@/lib/fetch-client";
 import { dataOraIt } from "@/lib/format";
 
@@ -206,6 +207,18 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
                 rapportinoId={r.id}
                 bloccato={!!r.firmatoAt}
               />
+              {/* СНИМКИТЕ СА ДОКАЗАТЕЛСТВО, НЕ УКРАСА. При спор кой е причинил
+                  повредата или дали частта наистина е сменена, снимката от
+                  обекта е единственото, което остава. Подписаният отчет е
+                  заключен и тук: съдържанието под подписа не се мени. */}
+              <div className="mt-3">
+                <Allegati
+                  entita="rapportini"
+                  entitaId={r.id}
+                  titolo="Foto dell'intervento"
+                  soloLettura={!!r.firmatoAt}
+                />
+              </div>
             </li>
           ))}
         </ul>

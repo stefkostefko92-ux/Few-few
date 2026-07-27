@@ -446,7 +446,6 @@ model Impianto {
 
   condominio     Condominio?           @relation(fields: [condominioId], references: [id])
   amministratore Amministratore?       @relation(fields: [amministratoreId], references: [id])
-  media          ImpiantoMedia[]
   verifiche      VerificaImpianto[]
   rapportini     Rapportino[]
   scadenze       ScadenzaImpianto[]
@@ -534,22 +533,6 @@ model Allegato {
   @@index([tenantId])
   @@index([entita, entitaId])
   @@map("allegati")
-}
-
-model ImpiantoMedia {
-  id         String   @id @default(uuid()) @db.Uuid
-  impiantoId String   @db.Uuid
-  tipo       String // foto, video, documento
-  url        String
-  nome       String?
-  tenantId   String?  @db.Uuid // изолация по фирма
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  impianto Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@map("impianti_media")
 }
 
 // Законови срокове; трите флага пазят от повторно известяване.

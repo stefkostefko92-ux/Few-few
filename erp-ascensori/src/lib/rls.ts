@@ -26,7 +26,6 @@ export const TABELLE_CON_TENANT = [
   "users",
   "audit_log",
   "impianti",
-  "impianti_media",
   "allegati",
   "verifiche_impianti",
   "scadenze_impianti",

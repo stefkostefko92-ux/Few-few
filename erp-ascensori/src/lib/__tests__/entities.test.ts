@@ -42,7 +42,6 @@ import {
   cottimisti,
   squadre,
   impianti,
-  impiantiMedia,
   scadenzeImpianti,
   assegnazioniTecnici,
   articoli,
@@ -360,15 +359,6 @@ describe("минималният валиден запис за всяка ан�
         marca: "Otis",
         modello: "Gen2",
         condominioId: "11111111-1111-4111-8111-111111111111",
-      },
-    ],
-    [
-      "impiantiMedia",
-      impiantiMedia.schemaCreate,
-      {
-        impiantoId: "11111111-1111-4111-8111-111111111111",
-        tipo: "foto",
-        url: "/x.jpg",
       },
     ],
     [
