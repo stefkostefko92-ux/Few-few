@@ -58,6 +58,9 @@ const PAGINE = [
   ["21-ddt", "/ddt"],
   ["22-documenti", "/documenti"],
   ["23-redditivita", "/redditivita"],
+  ["23a-scadenzario", "/scadenzario"],
+  ["23b-calendario", "/calendario"],
+  ["23c-conservazione", "/conservazione"],
   ["24-utenti", "/utenti"],
   ["25-audit", "/audit"],
   ["26-impostazioni", "/impostazioni"],
@@ -116,7 +119,25 @@ async function scatta(page, nome, percorso, opzioni = {}) {
   }
   // Малко въздух за графиките (Recharts анимира при монтиране).
   await sleep(900);
+
+  // `fullPage` НЕ СТИГА ЗА ТОЗИ ЛЕЙАУТ. Обвивката е `h-screen overflow-hidden`,
+  // а съдържанието се търкаля вътре в `<main class="overflow-y-auto">` — тоест
+  // САМИЯТ документ е висок точно колкото прозореца и „цялата страница" е
+  // просто първият екран. Дългите страници (таблото с всички джаджи, детайлът
+  // на импианто) излизаха отрязани, а долу — бяло поле.
+  //
+  // Затова прозорецът се разтяга до вътрешната височина и чак после се снима.
+  const originale = page.viewportSize();
+  const alto = await page
+    .locator("main")
+    .evaluate((m) => Math.ceil(m.scrollHeight) + 32)
+    .catch(() => 0);
+  if (alto > originale.height) {
+    await page.setViewportSize({ width: originale.width, height: alto });
+    await sleep(400); // графиките се преоразмеряват
+  }
   await page.screenshot({ path: `${FUORI}/${nome}.png`, fullPage: true });
+  if (alto > originale.height) await page.setViewportSize(originale);
   console.log(`  ✔ ${nome}`);
 }
 

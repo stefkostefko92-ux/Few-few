@@ -60,13 +60,15 @@ inserirli.
 
 ### d) Trasferimenti verso paesi terzi
 
-**Nessuno.** Infrastruttura, backup e assistenza sono interamente nell'Unione
-europea.
+**Nessuno.** L'infrastruttura è un server virtuale in locazione presso Hetzner
+Online GmbH, **in Germania**; backup e assistenza restano sulla stessa
+macchina. Nessun dato lascia l'Unione europea.
 
-Se il titolare attiva la funzione facoltativa di compilazione assistita e il
-fornitore del modello è extra-UE, il trasferimento va documentato qui con lo
-strumento del Capo V applicabile. **Alla data odierna la funzione è
-disattivata.**
+Se il titolare attiva la funzione facoltativa di compilazione assistita, la
+chiave e il contratto con il fornitore del modello sono **suoi**: il
+trasferimento eventuale è un trattamento del titolare, non nostro, e va
+documentato nel suo registro ex art. 30(1). **Alla data odierna la funzione è
+disattivata su ogni installazione.**
 
 ### e) Termini di cancellazione
 
@@ -97,7 +99,7 @@ ogni modifica del software.
 
 | Sub-responsabile | Servizio | Ubicazione | Contratto art. 28 |
 |---|---|---|---|
-| «Fornitore infrastruttura» | hosting | «Stato UE» | «rif.» |
+| Hetzner Online GmbH | server virtuale in locazione (hosting, alimentazione, rete) | Germania | «rif. DPA Hetzner» |
 
 ---
 

@@ -54,22 +54,28 @@ L'infrastruttura, i backup e la loro verifica restano a carico del Cliente.
 |---|---|
 | Giornata di formazione aggiuntiva (in sede) | € 600 + trasferta |
 | Importazione da gestionale esistente con mappatura personalizzata | a preventivo, da € 800 |
-| Compilazione assistita da modello linguistico | vedi § 5 |
+| Compilazione assistita da modello linguistico | nessun sovrapprezzo — chiave del Cliente, vedi § 5 |
 | Sviluppo su misura | € 90/ora |
 | Ripristino su richiesta del Cliente (errore proprio) | € 250 a intervento |
 
 ## 5. Funzione di compilazione assistita
 
-Disattivata per impostazione predefinita. Due modalità:
+Disattivata per impostazione predefinita. **La chiave è sempre del Cliente**: è
+lui a stipulare il contratto con il fornitore del modello e a inserire la
+propria chiave nella configurazione della sua installazione. **Nessun
+sovrapprezzo da parte nostra.**
 
-- **Chiave del Cliente** — il Cliente stipula il contratto con il fornitore del
-  modello e inserisce la propria chiave. **Nessun sovrapprezzo.** È la modalità
-  consigliata: la scelta del fornitore e il relativo contratto restano suoi.
-- **Chiave del Fornitore** — € 0,15 per documento elaborato, fatturato a
-  consumo, con tetto mensile concordato.
+Perché così e non a consumo: con la nostra chiave il fornitore del modello
+diventerebbe nostro sub-responsabile senza l'autorizzazione di alcun titolare
+(art. 28 par. 2 GDPR), e la scelta della finalità e dei mezzi ci renderebbe
+**titolari** ai sensi dell'art. 28 par. 10 — con responsabilità diretta su un
+trattamento che è del Cliente.
 
-In entrambi i casi l'attivazione richiede accordo scritto e comporta
-l'aggiornamento del DPA (il fornitore del modello diventa sub-responsabile).
+**Costo indicativo per il Cliente**, con il modello predefinito
+(Claude Haiku 4.5, $1 / $5 per milione di token in ingresso / in uscita):
+circa **0,4 centesimi di euro per documento** letto — una foto della targhetta,
+un verbale scansionato. Mille documenti al mese costano al Cliente meno di
+4 euro. L'attivazione richiede accordo scritto e l'aggiornamento del DPA.
 
 ## 6. Che cosa è compreso — e che cosa non lo è
 

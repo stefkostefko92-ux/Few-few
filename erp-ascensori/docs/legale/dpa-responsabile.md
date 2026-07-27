@@ -22,8 +22,8 @@ trattamento**
 
 E
 
-**Carbon Stealth VCC**, con sede in «indirizzo», iscrizione «…» — di seguito il
-**Responsabile del trattamento**
+**Carbon Stealth VCC**, con sede in «indirizzo», iscrizione «…», nella persona
+del suo legale rappresentante — di seguito il **Responsabile del trattamento**
 
 ---
 
@@ -124,7 +124,10 @@ Parte può recedere dal contratto senza penali.
 
 | Sub-responsabile | Servizio | Ubicazione dei dati |
 |---|---|---|
-| «Fornitore dell'infrastruttura» | hosting del server, alimentazione, rete | «Stato membro UE» |
+| Hetzner Online GmbH | server virtuale in locazione: hosting, alimentazione, rete | **Germania** |
+
+Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen (Germania). Il
+trattamento avviene interamente in territorio tedesco.
 
 5.3 Al sub-responsabile sono imposti per contratto **gli stessi obblighi** del
 presente accordo. Il Responsabile risponde dell'operato del sub-responsabile
@@ -142,8 +145,10 @@ la compilazione di campi. Se il Titolare la attiva:
 
 - il fornitore del modello diventa **sub-responsabile** e va inserito nella
   tabella dell'art. 5.2 con la relativa ubicazione;
-- la chiave e il contratto con tale fornitore sono «del Titolare / del
-  Responsabile» — **da definire prima della firma**;
+- la chiave e il contratto con tale fornitore sono **del Titolare**: la
+  funzione si attiva inserendo la chiave del Titolare nella configurazione
+  della sua installazione. Il Responsabile non stipula alcun contratto con il
+  fornitore del modello per conto del Titolare e non ne sopporta il costo;
 - nessun contenuto trasmesso viene registrato dal Servizio: nel registro delle
   operazioni restano il fatto dell'invio e l'impronta del file, non il testo.
 
