@@ -8,6 +8,9 @@ import {
   SudoGrants, needsSudo, confirmSudo, parseCidr, ipMatches, ipAllowed, validateAllowlist,
   sudoAllowed, sudoFailed, sudoSucceeded, _resetSudoLimiter,
 } from '../src/sudo.js';
+import { assertOutboundUrl, sanitizeNotify } from '../src/routes.js';
+import { failUrl } from '../src/notify.js';
+import { safePath } from '../src/accesslog.js';
 import { snapshotEtc, saveBaseline, diffEtc } from '../src/posture.js';
 import { hashPassword } from '../src/auth.js';
 import { IP_ALLOWLIST_EXEMPT, ipGateAllows } from '../src/routes.js';
@@ -224,4 +227,80 @@ test('снимка на /etc се записва и се чете обратно
   assert.equal(d.hasBaseline, true);
   assert.equal(d.clean, true, 'веднага след снимката нищо не се е променило');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+
+// ── Находки на Разбивача (фаза Ж) ─────────────────────────────────────────────
+test('изходящият адрес не бива да сочи към самата машина или към метаданните', () => {
+  // Законни: панелът трябва да може да пинга външен монитор ИЛИ другия ни VPS
+  // на вътрешен адрес — затова частните мрежи НЕ се забраняват, а се показват.
+  for (const ok of ['https://hc-ping.com/abc', 'http://10.0.0.5/ping', 'https://kuma.example/api/push/T?status=up']) {
+    assert.ok(assertOutboundUrl(ok), `${ok} трябваше да мине`);
+  }
+  // Панелът върви като root на същата машина, на която са Redis/Postgres/самият
+  // панел; в облак 169.254.169.254 е метаданните на инстанцията. Едно поле в
+  // настройките иначе става SSRF пистолет, който гърми на всеки каданс.
+  for (const bad of [
+    'http://127.0.0.1:6379/',
+    'http://localhost:7700/api/power',
+    'http://[::1]:7700/',
+    'http://169.254.169.254/latest/meta-data/',
+    'http://0.0.0.0/',
+    'http://user:pass@example.com/x', // име:парола крие истинския хост от четящия
+    'file:///etc/passwd',
+    'gopher://x/',
+    'не-адрес',
+  ]) {
+    assert.throws(() => assertOutboundUrl(bad), undefined, `${bad} трябваше да бъде отхвърлен`);
+  }
+});
+
+test('каналите не могат да бъдат изтрити с едно тяло', () => {
+  // `{"notify":"каквото и да е"}` презаписваше целия обект и трие botToken,
+  // chatId, topic и webhook URL — необратимо (тайните не се пазят другаде) и
+  // безшумно (одитът по конструкция не записва стойности).
+  for (const junk of ['wiped', 42, null, undefined, ['a'], { telegram: null }, { telegram: 'x' }]) {
+    assert.equal(sanitizeNotify(junk), null, `${JSON.stringify(junk)} не бива да произведе патч`);
+  }
+  // Позволено е САМО познато поле на познат канал.
+  const clean = sanitizeNotify({
+    telegram: { botToken: 'таен', chatId: '1', minSeverity: 'critical', зло: 'x' },
+    ntfy: { topic: 't', minSeverity: 'глупост' },
+    непознат: { url: 'x' },
+  });
+  assert.deepEqual(clean, { telegram: { botToken: 'таен', chatId: '1', minSeverity: 'critical' }, ntfy: { topic: 't' } });
+  // Нов ред в стойност би могъл да подправи заглавка/съобщение по-надолу.
+  assert.equal(sanitizeNotify({ webhook: { url: 'https://x/\r\nX-Evil: 1' } }).webhook.url, 'https://x/X-Evil: 1');
+});
+
+test('пингът за провал пази query-то — иначе докладва УСПЕХ', () => {
+  assert.equal(failUrl('https://hc-ping.com/abc'), 'https://hc-ping.com/abc/fail');
+  assert.equal(failUrl('https://hc-ping.com/abc/'), 'https://hc-ping.com/abc/fail');
+  // Uptime Kuma push (препоръчан в нашия собствен коментар): наивното лепене
+  // дава „…?status=up&msg=OK/fail" → Kuma чете status=up и записва УСПЕХ.
+  // Сигналът „жив, но сляп" тихо се обръща в „всичко е наред".
+  const kuma = failUrl('https://kuma.example/api/push/TOKEN?status=up&msg=OK');
+  assert.match(kuma, /\/api\/push\/TOKEN\/fail\?/);
+  assert.match(kuma, /status=up/, 'query-то оцелява, а не се превръща в част от пътя');
+});
+
+test('адресът от access log-а се скърбира, преди да влезе в известие', () => {
+  // Атакуващият избира какво пише в пътя — а пътят стига до Telegram/ntfy.
+  assert.ok(!safePath('/a\r\nfake: ред').includes('\n'), 'нови редове не минават');
+  assert.ok(!safePath('/a\r\nfake: ред').includes('\r'));
+  assert.equal(safePath('/' + 'щ'.repeat(300)).length, 80, 'дължината е с таван');
+  assert.equal(safePath('/поръчка/«id»'), '/поръчка/«id»', 'кирилицата и нашите кавички остават четими');
+});
+
+test('каналите искат sudo, праговете — не', () => {
+  const cfg = {};
+  // Тайните (bot token, ntfy токен) и адресът на мъртвеца-ключ: root процес,
+  // който чука навън на всеки каданс, безсрочно и преживявайки рестарт.
+  assert.equal(needsSudo('/api/alerts/channels', cfg, { mutating: true }), true);
+  // Праговете са числа — видима и обратима промяна. Панел, който пита за парола
+  // на всяка настройка, се превръща в панел с ИЗКЛЮЧЕН sudo режим; заглушаването
+  // е срочно (макс 7 дни), видимо и одитирано.
+  assert.equal(needsSudo('/api/alerts/settings', cfg, { mutating: true }), false);
+  assert.equal(needsSudo('/api/alerts/silence', cfg, { mutating: true }), false);
+  assert.equal(needsSudo('/api/alerts', cfg), false, 'четенето остава свободно');
 });

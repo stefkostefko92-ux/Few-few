@@ -149,6 +149,7 @@ export function evictionChecks(prev, now, { memPct = 90 } = {}) {
             'Redis прави място, като трие. Загубата е тиха: няма грешка и няма ред в лога. ' +
             'Или вдигни maxmemory, или намали какво пазиш там.',
           sustain: false,
+          transient: true, // разлика между две проверки, не състояние
         });
       }
       const rejDelta = (i.rejectedConnections ?? 0) - (was.rejectedConnections ?? 0);
@@ -159,6 +160,7 @@ export function evictionChecks(prev, now, { memPct = 90 } = {}) {
           title: `Redis отказва връзки (${i.name})`,
           body: `${rejDelta} отказани от последната проверка — опрян е в maxclients. Приложението получава грешки при свързване.`,
           sustain: false,
+          transient: true,
         });
       }
     }

@@ -1029,14 +1029,6 @@ async function renderAlerts() {
     alInputs[key] = i;
     return el('label', { class: 'muted' }, [document.createTextNode(label + ' '), i, document.createTextNode(' ' + suffix)]);
   };
-  // Адресът на пинга НОСИ тайната си (hc-ping.com/<uuid> е ключът) → не се
-  // връща обратно към браузъра. Празно поле значи „без промяна", както при
-  // каналите; изчистването е ИЗРИЧНО, с отделен бутон.
-  const hbInput = el('input', {
-    type: 'text',
-    class: 'grow',
-    placeholder: a.health?.heartbeat ? 'зададен — остави празно, за да го запазиш' : 'https://hc-ping.com/… (празно = изключено)',
-  });
   view.appendChild(
     el('div', { class: 'card', style: 'margin-top:18px' }, [
       el('h3', { text: 'Прагове' }),
@@ -1059,17 +1051,6 @@ async function renderAlerts() {
       el('div', { class: 'toolbar' }, [thRow('cpuPct', 'CPU', '%'), thRow('memPct', 'Памет', '%')]),
       el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Грешки от РЕАЛНИЯ трафик (access log). Пробата пита един адрес и вижда 200; потребителите в същия момент може да получават 500 на плащането.' }),
       el('div', { class: 'toolbar' }, [alRow('errorPct', 'Дял 5xx', '%'), alRow('minRequests', 'Минимум заявки', 'бр.')]),
-      el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Мъртвецът-ключ: адрес, който панелът пинга след ВСЯКА успешна проверка. Спре ли пингът, външният наблюдател вдига тревога вместо него — вътрешна проверка не открива собствената си смърт.' }),
-      el('div', { class: 'toolbar' }, [
-        el('span', { class: 'muted', style: 'width:90px', text: 'Пинг адрес' }),
-        hbInput,
-        a.health?.heartbeat
-          ? el('button', { class: 'btn btn-sm', text: 'Изчисти', onclick: async () => {
-              try { await api('/alerts/settings', { method: 'POST', body: { alerts: { heartbeatUrl: '' } } }); toast('Мъртвецът-ключ е изключен'); go('alerts'); }
-              catch (err) { toast(err.message, 'bad'); }
-            } })
-          : '',
-      ]),
       el('div', { class: 'metric-sub', text: `Праг трябва да се задържи ${a.sustainSamples} проверки (на ${a.checkIntervalSec}s); повторно известие най-рано след ${a.cooldownMin} мин.` }),
       el('div', { class: 'toolbar' }, [el('button', { class: 'btn btn-primary btn-sm', text: 'Запази праговете', onclick: async (e) => {
         e.target.disabled = true;
@@ -1084,9 +1065,7 @@ async function renderAlerts() {
           if (Number.isFinite(n) && n >= 0) accesslog[k] = n;
         }
         try {
-          const alertsPatch = { thresholds };
-          if (hbInput.value.trim()) alertsPatch.heartbeatUrl = hbInput.value.trim();
-          await api('/alerts/settings', { method: 'POST', body: { alerts: alertsPatch, accesslog } });
+          await api('/alerts/settings', { method: 'POST', body: { alerts: { thresholds }, accesslog } });
           toast('Праговете са запазени');
           go('alerts');
         } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
@@ -1123,7 +1102,12 @@ function sevClass(s) {
 async function silenceAlert(key, { remove = false } = {}) {
   let minutes = 0;
   if (!remove) {
-    const ans = prompt(`Заглуши „${key}" за колко минути? (макс 10080 = 7 дни)\n\nАлармата остава видима в панела — спират само известията.`, '60');
+    const ans = prompt(
+      `Заглуши „${key}" за колко минути? (макс 10080 = 7 дни)\n\n` +
+        'Алармата остава видима в панела — спират само известията.\n' +
+        'Заглушава се ТОЧНО този ключ. За цяло семейство добави звездичка в конфига („disk:*").',
+      '60'
+    );
     if (ans === null) return;
     minutes = Number(ans);
     if (!Number.isFinite(minutes) || minutes < 1) return toast('Невалидна продължителност', 'bad');
@@ -1153,9 +1137,22 @@ function monitorHealthCard(h) {
     el('div', { class: 'toolbar' }, [
       el('strong', { text: 'Здраве на мониторинга' }),
       freshPill,
-      pill(h.heartbeat ? 'ok' : 'dim', h.heartbeat ? 'мъртвецът-ключ е включен' : 'без мъртвец-ключ'),
+      // Зелено САМО при доказано успешен пинг. „Настроен" и „работи" са различни
+      // неща, а за мъртвец-ключ второто е единственото, което значи нещо —
+      // зелено хапче заради попълнено поле в конфига е точно фалшивото спокойствие,
+      // срещу което съществува целият механизъм.
+      h.heartbeat
+        ? h.heartbeatOk === true
+          ? pill('ok', 'мъртвецът-ключ работи')
+          : h.heartbeatOk === null
+            ? pill('dim', 'мъртвецът-ключ — още няма пинг')
+            : pill('bad', 'мъртвецът-ключ НЕ стига')
+        : pill('dim', 'без мъртвец-ключ'),
     ]),
   ];
+  if (h.heartbeat && h.lastHeartbeat && !h.lastHeartbeat.ok) {
+    rows.push(el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: `⚠ Пингът се проваля: ${h.lastHeartbeat.error || 'статус ' + h.lastHeartbeat.status}. Външният наблюдател ще вдигне тревога за нищо — или вече е спрял да ни чака.` }));
+  }
   if (!h.heartbeat) {
     rows.push(el('div', { class: 'metric-sub', text: 'Никоя вътрешна проверка не открива собствената си смърт. Задай адрес за пинг (healthchecks.io, Uptime Kuma push, или крон-монитор на другия VPS) — спре ли пингът, външният наблюдател вдига тревога вместо панела.' }));
   }
@@ -1183,6 +1180,14 @@ function monitorHealthCard(h) {
 // Картата за каналите — тайните се ПРАЩАТ, но никога не се четат обратно.
 function notifyChannelsCard(a) {
   const f = {};
+  // Адресът на пинга НОСИ тайната си (hc-ping.com/<uuid> е ключът) → не се
+  // връща обратно към браузъра, показва се само origin-ът. Празно поле значи
+  // „без промяна", както при каналите; изчистването е ИЗРИЧНО, с отделен бутон.
+  const hbInput = el('input', {
+    type: 'text',
+    class: 'grow',
+    placeholder: a.health?.heartbeat ? 'зададен — остави празно, за да го запазиш' : 'https://hc-ping.com/… (празно = изключено)',
+  });
   const inp = (key, ph) => {
     const i = el('input', { type: 'text', placeholder: ph, class: 'grow' });
     f[key] = i;
@@ -1210,6 +1215,21 @@ function notifyChannelsCard(a) {
     el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'ntfy' }), inp('ntfyServer', 'https://ntfy.sh'), inp('ntfyTopic', 'тема (topic)'), inp('ntfyToken', 'токен (по избор)'), sevSel('ntfy')]),
     el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Webhook' }), inp('hook', 'https://…'), sevSel('webhook')]),
     el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Имейл' }), inp('mailTo', 'до: адрес (иска sendmail на сървъра)'), sevSel('email')]),
+    el('h3', { text: 'Мъртвецът-ключ', style: 'margin-top:18px' }),
+    el('div', { class: 'metric-sub', text: 'Адрес, който панелът пинга след ВСЯКА успешна проверка (healthchecks.io, Uptime Kuma push, крон-монитор на другия VPS). Спре ли пингът, външният наблюдател вдига тревога вместо него — вътрешна проверка не открива собствената си смърт. Не бива да сочи към самата машина.' }),
+    el('div', { class: 'toolbar' }, [
+      el('span', { class: 'muted', style: 'width:90px', text: 'Пинг адрес' }),
+      hbInput,
+      a.health?.heartbeat
+        ? el('button', { class: 'btn btn-sm', text: 'Изчисти', onclick: async () => {
+            try { await api('/alerts/channels', { method: 'POST', body: { heartbeatUrl: '' } }); toast('Мъртвецът-ключ е изключен'); go('alerts'); }
+            catch (err) { toast(err.message, 'bad'); }
+          } })
+        : '',
+    ]),
+    a.heartbeatOrigin
+      ? el('div', { class: 'metric-sub', text: `Пинга към: ${a.heartbeatOrigin} (пътят носи токена и не се показва).` })
+      : '',
     el('div', { class: 'toolbar' }, [el('button', {
       class: 'btn btn-primary btn-sm',
       text: 'Запази каналите',
@@ -1230,7 +1250,9 @@ function notifyChannelsCard(a) {
           notify[chan] = notify[chan] || {};
           notify[chan].minSeverity = s.value;
         }
-        try { await api('/alerts/settings', { method: 'POST', body: { notify } }); toast('Каналите са запазени'); go('alerts'); }
+        const payload = { notify };
+        if (hbInput.value.trim()) payload.heartbeatUrl = hbInput.value.trim();
+        try { await api('/alerts/channels', { method: 'POST', body: payload }); toast('Каналите са запазени'); go('alerts'); }
         catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
       },
     })]),

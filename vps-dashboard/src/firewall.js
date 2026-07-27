@@ -107,7 +107,25 @@ export async function deleteRule(num, audit, user, { expect = null, force = fals
   if (rule && !force && rule.action === 'ALLOW' && rule.dir === 'IN') {
     const port = await sshPort();
     const to = String(rule.to || '');
-    if (new RegExp(`(^|[^\\d])${port}([^\\d]|$)`).test(to) || /\bssh\b/i.test(to)) {
+    // Неизвестен порт → НЕ можем да преценим. Тогава всяко ALLOW IN правило е
+    // потенциално SSH-достъпът и искаме изрично потвърждение. Досадно е веднъж;
+    // алтернативата е заключен сървър.
+    if (!port) {
+      throw Object.assign(
+        new Error(
+          `Не мога да прочета SSH порта (sshd -T не отговори), затова не знам дали правило №${n} („${to}") е достъпът ти. ` +
+            'Провери сам и потвърди изрично.'
+        ),
+        { status: 409 }
+      );
+    }
+    // ПОДНИЗ, не дума-граница. Стандартният начин на Ubuntu е `ufw allow OpenSSH`
+    // и `ufw status numbered` изписва правилото точно като „OpenSSH" — а
+    // `/\bssh\b/i.test('OpenSSH')` е FALSE (буквата преди „S" е дума-символ,
+    // значи няма граница). Предпазителят мълчеше точно при най-честия начин да
+    // си отвориш SSH. Свръх-задействането се изчиства с `force`; пропуснатото
+    // задействане се изчиства със стотинки за KVM конзола.
+    if (new RegExp(`(^|[^\\d])${port}([^\\d]|$)`).test(to) || /ssh/i.test(to)) {
       throw Object.assign(
         new Error(
           `Правило №${n} („${to}") е достъпът по SSH (порт ${port}). Изтриването му при активна стена те заключва ` +
@@ -124,10 +142,14 @@ export async function deleteRule(num, audit, user, { expect = null, force = fals
 }
 
 // Кой SSH порт слуша реално (за да не се самозаключим при включване на ufw).
+// Връща null, когато НЕ Е РАЗБРАЛ. Мълчаливото падане обратно на „22" правеше
+// предпазителя fail-OPEN точно при нестандартен порт (2222): не разпознава
+// правилото, пуска изтриването, връзката пада. „Не знам" трябва да ЗАТЯГА
+// защитата, не да я отваря.
 async function sshPort() {
   const r = await run('sshd', ['-T'], { timeout: 10000 });
   const m = r.ok && r.stdout.match(/^port (\d+)$/m);
-  return m ? m[1] : '22';
+  return m ? m[1] : null;
 }
 
 // Проверява дали има добавено allow правило за даден порт. `ufw show added`
@@ -139,7 +161,9 @@ export async function hasAllowFor(port) {
   return r.stdout
     .split('\n')
     .filter((l) => /\ballow\b/i.test(l))
-    .some((l) => new RegExp(`(^|[^\\d])${port}([^\\d]|$)`).test(l) || /\bssh\b/i.test(l));
+    // Пак подниз: `ufw allow OpenSSH` е най-честият запис и дума-границата не го
+    // хваща → предпазителят отказваше да пусне стената при напълно верен конфиг.
+    .some((l) => new RegExp(`(^|[^\\d])${port}([^\\d]|$)`).test(l) || /ssh/i.test(l));
 }
 
 export async function setEnabled(enabled, audit, user, { force = false } = {}) {
@@ -147,6 +171,15 @@ export async function setEnabled(enabled, audit, user, { force = false } = {}) {
   // сървъра (и панела). Отказваме, освен ако не е поискано изрично.
   if (enabled && !force) {
     const port = await sshPort();
+    if (!port) {
+      throw Object.assign(
+        new Error(
+          'Не мога да прочета SSH порта (sshd -T не отговори) — не мога да гарантирам, че няма да те заключа. ' +
+            'Провери сам, че има allow правило за твоя порт, и потвърди изрично.'
+        ),
+        { status: 409 }
+      );
+    }
     if (!(await hasAllowFor(port))) {
       throw Object.assign(
         new Error(

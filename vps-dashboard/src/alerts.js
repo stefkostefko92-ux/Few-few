@@ -16,6 +16,7 @@ import { evaluateBurn } from './slo.js';
 import { backupChecks } from './drill.js';
 import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from './health.js';
 import { overview as redisOverview, evictionChecks } from './redis.js';
+import { safePath } from './accesslog.js';
 
 export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog }) {
@@ -72,6 +73,23 @@ export class AlertEngine {
     }
   }
 
+  // Пингът към външния наблюдател се ЗАПИСВА, не се изхвърля. `post()` никога не
+  // хвърля — връща `{ok:false}` — така че „.catch(() => {})" правеше DNS грешка,
+  // изтекъл URL и блокиран изход неразличими от успех. Пазачът на пазача е
+  // единственото, което няма право да е „вероятно работи": панелът рисуваше
+  // зелено само защото полето в конфига е попълнено.
+  async ping({ ok = true } = {}) {
+    if (!this.cfg.alerts?.heartbeatUrl) return null;
+    let r;
+    try {
+      r = await heartbeat(this.cfg, { ok });
+    } catch (err) {
+      r = { ok: false, error: err.message };
+    }
+    this.lastHeartbeat = { ts: Date.now(), ok: Boolean(r?.ok), status: r?.status ?? null, error: r?.error || null };
+    return this.lastHeartbeat;
+  }
+
   // Заглушаване: изрично, СРОЧНО и видимо. Заглушената аларма продължава да се
   // изчислява и да стои в панела — само известието спира. Безсрочното заглушаване
   // е начинът да забравиш, че си заглушил, затова `until` е задължителен.
@@ -80,8 +98,18 @@ export class AlertEngine {
     return (this.cfg.alerts?.silences || []).filter((s) => s?.key && Number(s.until) > now);
   }
 
+  // ТОЧНО съвпадение по подразбиране. Мълчаливото съвпадение по префикс беше
+  // капан: заглушаването на `disk:/` (най-честата дискова аларма) ослепяваше и
+  // `disk:/var`, `disk:/boot`, `disk:/var/lib/docker`, а четиринайсет записа от
+  // по една буква заглушаваха ЦЕЛИЯ регистър — и в панела изглеждаха като
+  // четиринайсет безобидни букви. Цялото семейство се заглушава ИЗРИЧНО, със
+  // звездичка накрая, за да е видимо какво си направил.
   silencedBy(key) {
-    return this.silences().find((s) => key === s.key || key.startsWith(s.key)) || null;
+    return (
+      this.silences().find((s) =>
+        String(s.key).endsWith('*') ? key.startsWith(String(s.key).slice(0, -1)) : key === s.key
+      ) || null
+    );
   }
 
   start() {
@@ -94,7 +122,7 @@ export class AlertEngine {
       this.evaluate().catch((err) => {
         this.lastEvalError = { ts: Date.now(), message: String(err?.message || err).slice(0, 300) };
         this.save();
-        heartbeat(this.cfg, { ok: false }).catch(() => {});
+        this.ping({ ok: false });
       });
     setTimeout(tick, 10000); // първата проверка след 10s (метриките да се напълнят)
     this.timer = setInterval(tick, every);
@@ -172,14 +200,32 @@ export class AlertEngine {
             });
           }
         }
-      } else if (t.cpuPct && snap.cpuPct >= t.cpuPct) {
-        // Резерва за ядра без PSI: тогава прагът по CPU е всичко, което имаме.
-        out.push({
-          key: 'cpu',
-          severity: 'warning',
-          title: 'Високо натоварване на процесора',
-          body: `CPU ${snap.cpuPct.toFixed(0)}% (праг ${t.cpuPct}%; ядрото не подава PSI)`,
-        });
+      } else {
+        // Резерва за ядра без PSI: тогава праговете са всичко, което имаме.
+        if (t.cpuPct && snap.cpuPct >= t.cpuPct) {
+          out.push({
+            key: 'cpu',
+            severity: 'warning',
+            title: 'Високо натоварване на процесора',
+            body: `CPU ${snap.cpuPct.toFixed(0)}% (праг ${t.cpuPct}%; ядрото не подава PSI)`,
+          });
+        }
+        // `memPct` беше ДЕКЛАРИРАНА в конфига и редактируема в панела, но нито
+        // един ред не я четеше: на ядро без PSI паметта нямаше аларма изобщо, а
+        // собственикът въртеше скала, която не прави нищо. Мъртвата настройка е
+        // по-лоша от липсващата — тя обещава защита.
+        // Полетата са `snap.mem.{total,used}` (виж parseMeminfo в metrics.js) —
+        // НЕ `memUsed/memTotal`, каквато е формата на точките в ИСТОРИЯТА.
+        // Сбъркаш ли ги, алармата мълчи вечно, без нито една грешка.
+        const memPct = snap.mem?.total ? (snap.mem.used / snap.mem.total) * 100 : null;
+        if (t.memPct && memPct != null && memPct >= t.memPct) {
+          out.push({
+            key: 'mem',
+            severity: memPct >= 98 ? 'critical' : 'warning',
+            title: 'Паметта свършва',
+            body: `Заета ${memPct.toFixed(0)}% (праг ${t.memPct}%; ядрото не подава PSI). Следващото е OOM.`,
+          });
+        }
       }
 
       // Steal: единственият сигнал, че бавното НЕ е наша вина, а на съседа/хостера.
@@ -200,6 +246,7 @@ export class AlertEngine {
           title: 'Ядрото уби процес заради памет (OOM)',
           body: `${k.oomKillDelta} убит(и) процеса от последната проверка (общо ${k.oomKillTotal}). Виж кой: journalctl -k -g "Out of memory"`,
           sustain: false,
+          transient: true, // мери се по РАЗЛИКА → няма какво да се „възстанови"
         });
       }
 
@@ -236,6 +283,7 @@ export class AlertEngine {
             title: 'Препълнена опашка за връзки',
             body: `${d} нови ListenOverflows — заявки се отхвърлят преди да стигнат до приложението (вдигни backlog/worker-и).`,
             sustain: false,
+            transient: true,
           });
         }
       }
@@ -331,6 +379,9 @@ export class AlertEngine {
             title: 'TLS сертификат изтича',
             body: `${c.domain} изтича след ${c.daysLeft} дни (${c.expiresAt})`,
             sustain: false,
+            // Хоризонт седмици → напомняне веднъж на ден. При плоския час това
+            // бяха 336 критични съобщения за един изтичащ сертификат.
+            repeatEvery: 24 * 3600000,
           });
         }
       }
@@ -357,6 +408,9 @@ export class AlertEngine {
         title: 'Нужен е рестарт',
         body: 'Ъпдейтите изискват рестарт на сървъра.',
         sustain: false,
+        // Ubuntu държи този файл с дни. Час по час е info-буца, която учи човека
+        // да не чете канала.
+        repeatEvery: 7 * 24 * 3600000,
       });
     }
 
@@ -470,6 +524,7 @@ export class AlertEngine {
           `${f.delta} рестарта от последната проверка (общо ${f.total}). systemd я показва като жива, ` +
           `защото тя наистина се вдига — и пада отново. Виж защо: journalctl -u ${f.unit} -n 100`,
         sustain: false,
+        transient: true,
       });
     }
     this.lastRestarts = now;
@@ -511,6 +566,7 @@ export class AlertEngine {
           title: `Домейнът ${name} е задържан (hold)`,
           body: `Статус: ${info.status.join(', ')}. При „hold" домейнът НЕ резолвва — сайтът е недостъпен, независимо че сървърът работи.`,
           sustain: false,
+          repeatEvery: 24 * 3600000,
         });
       }
       if (info.daysLeft != null && info.daysLeft <= days) {
@@ -520,6 +576,7 @@ export class AlertEngine {
           title: `Регистрацията на ${name} изтича след ${info.daysLeft} дни`,
           body: `Изтича на ${info.expiresAt}. Сертификатът не помага — при изтекъл домейн сайтът просто изчезва, а връщането е скъпо и бавно.`,
           sustain: false,
+          repeatEvery: 24 * 3600000,
         });
       }
     }
@@ -537,6 +594,20 @@ export class AlertEngine {
   // прави случайно (инсталира и забравя). Казваме го веднъж, тихо.
   notifyChecks() {
     const out = [];
+    // Провален пинг към външния наблюдател: НИЕ знаем, че сме живи, но той след
+    // малко ще реши обратното (или, по-лошо, е спрял да ни чака). И двете
+    // посоки на грешката са скъпи, затова се вижда веднага.
+    if (this.cfg.alerts?.heartbeatUrl && this.lastHeartbeat && !this.lastHeartbeat.ok) {
+      out.push({
+        key: 'heartbeat:down',
+        severity: 'warning',
+        title: 'Мъртвецът-ключ не стига до наблюдателя',
+        body:
+          `Пингът се проваля (${this.lastHeartbeat.error || 'статус ' + this.lastHeartbeat.status}). ` +
+          'Външният наблюдател ще вдигне тревога за нищо — или вече е спрял да ни чака. Провери адреса и изходящия достъп.',
+        sustain: false,
+      });
+    }
     const channels = configuredChannels(this.cfg);
     const on = Object.entries(channels).filter(([, v]) => v).map(([k]) => k);
     if (!on.length) {
@@ -546,6 +617,7 @@ export class AlertEngine {
         title: 'Няма настроен канал за известия',
         body: 'Алармите се виждат само в този панел. Настрой Telegram/ntfy/webhook/имейл — иначе научаваш за проблема, когато сам отвориш екрана.',
         sustain: false,
+        repeatEvery: 7 * 24 * 3600000,
       });
       return out;
     }
@@ -590,20 +662,85 @@ export class AlertEngine {
     }
     const minRequests = Number(this.cfg.accesslog?.minRequests) || 20;
     const pct = Number(this.cfg.accesslog?.errorPct) || 5;
-    const server = Number(r.byStatus?.['5xx']) || 0;
-    if (r.total < minRequests || !server) return out;
-    const rate = (server / r.total) * 100;
+    const windowMs = Math.max(60000, Number(this.cfg.accesslog?.windowMin || 10) * 60000);
+
+    // ПЛЪЗГАЩ ПРОЗОРЕЦ, не „за този тик". Изискването „поне 20 заявки" в рамките
+    // на един 60-секунден тик значи праг на видимост от близо 30 000 заявки на
+    // ден — за medqr/panev/zabobovdol алармата просто нямаше да пламне никога.
+    // Прозорецът е ВРЕМЕВИ; тиковете само пълнят кофи.
+    //
+    // Знаменателят е БЕЗ ботове: скенерите са десетки пъти повече от истинските
+    // посетители на малък сайт и размиват дела 5xx точно когато има авария.
+    const h = r.human || { total: r.total, byStatus: r.byStatus || {} };
+    const nowMs = Date.now();
+    (this.accessWindow ||= []).push({ ts: nowMs, total: h.total, server: Number(h.byStatus?.['5xx']) || 0 });
+    // По-дълъг пръстен за сигнала „трафикът изчезна" (виж trafficDrop()).
+    this.accessWindow = this.accessWindow.filter((b) => b.ts >= nowMs - Math.max(windowMs, 3600000));
+    for (const c of this.trafficDrop(windowMs, nowMs)) out.push(c);
+    const since = nowMs - windowMs;
+    const win = this.accessWindow.filter((b) => b.ts >= since);
+    const total = win.reduce((a, b) => a + b.total, 0);
+    const server = win.reduce((a, b) => a + b.server, 0);
+    if (total < minRequests || !server) return out;
+    const rate = (server / total) * 100;
     if (rate < pct) return out;
     const top = (r.topByErrors || []).filter((p) => Object.keys(p.statuses || {}).some((s) => Number(s) >= 500)).slice(0, 3);
     out.push({
       key: 'http5xx',
       severity: rate >= pct * 2 ? 'critical' : 'warning',
       title: `${rate.toFixed(1)}% от заявките връщат 5xx`,
+      // Прозорецът е достатъчно дълъг, за да не пламва от едно мигване — затова
+      // няма нужда и от задържане отгоре (иначе закъснението се удвоява).
+      sustain: false,
       body:
-        `${server} сървърни грешки от ${r.total} заявки от последната проверка (праг ${pct}%).` +
-        (top.length ? `\nНай-засегнати:\n${top.map((p) => `• ${p.method} ${p.path} — ${p.errorPct}% от ${p.count}`).join('\n')}` : ''),
+        `${server} сървърни грешки от ${total} заявки на истински посетители за последните ` +
+        `${Math.round(windowMs / 60000)} мин (праг ${pct}%; ботовете не се броят).` +
+        (top.length ? `\nНай-засегнати:\n${top.map((p) => `• ${p.method} ${safePath(p.path)} — ${p.errorPct}% от ${p.count}`).join('\n')}` : ''),
     });
     return out;
+  }
+
+  // ЧЕТВЪРТИЯТ златен сигнал: TRAFFIC. Досега го нямахме изобщо — и точно той е
+  // единственият, който вижда клас провали, скрити за всичко останало.
+  //
+  // Синтетичната проба чука от САМАТА машина. Затова при изтекъл A запис, счупен
+  // DNS, ufw правило, изтрит `server_name`, спрян CDN или блокиран порт при
+  // доставчика тя вижда 200, продуктите са „нагоре", SLO бюджетът е непокътнат —
+  // а светът получава нищо. Единственият видим белег е, че access log-ът СПИРА.
+  //
+  // Правилото е нарочно тъпо и затова надеждно: без сезонен модел, без EWMA.
+  // Гърми само когато е имало ЯСЕН трафик и той е паднал на НУЛА. Тихата нощ на
+  // малък сайт не го задейства (искаме съществен предходен обем), а бавният спад
+  // съзнателно се пропуска — за него трябва история, каквато още нямаме.
+  trafficDrop(windowMs, nowMs) {
+    if (this.cfg.accesslog?.trafficDrop === false) return [];
+    const w = this.accessWindow || [];
+    const recentFrom = nowMs - windowMs;
+    // Сравняваме с ПРЕДХОДНИЯ период, не с целия пръстен — иначе самият срив
+    // разрежда собствената си базова линия и алармата се самогаси.
+    const prior = w.filter((b) => b.ts < recentFrom);
+    const recent = w.filter((b) => b.ts >= recentFrom);
+    // Нужна е поне толкова история, колкото е прозорецът — иначе рестарт на
+    // панела гърми веднага.
+    if (!prior.length || prior[0].ts > nowMs - 3 * windowMs) return [];
+    if (recent.length < 2) return [];
+    const priorTotal = prior.reduce((a, b) => a + b.total, 0);
+    const recentTotal = recent.reduce((a, b) => a + b.total, 0);
+    const minPrior = Math.max(50, (Number(this.cfg.accesslog?.minRequests) || 20) * 5);
+    if (priorTotal < minPrior || recentTotal > 0) return [];
+    const mins = Math.round(windowMs / 60000);
+    return [
+      {
+        key: 'traffic:zero',
+        severity: 'critical',
+        title: 'Трафикът падна до нула',
+        body:
+          `Нито една заявка от истински посетител за последните ${mins} мин, при ${priorTotal} преди това. ` +
+          'Продуктите отговарят на пробата, защото тя чука отвътре — това е точно провалът, който тя НЕ вижда: ' +
+          'изтекъл домейн/DNS, правило в защитната стена, изтрит server_name, спрян CDN или блокиран порт при доставчика.',
+        sustain: false,
+      },
+    ];
   }
 
   // Redis изхвърля ключове ТИХО: няма грешка, няма ред в лога, услугата е жива.
@@ -690,6 +827,27 @@ export class AlertEngine {
     }
 
     const conditions = await this.collect();
+
+    // „Не знам" НЕ е „възстановено". Ключ от източник, който не е отговорил,
+    // остава активен и НЕ праща фалшиво „Възстановено".
+    //
+    // Тези условия се добавят ПРЕДИ цикъла за пламване. По-рано бяха след него —
+    // тогава потискането на резолва работеше, но самата аларма „Липсва
+    // телеметрия" физически не можеше да пламне: човекът виждаше аларми, които
+    // висят вечно, без нито един ред за причината. Мълчаливият пазач е по-лош от
+    // липсващия, защото изглежда като работещ.
+    const stale = this.stale || new Map();
+    for (const [prefix, reason] of stale) {
+      const affected = [...this.active.keys()].filter((k) => k.startsWith(prefix)).length;
+      conditions.push({
+        key: `stale:${prefix}`,
+        severity: affected ? 'warning' : 'info',
+        title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
+        body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
+        sustain: false,
+      });
+    }
+
     const byKey = new Map(conditions.map((c) => [c.key, c]));
 
     // Задържане: праговите правила искат N последователни попадения.
@@ -707,6 +865,22 @@ export class AlertEngine {
     for (const c of conditions) {
       const sustained = c.sustain === false || (this.streaks.get(c.key) || 0) >= need;
       if (!sustained) continue;
+
+      // СЪБИТИЕ, не състояние. OOM, препълнена опашка и рестарт-цикъл се мерят по
+      // РАЗЛИКА между две проверки: следващия път разликата е 0, ключът изчезва и
+      // предишният код пращаше „Възстановено: Ядрото уби процес заради памет".
+      // Второто известие е чиста лъжа — нищо не се е възстановило, просто повече
+      // не се е случило. Тези условия минават през дневника и известието, но НЕ
+      // влизат в активните.
+      if (c.transient) {
+        const lastSeen = this.transientSeen?.get(c.key) || 0;
+        if (now - lastSeen >= cooldownMs) {
+          (this.transientSeen ||= new Map()).set(c.key, now);
+          events.push({ type: 'firing', ...c, oneShot: true });
+        }
+        continue;
+      }
+
       const prev = this.active.get(c.key);
       if (!prev) {
         this.active.set(c.key, {
@@ -719,33 +893,39 @@ export class AlertEngine {
         events.push({ type: 'firing', ...c });
       } else {
         prev.severity = c.severity;
+        // Заглавието също се обновява: „12.5% от заявките връщат 5xx" и „изтича
+        // след 9 дни" са ЖИВИ числа. Без този ред панелът показваше стойността
+        // от момента на пламване, а тялото — днешната, и двете си противоречаха.
+        prev.title = c.title;
         prev.body = c.body;
-        if (now - prev.lastNotified >= cooldownMs) {
+        // Повторението е съразмерно на ВРЕМЕТО ЗА ДЕЙСТВИЕ, не на един плосък
+        // час. Изтичащ след 30 дни домейн, напомнян на всеки час, е 720
+        // критични съобщения — точно начинът да приучиш човека да мълчи канала.
+        const repeatMs = Number(c.repeatEvery) || cooldownMs;
+        if (now - prev.lastNotified >= repeatMs) {
           prev.lastNotified = now;
           events.push({ type: 'firing', ...c, repeat: true });
         }
       }
     }
 
-    // „Не знам" НЕ е „възстановено". Ключ от източник, който не е отговорил,
-    // остава активен и НЕ праща фалшиво „Възстановено".
-    const stale = this.stale || new Map();
-    for (const [prefix, reason] of stale) {
-      const affected = [...this.active.keys()].filter((k) => k.startsWith(prefix)).length;
-      conditions.push({
-        key: `stale:${prefix}`,
-        severity: affected ? 'warning' : 'info',
-        title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
-        body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
-        sustain: false,
-      });
-      byKey.set(`stale:${prefix}`, conditions[conditions.length - 1]);
-    }
-
     // Възстановени.
+    //
+    // Хистерезисът е СИМЕТРИЧЕН. Пламването иска `sustainSamples` съвпадения; ако
+    // отпадането ставаше от една несъвпаднала проверка (както беше), осцилиращо
+    // около прага условие произвежда безкрайни двойки „пламна/възстанови се" —
+    // и то без cooldown, защото резолвът не минава през него. Две последователни
+    // чисти проверки са евтина цена срещу този вид спам.
+    const holdDown = Math.max(1, Number(cfg.alerts.resolveSamples) || 2);
+    this.misses ||= new Map();
+    for (const key of [...this.misses.keys()]) if (byKey.has(key)) this.misses.delete(key);
     for (const [key, prev] of [...this.active]) {
       if (byKey.has(key)) continue;
       if ([...stale.keys()].some((prefix) => key.startsWith(prefix))) continue; // мълчащ източник
+      const miss = (this.misses.get(key) || 0) + 1;
+      this.misses.set(key, miss);
+      if (miss < holdDown) continue;
+      this.misses.delete(key);
       this.active.delete(key);
       events.push({
         type: 'resolved',
@@ -765,7 +945,7 @@ export class AlertEngine {
     this.save();
     // Мъртвецът-ключ: външният наблюдател чака този пинг. Спре ли — вдига
     // тревога ВМЕСТО нас. Това е единствената защита срещу тихо умрял панел.
-    heartbeat(this.cfg, { ok: true }).catch(() => {});
+    this.ping({ ok: true });
     return { firing: this.listActive(), events };
   }
 
@@ -794,6 +974,18 @@ export class AlertEngine {
     if (silence) {
       entry.silenced = { until: silence.until, note: silence.note || null };
       entry.sent = [];
+      return entry;
+    }
+
+    // „Аномалиите не будят човек" беше КОМЕНТАР, не механизъм: тежестта им е
+    // `info`, но празният праг по канал (подразбирането) пуска всичко — значи
+    // на чиста инсталация „нетипично поведение на процесора" влизаше в Telegram
+    // като нормално съобщение. Точно това е класическият източник на умора от
+    // известия. `info` живее в панела и в дневника; на телефона отива само
+    // изрично (`alerts.notifyInfo`).
+    if (ev.severity === 'info' && !this.cfg.alerts?.notifyInfo && ev.type !== 'test') {
+      entry.sent = [];
+      entry.infoOnly = true;
       return entry;
     }
 
@@ -833,7 +1025,11 @@ export class AlertEngine {
       // „Свежо" = не по-старо от два каданса. Първото пускане (null) не е провал.
       fresh: this.lastEvalAt == null ? null : ageMs <= interval * 2 + 15000,
       lastEvalError: this.lastEvalError,
+      // „Настроен" и „работи" са различни неща — и второто е единственото, което
+      // има значение за мъртвец-ключ. `pinged` е null, докато няма опит.
       heartbeat: Boolean(this.cfg.alerts?.heartbeatUrl),
+      heartbeatOk: this.lastHeartbeat ? this.lastHeartbeat.ok && now - this.lastHeartbeat.ts <= interval * 2 + 15000 : null,
+      lastHeartbeat: this.lastHeartbeat || null,
       notify: this.notifyHealth,
       channels: configuredChannels(this.cfg),
       silences: this.silences(),

@@ -159,10 +159,26 @@ export function configuredChannels(cfg) {
 export async function heartbeat(cfg, { ok = true } = {}) {
   const url = cfg.alerts?.heartbeatUrl;
   if (!url) return null;
-  // Провалена оценка пинга „/fail" (конвенцията на healthchecks.io) — така
-  // външният наблюдател различава „жив, но сляп" от „мъртъв".
-  const target = ok ? url : `${String(url).replace(/\/$/, '')}/fail`;
-  return post(target, { body: '', timeout: 8000 });
+  return post(ok ? url : failUrl(url), { body: '', timeout: 8000 });
+}
+
+// Провалена оценка пинга „/fail" (конвенцията на healthchecks.io) — така
+// външният наблюдател различава „жив, но сляп" от „мъртъв".
+//
+// Строи се през `URL`, не с лепене на низове. Наивното `url + '/fail'` работи за
+// healthchecks.io и се ЧУПИ ОБЪРНАТО за Uptime Kuma push, който сме препоръчали
+// в собствения си коментар: `…/api/push/TOKEN?status=up&msg=OK` става
+// `…?status=up&msg=OK/fail` → Kuma чете `status=up` и записва УСПЕХ. Сигналът
+// „жив, но сляп" тихо се превръща в „всичко е наред" — точно обратното на целта.
+export function failUrl(raw) {
+  let u;
+  try {
+    u = new URL(String(raw));
+  } catch {
+    return String(raw);
+  }
+  u.pathname = `${u.pathname.replace(/\/$/, '')}/fail`;
+  return u.toString();
 }
 
 function escapeHtml(s) {

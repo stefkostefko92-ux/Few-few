@@ -17,6 +17,7 @@ import path from 'node:path';
 import { listDumps, restorePreviewSpec, resticConfigured } from './backups.js';
 
 const STATE = 'drill.json';
+const DAY_MS = 24 * 3600000;
 
 export function newestDump() {
   const dumps = listDumps();
@@ -124,6 +125,10 @@ export function drillSpec() {
 export function backupChecks(cfg, drillStore, now = Date.now()) {
   const out = [];
   if (cfg?.backups?.alertEnabled === false) return out;
+  // Хоризонтът на бекъп-алармите е ДНИ, не минути → повторно известие веднъж на
+  // 24 часа. При плоския час провалената проба (каданс 30 дни) даваше стотици
+  // критични съобщения до ръчна успешна проба — най-сигурният начин каналът да
+  // бъде заглушен завинаги.
   const maxAgeDays = Number(cfg?.backups?.maxAgeDays ?? 2);
   const age = backupAge(now);
 
@@ -134,6 +139,7 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
       title: 'Няма нито един бекъп',
       body: 'В папката с дъмпове няма нищо. Пусни „Снимка на всички бази" от панела и нагласи крон/таймер — иначе възстановяване няма от какво да стане.',
       sustain: false,
+        repeatEvery: DAY_MS,
     });
   } else {
     if (age.ageDays > maxAgeDays) {
@@ -143,6 +149,7 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
         title: `Бекъпът е на ${age.ageDays} дни`,
         body: `Най-новият е „${age.newest}" от ${age.at} (праг ${maxAgeDays} дни). Ако задачата е спряла, ще разбереш чак в деня, в който ти трябва.`,
         sustain: false,
+        repeatEvery: DAY_MS,
       });
     }
     if (age.suspiciouslySmall) {
@@ -152,6 +159,7 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
         title: 'Последният бекъп е практически празен',
         body: `„${age.newest}" е ${age.sizeBytes} байта. Файл със същото име и нула съдържание е по-опасен от липсващ — изглежда като успех.`,
         sustain: false,
+        repeatEvery: DAY_MS,
       });
     }
   }
@@ -166,6 +174,7 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
         title: 'Пробата за възстановяване се провали',
         body: `Последната проба (${st.lastResult.ts}) не мина. Бекъпът съществува, но не е доказано, че се възстановява.\n${String(st.lastResult.output || '').slice(-400)}`,
         sustain: false,
+        repeatEvery: DAY_MS,
       });
     } else if (st.lastOkAt) {
       const days = (now - new Date(st.lastOkAt).getTime()) / 86400000;
@@ -177,6 +186,7 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
           title: `От ${Math.round(days)} дни няма успешна проба за възстановяване`,
           body: `Каданс ${interval} дни. Бекъп, който никога не си възстановявал, е обещание, не гаранция.`,
           sustain: false,
+        repeatEvery: DAY_MS,
         });
       }
     }

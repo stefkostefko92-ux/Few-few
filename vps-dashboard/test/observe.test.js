@@ -323,16 +323,25 @@ test('заглушаването е срочно — изтеклото не з�
     alerts: {
       enabled: true,
       silences: [
-        { key: 'disk:', until: Date.now() + 60000 },
+        { key: 'disk:/', until: Date.now() + 60000 },
         { key: 'cert:example.com', until: Date.now() - 1000 }, // изтекло
       ],
     },
   };
   const eng = new AlertEngine({ cfg, metrics: { latest: null }, audit: null });
-  assert.ok(eng.silencedBy('disk:/'), 'префиксът заглушава всички дялове');
+  assert.ok(eng.silencedBy('disk:/'), 'точният ключ се заглушава');
+  // ТОЧНО съвпадение: заглушаването на кореновия дял НЕ бива да ослепява и
+  // останалите. Мълчаливият префикс правеше едно натискане на бутона в панела
+  // равно на „заглуши всички дискове" — а с ключ от една буква и целия регистър.
+  assert.equal(eng.silencedBy('disk:/var'), null, 'съседният дял остава жив');
+  assert.equal(eng.silencedBy('disk:/var/lib/docker'), null);
   assert.equal(eng.silencedBy('cert:example.com'), null, 'изтеклото заглушаване не важи');
   assert.equal(eng.silencedBy('service:nginx.service'), null);
   assert.equal(eng.silences().length, 1, 'изтеклите отпадат от списъка');
+  // Цялото семейство се заглушава ИЗРИЧНО — със звездичка, за да е видимо.
+  cfg.alerts.silences = [{ key: 'disk:*', until: Date.now() + 60000 }];
+  assert.ok(eng.silencedBy('disk:/var'), 'звездичката заглушава семейството');
+  assert.equal(eng.silencedBy('cert:x'), null);
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
@@ -376,4 +385,129 @@ test('диск: праг и прогноза се сливат в ЕДНА ал�
   assert.match(disk[0].body, /97%/, 'състоянието остава в текста');
   assert.match(disk[0].body, /5 дни/, 'срокът също — това е действената част');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// ── Поправки по одита на Наблюдателя ──────────────────────────────────────────
+function engine(over = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-eng-'));
+  const cfg = {
+    paths: { stateDir: dir },
+    alerts: { enabled: true, sustainSamples: 1, resolveSamples: 2, cooldownMin: 60, ...(over.alerts || {}) },
+    peers: [], healthChecks: [], slo: { enabled: false }, redis: { enabled: false },
+    domainExpiryDays: 0, backups: { alertEnabled: false }, ...over.cfg,
+  };
+  const eng = new AlertEngine({ cfg, metrics: { latest: null }, audit: null });
+  eng.accessPrimed = true;
+  eng.accesslog = null;
+  eng.intervalMs = 60000;
+  eng.dir = dir;
+  return eng;
+}
+
+test('„Липсва телеметрия" наистина ПЛАМВА, а не само потиска резолва', async () => {
+  const eng = engine();
+  // Цикъл 1: услугата е паднала.
+  eng.collect = async () => { eng.stale = new Map(); return [{ key: 'service:foo.service', severity: 'critical', title: 'Паднала услуга', body: 'foo', sustain: false }]; };
+  await eng.evaluate();
+  assert.deepEqual(eng.listActive().map((a) => a.key), ['service:foo.service']);
+
+  // Цикъл 2: systemctl мълчи. Алармата за услугата трябва да ОСТАНЕ (не знаем),
+  // и ОТГОРЕ да пламне „Липсва телеметрия" — иначе човекът гледа аларма, която
+  // виси вечно, без нито един ред за причината.
+  eng.collect = async () => { eng.stale = new Map([['service:', 'systemctl не отговори']]); return []; };
+  const r = await eng.evaluate();
+  const keys = eng.listActive().map((a) => a.key).sort();
+  assert.deepEqual(keys, ['service:foo.service', 'stale:service:']);
+  assert.ok(r.events.some((e) => e.key === 'stale:service:' && e.type === 'firing'), 'трябва да има събитие за мълчащия източник');
+  assert.ok(!r.events.some((e) => e.type === 'resolved'), 'мълчащ източник НЕ значи възстановено');
+  fs.rmSync(eng.dir, { recursive: true, force: true });
+});
+
+test('delta-събитията не пращат фалшиво „Възстановено"', async () => {
+  const eng = engine();
+  const oom = { key: 'oom', severity: 'critical', title: 'Ядрото уби процес заради памет (OOM)', body: '1 убит', sustain: false, transient: true };
+  eng.collect = async () => { eng.stale = new Map(); return [oom]; };
+  const r1 = await eng.evaluate();
+  assert.ok(r1.events.some((e) => e.key === 'oom' && e.type === 'firing'));
+  assert.equal(eng.listActive().length, 0, 'събитието НЕ се превръща в активно състояние');
+
+  // Следващият цикъл: разликата е 0, ключът изчезва. По-рано това пращаше
+  // „Възстановено: Ядрото уби процес заради памет" — известие, което лъже.
+  eng.collect = async () => { eng.stale = new Map(); return []; };
+  const r2 = await eng.evaluate();
+  assert.equal(r2.events.length, 0, 'нищо не се е „възстановило" — просто не се е повторило');
+  fs.rmSync(eng.dir, { recursive: true, force: true });
+});
+
+test('отпадането иска толкова чисти проверки, колкото и пламването', async () => {
+  const eng = engine({ alerts: { sustainSamples: 1, resolveSamples: 2 } });
+  const cond = { key: 'disk:/', severity: 'warning', title: 'Дискът се пълни', body: '90%' };
+  eng.collect = async () => { eng.stale = new Map(); return [cond]; };
+  await eng.evaluate();
+  assert.equal(eng.listActive().length, 1);
+
+  // Едно трепване под прага НЕ вдига алармата — иначе осцилиращо условие прави
+  // безкрайни двойки „пламна/възстанови се", всяка от които е две известия.
+  eng.collect = async () => { eng.stale = new Map(); return []; };
+  const r1 = await eng.evaluate();
+  assert.equal(r1.events.length, 0, 'първата чиста проверка само брои');
+  assert.equal(eng.listActive().length, 1);
+
+  const r2 = await eng.evaluate();
+  assert.ok(r2.events.some((e) => e.type === 'resolved'), 'втората чиста проверка вдига');
+  assert.equal(eng.listActive().length, 0);
+  fs.rmSync(eng.dir, { recursive: true, force: true });
+});
+
+test('„info" стои в панела, но не буди човек', async () => {
+  const eng = engine();
+  const sent = [];
+  eng.dispatchNotify = null;
+  const entryInfo = await eng.dispatch({ type: 'firing', key: 'anomaly:cpu', severity: 'info', title: 'Нетипично', body: 'z=4' });
+  assert.deepEqual(entryInfo.sent, [], 'аномалия не тръгва към телефона');
+  assert.equal(entryInfo.infoOnly, true);
+  assert.ok(eng.log.some((l) => l.key === 'anomaly:cpu'), 'но остава в дневника');
+  assert.equal(sent.length, 0);
+  fs.rmSync(eng.dir, { recursive: true, force: true });
+});
+
+test('повторното известие е съразмерно на времето за действие', async () => {
+  const eng = engine({ alerts: { sustainSamples: 1, cooldownMin: 60 } });
+  const cert = { key: 'cert:example.com', severity: 'warning', title: 'TLS сертификат изтича', body: '9 дни', sustain: false, repeatEvery: 24 * 3600000 };
+  eng.collect = async () => { eng.stale = new Map(); return [cert]; };
+  await eng.evaluate();
+  // Два часа по-късно: при плоския cooldown от 60 мин това щеше да е второ
+  // критично съобщение (и така 336 пъти за един изтичащ сертификат).
+  eng.active.get('cert:example.com').lastNotified = Date.now() - 2 * 3600000;
+  const r = await eng.evaluate();
+  assert.equal(r.events.length, 0, 'аларма с хоризонт дни не се повтаря на час');
+  eng.active.get('cert:example.com').lastNotified = Date.now() - 25 * 3600000;
+  const r2 = await eng.evaluate();
+  assert.ok(r2.events.some((e) => e.repeat), 'след 24 часа — напомня');
+  fs.rmSync(eng.dir, { recursive: true, force: true });
+});
+
+test('трафикът, паднал до нула, се вижда — пробата отвътре не го вижда', () => {
+  const eng = engine();
+  const now = Date.now();
+  const W = 10 * 60000;
+  // 40 минути нормален трафик, после 10 минути пълна тишина.
+  eng.accessWindow = [];
+  for (let i = 50; i > 10; i--) eng.accessWindow.push({ ts: now - i * 60000, total: 12, server: 0 });
+  for (let i = 10; i >= 0; i--) eng.accessWindow.push({ ts: now - i * 60000, total: 0, server: 0 });
+  const hit = eng.trafficDrop(W, now);
+  assert.equal(hit.length, 1);
+  assert.equal(hit[0].key, 'traffic:zero');
+  assert.equal(hit[0].severity, 'critical');
+
+  // Тиха нощ на малък сайт: малко трафик преди, нула сега → МЪЛЧИ.
+  eng.accessWindow = [];
+  for (let i = 50; i > 10; i--) eng.accessWindow.push({ ts: now - i * 60000, total: 0, server: 0 });
+  eng.accessWindow.push({ ts: now - 60000, total: 0, server: 0 }, { ts: now, total: 0, server: 0 });
+  assert.equal(eng.trafficDrop(W, now).length, 0, 'нула преди и нула сега не е авария');
+
+  // Пресен старт (няма достатъчно история) → МЪЛЧИ, вместо да гърми при рестарт.
+  eng.accessWindow = [{ ts: now - 60000, total: 500, server: 0 }, { ts: now, total: 0, server: 0 }];
+  assert.equal(eng.trafficDrop(W, now).length, 0, 'без история няма присъда');
+  fs.rmSync(eng.dir, { recursive: true, force: true });
 });

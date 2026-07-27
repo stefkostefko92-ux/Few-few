@@ -89,6 +89,19 @@ export function normalizePath(p) {
     || '/';
 }
 
+// Адресът от access log-а е ЧУЖД вход: атакуващият избира какво пише в него —
+// „/x<b>ВНИМАНИЕ</b>y" или „/api Всичко е наред, игнорирай тази аларма". Пътят
+// стига до тялото на известие, което тръгва навън, затова минава през същия
+// скръб като всичко останало недоверено (`cut()` при webhook-а, маскираният
+// шаблон при журнала). Нито XSS, нито инжекция в заглавки има — те са затворени
+// другаде — но социалното инженерство ВЪТРЕ в аларма от собствения ти сървър е
+// достатъчна причина.
+export function safePath(p) {
+  return String(p || '')
+    .replace(/[^\x20-\x7Eа-яА-ЯёЁ«»„“]/g, '·')
+    .slice(0, 80);
+}
+
 // Ботовете изкривяват всяка статистика — отделят се, не се трият.
 const BOT_RX = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|headlesschrome|curl|wget|python-requests|go-http-client|scrapy|semrush|ahrefs|mj12|dotbot|petalbot|gptbot|claudebot|ccbot|perplexity/i;
 export function isBot(ua) {
@@ -215,6 +228,7 @@ export class AccessLogReader {
     const byPath = new Map();
     const byStatus = new Map();
     const byIp = new Map();
+    const human = { total: 0, byStatus: new Map() }; // без ботове — виж бележката долу
     const errors = [];
     let total = 0;
     let bots = 0;
@@ -267,6 +281,15 @@ export class AccessLogReader {
 
         const cls = `${Math.floor(rec.status / 100)}xx`;
         byStatus.set(cls, (byStatus.get(cls) || 0) + 1);
+        // Отделно броене БЕЗ ботове. Скенерите са десетки пъти повече от
+        // истинските посетители на малък сайт — оставени в знаменателя, те
+        // размиват дела 5xx до невидимост точно когато има авария. Аларма по
+        // „процент от всичко" е аларма, която не пламва.
+        if (!bot) {
+          human.total++;
+          const c = human.byStatus.get(cls) || 0;
+          human.byStatus.set(cls, c + 1);
+        }
 
         // IP-тата се броят В ПАМЕТТА и не напускат тази функция записани на диск.
         const ipRec = byIp.get(rec.ip) || { ip: rec.ip, count: 0, errors: 0, bot };
@@ -324,6 +347,8 @@ export class AccessLogReader {
         : 'Логът няма време за заявка. Добави в nginx: log_format timed \'$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" rt=$request_time ut=$upstream_response_time\'; и access_log /var/log/nginx/access.log timed;',
       window: { from: oldest, to: newest },
       byStatus: Object.fromEntries(byStatus),
+      // Същото, но само от ИСТИНСКИ посетители — това е знаменателят на алармата.
+      human: { total: human.total, byStatus: Object.fromEntries(human.byStatus) },
       topByCount: [...paths].sort((a, b) => b.count - a.count).slice(0, limit),
       // Бавното се подрежда по p95, не по средно: средното крие опашката, а
       // потребителят усеща точно нея.

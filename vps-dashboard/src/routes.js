@@ -63,7 +63,10 @@ export const PEER_DENY = [
   /^\/api\/webserver\/site$/,
   /^\/api\/agents\/tools\/run$/,
   /^\/api\/totp\//,
-  /^\/api\/alerts\/settings$/,
+  /^\/api\/alerts\/(settings|channels)$/,
+  // Заглушаването е ослепяване — съседът няма работа да ни го прави, дори днес
+  // маршрутът да е само POST (утре GET-вариант би го отворил безшумно).
+  /^\/api\/alerts\/silence$/,
   /^\/api\/backups\/restore\//,
   /^\/api\/env(\/|$)/, // тайните на продуктите не тръгват към съседа
   /^\/api\/limits(\/|$)/,
@@ -92,6 +95,82 @@ export const IP_ALLOWLIST_EXEMPT = [/^\/api\/webhook\//];
 export function ipGateAllows(req, cfg, pathname, clientIpFn) {
   if (IP_ALLOWLIST_EXEMPT.some((rx) => rx.test(pathname))) return true;
   return ipAllowed(clientIpFn(req, cfg.trustProxy), cfg.allowIps);
+}
+
+// Изходящ адрес, зададен от човек през браузъра. Схемата не стига: панелът върви
+// като root на същата машина, на която живеят Redis, Postgres и самият панел,
+// а в облак — и метаданните на инстанцията. „http(s) е валидно" превръща едно
+// поле в настройките в SSRF пистолет, който гърми на всеки каданс.
+//
+// Частните мрежи са ПОЗВОЛЕНИ съзнателно: канонично препоръчваме монитор на
+// ДРУГИЯ ни VPS, който често е на вътрешен адрес. Затова защитата е двойна —
+// забраняваме само това, което няма законна употреба (loopback, link-local,
+// вградени име:парола), а всичко останало става ВИДИМО (origin в отговора и в
+// одита).
+export function assertOutboundUrl(raw, label = 'Адресът') {
+  let u;
+  try {
+    u = new URL(String(raw));
+  } catch {
+    throw Object.assign(new Error(`${label} иска валиден http(s) адрес`), { status: 400 });
+  }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+    throw Object.assign(new Error(`${label} иска http(s) адрес`), { status: 400 });
+  }
+  if (u.username || u.password) {
+    throw Object.assign(new Error(`${label} не бива да носи име и парола в адреса`), { status: 400 });
+  }
+  const host = u.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  const LOOPBACK = /^(localhost|127\.\d+\.\d+\.\d+|::1|0\.0\.0\.0|0+)$/;
+  // 169.254.0.0/16 и fe80::/10 — метаданните на облачната инстанция живеят точно
+  // там (169.254.169.254) и са класическата цел на SSRF.
+  const LINK_LOCAL = /^(169\.254\.\d+\.\d+|fe[89ab][0-9a-f]:|fd[0-9a-f]{2}:)/;
+  if (LOOPBACK.test(host) || LINK_LOCAL.test(host)) {
+    throw Object.assign(
+      new Error(`${label} не бива да сочи към самата машина или към метаданните на доставчика (${host}).`),
+      { status: 400 }
+    );
+  }
+  return u;
+}
+
+// Затворен списък по канал и по поле. Всичко извън него се изхвърля мълчаливо —
+// патърнът е същият като при праговете, а не „вярвай на тялото".
+const NOTIFY_FIELDS = {
+  telegram: ['botToken', 'chatId', 'minSeverity'],
+  ntfy: ['server', 'topic', 'token', 'minSeverity'],
+  webhook: ['url', 'minSeverity'],
+  email: ['to', 'from', 'minSeverity'],
+};
+const SEVERITIES = new Set(['', 'info', 'warning', 'critical']);
+
+export function safeOrigin(raw) {
+  if (!raw) return null;
+  try {
+    return new URL(String(raw)).origin;
+  } catch {
+    return '(невалиден адрес)';
+  }
+}
+
+export function sanitizeNotify(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
+  const out = {};
+  for (const [chan, fields] of Object.entries(NOTIFY_FIELDS)) {
+    const src = input[chan];
+    if (!src || typeof src !== 'object' || Array.isArray(src)) continue;
+    const clean = {};
+    for (const f of fields) {
+      if (src[f] === undefined) continue;
+      const v = String(src[f]).slice(0, 500).replace(/[\r\n]/g, '');
+      // Непознат праг = без филтър; мълчаливото „не разпознах" е по-безопасно от
+      // тихо спиране на канала.
+      if (f === 'minSeverity' && !SEVERITIES.has(v)) continue;
+      clean[f] = v;
+    }
+    if (Object.keys(clean).length) out[chan] = clean;
+  }
+  return Object.keys(out).length ? out : null;
 }
 
 export function buildRouter(ctx) {
@@ -678,6 +757,10 @@ export function buildRouter(ctx) {
           email: cfg.notify?.email?.minSeverity || '',
         },
         accesslog: cfg.accesslog || {},
+        // Origin-ът на мъртвеца-ключ е ВИДИМ (пътят носи токена и остава скрит).
+        // Без него полето е невидим изходящ канал: root процес чука някъде на
+        // всеки каданс, а никъде в панела не пише къде.
+        heartbeatOrigin: safeOrigin(cfg.alerts?.heartbeatUrl),
         // Здравето на САМИЯ мониторинг: „няма аларми" значи съвсем различно
         // нещо според това дали проверката върви или е спряла преди 3 часа.
         health: ctx.alerts ? ctx.alerts.health() : null,
@@ -698,7 +781,14 @@ export function buildRouter(ctx) {
         if (!key || key.length > 200 || /[\r\n]/.test(key)) {
           throw Object.assign(new Error('Липсва или невалиден ключ на аларма'), { status: 400 });
         }
+        // Изтеклите отпадат тук — така списъкът не расте вечно от само себе си.
         const list = (cfg.alerts?.silences || []).filter((s) => s?.key !== key && Number(s?.until) > Date.now());
+        // Таван на БРОЯ. Конфигът съдържа passwordHash и sessionSecret и се
+        // пренаписва ЦЯЛ при всеки запис — неограничен списък значи растящ файл
+        // с тайните вътре, пренаписван на всяко натискане на бутона.
+        if (!b.remove && list.length >= 50) {
+          throw Object.assign(new Error('Твърде много активни заглушавания (50). Махни някои — иначе не знаеш за какво си сляп.'), { status: 409 });
+        }
         if (b.remove) {
           saveConfig(cfg, { alerts: { silences: list } });
           audit.log({ action: 'alerts.unsilence', key, user: req.user });
@@ -730,21 +820,6 @@ export function buildRouter(ctx) {
           for (const k of ['enabled', 'cooldownMin', 'sustainSamples', 'checkIntervalSec']) {
             if (b.alerts[k] !== undefined) patch.alerts[k] = b.alerts[k];
           }
-          if (b.alerts.heartbeatUrl !== undefined) {
-            const u = String(b.alerts.heartbeatUrl || '').trim();
-            if (u) {
-              let parsed;
-              try {
-                parsed = new URL(u);
-              } catch {
-                throw Object.assign(new Error('Мъртвецът-ключ иска валиден http(s) адрес'), { status: 400 });
-              }
-              if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-                throw Object.assign(new Error('Мъртвецът-ключ иска http(s) адрес'), { status: 400 });
-              }
-            }
-            patch.alerts.heartbeatUrl = u;
-          }
           if (b.alerts.thresholds) {
             patch.alerts.thresholds = {};
             for (const [k, v] of Object.entries(b.alerts.thresholds)) {
@@ -761,9 +836,44 @@ export function buildRouter(ctx) {
             if (Number.isFinite(n) && n >= 0) patch.accesslog[k] = n;
           }
         }
-        if (b.notify) patch.notify = b.notify;
         saveConfig(cfg, patch);
-        audit.log({ action: 'alerts.settings', user: req.user }); // без стойности — може да има токени
+        audit.log({ action: 'alerts.settings', user: req.user });
+        return { ok: true };
+      }),
+      { mutating: true }
+    )
+  );
+
+  // Канали + мъртвец-ключ — ОТДЕЛЕН маршрут, защото носи друг клас риск:
+  // тайни и изходящ адрес, до който root процесът чука на всеки каданс. Затова е
+  // единственото тук, което иска повторна автентикация (виж SUDO_ON_WRITE).
+  // Праговете по-горе са числа и остават без sudo — панел, който пита за парола
+  // на всяка настройка, свършва с изключен sudo режим.
+  r.post(
+    '/api/alerts/channels',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const patch = {};
+        if (b.heartbeatUrl !== undefined) {
+          const u = String(b.heartbeatUrl || '').trim();
+          if (u) assertOutboundUrl(u, 'Мъртвецът-ключ');
+          patch.alerts = { heartbeatUrl: u };
+          // Адресът се ОДИТИРА по origin. Без този ред панелът има поле, което
+          // кара root процес да чука някъде на всеки 60 секунди, безсрочно и
+          // преживявайки рестарт, а НИКЪДЕ не се вижда къде — нито в отговора
+          // (тайната е в пътя), нито в дневника. Готов невидим изходящ канал.
+          audit.log({ action: 'alerts.heartbeat', origin: safeOrigin(u) || '(изключен)', user: req.user });
+        }
+        // Каналите минават през ИЗРИЧЕН списък по поле, не суров вход. Едно тяло
+        // `{"notify":"каквото и да е"}` иначе презаписваше целия обект и
+        // ИЗТРИВАШЕ botToken/chatId/topic/URL — необратимо (тайните не се пазят
+        // другаде) и безшумно (одитът по конструкция не записва стойности).
+        const notifyPatch = sanitizeNotify(b.notify);
+        if (notifyPatch) patch.notify = notifyPatch;
+        if (!Object.keys(patch).length) return { ok: true, note: 'Няма промяна.' };
+        saveConfig(cfg, patch);
+        audit.log({ action: 'alerts.channels', user: req.user }); // без стойности — тук има токени
         return { ok: true };
       }),
       { mutating: true }
