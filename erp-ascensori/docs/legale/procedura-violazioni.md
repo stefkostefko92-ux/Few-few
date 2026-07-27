@@ -43,6 +43,16 @@ dopo, il ritardo no.
 
 ### Fase 1 — Rilevazione e blocco *(immediata)*
 
+> **Oggi le tre righe della tabella dei contatti sono la stessa persona, e una
+> è vuota.** Non è una svista di compilazione: è il rischio operativo numero uno
+> di questa procedura. Il termine di 72 ore dell'art. 33 par. 1 decorre dal
+> momento in cui il responsabile *viene a conoscenza* della violazione e non si
+> sospende perché la persona è in ferie, in volo o in ospedale. **Individuare un
+> sostituto** — anche esterno, anche con il solo compito di avvisare i clienti e
+> di far partire il conteggio — è la misura più economica che questa procedura
+> possa contenere. Fino ad allora la procedura è scritta ma non è ridondante, e
+> va detto al cliente se lo chiede.
+
 Chiunque rilevi l'evento avvisa **subito** il referente privacy ai recapiti
 dell'art. 5, senza attendere conferme.
 
@@ -131,9 +141,9 @@ Conservazione: **5 anni**.
 
 | Ruolo | Nome | Telefono | E-mail | PEC |
 |---|---|---|---|---|
-| Referente privacy | «…» | «…» | «…» | «…» |
-| Sostituto | «…» | «…» | «…» | «…» |
-| Amministratore di sistema di turno | «…» | «…» | «…» | — |
+| Referente privacy | «nome e cognome» — legale rappresentante | «telefono» | «e-mail» | «PEC» |
+| Sostituto | **DA INDIVIDUARE** — vedi nota qui sotto | | | |
+| Amministratore di sistema di turno | la stessa persona | «telefono» | «e-mail» | — |
 
 ## 6. Prova della procedura
 

@@ -6,7 +6,9 @@
 > подобработващ, нова категория данни.
 
 **Titolare del registro (responsabile del trattamento):** Carbon Stealth VCC
-**Recapito:** «…» · **PEC:** «…» · **Referente privacy:** «…»
+**Recapito:** «…» · **PEC:** «…»
+**Referente privacy:** il socio e legale rappresentante — «nome e cognome».
+È anche l'unico **amministratore di sistema** ([`nomine.md`](nomine.md) § 0).
 **Rappresentante ex art. 27:** non necessario (stabilimento nell'Unione)
 **Responsabile della protezione dei dati (DPO):** non designato — vedi nota 1
 
@@ -122,7 +124,9 @@ coda locale.
 
 ## Note
 
-1. **DPO non designato.** Non ricorrono le condizioni dell'art. 37 par. 1: non
+1. **DPO non designato.** La concentrazione di più ruoli in una persona **non**
+   fa sorgere l'obbligo — l'art. 37 elenca condizioni oggettive, non un criterio
+   di numerosità. Non ricorrono le condizioni dell'art. 37 par. 1: non
    siamo autorità pubblica; l'attività principale non consiste in trattamenti
    che richiedono monitoraggio regolare e sistematico su larga scala di
    interessati (i dati sono di personale e controparti dei clienti, in numero
@@ -134,6 +138,14 @@ coda locale.
    ([`nomine.md`](nomine.md)), ai sensi del Provvedimento del Garante del
    27.11.2008, tuttora in vigore per effetto dell'art. 22 comma 4 D.Lgs.
    101/2018.
+
+   **Oggi è una persona sola**, che è anche il legale rappresentante. Le
+   registrazioni degli accessi richieste dal Provvedimento sono soddisfatte dal
+   registro immodificabile del gestionale: completezza e inalterabilità sono
+   garantite dalla firma HMAC concatenata, la conservazione è di sei mesi per
+   gli eventi di accesso — il minimo richiesto. La **verifica annuale**, invece,
+   non può essere indipendente finché la persona è una sola: il limite è
+   dichiarato in [`nomine.md`](nomine.md) § 7 con le due strade per superarlo.
 
 3. **Aggiornamento.** Il registro va aggiornato entro 30 giorni da: nuovo
    cliente, cessazione di un cliente, nuovo sub-responsabile, nuova categoria di

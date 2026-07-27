@@ -294,6 +294,7 @@ utilizzabili solo per la finalità di controllo.
 |---|---|---|
 | Referente privacy | «nome» | «nome» |
 | E-mail | «…» | «…» |
+| Referente privacy | «…» | «nome e cognome» — legale rappresentante, unico amministratore di sistema |
 | PEC | «…» | «…» |
 | Notifiche di violazione | «…» | «…» |
 
