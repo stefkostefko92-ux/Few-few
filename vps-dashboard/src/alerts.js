@@ -6,7 +6,7 @@
 // има cooldown, за да не спами; „възстановено“ също се известява.
 import fs from 'node:fs';
 import path from 'node:path';
-import { notify } from './notify.js';
+import { notify, configuredChannels, heartbeat } from './notify.js';
 import { failedServicesSafe, tlsCertsSafe, tlsCerts } from './system.js';
 import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
@@ -18,8 +18,9 @@ import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from '
 import { overview as redisOverview, evictionChecks } from './redis.js';
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history, slo, logminer, drill }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog }) {
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
+    this.accesslog = accesslog; // за дела 5xx от РЕАЛНИЯ трафик
     this.cfg = cfg;
     this.metrics = metrics;
     this.logminer = logminer; // за „нова грешка в журнала"
@@ -30,6 +31,13 @@ export class AlertEngine {
     this.active = new Map(); // key → { since, lastNotified, severity, title, body }
     this.streaks = new Map(); // key → колко последователни проверки е активно
     this.log = []; // последните известия (за интерфейса)
+    // „Кой пази пазача": кога за последно оценката МИНА докрай. Панелът показва
+    // възрастта, а рестарт с изтрито състояние не изглежда като жив мониторинг.
+    this.lastEvalAt = null;
+    this.lastEvalError = null;
+    // Здраве на каналите: последният опит за доставка. Аларма, която е излязла
+    // от двигателя, но не е стигнала до никого, е равна на липсваща аларма.
+    this.notifyHealth = null;
     this.load();
   }
 
@@ -38,6 +46,9 @@ export class AlertEngine {
       const raw = JSON.parse(fs.readFileSync(this.file, 'utf8'));
       this.active = new Map(Object.entries(raw.active || {}));
       this.log = raw.log || [];
+      this.lastEvalAt = raw.lastEvalAt || null;
+      this.lastEvalError = raw.lastEvalError || null;
+      this.notifyHealth = raw.notifyHealth || null;
     } catch {
       /* първо пускане */
     }
@@ -47,7 +58,13 @@ export class AlertEngine {
     try {
       fs.writeFileSync(
         this.file,
-        JSON.stringify({ active: Object.fromEntries(this.active), log: this.log.slice(-200) }),
+        JSON.stringify({
+          active: Object.fromEntries(this.active),
+          log: this.log.slice(-200),
+          lastEvalAt: this.lastEvalAt,
+          lastEvalError: this.lastEvalError,
+          notifyHealth: this.notifyHealth,
+        }),
         { mode: 0o600 }
       );
     } catch {
@@ -55,10 +72,30 @@ export class AlertEngine {
     }
   }
 
+  // Заглушаване: изрично, СРОЧНО и видимо. Заглушената аларма продължава да се
+  // изчислява и да стои в панела — само известието спира. Безсрочното заглушаване
+  // е начинът да забравиш, че си заглушил, затова `until` е задължителен.
+  silences() {
+    const now = Date.now();
+    return (this.cfg.alerts?.silences || []).filter((s) => s?.key && Number(s.until) > now);
+  }
+
+  silencedBy(key) {
+    return this.silences().find((s) => key === s.key || key.startsWith(s.key)) || null;
+  }
+
   start() {
     if (!this.cfg.alerts?.enabled) return;
     const every = Math.max(30, Number(this.cfg.alerts.checkIntervalSec) || 60) * 1000;
-    const tick = () => this.evaluate().catch(() => {});
+    this.intervalMs = every;
+    // Провалената оценка НЕ бива да се преглъща: точно тя е „жив процес, сляп
+    // мониторинг" — най-подвеждащото състояние, защото панелът изглежда наред.
+    const tick = () =>
+      this.evaluate().catch((err) => {
+        this.lastEvalError = { ts: Date.now(), message: String(err?.message || err).slice(0, 300) };
+        this.save();
+        heartbeat(this.cfg, { ok: false }).catch(() => {});
+      });
     setTimeout(tick, 10000); // първата проверка след 10s (метриките да се напълнят)
     this.timer = setInterval(tick, every);
     this.timer.unref?.();
@@ -205,28 +242,45 @@ export class AlertEngine {
       if (k?.listen) this.prevListen = k.listen;
 
       // Файлови дескриптори — EMFILE вали Node приложение мигновено.
-      if (k?.fds && k.fds.usePercent >= 80) {
+      // Прагът е в конфига като всички останали: зашитата стойност беше
+      // единственото число тук, което собственикът не можеше да нагласи.
+      const fdPct = Number(t.fdPct) || 80;
+      if (k?.fds && k.fds.usePercent >= fdPct) {
         out.push({
           key: 'fds',
-          severity: k.fds.usePercent >= 95 ? 'critical' : 'warning',
+          severity: k.fds.usePercent >= Math.max(fdPct, 95) ? 'critical' : 'warning',
           title: 'Свършват файловите дескриптори',
           body: `${k.fds.allocated} от ${k.fds.max} (${k.fds.usePercent.toFixed(0)}%)`,
         });
       }
 
-      // ── Капацитет: праг + ПРОГНОЗА ───────────────────────────────────────
+      // ── Капацитет: праг + ПРОГНОЗА, СЛЯТИ в едно условие ─────────────────
+      // Дял на 86%, който се пълни за 3 дни, е ЕДИН проблем. Две отделни аларми
+      // („дискът се пълни" + „дискът ще се напълни") за същия дял са двойна
+      // работа за човека и двойна умора от известия. Прогнозата не изтрива
+      // прага — тя го ОБОГАТЯВА: тежестта е по-тежката от двете, а текстът носи
+      // и състоянието, и срока.
+      const forecasts = new Map(this.diskForecasts().map((f) => [f.mount, f]));
+      const seenMounts = new Set();
       for (const d of snap.disks || []) {
-        if (t.diskPct && d.usePercent >= t.diskPct) {
-          out.push({
-            key: `disk:${d.mount}`,
-            severity: d.usePercent >= 95 ? 'critical' : 'warning',
-            title: 'Дискът се пълни',
-            body: `${d.mount} е на ${d.usePercent}% (остават ${fmtGb(d.availBytes)})`,
-          });
-        }
+        const f = forecasts.get(d.mount);
+        const overThreshold = t.diskPct && d.usePercent >= t.diskPct;
+        if (!overThreshold && !f) continue;
+        seenMounts.add(d.mount);
+        const thresholdSev = d.usePercent >= 95 ? 'critical' : 'warning';
+        const severity = worst(overThreshold ? thresholdSev : 'info', f ? f.severity : 'info');
+        const state = `${d.mount} е на ${d.usePercent}% (остават ${fmtGb(d.availBytes)})`;
+        out.push({
+          key: `disk:${d.mount}`,
+          severity,
+          title: f ? `Дискът ${d.mount} ще се напълни` : 'Дискът се пълни',
+          body: f ? `${state}. ${f.body}` : state,
+        });
       }
-      for (const f of this.diskForecasts()) {
-        out.push(f);
+      // Прогноза за дял, който метриките вече не показват (размонтиран между
+      // историята и снимката) — по-добре сама, отколкото изгубена.
+      for (const [mount, f] of forecasts) {
+        if (!seenMounts.has(mount)) out.push({ key: `disk:${mount}`, severity: f.severity, title: f.title, body: f.body });
       }
       for (const a of this.anomalyChecks()) {
         out.push(a);
@@ -263,6 +317,8 @@ export class AlertEngine {
     for (const b of await this.flappingChecks()) out.push(b);
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);
+    for (const b of this.accessChecks()) out.push(b);
+    for (const b of this.notifyChecks()) out.push(b);
 
     if (t.certDays) {
       const certs = await tlsCertsSafe();
@@ -328,10 +384,11 @@ export class AlertEngine {
       const etaDays = f.etaMs / 86400000;
       if (etaDays > days) continue;
       out.push({
+        mount,
         key: `disk-eta:${mount}`,
         severity: etaDays <= 1 ? 'critical' : 'warning',
         title: `Дискът ${mount} ще се напълни`,
-        body: `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) ${mount} стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
+        body: `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
       });
     }
     return out;
@@ -470,6 +527,85 @@ export class AlertEngine {
     return out;
   }
 
+  // „Кой известява за провала на известията." Аларма, тръгнала от двигателя и
+  // непристигнала до никого, е равна на липсваща — а точно този провал е тих по
+  // конструкция: Telegram блокиран от firewall, изтекъл ntfy токен, сгрешен
+  // webhook URL. Тук няма канал, по който да го съобщим (те са счупени), затова
+  // сигналът е СЪСТОЯНИЕ в панела: остава на екрана, докато не се оправи.
+  //
+  // Отделно: нула настроени канала не е грешка, а избор — но избор, който човек
+  // прави случайно (инсталира и забравя). Казваме го веднъж, тихо.
+  notifyChecks() {
+    const out = [];
+    const channels = configuredChannels(this.cfg);
+    const on = Object.entries(channels).filter(([, v]) => v).map(([k]) => k);
+    if (!on.length) {
+      out.push({
+        key: 'notify:none',
+        severity: 'info',
+        title: 'Няма настроен канал за известия',
+        body: 'Алармите се виждат само в този панел. Настрой Telegram/ntfy/webhook/имейл — иначе научаваш за проблема, когато сам отвориш екрана.',
+        sustain: false,
+      });
+      return out;
+    }
+    const h = this.notifyHealth;
+    if (!h || !h.attempted) return out;
+    // Пропуснатите по праг канали НЕ са провалени — иначе праг „само критично"
+    // би вдигал фалшива аларма при всяко „info" известие.
+    if (h.delivered > 0) return out;
+    out.push({
+      key: 'notify:down',
+      severity: 'critical',
+      title: 'Известията не стигат до никого',
+      body:
+        `Последното известие (${new Date(h.ts).toLocaleString('bg-BG')}) не мина по нито един от ${h.attempted} канала: ` +
+        `${(h.failures || []).join(', ') || 'без подробности'}. Този панел е единственото място, където виждаш алармите.`,
+      sustain: false,
+    });
+    return out;
+  }
+
+  // 5xx от РЕАЛНИЯ трафик. Пробата пита един URL и вижда 200; потребителите в
+  // същия момент може да получават 500 на checkout-а. Access log-ът е
+  // единственият източник, който брои какво светът наистина е получил.
+  //
+  // Броим само НОВОТО от последната проверка (курсорът е на този четец) — иначе
+  // едно старо избухване гърми вечно. Първото четене само зарежда курсора:
+  // без това стартът на панела вдига аларма за 24 MB история.
+  accessChecks() {
+    const out = [];
+    if (!this.accesslog || this.cfg.accesslog?.enabled === false) return out;
+    let r;
+    try {
+      r = this.accesslog.analyze({ persist: true, limit: 10 });
+    } catch (err) {
+      if (this.accessPrimed) this.stale?.set('http5xx', err.message);
+      return out;
+    }
+    if (!r.available) return out;
+    if (!this.accessPrimed) {
+      this.accessPrimed = true;
+      return out; // първото четене е зареждане на курсора, не измерване
+    }
+    const minRequests = Number(this.cfg.accesslog?.minRequests) || 20;
+    const pct = Number(this.cfg.accesslog?.errorPct) || 5;
+    const server = Number(r.byStatus?.['5xx']) || 0;
+    if (r.total < minRequests || !server) return out;
+    const rate = (server / r.total) * 100;
+    if (rate < pct) return out;
+    const top = (r.topByErrors || []).filter((p) => Object.keys(p.statuses || {}).some((s) => Number(s) >= 500)).slice(0, 3);
+    out.push({
+      key: 'http5xx',
+      severity: rate >= pct * 2 ? 'critical' : 'warning',
+      title: `${rate.toFixed(1)}% от заявките връщат 5xx`,
+      body:
+        `${server} сървърни грешки от ${r.total} заявки от последната проверка (праг ${pct}%).` +
+        (top.length ? `\nНай-засегнати:\n${top.map((p) => `• ${p.method} ${p.path} — ${p.errorPct}% от ${p.count}`).join('\n')}` : ''),
+    });
+    return out;
+  }
+
   // Redis изхвърля ключове ТИХО: няма грешка, няма ред в лога, услугата е жива.
   // Единственият видим белег е броячът, който расте — затова се мери разликата.
   async redisChecks() {
@@ -535,6 +671,24 @@ export class AlertEngine {
     const cooldownMs = Math.max(1, Number(cfg.alerts.cooldownMin) || 60) * 60 * 1000;
     const now = Date.now();
 
+    // Собствената дупка: между две оценки е минало много повече от каданса.
+    // Процесът е бил спрян, машината — приспана, или `evaluate()` е висяло.
+    // Това е ПРОПУСНАТ период, не текущо състояние → еднократно събитие, не
+    // аларма, която да се „възстановява". Казваме го, защото мълчанието в този
+    // интервал не е доказателство, че всичко е било наред.
+    const gapMs = this.lastEvalAt ? now - this.lastEvalAt : 0;
+    const maxGap = Math.max(5 * (this.intervalMs || 60000), 10 * 60000);
+    if (gapMs > maxGap) {
+      await this.event({
+        key: 'monitor:gap',
+        severity: 'warning',
+        title: 'Мониторингът е мълчал',
+        body:
+          `Между две проверки минаха ${fmtDuration(gapMs)} (каданс ${Math.round((this.intervalMs || 60000) / 1000)}s). ` +
+          'През това време не е имало кой да види проблем — провери дали услугата е рестартирала или сървърът е бил спрян.',
+      });
+    }
+
     const conditions = await this.collect();
     const byKey = new Map(conditions.map((c) => [c.key, c]));
 
@@ -597,13 +751,21 @@ export class AlertEngine {
         type: 'resolved',
         key,
         severity: 'ok',
+        // Тежестта на ТОВА, което се вдига — иначе канал с праг „само критично"
+        // получава алармата, но не и нейния край.
+        wasSeverity: prev.severity,
         title: `Възстановено: ${prev.title}`,
         body: `Проблемът от ${new Date(prev.since).toLocaleString('bg-BG')} вече го няма.`,
       });
     }
 
     for (const ev of events) await this.dispatch(ev);
+    this.lastEvalAt = Date.now();
+    this.lastEvalError = null;
     this.save();
+    // Мъртвецът-ключ: външният наблюдател чака този пинг. Спре ли — вдига
+    // тревога ВМЕСТО нас. Това е единствената защита срещу тихо умрял панел.
+    heartbeat(this.cfg, { ok: true }).catch(() => {});
     return { firing: this.listActive(), events };
   }
 
@@ -625,15 +787,63 @@ export class AlertEngine {
     this.log.push(entry);
     if (this.log.length > 200) this.log.shift();
     this.audit?.log({ action: `alert.${ev.type}`, key: ev.key, severity: ev.severity, title: ev.title });
+
+    // Заглушено: остава в дневника и в панела, само известието не тръгва.
+    // Тихо изхвърляне без следа е начинът да не разбереш, че си сляп.
+    const silence = ev.key ? this.silencedBy(ev.key) : null;
+    if (silence) {
+      entry.silenced = { until: silence.until, note: silence.note || null };
+      entry.sent = [];
+      return entry;
+    }
+
     const results = await notify(this.cfg, ev);
-    entry.sent = results.filter((r) => r.ok).map((r) => r.channel);
-    entry.failed = results.filter((r) => !r.ok).map((r) => `${r.channel}:${r.error || r.status}`);
+    const real = results.filter((r) => !r.skipped);
+    entry.sent = results.filter((r) => r.ok && !r.skipped).map((r) => r.channel);
+    entry.skipped = results.filter((r) => r.skipped).map((r) => r.channel);
+    entry.failed = real.filter((r) => !r.ok).map((r) => `${r.channel}:${r.error || r.status}`);
+    // Здравето се мери само когато НАИСТИНА е имало опит: известие, изцяло
+    // отсято по праг, не е доказателство нито за живи, нито за мъртви канали.
+    if (real.length) {
+      this.notifyHealth = {
+        ts: Date.now(),
+        attempted: real.length,
+        delivered: entry.sent.length,
+        failures: entry.failed,
+      };
+    }
     return entry;
   }
 
   listActive() {
-    return [...this.active.entries()].map(([key, v]) => ({ key, ...v }));
+    return [...this.active.entries()].map(([key, v]) => ({ key, ...v, silenced: this.silencedBy(key) || null }));
   }
+
+  // Здравето на САМИЯ мониторинг — за панела и за другия VPS. „Няма аларми"
+  // значи нещо съвсем различно според това дали проверката върви или е спряла.
+  health() {
+    const now = Date.now();
+    const interval = this.intervalMs || Math.max(30, Number(this.cfg.alerts?.checkIntervalSec) || 60) * 1000;
+    const ageMs = this.lastEvalAt ? now - this.lastEvalAt : null;
+    return {
+      enabled: Boolean(this.cfg.alerts?.enabled),
+      lastEvalAt: this.lastEvalAt,
+      ageMs,
+      intervalMs: interval,
+      // „Свежо" = не по-старо от два каданса. Първото пускане (null) не е провал.
+      fresh: this.lastEvalAt == null ? null : ageMs <= interval * 2 + 15000,
+      lastEvalError: this.lastEvalError,
+      heartbeat: Boolean(this.cfg.alerts?.heartbeatUrl),
+      notify: this.notifyHealth,
+      channels: configuredChannels(this.cfg),
+      silences: this.silences(),
+    };
+  }
+}
+
+const SEV_ORDER = { ok: 0, info: 1, warning: 2, critical: 3 };
+export function worst(...severities) {
+  return severities.reduce((a, b) => ((SEV_ORDER[b] ?? 0) > (SEV_ORDER[a] ?? 0) ? b : a), 'info');
 }
 
 function fmtGb(bytes) {

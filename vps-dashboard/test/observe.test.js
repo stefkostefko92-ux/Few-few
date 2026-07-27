@@ -7,6 +7,10 @@ import path from 'node:path';
 import { parseLine, parseTs, normalizePath, isBot, AccessLogReader } from '../src/accesslog.js';
 import { DrillStore, backupChecks } from '../src/drill.js';
 import { detectFlapping, registrableDomain, pickEvent, evaluateHeaders } from '../src/health.js';
+import { blameOf } from '../src/accesslog.js';
+import { AlertEngine, worst } from '../src/alerts.js';
+import { passesSeverity } from '../src/notify.js';
+import { assertRestoreUnit } from '../src/backups.js';
 
 // ── Access log ────────────────────────────────────────────────────────────────
 const LINE =
@@ -260,4 +264,116 @@ test('CSP без frame-ancestors не минава за защита от iframe
 test('версията на сървъра е находка, липсата ѝ — не', () => {
   assert.ok(evaluateHeaders({ server: 'nginx/1.24.0' }, { https: false }).findings.some((f) => f.id === 'server-token'));
   assert.equal(evaluateHeaders({ server: 'nginx' }, { https: false }).findings.some((f) => f.id === 'server-token'), false);
+});
+
+// ── Фаза Ж: кой пази пазача ───────────────────────────────────────────────────
+test('прагът по канал не бива да изяжда „Възстановено"', () => {
+  // Канал „само критично": алармата минава.
+  assert.equal(passesSeverity({ severity: 'critical' }, 'critical'), true);
+  assert.equal(passesSeverity({ severity: 'warning' }, 'critical'), false);
+  // ВДИГАНЕТО на същата аларма носи тежест „ok" (ранг 1). Наивен филтър го
+  // отсява → каналът получава „сървърът падна", но никога „сървърът се върна".
+  // Това е най-лошата комбинация: човек тича към машина, която вече работи.
+  assert.equal(
+    passesSeverity({ severity: 'ok', wasSeverity: 'critical' }, 'critical'),
+    true,
+    'краят на критична аларма трябва да мине по канал с праг „критично"'
+  );
+  assert.equal(passesSeverity({ severity: 'ok', wasSeverity: 'info' }, 'critical'), false);
+  // Празен/непознат праг = без филтър (по-добре повече известия, отколкото тихо
+  // отсяване заради печатна грешка в конфига).
+  assert.equal(passesSeverity({ severity: 'info' }, ''), true);
+  assert.equal(passesSeverity({ severity: 'info' }, 'глупост'), true);
+});
+
+test('сливането на праг и прогноза взема ПО-ТЕЖКОТО', () => {
+  // Диск на 97% (critical по праг) с прогноза за 5 дни (warning) — слятото
+  // условие НЕ бива да смъква тежестта до warning.
+  assert.equal(worst('critical', 'warning'), 'critical');
+  assert.equal(worst('info', 'warning'), 'warning');
+  assert.equal(worst('info', 'info'), 'info');
+  assert.equal(worst('warning', 'critical'), 'critical');
+});
+
+test('кой бави: приложението или nginx — и мълчание, когато е шум', () => {
+  // 900 ms общо, 850 в приложението → кодът.
+  assert.equal(blameOf(0.9, 0.85, 0.05), 'приложение');
+  // 900 ms общо, 100 в приложението → чакане пред приложението.
+  assert.equal(blameOf(0.9, 0.1, 0.8), 'nginx/мрежа');
+  assert.equal(blameOf(0.9, 0.55, 0.35), 'смесено');
+  // Под 200 ms разликата е измервателен шум — присъда там е измислица.
+  assert.equal(blameOf(0.05, 0.03, 0.02), null);
+  assert.equal(blameOf(0.9, null, null), null, 'без ut= няма как да се раздели');
+});
+
+test('името на услугата при възстановяване минава през allowlist', () => {
+  assert.equal(assertRestoreUnit('medqr.service'), 'medqr.service');
+  assert.equal(assertRestoreUnit(''), null);
+  assert.equal(assertRestoreUnit(null), null);
+  // Влиза в shell ред — точно затова не се доверяваме.
+  for (const bad of ['medqr.service; reboot', 'a b.service', 'medqr', '$(id).service', '../x.service']) {
+    assert.throws(() => assertRestoreUnit(bad), undefined, `„${bad}" трябваше да бъде отхвърлено`);
+  }
+});
+
+test('заглушаването е срочно — изтеклото не заглушава', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-sil-'));
+  const cfg = {
+    paths: { stateDir: dir },
+    alerts: {
+      enabled: true,
+      silences: [
+        { key: 'disk:', until: Date.now() + 60000 },
+        { key: 'cert:example.com', until: Date.now() - 1000 }, // изтекло
+      ],
+    },
+  };
+  const eng = new AlertEngine({ cfg, metrics: { latest: null }, audit: null });
+  assert.ok(eng.silencedBy('disk:/'), 'префиксът заглушава всички дялове');
+  assert.equal(eng.silencedBy('cert:example.com'), null, 'изтеклото заглушаване не важи');
+  assert.equal(eng.silencedBy('service:nginx.service'), null);
+  assert.equal(eng.silences().length, 1, 'изтеклите отпадат от списъка');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('здравето на мониторинга различава „още не е проверявал" от „изостава"', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-hp-'));
+  const cfg = { paths: { stateDir: dir }, alerts: { enabled: true, checkIntervalSec: 60 } };
+  const eng = new AlertEngine({ cfg, metrics: { latest: null }, audit: null });
+  assert.equal(eng.health().fresh, null, 'първо пускане не е провал');
+  eng.lastEvalAt = Date.now();
+  assert.equal(eng.health().fresh, true);
+  // Три часа мълчание при каданс 60s: панелът показва „няма аларми", а истината
+  // е „никой не гледа". Точно това разграничение е смисълът на картата.
+  eng.lastEvalAt = Date.now() - 3 * 3600 * 1000;
+  assert.equal(eng.health().fresh, false);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('диск: праг и прогноза се сливат в ЕДНА аларма с по-тежката тежест', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-disk-'));
+  const cfg = {
+    paths: { stateDir: dir },
+    alerts: { enabled: true, thresholds: { diskPct: 85 } },
+    peers: [],
+    healthChecks: [],
+    slo: { enabled: false },
+    redis: { enabled: false },
+    domainExpiryDays: 0,
+    backups: { alertEnabled: false },
+  };
+  const snap = { disks: [{ mount: '/', usePercent: 97, availBytes: 1e9 }], kernel: null };
+  const eng = new AlertEngine({ cfg, metrics: { latest: snap }, audit: null });
+  eng.accessPrimed = true;
+  eng.accesslog = null;
+  // Прогнозата е „warning" (5 дни), прагът е „critical" (97%).
+  eng.diskForecasts = () => [{ mount: '/', key: 'disk-eta:/', severity: 'warning', title: 'Дискът / ще се напълни', body: 'стига 100% след 5 дни.' }];
+  const out = await eng.collect();
+  const disk = out.filter((c) => c.key.startsWith('disk'));
+  assert.equal(disk.length, 1, 'ЕДИН проблем = ЕДНА аларма, не праг + прогноза поотделно');
+  assert.equal(disk[0].key, 'disk:/');
+  assert.equal(disk[0].severity, 'critical', 'прогнозата обогатява, но НЕ смъква тежестта на прага');
+  assert.match(disk[0].body, /97%/, 'състоянието остава в текста');
+  assert.match(disk[0].body, /5 дни/, 'срокът също — това е действената част');
+  fs.rmSync(dir, { recursive: true, force: true });
 });

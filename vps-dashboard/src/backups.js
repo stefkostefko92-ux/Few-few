@@ -45,10 +45,14 @@ export function backupAllSpec() {
     'done',
     'echo "▸ PostgreSQL в Docker…"',
     'if command -v docker >/dev/null; then',
+        // `--clean --if-exists` е в самия дъмп, не при възстановяването: без него
+    // връщането в НЕПРАЗНА база дава „relation already exists" на всеки CREATE,
+    // а COPY след това налива в СТАРИТЕ таблици. Резултатът е слята база, която
+    // изглежда като успешно възстановяване. Дъмпът трябва да носи почистването си.
     '  for c in $(docker ps --filter "ancestor=postgres" --format "{{.Names}}"; docker ps --format "{{.Names}} {{.Image}}" | awk "/postgres|pgvector/ {print \\$1}"); do',
     '    for d in $(docker exec "$c" psql -U postgres -At -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> \'postgres\';" 2>/dev/null); do',
     `      out="${DUMP_DIR}/\${d}-\${TS}.sql.gz"`,
-    '      if docker exec "$c" pg_dump -U postgres -d "$d" 2>/dev/null | gzip > "$out" && [ -s "$out" ]; then echo "  ✔ $c/$d"; else echo "  ✘ $c/$d"; rm -f "$out"; rc=1; fi',
+    '      if docker exec "$c" pg_dump -U postgres --clean --if-exists -d "$d" 2>/dev/null | gzip > "$out" && [ -s "$out" ]; then echo "  ✔ $c/$d"; else echo "  ✘ $c/$d"; rm -f "$out"; rc=1; fi',
     '    done',
     '  done',
     'else echo "  (няма docker — пропускам)"; fi',
@@ -104,6 +108,18 @@ export function resticConfigured() {
 const DUMP_RX = /^[\w.-]+\.(sqlite|sql)\.gz$/;
 export const RESTORE_PREVIEW_DIR = '/tmp/vps-dashboard-restore';
 
+// Името на unit-а влиза в shell ред — затова минава през същия строг allowlist
+// като навсякъде другаде, а не „вероятно е наред".
+export function assertRestoreUnit(unit) {
+  const s = String(unit || '').trim();
+  if (!s) return null;
+  if (!/^[a-zA-Z0-9@._-]{1,100}\.(service|socket)$/.test(s)) {
+    throw Object.assign(new Error('Невалидно име на услуга'), { status: 400 });
+  }
+  if (s.startsWith('-')) throw Object.assign(new Error('Невалидно име на услуга'), { status: 400 });
+  return s;
+}
+
 export function assertDumpName(name) {
   const base = path.basename(String(name || ''));
   if (!DUMP_RX.test(base)) throw Object.assign(new Error('Невалидно име на снимка'), { status: 400 });
@@ -147,27 +163,60 @@ export function restoreApplySpec(name, target) {
   const stamp = 'предВъзстановяване-$(date +%Y%m%d-%H%M%S)';
 
   if (isSqlite) {
-    const dst = path.resolve(String(target || ''));
+    // Целта е или гол път (стар вид), или { path, unit } — второто позволява да
+    // спрем услугата около презаписа.
+    const rawPath = target && typeof target === 'object' ? target.path : target;
+    const dst = path.resolve(String(rawPath || ''));
     if (!/\.(db|sqlite3?)$/.test(dst)) {
       throw Object.assign(new Error('Целта не е SQLite файл'), { status: 400 });
     }
     if (!/^[\w./@ +-]+$/.test(dst)) {
       throw Object.assign(new Error('Пътят съдържа непозволени знаци'), { status: 400 });
     }
+    // Услугата, която държи базата. По избор, но силно препоръчана: без нея
+    // презаписът става ПОД жив процес.
+    const unit = target && typeof target === 'object' ? assertRestoreUnit(target.unit) : null;
     return {
       title: `ВЪЗСТАНОВЯВАНЕ · ${base} → ${dst}`,
       shell: [
         `set -euo pipefail`,
         `[ -f "${src}" ] || { echo "Първо направи преглед — няма разопакован файл."; exit 1; }`,
+        `echo "▸ Проверявам снимката ПРЕДИ да пипна каквото и да е…"`,
+        // Проверката е първа: няма смисъл да спираш продукция заради счупен файл.
+        `sqlite3 "${src}" "PRAGMA integrity_check;" | grep -qx ok || { echo "Снимката е повредена — СПИРАМ."; exit 1; }`,
+        // Собственикът и правата се четат ПРЕДИ презаписа. `cp` като root иначе
+        // оставя root-owned файл, услугата под собствен потребител го отваря
+        // само за четене и пада с „attempt to write a readonly database" —
+        // възстановяване, което „мина", но продуктът не тръгва.
+        `OWNER=""; MODE=""`,
+        `if [ -f "${dst}" ]; then OWNER=$(stat -c '%u:%g' "${dst}"); MODE=$(stat -c '%a' "${dst}"); fi`,
+        unit
+          ? [
+              `echo "▸ Спирам ${unit} — презапис под жив процес е повреда, не възстановяване…"`,
+              `systemctl stop ${unit}`,
+              // Дори след stop SQLite може да е оставил WAL — изчакваме файловете.
+              `sleep 1`,
+            ].join('\n')
+          : `echo "⚠ Без спряна услуга: ако нещо държи базата отворена, резултатът е неопределен."`,
         `echo "▸ Снимка на ТЕКУЩОТО състояние преди презапис…"`,
         `mkdir -p ${DUMP_DIR}`,
         `[ -f "${dst}" ] && sqlite3 "${dst}" ".backup '${DUMP_DIR}/${stamp}.sqlite'" && gzip -f "${DUMP_DIR}/${stamp}.sqlite" || echo "(няма текущ файл)"`,
-        `echo "▸ Проверявам снимката…"`,
-        `sqlite3 "${src}" "PRAGMA integrity_check;" | grep -qx ok || { echo "Снимката е повредена — СПИРАМ."; exit 1; }`,
         `echo "▸ Възстановявам…"`,
         `cp "${src}" "${dst}"`,
+        // Най-коварното: WAL и SHM от СТАРАТА база остават до новия главен файл.
+        // SQLite ги приема за свои, „възпроизвежда" ги отгоре и получаваш смес от
+        // две бази — или отказ да отвори. Възстановената база е самодостатъчна;
+        // тези два файла трябва да ги няма.
+        `rm -f "${dst}-wal" "${dst}-shm"`,
+        `[ -n "$OWNER" ] && chown "$OWNER" "${dst}" || true`,
+        `[ -n "$MODE" ] && chmod "$MODE" "${dst}" || true`,
         `sqlite3 "${dst}" "PRAGMA integrity_check;"`,
-        `echo "✔ Готово. Рестартирай услугата, която ползва тази база."`,
+        // Пускането не бива да маркира ЦЯЛОТО възстановяване като провалено —
+        // данните вече са върнати. Провалът се КАЗВА, изходът остава 0.
+        unit
+          ? `echo "▸ Пускам ${unit}…"\nsystemctl start ${unit} || echo "⚠ Стартът се провали"\nsystemctl is-active ${unit} || echo "⚠ Услугата не е active — виж: journalctl -u ${unit} -n 50"`
+          : `echo "✔ Рестартирай услугата, която ползва тази база."`,
+        `echo "✔ Готово."`,
       ].join('\n'),
       exclusive: 'backup',
       timeoutMs: 60 * 60 * 1000,
@@ -189,9 +238,18 @@ export function restoreApplySpec(name, target) {
       `[ -f "${src}" ] || { echo "Първо направи преглед — няма разопакован файл."; exit 1; }`,
       `echo "▸ Снимка на ТЕКУЩОТО състояние преди презапис…"`,
       `mkdir -p ${DUMP_DIR}`,
-      `docker exec ${container} pg_dump -U postgres -d ${database} | gzip > "${DUMP_DIR}/${database}-${stamp}.sql.gz"`,
+      `docker exec ${container} pg_dump -U postgres --clean --if-exists -d ${database} | gzip > "${DUMP_DIR}/${database}-${stamp}.sql.gz"`,
+      // Празна „защитна" снимка е по-лоша от липсваща: тя дава увереност да
+      // натиснеш „Приложи", а после няма към какво да се върнеш.
+      `[ -s "${DUMP_DIR}/${database}-${stamp}.sql.gz" ] || { echo "Защитната снимка е празна — СПИРАМ преди да пипна базата."; exit 1; }`,
       `echo "▸ Възстановявам (psql)…"`,
-      `cat "${src}" | docker exec -i ${container} psql -U postgres -d ${database}`,
+      // Двете флагчета са разликата между възстановяване и мълчаливо
+      // полувъзстановяване:
+      //   ON_ERROR_STOP=1 — по подразбиране psql ПРОДЪЛЖАВА след грешка и излиза
+      //     с код 0. Половин върната база рапортува „✔ Готово".
+      //   --single-transaction — всичко или нищо. Без него провалът по средата
+      //     оставя базата в състояние, което не е нито старото, нито новото.
+      `cat "${src}" | docker exec -i ${container} psql -U postgres -v ON_ERROR_STOP=1 --single-transaction -d ${database}`,
       `echo "✔ Готово. Рестартирай приложението, което ползва тази база."`,
     ].join('\n'),
     exclusive: 'backup',

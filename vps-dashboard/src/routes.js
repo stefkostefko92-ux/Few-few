@@ -669,9 +669,52 @@ export function buildRouter(ctx) {
         sustainSamples: cfg.alerts?.sustainSamples,
         checkIntervalSec: cfg.alerts?.checkIntervalSec,
         channels: configuredChannels(cfg),
+        // Праговете по канал са настройка, не тайна — връщат се, за да ги
+        // покаже интерфейсът. Токените НИКОГА не излизат оттук.
+        minSeverity: {
+          telegram: cfg.notify?.telegram?.minSeverity || '',
+          ntfy: cfg.notify?.ntfy?.minSeverity || '',
+          webhook: cfg.notify?.webhook?.minSeverity || '',
+          email: cfg.notify?.email?.minSeverity || '',
+        },
+        accesslog: cfg.accesslog || {},
+        // Здравето на САМИЯ мониторинг: „няма аларми" значи съвсем различно
+        // нещо според това дали проверката върви или е спряла преди 3 часа.
+        health: ctx.alerts ? ctx.alerts.health() : null,
         active: ctx.alerts ? ctx.alerts.listActive() : [],
         log: ctx.alerts ? ctx.alerts.log.slice(-100).reverse() : [],
       }))
+    )
+  );
+
+  // Заглушаване — срочно и видимо. Безсрочното е начинът да забравиш, че си
+  // сляп, затова продължителността е задължителна и с таван от 7 дни.
+  r.post(
+    '/api/alerts/silence',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const key = String(b.key || '').trim();
+        if (!key || key.length > 200 || /[\r\n]/.test(key)) {
+          throw Object.assign(new Error('Липсва или невалиден ключ на аларма'), { status: 400 });
+        }
+        const list = (cfg.alerts?.silences || []).filter((s) => s?.key !== key && Number(s?.until) > Date.now());
+        if (b.remove) {
+          saveConfig(cfg, { alerts: { silences: list } });
+          audit.log({ action: 'alerts.unsilence', key, user: req.user });
+          return { ok: true, silences: list };
+        }
+        const minutes = Number(b.minutes);
+        if (!Number.isFinite(minutes) || minutes < 1 || minutes > 7 * 24 * 60) {
+          throw Object.assign(new Error('Продължителност от 1 минута до 7 дни'), { status: 400 });
+        }
+        const entry = { key, until: Date.now() + minutes * 60000, note: String(b.note || '').slice(0, 200) };
+        list.push(entry);
+        saveConfig(cfg, { alerts: { silences: list } });
+        audit.log({ action: 'alerts.silence', key, minutes, user: req.user });
+        return { ok: true, silences: list };
+      }),
+      { mutating: true }
     )
   );
   // Настройки: прагове/каданс + канали. Тайните (токени) се записват, но НИКОГА
@@ -687,12 +730,35 @@ export function buildRouter(ctx) {
           for (const k of ['enabled', 'cooldownMin', 'sustainSamples', 'checkIntervalSec']) {
             if (b.alerts[k] !== undefined) patch.alerts[k] = b.alerts[k];
           }
+          if (b.alerts.heartbeatUrl !== undefined) {
+            const u = String(b.alerts.heartbeatUrl || '').trim();
+            if (u) {
+              let parsed;
+              try {
+                parsed = new URL(u);
+              } catch {
+                throw Object.assign(new Error('Мъртвецът-ключ иска валиден http(s) адрес'), { status: 400 });
+              }
+              if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                throw Object.assign(new Error('Мъртвецът-ключ иска http(s) адрес'), { status: 400 });
+              }
+            }
+            patch.alerts.heartbeatUrl = u;
+          }
           if (b.alerts.thresholds) {
             patch.alerts.thresholds = {};
             for (const [k, v] of Object.entries(b.alerts.thresholds)) {
               const n = Number(v);
               if (Number.isFinite(n) && n >= 0) patch.alerts.thresholds[k] = n;
             }
+          }
+        }
+        if (b.accesslog) {
+          patch.accesslog = {};
+          if (b.accesslog.enabled !== undefined) patch.accesslog.enabled = Boolean(b.accesslog.enabled);
+          for (const k of ['errorPct', 'minRequests']) {
+            const n = Number(b.accesslog[k]);
+            if (Number.isFinite(n) && n >= 0) patch.accesslog[k] = n;
           }
         }
         if (b.notify) patch.notify = b.notify;
@@ -798,7 +864,7 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => {
         const b = await readJson(req);
-        return firewall.deleteRule(b.num, audit, req.user);
+        return firewall.deleteRule(b.num, audit, req.user, { expect: b.expect || null, force: Boolean(b.force) });
       }),
       { mutating: true }
     )

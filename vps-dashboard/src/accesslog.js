@@ -245,11 +245,22 @@ export class AccessLogReader {
         if (rec.requestTime != null) withTiming++;
 
         const key = `${rec.method} ${normalizePath(rec.path)}`;
-        const g = byPath.get(key) || { key, method: rec.method, path: normalizePath(rec.path), count: 0, bot: 0, bytes: 0, times: [], statuses: {}, errors: 0 };
+        const g = byPath.get(key) || { key, method: rec.method, path: normalizePath(rec.path), count: 0, bot: 0, bytes: 0, times: [], upTimes: [], waits: [], statuses: {}, errors: 0 };
         g.count++;
         g.bytes += rec.bytes;
         if (bot) g.bot++;
         if (rec.requestTime != null && g.times.length < 5000) g.times.push(rec.requestTime);
+        // Разделяне на вината: `$request_time` е ЦЯЛОТО време, което nginx е
+        // видял (вкл. четене от бавен клиент, TLS ръкостискане, чакане на
+        // свободен worker). `$upstream_response_time` е само приложението.
+        // Разликата е „nginx/мрежата", а не „приложението" — без нея всеки
+        // бавен адрес изглежда като бавен код и оптимизираш грешното нещо.
+        if (rec.upstreamTime != null && rec.upstreamTime >= 0) {
+          if (g.upTimes.length < 5000) g.upTimes.push(rec.upstreamTime);
+          if (rec.requestTime != null && g.waits.length < 5000) {
+            g.waits.push(Math.max(0, rec.requestTime - rec.upstreamTime));
+          }
+        }
         g.statuses[rec.status] = (g.statuses[rec.status] || 0) + 1;
         if (rec.status >= 400) g.errors++;
         byPath.set(key, g);
@@ -272,6 +283,11 @@ export class AccessLogReader {
 
     const paths = [...byPath.values()].map((g) => {
       const times = g.times.sort((a, b) => a - b);
+      const upTimes = g.upTimes.sort((a, b) => a - b);
+      const waits = g.waits.sort((a, b) => a - b);
+      const p95 = pct(times, 0.95);
+      const p95Up = pct(upTimes, 0.95);
+      const p95Wait = pct(waits, 0.95);
       return {
         method: g.method,
         path: g.path,
@@ -280,7 +296,12 @@ export class AccessLogReader {
         errorPct: g.count ? Math.round((g.errors / g.count) * 1000) / 10 : 0,
         bytes: g.bytes,
         p50: pct(times, 0.5),
-        p95: pct(times, 0.95),
+        p95,
+        p95Upstream: p95Up,
+        p95Wait,
+        // Присъдата се дава само когато и двете числа ги има И разликата е
+        // смислена — „51% приложение" при 12 ms общо време е шум, не находка.
+        blame: blameOf(p95, p95Up, p95Wait),
         max: times.length ? times[times.length - 1] : null,
         statuses: g.statuses,
       };
@@ -312,6 +333,17 @@ export class AccessLogReader {
       serverErrors: errors.slice(-50).reverse(),
     };
   }
+}
+
+// Кой бави: приложението (upstream) или всичко останало (nginx, TLS, бавен
+// клиент, липсващ worker). Мълчи под 200 ms — там разликата е измервателен шум.
+export function blameOf(p95, p95Upstream, p95Wait) {
+  if (p95 == null || p95Upstream == null || p95Wait == null) return null;
+  if (p95 < 0.2) return null;
+  const share = p95 > 0 ? p95Upstream / p95 : 0;
+  if (share >= 0.8) return 'приложение';
+  if (share <= 0.5) return 'nginx/мрежа';
+  return 'смесено';
 }
 
 function pct(sorted, q) {

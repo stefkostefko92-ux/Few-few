@@ -78,12 +78,46 @@ export async function addRule(rule, audit, user) {
   return { ok: true, output: out.trim() };
 }
 
-export async function deleteRule(num, audit, user) {
+// Изтриване по НОМЕР има два капана, и двата водят до заключен собственик:
+//
+//  1. Номерата се ПРЕМЕСТВАТ след всяко изтриване. Списък, зареден преди минута,
+//     сочи друго правило сега — натискаш „изтрий 3", а махаш SSH-а. Затова
+//     приемаме и `expect` (текстът, който потребителят е ВИДЯЛ) и сверяваме.
+//  2. Правилото за SSH няма нищо особено на вид. Махнеш ли го при активна стена,
+//     връзката пада в същата секунда и панелът също изчезва.
+export async function deleteRule(num, audit, user, { expect = null, force = false } = {}) {
   const n = Number(num);
   if (!Number.isInteger(n) || n < 1 || n > 1000) {
     throw Object.assign(new Error('Невалиден номер на правило'), { status: 400 });
   }
-  audit.log({ action: 'firewall.delete', num: n, user });
+  const st = await firewallStatus();
+  const rule = st.available ? st.rules.find((r) => r.num === n) : null;
+  if (st.available && !rule) {
+    throw Object.assign(new Error(`Няма правило с номер ${n} — презареди списъка.`), { status: 409 });
+  }
+  if (rule && expect) {
+    const shown = `${rule.to} ${rule.action} ${rule.dir} ${rule.from}`.replace(/\s+/g, ' ').trim();
+    if (shown !== String(expect).replace(/\s+/g, ' ').trim()) {
+      throw Object.assign(
+        new Error(`Правило №${n} вече не е това, което видя („${shown}"). Номерата се преместват при изтриване — презареди списъка.`),
+        { status: 409 }
+      );
+    }
+  }
+  if (rule && !force && rule.action === 'ALLOW' && rule.dir === 'IN') {
+    const port = await sshPort();
+    const to = String(rule.to || '');
+    if (new RegExp(`(^|[^\\d])${port}([^\\d]|$)`).test(to) || /\bssh\b/i.test(to)) {
+      throw Object.assign(
+        new Error(
+          `Правило №${n} („${to}") е достъпът по SSH (порт ${port}). Изтриването му при активна стена те заключва ` +
+            'извън сървъра — и този панел изчезва заедно с връзката. Потвърди изрично, ако наистина го искаш.'
+        ),
+        { status: 409 }
+      );
+    }
+  }
+  audit.log({ action: 'firewall.delete', num: n, rule: rule ? `${rule.to} ${rule.action}` : undefined, forced: force || undefined, user });
   // --force пропуска интерактивното „y/n“ потвърждение.
   const out = await runOk('ufw', ['--force', 'delete', String(n)], { timeout: 20000 });
   return { ok: true, output: out.trim() };

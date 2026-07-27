@@ -35,7 +35,7 @@ const slo = new SloStore(cfg.paths.stateDir);
 const logminer = new LogMiner(cfg.paths.stateDir);
 const accesslog = new AccessLogReader(cfg.paths.stateDir);
 const drill = new DrillStore(cfg.paths.stateDir);
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill });
+const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog });
 alerts.start();
 
 // Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО

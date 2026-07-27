@@ -984,17 +984,27 @@ async function renderAlerts() {
     view.appendChild(el('div', { class: 'toast warn', style: 'position:static;margin-bottom:14px', text: '⚠ Няма настроен канал — алармите се пазят само в таблото. Настрой Telegram/ntfy по-долу, за да идват на телефона.' }));
   }
 
+  view.appendChild(monitorHealthCard(a.health));
+
   // Активни в момента
   view.appendChild(el('h3', { class: 'muted', text: `Активни аларми (${a.active.length})`, style: 'margin:6px 0 10px' }));
   view.appendChild(
     a.active.length
       ? el('div', { class: 'table-wrap' }, [
-          tableEl(['Тежест', 'Проблем', 'Детайли', 'Откога'], a.active.map((x) =>
+          tableEl(['Тежест', 'Проблем', 'Детайли', 'Откога', ''], a.active.map((x) =>
             el('tr', {}, [
               el('td', {}, [pill(sevClass(x.severity), x.severity)]),
-              el('td', { text: x.title }),
+              el('td', {}, [
+                x.title,
+                x.silenced ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: `🔕 заглушена до ${fmtWhen(new Date(x.silenced.until).toISOString())}` }) : '',
+              ]),
               el('td', { class: 'muted', text: x.body }),
               el('td', { class: 'muted', text: fmtWhen(new Date(x.since).toISOString()) }),
+              el('td', {}, [
+                x.silenced
+                  ? el('button', { class: 'btn btn-sm', text: '🔔 Върни', onclick: () => silenceAlert(x.key, { remove: true }) })
+                  : el('button', { class: 'btn btn-sm', text: '🔕 Заглуши', title: 'Спира ИЗВЕСТИЯТА за срок. Алармата остава видима тук.', onclick: () => silenceAlert(x.key) }),
+              ]),
             ])
           )),
         ])
@@ -1009,6 +1019,21 @@ async function renderAlerts() {
     inputs[key] = i;
     return el('label', { class: 'muted' }, [document.createTextNode(label + ' '), i, document.createTextNode(' ' + suffix)]);
   };
+  const alCfg = a.accesslog || {};
+  const alInputs = {};
+  const alRow = (key, label, suffix) => {
+    const i = el('input', { type: 'text', value: String(alCfg[key] ?? ''), style: 'width:80px' });
+    alInputs[key] = i;
+    return el('label', { class: 'muted' }, [document.createTextNode(label + ' '), i, document.createTextNode(' ' + suffix)]);
+  };
+  // Адресът на пинга НОСИ тайната си (hc-ping.com/<uuid> е ключът) → не се
+  // връща обратно към браузъра. Празно поле значи „без промяна", както при
+  // каналите; изчистването е ИЗРИЧНО, с отделен бутон.
+  const hbInput = el('input', {
+    type: 'text',
+    class: 'grow',
+    placeholder: a.health?.heartbeat ? 'зададен — остави празно, за да го запазиш' : 'https://hc-ping.com/… (празно = изключено)',
+  });
   view.appendChild(
     el('div', { class: 'card', style: 'margin-top:18px' }, [
       el('h3', { text: 'Прагове' }),
@@ -1025,9 +1050,23 @@ async function renderAlerts() {
         thRow('diskEtaDays', 'Пълен до', 'дни'),
         thRow('inodePct', 'Inode-и', '%'),
         thRow('certDays', 'Сертификат', 'дни'),
+        thRow('fdPct', 'Файлови дескриптори', '%'),
       ]),
       el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Резерва, ако ядрото не подава PSI:' }),
       el('div', { class: 'toolbar' }, [thRow('cpuPct', 'CPU', '%'), thRow('memPct', 'Памет', '%')]),
+      el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Грешки от РЕАЛНИЯ трафик (access log). Пробата пита един адрес и вижда 200; потребителите в същия момент може да получават 500 на плащането.' }),
+      el('div', { class: 'toolbar' }, [alRow('errorPct', 'Дял 5xx', '%'), alRow('minRequests', 'Минимум заявки', 'бр.')]),
+      el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Мъртвецът-ключ: адрес, който панелът пинга след ВСЯКА успешна проверка. Спре ли пингът, външният наблюдател вдига тревога вместо него — вътрешна проверка не открива собствената си смърт.' }),
+      el('div', { class: 'toolbar' }, [
+        el('span', { class: 'muted', style: 'width:90px', text: 'Пинг адрес' }),
+        hbInput,
+        a.health?.heartbeat
+          ? el('button', { class: 'btn btn-sm', text: 'Изчисти', onclick: async () => {
+              try { await api('/alerts/settings', { method: 'POST', body: { alerts: { heartbeatUrl: '' } } }); toast('Мъртвецът-ключ е изключен'); go('alerts'); }
+              catch (err) { toast(err.message, 'bad'); }
+            } })
+          : '',
+      ]),
       el('div', { class: 'metric-sub', text: `Праг трябва да се задържи ${a.sustainSamples} проверки (на ${a.checkIntervalSec}s); повторно известие най-рано след ${a.cooldownMin} мин.` }),
       el('div', { class: 'toolbar' }, [el('button', { class: 'btn btn-primary btn-sm', text: 'Запази праговете', onclick: async (e) => {
         e.target.disabled = true;
@@ -1036,8 +1075,18 @@ async function renderAlerts() {
           const n = Number(i.value);
           if (Number.isFinite(n) && n >= 0) thresholds[k] = n;
         }
-        try { await api('/alerts/settings', { method: 'POST', body: { alerts: { thresholds } } }); toast('Праговете са запазени'); go('alerts'); }
-        catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
+        const accesslog = {};
+        for (const [k, i] of Object.entries(alInputs)) {
+          const n = Number(i.value);
+          if (Number.isFinite(n) && n >= 0) accesslog[k] = n;
+        }
+        try {
+          const alertsPatch = { thresholds };
+          if (hbInput.value.trim()) alertsPatch.heartbeatUrl = hbInput.value.trim();
+          await api('/alerts/settings', { method: 'POST', body: { alerts: alertsPatch, accesslog } });
+          toast('Праговете са запазени');
+          go('alerts');
+        } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
       } })]),
     ])
   );
@@ -1066,6 +1115,68 @@ function sevClass(s) {
   return s === 'critical' ? 'bad' : s === 'warning' ? 'warn' : s === 'ok' ? 'ok' : 'dim';
 }
 
+// Заглушаването е СРОЧНО по конструкция: няма „завинаги". Забравено заглушаване
+// е сляпо място, което изглежда като тишина.
+async function silenceAlert(key, { remove = false } = {}) {
+  let minutes = 0;
+  if (!remove) {
+    const ans = prompt(`Заглуши „${key}" за колко минути? (макс 10080 = 7 дни)\n\nАлармата остава видима в панела — спират само известията.`, '60');
+    if (ans === null) return;
+    minutes = Number(ans);
+    if (!Number.isFinite(minutes) || minutes < 1) return toast('Невалидна продължителност', 'bad');
+  }
+  try {
+    await api('/alerts/silence', { method: 'POST', body: { key, minutes, remove } });
+    toast(remove ? 'Известията са върнати' : `Заглушено за ${minutes} мин.`);
+    go('alerts');
+  } catch (err) {
+    toast(err.message, 'bad');
+  }
+}
+
+// „Кой пази пазача." Празен списък с аларми значи съвсем различно нещо според
+// това дали проверката върви, или е спряла преди три часа — затова тази карта е
+// НАД алармите, а не някъде в настройките.
+function monitorHealthCard(h) {
+  if (!h) return el('div', {});
+  const ageMin = h.ageMs == null ? null : Math.round(h.ageMs / 60000);
+  const freshPill =
+    h.fresh === null
+      ? pill('dim', 'още няма проверка')
+      : h.fresh
+        ? pill('ok', `проверено преди ${ageMin < 1 ? '<1' : ageMin} мин`)
+        : pill('bad', `последна проверка преди ${ageMin} мин — мониторингът изостава`);
+  const rows = [
+    el('div', { class: 'toolbar' }, [
+      el('strong', { text: 'Здраве на мониторинга' }),
+      freshPill,
+      pill(h.heartbeat ? 'ok' : 'dim', h.heartbeat ? 'мъртвецът-ключ е включен' : 'без мъртвец-ключ'),
+    ]),
+  ];
+  if (!h.heartbeat) {
+    rows.push(el('div', { class: 'metric-sub', text: 'Никоя вътрешна проверка не открива собствената си смърт. Задай адрес за пинг (healthchecks.io, Uptime Kuma push, или крон-монитор на другия VPS) — спре ли пингът, външният наблюдател вдига тревога вместо панела.' }));
+  }
+  if (h.lastEvalError) {
+    rows.push(el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: `⚠ Последната оценка се провали: ${h.lastEvalError.message}` }));
+  }
+  if (h.notify) {
+    const n = h.notify;
+    rows.push(
+      el('div', {
+        class: 'metric-sub',
+        style: n.delivered ? '' : 'color:var(--danger)',
+        text: n.delivered
+          ? `Последно известие: доставено по ${n.delivered} от ${n.attempted} канала.`
+          : `⚠ Последното известие НЕ стигна до никого (${(n.failures || []).join(', ') || 'без подробности'}).`,
+      })
+    );
+  }
+  if ((h.silences || []).length) {
+    rows.push(el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: `🔕 Заглушени: ${h.silences.map((s) => `${s.key} (до ${fmtWhen(new Date(s.until).toISOString())})`).join(' · ')}` }));
+  }
+  return el('div', { class: 'card', style: 'margin-bottom:14px' }, rows);
+}
+
 // Картата за каналите — тайните се ПРАЩАТ, но никога не се четат обратно.
 function notifyChannelsCard(a) {
   const f = {};
@@ -1074,13 +1185,28 @@ function notifyChannelsCard(a) {
     f[key] = i;
     return i;
   };
+  // Праг по канал: телефонът да звъни само за критичното, имейлът да носи
+  // всичко. Без него единственият избор е „всичко или нищо" — и човек изключва
+  // канала съвсем, което е най-лошият възможен изход.
+  const sev = {};
+  const sevSel = (chan) => {
+    const cur = (a.minSeverity || {})[chan] || '';
+    const s = el('select', { style: 'width:130px' }, [
+      el('option', { value: '', text: 'всичко', selected: cur === '' }),
+      el('option', { value: 'warning', text: '⚠ и по-тежко', selected: cur === 'warning' }),
+      el('option', { value: 'critical', text: '🔴 само критично', selected: cur === 'critical' }),
+    ]);
+    s.value = cur;
+    sev[chan] = s;
+    return s;
+  };
   return el('div', { class: 'card', style: 'margin-top:16px' }, [
     el('h3', { text: 'Канали за известия' }),
-    el('div', { class: 'metric-sub', text: 'Попълни само това, което ползваш. Полетата са празни по подразбиране — тайните не се връщат обратно към браузъра. Празно поле = без промяна.' }),
-    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Telegram' }), inp('tgToken', 'bot token'), inp('tgChat', 'chat id')]),
-    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'ntfy' }), inp('ntfyServer', 'https://ntfy.sh'), inp('ntfyTopic', 'тема (topic)'), inp('ntfyToken', 'токен (по избор)')]),
-    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Webhook' }), inp('hook', 'https://…')]),
-    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Имейл' }), inp('mailTo', 'до: адрес (иска sendmail на сървъра)')]),
+    el('div', { class: 'metric-sub', text: 'Попълни само това, което ползваш. Полетата са празни по подразбиране — тайните не се връщат обратно към браузъра. Празно поле = без промяна. „Възстановено" винаги минава по канала, който е получил самата аларма.' }),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Telegram' }), inp('tgToken', 'bot token'), inp('tgChat', 'chat id'), sevSel('telegram')]),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'ntfy' }), inp('ntfyServer', 'https://ntfy.sh'), inp('ntfyTopic', 'тема (topic)'), inp('ntfyToken', 'токен (по избор)'), sevSel('ntfy')]),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Webhook' }), inp('hook', 'https://…'), sevSel('webhook')]),
+    el('div', { class: 'toolbar' }, [el('span', { class: 'muted', style: 'width:90px', text: 'Имейл' }), inp('mailTo', 'до: адрес (иска sendmail на сървъра)'), sevSel('email')]),
     el('div', { class: 'toolbar' }, [el('button', {
       class: 'btn btn-primary btn-sm',
       text: 'Запази каналите',
@@ -1095,6 +1221,12 @@ function notifyChannelsCard(a) {
         set('ntfy', 'token', f.ntfyToken.value);
         set('webhook', 'url', f.hook.value);
         set('email', 'to', f.mailTo.value);
+        // Прагът се праща ВИНАГИ (и празният) — той не е тайна и „всичко"
+        // трябва да може да се върне обратно.
+        for (const [chan, s] of Object.entries(sev)) {
+          notify[chan] = notify[chan] || {};
+          notify[chan].minSeverity = s.value;
+        }
         try { await api('/alerts/settings', { method: 'POST', body: { notify } }); toast('Каналите са запазени'); go('alerts'); }
         catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
       },
@@ -1779,10 +1911,22 @@ async function renderDatabases() {
 async function restoreDialog(dump, db) {
   const isSqlite = dump.name.endsWith('.sqlite.gz');
   let target;
+  let sqlitePath = null;
   if (isSqlite) {
     const files = (db.sqlite || []).map((s) => s.file);
-    target = prompt(`Върху КОЙ файл да възстановя ${dump.name}?\n\nНамерени бази:\n${files.join('\n') || '(няма)'}`, files[0] || '');
-    if (!target) return;
+    sqlitePath = prompt(`Върху КОЙ файл да възстановя ${dump.name}?\n\nНамерени бази:\n${files.join('\n') || '(няма)'}`, files[0] || '');
+    if (!sqlitePath) return;
+    // Услугата, която държи базата. Презапис под жив процес е повреда, не
+    // възстановяване: старите WAL/SHM файлове се смесват с новата база, а
+    // отвореният дескриптор на приложението сочи вече несъществуващи данни.
+    const unit = prompt(
+      `Коя услуга ползва ${sqlitePath}?\n\n` +
+        'Панелът ще я СПРЕ преди презаписа и ще я пусне след това. Празно = не спирай ' +
+        '(прави го само ако си сигурен, че нищо не държи базата отворена).',
+      ''
+    );
+    if (unit === null) return;
+    target = { path: sqlitePath, unit: unit.trim() || undefined };
   } else {
     const inst = (db.postgres?.instances || [])[0];
     if (!inst) { toast('Няма Postgres контейнер за възстановяване', 'bad'); return; }
@@ -1790,7 +1934,7 @@ async function restoreDialog(dump, db) {
     if (!dbName) return;
     target = { container: inst.container, database: dbName };
   }
-  const label = isSqlite ? target : `${target.container}/${target.database}`;
+  const label = isSqlite ? sqlitePath : `${target.container}/${target.database}`;
   const ok = await confirmDanger({
     title: 'Възстановяване на база',
     what: [
@@ -1798,9 +1942,13 @@ async function restoreDialog(dump, db) {
       `Цел: ${label}`,
       'Текущото състояние ще бъде записано като снимка ПРЕДИ презаписа.',
       'Данните, въведени след тази снимка, ще изчезнат.',
-      'След това рестартирай услугата, която ползва базата.',
+      isSqlite
+        ? target.unit
+          ? `Услугата ${target.unit} ще бъде спряна за времето на презаписа и пусната след това.`
+          : 'НЯМА да спирам услуга — увери се, че нищо не държи базата отворена.'
+        : 'Възстановяването е в ЕДНА транзакция: при грешка нищо не се променя.',
     ],
-    expect: isSqlite ? String(target).split('/').pop() : target.database,
+    expect: isSqlite ? String(sqlitePath).split('/').pop() : target.database,
     confirmLabel: 'Възстанови',
     delayMs: 2000,
   });
@@ -1880,8 +2028,19 @@ async function renderFirewall() {
           el('td', { class: 'muted', text: r.from }),
           el('td', {}, [el('button', { class: 'btn btn-sm btn-danger', text: 'Изтрий', onclick: async () => {
             if (!confirm(`Изтривам правило #${r.num} (${r.to} ${r.action})?`)) return;
-            try { await api('/firewall/rule/delete', { method: 'POST', body: { num: r.num } }); toast('Изтрито'); go('firewall'); }
-            catch (e) { toast(e.message, 'bad'); }
+            // `expect` носи ТЕКСТА, който човекът е видял. Номерата се
+            // преместват след всяко изтриване — без сверяване „изтрий #3" от
+            // остарял списък маха друго правило, често точно SSH-а.
+            const expect = `${r.to} ${r.action} ${r.dir} ${r.from}`;
+            try { await api('/firewall/rule/delete', { method: 'POST', body: { num: r.num, expect } }); toast('Изтрито'); go('firewall'); }
+            catch (e) {
+              // 409 е предпазителят (SSH или разместени номера) — питаме изрично.
+              if (/SSH/i.test(e.message) && confirm(`${e.message}\n\nНАИСТИНА ли да го изтрия?`)) {
+                try { await api('/firewall/rule/delete', { method: 'POST', body: { num: r.num, expect, force: true } }); toast('Изтрито'); go('firewall'); return; }
+                catch (e2) { toast(e2.message, 'bad'); return; }
+              }
+              toast(e.message, 'bad');
+            }
           } })]),
         ])
       )),
@@ -3177,12 +3336,17 @@ async function renderTraffic() {
       el('h3', { class: 'muted', text: title, style: 'margin:0 0 8px' }),
       extra ? el('div', { class: 'metric-sub', style: 'margin-bottom:8px', text: extra }) : '',
       el('div', { class: 'table-wrap' }, [
-        tableEl(['Адрес', 'Брой', 'p50', 'p95', 'макс', 'грешки', 'ботове'], rows.map((p) =>
+        tableEl(['Адрес', 'Брой', 'p50', 'p95', 'приложение', 'кой бави', 'макс', 'грешки', 'ботове'], rows.map((p) =>
           el('tr', {}, [
             el('td', { class: 'mono', text: `${p.method} ${p.path}` }),
             el('td', { text: String(p.count) }),
             el('td', { class: 'mono', text: p.p50 != null ? `${p.p50}s` : '—' }),
             el('td', { class: 'mono', text: p.p95 != null ? `${p.p95}s` : '—' }),
+            // `$upstream_response_time` е само приложението; разликата до
+            // `$request_time` е nginx/мрежата/бавният клиент. Без това разделяне
+            // всеки бавен адрес изглежда като бавен код и оптимизираш грешното.
+            el('td', { class: 'mono', text: p.p95Upstream != null ? `${p.p95Upstream}s` : '—' }),
+            el('td', {}, [p.blame ? pill(p.blame === 'приложение' ? 'warn' : p.blame === 'nginx/мрежа' ? 'dim' : 'dim', p.blame) : el('span', { class: 'muted', text: '—' })]),
             el('td', { class: 'mono', text: p.max != null ? `${p.max}s` : '—' }),
             el('td', {}, [p.errorPct ? pill(p.errorPct > 20 ? 'bad' : 'warn', `${p.errorPct}%`) : el('span', { class: 'muted', text: '—' })]),
             el('td', { class: 'muted', text: `${p.botPct}%` }),
@@ -3193,7 +3357,7 @@ async function renderTraffic() {
 
   if (d.hasTiming) {
     view.appendChild(table('Най-бавни адреси', d.topBySlow,
-      'Подредени по p95, не по средно: средното се удавя от бързите заявки, а потребителят усеща точно опашката.'));
+      'Подредени по p95, не по средно: средното се удавя от бързите заявки, а потребителят усеща точно опашката. „Кой бави" сравнява времето на приложението (ut=) с общото (rt=) — останалото е nginx, TLS или бавен клиент.'));
   }
   view.appendChild(table('Най-искани адреси', d.topByCount));
   if (d.topByErrors.length) view.appendChild(table('Най-много грешки', d.topByErrors));

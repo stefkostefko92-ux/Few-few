@@ -95,7 +95,11 @@ export function aptRefreshSpec() {
     title: 'apt update (опресни списъците)',
     cmd: 'apt-get',
     args: ['update', '-y'],
-    env: { DEBIAN_FRONTEND: 'noninteractive' },
+    // NEEDRESTART_MODE=a: на Ubuntu 22.04+ `needrestart` спира по средата с
+    // пълноекранен въпрос „кои услуги да рестартирам". Няма кой да отговори —
+    // задачата виси до таймаута и изглежда като заклещен apt. „a" = рестартирай
+    // автоматично засегнатите услуги, което е и правилното на сървър.
+    env: { DEBIAN_FRONTEND: 'noninteractive', NEEDRESTART_MODE: 'a' },
     exclusive: 'system',
     timeoutMs: 10 * 60 * 1000,
   };
@@ -108,6 +112,7 @@ export function aptUpgradeSpec(security = false) {
         title: 'Security ъпдейти (unattended-upgrade)',
         cmd: 'unattended-upgrade',
         args: ['-v'],
+        env: { DEBIAN_FRONTEND: 'noninteractive', NEEDRESTART_MODE: 'a' },
         exclusive: 'system',
         timeoutMs: 30 * 60 * 1000,
       }
@@ -115,7 +120,7 @@ export function aptUpgradeSpec(security = false) {
         title: 'apt upgrade (всички пакети)',
         cmd: 'apt-get',
         args: ['upgrade', '-y'],
-        env: { DEBIAN_FRONTEND: 'noninteractive' },
+        env: { DEBIAN_FRONTEND: 'noninteractive', NEEDRESTART_MODE: 'a' },
         exclusive: 'system',
         timeoutMs: 45 * 60 * 1000,
       };

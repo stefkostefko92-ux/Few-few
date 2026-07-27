@@ -7,6 +7,20 @@ import { spawn } from 'node:child_process';
 
 const SEV_EMOJI = { critical: '🔴', warning: '🟠', info: '🔵', ok: '🟢' };
 
+// Праг по канал: телефонът да звъни само за критичното, имейлът да носи всичко.
+// Без него единственият избор е „всичко или нищо" — и човек изключва канала.
+const SEV_RANK = { ok: 1, info: 1, warning: 2, critical: 3 };
+
+// „Възстановено" носи тежест `ok` (ранг 1). Канал с праг „critical" иначе би
+// получил алармата, но НЕ и нейното вдигане — най-лошата възможна комбинация.
+// Затова прагът се мери спрямо ПО-ТЕЖКОТО от текущата и предишната тежест.
+export function passesSeverity(alert, minSeverity) {
+  const min = SEV_RANK[String(minSeverity || '').toLowerCase()];
+  if (!min) return true; // непознат/празен праг = без филтър
+  const rank = Math.max(SEV_RANK[alert.severity] || 1, SEV_RANK[alert.wasSeverity] || 1);
+  return rank >= min;
+}
+
 function post(url, { headers = {}, body, timeout = 10000 } = {}) {
   return new Promise((resolve) => {
     let u;
@@ -37,8 +51,9 @@ function post(url, { headers = {}, body, timeout = 10000 } = {}) {
 }
 
 async function sendTelegram(cfg, alert) {
-  const { botToken, chatId } = cfg.notify?.telegram || {};
+  const { botToken, chatId, minSeverity } = cfg.notify?.telegram || {};
   if (!botToken || !chatId) return null;
+  if (!passesSeverity(alert, minSeverity)) return { channel: 'telegram', ok: true, skipped: 'под прага' };
   const text = `${SEV_EMOJI[alert.severity] || ''} <b>${escapeHtml(alert.title)}</b>\n${escapeHtml(
     alert.body
   )}\n\n<i>${escapeHtml(cfg.nodeName)}</i>`;
@@ -50,8 +65,9 @@ async function sendTelegram(cfg, alert) {
 }
 
 async function sendNtfy(cfg, alert) {
-  const { server = 'https://ntfy.sh', topic, token } = cfg.notify?.ntfy || {};
+  const { server = 'https://ntfy.sh', topic, token, minSeverity } = cfg.notify?.ntfy || {};
   if (!topic) return null;
+  if (!passesSeverity(alert, minSeverity)) return { channel: 'ntfy', ok: true, skipped: 'под прага' };
   const headers = {
     'content-type': 'text/plain; charset=utf-8',
     Title: encodeHeader(`${alert.title} · ${cfg.nodeName}`),
@@ -69,6 +85,7 @@ async function sendNtfy(cfg, alert) {
 async function sendWebhook(cfg, alert) {
   const url = cfg.notify?.webhook?.url;
   if (!url) return null;
+  if (!passesSeverity(alert, cfg.notify?.webhook?.minSeverity)) return { channel: 'webhook', ok: true, skipped: 'под прага' };
   const r = await post(url, {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -87,8 +104,9 @@ async function sendWebhook(cfg, alert) {
 // Имейл без SMTP библиотека: подаваме готово писмо на локалния sendmail.
 // Няма sendmail → каналът просто мълчи (fail-closed, без да чупи алармата).
 function sendEmail(cfg, alert) {
-  const { to, from } = cfg.notify?.email || {};
+  const { to, from, minSeverity } = cfg.notify?.email || {};
   if (!to) return Promise.resolve(null);
+  if (!passesSeverity(alert, minSeverity)) return Promise.resolve({ channel: 'email', ok: true, skipped: 'под прага' });
   return new Promise((resolve) => {
     let child;
     try {
@@ -127,6 +145,24 @@ export function configuredChannels(cfg) {
     webhook: Boolean(n.webhook?.url),
     email: Boolean(n.email?.to),
   };
+}
+
+// ── Мъртвецът-ключ (dead man's switch) ───────────────────────────────────────
+// Най-тихият възможен провал: НЕ „сървърът падна", а „наблюдателят замлъкна".
+// Спрял процес, увиснало `evaluate()`, изтрит таймер — панелът не праща нищо и
+// точно това изглежда като „всичко е наред". Никоя вътрешна проверка не хваща
+// собствената си смърт, затова сигналът трябва да излиза НАВЪН: външна услуга
+// (healthchecks.io, Uptime Kuma, cron-monitor на другия VPS) чака пинг по
+// каданс и вдига тревога, когато пингът СПРЕ.
+//
+// Обратната логика е целта: тук успехът мълчи, а мълчанието е алармата.
+export async function heartbeat(cfg, { ok = true } = {}) {
+  const url = cfg.alerts?.heartbeatUrl;
+  if (!url) return null;
+  // Провалена оценка пинга „/fail" (конвенцията на healthchecks.io) — така
+  // външният наблюдател различава „жив, но сляп" от „мъртъв".
+  const target = ok ? url : `${String(url).replace(/\/$/, '')}/fail`;
+  return post(target, { body: '', timeout: 8000 });
 }
 
 function escapeHtml(s) {
