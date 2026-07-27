@@ -10,14 +10,10 @@
 // Втората причина: `dump.rdb`/AOF живее в Docker volume, който досега не влизаше
 // в нито един бекъп.
 import { run } from './exec.js';
-
-const NAME_RX = /^[\w][\w.-]{0,127}$/;
+import { assertDockerName } from './docker.js';
 
 export function assertName(name) {
-  if (!NAME_RX.test(String(name || ''))) {
-    throw Object.assign(new Error('Невалидно име на контейнер'), { status: 400 });
-  }
-  return name;
+  return assertDockerName(name, 'контейнер');
 }
 
 // `redis-cli INFO` връща секции с „ключ:стойност" и коментари с „#".

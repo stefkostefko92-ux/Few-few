@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { run } from './exec.js';
-import { assertUnit } from './services.js';
+import { assertUnit, parseShowKv } from './services.js';
 
 const FIELD_RX = /^[\d*\/,\-]+$/;
 const NICKNAMES = new Set(['@reboot', '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight', '@hourly']);
@@ -148,11 +148,7 @@ export async function timerHistory(unit, { lines = 200 } = {}) {
       'ExecMainExitTimestamp', '-p', 'NRestarts', '-p', 'InvocationID', '-p', 'ActiveState'],
     { timeout: 8000 }
   );
-  const kv = {};
-  for (const line of (show.stdout || '').split('\n')) {
-    const i = line.indexOf('=');
-    if (i > 0) kv[line.slice(0, i)] = line.slice(i + 1);
-  }
+  const kv = parseShowKv(show.stdout);
   const args = ['-u', service, '-n', String(Math.min(1000, Math.max(10, Number(lines) || 200))), '--no-pager', '-o', 'short-iso'];
   // Само редовете от ПОСЛЕДНОТО пускане — иначе четеш чужди изходи и си
   // въобразяваш провал, който е отпреди седмица.

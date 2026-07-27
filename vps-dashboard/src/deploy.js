@@ -117,7 +117,13 @@ export function rollbackSpec(cfg, { release, projects }) {
   }
   const dir = path.join(cfg.paths.releasesDir, name);
   if (!fs.existsSync(dir)) throw Object.assign(new Error('Няма такъв release'), { status: 400 });
-  const env = { RELEASE_DIR: dir };
+  // Същият флаг като при деплоя. Без него връщането назад, което включва самия
+  // панел, минава по НЕ-самодеплой пътя → `systemctl restart` → SIGTERM на целия
+  // cgroup → скриптът умира ПРЕДИ да пренасочи `current`. Панелът се вдига на
+  // стария код, но `current` продължава да сочи счупения release, значи следващият
+  // деплой чете autodeploy.sh от него. Тоест връщането назад се самоубива точно
+  // когато най-много ти трябва.
+  const env = { RELEASE_DIR: dir, CSD_SELF_DEPLOY: '1' };
   if (Array.isArray(projects) && projects.length) {
     for (const p of projects) {
       if (!PROJECT_RX.test(p)) throw Object.assign(new Error(`Невалиден проект: ${p}`), { status: 400 });

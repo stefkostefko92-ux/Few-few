@@ -80,10 +80,16 @@ export function mannKendall(values) {
 // ── Прогноза кога редът ще стигне граница ────────────────────────────────────
 // Връща null, ако трендът не е значим или сочи надолу — по-добре мълчание,
 // отколкото „дискът ще се напълни" на всяко трепване.
-export function forecastToLimit(points, limit, { minPoints = 8, maxHorizonMs = 90 * 86400000 } = {}) {
-  if (!Array.isArray(points) || points.length < minPoints) {
+export function forecastToLimit(rawPoints, limit, { minPoints = 8, maxHorizonMs = 90 * 86400000 } = {}) {
+  if (!Array.isArray(rawPoints) || rawPoints.length < minPoints) {
     return { ok: false, reason: 'малко данни' };
   }
+  // Подредбата по време се НАЛАГА, не се предполага. Историята се дописва по ред,
+  // но скок на часовника назад (NTP корекция, върнат снапшот на виртуалната
+  // машина) или компактиране разбъркват реда — и тогава `points[n-1]` е НАЙ-
+  // СТАРАТА точка. Прогнозата тихо се закотвя за грешен момент и връща уверено
+  // грешен срок (проверено: обърнат ред дава `ok:true` с дата в миналото).
+  const points = [...rawPoints].sort((a, b) => a.x - b.x);
   const values = points.map((p) => p.y);
   const mk = mannKendall(values);
   if (!mk.significant) return { ok: false, reason: 'няма значим тренд', z: mk.z };
@@ -133,24 +139,87 @@ export function detectAnomaly(values, { zThreshold = 3.5, ewmaFactor = 2.5 } = {
 // ── Кога се е променило поведението (CUSUM) ──────────────────────────────────
 // Най-ценният изход не е „сега е зле", а „стана зле в 03:14" — това се
 // кръстосва с деплой/рестарт от одита и дава готова хипотеза за причина.
-export function changePoint(points, { k = 0.5, h = 5 } = {}) {
-  if (points.length < 20) return null;
+//
+// ДВУСТРАНЕН. Едностранният вариант (само нагоре) не просто пропускаше спада —
+// той връщаше УВЕРЕНО ГРЕШЕН отговор: при ред, който пада на средата, първата
+// половина е над медианата, натрупването тръгва от индекс 0 и функцията
+// съобщаваше „промяната е в самото начало". А спадът е точно толкова важен
+// сигнал: изчезнал трафик, спрял процес, паднала честота на заявките — и той е
+// това, което търсиш в „Разследване" след инцидент.
+// Реализацията е УСТОЙЧИВО ТЪРСЕНЕ НА ПРОБИВ, не CUSUM. Пробвахме CUSUM и той се
+// проваля тихо на точно този вид данни — ето защо, за да не бъде „опростен"
+// обратно:
+//
+//  • С медиана на ЦЕЛИЯ ред за отправна точка стъпаловидната промяна поставя
+//    медианата МЕЖДУ двете нива, значи и двете половини изглеждат отклонени.
+//    Едностранният вариант съобщаваше „промяната е в самото начало" при спад;
+//    двустранният сочеше обратната посока.
+//  • С медиана на базов прозорец е още по-лошо: при чередуващи се 20/21 медианата
+//    на нечетен прозорец е 20 вместо 20.5, натрупването „храпва" по половин
+//    единица на стъпка и функцията ИЗМИСЛЯ инцидент в напълно спокоен ред
+//    (хванато от тест).
+//
+// Затова: за всяко възможно място на разрез сравняваме медианата ПРЕДИ с
+// медианата СЛЕД, мащабирано с разсейването вътре в двете части. Няма
+// натрупване, значи няма и дрейф; посоката излиза сама от знака.
+export function changePoint(rawPoints, { minShift = 3, minSegment = 8 } = {}) {
+  if (!Array.isArray(rawPoints) || rawPoints.length < 20) return null;
+  const points = [...rawPoints].sort((a, b) => a.x - b.x);
   const values = points.map((p) => p.y);
-  const med = median(values);
-  const m = mad(values, med);
-  if (!m) return null;
-  const sigma = 1.4826 * m;
-  let sPos = 0;
-  let lastZero = 0;
-  for (let i = 0; i < values.length; i++) {
-    const s = (values[i] - med) / sigma;
-    sPos = Math.max(0, sPos + s - k);
-    if (sPos === 0) lastZero = i;
-    if (sPos > h) {
-      return { index: lastZero, at: new Date(points[lastZero].x).toISOString(), cusum: sPos };
-    }
+  const n = values.length;
+  if (n < minSegment * 2) return null;
+
+  // Мястото на разреза се избира по НАЙ-МАЛКА остатъчна грешка (сума от
+  // абсолютни отклонения около медианата на всяка част) — класическата
+  // сегментация с най-малки абсолютни отклонения. Устойчива е на изключения и,
+  // за разлика от „най-голямата разлика между медианите", НЕ се подвежда от
+  // разрез в средата на едно ниво: там едната част остава с огромна вътрешна
+  // грешка. (Първият ми опит мереше само разликата и MAD-ът на частите падаше
+  // на нула винаги когато над половината стойности са еднакви — тогава всеки
+  // разрез изглеждаше идеален и печелеше най-ранният.)
+  const cost = (arr) => {
+    const m = median(arr);
+    let s = 0;
+    for (const v of arr) s += Math.abs(v - m);
+    return s;
+  };
+  let best = null;
+  for (let t = minSegment; t <= n - minSegment; t++) {
+    const before = values.slice(0, t);
+    const after = values.slice(t);
+    const c = cost(before) + cost(after);
+    if (!best || c < best.cost) best = { t, cost: c, before, after };
   }
-  return null;
+  if (!best) return null;
+
+  // Чак СЕГА се пита „това изобщо промяна ли е": разликата между двете нива,
+  // мащабирана с остатъчния шум ВЪТРЕ в частите.
+  const mb = median(best.before);
+  const ma = median(best.after);
+  const diff = ma - mb;
+  if (diff === 0) return null;
+  // Мащабът на шума е СРЕДНОТО абсолютно отклонение (то вече е сметнато — това е
+  // `best.cost`), НЕ медианното. При целочислени метрики (CPU %, броячи) над
+  // половината остатъци са точно нула и MAD се срива до 0 — тогава всяко
+  // чередуване 20/21 изглежда като идеална стъпка и функцията ИЗМИСЛЯ инцидент
+  // в напълно спокоен ред (хванато от тест).
+  const meanAbs = best.cost / n;
+  const sigma = 1.2533 * meanAbs; // средно абс. отклонение → σ при нормален шум
+  const score = sigma > 0 ? Math.abs(diff) / sigma : Infinity;
+  if (score < minShift) return null;
+  best.score = score;
+  best.diff = diff;
+  // Индексът е ПОСЛЕДНАТА точка от старото поведение — така „промяната е около
+  // 03:14" сочи момента ПРЕДИ скока, който после се кръстосва с одита.
+  const index = best.t - 1;
+  return {
+    index,
+    at: new Date(points[index].x).toISOString(),
+    // Запазено под старото име заради интерфейса; сега е сила на пробива в σ.
+    cusum: Number.isFinite(best.score) ? Math.round(best.score * 100) / 100 : 999,
+    score: Number.isFinite(best.score) ? Math.round(best.score * 100) / 100 : 999,
+    direction: best.diff > 0 ? 'нагоре' : 'надолу',
+  };
 }
 
 export function fmtDuration(ms) {

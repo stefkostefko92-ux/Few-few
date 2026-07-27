@@ -16,6 +16,7 @@ import { AccessLogReader } from './src/accesslog.js';
 import { DrillStore, drillSpec } from './src/drill.js';
 import { buildRouter, ipGateAllows } from './src/routes.js';
 import { SudoGrants } from './src/sudo.js';
+import { RevokedSessions } from './src/revoked.js';
 import { serveStatic, sendError, clientIp } from './src/httpd.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -149,7 +150,11 @@ const router = buildRouter({
   watchDrill,
   sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
-  revokedSessions: new Set(), // поименно отменени до изтичането им
+  // Отменените сесии ПРЕЖИВЯВАТ рестарт. Докато този списък живееше в паметта,
+  // изходът и поименната отмяна бяха илюзия точно в най-важния момент: рестарт
+  // (деплой, ъпдейт, срив) го изчистваше и вече отменен откраднат токен
+  // проработваше отново — до 12 часа.
+  revokedSessions: new RevokedSessions(cfg.paths.stateDir),
 });
 const statics = serveStatic(path.join(__dirname, 'public'));
 

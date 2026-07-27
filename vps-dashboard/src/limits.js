@@ -11,7 +11,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { run } from './exec.js';
-import { assertUnit } from './services.js';
+import { assertUnit, parseShowKv } from './services.js';
+import { assertDockerName } from './docker.js';
 
 const DROPIN = '50-csd-limits.conf';
 const UNIT_DIR = '/etc/systemd/system';
@@ -88,11 +89,7 @@ export async function readLimits(unit) {
     ['show', u, '-p', 'MemoryMax', '-p', 'MemoryHigh', '-p', 'CPUQuotaPerSecUSec', '-p', 'TasksMax', '-p', 'MemoryCurrent', '-p', 'TasksCurrent'],
     { timeout: 8000 }
   );
-  const kv = {};
-  for (const line of (r.stdout || '').split('\n')) {
-    const i = line.indexOf('=');
-    if (i > 0) kv[line.slice(0, i)] = line.slice(i + 1);
-  }
+  const kv = parseShowKv(r.stdout);
   const file = path.join(UNIT_DIR, `${u}.d`, DROPIN);
   return {
     unit: u,
@@ -179,12 +176,8 @@ export async function clearLimits(unit, audit, user) {
 // `docker update` сменя лимитите на ЖИВ контейнер, без рестарт. Compose го
 // презаписва при следващия `up` — затова интерфейсът казва да сложиш лимита и в
 // compose файла, ако искаш да е траен.
-const CONTAINER_RX = /^[\w][\w.-]{0,127}$/;
-
 export async function setDockerLimits(name, { memory = '', cpus = '' }, audit, user) {
-  if (!CONTAINER_RX.test(String(name || ''))) {
-    throw Object.assign(new Error('Невалидно име на контейнер'), { status: 400 });
-  }
+  assertDockerName(name, 'контейнер');
   const args = ['update'];
   if (memory) {
     const m = String(memory).trim();

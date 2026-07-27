@@ -15,7 +15,7 @@
 import https from 'node:https';
 import http from 'node:http';
 import { run } from './exec.js';
-import { assertUnit } from './services.js';
+import { assertUnit, parseShowKv } from './services.js';
 
 // ── 1. Рестарт-цикъл ─────────────────────────────────────────────────────────
 export async function restartCounts(units = []) {
@@ -29,11 +29,7 @@ export async function restartCounts(units = []) {
     }
     const r = await run('systemctl', ['show', u, '-p', 'NRestarts', '-p', 'ActiveState', '-p', 'SubState'], { timeout: 6000 });
     if (!r.ok) continue;
-    const kv = {};
-    for (const line of (r.stdout || '').split('\n')) {
-      const i = line.indexOf('=');
-      if (i > 0) kv[line.slice(0, i)] = line.slice(i + 1);
-    }
+    const kv = parseShowKv(r.stdout);
     const n = Number(kv.NRestarts);
     out.push({ unit: u, restarts: Number.isFinite(n) ? n : 0, activeState: kv.ActiveState || null, subState: kv.SubState || null });
   }

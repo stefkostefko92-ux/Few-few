@@ -142,14 +142,26 @@ export function sudoSucceeded(jti) {
 
 // Потвърждаване: парола + (ако 2FA е включена) TOTP код или резервен код.
 // Резервният код се ИЗРАЗХОДВА и тук — иначе би останал валиден завинаги.
-export function confirmSudo(cfg, { password, code }, saveConfig) {
+// `state` е СЪЩИЯТ обект, който `/api/login` ползва за `lastTotpStep`. Без
+// споделен брояч един и същи код минава веднъж на входа и втори път тук, в
+// рамките на своя прозорец (±1 стъпка): вторият фактор престава да е
+// доказателство за втори път, а точно това е смисълът на sudo режима.
+export function confirmSudo(cfg, { password, code }, saveConfig, state = null) {
   if (!verifyPassword(password || '', cfg.passwordHash)) {
     return { ok: false, error: 'Грешна парола.' };
   }
   if (cfg.totp?.enabled) {
     const c = String(code || '').trim();
     if (!c) return { ok: false, error: 'Липсва код от приложението.' };
-    if (verifyTotp(cfg.totp.secret, c)) return { ok: true };
+    const step = verifyTotp(cfg.totp.secret, c);
+    // `verifyTotp` връща НОМЕРА на стъпката или null — не булево.
+    if (step !== null) {
+      if (state && state.lastTotpStep === step) {
+        return { ok: false, error: 'Този код вече е използван — изчакай следващия.' };
+      }
+      if (state) state.lastTotpStep = step;
+      return { ok: true };
+    }
     const idx = verifyRecoveryCode(c, cfg.totp.recoveryHashes || []);
     if (idx >= 0) {
       const left = [...(cfg.totp.recoveryHashes || [])];

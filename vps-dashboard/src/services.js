@@ -139,3 +139,16 @@ export function journalFollow({ unit, priority }, sse, res) {
   child.on('close', () => sse.close());
   res.on('close', () => child.kill('SIGTERM'));
 }
+
+// `systemctl show -p A -p B` връща „КЛЮЧ=стойност" по един на ред. Разборът
+// беше преписан знак по знак на три места (cronedit, health, limits) — а и
+// трите вече внасят `assertUnit` оттук, значи това е естественият собственик.
+// Стойността може да съдържа „=", затова се реже по ПЪРВОТО срещане.
+export function parseShowKv(stdout) {
+  const kv = {};
+  for (const line of String(stdout || '').split('\n')) {
+    const i = line.indexOf('=');
+    if (i > 0) kv[line.slice(0, i)] = line.slice(i + 1);
+  }
+  return kv;
+}

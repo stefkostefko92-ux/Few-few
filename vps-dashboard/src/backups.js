@@ -50,9 +50,18 @@ export function backupAllSpec() {
     // а COPY след това налива в СТАРИТЕ таблици. Резултатът е слята база, която
     // изглежда като успешно възстановяване. Дъмпът трябва да носи почистването си.
     '  for c in $(docker ps --filter "ancestor=postgres" --format "{{.Names}}"; docker ps --format "{{.Names}} {{.Image}}" | awk "/postgres|pgvector/ {print \\$1}"); do',
-    '    for d in $(docker exec "$c" psql -U postgres -At -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> \'postgres\';" 2>/dev/null); do',
+    // Суперпотребителят се КАЗВА $POSTGRES_USER, не „postgres". Официалният образ
+    // прави `initdb --username="$POSTGRES_USER"`, а нашите стекове го задават:
+    // zabobovdol, bot (Supreme), eternaltouch. Заковано „-U postgres" значи
+    // „role postgres does not exist" → празен списък бази → вътрешният цикъл не
+    // се върти → rc остава 0 → задачата рапортува УСПЕХ с празна секция. Тоест
+    // трите ни Postgres бази не се бекъпваха ИЗОБЩО, а панелът рисуваше зелено.
+    '    PGU=$(docker exec "$c" printenv POSTGRES_USER 2>/dev/null || echo postgres)',
+    '    dbs=$(docker exec "$c" psql -U "$PGU" -At -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> \'postgres\';") || { echo "  ✘ $c: psql не отговори (потребител $PGU)"; rc=1; continue; }',
+    '    [ -n "$dbs" ] || { echo "  ✘ $c: нула бази (потребител $PGU) — това не е успех"; rc=1; continue; }',
+    '    for d in $dbs; do',
     `      out="${DUMP_DIR}/\${d}-\${TS}.sql.gz"`,
-    '      if docker exec "$c" pg_dump -U postgres --clean --if-exists -d "$d" 2>/dev/null | gzip > "$out" && [ -s "$out" ]; then echo "  ✔ $c/$d"; else echo "  ✘ $c/$d"; rm -f "$out"; rc=1; fi',
+    '      if docker exec "$c" pg_dump -U "$PGU" --clean --if-exists -d "$d" | gzip > "$out" && [ -s "$out" ]; then echo "  ✔ $c/$d"; else echo "  ✘ $c/$d"; rm -f "$out"; rc=1; fi',
     '    done',
     '  done',
     'else echo "  (няма docker — пропускам)"; fi',
@@ -106,7 +115,12 @@ export function resticConfigured() {
 //   2) „приложи" — прави снимка на ТЕКУЩОТО състояние, после презаписва.
 // Никога не се възстановява директно върху жива база без стъпка 1.
 const DUMP_RX = /^[\w.-]+\.(sqlite|sql)\.gz$/;
-export const RESTORE_PREVIEW_DIR = '/tmp/vps-dashboard-restore';
+// НЕ в /tmp. Разопакованият дъмп е ПЪЛНО копие на базата — за medqr това са
+// медицински данни по чл. 9 GDPR. В /tmp с umask 022 папката става 0755, а
+// файлът 0644, тоест всяка друга услуга на машината (ospedali върви като
+// www-data) може да ги чете. Плюс: планираната проба се пуска сама на 30 дни,
+// значи копието би лежало там постоянно.
+export const RESTORE_PREVIEW_DIR = '/var/lib/vps-dashboard/restore';
 
 // Името на unit-а влиза в shell ред — затова минава през същия строг allowlist
 // като навсякъде другаде, а не „вероятно е наред".
@@ -140,9 +154,12 @@ export function restorePreviewSpec(name) {
     title: `Преглед на снимка · ${base}`,
     shell: [
       `set -euo pipefail`,
-      `mkdir -p ${RESTORE_PREVIEW_DIR}`,
+      // Правата се задават ПРЕДИ да има какво да се чете, не след това.
+      `umask 077`,
+      `install -d -m 700 ${RESTORE_PREVIEW_DIR}`,
       `rm -f "${out}"`,
       `gzip -dc "${full}" > "${out}"`,
+      `chmod 600 "${out}"`,
       `echo "Разопаковано в ${out}"`,
       `ls -lh "${out}"`,
       describe,
@@ -251,7 +268,10 @@ export function restoreApplySpec(name, target) {
       `[ -f "${src}" ] || { echo "Първо направи преглед — няма разопакован файл."; exit 1; }`,
       `echo "▸ Снимка на ТЕКУЩОТО състояние преди презапис…"`,
       `mkdir -p ${DUMP_DIR}`,
-      `docker exec ${container} pg_dump -U postgres --clean --if-exists -d ${database} | gzip > "${DUMP_DIR}/${database}-${stamp}.sql.gz"`,
+      // Пак: потребителят се чете ОТ контейнера. „postgres" не съществува в нито
+      // един от нашите стекове (zabobovdol / bot / eternaltouch).
+      `PGU=$(docker exec ${container} printenv POSTGRES_USER 2>/dev/null || echo postgres)`,
+      `docker exec ${container} pg_dump -U "$PGU" --clean --if-exists -d ${database} | gzip > "${DUMP_DIR}/${database}-${stamp}.sql.gz"`,
       // Празна „защитна" снимка е по-лоша от липсваща: тя дава увереност да
       // натиснеш „Приложи", а после няма към какво да се върнеш.
       `[ -s "${DUMP_DIR}/${database}-${stamp}.sql.gz" ] || { echo "Защитната снимка е празна — СПИРАМ преди да пипна базата."; exit 1; }`,
@@ -262,7 +282,7 @@ export function restoreApplySpec(name, target) {
       //     с код 0. Половин върната база рапортува „✔ Готово".
       //   --single-transaction — всичко или нищо. Без него провалът по средата
       //     оставя базата в състояние, което не е нито старото, нито новото.
-      `cat "${src}" | docker exec -i ${container} psql -U postgres -v ON_ERROR_STOP=1 --single-transaction -d ${database}`,
+      `cat "${src}" | docker exec -i ${container} psql -U "$PGU" -v ON_ERROR_STOP=1 --single-transaction -d ${database}`,
       `echo "✔ Готово. Рестартирай приложението, което ползва тази база."`,
     ].join('\n'),
     exclusive: 'backup',

@@ -88,7 +88,7 @@ const GET_ROUTES = [
   // Маршрути с ЗАДЪЛЖИТЕЛЕН параметър — точно те са най-склонни да гръмнат с 500
   // при липсващ/невалиден вход, затова влизат с попълнен параметър.
   '/api/auth/info', '/api/limits?unit=cron.service', '/api/cron/history?unit=cron.service',
-  '/api/compose/ps?project=demo', '/api/docker/logs?id=demo&lines=5',
+  '/api/compose/ps?project=demo', '/api/compose/logs?project=demo&lines=5', '/api/docker/logs?id=demo&lines=5',
   '/api/databases/sqlite/check?file=/tmp/csd-smoke-няма.db',
   '/api/accesslog', '/api/accesslog/files', '/api/backups/health', '/api/redis', '/api/volumes',
   // `/api/domains/preflight` съзнателно НЕ влиза: прави реален DNS + HTTP навън и

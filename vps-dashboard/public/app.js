@@ -252,8 +252,15 @@ function searchBox(placeholder = 'Филтрирай…') {
 
 // Поколение на навигацията. Бавна секция (напр. „Ъпдейти", която чака apt) си
 // дорисува ЗАКЪСНЯЛО и презаписва секцията, към която вече си отишъл — видяно на
-// живо: отваряш „Задачи", а вътре стои списъкът с пакети. Затова всеки render се
-// сверява с поколението си, преди да пипне екрана.
+// живо: отваряш „Задачи", а вътре стои списъкът с пакети.
+//
+// ВНИМАНИЕ какво прави и какво НЕ прави този брояч: той служи САМО за отсяване
+// на закъсняла ГРЕШКА от изоставена секция (единственият му читател е catch-ът
+// в `go()`). Живото рисуване е защитено от нещо друго — `go()` подменя `#view`
+// със СВЕЖ възел и всеки render взема `view` в първите си два реда, значи
+// закъснелият отговор пише в откачен от документа възел.
+// Затова: ако пишеш нов render, вземи `view` ПРЕДИ първото `await`. Няма гейт,
+// който да те спаси, ако го вземеш след това.
 let navGen = 0;
 function isCurrentRender(gen) {
   return gen === navGen;
@@ -269,7 +276,7 @@ function go(id) {
   document.getElementById('section-title').textContent = s.label;
   // Всяка навигация получава СВЕЖ #view възел. Закъснялата секция държи стария
   // (вече откачен) възел и пише в нищото — вместо да замаже новата. Работи за
-  // всичките 32 секции наведнъж, защото всяка взема `view` ПРЕДИ първото await.
+  // ВСИЧКИ секции наведнъж, защото всяка взема `view` ПРЕДИ първото await.
   const old = document.getElementById('view');
   const fresh = old.cloneNode(false);
   old.replaceWith(fresh);
@@ -2168,8 +2175,8 @@ async function renderPty() {
   // Броят колони се МЕРИ, а не се гадае: сгрешена ширина значи, че всяка TUI
   // програма рисува в грешни колони и изгледът се разпада.
   view.appendChild(screen);
-  const cols = measureCols(screen);
-  const rows = 30;
+  let cols = measureCols(screen);
+  let rows = measureRows(screen);
   const term = new Terminal(cols, rows);
   let session = null;
   let es = null;
@@ -2288,17 +2295,64 @@ async function renderPty() {
   );
   view.appendChild(el('div', { class: 'metric-sub', text: 'Щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
 
+  // Смяна на размера на прозореца → ПРЕОРАЗМЕРЯВАМЕ и живия TTY.
+  //
+  // Дотук колоните се мереха ВЕДНЪЖ, при отваряне, а сървърният маршрут
+  // `/api/pty/:id/resize` нямаше нито един извикващ. Резултатът беше видим и
+  // досаден: завърташ телефона или дърпаш прозореца, а `htop`/`nano` продължават
+  // да рисуват в старата ширина и изгледът се разпада. Маршрутът съществуваше —
+  // липсваше страната на браузъра.
+  let resizeTimer = null;
+  const applySize = async () => {
+    const next = measureCols(screen);
+    const nextRows = measureRows(screen);
+    if (next === cols && nextRows === rows) return;
+    cols = next;
+    rows = nextRows;
+    term.resize?.(cols, rows);
+    paint();
+    if (!session) return;
+    try {
+      await api(`/pty/${session.id}/resize`, { method: 'POST', body: { cols, rows } });
+      status.textContent = `сесия ${session.id.slice(0, 8)} · ${cols}×${rows}`;
+    } catch {
+      /* размерът е удобство — провалът му не бива да чупи сесията */
+    }
+  };
+  // Дроселиране: влаченето на прозореца произвежда десетки събития в секунда,
+  // а всяко от тях е `stty` в чуждия TTY.
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(applySize, 250);
+  };
+  window.addEventListener('resize', onResize, { passive: true });
+
   // На телефон клавиатурата покрива екрана — свиваме терминала до видимата част.
   if (window.visualViewport) {
     const fit = () => {
       const vh = window.visualViewport.height;
       if (vh < window.innerHeight - 80) screen.style.height = `${Math.max(180, vh - 260)}px`;
       else screen.style.height = '64vh';
+      onResize();
     };
     window.visualViewport.addEventListener('resize', fit);
-    view.addEventListener('DOMNodeRemoved', () => window.visualViewport.removeEventListener('resize', fit), { once: true });
+    view.addEventListener('DOMNodeRemoved', () => {
+      window.visualViewport.removeEventListener('resize', fit);
+      window.removeEventListener('resize', onResize);
+    }, { once: true });
   }
   paint();
+}
+
+// Редовете се мерят по същата логика като колоните: по РЕАЛНАТА височина на
+// един ред в текущия шрифт, не по предположение.
+function measureRows(container) {
+  const probe = el('span', { text: '0', style: 'position:absolute;visibility:hidden;white-space:pre' });
+  container.appendChild(probe);
+  const lineHeight = probe.getBoundingClientRect().height;
+  probe.remove();
+  if (!lineHeight || !container.clientHeight) return 30;
+  return Math.max(10, Math.min(80, Math.floor((container.clientHeight - 16) / lineHeight)));
 }
 
 // Мери реалната ширина на един знак в моноширинния шрифт и връща колко цели

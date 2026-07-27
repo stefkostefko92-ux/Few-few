@@ -12,10 +12,11 @@
 // Съзнателно НЕ твърди причинност. Показва съвпадения по време и оставя
 // заключението на човека — „деплой 40 секунди преди скока" е улика, не присъда.
 import { changePoint, fmtDuration } from './forecast.js';
+import { memPercent } from './history.js';
 
 const SERIES = {
   cpu: { label: 'процесор', get: (p) => p.cpu, unit: '%' },
-  memory: { label: 'памет', get: (p) => (p.memTotal ? (p.memUsed / p.memTotal) * 100 : null), unit: '%' },
+  memory: { label: 'памет', get: memPercent, unit: '%' },
   disk: { label: 'диск', get: (p) => p.diskMax ?? null, unit: '%' },
   load: { label: 'натоварване', get: (p) => p.load1 ?? null, unit: '' },
 };

@@ -7,11 +7,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { notify, configuredChannels, heartbeat } from './notify.js';
-import { failedServicesSafe, tlsCertsSafe, tlsCerts } from './system.js';
+import { failedServicesSafe, tlsCertsSafe } from './system.js';
 import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
-import { diskSeries, knownMounts } from './history.js';
+import { diskSeries, knownMounts, memPercent } from './history.js';
 import { evaluateBurn } from './slo.js';
 import { backupChecks } from './drill.js';
 import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from './health.js';
@@ -441,8 +441,13 @@ export class AlertEngine {
         mount,
         key: `disk-eta:${mount}`,
         severity: etaDays <= 1 ? 'critical' : 'warning',
-        title: `Дискът ${mount} ще се напълни`,
-        body: `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
+        title: f.atLimit ? `Дискът ${mount} е на границата` : `Дискът ${mount} ще се напълни`,
+        // `fmtDuration(0)` дава „1 мин" (има долен праг), затова пълен дял
+        // получаваше „стига 100% след 1 мин" — изречение, което лъже за нещо,
+        // което вече се е случило.
+        body: f.atLimit
+          ? `Вече е на 100%. Записите се провалят СЕГА — освободи място или разшири дяла.`
+          : `При сегашния темп (${f.slopePerDay.toFixed(1)}%/ден) стига 100% след ${fmtDuration(f.etaMs)} — около ${new Date(Date.now() + f.etaMs).toLocaleDateString('bg-BG')}.`,
       });
     }
     return out;
@@ -546,8 +551,19 @@ export class AlertEngine {
     if (!names.length) {
       // Без изричен списък следим домейните, за които вече имаме сертификат.
       try {
-        names = [...new Set((await tlsCerts()).map((c) => registrableDomain(c.domain)))];
-      } catch {
+        // „Безопасният" вариант и ТУК. Наивният `tlsCerts()` + мълчалив catch
+        // беше същият клас тих провал, срещу който е построен целият модул:
+        // не можеш да прочетеш сертификатите → списъкът домейни е празен →
+        // алармата за изтичащ домейн просто изчезва, все едно всичко е наред.
+        // Братският блок за `certDays` вече вдига `stale:` — този не вдигаше.
+        const certs = await tlsCertsSafe();
+        if (!certs.ok) {
+          this.stale?.set('domain:', `сертификатите не се четат (${certs.error})`);
+          return out;
+        }
+        names = [...new Set(certs.certs.map((c) => registrableDomain(c.domain)))];
+      } catch (err) {
+        this.stale?.set('domain:', err.message);
         return out;
       }
     }
@@ -783,7 +799,7 @@ export class AlertEngine {
     const series = {
       cpu: { values: points.map((p) => p.cpu).filter((v) => typeof v === 'number'), label: 'процесора' },
       memory: {
-        values: points.map((p) => (p.memTotal ? (p.memUsed / p.memTotal) * 100 : null)).filter((v) => v !== null),
+        values: points.map(memPercent).filter((v) => v !== null),
         label: 'паметта',
       },
     };

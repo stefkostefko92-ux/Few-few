@@ -36,16 +36,33 @@ export class Jobs {
     };
     if (spec.exclusive) this.locks.add(spec.exclusive);
 
-    const child = spec.shell
-      ? spawn('bash', ['-lc', spec.shell], { cwd: spec.cwd, env: { ...process.env, ...spec.env } })
-      : spawn(spec.cmd, spec.args || [], { cwd: spec.cwd, env: { ...process.env, ...spec.env } });
+    // `detached: true` слага задачата в СОБСТВЕНА процесна група. Без това
+    // „убий" стига само до прекия наследник (`bash`), а внуците — `docker
+    // compose build`, `gzip` в конвейер, `apt` — продължават да работят.
+    const opts = { cwd: spec.cwd, env: { ...process.env, ...spec.env }, detached: true };
+    const child = spec.shell ? spawn('bash', ['-lc', spec.shell], opts) : spawn(spec.cmd, spec.args || [], opts);
     job.pid = child.pid;
     job.child = child;
+
+    // Сигнал към ЦЯЛАТА група (отрицателен pid). Резервно — само наследникът,
+    // ако групата вече не съществува.
+    const signal = (sig) => {
+      try {
+        process.kill(-child.pid, sig);
+      } catch {
+        try {
+          child.kill(sig);
+        } catch {
+          /* вече мъртъв */
+        }
+      }
+    };
+    job.signal = signal;
 
     const timeout = spec.timeoutMs
       ? setTimeout(() => {
           job.killed = true;
-          child.kill('SIGKILL');
+          signal('SIGKILL');
         }, spec.timeoutMs)
       : null;
 
@@ -57,7 +74,23 @@ export class Jobs {
     child.stdout.on('data', push);
     child.stderr.on('data', push);
     child.on('error', (err) => push(`\n[грешка при стартиране: ${err.message}]\n`));
-    child.on('close', (code) => {
+    // Финализира се на `exit`, НЕ на `close`.
+    //
+    // Node емитира `close` едва когато и последният наследник е затворил
+    // наследения stdout/stderr — не при смъртта на прекия процес. Проверено на
+    // живо (v22): `bash -c 'sleep 30 & sleep 30'` + SIGKILL към bash дава
+    // `exit` след 402 ms и `close` НИКОГА. Тогава ексклузивният ключ „system"
+    // не се освобождава, `endedAt` остава null, `prune()` не чисти задачата,
+    // SSE клиентите не получават край — всеки следващ деплой/ъпдейт/бекъп
+    // връща 409 до рестарт на услугата. С процесна група `close` идва веднага,
+    // но `exit` остава правилното място: то е фактът „процесът умря".
+    //
+    // Цената: последните няколко байта изход може да дойдат след събитието
+    // „край". Съзнателна размяна срещу вечно заключен ключ.
+    let finalized = false;
+    child.on('exit', (code) => {
+      if (finalized) return;
+      finalized = true;
       if (timeout) clearTimeout(timeout);
       job.code = code ?? (job.killed ? 137 : 1);
       job.endedAt = new Date().toISOString();
@@ -98,8 +131,12 @@ export class Jobs {
     if (!job) throw Object.assign(new Error('Няма такава задача'), { status: 404 });
     if (!job.child) return this.describe(job);
     job.killed = true;
-    job.child.kill('SIGTERM');
-    setTimeout(() => job.child && job.child.kill('SIGKILL'), 5000);
+    // Групата, не само прекият наследник — иначе „убий" лъже: bash умира,
+    // `docker compose build` продължава без надзор.
+    job.signal?.('SIGTERM');
+    setTimeout(() => {
+      if (job.child) job.signal?.('SIGKILL');
+    }, 5000).unref?.();
     this.audit?.log({ action: 'job.kill', jobId: id, user });
     return this.describe(job);
   }

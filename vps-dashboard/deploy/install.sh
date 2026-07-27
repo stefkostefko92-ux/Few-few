@@ -36,24 +36,40 @@ command -v curl >/dev/null || die "Липсва curl (нужен е за про�
 SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # 1) Код → APP_DIR (rsync ако е наличен, иначе cp).
-log "Инсталирам кода в ${APP_DIR}…"
-mkdir -p "$APP_DIR"
-if command -v rsync >/dev/null; then
-  rsync -a --delete --exclude .state/ --exclude node_modules/ "$SRC_DIR"/ "$APP_DIR"/
+# ПРЕДПАЗИТЕЛ: `rsync --delete` с APP_DIR=/opt (една сгрешена буква) изтрива
+# /opt/medqr, /opt/vizitka, /opt/nexus… Системните папки се отказват изрично.
+case "$APP_DIR" in
+  /|/opt|/usr|/etc|/var|/root|/home|/srv|/boot) die "Опасен APP_DIR: $APP_DIR" ;;
+esac
+if [ "$SRC_DIR" = "$APP_DIR" ]; then
+  ok "Кодът вече е на място (${APP_DIR}) — пропускам копирането."
 else
-  cp -a "$SRC_DIR"/. "$APP_DIR"/
+  log "Инсталирам кода в ${APP_DIR}…"
+  mkdir -p "$APP_DIR"
+  if command -v rsync >/dev/null; then
+    rsync -a --delete --exclude .state/ --exclude node_modules/ "$SRC_DIR"/ "$APP_DIR"/
+  else
+    # Без rsync няма `--delete`: изтритите в новата версия файлове оцеляват.
+    # Казваме го, вместо да се преструваме, че е същото.
+    printf '\033[33m⚠ Няма rsync — копирам с cp -a. Файлове от предишна версия НЕ се махат.\033[0m\n'
+    cp -a "$SRC_DIR"/. "$APP_DIR"/
+    rm -rf "$APP_DIR/.state"
+  fi
 fi
 
-# 2) State папка.
+# 2) State папка + права на конфиг папката.
 install -d -m 700 "$STATE_DIR"
+# ВЪН от блока „ако липсва конфиг": при преинсталация папката с тайните
+# (initial-admin-credential.txt, restic.env) иначе никога не се затяга.
+install -d -m 700 "$CONFIG_DIR"
 
 # 3) Конфиг — само ако липсва (пазим тайните при преинсталация).
 if [ -f "$CONFIG" ]; then
   ok "Конфигът вече съществува (${CONFIG}) — не го пипам."
 else
   log "Създавам конфиг с генерирани тайни…"
-  # 700 от самото начало: конфигът носи passwordHash, sessionSecret и peerToken.
-  install -d -m 700 "$CONFIG_DIR"
+  # (папката вече е създадена с mode 700 по-горе — при преинсталация тя трябва да
+  # се затегне ВИНАГИ, не само когато липсва конфиг.)
   ADMIN_PW="${CSD_ADMIN_PASSWORD:-}"
   if [ -z "$ADMIN_PW" ]; then
     if [ -t 0 ]; then
@@ -161,30 +177,69 @@ else
   fi
 fi
 
-# 4) systemd unit.
-# Пътищата в unit-а следват РЕАЛНИТЕ променливи. Зашитият `/opt/vps-dashboard` +
-# `/usr/bin/node` мълчаливо чупят всяка инсталация с друг APP_DIR или с node от
-# nvm/nodesource на друго място — услугата не тръгва, а причината е един ред.
+# 4) systemd unit + DROP-IN за локалните пътища.
+#
+# Локалните разлики НЕ се режат в самия unit файл със `sed`. Причината е точно
+# същата, заради която ресурсните лимити на панела са drop-in: `autodeploy.sh`
+# преинсталира unit-а при всеки деплой (`install -m 644 …`) и заличава всяка
+# персонализация. При node извън `/usr/bin` (nvm/nodesource) това значи, че
+# панелът умира на следващия рестарт, а причината е един презаписан ред.
+# Drop-in-ът оцелява преинсталацията и се маха с `systemctl revert`.
 log "Инсталирам systemd услугата…"
 NODE_BIN="$(command -v node)"
-sed -e "s#^WorkingDirectory=.*#WorkingDirectory=${APP_DIR}#" \
-    -e "s#^ExecStart=.*#ExecStart=${NODE_BIN} server.js#" \
-    -e "s#^Environment=CSD_CONFIG=.*#Environment=CSD_CONFIG=${CONFIG}#" \
-    -e "s#^Environment=HOME=.*#Environment=HOME=${STATE_DIR}#" \
-    "$APP_DIR/deploy/vps-dashboard.service" > /etc/systemd/system/${SERVICE}.service
-chmod 644 /etc/systemd/system/${SERVICE}.service
-# ReadWritePaths трябва да включва state и config папките, където и да са.
-grep -q "^ReadWritePaths=" /etc/systemd/system/${SERVICE}.service \
-  && sed -i "s#^ReadWritePaths=.*#ReadWritePaths=/root ${STATE_DIR} ${CONFIG_DIR} /opt/few-few#" /etc/systemd/system/${SERVICE}.service
+# Всичко, което влиза в конфигурационен файл, минава през проверка за знаци:
+# път с „&", „#" или интервал произвежда мълчаливо повреден ред.
+for p in "$APP_DIR" "$CONFIG_DIR" "$STATE_DIR" "$CONFIG" "$NODE_BIN"; do
+  case "$p" in
+    *[!A-Za-z0-9._/-]*) die "Непозволен знак в пътя: $p" ;;
+  esac
+done
+install -m 644 "$APP_DIR/deploy/vps-dashboard.service" /etc/systemd/system/${SERVICE}.service
+install -d -m 755 "/etc/systemd/system/${SERVICE}.service.d"
+# Празният `ExecStart=`/`ReadWritePaths=` ИЗРИЧНО нулира наследеното — без него
+# systemd добавя към списъка вместо да го замени.
+cat > "/etc/systemd/system/${SERVICE}.service.d/10-local.conf" <<EOF
+# Управлява се от deploy/install.sh. Локални пътища на ТАЗИ машина.
+# Маха се с: systemctl revert ${SERVICE}
+[Service]
+WorkingDirectory=${APP_DIR}
+ExecStart=
+ExecStart=${NODE_BIN} server.js
+Environment=CSD_CONFIG=${CONFIG}
+Environment=HOME=${STATE_DIR}
+ReadWritePaths=
+ReadWritePaths=-/root -${STATE_DIR} -${CONFIG_DIR} -/opt/few-few
+EOF
+chmod 644 "/etc/systemd/system/${SERVICE}.service.d/10-local.conf"
+# Папката за релийзите трябва да СЪЩЕСТВУВА, преди unit-ът да я поиска.
+install -d -m 755 /opt/few-few
 systemctl daemon-reload
 systemctl enable "$SERVICE" >/dev/null 2>&1 || true
 systemctl restart "$SERVICE"
-sleep 2
 
-if curl -fsS -o /dev/null --max-time 5 "http://127.0.0.1:${PORT}/api/ping" \
-  || [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:${PORT}/api/ping)" = "401" ]; then
-  ok "VPS Dashboard е жив на http://127.0.0.1:${PORT}"
+# Портът се чете от КОНФИГА, не от ENV: при преинсталация върху съществуващ
+# конфиг `CSD_PORT` не важи и проверката щеше да чука на грешна врата.
+if [ -f "$CONFIG" ]; then
+  PORT="$(CSD_CFG="$CONFIG" node -p 'JSON.parse(require("fs").readFileSync(process.env.CSD_CFG,"utf8")).port||7700' 2>/dev/null || echo "$PORT")"
+fi
+
+# Три приемливи отговора, не един:
+#   200 — рядко (панелът иска сесия)
+#   401 — нормалното „жив съм, но не си вписан"
+#   403 — жив, но `allowIps` не включва loopback. ФИКСИРАНИЯТ преди отказ тук
+#         обявяваше напълно здрав панел за мъртъв.
+# И цикъл вместо `sleep 2`: бавен старт не е провал.
+alive=0
+for _ in $(seq 20); do
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:${PORT}/api/ping" || echo 000)"
+  case "$code" in
+    200|401|403) alive=1; break ;;
+  esac
+  sleep 1
+done
+if [ "$alive" = "1" ]; then
+  ok "VPS Dashboard е жив на http://127.0.0.1:${PORT} (отговор ${code})"
   log "Публикувай го през Nginx + TLS: виж deploy/nginx.conf.example"
 else
-  die "Услугата не отговаря — виж: journalctl -u ${SERVICE} -n 40"
+  die "Услугата не отговаря на http://127.0.0.1:${PORT}/api/ping — виж: journalctl -u ${SERVICE} -n 40"
 fi

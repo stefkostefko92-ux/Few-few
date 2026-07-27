@@ -19,8 +19,7 @@
 import crypto from 'node:crypto';
 import { run } from './exec.js';
 import { DUMP_DIR } from './databases.js';
-
-const VOL_RX = /^[\w][\w.-]{0,127}$/;
+import { assertDockerName } from './docker.js';
 
 // Томове, чието СЪДЪРЖАНИЕ не бива да се архивира суров tar — за тях има
 // логически дъмп, който е последователен.
@@ -36,10 +35,7 @@ export function archiveName(src) {
 }
 
 export function assertVolume(name) {
-  if (!VOL_RX.test(String(name || ''))) {
-    throw Object.assign(new Error('Невалидно име на том'), { status: 400 });
-  }
-  return name;
+  return assertDockerName(name, 'том');
 }
 
 // Кои томове/bind-mount-ове се ползват от кои контейнери и струват ли архив.

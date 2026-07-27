@@ -94,3 +94,16 @@ export async function dockerLogs(id, lines = 300) {
   // docker пише логовете и на stderr (в зависимост от стрийма на процеса) — събираме двата.
   return { id, text: ((r.stdout || '') + (r.stderr || '')).slice(-200000) };
 }
+
+// Правилото на Docker за име на обект (контейнер, том, мрежа). Стоеше преписано
+// в три файла — limits, redis, volumes — с два от тях с ИДЕНТИЧНО съобщение за
+// грешка. Правилото не е наше: смени ли се, трябва да се смени на едно място.
+export const DOCKER_NAME_RX = /^[\w][\w.-]{0,127}$/;
+
+export function assertDockerName(name, label = 'Docker обект') {
+  const s = String(name || '');
+  if (!DOCKER_NAME_RX.test(s)) {
+    throw Object.assign(new Error(`Невалидно име на ${label}`), { status: 400 });
+  }
+  return s;
+}

@@ -109,6 +109,12 @@ async function postgresOverview() {
 
   const instances = [];
   for (const c of containers) {
+    // Кой е суперпотребителят се ПИТА контейнера. Официалният образ прави
+    // `initdb --username="$POSTGRES_USER"`, значи роля „postgres" няма да има
+    // никъде при нас (zabobovdol / bot / eternaltouch) — а заковано „-U postgres"
+    // прави секцията „Бази" вечно празна, без нито едно обяснение.
+    const who = await run('docker', ['exec', c.ID, 'printenv', 'POSTGRES_USER'], { timeout: 8000 });
+    const pgUser = (who.ok && who.stdout.trim()) || 'postgres';
     const sizes = await run(
       'docker',
       [
@@ -116,7 +122,7 @@ async function postgresOverview() {
         c.ID,
         'psql',
         '-U',
-        'postgres',
+        pgUser,
         '-At',
         '-F',
         '|',
@@ -130,6 +136,7 @@ async function postgresOverview() {
       id: c.ID,
       image: c.Image,
       status: c.Status,
+      pgUser, // видимо в панела: „с кой потребител го питаме" е първият въпрос при провал
       reachable: sizes.ok,
       databases: sizes.ok
         ? sizes.stdout
@@ -170,7 +177,10 @@ export function postgresDumpSpec({ container, database }) {
   }
   return {
     title: `pg_dump · ${database}`,
-    shell: `mkdir -p ${DUMP_DIR} && out="${DUMP_DIR}/${database}-$(date +%Y%m%d-%H%M%S).sql.gz" && docker exec ${container} pg_dump -U postgres -d ${database} | gzip > "$out" && ls -lh "$out"`,
+    // Потребителят се чете от контейнера: официалният образ прави
+    // `initdb --username="$POSTGRES_USER"`, значи роля „postgres" няма да
+    // съществува в нито един наш стек (zabobovdol / bot / eternaltouch).
+    shell: `mkdir -p ${DUMP_DIR} && PGU=$(docker exec ${container} printenv POSTGRES_USER 2>/dev/null || echo postgres) && out="${DUMP_DIR}/${database}-$(date +%Y%m%d-%H%M%S).sql.gz" && docker exec ${container} pg_dump -U "$PGU" --clean --if-exists -d ${database} | gzip > "$out" && [ -s "$out" ] && ls -lh "$out"`,
     exclusive: 'backup',
     timeoutMs: 60 * 60 * 1000,
   };

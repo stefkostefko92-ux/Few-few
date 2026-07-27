@@ -166,7 +166,14 @@ export function serveStatic(rootDir) {
       'cache-control': rel === '/index.html' ? 'no-store' : 'public, max-age=3600',
       'x-content-type-options': 'nosniff',
     });
-    fs.createReadStream(full).pipe(res);
+    // Слушателят за грешки е задължителен: необработен `'error'` на поток е
+    // НЕУЛОВЕНО изключение и сваля целия процес. Прозорецът е реален —
+    // `autodeploy.sh` подменя `public/` под живия панел, тоест между `statSync`
+    // и `open` файлът може да изчезне. Панелът да пада, защото някой е деплойнал,
+    // е точно обратното на предназначението му.
+    fs.createReadStream(full)
+      .on('error', () => res.destroy())
+      .pipe(res);
     return true;
   };
 }

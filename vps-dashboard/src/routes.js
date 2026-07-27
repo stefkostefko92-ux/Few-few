@@ -26,7 +26,7 @@ import * as backups from './backups.js';
 import { verifyTotp, generateSecret, otpauthUri, generateRecoveryCodes, hashRecoveryCode, verifyRecoveryCode } from './totp.js';
 import { saveConfig } from './config.js';
 import { configuredChannels } from './notify.js';
-import { RANGES, diskSeries, knownMounts } from './history.js';
+import { RANGES, diskSeries, knownMounts, memPercent } from './history.js';
 import { forecastToLimit, detectAnomaly, changePoint, fmtDuration } from './forecast.js';
 import { probe, resolveHost } from './probe.js';
 import { evaluateBurn, budgetRemaining, windowStats } from './slo.js';
@@ -72,6 +72,20 @@ export const PEER_DENY = [
   /^\/api\/limits(\/|$)/,
   /^\/api\/cron\//,
   /^\/api\/domains\/issue$/,
+  // ИЗХОДЯЩИ GET маршрути. Обхватът „read" пази от контрол над машината, но
+  // тези три правят заявка към адрес, ИЗБРАН ОТ ВИКАЩИЯ — значи компрометиран
+  // съсед ни ползва като SSRF-прокси към 127.0.0.1, вътрешната мрежа и
+  // метаданните на облака. „Заглавки за сигурност" връща ЦЕЛИТЕ заглавки на
+  // произволен адрес, а пробата дава оракул за съдържание през `expect`.
+  /^\/api\/probe$/,
+  /^\/api\/security\/headers$/,
+  /^\/api\/domains\/registration$/,
+  // Разузнаване: одитът носи IP-та на админа, действия и jti; списъкът със
+  // сесии — jti/браузър/изтичане; настройките за достъп — целия IP allowlist.
+  // Съседът няма работа с тях дори „само за четене".
+  /^\/api\/audit(\/|$)/,
+  /^\/api\/sessions(\/|$)/,
+  /^\/api\/settings\/access$/,
   // Peer НИКОГА не бива да ни ползва като прокси към трети възел: иначе
   // компрометиран съсед, който знае само НАШИЯ входящ токен, стига до другите
   // ни възли с ТЕХНИТЕ токени, които ние пазим (confused deputy). Може и да
@@ -263,6 +277,14 @@ export function buildRouter(ctx) {
       }
       req.user = who.user;
       req.jti = who.sess?.jti || null;
+      // „Последно видяна" се пишеше САМО при вход и се четеше само за
+      // подредбата — тоест колоната показваше времето на ВХОД и две сесии,
+      // едната мъртва от часове, изглеждаха еднакво живи. Точно сигналът, който
+      // списъкът обещава („непозната сесия = пробив"), не се получаваше.
+      if (req.jti) {
+        const s = ctx.sessions.get(req.jti);
+        if (s) s.lastSeen = Date.now();
+      }
       slideSession(req, res, who);
       return handler(req, res, params, url);
     };
@@ -340,7 +362,7 @@ export function buildRouter(ctx) {
     // Затова jti влиза в списък с отменени: откраднат токен спира ВЕДНАГА.
     const who = auth(req);
     if (who?.sess?.jti) {
-      ctx.revokedSessions.add(who.sess.jti);
+      ctx.revokedSessions.add(who.sess.jti, who.sess.absolute || Date.now() + 12 * 3600000);
       ctx.sessions.delete(who.sess.jti);
       audit.log({ action: 'logout', jti: who.sess.jti, user: who.user });
     }
@@ -356,7 +378,15 @@ export function buildRouter(ctx) {
         current: req.user,
         idleMinutes: cfg.idleMinutes || 30,
         absoluteHours: cfg.sessionTtlHours || 12,
-        sessions: [...ctx.sessions.values()].sort((a, b) => b.lastSeen - a.lastSeen),
+        // Изтеклите отпадат ТУК, а не висят като живи. „Непозната сесия е
+        // сигнал за пробив" не работи, ако списъкът е пълен с призраци.
+        sessions: [...ctx.sessions.values()]
+          .filter((s) => {
+            if (s.absolute > Date.now()) return true;
+            ctx.sessions.delete(s.jti);
+            return false;
+          })
+          .sort((a, b) => b.lastSeen - a.lastSeen),
       }))
     )
   );
@@ -381,7 +411,9 @@ export function buildRouter(ctx) {
         const b = await readJson(req);
         const jti = String(b.jti || '');
         if (!jti) throw Object.assign(new Error('Липсва jti'), { status: 400 });
-        ctx.revokedSessions.add(jti);
+        // Не знаем `exp` на чужд токен → пазим го до абсолютния таван на
+        // сесиите (после подписът и без това е мъртъв).
+        ctx.revokedSessions.add(jti, Date.now() + (cfg.sessionTtlHours || 12) * 3600000);
         ctx.sessions.delete(jti);
         audit.log({ action: 'sessions.revoke', jti, user: req.user });
         return { ok: true };
@@ -433,7 +465,8 @@ export function buildRouter(ctx) {
           throw Object.assign(new Error('Твърде много опити — изчакай 10 минути.'), { status: 429 });
         }
         const b = await readJson(req);
-        const r2 = confirmSudo(cfg, { password: b.password, code: b.code }, saveConfig);
+        // `ctx` носи `lastTotpStep` — същия брояч, който ползва и входът.
+        const r2 = confirmSudo(cfg, { password: b.password, code: b.code }, saveConfig, ctx);
         if (!r2.ok) {
           sudoFailed(jti);
           audit.log({ action: 'sudo.failed', user: req.user });
@@ -596,7 +629,7 @@ export function buildRouter(ctx) {
         }
         // Аномалии по основните редове + кога се е сменило поведението.
         const cpuSeries = points.map((p) => p.cpu).filter((v) => typeof v === 'number');
-        const memSeries = points.map((p) => (p.memTotal ? (p.memUsed / p.memTotal) * 100 : null)).filter((v) => v !== null);
+        const memSeries = points.map(memPercent).filter((v) => v !== null);
         return {
           disks,
           anomalies: {

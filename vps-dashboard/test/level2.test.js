@@ -61,7 +61,10 @@ test('compose: валидира проект, действие и compose фай
 
 test('бази: dump спецификациите валидират имената', () => {
   const spec = postgresDumpSpec({ container: 'zbd-postgres-1', database: 'zabobovdol' });
-  assert.match(spec.shell, /pg_dump -U postgres -d zabobovdol/);
+  assert.match(spec.shell, /pg_dump -U "\$PGU" --clean --if-exists -d zabobovdol/);
+  // Роля „postgres" НЕ съществува в нито един наш стек (zabobovdol/bot/
+  // eternaltouch) — заковаването ѝ значеше тих провал на бекъпа.
+  assert.match(spec.shell, /printenv POSTGRES_USER/, 'потребителят се чете ОТ контейнера');
   assert.equal(spec.exclusive, 'backup');
   for (const bad of [
     { container: 'c;rm -rf /', database: 'db' },

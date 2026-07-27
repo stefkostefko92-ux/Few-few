@@ -185,10 +185,11 @@ export async function failedServicesSafe() {
   }
 }
 
-export async function failedServices() {
-  const r = await failedServicesSafe();
-  return r.units;
-}
+// (Тук стоеше `failedServices()` — „наивна" обвивка без извикващ. Махната е
+// нарочно: тя връщаше само масива и с това СМЕСВАШЕ „няма паднали услуги" с
+// „systemctl не отговори" — точно грешката, срещу която е написан коментарът
+// над `failedServicesSafe`. Мъртъв код, който демонстрира антипатърна, е
+// покана да бъде копиран. Git пази историята.)
 
 // Липсваща папка = няма сертификати (нормално). Грешка при четене = не знам.
 export async function tlsCertsSafe() {

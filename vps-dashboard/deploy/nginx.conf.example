@@ -27,10 +27,17 @@ server {
     # auth_basic "Carbon Stealth VPS";
     # auth_basic_user_file /etc/nginx/vps-dashboard.htpasswd;
 
-    # Хедъри за сигурност.
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer" always;
+    # Хедъри за сигурност. X-Frame-Options / X-Content-Type-Options /
+    # Referrer-Policy / CSP панелът си ги слага сам (server.js) — тук е само
+    # HSTS, който изисква TLS и затова е работа на прокси слоя.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # БЕЗ този ред качването на архив от браузъра НЕ РАБОТИ: подразбирането на
+    # Nginx е 1 MB, а панелът рекламира 3 GB и праща файла с един POST. Отговорът
+    # е 413 от Nginx, преди заявката изобщо да стигне до панела.
+    client_max_body_size 3g;
+    client_body_timeout 300s;
+    send_timeout 300s;
 
     location / {
         proxy_pass http://127.0.0.1:7700;
@@ -44,6 +51,12 @@ server {
         proxy_buffering off;
         proxy_cache off;
         proxy_read_timeout 24h;
+        # Симетрично на read: качването на 3 GB архив трае повече от 60 секунди.
+        proxy_send_timeout 24h;
         chunked_transfer_encoding on;
+        # Стрийм направо към панела. Без това Nginx първо записва целите 3 GB на
+        # диска (удвоено място), лентата за напредък в браузъра скача на 100% и
+        # увисва, докато Nginx препраща наум.
+        proxy_request_buffering off;
     }
 }

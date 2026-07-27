@@ -84,6 +84,9 @@ src/
   agents.js              флот от agents.json + allowlist на агентските инструменти
   files.js               файлов браузър + преглед + запис с копие (.bak)
   pty.js                 интерактивни PTY сесии през `script` (нула зависимости)
+  probe.js               HTTP проба (статус, време, очакван текст)
+  audit-ship.js          изнасяне на одита към другия VPS (копие извън машината)
+  revoked.js             отменени сесии, които ПРЕЖИВЯВАТ рестарт
   nodes.js               federation: proxy към peer VPS + статус
   routes.js              всички API маршрути + auth/CSRF/audit гардове
 public/                  index.html · app.js · ui.js · ansi.js · style.css
@@ -92,7 +95,7 @@ scripts/syntax-check.mjs zero-dep линтер
 deploy/                  install.sh · vps-dashboard.service · nginx.conf.example
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
                          forecast · slo · manage · security · investigate ·
-                         observe · stack · ux · smoke (190 теста)
+                         observe · stack · ux · guard · smoke (195 теста)
 ```
 
 ## Конвенции (важни)
@@ -358,7 +361,7 @@ test/                    unit · level1 · level2 · ansi · hardening · sessio
 - **Всяка навигация получава СВЕЖ `#view` възел** (`go()` клонира и подменя).
   Бавна секция (напр. „Ъпдейти", която чака apt) иначе се дорисува закъсняло и
   замазва секцията, към която вече си отишъл — видяно на живо: отваряш „Задачи",
-  а вътре стои списъкът с пакети. Работи за всичките 32 секции наведнъж, защото
+  а вътре стои списъкът с пакети. Работи за всички секции наведнъж, защото
   всяка взема `view` ПРЕДИ първото `await`. **Ако пишеш нов render, вземи `view`
   в началото** — заявка след await ще хване новия възел и състезанието се връща.
 - **Инлайн `var(--…)` в app.js трябва да съществува в `style.css`.** Няма
@@ -386,7 +389,7 @@ node -e "import('/opt/node22/lib/node_modules/playwright/index.mjs')…"
 отворен по дизайн. Ползвай `domcontentloaded`.
 
 ## Тестове
-190 теста, `node --test`, без мокове на системата — тестват се само детерминистични
+195 теста, `node --test`, без мокове на системата — тестват се само детерминистични
 чисти функции: пароли/сесии, TOTP (с контролните вектори на RFC 4226), парсване на
 `/proc`, рутера, allowlist-ите (unit имена, архиви, ufw правила, compose, dump),
 историята, сливането на конфига, файловия запис, SLO математиката (бюджет,

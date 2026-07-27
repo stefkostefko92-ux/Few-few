@@ -108,6 +108,15 @@ export function compact(snap) {
 }
 
 // Реда за конкретен дял през историята — вход за прогнозата.
+// Процент заета памет от точка на ИСТОРИЯТА. Живее тук, защото този модул се
+// обявява за единствения източник на истината за формата на точката — а трима
+// читатели (alerts, routes, investigate) знаеха израза наизуст и го повтаряха
+// знак по знак. Внимание: формата на историята е `memUsed/memTotal`, а на
+// ЖИВАТА снимка — `mem.used/mem.total`. Смесването им мълчи вечно.
+export function memPercent(p) {
+  return p && p.memTotal ? (p.memUsed / p.memTotal) * 100 : null;
+}
+
 export function diskSeries(points, mount) {
   const out = [];
   for (const p of points) {
