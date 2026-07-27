@@ -118,7 +118,12 @@ services:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL липсва в .env}
       SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET липсва в .env}
       AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?AUDIT_HMAC_KEY липсва в .env}
+      # Пак чете `AUDIT_HMAC_KEY_PRECEDENTE` транзитивно (одитът я иска САМО при
+      # проверка) — без нея проверка от cron не би минала при ротация. Празната
+      # стойност е валидна и е подразбирането.
+      AUDIT_HMAC_KEY_PRECEDENTE: ${AUDIT_HMAC_KEY_PRECEDENTE:-}
       NODE_ENV: production
+      TZ: ${TZ:-Europe/Rome}
     entrypoint: ["/bin/sh", "-c"]
     # Сроковете — дневно в 06:00; прочистването — в неделя в 04:00.
     # Изчислява се спрямо стенния часовник, за да не се измества след рестарт.
@@ -136,6 +141,19 @@ services:
           if [ "$$GIORNO" = "7" ] && [ "$$ORA" = "0400" ]; then npm run retention || echo "✖ retention"; fi
           sleep 60
         done
+    # СИГНАЛ, А НЕ ТИШИНА. Без това единственият знак за спрял бекъп е ръчен
+    # поглед в `docker compose ps`: crashloop-ът при липсващ `age` и мълчаливо
+    # неуспяла нощ изглеждат еднакво отвън. 26 часа: един пропуснат пуск.
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "[ -f /backup/.ultimo-ok ] && [ $(( $(date +%s) - $(cat /backup/.ultimo-ok) )) -lt 93600 ]",
+        ]
+      interval: 30m
+      timeout: 10s
+      retries: 2
+      start_period: 24h
 
   # Дневен криптиран дъмп. Частният ключ на age НЕ е на този сървър.
   backup:
@@ -148,6 +166,10 @@ services:
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD липсва в .env}
       BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
+      # Часовникът на ТАЗИ услуга. Образът е `postgres:16-alpine` (без `TZ`),
+      # тоест „03:00" по-долу беше UTC — 05:00 италианско лятно време, при
+      # коментар, който твърди друго.
+      TZ: ${TZ:-Europe/Rome}
     volumes:
       - ./backup:/backup
       # Само за четене: задачата на тази услуга е да ЗАПАЗВА файловете, не да
@@ -168,6 +190,13 @@ services:
         # долу веригата `age … && rm -f "$$F"` тогава оставя НЕкриптирания
         # дъмп с всички лични данни на диска — точно обратното на целта.
         apk add --no-cache age >/dev/null 2>&1 || { echo "✖ age не се инсталира — бекъпът спира"; exit 1; }
+        # НЕКРИПТИРАН БЕКЪП Е ЛИЧНИ ДАННИ НА ДИСКА. Стойността по подразбиране е
+        # празна, а файловете живеят на преживяващ път — тоест мълчаливата
+        # инсталация пише всяка нощ пълния регистър в чист вид. Не спираме
+        # услугата (по-добре бекъп, отколкото никакъв), но операторът трябва да
+        # го ВИЖДА в лога при всеки старт.
+        [ -n "$$BACKUP_AGE_RECIPIENT" ] \
+          || echo "⚠ BACKUP_AGE_RECIPIENT е празен: дъмповете остават НЕкриптирани (лични данни в чист вид)."
         while true; do
           if [ "$$(date +%H%M)" = "0300" ]; then
             F=/backup/erp-$$(date +%Y%m%d).dump

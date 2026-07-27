@@ -568,7 +568,20 @@ deploy_erp_ascensori() {
   if [ ! -f "$d/.env" ]; then
     primo=1
     warn "Няма erp-ascensori/.env — генерирам тайните."
-    ( cd "$d" && bash scripts/setup-env.sh )
+    # ПРОВАЛЪТ ТУК Е ПРОВАЛ НА ЕДИН ПРОЕКТ, НЕ НА ДЕПЛОЯ.
+    #
+    # `setup-env.sh` излиза с 1 по КОНСТРУКЦИЯ при първо пускане (APP_URL е още
+    # примерният — от него се печатат стикерите по уредбите). Под
+    # `set -euo pipefail` необработеният ненулев изход прекратява ЦЕЛИЯ скрипт
+    # ПРЕДИ стъпка 4: `current` не се пренасочва към новото издание. А всеки
+    # пренос на тайни чете `$CURRENT_LINK/<проект>/.env` — тоест следващият
+    # деплой генерира НОВИ тайни за всички проекти и сваля сесиите навсякъде.
+    # И всичко това без нито един ред грешка от самия autodeploy.
+    if ! ( cd "$d" && bash scripts/setup-env.sh ); then
+      warn "erp-ascensori: настройката на средата не мина (задай APP_URL в $d/.env)."
+      deploy_failed=1
+      return
+    fi
     warn "Задай TRUSTED_PROXY_HOPS и BACKUP_AGE_RECIPIENT в erp-ascensori/.env."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true

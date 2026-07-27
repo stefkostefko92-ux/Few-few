@@ -145,7 +145,13 @@ async function misuraRls(): Promise<EsitoRls> {
     FROM unnest(${[...TABELLE_CON_TENANT]}::text[]) AS x(tabella)
     WHERE NOT EXISTS (
       SELECT 1 FROM pg_policies p
-      WHERE p.policyname = 'tenant_isolation' AND p.tablename = x.tabella
+      WHERE p.policyname = 'tenant_isolation'
+        AND p.tablename = x.tabella
+        -- СХЕМАТА Е ЧАСТ ОТ ТЪЖДЕСТВОТО. Без този ред съименник в друга схема
+        -- (altro.fatture с политика tenant_isolation) маскира ЛИПСВАЩАТА
+        -- политика в public — тоест гардът, добавен точно за да лови таблица
+        -- без политика, рапортува „активна“ за незащитена таблица.
+        AND p.schemaname = 'public'
     )
   `;
   if (scoperte.length)

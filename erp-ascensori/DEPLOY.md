@@ -46,8 +46,14 @@ bash scripts/setup-env.sh          # генерира ключовете, mode 6
 `AUDIT_HMAC_KEY` (различни, по 64 hex знака), `POSTGRES_PASSWORD` и
 `HEALTH_TOKEN`. Ако `.env` вече съществува, попълва само празните.
 
-Задай ръчно `TRUSTED_PROXY_HOPS` (1 при един Nginx, 2 зад Cloudflare) и
+Задай ръчно `TRUSTED_PROXY_HOPS` (**винаги 1** с нашия Nginx — виж §5) и
 `BACKUP_AGE_RECIPIENT`.
+
+> **Празен `BACKUP_AGE_RECIPIENT` значи НЕкриптирани дъмпове.** Услугата не
+> спира — по-добре бекъп, отколкото никакъв — но нощният `pg_dump` съдържа
+> целия регистър с лични данни в чист вид, върху път, който преживява
+> изданията. Задай публичния ключ на `age`, преди първата нощ; услугата пише
+> предупреждение в лога при всеки старт, докато е празен.
 
 > **`AUDIT_HMAC_KEY` е доказателственият ключ.** С него се проверява целият
 > регистър на операциите. Ротацията минава през `AUDIT_HMAC_KEY_PRECEDENTE`
@@ -121,19 +127,31 @@ AI_API_KEY=…              # ключът НИКОГА не влиза в ре�
 
 ## 5. Nginx и TLS
 
-Копирай `deploy/nginx/erp-ascensori.conf`, смени домейна, после:
+Vhost-ът `include`-ва `proxy_params_erp` **три пъти**. `include` на липсващ файл
+е ФАТАЛНА грешка за nginx — без първия ред `nginx -t` не минава изобщо:
 
 ```bash
+install -m 644 deploy/nginx/proxy_params_erp /etc/nginx/
+install -m 644 deploy/nginx/erp-ascensori.conf /etc/nginx/sites-available/
+# смени домейна в sites-available/erp-ascensori.conf
 ln -s /etc/nginx/sites-available/erp-ascensori.conf /etc/nginx/sites-enabled/
+# ПЪРВО сертификатът: блокът е `listen 443 ssl`, а без `ssl_certificate`
+# `nginx -t` гърми преди certbot изобщо да е пуснат.
+certbot certonly --nginx -d erp.azienda.it
 nginx -t && systemctl reload nginx
-certbot --nginx -d erp.azienda.it
 ```
 
 Две неща в конфигурацията, които не са козметика:
 
-- `proxy_set_header X-Forwarded-For $remote_addr;` — **задава**, не добавя.
-  `$proxy_add_x_forwarded_for` би позволил на клиента да инжектира префикс и с
-  `TRUSTED_PROXY_HOPS=1` да подправи IP-то в одита и в ограничението.
+- `proxy_set_header X-Forwarded-For $remote_addr;` (в `proxy_params_erp`) —
+  **задава**, не добавя. `$proxy_add_x_forwarded_for` би позволил на клиента да
+  инжектира префикс и с `TRUSTED_PROXY_HOPS=1` да подправи IP-то в одита и в
+  ограничението. Затова и `TRUSTED_PROXY_HOPS` е **винаги 1** с тази
+  конфигурация: хедърът носи ЕДИН елемент. Зад CDN добави
+  `set_real_ip_from <мрежите на CDN>` + `real_ip_header CF-Connecting-IP` в
+  Nginx — тогава `$remote_addr` е истинският клиент, а стойността пак е 1.
+  (`TRUSTED_PROXY_HOPS=2` тук слага всички потребители в един bucket с IP на
+  CDN-а: индексът излиза отрицателен и кодът пада на първия елемент.)
 - `client_max_body_size 16m` — импортът праща до 2000 реда наведнъж; при 1 MB
   по подразбиране импортите се секат.
 
@@ -280,7 +298,14 @@ docker compose exec -T db pg_restore -U erp -d erp_ascensori --clean --if-exists
 # 2б) и прикачените файлове — редовете в базата сочат към тях
 age -d -i /trezor/age.key allegati-20260725.tar.gz.age > /tmp/allegati.tar.gz
 docker run --rm -v erp-ascensori_allegati:/dati -v /tmp:/in alpine \
-  sh -c 'tar -xzf /in/allegati.tar.gz -C /dati'
+  sh -c 'tar -xzf /in/allegati.tar.gz -C /dati && chown -R 1001:1001 /dati'
+```
+
+`chown` не е козметика: контейнерът за възстановяване върви като root, а
+приложението — като uid **1001** (`Dockerfile:52`). Без него възстановените
+файлове са root-owned и първото качване върху тях гърми с `EACCES`.
+
+```bash
 docker compose up -d
 # 3) и накрая доказателството, че одитът е цял
 curl -s -X POST -H 'Content-Type: application/json' -d '{"limite":1000}' \
@@ -350,5 +375,5 @@ Entrypoint-ът прилага новите миграции преди стар
 | `503` + `Retry-After`               | базата не отговаря                | `docker compose ps db`, `logs db`                           |
 | `/api/healthz/automatismi` дава 503 | cron-ът не е минал за 26 ч        | `docker compose logs automatismi`                           |
 | „ALTERAZIONE RILEVATA“ след restore | базата е върната преди `.env`     | върни правилния `AUDIT_HMAC_KEY`                            |
-| всички влизания дават 429           | `TRUSTED_PROXY_HOPS=0` зад прокси | сложи 1 (или 2 зад Cloudflare)                              |
+| всички влизания дават 429           | `TRUSTED_PROXY_HOPS=0` зад прокси | сложи 1 (§5 — с този Nginx винаги 1)                        |
 | импортът се къса на големи файлове  | `client_max_body_size`            | 16m в Nginx                                                 |
