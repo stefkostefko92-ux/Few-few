@@ -256,7 +256,7 @@ export default function Pagina() {
               title={
                 sdi && !sdi.pronta
                   ? "Completare i requisiti elencati sotto"
-                  : "Scarica il file XML da trasmettere allo SDI"
+                  : "Scarica il file XML da trasmettere allo SdI"
               }
             >
               <IcoEsporta />
@@ -297,7 +297,7 @@ export default function Pagina() {
           {sdi.pronta ? <IcoIntegro /> : <IcoAttenzione />}
           <div>
             {sdi.pronta ? (
-              "Pronta per lo SDI: i requisiti della fattura elettronica sono completi."
+              "Pronta per lo SdI: i requisiti della fattura elettronica sono completi."
             ) : (
               <>
                 <p className="font-medium">

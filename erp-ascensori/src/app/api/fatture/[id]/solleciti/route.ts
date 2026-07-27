@@ -17,6 +17,7 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { fromCents } from "@/lib/totals";
+import { dataIt, plurale } from "@/lib/format";
 import { residuoFattura } from "@/lib/fiscale/pagamenti";
 import { calcolaInteressi, regimePerDebitore } from "@/lib/fiscale/interessi";
 import {
@@ -132,6 +133,8 @@ export const POST = gestito(async (req, ctx) => {
   // Лихвата влиза чак от втората покана: искане на лихва при седмица закъснение
   // разваля отношения, които струват повече от лихвата.
   let interessi = 0;
+  /** Резервата „salvo conguaglio", когато таблицата не покрива целия период. */
+  let riserva: string | null = null;
   if (def.conInteressi) {
     // Кондоминиумът е краен потребител дори с данъчен номер: той не упражнява
     // стопанска дейност, тоест лихвата е законната по чл. 1284 c.c., не
@@ -149,16 +152,21 @@ export const POST = gestito(async (req, ctx) => {
       oggi: new Date(),
       regime,
     });
-    // ЛИХВАТА СЕ ЗАМРАЗЯВА В РЕДА. Щом таблицата не покрива част от забавата,
-    // замразяването би вписало число, по-малко от дължимото — завинаги, защото
-    // таблицата е само-добавяща. Отказът е по-евтин от покана с грешна сума:
-    // тя отива на хартия у длъжника и се защитава после.
-    if (calcolo.giorniNonCoperti > 0)
-      throw new ErroreHttp(
-        409,
-        `Saggio d'interesse non disponibile per ${calcolo.giorniNonCoperti} giorni del periodo: aggiornare la tabella dei saggi prima di registrare questo sollecito.`,
-      );
+    // ЛИХВАТА СЕ ЗАМРАЗЯВА В РЕДА, но непокрит отрязък НЕ спира поканата.
+    //
+    // ЗАЩО НЕ ОТКАЗ (както беше). Таблиците се обнародват на 1 януари и 1 юли;
+    // между падежа и обнародването всяко просрочие пада в непокрит отрязък.
+    // Отказът значеше, че точно тогава НЕ МОЖЕ да се изпрати покана — а
+    // поканата е това, което поставя длъжника в забава (чл. 1219 c.c.) и
+    // прекъсва давността (чл. 2943 c.c.). Загубата от неизпратена покана е
+    // по-голяма от лихвата за няколко дни.
+    //
+    // ЗАЩО НЕ И ТИХО ЗАНИЖАВАНЕ. Вписва се ПОКРИТАТА част, а разликата се
+    // запазва изрично със „salvo conguaglio" — стандартната резерва: сумата в
+    // поканата не изчерпва вземането и остатъкът се иска по-късно.
     interessi = calcolo.importo;
+    if (calcolo.giorniNonCoperti > 0)
+      riserva = `Interessi calcolati fino al ${dataIt(calcolo.tratti.at(-1)?.al ?? scadenza)}: per ${plurale(calcolo.giorniNonCoperti, "giorno", "giorni")} del periodo il tasso non è ancora pubblicato. Importo richiesto salvo conguaglio.`;
   }
 
   const riga = await prisma.sollecito.create({
@@ -169,7 +177,7 @@ export const POST = gestito(async (req, ctx) => {
       importoCentesimi: res,
       interessiCentesimi: interessi,
       canale: dati.canale ?? undefined,
-      note: dati.note ?? undefined,
+      note: [dati.note, riserva].filter(Boolean).join(" ") || undefined,
       utenteId: s.sub,
       ...tenantDiCreazione(s),
     },
@@ -186,6 +194,7 @@ export const POST = gestito(async (req, ctx) => {
         giorniRitardo: { a: String(giorni) },
         importo: { a: fromCents(res) },
         interessi: { a: fromCents(interessi) },
+        ...(riserva ? { riserva: { a: "salvo conguaglio" } } : {}),
       },
     },
     utenteId: s.sub,
@@ -197,6 +206,7 @@ export const POST = gestito(async (req, ctx) => {
       ...riga,
       importo: fromCents(res),
       interessi: fromCents(interessi),
+      riserva,
       etichetta: def.etichetta,
     },
     201,

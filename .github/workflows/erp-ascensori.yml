@@ -63,7 +63,15 @@ jobs:
       # рефактор, достатъчно стегнати да уловят изчезнал пакет тестове.
       # ВАЖНО: покрива `src/lib` — чистата логика. Маршрутите и интерфейсът се
       # мерят с другите два слоя, не тук.
-      - run: npm run test:coverage
+      # Детайлният доклад при провал: `text-summary` дава само процентите, а
+      # човекът трябва да види КОЙ символ е паднал гейта.
+      - run: npm run test:coverage || (npx c8 --config .c8rc.json report --reporter=text; exit 1)
+      # Изключенията от покритието не растат мълчаливо: гейтът от 100 %
+      # функции спира да значи нещо, ако парчето, което го проваля, може
+      # просто да бъде заглушено.
+      - name: Изключенията от покритието
+        working-directory: .
+        run: node tools/ci/c8-ignore-audit.mjs
       - run: npm run build
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
@@ -197,6 +205,9 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('erp-ascensori/package-lock.json') }}
+          # Смяна на кой да е пакет обезсилва ключа, но браузърът рядко се мени:
+          # частичното възстановяване спестява тегленето, а `install` довършва.
+          restore-keys: playwright-${{ runner.os }}-
       # Само Chromium: три браузъра тук са три пъти минути за същия сигнал.
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

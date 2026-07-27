@@ -16,12 +16,15 @@ import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import {
   transizioneSdiAmmessa,
-  STATI_SDI,
+  STATI_SDI_MANUALI,
   type StatoSdi,
 } from "@/lib/fiscale/sdi-stato";
 
 const schema = z.object({
-  stato: z.enum(STATI_SDI),
+  // САМО човешките статуси. Изходът от SDI се вписва през `/notifiche`, заедно
+  // с известието, което го доказва — иначе маршрутът позволява да се обяви
+  // доставена фактура, за която няма нито едно известие.
+  stato: z.enum(STATI_SDI_MANUALI),
   identificativoSdi: z.string().trim().max(60).nullish(),
   dataInvio: z.coerce.date().optional(),
 });
@@ -41,7 +44,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!transizioneSdiAmmessa(da, data.stato))
       throw new ErroreHttp(
         409,
-        `Transizione SDI non ammessa: da «${da}» a «${data.stato}»`,
+        `Transizione SdI non ammessa: da «${da}» a «${data.stato}»`,
       );
     if (data.stato === "INVIATA" && !prima.progressivoInvio)
       throw new ErroreHttp(

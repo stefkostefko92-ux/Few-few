@@ -224,7 +224,10 @@ export default function Pagina() {
                             <button
                               type="button"
                               onClick={() => setGiornoAperto(g)}
-                              className="pl-1.5 text-[11px] text-text-2 underline hover:text-text-1"
+                              // Отрицателният марж дава зона за пръст, без да
+                              // разтяга клетката: същият праг (WCAG 2.5.5),
+                              // който важи и за бутона в материалите.
+                              className="-m-1 inline-flex min-h-9 items-center p-1 pl-1.5 text-[11px] text-text-2 underline hover:text-text-1"
                             >
                               {g.impegni.length - VISIBILI === 1
                                 ? "+1 altro"

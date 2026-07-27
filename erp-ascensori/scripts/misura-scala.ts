@@ -16,7 +16,9 @@
 import { execFileSync } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
 
-const ADMIN_URL = process.env.TEST_PG_ADMIN_URL ?? "postgresql://erp:erp@127.0.0.1:5433/postgres";
+const ADMIN_URL =
+  process.env.TEST_PG_ADMIN_URL ??
+  "postgresql://erp:erp@127.0.0.1:5433/postgres";
 const DB = "erp_ascensori_scala_test";
 const DB_URL = ADMIN_URL.replace(/\/[^/]*$/, `/${DB}`);
 
@@ -31,7 +33,9 @@ const DIM = "\x1b[2m";
 const RST = "\x1b[0m";
 
 function psql(sql: string, url = ADMIN_URL): void {
-  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], { stdio: "pipe" });
+  execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-c", sql], {
+    stdio: "pipe",
+  });
 }
 
 const TENANT = "11111111-1111-1111-1111-111111111111";
@@ -73,7 +77,8 @@ const QUERY: Misura[] = [
   },
   {
     nome: "fatture · филтър по статус на плащане",
-    perche: "хапчето „Non pagate“ в списъка — приложението филтрира по РАВЕНСТВО",
+    perche:
+      "хапчето „Non pagate“ в списъка — приложението филтрира по РАВЕНСТВО",
     sql: `SELECT * FROM fatture WHERE "tenantId" = '${TENANT}' AND "statoPagamento" = 'NON_PAGATA' ORDER BY data DESC LIMIT 50`,
   },
   {
@@ -127,7 +132,8 @@ function scansioneGrande(piano: Piano): boolean {
       n["Node Type"] === "Seq Scan" &&
       // Броят на РЕАЛНО минатите редове, не на върнатите: филтърът може да
       // остави петдесет, след като е прочел петдесет хиляди.
-      Number(n["Actual Rows"] ?? 0) + Number(n["Rows Removed by Filter"] ?? 0) > RIGHE_GRANDI
+      Number(n["Actual Rows"] ?? 0) + Number(n["Rows Removed by Filter"] ?? 0) >
+        RIGHE_GRANDI
     )
       return true;
     return (n.Plans ?? []).some(visita);
@@ -136,7 +142,9 @@ function scansioneGrande(piano: Piano): boolean {
 }
 
 async function main(): Promise<void> {
-  console.log(`▸ база ${DB} · ${FATTURE} фактури · ${IMPIANTI} импианта · ${AUDIT} одитни реда`);
+  console.log(
+    `▸ база ${DB} · ${FATTURE} фактури · ${IMPIANTI} импианта · ${AUDIT} одитни реда`,
+  );
   psql(`DROP DATABASE IF EXISTS ${DB}`);
   psql(`CREATE DATABASE ${DB}`);
   execFileSync("npx", ["prisma", "migrate", "deploy"], {
@@ -152,11 +160,13 @@ async function main(): Promise<void> {
     VALUES ('${TENANT}','a','A','a@t.local',true,now(),now()),
            ('${ALTRO}','b','B','b@t.local',true,now(),now())`);
 
-  await db.$executeRawUnsafe(`
+  await db.$executeRawUnsafe(
+    `
     INSERT INTO impianti (id, matricola, marca, modello, stato, tipo, regime, "tenantId", "createdAt", "updatedAt")
     SELECT gen_random_uuid(), 'M-'||g, 'Schindler', '3300', 'ATTIVO', 'ASCENSORE', 'DIRETTIVA_2014_33',
            CASE WHEN g %% 5 = 0 THEN '${ALTRO}'::uuid ELSE '${TENANT}'::uuid END, now(), now()
-    FROM generate_series(1, ${IMPIANTI}) g`.replace(/%%/g, "%"));
+    FROM generate_series(1, ${IMPIANTI}) g`.replace(/%%/g, "%"),
+  );
 
   await db.$executeRawUnsafe(`
     INSERT INTO fatture (id, numero, tipo, stato, "statoSdi", "statoPagamento", data, "dataScadenza",

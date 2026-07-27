@@ -31,6 +31,18 @@ export function dataOraIt(v: string | Date | null | undefined): string {
   });
 }
 
+/**
+ * Брой + съществително в правилното число: `1 riga`, `3 righe`.
+ *
+ * ЗАЩО ФУНКЦИЯ, А НЕ ШАБЛОН НА МЯСТО. „1 righe verificate" в екрана на одита е
+ * точно там, където човек трябва да повярва на числото; текст, който сам не си
+ * връзва граматиката, подкопава доверието в него. Италианският има само две
+ * форми, затова тук стига избор между две — без библиотека за плурализация.
+ */
+export function plurale(n: number, uno: string, molti: string): string {
+  return `${n} ${n === 1 ? uno : molti}`;
+}
+
 /** от Date/ISO към стойност за <input type="date"> */
 export function perInputData(v: string | Date | null | undefined): string {
   if (!v) return "";

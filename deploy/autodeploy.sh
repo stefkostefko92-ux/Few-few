@@ -599,7 +599,35 @@ deploy_erp_ascensori() {
     warn "  cd $d && docker compose run --rm -e MASTER_EMAIL=<адрес> app node scripts/crea-master.mjs"
   fi
 
-  health "$ERP_HEALTH_URL" "erp-ascensori" || deploy_failed=1
+  health "$ERP_HEALTH_URL" "erp-ascensori" || { deploy_failed=1; return; }
+
+  # ГЕЙТ НА ИЗДАНИЕТО, НЕ НА ТРАФИКА. `pronto` казва само „пускай ли трафик"
+  # (база + схема + ключове) — нарочно, за да не свали пълен диск целия
+  # гестионал в цикъл от рестарти. Но ново издание НЯМА право да тръгне с
+  # непримонтиран том (качените сертификати изчезват при следващото
+  # пресъздаване на контейнера) или с неактивна RLS (втората линия на
+  # изолацията между фирмите става украса). Това чете `rilascio`.
+  #
+  # Токенът минава през --config на стандартния вход, НЕ като аргумент:
+  # аргументите се виждат в `ps` от всеки локален потребител.
+  local token corpo
+  token="$(sed -n 's/^HEALTH_TOKEN=//p' "$d/.env" 2>/dev/null | head -1 || true)"
+  if [ -z "$token" ]; then
+    warn "erp-ascensori: няма HEALTH_TOKEN в .env — пропускам проверката на изданието (архив/RLS)."
+    return
+  fi
+  corpo="$(printf 'header = "x-health-token: %s"\n' "$token" \
+    | curl -fsS --max-time 5 --config - "$ERP_HEALTH_URL" || true)"
+  case "$corpo" in
+    *'"rilascio":true'*)
+      ok "erp-ascensori: изданието минава (архив записваем, RLS активна)." ;;
+    *)
+      warn "erp-ascensori: изданието НЕ минава."
+      warn "  архив: том за прикачените файлове монтиран и записваем?"
+      warn "  RLS:   ролята на приложението не бива да е суперпотребител."
+      deploy_failed=1
+      ;;
+  esac
 }
 
 # ── 3i) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────

@@ -82,21 +82,26 @@ const README = `PACCHETTO DI VERSAMENTO — FATTURE ELETTRONICHE
 COSA CONTIENE
   • i file XML delle fatture, esattamente come sono stati emessi;
   • indice.json, con una riga per documento e l'impronta SHA-256 di ciascun file;
+  • indice.sha256, l'impronta dell'indice stesso;
   • questo file.
 
 COME VERIFICARE L'INTEGRITÀ
   Per ogni documento, l'impronta SHA-256 del file deve coincidere con il campo
   "sha256" della riga corrispondente in indice.json.
 
-      Linux o macOS:  sha256sum fatture/IT01234567890_00001.xml
-      Windows:        certutil -hashfile fatture\IT01234567890_00001.xml SHA256
+      Linux:    sha256sum fatture/IT01234567890_00001.xml
+      macOS:    shasum -a 256 fatture/IT01234567890_00001.xml
+      Windows:  certutil -hashfile fatture\\IT01234567890_00001.xml SHA256
 
   Un solo byte diverso produce un'impronta completamente diversa.
 
-  L'indice ha una propria impronta, nel campo "sha256Indice": è calcolata sul
-  contenuto dell'indice PRIVATO di quel campo. Per verificarla, togliere la
-  riga "sha256Indice" dal file, salvare il resto e calcolarne lo SHA-256: se
-  coincide, dall'elenco non è stato tolto né aggiunto alcun documento.
+  L'indice ha una propria impronta, nel file indice.sha256: è calcolata su
+  indice.json così come si trova nel pacchetto, senza doverlo modificare.
+  Se coincide, dall'elenco non è stato tolto né aggiunto alcun documento.
+
+      Linux:    sha256sum -c indice.sha256
+      macOS:    shasum -a 256 -c indice.sha256
+      Windows:  certutil -hashfile indice.json SHA256
 
 CHE COSA QUESTO PACCHETTO NON È
   Questo NON è un sistema di conservazione a norma. La conservazione a norma è
@@ -175,15 +180,22 @@ export function creaPacchetto(
     documenti: righe,
   };
 
-  // Отпечатъкът на индекса се смята върху индекса БЕЗ него самия — иначе е
-  // отпечатък на нещо, което го съдържа, тоест безсмислен. Той лови МАХНАТ ред:
-  // отпечатъците по файлове не биха забелязали изчезнал документ.
-  const senza = JSON.stringify(indice, null, 2);
-  indice.sha256Indice = impronta(senza);
+  // Отпечатъкът на индекса лови МАХНАТ ред: отпечатъците по файлове не биха
+  // забелязали изчезнал документ.
+  //
+  // ИЗВЪН САМИЯ ИНДЕКС, И ТОВА НЕ Е ВКУСОВО. Поле вътре в индекса е отпечатък
+  // на нещо, което го съдържа — значи проверката иска първо да се възстанови
+  // текстът БЕЗ полето. Махането на реда обаче оставя запетая в края на
+  // предходния и байтовете не съвпадат: процедурата беше неизпълнима. Отделен
+  // файл във формата на `sha256sum` се проверява с една команда, без да се
+  // пипа архив, който се пази десет години.
+  const testoIndice = JSON.stringify(indice, null, 2);
+  indice.sha256Indice = impronta(testoIndice);
 
+  voci.push({ nome: "indice.json", dati: enc.encode(testoIndice) });
   voci.push({
-    nome: "indice.json",
-    dati: enc.encode(JSON.stringify(indice, null, 2)),
+    nome: "indice.sha256",
+    dati: enc.encode(`${indice.sha256Indice}  indice.json\n`),
   });
   voci.push({ nome: "README.txt", dati: enc.encode(README) });
 

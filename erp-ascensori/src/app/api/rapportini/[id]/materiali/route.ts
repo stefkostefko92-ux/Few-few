@@ -50,9 +50,11 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id } = await ctx.params;
   const dati = await corpoValidato(req, schema);
-  const rapportino = await rapportinoModificabile(id, s);
 
   const riga = await prisma.$transaction(async (tx) => {
+    // Проверката за подпис е В транзакцията: отвън между нея и вписването се
+    // побираше подписване, тоест материал под вече положен подпис.
+    const rapportino = await rapportinoModificabile(id, s, tx);
     // С филтъра по фирма: иначе познат UUID движи наличността на ЧУЖД склад.
     const articolo = await tx.articoloMagazzino.findFirst({
       where: { id: dati.articoloId, ...filtroTenant(s) },

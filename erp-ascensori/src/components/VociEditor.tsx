@@ -271,7 +271,7 @@ export default function VociEditor({
                 <label
                   className="label"
                   htmlFor={`naturaIva-${idForm}`}
-                  title="Codice SDI dell'esenzione"
+                  title="Codice natura SdI dell'esenzione"
                 >
                   Natura
                 </label>

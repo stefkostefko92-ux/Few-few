@@ -92,10 +92,11 @@ function titolo2(d: Doc, testo: string): void {
 
 function paragrafo(d: Doc, testo: string, colore = C.testo): void {
   assicuraSpazio(d, 30);
-  d.font(FONT)
-    .fontSize(9)
-    .fillColor(colore)
-    .text(testo, MARGINE, d.y, { width: LARGHEZZA, align: "left", lineGap: 1.5 });
+  d.font(FONT).fontSize(9).fillColor(colore).text(testo, MARGINE, d.y, {
+    width: LARGHEZZA,
+    align: "left",
+    lineGap: 1.5,
+  });
   spazio(d, 4);
 }
 
@@ -122,15 +123,21 @@ function tabella(d: Doc, righe: [string, string][], larghezzaSx = 150): void {
   for (const [sx, dx] of righe) {
     assicuraSpazio(d, 30);
     const y0 = d.y;
-    d.font(FONT_B).fontSize(8.5).fillColor(C.testo).text(sx, MARGINE, y0, {
-      width: larghezzaSx - 8,
-      lineGap: 1,
-    });
+    d.font(FONT_B)
+      .fontSize(8.5)
+      .fillColor(C.testo)
+      .text(sx, MARGINE, y0, {
+        width: larghezzaSx - 8,
+        lineGap: 1,
+      });
     const yDopoSx = d.y;
-    d.font(FONT).fontSize(8.5).fillColor(C.tenue).text(dx, MARGINE + larghezzaSx, y0, {
-      width: LARGHEZZA - larghezzaSx,
-      lineGap: 1,
-    });
+    d.font(FONT)
+      .fontSize(8.5)
+      .fillColor(C.tenue)
+      .text(dx, MARGINE + larghezzaSx, y0, {
+        width: LARGHEZZA - larghezzaSx,
+        lineGap: 1,
+      });
     d.y = Math.max(yDopoSx, d.y) + 4;
   }
   spazio(d, 3);
@@ -145,7 +152,9 @@ function nota(d: Doc, testo: string, colore: string): void {
   assicuraSpazio(d, h + 16);
   const y0 = d.y;
   d.fillColor(colore);
-  d.rect(MARGINE, y0 - 3, 2.5, h + 8).fillColor(colore).fill();
+  d.rect(MARGINE, y0 - 3, 2.5, h + 8)
+    .fillColor(colore)
+    .fill();
   d.fillColor(colore).text(testo, MARGINE + 12, y0, {
     width: LARGHEZZA - 20,
     lineGap: 1.5,
@@ -173,18 +182,27 @@ async function main(): Promise<void> {
   d.pipe(flusso);
 
   // ── Заглавна част ─────────────────────────────────────────────────────────
-  d.font(FONT_B).fontSize(24).fillColor(C.accento).text("ERP Ascensori", MARGINE, 90);
+  d.font(FONT_B)
+    .fontSize(24)
+    .fillColor(C.accento)
+    .text("ERP Ascensori", MARGINE, 90);
   d.font(FONT).fontSize(15).fillColor(C.testo).text("Enterprise");
   spazio(d, 14);
-  d.font(FONT).fontSize(10).fillColor(C.tenue).text(
-    "Гестионал за фирми по монтаж и поддръжка на асансьори в Италия.\n" +
-      "Обзор на това, което системата прави — и на това, което НЕ прави.",
-    { width: LARGHEZZA, lineGap: 3 },
-  );
+  d.font(FONT)
+    .fontSize(10)
+    .fillColor(C.tenue)
+    .text(
+      "Гестионал за фирми по монтаж и поддръжка на асансьори в Италия.\n" +
+        "Обзор на това, което системата прави — и на това, което НЕ прави.",
+      { width: LARGHEZZA, lineGap: 3 },
+    );
   spazio(d, 20);
-  d.font(FONT).fontSize(8.5).fillColor(C.tenue).text(
-    `Carbon Stealth VCC · ${new Date().toISOString().slice(0, 10)} · интерфейс на италиански`,
-  );
+  d.font(FONT)
+    .fontSize(8.5)
+    .fillColor(C.tenue)
+    .text(
+      `Carbon Stealth VCC · ${new Date().toISOString().slice(0, 10)} · интерфейс на италиански`,
+    );
   spazio(d, 24);
 
   nota(
@@ -215,10 +233,19 @@ async function main(): Promise<void> {
   titolo2(d, "Числата");
   tabella(d, [
     ["Модел на данните", "46 таблици · 13 енумерации · UUID ключове навсякъде"],
-    ["Нива на достъп", "7 йерархични (MASTER → CLIENTE), проверявани от СЪРВЪРА на всяка заявка"],
-    ["Тестове", "394 модулни · 286 интеграционни (реална база) · 31 през браузър"],
+    [
+      "Нива на достъп",
+      "7 йерархични (MASTER → CLIENTE), проверявани от СЪРВЪРА на всяка заявка",
+    ],
+    [
+      "Тестове",
+      "394 модулни · 286 интеграционни (реална база) · 31 през браузър",
+    ],
     ["Покритие", "96,9 % редове върху чистата логика, гейтвано в CI"],
-    ["Стек", "Next.js 15 · React 19 · TypeScript strict · Prisma · PostgreSQL 16"],
+    [
+      "Стек",
+      "Next.js 15 · React 19 · TypeScript strict · Prisma · PostgreSQL 16",
+    ],
   ]);
 
   // ── Модули ────────────────────────────────────────────────────────────────
@@ -266,14 +293,38 @@ async function main(): Promise<void> {
   // ── Сигурност ─────────────────────────────────────────────────────────────
   titolo1(d, "3. Сигурност и данни");
   tabella(d, [
-    ["Достъп", "Проверка от сървъра на всяка заявка. Скриването на бутон не е защита."],
-    ["Вход", "bcrypt · 5 неуспеха → 15 мин блокада по АКАУНТ · втори фактор (TOTP) · сесии с ротация"],
-    ["Одит", "Неизменим, всяка редица подписана HMAC-SHA256 и ВЕРИЖНО свързана с предходната — лови и изтриване. Маршрути за промяна не съществуват."],
-    ["Изолация", "Две линии: приложен филтър по фирма + Row-Level Security в Postgres (32 таблици, FORCE)."],
-    ["CSP", "Строга, с nonce на всяка заявка и strict-dynamic. Скрипт, вмъкнат в HTML-а, не тръгва."],
-    ["GDPR", "Износ по чл. 15/20; „заличаване“ по чл. 17 е АНОНИМИЗАЦИЯ — пада лицето, остава следата (чл. 2220 c.c. пази записите 10 години)."],
-    ["Съхранение", "6 месеца за входовете · 10 години за фискалните следи · 24 месеца за останалото."],
-    ["Достъпност", "WCAG 2.1 AA, проверявано автоматично с axe при всеки комит (EAA е в сила от 28.06.2025)."],
+    [
+      "Достъп",
+      "Проверка от сървъра на всяка заявка. Скриването на бутон не е защита.",
+    ],
+    [
+      "Вход",
+      "bcrypt · 5 неуспеха → 15 мин блокада по АКАУНТ · втори фактор (TOTP) · сесии с ротация",
+    ],
+    [
+      "Одит",
+      "Неизменим, всяка редица подписана HMAC-SHA256 и ВЕРИЖНО свързана с предходната — лови и изтриване. Маршрути за промяна не съществуват.",
+    ],
+    [
+      "Изолация",
+      "Две линии: приложен филтър по фирма + Row-Level Security в Postgres (32 таблици, FORCE).",
+    ],
+    [
+      "CSP",
+      "Строга, с nonce на всяка заявка и strict-dynamic. Скрипт, вмъкнат в HTML-а, не тръгва.",
+    ],
+    [
+      "GDPR",
+      "Износ по чл. 15/20; „заличаване“ по чл. 17 е АНОНИМИЗАЦИЯ — пада лицето, остава следата (чл. 2220 c.c. пази записите 10 години).",
+    ],
+    [
+      "Съхранение",
+      "6 месеца за входовете · 10 години за фискалните следи · 24 месеца за останалото.",
+    ],
+    [
+      "Достъпност",
+      "WCAG 2.1 AA, проверявано автоматично с axe при всеки комит (EAA е в сила от 28.06.2025).",
+    ],
   ]);
 
   // ── Какво НЕ прави ────────────────────────────────────────────────────────
@@ -331,12 +382,30 @@ async function main(): Promise<void> {
   // ── Как се разгръща ───────────────────────────────────────────────────────
   titolo1(d, "5. Как се разгръща и поддържа");
   tabella(d, [
-    ["Разгръщане", "Docker Compose + Nginx + Let's Encrypt на собствен сървър в ЕС. Един клиент = една инсталация, или мулти-фирмена с изолация."],
-    ["База", "PostgreSQL 16. Ролята на приложението НЕ е суперпотребител — иначе RLS е украса."],
-    ["Бекъп", "Проверява се с РЕАЛНО възстановяване, включително сверяване на броя редове. Тази проверка веднага откри, че pg_dump спира тихо след включването на RLS."],
-    ["Наблюдение", "Метрики за Prometheus зад токен, SLO с аларми по симптом, dead-man за автоматизмите."],
-    ["Тайни", "Само на сървъра, mode 600. Никога в репото или в архива за разгръщане."],
-    ["Автоматизми", "Срокове (24 ч), прочистване по срок (седмично), доставка на известия (5 мин)."],
+    [
+      "Разгръщане",
+      "Docker Compose + Nginx + Let's Encrypt на собствен сървър в ЕС. Един клиент = една инсталация, или мулти-фирмена с изолация.",
+    ],
+    [
+      "База",
+      "PostgreSQL 16. Ролята на приложението НЕ е суперпотребител — иначе RLS е украса.",
+    ],
+    [
+      "Бекъп",
+      "Проверява се с РЕАЛНО възстановяване, включително сверяване на броя редове. Тази проверка веднага откри, че pg_dump спира тихо след включването на RLS.",
+    ],
+    [
+      "Наблюдение",
+      "Метрики за Prometheus зад токен, SLO с аларми по симптом, dead-man за автоматизмите.",
+    ],
+    [
+      "Тайни",
+      "Само на сървъра, mode 600. Никога в репото или в архива за разгръщане.",
+    ],
+    [
+      "Автоматизми",
+      "Срокове (24 ч), прочистване по срок (седмично), доставка на известия (5 мин).",
+    ],
   ]);
 
   // ── Състояние ─────────────────────────────────────────────────────────────
@@ -373,12 +442,15 @@ async function main(): Promise<void> {
     // текстът излиза от полето, и МЪЛЧАЛИВО добавя нова страница — по една за
     // всеки футър, тоест документът се удвоява с празни листове.
     d.page.margins.bottom = 0;
-    d.font(FONT).fontSize(7.5).fillColor(C.tenue).text(
-      `ERP Ascensori Enterprise · Carbon Stealth VCC · ${i + 1} / ${range.count}`,
-      MARGINE,
-      d.page.height - MARGINE + 16,
-      { width: LARGHEZZA, align: "center", lineBreak: false },
-    );
+    d.font(FONT)
+      .fontSize(7.5)
+      .fillColor(C.tenue)
+      .text(
+        `ERP Ascensori Enterprise · Carbon Stealth VCC · ${i + 1} / ${range.count}`,
+        MARGINE,
+        d.page.height - MARGINE + 16,
+        { width: LARGHEZZA, align: "center", lineBreak: false },
+      );
   }
 
   d.end();

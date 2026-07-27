@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { riepilogoIva, toCents, fromCents } from "@/lib/totals";
 import { calcolaRitenuta } from "@/lib/fiscale/ritenuta";
+import { plurale } from "@/lib/format";
 import type {
   Azienda,
   Controparte,
@@ -105,7 +106,10 @@ export async function pdfPreventivo(
     totaleIva: p.totaleIva.toString(),
     totaleLordo: p.totaleLordo.toString(),
     dettagli: [
-      { label: "Validità", valore: `${p.validitaGiorni} giorni` },
+      {
+        label: "Validità",
+        valore: plurale(p.validitaGiorni, "giorno", "giorni"),
+      },
       ...(p.impianto
         ? [{ label: "Impianto", valore: p.impianto.matricola }]
         : []),

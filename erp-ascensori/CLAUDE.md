@@ -39,7 +39,7 @@ npm run verifica:backup -- <файл>               # РЕАЛНО възста�
   OPERATORE(6) > CLIENTE(7) — по-ниското число включва правата на по-високото.
 - **StatoOrdine минава само по позволените преходи** (`src/lib/workflow.ts` —
   таблицата от документацията, дословно). Всеки преход пише в `storico_stati`
-  + audit `STATE_CHANGE` в транзакция.
+  и в audit `STATE_CHANGE`, в една транзакция.
 - **Тоталите не се пишат на ръка**: при всяка промяна на voce се вика
   `ricalcolaPreventivo/ricalcolaFattura` (`src/lib/totali-db.ts`). Парите се
   смятат в **цели центесими** (`src/lib/totals.ts`), half-up — никакви float.

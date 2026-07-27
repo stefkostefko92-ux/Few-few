@@ -184,7 +184,7 @@ const GRUPPI: Gruppo[] = [
       },
       {
         href: "/conservazione",
-        label: "Versamento",
+        label: "Conservazione",
         icona: <Archive size={DIM.navigazione} />,
         minimo: "DIREZIONE",
       },

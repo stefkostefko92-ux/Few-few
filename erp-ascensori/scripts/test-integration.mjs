@@ -15,6 +15,20 @@ const ADMIN_URL =
 const DB = process.env.TEST_PG_DB ?? "erp_ascensori_test";
 const DB_URL = ADMIN_URL.replace(/\/[^/]*$/, `/${DB}`);
 
+// TEST_SOLO е инструмент за РАЗСЛЕДВАНЕ, не режим на работа.
+//
+// Ако остане зададен в средата на CI (изтекла стойност в repo vars, копиран
+// ред в друг workflow), пакетът пуска ЕДИН файл и излиза с нула — тоест
+// докладва зелено, докато останалите тестове изобщо не са тръгнали. Провалът
+// тук е тих и точно затова е опасен. GitHub Actions винаги задава `CI=true`.
+if (process.env.CI && process.env.TEST_SOLO) {
+  console.error(
+    `✖ TEST_SOLO="${process.env.TEST_SOLO}" е зададена в CI: пакетът би пуснал` +
+      ` само един файл и би докладвал зелено. Разрешено е само локално.`,
+  );
+  process.exit(1);
+}
+
 const env = {
   ...process.env,
   DATABASE_URL: DB_URL,
@@ -37,7 +51,11 @@ const env = {
   // адрес на посредник, който НЕ се вика: изпращач още няма, а маршрутът само
   // подготвя файла и маркира състоянието.
   SDI_CANALE: "intermediario",
-  SDI_INTERMEDIARIO_URL: "https://intermediario.esempio.it/api",
+  // `.invalid` е резервиран (RFC 2606) и по определение НЕ се резолвира: в деня,
+  // в който под маршрута застане реален изпращач, пакетът получава мигновена
+  // грешка от DNS вместо да опита истинска изходяща заявка от CI. Адрес с
+  // истински TLD (`esempio.it`) някой ден щеше да тръгне навън.
+  SDI_INTERMEDIARIO_URL: "https://intermediario.invalid/api",
   NODE_ENV: "production",
 };
 
@@ -128,7 +146,7 @@ async function main() {
     [
       "tsx",
       "--test",
-      // Един файл наведнъж, когато се разследва провал: `TEST_SOLO=nuovi-moduli`.
+      // Един файл наведнъж, когато се разследва провал: `TEST_SOLO=sla-scadenzario-conservazione`.
       process.env.TEST_SOLO
         ? `tests/integration/${process.env.TEST_SOLO}.int.test.ts`
         : "tests/integration/*.int.test.ts",

@@ -146,7 +146,7 @@ const AIUTO: Record<string, string> = {
 export function esporta(extra: MetricaExtra[] = []): string {
   const righe: string[] = [];
   // Таванът се вижда: нула тук значи, че регистърът е в границите си.
-  extra = [
+  const tutte: MetricaExtra[] = [
     ...extra,
     {
       nome: "erp_metriche_serie_scartate_totale",
@@ -185,7 +185,7 @@ export function esporta(extra: MetricaExtra[] = []): string {
     righe.push(`${nome}_count${etichette ? `{${etichette}}` : ""} ${h.totale}`);
   }
 
-  for (const m of extra) {
+  for (const m of tutte) {
     intestazione(m.nome, m.tipo, m.aiuto);
     righe.push(`${chiave(m.nome, m.etichette ?? {})} ${m.valore}`);
   }

@@ -8,12 +8,25 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import {
   ipInterno,
-  hostInterno,
+  nomeHostSospetto,
   lookupSicuro,
   valutaIndirizzi,
+  type Risolutore,
   postEsterno,
   ErroreIndirizzoInterno,
 } from "../rete";
+
+/** Резолвер, който връща зададен адрес за всяко име — шевът за тестовете. */
+const verso = (indirizzo: string): Risolutore =>
+  ((_h: string, o: unknown, cb: unknown) => {
+    const tutti = (o as { all?: boolean }).all;
+    const uno = { address: indirizzo, family: 4 };
+    (cb as (e: null, a: unknown, f?: number) => void)(
+      null,
+      tutti ? [uno] : uno.address,
+      uno.family,
+    );
+  }) as unknown as Risolutore;
 
 describe("литерален адрес", () => {
   test("вътрешните диапазони по IPv4 не минават", () => {
@@ -71,6 +84,38 @@ describe("литерален адрес", () => {
     assert.equal(ipInterno("::ffff:1:2:3"), true);
   });
 
+  // ВСИЧКИ НАЧИНИ IPv4 ДА СЕ СКРИЕ В IPv6, не само `::ffff:`.
+  //
+  // Първата версия беше denylist по първата група — и точно затова пропускаше
+  // всичко, което не е в списъка: NAT64 (`64:ff9b::/96`), 6to4 (`2002::/16`),
+  // IPv4-compatible (`::a9fe:a9fe`), Teredo (`2001:0::/32`), site-local
+  // (`fec0::/10`). Всяко от тях носи `169.254.169.254` навътре.
+  test("капсулиранията на IPv4 в IPv6 се отказват", () => {
+    for (const ip of [
+      "64:ff9b::a9fe:a9fe", // NAT64 — RFC 6052
+      "64:ff9b:1::a9fe:a9fe", // локален NAT64 префикс
+      "2002:a9fe:a9fe::1", // 6to4 — RFC 3056
+      "::a9fe:a9fe", // IPv4-compatible (отпаднал, но приеман)
+      "::169.254.169.254",
+      "2001:0:4136:e378:8000:63bf:3fff:fdd2", // Teredo — RFC 4380
+      "fec0::1", // site-local (отпаднал)
+      "2001:db8::1", // документация
+      "3ffe::1", // 6bone (отпаднал)
+      "0100::1", // discard-only
+    ])
+      assert.equal(ipInterno(ip), true, ip);
+  });
+
+  test("истинският глобален unicast минава", () => {
+    for (const ip of [
+      "2a00:1450:4001::1", // Google
+      "2606:4700::1111", // Cloudflare
+      "2001:4860:4860::8888",
+      "3fff:ffff::1", // краят на 2000::/3
+    ])
+      assert.equal(ipInterno(ip), false, ip);
+  });
+
   test("останалите вътрешни IPv6 обхвати", () => {
     for (const ip of [
       "::",
@@ -83,6 +128,13 @@ describe("литерален адрес", () => {
       "ff02::1",
       "100::1",
     ])
+      assert.equal(ipInterno(ip), true, ip);
+  });
+
+  test("невалидна група в IPv6 не минава за адрес", () => {
+    // Разгъването връща `null` и решението е fail-closed — не „непознат
+    // формат значи публичен".
+    for (const ip of ["2001:zzzz::1", "2001::1::2", "2001:1:2:3:4:5:6:7:8"])
       assert.equal(ipInterno(ip), true, ip);
   });
 
@@ -106,7 +158,7 @@ describe("хост по име", () => {
       "db",
       "",
     ])
-      assert.equal(hostInterno(h), true, h);
+      assert.equal(nomeHostSospetto(h), true, h);
   });
 
   test("публично име минава — то се проверява при СВЪРЗВАНЕТО", () => {
@@ -116,13 +168,13 @@ describe("хост по име", () => {
       "erp.carbonstealth.eu",
       "esempio.it.", // с крайна точка (абсолютно име)
     ])
-      assert.equal(hostInterno(h), false, h);
+      assert.equal(nomeHostSospetto(h), false, h);
   });
 
   test("литерален вътрешен адрес се хваща и по име", () => {
-    assert.equal(hostInterno("169.254.169.254"), true);
-    assert.equal(hostInterno("[::ffff:169.254.169.254]"), true);
-    assert.equal(hostInterno("8.8.8.8"), false);
+    assert.equal(nomeHostSospetto("169.254.169.254"), true);
+    assert.equal(nomeHostSospetto("[::ffff:169.254.169.254]"), true);
+    assert.equal(nomeHostSospetto("8.8.8.8"), false);
   });
 });
 
@@ -159,6 +211,22 @@ describe("резолвирането пази при свързването", ()
     });
   });
 
+  test("подписът без `all` връща един адрес — договорът с net.connect", (_t, done) => {
+    // Node вика `lookup` и в двете форми; ако не-`all` пътят върне масив,
+    // сокетът тръгва към нищо. Затова се проверява ФОРМАТА, не само отказът.
+    lookupSicuro(
+      "esempio.it",
+      { family: 4 },
+      (err, indirizzo, famiglia) => {
+        assert.equal(err, null);
+        assert.equal(indirizzo, "8.8.8.8");
+        assert.equal(famiglia, 4);
+        done();
+      },
+      verso("8.8.8.8"),
+    );
+  });
+
   // РЕШЕНИЕТО, взето отделно от резолвирането — тук е цялото правило.
   test("публични адреси минават; един вътрешен между тях спира всичко", () => {
     const pub = [
@@ -181,6 +249,44 @@ describe("резолвирането пази при свързването", ()
 });
 
 describe("изходящият POST", () => {
+  // РЕГРЕСИЯ: промисът увисваше ЗАВИНАГИ при прекъсната връзка.
+  //
+  // Node не емитва `error`, когато отсрещната страна разкъса сокета НАСРЕД
+  // тялото — идват `aborted` и `close`, а `end` не идва. Доставката на
+  // известията е последователна, тоест един такъв получател спираше целия
+  // пакет и `npm run webhook` не приключваше.
+  //
+  // Тестът минава по ИСТИНСКИЯ път: подава резолвер, който връща публичен
+  // адрес за локалното име, тоест защитата пропуска и сокетът тръгва наистина.
+  // Без това тестът щеше да „мине" върху отказа за вътрешен адрес и да не
+  // докаже нищо.
+  test("прекъсната връзка се урежда като неуспех, не като тишина", async () => {
+    const server = createServer((_req, res) => {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.write("{");
+      setTimeout(() => res.socket?.destroy(), 10);
+    });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    const porta = (server.address() as { port: number }).port;
+    try {
+      const esito = await Promise.race([
+        postEsterno(`https://ricevente.esempio.it:${porta}/hook`, {
+          intestazioni: {},
+          corpo: "{}",
+          timeoutMs: 3000,
+          risolutore: verso("127.0.0.1"),
+        }).then(
+          () => "уреден",
+          () => "уреден",
+        ),
+        new Promise((r) => setTimeout(() => r("УВИСНА"), 2500)),
+      ]);
+      assert.equal(esito, "уреден");
+    } finally {
+      server.close();
+    }
+  });
+
   test("HTTP не минава: известието носи бизнес данни", async () => {
     await assert.rejects(
       postEsterno("http://esempio.it/hook", {

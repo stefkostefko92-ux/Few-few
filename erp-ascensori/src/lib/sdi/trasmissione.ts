@@ -22,8 +22,12 @@
 //      тръгнала.
 //   3. НЕУСПЕХЪТ Е СЪСТОЯНИЕ, НЕ ИЗКЛЮЧЕНИЕ. „Не тръгна" се вижда в списъка и
 //      се пробва пак; не изчезва в лог, който никой не чете.
+//
+// И ЕДНО ЧЕСТНО ОГРАНИЧЕНИЕ, КОЕТО СТОИ В КОДА, НЕ САМО В КОМЕНТАР:
+// `CANALI_IMPLEMENTATI` е ПРАЗЕН. Никой канал още няма реален изпращач, затова
+// маршрутът за подаване отказва вместо да отбележи фактурата като тръгнала.
 
-import { hostInterno } from "@/lib/rete";
+import { nomeHostSospetto } from "@/lib/rete";
 
 /** Каналите, които продуктът разпознава. */
 export type Canale =
@@ -54,6 +58,25 @@ export interface ConfigTrasmissione {
 export const PEC_SDI_PRIMO_INVIO = "sdi01@pec.fatturapa.it";
 
 const CANALI: readonly Canale[] = ["manuale", "pec", "intermediario"];
+
+/**
+ * Каналите, зад които стои РЕАЛЕН изпращач.
+ *
+ * ПРАЗЕН НАРОЧНО, И ТОВА Е ЧЕСТНАТА СТОЙНОСТ ДНЕС. Слоят подготвя файла и
+ * държи номерацията, но нищо в продукта не праща PEC и не вика посредник —
+ * `postEsterno` се вика само от известията. Докато е така, маршрутът за
+ * подаване НЕ бива да отбелязва фактурата като подадена: фактура, която
+ * системата смята за тръгнала, а не е, е НЕИЗДАДЕНА за данъчната
+ * администрация (чл. 6, ал. 1 D.Lgs. 471/1997 — 70 % от данъка, минимум 300 €
+ * на операция), и клиентът го открива месеци по-късно.
+ *
+ * Щом изпращач влезе, името му се добавя тук — в същия комит, в който влиза.
+ */
+export const CANALI_IMPLEMENTATI: readonly Canale[] = [];
+
+export function canaleImplementato(c: Canale): boolean {
+  return CANALI_IMPLEMENTATI.includes(c);
+}
 
 function canaleValido(v: string): v is Canale {
   return (CANALI as readonly string[]).includes(v);
@@ -86,26 +109,6 @@ export function configTrasmissione(
       etichetta: "Intermediario",
     };
   return { canale: "manuale", etichetta: "Manuale (download)" };
-}
-
-export interface EsitoTrasmissione {
-  inviato: boolean;
-  /** Как е тръгнало — влиза в одита. */
-  canale: Canale;
-  /** Съобщение за човека, на италиански. */
-  messaggio: string;
-  /** Идентификатор от канала, ако има (message-id на PEC, id на посредника). */
-  riferimento?: string | null;
-}
-
-export class ErroreTrasmissione extends Error {
-  constructor(
-    readonly stato: number,
-    message: string,
-  ) {
-    super(message);
-    this.name = "ErroreTrasmissione";
-  }
 }
 
 export interface Invio {
@@ -160,7 +163,7 @@ export function controllaInvio(
       // от конфигурацията, тоест е класически SSRF, ако не се провери.
       if (u && u.protocol !== "https:")
         problemi.push("L'URL dell'intermediario deve essere HTTPS.");
-      if (u && indirizzoInterno(u.hostname))
+      if (u && nomeHostSospetto(u.hostname))
         problemi.push(
           "L'URL dell'intermediario punta a un indirizzo interno: non ammesso.",
         );
@@ -168,21 +171,4 @@ export function controllaInvio(
   }
 
   return problemi;
-}
-
-/**
- * Вътрешен ли е адресът.
- *
- * Същата проверка като при webhook-ите — и буквално същият код: тя живее в
- * `lib/rete.ts`, защото едно правило за „навън" не бива да има два различни
- * списъка. Без нея конфигурация с `https://169.254.169.254/...` кара сървъра
- * да изпрати фактурата — и всичко останало, до което стигне — на метаданните
- * на облака.
- *
- * Пази се като име, защото се вика от проверката на конфигурацията: там се
- * съди по това, което е ЗАПИСАНО. Самото изпращане минава през `postEsterno`,
- * който проверява резолвния адрес в мига на свързването.
- */
-export function indirizzoInterno(hostname: string): boolean {
-  return hostInterno(hostname);
 }

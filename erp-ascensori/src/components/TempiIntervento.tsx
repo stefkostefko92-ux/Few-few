@@ -56,7 +56,11 @@ const STILE: Record<StatoSla, string> = {
   in_corso: "bg-surface-2 text-text-2",
   a_rischio: "bg-warning-subtle text-warning-text",
   rispettato: "bg-success-subtle text-success-text",
-  violato: "bg-danger-subtle text-danger-text",
+  // Пръстенът е речникът на продукта за „най-тежкото червено": `Badge` го дава
+  // на състоянията с правни или договорни последици (CONTESTATO, SCARTATA,
+  // FERMO_AMMINISTRATIVO). Нарушен договорен срок за отзив е точно това —
+  // без пръстена изглежда по-леко от собствената ни конвенция.
+  violato: "bg-danger-subtle text-danger-text border border-danger/30",
 };
 
 /** `AAAA-MM-GGTHH:MM` по ЛОКАЛЕН календар — форматът на `datetime-local`. */
@@ -81,7 +85,7 @@ function Misura({ titolo, m }: { titolo: string; m: EsitoSla["intervento"] }) {
     <div className="flex items-center gap-2 text-xs">
       <span className="text-text-2">{titolo}:</span>
       <span
-        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-medium ${STILE[m.stato]}`}
+        className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 font-medium ${STILE[m.stato]}`}
       >
         {m.stato === "violato" ? (
           <IcoAttenzione />

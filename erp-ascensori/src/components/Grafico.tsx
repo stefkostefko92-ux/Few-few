@@ -5,6 +5,7 @@
 // フикс ред на цветовете (цветът следва категорията, не позицията),
 // текстът винаги в текстови токени, tooltip навсякъде, без анимации.
 
+import { euro } from "@/lib/format";
 import {
   STATO_LABEL,
   PRIORITA_LABEL,
@@ -108,14 +109,31 @@ export function ordinaCanonico(
   );
 }
 
+/**
+ * Източниците, чиито стойности са ПАРИ.
+ *
+ * ЗАЩО СПИСЪК, А НЕ ПОГЛЕД В ЧИСЛОТО. Отгатването по стойност бърка: 12 ордера
+ * и 12 евро са едно и също число. Скритата таблица е ЕДИНСТВЕНОТО, което чете
+ * екранният четец — там „12345.67" вместо „12.345,67 €" не е разкрасяване, а
+ * разлика между сума и брой.
+ */
+const FONTI_MONETARIE = new Set(["fatturatoMensile"]);
+
+export function formattaValore(v: string | number, monetario: boolean): string {
+  if (!monetario) return String(v);
+  return euro(v);
+}
+
 function TooltipCard({
   active,
   payload,
   label,
+  monetario = false,
 }: {
   active?: boolean;
   payload?: { name: string; value: number | string; color?: string }[];
   label?: string;
+  monetario?: boolean;
 }) {
   if (!active || !payload?.length) return null;
   return (
@@ -129,7 +147,9 @@ function TooltipCard({
             aria-hidden
           />
           {p.name}:{" "}
-          <span className="font-mono font-medium text-text-1">{p.value}</span>
+          <span className="font-mono font-medium text-text-1">
+            {formattaValore(p.value, monetario)}
+          </span>
         </div>
       ))}
     </div>
@@ -232,12 +252,18 @@ export function GraficoCategorie({
   colore: "multi" | number;
 }) {
   const ordinati = ordinaCanonico(fonte, dati);
+  const monetario = FONTI_MONETARIE.has(fonte);
   const tabella = (
     <TabellaAlternativa
       titolo={titolo}
       // Не „Voce": в този продукт „voce" вече значи ред от фактура/оферта.
-      colonne={["Categoria", "Valore"]}
-      righe={ordinati.map((p) => [etichettaAsse(p.nome), p.valore])}
+      // И не „Valore": всички категорийни източници са БРОЕВЕ, а „valore" в
+      // счетоводен контекст се чете като сума.
+      colonne={["Categoria", monetario ? "Importo" : "Numero"]}
+      righe={ordinati.map((p) => [
+        etichettaAsse(p.nome),
+        formattaValore(p.valore, monetario),
+      ])}
     />
   );
 
@@ -250,7 +276,7 @@ export function GraficoCategorie({
         <div aria-hidden>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Tooltip content={<TooltipCard />} />
+              <Tooltip content={<TooltipCard monetario={monetario} />} />
               <Pie
                 data={ordinati}
                 dataKey="valore"
@@ -317,7 +343,7 @@ export function GraficoCategorie({
               <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
               <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
               <YAxis {...ASSI} allowDecimals={false} />
-              <Tooltip content={<TooltipCard />} />
+              <Tooltip content={<TooltipCard monetario={monetario} />} />
               {tipo === "line" ? (
                 <Line
                   dataKey="valore"
@@ -359,7 +385,7 @@ export function GraficoCategorie({
             <XAxis dataKey="nome" {...ASSI} {...ASSE_X_CATEGORIE} />
             <YAxis {...ASSI} allowDecimals={false} />
             <Tooltip
-              content={<TooltipCard />}
+              content={<TooltipCard monetario={monetario} />}
               cursor={{ fill: "var(--surface-2)" }}
             />
             <Bar
@@ -385,12 +411,14 @@ export function GraficoCategorie({
 
 /** Времева графика с няколко серии (fatturato: emesso / incassato). */
 export function GraficoSerie({
+  fonte,
   titolo,
   dati,
   serie,
   tipo,
   colore,
 }: {
+  fonte: string;
   /** Заглавието на графиката — става `<caption>` на скритата таблица. */
   titolo: string;
   dati: PuntoSerie[];
@@ -398,6 +426,7 @@ export function GraficoSerie({
   tipo: TipoGrafico;
   colore: "multi" | number;
 }) {
+  const monetario = FONTI_MONETARIE.has(fonte);
   const colori = serie.map((_, i) =>
     colore === "multi"
       ? COLORI_GRAFICO[i % 8]
@@ -413,7 +442,7 @@ export function GraficoSerie({
         colonne={["Periodo", ...serie.map((s) => s.label)]}
         righe={dati.map((p) => [
           String(p.nome),
-          ...serie.map((s) => p[s.chiave] ?? 0),
+          ...serie.map((s) => formattaValore(p[s.chiave] ?? 0, monetario)),
         ])}
       />
       <div aria-hidden>
@@ -427,7 +456,7 @@ export function GraficoSerie({
             <XAxis dataKey="nome" {...ASSI} />
             <YAxis {...ASSI} />
             <Tooltip
-              content={<TooltipCard />}
+              content={<TooltipCard monetario={monetario} />}
               cursor={tipo === "bar" ? { fill: "var(--surface-2)" } : undefined}
             />
             {serie.map((s, i) =>

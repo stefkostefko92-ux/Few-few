@@ -102,7 +102,12 @@ groups:
 
       - alert: ErpWebhookFermo
         # Каданс от пет минути: шест пропуснати цикъла значи спрян процес.
-        expr: erp_automatismo_eta_secondi{nome="webhook"} > 1800
+        # `== -1` НЕ е излишно: при него автоматизмът никога не е минавал, а
+        # `-1 > 1800` е лъжа — без този клон алармата изглежда като покритие и
+        # не може да се задейства нито веднъж.
+        expr: >-
+          erp_automatismo_eta_secondi{nome="webhook"} > 1800
+          or erp_automatismo_eta_secondi{nome="webhook"} == -1
         for: 15m
         labels:
           severity: ticket
@@ -122,6 +127,82 @@ groups:
             Scadenze non aggiornate e conservazione non applicata.
             Le prime hanno effetti di sicurezza (art. 13 D.P.R. 162/1999),
             la seconda ha effetti legali (art. 5(1)(e) GDPR).
+
+      # Предпазителят за кардиналността е безполезен, ако никой не разбере, че е
+      # сработил: оттам нататък нови редици не се раждат, тоест ИСТИНСКИ
+      # проблем на нов маршрут вече не вдига аларма.
+      - alert: ErpCardinalitaAlLimite
+        expr: increase(erp_metriche_serie_scartate_totale[1h]) > 0
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: il registro delle metriche ha raggiunto il tetto"
+          description: >-
+            Nuove serie non vengono più create: da questo momento un errore su
+            una rotta mai vista prima non produce alcun segnale.
+
+      # Липсваща редица НЕ вдига аларма. При провал на четенето от базата
+      # маршрутът връща 200 с празен списък, тоест `up` остава 1, а всички
+      # интегритетни аларми млъкват точно когато базата е зле.
+      - alert: ErpIndicatoriAssenti
+        expr: >-
+          erp_indicatori_ok == 0
+          or absent(erp_indicatori_ok)
+          or absent(erp_automatismo_eta_secondi{nome="scadenze"})
+        for: 15m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: gli indicatori dal database non arrivano più"
+          description: >-
+            Lo scrape risponde ma senza dati: le altre soglie di questo gruppo
+            non possono scattare.
+
+      # ФАКТУРА, ЗА КОЯТО СИСТЕМАТА МИСЛИ, ЧЕ Е ТРЪГНАЛА. SDI се произнася за
+      # дни; седмица мълчание значи, че файлът най-вероятно не е стигнал. За
+      # данъчната администрация такъв документ е НЕИЗДАДЕН — чл. 6, ал. 1
+      # D.Lgs. 471/1997: 70 % от данъка, минимум 300 € на операция. Открива се
+      # при проверка месеци по-късно, ако никой не гледа.
+      - alert: ErpFattureSenzaEsitoSdi
+        expr: erp_sdi_senza_esito > 0
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: fatture trasmesse senza notifica dallo SdI da oltre 7 giorni"
+          description: >-
+            Verificare il canale di trasmissione: una fattura che il gestionale
+            considera trasmessa ma che lo SdI non ha ricevuto è, per il fisco,
+            non emessa (art. 6 c. 1 D.Lgs. 471/1997).
+
+      # Пет дни от известието за преиздаване със същия номер (циркуляр 13/E от
+      # 2018 г. на Agenzia delle Entrate). Пропуснат срок = дупка в регистъра.
+      - alert: ErpRinvioSdiInScadenza
+        expr: erp_sdi_rinvio_in_scadenza > 0
+        for: 30m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: scade il termine per il rinvio di una fattura scartata"
+          description: >-
+            Meno di 2 giorni per correggere e ritrasmettere con lo stesso numero
+            e la stessa data.
+
+      # Хранилището нарочно НЕ вали readiness (пълен диск не бива да сваля
+      # фактурирането в цикъл от рестарти) — затова тук трябва аларма, иначе
+      # влошаването е тихо: качването отказва, а никой не разбира.
+      - alert: ErpArchivioNonScrivibile
+        expr: erp_archivio_scrivibile == 0
+        for: 10m
+        labels:
+          severity: critica
+        annotations:
+          summary: "ERP: l'archivio degli allegati non è scrivibile"
+          description: >-
+            Il caricamento di certificati e verbali non funziona e i documenti
+            già caricati spariscono alla prossima ricreazione del container.
+            Verificare il volume montato.
 
       - alert: ErpRlsDisattivata
         # Отказ, който НЕ се вижда никъде другаде: политиките стоят, приложението

@@ -67,13 +67,23 @@ const STILE_FASCIA: Record<ChiaveFascia, string> = {
   corrente: "text-text-3",
   g0_30: "text-text-2",
   g31_60: "text-warning-text",
-  g61_90: "text-warning-text",
-  oltre90: "text-danger-text",
+  // ЧЕТИРИ РАЗЛИЧИМИ СТЪПАЛА, НЕ ТРИ. Двете средни кофи ползваха един и същ
+  // цвят, тоест 61–90 дни — крачката преди „опасно" — изглеждаше като 31–60.
+  // Тежестта разделя стъпалата, без да въвежда невалидиран цвят в палитрата.
+  g61_90: "font-semibold text-warning-text",
+  oltre90: "font-semibold text-danger-text",
 };
 
-/** Дните до падежа не са „закъснение" — колоната казва от кога е просрочено. */
+/**
+ * Колоната казва ОТ КОГА е просрочено — за непросрочен документ тя няма
+ * стойност.
+ *
+ * „Scaduto da: fra 5 gg" е противоречие в един ред. Кога пада документът вече
+ * пише в съседната колона „Scadenza", тоест тире тук не крие нищо: то е
+ * честният отговор на въпроса, който колоната задава.
+ */
 function ritardoIt(giorni: number): string {
-  return giorni < 0 ? `fra ${-giorni} gg` : `${giorni} gg`;
+  return giorni < 0 ? "—" : `${giorni} gg`;
 }
 
 export default function Pagina() {

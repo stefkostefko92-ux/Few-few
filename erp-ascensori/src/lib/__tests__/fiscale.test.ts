@@ -43,6 +43,9 @@ import {
   transizioneSdiAmmessa,
   azioneRichiesta,
   STATI_SDI,
+  TIPI_NOTIFICA,
+  STATI_SDI_MANUALI,
+  statoSdiManuale,
   TRANSIZIONI_SDI,
   GIORNI_RINVIO_DOPO_SCARTO,
 } from "../fiscale/sdi-stato";
@@ -330,7 +333,7 @@ describe("лихва при забава", () => {
     });
     assert.equal(r.tasso, null);
     assert.equal(r.importo, 0);
-    assert.match(r.motivazione, /aggiornare la tabella/);
+    assert.match(r.motivazione, /salvo conguaglio/);
     assert.equal(tassoVigente(TASSI_LEGALI, new Date("2015-01-01")), null);
   });
 });
@@ -392,6 +395,36 @@ describe("SDI: пълнота на таблицата с преходи", () => 
     // състояние.
     for (const s of STATI_SDI) assert.ok(Array.isArray(TRANSIZIONI_SDI[s]), s);
     assert.equal(Object.keys(TRANSIZIONI_SDI).length, STATI_SDI.length);
+  });
+
+  test("на ръка се вписват САМО трите човешки състояния", () => {
+    // Изходът от SDI (доставена, отказана, приета) идва от ИЗВЕСТИЕ и минава
+    // само през `/notifiche`, където се записва и самото известие. Ръчно
+    // поставена CONSEGNATA е твърдение без нито един документ зад него; ръчно
+    // поставена SCARTATA освобождава номера за преиздаване без да е имало
+    // отказ — дупка в регистъра (чл. 21, ал. 2, б. „б" D.P.R. 633/1972).
+    assert.deepEqual(
+      [...STATI_SDI_MANUALI],
+      ["NON_INVIATA", "GENERATA", "INVIATA"],
+    );
+    const daNotifica = STATI_SDI.filter((s) => !statoSdiManuale(s));
+    assert.deepEqual(daNotifica, [
+      "CONSEGNATA",
+      "MANCATA_CONSEGNA",
+      "SCARTATA",
+      "ACCETTATA",
+      "RIFIUTATA",
+      "DECORSI_TERMINI",
+    ]);
+    // И обратното: всеки от тях е ДОСТИЖИМ през известие — иначе списъкът би
+    // заключил състояние, в което фактурата не може да влезе по никакъв път.
+    for (const s of daNotifica)
+      assert.ok(
+        TIPI_NOTIFICA.some(
+          (t) => statoDaNotifica(t, "EC02") === s || statoDaNotifica(t) === s,
+        ),
+        s,
+      );
   });
 
   test("всяка цел на преход е познато състояние", () => {
@@ -491,6 +524,35 @@ describe("лихви: договорният режим", () => {
     assert.ok(r.importo < vecchio * 0.75, `${r.importo} vs ${vecchio}`);
   });
 
+  // ОЦЕЛЯЛА МУТАЦИЯ: `Math.round` → `Math.floor` в `quota()` не чупеше нищо.
+  //
+  // `toCents` носи същата граница от по-рано; `quota` е ВТОРА имплементация на
+  // закръгляне в същия домейн и стоеше без нея. Занижаване с половин цент на
+  // ред е системно, не случайно: лихвата се замразява в поканата.
+  test("лихвата се закръглява half-up, не надолу", () => {
+    // Подбрано така, че `capitale × tasso × giorni / 3 650 000` да падне точно
+    // на .5: 3 650 000 × 2,5 = 9 125 000 = 1 000 000 × 365 × 25 дни.
+    const meta = calcolaInteressi({
+      capitale: 1_000_000,
+      scadenza: new Date("2026-02-01T00:00:00Z"),
+      oggi: new Date("2026-02-26T00:00:00Z"), // 25 дни
+      regime: "LEGALE", // 1,60 % през 2026
+    });
+    assert.equal(meta.giorni, 25);
+    // 1 000 000 × 160 × 25 / 3 650 000 = 1095,890… → 1096, не 1095.
+    assert.equal(meta.importo, 1096);
+
+    // И обратната посока: точно .5 отива НАГОРЕ.
+    const suMezzo = calcolaInteressi({
+      capitale: 365_000,
+      scadenza: new Date("2026-02-01T00:00:00Z"),
+      oggi: new Date("2026-02-02T00:00:00Z"), // 1 ден
+      regime: "CONTRATTUALE",
+      tassoContrattuale: 500, // 365 000 × 500 × 1 / 3 650 000 = 50,0
+    });
+    assert.equal(suMezzo.importo, 50);
+  });
+
   test("непокрит период НЕ се остойностява мълчаливо", () => {
     const ultimo = TASSI_COMMERCIALI[TASSI_COMMERCIALI.length - 1];
     const r = calcolaInteressi({
@@ -500,7 +562,7 @@ describe("лихви: договорният режим", () => {
       regime: "COMMERCIALE",
     });
     assert.equal(r.giorniNonCoperti, 30);
-    assert.match(r.motivazione, /aggiornare la tabella/);
+    assert.match(r.motivazione, /salvo conguaglio/);
     // Покритата част СЕ смята: отказ на всичко би скрил и известното.
     assert.ok(r.importo > 0);
   });

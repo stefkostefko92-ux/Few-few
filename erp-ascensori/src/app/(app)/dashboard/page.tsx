@@ -472,6 +472,7 @@ function ContenutoWidget({ cfg, stats }: { cfg: WidgetCfg; stats: Stats }) {
       );
     return (
       <GraficoSerie
+        fonte={fonte}
         titolo={def.label}
         dati={dati}
         serie={def.serie}

@@ -94,17 +94,44 @@ export async function conRls<T>(
  * нищо в лога да го подскаже. Затова проверката е явна и се вижда в здравния
  * маршрут.
  */
-export async function rlsAttiva(): Promise<{
+export interface EsitoRls {
   attiva: boolean;
   motivo?: string;
-}> {
-  const [r] = await prisma.$queryRaw<
-    { super: boolean; bypass: boolean; policy: bigint }[]
-  >`
+}
+
+/**
+ * Кеш на проверката за RLS.
+ *
+ * ДВЕ ЗАЯВКИ, ДВЕ ПОВИКВАЩИ, ВСЕКИ 30 s. `/api/metrics` (scrape на 30 s) и
+ * `/api/readyz` (probe на 60 s) питаха базата ВСЕКИ ПЪТ — а отговорът се мени
+ * само при миграция или при смяна на ролята, тоест веднъж на разгръщане.
+ * Заедно с останалите показатели скрейпът държеше 6 от 10 връзки в пула и се
+ * състезаваше с истинския трафик точно когато системата е натоварена.
+ *
+ * Пет минути: смяна на ролята изплува най-късно за пет минути, а това е
+ * състояние, което се проверява при разгръщане, не в реално време.
+ */
+let cacheRls: { esito: EsitoRls; scadenza: number } | null = null;
+const TTL_RLS_MS = 5 * 60_000;
+
+/** Само за тестовете: следващото повикване пак пита базата. */
+export function azzeraCacheRls(): void {
+  cacheRls = null;
+}
+
+export async function rlsAttiva(): Promise<EsitoRls> {
+  const ora = Date.now();
+  if (cacheRls && cacheRls.scadenza > ora) return cacheRls.esito;
+  const esito = await misuraRls();
+  cacheRls = { esito, scadenza: ora + TTL_RLS_MS };
+  return esito;
+}
+
+async function misuraRls(): Promise<EsitoRls> {
+  const [r] = await prisma.$queryRaw<{ super: boolean; bypass: boolean }[]>`
     SELECT
       r.rolsuper       AS "super",
-      r.rolbypassrls   AS "bypass",
-      (SELECT count(*) FROM pg_policies WHERE policyname = 'tenant_isolation') AS "policy"
+      r.rolbypassrls   AS "bypass"
     FROM pg_roles r
     WHERE r.rolname = current_user
   `;
@@ -126,8 +153,6 @@ export async function rlsAttiva(): Promise<{
       attiva: false,
       motivo: `policy tenant_isolation assente su: ${scoperte.map((x) => x.t).join(", ")}`,
     };
-  if (Number(r.policy) === 0)
-    return { attiva: false, motivo: "policy tenant_isolation assente" };
   if (r.super)
     return { attiva: false, motivo: "il ruolo applicativo è superuser" };
   if (r.bypass)

@@ -61,7 +61,7 @@ export const POST = gestito(async (req, ctx) => {
     if (da === "NON_INVIATA" && data.tipo !== "AT")
       throw new ErroreHttp(
         409,
-        "La fattura non risulta trasmessa: registrare prima la trasmissione allo SDI",
+        "La fattura non risulta trasmessa: registrare prima la trasmissione allo SdI",
       );
 
     const dataOra = data.dataOra ?? new Date();

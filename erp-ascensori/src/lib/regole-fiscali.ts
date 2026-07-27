@@ -100,3 +100,17 @@ export function quantitaValida(
   if (tipo === "RETTIFICA") return quantita !== 0;
   return quantita > 0;
 }
+
+/**
+ * Кога DDT приема промени: САМО докато не е качен на фактура.
+ *
+ * Правилото стои тук — на едно място, а не преписано в трите му входа
+ * (`/api/ddt/[id]`, редовете и `/api/fatture/[id]/ddt`). XML-ът за SDI не се
+ * пази: ражда се наново от живите редове, а типът на документа се извежда
+ * (`TD24` с DDT, `TD01` без). Значи промяна по закачен DDT сменя вече подадена
+ * фактура — със същия номер и същия `progressivoInvio`.
+ */
+export const DDT_MODIFICABILE = { fatturaId: null } as const;
+
+export const DDT_BLOCCATO =
+  "DDT collegato a una fattura: scollegarlo dalla fattura (possibile solo in bozza) prima di modificarlo o eliminarlo.";

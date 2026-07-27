@@ -49,7 +49,7 @@ export const GET = gestito(async (req, ctx) => {
   if (problemi.length)
     // 422: заявката е разбрана, документът просто още не е годен за подаване.
     return NextResponse.json(
-      { error: "Fattura non pronta per lo SDI", problemi, avvisi },
+      { error: "Fattura non pronta per lo SdI", problemi, avvisi },
       { status: 422 },
     );
 

@@ -16,8 +16,6 @@ export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id, rigaId } = await ctx.params;
 
-  const rapportino = await rapportinoModificabile(id, s);
-
   const riga = await prisma.materialeRapportino.findFirst({
     where: { id: rigaId, rapportinoId: id, ...filtroTenant(s) },
     include: { articolo: { select: { codice: true } } },
@@ -25,6 +23,9 @@ export const DELETE = gestito(async (_req, ctx) => {
   if (!riga) throw new ErroreHttp(404, "Riga non trovata");
 
   await prisma.$transaction(async (tx) => {
+    // Проверката за подпис е В транзакцията: махане на материал ПОД подпис
+    // променя списъка, който клиентът е подписал.
+    const rapportino = await rapportinoModificabile(id, s, tx);
     // Изтриването на РЕДА е условно: две едновременни изтривания не могат да
     // върнат количеството два пъти.
     const via = await tx.materialeRapportino.deleteMany({

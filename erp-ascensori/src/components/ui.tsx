@@ -2,7 +2,7 @@
 
 // Дребни UI градивни блокове: модал, статус-бадж, странициране.
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import {
   IcoChiudi,
   IcoPrecedente,
@@ -10,6 +10,7 @@ import {
   IcoVuoto,
 } from "@/components/icone";
 import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
+import { plurale } from "@/lib/format";
 
 // ── Бадж за статуси (цветове от дизайн системата) ───────────────────────────
 
@@ -98,12 +99,34 @@ export function Modale({
   children: ReactNode;
   largo?: boolean;
 }) {
+  const pannello = useRef<HTMLDivElement>(null);
+  const chiamante = useRef<Element | null>(null);
+
   useEffect(() => {
     if (!aperto) return;
     const onEsc = (e: KeyboardEvent) => e.key === "Escape" && onChiudi();
     window.addEventListener("keydown", onEsc);
     return () => window.removeEventListener("keydown", onEsc);
   }, [aperto, onChiudi]);
+
+  // ФОКУСЪТ ВЛИЗА В ДИАЛОГА И СЕ ВРЪЩА ОТКЪДЕТО Е ДОШЪЛ.
+  //
+  // Без първото четецът продължава да чете страницата ЗАД диалога, тоест
+  // „aria-modal" лъже. Без второто човекът, отворил диалога с клавиатура,
+  // след затваряне пада в началото на документа и трябва да табулира обратно
+  // през цялата навигация — до реда, на който е бил. И двете са WCAG 2.4.3
+  // (Focus Order) и важат за ВСЕКИ диалог в продукта, не за един екран.
+  useEffect(() => {
+    if (!aperto) return;
+    chiamante.current = document.activeElement;
+    // Самият панел получава фокуса: така първото натискане на Tab влиза в
+    // съдържанието, вместо да прескочи навън.
+    pannello.current?.focus();
+    return () => {
+      const t = chiamante.current;
+      if (t instanceof HTMLElement && document.contains(t)) t.focus();
+    };
+  }, [aperto]);
 
   if (!aperto) return null;
   return (
@@ -115,7 +138,11 @@ export function Modale({
       aria-label={titolo}
     >
       <div
-        className={`w-full ${largo ? "max-w-3xl" : "max-w-xl"} rounded-xl border border-border bg-surface p-6 shadow-lg`}
+        ref={pannello}
+        // `-1`, не `0`: панелът се фокусира програмно, но НЕ влиза в реда на
+        // табулация като самостоятелна спирка.
+        tabIndex={-1}
+        className={`w-full ${largo ? "max-w-3xl" : "max-w-xl"} rounded-xl border border-border bg-surface p-6 shadow-lg outline-none`}
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-1">{titolo}</h2>
@@ -151,7 +178,7 @@ export function Paginazione({
   return (
     <div className="flex items-center justify-between border-t border-border px-3 py-2 text-sm text-text-2">
       <span>
-        {totale} risultati · pagina {page} di {pagine}
+        {plurale(totale, "risultato", "risultati")} · pagina {page} di {pagine}
       </span>
       <div className="flex gap-2">
         <button

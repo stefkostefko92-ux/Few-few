@@ -6,6 +6,7 @@ import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { ddtSchema } from "@/lib/entities";
+import { DDT_BLOCCATO } from "@/lib/regole-fiscali";
 
 /**
  * DDT, закачен за фактура, е ЗАМРАЗЕН.
@@ -22,11 +23,7 @@ import { ddtSchema } from "@/lib/entities";
  * DDT, защото това е другият вход към същите данни.
  */
 function esigiScollegato(prima: { fatturaId: string | null }): void {
-  if (prima.fatturaId)
-    throw new ErroreHttp(
-      409,
-      "DDT collegato a una fattura: scollegarlo dalla fattura (possibile solo in bozza) prima di modificarlo o eliminarlo.",
-    );
+  if (prima.fatturaId) throw new ErroreHttp(409, DDT_BLOCCATO);
 }
 
 const include = {

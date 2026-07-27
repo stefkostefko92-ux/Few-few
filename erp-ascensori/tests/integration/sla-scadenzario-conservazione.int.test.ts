@@ -1,4 +1,8 @@
-// Осемте маршрута, добавени последни, през РЕАЛНА база.
+// SLA, скаденцарио/покани, календар и фискален архив — през РЕАЛНА база.
+//
+// ИМЕТО КАЗВА КОЕ Е ПОКРИТО. „Нови модули" остарява в мига, в който влязат
+// следващите: след месец никой не помни кои са били новите, а файлът се чете
+// точно когато нещо от тях се е счупило.
 //
 // ЗАЩО ОТДЕЛЕН СЛОЙ. Чистата логика зад тях (`sla.ts`, `scadenzario.ts`,
 // `calendario.ts`, `zip.ts`) вече носи модулни тестове и те са силни — но
@@ -226,9 +230,18 @@ describe("времена за отзив", () => {
   });
 
   test("нулирането на една отметка не бута другите", async () => {
+    // Тестът си слага СВОЕ състояние. Дотук четеше каквото предишният е
+    // оставил — и при `null` сравнението `null === null` минаваше тривиално,
+    // тоест тестът щеше да мълчи и ако PATCH-ът триеше чужди полета.
+    const segnalato = new Date(Date.now() - 60 * 60_000).toISOString();
+    await tecnico.patch(`/api/ordini/${ordineId}/sla`, {
+      segnalatoAt: segnalato,
+      arrivoAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+    });
     const g0 = await tecnico.get<{ tempi: { segnalatoAt: string | null } }>(
       `/api/ordini/${ordineId}/sla`,
     );
+    assert.equal(g0.dati.tempi.segnalatoAt, segnalato, "предусловието държи");
     const p = await tecnico.patch(`/api/ordini/${ordineId}/sla`, {
       arrivoAt: null,
     });
@@ -335,6 +348,8 @@ describe("DDT, закачени за фактура", () => {
 
 describe("подаване към SDI", () => {
   test("черновата не се подава: номерът ѝ не е изразходван", async () => {
+    // 409, не 501: проверката по ДОКУМЕНТА стои преди отказа за канала —
+    // операторът трябва да чуе „издай я първо", не „няма канал".
     const fattura = await nuovaFatturaEmessa();
     const { status } = await direzione.post(
       `/api/fatture/${fattura}/trasmetti`,
@@ -342,16 +357,22 @@ describe("подаване към SDI", () => {
     assert.equal(status, 409);
   });
 
-  test("подаването е ВЕДНЪЖ, дори при два едновременни клика", async () => {
-    // SDI отхвърля повторно ИМЕ на файл независимо от съдържанието; условният
-    // запис е защитата, а проверката на резултата му е това, което пази
-    // неизменимия одит от втори ред за преход, който не се е случил.
+  test("канал без изпращач НЕ отбелязва фактурата като подадена", async () => {
+    // ТОВА Е ФИСКАЛНИЯТ ИНВАРИАНТ ДНЕС. `CANALI_IMPLEMENTATI` е празен: нищо в
+    // продукта не праща PEC и не вика посредник. Фактура, която системата
+    // смята за тръгнала, а не е, е НЕИЗДАДЕНА за данъчната администрация
+    // (чл. 6, ал. 1 D.Lgs. 471/1997 — 70 % от данъка, минимум 300 € на
+    // операция), и клиентът го открива месеци по-късно.
+    //
+    // Условният запис (CAS) под тази проверка си остава в кода и пази двойния
+    // клик; през HTTP той става проверим в деня, в който влезе реален
+    // изпращач — дотогава дотам не се стига по никакъв път.
     const fattura = await nuovaFatturaEmessa();
     await direzione.patch(`/api/fatture/${fattura}/stato`, { stato: "EMESSA" });
 
     // Ако документът не минава проверките за SDI, маршрутът връща 422 и
-    // състезанието изобщо не се проверява — затова причината се показва тук,
-    // вместо тестът да падне с гол код.
+    // същинската проверка изобщо не се прави — затова причината се показва
+    // тук, вместо тестът да падне с гол код.
     const controllo = await direzione.get<{ problemi: string[] }>(
       `/api/fatture/${fattura}/xml?controlla=1`,
     );
@@ -362,7 +383,9 @@ describe("подаване към SDI", () => {
     );
 
     // Подаване БЕЗ генериран файл се отказва с обяснение — прогресивният номер
-    // (ключът за идемпотентност в SDI) се ражда при генерирането.
+    // (ключът за идемпотентност в SDI) се ражда при генерирането. Тази
+    // проверка стои ПРЕДИ отказа за канала: 501 „няма канал" не бива да
+    // поглъща по-специфичната причина.
     const senzaXml = await direzione.post<{ error?: string }>(
       `/api/fatture/${fattura}/trasmetti`,
     );
@@ -374,32 +397,37 @@ describe("подаване към SDI", () => {
     });
     assert.equal(xml.status, 200);
 
+    /** Броят преходи по ТАЗИ фактура в неизменимия одит. */
+    async function cambiStato(): Promise<number> {
+      const aud = await master.get<{
+        righe: { azione: string; entitaId: string }[];
+      }>(`/api/audit?entita=fatture&size=100`);
+      return aud.dati.righe.filter(
+        (r) => r.entitaId === fattura && r.azione === "STATE_CHANGE",
+      ).length;
+    }
+    // Базата е РАЗЛИЧНА от нула: издаването и генерирането на файла вече са
+    // писали. Твърдението е за РАЗЛИКАТА, не за абсолютно число — иначе тестът
+    // мери чужди операции и се чупи при всяка нова следа.
+    const prima = await cambiStato();
+
+    // Два едновременни клика: и двата отказват, нито един не пише.
     const esiti = await Promise.all([
       direzione.post<{ error?: string }>(`/api/fatture/${fattura}/trasmetti`),
       direzione.post<{ error?: string }>(`/api/fatture/${fattura}/trasmetti`),
     ]);
-    const ok = esiti.filter((e) => e.status === 200).length;
-    assert.equal(ok, 1, JSON.stringify(esiti.map((e) => [e.status, e.dati])));
+    for (const e of esiti)
+      assert.equal(e.status, 501, JSON.stringify([e.status, e.dati]));
 
-    // И трети опит после — вече по състояние, не по състезание.
-    const terzo = await direzione.post<{ error?: string }>(
-      `/api/fatture/${fattura}/trasmetti`,
+    // Състоянието НЕ е мръднало: файлът е готов, но не е тръгвал.
+    const dopo = await direzione.get<{ statoSdi: string }>(
+      `/api/fatture/${fattura}`,
     );
-    assert.equal(terzo.status, 409);
-    assert.match(String(terzo.dati.error), /duplicato/i);
+    assert.equal(dopo.dati.statoSdi, "GENERATA");
 
-    // Одитът носи ЕДИН преход, не два.
-    const aud = await master.get<{
-      righe: { azione: string; entita: string; entitaId: string }[];
-    }>(`/api/audit?entita=fatture&size=100`);
-    const cambi = aud.dati.righe.filter(
-      (r) => r.entitaId === fattura && r.azione === "STATE_CHANGE",
-    );
-    assert.equal(
-      cambi.filter((_, i) => i >= 0).length >= 1,
-      true,
-      "поне един преход",
-    );
+    // И одитът НЕ е пораснал. Ред „da GENERATA a INVIATA" в неизменима следа
+    // описва нещо, което не се е случило.
+    assert.equal(await cambiStato(), prima);
   });
 });
 
@@ -593,6 +621,15 @@ describe("пакет за предаване", () => {
       testo.includes(numeroBozza),
       false,
       "черновата не бива да е в пратката",
+    );
+    // ПОЗИТИВЕН КОНТРОЛ. Без него редът отгоре минава и при празен или счупен
+    // архив: „няма го" не значи нищо, ако нищо не е вътре.
+    const numeroEmessa = (
+      await direzione.get<{ numero: string }>(`/api/fatture/${emessa}`)
+    ).dati.numero;
+    assert.ok(
+      testo.includes(numeroEmessa),
+      `издадената ${numeroEmessa} трябва да е в пратката`,
     );
     // Истински ZIP: подписът на локалното заглавие е първите четири байта.
     assert.equal(zip.subarray(0, 4).toString("hex"), "504b0304");

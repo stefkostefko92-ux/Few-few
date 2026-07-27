@@ -12,6 +12,8 @@ import {
   TRANSIZIONI_PREVENTIVO,
   STATI_FATTURA,
   STATI_PREVENTIVO,
+  DDT_MODIFICABILE,
+  DDT_BLOCCATO,
 } from "../regole-fiscali";
 
 describe("преходи на фактурата", () => {
@@ -118,4 +120,18 @@ test("списъците със състояния са пълни и без д�
   }
   assert.ok((STATI_FATTURA as readonly string[]).includes("STORNATA"));
   assert.ok((STATI_PREVENTIVO as readonly string[]).includes("SCADUTO"));
+});
+
+describe("DDT: замразяване при качване на фактура", () => {
+  test("условието е точно „няма фактура", () => {
+    // Правилото пази ТРИ входа (детайлът, редовете, свързването). Ако тук
+    // влезе нещо друго, редовете на закачен DDT пак стават променими — а
+    // XML-ът за SDI се ражда наново от живите редове, тоест подаденият
+    // документ се разминава с архивирания без нито една следа.
+    assert.deepEqual({ ...DDT_MODIFICABILE }, { fatturaId: null });
+  });
+
+  test("обяснението казва какво да направи човекът", () => {
+    assert.match(DDT_BLOCCATO, /scollegarlo dalla fattura/);
+  });
 });

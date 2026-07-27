@@ -167,6 +167,15 @@ describe("пакетът за предаване", () => {
       // подразбиране, че го прави.
       assert.match(readme, /NON è un sistema di conservazione a norma/);
       assert.match(readme, /NON sono firmati digitalmente/);
+      // Процедурата за проверка на индекса трябва да е ИЗПЪЛНИМА: отпечатъкът
+      // стои в отделен файл, върху индекса както е в архива. Дотук се смяташе
+      // върху индекса БЕЗ полето `sha256Indice` — а махането на реда оставя
+      // запетая в предходния, тоест байтовете никога не съвпадаха.
+      const digest = readFileSync(join(dir, "indice.sha256"), "utf8");
+      const testo = readFileSync(join(dir, "indice.json"), "utf8");
+      assert.equal(digest, `${impronta(testo)}  indice.json\n`);
+      assert.equal(digest.slice(0, 64), p.indice.sha256Indice);
+
       // Индексът в архива трябва да е СЪЩИЯТ като върнатия.
       const indice = JSON.parse(readFileSync(join(dir, "indice.json"), "utf8"));
       assert.equal(indice.documenti.length, 2);

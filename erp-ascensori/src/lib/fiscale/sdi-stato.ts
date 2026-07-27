@@ -54,6 +54,30 @@ export const TRANSIZIONI_SDI: Record<StatoSdi, readonly StatoSdi[]> = {
   DECORSI_TERMINI: [],
 };
 
+/**
+ * Статусите, които ЧОВЕК има право да впише на ръка.
+ *
+ * ОСТАНАЛИТЕ СА ИЗХОД ОТ ИЗВЕСТИЕ, НЕ ИЗБОР. `CONSEGNATA`, `SCARTATA`,
+ * `ACCETTATA`, `RIFIUTATA`, `MANCATA_CONSEGNA`, `DECORSI_TERMINI` идват от
+ * SDI и се вписват САМО през `/notifiche`, където се записва и самото
+ * известие. Ръчно поставена `CONSEGNATA` е фактура, за която системата
+ * твърди, че е доставена, без нито един документ зад твърдението; ръчно
+ * поставена `SCARTATA` освобождава номера за преиздаване, без да е имало
+ * отказ — тоест дупка в регистъра (чл. 21, ал. 2, б. „б" D.P.R. 633/1972).
+ *
+ * Тук стои списъкът, а не в маршрута: правилото е фискално и носи тест.
+ */
+export const STATI_SDI_MANUALI = [
+  "NON_INVIATA",
+  "GENERATA",
+  "INVIATA",
+] as const satisfies readonly StatoSdi[];
+export type StatoSdiManuale = (typeof STATI_SDI_MANUALI)[number];
+
+export function statoSdiManuale(s: StatoSdi): s is StatoSdiManuale {
+  return (STATI_SDI_MANUALI as readonly StatoSdi[]).includes(s);
+}
+
 export function transizioneSdiAmmessa(da: StatoSdi, a: StatoSdi): boolean {
   return TRANSIZIONI_SDI[da].includes(a);
 }

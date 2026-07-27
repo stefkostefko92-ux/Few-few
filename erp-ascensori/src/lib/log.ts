@@ -88,10 +88,109 @@ export function descriviErrore(e: unknown): {
   return { err_tipo: tipo, err_codice: codice };
 }
 
-/** Шаблон на маршрута вместо конкретния път: /api/impianti/<uuid> → /api/impianti/[id] */
+/**
+ * Всеки сегмент, който РЕАЛНО съществува като папка в `src/app/api`.
+ *
+ * Списъкът се сверява с файловата система от тест (`log.test.ts`), тоест не
+ * може да остарее мълчаливо: нов маршрут без ред тук вали гейта.
+ */
+export const SEGMENTI_NOTI = new Set([
+  "api",
+  "i",
+  "ai",
+  "allegati",
+  "amministratori",
+  "anonimizza",
+  "articoli",
+  "assegnazioni",
+  "audit",
+  "auth",
+  "automatismi",
+  "automezzi",
+  "beni-significativi",
+  "calendario",
+  "check",
+  "chiavi",
+  "condomini",
+  "conservazione",
+  "contratti",
+  "cottimisti",
+  "csp-report",
+  "dashboard",
+  "dati-azienda",
+  "ddt",
+  "dipendenti",
+  "documenti",
+  "elabora",
+  "esegui",
+  "esporta",
+  "estrai",
+  "fatture",
+  "firma",
+  "gdpr",
+  "healthz",
+  "impianti",
+  "impianti-media",
+  "import",
+  "libretto",
+  "login",
+  "logout",
+  "materiali",
+  "me",
+  "metrics",
+  "mfa",
+  "movimenti",
+  "notifiche",
+  "ordini",
+  "pagamenti",
+  "password",
+  "pdf",
+  "preventivi",
+  "pubblica",
+  "qr",
+  "rapportini",
+  "readyz",
+  "redditivita",
+  "refresh",
+  "report",
+  "retention",
+  "righe",
+  "scadenzario",
+  "scadenze",
+  "sdi",
+  "sessioni",
+  "sla",
+  "solleciti",
+  "squadre",
+  "stato",
+  "stats",
+  "tenants",
+  "trasmetti",
+  "utenti",
+  "v1",
+  "verifica",
+  "verifiche",
+  "voci",
+  "webhooks",
+  "xml",
+]);
+
+/**
+ * Шаблон на маршрута вместо конкретния път: `/api/impianti/<uuid>` → `/api/impianti/[id]`.
+ *
+ * ЗАТВОРЕНО МНОЖЕСТВО, НЕ „ПОЧИСТЕН" НИЗ. Стойността става етикет на метрика, а
+ * регистърът е Map в паметта, която нищо не чисти. Дотук се заменяха само
+ * UUID-та: `GET /api/fatture/боклук/ddt` минаваше СУРОВ, а маршрутът отговаря и
+ * без сесия (грешката се брои и при 401). Пет хиляди такива заявки изчерпваха
+ * тавана и оттам нататък ИСТИНСКИ 5xx на нов маршрут вече не раждаше редица —
+ * тоест алармите по бюджета за грешки ослепяваха.
+ *
+ * Проверката по ФОРМА не стига: `/api/fatture/x0/ddt`, `x1`, `x2`… също
+ * приличат на имена. Стига само речник на това, което наистина съществува.
+ */
 export function rottaModello(percorso: string): string {
-  return percorso.replace(
-    /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-    "/[id]",
-  );
+  return percorso
+    .split("/")
+    .map((p, i) => (i === 0 || p === "" || SEGMENTI_NOTI.has(p) ? p : "[id]"))
+    .join("/");
 }

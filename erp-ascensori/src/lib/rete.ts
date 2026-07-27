@@ -73,41 +73,96 @@ function ipv4Interno(s: string): boolean {
   return false;
 }
 
+/**
+ * Разгъва IPv6 до осем 16-битови групи; `null`, ако не е адрес.
+ *
+ * Нужно е, защото решението гледа и ВТОРАТА група (Teredo, документация), а тя
+ * изчезва при съкратения запис.
+ */
+function gruppiIpv6(s: string): number[] | null {
+  const parti = s.split("::");
+  if (parti.length > 2) return null;
+  // Вграденият IPv4 (`::ffff:1.2.3.4`) заема ДВЕ групи.
+  const leggi = (t: string): number[] => {
+    const p = t ? t.split(":").filter(Boolean) : [];
+    const fine = p[p.length - 1];
+    if (fine?.includes(".")) {
+      const o = fine.split(".").map(Number);
+      if (o.length !== 4 || o.some((n) => !Number.isInteger(n) || n > 255))
+        return [NaN];
+      return [
+        ...p.slice(0, -1).map((g) => parseInt(g, 16)),
+        (o[0] << 8) | o[1],
+        (o[2] << 8) | o[3],
+      ];
+    }
+    return p.map((g) => parseInt(g, 16));
+  };
+  const testa = leggi(parti[0]);
+  const coda = parti.length === 2 ? leggi(parti[1]) : [];
+  if (parti.length === 1) return testa.length === 8 ? testa : null;
+  const mancanti = 8 - testa.length - coda.length;
+  if (mancanti < 0) return null;
+  const tutti = [...testa, ...new Array(mancanti).fill(0), ...coda];
+  return tutti.some((g) => !Number.isInteger(g) || g < 0 || g > 0xffff)
+    ? null
+    : tutti;
+}
+
+/**
+ * Вътрешен ли е IPv6 адрес — по ALLOWLIST, не по списък със забрани.
+ *
+ * ЗАЩО ОБЪРНАТО. Първата версия изброяваше лошите обхвати (`fc00::/7`,
+ * `fe80::/10`, `ff00::/8`) и пускаше всичко останало. Това пропускаше ПЕТ
+ * различни начина `169.254.169.254` да пътува в IPv6 дреха — NAT64
+ * (`64:ff9b::/96`), 6to4 (`2002::/16`), IPv4-compatible (`::a9fe:a9fe`),
+ * Teredo (`2001:0::/32`) и site-local (`fec0::/10`) — и нито един не прилича
+ * на забранените. Списък със забрани върху пространство от 128 бита е обречен:
+ * винаги има шести начин.
+ *
+ * Затова тук минава САМО глобалният unicast (`2000::/3`), от който се вадят
+ * обхватите с вграден чужд IPv4 и тези, които не се рутират. Непознат запис е
+ * вътрешен — fail-closed.
+ */
 function ipv6Interno(s: string): boolean {
-  if (s === "::" || s === "::1") return true; // неопределен + loopback
-  // IPv4 в IPv6: `::ffff:1.2.3.4` и `::ffff:0102:0304` са ЕДИН И СЪЩ адрес.
-  // Точката 2 от коментара отгоре — преценява се вложеният IPv4.
+  // IPv4 в IPv6: `::ffff:1.2.3.4` и `::ffff:0102:0304` са ЕДИН И СЪЩ адрес и
+  // се съдят като IPv4 — иначе публичен получател по този запис би бил отказан.
   const mappato = /^::ffff:(?:0{1,4}:)?(.+)$/.exec(s);
   if (mappato) {
     const v = mappato[1];
     if (v.includes(".")) return ipv4Interno(v);
     const esa = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(v);
-    if (esa) {
-      const n = (parseInt(esa[1], 16) << 16) | parseInt(esa[2], 16);
-      return ipv4Interno(
-        [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join(
-          ".",
-        ),
-      );
-    }
-    return true;
+    if (!esa) return true;
+    const n = (parseInt(esa[1], 16) << 16) | parseInt(esa[2], 16);
+    return ipv4Interno(
+      [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join("."),
+    );
   }
-  const primo = parseInt(s.split(":")[0] || "0", 16);
-  if ((primo & 0xfe00) === 0xfc00) return true; // fc00::/7 — unique local
-  if ((primo & 0xffc0) === 0xfe80) return true; // fe80::/10 — link-local
-  if (primo === 0x100) return true; // 100::/64 — discard-only
-  if ((primo & 0xff00) === 0xff00) return true; // ff00::/8 — multicast
+
+  const g = gruppiIpv6(s);
+  if (!g) return true;
+  // Извън глобалния unicast няма какво да се търси навън: `::`, `::1`,
+  // `64:ff9b::/96`, `fc00::/7`, `fe80::/10`, `fec0::/10`, `ff00::/8` — всички.
+  if (g[0] < 0x2000 || g[0] > 0x3fff) return true;
+  // Вътре в него — обхватите, които носят чужд IPv4 или не се рутират.
+  if (g[0] === 0x2002) return true; // 6to4: следващите 32 бита СА IPv4
+  if (g[0] === 0x2001 && g[1] === 0x0000) return true; // Teredo
+  if (g[0] === 0x2001 && g[1] === 0x0db8) return true; // документация
+  if (g[0] === 0x3ffe) return true; // 6bone (отпаднал)
   return false;
 }
 
 /**
- * Вътрешен ли е ХОСТЪТ по самото си име.
+ * Изглежда ли името вътрешно — БЕЗ да пита DNS.
  *
- * Бърза проверка при ЗАПИС на адрес — тя не замества резолвирането, а спестява
- * на потребителя грешка чак при първата доставка. Истинската защита е
- * `lookupSicuro`.
+ * ИМЕТО КАЗВА ТОЧНО КОЛКОТО ФУНКЦИЯТА ЗНАЕ. Предишното (`hostInterno`) звучеше
+ * като присъда „този хост е вътрешен"; тук се гледа само НИЗЪТ, а публично
+ * име, което сочи 127.0.0.1, минава спокойно. Затова е бърза проверка при
+ * ЗАПИС на адрес — спестява на човека грешка чак при първата доставка — и
+ * НИКОГА не е защитата. Защитата е `lookupSicuro`, която съди резолвния адрес
+ * в мига на свързването.
  */
-export function hostInterno(hostname: string): boolean {
+export function nomeHostSospetto(hostname: string): boolean {
   const h = hostname.trim().toLowerCase().replace(/\.$/, "");
   if (!h) return true;
   if (h === "localhost") return true;
@@ -165,25 +220,32 @@ export function valutaIndirizzi(
  * Подписът следва `dns.lookup`, защото Node го подава на `net.connect` както
  * си е (включително `all: true`, което Node ≥ 20 ползва за happy eyeballs).
  */
+/**
+ * Резолверът е ПАРАМЕТЪР — единственият шев в този модул.
+ *
+ * Не за гъвкавост: без него успешният път (адресът е публичен, сокетът тръгва)
+ * не може да бъде изпълнен в тест, който не излиза в интернет — а точно там
+ * живее договорът с `net.connect`. Подразбирането е истинският резолвер, тоест
+ * продукционното поведение е непроменено.
+ */
+export type Risolutore = typeof lookupDns;
+
 export function lookupSicuro(
   hostname: string,
   opzioni: unknown,
   callback: Richiamo,
+  risolvi: Risolutore = lookupDns,
 ): void {
   const o =
     typeof opzioni === "number"
       ? { family: opzioni }
       : ((opzioni ?? {}) as Record<string, unknown>);
-  lookupDns(hostname, { ...o, all: true }, (err, indirizzi) => {
+  risolvi(hostname, { ...o, all: true }, (err, indirizzi) => {
     if (err) return callback(err, "");
     const rifiuto = valutaIndirizzi(hostname, indirizzi);
     if (rifiuto) return callback(rifiuto, "");
-    /* c8 ignore start -- успешният път иска име, което се резолвира до
-       ПУБЛИЧЕН адрес, тоест реален DNS: тест, който излиза навън, пада,
-       когато мрежата кихне. Решението е в `valutaIndirizzi` и е тествано. */
     if (o.all) return callback(null, indirizzi);
     callback(null, indirizzi[0].address, indirizzi[0].family);
-    /* c8 ignore stop */
   });
 }
 
@@ -203,6 +265,8 @@ export function postEsterno(
     intestazioni: Record<string, string>;
     corpo: string;
     timeoutMs: number;
+    /** Само за тест — виж `Risolutore`. Подразбирането е системният DNS. */
+    risolutore?: Risolutore;
   },
 ): Promise<EsitoPost> {
   return new Promise((risolvi, rifiuta) => {
@@ -214,14 +278,9 @@ export function postEsterno(
     }
     if (u.protocol !== "https:")
       return rifiuta(new Error("solo HTTPS è ammesso"));
-    if (hostInterno(u.hostname))
+    if (nomeHostSospetto(u.hostname))
       return rifiuta(new ErroreIndirizzoInterno(u.hostname));
 
-    /* c8 ignore start -- От тук нататък се иска РЕАЛЕН външен хост: всичко
-       локално (127.0.0.1, localhost) е отказано преди това от самата защита,
-       а тест, който излиза в интернет, е тест, който пада, когато мрежата
-       кихне. Проверимите решения — схема, вътрешен адрес, резолвиране — са
-       над този ред и всички носят тестове (`__tests__/rete.test.ts`). */
     const req = requestHttps(
       u,
       {
@@ -230,18 +289,40 @@ export function postEsterno(
           ...opzioni.intestazioni,
           "Content-Length": Buffer.byteLength(opzioni.corpo),
         },
-        lookup: lookupSicuro,
+        lookup: (h, o, cb) =>
+          lookupSicuro(h, o, cb as Richiamo, opzioni.risolutore),
         timeout: opzioni.timeoutMs,
       },
+      /* c8 ignore start -- успешен отговор иска ВАЛИДЕН TLS сертификат:
+         `postEsterno` не приема самоподписан и няма опция за собствен CA
+         (нарочно — това би било копче за отслабване на защитата). Пътят на
+         ГРЕШКАТА е тестван (`rete.test.ts`, прекъсната връзка). */
       (res) => {
         // Изчерпваме потока: без това сокетът остава зает до таймаут.
         res.resume();
+        res.on("error", rifiuta);
         res.on("end", () => risolvi({ stato: res.statusCode ?? 0 }));
       },
+      /* c8 ignore stop */
+    );
+    // ОБЩ СРОК, НЕ САМО БЕЗДЕЙСТВИЕ. `timeout` на `https.request` е idle
+    // таймаут: получател, който капе по байт, го нулира вечно. `fetch` имаше
+    // `AbortSignal.timeout`, който покриваше и това — при смяната се загуби.
+    const scadenza = setTimeout(
+      () => req.destroy(new Error("timeout")),
+      opzioni.timeoutMs,
     );
     req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", rifiuta);
+    // ЗАТВАРЯНЕ БЕЗ УРЕДЕН ПРОМИС Е НЕУСПЕХ, НЕ ТИШИНА. Прекъсване НАСРЕД
+    // тялото не поражда задължително `error`; `end` не идва. Промис, който
+    // чака само тях, увисва — а доставката е последователен `for … await`,
+    // тоест един зъл получател спираше целия пакет. `rifiuta` след `risolvi`
+    // е без ефект, затова закачането е безусловно.
+    req.on("close", () => {
+      clearTimeout(scadenza);
+      rifiuta(new Error("connessione chiusa senza risposta"));
+    });
     req.end(opzioni.corpo);
-    /* c8 ignore stop */
   });
 }

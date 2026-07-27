@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Paginazione, Vuoto } from "@/components/ui";
 import { IcoAlterato, IcoIntegro } from "@/components/icone";
-import { dataOraIt } from "@/lib/format";
+import { dataOraIt, plurale } from "@/lib/format";
 
 interface RigaAudit {
   id: string;
@@ -80,12 +80,12 @@ export default function Pagina() {
     else if (d.integro)
       setVerifica({
         esito: "integro",
-        testo: `Integro: ${d.controllate} righe verificate, nessuna alterazione`,
+        testo: `Integro: ${plurale(d.controllate, "riga verificata", "righe verificate")}, nessuna alterazione`,
       });
     else
       setVerifica({
         esito: "alterato",
-        testo: `ALTERAZIONE RILEVATA: ${d.corrotte.length} righe con firma non valida`,
+        testo: `ALTERAZIONE RILEVATA: ${plurale(d.corrotte.length, "riga", "righe")} con firma non valida`,
       });
   }
 

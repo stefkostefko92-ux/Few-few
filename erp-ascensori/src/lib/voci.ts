@@ -42,6 +42,19 @@ export interface VociConfig {
   ruolo?: Ruolo;
   /** състояния на родителя, в които редовете са променими (напр. само BOZZA) */
   statiModificabili?: readonly string[];
+  /**
+   * Допълнително условие върху родителя, без което редовете са замразени.
+   *
+   * ЗАЩО НЕ СТИГА `statiModificabili`. DDT няма статус: замразява го КАЧВАНЕТО
+   * НА ФАКТУРА (`fatturaId != null`). Правилото се пазеше само в
+   * `/api/ddt/[id]` (`esigiScollegato`), а редовете имаха свой вход — тоест
+   * ред можеше да се добави, смени или изтрие в DDT, вече прикачен към
+   * издадена фактура. XML-ът за SDI не се пази, а се ражда наново от живите
+   * редове, значи подаденият документ мълчаливо се разминава с архивирания.
+   */
+  filtroModificabile?: Record<string, unknown>;
+  /** Обяснението, когато `filtroModificabile` не е изпълнено. */
+  messaggioBloccato?: string;
 }
 
 function delegate(model: ModelloPrisma): DelegateVoce {
@@ -84,6 +97,7 @@ async function controllaParent(
       ...(cfg.statiModificabili
         ? { stato: { in: cfg.statiModificabili } }
         : {}),
+      ...(cfg.filtroModificabile ?? {}),
     },
     data: { updatedAt: new Date() },
   });
@@ -95,7 +109,10 @@ async function controllaParent(
     where: { id: parentId, ...filtroTenant(s) },
   });
   if (!esiste) throw new ErroreHttp(404, "Documento non trovato");
-  throw new ErroreHttp(409, "Documento non modificabile in questo stato");
+  throw new ErroreHttp(
+    409,
+    cfg.messaggioBloccato ?? "Documento non modificabile in questo stato",
+  );
 }
 
 /** POST /:id/voci — добавя редица. */

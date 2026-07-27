@@ -37,6 +37,10 @@ export default function Pagina() {
   async function scarica(e: React.FormEvent) {
     e.preventDefault();
     if (inCorso) return;
+    if (dal > al) {
+      setErrore("Il periodo è invertito: la data iniziale è dopo la finale.");
+      return;
+    }
     setInCorso(true);
     setErrore(null);
     setEsito(null);
@@ -69,7 +73,9 @@ export default function Pagina() {
       URL.revokeObjectURL(url);
       setEsito(
         `${documenti} ${documenti === "1" ? "documento" : "documenti"} nel pacchetto${
-          scartate !== "0" ? ` · ${scartate} esclusi dai controlli` : ""
+          scartate !== "0"
+            ? ` · ${scartate} esclusi perché non conformi ai controlli dello SdI`
+            : ""
         }.`,
       );
     } catch {
@@ -125,11 +131,16 @@ export default function Pagina() {
         <p className="flex items-start gap-2 text-xs text-warning-text">
           <IcoNota />
           <span>
-            Questo non è un sistema di conservazione a norma: quella è svolta da
-            un conservatore, con marche temporali e metadati secondo le Linee
-            guida AgID. L&apos;obbligo di conservazione resta in capo al
-            contribuente (art. 39 D.P.R. 633/1972, art. 2220 c.c.). Le bozze non
-            entrano nel pacchetto.
+            {/* Плътен правен абзац се прескача след първия прочит — а точно
+                тази страница се отваря веднъж на тримесечие. Носещата фраза
+                остава видима и при сканиране; останалото е за първия път. */}
+            <strong className="font-semibold">
+              Questo non è un sistema di conservazione a norma.
+            </strong>{" "}
+            Quella è svolta da un conservatore, con marche temporali e metadati
+            secondo le Linee guida AgID. L&apos;obbligo di conservazione resta
+            in capo al contribuente (art. 39 D.P.R. 633/1972, art. 2220 c.c.).
+            Le bozze non entrano nel pacchetto.
           </span>
         </p>
 

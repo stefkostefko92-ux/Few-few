@@ -2,7 +2,11 @@
 //
 // РАЗЛИКАТА ОТ `/sdi`. Там се ВПИСВА, че файлът е тръгнал — човек го е подал
 // през портала на Agenzia delle Entrate или го е пратил на счетоводителя. Тук
-// продуктът го изпраща САМ, когато клиентът е конфигурирал канал.
+// продуктът щеше да го изпрати САМ — но изпращач още няма, и затова маршрутът
+// ОТКАЗВА, вместо да отбележи фактурата като подадена. Фактура, за която
+// системата твърди, че е тръгнала, а не е, е неиздадена за данъчната
+// администрация; санкцията по чл. 6, ал. 1 D.Lgs. 471/1997 е 70 % от данъка,
+// минимум 300 € на операция, и се открива месеци по-късно.
 //
 // Двата пътя съществуват заедно нарочно: канал се конфигурира от малцина, а
 // ръчното подаване е реалността на повечето малки фирми. Отнемането на ръчния
@@ -20,7 +24,11 @@ import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { fatturaPerSdi } from "@/lib/sdi/carica";
 import { xmlFatturaPa, validaPerSdi, nomeFileSdi } from "@/lib/sdi/fatturapa";
-import { configTrasmissione, controllaInvio } from "@/lib/sdi/trasmissione";
+import {
+  configTrasmissione,
+  controllaInvio,
+  canaleImplementato,
+} from "@/lib/sdi/trasmissione";
 import { consenti } from "@/lib/rate-limit";
 import { giaTrasmessa } from "@/lib/fiscale/sdi-stato";
 
@@ -47,11 +55,10 @@ export const POST = gestito(async (_req, ctx) => {
 
   const cfg = configTrasmissione();
   if (cfg.canale === "manuale")
-    return errore(
+    throw new ErroreHttp(
       503,
       "Nessun canale di trasmissione configurato: scaricare l'XML e trasmetterlo tramite il proprio intermediario o il portale Fatture e Corrispettivi.",
     );
-
   if (!consenti(`sdi:${s.tenantId ?? "-"}`, LIMITE_ORARIO, 60 * 60_000))
     return errore(429, "Troppe trasmissioni: riprovare fra qualche minuto.");
 
@@ -120,6 +127,25 @@ export const POST = gestito(async (_req, ctx) => {
       `Configurazione del canale non valida: ${guasti.join(" ")}`,
     );
 
+  // КАНАЛЪТ Е КОНФИГУРИРАН, НО ЗАД НЕГО НЯМА ИЗПРАЩАЧ.
+  //
+  // Единственият честен отговор е отказ. Алтернативата — да запишем
+  // `statoSdi = INVIATA` — прави фактурата „подадена" в очите на потребителя и
+  // необратима в интерфейса (`giaTrasmessa` после отказва повторен опит),
+  // докато файлът не е тръгнал наникъде.
+  //
+  // ЗАЩО ЧАК ТУК, А НЕ НА ВХОДА. Проверката стоеше първа и с празен
+  // `CANALI_IMPLEMENTATI` поглъщаше ВСИЧКО под себе си: чернова, вече подадена
+  // фактура, несъответстващ документ — всички получаваха 501 „няма канал", а
+  // инвариантите под нея станаха недостижими, тоест и нетествани. Отказът е
+  // същият; сега казва ПО-СПЕЦИФИЧНАТА причина, а проверките по документа
+  // остават живи за деня, в който изпращачът влезе.
+  if (!canaleImplementato(cfg.canale))
+    throw new ErroreHttp(
+      501,
+      `Il canale «${cfg.etichetta}» non è ancora operativo in questa versione: il gestionale prepara il file, ma non lo trasmette. Scaricare l'XML, trasmetterlo con il proprio canale e poi registrare l'esito dalla scheda della fattura.`,
+    );
+
   // ФАКТЪТ СЕ ЗАПИСВА ПРЕДИ ОТГОВОРА НА КАНАЛА.
   //
   // Обратното значи, че прекъсване по средата оставя фактура, за която
@@ -138,7 +164,7 @@ export const POST = gestito(async (_req, ctx) => {
   if (upd.count === 0)
     throw new ErroreHttp(
       409,
-      "Stato SDI modificato da un'altra operazione: ricaricare la fattura.",
+      "Stato SdI modificato da un'altra operazione: ricaricare la fattura.",
     );
   await scriviAudit({
     azione: "STATE_CHANGE",

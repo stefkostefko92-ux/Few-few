@@ -7,7 +7,7 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { EVENTI } from "@/lib/webhook/firma";
-import { hostInterno } from "@/lib/rete";
+import { nomeHostSospetto } from "@/lib/rete";
 
 const schema = z.object({
   url: z
@@ -34,7 +34,7 @@ function indirizzoAmmesso(url: string): boolean {
   } catch {
     return false;
   }
-  return !hostInterno(u.hostname);
+  return !nomeHostSospetto(u.hostname);
 }
 
 export const GET = gestito(async () => {

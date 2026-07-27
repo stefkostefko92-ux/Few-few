@@ -29,13 +29,13 @@ const CAMPI: {
   { name: "pec", label: "PEC" },
   {
     name: "codiceSdi",
-    label: "Codice destinatario (SDI)",
+    label: "Codice destinatario (SdI)",
     aiuto: "Per la fatturazione elettronica",
   },
   {
     name: "regimeFiscale",
     label: "Regime fiscale",
-    aiuto: "Codice SDI: RF01 ordinario, RF19 forfettario",
+    aiuto: "Codice del regime: RF01 ordinario, RF19 forfettario",
   },
   { name: "iban", label: "IBAN", aiuto: "Stampato in calce ai documenti" },
   { name: "rea", label: "Numero REA" },

@@ -1,11 +1,16 @@
+// БЕЛЕЖКА ЗА ОБХВАТА. Диапазоните на адресите СЕ тестват — в
+// `rete.test.ts`, където живее решението. Дотук същите случаи стояха и тук,
+// защото `indirizzoInterno` беше обвивка от един ред около `nomeHostSospetto`:
+// два пакета, които падат заедно и не могат да се разминат, значи един пакет
+// и една обвивка в повече.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import {
   configTrasmissione,
   controllaInvio,
-  indirizzoInterno,
+  CANALI_IMPLEMENTATI,
+  canaleImplementato,
   PEC_SDI_PRIMO_INVIO,
-  ErroreTrasmissione,
   type ConfigTrasmissione,
 } from "../sdi/trasmissione";
 
@@ -141,49 +146,6 @@ describe("посредник — това е SSRF повърхност", () => {
   });
 });
 
-describe("кои адреси са вътрешни", () => {
-  test("частните диапазони и loopback", () => {
-    for (const h of [
-      "localhost",
-      "127.0.0.1",
-      "10.0.0.5",
-      "172.16.3.9",
-      "172.31.255.255",
-      "192.168.1.1",
-      "169.254.169.254",
-      "0.0.0.0",
-      "servizio.internal",
-    ])
-      assert.equal(indirizzoInterno(h), true, h);
-  });
-
-  test("публичните НЕ се бъркат с частните", () => {
-    // 172.32 е ПУБЛИЧЕН: диапазонът свършва на 172.31. Груба проверка „започва
-    // със 172" би отрязала законни адреси.
-    for (const h of [
-      "fatture.example.it",
-      "8.8.8.8",
-      "172.32.0.1",
-      "172.15.0.1",
-      "193.168.1.1",
-      "11.0.0.1",
-    ])
-      assert.equal(indirizzoInterno(h), false, h);
-  });
-});
-
-describe("грешката на канала", () => {
-  test("носи HTTP състояние и се разпознава по тип", () => {
-    // Маршрутът я превежда 1:1 в отговор към оператора; без състоянието всяка
-    // грешка на канала би станала 500.
-    const e = new ErroreTrasmissione(504, "Il canale non risponde");
-    assert.ok(e instanceof Error);
-    assert.equal(e.name, "ErroreTrasmissione");
-    assert.equal(e.stato, 504);
-    assert.equal(e.message, "Il canale non risponde");
-  });
-});
-
 describe("напълно неразбираем адрес", () => {
   test("не гърми, а се отказва с обяснение", () => {
     // `new URL` хвърля; без прихващането конфигурационна печатна грешка би
@@ -203,5 +165,20 @@ describe("напълно неразбираем адрес", () => {
       p.some((x) => /HTTPS/.test(x)),
       false,
     );
+  });
+});
+
+// ЧЕСТНОТО ОГРАНИЧЕНИЕ, ЗАКЛЮЧЕНО В ТЕСТ.
+//
+// Слоят подготвя файла, но нищо в продукта не праща PEC и не вика посредник.
+// Докато е така, маршрутът за подаване трябва да ОТКАЗВА — фактура, за която
+// системата твърди, че е тръгнала, а не е, е неиздадена за данъчната
+// администрация. Тестът пази списъка празен: пълненето му без реален изпращач
+// вали гейта.
+describe("кои канали имат реален изпращач", () => {
+  test("нито един — и това е проверимо, не обещано в коментар", () => {
+    assert.deepEqual([...CANALI_IMPLEMENTATI], []);
+    for (const c of ["manuale", "pec", "intermediario"] as const)
+      assert.equal(canaleImplementato(c), false, c);
   });
 });

@@ -70,6 +70,47 @@ export interface EsitoConsegne {
 }
 
 /**
+ * Същото, но със следа в `automatismi_run` — това е, което dead-man-ът чете.
+ *
+ * ЗАЩО НЕ Е ПОДРОБНОСТ. Гейджът `erp_automatismo_eta_secondi{nome="webhook"}`
+ * се смята от последния УСПЕШЕН пуск. Без този запис той стои на `-1`
+ * завинаги, тоест алармата за спрели доставки не може да се задейства нито
+ * веднъж — а на таблото изглежда като покритие. По-лошо от липсваща аларма.
+ */
+export async function consegnaInAttesaTracciato(
+  limite = 100,
+): Promise<EsitoConsegne> {
+  const run = await prisma.automatismoRun.create({ data: { nome: "webhook" } });
+  const inizio = Date.now();
+  try {
+    const esito = await consegnaInAttesa(limite);
+    await prisma.automatismoRun.update({
+      where: { id: run.id },
+      data: {
+        terminatoAt: new Date(),
+        esito: "OK",
+        durataMs: Date.now() - inizio,
+        dettagli: { ...esito },
+      },
+    });
+    return esito;
+  } catch (e) {
+    const err = descriviErrore(e);
+    await prisma.automatismoRun.update({
+      where: { id: run.id },
+      data: {
+        terminatoAt: new Date(),
+        esito: "ERRORE",
+        durataMs: Date.now() - inizio,
+        errore: `${err.err_tipo}:${err.err_codice}`,
+      },
+    });
+    log.error("automatismo webhook fallito", { ...err, esito: "ERRORE" });
+    throw e;
+  }
+}
+
+/**
  * Праща чакащите доставки, чието време е дошло.
  *
  * Пуска се от автоматизъм. Взима ограничен пакет: една заседнала опашка не бива
