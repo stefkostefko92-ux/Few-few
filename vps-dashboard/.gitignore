@@ -5,3 +5,7 @@ node_modules/
 # Тайните живеят само на сървъра (mode 600), никога тук.
 config.json
 initial-admin-credential.txt
+restic.env
+# Паролата на незадължителния десктоп. Същото правило: живее ДО compose
+# файла на сървъра (mode 600), никога тук и никога в деплой архива.
+deploy/desktop/desktop.env

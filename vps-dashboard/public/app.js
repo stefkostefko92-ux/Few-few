@@ -191,6 +191,7 @@ const SECTIONS = [
   { id: 'domains', ico: '🔒', label: 'Домейни и TLS', render: renderDomains },
   { id: 'cron', ico: '◷', label: 'Крон/таймери', render: renderCron },
   { id: 'files', ico: '🗀', label: 'Файлове', render: renderFiles },
+  { id: 'desktop', ico: '🖥', label: 'Десктоп', render: renderDesktop },
   { id: 'terminal', ico: '⌘', label: 'Терминал', render: renderPty },
   { id: 'runonce', ico: '▷', label: 'Еднократна команда', render: renderTerminal },
   { id: 'agents', ico: '✦', label: 'Агенти', render: renderAgents },
@@ -322,6 +323,7 @@ const SECTION_ALIASES = {
   integrity: 'целост отпечатък baseline промени etc конфигурация',
   fail2ban: 'фейлтубан банове блокирани ip jail забрана',
   access: 'достъп ip allowlist разрешени адреси sudo режим',
+  desktop: 'десктоп графичен интерфейс gui xfce ubuntu браузър vnc',
   webserver: 'уеб сървър нгинкс nginx caddy vhost certbot',
   backups: 'бекъпи архиви restic снимки',
   env: 'променливи env среда secrets тайни конфигурация ключове',
@@ -1989,6 +1991,97 @@ async function restoreDialog(dump, db) {
     const job = await api('/backups/restore/apply', { method: 'POST', body: { name: dump.name, target } });
     streamJob(job.id, job.title);
   } catch (e) { toast(e.message, 'bad'); }
+}
+
+// ── Десктоп (незадължителен) ──────────────────────────────────────────────────
+// Пълен Ubuntu + XFCE в контейнер, показан ВЪТРЕ в панела. Изключен по
+// подразбиране: жива графична сесия е втора среда за изпълнение на машината, а
+// не подробност от интерфейса.
+async function renderDesktop() {
+  const view = document.getElementById('view');
+  const d = await api('/desktop');
+  view.innerHTML = '';
+
+  view.appendChild(
+    el('p', { class: 'section-desc', text:
+      'Графичен работен плот на самия сървър — браузър (виждаш сайта както го вижда светът от този IP), ' +
+      'графичен клиент за база, преглед на снимки и PDF. Върви в контейнер, слуша само на 127.0.0.1 и се ' +
+      'вижда единствено през този панел, тоест зад същия вход и 2FA.' })
+  );
+
+  if (!d.available) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'empty', text: d.error || 'Няма compose файл за десктопа в текущия release.' }),
+    ]));
+    return;
+  }
+
+  const busy = (btn, fn) => async () => {
+    btn.disabled = true;
+    try { const job = await fn(); streamJob(job.id, job.title); }
+    catch (e) { toast(e.message, 'bad'); btn.disabled = false; }
+  };
+  const upBtn = el('button', { class: 'btn btn-primary btn-sm', text: '▶ Пусни десктопа' });
+  upBtn.onclick = busy(upBtn, () => api('/desktop/up', { method: 'POST' }));
+  const downBtn = el('button', { class: 'btn btn-sm btn-danger', text: '■ Спри' });
+  downBtn.onclick = busy(downBtn, () => api('/desktop/down', { method: 'POST' }));
+  const pullBtn = el('button', { class: 'btn btn-sm', text: '⟳ Обнови образа' });
+  pullBtn.onclick = busy(pullBtn, () => api('/desktop/pull', { method: 'POST' }));
+
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      pill(d.running ? 'ok' : 'dim', d.running ? 'върви' : d.state || 'спрян'),
+      d.health ? pill(d.health === 'healthy' ? 'ok' : 'warn', d.health) : '',
+      pill(d.envConfigured ? 'ok' : 'bad', d.envConfigured ? 'паролата е зададена' : 'липсва desktop.env'),
+      el('span', { class: 'grow' }),
+      d.running ? downBtn : upBtn,
+      pullBtn,
+    ])
+  );
+
+  if (!d.envConfigured) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('h3', { text: 'Първо задай парола за десктопа' }),
+      el('div', { class: 'metric-sub', text:
+        'Тя е ВТОРИ слой — контейнерът и без това не се вижда отвън. Живее до compose файла, mode 600, ' +
+        'никога в репото (същото правило като restic.env):' }),
+      el('pre', { class: 'term-out', style: 'max-height:140px', text:
+        `printf 'DESKTOP_USER=csd\nDESKTOP_PASSWORD=%s\n' "$(openssl rand -base64 18)" \\
+` +
+        `  > ${d.composeFile.replace(/docker-compose\.yml$/, 'desktop.env')}
+` +
+        `chmod 600 ${d.composeFile.replace(/docker-compose\.yml$/, 'desktop.env')}` }),
+    ]));
+    return;
+  }
+
+  if (!d.running) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'empty', text:
+        'Десктопът е спрян. Първото пускане дърпа около 2 GB образ — виж живия изход на задачата.' }),
+      el('div', { class: 'metric-sub', text:
+        'Не стартира заедно с машината по подразбиране. Спри го, като свършиш: ~1 GB RAM и една ' +
+        'допълнителна среда за изпълнение по-малко.' }),
+    ]));
+    return;
+  }
+
+  // Рамката е от СЪЩИЯ произход (`/desktop/` минава през панела), затова CSP-то
+  // остава стегнато — нищо чуждо не се отваря.
+  const frame = el('iframe', {
+    src: '/desktop/',
+    style: 'width:100%;height:76vh;border:1px solid var(--line);border-radius:var(--radius);background:#000',
+    allow: 'clipboard-read; clipboard-write; fullscreen',
+    title: 'Десктоп на сървъра',
+  });
+  view.appendChild(frame);
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      el('button', { class: 'btn btn-sm', text: '⛶ На цял екран', onclick: () => frame.requestFullscreen?.() }),
+      el('button', { class: 'btn btn-sm', text: '↗ В нов раздел', onclick: () => window.open('/desktop/', '_blank', 'noopener') }),
+      el('span', { class: 'muted', text: `порт 127.0.0.1:${d.port} · контейнер csd-desktop` }),
+    ])
+  );
 }
 
 // ── Firewall ───────────────────────────────────────────────────────────────────

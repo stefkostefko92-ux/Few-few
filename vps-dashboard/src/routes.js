@@ -43,6 +43,7 @@ import { drillSpec, backupAge } from './drill.js';
 import * as health from './health.js';
 import * as redis from './redis.js';
 import * as volumes from './volumes.js';
+import * as desktop from './desktop.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -86,6 +87,9 @@ export const PEER_DENY = [
   /^\/api\/audit(\/|$)/,
   /^\/api\/sessions(\/|$)/,
   /^\/api\/settings\/access$/,
+  // Десктопът е графична сесия НА нашата машина — съседът няма работа с нея,
+  // нито да я пуска, нито да гледа през нея.
+  /^\/api\/desktop(\/|$)/,
   // Peer НИКОГА не бива да ни ползва като прокси към трети възел: иначе
   // компрометиран съсед, който знае само НАШИЯ входящ токен, стига до другите
   // ни възли с ТЕХНИТЕ токени, които ние пазим (confused deputy). Може и да
@@ -1441,6 +1445,21 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Десктоп (незадължителен) ───────────────────────────────────────────────
+  r.get('/api/desktop', guard(J(() => desktop.status(cfg))));
+  r.post(
+    '/api/desktop/:action',
+    guard(
+      J(async (req, res, params) => {
+        const spec = desktop.actionSpec(cfg, params.action);
+        const job = jobs.start(spec, { user: req.user });
+        audit.log({ action: `desktop.${params.action}`, user: req.user });
+        return job;
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Redis ──────────────────────────────────────────────────────────────────
   r.get('/api/redis', guard(J(() => redis.overview())));
   r.post(
@@ -1738,5 +1757,10 @@ export function buildRouter(ctx) {
     )
   );
 
+  // Изнесено НАВЪН, защото десктопът се проксира ИЗВЪН рутера: пътят му е
+  // `/desktop/…` (не `/api/…`), а WebSocket надграждането изобщо не минава през
+  // обикновения път на заявките. И двете места трябва да питат СЪЩАТА функция
+  // за автентикация — иначе рамката се превръща във втора врата без вход.
+  r.authenticate = (req) => auth(req);
   return r;
 }

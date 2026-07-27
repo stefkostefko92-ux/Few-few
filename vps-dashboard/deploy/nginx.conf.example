@@ -17,6 +17,14 @@ server {
     location / { return 301 https://$host$request_uri; }
 }
 
+# Нужно за WebSocket (десктопът). Стои в `http` контекста, не в `server` —
+# сложи го в /etc/nginx/conf.d/upgrade.conf, ако този файл е include-нат вътре в
+# server блок.
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
 server {
     listen 443 ssl http2;
     server_name vps1.carbonstealth.eu;
@@ -46,6 +54,12 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket. Панелът сам по себе си НЕ ползва WS (потоците му са SSE) —
+        # това е за незадължителния десктоп, чийто VNC е WebSocket от първата до
+        # последната заявка. Без тези два реда рамката се зарежда и остава черна.
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
 
         # SSE (метрики/логове/задачи на живо): без буфериране, без таймаут.
         proxy_buffering off;

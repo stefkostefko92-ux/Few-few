@@ -18,6 +18,7 @@ import { buildRouter, ipGateAllows } from './src/routes.js';
 import { SudoGrants } from './src/sudo.js';
 import { RevokedSessions } from './src/revoked.js';
 import { serveStatic, sendError, clientIp } from './src/httpd.js';
+import * as desktop from './src/desktop.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -171,7 +172,12 @@ const server = http.createServer(async (req, res) => {
   res.setHeader(
     'content-security-policy',
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
-      "connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'"
+      "connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; " +
+      // Незадължителният десктоп се показва в рамка. Понеже минава ПРЕЗ панела
+      // (`/desktop/…`), произходът е същият и „self" стига — не отваряме нищо
+      // чуждо. `frame-ancestors 'none'` отгоре остава: панелът не бива да бъде
+      // рамкиран ОТ никого.
+      "frame-src 'self'"
   );
   let url;
   try {
@@ -185,6 +191,25 @@ const server = http.createServer(async (req, res) => {
   // изключено (иначе едно погрешно записване заключва собственика отвън).
   if (!ipGateAllows(req, cfg, url.pathname, clientIp)) {
     return sendError(res, 403, 'Достъпът от този адрес не е разрешен.');
+  }
+
+  // Десктопът се проксира ИЗВЪН рутера: пътят му е `/desktop/…`, а не `/api/…`,
+  // защото контейнерът очаква точно този префикс (`SUBFOLDER=/desktop/`).
+  // Автентикацията обаче е СЪЩАТА — иначе рамката става втора врата към
+  // машината без вход.
+  if (url.pathname === desktop.PREFIX || url.pathname.startsWith(`${desktop.PREFIX}/`)) {
+    if (!router.authenticate(req)) return sendError(res, 401, 'Не си вписан.');
+    // Заглавките на ПАНЕЛА трябва да отпаднат от отговора на десктопа, иначе
+    // рамката остава черна без нито едно съобщение за грешка:
+    //   • `x-frame-options: DENY` забранява рамкирането ДОРИ от същия произход
+    //     (за същия произход е нужно SAMEORIGIN, не DENY);
+    //   • `frame-ancestors 'none'` в CSP-то прави същото.
+    // Панелът си запазва и двете за собствените си страници — маха ги само за
+    // този път, който сам проксира и сам е автентикирал.
+    res.removeHeader('x-frame-options');
+    res.removeHeader('content-security-policy');
+    res.setHeader('x-frame-options', 'SAMEORIGIN');
+    return desktop.proxyHttp(cfg, req, res);
   }
 
   try {
@@ -205,6 +230,28 @@ const server = http.createServer(async (req, res) => {
     if (status >= 500) console.error(`[csd] ${req.method} ${url.pathname}:`, err);
     sendError(res, status, status >= 500 ? 'Вътрешна грешка' : err.message);
   }
+});
+
+// WebSocket за десктопа. `node:http` не проксира надграждане сам, а VNC е
+// WebSocket от първата до последната си заявка: без това рамката се зарежда и
+// остава черна.
+//
+// Автентикацията е ЗАДЪЛЖИТЕЛНА и тук. Пропускът ѝ е класическата дупка при
+// такова прокси: обикновените заявки са зад вход, а сокетът — не.
+server.on('upgrade', (req, socket, head) => {
+  let url;
+  try {
+    url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  } catch {
+    return socket.destroy();
+  }
+  if (!ipGateAllows(req, cfg, url.pathname, clientIp)) return socket.destroy();
+  if (url.pathname !== desktop.PREFIX && !url.pathname.startsWith(`${desktop.PREFIX}/`)) return socket.destroy();
+  if (!router.authenticate(req)) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    return socket.destroy();
+  }
+  desktop.proxyUpgrade(cfg, req, socket, head);
 });
 
 server.headersTimeout = 30000;

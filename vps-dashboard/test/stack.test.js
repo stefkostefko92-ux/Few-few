@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { parseInfo, parseKeyspace, summarize, evictionChecks, saveSpec, assertName } from '../src/redis.js';
 import { assertVolume, parseSize, volumeBackupSpec, backupAllVolumesSpec, archiveName } from '../src/volumes.js';
 import { loadConfig } from '../src/config.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { desktopPort, actionSpec, status } from '../src/desktop.js';
 
 // Реален изход на `redis-cli INFO`, съкратен до нужното.
 const INFO = `# Server
@@ -199,4 +203,60 @@ test('всички деплойвани продукти имат health про�
   const adblock = cfg.healthChecks.find((c) => c.name === 'adblock');
   assert.ok(adblock.host, 'статичният сайт иска Host заглавка');
   assert.match(adblock.host, /adblock\./);
+});
+
+
+// ── Десктоп (незадължителен) ──────────────────────────────────────────────────
+test('десктоп: портът се валидира, а не се вярва на конфига', () => {
+  assert.equal(desktopPort({}), 3010, 'подразбиране');
+  assert.equal(desktopPort({ desktop: { port: 4000 } }), 4000);
+  for (const bad of [0, -1, 70000, 'осем', null, 1.5]) {
+    assert.equal(desktopPort({ desktop: { port: bad } }), 3010, `${bad} трябваше да падне към подразбирането`);
+  }
+});
+
+test('десктоп: действията са затворен списък и искат парола преди пускане', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-'));
+  const file = path.join(dir, 'docker-compose.yml');
+  fs.writeFileSync(file, 'services: {}\n');
+  const cfg = { desktop: { composeFile: file }, paths: {} };
+
+  for (const bad of ['rm', 'exec', 'up; rm -rf x', '', null]) {
+    assert.throws(() => actionSpec(cfg, bad), undefined, `„${bad}" трябваше да бъде отхвърлено`);
+  }
+  // Пускане БЕЗ desktop.env: паролата на десктопа никога не е празна по
+  // подразбиране — иначе графична сесия тръгва без нито един втори слой.
+  assert.throws(() => actionSpec(cfg, 'up'), /desktop\.env/);
+  // Спирането обаче трябва да работи ВИНАГИ: да не можеш да спреш нещо, защото
+  // липсва конфиг файл, е най-лошият възможен момент да си блокиран.
+  assert.ok(actionSpec(cfg, 'down').shell.includes('down'));
+
+  fs.writeFileSync(path.join(dir, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  const up = actionSpec(cfg, 'up');
+  assert.match(up.shell, /docker compose/);
+  assert.match(up.shell, /--env-file desktop\.env/);
+  assert.equal(up.exclusive, 'desktop', 'две едновременни пускания нямат смисъл');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('десктоп: липсващият Docker е „спрян", не „грешка"', async () => {
+  // Compose файлът се намира спрямо самия модул → работи при всяко APP_DIR и в
+  // dev режим (по-рано беше зашит към /opt/vps-dashboard и мълчеше навсякъде
+  // другаде).
+  const s = await status({ paths: { currentLink: '/няма/такъв/път' }, desktop: {} });
+  assert.equal(s.available, true, 'файлът, който ШИПВАМЕ, трябва да се намира');
+  assert.match(s.composeFile, /deploy\/desktop\/docker-compose\.yml$/);
+  // Тук няма Docker. Това НЕ е грешка — десктопът просто не върви. Разликата е
+  // същата като при алармите: „няма проблем" ≠ „не знам".
+  assert.equal(s.running, false);
+  assert.equal(s.state, null);
+  // Без desktop.env панелът показва как да я създадеш, вместо да пусне сесия
+  // без втори слой.
+  assert.equal(s.envConfigured, false);
+});
+
+test('десктоп: compose файлът не сочи извън продукта', async () => {
+  const s = await status({ paths: {}, desktop: {} });
+  assert.ok(s.composeFile.endsWith('/deploy/desktop/docker-compose.yml'));
+  assert.ok(!s.composeFile.includes('..'), 'пътят е нормализиран');
 });
