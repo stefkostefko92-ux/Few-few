@@ -16,8 +16,14 @@ CREATE TYPE "TipoNotifica" AS ENUM (
 
 CREATE TYPE "StatoNotifica" AS ENUM ('IN_ATTESA', 'INVIATA', 'FALLITA');
 
+-- `id` е БЕЗ `DEFAULT gen_random_uuid()` и това не е пропуск: `@default(uuid())`
+-- в Prisma се изпълнява в ПРИЛОЖЕНИЕТО, не в базата. Първата версия на тази
+-- миграция сложи default в SQL-а и гейтът „дрейф между схема и миграции" я
+-- отхвърли — точно за това съществува: историята на миграциите трябва да
+-- изгражда живата схема ДОСЛОВНО, иначе поправката се прави с ръчен SQL върху
+-- продукционна база. Всички останали 39 таблици са същите.
 CREATE TABLE "notifiche" (
-  "id"                UUID            NOT NULL DEFAULT gen_random_uuid(),
+  "id"                UUID            NOT NULL,
   "tipo"              "TipoNotifica"  NOT NULL,
   "chiave"            TEXT            NOT NULL,
   "destinatario"      TEXT            NOT NULL,
