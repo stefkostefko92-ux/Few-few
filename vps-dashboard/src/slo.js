@@ -150,29 +150,38 @@ export const BURN_RULES = [
 
 // Оценява правилата за един продукт. Пламва само когато И ДВАТА прозореца
 // надхвърлят прага — късият гаси алармата ~5 мин след като проблемът спре.
-export function evaluateBurn(rows, name, slo, { now = Date.now(), minBadShort = 3 } = {}) {
+// `metric` избира КОЙ SLI гори бюджета:
+//   'bad'  — недостъпност (по подразбиране)
+//   'slow' — латентност над целта
+// Второто съществуваше като данни (slo.js записва `slow`), но никога не се
+// оценяваше — тоест сайт, минал от 200 ms на 9 секунди и останал там, не будеше
+// никого. А точно това е сигналът ПРЕДИ срива.
+export function evaluateBurn(rows, name, slo, { now = Date.now(), minBadShort = 3, metric = 'bad' } = {}) {
   const out = [];
+  const rate = (w) => (metric === 'slow' ? w.slowRate : w.errorRate);
+  const count = (w) => (metric === 'slow' ? w.slow : w.bad);
   for (const rule of BURN_RULES) {
     const long = windowStats(rows, name, rule.longMs, now);
     const short = windowStats(rows, name, rule.shortMs, now);
     if (!long.total || !short.total) continue;
-    const longBurn = burnRate(long.errorRate, slo);
-    const shortBurn = burnRate(short.errorRate, slo);
+    const longBurn = burnRate(rate(long), slo);
+    const shortBurn = burnRate(rate(short), slo);
     // Защитата от „една лоша проба = аларма": искаме МИНИМАЛЕН БРОЙ лоши проби в
     // късия прозорец, независимо колко проби има. (Условието беше „и малко проби
     // общо" — при 360 проби на прозорец това никога не се задействаше и една
     // мигнала проба вдигаше тикет. Цената е забавяне: при каданс 60s трябват 3
     // минути престой, преди да пламне — съзнателна размяна срещу шума.)
-    if (short.bad < minBadShort) continue;
+    if (count(short) < minBadShort) continue;
     if (longBurn >= rule.factor && shortBurn >= rule.factor) {
       out.push({
         severity: rule.severity,
         factor: rule.factor,
         label: rule.label,
+        metric,
         longBurn: Math.round(longBurn * 10) / 10,
         shortBurn: Math.round(shortBurn * 10) / 10,
         longWindowMs: rule.longMs,
-        badLong: long.bad,
+        badLong: count(long),
         totalLong: long.total,
       });
     }

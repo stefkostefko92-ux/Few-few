@@ -22,6 +22,10 @@ export const SUDO_TTL_MS = 5 * 60 * 1000;
 export const SUDO_ALWAYS = [
   /^\/api\/terminal\//,
   /^\/api\/pty(\/|$)/,
+  // Четене на ПРОИЗВОЛЕН файл като root е същата заплаха като разкриването на
+  // тайните в `.env`: панелът върви като root, значи /etc/shadow, ключовете в
+  // /root/.ssh и всеки конфиг са на един GET разстояние.
+  /^\/api\/files\/read$/,
 ];
 
 // САМО мутации: четенето им е безобидно (кой е списъкът с адреси, какви лимити
@@ -37,6 +41,12 @@ export const SUDO_ON_WRITE = [
   /^\/api\/totp\/(enable|disable)$/,
   /^\/api\/settings\/access$/,
   /^\/api\/limits(\/|$)/,
+  // Запис на файл като root е изпълнение на код с една стъпка забавяне: пишеш
+  // unit файл или скрипт, после го стартираш от „Услуги".
+  /^\/api\/files\/write$/,
+  // Крон записът е същото, само отложено: ред в crontab е код, който ще се
+  // изпълни като root без никого наоколо.
+  /^\/api\/cron\/(add|remove|run)$/,
 ];
 
 export function needsSudo(pathname, cfg, { mutating = false } = {}) {

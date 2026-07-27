@@ -145,14 +145,16 @@ export class AccessLogReader {
 
   // Чете САМО новото от файла. Връща и решението си за ротацията, за да е видимо
   // защо понякога се чете отначало.
-  readNew(file) {
+  // `persist: false` чете от края БЕЗ да мести курсора — за човешко гледане.
+  readNew(file, { persist = true } = {}) {
     let st;
     try {
       st = fs.statSync(file);
     } catch {
       return { lines: [], rotated: false, error: 'няма достъп' };
     }
-    const cur = this.state.cursors[file];
+    // При четене за човек курсорът се игнорира: винаги последният прозорец.
+    const cur = persist ? this.state.cursors[file] : null;
     let start = 0;
     let rotated = false;
     if (cur && cur.inode === st.ino) {
@@ -198,14 +200,14 @@ export class AccessLogReader {
     } catch (err) {
       return { lines: [], rotated, error: err.message };
     }
-    this.state.cursors[file] = { inode: st.ino, offset: st.size };
+    if (persist) this.state.cursors[file] = { inode: st.ino, offset: st.size };
     const lines = text.split('\n');
     if (partial && lines.length) lines.shift(); // отрязаният първи ред
     return { lines: lines.filter(Boolean), rotated, error: null };
   }
 
   // Пълният анализ: агрегати по адрес, статус, IP и бот.
-  analyze({ files = null, limit = 25 } = {}) {
+  analyze({ files = null, limit = 25, persist = true, windowBytes = 4 * 1024 * 1024 } = {}) {
     const targets = files || discoverLogs().map((f) => f.path);
     if (!targets.length) {
       return { available: false, note: 'Не са намерени access log файлове (търсено в /var/log/nginx, /var/log/caddy, /var/log/apache2).' };
@@ -224,7 +226,7 @@ export class AccessLogReader {
     let newest = null;
 
     for (const file of targets) {
-      const r = this.readNew(file);
+      const r = this.readNew(file, { persist });
       if (r.rotated) rotated = true;
       for (const line of r.lines) {
         const rec = parseLine(line);
@@ -266,7 +268,7 @@ export class AccessLogReader {
         }
       }
     }
-    this.save();
+    if (persist) this.save();
 
     const paths = [...byPath.values()].map((g) => {
       const times = g.times.sort((a, b) => a - b);
@@ -286,6 +288,7 @@ export class AccessLogReader {
 
     return {
       available: true,
+      persisted: persist,
       files: targets,
       rotated,
       total,

@@ -68,10 +68,23 @@ export class LogMiner {
 
   // Чете САМО новото след курсора — точен брой без препокриване и без да
   // прехвърляме целия журнал всеки път.
-  async collect({ priority = 4, limit = 2000 } = {}) {
+  // `persist: false` е за ЧЕТЕНЕ ОТ ЧОВЕК: не мести курсора и не маркира
+  // отпечатъците като видени. Без това отварянето на секцията в браузъра
+  // консумира курсора и следващата проверка вече не обявява грешките за НОВИ —
+  // точно по време на инцидент, когато човек рефрешва най-често.
+  async collect({ priority = 4, limit = 2000, persist = true, sinceMin = null } = {}) {
     const args = ['-o', 'json', '--no-pager', '-p', String(priority), '--show-cursor', '-n', String(limit)];
-    if (this.state.cursor) args.push(`--after-cursor=${this.state.cursor}`);
-    else args.push('--since', '-1h'); // първо пускане: последният час, не всичко
+    if (!persist) {
+      // Четенето от човек гледа ФИКСИРАН прозорец назад — иначе показва „каквото
+      // се е случило, откакто гледах последно", което е безполезно за въпроса
+      // „какво стана през последния час".
+      const mins = Math.min(1440, Math.max(5, Number(sinceMin) || 60));
+      args.push('--since', `-${mins}min`);
+    } else if (this.state.cursor) {
+      args.push(`--after-cursor=${this.state.cursor}`);
+    } else {
+      args.push('--since', '-1h'); // първо пускане: последният час, не всичко
+    }
 
     const r = await run('journalctl', args, { timeout: 25000, maxBuffer: 32 * 1024 * 1024 });
     if (!r.ok) return { available: false, error: (r.stderr || '').trim().slice(0, 200), groups: [] };
@@ -123,14 +136,20 @@ export class LogMiner {
       g.isNew = !known;
       g.firstSeenEver = known ? known.first : now;
       out.push(g);
-      this.state.seen[g.fingerprint] = { first: known ? known.first : now, last: now };
+      // Само алармения път записва „видяно". Иначе човек, който погледне,
+      // отнема на алармата единствения ѝ признак за новост.
+      if (persist) this.state.seen[g.fingerprint] = { first: known ? known.first : now, last: now };
     }
-    this.state.cursor = newCursor;
-    this.state.lastRun = now;
-    this.save();
+    if (persist) {
+      this.state.cursor = newCursor;
+      this.state.lastRun = now;
+      this.save();
+    }
 
     return {
       available: true,
+      persisted: persist,
+      windowMin: persist ? null : Math.min(1440, Math.max(5, Number(sinceMin) || 60)),
       scannedLines: lines,
       groups: out.sort((a, b) => b.count - a.count),
       newCount: out.filter((g) => g.isNew).length,

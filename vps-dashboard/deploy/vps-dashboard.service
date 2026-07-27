@@ -14,15 +14,28 @@ User=root
 WorkingDirectory=/opt/vps-dashboard
 Environment=NODE_ENV=production
 Environment=CSD_CONFIG=/etc/vps-dashboard/config.json
+# HOME за самия панел и за децата му (npm кеш, docker buildx state). Без него
+# всяко дете наследява HOME=/root, който при ProtectHome не се пише.
+Environment=HOME=/var/lib/vps-dashboard
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=3
 # Панелът пуска системни команди (systemctl/docker/apt) → не може напълно да се
 # капсулира, но пазим това, което не му трябва.
 NoNewPrivileges=true
-ProtectHome=true
-ProtectKernelTunables=true
-ProtectKernelModules=true
+# ProtectHome=read-only, НЕ true. При „true" systemd прави /root празен и
+# недостъпен за юнита И за всички негови деца — а точно там живее канонът на
+# репото: качените ZIP архиви (archiveDir=/root), autodeploy.sh го търси там,
+# PTY стартира в /root. С „true" секция „Деплой" показва нула архива БЕЗ
+# грешка, качването пада с EROFS, а терминалът отваря празна папка.
+# /root остава четим, а ReadWritePaths го отваря за запис само за качването.
+ProtectHome=read-only
+ReadWritePaths=/root /var/lib/vps-dashboard /etc/vps-dashboard /opt/few-few
+# ProtectKernelTunables прави /proc/sys read-only, а `ufw enable` вика
+# `sysctl -p /etc/ufw/sysctl.conf` → „Read-only file system". Панелът управлява
+# защитната стена, затова тази защита се разменя срещу работеща функция.
+ProtectKernelTunables=false
+ProtectKernelModules=false
 ProtectControlGroups=true
 RestrictSUIDSGID=true
 LockPersonality=true

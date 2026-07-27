@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { notify } from './notify.js';
-import { failedServices, tlsCerts } from './system.js';
+import { failedServicesSafe, tlsCertsSafe, tlsCerts } from './system.js';
 import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
@@ -101,9 +101,16 @@ export class AlertEngine {
   }
 
   // Събира текущо активните условия. Всяко: {key, severity, title, body, sustain?}
+  //
+  // `this.stale` събира ПРЕФИКСИТЕ на източниците, които не са отговорили. Това е
+  // разликата между „няма проблем" и „не знам" — и тя е решаваща: резолв по
+  // отсъствие превръща провала на systemctl във фалшиво „Възстановено". Фалшивото
+  // възстановяване е по-скъпо от пропуснатата аларма, защото учи човека да не
+  // вярва на канала.
   async collect() {
     const t = this.cfg.alerts?.thresholds || {};
     const out = [];
+    this.stale = new Map(); // префикс → причина
     const snap = this.metrics.latest;
 
     if (snap) {
@@ -226,7 +233,9 @@ export class AlertEngine {
       }
     }
 
-    for (const unit of await failedServices()) {
+    const svc = await failedServicesSafe();
+    if (!svc.ok) this.stale.set('service:', `systemd не отговори (${svc.error})`);
+    for (const unit of svc.units) {
       out.push({
         key: `service:${unit}`,
         severity: 'critical',
@@ -256,7 +265,9 @@ export class AlertEngine {
     for (const b of await this.redisChecks()) out.push(b);
 
     if (t.certDays) {
-      for (const c of await tlsCerts()) {
+      const certs = await tlsCertsSafe();
+      if (!certs.ok) this.stale.set('cert:', `сертификатите не се четат (${certs.error})`);
+      for (const c of certs.certs) {
         if (c.daysLeft != null && c.daysLeft <= t.certDays) {
           out.push({
             key: `cert:${c.domain}`,
@@ -336,15 +347,34 @@ export class AlertEngine {
     const rows = this.slo.read(Date.now() - 4 * 86400000);
     if (!rows.length) return out;
     const names = [...new Set(rows.map((r) => r.name))];
+    const minBadShort = Number(this.cfg.slo?.minBadShort) || 3;
     for (const name of names) {
-      const hit = evaluateBurn(rows, name, target, { minBadShort: Number(this.cfg.slo?.minBadShort) || 3 });
-      if (!hit) continue;
-      out.push({
-        key: `slo:${name}`,
-        severity: hit.severity,
-        title: `${name}: харчи бюджета за грешки твърде бързо`,
-        body: `Скорост ${hit.longBurn}× (праг ${hit.factor}×) — ${hit.label}. ${hit.badLong} лоши от ${hit.totalLong} проби за последните ${fmtDuration(hit.longWindowMs)}.`,
-      });
+      const hit = evaluateBurn(rows, name, target, { minBadShort });
+      if (hit) {
+        out.push({
+          key: `slo:${name}`,
+          severity: hit.severity,
+          title: `${name}: харчи бюджета за грешки твърде бързо`,
+          body: `Скорост ${hit.longBurn}× (праг ${hit.factor}×) — ${hit.label}. ${hit.badLong} лоши от ${hit.totalLong} проби за последните ${fmtDuration(hit.longWindowMs)}.`,
+        });
+      }
+      // Латентността е ОТДЕЛЕН бюджет с по-мека цел: „бавно" не е „долу", но е
+      // това, което потребителят усеща първо. Целта е дял бързи заявки.
+      const latTarget = Number(this.cfg.slo?.latencyTarget) || 0.99;
+      const slowHit = evaluateBurn(rows, name, latTarget, { minBadShort, metric: 'slow' });
+      if (slowHit) {
+        out.push({
+          key: `slo-slow:${name}`,
+          // Бавното НЕ е авария — то е предупреждение. Дори при висока скорост
+          // на изгаряне не бива да буди човек нощем както паднал сайт.
+          severity: 'warning',
+          title: `${name}: отговаря бавно`,
+          body:
+            `${slowHit.badLong} от ${slowHit.totalLong} заявки над ${this.cfg.slo?.latencyTargetMs || 800} ms ` +
+            `за последните ${fmtDuration(slowHit.longWindowMs)} (скорост ${slowHit.longBurn}× при цел ${(latTarget * 100).toFixed(0)}% бързи). ` +
+            'Сайтът работи, но потребителят го усеща като счупен.',
+        });
+      }
     }
     return out;
   }
@@ -447,9 +477,15 @@ export class AlertEngine {
     let now;
     try {
       const r = await redisOverview();
-      if (!r.available) return [];
+      // „Няма docker" е законно НЯМА; грешка от docker при вече познат Redis е
+      // незнание — иначе eviction алармата се резолвва при трепнал docker.
+      if (!r.available) {
+        if (this.lastRedis?.length) this.stale?.set('redis-', `docker не отговори (${r.error || '?'})`);
+        return [];
+      }
       now = r.instances;
-    } catch {
+    } catch (err) {
+      if (this.lastRedis?.length) this.stale?.set('redis-', err.message);
       return [];
     }
     const out = evictionChecks(this.lastRedis, now, { memPct: Number(this.cfg.redis?.memPct) || 90 });
@@ -537,9 +573,25 @@ export class AlertEngine {
       }
     }
 
+    // „Не знам" НЕ е „възстановено". Ключ от източник, който не е отговорил,
+    // остава активен и НЕ праща фалшиво „Възстановено".
+    const stale = this.stale || new Map();
+    for (const [prefix, reason] of stale) {
+      const affected = [...this.active.keys()].filter((k) => k.startsWith(prefix)).length;
+      conditions.push({
+        key: `stale:${prefix}`,
+        severity: affected ? 'warning' : 'info',
+        title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
+        body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
+        sustain: false,
+      });
+      byKey.set(`stale:${prefix}`, conditions[conditions.length - 1]);
+    }
+
     // Възстановени.
     for (const [key, prev] of [...this.active]) {
       if (byKey.has(key)) continue;
+      if ([...stale.keys()].some((prefix) => key.startsWith(prefix))) continue; // мълчащ източник
       this.active.delete(key);
       events.push({
         type: 'resolved',

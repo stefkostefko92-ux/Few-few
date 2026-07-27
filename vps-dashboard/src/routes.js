@@ -69,6 +69,14 @@ export const PEER_DENY = [
   /^\/api\/limits(\/|$)/,
   /^\/api\/cron\//,
   /^\/api\/domains\/issue$/,
+  // Peer НИКОГА не бива да ни ползва като прокси към трети възел: иначе
+  // компрометиран съсед, който знае само НАШИЯ входящ токен, стига до другите
+  // ни възли с ТЕХНИТЕ токени, които ние пазим (confused deputy). Може и да
+  // верижи: /api/nodes/B/api/nodes/C/…
+  /^\/api\/nodes\//,
+  // Изходът на задачите е ковертен канал около защитата на тайните: ако някой
+  // е пуснал дъмп или `cat` в терминала, тайната стои в изхода на задачата.
+  /^\/api\/jobs(\/|$)/,
 ];
 
 // Изключения: маршрути, които peer-ът ТРЯБВА да ползва въпреки обхвата „read" —
@@ -1064,10 +1072,18 @@ export function buildRouter(ctx) {
       J(async (req, res, p, url) => {
         if (!ctx.logminer) return { available: false };
         const priority = Number(url.searchParams.get('priority') ?? cfg.logmine?.priority ?? 4);
-        const r2 = await ctx.logminer.collect({ priority: Number.isInteger(priority) && priority >= 0 && priority <= 7 ? priority : 4 });
+        const windowMin = Math.min(1440, Math.max(5, Number(url.searchParams.get('window')) || 60));
+        // persist:false — гледането НЕ бива да отнема на алармата признака „НОВА".
+        const r2 = await ctx.logminer.collect({
+          priority: Number.isInteger(priority) && priority >= 0 && priority <= 7 ? priority : 4,
+          persist: false,
+          sinceMin: windowMin,
+        });
         return {
           ...r2,
-          byUnit: r2.groups ? LogMiner.ratesByUnit(r2.groups, 60) : [],
+          // Прозорецът е ИЗВЕСТЕН (фиксирани минути), затова „грешки/минута" е
+          // истинско число, а не делене на измислена константа.
+          byUnit: r2.groups ? LogMiner.ratesByUnit(r2.groups, windowMin) : [],
         };
       })
     )
@@ -1209,7 +1225,9 @@ export function buildRouter(ctx) {
     guard(
       J((req, res, p, url) => {
         const limit = Math.min(100, Math.max(5, Number(url.searchParams.get('limit')) || 25));
-        return (ctx.accesslog || new AccessLogReader(cfg.paths.stateDir)).analyze({ limit });
+        // Същото и тук: отварянето на секцията не бива да „изяжда" данните, така
+        // че следващото зареждане да показва 12 заявки вместо 40 000.
+        return (ctx.accesslog || new AccessLogReader(cfg.paths.stateDir)).analyze({ limit, persist: false });
       })
     )
   );

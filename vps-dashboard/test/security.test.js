@@ -55,6 +55,22 @@ test('sudo се иска за необратимото, не за четенет
   assert.equal(needsSudo('/api/pty', { sudoMode: { enabled: false } }), false);
 });
 
+test('файловете и кронът са под sudo — четенето като root е същата заплаха като терминала', () => {
+  const cfg = {};
+  // ЧЕТЕНЕ на произволен файл като root: /etc/shadow, ключовете в /root/.ssh и
+  // всеки .env са на един GET разстояние. Затова е в „винаги", не в „при запис".
+  assert.equal(needsSudo('/api/files/read', cfg), true, 'четенето на файл трябва да иска sudo');
+  // Записът е изпълнение на код с една стъпка забавяне (unit файл → „Услуги"),
+  // кронът — същото, само отложено. Изброяването на папка остава свободно.
+  for (const p of ['/api/files/write', '/api/cron/add', '/api/cron/remove', '/api/cron/run']) {
+    assert.equal(needsSudo(p, cfg, { mutating: true }), true, `${p} трябваше да иска sudo при запис`);
+    assert.equal(needsSudo(p, cfg), false, `${p} НЕ бива да иска sudo при четене`);
+  }
+  for (const p of ['/api/files', '/api/cron', '/api/cron/jobs', '/api/cron/timers']) {
+    assert.equal(needsSudo(p, cfg, { mutating: true }), false, `${p} НЕ трябваше да иска sudo`);
+  }
+});
+
 test('потвърждаването иска вярна парола, а при 2FA — и код', () => {
   const cfg = { passwordHash: hashPassword('правилната') };
   assert.equal(confirmSudo(cfg, { password: 'грешната' }).ok, false);

@@ -20,11 +20,29 @@ const UNIT_DIR = '/etc/systemd/system';
 const BYTES_RX = /^\d+(\.\d+)?[KMGT]?$/;
 const PCT_RX = /^\d{1,3}%$/;
 
+const MIN_MEMORY_BYTES = 16 * 1024 * 1024; // под това всяка услуга е мъртва
+
+export function toBytes(s) {
+  const m = /^(\d+(?:\.\d+)?)([KMGT]?)$/.exec(String(s || '').trim());
+  if (!m) return null;
+  const mult = { '': 1, K: 1024, M: 1024 ** 2, G: 1024 ** 3, T: 1024 ** 4 }[m[2]];
+  return Number(m[1]) * mult;
+}
+
 export function assertBytes(v, label) {
   const s = String(v ?? '').trim();
   if (!s) return '';
   if (!BYTES_RX.test(s) && !PCT_RX.test(s)) {
     throw Object.assign(new Error(`${label}: очаквам напр. „512M", „2G" или „80%"`), { status: 400 });
+  }
+  // „MemoryMax=1K" минава синтаксиса и се прилага ВЕДНАГА през set-property →
+  // мигновен OOM на избраната услуга. Долен праг вместо доверие в пръстите.
+  const bytes = toBytes(s);
+  if (bytes != null && bytes < MIN_MEMORY_BYTES) {
+    throw Object.assign(
+      new Error(`${label}: под 16M услугата умира мигновено от OOM. Ако наистина искаш толкова, направи го от терминала.`),
+      { status: 400 }
+    );
   }
   return s;
 }

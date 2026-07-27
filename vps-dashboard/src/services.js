@@ -6,10 +6,46 @@ import { readCgroupStats } from './kernel.js';
 const UNIT_RX = /^[\w@.\\-]+$/; // валидни имена на unit-и — нищо друго не стига до systemctl
 const ACTIONS = new Set(['start', 'stop', 'restart', 'reload', 'enable', 'disable']);
 
+// Услуги, чието СПИРАНЕ те оставя без път обратно към машината или сваля самия
+// панел по средата на действие. Задачите вървят като ДЕЦА на панела (в неговия
+// cgroup), затова „рестартирай vps-dashboard" по време на apt upgrade убива dpkg
+// по средата — а „dpkg was interrupted" се оправя само по SSH.
+// Рестартът им е позволен САМО отложено (виж autodeploy.sh CSD_SELF_DEPLOY).
+const PROTECTED = [
+  /^vps-dashboard(\.service)?$/,
+  /^ssh(d)?(\.service|\.socket)?$/,
+  /^docker(\.service|\.socket)?$/,
+  /^containerd(\.service)?$/,
+  /^systemd-(journald|logind|networkd|resolved|udevd)(\.service|\.socket)?$/,
+  /^dbus(\.service|\.socket)?$/,
+  /^network(ing)?(\.service)?$/,
+];
+
+export function isProtected(unit) {
+  const u = String(unit || '').replace(/\.service$/, '');
+  return PROTECTED.some((rx) => rx.test(unit) || rx.test(u));
+}
+
+// Спиране/изключване на защитена услуга е отказано. Рестартът също — той минава
+// през същия cgroup и убива течащи задачи.
+export function assertActionAllowed(unit, action) {
+  if (!isProtected(unit)) return;
+  if (action === 'start' || action === 'reload') return; // безобидни
+  throw Object.assign(
+    new Error(
+      `„${unit}" е защитена: ${action} оттук може да те остави без достъп до машината или да прекъсне течаща задача по средата. ` +
+        'Направи го от терминала, ако наистина трябва.'
+    ),
+    { status: 400 }
+  );
+}
+
 export function assertUnit(unit) {
   if (typeof unit !== 'string' || unit.length > 200 || !UNIT_RX.test(unit)) {
     throw Object.assign(new Error('Невалидно име на услуга'), { status: 400 });
   }
+  // Име, започващо с „-", стига до systemctl като ОПЦИЯ, не като unit.
+  if (unit.startsWith('-')) throw Object.assign(new Error('Невалидно име на услуга'), { status: 400 });
   return unit;
 }
 
@@ -63,6 +99,7 @@ export async function listServices() {
 export async function serviceAction(unit, action, audit, user) {
   assertUnit(unit);
   if (!ACTIONS.has(action)) throw Object.assign(new Error('Невалидно действие'), { status: 400 });
+  assertActionAllowed(unit, action);
   audit.log({ action: `service.${action}`, unit, user });
   await runOk('systemctl', [action, unit], { timeout: 60000 });
   const st = await run('systemctl', ['is-active', unit]);

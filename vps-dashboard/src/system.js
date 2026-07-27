@@ -164,31 +164,43 @@ function parsePorts(text) {
 }
 
 // Услуги в състояние failed — суровината за алармата „паднала услуга“.
-export async function failedServices() {
+// ВАЖНО: празен масив значи „няма паднали услуги", а провал на командата значи
+// „не знам". Двете НЕ бива да се смесват: който ги смеси, резолвва алармата за
+// паднала услуга точно когато systemctl е спрял да отговаря. Затова има и
+// `failedServicesSafe()`, който казва кое от двете е.
+export async function failedServicesSafe() {
   const r = await run('systemctl', ['list-units', '--state=failed', '--no-pager', '--output=json'], {
     timeout: 10000,
   });
-  if (!r.ok) return [];
+  if (!r.ok) return { ok: false, error: (r.stderr || r.error || 'systemctl не отговори').slice(0, 200), units: [] };
   try {
-    return JSON.parse(r.stdout).map((u) => u.unit);
-  } catch {
-    return [];
+    return { ok: true, units: JSON.parse(r.stdout).map((u) => u.unit) };
+  } catch (err) {
+    return { ok: false, error: `нечетим изход: ${err.message}`, units: [] };
   }
 }
 
-export async function tlsCerts() {
-  // Let's Encrypt: четем сертификатите с openssl (без certbot зависимост).
+export async function failedServices() {
+  const r = await failedServicesSafe();
+  return r.units;
+}
+
+// Липсваща папка = няма сертификати (нормално). Грешка при четене = не знам.
+export async function tlsCertsSafe() {
   const out = [];
   const live = '/etc/letsencrypt/live';
   let domains = [];
   try {
     domains = fs.readdirSync(live).filter((d) => !d.startsWith('.') && !d.endsWith('README'));
-  } catch {
-    return out;
+  } catch (err) {
+    // ENOENT е законно „няма Let's Encrypt тук"; всичко друго е незнание.
+    if (err.code === 'ENOENT') return { ok: true, certs: [] };
+    return { ok: false, error: err.message.slice(0, 200), certs: [] };
   }
   for (const d of domains) {
     const pem = path.join(live, d, 'fullchain.pem');
     const r = await run('openssl', ['x509', '-enddate', '-noout', '-in', pem], { timeout: 5000 });
+    if (!r.ok) return { ok: false, error: `openssl се провали за ${d}`, certs: out };
     const m = r.stdout.match(/notAfter=(.+)/);
     const expires = m ? new Date(m[1]) : null;
     out.push({
@@ -197,7 +209,11 @@ export async function tlsCerts() {
       daysLeft: expires ? Math.round((expires.getTime() - Date.now()) / 86400000) : null,
     });
   }
-  return out;
+  return { ok: true, certs: out };
+}
+
+export async function tlsCerts() {
+  return (await tlsCertsSafe()).certs;
 }
 
 // ── Бекъпи ────────────────────────────────────────────────────────────────────

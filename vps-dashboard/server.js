@@ -51,7 +51,16 @@ function runDrill(reason) {
     drill.record({ ok: false, name: null, output: err.message, code: null });
     return;
   }
-  const job = jobs.start(spec, { user: reason });
+  // `jobs.start` хвърля 409 при зает ексклузивен ключ „backup" (напр. тече
+   // архив на томове). Това НЕ е провал на пробата — записването му като
+  // провал би вдигнало фалшива критична аларма И би отложило истинската проба
+  // с цял интервал. Часовият таймер ще опита пак.
+  let job;
+  try {
+    job = jobs.start(spec, { user: reason });
+  } catch {
+    return;
+  }
   watchDrill(job.id, spec.dumpName);
 }
 

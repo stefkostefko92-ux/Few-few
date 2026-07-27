@@ -5,6 +5,10 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 const MAX_BYTES = 5 * 1024 * 1024;
+// Тавани за ЧУЖДИЯ одит (виж acceptMirror): съседът може да е компрометиран.
+const MIRROR_MAX_ENTRIES = 1000;
+const MIRROR_MAX_LINE = 8 * 1024;
+const MIRROR_MAX_BYTES = 20 * 1024 * 1024;
 
 export function hashLine(line) {
   return crypto.createHash('sha256').update(line).digest('base64url').slice(0, 22);
@@ -127,15 +131,36 @@ export class Audit {
 
   // Приема копие от друг възел. Пази се ОТДЕЛНО — не се смесва с нашия дневник,
   // за да не може чужд възел да замърси собствената ни верига.
+  // Огледалото приема данни от ДРУГА машина — тоест от нещо, което може да е
+  // компрометирано. Затова има тавани: без тях съсед с валиден токен пълни диска
+  // ни (което вдига нашата аларма „одитът не се записва") и залива копието с
+  // измислени редове, руширайки точно гаранцията, заради която огледалото
+  // съществува. Ротацията пази последното поколение, както при собствения одит.
   acceptMirror(nodeId, entries) {
     if (!/^[\w-]{1,40}$/.test(String(nodeId || ''))) {
       throw Object.assign(new Error('Невалиден възел'), { status: 400 });
     }
+    if (!Array.isArray(entries)) throw Object.assign(new Error('entries трябва да е списък'), { status: 400 });
+    if (entries.length > MIRROR_MAX_ENTRIES) {
+      throw Object.assign(new Error(`Най-много ${MIRROR_MAX_ENTRIES} записа на заявка`), { status: 400 });
+    }
     const file = path.join(path.dirname(this.file), `audit-mirror-${nodeId}.jsonl`);
-    const lines = (entries || []).map((e) => JSON.stringify(e)).join('\n');
-    if (!lines) return { accepted: 0 };
-    fs.appendFileSync(file, lines + '\n', { mode: 0o600 });
-    return { accepted: entries.length, file };
+    // Всеки запис е обект с таван по размер — низ от 400 KB не е одитен ред.
+    const kept = [];
+    for (const e of entries) {
+      if (!e || typeof e !== 'object' || Array.isArray(e)) continue;
+      const line = JSON.stringify(e);
+      if (line.length > MIRROR_MAX_LINE) continue;
+      kept.push(line);
+    }
+    if (!kept.length) return { accepted: 0, rejected: entries.length };
+    try {
+      if (fs.statSync(file).size > MIRROR_MAX_BYTES) fs.renameSync(file, `${file}.1`);
+    } catch {
+      /* още няма файл */
+    }
+    fs.appendFileSync(file, kept.join('\n') + '\n', { mode: 0o600 });
+    return { accepted: kept.length, rejected: entries.length - kept.length, file };
   }
 
   mirrors() {

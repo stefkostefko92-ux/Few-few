@@ -7,10 +7,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DUMP_DIR } from './databases.js';
 
+// САМО дъмпове на бази. Архивите на томове (`vol-*`/`dir-*`) живеят в същата
+// папка, но не са снимки на база: ако попаднат тук, „най-новият бекъп" става
+// tar.gz, `assertDumpName` го отхвърля и планираната проба се проваля ВЕЧНО с
+// критична аларма. Освен това един том-архив „подмладява" бекъпа на базата и
+// гаси алармата за остарял дъмп — точно обратното на смисъла ѝ.
 export function listDumps() {
   try {
     return fs
       .readdirSync(DUMP_DIR)
+      .filter((name) => DUMP_RX.test(name))
       .map((name) => {
         const st = fs.statSync(path.join(DUMP_DIR, name));
         return { name, sizeBytes: st.size, mtime: st.mtime.toISOString() };
