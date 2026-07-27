@@ -6,8 +6,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
 import { ScheletroDettaglio } from "@/components/ui";
-import { IcoIndietro, IcoStampa } from "@/components/icone";
-import { dataIt } from "@/lib/format";
+import {
+  IcoIndietro,
+  IcoStampa,
+  IcoAttenzione,
+  IcoNota,
+} from "@/components/icone";
+import { dataIt, dataOraIt } from "@/lib/format";
 
 interface DdtDettaglio {
   id: string;
@@ -17,6 +22,9 @@ interface DdtDettaglio {
   destinatario: string | null;
   indirizzoConsegna: string | null;
   vettore: string | null;
+  inizioTrasporto: string | null;
+  /** Реквизитите по чл. 1, ал. 3 D.P.R. 472/1996, смятани на сървъра. */
+  controllo: { problemi: string[]; avvisi: string[] };
   ordineLavoro: { numero: string; oggetto: string } | null;
   righe: VoceRiga[];
   movimenti: {
@@ -69,6 +77,9 @@ export default function Pagina() {
             {d.vettore ?? "mittente"}
             {d.ordineLavoro ? ` · ordine ${d.ordineLavoro.numero}` : ""}
           </p>
+          <p className="mt-0.5 text-xs text-text-3">
+            Inizio del trasporto: {dataOraIt(d.inizioTrasporto)}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <a
@@ -82,6 +93,45 @@ export default function Pagina() {
           </a>
         </div>
       </div>
+
+      {/* Реквизитите по чл. 1, ал. 3 D.P.R. 472/1996. Блокиращото и
+          препоръчителното стоят разделени нарочно: слепени в един списък,
+          операторът или пренебрегва и двете, или спира заради нито едно. */}
+      {d.controllo.problemi.length > 0 && (
+        <div
+          className="mb-4 flex items-start gap-2 rounded-md bg-danger-subtle px-4 py-3 text-sm text-danger-text"
+          role="status"
+          aria-label="Requisiti del documento di trasporto"
+        >
+          <IcoAttenzione />
+          <div>
+            <p className="font-medium">
+              Documento incompleto rispetto all&apos;art. 1, comma 3, D.P.R.
+              472/1996.
+            </p>
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-5">
+              {d.controllo.problemi.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {d.controllo.avvisi.length > 0 && (
+        <div
+          className="mb-4 flex items-start gap-2 rounded-md bg-warning-subtle px-4 py-3 text-sm text-warning-text"
+          role="status"
+          aria-label="Avvertenze sul trasporto"
+        >
+          <IcoNota />
+          <ul className="list-disc space-y-0.5 pl-5">
+            {d.controllo.avvisi.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="card mb-6 p-5">
         <h2 className="mb-4 text-lg font-semibold text-text-1">

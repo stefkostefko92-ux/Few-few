@@ -170,7 +170,13 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
  * Изричен списък: автоматизъм, който никога не е минавал, трябва да се вижда
  * като `-1`, а не да липсва от изхода — липсваща редица не вдига аларма.
  */
-const AUTOMATISMI = ["scadenze", "contratti", "retention", "webhook"] as const;
+const AUTOMATISMI = [
+  "scadenze",
+  "contratti",
+  "retention",
+  "webhook",
+  "notifiche",
+] as const;
 
 /**
  * Кеш на показателите от базата.

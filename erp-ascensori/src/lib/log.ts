@@ -125,6 +125,7 @@ export const SEGMENTI_NOTI = new Set([
   "esegui",
   "esporta",
   "estrai",
+  "testo",
   "fatture",
   "firma",
   "gdpr",

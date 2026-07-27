@@ -4,7 +4,7 @@ import EntityPage, {
   type EntityConfig,
   type Riga,
 } from "@/components/EntityPage";
-import { dataIt } from "@/lib/format";
+import { dataIt, dataOraIt } from "@/lib/format";
 
 const config: EntityConfig = {
   titolo: "Documenti di trasporto",
@@ -24,6 +24,11 @@ const config: EntityConfig = {
       chiave: "vettore",
       label: "Vettore",
       render: (r) => String(r.vettore ?? "mittente"),
+    },
+    {
+      chiave: "inizioTrasporto",
+      label: "Inizio trasporto",
+      render: (r) => dataOraIt(r.inizioTrasporto as string | null),
     },
     {
       chiave: "ordineLavoro",
@@ -51,6 +56,13 @@ const config: EntityConfig = {
     { name: "destinatario", label: "Destinatario", tipo: "text" },
     { name: "indirizzoConsegna", label: "Indirizzo di consegna", tipo: "text" },
     { name: "vettore", label: "Vettore (vuoto = mittente)", tipo: "text" },
+    {
+      name: "inizioTrasporto",
+      label: "Inizio del trasporto (data e ora)",
+      tipo: "datetime",
+      aiuto:
+        "Il momento in cui la merce parte. È ciò che lega il documento al singolo viaggio in caso di controllo su strada; la sola data non basta quando nella giornata ci sono più consegne.",
+    },
     {
       name: "ordineLavoroId",
       label: "Ordine di lavoro",

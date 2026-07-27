@@ -7,6 +7,7 @@ import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { ddtSchema } from "@/lib/entities";
 import { DDT_BLOCCATO } from "@/lib/regole-fiscali";
+import { controllaDdt } from "@/lib/fiscale/ddt";
 
 /**
  * DDT, закачен за фактура, е ЗАМРАЗЕН.
@@ -42,7 +43,9 @@ export const GET = gestito(async (_req, ctx) => {
     include,
   });
   if (!r) throw new ErroreHttp(404, "DDT non trovato");
-  return ok(r);
+  // Проверката за реквизити пътува ЗАЕДНО с документа, а не по отделен маршрут:
+  // втора заявка значи екран, който за миг показва документа като изряден.
+  return ok({ ...r, controllo: controllaDdt(r) });
 });
 
 export const PUT = gestito(async (req, ctx) => {

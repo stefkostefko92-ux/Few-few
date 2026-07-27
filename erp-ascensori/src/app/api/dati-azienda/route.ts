@@ -36,6 +36,13 @@ const schema = z.object({
   rea: str(50),
   capitaleSociale: str(50),
   notePiePagina: str(500),
+  /// Получателите на известията за срокове. Списък, разделен със запетая.
+  ///
+  /// Не се валидира като ЕДИН адрес: полето носи няколко. Всеки адрес минава
+  /// през `indirizzoValido` в момента на изпращане — там е и единственото
+  /// място, където сгрешен адрес има последствие.
+  emailAvvisi: str(500),
+  avvisiAttivi: z.boolean().optional(),
 });
 
 export const GET = gestito(async () => {

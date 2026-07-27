@@ -115,6 +115,26 @@ groups:
           summary: "ERP: le consegne webhook non partono da oltre 30 minuti"
           description: "Le integrazioni del cliente smettono di ricevere eventi."
 
+      - alert: ErpNotificheFerme
+        # Каданс от петнайсет минути; час и половина мълчание значи спрян
+        # процес. `== -1` НЕ е излишно — виж ErpWebhookFermo: без него
+        # алармата не може да се задейства нито веднъж.
+        #
+        # НЕ се вдига при неконфигуриран SMTP: там автоматизмът минава, оставя
+        # следа и излиза чист. Липсващата конфигурация е решение на клиента и
+        # се вижда в интерфейса, не е авария.
+        expr: >-
+          erp_automatismo_eta_secondi{nome="notifiche"} > 5400
+          or erp_automatismo_eta_secondi{nome="notifiche"} == -1
+        for: 20m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: gli avvisi di scadenza non partono da oltre 90 minuti"
+          description: >-
+            La coda si riempie e nessuno riceve gli avvisi. Le scadenze
+            normative continuano a decorrere (art. 13 D.P.R. 162/1999).
+
       - alert: ErpAutomatismiFermi
         # Остава като мрежа за случаите, в които изобщо НИЩО не минава.
         expr: erp_automatismi_eta_secondi > 93600 or erp_automatismi_eta_secondi == -1

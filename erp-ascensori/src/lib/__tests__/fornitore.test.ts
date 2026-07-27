@@ -96,6 +96,66 @@ describe("изключената функция", () => {
   });
 });
 
+describe("заявка за ТЕКСТ (без документ)", () => {
+  // Съставянето на описание няма какво да чете. Двата риска тук са тихи:
+  // празен блок `documento`, който доставчикът отхвърля, и забравен ключ
+  // „върни JSON", който превръща прозата в `{"testo": …}` или в отказ.
+  const TESTO = {
+    istruzione: "Scrivi una descrizione.",
+    formato: "testo" as const,
+    maxToken: 400,
+  };
+
+  test("Gemini: без inlineData и БЕЗ responseMimeType", async () => {
+    conProvider("gemini");
+    stubFetch({
+      corpo: { candidates: [{ content: { parts: [{ text: "Sostituzione." }] } }] },
+    });
+    assert.equal(await chiedi(TESTO), "Sostituzione.");
+    const gen = chiamate[0].corpo.generationConfig as Record<string, unknown>;
+    assert.equal(gen.responseMimeType, undefined);
+    assert.equal(gen.maxOutputTokens, 400);
+    const contents = chiamate[0].corpo.contents as {
+      parts: Record<string, unknown>[];
+    }[];
+    assert.equal(contents[0].parts.length, 1);
+    assert.equal(contents[0].parts[0].inlineData, undefined);
+  });
+
+  test("Anthropic: съдържанието е САМО текст", async () => {
+    conProvider("anthropic");
+    stubFetch({ corpo: { content: [{ type: "text", text: "Revisione." }] } });
+    assert.equal(await chiedi(TESTO), "Revisione.");
+    const msg = chiamate[0].corpo.messages as {
+      content: { type: string }[];
+    }[];
+    assert.equal(msg[0].content.length, 1);
+    assert.equal(msg[0].content[0].type, "text");
+  });
+
+  test("OpenAI: без response_format и без прикачен файл", async () => {
+    conProvider("openai");
+    stubFetch({ corpo: { choices: [{ message: { content: "Ripristino." } }] } });
+    assert.equal(await chiedi(TESTO), "Ripristino.");
+    assert.equal(chiamate[0].corpo.response_format, undefined);
+    const msg = chiamate[0].corpo.messages as {
+      content: { type: string }[];
+    }[];
+    assert.equal(msg[0].content.length, 1);
+    assert.equal(msg[0].content[0].type, "text");
+  });
+
+  test("извличането ОСТАВА на нулева температура и на JSON", async () => {
+    conProvider("openai");
+    stubFetch({ corpo: { choices: [{ message: { content: "{}" } }] } });
+    await chiedi(RICHIESTA);
+    assert.equal(chiamate[0].corpo.temperature, 0);
+    assert.deepEqual(chiamate[0].corpo.response_format, {
+      type: "json_object",
+    });
+  });
+});
+
 describe("Gemini", () => {
   test("указанието и документът тръгват в правилните полета", async () => {
     conProvider("gemini");

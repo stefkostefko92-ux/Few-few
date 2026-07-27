@@ -50,3 +50,30 @@ export function perInputData(v: string | Date | null | undefined): string {
   if (Number.isNaN(d.getTime())) return "";
   return d.toISOString().slice(0, 10);
 }
+
+function due(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/**
+ * от Date/ISO към стойност за <input type="datetime-local">
+ *
+ * МЕСТНО време, не UTC — и това е разликата с `perInputData`. Полето няма
+ * часова зона: браузърът показва каквото му дадем и връща същото обратно.
+ * Часът на започване на превоза по чл. 1, ал. 3 D.P.R. 472/1996 е стенен час в
+ * Италия; форматиран през `toISOString()` той би отскочил с час-два и на
+ * товарителницата би стоял час, в който камионът още не е тръгнал.
+ *
+ * Двата края са на Europe/Rome: `Dockerfile` (`ENV TZ`) и `docker-compose.yml`
+ * пиноват сървъра, а браузърът на оператора е в Италия. Затова `z.coerce.date()`
+ * разбира върнатия низ без зона като същия стенен час.
+ */
+export function perInputDataOra(v: string | Date | null | undefined): string {
+  if (!v) return "";
+  const d = typeof v === "string" ? new Date(v) : v;
+  if (Number.isNaN(d.getTime())) return "";
+  return (
+    `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}` +
+    `T${due(d.getHours())}:${due(d.getMinutes())}`
+  );
+}

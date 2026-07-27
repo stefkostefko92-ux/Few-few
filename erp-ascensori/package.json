@@ -44,6 +44,7 @@
     "test:int": "node scripts/test-integration.mjs",
     "verifica:backup": "node scripts/verifica-backup.mjs",
     "webhook": "tsx --env-file-if-exists=.env scripts/webhook.ts",
+    "notifiche": "tsx --env-file-if-exists=.env scripts/notifiche.ts",
     "test:e2e": "node scripts/test-e2e.mjs",
     "schermate": "node scripts/schermate.mjs",
     "misura:scala": "tsx scripts/misura-scala.ts",

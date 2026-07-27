@@ -305,7 +305,7 @@ function TrattamentoAi() {
   return (
     <div className="card mb-6 p-5">
       <h2 className="text-lg font-semibold text-text-1">
-        Lettura dei documenti con l&apos;AI
+        Funzioni assistite da un modello linguistico
       </h2>
       {stato.attiva ? (
         <>
@@ -336,11 +336,25 @@ function TrattamentoAi() {
               a carico del titolare.
             </li>
           </ul>
+          {/* Втората функция е РАЗЛИЧНО обработване и се обявява отделно:
+              там навън излиза документ, тук — бележка, писана от оператора.
+              Слети в едно изречение, човекът научава за едното и пропуска
+              другото (чл. 12(1) ОРЗД иска ясно и разделно). */}
+          <p className="mt-3 text-sm text-text-2">
+            È attiva anche la funzione «Scrivi con l&apos;AI», che riformula gli
+            appunti del tecnico in una descrizione o in un riepilogo. In questo
+            caso a {stato.fornitore} viene inviato{" "}
+            <strong>il testo scritto dall&apos;operatore</strong>, non un
+            documento. Valgono le stesse regole: nessun invio automatico, nel
+            registro resta solo il fatto (chi, quando, quale compito, quanti
+            caratteri) e non il testo, il risultato è una proposta modificabile
+            che nessuno salva al posto di una persona.
+          </p>
         </>
       ) : (
         <p className="mt-1 text-sm text-text-2">
-          La funzione è <strong>disattivata</strong>: nessun documento lascia
-          questo server.
+          Le funzioni sono <strong>disattivate</strong>: nessun documento e
+          nessun testo lascia questo server.
         </p>
       )}
     </div>

@@ -85,6 +85,11 @@ async function main() {
       capitaleSociale: "50.000,00 €",
       notePiePagina:
         "Pagamento a 30 giorni data fattura. Interessi di mora ex D.Lgs. 231/2002.",
+      // Адресът е попълнен, изпращането е ИЗКЛЮЧЕНО. Демо база, която сама
+      // започва да праща поща, защото някой я е заредил, е точно повредата,
+      // която флагът съществува да предотврати.
+      emailAvvisi: "manutenzione@ascensoridemo.it",
+      avvisiAttivi: false,
     },
   );
 
@@ -596,6 +601,9 @@ async function main() {
       causale: "vendita",
       destinatario: "Condominio Torre Aurora",
       indirizzoConsegna: "Via Torino 8, Milano",
+      // Часът по чл. 1, ал. 3 D.P.R. 472/1996 — демото показва изряден
+      // документ, не такъв, който при първото отваряне вика „непълен".
+      inizioTrasporto: new Date(fraGiorni(-3).setHours(9, 15, 0, 0)),
       ordineLavoroId: ordine.id,
     },
   );

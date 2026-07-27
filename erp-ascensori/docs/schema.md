@@ -1,6 +1,6 @@
 # Модел на данните
 
-24 таблици, 13 енумерации. Диаграмата показва връзките, не всяко поле — за
+40 таблици, 26 енумерации. Диаграмата показва връзките, не всяко поле — за
 пълния текст на схемата виж [`prisma/schema.prisma`](../prisma/schema.prisma).
 
 ## Общо устройство
@@ -89,16 +89,31 @@ erDiagram
         int versioneFirma
     }
     AutomatismoRun {
-        string nome "scadenze | retention"
+        string nome "scadenze | webhook | notifiche | contratti | retention"
         datetime iniziatoAt
         string esito "IN_CORSO | OK | ERRORE"
         json dettagli "агрегати, никога лични данни"
+    }
+    Notifica {
+        enum tipo "SCADENZA_IMPIANTO | SCADENZA_AUTOMEZZO | FATTURA_SCADUTA | PREVENTIVO_SCADUTO"
+        string chiave "идемпотентен: scadenza-impianto:ID:90"
+        string destinatario
+        string corpo "матрикола, срок, връзка — без имена и суми"
+        enum stato "IN_ATTESA | INVIATA | FALLITA"
+        int tentativi
+        datetime prossimoTentativo
     }
 ```
 
 `AuditLog` е неизменим по съдържание ([ADR 0002](adr/0002-nezimenim-odit-hmac.md));
 `AutomatismoRun` е следата, по която `/api/healthz/automatismi` разбира, че cron-ът
 е жив, и по която прочистването отчита какво е изтрило.
+
+`Notifica` е ОПАШКА, не дневник на изпратеното: автоматизмът за сроковете я
+пълни в своята транзакция, а друг процес я праща. Уникалността
+`(tenantId, chiave, destinatario)` е това, което прави повторното пускане
+безопасно. Съдържанието е минимизирано нарочно — известието минава през чуждо
+реле и остава в нечия кутия завинаги (чл. 5(1)(в) ОРЗД).
 
 ## Енумерации
 

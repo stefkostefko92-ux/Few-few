@@ -13,6 +13,7 @@ import {
   TIPO_INTERVENTO_LABEL,
 } from "@/lib/normativa/interventi";
 import { Modale, Vuoto } from "@/components/ui";
+import ScriviConAi from "@/components/ScriviConAi";
 import {
   IcoNuovoPiccolo,
   IcoStampa,
@@ -245,6 +246,14 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
                 onChange={(e) =>
                   setForm({ ...form, descrizione: e.target.value })
                 }
+              />
+              {/* Техникът диктува две думи на телефона си пред машинното
+                  помещение; клиентът получава изречение, което се чете.
+                  Между двете стои човек, който натиска бутона. */}
+              <ScriviConAi
+                compito="riepilogo-intervento"
+                valoreAttuale={form.descrizione}
+                onTesto={(t) => setForm({ ...form, descrizione: t })}
               />
             </div>
             <div>

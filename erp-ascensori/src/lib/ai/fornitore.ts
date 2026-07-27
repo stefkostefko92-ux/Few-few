@@ -10,8 +10,23 @@ import { configAi, type ConfigAi } from "@/lib/ai/config";
 export interface RichiestaAi {
   /** Указанието — НАШЕ. Никога не идва от потребител. */
   istruzione: string;
-  /** Документът: байтове + подушен тип. */
-  documento: { dati: Uint8Array; mimeType: string };
+  /**
+   * Документът: байтове + подушен тип.
+   *
+   * НЕЗАДЪЛЖИТЕЛЕН. Извличането на полета чете документ; съставянето на текст
+   * (описание на оферта, обобщение на поръчка) няма какво да чете — там
+   * входът е бележката на оператора и тя вече е в указанието.
+   */
+  documento?: { dati: Uint8Array; mimeType: string };
+  /**
+   * Какъв изход чакаме.
+   *
+   * ЗАЩО Е ИЗРИЧНО. И трите доставчика имат ключ „върни само JSON“
+   * (`responseMimeType`, `response_format`). Пуснат при задача за проза, той
+   * дава `{"testo": "…"}` в най-добрия случай и отказ в най-лошия — тоест
+   * забравеният превключвател е повреда, която изглежда като грешка на модела.
+   */
+  formato?: "json" | "testo";
   /** Таван на изхода. JSON с трийсетина полета се побира с голям запас. */
   maxToken?: number;
 }
@@ -66,7 +81,20 @@ function traduciErrore(stato: number): ErroreAi {
   return new ErroreAi(502, "Il servizio AI non ha risposto: riprovare.");
 }
 
+/** JSON ли чакаме. Подразбирането е „да“ — старият път остава непокътнат. */
+function vuoleJson(r: RichiestaAi): boolean {
+  return (r.formato ?? "json") === "json";
+}
+
 async function chiediGemini(c: ConfigAi, r: RichiestaAi): Promise<string> {
+  const parti: Record<string, unknown>[] = [{ text: r.istruzione }];
+  if (r.documento)
+    parti.push({
+      inlineData: {
+        mimeType: r.documento.mimeType,
+        data: base64(r.documento.dati),
+      },
+    });
   const res = await fetch(
     `${c.baseUrl}/models/${encodeURIComponent(c.modello)}:generateContent`,
     {
@@ -76,26 +104,15 @@ async function chiediGemini(c: ConfigAi, r: RichiestaAi): Promise<string> {
         "x-goog-api-key": c.chiave,
       },
       body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: r.istruzione },
-              {
-                inlineData: {
-                  mimeType: r.documento.mimeType,
-                  data: base64(r.documento.dati),
-                },
-              },
-            ],
-          },
-        ],
+        contents: [{ role: "user", parts: parti }],
         generationConfig: {
           // Извличане на данни, не съчинение: температурата е нула, за да не
-          // „допълва“ полета, които в документа ги няма.
-          temperature: 0,
+          // „допълва“ полета, които в документа ги няма. За текст я вдигаме
+          // едва до 0,3 — достатъчно за четимо изречение, недостатъчно, за да
+          // започне да съчинява технически подробности.
+          temperature: vuoleJson(r) ? 0 : 0.3,
           maxOutputTokens: r.maxToken ?? 2048,
-          responseMimeType: "application/json",
+          ...(vuoleJson(r) ? { responseMimeType: "application/json" } : {}),
         },
       }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -112,22 +129,24 @@ async function chiediGemini(c: ConfigAi, r: RichiestaAi): Promise<string> {
 
 async function chiediAnthropic(c: ConfigAi, r: RichiestaAi): Promise<string> {
   // PDF-ът и картинката вървят по различни пътища в този формат.
-  const contenuto =
-    r.documento.mimeType === "application/pdf"
+  const doc = r.documento;
+  const contenuto = !doc
+    ? null
+    : doc.mimeType === "application/pdf"
       ? {
           type: "document" as const,
           source: {
             type: "base64",
             media_type: "application/pdf",
-            data: base64(r.documento.dati),
+            data: base64(doc.dati),
           },
         }
       : {
           type: "image" as const,
           source: {
             type: "base64",
-            media_type: r.documento.mimeType,
-            data: base64(r.documento.dati),
+            media_type: doc.mimeType,
+            data: base64(doc.dati),
           },
         };
 
@@ -141,11 +160,14 @@ async function chiediAnthropic(c: ConfigAi, r: RichiestaAi): Promise<string> {
     body: JSON.stringify({
       model: c.modello,
       max_tokens: r.maxToken ?? 2048,
-      temperature: 0,
+      temperature: vuoleJson(r) ? 0 : 0.3,
       messages: [
         {
           role: "user",
-          content: [contenuto, { type: "text", text: r.istruzione }],
+          content: [
+            ...(contenuto ? [contenuto] : []),
+            { type: "text", text: r.istruzione },
+          ],
         },
       ],
     }),
@@ -162,7 +184,20 @@ async function chiediAnthropic(c: ConfigAi, r: RichiestaAi): Promise<string> {
 }
 
 async function chiediOpenAi(c: ConfigAi, r: RichiestaAi): Promise<string> {
-  const dataUrl = `data:${r.documento.mimeType};base64,${base64(r.documento.dati)}`;
+  const doc = r.documento;
+  const dataUrl = doc ? `data:${doc.mimeType};base64,${base64(doc.dati)}` : "";
+  const contenuto: Record<string, unknown>[] = [
+    { type: "text", text: r.istruzione },
+  ];
+  if (doc)
+    contenuto.push(
+      doc.mimeType === "application/pdf"
+        ? {
+            type: "file",
+            file: { filename: "documento.pdf", file_data: dataUrl },
+          }
+        : { type: "image_url", image_url: { url: dataUrl } },
+    );
   const res = await fetch(`${c.baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
@@ -171,23 +206,10 @@ async function chiediOpenAi(c: ConfigAi, r: RichiestaAi): Promise<string> {
     },
     body: JSON.stringify({
       model: c.modello,
-      temperature: 0,
+      temperature: vuoleJson(r) ? 0 : 0.3,
       max_tokens: r.maxToken ?? 2048,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: r.istruzione },
-            r.documento.mimeType === "application/pdf"
-              ? {
-                  type: "file",
-                  file: { filename: "documento.pdf", file_data: dataUrl },
-                }
-              : { type: "image_url", image_url: { url: dataUrl } },
-          ],
-        },
-      ],
+      ...(vuoleJson(r) ? { response_format: { type: "json_object" } } : {}),
+      messages: [{ role: "user", content: contenuto }],
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });

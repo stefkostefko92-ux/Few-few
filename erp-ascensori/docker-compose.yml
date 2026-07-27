@@ -85,6 +85,14 @@ services:
       AI_MODEL: ${AI_MODEL:-}
       AI_BASE_URL: ${AI_BASE_URL:-}
       AI_FORNITORE_ETICHETTA: ${AI_FORNITORE_ETICHETTA:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORTA: ${SMTP_PORTA:-587}
+      SMTP_TLS: ${SMTP_TLS:-}
+      SMTP_UTENTE: ${SMTP_UTENTE:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_MITTENTE: ${SMTP_MITTENTE:-}
+      SMTP_NOME: ${SMTP_NOME:-ERP Ascensori}
+      NOTIFICHE_LOTTO: ${NOTIFICHE_LOTTO:-50}
       NODE_ENV: production
     volumes:
       # Първият том с ДАННИ на приложението. Влиза в бекъпа: база без файловете
@@ -122,6 +130,18 @@ services:
       # проверка) — без нея проверка от cron не би минала при ротация. Празната
       # стойност е валидна и е подразбирането.
       AUDIT_HMAC_KEY_PRECEDENTE: ${AUDIT_HMAC_KEY_PRECEDENTE:-}
+      # Автоматизмът за сроковете строи ВРЪЗКИТЕ в известията от този адрес.
+      # Без него писмото стига, но „Apri la scheda" сочи в празното — а точно
+      # заради връзката получателят отваря писмото.
+      APP_URL: ${APP_URL:?APP_URL липсва в .env}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORTA: ${SMTP_PORTA:-587}
+      SMTP_TLS: ${SMTP_TLS:-}
+      SMTP_UTENTE: ${SMTP_UTENTE:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_MITTENTE: ${SMTP_MITTENTE:-}
+      SMTP_NOME: ${SMTP_NOME:-ERP Ascensori}
+      NOTIFICHE_LOTTO: ${NOTIFICHE_LOTTO:-50}
       NODE_ENV: production
       TZ: ${TZ:-Europe/Rome}
     entrypoint: ["/bin/sh", "-c"]
@@ -129,12 +149,17 @@ services:
     # Изчислява се спрямо стенния часовник, за да не се измества след рестарт.
     command:
       - |
-        echo "→ автоматизмите са активни (webhook 5 мин · contratti 05:00 · scadenze 06:00 · retention неделя 04:00)"
+        echo "→ автоматизмите са активни (webhook 5 мин · notifiche 15 мин · contratti 05:00 · scadenze 06:00 · retention неделя 04:00)"
         while true; do
           ORA=$$(date +%H%M); GIORNO=$$(date +%u); MIN=$$(date +%M)
           # Доставките са ЧЕСТИ: външната система чака известие, а не отчет.
           case "$$MIN" in 00|05|10|15|20|25|30|35|40|45|50|55)
             npm run webhook || echo "✖ webhook" ;;
+          esac
+          # Пощата е по-рядко от webhook-ите: получателят е човек, който
+          # проверява кутията си, не система, която чака отговор.
+          case "$$MIN" in 07|22|37|52)
+            npm run notifiche || echo "✖ notifiche" ;;
           esac
           if [ "$$ORA" = "0500" ]; then npm run contratti || echo "✖ contratti"; fi
           if [ "$$ORA" = "0600" ]; then npm run scadenze:check || echo "✖ scadenze"; fi

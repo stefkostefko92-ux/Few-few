@@ -53,6 +53,7 @@ export const TABELLE_CON_TENANT = [
   "api_keys",
   "webhooks",
   "webhook_consegne",
+  "notifiche",
 ] as const;
 
 /** Обхватът на доставчика: вижда всички фирми. */

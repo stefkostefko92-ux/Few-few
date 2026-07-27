@@ -55,6 +55,20 @@ export const ENTITA_CONTABILI = [
 /** Дни за оперативната телеметрия на автоматизмите. */
 export const GIORNI_TELEMETRIA = 90;
 
+/**
+ * Дни за изпратените известия.
+ *
+ * Известието е КОПИЕ на нещо, което вече стои в гестионала (срок, документ) —
+ * плюс адреса на получателя. След като е тръгнало, единствената му стойност е
+ * доказателството „беше известено на тази дата", а то се изчерпва много преди
+ * счетоводните срокове. Затова 90 дни, колкото телеметрията.
+ *
+ * ЧАКАЩИТЕ И ПРОВАЛЕНИТЕ НЕ СЕ ТРИЯТ по този срок: чакащото известие е задача,
+ * а провалилото се е сигнал, че адресът е сгрешен. Прочистване „по дата, без
+ * оглед на състоянието" би махнало точно това, което трябва да се види.
+ */
+export const GIORNI_NOTIFICHE = 90;
+
 export interface Soglie {
   /** редове за достъп по-стари от това се трият */
   accesso: Date;
@@ -64,6 +78,8 @@ export interface Soglie {
   ordinario: Date;
   /** пускания на автоматизми по-стари от това се трият */
   telemetria: Date;
+  /** ИЗПРАТЕНИ известия по-стари от това се трият */
+  notifiche: Date;
 }
 
 function meno(base: Date, { anni = 0, mesi = 0, giorni = 0 }): Date {
@@ -81,6 +97,7 @@ export function soglie(oggi: Date): Soglie {
     contabile: meno(oggi, { anni: ANNI_CONTABILE }),
     ordinario: meno(oggi, { mesi: MESI_ORDINARIO }),
     telemetria: meno(oggi, { giorni: GIORNI_TELEMETRIA }),
+    notifiche: meno(oggi, { giorni: GIORNI_NOTIFICHE }),
   };
 }
 

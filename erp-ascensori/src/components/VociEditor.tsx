@@ -7,6 +7,7 @@ import { useId, useState } from "react";
 import { euro } from "@/lib/format";
 import { IcoNuovoPiccolo } from "@/components/icone";
 import { apiFetch } from "@/lib/fetch-client";
+import ScriviConAi from "@/components/ScriviConAi";
 
 export interface VoceRiga {
   id: string;
@@ -221,6 +222,16 @@ export default function VociEditor({
             value={form.descrizione}
             onChange={(e) => setForm({ ...form, descrizione: e.target.value })}
           />
+          {/* Само където има цени: това са офертата и фактурата — документите,
+              които клиентът чете. Редовете на DDT изброяват пренесена стока и
+              не искат проза. */}
+          {conPrezzi && (
+            <ScriviConAi
+              compito="descrizione-voce"
+              valoreAttuale={form.descrizione}
+              onTesto={(t) => setForm({ ...form, descrizione: t })}
+            />
+          )}
         </div>
         <div className="w-20">
           <label className="label" htmlFor={`quantita-${idForm}`}>

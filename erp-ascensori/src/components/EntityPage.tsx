@@ -19,7 +19,7 @@ import {
 } from "@/components/ui";
 import Link from "next/link";
 import { IcoNuovo } from "@/components/icone";
-import { perInputData } from "@/lib/format";
+import { perInputData, perInputDataOra } from "@/lib/format";
 import { apiFetch } from "@/lib/fetch-client";
 import CompilaConAi from "@/components/CompilaConAi";
 
@@ -46,6 +46,7 @@ export interface Campo {
     | "number"
     | "decimal"
     | "date"
+    | "datetime"
     | "select"
     | "textarea"
     | "checkbox"
@@ -374,6 +375,7 @@ function valoreIniziale(campo: Campo, riga?: Riga): unknown {
   if (v === null || v === undefined)
     return campo.tipo === "checkbox" ? false : "";
   if (campo.tipo === "date") return perInputData(v as string | Date);
+  if (campo.tipo === "datetime") return perInputDataOra(v as string | Date);
   if (campo.tipo === "tags") return (v as string[]).join(", ");
   // Многото стойности идват като списък от свързващи редове — вадим само id-тата.
   if (campo.tipo === "multiselect")
@@ -445,7 +447,8 @@ export function FormEntity({
         v = typeof v === "string" && v.trim() === "" ? null : v;
       if (campo.tipo === "textarea")
         v = typeof v === "string" && v.trim() === "" ? null : v;
-      if (campo.tipo === "date") v = v === "" ? null : v;
+      if (campo.tipo === "date" || campo.tipo === "datetime")
+        v = v === "" ? null : v;
       if (campo.tipo === "select") v = v === "" ? null : v;
       if (campo.tipo === "multiselect") v = Array.isArray(v) ? v : [];
       if (campo.tipo === "tags")
@@ -679,6 +682,18 @@ function CampoInput({
           id={id}
           {...descritto}
           type="date"
+          className="input"
+          value={String(valore ?? "")}
+          onChange={(e) => onCambia(e.target.value)}
+          required={campo.richiesto}
+        />
+      );
+    case "datetime":
+      return (
+        <input
+          id={id}
+          {...descritto}
+          type="datetime-local"
           className="input"
           value={String(valore ?? "")}
           onChange={(e) => onCambia(e.target.value)}

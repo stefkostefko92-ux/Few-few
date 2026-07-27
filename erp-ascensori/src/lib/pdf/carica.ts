@@ -6,7 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { riepilogoIva, toCents, fromCents } from "@/lib/totals";
 import { calcolaRitenuta } from "@/lib/fiscale/ritenuta";
-import { plurale } from "@/lib/format";
+import { plurale, dataOraIt } from "@/lib/format";
 import type {
   Azienda,
   Controparte,
@@ -243,6 +243,12 @@ export async function pdfDdt(
     dettagli: [
       { label: "Causale del trasporto", valore: d.causale ?? "—" },
       { label: "Trasporto a cura di", valore: d.vettore ?? "mittente" },
+      // Часът е върху ХАРТИЯТА, не само в базата: това е екземплярът, който
+      // пътува с камиона и който проверяващият чете.
+      {
+        label: "Inizio del trasporto",
+        valore: dataOraIt(d.inizioTrasporto),
+      },
       ...(d.ordineLavoro
         ? [{ label: "Ordine", valore: d.ordineLavoro.numero }]
         : []),

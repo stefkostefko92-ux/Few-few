@@ -57,6 +57,7 @@ export const POST = gestito(async (req) => {
         destinatario: data.destinatario ?? undefined,
         indirizzoConsegna: data.indirizzoConsegna ?? undefined,
         vettore: data.vettore ?? undefined,
+        inizioTrasporto: data.inizioTrasporto ?? undefined,
         ordineLavoroId: data.ordineLavoroId ?? undefined,
         note: data.note ?? undefined,
         numero,

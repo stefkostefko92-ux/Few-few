@@ -69,3 +69,37 @@ test("регистърът на операциите се проверява к�
   await expect(page).toHaveURL(/\/audit/);
   await expect(page.locator("table")).toBeVisible();
 });
+
+test("DDT: часът на превоза се въвежда, а непълният документ го казва", async ({
+  page,
+}) => {
+  await entra(page, UTENTI.DIREZIONE);
+  await page.goto("/ddt");
+
+  await page
+    .getByRole("button", { name: /Nuov[oa]/i })
+    .first()
+    .click();
+  const destinatario = unico("Condominio");
+  await page.getByLabel(/^Destinatario/).fill(destinatario);
+  // Полето е `datetime-local`: тестът минава през ИСТИНСКИЯ вход, а не през
+  // API-то — точно тук се къса връзката между стенния час и това, което вижда
+  // операторът.
+  await page.getByLabel(/Inizio del trasporto/).fill("2026-05-12T14:30");
+  await page.getByRole("button", { name: "Salva", exact: true }).click();
+
+  await expect(
+    page.getByRole("button", { name: "Salva", exact: true }),
+  ).toHaveCount(0, { timeout: 15_000 });
+
+  await page.locator("tbody a").first().click();
+  await expect(page).toHaveURL(/\/ddt\/[0-9a-f-]{36}/);
+  await expect(page.getByText("12/05/2026", { exact: false })).toBeVisible();
+
+  // Реквизитите по чл. 1, ал. 3 D.P.R. 472/1996 се виждат БЕЗ да се натиска
+  // нищо, и двата блока са наименувани поотделно: „липсва реквизит" и
+  // „приема се, но знай това" са различни съобщения за екранния четец.
+  await expect(
+    page.getByRole("status", { name: "Requisiti del documento di trasporto" }),
+  ).toBeVisible();
+});

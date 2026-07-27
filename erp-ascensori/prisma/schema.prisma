@@ -294,11 +294,73 @@ model DatiAzienda {
   capitaleSociale String?
   /// Бележка под линия на печатните документи (условия на плащане и подобни).
   notePiePagina   String?
+  /// Кой получава известията за срокове. Списък с адреси, разделени със запетая.
+  ///
+  /// ОТДЕЛНО от `email` (адреса на фирмата върху фактурите): известието за
+  /// изтичаща законова проверка трябва да стигне до техническия отговорник, а
+  /// не в общата кутия „info@", която никой не отваря.
+  emailAvvisi     String?
+  /// Изпращат ли се известията изобщо. ИЗКЛЮЧЕНО по подразбиране — включването
+  /// е съзнателно действие, защото праща поща от името на фирмата.
+  avvisiAttivi    Boolean  @default(false)
   tenantId        String?  @unique @db.Uuid
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@map("dati_azienda")
+}
+
+/// Изходящо известие — ОПАШКА, не изпращане.
+///
+/// Същото разделение като при webhook-ите и по същата причина: автоматизмът за
+/// сроковете ЗАПИСВА известието в своята транзакция (бързо, надеждно), а друг
+/// процес го праща (бавно, през чужд сървър). Слети в едно, паднало реле
+/// проваля целия пуск на автоматизма — тоест чужд пощенски сървър решава дали
+/// сроковете на импиантите ще се вдигнат.
+///
+/// СЪДЪРЖАНИЕТО Е МИНИМАЛНО. В тялото влизат матрикола, вид срок, дата и
+/// връзка към записа — не имена на живи хора, не адреси на кондомини.
+/// Известието пътува през реле на трета страна и остава в кутията на
+/// получателя завинаги; чл. 5(1)(в) ОРЗД иска точно това ограничение.
+model Notifica {
+  id                String        @id @default(uuid()) @db.Uuid
+  tipo              TipoNotifica
+  /// Идемпотентен ключ: „scadenza:<id>:90". С него вторият пуск на автоматизма
+  /// в същия ден НЕ праща същото известие втори път.
+  chiave            String
+  destinatario      String
+  oggetto           String
+  corpo             String
+  stato             StatoNotifica @default(IN_ATTESA)
+  tentativi         Int           @default(0)
+  prossimoTentativo DateTime      @default(now())
+  inviataAt         DateTime?
+  /// Причината за последния неуспех — КОД и стъпка, никога отговорът на релето
+  /// дословно (той носи адреса на получателя и е на английски).
+  ultimoErrore      String?
+  tenantId          String?       @db.Uuid
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([tenantId, chiave, destinatario])
+  /// Опашката се чете по „чакащи, чието време е дошло" — това е индексът за нея.
+  @@index([stato, prossimoTentativo])
+  @@index([tenantId])
+  @@map("notifiche")
+}
+
+enum TipoNotifica {
+  SCADENZA_IMPIANTO
+  SCADENZA_AUTOMEZZO
+  FATTURA_SCADUTA
+  PREVENTIVO_SCADUTO
+}
+
+enum StatoNotifica {
+  IN_ATTESA
+  INVIATA
+  /// Изчерпани опити. Редът ОСТАВА — „не е изпратено" е информация.
+  FALLITA
 }
 
 model User {
@@ -1309,6 +1371,14 @@ model Ddt {
   destinatario      String?
   indirizzoConsegna String?
   vettore           String?
+  /// Дата И ЧАС на започване на превоза — чл. 1, ал. 3 D.P.R. 472/1996.
+  ///
+  /// Отделно от `data` (датата на документа) нарочно: DDT може да се изготви
+  /// сутринта, а камионът да тръгне следобед. Часът е това, което прави
+  /// документа годен да оправдае превоза при пътна проверка; без него
+  /// презумпцията за прехвърляне на собствеността по чл. 1, ал. 2 не се държи.
+  /// Стенен час в Италия (`TZ=Europe/Rome` е пинована и в образа, и в Compose).
+  inizioTrasporto   DateTime?
   ordineLavoroId    String?  @db.Uuid
   /// Фактурата, която е обхванала тази доставка (отложено фактуриране).
   ///

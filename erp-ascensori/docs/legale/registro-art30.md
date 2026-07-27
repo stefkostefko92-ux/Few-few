@@ -43,7 +43,16 @@ interessati, solo la mappa dei trattamenti)*
    in caso di incidente.
 8. *(eventuale, se attivata)* **Compilazione assistita da modello linguistico** —
    invio a un fornitore terzo di un documento caricato dall'utente per proporre
-   valori di campo.
+   valori di campo, oppure di appunti scritti dall'operatore per riformularli in
+   una descrizione o in un riepilogo. Sono due trattamenti distinti e vanno
+   dichiarati come tali: nel primo esce un documento del cliente, nel secondo un
+   testo scritto dal personale.
+9. *(eventuale, se attivata)* **Avvisi di scadenza per posta elettronica** —
+   invio, agli indirizzi indicati dal titolare, di un messaggio contenente
+   matricola dell'impianto, tipo e data della scadenza, numero del documento e
+   un collegamento al gestionale. **Non contiene dati identificativi di persone
+   fisiche**: la minimizzazione è una proprietà del testo, verificata da test
+   automatici, non una promessa organizzativa.
 
 ### c) Categorie di interessati e di dati
 
@@ -75,6 +84,7 @@ disattivata su ogni installazione.**
 | Dato | Termine |
 |---|---|
 | Registro accessi (login/logout) | 6 mesi |
+| Avvisi di scadenza inviati | 90 giorni (i non inviati restano: sono lavoro da fare) |
 | Tracce riferite a entità contabili e fiscali | 10 anni (art. 2220 c.c.) |
 | Ogni altra traccia operativa | 24 mesi |
 | Telemetria tecnica | 90 giorni |
@@ -100,6 +110,13 @@ ogni modifica del software.
 | Sub-responsabile | Servizio | Ubicazione | Contratto art. 28 |
 |---|---|---|---|
 | Hetzner Online GmbH | server virtuale in locazione (hosting, alimentazione, rete) | Germania | «rif. DPA Hetzner» |
+
+**Il server di posta non è nostro sub-responsabile.** Gli avvisi di scadenza
+partono dal server del titolare attraverso il **suo** provider di posta, con le
+**sue** credenziali, configurate sulla sua installazione: il rapporto con quel
+provider è del titolare e va nel suo registro ex art. 30(1). Se il titolare non
+configura alcun server, la funzione non invia nulla e gli avvisi restano nella
+coda locale.
 
 ---
 

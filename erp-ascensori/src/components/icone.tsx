@@ -36,6 +36,7 @@ import {
   QrCode,
   Printer,
   Receipt,
+  Sparkle,
   Trash,
   Tray,
   WarningCircle,
@@ -154,6 +155,10 @@ export const IcoFatto = () => (
     className="text-success-text"
     aria-hidden
   />
+);
+/** Действие, което вика езиков модел. Bold — това е действие, не статус. */
+export const IcoAi = () => (
+  <Sparkle size={DIM.tabella} weight="bold" aria-hidden />
 );
 export const IcoVuoto = () => (
   <Tray size={32} className="text-text-3" aria-hidden />

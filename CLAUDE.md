@@ -23,7 +23,7 @@ file holds only what is true across all products. Keep it that way.
 | `Nexus/` | Nexus Dominion — браузър игра (клиент) | React · Vite · Three.js · TS | — |
 | `scuolabulgara/` | Qui Bulgaria — бълг. училище Милано (CMS) | Next.js · React · TS · Prisma | IT/BG multilingue |
 | `panev/` | Panev Ascensori — сайт + e-commerce | Express · SQLite · Stripe | IT |
-| `erp-ascensori/` | ERP Ascensori Enterprise — гестионал за асансьорни фирми (импианти, срокове, склад, preventivi, ordini, фактури, DDT, персонализируемо табло) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · Recharts | IT · 24 таблици · 7 нива достъп · HMAC audit |
+| `erp-ascensori/` | ERP Ascensori Enterprise — гестионал за асансьорни фирми (импианти, срокове, склад, preventivi, ordini, фактури, DDT, персонализируемо табло) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · Recharts | IT · 40 таблици · 7 нива достъп · HMAC audit |
 | `kebab/` | Uylas Kebap Center — сайт | static | IT |
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
 | `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |

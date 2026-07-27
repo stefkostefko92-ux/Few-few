@@ -7,6 +7,7 @@ import {
   ANNI_CONTABILE,
   MESI_ORDINARIO,
   GIORNI_TELEMETRIA,
+  GIORNI_NOTIFICHE,
   AZIONI_ACCESSO,
   ENTITA_CONTABILI,
   sogliaPerRiga,
@@ -20,10 +21,15 @@ test("праговете следват законовите срокове", ()
   assert.equal(s.contabile.toISOString(), "2016-07-25T00:00:00.000Z"); // -10 години
   assert.equal(s.ordinario.toISOString(), "2024-07-25T00:00:00.000Z"); // -24 месеца
   assert.equal(s.telemetria.toISOString(), "2026-04-26T00:00:00.000Z"); // -90 дни
+  // Известието е КОПИЕ на нещо, което вече стои в гестионала, плюс адрес на
+  // получател: доказателството „беше известено" се изчерпва много преди
+  // счетоводните срокове. Затова същият праг като телеметрията.
+  assert.equal(s.notifiche.toISOString(), "2026-04-26T00:00:00.000Z");
   assert.equal(MESI_ACCESSO, 6);
   assert.equal(ANNI_CONTABILE, 10);
   assert.equal(MESI_ORDINARIO, 24);
   assert.equal(GIORNI_TELEMETRIA, 90);
+  assert.equal(GIORNI_NOTIFICHE, 90);
 });
 
 test("вход отпреди 7 месеца се трие, отпреди 5 — не", () => {

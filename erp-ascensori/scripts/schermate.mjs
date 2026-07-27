@@ -56,6 +56,7 @@ const PAGINE = [
   ["19-fatture", "/fatture"],
   ["20-fattura-dettaglio", null, { primo: "/fatture" }],
   ["21-ddt", "/ddt"],
+  ["21a-ddt-dettaglio", null, { primo: "/ddt" }],
   ["22-documenti", "/documenti"],
   ["23-redditivita", "/redditivita"],
   ["23a-scadenzario", "/scadenzario"],

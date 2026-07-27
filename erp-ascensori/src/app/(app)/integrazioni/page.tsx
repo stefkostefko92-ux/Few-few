@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/fetch-client";
+import CodaNotifiche from "@/components/CodaNotifiche";
 import { IcoAttenzione, IcoIntegro } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 
@@ -359,6 +360,11 @@ export default function Pagina() {
           minuti) prima di fidarsi del contenuto.
         </p>
       </section>
+
+      {/* Третият изходящ канал стои при другите два, не в отделен екран:
+          въпросът „защо не стигна известието" е същият въпрос като „защо не
+          стигна webhook-ът", и се задава на едно място. */}
+      <CodaNotifiche />
     </div>
   );
 }

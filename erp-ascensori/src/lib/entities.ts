@@ -515,6 +515,15 @@ const ddtBase = z.object({
   destinatario: strOpt,
   indirizzoConsegna: strOpt,
   vettore: strOpt,
+  /// Дата и час на започване на превоза (чл. 1, ал. 3 D.P.R. 472/1996).
+  /// Празният низ е „не е попълнено", не „невалидна дата": `<input
+  /// type="datetime-local"> го праща така, а `z.coerce.date("")` дава
+  /// Invalid Date и формата би отказала запис заради незадължително поле.
+  inizioTrasporto: z
+    .literal("")
+    .transform(() => null)
+    .or(z.coerce.date())
+    .nullish(),
   ordineLavoroId: uuidOpt,
   note: strOpt,
 });

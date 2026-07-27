@@ -23,6 +23,7 @@ export interface EsitoRetention {
   auditContabile: number;
   auditOrdinario: number;
   telemetria: number;
+  notifiche: number;
 }
 
 /** Пуска прочистването и записва следа от пускането (както при scadenze). */
@@ -121,5 +122,18 @@ export async function applicaRetention(
     where: { iniziatoAt: { lt: s.telemetria } },
   });
 
-  return { auditAccesso, auditContabile, auditOrdinario, telemetria };
+  // 5) ИЗПРАТЕНИ известия — 90 дни. Само `INVIATA`: чакащото е задача, а
+  //    провалилото се е сигнал за сгрешен адрес. Прочистване „по дата, без
+  //    оглед на състоянието" би махнало точно това, което трябва да се види.
+  const { count: notifiche } = await prisma.notifica.deleteMany({
+    where: { stato: "INVIATA", inviataAt: { lt: s.notifiche } },
+  });
+
+  return {
+    auditAccesso,
+    auditContabile,
+    auditOrdinario,
+    telemetria,
+    notifiche,
+  };
 }
