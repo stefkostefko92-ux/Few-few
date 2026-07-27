@@ -998,7 +998,10 @@ async function renderAlerts() {
                 x.title,
                 x.silenced ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: `🔕 заглушена до ${fmtWhen(new Date(x.silenced.until).toISOString())}` }) : '',
               ]),
-              el('td', { class: 'muted', text: x.body }),
+              // Детайлите се режат по ширина: иначе дълъг текст изтласква
+              // бутона „Заглуши" извън екрана и най-полезното действие става
+              // невидимо (видяно на живо при 21 активни аларми).
+              el('td', { class: 'muted', style: 'max-width:520px;overflow:hidden;text-overflow:ellipsis', title: x.body, text: x.body }),
               el('td', { class: 'muted', text: fmtWhen(new Date(x.since).toISOString()) }),
               el('td', {}, [
                 x.silenced
