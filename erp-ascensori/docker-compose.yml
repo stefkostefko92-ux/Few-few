@@ -1,0 +1,251 @@
+# Продукционен стек: приложение + PostgreSQL 16 + автоматизми + бекъп.
+#
+# Тайните НЕ живеят тук. `${VAR:?…}` кара Compose да спре с ясно съобщение,
+# ако променливата липсва в `.env` — по-добре ранен отказ, отколкото сървър,
+# тръгнал с празен ключ.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      # Bootstrap потребителят е `postgres` и приложението НЕ го ползва.
+      # Причината е RLS: суперпотребителят заобикаля политиките безусловно, а
+      # Postgres отказва да понижи именно bootstrap-а („The bootstrap user must
+      # have the SUPERUSER attribute"). Приложението върви с отделната роля
+      # `APP_DB_USER`, създадена от скрипта в `deploy/postgres-init/`.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_BOOTSTRAP_PASSWORD:?POSTGRES_BOOTSTRAP_PASSWORD липсва в .env}
+      POSTGRES_DB: ${POSTGRES_DB:-erp_ascensori}
+      APP_DB_USER: ${POSTGRES_USER:?POSTGRES_USER липсва в .env}
+      APP_DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD липсва в .env}
+      # Италиански колации за правилна подредба на имена със знаци с ударение.
+      LANG: it_IT.utf8
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # Пуска се ВЕДНЪЖ, при първото вдигане на празен том.
+      - ./deploy/postgres-init:/docker-entrypoint-initdb.d:ro
+    # БЕЗ публикуван порт: базата се вижда само от вътрешната мрежа на стека.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${APP_DB_USER} -d $${POSTGRES_DB:-erp_ascensori}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL липсва в .env}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET липсва в .env}
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?AUDIT_HMAC_KEY липсва в .env}
+      AUDIT_HMAC_KEY_PRECEDENTE: ${AUDIT_HMAC_KEY_PRECEDENTE:-}
+      HEALTH_TOKEN: ${HEALTH_TOKEN:-}
+      # Без него QR етикетите отказват да се генерират (по-добре, отколкото да
+      # излязат с грешен адрес и да бъдат залепени).
+      APP_URL: ${APP_URL:?APP_URL липсва в .env — QR етикетите го изискват}
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
+      ACCESS_TOKEN_TTL_MIN: ${ACCESS_TOKEN_TTL_MIN:-15}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-7}
+      AUTOMATISMI_SOGLIA_ORE: ${AUTOMATISMI_SOGLIA_ORE:-26}
+      # Коренът на прикачените файлове. ИЗВЪН публичната папка нарочно: под
+      # `public/` всеки качен сертификат би бил свободно достъпен на познат
+      # адрес, а тук се качват протоколи с лични данни.
+      STORAGE_DIR: /var/lib/erp-ascensori/allegati
+      # ОТ ТУК НАДОЛУ: всяка променлива, която кодът чете, ТРЯБВА да е в този
+      # списък. Услугата няма `env_file`, тоест липсващо име не гърми — просто
+      # остава на подразбирането, а функцията изглежда включена в `.env` и не
+      # работи. Точно така AI асистентът и каналът към SDI биха замълчали.
+      SDI_CANALE: ${SDI_CANALE:-manuale}
+      SDI_PEC_DESTINATARIO: ${SDI_PEC_DESTINATARIO:-}
+      SDI_INTERMEDIARIO_URL: ${SDI_INTERMEDIARIO_URL:-}
+      CAPACITA_INTERVENTI_TECNICO: ${CAPACITA_INTERVENTI_TECNICO:-6}
+      CSP_REPORT_ONLY: ${CSP_REPORT_ONLY:-0}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-20}
+      RATE_LIMIT_REFRESH: ${RATE_LIMIT_REFRESH:-60}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_SDI: ${RATE_LIMIT_SDI:-120}
+      RATE_LIMIT_CSP: ${RATE_LIMIT_CSP:-120}
+      RATE_LIMIT_AI: ${RATE_LIMIT_AI:-60}
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_FORNITORE_ETICHETTA: ${AI_FORNITORE_ETICHETTA:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORTA: ${SMTP_PORTA:-587}
+      SMTP_TLS: ${SMTP_TLS:-}
+      SMTP_UTENTE: ${SMTP_UTENTE:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_MITTENTE: ${SMTP_MITTENTE:-}
+      SMTP_NOME: ${SMTP_NOME:-ERP Ascensori}
+      NOTIFICHE_LOTTO: ${NOTIFICHE_LOTTO:-50}
+      NODE_ENV: production
+    volumes:
+      # Първият том с ДАННИ на приложението. Влиза в бекъпа: база без файловете
+      # е половин архив, а протоколът от проверката е доказателство.
+      - allegati:/var/lib/erp-ascensori/allegati
+    # Само на localhost — навън се излиза през Nginx с TLS.
+    ports:
+      - "127.0.0.1:${APP_PORT:-3050}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Автоматизмите вървят в СЪЩИЯ образ, но като отделна услуга.
+  #
+  # Не са API маршрути по cron: `POST /api/scadenze/check` иска RESPONSABILE, а
+  # `POST /api/retention/esegui` — MASTER, и няма машинен токен. Сервизен акаунт
+  # с парола в crontab е точно това, което не искаме.
+  automatismi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL липсва в .env}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET липсва в .env}
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?AUDIT_HMAC_KEY липсва в .env}
+      # Пак чете `AUDIT_HMAC_KEY_PRECEDENTE` транзитивно (одитът я иска САМО при
+      # проверка) — без нея проверка от cron не би минала при ротация. Празната
+      # стойност е валидна и е подразбирането.
+      AUDIT_HMAC_KEY_PRECEDENTE: ${AUDIT_HMAC_KEY_PRECEDENTE:-}
+      # Автоматизмът за сроковете строи ВРЪЗКИТЕ в известията от този адрес.
+      # Без него писмото стига, но „Apri la scheda" сочи в празното — а точно
+      # заради връзката получателят отваря писмото.
+      APP_URL: ${APP_URL:?APP_URL липсва в .env}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORTA: ${SMTP_PORTA:-587}
+      SMTP_TLS: ${SMTP_TLS:-}
+      SMTP_UTENTE: ${SMTP_UTENTE:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_MITTENTE: ${SMTP_MITTENTE:-}
+      SMTP_NOME: ${SMTP_NOME:-ERP Ascensori}
+      NOTIFICHE_LOTTO: ${NOTIFICHE_LOTTO:-50}
+      NODE_ENV: production
+      TZ: ${TZ:-Europe/Rome}
+    entrypoint: ["/bin/sh", "-c"]
+    # Сроковете — дневно в 06:00; прочистването — в неделя в 04:00.
+    # Изчислява се спрямо стенния часовник, за да не се измества след рестарт.
+    command:
+      - |
+        echo "→ автоматизмите са активни (webhook 5 мин · notifiche 15 мин · contratti 05:00 · scadenze 06:00 · retention неделя 04:00)"
+        while true; do
+          ORA=$$(date +%H%M); GIORNO=$$(date +%u); MIN=$$(date +%M)
+          # Доставките са ЧЕСТИ: външната система чака известие, а не отчет.
+          case "$$MIN" in 00|05|10|15|20|25|30|35|40|45|50|55)
+            npm run webhook || echo "✖ webhook" ;;
+          esac
+          # Пощата е по-рядко от webhook-ите: получателят е човек, който
+          # проверява кутията си, не система, която чака отговор.
+          case "$$MIN" in 07|22|37|52)
+            npm run notifiche || echo "✖ notifiche" ;;
+          esac
+          if [ "$$ORA" = "0500" ]; then npm run contratti || echo "✖ contratti"; fi
+          if [ "$$ORA" = "0600" ]; then npm run scadenze:check || echo "✖ scadenze"; fi
+          if [ "$$GIORNO" = "7" ] && [ "$$ORA" = "0400" ]; then npm run retention || echo "✖ retention"; fi
+          sleep 60
+        done
+    # СИГНАЛ, А НЕ ТИШИНА. Без това единственият знак за спрял бекъп е ръчен
+    # поглед в `docker compose ps`: crashloop-ът при липсващ `age` и мълчаливо
+    # неуспяла нощ изглеждат еднакво отвън. 26 часа: един пропуснат пуск.
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "[ -f /backup/.ultimo-ok ] && [ $(( $(date +%s) - $(cat /backup/.ultimo-ok) )) -lt 93600 ]",
+        ]
+      interval: 30m
+      timeout: 10s
+      retries: 2
+      start_period: 24h
+
+  # Дневен криптиран дъмп. Частният ключ на age НЕ е на този сървър.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD липсва в .env}
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
+      # Часовникът на ТАЗИ услуга. Образът е `postgres:16-alpine` (без `TZ`),
+      # тоест „03:00" по-долу беше UTC — 05:00 италианско лятно време, при
+      # коментар, който твърди друго.
+      TZ: ${TZ:-Europe/Rome}
+    volumes:
+      - ./backup:/backup
+      # Само за четене: задачата на тази услуга е да ЗАПАЗВА файловете, не да
+      # ги мени. Компрометиран бекъп контейнер не бива да може да ги изтрие.
+      - allegati:/allegati:ro
+    entrypoint: ["/bin/sh", "-c"]
+    # ДВЕТЕ добавки при pg_dump не са по избор, откакто има RLS:
+    #   • `--enable-row-security` — иначе pg_dump ОТКАЗВА да дъмпне таблица с
+    #     политика, когато ролята не я заобикаля. Нощният бекъп просто спира.
+    #   • `app.tenant_id=*` — с него дъмпът минава по ИЗРИЧНИЯ обхват на
+    #     доставчика, а не по подразбирането „няма обхват → пропускай". Ако утре
+    #     някой затегне политиката, бекъпът остава пълен вместо тихо частичен.
+    # Пълнотата не се приема наум: `scripts/verifica-backup.mjs` сверява броя
+    # редове възстановено-срещу-източник.
+    command:
+      - |
+        # `age` СЕ ИСКА, не се пробва. С `|| true` липсата минаваше тихо, а
+        # долу веригата `age … && rm -f "$$F"` тогава оставя НЕкриптирания
+        # дъмп с всички лични данни на диска — точно обратното на целта.
+        apk add --no-cache age >/dev/null 2>&1 || { echo "✖ age не се инсталира — бекъпът спира"; exit 1; }
+        # НЕКРИПТИРАН БЕКЪП Е ЛИЧНИ ДАННИ НА ДИСКА. Стойността по подразбиране е
+        # празна, а файловете живеят на преживяващ път — тоест мълчаливата
+        # инсталация пише всяка нощ пълния регистър в чист вид. Не спираме
+        # услугата (по-добре бекъп, отколкото никакъв), но операторът трябва да
+        # го ВИЖДА в лога при всеки старт.
+        [ -n "$$BACKUP_AGE_RECIPIENT" ] \
+          || echo "⚠ BACKUP_AGE_RECIPIENT е празен: дъмповете остават НЕкриптирани (лични данни в чист вид)."
+        while true; do
+          if [ "$$(date +%H%M)" = "0300" ]; then
+            F=/backup/erp-$$(date +%Y%m%d).dump
+            A=/backup/allegati-$$(date +%Y%m%d).tar.gz
+            PGOPTIONS="-c app.tenant_id=*" pg_dump --enable-row-security \
+              -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB:-erp_ascensori} -Fc -f "$$F" \
+              && tar -czf "$$A" -C /allegati . \
+              && if [ -n "$$BACKUP_AGE_RECIPIENT" ]; then \
+                   # Чистият файл се маха БЕЗУСЛОВНО: провалено криптиране не
+                   # бива да оставя дъмпа четим на диска.
+                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$F.age" "$$F"; e1=$$?; rm -f "$$F"; \
+                   age -r "$$BACKUP_AGE_RECIPIENT" -o "$$A.age" "$$A"; e2=$$?; rm -f "$$A"; \
+                   [ $$e1 -eq 0 ] && [ $$e2 -eq 0 ]; \
+                 fi \
+              && find /backup -name 'erp-*' -mtime +31 -delete \
+              && find /backup -name 'allegati-*' -mtime +31 -delete \
+              && date +%s > /backup/.ultimo-ok \
+              && echo "✔ бекъп $$F + $$A"
+          fi
+          sleep 60
+        done
+
+volumes:
+  db-data:
+  # Прикачените файлове. Без него всяко пресъздаване на контейнера трие
+  # сертификатите и протоколите — данни, които по чл. 2220 c.c. се пазят 10 г.
+  allegati:

@@ -1,0 +1,265 @@
+name: ERP Ascensori CI
+
+# Клоните се покриват от `pull_request`, НЕ и от `push`.
+#
+# Дотук и двата тригера ловяха един и същ комит на работен клон и пускаха целия
+# пакет ДВА ПЪТИ. Не е само разход: интеграционният и e2e пакетът дърпат образи
+# от Docker Hub, тоест удвоеният брой пускания удвоява и шанса един от тях да
+# падне на мрежов блип — точно това стана на 26.07.2026 (три таймаута при
+# `docker pull postgres:16-alpine`, докато същият комит мина зелен в другото
+# пускане). Червена отметка по причина, която няма нищо общо с кода, е по-лоша
+# от липсваща: тя учи човек да не гледа отметките.
+#
+# Обединяване през `concurrency` не върши работа: групите са различни
+# (`refs/heads/…` срещу `refs/pull/…/merge`), а изравняването им би карало двата
+# пуска да се ОТМЕНЯТ взаимно и да излизат като „cancelled“.
+on:
+  push:
+    branches: [main]
+    paths: ["erp-ascensori/**", ".github/workflows/erp-ascensori.yml"]
+  pull_request:
+    paths: ["erp-ascensori/**", ".github/workflows/erp-ascensori.yml"]
+  workflow_dispatch: # ръчно пускане по клон без отворен PR
+
+# Нов push отменя предишния пуск за същия клон: чакащи задачи по остарял код
+# горят минути и бавят обратната връзка.
+concurrency:
+  group: erp-ascensori-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Стойности само за билд и тестове. Реалните тайни живеят на сървъра (mode 600)
+  # и никога не минават през CI.
+  SESSION_SECRET: ci_build_only_session_secret_32_chars_min_0123456789
+  AUDIT_HMAC_KEY: ci_build_only_audit_hmac_key_32_chars_min_012345
+  HEALTH_TOKEN: ci_health_token
+  APP_URL: http://127.0.0.1:3021
+
+jobs:
+  quality:
+    name: Lint · typecheck · unit · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # Покритието е ГЕЙТ, не отчет. Числото само по себе си не значи качество —
+      # но 96 % бяха измерени веднъж и после стояха непроверени, тоест изтриване
+      # на цял тестов файл минаваше зелено. Праговете са малко под измереното
+      # (измерено 99,98 statements/lines · 100 functions · 91,05 branches към
+      # 26.07.2026, прагове 99,9/99,9/100/90): достатъчно хлабави за честен
+      # рефактор, достатъчно стегнати да уловят изчезнал пакет тестове.
+      # ВАЖНО: покрива `src/lib` — чистата логика. Маршрутите и интерфейсът се
+      # мерят с другите два слоя, не тук.
+      # Детайлният доклад при провал: `text-summary` дава само процентите, а
+      # човекът трябва да види КОЙ символ е паднал гейта.
+      - run: npm run test:coverage || (npx c8 --config .c8rc.json report --reporter=text; exit 1)
+      # Изключенията от покритието не растат мълчаливо: гейтът от 100 %
+      # функции спира да значи нещо, ако парчето, което го проваля, може
+      # просто да бъде заглушено.
+      - name: Изключенията от покритието
+        working-directory: .
+        run: node tools/ci/c8-ignore-audit.mjs
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+  migrazioni:
+    name: Дрейф между схема и миграции
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: npm ci
+      # Историята на миграциите ТРЯБВА да изгражда точно живата схема. Дрейфът
+      # се хваща тук, а не при клиента, където поправката е ръчна SQL операция
+      # върху продукционна база.
+      - name: Миграциите изграждат схемата дословно
+        run: |
+          npx prisma migrate deploy
+          npx prisma migrate diff \
+            --from-schema-datasource prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code && echo "✔ без дрейф"
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+  integrazione:
+    name: Интеграционен пакет (реална база)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    # Bootstrap потребителят е `postgres` и НЕ се ползва от приложението — точно
+    # както в продукцията. Причината: Postgres отказва да понижи bootstrap-а
+    # („The bootstrap user must have the SUPERUSER attribute"), а суперпотребител
+    # заобикаля RLS безусловно. Ако CI върви с него, тестовете за изолация мерят
+    # среда, каквато клиентът никога няма да има.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      # Приложната роля: обикновена, но с CREATEDB (пакетът си прави своя база).
+      # Същото, което `deploy/postgres-init/` прави при клиента.
+      - name: Приложна роля без суперпотребител
+        run: |
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres \
+            -c "CREATE ROLE erp LOGIN PASSWORD 'erp' NOSUPERUSER CREATEDB"
+          psql -h 127.0.0.1 -p 5433 -U postgres -d postgres -Atc \
+            "SELECT 'erp rolsuper=' || rolsuper FROM pg_roles WHERE rolname='erp'"
+        env:
+          PGPASSWORD: postgres
+      - run: npm ci
+      - run: npm run test:int
+        env:
+          TEST_PG_ADMIN_URL: postgresql://erp:erp@127.0.0.1:5433/postgres
+
+  e2e:
+    name: E2E през браузър
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    # Bootstrap потребителят е `postgres` и НЕ се ползва от приложението — точно
+    # както в продукцията. Причината: Postgres отказва да понижи bootstrap-а
+    # („The bootstrap user must have the SUPERUSER attribute"), а суперпотребител
+    # заобикаля RLS безусловно. Ако CI върви с него, тестовете за изолация мерят
+    # среда, каквато клиентът никога няма да има.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      # Приложната роля: обикновена, но с CREATEDB (пакетът си прави своя база).
+      # Същото, което `deploy/postgres-init/` прави при клиента.
+      - name: Приложна роля без суперпотребител
+        run: |
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres \
+            -c "CREATE ROLE erp LOGIN PASSWORD 'erp' NOSUPERUSER CREATEDB"
+          psql -h 127.0.0.1 -p 5433 -U postgres -d postgres -Atc \
+            "SELECT 'erp rolsuper=' || rolsuper FROM pg_roles WHERE rolname='erp'"
+        env:
+          PGPASSWORD: postgres
+      - run: npm ci
+      # Браузърът се тегли веднъж на промяна в зависимостите, не на всеки пуск.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('erp-ascensori/package-lock.json') }}
+          # Смяна на кой да е пакет обезсилва ключа, но браузърът рядко се мени:
+          # частичното възстановяване спестява тегленето, а `install` довършва.
+          restore-keys: playwright-${{ runner.os }}-
+      # Само Chromium: три браузъра тук са три пъти минути за същия сигнал.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          TEST_PG_ADMIN_URL: postgresql://erp:erp@127.0.0.1:5433/postgres
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: erp-ascensori/playwright-report/
+          retention-days: 7
+
+  fornitura:
+    name: Верига на доставка (SBOM + одит)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erp-ascensori
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: erp-ascensori/package-lock.json
+      - run: npm ci
+      # SBOM-ът е за КЛИЕНТА: enterprise купувач иска списък на компонентите,
+      # преди да пусне софтуера в мрежата си.
+      - name: SBOM (CycloneDX)
+        run: npx --yes @cyclonedx/cyclonedx-npm@latest --output-file sbom.json --omit dev
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-erp-ascensori
+          path: erp-ascensori/sbom.json
+          retention-days: 90
+      # Гейт САМО върху продукционните зависимости: dev уязвимост в линтера не
+      # стига до клиента, а блокирането ѝ води до заглушаване на целия гейт.
+      #
+      # Прагът е `critical`, не `high`, заради ЕДИН документиран запис
+      # (`postcss`, вложен в next@15 — виж `.audit-eccezioni.md`). Високите пак
+      # се докладват; ако изключението отпадне, прагът се вдига обратно.
+      #
+      # НЕ `npm audit`: от юли 2026 г. командата пита ретирания „quick" endpoint
+      # на registry-то и излиза с код 1 („Invalid package tree") независимо дали
+      # има уязвимости — тоест не проверява нищо, но спира всяко вливане. Нашият
+      # скрипт пита РАБОТЕЩИЯ „bulk" endpoint; източникът на съветите е същият.
+      - name: Одит на продукционните зависимости (блокиращ)
+        working-directory: .
+        run: node tools/security/audit-deps.mjs erp-ascensori --soglia critical
+      - name: Високи уязвимости (само доклад)
+        working-directory: .
+        continue-on-error: true
+        run: |
+          node tools/security/audit-deps.mjs erp-ascensori --soglia high --solo-report \
+            || echo "::warning::Има високи уязвимости в продукционните зависимости. Приетите изключения са в erp-ascensori/.audit-eccezioni.md."

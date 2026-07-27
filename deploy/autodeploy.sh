@@ -21,9 +21,11 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali erp-ascensori}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
+# Каквото трябва да преживее прочистването на старите издания.
+SHARED_DIR="${SHARED_DIR:-/opt/few-few/shared}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
 
@@ -88,6 +90,12 @@ CADDY_SITES_DIR="${CADDY_SITES_DIR:-/etc/caddy/sites}"
 CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
+
+# erp-ascensori (ERP Ascensori Enterprise — Docker Compose) — app:3050 + postgres
+# във вътрешната мрежа на стека (базата БЕЗ публикуван порт), зад Nginx с TLS.
+# Тайните живеят в erp-ascensori/.env на сървъра (mode 600) и се пренасят при
+# всеки деплой. `readyz` проверява база + схема + наличието на ключовете.
+ERP_HEALTH_URL="${ERP_HEALTH_URL:-http://127.0.0.1:3050/api/readyz}"
 ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
@@ -158,10 +166,10 @@ deploy_zabobovdol() {
   fi
   # Бекъпите живеят на СТАБИЛЕН път извън releases — иначе умират с прочистването
   # на старите releases (KEEP_RELEASES) и историята се губи при всеки деплой.
-  mkdir -p /opt/few-few/shared/zabobovdol/backups
+  mkdir -p "$SHARED_DIR/zabobovdol/backups"
   rm -rf "$d/backups"
-  ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
-  ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
+  ln -sfnT "$SHARED_DIR/zabobovdol/backups" "$d/backups"
+  ok "zabobovdol/backups -> $SHARED_DIR/zabobovdol/backups"
   ( cd "$d"
     if [ -f .env ]; then
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)
@@ -542,7 +550,100 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
-# ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
+# ── 3h) erp-ascensori — Docker Compose ────────────────────────────────────────
+deploy_erp_ascensori() {
+  local d="$SRC/erp-ascensori"
+  [ -d "$d" ] || { warn "Няма erp-ascensori/ в архива — пропускам."; return; }
+  log "Разгръщам erp-ascensori (Docker Compose)…"
+
+  # Тайните живеят на сървъра, не в архива.
+  if [ -f "$CURRENT_LINK/erp-ascensori/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/erp-ascensori/.env" "$d/.env"; ok "Пренесох erp-ascensori/.env"
+  fi
+
+  # Пръв деплой: генерирай тайните с продуктовия скрипт (идемпотентен, mode 600).
+  # НЕ пускаме демо seed-а — той има публично известна парола. Първият MASTER се
+  # създава изрично, с показана веднъж случайна парола.
+  local primo=0
+  if [ ! -f "$d/.env" ]; then
+    primo=1
+    warn "Няма erp-ascensori/.env — генерирам тайните."
+    # ПРОВАЛЪТ ТУК Е ПРОВАЛ НА ЕДИН ПРОЕКТ, НЕ НА ДЕПЛОЯ.
+    #
+    # `setup-env.sh` излиза с 1 по КОНСТРУКЦИЯ при първо пускане (APP_URL е още
+    # примерният — от него се печатат стикерите по уредбите). Под
+    # `set -euo pipefail` необработеният ненулев изход прекратява ЦЕЛИЯ скрипт
+    # ПРЕДИ стъпка 4: `current` не се пренасочва към новото издание. А всеки
+    # пренос на тайни чете `$CURRENT_LINK/<проект>/.env` — тоест следващият
+    # деплой генерира НОВИ тайни за всички проекти и сваля сесиите навсякъде.
+    # И всичко това без нито един ред грешка от самия autodeploy.
+    if ! ( cd "$d" && bash scripts/setup-env.sh ); then
+      warn "erp-ascensori: настройката на средата не мина (задай APP_URL в $d/.env)."
+      deploy_failed=1
+      return
+    fi
+    warn "Задай TRUSTED_PROXY_HOPS и BACKUP_AGE_RECIPIENT в erp-ascensori/.env."
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # БЕКЪПИТЕ ИЗЛИЗАТ ОТ ПАПКАТА НА ИЗДАНИЕТО.
+  #
+  # `docker-compose.yml` монтира `./backup`, тоест при този поток бекъпите се
+  # пишат ВЪТРЕ в `/opt/few-few/releases/<час>/erp-ascensori/`. Прочистването
+  # по-долу пази последните $KEEP_RELEASES издания — на шестото разгръщане
+  # цялата история от дъмпове и архиви на файловете изчезва. Същият symlink
+  # решава същия проблем при zabobovdol.
+  local backups="$SHARED_DIR/erp-ascensori/backups"
+  mkdir -p "$backups"
+  chmod 700 "$backups"
+  if [ -d "$d/backup" ] && [ ! -L "$d/backup" ]; then
+    # Ако разгръщането е минало веднъж без symlink, пренасяме намереното.
+    cp -an "$d/backup/." "$backups/" 2>/dev/null || true
+    rm -rf "$d/backup"
+  fi
+  ln -sfnT "$backups" "$d/backup"
+  ok "erp-ascensori/backup -> $backups"
+
+  # Миграциите се прилагат от docker-entrypoint.sh при старта на контейнера.
+  ( cd "$d" && docker compose up -d --build )
+
+  if [ "$primo" = "1" ]; then
+    warn "Първо разгръщане: създай MASTER акаунта с"
+    warn "  cd $d && docker compose run --rm -e MASTER_EMAIL=<адрес> app node scripts/crea-master.mjs"
+  fi
+
+  health "$ERP_HEALTH_URL" "erp-ascensori" || { deploy_failed=1; return; }
+
+  # ГЕЙТ НА ИЗДАНИЕТО, НЕ НА ТРАФИКА. `pronto` казва само „пускай ли трафик"
+  # (база + схема + ключове) — нарочно, за да не свали пълен диск целия
+  # гестионал в цикъл от рестарти. Но ново издание НЯМА право да тръгне с
+  # непримонтиран том (качените сертификати изчезват при следващото
+  # пресъздаване на контейнера) или с неактивна RLS (втората линия на
+  # изолацията между фирмите става украса). Това чете `rilascio`.
+  #
+  # Токенът минава през --config на стандартния вход, НЕ като аргумент:
+  # аргументите се виждат в `ps` от всеки локален потребител.
+  local token corpo
+  token="$(sed -n 's/^HEALTH_TOKEN=//p' "$d/.env" 2>/dev/null | head -1 || true)"
+  if [ -z "$token" ]; then
+    warn "erp-ascensori: няма HEALTH_TOKEN в .env — пропускам проверката на изданието (архив/RLS)."
+    return
+  fi
+  corpo="$(printf 'header = "x-health-token: %s"\n' "$token" \
+    | curl -fsS --max-time 5 --config - "$ERP_HEALTH_URL" || true)"
+  case "$corpo" in
+    *'"rilascio":true'*)
+      ok "erp-ascensori: изданието минава (архив записваем, RLS активна)." ;;
+    *)
+      warn "erp-ascensori: изданието НЕ минава."
+      warn "  архив: том за прикачените файлове монтиран и записваем?"
+      warn "  RLS:   ролята на приложението не бива да е суперпотребител."
+      deploy_failed=1
+      ;;
+  esac
+}
+
+# ── 3i) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
 # import в главния Caddyfile). Валидира преди reload → нула downtime. Идемпотентно:
@@ -710,6 +811,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    erp-ascensori)        deploy_erp_ascensori ;;
     adblock)    deploy_adblock ;;
     *)          warn "Непознат проект: $p" ;;
   esac

@@ -1,0 +1,88 @@
+{
+  "name": "erp-ascensori",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ERP Ascensori Enterprise — gestionale per aziende di manutenzione e installazione ascensori: impianti, scadenze, magazzino, preventivi, ordini di lavoro, fatturazione, DDT.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "homepage": "https://erp-ascensori.carbonstealth.eu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "erp-ascensori"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "erp",
+    "ascensori",
+    "gestionale",
+    "manutenzione ascensori",
+    "fatturazione elettronica",
+    "ordini di lavoro",
+    "Carbon Stealth",
+    "nextjs",
+    "prisma"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/lib/__tests__/*.test.ts",
+    "test:coverage": "c8 --config .c8rc.json tsx --test src/lib/__tests__/*.test.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
+    "scadenze:check": "tsx --env-file-if-exists=.env scripts/check-scadenze.ts",
+    "retention": "tsx --env-file-if-exists=.env scripts/retention.ts",
+    "contratti": "tsx --env-file-if-exists=.env scripts/contratti.ts",
+    "test:int": "node scripts/test-integration.mjs",
+    "verifica:backup": "node scripts/verifica-backup.mjs",
+    "webhook": "tsx --env-file-if-exists=.env scripts/webhook.ts",
+    "notifiche": "tsx --env-file-if-exists=.env scripts/notifiche.ts",
+    "test:e2e": "node scripts/test-e2e.mjs",
+    "schermate": "node scripts/schermate.mjs",
+    "misura:scala": "tsx scripts/misura-scala.ts",
+    "scheda": "tsx scripts/scheda-prodotto.ts"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@prisma/client": "^6.2.1",
+    "@types/pdfkit": "^0.17.6",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6",
+    "next": "^15.1.4",
+    "pdfkit": "^0.19.1",
+    "qrcode-generator": "^1.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.62.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "c8": "^12.0.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.19",
+    "postcss": "^8.5.23",
+    "prisma": "^6.2.1",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "overrides": {
+    "sharp": "^0.35.3"
+  }
+}

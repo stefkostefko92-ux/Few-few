@@ -9,6 +9,7 @@
 Версии на рамки (Playwright/Vitest/MSW) са време-чувствителни → потвърждавай на живо.
 
 ## Проверени поуки (verified)
+- **2026-07-25:** erp-ascensori: RBAC се проверява навсякъде през richiedeRuolo(minRuolo) на route ниво (haPermesso чисто в roles.ts) — грепни 'richiedeRuolo(' в src/app/api за таблично-управляван RBAC-matrix тест вместо ръчен списък. _(общо; verified; "src/lib/crud.ts:52,83,115,134; grep richiedeRuolo src/app/api --include=route.ts")_
 - **2026-07-24:** test.info() дава live handle за annotations (skip/fixme/fail/slow) и attachments по време на изпълнение — ползвай за прикачване на диагностика (screenshot/log) точно в момента на провал, не post-hoc. _(playwright; verified; https://playwright.dev/docs/test-annotations)_
 - **2026-07-24:** Карантина на flaky тест: тагвай @flaky и изключвай от главния гейт с --grep-invert @flaky; отделен @flaky job пуска карантинираните без да блокира merge; всеки карантиниран тест носи owner+билет+дедлайн — не остава завинаги скрит. _(playwright/ci; verified; https://testquality.com/playwright-flaky-tests-diagnostic-playbook-2026/)_
 - **2026-07-24:** test.fixme() маркира теста failing и НЕ го изпълнява (различно от test.slow() — трипъл timeout); ползвай fixme за спрян тест с трекнат проблем, skip само когато сценарият вече не е приложим. _(playwright; verified; https://playwright.dev/docs/test-annotations)_
@@ -189,5 +190,7 @@
 - **2026-07-16:** Регресионен тест за всеки поправен бъг: преди фикса напиши тест, който пада заради бъга, после го оправи → тестът пази да не се върне (характеризиращ тест). _("regression тест за бъг"; verified; "https://martinfowler.com/bliki/CharacterizationTest.html")_
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-25:** erp-ascensori няма playwright.config.ts/vitest.config.ts все още, само tsx --test src/lib/__tests__/*.test.ts — интеграционен и e2e слой трябва да се добавят от нула (нови scripts test:int/test:e2e), не просто разширяване на съществуващ config. _(общо; unverified; "erp-ascensori/package.json scripts; ls erp-ascensori/*.config.ts")_
+- **2026-07-25:** movimenti/route.ts и ordini/[id]/stato/route.ts ползват optimistic locking (updateMany с where-guard, count===0 → 409) вместо явни DB locks — concurrency тестовете трябва да асертират инвариант (сбор ≤ начална стойност), не 'кой печели', и не могат да живеят вложени в обгръщаща тестова транзакция (нужен truncate+reseed per test, не nested $transaction rollback). _(общо; unverified; "src/app/api/movimenti/route.ts; src/app/api/ordini/[id]/stato/route.ts")_
 - **2026-07-16:** Точните текущи мажорни версии на Playwright/Vitest/MSW и техните breaking промени са време-чувствителни → потвърди в package.json на продукта и changelog на рамката преди да цитираш API. _("рамка версии; unverified; провери locally package.json + официалния changelog")_
 - **2026-07-16:** Кои продукти в репото реално имат тестови пакети и какви (има ли e2e за критичните потоци) не е установено — пусни `tools/qa/test-audit.mjs` и прочети конфигурациите преди твърдение. _("репо тест покритие; unverified; tools/qa/test-audit.mjs (чети преди да твърдиш)")_
