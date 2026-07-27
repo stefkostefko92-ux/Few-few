@@ -787,7 +787,6 @@ gl_FragColor.rgb += uRim * _fres * 0.5;\n\
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                aria-pressed={isActive}
                 onClick={function () { handleTabClick(i); }}
                 style={{
                   fontFamily: MONO, fontSize: 8, letterSpacing: ".2em", textTransform: "uppercase",
