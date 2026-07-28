@@ -6645,9 +6645,20 @@
           "date": "2026-07-24",
           "event": "v14.2 — учене",
           "detail": "Научи: NURBS рационална basis функция: R_i,p(u) = w_i·N_i,p(u) / Σ_j w_j·N_j,p(u); хомогенни к… (+14 още)"
+        },
+        {
+          "version": "14.5.0",
+          "date": "2026-07-28",
+          "event": "v14.5 — учене",
+          "detail": "Научи: QuickSurface Pro 2026 = v7.9.62 (окт. 2025), Parasolid kernel; 12 нови мажорни features… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface Pro 2026 = v7.9.62 (окт. 2025), Parasolid kernel; 12 нови мажорни features…\" (+2 още) · 8 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
