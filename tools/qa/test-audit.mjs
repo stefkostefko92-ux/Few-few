@@ -31,7 +31,9 @@ function walk(dir, out) {
   let e; try { e = readdirSync(dir, { withFileTypes: true }); } catch { return; }
   for (const x of e) {
     if (x.isDirectory()) { if (!SKIP.has(x.name) && !x.name.startsWith(".")) walk(join(dir, x.name), out); }
-    else if (TEST_EXT.has(extname(x.name)) && /\.(test|spec)\.|(^|\/)__tests__\//.test(x.name)) out.push(join(dir, x.name));
+    // `.e2e.` също е тестов файл. Без него `medqr/test/webauthn.e2e.mjs` и подобните бяха СЛЯПО
+    // ПЕТНО — нито flaky-sleep, нито `.only` проверката са ги гледали някога.
+    else if (TEST_EXT.has(extname(x.name)) && /\.(test|spec|e2e)\.|(^|\/)__tests__\//.test(x.name)) out.push(join(dir, x.name));
   }
 }
 
@@ -61,6 +63,11 @@ for (const f of allTestFiles) {
   while ((m = skipRe.exec(t))) add("info", "test-skip", f, lineOf(t, m.index), "`.skip`/`xit` — пропуснат тест; карантинирай с билет, не оставяй тихо изключен завинаги.");
   const sleepRe = /waitForTimeout\s*\(|(?:await\s+)?(?:new\s+Promise[^;]*setTimeout)|\bsleep\s*\(/g;
   if (/playwright|@playwright|page\.|e2e/i.test(t)) while ((m = sleepRe.exec(t))) add("warn", "flaky-sleep", f, lineOf(t, m.index), "Чакане по време (`waitForTimeout`/`sleep`) в e2e → flaky. Чакай по състояние (web-first assertion / `waitForResponse`).");
+  // `networkidle` е СЪЩИЯТ клас грешка като sleep, но се пропускаше: чака 500ms тишина по мрежата,
+  // затова една шумна фонова заявка (analytics · SSE · long-poll · регистрация на PWA service worker)
+  // го държи до тайм-аут. Самият Playwright го обявява за discouraged.
+  const idleRe = /waitUntil\s*:\s*["'`]networkidle["'`]|waitForLoadState\s*\(\s*["'`]networkidle["'`]/g;
+  while ((m = idleRe.exec(t))) add("warn", "flaky-networkidle", f, lineOf(t, m.index), "`networkidle` е антипатърн (шумна фонова заявка го държи до тайм-аут). Чакай по конкретен елемент/assertion.");
 }
 
 const order = { block: 0, warn: 1, info: 2 };
