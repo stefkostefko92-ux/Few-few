@@ -27,7 +27,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   STALE_DAYS, MERGE_THRESHOLD, TIME_SENSITIVE,
-  jaccard, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
+  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
 } from "./oversee-lib.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -130,9 +130,12 @@ for (const id of allIds) {
     const unsourced = verified.filter((b) => !hasSource(b));
     r.unsourced = unsourced.length;
     if (unsourced.length) r.warn.push(`${unsourced.length}/${verified.length} проверени поуки без цитиран източник (закон „източник или нищо")`);
-    // почти-дубли
+    // почти-дубли. Токенизираме ВЕДНЪЖ на поука, не на всяко сравнение: при m поуки двойките са
+    // m²/2, а `jaccard` токенизира и двата низа всеки път → ~m² токенизации вместо m. Броенето на
+    // двойки остава същото (не клъстери — „3 еднакви" са 3 двойки, не 1).
     let dup = 0;
-    for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccard(verified[i], verified[j]) >= MERGE_THRESHOLD) dup++;
+    const vSets = verified.map((b) => toks(b));
+    for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccardSets(vSets[i], vSets[j]) >= MERGE_THRESHOLD) dup++;
     r.dups = dup;
     if (dup) r.warn.push(`${dup} почти-дубли (Jaccard ≥${MERGE_THRESHOLD}) → curate --merge-dups`);
     // застарели: време-чувствителни >STALE_DAYS, ИЛИ с явна минала „re-verify:" дата (#2)

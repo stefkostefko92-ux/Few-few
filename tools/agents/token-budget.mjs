@@ -38,6 +38,13 @@ const DEF_TOKEN_HARD = 8000;
 // не сляпо първите N. Отразяваме РЕАЛНО инжектирания разход, не пълния файл. Дръж в синхрон с
 // MEM_TOKEN_BUDGET в .claude/hooks/memory-preload.mjs.
 const MEM_INJECT_BUDGET = 3200;
+// Таван на СТАТИЧНИЯ ПРЕФИКС (доктрина+процедура+споделено). Този блок се инжектира на ВСЕКИ агент,
+// на ВСЕКИ старт → цената му се умножава по размера на флота. При 27 агента един добавен булет от
+// ~230 т струва ~6200 т на вълна, завинаги. Дефинициите отдавна имат таван (DEF_TOKEN_HARD), а
+// най-мултиплицираният разход във флота нямаше НИКАКЪВ — растеше безнадзорно.
+// WARN ≈ +10% над днешното, HARD ≈ +27%: гейтваме РАЗБЯГВАНЕТО, не текущото състояние.
+export const PREFIX_TOKEN_WARN = 5200;
+export const PREFIX_TOKEN_HARD = 6000;
 
 // --- Cyrillic-aware евристичен токенизатор ---------------------------------
 // Claude токенизаторът дели кирилицата по-ситно от латиницата. Емпирично blended съотношение:
@@ -96,7 +103,13 @@ export function computeBudget() {
   const doctrine = bulletsUnder(join(MEM_DIR, "SECURITY.md"), /^##\s*Доктрина/).join("\n");
   const procedure = bulletsUnder(join(MEM_DIR, "PROCEDURE.md"), /^##\s*Процедура/).join("\n");
   const shared = bulletsUnder(join(MEM_DIR, "_shared.md"), /^##\s*Споделени поуки/).join("\n");
-  const STATIC_PREFIX_TOKENS = estTokens(doctrine) + estTokens(procedure) + estTokens(shared);
+  // Разбивка по източник — за да се вижда КОЙ файл дърпа тавана нагоре, не само общата сума.
+  const prefixParts = [
+    { src: "_memory/SECURITY.md (Доктрина)", tokens: estTokens(doctrine) },
+    { src: "_memory/PROCEDURE.md (Процедура)", tokens: estTokens(procedure) },
+    { src: "_memory/_shared.md (Споделени поуки)", tokens: estTokens(shared) },
+  ];
+  const STATIC_PREFIX_TOKENS = prefixParts.reduce((s, p) => s + p.tokens, 0);
   // Кешираният read е ~0.1× → спестено на всяко извикване след първото = 0.9× от статичния префикс.
   const CACHE_SAVED = Math.round(STATIC_PREFIX_TOKENS * 0.9);
 
@@ -131,11 +144,26 @@ export function computeBudget() {
     fleetWarmPerStart: rows.reduce((s, r) => s + r.perStartWarm, 0),
   };
   totals.fleetSavedPerWave = totals.fleetColdPerStart - totals.fleetWarmPerStart;
-  return { rows, totals, STATIC_PREFIX_TOKENS, CACHE_SAVED, DEF_TOKEN_WARN, DEF_TOKEN_HARD };
+  // Реалната цена на префикса за флота: плаща се веднъж на агент, на всяка вълна.
+  totals.prefixCostPerWave = STATIC_PREFIX_TOKENS * rows.length;
+  totals.prefixShareOfWave = totals.fleetColdPerStart ? totals.prefixCostPerWave / totals.fleetColdPerStart : 0;
+  // Колко струва ЕДИН нов булет в префикса (средна дължина на съществуващите) — числото, което
+  // прави решението „да го добавя ли в _shared/PROCEDURE" осъзнато, вместо безплатно на вид.
+  const prefixBullets = bulletsUnder(join(MEM_DIR, "SECURITY.md"), /^##\s*Доктрина/).length
+    + bulletsUnder(join(MEM_DIR, "PROCEDURE.md"), /^##\s*Процедура/).length
+    + bulletsUnder(join(MEM_DIR, "_shared.md"), /^##\s*Споделени поуки/).length;
+  totals.prefixBullets = prefixBullets;
+  totals.costPerPrefixBullet = prefixBullets ? Math.round((STATIC_PREFIX_TOKENS / prefixBullets) * rows.length) : 0;
+  return {
+    rows, totals, prefixParts, STATIC_PREFIX_TOKENS, CACHE_SAVED,
+    DEF_TOKEN_WARN, DEF_TOKEN_HARD, PREFIX_TOKEN_WARN, PREFIX_TOKEN_HARD,
+    prefixBloated: STATIC_PREFIX_TOKENS > PREFIX_TOKEN_WARN,
+    prefixOverHard: STATIC_PREFIX_TOKENS > PREFIX_TOKEN_HARD,
+  };
 }
 
 function runCli() {
-const { rows, totals, STATIC_PREFIX_TOKENS, CACHE_SAVED } = computeBudget();
+const { rows, totals, prefixParts, STATIC_PREFIX_TOKENS, CACHE_SAVED, prefixBloated, prefixOverHard } = computeBudget();
 const bloated = rows.filter((r) => r.bloated);
 const overHard = rows.filter((r) => r.overHard);
 
@@ -143,7 +171,8 @@ if (JSON_OUT) {
   console.log(JSON.stringify({
     generatedNote: "оценка (евристичен Cyrillic-aware токенизатор); точни числа: count_tokens endpoint",
     defTokenWarn: DEF_TOKEN_WARN,
-    totals, rows,
+    prefixTokenWarn: PREFIX_TOKEN_WARN, prefixTokenHard: PREFIX_TOKEN_HARD,
+    totals, prefixParts, rows,
   }, null, 2));
   process.exit(0);
 }
@@ -152,7 +181,11 @@ console.log(`\n🪙  Токен-бюджет на екипа (${rows.length} а�
 console.log(`  Статичен префикс (доктрина+процедура+споделено): ~${STATIC_PREFIX_TOKENS} т · еднакъв по СЪДЪРЖАНИЕ`);
 console.log(`  Кеш спестява ~${CACHE_SAVED} т на повторно извикване на СЪЩИЯ агент (0.9× от префикса).`);
 console.log(`  \x1b[90mНЕ се дели между различни агенти: префиксът влиза в messages (SubagentStart), а системният`);
-console.log(`  блок преди него е различен за всеки агент → всеки плаща префикса си наново.\x1b[0m\n`);
+console.log(`  блок преди него е различен за всеки агент → всеки плаща префикса си наново.\x1b[0m`);
+for (const p of prefixParts) console.log(`    \x1b[90m· ${p.src.padEnd(36)} ~${String(p.tokens).padStart(5)} т\x1b[0m`);
+console.log(`  Цена за флота: ~${totals.prefixCostPerWave} т/вълна (${(totals.prefixShareOfWave * 100).toFixed(0)}% от студена вълна) · ` +
+  `таван ${PREFIX_TOKEN_HARD} т`);
+console.log(`  \x1b[90mЕДИН нов булет в префикса струва ~${totals.costPerPrefixBullet} т на вълна, завинаги (×${rows.length} агента).\x1b[0m\n`);
 console.log("  агент                   модел    усилие  сис.промпт  лична  старт(студ)  старт(кеш)  спест%");
 for (const r of rows) {
   const flag = r.bloated ? "\x1b[33m▲\x1b[0m" : " ";
@@ -172,12 +205,25 @@ if (bloated.length) {
 }
 console.log("");
 
+if (prefixBloated && !prefixOverHard) {
+  console.log(`\x1b[33m▲ Статичният префикс\x1b[0m е ~${STATIC_PREFIX_TOKENS} т (над ${PREFIX_TOKEN_WARN}) — ` +
+    `всеки булет се плаща ×${rows.length}. Слим кандидат, преди да удари тавана ${PREFIX_TOKEN_HARD}.\n`);
+}
+
+let failed = 0;
 if (CHECK && overHard.length) {
   console.error(`token-budget --check: ${overHard.length} дефиниции над твърдия таван ${DEF_TOKEN_HARD} т (разбягване): ` +
     overHard.map((r) => `${r.id}~${r.sysTokens}`).join(", "));
-  process.exit(1);
+  failed = 1;
 }
-process.exit(0);
+if (CHECK && prefixOverHard) {
+  console.error(`token-budget --check: статичният префикс е ~${STATIC_PREFIX_TOKENS} т над твърдия таван ` +
+    `${PREFIX_TOKEN_HARD} т. Той се инжектира на ВСЕКИ агент → ~${totals.prefixCostPerWave} т на вълна. ` +
+    `Разбивка: ${prefixParts.map((p) => `${p.src}~${p.tokens}`).join(" · ")}. ` +
+    `Слим доктрината/процедурата/споделеното или обедини булети — не вдигай тавана.`);
+  failed = 1;
+}
+process.exit(failed);
 }
 
 // Пусни CLI само при директно извикване (не при import от тест/табло).

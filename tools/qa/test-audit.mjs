@@ -9,12 +9,12 @@
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, relative, extname, basename } from "node:path";
+import { isTestFile, TEST_EXT } from "../lib/audit-patterns.mjs";
 
 const ROOT = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : ".";
 const JSON_OUT = process.argv.includes("--json");
 const STRICT = process.argv.includes("--strict");
 const SKIP = new Set(["node_modules", ".git", "dist", "build", ".next", "out", "coverage", "vendor", ".claude", "tools", "deploy", "agents-dashboard"]);
-const TEST_EXT = new Set([".js", ".ts", ".tsx", ".jsx", ".mjs", ".cjs"]);
 
 const findings = [];
 const add = (sev, rule, file, line, msg) => findings.push({ sev, rule, file: relative(ROOT, file) || file, line, msg });
@@ -31,9 +31,7 @@ function walk(dir, out) {
   let e; try { e = readdirSync(dir, { withFileTypes: true }); } catch { return; }
   for (const x of e) {
     if (x.isDirectory()) { if (!SKIP.has(x.name) && !x.name.startsWith(".")) walk(join(dir, x.name), out); }
-    // `.e2e.` също е тестов файл. Без него `medqr/test/webauthn.e2e.mjs` и подобните бяха СЛЯПО
-    // ПЕТНО — нито flaky-sleep, нито `.only` проверката са ги гледали някога.
-    else if (TEST_EXT.has(extname(x.name)) && /\.(test|spec|e2e)\.|(^|\/)__tests__\//.test(x.name)) out.push(join(dir, x.name));
+    else if (isTestFile(x.name)) out.push(join(dir, x.name));
   }
 }
 

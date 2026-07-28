@@ -12,5 +12,4 @@ agents-dashboard/.sync.lock
 .claude/agents/_memory/_flows.jsonl
 .claude/hooks/_state/
 agents-dashboard/metrics.json
-tools/agents/evals/trend.jsonl
 dist/

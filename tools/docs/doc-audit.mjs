@@ -9,6 +9,7 @@
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, relative, dirname, resolve } from "node:path";
+import { isUnfinished } from "../lib/audit-patterns.mjs";
 
 const ROOT = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : ".";
 const JSON_OUT = process.argv.includes("--json");
@@ -50,10 +51,7 @@ const linkRe = /\[[^\]]*\]\(([^)]+)\)/g;
 for (const f of mdFiles) {
   const t = read(f), lines = t.split("\n");
   lines.forEach((ln, i) => {
-    // `XXX{2,}` с флаг `i` ловеше `xxxx` в примерни команди — фалшив позитив. Стеснено до ГЛАВНИ X,
-    // които НЕ са част от име на файл/идентификатор (`backup-XXXX.sql.gz` е примерен аргумент, а
-    // `+359 XX XXX XXXX` в правен документ е истински незапълнен плейсхолдър).
-    if (/\b(TODO|TBD|FIXME|WIP)\b|lorem ipsum|<placeholder>/i.test(ln) || /(?<![-_/\w])XXX+(?![-_.\w])/.test(ln))
+    if (isUnfinished(ln))
       add("info", "unfinished", f, i + 1, "Недовършен маркер (TODO/TBD/FIXME/lorem) в публикуван документ — довърши преди merge.");
   });
   let m;
