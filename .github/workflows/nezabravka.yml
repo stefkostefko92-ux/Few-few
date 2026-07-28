@@ -1,0 +1,72 @@
+name: nezabravka
+
+# Гейтът на „Незабравка“ (iOS). Ядрото (сметки за дати + планиране на известия)
+# е Foundation-only и се тества на Linux при всяка промяна — без Mac и без
+# минути от скъп macOS runner.
+#
+# Целият проект (SwiftUI + SwiftData) се билдва с xcodebuild, но само РЪЧНО:
+# Actions → „nezabravka“ → Run workflow (macOS runner-ите се таксуват 10×).
+
+on:
+  push:
+    paths:
+      - "nezabravka/**"
+      - ".github/workflows/nezabravka.yml"
+  pull_request:
+    paths:
+      - "nezabravka/**"
+      - ".github/workflows/nezabravka.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nezabravka-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Ядро (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.1-noble
+    defaults:
+      run:
+        working-directory: nezabravka
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Формат
+        run: swift format lint --strict --recursive Nezabravka Tests
+
+      - name: Билд
+        run: swift build
+
+      - name: Тестове
+        run: swift test
+
+      - name: Иконата е възпроизводима от скрипта
+        run: |
+          command -v python3 >/dev/null || (apt-get update -qq && apt-get install -y -qq --no-install-recommends python3)
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          python3 scripts/generate-icon.py
+          git diff --exit-code -- Nezabravka/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+
+  app:
+    name: Приложение (xcodebuild)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: nezabravka
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Билд за симулатор (без подписване)
+        run: |
+          xcodebuild build \
+            -project Nezabravka.xcodeproj \
+            -scheme Nezabravka \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO

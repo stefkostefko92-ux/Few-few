@@ -32,6 +32,7 @@ file holds only what is true across all products. Keep it that way.
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
+| `nezabravka/` | Незабравка — лични записки с напомняне (iOS) | Swift 6 · SwiftUI · SwiftData · UserNotifications · iOS 17+ | BG · лична употреба · **локални** известия, нула мрежа · ядрото е Foundation-only → `swift test` на Linux/CI без Mac |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
