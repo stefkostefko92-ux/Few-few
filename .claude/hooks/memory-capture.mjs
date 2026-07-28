@@ -53,6 +53,25 @@ function lastLearnBlock(text) {
   return last;
 }
 
+// Нормализира етикета на увереност. ТИХ ПРОВАЛ, който това затваря: `PROCEDURE.md` (red line 3)
+// учи всеки агент да ползва „Сигурно / Вероятно / Несигурно", а тук се приемаше само английското
+// `verified` — така поука, писана точно по нашата собствена процедура, мълчаливо падаше в Карантина.
+// В една вълна това изяде 22 поуки от 3 агента (letopisetsa 5/5, printadjiyata 5/8, 3d-maniac 8/11):
+// hook-ът връщаше успех, файлът се пишеше, версията просто не мърдаше и никой не разбираше.
+// Неразпознатите стойности пак падат към `unverified` — по-безопасната посока.
+export const CONFIDENCE_SYNONYMS = {
+  сигурно: "verified", потвърдено: "verified", проверено: "verified",
+  вероятно: "probable", "по-вероятно": "probable", likely: "probable",
+  несигурно: "unverified", непроверено: "unverified", quarantine: "unverified",
+  hypothesis: "unverified", hypothese: "unverified", incertain: "unverified",
+  uncertain: "unverified", unknown: "unverified",
+};
+export function normalizeConfidence(raw) {
+  const s = String(raw || "").trim().toLowerCase().replace(/^["']|["']$/g, "");
+  if (s === "verified" || s === "probable" || s === "unverified") return s;
+  return CONFIDENCE_SYNONYMS[s] || "unverified";
+}
+
 function parseLearn(block) {
   const res = { agent: null, date: null, lessons: [] };
   let cur = null;
@@ -64,7 +83,7 @@ function parseLearn(block) {
     // Приема и `text:`, и `lesson:` като начало на поука (агентите естествено варират ключа —
     // nabludatelya/analizatora ползваха `lesson:` и поуките им бяха тихо изхвърлени).
     else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
-    else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = m[1].trim().toLowerCase();
+    else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = normalizeConfidence(m[1]);
     else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = m[1].trim();
     else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
     else if (cur && (m = line.match(/^\s*re-?verify:\s*(\d{4}-\d{2}-\d{2}).*$/i))) cur.reverify = m[1].trim(); // #2 явен TTL за критичен факт
@@ -341,4 +360,8 @@ function main() {
   process.exit(0);
 }
 
-try { main(); } catch { process.exit(0); } // никога не блокирай агента заради паметта
+// Пусни main() САМО като CLI (SubagentStop hook) — иначе import от тест чете stdin и излиза,
+// което правеше файла нетестваем (за разлика от memory-preload.mjs, който вече има този гард).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  try { main(); } catch { process.exit(0); } // никога не блокирай агента заради паметта
+}
