@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
-import { safeJsonLd } from '@/lib/jsonld';
 import { CursorGlow } from '@/components/CursorGlow';
 import { faqJsonLd, pageMetadata, siteJsonLd } from '@/lib/seo';
 import {
@@ -158,7 +157,7 @@ export default async function HomePage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div aria-hidden className="scroll-progress" />
       <CursorGlow />

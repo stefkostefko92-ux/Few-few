@@ -51,32 +51,15 @@ const banners = [
 ];
 
 async function main() {
-  // Идемпотентно БЕЗ да трие човешка работа. Старият вариант правеше deleteMany + create,
-  // което при всяко пускане изтриваше редовете (заедно с ръчните промени на админа по
-  // `order`/`published`) и раздаваше нови `id`-та. `Banner` няма `@unique` поле, затова
-  // съпоставяме по естествената двойка (sponsor, title) и обновяваме само СЪДЪРЖАНИЕТО;
-  // `order` и `published` са на админа — пипат се само при първо създаване.
-  let created = 0, updated = 0;
+  // Идемпотентно: махаме старите банери на този рекламодател и слагаме наново.
+  await prisma.banner.deleteMany({ where: { sponsor: SPONSOR } });
   for (const b of banners) {
-    const existing = await prisma.banner.findFirst({
-      where: { sponsor: SPONSOR, title: b.title },
-      select: { id: true },
+    // Цветовете на Carbon Stealth: черен фон с циан акцент.
+    await prisma.banner.create({
+      data: { ...b, bgColor: "#000000", accentColor: "#00e5ff", published: true },
     });
-    if (existing) {
-      await prisma.banner.update({
-        where: { id: existing.id },
-        data: { description: b.description, linkUrl: b.linkUrl, bgColor: "#000000", accentColor: "#00e5ff" },
-      });
-      updated++;
-    } else {
-      // Цветовете на Carbon Stealth: черен фон с циан акцент.
-      await prisma.banner.create({
-        data: { ...b, bgColor: "#000000", accentColor: "#00e5ff", published: true },
-      });
-      created++;
-    }
   }
-  console.log(`✔ Рекламни банери (${SPONSOR}): ${created} нови, ${updated} обновени (order/published не се пипат)`);
+  console.log(`✔ Рекламни банери (${SPONSOR}): ${banners.length}`);
   await prisma.$disconnect();
   console.log("Готово.");
 }

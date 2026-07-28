@@ -350,7 +350,7 @@
     "adultConfirm": "Continua — ho più di 18 anni",
     "adultBack": "Torna al profilo",
     "speaksLangs": "Parlo {count} lingue",
-    "viewsBadge": "{count, plural, one {# visita} other {# visite}} questo mese",
+    "viewsBadge": "{count} visite questo mese",
     "share": "Condividi",
     "copyLink": "Copia il link",
     "copied": "Copiato!",
