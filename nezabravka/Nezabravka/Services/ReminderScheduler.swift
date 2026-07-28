@@ -21,6 +21,11 @@ final class ReminderScheduler {
     private(set) var scheduledCount = 0
     /// Записът, отворен от натиснато известие — списъкът го подчертава.
     var highlightedReminderID: UUID?
+    /// Последният неуспешен запис — показва се в списъка, не се преглъща.
+    private(set) var saveError: String?
+
+    /// Веригата от пресинхронизации (виж `resync()`).
+    private var resyncTask: Task<Void, Never>?
 
     init(
         context: ModelContext,
@@ -32,7 +37,7 @@ final class ReminderScheduler {
         self.planner = planner
         service.start()
         service.onAction = { [weak self] action in
-            self?.handle(action)
+            await self?.handle(action)
         }
     }
 
@@ -61,9 +66,31 @@ final class ReminderScheduler {
         await resync()
     }
 
+    /// Пресинхронизира плана — сериализирано.
+    ///
+    /// `@MainActor async` НЕ е взаимно изключващо: всяко `await` вътре пуска
+    /// друга задача да влезе в същия метод. Два преплетени пресинхрона са
+    /// опасни, защото `apply` първо трие всички чакащи известия, а после ги
+    /// добавя едно по едно — по-старият план би дописал заявки върху по-новия
+    /// (призрачно известие за изтрит запис) или обратно. Затова всеки
+    /// пресинхрон изчаква предишния.
     func resync() async {
+        let previous = resyncTask
+        let task = Task { @MainActor [weak self] in
+            await previous?.value
+            await self?.performResync()
+        }
+        resyncTask = task
+        await task.value
+    }
+
+    private func performResync() async {
         let now = Date()
-        let reminders = fetchAll()
+        guard let reminders = fetchAll() else {
+            // Базата не се прочете. По-добре старият план да остане, отколкото
+            // да изтрием всички известия заради празен резултат.
+            return
+        }
 
         // Изгорелите отлагания се чистят, преди да планираме — иначе биха
         // изглеждали като „следващо задействане“ завинаги.
@@ -89,77 +116,116 @@ final class ReminderScheduler {
 
     func add(_ reminder: Reminder) {
         context.insert(reminder)
-        save()
-        Task { await resync() }
+        saveAndResync()
     }
 
     func delete(_ reminder: Reminder) {
+        clearHighlight(reminder.id)
         context.delete(reminder)
-        save()
-        Task { await resync() }
+        saveAndResync()
     }
 
     func toggleDone(_ reminder: Reminder) {
+        clearHighlight(reminder.id)
         if reminder.isDone {
             reminder.markNotDone()
         } else {
             reminder.markDone()
         }
-        save()
-        Task { await resync() }
+        saveAndResync()
     }
 
     func snooze(_ reminder: Reminder, option: SnoozeOption) {
         guard let date = option.nextDate(from: Date()) else { return }
+        clearHighlight(reminder.id)
         reminder.snooze(until: date)
-        save()
-        Task { await resync() }
+        saveAndResync()
     }
 
     /// Извиква се след редакция през `ReminderEditorView`.
-    func commitEdit() {
-        save()
-        Task { await resync() }
+    func commitEdit(_ reminder: Reminder? = nil) {
+        if let reminder { clearHighlight(reminder.id) }
+        saveAndResync()
     }
 
     func clearDeliveredNotifications() {
         service.clearDelivered()
     }
 
+    func dismissSaveError() {
+        saveError = nil
+    }
+
     // MARK: - Действия от известието
 
-    private func handle(_ action: NotificationAction) {
+    /// `async` нарочно — изчаква се докрай от делегата на известията, докато
+    /// iOS още държи приложението будно (виж `NotificationService.onAction`).
+    private func handle(_ action: NotificationAction) async {
         switch action {
         case .open(let id):
             highlightedReminderID = id
+
         case .complete(let id):
             guard let reminder = reminder(with: id) else { return }
-            reminder.markDone()
+            // От известието „Готово“ значи „това задействане е свършено“.
+            // Повтарящото се напомняне НЕ се архивира — иначе едно натискане
+            // би убило цялата поредица („всеки ден в 7:00“) без предупреждение.
+            if reminder.repeatRule.isRepeating {
+                reminder.snoozedUntil = nil
+                reminder.completedAt = Date()
+            } else {
+                reminder.markDone()
+            }
             save()
-            Task { await resync() }
+            await resync()
+
         case .snooze(let id, let option):
             guard let reminder = reminder(with: id), let date = option.nextDate(from: Date()) else { return }
             reminder.snooze(until: date)
             save()
-            Task { await resync() }
+            await resync()
         }
     }
 
     // MARK: - База
 
-    private func fetchAll() -> [Reminder] {
+    private func saveAndResync() {
+        // Един шев за всяка мутация: инвариантът „изтрито/променено напомняне
+        // не оставя призрачно известие“ се пази от кода, не от дисциплина.
+        save()
+        Task { await resync() }
+    }
+
+    /// `nil` = четенето се провали (различно от „няма записи“).
+    private func fetchAll() -> [Reminder]? {
         let descriptor = FetchDescriptor<Reminder>(sortBy: [SortDescriptor(\.fireDate)])
-        return (try? context.fetch(descriptor)) ?? []
+        do {
+            return try context.fetch(descriptor)
+        } catch {
+            print("[Незабравка] базата не се прочете: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     private func reminder(with id: UUID) -> Reminder? {
-        fetchAll().first { $0.id == id }
+        fetchAll()?.first { $0.id == id }
+    }
+
+    private func clearHighlight(_ id: UUID) {
+        if highlightedReminderID == id { highlightedReminderID = nil }
     }
 
     private func save() {
         do {
             try context.save()
+            saveError = nil
         } catch {
+            // Мълчаливият провал е най-лошият изход: списъкът показва записа
+            // като запазен, планът се строи от незаписано състояние, а при
+            // следващия старт записката липсва. Връщаме контекста назад и
+            // казваме на потребителя.
+            context.rollback()
+            saveError = "Промяната не се запази. Опитай отново."
             print("[Незабравка] записът в базата не мина: \(error.localizedDescription)")
         }
     }

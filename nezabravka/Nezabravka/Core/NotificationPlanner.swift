@@ -103,7 +103,7 @@ public struct NotificationPlanner: Sendable {
         // Още незапочнало повторение → поединични заявки, докато приложението
         // се отвори и планът мине на повтарящ се тригер.
         if reminder.repeatRule.isRepeating && reminder.fireDate > now {
-            let dates = calculator.occurrences(of: reminder, after: now, limit: leadOccurrences)
+            let dates = calculator.patternOccurrences(of: reminder, after: now, limit: leadOccurrences)
             items.append(
                 contentsOf: dates.enumerated().map { index, date in
                     make(

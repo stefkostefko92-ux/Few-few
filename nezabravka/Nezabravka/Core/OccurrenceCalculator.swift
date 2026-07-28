@@ -35,7 +35,17 @@ public struct OccurrenceCalculator: Sendable {
 
         // Повтарящо се напомняне, което още не е започнало → първото задействане
         // е самата начална дата, не най-близкото съвпадение по шаблона.
-        if reminder.fireDate > date { return reminder.fireDate }
+        if reminder.fireDate > date {
+            // Освен ако началото не пасва на шаблона: „всеки делник“ с начало в
+            // събота не бива да звънне в събота (единственото правило, при което
+            // избраната дата може да противоречи на повторението).
+            if reminder.repeatRule == .weekdays,
+                !Self.weekdayNumbers.contains(calendar.component(.weekday, from: reminder.fireDate))
+            {
+                return nextWeekday(after: reminder.fireDate, time: timeComponents(of: reminder.fireDate))
+            }
+            return reminder.fireDate
+        }
 
         switch reminder.repeatRule {
         case .once:
@@ -61,12 +71,31 @@ public struct OccurrenceCalculator: Sendable {
         }
     }
 
-    /// Следващите `limit` задействания след `date`, във възходящ ред.
+    /// Следващите `limit` задействания след `date`, във възходящ ред —
+    /// включително отложеното (това вижда потребителят).
     public func occurrences(of reminder: ReminderSnapshot, after date: Date, limit: Int) -> [Date] {
+        series(of: reminder, after: date, limit: limit, step: nextOccurrence)
+    }
+
+    /// Само задействанията по шаблона — без отложеното.
+    ///
+    /// Планирането на известията ползва тази поредица: отлагането е отделна
+    /// заявка, а не стъпало от шаблона (иначе „изяжда“ едно от местата и две
+    /// заявки сочат към един и същ момент).
+    public func patternOccurrences(of reminder: ReminderSnapshot, after date: Date, limit: Int) -> [Date] {
+        series(of: reminder, after: date, limit: limit, step: patternOccurrence)
+    }
+
+    private func series(
+        of reminder: ReminderSnapshot,
+        after date: Date,
+        limit: Int,
+        step: (ReminderSnapshot, Date) -> Date?
+    ) -> [Date] {
         guard limit > 0 else { return [] }
         var result: [Date] = []
         var cursor = date
-        while result.count < limit, let next = nextOccurrence(of: reminder, after: cursor) {
+        while result.count < limit, let next = step(reminder, cursor) {
             result.append(next)
             guard reminder.repeatRule.isRepeating else { break }
             cursor = next

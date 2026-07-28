@@ -78,11 +78,16 @@ final class Reminder {
     /// Отлага напомнянето. Еднократното се мести изцяло (иначе остава завинаги
     /// просрочено); повтарящото се получава допълнително задействане, а
     /// шаблонът му остава непокътнат.
+    ///
+    /// Отлагането мести само **напред**: „След 10 минути“ върху записка за
+    /// другия вторник не бива да я дърпа за днес и да изтрие избрания час.
     func snooze(until date: Date) {
         if repeatRule == .once {
+            guard date > fireDate else { return }
             fireDate = date
             snoozedUntil = nil
         } else {
+            guard date > (snoozedUntil ?? .distantPast) else { return }
             snoozedUntil = date
         }
     }

@@ -16,6 +16,9 @@ struct ReminderListView: View {
     var body: some View {
         NavigationStack {
             List {
+                if let saveError = scheduler.saveError {
+                    SaveErrorBanner(message: saveError) { scheduler.dismissSaveError() }
+                }
                 if scheduler.isDenied {
                     NotificationPermissionBanner()
                 }
@@ -73,13 +76,18 @@ struct ReminderListView: View {
 
     @ViewBuilder
     private func row(for reminder: Reminder, snapshot: ReminderSnapshot) -> some View {
-        ReminderRow(
-            snapshot: snapshot,
-            isHighlighted: scheduler.highlightedReminderID == snapshot.id,
-            dateText: dateText
-        )
-        .contentShape(Rectangle())
-        .onTapGesture { editorMode = .edit(reminder) }
+        Button {
+            editorMode = .edit(reminder)
+        } label: {
+            ReminderRow(
+                snapshot: snapshot,
+                isHighlighted: scheduler.highlightedReminderID == snapshot.id,
+                dateText: dateText
+            )
+        }
+        // Бутон, а не `onTapGesture` — иначе екранният четец не обявява роля
+        // и активирането с VoiceOver не е гарантирано (WCAG 4.1.2).
+        .buttonStyle(.plain)
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 scheduler.delete(reminder)
@@ -162,11 +170,30 @@ private struct NotificationBudgetBanner: View {
     var body: some View {
         Section {
             Label(
-                "\(skipped) напомняния чакат ред — iOS насрочва най-много \(NotificationPlanner.iOSPendingLimit) известия наведнъж. Ще се насрочат сами, щом по-близките минат.",
+                "\(skipped) напомняния чакат ред — iOS насрочва най-много \(NotificationPlanner.iOSPendingLimit) известия наведнъж. Ще се насрочат при следващото отваряне на приложението.",
                 systemImage: "exclamationmark.triangle"
             )
             .font(.footnote)
             .foregroundStyle(.secondary)
+        }
+    }
+}
+
+/// Записът в базата се провали — мълчаливото преглъщане е по-лошо от грозен банер.
+private struct SaveErrorBanner: View {
+    let message: String
+    let dismiss: () -> Void
+
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 8) {
+                Label(message, systemImage: "exclamationmark.icloud")
+                    .font(.subheadline)
+                    .foregroundStyle(Color("OverdueColor"))
+                Button("Разбрах", action: dismiss)
+                    .font(.subheadline.weight(.semibold))
+            }
+            .padding(.vertical, 4)
         }
     }
 }

@@ -39,7 +39,9 @@ struct ReminderRow: View {
                 HStack(spacing: 8) {
                     Label(scheduleText, systemImage: isOverdue ? "exclamationmark.triangle" : "bell")
                         .font(.caption)
-                        .foregroundStyle(isOverdue ? Color.red : Color.secondary)
+                        // Собствен цвят вместо системното червено — то пада под
+                        // 4.5:1 контраст при дребен шрифт (WCAG 1.4.3).
+                        .foregroundStyle(isOverdue ? Color("OverdueColor") : Color.secondary)
                     if snapshot.repeatRule.isRepeating {
                         Text(snapshot.repeatRule.shortTitle)
                             .font(.caption2)
@@ -63,7 +65,9 @@ struct ReminderRow: View {
         .accessibilityLabel(accessibilityText)
     }
 
-    private var now: Date { Date() }
+    /// Един момент за целия render — иначе четирите обръщения по-долу
+    /// биха видели различно „сега“.
+    private let now = Date()
 
     private var nextOccurrence: Date? {
         calculator.nextOccurrence(of: snapshot, after: now)
@@ -88,6 +92,8 @@ struct ReminderRow: View {
         if !snapshot.note.isEmpty { parts.append(snapshot.note) }
         parts.append(scheduleText)
         if snapshot.repeatRule.isRepeating { parts.append(snapshot.repeatRule.title) }
+        // Капсулата „отложено“ е визуална — екранният четец трябва да я чуе.
+        if isSnoozed { parts.append("отложено") }
         if snapshot.isImportant { parts.append("важно") }
         return parts.joined(separator: ", ")
     }

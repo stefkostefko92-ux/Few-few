@@ -123,4 +123,68 @@ struct NotificationPlannerTests {
         let reminder = Fixture.reminder(title: "   ", at: Fixture.date(2026, 8, 12, 8, 0))
         #expect(planner.plan(for: [reminder], now: now).notifications[0].title == "Напомняне")
     }
+
+    @Test("Напомняне без нито едно бъдещо задействане не произвежда известия")
+    func reminderWithoutOccurrenceYieldsNoNotifications() {
+        // Еднократно, чийто час е минал, без отлагане — легитимно състояние
+        // (просрочено), не грешка; планът просто не му отделя място.
+        let overdueOnce = Fixture.reminder(at: Fixture.date(2026, 8, 1, 8, 0))
+        #expect(planner.plan(for: [overdueOnce], now: now).notifications.isEmpty)
+    }
+
+    // MARK: - Бюджет на границата (по подразбиране 56)
+
+    @Test("Точно 56 напомняния се побират без нито едно пропуснато")
+    func budgetBoundaryExactlyFits() {
+        let reminders = (1...56).map { index in
+            Fixture.reminder(title: "Задача \(index)", at: Fixture.date(2026, 8, 11, 0, min(index, 59)))
+        }
+        let plan = planner.plan(for: reminders, now: now)
+        #expect(plan.notifications.count == 56)
+        #expect(plan.skippedReminders == 0)
+    }
+
+    @Test("57-ото напомняне вече не се побира в бюджета от 56")
+    func budgetBoundaryOverflowsByOne() {
+        let reminders = (1...57).map { index in
+            Fixture.reminder(title: "Задача \(index)", at: Fixture.date(2026, 8, 11, 0, min(index, 59)))
+        }
+        let plan = planner.plan(for: reminders, now: now)
+        #expect(plan.notifications.count == 56)
+        #expect(plan.skippedReminders == 1)
+    }
+
+    @Test("Няколко напомняния в един и същ час всички влизат в плана")
+    func multipleRemindersAtSameHour() {
+        let a = Fixture.reminder(title: "Лекарство", at: Fixture.date(2026, 8, 11, 9, 0))
+        let b = Fixture.reminder(title: "Обаждане", at: Fixture.date(2026, 8, 11, 9, 0))
+        let plan = planner.plan(for: [a, b], now: now)
+        // Асертираме кои са включени, не строгия ред между тях — редът между
+        // равни по време напомняния не е гарантирано поведение.
+        #expect(Set(plan.notifications.map(\.title)) == ["Лекарство", "Обаждане"])
+        #expect(plan.notifications.allSatisfy { $0.nextFireDate == Fixture.date(2026, 8, 11, 9, 0) })
+    }
+
+    // MARK: - Регресия по находка от ревюто
+
+    @Test("Отлагането е добавъчна заявка — не изяжда стъпало от поединичните заявки")
+    func snoozeDuplicatesLeadOccurrenceForFutureRepeating() {
+        var reminder = Fixture.reminder(at: Fixture.date(2026, 9, 1, 9, 0), repeat: .daily)
+        reminder.snoozedUntil = Fixture.date(2026, 8, 15, 9, 0)
+        let plan = planner.plan(for: [reminder], now: now)
+
+        // Очакваното поведение: отлагането е ЕДНА добавъчна заявка, а `lead`
+        // сериите пазят `leadOccurrences` чисти стъпки по шаблона (1, 2 септември...),
+        // без да пропускат/дублират стъпало заради отлагането.
+        let leadDates = plan.notifications.filter { $0.requestID.contains("|lead") }.map(\.nextFireDate)
+        #expect(
+            leadDates == [
+                Fixture.date(2026, 9, 1, 9, 0),
+                Fixture.date(2026, 9, 2, 9, 0),
+                Fixture.date(2026, 9, 3, 9, 0),
+                Fixture.date(2026, 9, 4, 9, 0),
+            ])
+        let uniqueFireDates = Set(plan.notifications.map(\.nextFireDate))
+        #expect(uniqueFireDates.count == plan.notifications.count)  // без дублирано задействане
+    }
 }

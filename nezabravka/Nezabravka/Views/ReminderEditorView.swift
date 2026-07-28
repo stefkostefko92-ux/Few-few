@@ -56,7 +56,7 @@ struct ReminderEditorView: View {
                 if let warning = ReminderDefaults.warning(for: date, rule: repeatRule) {
                     Section {
                         Label(warning, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color("WarningColor"))
                             .font(.footnote)
                     }
                 }
@@ -162,7 +162,7 @@ struct ReminderEditorView: View {
             reminder.snoozedUntil = nil
             // Преместено напред във времето → записката отново е активна.
             if reminder.isDone, date > Date() { reminder.markNotDone() }
-            scheduler.commitEdit()
+            scheduler.commitEdit(reminder)
         }
         dismiss()
     }

@@ -29,12 +29,16 @@ jobs:
   core:
     name: Ядро (Linux)
     runs-on: ubuntu-latest
-    container: swift:6.1-noble
+    # Точна patch версия — `swift:6.1-noble` е подвижен таг и се рипъблишва.
+    container: swift:6.1.2-noble
     defaults:
       run:
         working-directory: nezabravka
     steps:
-      - uses: actions/checkout@v4
+      # Пинат по SHA — supply-chain дисциплина. actions/checkout v4.2.2.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
 
       - name: Формат
         run: swift format lint --strict --recursive Nezabravka Tests
@@ -54,13 +58,17 @@ jobs:
 
   app:
     name: Приложение (xcodebuild)
+    # Не харчи 10× по-скъпи macOS минути, ако Linux гейтът е червен.
+    needs: core
     if: github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     defaults:
       run:
         working-directory: nezabravka
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
 
       - name: Билд за симулатор (без подписване)
         run: |

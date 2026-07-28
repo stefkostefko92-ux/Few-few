@@ -85,6 +85,15 @@ struct DateTextAndSnoozeTests {
         #expect(text.bucket(for: Fixture.date(2026, 8, 1, 9, 0), now: now) == .later)
     }
 
+    @Test("Границата ден/седмица е точно между +6 и +7 дни, независимо от часа")
+    func bucketWeekBoundaryIsExact() {
+        // „Сега“ е в полунощ нарочно — проверява границата по цели дни, не по часа.
+        let midnight = Fixture.date(2026, 8, 10, 0, 0)
+        #expect(text.bucket(for: Fixture.date(2026, 8, 16, 23, 59), now: midnight) == .withinWeek)  // +6 дни
+        #expect(text.bucket(for: Fixture.date(2026, 8, 17, 0, 0), now: midnight) == .later)  // +7 дни
+        #expect(text.bucket(for: midnight, now: midnight) == .today)  // самият момент „сега“
+    }
+
     @Test("Текстът за днес и утре е на български")
     func textIsBulgarian() {
         #expect(text.text(for: Fixture.date(2026, 8, 10, 14, 30), now: now).hasPrefix("днес в "))

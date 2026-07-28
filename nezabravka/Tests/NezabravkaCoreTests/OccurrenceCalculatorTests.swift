@@ -109,4 +109,67 @@ struct OccurrenceCalculatorTests {
         let series = calculator.occurrences(of: reminder, after: Fixture.date(2026, 8, 1), limit: 5)
         #expect(series.count == 1)
     }
+
+    // MARK: - Часови зони и лятно време
+
+    @Test("Ежедневното напомняне пази часа през връщането на зимното време")
+    func dailyKeepsLocalTimeAcrossFallBack() {
+        // Европа/София се връща на зимно време в нощта на 25 октомври 2026 (04:00 → 03:00) —
+        // 03:30 се случва два пъти; политиката `.first` избира първото случване.
+        let reminder = Fixture.reminder(at: Fixture.date(2026, 10, 1, 3, 30), repeat: .daily)
+        let next = calculator.nextOccurrence(of: reminder, after: Fixture.date(2026, 10, 24, 12, 0))
+        let parts = Fixture.parts(next!)
+        #expect(parts.day == 25)
+        #expect(parts.hour == 3)
+        #expect(parts.minute == 30)
+    }
+
+    @Test("Седмичното напомняне на несъществуващ час при смяна на лятното време се измества напред")
+    func weeklyHandlesNonexistentTimeAtSpringForward() {
+        // Европа/София минава на лятно време в нощта на 29 март 2026 (03:00 → 04:00) —
+        // 03:30 просто не съществува локално този ден. `Calendar` (matchingPolicy `.nextTime`)
+        // го измества напред до 04:00, а не го пропуска или чупи.
+        let start = Fixture.date(2026, 3, 22, 3, 30)  // неделя, седмица преди прехода
+        let reminder = Fixture.reminder(at: start, repeat: .weekly)
+        let next = calculator.nextOccurrence(of: reminder, after: Fixture.date(2026, 3, 23, 0, 0))
+        let parts = Fixture.parts(next!)
+        #expect(parts.day == 29)
+        #expect(parts.hour == 4)
+        #expect(parts.minute == 0)
+        #expect(parts.weekday == Fixture.parts(start).weekday)
+    }
+
+    // MARK: - „Всеки делник“ около граници на месец/година
+
+    @Test("„Всеки делник“ минава коректно през границата на годината")
+    func weekdaysCrossYearBoundary() {
+        // 31 декември 2026 е четвъртък, 1 януари 2027 е петък — следващият делник.
+        let reminder = Fixture.reminder(at: Fixture.date(2026, 12, 3, 8, 0), repeat: .weekdays)
+        let next = calculator.nextOccurrence(of: reminder, after: Fixture.date(2026, 12, 31, 9, 0))
+        #expect(next == Fixture.date(2027, 1, 1, 8, 0))
+    }
+
+    @Test("„Всеки делник“ не зависи от това дали седмицата започва в неделя или понеделник")
+    func weekdaysIndependentOfFirstWeekday() {
+        // Разделянето на делник/уикенд е по номер на деня (`weekdayNumbers`), не по
+        // позиция в седмицата — резултатът трябва да е един и същ и с двете настройки.
+        let reminder = Fixture.reminder(at: Fixture.date(2026, 12, 3, 8, 0), repeat: .weekdays)
+        let now = Fixture.date(2026, 12, 31, 9, 0)
+
+        var sundayFirst = Fixture.calendar
+        sundayFirst.firstWeekday = 1
+        var mondayFirst = Fixture.calendar
+        mondayFirst.firstWeekday = 2
+
+        let sundayResult = OccurrenceCalculator(calendar: sundayFirst).nextOccurrence(of: reminder, after: now)
+        let mondayResult = OccurrenceCalculator(calendar: mondayFirst).nextOccurrence(of: reminder, after: now)
+        #expect(sundayResult == mondayResult)
+    }
+
+    @Test("Месечно на 30-о число прескача февруари, но не и по-дългите месеци около него")
+    func monthlyDay30SkipsFebruary() {
+        let reminder = Fixture.reminder(at: Fixture.date(2026, 1, 30, 10, 0), repeat: .monthly)
+        let next = calculator.nextOccurrence(of: reminder, after: Fixture.date(2026, 2, 1, 0, 0))
+        #expect(next == Fixture.date(2026, 3, 30, 10, 0))  // не 28 февруари
+    }
 }

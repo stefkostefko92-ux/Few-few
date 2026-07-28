@@ -20,7 +20,12 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     private let center = UNUserNotificationCenter.current()
 
     /// Викащият поема действията от известието.
-    var onAction: ((NotificationAction) -> Void)?
+    ///
+    /// Нарочно е `async`: iOS дава на приложението изпълнение само докато
+    /// делегатският метод `didReceive` тече. Ако обработката се пусне в
+    /// откачен `Task`, системата може да приспи процеса, преди планът да е
+    /// пресинхронизиран — и „Готово“/„Отложи“ от известието остава наполовина.
+    var onAction: ((NotificationAction) async -> Void)?
 
     static let categoryIdentifier = "NEZABRAVKA_REMINDER"
     static let completeActionIdentifier = "COMPLETE"
@@ -111,10 +116,6 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    func pendingRequestsCount() async -> Int {
-        await center.pendingNotificationRequests().count
-    }
-
     /// Маха вече доставените известия от Центъра за известия (при отваряне на приложението).
     func clearDelivered() {
         center.removeAllDeliveredNotifications()
@@ -138,14 +139,21 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         guard let reminderID = NotificationPlanner.reminderID(fromRequestID: requestID) else { return }
         let actionIdentifier = response.actionIdentifier
 
-        await MainActor.run {
-            if actionIdentifier == Self.completeActionIdentifier {
-                self.onAction?(.complete(reminderID))
-            } else if let option = Self.snoozeOption(fromActionIdentifier: actionIdentifier) {
-                self.onAction?(.snooze(reminderID, option))
-            } else {
-                self.onAction?(.open(reminderID))
-            }
+        let action: NotificationAction
+        if actionIdentifier == Self.completeActionIdentifier {
+            action = .complete(reminderID)
+        } else if let option = Self.snoozeOption(fromActionIdentifier: actionIdentifier) {
+            action = .snooze(reminderID, option)
+        } else {
+            action = .open(reminderID)
         }
+
+        // Изчакваме обработката ДОКРАЙ (запис + пресинхронизиран план), докато
+        // iOS още държи приложението будно заради този делегатски метод.
+        await deliver(action)
+    }
+
+    private func deliver(_ action: NotificationAction) async {
+        await onAction?(action)
     }
 }
