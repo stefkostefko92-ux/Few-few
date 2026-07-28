@@ -12805,9 +12805,20 @@
           "date": "2026-07-24",
           "event": "v13.8 — учене",
           "detail": "Научи: Playwright auto-waiting не покрива API отговор/route промяна — избирай wait по СИГНАЛ: … (+25 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-07-28",
+          "event": "v14.9 — учене",
+          "detail": "Научи: Playwright: `waitForLoadState('networkidle')`/`page.goto({waitUntil:'networkidle'})` е … (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „Playwright: `waitForLoadState('networkidle')`/`page.goto({waitUntil:'networkidle'})` е …\" (+10 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
