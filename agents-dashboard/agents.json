@@ -12287,9 +12287,20 @@
           "date": "2026-07-16",
           "event": "Обучен до v15 + онбординг на Тайния агент",
           "detail": "Ръководи включването на 20-ия агент „Тайният агент“ (изрядност пред Apple/Google/Meta) в екипа с пълен 4-синхрон и зелен oversee. Задълбочен на канона за изграждане на агенти: +20 проверени поуки (дизайн на инструменти/ACI, context engineering just-in-time, evaluator-optimizer/routing патърни, prompt caching, model routing по роля, reasoning бюджети, agent loop gather→act→verify, guardrails/lethal-trifecta, evals преди смяна на модел, версия като сигнал за зрялост, надзорна каденция) → 150 проверени поуки, v15.0."
+        },
+        {
+          "version": "16.3.0",
+          "date": "2026-07-28",
+          "event": "v16.3 — учене",
+          "detail": "Научи: Prompt кешът следва СТРОГА йерархия tools → system → messages; промяна на ниво инвалиди… (+12 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „Prompt кешът следва СТРОГА йерархия tools → system → messages; промяна на ниво инвалиди…\" (+12 още)"
+        },
         {
           "date": "2026-07-17",
           "type": "одит",
