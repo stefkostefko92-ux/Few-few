@@ -1030,7 +1030,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 245
+        "lessons": 248
       },
       "evolution": [
         {
@@ -1620,9 +1620,20 @@
           "date": "2026-07-28",
           "event": "v16.6 — учене",
           "detail": "Научи: linketto ProfileScreen.tsx:385-392 вгражда personJsonLd/productListJsonLd със суров JSO… (+12 още)"
+        },
+        {
+          "version": "16.9.0",
+          "date": "2026-07-28",
+          "event": "v16.9 — учене",
+          "detail": "Научи: В nezabravka всяка мутация пуска `Task { await resync() }` без сериализация, а `Notific… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „В nezabravka всяка мутация пуска `Task { await resync() }` без сериализация, а `Notific…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
