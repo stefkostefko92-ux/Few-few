@@ -7,6 +7,10 @@ Description=Carbon Stealth VPS Dashboard
 Documentation=https://carbonstealth.eu
 After=network-online.target
 Wants=network-online.target
+# Границите за рестарт-цикъл живеят в [Unit], НЕ в [Service]. В [Service]
+# systemd ги игнорира мълчаливо — файлът изглежда защитен, а не е.
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
@@ -20,9 +24,6 @@ Environment=HOME=/var/lib/vps-dashboard
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=3
-# Явни граници вместо подразбиране: рестарт-цикъл да не се върти вечно.
-StartLimitIntervalSec=60
-StartLimitBurst=5
 # `KillMode=mixed`: SIGTERM само към главния процес, за да успее да затвори
 # нещата си; групата получава SIGKILL чак след таймаута. При подразбиращото се
 # `control-group` рестартът на панела убива и течащия деплой/бекъп/възстановяване

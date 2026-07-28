@@ -40,7 +40,8 @@ src/
   kernel.js              PSI (натиск), steal, диск I/O, inode-и, OOM, TCP/опашки,
                          fd, мрежа по интерфейс, conntrack, cgroup ресурси по unit
   forecast.js            Theil–Sen + Mann–Kendall (прогноза), MAD-z + EWMA ансамбъл
-                         (аномалии), CUSUM (момент на промяната)
+                         (аномалии), сегментация по най-малки абс. отклонения
+                         (момент на промяната — НЕ CUSUM, виж коментара защо)
   history.js             история на метриките на диск (JSONL, 7 дни, прозорци)
                          + compact() — ЕДИНСТВЕНИЯТ източник за формата на точката
   slo.js                 SLO: минутни агрегати на пробите, бюджет за грешки,
@@ -98,7 +99,7 @@ deploy/                  install.sh · vps-dashboard.service · nginx.conf.examp
                          desktop/docker-compose.yml (незадължителен десктоп)
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
                          forecast · slo · manage · security · investigate ·
-                         observe · stack · ux · guard · smoke (199 теста)
+                         observe · stack · ux · guard · deployfiles · smoke (206 теста)
 ```
 
 ## Конвенции (важни)
@@ -420,7 +421,7 @@ node -e "import('/opt/node22/lib/node_modules/playwright/index.mjs')…"
 отворен по дизайн. Ползвай `domcontentloaded`.
 
 ## Тестове
-199 теста, `node --test`, без мокове на системата — тестват се само детерминистични
+206 теста, `node --test`, без мокове на системата — тестват се само детерминистични
 чисти функции: пароли/сесии, TOTP (с контролните вектори на RFC 4226), парсване на
 `/proc`, рутера, allowlist-ите (unit имена, архиви, ufw правила, compose, dump),
 историята, сливането на конфига, файловия запис, SLO математиката (бюджет,
