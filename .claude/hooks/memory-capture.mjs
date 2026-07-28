@@ -198,6 +198,19 @@ function bumpVersionBy(v, n) {
 
 // Прилага activity запис и (при проверено учене) вдига minor версията + timeline запис.
 // Връща true, ако нещо се е променило.
+// Брои булетите в раздела „Проверени поуки" на паметта. `null` при липсващ/нечетим файл —
+// тогава не пипаме полето (по-добре старо число, отколкото да занулим показателя).
+export function countVerified(agentId, dir = MEM_DIR) {
+  let txt;
+  try { txt = readFileSync(join(dir, `${agentId}.md`), "utf8"); } catch { return null; }
+  let inSec = false, n = 0;
+  for (const ln of txt.split("\n")) {
+    if (/^##\s/.test(ln)) { inSec = /verified|Проверени поуки/i.test(ln); continue; }
+    if (inSec && /^\s*-\s+\*\*/.test(ln)) n++;
+  }
+  return n;
+}
+
 function applyUpdate(obj, agentId, activityEntry, evoDetail, verifiedCount = 1) {
   const a = (obj.agents || []).find((x) => x.id === agentId);
   if (!a) return false;
@@ -206,6 +219,15 @@ function applyUpdate(obj, agentId, activityEntry, evoDetail, verifiedCount = 1) 
   a.activity = a.activity || [];
   if (!a.activity.some((x) => x.summary === activityEntry.summary)) {
     a.activity.unshift(activityEntry); // без cap — пазим целия поток на учене
+    changed = true;
+  }
+
+  // Реалният брой ПРОВЕРЕНИ поуки. Таблото дотук показваше `knowledge.sources` под етикет
+  // „ПОУКИ" — а това са изследователските източници ПРИ РАЖДАНЕТО на агента, статично число,
+  // което не мърда, колкото и да учи флотът. Поддържаме истинския брой тук, до самия запис.
+  const lessons = countVerified(agentId);
+  if (lessons != null && a.knowledge && a.knowledge.lessons !== lessons) {
+    a.knowledge.lessons = lessons;
     changed = true;
   }
 
