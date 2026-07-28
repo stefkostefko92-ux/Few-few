@@ -2251,9 +2251,20 @@
           "date": "2026-07-24",
           "event": "v14.5 — учене",
           "detail": "Научи: Fowler's Technical Debt Quadrant: дългът се класифицира по 2 оси — reckless↔prudent и d… (+18 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-07-28",
+          "event": "v16.2 — учене",
+          "detail": "Научи: Когнитивна сложност (SonarSource): `else`, `else if`, `elif` получават СТРУКТУРЕН инкре… (+16 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „Когнитивна сложност (SonarSource): `else`, `else if`, `elif` получават СТРУКТУРЕН инкре…\" (+16 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
