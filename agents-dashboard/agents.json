@@ -1601,9 +1601,20 @@
           "date": "2026-07-24",
           "event": "v15.3 — учене",
           "detail": "Научи: В Express req.path НЕ е percent-decoded, докато express.static/send декодират преди да … (+2 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-07-28",
+          "event": "v16.6 — учене",
+          "detail": "Научи: linketto ProfileScreen.tsx:385-392 вгражда personJsonLd/productListJsonLd със суров JSO… (+12 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „linketto ProfileScreen.tsx:385-392 вгражда personJsonLd/productListJsonLd със суров JSO…\" (+12 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
