@@ -22,8 +22,21 @@ export const SECRET_RE = [
 // Пътища, където фалшиви ключове са легитимни (фикстури/тестове/eval/scratch) → не вдигай шум.
 export const SKIP_PATH = /(^|\/)(evals?|fixtures?|__tests__|test|tests|\.tmp|scratchpad|node_modules)(\/|$)|\.(test|spec)\.[a-z]+$/i;
 
+// Невидими знаци, с които се крие/разкъсва payload. Red-team F6/F7: старият списък покриваше само
+// U+200B-200F/U+202A-202E/U+2066-2069 и ПРОПУСКАШЕ Unicode Tags блока U+E0000-E007F (огледално
+// повтаря ASCII, не се вижда в браузър/терминал/ревю, но моделът го чете), както и U+FEFF, U+2060,
+// U+00AD, U+180E, U+3164. Един `sk_live_…` с вмъкнат U+200B преставаше да се разпознава като тайна.
+// Санитизираме ВЕДНЪЖ на едно място, вместо да разширяваме два отделни списъка ad hoc.
+export const INVISIBLE =
+  /[­᠎​-‏‪-‮⁠-⁤⁦-⁩ㅤ﻿]|[\u{E0000}-\u{E007F}]/gu;
+
+/** Маха невидимите знаци и нормализира (NFKC), за да не се крие payload зад тях. */
+export function sanitize(text) {
+  return String(text || "").normalize("NFKC").replace(INVISIBLE, "");
+}
+
 export function findSecret(content) {
-  const s = String(content || "");
+  const s = sanitize(content);
   for (const p of SECRET_RE) if (p.re.test(s)) return p.name;
   return null;
 }

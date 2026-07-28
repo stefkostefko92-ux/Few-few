@@ -15,7 +15,11 @@ export const CATASTROPHIC = [
   { re: /\bdd\b[^\n]*\bof=\/dev\/(sd|nvme|vd|hd|disk)/i, why: "dd върху суров диск" },
   { re: />\s*\/dev\/(sd|nvme|vd|hd)[a-z0-9]/i, why: "запис върху суров диск" },
   { re: /chmod\s+-[a-z]*R[a-z]*\s+0*777\s+\/(\s|$)/i, why: "chmod -R 777 на корен" },
-  { re: /\b(curl|wget)\b[^\n|]*\|\s*(sudo\s+)?(ba)?sh\b/i, why: "изтегляне и изпълнение на отдалечен скрипт (curl|sh)" },
+  // Red-team F1: `[^\n|]*` забраняваше МЕЖДИНЕН pipe, затова `curl … | base64 -d | sh` минаваше.
+  // Разширено и по обвивка/интерпретатор, и по варианта БЕЗ pipe (`-o файл && sh файл`).
+  { re: /\b(curl|wget)\b[^\n]*\|\s*[^\n]*\b(sudo\s+)?((ba|z|k|da|a)?sh|python3?|node|perl|ruby|php)\b/i, why: "изтегляне и изпълнение на отдалечен скрипт (curl|sh)" },
+  // `-so` е комбинирани флагове — затова `(-o|-O)` с интервал не хващаше най-честия вариант.
+  { re: /\b(curl|wget)\b[^\n]*\s-[a-zA-Z]*[oO]\s*\S+[^\n]*(&&|;|\|\|)\s*(sudo\s+)?((ba|z|k|da|a)?sh|python3?|node|perl|ruby|php)\b/i, why: "изтегляне във файл и изпълнението му (curl -o … && sh)" },
   { re: /\bgit\b[^\n]*\bpush\b[^\n]*--force\b(?![^\n]*--force-with-lease)[^\n]*\b(origin\s+)?(main|master)\b/i, why: "git push --force към main (ползвай --force-with-lease към feature клон)" },
 ];
 

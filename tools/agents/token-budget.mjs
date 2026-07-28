@@ -84,7 +84,15 @@ function frontEffort(md) { const m = md.match(/^effort:\s*(.+)$/m); return m ? m
 
 // Смятай целия бюджет — изнесено като функция, за да е тестваемо и преизползваемо (таблото).
 export function computeBudget() {
-  // Статичен префикс (кешируем, еднакъв за ВСИЧКИ агенти).
+  // Статичен префикс — идентичен по СЪДЪРЖАНИЕ за всички агенти, но НЕ и споделим между тях.
+  // Кешът е йерархичен (tools → system → messages) и се инвалидира надолу по веригата. Нашият
+  // префикс се инжектира като `additionalContext` от `SubagentStart` (memory-preload.mjs:155),
+  // тоест в MESSAGES — след системния блок, който носи дефиницията на конкретния агент и е
+  // РАЗЛИЧЕН за всеки. Затова един агент не може да прочете кеша на друг.
+  // Икономията по-долу е за ПОВТОРНИ извиквания на СЪЩИЯ агент (топла сесия), не за вълна от 27.
+  // Отделно: статичното и променливата по задача памет днес влизат в ЕДИН блок (същият ред 155),
+  // така че няма чиста точка на прекъсване — истинската поправка е префиксът да отиде на system
+  // ниво (както `evals/headless-run.mjs:84` вече прави с --append-system-prompt).
   const doctrine = bulletsUnder(join(MEM_DIR, "SECURITY.md"), /^##\s*Доктрина/).join("\n");
   const procedure = bulletsUnder(join(MEM_DIR, "PROCEDURE.md"), /^##\s*Процедура/).join("\n");
   const shared = bulletsUnder(join(MEM_DIR, "_shared.md"), /^##\s*Споделени поуки/).join("\n");
@@ -141,8 +149,10 @@ if (JSON_OUT) {
 }
 
 console.log(`\n🪙  Токен-бюджет на екипа (${rows.length} агента) — ОЦЕНКА, не измерен ран\n`);
-console.log(`  Статичен кешируем префикс (доктрина+процедура+споделено): ~${STATIC_PREFIX_TOKENS} т · еднакъв за всички`);
-console.log(`  Кеш спестява ~${CACHE_SAVED} т на всяко извикване след първото (0.9× от префикса)\n`);
+console.log(`  Статичен префикс (доктрина+процедура+споделено): ~${STATIC_PREFIX_TOKENS} т · еднакъв по СЪДЪРЖАНИЕ`);
+console.log(`  Кеш спестява ~${CACHE_SAVED} т на повторно извикване на СЪЩИЯ агент (0.9× от префикса).`);
+console.log(`  \x1b[90mНЕ се дели между различни агенти: префиксът влиза в messages (SubagentStart), а системният`);
+console.log(`  блок преди него е различен за всеки агент → всеки плаща префикса си наново.\x1b[0m\n`);
 console.log("  агент                   модел    усилие  сис.промпт  лична  старт(студ)  старт(кеш)  спест%");
 for (const r of rows) {
   const flag = r.bloated ? "\x1b[33m▲\x1b[0m" : " ";
@@ -152,8 +162,10 @@ for (const r of rows) {
     `${String(r.perStartCold).padStart(10)}  ${String(r.perStartWarm).padStart(9)}  ${String(r.savedPct).padStart(5)}%`,
   );
 }
-console.log(`\n  Флот/вълна: студено ~${totals.fleetColdPerStart} т → с кеш ~${totals.fleetWarmPerStart} т ` +
-  `(спестено ~${totals.fleetSavedPerWave} т при паралелна вълна)`);
+console.log(`\n  Флот/вълна: студено ~${totals.fleetColdPerStart} т → топло ~${totals.fleetWarmPerStart} т ` +
+  `(~${totals.fleetSavedPerWave} т ГОРНА ГРАНИЦА, не прогноза)`);
+console.log(`  \x1b[90m„Топло" значи всеки агент е викан ПОВТОРНО в рамките на живота на кеша. Първа паралелна`);
+console.log(`  вълна от 27 различни агента е студена по дефиниция — там икономията е нула.\x1b[0m`);
 if (bloated.length) {
   console.log(`\n\x1b[33m▲ Постнота:\x1b[0m ${bloated.length} дефиниции над ${DEF_TOKEN_WARN} т — кандидати за слим (плаща се на всеки старт):`);
   for (const r of bloated) console.log(`    ${r.id} — ~${r.sysTokens} т`);

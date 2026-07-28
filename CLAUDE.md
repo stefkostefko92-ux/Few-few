@@ -30,6 +30,7 @@ file holds only what is true across all products. Keep it that way.
 | `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 15 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
 | `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
+| `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
@@ -123,10 +124,14 @@ Sonnet 5 ($3/$15) — не за флота; Haiku е изключен по ре�
 **model+effort routing** (`tools/agents/model-policy.mjs` — TIER_A opus/high · TIER_B sonnet/medium · шаблонно
 low · `--apply` пише frontmatter; oversee гейтва model/effort sync); **рутинг по ЗАДАЧА** (`route.mjs` —
 per-invocation надстройка opus/sonnet × effort, без Haiku); **prompt caching** на статичния префикс
-(доктрина+процедура+споделено, заключен в `memory-preload.mjs`, byte-стабилен → ~0.1×); **релевантно
+(доктрина+процедура+споделено, byte-стабилен в `memory-preload.mjs` → ~0.1× при ПОВТОРНО извикване на
+**същия** агент. Внимание — кешът е йерархичен (tools→system→messages), а префиксът влиза в *messages*
+през `SubagentStart`, след системния блок, който е различен за всеки агент: затова **не се дели между
+агенти** и първа паралелна вълна е студена. Истинската поправка е префиксът да мине на system ниво, както
+`evals/headless-run.mjs` вече прави с `--append-system-prompt`); **релевантно
 извличане на памет** (`memory-preload.mjs` — инжектира релевантните на задачата поуки в токен-бюджет ~3.2k,
 не сляпо първите 40 → реже ~40k т/вълна + маха шума); **_shared промоция** (`shared-candidates.mjs` — поука в
-много агенти → в _shared веднъж, кеширана, не платена K пъти); **терсен изход** (изходни токени ~5× входните
+много агенти → в _shared веднъж, не дублирана в K памети); **терсен изход** (изходни токени ~5× входните
 — доктрина в `_shared.md`); и **token-budget** (`tools/agents/token-budget.mjs` — разход/старт + печалба по
 агент; `--check` гейт срещу разбягване; в CI). Табло: изгледът „Токен-бюджет" + бюджет-картата в профила.
 
