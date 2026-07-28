@@ -6,14 +6,16 @@
       "extractionState" : "manual",
       "localizations" : {
         "bg" : { "stringUnit" : { "state" : "translated", "value" : "Каракочев" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
       }
     },
     "CFBundleName" : {
       "extractionState" : "manual",
       "localizations" : {
         "bg" : { "stringUnit" : { "state" : "translated", "value" : "Каракочев" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
       }
     }
   },

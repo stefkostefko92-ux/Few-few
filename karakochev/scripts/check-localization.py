@@ -28,7 +28,7 @@ CATALOGS = [
     ROOT / "Karakochev/Resources/Localizable.xcstrings",
     ROOT / "Karakochev/Resources/InfoPlist.xcstrings",
 ]
-LANGUAGES = {"bg", "en"}
+LANGUAGES = {"bg", "en", "it"}
 
 # Изброяване → шаблон на ключа. Такъв ключ никога не се вижда като литерал.
 ENUM_KEYS = {
@@ -58,9 +58,20 @@ def load_catalog(path: pathlib.Path) -> dict:
         return {"strings": {}}
 
     for key, entry in catalog.get("strings", {}).items():
-        translated = set(entry.get("localizations", {}))
-        for missing in sorted(LANGUAGES - translated):
+        localizations = entry.get("localizations", {})
+        for missing in sorted(LANGUAGES - set(localizations)):
             problems.append(f"{path.name}: ключът „{key}“ няма превод на {missing}")
+
+        # Празна обвивка минава за „преведено“, ако не проверим съдържанието:
+        # всеки език носи или готов низ, или пълен набор форми за брой.
+        for language, unit in localizations.items():
+            if "stringUnit" in unit:
+                continue
+            forms = unit.get("variations", {}).get("plural", {})
+            if not {"one", "other"} <= set(forms):
+                problems.append(
+                    f"{path.name}: „{key}“ на {language} няма нито текст, нито форми one/other"
+                )
     return catalog
 
 

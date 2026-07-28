@@ -3,7 +3,7 @@
 Нативно iOS приложение за **лична употреба**: записваш какво да не забравиш, избираш
 ден и час, телефонът те подсеща. Известията са **локални** (`UNUserNotificationCenter`) —
 няма акаунт, няма сървър, няма APNs, нищо не излиза от устройството. Интерфейсът е на
-**езика на телефона** (bg/en; при друг език — английски).
+**езика на телефона** (bg/en/it; при друг език — английски).
 
 _Стек: Swift 6 toolchain · SwiftUI · SwiftData · UserNotifications · iOS 17+.
 Приложният таргет върви в **Swift 5 language mode** със `SWIFT_STRICT_CONCURRENCY =
@@ -66,7 +66,7 @@ Karakochev/
                          базата И известията заедно)
   Localization/          LocalizedText — мостът ключ → преведен текст (+ ReminderDateLabel)
   Views/                 ReminderListView · ReminderRow · ReminderEditorView
-  Resources/             Localizable.xcstrings + InfoPlist.xcstrings (bg/en) ·
+  Resources/             Localizable.xcstrings + InfoPlist.xcstrings (bg/en/it) ·
                          Assets.xcassets — икона + палитрата на Carbon Stealth:
                          AccentColor (циан #00697A светло / #00E5FF тъмно — чистият
                          бранд циан е нечетим върху бяло, 1.4:1) · BrandBackground
@@ -112,8 +112,9 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
    стойности, никога изречения — иначе логиката не може да се тества на Linux и текстът
    не може да следва телефона. Преводът става в `Localization/` през `String(localized:)`,
    а датите и часовете форматира Foundation с локала на устройството. Нов видим текст →
-   нов ключ в `Localizable.xcstrings` с **bg и en**; `scripts/check-localization.py` е
-   гейт (липсващ, непреведен или неизползван ключ = червено CI).
+   нов ключ в `Localizable.xcstrings` с **bg, en и it**; `scripts/check-localization.py` е
+   гейт (липсващ, непреведен или неизползван ключ = червено CI). Нов език = един ред в
+   `LANGUAGES` на скрипта + `CFBundleLocalizations` + `knownRegions`; кодът не се пипа.
 9. **Нула мрежа.** Няма `URLSession`, няма аналитика, няма акаунт. Ако някой ден потрябва
    синхрон между устройства — това е ново решение с GDPR преглед, не „дребна добавка“.
 
@@ -137,9 +138,11 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
   въглерод #00020A + циан #00E5FF. Списъкът и редакторът гасят системния фон
   (`.scrollContentBackground(.hidden)`) и стъпват на `BrandBackground`/`BrandSurface`.
   Иконата се рисува от скрипта — отворен пръстен със стрелка, без илюстрация.
-- Езикът следва телефона: `developmentRegion = en`, `CFBundleLocalizations = [en, bg]`,
+- Езикът следва телефона: `developmentRegion = en`, `CFBundleLocalizations = [en, bg, it]`,
   името под иконата идва от `InfoPlist.xcstrings` („Каракочев“ на български телефон,
   „Karakochev“ иначе). Английският е и резервният език за всеки друг локал — затова
   ключовете са семантични, а не български изречения.
 - **Български остава източникът на истината** за текста: пиши го първо на български,
-  после превеждай. Чуждият превод никога не е машинен без преглед.
+  после превеждай. Чуждият превод никога не е машинен без преглед — собственик на
+  веригата BG→EN→IT е агентът **Преводач** (skill `i18n-parity`).
+- Италианският говори на **„tu“**, не на „Lei“ — това е лично приложение, не банка.

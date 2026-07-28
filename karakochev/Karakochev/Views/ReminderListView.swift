@@ -192,17 +192,17 @@ private struct NotificationBudgetBanner: View {
     }
 
     private var text: String {
+        // Всяко изречение носи ЕДНО число — така формите за единствено и
+        // множествено число („1 чака“ / „2 чакат“) се избират правилно от
+        // каталога. Лимитът на iOS е отделно изречение по същата причина.
         var parts: [String] = []
         if reduced > 0 {
-            parts.append(
-                String(
-                    localized: "banner.budget.reduced \(reduced) \(NotificationPlanner.iOSPendingLimit)"
-                )
-            )
+            parts.append(String(localized: "banner.budget.reduced \(reduced)"))
         }
         if skipped > 0 {
             parts.append(String(localized: "banner.budget.skipped \(skipped)"))
         }
+        parts.append(String(localized: "banner.budget.limit \(NotificationPlanner.iOSPendingLimit)"))
         return parts.joined(separator: " ")
     }
 }

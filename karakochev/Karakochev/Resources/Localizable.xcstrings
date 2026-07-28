@@ -1,405 +1,1540 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "action.cancel" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Откажи" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } }
-      }
-    },
-    "action.delete" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Изтрий" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } }
-      }
-    },
-    "action.deleteReminder" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Изтрий записката" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete reminder" } }
-      }
-    },
-    "action.done" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Готово" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } }
-      }
-    },
-    "action.edit" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Редактирай" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } }
-      }
-    },
-    "action.newReminder" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Нова записка" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "New reminder" } }
-      }
-    },
-    "action.openSettings" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Отвори Настройки" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Settings" } }
-      }
-    },
-    "action.save" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Запази" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save" } }
-      }
-    },
-    "action.snooze" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Отложи" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Snooze" } }
-      }
-    },
-    "action.stop" : {
-      "comment" : "Плъзгане по повтарящо се напомняне — спира цялата поредица, не едно задействане.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Спри" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Stop" } }
-      }
-    },
-    "action.undo" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Върни" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Undo" } }
-      }
-    },
-    "banner.budget.reduced" : {
-      "comment" : "%1$lld напомняния, %2$lld е лимитът на iOS (64).",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld напомняния са насрочени само за най-близкия си час — iOS пази най-много %2$lld известия наведнъж." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld reminders are scheduled only for their next time — iOS keeps at most %2$lld notifications at once." } }
-      }
-    },
-    "banner.budget.skipped" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "%lld чакат ред и ще се насрочат при следващото отваряне на приложението." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld are waiting their turn and will be scheduled next time you open the app." } }
-      }
-    },
-    "banner.permission.body" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Записките се пазят, но телефонът няма да те подсети. Включи ги от Настройки → Каракочев → Известия." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your reminders are saved, but the phone will not alert you. Turn them on in Settings → Karakochev → Notifications." } }
-      }
-    },
-    "banner.permission.title" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Известията са изключени" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notifications are off" } }
-      }
-    },
-    "banner.saveError" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Промяната не се запази. Опитай отново." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The change was not saved. Try again." } }
-      }
-    },
-    "banner.saveError.dismiss" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Разбрах" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Got it" } }
-      }
-    },
-    "banner.temporaryStore.body" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Записките на телефона не се четат в момента. Досегашните известия остават насрочени и нищо не е изтрито, но новото тук няма да се запази. Затвори и пусни приложението пак." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your saved reminders cannot be read right now. Existing notifications stay scheduled and nothing was deleted, but anything you add here will not be kept. Quit and open the app again." } }
-      }
-    },
-    "banner.temporaryStore.title" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Работи с временна база" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Running on a temporary store" } }
-      }
-    },
-    "date.later" : {
-      "comment" : "%1$@ е денят („12 август“), %2$@ е часът.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "%1$@ в %2$@" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$@ at %2$@" } }
-      }
-    },
-    "date.today" : {
-      "comment" : "%@ е часът.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "днес в %@" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "today at %@" } }
-      }
-    },
-    "date.tomorrow" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "утре в %@" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "tomorrow at %@" } }
-      }
-    },
-    "date.withinWeek" : {
-      "comment" : "%1$@ е денят от седмицата, %2$@ е часът.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "%1$@ в %2$@" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$@ at %2$@" } }
-      }
-    },
-    "date.yesterday" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "вчера в %@" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "yesterday at %@" } }
-      }
-    },
-    "editor.important" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Важно" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Important" } }
-      }
-    },
-    "editor.important.footer" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Важните известия се доставят и при включен „Фокус“, ако си разрешил това на приложението." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Important reminders are delivered even during Focus, if you allowed the app to do that." } }
-      }
-    },
-    "editor.note.placeholder" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Бележка (по избор)" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note (optional)" } }
-      }
-    },
-    "editor.repeat" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Повторение" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Repeat" } }
-      }
-    },
-    "editor.section.upcoming" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Следващи известия" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next notifications" } }
-      }
-    },
-    "editor.section.what" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Какво да не забравя" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "What to remember" } }
-      }
-    },
-    "editor.section.when" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Кога да те подсетя" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "When to remind you" } }
-      }
-    },
-    "editor.title.edit" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Редакция" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } }
-      }
-    },
-    "editor.title.placeholder" : {
-      "comment" : "Примерна записка в празното поле.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Например: платѝ тока" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "For example: pay the electricity bill" } }
-      }
-    },
-    "editor.when" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Ден и час" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day and time" } }
-      }
-    },
-    "list.empty.body" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Запиши какво да не забравиш и избери кога да те подсетя." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Write down what you must not forget and pick when to be reminded." } }
-      }
-    },
-    "list.empty.title" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Няма записки" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No reminders yet" } }
-      }
-    },
-    "list.scheduled" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Насрочени известия: %lld" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scheduled notifications: %lld" } }
-      }
-    },
-    "list.search" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Търсене в записките" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search reminders" } }
-      }
-    },
-    "list.title" : {
-      "comment" : "Заглавието на екрана — името на приложението.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Каракочев" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
-      }
-    },
-    "notification.fallbackTitle" : {
-      "comment" : "Какво пише в известието, ако записката е без заглавие.",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Напомняне" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reminder" } }
-      }
-    },
-    "repeat.daily" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Всеки ден" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Every day" } }
-      }
-    },
-    "repeat.monthly" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Всеки месец" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Every month" } }
-      }
-    },
-    "repeat.once" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Еднократно" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Once" } }
-      }
-    },
-    "repeat.short.daily" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "дневно" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "daily" } }
-      }
-    },
-    "repeat.short.monthly" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "месечно" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "monthly" } }
-      }
-    },
-    "repeat.short.weekdays" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "делници" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "weekdays" } }
-      }
-    },
-    "repeat.short.weekly" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "седмично" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "weekly" } }
-      }
-    },
-    "repeat.short.yearly" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "годишно" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "yearly" } }
-      }
-    },
-    "repeat.weekdays" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Всеки делник (пн–пт)" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Every weekday (Mon–Fri)" } }
-      }
-    },
-    "repeat.weekly" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Всяка седмица" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Every week" } }
-      }
-    },
-    "repeat.yearly" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Всяка година" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Every year" } }
-      }
-    },
-    "row.done" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "изпълнено" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "completed" } }
-      }
-    },
-    "row.important" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "важно" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "important" } }
-      }
-    },
-    "row.overdue" : {
-      "comment" : "%@ е кога е бил часът („вчера в 9:00“).",
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "просрочено — %@" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "overdue — %@" } }
-      }
-    },
-    "row.snoozed" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "отложено" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "snoozed" } }
-      }
-    },
-    "section.done" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Изпълнени" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Completed" } }
-      }
-    },
-    "section.overdue" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Просрочени" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Overdue" } }
-      }
-    },
-    "section.today" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Днес" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } }
-      }
-    },
-    "section.tomorrow" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Утре" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tomorrow" } }
-      }
-    },
-    "section.upcoming" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Предстоящи" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upcoming" } }
-      }
-    },
-    "snooze.oneHour" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "След час" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "In an hour" } }
-      }
-    },
-    "snooze.tenMinutes" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "След 10 минути" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "In 10 minutes" } }
-      }
-    },
-    "snooze.tomorrowMorning" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Утре в 09:00" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tomorrow at 9:00" } }
-      }
-    },
-    "snooze.tonight" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Довечера в 19:00" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tonight at 19:00" } }
-      }
-    },
-    "warning.pastOneOff" : {
-      "localizations" : {
-        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Този час вече е минал — известие няма да има. Избери бъдещ ден и час." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "That time has already passed — there will be no notification. Pick a future day and time." } }
+  "sourceLanguage": "en",
+  "strings": {
+    "action.cancel": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откажи"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annulla"
+          }
+        }
+      }
+    },
+    "action.delete": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изтрий"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina"
+          }
+        }
+      }
+    },
+    "action.deleteReminder": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изтрий записката"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete reminder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina promemoria"
+          }
+        }
+      }
+    },
+    "action.done": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fatto"
+          }
+        }
+      }
+    },
+    "action.edit": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Редактирай"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica"
+          }
+        }
+      }
+    },
+    "action.newReminder": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нова записка"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New reminder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovo promemoria"
+          }
+        }
+      }
+    },
+    "action.openSettings": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отвори Настройки"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Impostazioni"
+          }
+        }
+      }
+    },
+    "action.save": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запази"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva"
+          }
+        }
+      }
+    },
+    "action.snooze": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отложи"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posticipa"
+          }
+        }
+      }
+    },
+    "action.stop": {
+      "comment": "Плъзгане по повтарящо се напомняне — спира цялата поредица, не едно задействане.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спри"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interrompi"
+          }
+        }
+      }
+    },
+    "action.undo": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Върни"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristina"
+          }
+        }
+      }
+    },
+    "banner.budget.limit": {
+      "comment": "Лимитът на iOS — допълва двата броя по-горе.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS пази най-много %lld известия наведнъж."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS keeps at most %lld notifications at once."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS conserva al massimo %lld notifiche alla volta."
+          }
+        }
+      }
+    },
+    "banner.budget.reduced": {
+      "comment": "Броят напомняния, сведени до едно известие.",
+      "localizations": {
+        "bg": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld напомняне е насрочено само за най-близкия си час."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld напомняния са насрочени само за най-близкия си час."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld reminder is scheduled only for its next time."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld reminders are scheduled only for their next time."
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld promemoria è programmato solo per il suo prossimo orario."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld promemoria sono programmati solo per il loro prossimo orario."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "banner.budget.skipped": {
+      "localizations": {
+        "bg": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld чака ред и ще се насрочи при следващото отваряне на приложението."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld чакат ред и ще се насрочат при следващото отваряне на приложението."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld is waiting its turn and will be scheduled next time you open the app."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld are waiting their turn and will be scheduled next time you open the app."
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld è in attesa del suo turno e verrà programmato alla prossima apertura dell’app."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld sono in attesa del loro turno e verranno programmati alla prossima apertura dell’app."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "banner.permission.body": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записките се пазят, но телефонът няма да те подсети. Включи ги от Настройки → Каракочев → Известия."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your reminders are saved, but the phone will not alert you. Turn them on in Settings → Karakochev → Notifications."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I promemoria vengono salvati, ma il telefono non ti avviserà. Attiva le notifiche da Impostazioni → Karakochev → Notifiche."
+          }
+        }
+      }
+    },
+    "banner.permission.title": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Известията са изключени"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are off"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le notifiche sono disattivate"
+          }
+        }
+      }
+    },
+    "banner.saveError": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Промяната не се запази. Опитай отново."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The change was not saved. Try again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La modifica non è stata salvata. Riprova."
+          }
+        }
+      }
+    },
+    "banner.saveError.dismiss": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разбрах"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho capito"
+          }
+        }
+      }
+    },
+    "banner.temporaryStore.body": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записките на телефона не се четат в момента. Досегашните известия остават насрочени и нищо не е изтрито, но новото тук няма да се запази. Затвори и пусни приложението пак."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your saved reminders cannot be read right now. Existing notifications stay scheduled and nothing was deleted, but anything you add here will not be kept. Quit and open the app again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I promemoria salvati sul telefono al momento non sono leggibili. Le notifiche già programmate restano attive e non è stato eliminato nulla, ma quello che aggiungi qui non verrà conservato. Chiudi e riapri l’app."
+          }
+        }
+      }
+    },
+    "banner.temporaryStore.title": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работи с временна база"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running on a temporary store"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivio temporaneo in uso"
+          }
+        }
+      }
+    },
+    "date.later": {
+      "comment": "%1$@ е денят („12 август“), %2$@ е часът.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ в %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ at %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ alle %2$@"
+          }
+        }
+      }
+    },
+    "date.today": {
+      "comment": "%@ е часът.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "днес в %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "today at %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "oggi alle %@"
+          }
+        }
+      }
+    },
+    "date.tomorrow": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "утре в %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tomorrow at %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "domani alle %@"
+          }
+        }
+      }
+    },
+    "date.withinWeek": {
+      "comment": "%1$@ е денят от седмицата, %2$@ е часът.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ в %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ at %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ alle %2$@"
+          }
+        }
+      }
+    },
+    "date.yesterday": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "вчера в %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yesterday at %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ieri alle %@"
+          }
+        }
+      }
+    },
+    "editor.important": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Важно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Important"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importante"
+          }
+        }
+      }
+    },
+    "editor.important.footer": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Важните известия се доставят и при включен „Фокус“, ако си разрешил това на приложението."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Important reminders are delivered even during Focus, if you allowed the app to do that."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le notifiche importanti vengono recapitate anche con «Full Immersion» attivo, se hai dato il permesso all’app."
+          }
+        }
+      }
+    },
+    "editor.note.placeholder": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бележка (по избор)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note (optional)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota (facoltativa)"
+          }
+        }
+      }
+    },
+    "editor.repeat": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторение"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripetizione"
+          }
+        }
+      }
+    },
+    "editor.section.upcoming": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следващи известия"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next notifications"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prossime notifiche"
+          }
+        }
+      }
+    },
+    "editor.section.what": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Какво да не забравиш"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What to remember"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cosa non dimenticare"
+          }
+        }
+      }
+    },
+    "editor.section.when": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кога да те подсетя"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When to remind you"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando ricordartelo"
+          }
+        }
+      }
+    },
+    "editor.title.edit": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Редакция"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica"
+          }
+        }
+      }
+    },
+    "editor.title.placeholder": {
+      "comment": "Примерна записка в празното поле.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Например: платѝ тока"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For example: pay the electricity bill"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per esempio: paga la bolletta della luce"
+          }
+        }
+      }
+    },
+    "editor.when": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ден и час"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day and time"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giorno e ora"
+          }
+        }
+      }
+    },
+    "list.empty.body": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запиши какво да не забравиш и избери кога да те подсетя."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write down what you must not forget and pick when to be reminded."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrivi cosa non devi dimenticare e scegli quando ricordartelo."
+          }
+        }
+      }
+    },
+    "list.empty.title": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Няма записки"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reminders yet"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun promemoria"
+          }
+        }
+      }
+    },
+    "list.scheduled": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Насрочени известия: %lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scheduled notifications: %lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifiche programmate: %lld"
+          }
+        }
+      }
+    },
+    "list.search": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Търсене в записките"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search reminders"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca nei promemoria"
+          }
+        }
+      }
+    },
+    "list.title": {
+      "comment": "Заглавието на екрана — името на приложението.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каракочев"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karakochev"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karakochev"
+          }
+        }
+      }
+    },
+    "notification.fallbackTitle": {
+      "comment": "Какво пише в известието, ако записката е без заглавие.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Напомняне"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Promemoria"
+          }
+        }
+      }
+    },
+    "repeat.daily": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всеки ден"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every day"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni giorno"
+          }
+        }
+      }
+    },
+    "repeat.monthly": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всеки месец"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every month"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni mese"
+          }
+        }
+      }
+    },
+    "repeat.once": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Еднократно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una sola volta"
+          }
+        }
+      }
+    },
+    "repeat.short.daily": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "дневно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "daily"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "giornaliero"
+          }
+        }
+      }
+    },
+    "repeat.short.monthly": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "месечно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "monthly"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mensile"
+          }
+        }
+      }
+    },
+    "repeat.short.weekdays": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "делници"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weekdays"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lun–ven"
+          }
+        }
+      }
+    },
+    "repeat.short.weekly": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "седмично"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weekly"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "settimanale"
+          }
+        }
+      }
+    },
+    "repeat.short.yearly": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "годишно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yearly"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "annuale"
+          }
+        }
+      }
+    },
+    "repeat.weekdays": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всеки делник (пн–пт)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every weekday (Mon–Fri)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni giorno feriale (lun–ven)"
+          }
+        }
+      }
+    },
+    "repeat.weekly": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всяка седмица"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every week"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni settimana"
+          }
+        }
+      }
+    },
+    "repeat.yearly": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всяка година"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every year"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni anno"
+          }
+        }
+      }
+    },
+    "row.done": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "изпълнено"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "completed"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "completato"
+          }
+        }
+      }
+    },
+    "row.important": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "важно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "important"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "importante"
+          }
+        }
+      }
+    },
+    "row.overdue": {
+      "comment": "%@ е кога е бил часът („вчера в 9:00“).",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "просрочено — %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "overdue — %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "scaduto — %@"
+          }
+        }
+      }
+    },
+    "row.snoozed": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "отложено"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "snoozed"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "posticipato"
+          }
+        }
+      }
+    },
+    "section.done": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изпълнени"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completati"
+          }
+        }
+      }
+    },
+    "section.overdue": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Просрочени"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overdue"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scaduti"
+          }
+        }
+      }
+    },
+    "section.today": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Днес"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oggi"
+          }
+        }
+      }
+    },
+    "section.tomorrow": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Утре"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domani"
+          }
+        }
+      }
+    },
+    "section.upcoming": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предстоящи"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prossimi"
+          }
+        }
+      }
+    },
+    "snooze.oneHour": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "След час"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In an hour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tra un’ora"
+          }
+        }
+      }
+    },
+    "snooze.tenMinutes": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "След 10 минути"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In 10 minutes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tra 10 minuti"
+          }
+        }
+      }
+    },
+    "snooze.tomorrowMorning": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Утре в 09:00"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow at 9:00"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domani alle 9:00"
+          }
+        }
+      }
+    },
+    "snooze.tonight": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Довечера в 19:00"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tonight at 19:00"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stasera alle 19:00"
+          }
+        }
+      }
+    },
+    "warning.pastOneOff": {
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Този час вече е минал — известие няма да има. Избери бъдещ ден и час."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That time has already passed — there will be no notification. Pick a future day and time."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo orario è già passato — non ci sarà nessuna notifica. Scegli un giorno e un’ora futuri."
+          }
+        }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
