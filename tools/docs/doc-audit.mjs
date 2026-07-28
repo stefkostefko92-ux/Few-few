@@ -50,7 +50,10 @@ const linkRe = /\[[^\]]*\]\(([^)]+)\)/g;
 for (const f of mdFiles) {
   const t = read(f), lines = t.split("\n");
   lines.forEach((ln, i) => {
-    if (/\b(TODO|TBD|FIXME|WIP)\b|lorem ipsum|<placeholder>|XXX{2,}/i.test(ln))
+    // `XXX{2,}` с флаг `i` ловеше `xxxx` в примерни команди — фалшив позитив. Стеснено до ГЛАВНИ X,
+    // които НЕ са част от име на файл/идентификатор (`backup-XXXX.sql.gz` е примерен аргумент, а
+    // `+359 XX XXX XXXX` в правен документ е истински незапълнен плейсхолдър).
+    if (/\b(TODO|TBD|FIXME|WIP)\b|lorem ipsum|<placeholder>/i.test(ln) || /(?<![-_/\w])XXX+(?![-_.\w])/.test(ln))
       add("info", "unfinished", f, i + 1, "Недовършен маркер (TODO/TBD/FIXME/lorem) в публикуван документ — довърши преди merge.");
   });
   let m;
