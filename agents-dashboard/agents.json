@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-24",
+    "updated": "2026-07-28",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -12638,9 +12638,20 @@
           "date": "2026-07-24",
           "event": "v13.7 — учене",
           "detail": "Научи: Reusable workflow nesting: официалната GitHub документация казва 'You can connect a max…"
+        },
+        {
+          "version": "14.7.0",
+          "date": "2026-07-28",
+          "event": "v14.7 — учене",
+          "detail": "Научи: tj-actions/changed-files (CVE-2025-30066, март 2025): атакуващ пренаписа 350+ git тагов… (+9 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „tj-actions/changed-files (CVE-2025-30066, март 2025): атакуващ пренаписа 350+ git тагов…\" (+9 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
