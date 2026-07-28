@@ -24,7 +24,7 @@ struct ReminderDefaultsTests {
     @Test("Еднократна записка с минал час се маркира като безсмислена")
     func warningForPastOnce() {
         let now = Fixture.date(2026, 8, 10, 9, 0)
-        #expect(ReminderDefaults.warning(for: Fixture.date(2026, 8, 9, 9, 0), rule: .once, now: now) != nil)
+        #expect(ReminderDefaults.warning(for: Fixture.date(2026, 8, 9, 9, 0), rule: .once, now: now) == .pastOneOff)
         #expect(ReminderDefaults.warning(for: Fixture.date(2026, 8, 11, 9, 0), rule: .once, now: now) == nil)
     }
 

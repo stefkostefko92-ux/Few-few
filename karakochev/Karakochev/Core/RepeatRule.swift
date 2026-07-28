@@ -19,29 +19,12 @@ public enum RepeatRule: String, Codable, CaseIterable, Sendable {
     /// Всяка година, на същата дата. 29 февруари се задейства само високосна година.
     case yearly
 
-    /// Заглавие за интерфейса (български — източник на истината).
-    public var title: String {
-        switch self {
-        case .once: return "Еднократно"
-        case .daily: return "Всеки ден"
-        case .weekdays: return "Всеки делник (пн–пт)"
-        case .weekly: return "Всяка седмица"
-        case .monthly: return "Всеки месец"
-        case .yearly: return "Всяка година"
-        }
-    }
+    /// Ключът за превод. Текстът живее в `Localizable.xcstrings` (приложният
+    /// слой) — ядрото няма език, за да може приложението да следва телефона.
+    public var localizationKey: String { "repeat.\(rawValue)" }
 
-    /// Кратък етикет за реда в списъка.
-    public var shortTitle: String {
-        switch self {
-        case .once: return ""
-        case .daily: return "дневно"
-        case .weekdays: return "делници"
-        case .weekly: return "седмично"
-        case .monthly: return "месечно"
-        case .yearly: return "годишно"
-        }
-    }
+    /// Ключът за късия етикет в реда на списъка.
+    public var shortLocalizationKey: String { "repeat.short.\(rawValue)" }
 
     public var isRepeating: Bool { self != .once }
 }

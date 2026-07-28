@@ -4,15 +4,8 @@ import Foundation
 public enum ReminderSection: String, CaseIterable, Sendable {
     case overdue, today, tomorrow, upcoming, done
 
-    public var title: String {
-        switch self {
-        case .overdue: return "Просрочени"
-        case .today: return "Днес"
-        case .tomorrow: return "Утре"
-        case .upcoming: return "Предстоящи"
-        case .done: return "Изпълнени"
-        }
-    }
+    /// Ключът за превод — виж `RepeatRule.localizationKey`.
+    public var localizationKey: String { "section.\(rawValue)" }
 }
 
 /// Един раздел със записите в него.
@@ -47,7 +40,7 @@ public struct ReminderGrouping: Sendable {
                 sortKey = next
                 // „Днес“/„утре“ се мерят спрямо подаденото `now`, не спрямо
                 // системното време — иначе разделите зависят от часа на пускане.
-                switch ReminderDateText.dayOffset(from: now, to: next, calendar: calendar) {
+                switch ReminderDayClassifier.dayOffset(from: now, to: next, calendar: calendar) {
                 case 0: section = .today
                 case 1: section = .tomorrow
                 default: section = .upcoming

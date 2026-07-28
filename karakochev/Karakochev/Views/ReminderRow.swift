@@ -5,7 +5,7 @@ import SwiftUI
 struct ReminderRow: View {
     let snapshot: ReminderSnapshot
     let isHighlighted: Bool
-    let dateText: ReminderDateText
+    let dateLabel: ReminderDateLabel
 
     private let calculator = OccurrenceCalculator()
 
@@ -25,7 +25,7 @@ struct ReminderRow: View {
                     if snapshot.isImportant {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(.orange)
-                            .accessibilityLabel("Важно")
+                            .accessibilityLabel(Text("row.important"))
                     }
                 }
 
@@ -43,14 +43,14 @@ struct ReminderRow: View {
                         // 4.5:1 контраст при дребен шрифт (WCAG 1.4.3).
                         .foregroundStyle(isOverdue ? Color("OverdueColor") : Color.secondary)
                     if snapshot.repeatRule.isRepeating {
-                        Text(snapshot.repeatRule.shortTitle)
+                        Text(snapshot.repeatRule.localizedShortTitle)
                             .font(.caption2)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Color.secondary.opacity(0.15), in: Capsule())
                     }
                     if isSnoozed {
-                        Text("отложено")
+                        Text("row.snoozed")
                             .font(.caption2)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -82,19 +82,19 @@ struct ReminderRow: View {
     }
 
     private var scheduleText: String {
-        if snapshot.isDone { return "изпълнено" }
-        if let next = nextOccurrence { return dateText.text(for: next, now: now) }
-        return "просрочено — \(dateText.text(for: snapshot.fireDate, now: now))"
+        if snapshot.isDone { return String(localized: "row.done") }
+        if let next = nextOccurrence { return dateLabel.text(for: next, now: now) }
+        return String(localized: "row.overdue \(dateLabel.text(for: snapshot.fireDate, now: now))")
     }
 
     private var accessibilityText: String {
         var parts = [snapshot.title]
         if !snapshot.note.isEmpty { parts.append(snapshot.note) }
         parts.append(scheduleText)
-        if snapshot.repeatRule.isRepeating { parts.append(snapshot.repeatRule.title) }
+        if snapshot.repeatRule.isRepeating { parts.append(snapshot.repeatRule.localizedTitle) }
         // Капсулата „отложено“ е визуална — екранният четец трябва да я чуе.
-        if isSnoozed { parts.append("отложено") }
-        if snapshot.isImportant { parts.append("важно") }
+        if isSnoozed { parts.append(String(localized: "row.snoozed")) }
+        if snapshot.isImportant { parts.append(String(localized: "row.important")) }
         return parts.joined(separator: ", ")
     }
 }

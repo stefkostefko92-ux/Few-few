@@ -11,7 +11,7 @@ struct ReminderListView: View {
     @State private var editorMode: ReminderEditorView.Mode?
 
     private let grouping = ReminderGrouping()
-    private let dateText = ReminderDateText()
+    private let dateLabel = ReminderDateLabel()
 
     var body: some View {
         NavigationStack {
@@ -33,7 +33,7 @@ struct ReminderListView: View {
                 }
 
                 ForEach(groups) { group in
-                    Section(group.section.title) {
+                    Section(group.section.localizedTitle) {
                         ForEach(group.items) { snapshot in
                             if let reminder = model(for: snapshot.id) {
                                 row(for: reminder, snapshot: snapshot)
@@ -47,14 +47,14 @@ struct ReminderListView: View {
             // Въглеродният фон на Carbon Stealth вместо системния групиран.
             .scrollContentBackground(.hidden)
             .background(Color("BrandBackground"))
-            .navigationTitle("Каракочев")
-            .searchable(text: $searchText, prompt: "Търсене в записките")
+            .navigationTitle(Text("list.title"))
+            .searchable(text: $searchText, prompt: Text("list.search"))
             .overlay {
                 if reminders.isEmpty {
                     ContentUnavailableView(
-                        "Няма записки",
+                        "list.empty.title",
                         systemImage: "bell.badge",
-                        description: Text("Запиши какво да не забравиш и избери кога да те подсетя.")
+                        description: Text("list.empty.body")
                     )
                 } else if groups.isEmpty {
                     ContentUnavailableView.search(text: searchText)
@@ -65,12 +65,12 @@ struct ReminderListView: View {
                     Button {
                         editorMode = .create
                     } label: {
-                        Label("Нова записка", systemImage: "plus")
+                        Label("action.newReminder", systemImage: "plus")
                     }
                 }
                 ToolbarItem(placement: .status) {
                     if scheduler.isAuthorized {
-                        Text("Насрочени известия: \(scheduler.scheduledCount)")
+                        Text("list.scheduled \(scheduler.scheduledCount)")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -92,7 +92,7 @@ struct ReminderListView: View {
             ReminderRow(
                 snapshot: snapshot,
                 isHighlighted: scheduler.highlightedReminderID == snapshot.id,
-                dateText: dateText
+                dateLabel: dateLabel
             )
         }
         // Бутон, а не `onTapGesture` — иначе екранният четец не обявява роля
@@ -102,7 +102,7 @@ struct ReminderListView: View {
             Button(role: .destructive) {
                 scheduler.delete(reminder)
             } label: {
-                Label("Изтрий", systemImage: "trash")
+                Label("action.delete", systemImage: "trash")
             }
         }
         .swipeActions(edge: .leading) {
@@ -120,21 +120,21 @@ struct ReminderListView: View {
             Button {
                 editorMode = .edit(reminder)
             } label: {
-                Label("Редактирай", systemImage: "pencil")
+                Label("action.edit", systemImage: "pencil")
             }
             if !reminder.isDone {
                 Menu {
                     ForEach(SnoozeOption.allCases, id: \.self) { option in
-                        Button(option.title) { scheduler.snooze(reminder, option: option) }
+                        Button(option.localizedTitle) { scheduler.snooze(reminder, option: option) }
                     }
                 } label: {
-                    Label("Отложи", systemImage: "clock.arrow.circlepath")
+                    Label("action.snooze", systemImage: "clock.arrow.circlepath")
                 }
             }
             Button(role: .destructive) {
                 scheduler.delete(reminder)
             } label: {
-                Label("Изтрий", systemImage: "trash")
+                Label("action.delete", systemImage: "trash")
             }
         }
     }
@@ -148,9 +148,9 @@ struct ReminderListView: View {
 
     /// Плъзгането архивира ЦЯЛОТО напомняне. За повторение това значи „спри“,
     /// не „това задействане е свършено“ (последното е бутонът в известието).
-    private func doneActionTitle(for reminder: Reminder) -> String {
-        if reminder.isDone { return "Върни" }
-        return reminder.repeatRule.isRepeating ? "Спри" : "Готово"
+    private func doneActionTitle(for reminder: Reminder) -> LocalizedStringKey {
+        if reminder.isDone { return "action.undo" }
+        return reminder.repeatRule.isRepeating ? "action.stop" : "action.done"
     }
 
     private func model(for id: UUID) -> Reminder? {
@@ -163,15 +163,13 @@ private struct NotificationPermissionBanner: View {
     var body: some View {
         Section {
             VStack(alignment: .leading, spacing: 8) {
-                Label("Известията са изключени", systemImage: "bell.slash")
+                Label("banner.permission.title", systemImage: "bell.slash")
                     .font(.headline)
-                Text(
-                    "Записките се пазят, но телефонът няма да те подсети. Включи ги от Настройки → Каракочев → Известия."
-                )
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("banner.permission.body")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 if let url = URL(string: UIApplication.openSettingsURLString) {
-                    Link("Отвори Настройки", destination: url)
+                    Link("action.openSettings", destination: url)
                         .font(.subheadline.weight(.semibold))
                 }
             }
@@ -197,12 +195,13 @@ private struct NotificationBudgetBanner: View {
         var parts: [String] = []
         if reduced > 0 {
             parts.append(
-                "\(reduced) напомняния са насрочени само за най-близкия си час — iOS пази "
-                    + "най-много \(NotificationPlanner.iOSPendingLimit) известия наведнъж."
+                String(
+                    localized: "banner.budget.reduced \(reduced) \(NotificationPlanner.iOSPendingLimit)"
+                )
             )
         }
         if skipped > 0 {
-            parts.append("\(skipped) чакат ред и ще се насрочат при следващото отваряне на приложението.")
+            parts.append(String(localized: "banner.budget.skipped \(skipped)"))
         }
         return parts.joined(separator: " ")
     }
@@ -213,16 +212,12 @@ private struct TemporaryStoreBanner: View {
     var body: some View {
         Section {
             VStack(alignment: .leading, spacing: 8) {
-                Label("Работи с временна база", systemImage: "externaldrive.badge.exclamationmark")
+                Label("banner.temporaryStore.title", systemImage: "externaldrive.badge.exclamationmark")
                     .font(.headline)
                     .foregroundStyle(Color("OverdueColor"))
-                Text(
-                    "Записките на телефона не се четат в момента. Досегашните известия остават "
-                        + "насрочени и нищо не е изтрито, но новото тук няма да се запази. "
-                        + "Затвори и пусни приложението пак."
-                )
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("banner.temporaryStore.body")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
             .padding(.vertical, 4)
         }
@@ -240,7 +235,7 @@ private struct SaveErrorBanner: View {
                 Label(message, systemImage: "exclamationmark.icloud")
                     .font(.subheadline)
                     .foregroundStyle(Color("OverdueColor"))
-                Button("Разбрах", action: dismiss)
+                Button("banner.saveError.dismiss", action: dismiss)
                     .font(.subheadline.weight(.semibold))
             }
             .padding(.vertical, 4)

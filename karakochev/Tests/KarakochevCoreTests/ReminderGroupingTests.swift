@@ -70,9 +70,9 @@ struct ReminderGroupingTests {
     }
 }
 
-@Suite("Текст за датата и отлагане")
-struct DateTextAndSnoozeTests {
-    let text = ReminderDateText(calendar: Fixture.calendar, locale: Locale(identifier: "bg_BG"))
+@Suite("Ден-кофи и отлагане")
+struct DayBucketAndSnoozeTests {
+    let text = ReminderDayClassifier(calendar: Fixture.calendar)
     let now = Fixture.date(2026, 8, 10, 9, 0)
 
     @Test("Денят се разпознава правилно")
@@ -94,10 +94,12 @@ struct DateTextAndSnoozeTests {
         #expect(text.bucket(for: midnight, now: midnight) == .today)  // самият момент „сега“
     }
 
-    @Test("Текстът за днес и утре е на български")
-    func textIsBulgarian() {
-        #expect(text.text(for: Fixture.date(2026, 8, 10, 14, 30), now: now).hasPrefix("днес в "))
-        #expect(text.text(for: Fixture.date(2026, 8, 11, 9, 0), now: now).hasPrefix("утре в "))
+    @Test("Кофата носи ключ за превод, не готово изречение")
+    func bucketExposesLocalizationKey() {
+        // Ядрото няма език — изписването („днес в 14:30“) става в приложния слой
+        // с локала на телефона.
+        #expect(DayBucket.today.localizationKey == "date.today")
+        #expect(DayBucket.later.localizationKey == "date.later")
     }
 
     @Test("Отлагането с 10 минути и с час мести точно")

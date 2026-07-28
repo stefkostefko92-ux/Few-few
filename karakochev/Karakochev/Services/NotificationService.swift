@@ -50,12 +50,16 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         var actions: [UNNotificationAction] = SnoozeOption.notificationActions.map { option in
             UNNotificationAction(
                 identifier: Self.snoozeActionIdentifier(for: option),
-                title: option.title,
+                title: option.localizedTitle,
                 options: []
             )
         }
         actions.append(
-            UNNotificationAction(identifier: Self.completeActionIdentifier, title: "Готово", options: [])
+            UNNotificationAction(
+                identifier: Self.completeActionIdentifier,
+                title: String(localized: "action.done"),
+                options: []
+            )
         )
         let category = UNNotificationCategory(
             identifier: Self.categoryIdentifier,

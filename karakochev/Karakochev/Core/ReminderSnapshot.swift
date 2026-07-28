@@ -42,10 +42,12 @@ public struct ReminderSnapshot: Identifiable, Hashable, Sendable {
         self.snoozedUntil = snoozedUntil
     }
 
-    /// Заглавие за известието — празното заглавие не бива да стига до екрана.
-    public var notificationTitle: String {
+    /// Заглавието без празните знаци; `nil`, ако не е останало нищо. Резервният
+    /// текст се подава отвън (`NotificationPlanner.fallbackTitle`), защото е
+    /// потребителски низ и подлежи на превод.
+    public var trimmedTitle: String? {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Напомняне" : trimmed
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     /// Текст на известието — бележката, ако има такава.

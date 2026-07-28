@@ -7,14 +7,8 @@ public enum SnoozeOption: String, CaseIterable, Sendable {
     case tonight
     case tomorrowMorning
 
-    public var title: String {
-        switch self {
-        case .tenMinutes: return "След 10 минути"
-        case .oneHour: return "След час"
-        case .tonight: return "Довечера в 19:00"
-        case .tomorrowMorning: return "Утре в 09:00"
-        }
-    }
+    /// Ключът за превод — виж `RepeatRule.localizationKey`.
+    public var localizationKey: String { "snooze.\(rawValue)" }
 
     /// Действията в самото известие — iOS показва разумно до 4, но два бутона
     /// са четими и на заключен екран.

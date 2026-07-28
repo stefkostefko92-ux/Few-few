@@ -12,9 +12,18 @@ public enum ReminderDefaults {
         return rounded
     }
 
-    /// Има ли смисъл записката изобщо да се насрочва.
-    public static func warning(for date: Date, rule: RepeatRule, now: Date = Date()) -> String? {
+    /// Има ли смисъл записката изобщо да се насрочва. Връща **причината**,
+    /// не изречението — текстът се превежда в приложния слой.
+    public static func warning(for date: Date, rule: RepeatRule, now: Date = Date()) -> ReminderWarning? {
         guard rule == .once, date <= now else { return nil }
-        return "Този час вече е минал — известие няма да има. Избери бъдещ ден и час."
+        return .pastOneOff
     }
+}
+
+/// Защо записката няма да се обади.
+public enum ReminderWarning: String, Sendable {
+    /// Еднократна записка с час в миналото.
+    case pastOneOff
+
+    public var localizationKey: String { "warning.\(rawValue)" }
 }

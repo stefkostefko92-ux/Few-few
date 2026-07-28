@@ -18,9 +18,9 @@ struct KarakochevApp: App {
 
     var body: some Scene {
         WindowGroup {
+            // Няма зададен локал: приложението говори езика на телефона.
             RootView()
                 .environment(scheduler)
-                .environment(\.locale, Locale(identifier: "bg_BG"))
         }
         .modelContainer(container)
     }

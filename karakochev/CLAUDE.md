@@ -2,7 +2,8 @@
 
 Нативно iOS приложение за **лична употреба**: записваш какво да не забравиш, избираш
 ден и час, телефонът те подсеща. Известията са **локални** (`UNUserNotificationCenter`) —
-няма акаунт, няма сървър, няма APNs, нищо не излиза от устройството.
+няма акаунт, няма сървър, няма APNs, нищо не излиза от устройството. Интерфейсът е на
+**езика на телефона** (bg/en; при друг език — английски).
 
 _Стек: Swift 6 toolchain · SwiftUI · SwiftData · UserNotifications · iOS 17+.
 Приложният таргет върви в **Swift 5 language mode** със `SWIFT_STRICT_CONCURRENCY =
@@ -31,6 +32,7 @@ swift build                                              # ядрото
 swift test                                               # 70 теста (Swift Testing)
 swift format lint --strict --recursive Karakochev Tests  # формат (гейт)
 swift format --in-place --recursive Karakochev Tests     # авто-поправка
+python3 scripts/check-localization.py                    # преводите (гейт)
 python3 scripts/generate-icon.py                         # иконата (детерминистична)
 
 # Целият проект — само на Mac с Xcode 16+:
@@ -39,7 +41,7 @@ xcodebuild build -project Karakochev.xcodeproj -scheme Karakochev \
   -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 ```
 
-**Гейт преди „готово“:** `swift format lint` + `swift build` + `swift test`. CI
+**Гейт преди „готово“:** `swift format lint` + `check-localization.py` + `swift build` + `swift test`. CI
 (`.github/workflows/karakochev.yml`) пуска точно това на всяка промяна в `karakochev/`;
 `xcodebuild` върви само ръчно (workflow_dispatch — macOS runner-ите са 10× по-скъпи).
 
@@ -56,14 +58,16 @@ Karakochev/
   App/                   KarakochevApp (ModelContainer + scheduler), RootView (scenePhase)
   Core/                  чистата логика — Foundation-only, тествана:
                          RepeatRule · ReminderSnapshot · OccurrenceCalculator
-                         NotificationPlanner · ReminderGrouping · ReminderDateText
+                         NotificationPlanner · ReminderGrouping · ReminderDayClassifier
                          SnoozeOption · ReminderDefaults
   Models/Reminder.swift  @Model (SwiftData) + `snapshot` мост към Core
   Services/              NotificationService (UNUserNotificationCenter, категории,
                          действия) · ReminderScheduler (единствената точка, която пипа
                          базата И известията заедно)
+  Localization/          LocalizedText — мостът ключ → преведен текст (+ ReminderDateLabel)
   Views/                 ReminderListView · ReminderRow · ReminderEditorView
-  Resources/             Assets.xcassets — икона + палитрата на Carbon Stealth:
+  Resources/             Localizable.xcstrings + InfoPlist.xcstrings (bg/en) ·
+                         Assets.xcassets — икона + палитрата на Carbon Stealth:
                          AccentColor (циан #00697A светло / #00E5FF тъмно — чистият
                          бранд циан е нечетим върху бяло, 1.4:1) · BrandBackground
                          (#F2F5F7 / въглерод #00020A) · BrandSurface · OverdueColor ·
@@ -104,7 +108,13 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
    резервния път, списъкът изглежда празен — а празен план би изтрил всички насрочени
    известия за записи, които си стоят на диска. `isTemporaryStore` спира синхронизацията
    и показва банер.
-8. **Нула мрежа.** Няма `URLSession`, няма аналитика, няма акаунт. Ако някой ден потрябва
+8. **Ядрото няма език.** `Core/` връща **ключове** (`section.today`, `repeat.daily`) и
+   стойности, никога изречения — иначе логиката не може да се тества на Linux и текстът
+   не може да следва телефона. Преводът става в `Localization/` през `String(localized:)`,
+   а датите и часовете форматира Foundation с локала на устройството. Нов видим текст →
+   нов ключ в `Localizable.xcstrings` с **bg и en**; `scripts/check-localization.py` е
+   гейт (липсващ, непреведен или неизползван ключ = червено CI).
+9. **Нула мрежа.** Няма `URLSession`, няма аналитика, няма акаунт. Ако някой ден потрябва
    синхрон между устройства — това е ново решение с GDPR преглед, не „дребна добавка“.
 
 ## Дребни неща, които хапят
@@ -127,5 +137,9 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
   въглерод #00020A + циан #00E5FF. Списъкът и редакторът гасят системния фон
   (`.scrollContentBackground(.hidden)`) и стъпват на `BrandBackground`/`BrandSurface`.
   Иконата се рисува от скрипта — отворен пръстен със стрелка, без илюстрация.
-- Езикът е български, твърдо: `developmentRegion = bg`, `CFBundleDisplayName = Каракочев`,
-  `.environment(\.locale, Locale(identifier: "bg_BG"))`. Няма превод и не е нужен.
+- Езикът следва телефона: `developmentRegion = en`, `CFBundleLocalizations = [en, bg]`,
+  името под иконата идва от `InfoPlist.xcstrings` („Каракочев“ на български телефон,
+  „Karakochev“ иначе). Английският е и резервният език за всеки друг локал — затова
+  ключовете са семантични, а не български изречения.
+- **Български остава източникът на истината** за текста: пиши го първо на български,
+  после превеждай. Чуждият превод никога не е машинен без преглед.

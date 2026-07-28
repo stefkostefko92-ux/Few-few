@@ -91,9 +91,10 @@
 			};
 			buildConfigurationList = 1A000000000000000000000A /* Build configuration list for PBXProject "Karakochev" */;
 			compatibilityVersion = "Xcode 15.0";
-			developmentRegion = bg;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				en,
 				bg,
 				Base,
 			);

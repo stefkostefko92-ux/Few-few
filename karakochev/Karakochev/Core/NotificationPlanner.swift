@@ -40,11 +40,20 @@ public struct NotificationPlanner: Sendable {
     public var limit: Int
     /// Колко задействания се насрочват поединично за още незапочнало повторение.
     public var leadOccurrences: Int
+    /// Какво пише в известието, ако записката е без заглавие. Подава се отвън,
+    /// защото е преведен низ, а ядрото няма език.
+    public var fallbackTitle: String
 
-    public init(calendar: Calendar = .autoupdatingCurrent, limit: Int = 56, leadOccurrences: Int = 4) {
+    public init(
+        calendar: Calendar = .autoupdatingCurrent,
+        limit: Int = 56,
+        leadOccurrences: Int = 4,
+        fallbackTitle: String = "Reminder"
+    ) {
         self.calendar = calendar
         self.limit = min(limit, Self.iOSPendingLimit)
         self.leadOccurrences = max(1, leadOccurrences)
+        self.fallbackTitle = fallbackTitle
     }
 
     public struct Plan: Sendable {
@@ -207,7 +216,7 @@ public struct NotificationPlanner: Sendable {
         PlannedNotification(
             requestID: Self.requestID(reminderID: reminder.id, suffix: suffix),
             reminderID: reminder.id,
-            title: reminder.notificationTitle,
+            title: reminder.trimmedTitle ?? fallbackTitle,
             body: reminder.notificationBody,
             nextFireDate: fireDate,
             dateComponents: components,

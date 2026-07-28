@@ -125,10 +125,12 @@ struct NotificationPlannerTests {
         #expect(Set(ids).count == ids.count)
     }
 
-    @Test("Празното заглавие не стига до екрана")
+    @Test("Празното заглавие получава подаденото резервно (преведено) заглавие")
     func emptyTitleFallsBack() {
+        let planner = NotificationPlanner(calendar: Fixture.calendar, fallbackTitle: "Reminder")
         let reminder = Fixture.reminder(title: "   ", at: Fixture.date(2026, 8, 12, 8, 0))
-        #expect(planner.plan(for: [reminder], now: now).notifications[0].title == "Напомняне")
+        #expect(planner.plan(for: [reminder], now: now).notifications[0].title == "Reminder")
+        #expect(reminder.trimmedTitle == nil)
     }
 
     @Test("Напомняне без нито едно бъдещо задействане не произвежда известия")

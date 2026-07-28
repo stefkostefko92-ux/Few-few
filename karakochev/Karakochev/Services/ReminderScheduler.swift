@@ -34,7 +34,9 @@ final class ReminderScheduler {
     init(
         context: ModelContext,
         service: NotificationService = .shared,
-        planner: NotificationPlanner = NotificationPlanner(),
+        planner: NotificationPlanner = NotificationPlanner(
+            fallbackTitle: String(localized: "notification.fallbackTitle")
+        ),
         isTemporaryStore: Bool = false
     ) {
         self.context = context
@@ -237,7 +239,7 @@ final class ReminderScheduler {
             // следващия старт записката липсва. Връщаме контекста назад и
             // казваме на потребителя.
             context.rollback()
-            saveError = "Промяната не се запази. Опитай отново."
+            saveError = String(localized: "banner.saveError")
             print("[Каракочев] записът в базата не мина: \(error.localizedDescription)")
         }
     }

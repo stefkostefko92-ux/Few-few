@@ -28,49 +28,49 @@ struct ReminderEditorView: View {
     @State private var didLoad = false
 
     private let calculator = OccurrenceCalculator()
-    private let dateText = ReminderDateText()
+    private let dateLabel = ReminderDateLabel()
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Какво да не забравя") {
-                    TextField("Например: платѝ тока", text: $title)
+                Section("editor.section.what") {
+                    TextField("editor.title.placeholder", text: $title)
                         .submitLabel(.done)
-                    TextField("Бележка (по избор)", text: $note, axis: .vertical)
+                    TextField("editor.note.placeholder", text: $note, axis: .vertical)
                         .lineLimit(2...6)
                 }
 
-                Section("Кога да те подсетя") {
+                Section("editor.section.when") {
                     DatePicker(
-                        "Ден и час",
+                        "editor.when",
                         selection: $date,
                         displayedComponents: [.date, .hourAndMinute]
                     )
-                    Picker("Повторение", selection: $repeatRule) {
+                    Picker("editor.repeat", selection: $repeatRule) {
                         ForEach(RepeatRule.allCases, id: \.self) { rule in
-                            Text(rule.title).tag(rule)
+                            Text(rule.localizedTitle).tag(rule)
                         }
                     }
                 }
 
                 if let warning = ReminderDefaults.warning(for: date, rule: repeatRule) {
                     Section {
-                        Label(warning, systemImage: "exclamationmark.triangle")
+                        Label(warning.localizedText, systemImage: "exclamationmark.triangle")
                             .foregroundStyle(Color("WarningColor"))
                             .font(.footnote)
                     }
                 }
 
                 Section {
-                    Toggle("Важно", isOn: $isImportant)
+                    Toggle("editor.important", isOn: $isImportant)
                 } footer: {
-                    Text("Важните известия се доставят и при включен „Фокус“, ако си разрешил това на приложението.")
+                    Text("editor.important.footer")
                 }
 
                 if !upcoming.isEmpty {
-                    Section("Следващи известия") {
+                    Section("editor.section.upcoming") {
                         ForEach(upcoming, id: \.self) { occurrence in
-                            Text(dateText.text(for: occurrence, now: Date()))
+                            Text(dateLabel.text(for: occurrence, now: Date()))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -79,7 +79,7 @@ struct ReminderEditorView: View {
 
                 if case .edit(let reminder) = mode {
                     Section {
-                        Button("Изтрий записката", role: .destructive) {
+                        Button("action.deleteReminder", role: .destructive) {
                             scheduler.delete(reminder)
                             dismiss()
                         }
@@ -89,14 +89,14 @@ struct ReminderEditorView: View {
             .listRowBackground(Color("BrandSurface"))
             .scrollContentBackground(.hidden)
             .background(Color("BrandBackground"))
-            .navigationTitle(isCreating ? "Нова записка" : "Редакция")
+            .navigationTitle(Text(isCreating ? "action.newReminder" : "editor.title.edit"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Откажи") { dismiss() }
+                    Button("action.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Запази") { save() }
+                    Button("action.save") { save() }
                         .disabled(!canSave)
                 }
             }
