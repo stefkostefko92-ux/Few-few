@@ -5789,9 +5789,20 @@
           "date": "2026-07-24",
           "event": "v14.4 — учене",
           "detail": "Научи: pg_dump: 'directory' формат (-Fd) е ЕДИНСТВЕНИЯТ, който поддържа паралелни дъмпове (-j … (+15 още)"
+        },
+        {
+          "version": "15.7.0",
+          "date": "2026-07-28",
+          "event": "v15.7 — учене",
+          "detail": "Научи: systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У… (+12 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У…\" (+12 още)"
+        },
         {
           "date": "2026-07-24",
           "type": "learning",
