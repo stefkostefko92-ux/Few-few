@@ -12829,7 +12829,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 149
+        "lessons": 151
       },
       "evolution": [
         {
@@ -12885,9 +12885,20 @@
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: tj-actions/changed-files (CVE-2025-30066, март 2025): атакуващ пренаписа 350+ git тагов… (+9 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-07-28",
+          "event": "v14.9 — учене",
+          "detail": "Научи: actions/checkout (Node20 action) в job-level `container:` работи защото runner-ът bind-… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „actions/checkout (Node20 action) в job-level `container:` работи защото runner-ът bind-…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
