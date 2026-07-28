@@ -49,8 +49,31 @@ public struct NotificationPlanner: Sendable {
 
     public struct Plan: Sendable {
         public let notifications: [PlannedNotification]
-        /// Колко напомняния не се побраха в бюджета — UI-ът предупреждава за тях.
+        /// Колко напомняния не се побраха изобщо — UI-ът предупреждава за тях.
         public let skippedReminders: Int
+        /// Колко се побраха само с едно задействане вместо с целия си шаблон.
+        public let reducedReminders: Int
+
+        public init(notifications: [PlannedNotification], skippedReminders: Int, reducedReminders: Int = 0) {
+            self.notifications = notifications
+            self.skippedReminders = skippedReminders
+            self.reducedReminders = reducedReminders
+        }
+    }
+
+    /// Най-близкото задействане на групата, сведено до една еднократна заявка.
+    private func minimalRequest(from items: [PlannedNotification]) -> PlannedNotification? {
+        guard let nearest = items.min(by: { $0.nextFireDate < $1.nextFireDate }) else { return nil }
+        return PlannedNotification(
+            requestID: Self.requestID(reminderID: nearest.reminderID, suffix: "budget"),
+            reminderID: nearest.reminderID,
+            title: nearest.title,
+            body: nearest.body,
+            nextFireDate: nearest.nextFireDate,
+            dateComponents: exactComponents(nearest.nextFireDate),
+            repeats: false,
+            isImportant: nearest.isImportant
+        )
     }
 
     public func plan(for reminders: [ReminderSnapshot], now: Date) -> Plan {
@@ -69,15 +92,26 @@ public struct NotificationPlanner: Sendable {
 
         var notifications: [PlannedNotification] = []
         var skipped = 0
+        var reduced = 0
         for group in groups {
             if notifications.count + group.items.count <= limit {
                 notifications.append(contentsOf: group.items)
+            } else if notifications.count < limit, let fallback = minimalRequest(from: group.items) {
+                // Цялата група не се побира. Пълното ѝ изхвърляне значи ВЕЧНО
+                // мълчание за това напомняне: повтарящите се тригери не изтичат,
+                // тоест мястото никога не се освобождава само. Затова му даваме
+                // поне най-близкото задействане като еднократна заявка.
+                notifications.append(fallback)
+                reduced += 1
             } else {
                 skipped += 1
             }
         }
         return Plan(
-            notifications: notifications.sorted { $0.nextFireDate < $1.nextFireDate }, skippedReminders: skipped)
+            notifications: notifications.sorted { $0.nextFireDate < $1.nextFireDate },
+            skippedReminders: skipped,
+            reducedReminders: reduced
+        )
     }
 
     // MARK: - Заявки за едно напомняне
@@ -188,7 +222,13 @@ public struct NotificationPlanner: Sendable {
     }
 
     private func exactComponents(_ date: Date) -> DateComponents {
-        calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        // Без зона iOS тълкува компонентите в зоната, ДЕЙСТВАЩА при задействането:
+        // насрочено за 08:30 в София и полетял до Токио → тригерът иска 08:30 JST,
+        // което вече е минало, и известието изобщо не идва. Повтарящите се тригери
+        // нарочно остават без зона — там верният смисъл е стенният час „всеки ден в 7“.
+        components.timeZone = calendar.timeZone
+        return components
     }
 
     // MARK: - Идентификатори

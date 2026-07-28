@@ -14,10 +14,14 @@ final class ReminderScheduler {
     private let context: ModelContext
     private let service: NotificationService
     private let planner: NotificationPlanner
+    /// Базата не се отвори и работим върху временна (в паметта) — виж `NezabravkaApp`.
+    let isTemporaryStore: Bool
 
     private(set) var authorizationStatus: UNAuthorizationStatus = .notDetermined
     /// Колко напомняния не се побраха в лимита на iOS (виж `NotificationPlanner`).
     private(set) var skippedReminders = 0
+    /// Колко напомняния са сведени до едно известие заради лимита на iOS.
+    private(set) var reducedReminders = 0
     private(set) var scheduledCount = 0
     /// Записът, отворен от натиснато известие — списъкът го подчертава.
     var highlightedReminderID: UUID?
@@ -30,11 +34,13 @@ final class ReminderScheduler {
     init(
         context: ModelContext,
         service: NotificationService = .shared,
-        planner: NotificationPlanner = NotificationPlanner()
+        planner: NotificationPlanner = NotificationPlanner(),
+        isTemporaryStore: Bool = false
     ) {
         self.context = context
         self.service = service
         self.planner = planner
+        self.isTemporaryStore = isTemporaryStore
         service.start()
         service.onAction = { [weak self] action in
             await self?.handle(action)
@@ -85,6 +91,10 @@ final class ReminderScheduler {
     }
 
     private func performResync() async {
+        // Временна база = не знаем какво има на диска. Стоим настрана от
+        // насрочените известия, вместо да ги изтрием заради празен списък.
+        guard !isTemporaryStore else { return }
+
         let now = Date()
         guard let reminders = fetchAll() else {
             // Базата не се прочете. По-добре старият план да остане, отколкото
@@ -107,9 +117,11 @@ final class ReminderScheduler {
         }
 
         let plan = planner.plan(for: reminders.map(\.snapshot), now: now)
-        await service.apply(plan)
+        // Броим реално насрочените, не планираните — иначе етикетът в списъка
+        // обещава известия, които системата може да е отказала.
+        scheduledCount = await service.apply(plan)
         skippedReminders = plan.skippedReminders
-        scheduledCount = plan.notifications.count
+        reducedReminders = plan.reducedReminders
     }
 
     // MARK: - Промени по напомнянията

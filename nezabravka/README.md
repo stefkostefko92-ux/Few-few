@@ -42,7 +42,7 @@
 
 ```bash
 cd nezabravka
-swift test                                               # 62 теста
+swift test                                               # 70 теста
 swift format lint --strict --recursive Nezabravka Tests
 ```
 

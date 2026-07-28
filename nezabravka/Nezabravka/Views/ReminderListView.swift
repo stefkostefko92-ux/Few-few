@@ -16,14 +16,20 @@ struct ReminderListView: View {
     var body: some View {
         NavigationStack {
             List {
+                if scheduler.isTemporaryStore {
+                    TemporaryStoreBanner()
+                }
                 if let saveError = scheduler.saveError {
                     SaveErrorBanner(message: saveError) { scheduler.dismissSaveError() }
                 }
                 if scheduler.isDenied {
                     NotificationPermissionBanner()
                 }
-                if scheduler.skippedReminders > 0 {
-                    NotificationBudgetBanner(skipped: scheduler.skippedReminders)
+                if scheduler.skippedReminders > 0 || scheduler.reducedReminders > 0 {
+                    NotificationBudgetBanner(
+                        skipped: scheduler.skippedReminders,
+                        reduced: scheduler.reducedReminders
+                    )
                 }
 
                 ForEach(groups) { group in
@@ -100,7 +106,7 @@ struct ReminderListView: View {
                 scheduler.toggleDone(reminder)
             } label: {
                 Label(
-                    reminder.isDone ? "Върни" : "Готово",
+                    doneActionTitle(for: reminder),
                     systemImage: reminder.isDone ? "arrow.uturn.backward" : "checkmark"
                 )
             }
@@ -136,6 +142,13 @@ struct ReminderListView: View {
         return grouping.group(grouping.search(snapshots, query: searchText), now: Date())
     }
 
+    /// Плъзгането архивира ЦЯЛОТО напомняне. За повторение това значи „спри“,
+    /// не „това задействане е свършено“ (последното е бутонът в известието).
+    private func doneActionTitle(for reminder: Reminder) -> String {
+        if reminder.isDone { return "Върни" }
+        return reminder.repeatRule.isRepeating ? "Спри" : "Готово"
+    }
+
     private func model(for id: UUID) -> Reminder? {
         reminders.first { $0.id == id }
     }
@@ -166,15 +179,48 @@ private struct NotificationPermissionBanner: View {
 /// iOS пази най-много 64 чакащи локални известия — предупреждаваме честно.
 private struct NotificationBudgetBanner: View {
     let skipped: Int
+    let reduced: Int
 
     var body: some View {
         Section {
-            Label(
-                "\(skipped) напомняния чакат ред — iOS насрочва най-много \(NotificationPlanner.iOSPendingLimit) известия наведнъж. Ще се насрочат при следващото отваряне на приложението.",
-                systemImage: "exclamationmark.triangle"
+            Label(text, systemImage: "exclamationmark.triangle")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var text: String {
+        var parts: [String] = []
+        if reduced > 0 {
+            parts.append(
+                "\(reduced) напомняния са насрочени само за най-близкия си час — iOS пази "
+                    + "най-много \(NotificationPlanner.iOSPendingLimit) известия наведнъж."
             )
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+        }
+        if skipped > 0 {
+            parts.append("\(skipped) чакат ред и ще се насрочат при следващото отваряне на приложението.")
+        }
+        return parts.joined(separator: " ")
+    }
+}
+
+/// Базата не се отвори — записите на диска са невидими, но непокътнати.
+private struct TemporaryStoreBanner: View {
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Работи с временна база", systemImage: "externaldrive.badge.exclamationmark")
+                    .font(.headline)
+                    .foregroundStyle(Color("OverdueColor"))
+                Text(
+                    "Записките на телефона не се четат в момента. Досегашните известия остават "
+                        + "насрочени и нищо не е изтрито, но новото тук няма да се запази. "
+                        + "Затвори и пусни приложението пак."
+                )
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
         }
     }
 }

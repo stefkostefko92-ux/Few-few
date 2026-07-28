@@ -81,12 +81,22 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: - Насрочване
 
-    /// Заменя всички чакащи известия с новия план.
+    /// Привежда чакащите известия към новия план и връща колко реално са насрочени.
     ///
-    /// Пълната подмяна е нарочна: планът е малък (под лимита на iOS) и така
-    /// изтритите/променените напомняния не могат да оставят „призрачно“ известие.
-    func apply(_ plan: NotificationPlanner.Plan) async {
-        center.removeAllPendingNotificationRequests()
+    /// Разлика, а не „изтрий всичко и добави наново“: при пълна подмяна между
+    /// триенето и добавянето има прозорец (до 56 обиколки към системата), в който
+    /// смърт на процеса оставя телефона без нито едно известие. Заявка със същия
+    /// идентификатор се презаписва, затова е достатъчно да махнем само излишните.
+    @discardableResult
+    func apply(_ plan: NotificationPlanner.Plan) async -> Int {
+        let wanted = Set(plan.notifications.map(\.requestID))
+        let pending = await center.pendingNotificationRequests().map(\.identifier)
+        let stale = pending.filter { !wanted.contains($0) }
+        if !stale.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: stale)
+        }
+
+        var scheduled = 0
         for planned in plan.notifications {
             let content = UNMutableNotificationContent()
             content.title = planned.title
@@ -109,11 +119,19 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             )
             do {
                 try await center.add(request)
+                scheduled += 1
             } catch {
-                // Единичен неуспех не бива да събаря останалия план.
+                // Единичен неуспех не бива да събаря останалия план — но и не бива
+                // да се брои за успех: „Насрочени известия: N“ трябва да е вярно.
                 print("[Незабравка] известието \(planned.requestID) не се насрочи: \(error.localizedDescription)")
             }
         }
+        return scheduled
+    }
+
+    /// Колко известия реално чакат в системата — единственият честен източник.
+    func pendingRequestsCount() async -> Int {
+        await center.pendingNotificationRequests().count
     }
 
     /// Маха вече доставените известия от Центъра за известия (при отваряне на приложението).

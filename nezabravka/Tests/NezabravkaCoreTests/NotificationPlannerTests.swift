@@ -86,15 +86,22 @@ struct NotificationPlannerTests {
         #expect(plan.notifications.map(\.title) == ["Задача 1", "Задача 2", "Задача 3"])
     }
 
-    @Test("Не се насрочва половин напомняне — „делници“ или влиза цяло, или отпада")
+    @Test("Половин напомняне не се насрочва — непобралото се получава една резервна заявка")
     func groupsAreNotSplit() {
         let tight = NotificationPlanner(calendar: Fixture.calendar, limit: 4)
         let single = Fixture.reminder(title: "Едно", at: Fixture.date(2026, 8, 11, 8, 0))
         let everyWeekday = Fixture.reminder(title: "Делници", at: Fixture.date(2026, 8, 3, 7, 0), repeat: .weekdays)
         let plan = tight.plan(for: [single, everyWeekday], now: now)
 
-        #expect(plan.notifications.map(\.title) == ["Едно"])
-        #expect(plan.skippedReminders == 1)
+        // „Делници“ не се появява с 2 от 5 дни: или влиза цяло, или получава
+        // ЕДНА еднократна заявка за най-близкия си час (по-добре от тишина).
+        let weekdayRequests = plan.notifications.filter { $0.title == "Делници" }
+        #expect(weekdayRequests.count == 1)
+        #expect(weekdayRequests[0].repeats == false)
+        #expect(weekdayRequests[0].requestID.hasSuffix("|budget"))
+        #expect(plan.reducedReminders == 1)
+        #expect(plan.skippedReminders == 0)
+        #expect(plan.notifications.contains { $0.title == "Едно" })
     }
 
     @Test("Лимитът никога не надхвърля твърдия таван на iOS")
