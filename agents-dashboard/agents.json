@@ -3995,7 +3995,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 40
+        "lessons": 42
       },
       "evolution": [
         {
@@ -4093,9 +4093,20 @@
           "date": "2026-07-29",
           "event": "v10.0 — учене",
           "detail": "Научи: ospedalitrasparenti/site/fornitori.html (866KB, 23804 DOM възела) скорира 67/100 mobile… (+5 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-29",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Chrome Soft Navigations API излиза unflagged от Chrome 151 (юли 2026), но интеграцията … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „Chrome Soft Navigations API излиза unflagged от Chrome 151 (юли 2026), но интеграцията …\" (+1 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
