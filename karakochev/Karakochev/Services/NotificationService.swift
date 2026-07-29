@@ -8,6 +8,26 @@ enum NotificationAction: Sendable {
     case snooze(UUID, SnoozeOption)
 }
 
+/// Идентификаторите на категорията и действията.
+///
+/// Стоят **извън** `NotificationService`, защото той е `@MainActor`, а
+/// делегатът на iOS ги чете от `nonisolated` контекст — статичен член на
+/// изолиран клас не се вижда оттам (грешка в Swift 6, предупреждение в Swift 5).
+enum NotificationIdentifiers {
+    static let category = "KARAKOCHEV_REMINDER"
+    static let complete = "COMPLETE"
+    private static let snoozePrefix = "SNOOZE_"
+
+    static func snooze(for option: SnoozeOption) -> String {
+        snoozePrefix + option.rawValue
+    }
+
+    static func snoozeOption(from identifier: String) -> SnoozeOption? {
+        guard identifier.hasPrefix(snoozePrefix) else { return nil }
+        return SnoozeOption(rawValue: String(identifier.dropFirst(snoozePrefix.count)))
+    }
+}
+
 /// Тънка обвивка над `UNUserNotificationCenter`.
 ///
 /// Тук няма достъп до базата — какво да се промени по записа решава
@@ -27,19 +47,6 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     /// пресинхронизиран — и „Готово“/„Отложи“ от известието остава наполовина.
     var onAction: ((NotificationAction) async -> Void)?
 
-    static let categoryIdentifier = "KARAKOCHEV_REMINDER"
-    static let completeActionIdentifier = "COMPLETE"
-    private static let snoozeActionPrefix = "SNOOZE_"
-
-    static func snoozeActionIdentifier(for option: SnoozeOption) -> String {
-        snoozeActionPrefix + option.rawValue
-    }
-
-    static func snoozeOption(fromActionIdentifier identifier: String) -> SnoozeOption? {
-        guard identifier.hasPrefix(snoozeActionPrefix) else { return nil }
-        return SnoozeOption(rawValue: String(identifier.dropFirst(snoozeActionPrefix.count)))
-    }
-
     /// Извиква се веднъж при старт — преди системата да е доставила отговор на известие.
     func start() {
         center.delegate = self
@@ -49,20 +56,20 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     private func registerCategories() {
         var actions: [UNNotificationAction] = SnoozeOption.notificationActions.map { option in
             UNNotificationAction(
-                identifier: Self.snoozeActionIdentifier(for: option),
+                identifier: NotificationIdentifiers.snooze(for: option),
                 title: option.localizedTitle,
                 options: []
             )
         }
         actions.append(
             UNNotificationAction(
-                identifier: Self.completeActionIdentifier,
+                identifier: NotificationIdentifiers.complete,
                 title: String(localized: "action.done"),
                 options: []
             )
         )
         let category = UNNotificationCategory(
-            identifier: Self.categoryIdentifier,
+            identifier: NotificationIdentifiers.category,
             actions: actions,
             intentIdentifiers: [],
             options: []
@@ -106,7 +113,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             content.title = planned.title
             if !planned.body.isEmpty { content.body = planned.body }
             content.sound = .default
-            content.categoryIdentifier = Self.categoryIdentifier
+            content.categoryIdentifier = NotificationIdentifiers.category
             content.userInfo = ["reminderID": planned.reminderID.uuidString]
             // „Важно“ пробива режим „Фокус“ само ако проектът има способността
             // Time Sensitive Notifications; без нея iOS го третира като обикновено.
@@ -162,9 +169,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         let actionIdentifier = response.actionIdentifier
 
         let action: NotificationAction
-        if actionIdentifier == Self.completeActionIdentifier {
+        if actionIdentifier == NotificationIdentifiers.complete {
             action = .complete(reminderID)
-        } else if let option = Self.snoozeOption(fromActionIdentifier: actionIdentifier) {
+        } else if let option = NotificationIdentifiers.snoozeOption(from: actionIdentifier) {
             action = .snooze(reminderID, option)
         } else {
             action = .open(reminderID)

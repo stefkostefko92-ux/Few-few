@@ -212,9 +212,11 @@ final class ReminderScheduler {
 
     /// `nil` = четенето се провали (различно от „няма записи“).
     private func fetchAll() -> [Reminder]? {
-        let descriptor = FetchDescriptor<Reminder>(sortBy: [SortDescriptor(\.fireDate)])
+        // Сортираме след извличането: `SortDescriptor(\.fireDate)` вкарва
+        // несъответстващ на Sendable KeyPath в дескриптора (грешка в Swift 6).
+        let descriptor = FetchDescriptor<Reminder>()
         do {
-            return try context.fetch(descriptor)
+            return try context.fetch(descriptor).sorted { $0.fireDate < $1.fireDate }
         } catch {
             print("[Каракочев] базата не се прочете: \(error.localizedDescription)")
             return nil
