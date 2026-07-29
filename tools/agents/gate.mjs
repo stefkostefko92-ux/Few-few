@@ -28,6 +28,7 @@ const CHECKS = [
   // Пръв по ред: ако наш файл не се парсва, всички следващи проверки падат по объркваща причина.
   { id: "syntax", desc: "всеки наш .mjs се парсва (права кавичка в „ … “ чупи низа)", cmd: ["tools/lib/syntax-check.mjs"] },
   { id: "oversee", desc: "надзор над екипа (цялост дефиниция↔памет↔agents.json↔settings)", cmd: ["tools/agents/oversee.mjs"] },
+  { id: "deep-audit", desc: "дупки: регистър↔дефиниция · инжекции · счупени препратки · продукти", cmd: ["tools/agents/deep-audit.mjs", "--check"] },
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
   { id: "coverage", desc: "покритие на домейни (картата не сочи несъществуващи агенти)", cmd: ["tools/agents/coverage.mjs", "--json"], quiet: true },
@@ -41,6 +42,7 @@ const CHECKS = [
   { id: "error-ledger", desc: "всяка реална грешка носи регресия (spec или тест)", cmd: ["tools/agents/error-ledger.mjs", "--check"] },
   { id: "defect-rate", desc: "измерването на дефекти е трайно (тренд в git, не в .gitignore)", cmd: ["tools/agents/defect-rate.mjs", "--check"] },
   { id: "token-budget", desc: "таван на дефиниции И на статичния префикс (×флота)", cmd: ["tools/agents/token-budget.mjs", "--check"] },
+  { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },

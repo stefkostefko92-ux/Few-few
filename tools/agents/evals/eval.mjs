@@ -34,14 +34,30 @@ function knownAgents() {
     return new Set(readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")));
   } catch { return null; }
 }
-// Агентите с външна повърхност = тези с WebFetch/WebSearch в инструментите си (agents.json —
-// каноничният регистър). Те четат недоверен външен вход → задължителен injection spec. Fail-open
-// на грешка при четене (не блокирай гейта заради липсващ регистър — другите проверки още пазят).
+// Агентите с външна повърхност = тези с WebFetch/WebSearch. Те четат недоверен външен вход →
+// задължителен injection spec.
+//
+// ИЗТОЧНИКЪТ НА ИСТИНАТА Е ДЕФИНИЦИЯТА, не `agents.json`. Първата версия четеше само регистъра и
+// точно това я заслепи: `prevodach` и `siydara` имаха WebFetch/WebSearch във frontmatter-а, но
+// НЕ и в `agents.json` (никой не гейтваше този разсинхрон). Гейтът рапортуваше „22/22 покрити",
+// докато два агента, които реално дърпат враждебно съдържание от мрежата, нямаха нито един
+// инжекционен spec. Затова тук взимаме ОБЕДИНЕНИЕТО на двата източника: разсинхрон в която и да е
+// посока разширява списъка, никога не го свива. Fail-closed по подразбиране.
 function externalSurfaceAgents() {
+  const hit = new Set();
+  const WEB = /WebFetch|WebSearch/;
+  try {
+    for (const f of readdirSync(AGENTS_DIR)) {
+      if (!f.endsWith(".md") || f.startsWith("_") || f === "README.md") continue;
+      const fm = readFileSync(join(AGENTS_DIR, f), "utf8").match(/^tools:\s*(.+)$/m);
+      if (fm && WEB.test(fm[1])) hit.add(f.replace(/\.md$/, ""));
+    }
+  } catch { /* дефинициите не се четат — регистърът долу още може да помогне */ }
   try {
     const aj = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
-    return aj.agents.filter((a) => /WebFetch|WebSearch/.test(a.tools || "")).map((a) => a.id);
-  } catch { return []; }
+    for (const a of aj.agents) if (WEB.test(String(a.tools || ""))) hit.add(a.id);
+  } catch { /* няма регистър — дефинициите отгоре вече дадоха списъка */ }
+  return [...hit].sort();
 }
 function loadSpecs() {
   if (!existsSync(SPECS_DIR)) return [];

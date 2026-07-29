@@ -117,6 +117,22 @@ for (const id of allIds) {
     if (fm && jrec.model && fm !== jrec.model) r.hard.push(`модел разсинхрон: frontmatter=${fm} ≠ agents.json=${jrec.model}`);
     if (!fe) r.hard.push("липсва effort във frontmatter (рутинг на усилие)");
     else if (jrec.effort && fe !== jrec.effort) r.hard.push(`усилие разсинхрон: frontmatter=${fe} ≠ agents.json=${jrec.effort}`);
+
+    // Синхрон на ИНСТРУМЕНТИТЕ. Дълго беше негейтван и точно това обезсили инжекционния гейт:
+    // `prevodach` и `siydara` имаха WebFetch/WebSearch в дефиницията, но не и в `agents.json`,
+    // затова проверката за injection покритие ги смяташе за агенти без външна повърхност и
+    // рапортуваше „всички покрити". Разсинхронът в набора инструменти не е козметика — той мени
+    // кой се смята за изложен на недоверено съдържание.
+    const ft = (md.match(/^tools:\s*(.+)$/m) || [])[1];
+    if (ft) {
+      const defTools = ft.split(",").map((s) => s.trim()).filter(Boolean).sort();
+      const jsonTools = (Array.isArray(jrec.tools) ? jrec.tools : []).map((s) => String(s).trim()).filter(Boolean).sort();
+      if (jsonTools.length && defTools.join(",") !== jsonTools.join(",")) {
+        const onlyDef = defTools.filter((t) => !jsonTools.includes(t));
+        const onlyJson = jsonTools.filter((t) => !defTools.includes(t));
+        r.hard.push(`инструменти разсинхрон: само в дефиниция [${onlyDef.join(", ") || "—"}] · само в agents.json [${onlyJson.join(", ") || "—"}]`);
+      }
+    }
   }
 
   if (hasMem) {
