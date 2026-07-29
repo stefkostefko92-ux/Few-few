@@ -1,7 +1,12 @@
 // critique.test.mjs — node:test за контура критика → рутинг (гл.16).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { critiqueAgent, memoryDiscipline, critiqueAll } from "./critique.mjs";
+
+const REGISTRY = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "agents-dashboard", "agents.json");
 
 const disc = (verified, quarantine) => ({ verified, quarantine, ratio: (verified + quarantine) ? quarantine / (verified + quarantine) : 0 });
 
@@ -59,7 +64,11 @@ test("безопасно-критичен (opus/high) НИКОГА не се п�
 
 test("critiqueAll покрива целия реален флот и дава валидни ръчки", () => {
   const rows = critiqueAll();
-  assert.equal(rows.length, 27);
+  // Твърдението е ПОКРИТИЕ (никой агент не остава без критика), не „флотът е с размер N".
+  // Числото 27 стоеше тук закотвено и падна при 28-ия агент, макар нищо да не се беше счупило —
+  // тест, който мери снимка вместо инвариант, произвежда фалшива тревога при всяко израстване.
+  const roster = new Set(JSON.parse(readFileSync(REGISTRY, "utf8")).agents.map((a) => a.id));
+  assert.deepEqual(new Set(rows.map((r) => r.id)), roster, "критиката пропуска агент от регистъра");
   const valid = new Set(["escalate", "hold", "hold-max", "deescalate-candidate"]);
   for (const r of rows) assert.ok(valid.has(r.nudge), `${r.id}: невалидна ръчка ${r.nudge}`);
 });

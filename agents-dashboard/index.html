@@ -168,7 +168,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-28",
+    "updated": "2026-07-29",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -4107,6 +4107,65 @@ const FALLBACK = {
           "source": "https://webvitals.tools/blog/google-core-web-vitals-update-2026/"
         }
       ]
+    },
+    {
+      "id": "skorostnika",
+      "name": "Скоростника",
+      "title": "Предпусков одит на производителността (Lighthouse-съвместим)",
+      "emoji": "⚡",
+      "accent": "#facc15",
+      "tagline": "Дава числата на PageSpeed, преди сайтът да е жив.",
+      "file": ".claude/agents/skorostnika.md",
+      "model": "sonnet",
+      "effort": "medium",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Мери реалните лабораторни метрики (FCP · LCP · TBT · CLS) в истински Chromium срещу локален билд и смята Lighthouse-съвместима оценка 0–100 по същите log-normal криви — ПРЕДИ деплой, когато поправката още е евтина. Връща конкретно какво пречи на 100, подредено по въздействие.",
+      "capabilities": [
+        "Lighthouse v10 криви: p10→90, медиана→50 (erfc, log-normal)",
+        "Тегла FCP 10 · LCP 25 · TBT 30 · CLS 25 (SI не се мери → пренормиране)",
+        "Chromium + CDP throttle: 4× CPU, ~Slow 4G (mobile профил)",
+        "Медиана от N рана + докладван спред (единично число = шум)",
+        "Зависим статичен сървър с нула зависимости (папка или URL)",
+        "Приоритизирани съвети: render-blocking · размери на изображения · компресия · дълги задачи · font-display",
+        "Сверка след деплой с реалния PSI/CrUX (tools/seo/cwv.mjs)",
+        "Инструмент: tools/seo/prelaunch-audit.mjs"
+      ],
+      "knowledge": {
+        "sources": 6,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Lighthouse scoring (GoogleChrome/lighthouse · docs/scoring.md) — криви и тегла",
+          "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
+          "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
+        ],
+        "lessons": 0
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-29",
+          "event": "Раждане",
+          "detail": "PageSpeed Insights дърпа URL-а от сървърите на Google — непубликуван сайт е недостъпен ПО УСТРОЙСТВО, не заради ключ. Затова лабораторната половина (Lighthouse = Chromium + измервания) се възпроизвежда локално: tools/seo/prelaunch-audit.mjs."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "birth",
+          "summary": "Създаден заедно с tools/seo/prelaunch-audit.mjs; първо измерване: kebab/ = 75/100 (медиана от 3 рана, спред LCP ±120 ms · TBT ±150 ms)."
+        }
+      ],
+      "recentLessons": []
     },
     {
       "id": "prevodach",
