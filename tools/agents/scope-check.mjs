@@ -42,13 +42,43 @@ function gitFiles(args) {
   catch (e) { console.error(`git diff провал: ${e.message}`); process.exit(2); }
 }
 
+const gitOk = (cmd) => { try { execSync(cmd, { stdio: "ignore" }); return true; } catch { return false; } };
+
+/**
+ * Кой diff да съдим по подразбиране.
+ *
+ * ДЕФЕКТЪТ, който това затваря: по подразбиране инструментът правеше `git diff HEAD` — тоест само
+ * НЕКОМИТНАТИТЕ промени — докато CI пуска `--range origin/<base>...HEAD`, тоест ЦЕЛИЯ PR. След
+ * комит локалният ран нямаше какво да види и весело обявяваше „само инфраструктура", а CI за същия
+ * клон валеше нарушение. Гейт, който отговаря различно на двете места, е по-лош от липсващ — точно
+ * на този фалшив зелен се доверих и сгреших (2026-07-29, PR #147).
+ *
+ * Сега по подразбиране се съди СЪЩОТО като в CI. Ако няма база (плитък клон, откачена глава),
+ * падаме назад и КАЗВАМЕ на какво сме паднали — режимът никога не се избира мълчаливо.
+ */
+export function defaultRange() {
+  for (const base of ["origin/main", "origin/master", "main", "master"]) {
+    if (gitOk(`git rev-parse --verify --quiet ${base}`) && gitOk(`git merge-base ${base} HEAD`))
+      return { mode: "range", args: `${base}...HEAD`, label: `клонът спрямо ${base} (както в CI)` };
+  }
+  return { mode: "worktree", args: "HEAD", label: "САМО некомитнатите промени (няма база за сравнение!)" };
+}
+
 function runCli() {
   const argv = process.argv.slice(2);
-  let files;
-  if (argv.includes("--staged")) files = gitFiles("--cached");
-  else if (argv.includes("--range")) files = gitFiles(argv[argv.indexOf("--range") + 1] || "origin/main..HEAD");
-  else if (argv.length) files = argv.filter((a) => !a.startsWith("--"));
-  else files = gitFiles("HEAD");
+  let files, label;
+  if (argv.includes("--staged")) { files = gitFiles("--cached"); label = "staged файловете"; }
+  else if (argv.includes("--range")) {
+    const rng = argv[argv.indexOf("--range") + 1] || "origin/main...HEAD";
+    files = gitFiles(rng); label = `диапазон ${rng}`;
+  } else if (argv.filter((a) => !a.startsWith("--")).length) {
+    files = argv.filter((a) => !a.startsWith("--")); label = `${files.length} подадени файла`;
+  } else {
+    const d = defaultRange();
+    files = gitFiles(d.args); label = d.label;
+  }
+  // Винаги казвай КАКВО си мерил. Мълчаливият избор на режим е причината този гейт да подведе.
+  console.log(`\x1b[90mscope-check съди: ${label} · ${files.length} файла\x1b[0m`);
   const r = checkScope(files);
   if (r.ok) { console.log(`✓ scope-check: ${r.products.length ? `един продукт (${r.products[0]})` : "само инфраструктура"} — законът „one project per change" е спазен.`); process.exit(0); }
   console.log(`✗ scope-check: промяната пипа ${r.products.length} продукта: ${r.products.join(", ")}`);
