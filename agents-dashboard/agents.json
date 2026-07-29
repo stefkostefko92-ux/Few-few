@@ -13203,7 +13203,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 149
+        "lessons": 152
       },
       "evolution": [
         {
@@ -13241,9 +13241,20 @@
           "date": "2026-07-28",
           "event": "v14.9 — учене",
           "detail": "Научи: Playwright: `waitForLoadState('networkidle')`/`page.goto({waitUntil:'networkidle'})` е … (+10 още)"
+        },
+        {
+          "version": "15.2.0",
+          "date": "2026-07-29",
+          "event": "v15.2 — учене",
+          "detail": "Научи: vps-adjiyata.md дефиницията (Двата модела на разгръщане) документира само zabobovdol+me… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „vps-adjiyata.md дефиницията (Двата модела на разгръщане) документира само zabobovdol+me…\" (+2 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
