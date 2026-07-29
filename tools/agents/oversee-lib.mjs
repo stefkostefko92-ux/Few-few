@@ -22,6 +22,67 @@ export const jaccard = (a, b) => {
   return i / (A.size + B.size - i);
 };
 
+// Jaccard над ВЕЧЕ токенизирани множества — за горещи цикли, където токенизацията се преизползва.
+// `jaccard` отгоре токенизира ДВАТА низа при всяко извикване; при попарно сравнение на хиляди
+// поуки това е доминиращата цена (3559 поуки ⇒ ~6.3M токенизации).
+export const jaccardSets = (A, B) => {
+  if (!A.size || !B.size) return 0;
+  // Итерирай по по-малкото множество — по-малко проверки, същият резултат.
+  const [S, L] = A.size <= B.size ? [A, B] : [B, A];
+  let i = 0; for (const x of S) if (L.has(x)) i++;
+  return i / (A.size + B.size - i);
+};
+
+// Гриди single-pass клъстеризация по Jaccard спрямо ПРЕДСТАВИТЕЛЯ на клъстера — същата семантика
+// като наивния двоен цикъл (първият съвпаднал по ред на създаване печели), но без O(n²) сравнения.
+//
+// Два филтъра отсяват невъзможните двойки, ПРЕДИ да смятаме Jaccard (точен резултат, не евристика):
+//   • граница по припокриване — от J = i/(|A|+|B|-i) ≥ t следва i ≥ t·(|A|+|B|)/(1+t) ≥ t·|A|,
+//     значи двойка с по-малко от ⌈t·|A|⌉ общи токена НЕ МОЖЕ да мине прага;
+//   • префиксен филтър — при нужни ≥ i_min общи токена, поне един от (|A| − i_min + 1) НАЙ-РЕДКИТЕ
+//     токена на A задължително присъства в B (принцип на чекмеджетата). Индексираме само тях.
+// Редкостта е по глобална честота, изчислена веднъж → детерминистично подреждане.
+export function clusterByJaccard(texts, threshold = MERGE_THRESHOLD) {
+  const sets = texts.map((t) => toks(t));
+  const df = new Map(); // честота на токен през всички поуки — определя „най-редките"
+  for (const S of sets) for (const w of S) df.set(w, (df.get(w) || 0) + 1);
+  const prefixOf = (S) => {
+    const sorted = [...S].sort((a, b) => (df.get(a) - df.get(b)) || (a < b ? -1 : 1));
+    const iMin = Math.ceil(threshold * S.size);
+    return sorted.slice(0, Math.max(1, S.size - iMin + 1));
+  };
+
+  const clusters = [];               // { rep, repSet, members: number[] }
+  const index = new Map();           // токен → индекси на клъстери, чийто префикс го съдържа
+  const counts = new Map();          // преизползван брояч (без ново заделяне на всяка итерация)
+
+  for (let i = 0; i < texts.length; i++) {
+    const S = sets[i];
+    let hit = -1;
+    if (S.size) {
+      counts.clear();
+      for (const w of prefixOf(S)) {
+        const posting = index.get(w);
+        if (!posting) continue;
+        for (const c of posting) counts.set(c, (counts.get(c) || 0) + 1);
+      }
+      // Кандидатите се проверяват ТОЧНО, и печели най-ранният по ред на създаване — както наивният цикъл.
+      for (const [c] of counts) {
+        if (hit >= 0 && c > hit) continue;
+        if (jaccardSets(clusters[c].repSet, S) >= threshold) hit = hit < 0 ? c : Math.min(hit, c);
+      }
+    }
+    if (hit >= 0) { clusters[hit].members.push(i); continue; }
+    const idx = clusters.length;
+    clusters.push({ rep: texts[i], repSet: S, members: [i] });
+    for (const w of prefixOf(S)) {
+      if (!index.has(w)) index.set(w, []);
+      index.get(w).push(idx);
+    }
+  }
+  return clusters.map((c) => ({ rep: c.rep, members: c.members }));
+}
+
 export const lessonDate = (b) => { const m = String(b).match(/\*\*(\d{4}-\d{2}-\d{2})/); return m ? m[1] : null; };
 
 // Дни между дата на поука и „днес" (подава се отвън → детерминистично в тестове, без Date.now).

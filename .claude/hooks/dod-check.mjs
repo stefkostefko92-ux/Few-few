@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
+import { validateHandoff, knownAgentIds } from "../../tools/agents/handoff.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -54,6 +55,35 @@ export function bashWrites(bashCmds) {
   return out;
 }
 
+// Последният текст на асистента в транскрипта = отговорът, с който агентът приключва. Той трябва да
+// носи блока „ПРЕДАВАНЕ". Обхождаме JSONL-а отзад-напред и вземаме първия непразен assistant текст.
+export function lastAssistantText(jsonl) {
+  const lines = String(jsonl).split("\n").filter((l) => l.trim());
+  for (let i = lines.length - 1; i >= 0; i--) {
+    let o; try { o = JSON.parse(lines[i]); } catch { continue; }
+    const msg = o.message || o;
+    if (msg.role !== "assistant") continue;
+    const c = msg.content;
+    const txt = typeof c === "string" ? c
+      : Array.isArray(c) ? c.filter((b) => b && b.type === "text").map((b) => b.text).join("\n")
+      : "";
+    if (txt.trim()) return txt;
+  }
+  return "";
+}
+
+// Договорът за колаборация (блокът ПРЕДАВАНЕ) — доктрината го изисква от ВСЕКИ агент, но досега
+// нищо не го проверяваше: агент можеше да завърши със свободен текст и веригата тихо се късаше.
+export function checkHandoffViolation(finalText, agentIds) {
+  if (!String(finalText || "").trim()) return null; // няма изход за съдене → не заклещвай агента
+  const r = validateHandoff(finalText, { agentIds });
+  if (r.ok) return null;
+  return {
+    files: ["(край на отговора)"],
+    gate: `договорът ПРЕДАВАНЕ е нарушен — ${r.problems.map((p) => `[${p.field}] ${p.msg}`).join(" · ")}`,
+  };
+}
+
 // Чиста логика — тестваема: {violations:[{file, gate}]}. `root` за релативизиране на абсолютни пътища (F1).
 export function checkDoD(uses, root) {
   const bashCmds = uses.filter((u) => u.name === "Bash").map((u) => String(u.input.command || ""));
@@ -81,6 +111,8 @@ function main() {
   let jsonl = "";
   try { jsonl = readFileSync(tPath, "utf8"); } catch { process.exit(0); }
   const violations = checkDoD(collectToolUses(jsonl), ROOT);
+  const hv = checkHandoffViolation(lastAssistantText(jsonl), knownAgentIds(join(ROOT, ".claude", "agents")));
+  if (hv) violations.push(hv);
   if (!violations.length) process.exit(0);
   const msg = violations.map((v) => `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`).join("\n");
   if (payload.stop_hook_active) { console.log(`⚠ dod-check (advisory, без повторно връщане): ${msg}`); process.exit(0); }

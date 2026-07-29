@@ -14,7 +14,7 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { jaccard, sectionBullets, MERGE_THRESHOLD } from "./oversee-lib.mjs";
+import { jaccardSets, toks, sectionBullets, clusterByJaccard, MERGE_THRESHOLD } from "./oversee-lib.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = join(ROOT, ".claude", "agents", "_memory");
@@ -29,7 +29,8 @@ const ids = readdirSync(MEM_DIR).filter((f) => f.endsWith(".md") && !NOT_AGENT.h
 
 // Вече в _shared? Не го предлагай пак.
 const sharedBullets = existsSync(join(MEM_DIR, "_shared.md")) ? sectionBullets(readFileSync(join(MEM_DIR, "_shared.md"), "utf8"), "Споделени поуки") : [];
-const alreadyShared = (b) => sharedBullets.some((s) => jaccard(s, b) >= CLUSTER_SIM);
+const sharedSets = sharedBullets.map((s) => toks(s)); // токенизирай веднъж, не на всяка проверка
+const alreadyShared = (b) => { const B = toks(b); return sharedSets.some((s) => jaccardSets(s, B) >= CLUSTER_SIM); };
 
 // Събери всички лични поуки с техния собственик.
 const items = [];
@@ -38,14 +39,12 @@ for (const id of ids) {
   for (const b of sectionBullets(readFileSync(f, "utf8"), "Проверени поуки")) items.push({ id, b });
 }
 
-// Клъстеризирай близките поуки (прост single-pass съюз по Jaccard≥CLUSTER_SIM).
-const clusters = [];
-for (const it of items) {
-  let hit = null;
-  for (const c of clusters) if (jaccard(c.rep, it.b) >= CLUSTER_SIM) { hit = c; break; }
-  if (hit) { hit.members.push(it); hit.agents.add(it.id); }
-  else clusters.push({ rep: it.b, members: [it], agents: new Set([it.id]) });
-}
+// Клъстеризирай близките поуки (single-pass съюз по Jaccard≥CLUSTER_SIM спрямо представителя).
+// Индексирано, не попарно: наивният двоен цикъл тичаше ~250 СЕКУНДИ върху 3559 поуки и това се
+// плащаше в CI при всеки agents-layer PR — за изход „няма кандидати". Семантиката е идентична
+// (доказано в cluster.test.mjs срещу референтната имплементация).
+const clusters = clusterByJaccard(items.map((it) => it.b), CLUSTER_SIM)
+  .map((c) => ({ rep: c.rep, agents: new Set(c.members.map((i) => items[i].id)) }));
 
 // Кандидат = клъстер, покрит от ≥MIN РАЗЛИЧНИ агента и още не е в _shared.
 const candidates = clusters
