@@ -40,6 +40,10 @@ public struct NotificationPlanner: Sendable {
     public var limit: Int
     /// Колко задействания се насрочват поединично за още незапочнало повторение.
     public var leadOccurrences: Int
+    /// Колко задействания напред покрива поредицата за правило без нативен тригер.
+    public var seriesOccurrences: Int
+    /// След колко време важното напомняне пита пак, ако не е потвърдено.
+    public var nudgeOffsets: [TimeInterval]
     /// Какво пише в известието, ако записката е без заглавие. Подава се отвън,
     /// защото е преведен низ, а ядрото няма език.
     public var fallbackTitle: String
@@ -48,11 +52,15 @@ public struct NotificationPlanner: Sendable {
         calendar: Calendar = .autoupdatingCurrent,
         limit: Int = 56,
         leadOccurrences: Int = 4,
+        seriesOccurrences: Int = 8,
+        nudgeOffsets: [TimeInterval] = [10 * 60, 25 * 60],
         fallbackTitle: String = "Reminder"
     ) {
         self.calendar = calendar
         self.limit = min(limit, Self.iOSPendingLimit)
         self.leadOccurrences = max(1, leadOccurrences)
+        self.seriesOccurrences = max(1, seriesOccurrences)
+        self.nudgeOffsets = nudgeOffsets.filter { $0 > 0 }
         self.fallbackTitle = fallbackTitle
     }
 
@@ -143,16 +151,24 @@ public struct NotificationPlanner: Sendable {
 
         guard let next = calculator.patternOccurrence(of: reminder, after: now) else { return items }
 
-        // Още незапочнало повторение → поединични заявки, докато приложението
-        // се отвори и планът мине на повтарящ се тригер.
-        if reminder.repeatRule.isRepeating && reminder.fireDate > now {
-            let dates = calculator.patternOccurrences(of: reminder, after: now, limit: leadOccurrences)
+        // Две положения искат поредица от отделни заявки вместо повтарящ се тригер:
+        //  · повторението още не е започнало (тригерът би се задействал преди началото);
+        //  · правилото няма нативен тригер („на всеки 3 дни“, „последния работен ден“) —
+        //    те не са постоянен набор календарни компоненти.
+        // Поредицата се допълва при всяко отваряне на приложението.
+        let needsSeries =
+            reminder.repeatRule.isRepeating
+            && (reminder.fireDate > now || !reminder.repeatRule.hasNativeTrigger)
+        if needsSeries {
+            let count = reminder.repeatRule.hasNativeTrigger ? leadOccurrences : seriesOccurrences
+            let dates = calculator.patternOccurrences(of: reminder, after: now, limit: count)
             items.append(
                 contentsOf: dates.enumerated().map { index, date in
                     make(
                         reminder, id: "lead\(index)", fireDate: date, components: exactComponents(date), repeats: false)
                 }
             )
+            items.append(contentsOf: nudges(for: reminder, firing: next))
             return items
         }
 
@@ -201,9 +217,34 @@ public struct NotificationPlanner: Sendable {
             components.day = calendar.component(.day, from: reminder.fireDate)
             components.month = calendar.component(.month, from: reminder.fireDate)
             items.append(make(reminder, id: "yearly", fireDate: next, components: components, repeats: true))
+
+        case .everyNDays, .everyNWeeks, .lastWorkdayOfMonth:
+            // Обработени по-горе (нямат нативен тригер) — тук не се стига.
+            break
         }
 
+        items.append(contentsOf: nudges(for: reminder, firing: next))
         return items
+    }
+
+    /// „Настойчивите“ повторни известия след основното.
+    ///
+    /// Само за важните: ако не потвърдиш, телефонът пита пак след 10 и 25 минути.
+    /// Планират се за **следващото** задействане; щом натиснеш „Готово“, планът
+    /// се пресинхронизира и заявките за отминалото задействане изчезват сами
+    /// (новият план вече не ги съдържа).
+    private func nudges(for reminder: ReminderSnapshot, firing next: Date) -> [PlannedNotification] {
+        guard reminder.isImportant else { return [] }
+        return nudgeOffsets.enumerated().compactMap { index, offset in
+            let date = next.addingTimeInterval(offset)
+            return make(
+                reminder,
+                id: "nudge\(index)",
+                fireDate: date,
+                components: exactComponents(date),
+                repeats: false
+            )
+        }
     }
 
     private func make(

@@ -68,6 +68,15 @@ public struct OccurrenceCalculator: Sendable {
             components.day = calendar.component(.day, from: reminder.fireDate)
             components.month = calendar.component(.month, from: reminder.fireDate)
             return next(after: date, matching: components, policy: .strict)
+
+        case .everyNDays:
+            return nextStep(of: reminder, after: date, unit: .day, step: reminder.interval)
+
+        case .everyNWeeks:
+            return nextStep(of: reminder, after: date, unit: .weekOfYear, step: reminder.interval)
+
+        case .lastWorkdayOfMonth:
+            return nextLastWorkday(of: reminder, after: date)
         }
     }
 
@@ -128,6 +137,63 @@ public struct OccurrenceCalculator: Sendable {
             direction: .forward
         )
     }
+
+    /// „На всеки N дни/седмици“ се брои от началната дата, а не от „сега“ —
+    /// иначе стъпката се разминава след всяко отваряне на приложението.
+    private func nextStep(
+        of reminder: ReminderSnapshot,
+        after date: Date,
+        unit: Calendar.Component,
+        step: Int
+    ) -> Date? {
+        let step = RepeatRule.clampInterval(step)
+        var candidate = reminder.fireDate
+        // Скачаме на цели стъпки, докато подминем `date`. Таванът пази от
+        // безкраен цикъл, ако календарът върне същата дата.
+        for _ in 0..<Self.maxSteps {
+            if candidate > date { return candidate }
+            guard let next = calendar.date(byAdding: unit, value: step, to: candidate), next > candidate
+            else { return nil }
+            candidate = next
+        }
+        return nil
+    }
+
+    /// Последният делник (пн–пт) от месеца на `date` или от следващите месеци.
+    private func nextLastWorkday(of reminder: ReminderSnapshot, after date: Date) -> Date? {
+        let time = timeComponents(of: reminder.fireDate)
+        var month = calendar.dateComponents([.year, .month], from: date)
+        for _ in 0..<Self.maxMonths {
+            guard
+                let start = calendar.date(from: month),
+                let range = calendar.range(of: .day, in: .month, for: start)
+            else { return nil }
+
+            // Тръгваме от последния ден назад, докато стигнем делник.
+            for day in stride(from: range.upperBound - 1, through: range.lowerBound, by: -1) {
+                var components = month
+                components.day = day
+                components.hour = time.hour
+                components.minute = time.minute
+                guard let candidate = calendar.date(from: components) else { continue }
+                let weekday = calendar.component(.weekday, from: candidate)
+                guard Self.weekdayNumbers.contains(weekday) else { continue }
+                if candidate > date { return candidate }
+                break  // намереният делник е минал → следващият месец
+            }
+
+            guard
+                let start = calendar.date(from: month),
+                let nextMonth = calendar.date(byAdding: .month, value: 1, to: start)
+            else { return nil }
+            month = calendar.dateComponents([.year, .month], from: nextMonth)
+        }
+        return nil
+    }
+
+    /// Тавани срещу безкраен цикъл при странен календар.
+    static let maxSteps = 4000
+    static let maxMonths = 24
 
     private func nextWeekday(after date: Date, time: DateComponents) -> Date? {
         var cursor = date

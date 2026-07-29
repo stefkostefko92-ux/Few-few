@@ -13,6 +13,13 @@ public struct ReminderSnapshot: Identifiable, Hashable, Sendable {
     /// е и „началото“ — по-ранни задействания няма.
     public var fireDate: Date
     public var repeatRule: RepeatRule
+    /// Броят за „на всеки N дни/седмици“. Игнорира се от другите правила.
+    ///
+    /// Ограничава се при **всяко** присвояване, не само в init-а: „на всеки 0 дни“
+    /// би завъртяло сметката за следващото задействане в безкраен цикъл.
+    public var interval: Int {
+        didSet { interval = RepeatRule.clampInterval(interval) }
+    }
     /// Приключено — не се насрочва повече.
     public var isDone: Bool
     /// Важно → известието се доставя като „чувствително към времето“ (пробива
@@ -28,6 +35,7 @@ public struct ReminderSnapshot: Identifiable, Hashable, Sendable {
         note: String = "",
         fireDate: Date,
         repeatRule: RepeatRule = .once,
+        interval: Int = 1,
         isDone: Bool = false,
         isImportant: Bool = false,
         snoozedUntil: Date? = nil
@@ -37,6 +45,7 @@ public struct ReminderSnapshot: Identifiable, Hashable, Sendable {
         self.note = note
         self.fireDate = fireDate
         self.repeatRule = repeatRule
+        self.interval = RepeatRule.clampInterval(interval)
         self.isDone = isDone
         self.isImportant = isImportant
         self.snoozedUntil = snoozedUntil

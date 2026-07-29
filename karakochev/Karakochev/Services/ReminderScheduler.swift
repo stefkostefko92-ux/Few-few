@@ -37,15 +37,23 @@ final class ReminderScheduler {
         planner: NotificationPlanner = NotificationPlanner(
             fallbackTitle: String(localized: "notification.fallbackTitle")
         ),
-        isTemporaryStore: Bool = false
+        isTemporaryStore: Bool = false,
+        registerAsActionHandler: Bool = true
     ) {
         self.context = context
         self.service = service
         self.planner = planner
         self.isTemporaryStore = isTemporaryStore
         service.start()
-        service.onAction = { [weak self] action in
-            await self?.handle(action)
+        // `NotificationService.shared` е синглтон за целия процес. Временна
+        // инстанция (напр. в App Intent, който се изпълнява ДОКАТО приложението
+        // е отворено) не бива да поема действията от известията: тя умира с
+        // `perform()`, а живият scheduler остава без делегат и бутоните
+        // „Готово“/„Отложи“ спират тихо да работят до следващо студено пускане.
+        if registerAsActionHandler {
+            service.onAction = { [weak self] action in
+                await self?.handle(action)
+            }
         }
     }
 
@@ -160,6 +168,56 @@ final class ReminderScheduler {
     func commitEdit(_ reminder: Reminder? = nil) {
         if let reminder { clearHighlight(reminder.id) }
         saveAndResync()
+    }
+
+    // MARK: - Бързо добавяне, износ и внос
+
+    /// Създава записка от свободен текст („плащане на ток вторник в 8“).
+    ///
+    /// Връща записа, за да може UI-ът да покаже какво е разбрал; `nil`, ако
+    /// след изваждането на времевата част не е останало заглавие.
+    @discardableResult
+    func addFromText(_ text: String, now: Date = Date()) -> Reminder? {
+        let parser = ReminderTextParser(
+            language: ReminderTextParser.Language(code: Locale.current.language.languageCode?.identifier)
+        )
+        let parsed = parser.parse(text, now: now)
+        let title = parsed.title.isEmpty ? text.trimmingCharacters(in: .whitespacesAndNewlines) : parsed.title
+        guard !title.isEmpty else { return nil }
+
+        let reminder = Reminder(
+            title: title,
+            fireDate: parsed.date ?? ReminderDefaults.suggestedDate(now: now),
+            repeatRule: parsed.repeatRule ?? .once,
+            interval: parsed.interval
+        )
+        add(reminder)
+        return reminder
+    }
+
+    /// Всички записки като архив за изнасяне.
+    func exportArchive(now: Date = Date()) -> Data? {
+        guard let reminders = fetchAll() else { return nil }
+        return try? ReminderArchiveCoder.encode(reminders.map(\.snapshot), exportedAt: now)
+    }
+
+    /// Внася архив. Връща колко записа са добавени; хвърля при нечетим файл.
+    ///
+    /// Вносът **само добавя** — не трие и не презаписва. Стар архив не може да
+    /// изтрие записка, направена след него.
+    @discardableResult
+    func importArchive(_ data: Data) throws -> Int {
+        let imported = try ReminderArchiveCoder.decode(data)
+        let existing = fetchAll() ?? []
+        let fresh = ReminderArchiveCoder.newReminders(
+            from: imported,
+            existing: existing.map(\.snapshot)
+        )
+        for snapshot in fresh {
+            context.insert(Reminder(archived: snapshot))
+        }
+        saveAndResync()
+        return fresh.count
     }
 
     func clearDeliveredNotifications() {

@@ -43,7 +43,7 @@ struct ReminderRow: View {
                         // 4.5:1 контраст при дребен шрифт (WCAG 1.4.3).
                         .foregroundStyle(isOverdue ? Color("OverdueColor") : Color.secondary)
                     if snapshot.repeatRule.isRepeating {
-                        Text(snapshot.repeatRule.localizedShortTitle)
+                        Text(snapshot.repeatRule.localizedShortTitle(interval: snapshot.interval))
                             .font(.caption2)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)

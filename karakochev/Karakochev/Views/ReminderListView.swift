@@ -1,6 +1,7 @@
 import SwiftData
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 /// Началният екран: всички записки, подредени по раздели.
 struct ReminderListView: View {
@@ -9,6 +10,11 @@ struct ReminderListView: View {
 
     @State private var searchText = ""
     @State private var editorMode: ReminderEditorView.Mode?
+    @State private var exportDocument: ArchiveDocument?
+    @State private var isExporting = false
+    @State private var isImporting = false
+    @State private var showImportResult = false
+    @State private var importMessage = ""
 
     private let grouping = ReminderGrouping()
     private let dateLabel = ReminderDateLabel()
@@ -30,6 +36,10 @@ struct ReminderListView: View {
                         skipped: scheduler.skippedReminders,
                         reduced: scheduler.reducedReminders
                     )
+                }
+
+                Section {
+                    QuickAddField()
                 }
 
                 ForEach(groups) { group in
@@ -68,6 +78,22 @@ struct ReminderListView: View {
                         Label("action.newReminder", systemImage: "plus")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Button {
+                            startExport()
+                        } label: {
+                            Label("action.export", systemImage: "square.and.arrow.up")
+                        }
+                        Button {
+                            isImporting = true
+                        } label: {
+                            Label("action.import", systemImage: "square.and.arrow.down")
+                        }
+                    } label: {
+                        Label("action.more", systemImage: "ellipsis.circle")
+                    }
+                }
                 ToolbarItem(placement: .status) {
                     if scheduler.isAuthorized {
                         Text("list.scheduled \(scheduler.scheduledCount)")
@@ -78,6 +104,25 @@ struct ReminderListView: View {
             }
             .sheet(item: $editorMode) { mode in
                 ReminderEditorView(mode: mode)
+            }
+            .fileExporter(
+                isPresented: $isExporting,
+                document: exportDocument,
+                contentType: .json,
+                defaultFilename: ReminderArchiveCoder.fileName(for: Date())
+            ) { result in
+                if case .failure = result {
+                    importMessage = String(localized: "export.failed")
+                    showImportResult = true
+                }
+            }
+            .fileImporter(isPresented: $isImporting, allowedContentTypes: [.json]) { result in
+                importArchive(result)
+            }
+            .alert("import.result", isPresented: $showImportResult) {
+                Button("banner.saveError.dismiss", role: .cancel) {}
+            } message: {
+                Text(importMessage)
             }
         }
     }
@@ -155,6 +200,62 @@ struct ReminderListView: View {
 
     private func model(for id: UUID) -> Reminder? {
         reminders.first { $0.id == id }
+    }
+
+    // MARK: - Износ и внос
+
+    /// Един тап → системният диалог за запис на файл (Files, iCloud Drive).
+    private func startExport() {
+        guard let data = scheduler.exportArchive() else {
+            importMessage = String(localized: "export.failed")
+            showImportResult = true
+            return
+        }
+        exportDocument = ArchiveDocument(data: data)
+        isExporting = true
+    }
+
+    private func importArchive(_ result: Result<URL, Error>) {
+        guard case .success(let url) = result else {
+            importMessage = String(localized: "import.failed")
+            showImportResult = true
+            return
+        }
+        // Файлът идва отвън (Files, iCloud Drive) → нужен е обхватен достъп.
+        let opened = url.startAccessingSecurityScopedResource()
+        defer { if opened { url.stopAccessingSecurityScopedResource() } }
+
+        do {
+            let count = try scheduler.importArchive(Data(contentsOf: url))
+            importMessage = String(localized: "import.added \(count)")
+        } catch ReminderArchiveCoder.ImportError.tooNew {
+            importMessage = String(localized: "import.tooNew")
+        } catch {
+            importMessage = String(localized: "import.failed")
+        }
+        showImportResult = true
+    }
+}
+
+/// Архивът като документ — `fileExporter` иска `FileDocument`, не сурови данни.
+private struct ArchiveDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+
+    var data: Data
+
+    init(data: Data) {
+        self.data = data
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let contents = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        data = contents
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }
 

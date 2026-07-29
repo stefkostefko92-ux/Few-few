@@ -11,9 +11,25 @@ extension RepeatRule {
         String(localized: String.LocalizationValue(localizationKey))
     }
 
-    /// Късият етикет в реда на списъка („дневно“). Еднократното няма етикет.
-    var localizedShortTitle: String {
-        isRepeating ? String(localized: String.LocalizationValue(shortLocalizationKey)) : ""
+    /// Заглавие с броя за правилата, които го ползват („на всеки 3 дни“).
+    /// Числото минава през каталога, за да има вярна форма за единствено число.
+    func localizedTitle(interval: Int) -> String {
+        guard usesInterval else { return localizedTitle }
+        switch self {
+        case .everyNDays: return String(localized: "repeat.everyNDays.count \(interval)")
+        case .everyNWeeks: return String(localized: "repeat.everyNWeeks.count \(interval)")
+        default: return localizedTitle
+        }
+    }
+
+    /// Късият етикет в реда на списъка („дневно“, „на 3 дни“). Еднократното няма етикет.
+    func localizedShortTitle(interval: Int) -> String {
+        guard isRepeating else { return "" }
+        switch self {
+        case .everyNDays: return String(localized: "repeat.short.everyNDays.count \(interval)")
+        case .everyNWeeks: return String(localized: "repeat.short.everyNWeeks.count \(interval)")
+        default: return String(localized: String.LocalizationValue(shortLocalizationKey))
+        }
     }
 }
 

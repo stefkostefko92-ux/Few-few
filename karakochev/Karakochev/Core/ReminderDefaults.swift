@@ -2,6 +2,9 @@ import Foundation
 
 /// Разумните стойности по подразбиране при нова записка.
 public enum ReminderDefaults {
+    /// Часът, който се подразбира, когато е казан ден без час („утре“).
+    public static let fallbackHour = 9
+
     /// Предложеният час: следващият кръгъл час (никога в миналото).
     public static func suggestedDate(now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> Date {
         guard let inAnHour = calendar.date(byAdding: .hour, value: 1, to: now) else { return now }

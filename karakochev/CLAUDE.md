@@ -29,7 +29,7 @@ SwiftData. Същите файлове се компилират два пъти
 
 ```bash
 swift build                                              # ядрото
-swift test                                               # 70 теста (Swift Testing)
+swift test                                               # 111 теста (Swift Testing)
 swift format lint --strict --recursive Karakochev Tests  # формат (гейт)
 swift format --in-place --recursive Karakochev Tests     # авто-поправка
 python3 scripts/check-localization.py                    # преводите (гейт)
@@ -59,13 +59,16 @@ Karakochev/
   Core/                  чистата логика — Foundation-only, тествана:
                          RepeatRule · ReminderSnapshot · OccurrenceCalculator
                          NotificationPlanner · ReminderGrouping · ReminderDayClassifier
-                         SnoozeOption · ReminderDefaults
+                         SnoozeOption · ReminderDefaults · ReminderTextParser
+                         (естествен език) · ReminderArchive (износ/внос)
   Models/Reminder.swift  @Model (SwiftData) + `snapshot` мост към Core
   Services/              NotificationService (UNUserNotificationCenter, категории,
                          действия) · ReminderScheduler (единствената точка, която пипа
                          базата И известията заедно)
   Localization/          LocalizedText — мостът ключ → преведен текст (+ ReminderDateLabel)
-  Views/                 ReminderListView · ReminderRow · ReminderEditorView
+  Intents/               AddReminderIntent + KarakochevShortcuts (Siri, Преки пътища)
+  Views/                 ReminderListView · ReminderRow · ReminderEditorView ·
+                         QuickAddField (бързо добавяне от свободен текст)
   Resources/             Localizable.xcstrings + InfoPlist.xcstrings (bg/en/it) ·
                          Assets.xcassets — икона + палитрата на Carbon Stealth:
                          AccentColor (циан #00697A светло / #00E5FF тъмно — чистият
@@ -85,8 +88,12 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
    тригери не изтичат и мястото никога не се освобождава само. UI-ът показва и
    `reducedReminders`, и `skippedReminders`.
 2. **Повторение = повтарящ се тригер**, не списък от дати — иначе напомнянията свършват,
-   ако приложението не се отваря. Изключение: повторение с начало в бъдещето (не може да
-   се изрази с повтарящ се тригер) → първите 4 задействания поединично + пресинхронизация.
+   ако приложението не се отваря. Две изключения минават през поредица от отделни заявки,
+   която се допълва при всяко отваряне: повторение с **начало в бъдещето** (тригерът би
+   се задействал преди началото) и правилата **без нативен тригер** (`hasNativeTrigger ==
+   false`: „на всеки N дни/седмици“, „последният работен ден“ — те не са постоянен набор
+   календарни компоненти). Затова тези правила струват `seriesOccurrences` слота от
+   бюджета вместо един — важно при много такива напомняния.
 3. **Отлагането се пази в записа** (`snoozedUntil`), не като „висящо“ известие — така
    преживява рестарт и пълната подмяна на плана. То е **добавъчна** заявка: планирането
    ползва `patternOccurrences` (чист шаблон), за да не изяде стъпало от поредицата.
@@ -115,7 +122,15 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
    нов ключ в `Localizable.xcstrings` с **bg, en и it**; `scripts/check-localization.py` е
    гейт (липсващ, непреведен или неизползван ключ = червено CI). Нов език = един ред в
    `LANGUAGES` на скрипта + `CFBundleLocalizations` + `knownRegions`; кодът не се пипа.
-9. **Нула мрежа.** Няма `URLSession`, няма аналитика, няма акаунт. Ако някой ден потрябва
+9. **Настойчивостта е само за важните.** Важното напомняне получава 2 допълнителни
+   заявки (`nudgeOffsets`, +10 и +25 мин). Те не се отменят изрично: при „Готово“ планът
+   се пресинхронизира, а заявките за отминалото задействане просто не са в новия план и
+   `apply` ги маха. Цената е 3 слота от бюджета вместо 1.
+10. **Износът е единственият изход за данните** и тръгва само от натиснат бутон.
+   Форматът (`ReminderArchive`) е **отделен тип** от `ReminderSnapshot` — договор с
+   бъдещето, който не се мени при всяка вътрешна промяна. Вносът **само добавя** по
+   идентификатор: стар архив не може да изтрие по-нова записка.
+11. **Нула мрежа.** Няма `URLSession`, няма аналитика, няма акаунт. Ако някой ден потрябва
    синхрон между устройства — това е ново решение с GDPR преглед, не „дребна добавка“.
 
 ## Дребни неща, които хапят
@@ -138,6 +153,12 @@ scripts/generate-icon.py нулеви зависимости, възпроизв
   въглерод #00020A + циан #00E5FF. Списъкът и редакторът гасят системния фон
   (`.scrollContentBackground(.hidden)`) и стъпват на `BrandBackground`/`BrandSurface`.
   Иконата се рисува от скрипта — отворен пръстен със стрелка, без илюстрация.
+- Парсерът на естествен език (`ReminderTextParser`) е нарочно **консервативен**: при
+  съмнение оставя текста в заглавието, вместо да гадае час. Речниците са по език (bg/en/it)
+  и живеят в самия файл. Нова дума → нов тест; UI-ът винаги показва какво е разбрано.
+- Siri фразите в `KarakochevShortcuts` **трябва** да съдържат `\(.applicationName)` — Apple
+  отхвърля фрази без името на приложението. Интентът отваря **свой** `ModelContainer`,
+  защото се изпълнява и когато приложението не е стартирано.
 - Езикът следва телефона: `developmentRegion = en`, `CFBundleLocalizations = [en, bg, it]`,
   името под иконата идва от `InfoPlist.xcstrings` („Каракочев“ на български телефон,
   „Karakochev“ иначе). Английският е и резервният език за всеки друг локал — затова

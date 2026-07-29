@@ -24,6 +24,7 @@ struct ReminderEditorView: View {
     @State private var note = ""
     @State private var date = ReminderDefaults.suggestedDate()
     @State private var repeatRule: RepeatRule = .once
+    @State private var interval = 1
     @State private var isImportant = false
     @State private var didLoad = false
 
@@ -49,6 +50,11 @@ struct ReminderEditorView: View {
                     Picker("editor.repeat", selection: $repeatRule) {
                         ForEach(RepeatRule.allCases, id: \.self) { rule in
                             Text(rule.localizedTitle).tag(rule)
+                        }
+                    }
+                    if repeatRule.usesInterval {
+                        Stepper(value: $interval, in: RepeatRule.intervalRange) {
+                            Text(repeatRule.localizedTitle(interval: interval))
                         }
                     }
                 }
@@ -126,6 +132,7 @@ struct ReminderEditorView: View {
             note: note,
             fireDate: date,
             repeatRule: repeatRule,
+            interval: interval,
             isDone: false,
             isImportant: isImportant
         )
@@ -140,6 +147,7 @@ struct ReminderEditorView: View {
         note = reminder.note
         date = reminder.fireDate
         repeatRule = reminder.repeatRule
+        interval = reminder.interval
         isImportant = reminder.isImportant
     }
 
@@ -151,6 +159,7 @@ struct ReminderEditorView: View {
                 note: note.trimmingCharacters(in: .whitespacesAndNewlines),
                 fireDate: date,
                 repeatRule: repeatRule,
+                interval: interval,
                 isImportant: isImportant
             )
             scheduler.add(reminder)
@@ -160,6 +169,7 @@ struct ReminderEditorView: View {
             reminder.note = note.trimmingCharacters(in: .whitespacesAndNewlines)
             reminder.fireDate = date
             reminder.repeatRule = repeatRule
+            reminder.interval = RepeatRule.clampInterval(interval)
             reminder.isImportant = isImportant
             // Ръчната промяна отменя отлагането — новият час е този, който важи.
             reminder.snoozedUntil = nil

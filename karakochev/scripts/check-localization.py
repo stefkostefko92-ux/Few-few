@@ -44,7 +44,7 @@ ENUM_EXCEPTIONS = {"repeat.short.once"}
 KEY_PATTERN = re.compile(r'"([a-z][a-zA-Z]*(?:\.[a-zA-Z]+)+)(?:\s+\\\([^"]*)?"')
 # Имената на SF Symbol-ите изглеждат като ключове („bell.badge“), но не са текст.
 # Режем до края на реда, за да хванем и тернарните („isDone ? "a" : "b"“).
-SYMBOL_PATTERN = re.compile(r"(?:systemImage|systemName):.*$", re.MULTILINE)
+SYMBOL_PATTERN = re.compile(r"(?:systemImage|systemName|systemImageName):.*$", re.MULTILINE)
 CASE_PATTERN = re.compile(r"^\s*case\s+([a-zA-Z, ]+)$", re.MULTILINE)
 
 problems: list[str] = []
