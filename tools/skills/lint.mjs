@@ -11,7 +11,8 @@ import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const SKILLS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "skills");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+export const SKILLS_DIR = join(ROOT, ".claude", "skills");
 
 // Минимален YAML-frontmatter парсер (name/description) — без зависимости.
 export function parseFrontmatter(md) {
@@ -55,6 +56,14 @@ export function lintSkill(dir, name) {
   // реферирани scripts/ файлове съществуват (лов на счупени пътища от вида scripts/foo)
   for (const ref of body.match(/scripts\/[\w./-]+/g) || []) {
     if (!existsSync(join(dir, ref))) warns.push(`реферира несъществуващ ${ref}`);
+  }
+  // Реферирани инструменти от репото (`tools/…​.mjs`) — пътят е спрямо КОРЕНА, не спрямо skill-а.
+  // Досега се проверяваха само `scripts/` препратките, затова `stripe-payment` цитираше
+  // `tools/payments/stripe-lint.mjs` (реалният път е `tools/commerce/…`) и линтът мълчеше.
+  // Skill, който вика несъществуващ инструмент, е счупен работен процес — това е ТВЪРД провал,
+  // не съвет: изпълняващият агент ще удари „No such file" насред процедурата.
+  for (const ref of new Set(body.match(/\btools\/[\w./-]+\.mjs\b/g) || [])) {
+    if (!existsSync(join(ROOT, ref))) errs.push(`реферира несъществуващ инструмент ${ref}`);
   }
   return { name, errs, warns };
 }

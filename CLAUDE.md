@@ -31,6 +31,7 @@ file holds only what is true across all products. Keep it that way.
 | `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
+| `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
@@ -146,6 +147,17 @@ loop-engineering, написана нашия начин — zero-dep, fail-clos
 цялата цена на колаборацията**; ако префиксът се плащаше веднъж на верига (system-ниво), щяха да
 паднат ~232k. Затова: **къси, целенасочени вериги са по-евтини от дълги обзорни**, а всеки токен,
 отрязан от префикса, се умножава по 67, не по 27. `--check` гейтва дела на повторението.
+
+**Дълбок одит срещу дупки (`deep-audit.mjs`).** Отделен от `oversee` (той пази целостта на
+екипа) — този гони **несъответствие документ↔реалност** и **проверка, която мълчи, защото гледа
+грешния източник**. Всяка проверка е добавена след реален пропуск: инжекционното покритие се четеше
+от `agents.json`, а два агента имаха WebFetch само в дефиницията → гейтът твърдеше „всички покрити"
+при нула тестове за тях (затова сега се чете **обединението** дефиниция+регистър, fail-closed);
+skill цитираше несъществуващ инструмент, защото линтът гледаше само `scripts/`; `SupremeBot/` беше
+продукт без ред в таблицата и без свой `CLAUDE.md`. Гейтва: синхрон дефиниция↔регистър (**вкл.
+tools** — наборът определя кой е изложен на недоверено съдържание), инжекционно покритие, счупени
+препратки, продуктова документация. Докладва (не гейтва): продукт без CI, инструмент без тест,
+висока карантина.
 
 **Един гейт, едно място.** Пълният гейт на агентския слой е `node tools/agents/gate.mjs`
 (`--list` показва състава, `--serial` за диагностика). `agents.yml` и `agents-sweep.yml` само го
