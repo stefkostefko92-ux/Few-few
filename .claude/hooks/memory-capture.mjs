@@ -135,7 +135,12 @@ const looksInjection = (s) => INJECTION_RE.test(String(s));
 // да отхвърляме празнотата („N/A", „само коефициенти налични") — там няма какво да се провери.
 // Внасяме КАНОНИЧНИЯ предикат — да не съществуват две дефиниции за „източник“ (точно това
 // заклещи 74 реални поуки в Карантина).
-export { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
+// ВНИМАНИЕ: `export { x as y } from "..."` е РЕ-ЕКСПОРТ — изнася за други модули, но НЕ създава
+// локална променлива. Първата версия беше само ре-експорт и `sourceIsReal(...)` вътре в main()
+// хвърляше ReferenceError при ВСЯКО захващане — а fail-open catch-ът го маскираше до нула
+// симптоми: учебният цикъл на целия флот мълчеше и изглеждаше „празен ден", не счупен.
+import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
+export { sourceIsReal };
 
 function ensureSections(txt) {
   if (!/##\s*Проверени поуки/.test(txt)) txt += `\n## Проверени поуки (verified)\n`;

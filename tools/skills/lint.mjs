@@ -10,6 +10,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const SKILLS_DIR = join(ROOT, ".claude", "skills");
@@ -76,7 +77,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const results = names.map((n) => lintSkill(join(SKILLS_DIR, n), n));
   const hardFails = results.reduce((a, r) => a + r.errs.length, 0);
   const warns = results.reduce((a, r) => a + r.warns.length, 0);
-  if (JSON_OUT) { console.log(JSON.stringify({ skills: results.length, hardFails, warns, results }, null, 2)); process.exit(hardFails ? 1 : 0); }
+  if (JSON_OUT) { await emitJsonNow({ skills: results.length, hardFails, warns, results }, hardFails ? 1 : 0); }
   const g = (s) => `\x1b[32m${s}\x1b[0m`, r = (s) => `\x1b[31m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`;
   console.log(`\n🧩  Skills lint — ${results.length} skill-а\n`);
   for (const res of results) {

@@ -15,6 +15,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { jaccardSets, toks, sectionBullets, clusterByJaccard, MERGE_THRESHOLD } from "./oversee-lib.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = join(ROOT, ".claude", "agents", "_memory");
@@ -52,7 +53,7 @@ const candidates = clusters
   .map((c) => ({ agents: [...c.agents].sort(), count: c.agents.size, example: c.rep.replace(/^\-\s*/, "").slice(0, 160) }))
   .sort((a, b) => b.count - a.count);
 
-if (JSON_OUT) { console.log(JSON.stringify({ min: MIN, candidates }, null, 2)); process.exit(0); }
+if (JSON_OUT) { await emitJsonNow({ min: MIN, candidates }, 0); }
 
 console.log(`\n🔗 Кандидати за промоция към _shared (поука в ≥${MIN} агента → инжектирай веднъж, кеширано)\n`);
 if (!candidates.length) { console.log("  Няма — крос-режещото знание вече е в _shared или под прага. Чисто.\n"); process.exit(0); }

@@ -20,6 +20,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets, isRealSource, lessonDate } from "../agents/oversee-lib.mjs";
+import { emitJson, finish } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM = join(ROOT, ".claude", "agents", "_memory");
@@ -73,7 +74,9 @@ function main() {
   const cand = all.reduce((s, r) => s + r.candidates.length, 0);
   const strong = all.reduce((s, r) => s + r.strong.length, 0);
 
-  if (JSON_OUT) { console.log(JSON.stringify({ total: tot, candidates: cand, strong, agents: all }, null, 2)); process.exit(0); }
+  // `console.log(...)` + `process.exit(0)` РЕЖЕ изхода на 65 536 байта, когато stdout е тръба
+  // (а CI и таблото четат точно през тръба). Този отчет е ~544 KB — 88% изчезваха мълчаливо.
+  if (JSON_OUT) return emitJson({ total: tot, candidates: cand, strong, agents: all }, 0);
 
   const d = (s) => `\x1b[90m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, c = (s) => `\x1b[36m${s}\x1b[0m`;
 
@@ -87,7 +90,7 @@ function main() {
       console.log(d(`      ${i.date || "без дата"}${i.preFix ? " · ПРЕДИ поправката на етикета" : ""}\n`));
     }
     console.log(d("Нищо не е променено. Повторната проверка се прави от агента срещу цитирания източник.\n"));
-    process.exit(0);
+    return finish(0);
   }
 
   console.log(`\n🔎  Преглед на карантината — ${tot} записа във флота\n`);
@@ -101,7 +104,7 @@ function main() {
   console.log(d(`\n  ВАЖНО: това е доклад, не промоция. Минаването на проверката за източник е НЕОБХОДИМО,`));
   console.log(d(`  не достатъчно — съдържанието още трябва да е вярно. Повторната проверка е работа на`));
   console.log(d(`  агента, който го е научил, срещу цитирания източник. Виж: --agent <id>.\n`));
-  process.exit(0);
+  return finish(0);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

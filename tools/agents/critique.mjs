@@ -27,6 +27,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { auditAll } from "./consistency-audit.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = join(ROOT, ".claude", "agents", "_memory");
@@ -113,7 +114,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     rows = rows.filter((r) => r.id === only);
     if (!rows.length) { console.error(`няма агент „${only}"`); process.exit(2); }
   }
-  if (argv.includes("--json")) { console.log(JSON.stringify(only ? rows[0] : rows, null, 2)); process.exit(0); }
+  if (argv.includes("--json")) { await emitJsonNow(only ? rows[0] : rows, 0); }
 
   const red = (s) => `\x1b[31m${s}\x1b[0m`, yel = (s) => `\x1b[33m${s}\x1b[0m`, dim = (s) => `\x1b[90m${s}\x1b[0m`, grn = (s) => `\x1b[32m${s}\x1b[0m`;
   const badge = { escalate: red("▲ вдигни"), "hold-max": yel("■ таван"), hold: dim("· задръж"), "deescalate-candidate": grn("▼ кандидат") };

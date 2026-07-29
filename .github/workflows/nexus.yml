@@ -15,6 +15,10 @@ concurrency:
   group: nexus-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   quality:
     name: Typecheck, test, build, release gate

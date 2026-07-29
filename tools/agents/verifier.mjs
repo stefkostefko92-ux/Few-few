@@ -13,6 +13,7 @@
 // Fail-closed за покритите агенти; агент без верификатор → exit 0 (не блокираме непокритото).
 
 import { readFileSync } from "node:fs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 // Проверка: { when: RegExp (темата присъства → проверката важи), any|none: маркери, label }.
 // Маркерите са tolerant (какъвто е eval-lib подходът) — ловим ОТСЪСТВИЕ на дисциплина, не стил.
@@ -84,7 +85,7 @@ export function verifyOutput(agent, text) {
   return { agent, covered: true, ok: checks.every((c) => c.ok), checks };
 }
 
-function runCli() {
+async function runCli() {
   const argv = process.argv.slice(2);
   if (argv.includes("--list")) { console.log("Верификатор покрива: " + Object.keys(VERIFIER).join(", ")); process.exit(0); }
   const [agent, file] = argv.filter((a) => !a.startsWith("--"));
@@ -92,7 +93,7 @@ function runCli() {
   let text = "";
   try { text = readFileSync(file, "utf8"); } catch (e) { console.error(`не мога да прочета ${file}: ${e.message}`); process.exit(2); }
   const r = verifyOutput(agent, text);
-  if (argv.includes("--json")) { console.log(JSON.stringify(r, null, 2)); process.exit(r.ok ? 0 : 1); }
+  if (argv.includes("--json")) { await emitJsonNow(r, r.ok ? 0 : 1); }
   if (!r.covered) { console.log(`(няма верификатор за „${agent}" — пропускам)`); process.exit(0); }
   console.log(`\n🛡  Верификатор · ${agent} · ${r.ok ? "МИНАВА" : "ПРОВАЛ"}\n`);
   for (const c of r.checks) console.log(`  ${c.na ? "·" : c.ok ? "✓" : "✗"} ${c.label}${c.na ? " (н/п за този изход)" : ""}${!c.ok && c.hits ? " ← намери: " + c.hits.join(", ") : ""}`);
@@ -100,4 +101,4 @@ function runCli() {
   process.exit(r.ok ? 0 : 1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (import.meta.url === `file://${process.argv[1]}`) await runCli();

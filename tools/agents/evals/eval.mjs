@@ -19,6 +19,7 @@ import { readdirSync, readFileSync, existsSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreOutput, validateSpec, summarize } from "./eval-lib.mjs";
+import { emitJsonNow } from "../../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SPECS_DIR = join(HERE, "specs");
@@ -72,7 +73,7 @@ const green = (s) => `\x1b[32m${s}\x1b[0m`, red = (s) => `\x1b[31m${s}\x1b[0m`, 
 
 // ── --list ──
 if (has("--list")) {
-  if (JSON_OUT) { console.log(JSON.stringify(specs.map((s) => ({ id: s.id, agent: s.agent, checks: (s.expect || []).length })), null, 2)); process.exit(0); }
+  if (JSON_OUT) { await emitJsonNow(specs.map((s) => ({ id: s.id, agent: s.agent, checks: (s.expect || []).length })), 0); }
   console.log(`\n📋  ${specs.length} golden spec-а:\n`);
   for (const s of specs) console.log(`  ${s.id ? green(s.id) : red(s._file)}  ${dim("· " + (s.agent || "?") + " · " + ((s.expect || []).length) + " проверки")}`);
   process.exit(0);

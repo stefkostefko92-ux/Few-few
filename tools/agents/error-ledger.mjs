@@ -86,7 +86,11 @@ function runCli() {
     process.exit(0);
   }
   if (argv.includes("--check")) {
-    const errors = checkLedger(entries, specIds(), agentIds(), testExists);
+    const ids = agentIds();
+    // fail-closed: недостъпна директория с агенти → checkLedger би ПРОПУСНАЛ валидацията на
+    // агентите и гейтът би минал по-мек, отколкото твърди, че е. Неможене ≠ чисто.
+    if (ids === null) { console.error("✗ error-ledger: не мога да прочета .claude/agents/ — проверката е невъзможна, не „зелена“."); process.exit(2); }
+    const errors = checkLedger(entries, specIds(), ids, testExists);
     if (!errors.length) { console.log(`✓ error-ledger: ${entries.length} записа, всички с регресия (spec или тест).`); process.exit(0); }
     console.log(`✗ error-ledger: ${errors.length} проблема:`); errors.forEach((e) => console.log(`    ${e}`));
     process.exit(1);

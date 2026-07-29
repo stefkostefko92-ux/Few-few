@@ -20,6 +20,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreTrajectory } from "./evals/eval-lib.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -160,7 +161,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const orchPath = join(ROOT, ".claude", "agents", "_orchestration.md");
     const flows = existsSync(orchPath) ? canonicalFlows(readFileSync(orchPath, "utf8")) : [];
     const cov = coverage(flows, specs, flowsFrom(rows));
-    if (argv.includes("--json")) { console.log(JSON.stringify(cov, null, 2)); process.exit(0); }
+    if (argv.includes("--json")) { await emitJsonNow(cov, 0); }
     const g = (s) => `\x1b[32m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, d = (s) => `\x1b[90m${s}\x1b[0m`;
     const pct = cov.total ? Math.round((cov.withSpec / cov.total) * 100) : 0;
     console.log(`\n🗺  Покритие на оркестрацията — ${cov.withSpec}/${cov.total} канонични потока с ground-truth път (${pct}%)\n`);
@@ -177,8 +178,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 
   if (argv.includes("--json")) {
-    console.log(JSON.stringify({ specsWithTrajectory: withTraj, graded: graded.length, failed, all: graded }, null, 2));
-    process.exit(argv.includes("--check") && failed.length ? 1 : 0);
+    await emitJsonNow({ specsWithTrajectory: withTraj, graded: graded.length, failed, all: graded }, argv.includes("--check") && failed.length ? 1 : 0);
   }
 
   const green = (s) => `\x1b[32m${s}\x1b[0m`, red = (s) => `\x1b[31m${s}\x1b[0m`, dim = (s) => `\x1b[90m${s}\x1b[0m`;

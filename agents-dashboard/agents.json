@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-28",
+    "updated": "2026-07-29",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -3945,6 +3945,190 @@
       ]
     },
     {
+      "id": "skorostnika",
+      "name": "Скоростника",
+      "title": "Предпусков одит на производителността (Lighthouse-съвместим)",
+      "emoji": "⚡",
+      "accent": "#facc15",
+      "tagline": "Дава числата на PageSpeed, преди сайтът да е жив.",
+      "file": ".claude/agents/skorostnika.md",
+      "model": "sonnet",
+      "effort": "medium",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Мери реалните лабораторни метрики (FCP · LCP · TBT · CLS) в истински Chromium срещу локален билд и смята Lighthouse-съвместима оценка 0–100 по същите log-normal криви — ПРЕДИ деплой, когато поправката още е евтина. Връща конкретно какво пречи на 100, подредено по въздействие.",
+      "capabilities": [
+        "Lighthouse v10 криви: p10→90, медиана→50 (erfc, log-normal)",
+        "Тегла FCP 10 · LCP 25 · TBT 30 · CLS 25 (SI не се мери → пренормиране)",
+        "Chromium + CDP throttle: 4× CPU, ~Slow 4G (mobile профил)",
+        "Медиана от N рана + докладван спред (единично число = шум)",
+        "Зависим статичен сървър с нула зависимости (папка или URL)",
+        "Приоритизирани съвети: render-blocking · размери на изображения · компресия · дълги задачи · font-display",
+        "Сверка след деплой с реалния PSI/CrUX (tools/seo/cwv.mjs)",
+        "Инструмент: tools/seo/prelaunch-audit.mjs"
+      ],
+      "knowledge": {
+        "sources": 6,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Lighthouse scoring (GoogleChrome/lighthouse · docs/scoring.md) — криви и тегла",
+          "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
+          "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
+        ],
+        "lessons": 40
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-29",
+          "event": "Раждане",
+          "detail": "PageSpeed Insights дърпа URL-а от сървърите на Google — непубликуван сайт е недостъпен ПО УСТРОЙСТВО, не заради ключ. Затова лабораторната половина (Lighthouse = Chromium + измервания) се възпроизвежда локално: tools/seo/prelaunch-audit.mjs."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-07-29",
+          "event": "v1.0 — операционен договор",
+          "detail": "Източник-или-мълчание, числа само с разсейване, DoD: сверка след деплой (дефиницията, секции „Червени линии“/„Предаване“)."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-07-29",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "Реален инструмент: tools/seo/prelaunch-audit.mjs (Chromium + Lighthouse криви + медиана/спред)."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-07-29",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "Чисти тествани функции: totalBlockingTime/scoreMetric/shouldGzip + 18 теста (prelaunch-audit.test.mjs)."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-07-29",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "В каноничния поток „Пускане в продукция“ (_orchestration.md) с ground-truth (traj-prod-release.json)."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-07-29",
+          "event": "v4.0 — файлова памет",
+          "detail": "_memory/skorostnika.md + hook-инжектиране при старт (settings.json matchers)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-29",
+          "event": "v5.0 — самоодит",
+          "detail": "Golden spec (skorostnika.json) + инжекционен spec (injection-skorostnika.json) — eval --check ги гейтва."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-07-29",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "Учебният цикъл доказан в действие: мисии 1–4 → captures през memory-capture (по 0.1/проверена поука нагоре)."
+        },
+        {
+          "version": "0.8.0",
+          "date": "2026-07-29",
+          "event": "v0.8 — учене",
+          "detail": "Научи: LCP изключва изображения под 0.05 bits/pixel entropy (Chrome 112+), измерено по display… (+6 още)"
+        },
+        {
+          "version": "1.2.0",
+          "date": "2026-07-29",
+          "event": "v1.2 — учене",
+          "detail": "Научи: fetchpriority=\"high\" на LCP <img> е ПЪРВИЧНАТА тактика на канона (не само preload) — \"Y… (+3 още)"
+        },
+        {
+          "version": "1.7.0",
+          "date": "2026-07-29",
+          "event": "v1.7 — учене",
+          "detail": "Научи: lesson: > Lighthouse има ДВЕ throttling стратегии. Simulated (Lantern) — модел, а не ре… (+4 още)"
+        },
+        {
+          "version": "1.8.0",
+          "date": "2026-07-29",
+          "event": "v1.8 — учене",
+          "detail": "Научи: statement: 100/100 локално НЕ е гаранция за жив CWV — TBT/LCP локално нямат мрежов late…"
+        },
+        {
+          "version": "2.3.0",
+          "date": "2026-07-29",
+          "event": "v2.3 — учене",
+          "detail": "Научи: App Router Server Components изпращат само RSC Payload + JS за 'use client' граници към… (+4 още)"
+        },
+        {
+          "version": "2.9.0",
+          "date": "2026-07-29",
+          "event": "v2.9 — учене",
+          "detail": "Научи: TTFB прагове (Lighthouse/CrUX): добро ≤0.8s, нужда от подобрение 0.8–1.8s, лошо >1.8s. … (+5 още)"
+        },
+        {
+          "version": "9.4.0",
+          "date": "2026-07-29",
+          "event": "v9.4 — нова схема (структура+учене)",
+          "detail": "Преизчислена по схемата на флота (прецедент: Правния, 2026-06-26): структурна база 6.0 (стълбата v1–v6 по-горе, всяко стъпало с проверимо доказателство) + 34 проверени поуки × 0.1. Целта v10.0 = 40 поуки."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-29",
+          "event": "v10.0 — учене",
+          "detail": "Научи: ospedalitrasparenti/site/fornitori.html (866KB, 23804 DOM възела) скорира 67/100 mobile… (+5 още)"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „ospedalitrasparenti/site/fornitori.html (866KB, 23804 DOM възела) скорира 67/100 mobile…\" (+5 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „TTFB прагове (Lighthouse/CrUX): добро ≤0.8s, нужда от подобрение 0.8–1.8s, лошо >1.8s. …\" (+5 още)"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „App Router Server Components изпращат само RSC Payload + JS за 'use client' граници към…\" (+4 още)"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „statement: 100/100 локално НЕ е гаранция за жив CWV — TBT/LCP локално нямат мрежов late…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „lesson: > Lighthouse има ДВЕ throttling стратегии. Simulated (Lantern) — модел, а не ре…\" (+4 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „fetchpriority=\"high\" на LCP <img> е ПЪРВИЧНАТА тактика на канона (не само preload) — \"Y…\" (+3 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „LCP изключва изображения под 0.05 bits/pixel entropy (Chrome 112+), измерено по display…\" (+6 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-29",
+          "type": "birth",
+          "summary": "Създаден заедно с tools/seo/prelaunch-audit.mjs; първо измерване: kebab/ = 75/100 (медиана от 3 рана, спред LCP ±120 ms · TBT ±150 ms)."
+        }
+      ],
+      "recentLessons": []
+    },
+    {
       "id": "prevodach",
       "name": "Преводач",
       "title": "Локализация BG → EN → IT",
@@ -6249,7 +6433,7 @@
       "id": "3d-maniac",
       "name": "3D Maniac",
       "title": "Reverse engineering · Mesh→Solid CAD · карбон",
-      "emoji": "🧩",
+      "emoji": "🧊",
       "accent": "#d64f7a",
       "tagline": "Безпощадно точна трансформация скан → параметричен solid за карбон части.",
       "file": ".claude/agents/3d-maniac.md",
@@ -12231,7 +12415,7 @@
       "id": "ai-djiyata",
       "name": "AI-джията",
       "title": "Президент на агентите · LLM/AI интеграция",
-      "emoji": "🤖",
+      "emoji": "🧠",
       "accent": "#7c5cff",
       "tagline": "Води и следи целия екип агенти (oversee); свързва продуктите с Gemini/OpenAI/Claude.",
       "file": ".claude/agents/ai-djiyata.md",

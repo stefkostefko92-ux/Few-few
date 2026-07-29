@@ -20,6 +20,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets } from "./oversee-lib.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -124,7 +125,7 @@ const broken = brokenPaths();
 const drift = memoryDrift();
 const cons = countConsistency();
 
-if (JSON_OUT) { console.log(JSON.stringify({ brokenPaths: broken, memoryDrift: drift, countConsistency: cons.hits }, null, 2)); process.exit(broken.length || cons.hits.length ? 1 : 0); }
+if (JSON_OUT) { await emitJsonNow({ brokenPaths: broken, memoryDrift: drift, countConsistency: cons.hits }, broken.length || cons.hits.length ? 1 : 0); }
 
 console.log(`\n🧭 Drift-lint на агентския слой\n`);
 if (!broken.length) console.log("  ✓ файлови референции: нула счупени пътища в дефинициите");

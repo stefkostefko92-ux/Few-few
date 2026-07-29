@@ -21,6 +21,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -62,11 +63,11 @@ export function auditRecovery(procedureMd, manifest) {
   return { doctrineChecks: REQUIRED_DOCTRINE.length, doctrineMissing: missing.length, loops: loops.length, errors };
 }
 
-function runCli() {
+async function runCli() {
   const procedure = readFileSync(join(ROOT, ".claude", "agents", "_memory", "PROCEDURE.md"), "utf8");
   const manifest = JSON.parse(readFileSync(join(ROOT, "tools", "agents", "loops", "loops.json"), "utf8"));
   const r = auditRecovery(procedure, manifest);
-  if (process.argv.includes("--json")) { console.log(JSON.stringify(r, null, 2)); process.exit(r.errors.length ? 1 : 0); }
+  if (process.argv.includes("--json")) { await emitJsonNow(r, r.errors.length ? 1 : 0); }
 
   const green = (s) => `\x1b[32m${s}\x1b[0m`, red = (s) => `\x1b[31m${s}\x1b[0m`;
   console.log(`\n🩹 Recovery-audit — ${r.doctrineChecks - r.doctrineMissing}/${r.doctrineChecks} елемента на доктрината · ${r.loops} автоматизации\n`);
@@ -75,4 +76,4 @@ function runCli() {
   process.exit(r.errors.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (import.meta.url === `file://${process.argv[1]}`) await runCli();

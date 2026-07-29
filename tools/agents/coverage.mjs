@@ -8,6 +8,7 @@
 import { readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const AGENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents");
 const argv = process.argv.slice(2);
@@ -60,7 +61,7 @@ const dangling = [];
 for (const [, list] of MAP) for (const a of list) { covered.add(a); if (!ids.has(a)) dangling.push(a); }
 const uncoveredAgents = [...ids].filter((a) => !covered.has(a));
 
-if (JSON_OUT) { console.log(JSON.stringify({ domains: MAP.length, agents: ids.size, gaps: GAPS, danglingRefs: dangling, agentsNotInMap: uncoveredAgents }, null, 2)); process.exit(dangling.length ? 1 : 0); }
+if (JSON_OUT) { await emitJsonNow({ domains: MAP.length, agents: ids.size, gaps: GAPS, danglingRefs: dangling, agentsNotInMap: uncoveredAgents }, dangling.length ? 1 : 0); }
 
 console.log(`\n🗺  Покритие на домейни — ${MAP.length} домейна · ${ids.size} агента\n`);
 for (const [domain, list] of MAP) console.log(`  ✓ ${domain.padEnd(40)} → ${list.join(", ")}`);

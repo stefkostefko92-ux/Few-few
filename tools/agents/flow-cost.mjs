@@ -20,6 +20,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeBudget } from "./token-budget.mjs";
 import { canonicalFlows } from "./trajectory-audit.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ORCH = join(ROOT, ".claude", "agents", "_orchestration.md");
@@ -129,14 +130,14 @@ export function computeFlowCosts({ md, agentsJson, budget }) {
   return { flows, totals, prefix };
 }
 
-function main() {
+async function main() {
   if (!existsSync(ORCH)) { console.error("липсва _orchestration.md"); process.exit(2); }
   const md = readFileSync(ORCH, "utf8");
   const agentsJson = JSON.parse(readFileSync(AGENTS_JSON, "utf8"));
   const budget = computeBudget();
   const { flows, totals, prefix } = computeFlowCosts({ md, agentsJson, budget });
 
-  if (JSON_OUT) { console.log(JSON.stringify({ prefix, totals, flows }, null, 2)); process.exit(0); }
+  if (JSON_OUT) { await emitJsonNow({ prefix, totals, flows }, 0); }
 
   const d = (s) => `\x1b[90m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, g = (s) => `\x1b[32m${s}\x1b[0m`;
   console.log(`\n🔗  Цена на колаборацията — ${flows.length} канонични потока (ОЦЕНКА, студен старт)\n`);
@@ -158,4 +159,4 @@ function main() {
   process.exit(CHECK && over.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();
