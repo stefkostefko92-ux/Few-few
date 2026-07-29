@@ -24,10 +24,18 @@ jobs:
           node-version: 22
       # Продуктът няма тестове и няма lockfile. Не измисляме гейт, който не съществува —
       # проверяваме това, което Е проверимо: валидна Prisma схема и синтаксис на сорса.
-      - name: Валидна Prisma схема
+      # Prisma на ПРОДУКТА (^6.8.0), не `npx --yes prisma` — той дърпа latest (7.x), който
+      # премахна `url` в datasource и обяви валидна схема за невалидна. Гейт, който ползва друга
+      # версия от продукта, мери грешното нещо.
+      - name: Валидна Prisma схема (версията на продукта)
         working-directory: Ivan/backend
         run: |
-          if [ -f prisma/schema.prisma ]; then npx --yes prisma validate; else echo "няма схема — пропускам"; fi
+          if [ -f prisma/schema.prisma ]; then
+            npm install --no-audit --no-fund
+            npx prisma validate
+          else
+            echo "няма схема — пропускам"
+          fi
       - name: Синтаксис на сорса
         run: |
           fail=0
