@@ -27,13 +27,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Продуктът декларира pnpm@10 в packageManager и има pnpm-lock.yaml — corepack го уважава.
-      # corepack ПРЕДИ setup-node: cache: pnpm вика `pnpm store path` още в setup стъпката.
-      - run: corepack enable
+      # БЕЗ cache: pnpm — проверено в CI (run 30453590507): setup-node вика `pnpm store path`
+      # от КОРЕНА на монорепото, където няма package.json/packageManager → corepack не резолвва
+      # версия, пътят не съществува и post-стъпката проваля ЦЕЛИЯ job с Path Validation Error,
+      # въпреки зеления билд. Turbo кешът на продукта вече пази повечето време.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          cache-dependency-path: Gaming/pnpm-lock.yaml
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
       - run: pnpm run typecheck
