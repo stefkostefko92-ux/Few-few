@@ -6472,7 +6472,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 133
+        "lessons": 134
       },
       "evolution": [
         {
@@ -6870,9 +6870,20 @@
           "date": "2026-07-28",
           "event": "v14.5 — учене",
           "detail": "Научи: QuickSurface Pro 2026 = v7.9.62 (окт. 2025), Parasolid kernel; 12 нови мажорни features… (+2 още)"
+        },
+        {
+          "version": "14.6.0",
+          "date": "2026-07-29",
+          "event": "v14.6 — учене",
+          "detail": "Научи: Колегиален одит на printadjiyata.md + неговата памет: технически твърдения за mesh хиги…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „Колегиален одит на printadjiyata.md + неговата памет: технически твърдения за mesh хиги…\" · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
