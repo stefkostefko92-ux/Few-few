@@ -63,6 +63,23 @@ export function brokenToolRefs(text) {
   return [...new Set(String(text || "").match(re) || [])].filter((p) => !has(p));
 }
 
+/**
+ * Редове, на които дефиницията нарежда да ИЗПЪЛНИ команда (`node/bash/npx tools/…`) като
+ * ЗАДЪЛЖЕНИЕ (пусни/DoD/верификатор/гейт), докато `tools` няма Bash → неизпълним договор.
+ * Чиста функция (md + toolset низ) за да е тествана. Президентски одит 2026-07-29 (Правният).
+ * Просто СПОМЕНАВАНЕ на инструмент в проза не е дефект — искаме рамка на задължение.
+ */
+export function execWithoutBash(md, toolset) {
+  if (/\bBash\b/.test(String(toolset || ""))) return [];
+  const out = [];
+  String(md || "").split("\n").forEach((l, i) => {
+    const hasCmd = /`(?:node|bash|npx|sh)\s+tools\/[\w./-]+/.test(l);
+    const isDuty = /(?:пусни|пускаш|изпълни|стартирай|преди\s+[„"]?готово|DoD|верификатор|минава\s+(?:детерминистичн|гейт)|гейт)/i.test(l);
+    if (hasCmd && isDuty) out.push(i + 1);
+  });
+  return out;
+}
+
 export function audit() {
   const hard = [], soft = [];
   const ids = agentIds();
@@ -96,6 +113,19 @@ export function audit() {
     const t = (R(`.claude/agents/${id}.md`).match(/^tools:\s*(.+)$/m) || [])[1] || "";
     if (/WebFetch|WebSearch/.test(t) && !injAgents.has(id))
       hard.push({ kind: "injection", msg: `${id} чете недоверено външно съдържание (WebFetch/WebSearch), но няма инжекционен spec` });
+  }
+
+  // 2b. Инструкция↔инструментариум: дефиниция, която нарежда да ИЗПЪЛНЯВА команди (`node tools/…`,
+  //     `bash …`), но агентът НЯМА Bash → неизпълним договор. Президентският колегиален одит
+  //     (2026-07-29) намери точно това у Правния Разбирач: DoD иска да пусне 5 скрипта, а `tools`
+  //     е Read/Grep/Glob/WebFetch/WebSearch. Гейтовете сверяваха дефиниция↔регистър↔matcher, но
+  //     НИКОЙ не сверяваше „изисквани команди ⊆ наличен инструментариум". Детерминистично е.
+  for (const id of ids) {
+    const md = R(`.claude/agents/${id}.md`);
+    const toolset = (md.match(/^tools:\s*(.+)$/m) || [])[1] || "";
+    const execLines = execWithoutBash(md, toolset);
+    if (execLines.length)
+      hard.push({ kind: "exec-without-bash", msg: `${id}: дефиницията нарежда да ИЗПЪЛНИ команда като DoD (ред ${execLines.slice(0, 5).join(",")}), но „tools" няма Bash → неизпълним договор (изходът от скенера идва от агент с Bash, или добави Bash)` });
   }
 
   // 3. Счупени препратки към инструменти — в дефиниции, skills и общата доктрина.

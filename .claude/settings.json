@@ -75,7 +75,7 @@
         ]
       },
       {
-        "matcher": "Bash|WebFetch",
+        "matcher": "Bash|WebFetch|WebSearch",
         "hooks": [
           {
             "type": "command",

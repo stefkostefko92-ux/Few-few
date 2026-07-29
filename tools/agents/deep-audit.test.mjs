@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { audit, agentIds, productDirs, brokenToolRefs } from "./deep-audit.mjs";
+import { audit, agentIds, productDirs, brokenToolRefs, execWithoutBash } from "./deep-audit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -91,4 +91,18 @@ test("productDirs изключва служебните папки", () => {
   for (const skip of ["tools", "deploy", "docs", "agents-dashboard", "research", "client"])
     assert.ok(!p.includes(skip), `„${skip}" не е продукт`);
   assert.ok(p.includes("zabobovdol") && p.includes("medqr"), "реалните продукти са вътре");
+});
+
+test("execWithoutBash: no-Bash агент с DoD команда → находка; проза/има-Bash → нула", () => {
+  const md = [
+    "tools: Read, Grep, Glob, WebFetch",
+    "- **Верификатор:** `node tools/agents/verifier.mjs x` минава детерминистичния DoD чек.",
+    "просто споменаваме `node tools/legal/a11y.mjs` в описание без задължение",
+  ].join("\n");
+  // ред 2 е задължение (верификатор+DoD+команда) → находка; ред 3 е проза → не
+  assert.deepEqual(execWithoutBash(md, "Read, Grep, Glob, WebFetch"), [2]);
+  // същият текст, но агентът ИМА Bash → нула (може да изпълнява)
+  assert.deepEqual(execWithoutBash(md, "Read, Bash, Grep"), []);
+  // никаква команда → нула
+  assert.deepEqual(execWithoutBash("- просто одит без инструменти", "Read"), []);
 });
