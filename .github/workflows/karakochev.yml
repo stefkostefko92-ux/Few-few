@@ -82,3 +82,47 @@ jobs:
             -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
+
+      # Архив за истинско устройство, БЕЗ подпис. Подписването иска сертификат,
+      # вързан за конкретен Apple ID и телефон — то става на машината на
+      # собственика (Xcode, Sideloadly или AltStore), не тук.
+      - name: Архив за устройство (без подписване)
+        run: |
+          xcodebuild archive \
+            -project Karakochev.xcodeproj \
+            -scheme Karakochev \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Karakochev.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+
+      # .ipa е обикновен zip с папка `Payload/`. Правим го ръчно, защото
+      # `xcodebuild -exportArchive` изисква подпис, какъвто тук няма.
+      - name: Сглоби .ipa
+        run: |
+          set -e
+          APP="build/Karakochev.xcarchive/Products/Applications/Karakochev.app"
+          test -d "$APP" || { echo "::error::архивът не съдържа Karakochev.app"; exit 1; }
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
+          mkdir -p build/Payload
+          cp -R "$APP" build/Payload/
+          (cd build && zip -qry "Karakochev-$VERSION-unsigned.ipa" Payload)
+          shasum -a 256 "build/Karakochev-$VERSION-unsigned.ipa" | tee build/SHA256.txt
+          {
+            echo "### Готов за подписване"
+            echo ""
+            echo '`Karakochev-'"$VERSION"'-unsigned.ipa` — свали го от „Artifacts“ по-долу.'
+            echo "Инсталация: **Sideloadly** или **AltStore** (Windows/Mac) с твоя Apple ID,"
+            echo "или Xcode → Window → Devices and Simulators. Виж \`karakochev/README.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Качи .ipa
+        # По таг (както android.yml) — не пиша SHA по памет, който не мога да проверя.
+        uses: actions/upload-artifact@v4
+        with:
+          name: karakochev-ipa-unsigned
+          path: |
+            karakochev/build/*.ipa
+            karakochev/build/SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
