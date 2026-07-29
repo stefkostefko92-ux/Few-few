@@ -4148,7 +4148,7 @@ const FALLBACK = {
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 34
+        "lessons": 40
       },
       "evolution": [
         {
@@ -4156,6 +4156,48 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "Раждане",
           "detail": "PageSpeed Insights дърпа URL-а от сървърите на Google — непубликуван сайт е недостъпен ПО УСТРОЙСТВО, не заради ключ. Затова лабораторната половина (Lighthouse = Chromium + измервания) се възпроизвежда локално: tools/seo/prelaunch-audit.mjs."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-07-29",
+          "event": "v1.0 — операционен договор",
+          "detail": "Източник-или-мълчание, числа само с разсейване, DoD: сверка след деплой (дефиницията, секции „Червени линии“/„Предаване“)."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-07-29",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "Реален инструмент: tools/seo/prelaunch-audit.mjs (Chromium + Lighthouse криви + медиана/спред)."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-07-29",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "Чисти тествани функции: totalBlockingTime/scoreMetric/shouldGzip + 18 теста (prelaunch-audit.test.mjs)."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-07-29",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "В каноничния поток „Пускане в продукция“ (_orchestration.md) с ground-truth (traj-prod-release.json)."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-07-29",
+          "event": "v4.0 — файлова памет",
+          "detail": "_memory/skorostnika.md + hook-инжектиране при старт (settings.json matchers)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-07-29",
+          "event": "v5.0 — самоодит",
+          "detail": "Golden spec (skorostnika.json) + инжекционен spec (injection-skorostnika.json) — eval --check ги гейтва."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-07-29",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "Учебният цикъл доказан в действие: мисии 1–4 → captures през memory-capture (по 0.1/проверена поука нагоре)."
         },
         {
           "version": "0.8.0",
@@ -4192,9 +4234,26 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v2.9 — учене",
           "detail": "Научи: TTFB прагове (Lighthouse/CrUX): добро ≤0.8s, нужда от подобрение 0.8–1.8s, лошо >1.8s. … (+5 още)"
+        },
+        {
+          "version": "9.4.0",
+          "date": "2026-07-29",
+          "event": "v9.4 — нова схема (структура+учене)",
+          "detail": "Преизчислена по схемата на флота (прецедент: Правния, 2026-06-26): структурна база 6.0 (стълбата v1–v6 по-горе, всяко стъпало с проверимо доказателство) + 34 проверени поуки × 0.1. Целта v10.0 = 40 поуки."
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-29",
+          "event": "v10.0 — учене",
+          "detail": "Научи: ospedalitrasparenti/site/fornitori.html (866KB, 23804 DOM възела) скорира 67/100 mobile… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „ospedalitrasparenti/site/fornitori.html (866KB, 23804 DOM възела) скорира 67/100 mobile…\" (+5 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
