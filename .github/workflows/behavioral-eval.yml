@@ -10,6 +10,10 @@ on:
     - cron: "43 5 2 * *" # 2-о число, 05:43 UTC (off-peak минута)
   workflow_dispatch: {}
 
+concurrency:
+  group: behavioral-eval-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

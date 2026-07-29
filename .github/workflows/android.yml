@@ -18,6 +18,10 @@ on:
     tags: ["android-v*"]
 
 # Най-малки права за GITHUB_TOKEN — workflow-ът само чете кода и качва artifact.
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

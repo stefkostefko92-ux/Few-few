@@ -12,6 +12,10 @@ on:
       - 'tools/trading/**'
       - '.github/workflows/treydar.yml'
 
+concurrency:
+  group: treydar-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest

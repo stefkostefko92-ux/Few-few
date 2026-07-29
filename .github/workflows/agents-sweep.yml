@@ -8,6 +8,10 @@ on:
     - cron: "17 6 * * 1" # понеделник 06:17 UTC (off-peak минута — не :00)
   workflow_dispatch: {}
 
+concurrency:
+  group: agents-sweep-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

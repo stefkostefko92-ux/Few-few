@@ -1,0 +1,37 @@
+name: ivan
+
+on:
+  push:
+    paths:
+      - 'Ivan/**'
+      - '.github/workflows/ivan.yml'
+  pull_request:
+    paths:
+      - 'Ivan/**'
+      - '.github/workflows/ivan.yml'
+
+concurrency:
+  group: ivan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Продуктът няма тестове и няма lockfile. Не измисляме гейт, който не съществува —
+      # проверяваме това, което Е проверимо: валидна Prisma схема и синтаксис на сорса.
+      - name: Валидна Prisma схема
+        working-directory: Ivan/backend
+        run: |
+          if [ -f prisma/schema.prisma ]; then npx --yes prisma validate; else echo "няма схема — пропускам"; fi
+      - name: Синтаксис на сорса
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            node --check "$f" || { echo "::error file=$f::синтактична грешка"; fail=1; }
+          done < <(find Ivan -name '*.js' -o -name '*.mjs' | grep -v node_modules)
+          exit $fail

@@ -1,0 +1,42 @@
+name: supremediscordbot
+
+on:
+  push:
+    paths:
+      - 'SupremeDiscordBot/**'
+      - '.github/workflows/supremediscordbot.yml'
+  pull_request:
+    paths:
+      - 'SupremeDiscordBot/**'
+      - '.github/workflows/supremediscordbot.yml'
+
+concurrency:
+  group: supremediscordbot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Продуктът е три отделни пакета (backend · bot · frontend), всеки със свой lock и скриптове.
+  packages:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pkg: backend
+            cmd: npm test
+          - pkg: bot
+            cmd: npm test
+          - pkg: frontend
+            cmd: npm run build
+    defaults:
+      run:
+        working-directory: SupremeDiscordBot/${{ matrix.pkg }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SupremeDiscordBot/${{ matrix.pkg }}/package-lock.json
+      - run: npm ci
+      - run: ${{ matrix.cmd }}

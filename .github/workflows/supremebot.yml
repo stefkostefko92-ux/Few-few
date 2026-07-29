@@ -1,0 +1,30 @@
+name: supremebot
+
+on:
+  push:
+    paths:
+      - 'SupremeBot/**'
+      - '.github/workflows/supremebot.yml'
+  pull_request:
+    paths:
+      - 'SupremeBot/**'
+      - '.github/workflows/supremebot.yml'
+
+concurrency:
+  group: supremebot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Нула зависимости → няма какво да се инсталира; тестовете тичат директно.
+      - name: Тестове на разширението
+        working-directory: SupremeBot
+        run: npm test
+      - name: Проверки на MV3 (права, service worker, remote code)
+        run: node tools/chrome/mv3-lint.mjs SupremeBot
