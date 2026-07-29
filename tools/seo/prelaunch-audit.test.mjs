@@ -6,7 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { scoreMetric, performanceScore, advise, totalBlockingTime } from "./prelaunch-audit.mjs";
+import { scoreMetric, performanceScore, advise, totalBlockingTime, shouldGzip } from "./prelaunch-audit.mjs";
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b} (±${tol})`);
 
@@ -142,4 +142,27 @@ test("TBT е устойчив на липсващи/повредени вход�
   assert.equal(totalBlockingTime([{}], 1000), 0);
   // липсващ FCP → прозорецът пада към 0 (консервативно: брои всичко, не мълчи с нула)
   assert.equal(totalBlockingTime([{ start: 0, dur: 200 }], null), 150);
+});
+
+// ── Компресия: инструментът не бива да обвинява сайта в СОБСТВЕНИЯ си дефект ──────────
+// Вътрешният статичен сървър не гзипваше нищо. Резултат: по Slow 4G HTML/CSS/JS пътуваха
+// некомпресирани, FCP/LCP излизаха по-бавни, отколкото ще са в продукция, и отгоре одитът
+// докладваше „4 текстови ресурса без компресия" като находка ЗА САЙТА. Върху kebab/ това
+// струваше 4 точки и 87 KB измислен трансфер (185 KB → 98 KB, 95/100 → 99/100).
+
+test("гзипва се текстът, не вече компресираните формати", () => {
+  assert.equal(shouldGzip("text/html", "gzip, deflate, br"), true);
+  assert.equal(shouldGzip("text/css", "gzip"), true);
+  assert.equal(shouldGzip("text/javascript", "gzip"), true);
+  assert.equal(shouldGzip("application/json", "gzip"), true);
+  assert.equal(shouldGzip("image/png", "gzip"), false, "PNG вече е компресиран");
+  assert.equal(shouldGzip("image/svg+xml", "gzip"), false, "SVG минава като image/* — не го пипаме");
+  assert.equal(shouldGzip("font/woff2", "gzip"), false, "woff2 вече е компресиран");
+});
+
+test("гзип само ако клиентът го обяви (иначе е счупен отговор)", () => {
+  assert.equal(shouldGzip("text/html", "br"), false);
+  assert.equal(shouldGzip("text/html", ""), false);
+  assert.equal(shouldGzip("text/html", undefined), false);
+  assert.equal(shouldGzip(undefined, "gzip"), false);
 });

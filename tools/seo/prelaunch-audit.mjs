@@ -25,6 +25,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { existsSync, readdirSync } from "node:fs";
 import { join, extname, resolve } from "node:path";
+import { gzipSync } from "node:zlib";
 import { emitJson, finish } from "../lib/emit.mjs";
 
 const argv = process.argv.slice(2);
@@ -112,6 +113,17 @@ const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg", ".webp": "image/webp", ".avif": "image/avif", ".woff2": "font/woff2", ".ico": "image/x-icon" };
 
+/**
+ * Компресира ли се този тип? Продукционните сървъри гзипват ТЕКСТА и не пипат вече компресираните
+ * формати (изображения, шрифтове) — там gzip само хаби процесор и понякога уголемява.
+ * Изнесено като чиста функция, за да е тествано: вътрешният сървър, който не гзипва, приписва на
+ * САЙТА забавяне и „липсваща компресия", които идват от самия инструмент.
+ */
+export function shouldGzip(contentType, acceptEncoding) {
+  return /^(text\/|application\/(javascript|json|xml|manifest))/.test(String(contentType || "")) &&
+    /\bgzip\b/.test(String(acceptEncoding || ""));
+}
+
 async function serve(dir) {
   const root = resolve(dir);
   const server = createServer(async (req, res) => {
@@ -121,8 +133,19 @@ async function serve(dir) {
       if (existsSync(f) && (await stat(f)).isDirectory()) f = join(f, "index.html");
       if (!existsSync(f)) { res.writeHead(404); return res.end("404"); }
       const buf = await readFile(f);
-      res.writeHead(200, { "content-type": MIME[extname(f)] || "application/octet-stream", "content-length": buf.length });
-      res.end(buf);
+      const type = MIME[extname(f)] || "application/octet-stream";
+      // gzip за текстовите типове — както ВСЯКА продукционна конфигурация (Nginx `gzip on`).
+      // Без това вътрешният сървър бавеше HTML/CSS/JS по Slow 4G и одитът приписваше на САЙТА
+      // забавяне, което идва от инструмента; после и „некомпресиран ресурс" като негова находка.
+      // Инструмент, който обвинява обекта в собствения си дефект, е по-лош от липсващ инструмент.
+      const gz = shouldGzip(type, req.headers["accept-encoding"]);
+      const body = gz ? gzipSync(buf) : buf;
+      res.writeHead(200, {
+        "content-type": type,
+        "content-length": body.length,
+        ...(gz ? { "content-encoding": "gzip" } : {}),
+      });
+      res.end(body);
     } catch { res.writeHead(500); res.end("500"); }
   });
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
@@ -310,6 +333,7 @@ async function main() {
     })),
   };
   res.runs = RUNS;
+  res.servedLocally = Boolean(srv);
   res.spread = Object.fromEntries(["LCP", "TBT", "CLS"].map((k) => {
     const vs = all.map((r) => r.metrics[k]).filter(Number.isFinite);
     return [k, vs.length > 1 ? Math.round(Math.max(...vs) - Math.min(...vs)) : 0];
@@ -323,6 +347,7 @@ async function main() {
     return emitJson({
       target: TARGET, profile, score, parts, metrics: res.metrics,
       requests: res.requests.length, transferBytes: bytes, tips, runs: res.runs, spread: res.spread,
+      servedLocally: res.servedLocally,
       note: "лабораторни данни (както раздела Lab на PageSpeed). Полевите CrUX данни изискват реални потребители и НЕ могат да се получат преди пускане.",
     }, MIN != null && score != null && score < MIN ? 1 : 0);
   }
@@ -340,6 +365,8 @@ async function main() {
   console.log(d(`\n   Теглата са пренормирани върху ${weightBase}% (Speed Index не се мери тук — иска филмова лента).`));
   console.log(d(`   TBT се брои от FCP до края на измерването (Lighthouse спира на TTI) — прозорецът ни`));
   console.log(d(`   е по-широк, значи числото може да е по-високо от тяхното, но никога по-ниско.`));
+  if (res.servedLocally) console.log(d(`   Срещу ПАПКА вътрешният сървър гзипва текста, както прави продукцията — затова`));
+  if (res.servedLocally) console.log(d(`   компресията тук е ДОПУСКАНЕ, не проверка. Сверявай я на живия сървър.`));
   console.log(d(`   ${res.requests.length} заявки · ~${Math.round(bytes / 1024)} KB трансфер · медиана от ${res.runs} рана`));
   const noisy = Object.entries(res.spread).filter(([, v]) => v > 0);
   if (noisy.length) console.log(d(`   разсейване между раните: ${noisy.map(([k, v]) => `${k} ±${k === "CLS" ? v : v + "ms"}`).join(" · ")}`));
