@@ -41,6 +41,7 @@ const CHECKS = [
   { id: "error-ledger", desc: "всяка реална грешка носи регресия (spec или тест)", cmd: ["tools/agents/error-ledger.mjs", "--check"] },
   { id: "defect-rate", desc: "измерването на дефекти е трайно (тренд в git, не в .gitignore)", cmd: ["tools/agents/defect-rate.mjs", "--check"] },
   { id: "token-budget", desc: "таван на дефиниции И на статичния префикс (×флота)", cmd: ["tools/agents/token-budget.mjs", "--check"] },
+  { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
