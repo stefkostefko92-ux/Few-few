@@ -1,7 +1,7 @@
 // dod-check.test.mjs — DoD-enforcement hook логиката (CI auto-discovery).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { collectToolUses, checkDoD, bashWrites } from "../../.claude/hooks/dod-check.mjs";
+import { collectToolUses, checkDoD, bashWrites, lastAssistantText, checkHandoffViolation } from "../../.claude/hooks/dod-check.mjs";
 
 const jl = (objs) => objs.map((o) => JSON.stringify(o)).join("\n");
 
@@ -91,4 +91,49 @@ test("F1: абсолютни пътища в 2 продукта с root → scop
 test("непарсим ред в транскрипта не чупи събирането", () => {
   const uses = collectToolUses('не е json\n' + JSON.stringify({ message: { content: [{ type: "tool_use", name: "Bash", input: { command: "echo x" } }] } }));
   assert.equal(uses.length, 1);
+});
+
+// --- Договорът ПРЕДАВАНЕ, наложен на SubagentStop ---------------------------------
+// Доктрината иска блока от всеки агент при всеки старт (плаща се ~3.8k т/вълна, за да бъде
+// инжектиран), а куката не го проверяваше. Агент можеше да завърши със свободен текст и веригата
+// тихо се късаше: следващият получаваше проза вместо структура с `файл:ред`.
+
+const AGENTS = new Set(["kodadjiyata", "izpitatelya"]);
+const asst = (text) => JSON.stringify({ message: { role: "assistant", content: [{ type: "text", text }] } });
+
+const GOOD = `## ПРЕДАВАНЕ
+От: kodadjiyata → Към: izpitatelya
+Статус: наред
+Изход/артефакт: ревю на diff-а
+Следваща стъпка: Изпитателят пуска e2e`;
+
+test("lastAssistantText: взема ПОСЛЕДНИЯ асистентски текст, не първия", () => {
+  const jl = [asst("първо"), JSON.stringify({ message: { role: "user", content: "нещо" } }), asst("последно")].join("\n");
+  assert.equal(lastAssistantText(jl), "последно");
+});
+
+test("lastAssistantText: понася низов content и празен транскрипт", () => {
+  assert.equal(lastAssistantText(JSON.stringify({ message: { role: "assistant", content: "гол низ" } })), "гол низ");
+  assert.equal(lastAssistantText(""), "");
+  assert.equal(lastAssistantText("{счупен"), "");
+});
+
+test("валиден блок ПРЕДАВАНЕ → няма нарушение", () => {
+  assert.equal(checkHandoffViolation(GOOD, AGENTS), null);
+});
+
+test("липсващ блок → нарушение (тук се къса веригата)", () => {
+  const v = checkHandoffViolation("Готово, оправих го.", AGENTS);
+  assert.ok(v);
+  assert.match(v.gate, /ПРЕДАВАНЕ/);
+});
+
+test("празен изход НЕ е нарушение — не заклещвай агент без какво да съдиш", () => {
+  assert.equal(checkHandoffViolation("", AGENTS), null);
+  assert.equal(checkHandoffViolation("   \n ", AGENTS), null);
+});
+
+test("адресат извън екипа → нарушение (веригата сочи в нищото)", () => {
+  const v = checkHandoffViolation(GOOD.replace("Към: izpitatelya", "Към: несъществуващ"), AGENTS);
+  assert.ok(v && /непознат адресат/.test(v.gate));
 });

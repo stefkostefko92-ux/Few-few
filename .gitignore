@@ -9,7 +9,6 @@ handoff.md
 .tmp/
 agents-dashboard/.git-sync.lock
 agents-dashboard/.sync.lock
-.claude/agents/_memory/_flows.jsonl
 .claude/hooks/_state/
 agents-dashboard/metrics.json
 dist/

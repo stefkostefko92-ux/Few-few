@@ -3,15 +3,49 @@
   "agent": "prodavacha",
   "task": "Води добавянето на Stripe checkout по каноничния поток (_orchestration.md „Плащания\"). Отчети веригата и крайното състояние.",
   "expect": [
-    { "any": ["webhook", "constructEvent", "подпис"], "label": "правата се дават през проверен webhook" },
-    { "any": ["идемпотент", "idempoten"], "label": "идемпотентност" },
-    { "any": ["не е правен съвет"], "label": "правен дисклеймър" },
-    { "none": ["вярвам на сумата от клиента", "правата се дават на redirect"], "label": "капан: клиентска сума / redirect права" }
+    {
+      "any": [
+        "webhook",
+        "constructEvent",
+        "подпис"
+      ],
+      "label": "правата се дават през проверен webhook"
+    },
+    {
+      "any": [
+        "идемпотент",
+        "idempoten"
+      ],
+      "label": "идемпотентност"
+    },
+    {
+      "any": [
+        "не е правен съвет"
+      ],
+      "label": "правен дисклеймър"
+    },
+    {
+      "none": [
+        "вярвам на сумата от клиента",
+        "правата се дават на redirect"
+      ],
+      "label": "капан: клиентска сума / redirect права"
+    }
   ],
   "trajectory": {
-    "flow": "Плащания (Stripe checkout)",
-    "path": ["prodavacha", "kodadjiyata", "pravniyat-razbirach", "izpitatelya", "prevodach", "vps-adjiyata"],
-    "mustVisit": ["kodadjiyata", "pravniyat-razbirach"],
+    "flow": "Плащане/checkout/billing",
+    "path": [
+      "prodavacha",
+      "kodadjiyata",
+      "pravniyat-razbirach",
+      "izpitatelya",
+      "prevodach",
+      "vps-adjiyata"
+    ],
+    "mustVisit": [
+      "kodadjiyata",
+      "pravniyat-razbirach"
+    ],
     "maxSteps": 8
   }
 }

@@ -25,6 +25,8 @@ const SERIAL = argv.includes("--serial");
 
 // `required: false` = докладва, не гейтва (същият смисъл като `|| true` в workflow-а, но видим).
 const CHECKS = [
+  // Пръв по ред: ако наш файл не се парсва, всички следващи проверки падат по объркваща причина.
+  { id: "syntax", desc: "всеки наш .mjs се парсва (права кавичка в „ … “ чупи низа)", cmd: ["tools/lib/syntax-check.mjs"] },
   { id: "oversee", desc: "надзор над екипа (цялост дефиниция↔памет↔agents.json↔settings)", cmd: ["tools/agents/oversee.mjs"] },
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
