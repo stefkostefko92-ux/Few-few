@@ -47,6 +47,35 @@ const CURVES = {
 // Тежести на Lighthouse v10. Speed Index (10%) НЕ се мери тук → изключен и теглата се пренормират.
 const WEIGHTS = { FCP: 10, LCP: 25, TBT: 30, CLS: 25 };
 
+/**
+ * Total Blocking Time в ПРОЗОРЕЦ, започващ от FCP — както го дефинира Lighthouse.
+ *
+ * Първата версия тук събираше `duration - 50` по ВСИЧКИ дълги задачи за целия живот на страницата.
+ * Това е грешно и то в посока „сайтът изглежда по-зле, отколкото е": задачите ПРЕДИ First
+ * Contentful Paint (стартиране на браузъра, парсване, компилация под 4× CPU throttle) са изрично
+ * ИЗКЛЮЧЕНИ от TBT. Измерено върху `kebab/` — статичен сайт с един малък `app.js`, 10 заявки,
+ * 185 KB — старата сметка даваше ~1000 ms TBT, което не е правдоподобно за такъв сайт и щеше да
+ * прати оптимизацията да гони несъществуващ JS проблем.
+ *
+ * Долната граница е точно тази на Lighthouse (FCP). Горната при тях е TTI, която иска пълен trace
+ * (5 s тишина на главната нишка) — тук не я смятаме, затова броим ДО КРАЯ на измерването. Тоест
+ * прозорецът ни е по-ШИРОК от техния и числото може да е по-високо, но никога по-ниско:
+ * **консервативно е — не ласкае сайта.** Отчетът го казва.
+ *
+ * Частично припокриващите се задачи се ИЗРЯЗВАТ: задача, започнала преди FCP и продължила след
+ * него, брои само частта си след FCP. Блокиращото време на всяка е `max(0, изрязана − 50 ms)`.
+ */
+export function totalBlockingTime(longTasks, fcp) {
+  if (!Array.isArray(longTasks)) return 0;
+  const from = Number.isFinite(fcp) ? fcp : 0;
+  return longTasks.reduce((sum, t) => {
+    const start = Number(t?.start ?? 0);
+    const end = start + Number(t?.dur ?? 0);
+    const clipped = end - Math.max(start, from);
+    return sum + Math.max(0, clipped - 50);
+  }, 0);
+}
+
 /** Lighthouse-ката log-normal оценка: връща 0..1. */
 export function scoreMetric(value, p10, median) {
   if (!Number.isFinite(value)) return null;
@@ -152,7 +181,9 @@ async function measure(url) {
       .observe({ type: "largest-contentful-paint", buffered: true });
     new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__m.cls += e.value; })
       .observe({ type: "layout-shift", buffered: true });
-    new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__m.longTasks.push(e.duration); })
+    // Пазим НАЧАЛО + ПРОДЪЛЖИТЕЛНОСТ, не само продължителността: TBT се смята в прозорец, който
+    // започва от FCP, а сумата иска изрязване на частично припокриващите се задачи (виж по-долу).
+    new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__m.longTasks.push({ start: e.startTime, dur: e.duration }); })
       .observe({ type: "longtask", buffered: true });
   });
 
@@ -169,12 +200,16 @@ async function measure(url) {
       FCP: fcp ? fcp.startTime : null,
       LCP: window.__m.lcp || null,
       CLS: window.__m.cls,
-      TBT: window.__m.longTasks.reduce((s, d) => s + Math.max(0, d - 50), 0),
+      longTasks: window.__m.longTasks,
       TTFB: nav.responseStart || null,
       DCL: nav.domContentLoadedEventEnd || null,
       domNodes: document.getElementsByTagName("*").length,
     };
   });
+  // TBT се смята ТУК (в Node), не в страницата: така сметката е чиста функция и е тествана
+  // отделно — прозорецът ѝ вече веднъж беше грешен и никой тест не можеше да го хване.
+  m.TBT = totalBlockingTime(m.longTasks, m.FCP);
+  delete m.longTasks;
 
   // Диагностика — това, което казва КАК да се стигне до 100.
   const diag = await page.evaluate(() => {
@@ -303,6 +338,8 @@ async function main() {
     console.log(`   ${p.metric.padEnd(9)} ${String(v).padEnd(15)} ${band(p.score)}/100   ${p.weight}%`);
   }
   console.log(d(`\n   Теглата са пренормирани върху ${weightBase}% (Speed Index не се мери тук — иска филмова лента).`));
+  console.log(d(`   TBT се брои от FCP до края на измерването (Lighthouse спира на TTI) — прозорецът ни`));
+  console.log(d(`   е по-широк, значи числото може да е по-високо от тяхното, но никога по-ниско.`));
   console.log(d(`   ${res.requests.length} заявки · ~${Math.round(bytes / 1024)} KB трансфер · медиана от ${res.runs} рана`));
   const noisy = Object.entries(res.spread).filter(([, v]) => v > 0);
   if (noisy.length) console.log(d(`   разсейване между раните: ${noisy.map(([k, v]) => `${k} ±${k === "CLS" ? v : v + "ms"}`).join(" · ")}`));

@@ -6,7 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { scoreMetric, performanceScore, advise } from "./prelaunch-audit.mjs";
+import { scoreMetric, performanceScore, advise, totalBlockingTime } from "./prelaunch-audit.mjs";
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b} (±${tol})`);
 
@@ -108,4 +108,38 @@ test("всеки съвет казва КАКВО и КАК (иначе е оп�
     assert.ok(t.how && t.how.length > 10, "как");
     assert.ok(["висок", "среден", "нисък"].includes(t.impact));
   }
+});
+
+// ── TBT: прозорецът, който веднъж вече беше грешен ───────────────────────────────────
+// Първата версия събираше `duration - 50` по ВСИЧКИ дълги задачи за целия живот на страницата,
+// включително тези ПРЕДИ First Contentful Paint (стартиране на браузъра, парсване, компилация под
+// 4× CPU throttle), които Lighthouse изрично изключва. Върху kebab/ — статичен сайт с един малък
+// app.js — това даваше TBT ≈1002 ms и оценка 75/100; правилният прозорец дава 224 ms и 95/100.
+// Двадесет точки разлика, които щяха да пратят оптимизацията по несъществуващ JS проблем.
+
+test("TBT изключва дългите задачи ПРЕДИ FCP", () => {
+  const tasks = [{ start: 100, dur: 300 }, { start: 2000, dur: 250 }];
+  // само втората е след FCP=1000 → 250 − 50 = 200
+  assert.equal(totalBlockingTime(tasks, 1000), 200);
+  // без прозорец (старото поведение) би било (300−50) + (250−50) = 450
+  assert.equal(totalBlockingTime(tasks, 0), 450);
+});
+
+test("TBT изрязва задача, която започва преди FCP и продължава след него", () => {
+  // задача 800→1400, FCP=1000 → броимата част е 400 ms → 400 − 50 = 350
+  assert.equal(totalBlockingTime([{ start: 800, dur: 600 }], 1000), 350);
+});
+
+test("TBT не брои отрицателно и игнорира задачи под прага след изрязване", () => {
+  // задача 900→1030, FCP=1000 → остават 30 ms < 50 → нула, не −20
+  assert.equal(totalBlockingTime([{ start: 900, dur: 130 }], 1000), 0);
+  assert.equal(totalBlockingTime([{ start: 10, dur: 900 }], 5000), 0, "изцяло преди FCP → нула");
+});
+
+test("TBT е устойчив на липсващи/повредени входни данни", () => {
+  assert.equal(totalBlockingTime(null, 1000), 0);
+  assert.equal(totalBlockingTime([], 1000), 0);
+  assert.equal(totalBlockingTime([{}], 1000), 0);
+  // липсващ FCP → прозорецът пада към 0 (консервативно: брои всичко, не мълчи с нула)
+  assert.equal(totalBlockingTime([{ start: 0, dur: 200 }], null), 150);
 });
