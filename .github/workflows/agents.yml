@@ -1,6 +1,6 @@
 # Гейт за агентския слой — „ръката" на Президента в CI (Конвейерът).
 # Пуска oversee.mjs (fail-closed) + unit тестовете за надзорната логика при всяка промяна по
-# .claude/agents, settings.json, hooks, таблото или tools/agents|memory. Досега надзорът беше само
+# .claude/agents, settings.json, hooks, таблото или tools/. Досега надзорът беше само
 # ръчен; вече един провал (сирак, рассинхрон FALLBACK↔agents.json, липсваща доктрина) блокира PR.
 name: agents
 
@@ -14,9 +14,11 @@ on:
       - ".claude/hooks/**"
       - "agents-dashboard/agents.json"
       - "agents-dashboard/index.html"
-      - "tools/agents/**"
-      - "tools/memory/**"
-      - "tools/skills/**"
+      # ЦЯЛОТО tools/, не три избрани папки. Стъпката по-долу пуска `find tools -name '*.test.mjs'`
+      # — тоест ВСИЧКИ тестове — но филтърът ги пускаше само при промяна в agents|memory|skills.
+      # Промяна в tools/seo/, tools/lib/, tools/qa/, tools/security/… минаваше БЕЗ нито един тест.
+      # Гейт, чийто обхват е по-тесен от това, което проверява, е зелен по слепота.
+      - "tools/**"
       - ".github/workflows/agents.yml"
   pull_request:
     paths:
@@ -26,9 +28,11 @@ on:
       - ".claude/hooks/**"
       - "agents-dashboard/agents.json"
       - "agents-dashboard/index.html"
-      - "tools/agents/**"
-      - "tools/memory/**"
-      - "tools/skills/**"
+      # ЦЯЛОТО tools/, не три избрани папки. Стъпката по-долу пуска `find tools -name '*.test.mjs'`
+      # — тоест ВСИЧКИ тестове — но филтърът ги пускаше само при промяна в agents|memory|skills.
+      # Промяна в tools/seo/, tools/lib/, tools/qa/, tools/security/… минаваше БЕЗ нито един тест.
+      # Гейт, чийто обхват е по-тесен от това, което проверява, е зелен по слепота.
+      - "tools/**"
       - ".github/workflows/agents.yml"
 
 # Least-privilege: гейтът само чете кода.
