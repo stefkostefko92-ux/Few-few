@@ -79,8 +79,27 @@ test("липсващ title и lang са находки (достъпност + S
   } finally { s.cleanup(); }
 });
 
-test("реалният kebab минава (регресия за поправените ключови думи)", () => {
-  const r = checkSite("kebab");
-  assert.ok(r.files >= 4, `очаквам HTML файловете на kebab, намерих ${r.files}`);
-  assert.deepEqual(r.failed.map((f) => `${f.file}: ${f.errs.join(" · ")}`), []);
+// СЪЗНАТЕЛНО НЕ проверяваме тук реален продукт. Първата версия твърдеше „реалният kebab минава" и
+// така вързваше тест на ИНСТРУМЕНТА за съдържанието на ПРОДУКТ: щом продуктовата поправка излезе в
+// свой PR (монорепо закон №1 — един продукт на промяна), инфра тестът падна по причина, нямаща
+// нищо общо с инструмента. Състоянието на продукта се гейтва от НЕГОВИЯ workflow (`kebab.yml`),
+// който пуска точно този инструмент. Тук доказваме, че инструментът работи.
+test("checkSite обхожда дърво и връща обобщение, без да зависи от конкретен продукт", () => {
+  const html = page(`<img src="a.png">`);
+  const s = site({ "index.html": html, "a.png": "x", "под/друга.html": page(), "readme.md": "не е html" });
+  try {
+    const r = checkSite(s.dir);
+    assert.equal(r.files, 2, "само .html файловете, рекурсивно");
+    assert.deepEqual(r.failed, [], "чист сайт → нула провали");
+  } finally { s.cleanup(); }
+});
+
+test("checkSite маркира само проблемните файлове", () => {
+  const s = site({ "ok.html": page(), "lошо.html": page(`<a href="nqma.html">x</a>`) });
+  try {
+    const r = checkSite(s.dir);
+    assert.equal(r.files, 2);
+    assert.equal(r.failed.length, 1);
+    assert.match(r.failed[0].file, /lошо\.html/);
+  } finally { s.cleanup(); }
 });
