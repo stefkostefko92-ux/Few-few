@@ -21,6 +21,7 @@ import { readdirSync } from "node:fs";
 import { cpus } from "node:os";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const JSON_OUT = process.argv.includes("--json");
@@ -71,8 +72,7 @@ export async function checkAll(files = collectFiles()) {
 async function main() {
   const { checked, bad } = await checkAll();
   if (JSON_OUT) {
-    console.log(JSON.stringify({ checked, bad }, null, 2));
-    process.exit(bad.length ? 1 : 0);
+    await emitJsonNow({ checked, bad }, bad.length ? 1 : 0);
   }
   if (!bad.length) {
     console.log(`✓ syntax-check: ${checked} файла се парсват чисто.`);

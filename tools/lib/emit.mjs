@@ -40,3 +40,16 @@ export function emitText(text, code = 0) {
   if (!String(text).endsWith("\n")) process.stdout.write("\n");
   finish(code);
 }
+
+/**
+ * За РАННИТЕ изходи на върха на модула: `if (JSON_OUT) { print; exit }` не може да стане
+ * `finish()`, защото кодът след if-а щеше да продължи (текстовият отчет би се залепил за JSON-а).
+ * Тук изходът е безопасен, защото `process.exit` тръгва чак СЛЕД като write() е потвърдил flush
+ * през callback-а си — данните са в тръбата, преди процесът да умре.
+ *
+ *   if (JSON_OUT) await emitJsonNow(data, hasFindings ? 1 : 0);
+ */
+export async function emitJsonNow(value, code = 0, space = 2) {
+  await new Promise((r) => process.stdout.write(JSON.stringify(value, null, space) + "\n", r));
+  process.exit(code);
+}

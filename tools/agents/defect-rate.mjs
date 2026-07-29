@@ -20,6 +20,7 @@
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -93,7 +94,7 @@ export function measurementHealth() {
   return { trendIgnored, trendExists: existsSync(TREND), problems };
 }
 
-function main() {
+async function main() {
   const entries = parseJsonl(LEDGER);
   const rate = computeRate(entries);
   const pressure = computePressure();
@@ -105,8 +106,7 @@ function main() {
   if (noRegression) problems.push(`${noRegression} записа в дневника без регресия — този клас грешка може да се върне тихо.`);
 
   if (JSON_OUT) {
-    console.log(JSON.stringify({ date: TODAY, rate, pressure, trendPoints, measurement: health, problems }, null, 2));
-    process.exit(CHECK && problems.length ? 1 : 0);
+    await emitJsonNow({ date: TODAY, rate, pressure, trendPoints, measurement: health, problems }, CHECK && problems.length ? 1 : 0);
   }
 
   console.log(`\n🌡  Дефектен процент на флота (термометър, не оценка)\n`);
@@ -137,4 +137,4 @@ function main() {
   process.exit(CHECK && problems.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();

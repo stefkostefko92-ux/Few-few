@@ -27,6 +27,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join, extname, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 import { emitJson, finish } from "../lib/emit.mjs";
+import { launchChromium } from "../lib/browser.mjs";
 
 const argv = process.argv.slice(2);
 const TARGET = argv.find((a) => !a.startsWith("--"));
@@ -152,29 +153,12 @@ async function serve(dir) {
   return { server, url: `http://127.0.0.1:${server.address().port}/` };
 }
 
-function findChromium() {
-  const base = "/opt/pw-browsers";
-  if (!existsSync(base)) return null;
-  for (const d of readdirSync(base)) {
-    for (const p of [join(base, d, "chrome-linux", "chrome"), join(base, d, "chrome-linux", "headless_shell")])
-      if (existsSync(p)) return p;
-  }
-  return null;
-}
-
 // ── Измерване в реален Chromium ─────────────────────────────────────────────────────
 async function measure(url) {
-  let chromium;
-  try { ({ chromium } = await import("playwright-core")); }
-  catch {
-    // Гейт, който не може да се изпълни, ТРЯБВА да го каже с код за грешка — не да мълчи в зелено.
-    console.error("✘ Липсва playwright-core. Инсталирай: npm i -D playwright-core");
-    process.exit(2);
-  }
-  const exe = findChromium();
-  if (!exe) { console.error("✘ Не намирам Chromium в /opt/pw-browsers"); process.exit(2); }
-
-  const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox"] });
+  // Общият launcher (tools/lib/browser.mjs) — същият, който ползват consent-scan и a11y.
+  // Гейт, който не може да се изпълни, ТРЯБВА да го каже с код за грешка — не да мълчи в зелено.
+  const { browser, error } = await launchChromium();
+  if (error) { console.error(`✘ Не мога да меря: ${error}`); process.exit(2); }
   // Профилът на PageSpeed за мобилно: 4x CPU throttle + Moto G-подобен viewport.
   const ctx = await browser.newContext(DESKTOP
     ? { viewport: { width: 1350, height: 940 }, deviceScaleFactor: 1 }

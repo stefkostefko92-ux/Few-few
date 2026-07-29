@@ -13,6 +13,7 @@
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname, resolve, relative } from "node:path";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
@@ -78,10 +79,10 @@ export function checkSite(dir) {
   return { dir, files: files.length, results, failed: results.filter((r) => r.errs.length) };
 }
 
-function main() {
+async function main() {
   if (!DIR || !existsSync(DIR)) { console.error("употреба: static-site-check.mjs <папка> [--json]"); process.exit(2); }
   const r = checkSite(DIR);
-  if (JSON_OUT) { console.log(JSON.stringify(r, null, 2)); process.exit(r.failed.length ? 1 : 0); }
+  if (JSON_OUT) { await emitJsonNow(r, r.failed.length ? 1 : 0); }
   const g = (s) => `\x1b[32m${s}\x1b[0m`, red = (s) => `\x1b[31m${s}\x1b[0m`;
   console.log(`\n🧱  Статичен сайт „${r.dir}" — ${r.files} HTML файла\n`);
   if (!r.files) { console.log("  няма HTML файлове — нищо за проверка\n"); process.exit(0); }
@@ -94,4 +95,4 @@ function main() {
   process.exit(r.failed.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();

@@ -14,6 +14,10 @@ concurrency:
   group: supremediscordbot-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   # Продуктът е три отделни пакета (backend · bot · frontend), всеки със свой lock и скриптове.
   packages:

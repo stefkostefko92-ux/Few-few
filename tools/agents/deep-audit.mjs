@@ -23,6 +23,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const argv = process.argv.slice(2);
@@ -156,9 +157,9 @@ export function audit() {
   return { hard, soft, counts: { agents: ids.length, products: products.length, specs: specs.length, tools: toolFiles.length } };
 }
 
-function main() {
+async function main() {
   const { hard, soft, counts } = audit();
-  if (JSON_OUT) { console.log(JSON.stringify({ hard, soft, counts }, null, 2)); process.exit(CHECK && hard.length ? 1 : 0); }
+  if (JSON_OUT) { await emitJsonNow({ hard, soft, counts }, CHECK && hard.length ? 1 : 0); }
 
   const g = (s) => `\x1b[32m${s}\x1b[0m`, r = (s) => `\x1b[31m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, d = (s) => `\x1b[90m${s}\x1b[0m`;
   console.log(`\n🔬  Дълбок одит — ${counts.agents} агента · ${counts.products} продукта · ${counts.specs} spec-а · ${counts.tools} инструмента\n`);
@@ -177,4 +178,4 @@ function main() {
   process.exit(CHECK && hard.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();

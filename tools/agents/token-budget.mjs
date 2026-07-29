@@ -18,6 +18,7 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -162,19 +163,18 @@ export function computeBudget() {
   };
 }
 
-function runCli() {
+async function runCli() {
 const { rows, totals, prefixParts, STATIC_PREFIX_TOKENS, CACHE_SAVED, prefixBloated, prefixOverHard } = computeBudget();
 const bloated = rows.filter((r) => r.bloated);
 const overHard = rows.filter((r) => r.overHard);
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({
+  await emitJsonNow({
     generatedNote: "оценка (евристичен Cyrillic-aware токенизатор); точни числа: count_tokens endpoint",
     defTokenWarn: DEF_TOKEN_WARN,
     prefixTokenWarn: PREFIX_TOKEN_WARN, prefixTokenHard: PREFIX_TOKEN_HARD,
     totals, prefixParts, rows,
-  }, null, 2));
-  process.exit(0);
+  }, 0);
 }
 
 console.log(`\n🪙  Токен-бюджет на екипа (${rows.length} агента) — ОЦЕНКА, не измерен ран\n`);
@@ -227,4 +227,4 @@ process.exit(failed);
 }
 
 // Пусни CLI само при директно извикване (не при import от тест/табло).
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (import.meta.url === `file://${process.argv[1]}`) await runCli();

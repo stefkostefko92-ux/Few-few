@@ -25,6 +25,7 @@
 import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 import {
   STALE_DAYS, MERGE_THRESHOLD, TIME_SENSITIVE,
   jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
@@ -196,6 +197,8 @@ if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва обща
 const dupKey = (k) => { const seen = new Set(), dups = new Set(); for (const a of aj.agents) { const v = a[k]; if (v == null) continue; if (seen.has(v)) dups.add(v); else seen.add(v); } return [...dups]; };
 for (const acc of dupKey("accent")) { team.push({ level: "hard", msg: `дублиран accent „${acc}" при два агента — сменѝ единия` }); hardFails++; }
 for (const nm of dupKey("name")) { team.push({ level: "hard", msg: `дублирано име „${nm}" при два агента` }); hardFails++; }
+// Емоджито е втората визуална идентичност (таблото, README, tooltips) — дубъл = двама с едно лице.
+for (const e of dupKey("emoji")) { team.push({ level: "hard", msg: `дублирано емоджи „${e}" при два агента — сменѝ единия` }); hardFails++; }
 
 // --- тренд: сравни с предишна снимка (по избор) → регресии ---
 const trend = [];
@@ -226,8 +229,7 @@ if (snapshotArg) {
 }
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, null, 2));
-  process.exit(hardFails || (STRICT && warns) ? 1 : 0);
+  await emitJsonNow({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, hardFails || (STRICT && warns) ? 1 : 0);
 }
 
 console.log(`\n🏛  Надзор над агентския екип — ${report.length} агента (${TODAY})\n`);

@@ -34,7 +34,9 @@ const EMPTY = mkdtempSync(join(tmpdir(), "toolarg-"));
 // `args`: с какво се вика. `net`: пипа мрежата (тестваме само че се държи прилично без нея).
 const TOOLS = [
   { rel: "tools/agents/evals/eval.mjs", args: ["--check"] },
+  { rel: "tools/agents/evals/headless-run.mjs", args: ["--dry"] },
   { rel: "tools/agents/evals/run-plan.mjs", args: [] },
+  { rel: "tools/docs/collect-claude-md.mjs", args: ["--check"] },
   { rel: "tools/agents/flow-ledger.mjs", args: ["--report"] },
   { rel: "tools/agents/metrics.mjs", args: [] },
   { rel: "tools/agents/model-policy.mjs", args: [] },
@@ -100,10 +102,9 @@ for (const t of NET) {
 
 // --- Поведенчески: най-рисковите домейни -------------------------------------------
 
-// consent-scan е РЪНТАЙМ скенер (Playwright + ЖИВ URL), не статичен обход на папка — затова тук
-// няма поведенчески тест с фикстура-папка. Отделна находка, записана в дневника: при липсващ
-// Playwright той излиза с код 0, тоест „успех", без да е проверил нищо. GDPR гейт, който рапортува
-// успех, докато не е направил нищо, е същият клас „зелено, защото сме слепи".
+// consent-scan е РЪНТАЙМ скенер (Playwright + ЖИВ URL) — поведенческите му тестове са в
+// tools/legal/consent-scan.test.mjs: чистата verdict() гарантира, че незаредена страница дава
+// изход 2 (неизмерено), НИКОГА 0. Класът „зелено, защото сме слепи" там вече е под гейт.
 
 test("trader-lint не пада върху реалния treydar (паричен домейн)", () => {
   if (!existsSync(join(ROOT, "treydar"))) return;

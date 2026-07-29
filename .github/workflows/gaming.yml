@@ -14,6 +14,10 @@ concurrency:
   group: gaming-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -23,10 +27,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Продуктът декларира pnpm@10 в packageManager и има pnpm-lock.yaml — corepack го уважава.
+      # corepack ПРЕДИ setup-node: cache: pnpm вика `pnpm store path` още в setup стъпката.
+      - run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: corepack enable
+          cache: pnpm
+          cache-dependency-path: Gaming/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
       - run: pnpm run typecheck

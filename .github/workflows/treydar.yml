@@ -16,6 +16,10 @@ concurrency:
   group: treydar-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
