@@ -104,11 +104,36 @@ export const tailHasSource = (tail) => {
 // легитимните формати, които агентите ползват: inline `(Източник: …)` / `(Source: …)`, гол URL,
 // собствено-кодово потекло (`file:line`, `tools/…`, `src/…`, `.mjs`/`.ts`/…). Всичките са реален
 // източник. Само поука БЕЗ нито едно от тях е „без източник".
+/**
+ * КАНОНИЧНАТА дефиниция за „това е реален източник" — един низ, един отговор.
+ *
+ * Дълго време съществуваха ДВЕ: `hasSource` тук (одиторът) и `sourceIsReal` в
+ * `.claude/hooks/memory-capture.mjs` (куката, която решава дали поука става ФАКТ). Куката беше
+ * по-строгата и за 74 реални поуки двете се разминаваха → напълно валидно знание заседна в
+ * Карантина завинаги. Затова предикатът живее ТУК веднъж и куката го внася.
+ *
+ * ВНИМАНИЕ за кирилицата: `\b` в JS е ASCII-базирана и НЕ образува граница пред „ч" от „чл.".
+ * Затова правната цитация се лови без `\b` (проверено — вече ме подведе веднъж в handoff.mjs).
+ */
+export const isRealSource = (src) => {
+  const s = String(src ?? "").trim();
+  if (!s || /^(n\/?a|няма|липсва|—|--?)$/i.test(s)) return false;
+  return (
+    /https?:\/\/[^/\s]*\.[^/\s.][^/\s]*/i.test(s) ||                       // пълен URL с хост-с-точка
+    /(?:^|[\s(„"'])[a-z0-9-]+(?:\.[a-z0-9-]+)+\/[\w./-]*/i.test(s) ||      // хост+път БЕЗ схема (tita.bg/laws/427)
+    /[\w./-]+\.[a-z]{1,5}:\d+/i.test(s) ||                                 // file.ext:line
+    /[\w-]+\/[\w./-]*\.(?:mjs|js|ts|tsx|jsx|json|md|prisma|ejs|html|css|lua|sh|ya?ml)/i.test(s) || // репо-път
+    /(?:чл|ал|Прил|Регл|Дир|Наредба|ЗДДС|ЗЗП|ЗСч|ЗВЕРБ|GDPR|WCAG|§)\.?\s*№?\s*\d/i.test(s) ||     // правна цитация
+    /(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)/i.test(s)
+  );
+};
+
 export const hasSource = (block) => {
   if (!block) return false;
   const m = String(block).match(/_\((.*?)\)_\s*$/);
   if (tailHasSource(m && m[1])) return true;
   if (/\((?:Източник|Source)\s*:\s*[^)]{4,}\)/i.test(block)) return true; // inline цитат
+  if (isRealSource(block)) return true; // каноничният предикат (един източник на истина)
   if (/https?:\/\/\S{4,}/.test(block)) return true;                       // гол URL
   if (/\b[\w./-]+\.(?:mjs|ts|tsx|js|jsx|json|md|prisma|ejs|html)\b/i.test(block)) return true; // репо файл
   if (/\b(?:tools|src|prisma|app|deploy)\/[\w./-]+/.test(block)) return true; // репо път

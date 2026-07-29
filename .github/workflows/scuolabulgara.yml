@@ -1,0 +1,32 @@
+name: scuolabulgara
+
+on:
+  push:
+    paths:
+      - 'scuolabulgara/**'
+      - '.github/workflows/scuolabulgara.yml'
+  pull_request:
+    paths:
+      - 'scuolabulgara/**'
+      - '.github/workflows/scuolabulgara.yml'
+
+concurrency:
+  group: scuolabulgara-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scuolabulgara
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scuolabulgara/package-lock.json
+      # postinstall прави prisma generate — затова npm ci е достатъчен преди build.
+      - run: npm ci
+      - run: npm run build

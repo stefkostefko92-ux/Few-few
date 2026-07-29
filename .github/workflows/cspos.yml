@@ -9,6 +9,10 @@ on:
     paths: ["CSPos/**", ".github/workflows/cspos.yml"]
   workflow_dispatch: # ръчно пускане на инсталатора от раздел Actions
 
+concurrency:
+  group: cspos-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Качествена порта (Linux) ──────────────────────────────────────────────
   quality:

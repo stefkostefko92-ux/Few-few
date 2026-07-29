@@ -11,6 +11,10 @@ defaults:
   run:
     working-directory: zabobovdol
 
+concurrency:
+  group: zabobovdol-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     name: Lint, typecheck, test, build

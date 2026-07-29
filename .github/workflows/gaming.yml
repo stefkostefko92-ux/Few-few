@@ -1,0 +1,34 @@
+name: gaming
+
+on:
+  push:
+    paths:
+      - 'Gaming/**'
+      - '.github/workflows/gaming.yml'
+  pull_request:
+    paths:
+      - 'Gaming/**'
+      - '.github/workflows/gaming.yml'
+
+concurrency:
+  group: gaming-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Gaming
+    steps:
+      - uses: actions/checkout@v4
+      # Продуктът декларира pnpm@10 в packageManager и има pnpm-lock.yaml — corepack го уважава.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - run: pnpm test
+      - run: pnpm run build

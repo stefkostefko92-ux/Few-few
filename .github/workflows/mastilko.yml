@@ -7,6 +7,10 @@ on:
   pull_request:
     paths: ["mastilko/**", ".github/workflows/mastilko.yml"]
 
+concurrency:
+  group: mastilko-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Качествена порта ──────────────────────────────────────────────────────
   quality:

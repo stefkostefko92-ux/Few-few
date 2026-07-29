@@ -11,6 +11,10 @@ defaults:
   run:
     working-directory: Minyor
 
+concurrency:
+  group: minyor-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     name: Lint, typecheck, build

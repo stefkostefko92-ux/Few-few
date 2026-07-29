@@ -11,6 +11,10 @@ defaults:
   run:
     working-directory: Nexus
 
+concurrency:
+  group: nexus-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     name: Typecheck, test, build, release gate

@@ -1,0 +1,35 @@
+name: adblock
+
+on:
+  push:
+    paths:
+      - 'adblock/**'
+      - '.github/workflows/adblock.yml'
+  pull_request:
+    paths:
+      - 'adblock/**'
+      - '.github/workflows/adblock.yml'
+
+concurrency:
+  group: adblock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Продуктът няма билд стъпка и няма зависимости (vanilla MV3). Реалният гейт е MV3 линтът
+      # (минимални права · без отдалечен код · валиден manifest) плюс синтаксисът на всички скриптове.
+      - name: MV3 линт
+        run: node tools/chrome/mv3-lint.mjs adblock
+      - name: Синтаксис на всички .js/.mjs в разширението
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            node --check "$f" || { echo "::error file=$f::синтактична грешка"; fail=1; }
+          done < <(find adblock -name '*.js' -o -name '*.mjs' | grep -v node_modules)
+          exit $fail

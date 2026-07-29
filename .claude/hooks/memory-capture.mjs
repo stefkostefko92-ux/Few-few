@@ -123,14 +123,19 @@ const INJECTION_RE = new RegExp(
 );
 const looksInjection = (s) => INJECTION_RE.test(String(s));
 
-// „Verified" иска РЕАЛЕН източник. Втвърдено: URL трябва да има истински ХОСТ (с точка,
-// напр. docs.anthropic.com) — отхвърля малформирани като https://zabobovdol/… (repo-path,
-// залепен на https://); ИЛИ реален file:line (път.разширение:ред); ИЛИ познат инструмент/eval.
-// Синтактична проверка (не семантична — hook-ът не отваря URL-а); curate + човек до push.
-const sourceIsReal = (src) =>
-  /https?:\/\/[^/\s]*\.[^/\s.][^/\s]*\//i.test(String(src)) ||           // URL с хост-с-точка + път
-  /[\w./-]+\.[a-z]{1,5}:\d+/i.test(String(src)) ||                         // file.ext:line
-  /\b(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)\b/i.test(String(src));
+// „Verified" иска РЕАЛЕН източник. Синтактична проверка (не семантична — hook-ът не отваря URL-а);
+// curate + човек до push.
+//
+// ИЗРАВНЕНО С `hasSource` (tools/agents/oversee-lib.mjs). Дълго време двете функции даваха РАЗЛИЧЕН
+// отговор за един и същ низ: куката (която решава дали поуката става ФАКТ) беше по-строга от
+// одитора (който после я преглежда). Резултат: 74 поуки с напълно реален източник заседнаха в
+// Карантина и никога не станаха знание — правни цитати с домейн без схема (`tita.bg/laws/427`),
+// репо-пътища без номер на ред (`bot/src/utils/serverEventLog.js`), `discord.com/developers/docs`.
+// Две дефиниции за едно понятие = тих отпад. Приемаме същите форми като `hasSource`; продължаваме
+// да отхвърляме празнотата („N/A", „само коефициенти налични") — там няма какво да се провери.
+// Внасяме КАНОНИЧНИЯ предикат — да не съществуват две дефиниции за „източник“ (точно това
+// заклещи 74 реални поуки в Карантина).
+export { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
 
 function ensureSections(txt) {
   if (!/##\s*Проверени поуки/.test(txt)) txt += `\n## Проверени поуки (verified)\n`;
