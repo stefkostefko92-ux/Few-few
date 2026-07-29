@@ -178,7 +178,8 @@ async function measure(url) {
     try {
       const h = r.headers();
       requests.push({ url: r.url(), status: r.status(), type: h["content-type"] || "",
-        size: Number(h["content-length"] || 0), encoding: h["content-encoding"] || "" });
+        size: Number(h["content-length"] || 0), encoding: h["content-encoding"] || "",
+        cacheControl: h["cache-control"] || "" });
     } catch { /* игнорирай затворени отговори */ }
   });
 
@@ -251,10 +252,10 @@ export function advise({ metrics, requests, diag }, profile) {
 
   if (metrics.LCP > c.LCP[0]) tips.push({ impact: "висок", metric: "LCP",
     what: `LCP е ${Math.round(metrics.LCP)}ms (цел ≤${c.LCP[0]}ms)`,
-    how: "предзареди LCP изображението (`<link rel=preload as=image>`), сервирай AVIF/WebP, махни render-blocking CSS над сгъвката" });
+    how: "`fetchpriority=\"high\"` на LCP <img> (първичната тактика; preload е за CSS background LCP), сервирай AVIF/WebP, махни render-blocking CSS над сгъвката" });
   if (metrics.TBT > c.TBT[0]) tips.push({ impact: "висок", metric: "TBT",
     what: `TBT е ${Math.round(metrics.TBT)}ms (цел ≤${c.TBT[0]}ms)`,
-    how: "разцепи дългите задачи, отложи несъщностния JS (`defer`/`type=module`), махни неизползвани библиотеки" });
+    how: "разцепи дългите задачи (`scheduler.yield()` — Chrome/Edge 129+, Firefox 142+; setTimeout fallback за Safari), отложи несъщностния JS (`defer`/`type=module`), махни неизползвани библиотеки" });
   if (metrics.CLS > c.CLS[0]) tips.push({ impact: "висок", metric: "CLS",
     what: `CLS е ${metrics.CLS.toFixed(3)} (цел ≤${c.CLS[0]})`,
     how: "дай `width`/`height` на всяко изображение, резервирай място за банери/реклами, `font-display: optional`" });
@@ -276,9 +277,16 @@ export function advise({ metrics, requests, diag }, profile) {
     how: "`loading=\"lazy\"` на всичко под сгъвката (НЕ на LCP изображението)" });
   if (diag.fontsNoDisplay.length) tips.push({ impact: "среден", metric: "FCP/CLS",
     what: `${diag.fontsNoDisplay.length} @font-face без font-display`,
-    how: "`font-display: swap` (или `optional` за минимален CLS)" });
+    how: "`font-display: swap`/`optional` + `size-adjust`/`ascent-override`/`descent-override` на fallback шрифта — само font-display НАМАЛЯВА CLS от смяната, override метриките го нулират" });
   if (bytes > 1_600_000) tips.push({ impact: "среден", metric: "трансфер",
     what: `~${Math.round(bytes / 1024)} KB общ трансфер`, how: "смали изображенията, изчисти неизползван CSS/JS" });
+  // bfcache: `no-store` на ГЛАВНИЯ документ блокира back/forward кеша — най-голямата безплатна
+  // победа за навигации (web.dev/bfcache). Инструментът не тества назад/напред, затова само
+  // предупреждава при позитивно доказателство в заглавията.
+  const doc = requests.find((r) => /text\/html/.test(r.type));
+  if (doc && /no-store/i.test(doc.cacheControl || "")) tips.push({ impact: "среден", metric: "навигации",
+    what: "главният документ е с Cache-Control: no-store",
+    how: "това изключва bfcache (мигновеното назад/напред) — махни no-store от HTML отговора, освен ако страницата носи чувствителни данни" });
   if (metrics.domNodes > 1500) tips.push({ impact: "нисък", metric: "TBT",
     what: `${metrics.domNodes} DOM възела`, how: "опрости маркъпа; големият DOM оскъпява всеки стил/лейаут" });
 
@@ -349,6 +357,7 @@ async function main() {
   console.log(d(`\n   Теглата са пренормирани върху ${weightBase}% (Speed Index не се мери тук — иска филмова лента).`));
   console.log(d(`   TBT се брои от FCP до края на измерването (Lighthouse спира на TTI) — прозорецът ни`));
   console.log(d(`   е по-широк, значи числото може да е по-високо от тяхното, но никога по-ниско.`));
+  console.log(d(`   INP не се мери тук — иска реален потребителски вход (полева метрика). TBT е лабораторният му прокси.`));
   if (res.servedLocally) console.log(d(`   Срещу ПАПКА вътрешният сървър гзипва текста, както прави продукцията — затова`));
   if (res.servedLocally) console.log(d(`   компресията тук е ДОПУСКАНЕ, не проверка. Сверявай я на живия сървър.`));
   console.log(d(`   ${res.requests.length} заявки · ~${Math.round(bytes / 1024)} KB трансфер · медиана от ${res.runs} рана`));
