@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-28",
+    "updated": "2026-07-29",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 220
+        "lessons": 223
       },
       "evolution": [
         {
@@ -530,9 +530,20 @@
           "date": "2026-07-28",
           "event": "v16.1 — учене",
           "detail": "Научи: Digital Omnibus вече НЕ е един проект — разцепен е. AI-омнибусът е ПРАВО: Регламент (ЕС… (+11 още)"
+        },
+        {
+          "version": "16.4.0",
+          "date": "2026-07-28",
+          "event": "v16.4 — учене",
+          "detail": "Научи: iOS клас за защита на файлове по подразбиране е NSFileProtectionCompleteUntilFirstUserA… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „iOS клас за защита на файлове по подразбиране е NSFileProtectionCompleteUntilFirstUserA…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -1030,7 +1041,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 245
+        "lessons": 248
       },
       "evolution": [
         {
@@ -1620,9 +1631,20 @@
           "date": "2026-07-28",
           "event": "v16.6 — учене",
           "detail": "Научи: linketto ProfileScreen.tsx:385-392 вгражда personJsonLd/productListJsonLd със суров JSO… (+12 още)"
+        },
+        {
+          "version": "16.9.0",
+          "date": "2026-07-28",
+          "event": "v16.9 — учене",
+          "detail": "Научи: В nezabravka всяка мутация пуска `Task { await resync() }` без сериализация, а `Notific… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „В nezabravka всяка мутация пуска `Task { await resync() }` без сериализация, а `Notific…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -3986,7 +4008,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 121
+        "lessons": 127
       },
       "evolution": [
         {
@@ -4360,9 +4382,31 @@
           "date": "2026-07-28",
           "event": "v16.0 — учене",
           "detail": "Научи: ICU MessageFormat третира ASCII апострофа ' като escape-знак — в италиански/френски низ… (+11 още)"
+        },
+        {
+          "version": "16.3.0",
+          "date": "2026-07-28",
+          "event": "v16.3 — учене",
+          "detail": "Научи: iOS на италиански нарича Focus „Full Immersion“ (Impostazioni → Full Immersion), не „Fo… (+2 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-07-29",
+          "event": "v16.6 — учене",
+          "detail": "Научи: karakochev/: `repeat.lastWorkdayOfMonth` = последният пн–пт (OccurrenceCalculator.weekd… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „karakochev/: `repeat.lastWorkdayOfMonth` = последният пн–пт (OccurrenceCalculator.weekd…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „iOS на италиански нарича Focus „Full Immersion“ (Impostazioni → Full Immersion), не „Fo…\" (+2 още) · 2 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -8534,7 +8578,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 122
+        "lessons": 124
       },
       "evolution": [
         {
@@ -8842,9 +8886,25 @@
           "date": "2026-07-28",
           "event": "v13.8 — учене",
           "detail": "Научи: medqr/mobile/package.json е на @capacitor/core|android|ios ^6.2.0 — не Capacitor 7/8; ъ… (+6 още)"
+        },
+        {
+          "version": "14.0.0",
+          "date": "2026-07-28",
+          "event": "v14.0 — учене",
+          "detail": "Научи: nezabravka/: App target SWIFT_VERSION=5.0 в project.pbxproj/project.yml, докато Package… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „karakochev/Karakochev App Intents (Xcode target, синхронизирана папка) няма нужда от от…\" (+2)"
+        },
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „nezabravka/: App target SWIFT_VERSION=5.0 в project.pbxproj/project.yml, докато Package…\" (+1 още) · 2 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -12656,7 +12716,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 146
+        "lessons": 151
       },
       "evolution": [
         {
@@ -12706,9 +12766,20 @@
           "date": "2026-07-28",
           "event": "v14.3 — учене",
           "detail": "Научи: Apple age rating скалата е 4+/9+/13+/16+/18+ (13+/16+/18+ добавени към старите 4+/9+); … (+11 още)"
+        },
+        {
+          "version": "14.8.0",
+          "date": "2026-07-28",
+          "event": "v14.8 — учене",
+          "detail": "Научи: iOS 16+ иска включен Developer Mode (Настройки → Поверителност и сигурност) за всяко de… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „iOS 16+ иска включен Developer Mode (Настройки → Поверителност и сигурност) за всяко de…\" (+4 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -12833,7 +12904,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 149
+        "lessons": 151
       },
       "evolution": [
         {
@@ -12889,9 +12960,20 @@
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: tj-actions/changed-files (CVE-2025-30066, март 2025): атакуващ пренаписа 350+ git тагов… (+9 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-07-28",
+          "event": "v14.9 — учене",
+          "detail": "Научи: actions/checkout (Node20 action) в job-level `container:` работи защото runner-ът bind-… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-28",
+          "type": "learning",
+          "summary": "Научи: „actions/checkout (Node20 action) в job-level `container:` работи защото runner-ът bind-…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",

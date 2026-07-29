@@ -1,0 +1,23 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Името под иконата на началния екран.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Каракочев" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
+      }
+    },
+    "CFBundleName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "bg" : { "stringUnit" : { "state" : "translated", "value" : "Каракочев" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Karakochev" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

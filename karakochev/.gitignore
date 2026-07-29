@@ -1,0 +1,11 @@
+# SwiftPM (ядрото се билдва и на Linux)
+.build/
+.swiftpm/
+Package.resolved
+
+# Xcode
+DerivedData/
+*.xcuserdatad/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+build/
