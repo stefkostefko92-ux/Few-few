@@ -59,22 +59,31 @@ test("абсолютен път БЕЗ root вече не мислабелва �
 // фалшивия зелен и сгреших (PR #147). Гейт, който отговаря различно на двете места, е по-лош от
 // липсващ, защото активно подвежда.
 
-test("defaultRange сочи към БАЗАТА, не към работното дърво", () => {
-  const d = defaultRange();
-  assert.equal(d.mode, "range", "в нормално репо трябва да има база за сравнение");
-  assert.match(d.args, /\.\.\.HEAD$/, "трипосочен diff спрямо merge-base, както в CI");
-  assert.match(d.args, /^(origin\/)?(main|master)/);
-});
-
-test("defaultRange описва какво мери (мълчаливият избор на режим беше причината за подвеждането)", () => {
-  const d = defaultRange();
-  assert.ok(d.label && d.label.length > 10, "етикетът се печата на потребителя");
+test("defaultRange избира базата, а не работното дърво — детерминистично, без реален git", () => {
+  const d = defaultRange(() => true); // първата база е налична
+  assert.equal(d.mode, "range");
+  assert.equal(d.args, "origin/main...HEAD", "трипосочен diff спрямо merge-base, както в CI");
   assert.match(d.label, /CI/, "казва изрично, че съвпада с CI");
 });
 
-test("резервният режим се самообявява като по-слаб", () => {
-  // Не можем да махнем origin/main тук, но инвариантът е проверим: резервният етикет ТРЯБВА да
-  // предупреждава, че мери само некомитнатото — иначе пак ще бъде прочетен като пълна проверка.
-  const fallbackLabel = "САМО некомитнатите промени (няма база за сравнение!)";
-  assert.match(fallbackLabel, /САМО|!/, "резервният режим се обявява шумно");
+test("реда на базите се спазва (origin преди локална)", () => {
+  const seen = [];
+  defaultRange((b) => { seen.push(b); return b === "main"; });
+  assert.deepEqual(seen, ["origin/main", "origin/master", "main"]);
+  assert.equal(defaultRange((b) => b === "main").args, "main...HEAD");
+});
+
+test("без никаква база пада към работното дърво и се обявява ШУМНО", () => {
+  const d = defaultRange(() => false);
+  assert.equal(d.mode, "worktree");
+  assert.equal(d.args, "HEAD");
+  assert.match(d.label, /САМО|!/, "резервният режим не бива да се чете като пълна проверка");
+});
+
+test("режимът НИКОГА не е мълчалив — винаги има етикет (това беше истинската причина да подведе)", () => {
+  for (const probe of [() => true, () => false, (b) => b === "master"]) {
+    const d = defaultRange(probe);
+    assert.ok(d.label && d.label.length > 10, "етикетът се печата на потребителя");
+    assert.ok(["range", "worktree"].includes(d.mode));
+  }
 });

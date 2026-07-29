@@ -56,10 +56,15 @@ const gitOk = (cmd) => { try { execSync(cmd, { stdio: "ignore" }); return true; 
  * Сега по подразбиране се съди СЪЩОТО като в CI. Ако няма база (плитък клон, откачена глава),
  * падаме назад и КАЗВАМЕ на какво сме паднали — режимът никога не се избира мълчаливо.
  */
-export function defaultRange() {
-  for (const base of ["origin/main", "origin/master", "main", "master"]) {
-    if (gitOk(`git rev-parse --verify --quiet ${base}`) && gitOk(`git merge-base ${base} HEAD`))
-      return { mode: "range", args: `${base}...HEAD`, label: `клонът спрямо ${base} (както в CI)` };
+export const BASES = ["origin/main", "origin/master", "main", "master"];
+
+// `hasBase` е ИНЖЕКТИРУЕМ, за да е логиката тестваема детерминистично. Първата версия на теста
+// твърдеше „режимът е range" и падна в CI, защото `actions/checkout` прави плитък клон и
+// `origin/main` там не съществува — тоест тестът проверяваше ОБКРЪЖЕНИЕТО, не логиката. Точно
+// анти-патърнът, който изчиствам другаде: проверка, вързана за ambient състояние.
+export function defaultRange(hasBase = (b) => gitOk(`git rev-parse --verify --quiet ${b}`) && gitOk(`git merge-base ${b} HEAD`)) {
+  for (const base of BASES) {
+    if (hasBase(base)) return { mode: "range", args: `${base}...HEAD`, label: `клонът спрямо ${base} (както в CI)` };
   }
   return { mode: "worktree", args: "HEAD", label: "САМО некомитнатите промени (няма база за сравнение!)" };
 }
