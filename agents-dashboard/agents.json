@@ -3984,7 +3984,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 6
+        "lessons": 13
       },
       "evolution": [
         {
@@ -3992,9 +3992,20 @@
           "date": "2026-07-29",
           "event": "Раждане",
           "detail": "PageSpeed Insights дърпа URL-а от сървърите на Google — непубликуван сайт е недостъпен ПО УСТРОЙСТВО, не заради ключ. Затова лабораторната половина (Lighthouse = Chromium + измервания) се възпроизвежда локално: tools/seo/prelaunch-audit.mjs."
+        },
+        {
+          "version": "0.8.0",
+          "date": "2026-07-29",
+          "event": "v0.8 — учене",
+          "detail": "Научи: LCP изключва изображения под 0.05 bits/pixel entropy (Chrome 112+), измерено по display… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „LCP изключва изображения под 0.05 bits/pixel entropy (Chrome 112+), измерено по display…\" (+6 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-29",
           "type": "birth",
