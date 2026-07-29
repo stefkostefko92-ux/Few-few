@@ -29,6 +29,11 @@ jobs:
       # версия от продукта, мери грешното нещо.
       - name: Валидна Prisma схема (версията на продукта)
         working-directory: Ivan/backend
+        env:
+          # `prisma validate` НЕ се свързва, но иска променливата да съществува, защото схемата я
+          # реферира. Стойността е фиктивна и БЕЗ идентификационни данни — низ с `user:pass@` би
+          # бил находка за нашия собствен secret-scan.
+          DATABASE_URL: postgresql://localhost:5432/validate_only
         run: |
           if [ -f prisma/schema.prisma ]; then
             npm install --no-audit --no-fund
