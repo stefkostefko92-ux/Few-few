@@ -3984,7 +3984,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 23
+        "lessons": 28
       },
       "evolution": [
         {
@@ -4016,9 +4016,20 @@
           "date": "2026-07-29",
           "event": "v1.8 — учене",
           "detail": "Научи: statement: 100/100 локално НЕ е гаранция за жив CWV — TBT/LCP локално нямат мрежов late…"
+        },
+        {
+          "version": "2.3.0",
+          "date": "2026-07-29",
+          "event": "v2.3 — учене",
+          "detail": "Научи: App Router Server Components изпращат само RSC Payload + JS за 'use client' граници към… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „App Router Server Components изпращат само RSC Payload + JS за 'use client' граници към…\" (+4 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
