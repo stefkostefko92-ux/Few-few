@@ -127,7 +127,11 @@ export function computeBudget() {
     // Разход при старт (без кеш) = системен промпт + статичен префикс + лична памет.
     const perStartCold = sysTokens + STATIC_PREFIX_TOKENS + personalTokens;
     // Разход при старт (със заключен кеш) = плащаш пълно само динамичното; статичното на 0.1×.
-    const perStartWarm = sysTokens + Math.round(STATIC_PREFIX_TOKENS * 0.1) + personalTokens;
+    // Дефинираме warm ЧРЕЗ CACHE_SAVED (една закръглителна точка), не с отделен Math.round:
+    // две независими закръгляния на 0.1× и 0.9× се разминават с 1 токен при полу-стойност
+    // (напр. префикс 4895 → 489.5↑ + 4405.5↑ = 4896 ≠ 4895) и инвариантът
+    // „студено − топло = спестено" се чупи с по 1 токен на агент.
+    const perStartWarm = sysTokens + (STATIC_PREFIX_TOKENS - CACHE_SAVED) + personalTokens;
     const savedPct = perStartCold ? Math.round((CACHE_SAVED / perStartCold) * 100) : 0;
     rows.push({
       id, model: frontModel(md), effort: frontEffort(md),
