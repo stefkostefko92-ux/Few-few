@@ -3128,7 +3128,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 151
+        "lessons": 152
       },
       "evolution": [
         {
@@ -3532,9 +3532,20 @@
           "date": "2026-07-28",
           "event": "v14.5 — учене",
           "detail": "Научи: От Chrome 151 (юли 2026) Soft Navigations API излиза unflagged — CrUX вече мери client-… (+3 още)"
+        },
+        {
+          "version": "14.6.0",
+          "date": "2026-07-29",
+          "event": "v14.6 — учене",
+          "detail": "Научи: tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…\" · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
