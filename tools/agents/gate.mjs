@@ -44,6 +44,7 @@ const CHECKS = [
   { id: "token-budget", desc: "таван на дефиниции И на статичния префикс (×флота)", cmd: ["tools/agents/token-budget.mjs", "--check"] },
   { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
+  { id: "version-freshness", desc: "версиите, които агентите цитират, са сверени в TTL (не 2–3 годишни спомени)", cmd: ["tools/agents/version-freshness.mjs", "--check"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
 ];
