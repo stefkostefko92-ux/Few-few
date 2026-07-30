@@ -37,6 +37,7 @@ const CHECKS = [
   { id: "tools-audit", desc: "най-малки права (advisory агенти без Write/Edit)", cmd: ["tools/agents/tools-audit.mjs"] },
   { id: "def-freshness", desc: "свежест на дефинициите (без просрочени срокове)", cmd: ["tools/agents/def-freshness.mjs"] },
   { id: "consistency", desc: "противоречия/безизточникови verified в паметта", cmd: ["tools/agents/consistency-audit.mjs", "--check"] },
+  { id: "dashboard-sync", desc: "таблото не лъже за знанието (agents.json ↔ реалния брой поуки в _memory)", cmd: ["tools/agents/sync-dashboard.mjs", "--check"] },
   { id: "loop-audit", desc: "readiness на автоматизациите (автономия-стълба)", cmd: ["tools/agents/loops/loop-audit.mjs"] },
   { id: "recovery-audit", desc: "стълбата провал→възстановяване е цяла", cmd: ["tools/agents/recovery-audit.mjs"] },
   { id: "trajectory-audit", desc: "пътят на оркестрацията спрямо ground-truth", cmd: ["tools/agents/trajectory-audit.mjs", "--check"] },

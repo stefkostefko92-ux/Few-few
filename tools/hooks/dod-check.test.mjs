@@ -1,7 +1,7 @@
 // dod-check.test.mjs — DoD-enforcement hook логиката (CI auto-discovery).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { collectToolUses, checkDoD, bashWrites, lastAssistantText, checkHandoffViolation } from "../../.claude/hooks/dod-check.mjs";
+import { collectToolUses, checkDoD, bashWrites, lastAssistantText, checkHandoffViolation, checkFailedGates, collectToolResults } from "../../.claude/hooks/dod-check.mjs";
 
 const jl = (objs) => objs.map((o) => JSON.stringify(o)).join("\n");
 
@@ -136,4 +136,58 @@ test("празен изход НЕ е нарушение — не заклещв
 test("адресат извън екипа → нарушение (веригата сочи в нищото)", () => {
   const v = checkHandoffViolation(GOOD.replace("Към: izpitatelya", "Към: несъществуващ"), AGENTS);
   assert.ok(v && /непознат адресат/.test(v.gate));
+});
+
+// ── Вълна 2026-07-30: DoD гледа РЕЗУЛТАТА, не само че гейтът е пуснат ─────────────────────────
+// Дефектът (от президентския одит, възпроизведен): `collectToolUses` събираше само tool_use
+// (име+вход), затова хукът знаеше че гейтът е ПУСНАТ, но не и че е МИНАЛ. Агент можеше да пусне
+// гейта, той да падне ЧЕРВЕН, и DoD пак да го пусне за завършено — при положение че доктрината ни
+// казва обратното: „готово“ = гейтът е РЕАЛНО зелен, не „предполагам минава“.
+// ANSI кодовете се сглобяват в runtime — литерален ESC в изходен файл е невидим и чупи diff-а.
+const ESC = String.fromCharCode(27);
+const RED = `${ESC}[31m`, GRN = `${ESC}[32m`, RST = `${ESC}[0m`;
+
+test("checkFailedGates: ЧЕРВЕН гейт в резултатите блокира завършването", () => {
+  const v = checkFailedGates([`${RED}СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН${RST} — 1 задължителни проверки паднаха: oversee`]);
+  assert.ok(v, "червеният гейт трябва да е нарушение");
+  assert.match(v.gate, /ЧЕРВЕН/);
+  assert.match(v.gate, /гейтът на агентския слой/);
+});
+
+test("checkFailedGates: зелено навсякъде → нула нарушения", () => {
+  assert.equal(checkFailedGates([`${GRN}СТАТУС: гейтът е зелен${RST} — всички задължителни проверки минаха`]), null);
+  assert.equal(checkFailedGates(["# tests 502", "# pass 502", "# fail 0"]), null);
+  // Регресия за собствен FP: първият ми маркер за провал търсеше „изтекл" и съвпадаше с този
+  // ЗЕЛЕН ред („нула изтекли тайни“) → DoD блокираше при чист secret-scan.
+  assert.equal(checkFailedGates(["✓ secret-scan: чисто — нула изтекли тайни в проследените файлове."]), null);
+  assert.equal(checkFailedGates([]), null, "празен транскрипт не е нарушение");
+});
+
+test("secret-scan: РЕАЛНИЯТ ред на провала блокира", () => {
+  assert.ok(checkFailedGates(["✘ secret-scan: 3 възможни тайни — НЕ комитвай/мерджвай:"]));
+});
+
+test("ПОСЛЕДНОТО срещане решава — червено→поправка→зелено е ПРАВИЛНИЯТ поток", () => {
+  const red = "СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН — 1 задължителни проверки паднаха: oversee";
+  const green = "СТАТУС: гейтът е зелен — всички задължителни проверки минаха";
+  assert.equal(checkFailedGates([red, "поправих причината", green]), null, "поправеният гейт не блокира");
+  assert.ok(checkFailedGates([green, red]), "зелено, после червено = червено");
+});
+
+test("паднали ТЕСТОВЕ също блокират (# fail ≠ 0)", () => {
+  assert.ok(checkFailedGates(["# tests 10", "# pass 9", "# fail 1"]));
+  assert.equal(checkFailedGates(["# fail 0"]), null);
+});
+
+test("collectToolResults изважда текста на tool_result (вкл. вложени блокове)", () => {
+  const jsonl = [
+    JSON.stringify({ type: "assistant", message: { content: [{ type: "tool_use", name: "Bash", input: { command: "node gate.mjs" } }] } }),
+    JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", content: "СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН" }] } }),
+    JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", content: [{ type: "text", text: "# fail 0" }] }] } }),
+  ].join("\n");
+  const res = collectToolResults(jsonl);
+  assert.equal(res.length, 2);
+  assert.match(res[0], /ЧЕРВЕН/);
+  assert.equal(res[1], "# fail 0");
+  assert.ok(checkFailedGates(res), "прочетеният червен резултат трябва да блокира");
 });
