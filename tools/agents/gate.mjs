@@ -31,6 +31,7 @@ const CHECKS = [
   { id: "deep-audit", desc: "дупки: регистър↔дефиниция · инжекции · счупени препратки · продукти", cmd: ["tools/agents/deep-audit.mjs", "--check"] },
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
+  { id: "invariant-check", desc: "критичните method/safety котви на домейн-собствениците са в материала (детерм. behavioral слой)", cmd: ["tools/agents/invariant-check.mjs", "--check"] },
   { id: "coverage", desc: "покритие на домейни (картата не сочи несъществуващи агенти)", cmd: ["tools/agents/coverage.mjs", "--json"], quiet: true },
   { id: "skills-lint", desc: "skills frontmatter/name/тяло", cmd: ["tools/skills/lint.mjs"] },
   { id: "tools-audit", desc: "най-малки права (advisory агенти без Write/Edit)", cmd: ["tools/agents/tools-audit.mjs"] },
@@ -45,6 +46,7 @@ const CHECKS = [
   { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
   { id: "version-freshness", desc: "версиите, които агентите цитират, са сверени в TTL (не 2–3 годишни спомени)", cmd: ["tools/agents/version-freshness.mjs", "--check"] },
+  { id: "claims-audit", desc: "правни/таксономични твърдения сверени в TTL + карта на зависимостта цяла", cmd: ["tools/agents/claims-audit.mjs", "--check"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
 ];

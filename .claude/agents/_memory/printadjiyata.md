@@ -123,10 +123,6 @@
   3MF (понякога счупени). Мрежата: watertight/manifold, mm, нормали навън. (Източник: Snapmaker, Meshy, 3dwithus.)
 - **2026-06-26:** `tools/print/printability.mjs` чете binary STL: bounding box vs 350³, watertight (ръбове),
   единици, изродени, ориентация. Тествано: затворен куб=OK, 400mm=над обема, липсваща стена=non-watertight. (Източник: собствен инструмент.)
-- **2026-06-26:** `tools/print/printability.mjs` чете binary STL: bounding box vs 350³, watertight (ръбове),
-- **2026-07-06:** K2 Plus активното нагряване на камерата работи само в диапазон 40 < T ≤ 60 °C (макс 60 °C); за PLA/PETG/TPU препоръка 30–35 °C, за ABS/ASA/PC/PA/найлон 50–60 °C със затворен капак и врата. Високата камера при PLA/PETG омеква филамента и рискува запушване. _("K2 Plus камерни температури по материал"; verified; "https://wiki.creality.com/en/k2-flagship-series/k2-plus/chamber-temp ; https://store.creality.com/blogs/tutorial/creality-k2-plus-chamber-temperature-setting-guide")_
-  единици, изродени, ориентация. Тествано: затворен куб=OK, 400mm=над обема, липсваща стена=non-watertight. (Източник: собствен инструмент.)
-
 ## Карантина (непроверени — НЕ са факт)
 - **2026-07-28:** K2 Plus firmware update 2026-02-02 обявен на форума, но пълният changelog не е извлечен в тази справка -- НЕ измисляй съдържание, провери директно wiki.creality.com/en/product-updates или форум треда преди да цитираш конкретна промяна. _(printadjiyata; hypothesis; "https://forum.creality.com/t/new-firmware-update-2026-02-02-for-the-k2-series-feedback/48768")_
 - **2026-07-28:** CFS purge минимизация -- общностна техника: flush/purge в отделен голям обект (не само prime tower) вместо чист prime tower; ако purge-into обектът е печатан пръв, prime tower може да отпадне изцяло. _(printadjiyata; hypothesis; "https://forum.creality.com/t/how-to-reduce-the-number-of-purges/45890")_
@@ -142,7 +138,4 @@
 - **2026-06-26:** Камерни температури по материал — официалният Creality гайд е JS-rendered, числата
   НЕ са извлечени; **дръпни на живо**. (Хипотеза/за проверка.)
 - **2026-06-26:** Обем Z 350 (маркетинг) vs 360 (Orca профил); flush ~140 mm³ (единичен източник);
-  CFS-C дистанционно рязане е по-нов/различен възел. За проверка преди гаранция. (Несигурно.)
-- **2026-06-26:** Обем Z 350 (маркетинг) vs 360 (Orca профил); flush ~140 mm³ (единичен източник);
-- **2026-07-06:** Хипотеза (community, не официално): OrcaSlicer няма авто-RFID четене за CFS — филаментите се назначават ръчно (първите 4 слота = CFS bays, 5-ти = външна макара). Изисква проверка на живо с текуща версия. _("CFS + OrcaSlicer RFID/слот workflow"; unverified; "https://forum.creality.com/t/cfs-integration-with-orca-slicer/34061")_
   CFS-C дистанционно рязане е по-нов/различен възел. За проверка преди гаранция. (Несигурно.)
