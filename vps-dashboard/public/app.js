@@ -3297,13 +3297,83 @@ function scheduleCard(sch) {
   ]);
 }
 
+// Възстановяване на том/папка от архив. Бекъп, който не можеш да върнеш от
+// панела, е половин бекъп — досега това беше „SSH и се оправяй".
+function volumeRestoreCard(archives, vols) {
+  const out = el('div', {});
+  const bindTargets = new Map();
+  for (const i of vols?.items || []) {
+    if (i.type === 'bind' && i.source) bindTargets.set(i.source, i.source);
+  }
+
+  const restore = async (a) => {
+    let target = null;
+    if (a.kind === 'dir') {
+      // Целта се доказва по хеша в името — тук само я избираме/въвеждаме.
+      target = prompt(
+        'Път на папката, върху която се възстановява.\nХешът в името на архива трябва да съвпадне — грешна цел се отказва:',
+        [...bindTargets.keys()][0] || '/opt/'
+      );
+      if (!target) return;
+    }
+    const ok = await confirmDanger({
+      title: `Възстановяване от ${a.name}`,
+      what: [
+        a.kind === 'volume' ? `Том „${a.volume}" се ИЗПРАЗВА и върху него се излива архивът.` : `Папка „${target}" се ИЗПРАЗВА и върху нея се излива архивът.`,
+        'Първо се прави защитна снимка на ТЕКУЩОТО състояние — при провал вериганата се връща сама.',
+        'Контейнерите, които ползват целта, се спират и се пускат отново автоматично (trap).',
+        'Файлове, създадени СЛЕД архива, ще изчезнат (те са в защитната снимка).',
+      ],
+      expect: a.kind === 'volume' ? a.volume : 'възстанови',
+      confirmLabel: 'Възстанови',
+      delayMs: 2000,
+    });
+    if (!ok) return;
+    runJob('/volumes/restore/apply', { name: a.name, target }, `Възстановяване: ${a.name}`);
+  };
+
+  out.appendChild(
+    el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: 'Възстановяване на томове и папки' }),
+        pill('dim', `${archives.length} архива`),
+      ]),
+      el('div', { class: 'metric-sub', text:
+        'Две стъпки, като при базите: „преглед" показва съдържанието, без да пипа нищо; „възстанови" прави защитна ' +
+        'снимка на текущото, ИЗПРАЗВА целта (иначе файлове отпреди и след архива се смесват — урокът от WAL/SHM) и ' +
+        'разархивира, с автоматичен откат при провал. За папки целта се ДОКАЗВА по хеша в името на архива.' }),
+      el('div', { class: 'table-wrap' }, [
+        tableEl(['Архив', 'Цел', 'Размер', 'От', ''], archives.map((a) =>
+          el('tr', {}, [
+            el('td', { class: 'mono', text: a.name }),
+            el('td', { class: 'muted', text: a.kind === 'volume' ? `том ${a.volume}` : 'папка (доказва се по хеш)' }),
+            el('td', { text: fmtBytes(a.sizeBytes) }),
+            el('td', { class: 'muted', text: fmtWhen(a.mtime) }),
+            el('td', {}, [
+              el('div', { class: 'toolbar', style: 'margin:0' }, [
+                el('button', {
+                  class: 'btn btn-sm', text: '⊙ Преглед',
+                  onclick: () => runJob('/volumes/restore/preview', { name: a.name }, `Преглед: ${a.name}`),
+                }),
+                el('button', { class: 'btn btn-danger btn-sm', text: '↩ Възстанови', onclick: () => restore(a) }),
+              ]),
+            ]),
+          ])
+        )),
+      ]),
+    ])
+  );
+  return out;
+}
+
 async function renderBackups() {
   const view = document.getElementById('view');
-  const [b, h, vols, sch] = await Promise.all([
+  const [b, h, vols, sch, archives] = await Promise.all([
     api('/backups'),
     api('/backups/health').catch(() => null),
     api('/volumes').catch(() => null),
     api('/backups/schedule').catch(() => null),
+    api('/volumes/archives').catch(() => []),
   ]);
   view.innerHTML = '';
 
@@ -3408,6 +3478,8 @@ async function renderBackups() {
       ])
     );
   }
+
+  if (archives.length) view.appendChild(volumeRestoreCard(archives, vols));
 
   view.appendChild(el('p', { class: 'section-desc', text: 'Открити бекъп папки + история на releases (за rollback).' }));
   if (!b.spots.length) view.appendChild(el('div', { class: 'empty', text: 'Няма известни бекъп папки на този VPS.' }));

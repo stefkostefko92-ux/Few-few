@@ -17,6 +17,7 @@
 //     (`/var/lib/docker/volumes/...`) е вътрешна подробност на Docker и се мени
 //     между драйвери. `docker run -v <том>:/src:ro` работи винаги.
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { run } from './exec.js';
 import { DUMP_DIR } from './databases.js';
 import { assertDockerName } from './docker.js';
@@ -205,6 +206,187 @@ export function backupAllVolumesSpec(items) {
   lines.push(`ls -lh ${DUMP_DIR} | tail -20`, 'exit $rc');
   return {
     title: `Архив на ${worth.length} тома/папки`,
+    cmd: 'bash',
+    args: ['-c', lines.join('\n')],
+    exclusive: 'backup',
+    timeoutMs: 60 * 60 * 1000,
+  };
+}
+
+// ── Възстановяване ────────────────────────────────────────────────────────────
+// Бекъп, който не можеш да върнеш, не е бекъп — правилото, което роди пробата за
+// възстановяване на дъмповете, важи и тук. До момента томовете се архивираха, но
+// връщането им беше „SSH и се оправяй".
+//
+// Три решения, взети от урока със SQLite (WAL/SHM миксът от две бази):
+//
+//  1. **Първо се ИЗПРАЗВА, после се разархивира.** tar върху непразен том оставя
+//     файловете, създадени СЛЕД снимката — смес от две състояния, която изглежда
+//     като успех. `find /dst -mindepth 1 -delete` преди extract е задължителен.
+//  2. **Защитна снимка на ТЕКУЩОТО състояние преди всичко друго.** Ако тя не
+//     стане, не се пипа нищо. При провал на разархивирането откатът връща точно
+//     нея — в СЪЩИЯ процес, не „ако някой гледа".
+//  3. **Контейнерите, ползващи тома, се спират и рестартът им е в trap.** Запис
+//     под жив процес е повреда; а „спрях ги и забравих да ги пусна" е инцидент,
+//     който trap EXIT прави невъзможен — включително по пътя на провала.
+//
+// За bind папки има четвърто: целта идва от заявката, но се ДОКАЗВА — краткият
+// хеш от пълния път е в името на архива, значи `archiveName(цел)` трябва да
+// съвпадне. Иначе архив на uploads се излива върху грешния продукт.
+const RESTORABLE_RX = /^(pre-restore-)?(vol|dir)-[\w.-]+-\d{8}-\d{6}\.tar\.gz$/;
+
+export function parseArchiveName(name) {
+  const base = String(name || '');
+  if (base.includes('/') || base.includes('\\') || base.includes('\0') || !RESTORABLE_RX.test(base)) {
+    throw Object.assign(new Error('Невалидно име на архив на том'), { status: 400 });
+  }
+  let m = /^(?:pre-restore-)?vol-(.+)-\d{8}-\d{6}\.tar\.gz$/.exec(base);
+  if (m) return { name: base, kind: 'volume', volume: assertVolume(m[1]) };
+  m = /^(?:pre-restore-)?dir-(.+-[0-9a-f]{6})-\d{8}-\d{6}\.tar\.gz$/.exec(base);
+  if (m) return { name: base, kind: 'dir', safeName: m[1] };
+  throw Object.assign(new Error('Невалидно име на архив на том'), { status: 400 });
+}
+
+export function listVolumeArchives() {
+  let names = [];
+  try {
+    names = fs.readdirSync(DUMP_DIR);
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const n of names) {
+    let parsed;
+    try {
+      parsed = parseArchiveName(n);
+    } catch {
+      continue;
+    }
+    try {
+      const st = fs.statSync(`${DUMP_DIR}/${n}`);
+      out.push({ ...parsed, sizeBytes: st.size, mtime: st.mtime.toISOString(), preRestore: n.startsWith('pre-restore-') });
+    } catch {
+      /* изчезнал файл */
+    }
+  }
+  return out.sort((a, b) => b.mtime.localeCompare(a.mtime));
+}
+
+// Пътят на bind целта: абсолютен, без опасни знаци, поне 2 нива дълбочина —
+// `find <цел> -mindepth 1 -delete` върху „/" или „/opt" не бива да е изразимо.
+export function assertRestoreDir(p) {
+  const src = String(p || '');
+  if (!src.startsWith('/') || src.includes('\0') || /[`$;&|<>"'\\\s]/.test(src) || src.includes('..')) {
+    throw Object.assign(new Error('Невалиден път за възстановяване'), { status: 400 });
+  }
+  const depth = src.split('/').filter(Boolean).length;
+  if (depth < 2) {
+    throw Object.assign(new Error(`Пътят „${src}" е твърде плитък — възстановяване върху него би изтрило половината машина.`), { status: 400 });
+  }
+  return src;
+}
+
+// Стъпка 1: преглед — какво има вътре, НИЩО не се пипа.
+export function volumeRestorePreviewSpec(name) {
+  const parsed = parseArchiveName(name);
+  const archive = `${DUMP_DIR}/${parsed.name}`;
+  return {
+    title: `Преглед на архив: ${parsed.name}`,
+    cmd: 'bash',
+    args: [
+      '-c',
+      [
+        'set -uo pipefail',
+        `[ -s ${JSON.stringify(archive)} ] || { echo "✘ архивът липсва или е празен"; exit 1; }`,
+        `echo "▸ Съдържание (до 200 записа):"`,
+        `tar tzf ${JSON.stringify(archive)} | head -200`,
+        `echo "▸ Общо записи: $(tar tzf ${JSON.stringify(archive)} | wc -l)"`,
+        parsed.kind === 'volume'
+          ? `echo "▸ Целта би била том: ${parsed.volume}"`
+          : `echo "▸ Целта е bind папка — при прилагане пътят се доказва по хеша в името (${parsed.safeName})."`,
+      ].join('\n'),
+    ],
+    exclusive: null,
+    timeoutMs: 5 * 60 * 1000,
+  };
+}
+
+// Стъпка 2: прилагане — защитна снимка → спиране → изпразване → extract →
+// при провал откат от снимката; рестартът на контейнерите е в trap EXIT.
+export function volumeRestoreApplySpec(name, { target = null, containers = [] } = {}) {
+  const parsed = parseArchiveName(name);
+  const archive = `${DUMP_DIR}/${parsed.name}`;
+  const stops = (containers || []).map((c) => assertDockerName(c, 'контейнер'));
+
+  const lines = [
+    'set -uo pipefail',
+    `ARCHIVE=${JSON.stringify(archive)}`,
+    '[ -s "$ARCHIVE" ] || { echo "✘ архивът липсва или е празен"; exit 1; }',
+    'TS=$(date +%Y%m%d-%H%M%S)',
+    'STOPPED=""',
+    // Trap-ът е обявен ПРЕДИ първото спиране: пътят, по който контейнер остава
+    // спрян завинаги, не бива да съществува.
+    'restart_stopped() { for c in $STOPPED; do docker start "$c" >/dev/null 2>&1 && echo "  ▶ пуснат: $c"; done; }',
+    'trap restart_stopped EXIT',
+  ];
+
+  let pre;
+  let target_label;
+  if (parsed.kind === 'volume') {
+    const vol = parsed.volume;
+    pre = `pre-restore-vol-${vol}-$TS.tar.gz`;
+    target_label = `том ${vol}`;
+    lines.push(
+      `echo "▸ Защитна снимка на ТЕКУЩОТО състояние на том ${vol}"`,
+      `docker run --rm -v ${vol}:/src:ro -v ${DUMP_DIR}:/out alpine tar czf /out/${pre} -C /src . ` +
+        '|| { echo "✘ защитната снимка не стана — НЕ пипам нищо"; exit 1; }',
+      ...stops.map((c) => `docker stop ${c} >/dev/null && STOPPED="$STOPPED ${c}" && echo "  ■ спрян: ${c}"`),
+      `echo "▸ Изпразвам тома и разархивирам ${parsed.name}"`,
+      // Изпразване + extract в ЕДИН контейнер: между двете няма прозорец, в
+      // който някой да види полупразен том.
+      `if docker run --rm -v ${vol}:/dst -v ${DUMP_DIR}:/in:ro alpine sh -c ` +
+        `'find /dst -mindepth 1 -delete && tar xzf /in/${parsed.name} -C /dst'; then`,
+      '  echo "✔ Върнато."',
+      'else',
+      '  echo "✘ Разархивирането се провали — връщам защитната снимка"',
+      `  docker run --rm -v ${vol}:/dst -v ${DUMP_DIR}:/in:ro alpine sh -c ` +
+        `"find /dst -mindepth 1 -delete && tar xzf /in/${pre} -C /dst" ` +
+        `&& echo "↩ старото състояние е върнато" || echo "‼ И откатът се провали — старото състояние е в ${pre}"`,
+      '  exit 1',
+      'fi'
+    );
+  } else {
+    const dst = assertRestoreDir(target);
+    // Доказателството: хешът от пълния път е в името на архива. Несъвпадение
+    // значи „този архив не е правен от тази папка" — отказ преди първия байт.
+    if (archiveName(dst) !== parsed.safeName) {
+      throw Object.assign(
+        new Error(`Архивът „${parsed.name}" не е правен от „${dst}" — хешът в името не съвпада. Провери целта.`),
+        { status: 400 }
+      );
+    }
+    pre = `pre-restore-dir-${parsed.safeName}-$TS.tar.gz`;
+    target_label = `папка ${dst}`;
+    lines.push(
+      `echo "▸ Защитна снимка на ТЕКУЩОТО състояние на ${dst}"`,
+      `tar czf ${DUMP_DIR}/${pre} -C ${JSON.stringify(dst)} . || { echo "✘ защитната снимка не стана — НЕ пипам нищо"; exit 1; }`,
+      ...stops.map((c) => `docker stop ${c} >/dev/null && STOPPED="$STOPPED ${c}" && echo "  ■ спрян: ${c}"`),
+      `echo "▸ Изпразвам папката и разархивирам ${parsed.name}"`,
+      `if find ${JSON.stringify(dst)} -mindepth 1 -delete && tar xzf "$ARCHIVE" -C ${JSON.stringify(dst)}; then`,
+      '  echo "✔ Върнато."',
+      'else',
+      '  echo "✘ Разархивирането се провали — връщам защитната снимка"',
+      `  find ${JSON.stringify(dst)} -mindepth 1 -delete; tar xzf ${DUMP_DIR}/${pre} -C ${JSON.stringify(dst)} ` +
+        `&& echo "↩ старото състояние е върнато" || echo "‼ И откатът се провали — старото състояние е в ${pre}"`,
+      '  exit 1',
+      'fi'
+    );
+  }
+
+  lines.push(`echo "ℹ Защитната снимка остава в ${DUMP_DIR}/${pre} — изтрий я, когато си сигурен."`);
+
+  return {
+    title: `Възстановяване на ${target_label} от ${parsed.name}`,
     cmd: 'bash',
     args: ['-c', lines.join('\n')],
     exclusive: 'backup',

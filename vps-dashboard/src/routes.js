@@ -1561,6 +1561,52 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Томове: възстановяване (огледалото на архивирането) ──────────────────
+  r.get('/api/volumes/archives', guard(J(() => volumes.listVolumeArchives())));
+  r.post(
+    '/api/volumes/restore/preview',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        audit.log({ action: 'volumes.restorePreview', name: b.name, user: req.user });
+        return jobs.start(volumes.volumeRestorePreviewSpec(b.name), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/volumes/restore/apply',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const parsed = volumes.parseArchiveName(b.name);
+        // Контейнерите, които ползват целта, се откриват ТУК, не се вярва на
+        // списък от браузъра — списък с чужд контейнер би спрял чужд продукт.
+        let containers = [];
+        const found = await volumes.discover();
+        if (found.available) {
+          const hit = found.items.find((i) =>
+            parsed.kind === 'volume' ? i.type === 'volume' && i.name === parsed.volume : i.type === 'bind' && i.source === b.target
+          );
+          containers = hit?.containers || [];
+        } else if (parsed.kind === 'volume') {
+          // Том без docker не се възстановява по конструкция — казваме го ясно.
+          throw Object.assign(new Error(`docker недостъпен: ${found.error}`), { status: 400 });
+        }
+        const spec = volumes.volumeRestoreApplySpec(b.name, { target: b.target || null, containers });
+        audit.log({
+          action: 'volumes.restoreApply',
+          name: parsed.name,
+          target: parsed.kind === 'volume' ? parsed.volume : b.target,
+          containers,
+          user: req.user,
+        });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Бекъпи: възраст + проба за възстановяване ──────────────────────────────
   r.get('/api/backups/health', guard(J(() => ctx.drill.status(cfg))));
   r.post(
