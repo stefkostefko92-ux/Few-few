@@ -31,6 +31,7 @@ const CHECKS = [
   { id: "deep-audit", desc: "дупки: регистър↔дефиниция · инжекции · счупени препратки · продукти", cmd: ["tools/agents/deep-audit.mjs", "--check"] },
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
+  { id: "invariant-check", desc: "критичните method/safety котви на домейн-собствениците са в материала (детерм. behavioral слой)", cmd: ["tools/agents/invariant-check.mjs", "--check"] },
   { id: "coverage", desc: "покритие на домейни (картата не сочи несъществуващи агенти)", cmd: ["tools/agents/coverage.mjs", "--json"], quiet: true },
   { id: "skills-lint", desc: "skills frontmatter/name/тяло", cmd: ["tools/skills/lint.mjs"] },
   { id: "tools-audit", desc: "най-малки права (advisory агенти без Write/Edit)", cmd: ["tools/agents/tools-audit.mjs"] },

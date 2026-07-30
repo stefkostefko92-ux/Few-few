@@ -32,3 +32,12 @@ jobs:
         run: node tools/agents/defect-rate.mjs
       - name: Всички тестове
         run: node --test $(find tools -name '*.test.mjs')
+      # Реалният ПОВЕДЕНЧЕСКИ eval (жив LLM) — не може евтин PR гейт, затова тича по КАДАНС тук.
+      # Детерминистичният слой (invariant-check) вече е в гейта горе; това мери реалното поведение
+      # на агентите срещу golden spec-овете. Без ANTHROPIC_API_KEY secret → скрипта излиза 0 с ясно
+      # съобщение (гейтът не лъже червено заради липсваща конфигурация). Активира се, щом собственикът
+      # добави ключа като secret. Системният промпт носи СЪЩИЯ статичен префикс като продукцията.
+      - name: Поведенчески eval (жив LLM — скача без ключ)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node tools/agents/evals/headless-run.mjs
