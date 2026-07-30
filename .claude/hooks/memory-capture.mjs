@@ -315,7 +315,9 @@ function bgGitSync(agentId) {
     `cd "${PROJECT_DIR}" || exit 0`,
     `git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html" 2>/dev/null`,
     `git diff --cached --quiet 2>/dev/null && exit 0`, // нищо staged → нищо за commit
-    `git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
+    // Имейлът е noreply@anthropic.com — иначе GitHub показва авто-комитите като Unverified
+    // (carbonstealth имейлът не е свързан с подписващ акаунт; stop-hook-git-check го лови).
+    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
     `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
     `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
     `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,

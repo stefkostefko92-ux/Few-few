@@ -54,6 +54,12 @@ function jaccard(a, b) {
   let inter = 0; for (const x of A) if (B.has(x)) inter++;
   return inter / (A.size + B.size - inter);
 }
+// БЕЛЕЖКА (Трейдъра + Разбивача, 2026-07-29): лексикалната прилика пропуска ЧИСЛОВО противоречие
+// (ξ=0.0065/ден срещу 0.0019/ден; EPL 3.28 срещу 2.93 гол/мач). Опитах регекс-детектор тук и го
+// МАХНАХ: надеждно да свържеш етикет с число в свободна проза е NLP-трудно — детекторът или шуми
+// (лови версии/URL: „edition 2≠4", „https 3≠2"), или пропуска реалния случай („TBT е 200 ms" —
+// етикетът е 2 думи преди числото). Проверка, която само ИЗГЛЕЖДА че работи, е по-лоша от липса.
+// Конкретните числови противоречия се маршрутизират към собственика на паметта (човек решава).
 
 function sectionBounds(lines, heading) {
   const start = lines.findIndex((l) => new RegExp(`^##\\s*${heading}`).test(l));
@@ -79,6 +85,9 @@ function parseEntries(body) {
 }
 const blockText = (e) => e.lines.map((l) => l.trim()).join(" ");
 
+// CLI guard: без него целият обход на паметта се пуска при `import` и виси — президентски
+// одит-клас „код на върха при import" (същият, за който имаме import-safety.test.mjs).
+function main() {
 let totalDup = 0, totalCap = 0, totalConflict = 0, totalStale = 0, totalMerged = 0;
 
 for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "PROTOCOL.md")) {
@@ -157,4 +166,6 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
 
 console.log(`\ncurate: ${totalDup} дубли, ${totalMerged} слети парафрази${MERGE_DUPS ? "" : " (само dry — добави --merge-dups)"}, ${totalCap} капнати, ${totalConflict} за преглед (противоречия), ${totalStale} застарели (>${STALE_DAYS}д, време-чувствителни).` +
   (WRITE ? " [записано]" : " [dry-run — добави --write за прилагане]"));
-process.exit(0);
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) main();

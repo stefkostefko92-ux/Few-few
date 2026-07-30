@@ -26,8 +26,13 @@ effort: medium
 
 **Събития.** `RegisterNetEvent` (само за реално мрежови събития) + `AddEventHandler`
 (локални). `TriggerServerEvent` (client→server), `TriggerClientEvent(name, target, ...)`
-(server→client, `-1` = всички). **На сървъра първият неявен аргумент на мрежово събитие
-е `source`** (server ID на играча) — четеш го като `local src = source` в НАЧАЛОТО на handler-а, преди всякаква логика; никога не приемай `source`/самоличност от payload аргумент (spoof). На клиента отхвърляй събития, които не идват от сървъра. Пре-доставка гейт: `node tools/fivem/manifest-lint.mjs <папка>` (0/HIGH=0).
+(server→client, `-1` = всички). **На сървъра `source` е ГЛОБАЛНА променлива** (не параметър
+на handler функцията — параметрите са само аргументите, с които е извикано събитието) —
+съдържа server ID на играча, който е триггерирал събитието; чети я като `local src = source`
+в НАЧАЛОТО на handler-а (валидна е само за първоначалното извикване — копирай я в локална
+преди `Wait`/async scope), преди всякаква логика; никога не приемай `source`/самоличност от
+payload аргумент (spoof). На клиента отхвърляй събития, които не идват от сървъра (`source ~= 65535`).
+Пре-доставка гейт: `node tools/fivem/manifest-lint.mjs <папка>` (0/HIGH=0).
 
 **Callbacks.** Предпочитай **`lib.callback`** (ox_lib) пред пинг-понг със събития:
 `lib.callback.register('name', fn)` / `lib.callback.await('name', false, ...)`.

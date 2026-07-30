@@ -69,6 +69,16 @@ export function detectUrlExfil(url) {
   return null;
 }
 
+// Red-team F2 (президент + Разбивача, 2026-07-29): guard-exfil пазеше само Bash|WebFetch, а
+// WebSearch е СЪЩО изходен канал — низът на заявката напуска към търсачка и е контролируем от
+// инжектирано съдържание. Агент, подмамен да „търси" тайна, я изнася през заявката. Проверяваме
+// същите литерални тайни (SECRET_RE) в query-то; нормалните търсения минават (near-zero-FP).
+export function detectSearchExfil(query) {
+  const s = String(query || "");
+  for (const p of SECRET_RE) if (p.re.test(s)) return `${p.name} в текста на търсенето`;
+  return null;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
@@ -80,6 +90,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       let why = null;
       if (/bash/i.test(tool)) why = detectBashExfil(ti.command);
       else if (/webfetch/i.test(tool)) why = detectUrlExfil(ti.url);
+      else if (/websearch/i.test(tool)) why = detectSearchExfil(ti.query);
       if (why) {
         process.stderr.write(`⛔ Блокирано от guard-exfil: ${why}. Тайните живеят само на сървъра — не се изнасят навън от агента. Ако е легитимно, направи го ръчно извън агента.\n`);
         process.exit(2);
