@@ -3,6 +3,7 @@ import {
   el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml,
   registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
 } from './ui.js';
+import { t, setLang, getLang, languages, translateDom } from './i18n.js';
 
 // ── Състояние + API слой (с federation рутинг към избрания възел) ──────────────
 const state = { node: 'local', me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
@@ -239,7 +240,7 @@ function attachFilter(input, container, { count } = {}) {
       row.hidden = !hit;
       if (hit) shown++;
     }
-    if (count) count.textContent = q ? `${shown} от ${container.querySelectorAll('tbody tr').length}` : '';
+    if (count) count.textContent = q ? t(`${shown} от ${container.querySelectorAll('tbody tr').length}`) : '';
   };
   let t;
   input.addEventListener('input', () => {
@@ -276,7 +277,7 @@ function go(id) {
   closeSectionStream();
   for (const b of document.querySelectorAll('#nav button')) b.classList.toggle('active', b.dataset.id === id);
   const s = SECTIONS.find((x) => x.id === id);
-  document.getElementById('section-title').textContent = s.label;
+  document.getElementById('section-title').textContent = t(s.label);
   // Всяка навигация получава СВЕЖ #view възел. Закъснялата секция държи стария
   // (вече откачен) възел и пише в нищото — вместо да замаже новата. Работи за
   // ВСИЧКИ секции наведнъж, защото всяка взема `view` ПРЕДИ първото await.
@@ -394,9 +395,27 @@ function setConnStatus(status) {
   dot.classList.toggle('connecting', status === 'connecting');
   dot.classList.toggle('down', status === 'down');
   dot.title =
-    status === 'live' ? 'Връзка на живо' : status === 'connecting' ? 'Свързвам се…' : status === 'down' ? 'Връзката прекъсна — пробвам пак' : 'Няма поток';
+    t(status === 'live' ? 'Връзка на живо' : status === 'connecting' ? 'Свързвам се…' : status === 'down' ? 'Връзката прекъсна — пробвам пак' : 'Няма поток');
   const sr = document.getElementById('conn-sr');
   if (sr) sr.textContent = dot.title;
+}
+
+// ── Език (БГ/EN/IT) ──────────────────────────────────────────────────────────
+// Преводът на статичния HTML става веднъж тук; всичко, рисувано от кода, минава
+// през el()/toast() в ui.js. Смяната презарежда — виж i18n.js защо.
+document.documentElement.lang = getLang();
+translateDom(document.body);
+{
+  const wrap = el('div', { class: 'lang-switch', role: 'group', 'aria-label': 'Език / Language / Lingua' },
+    languages().map((l) =>
+      el('button', {
+        class: 'lang-btn' + (l.id === getLang() ? ' active' : ''),
+        text: l.label,
+        title: { bg: 'Български', en: 'English', it: 'Italiano' }[l.id],
+        onclick: () => setLang(l.id),
+      })
+    ));
+  document.querySelector('.topbar-right')?.insertBefore(wrap, document.getElementById('btn-palette'));
 }
 
 document.getElementById('menu-toggle').addEventListener('click', () =>
@@ -415,15 +434,15 @@ async function loadNodes() {
     return;
   }
   sel.innerHTML = '';
-  sel.appendChild(el('option', { value: 'local', text: `● ${data.local.name} (локален)` }));
+  sel.appendChild(el('option', { value: 'local', text: `● ${data.local.name}` + t(' (локален)') }));
   for (const p of data.peers || []) {
     sel.appendChild(el('option', { value: p.id, text: `${p.up ? '●' : '○'} ${p.name}` }));
   }
   sel.value = state.node;
   const peers = data.peers || [];
-  status.textContent = peers.length
+  status.textContent = t(peers.length
     ? `${peers.filter((p) => p.up).length}/${peers.length} peer(s) на линия`
-    : 'Няма конфигурирани peer-и';
+    : 'Няма конфигурирани peer-и');
   sel.onchange = () => {
     state.node = sel.value;
     go(state.section);
@@ -601,7 +620,7 @@ function markStale() {
   const b = document.getElementById('stale-banner');
   if (!state.lastSnapAt) return;
   const when = new Date(state.lastSnapAt).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
-  b.textContent = `⚠ данните са от ${when} — връзката прекъсна`;
+  b.textContent = t(`⚠ данните са от ${when} — връзката прекъсна`);
   b.classList.remove('hidden');
 }
 function markFresh() {
@@ -1528,7 +1547,7 @@ function bulkBar(kind, selected, run) {
       [...(root?.querySelectorAll('tbody tr:not([hidden]) .bulk-pick') || [])].map((cb) => cb.value)
     );
     const hidden = [...selected].filter((v) => !onScreen.has(v)).length;
-    count.textContent = hidden ? `${selected.size} избрани (${hidden} скрити от филтъра)` : `${selected.size} избрани`;
+    count.textContent = t(hidden ? `${selected.size} избрани (${hidden} скрити от филтъра)` : `${selected.size} избрани`);
     bar.style.display = selected.size ? '' : 'none';
   };
   return { bar, sync };
@@ -2204,7 +2223,7 @@ function scanCard(d) {
     ]),
     s.at
       ? el('div', { class: 'metric-sub', text:
-          `Корен ${s.root} · дълбочина ${s.depth} · файлове над ${s.minMB} MB · изход ${s.code}` })
+          `${t('Корен')} ${s.root} · ${t(`дълбочина ${s.depth}`)} · ${t(`файлове над ${s.minMB} MB`)} · ${t(`изход ${s.code}`)}` })
       : el('div', { class: 'empty', text: 'Още няма сканиране. Изборът на корен е от ЗАТВОРЕН списък — произволен път би направил панела „изброй ми имената на всички файлове като root".' }),
     !s.complete && s.at
       ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
@@ -3237,8 +3256,10 @@ function scheduleCard(sch) {
       save,
     ]),
     last
+      // Сглобен от ПРЕВЕДЕНИ части: цялото изречение никога не е ключ (носи и
+      // причина от сървъра), но всяка частица е.
       ? el('div', { class: 'metric-sub', style: last.ok ? '' : 'color:var(--danger)', text:
-          `Последно: ${fmtWhen(last.ts)} · ${last.ok ? 'успех' : `ПРОВАЛ (изход ${last.code ?? '?'})`}` +
+          `${t('Последно:')} ${t(fmtWhen(last.ts))} · ${last.ok ? t('успех') : t(`ПРОВАЛ (изход ${last.code ?? '?'})`)}` +
           `${last.reason ? ` · ${last.reason}` : ''}` })
       : el('div', { class: 'metric-sub', text: 'Още не е пускан през графика.' }),
 

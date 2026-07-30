@@ -336,3 +336,12 @@ tr.row-before td { background: rgba(255, 180, 84, 0.05); }
 /* Групови действия — лентата се появява само когато има избрано. */
 .bulk-bar { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; margin: 8px 0; }
 .bulk-pick { cursor: pointer; }
+
+/* ── Езиков превключвател ────────────────────────────── */
+.lang-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.lang-btn {
+  background: none; border: none; color: var(--txt-dim); padding: 5px 9px;
+  font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.lang-btn:hover { color: var(--txt); }
+.lang-btn.active { background: var(--panel); color: var(--txt); }

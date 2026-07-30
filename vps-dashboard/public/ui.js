@@ -1,17 +1,24 @@
 // Малки DOM/формат помощници (без библиотеки).
+//
+// Преводът живее ТУК, не в 5000-те реда на app.js: всичко текстово минава през
+// el()/toast(), значи едно място превежда целия интерфейс. Виж i18n.js за защо
+// ключът е самият български низ.
+import { t, tf, langTag } from './i18n.js';
+const tHelper = t;
 
 // Създава елемент. props: {class, text, html, style, onclick, ... останалите → атрибути}
 export function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {
     if (v == null || v === false) continue;
-    if (k === 'text') node.textContent = v;
+    if (k === 'text') node.textContent = t(v);
     else if (k === 'html') node.innerHTML = v;
     else if (k === 'class') node.className = v;
     else if (k === 'style') node.setAttribute('style', v);
     else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
     else if (k === 'disabled') node.disabled = Boolean(v);
     else if (k === 'value') node.value = v;
+    else if (k === 'title' || k === 'placeholder' || k === 'aria-label') node.setAttribute(k, t(v));
     else node.setAttribute(k, v);
   }
   appendChildren(node, children);
@@ -26,7 +33,7 @@ function appendChildren(node, children) {
   for (const c of list) {
     if (c === null || c === undefined || c === false || c === '') continue;
     if (Array.isArray(c)) appendChildren(node, c);
-    else if (typeof c === 'string' || typeof c === 'number') node.appendChild(document.createTextNode(String(c)));
+    else if (typeof c === 'string' || typeof c === 'number') node.appendChild(document.createTextNode(t(String(c))));
     else if (c.nodeType) node.appendChild(c);
     // Всичко останало се пропуска мълчаливо — по-добре липсващ ред, отколкото
     // счупена секция.
@@ -77,7 +84,7 @@ export function fmtWhen(iso) {
   if (diff >= 0 && diff < 60) return 'преди малко';
   if (diff >= 0 && diff < 3600) return `преди ${Math.floor(diff / 60)} мин`;
   if (diff >= 0 && diff < 86400) return `преди ${Math.floor(diff / 3600)} ч`;
-  return d.toLocaleString('bg-BG', { dateStyle: 'short', timeStyle: 'short' });
+  return d.toLocaleString(langTag(), { dateStyle: 'short', timeStyle: 'short' });
 }
 
 // ── Команден палет (Ctrl/Cmd+K) ───────────────────────────────────────────────
@@ -154,7 +161,7 @@ export function openPalette() {
     const recent = recentIds();
     items = commands
       .map((c) => {
-        const hay = `${c.label} ${c.section || ''} ${c.keywords || ''}`;
+        const hay = `${c.label} ${t(c.label)} ${c.section || ''} ${c.keywords || ''}`;
         const base = fuzzyScore(q, hay);
         if (!base) return null;
         const boost = !q && recent.includes(c.id) ? 5000 - recent.indexOf(c.id) : 0;
@@ -261,9 +268,9 @@ export function confirmDanger({ title, what, expect, confirmLabel = 'Потвъ�
     const btn = el('button', { class: 'btn btn-danger', text: confirmLabel, disabled: true });
     const dlg = el('dialog', { class: 'confirm-dlg' }, [
       el('h3', { text: title }),
-      el('div', { class: 'confirm-what' }, (Array.isArray(what) ? what : [what]).map((w) => el('div', { text: '• ' + w }))),
+      el('div', { class: 'confirm-what' }, (Array.isArray(what) ? what : [what]).map((w) => el('div', {}, ['• ', t(w)]))),
       el('label', { class: 'muted' }, [
-        document.createTextNode(`Изпиши „${expect}“, за да потвърдиш:`),
+        document.createTextNode(tf('Изпиши „%s“, за да потвърдиш:', expect)),
         input,
       ]),
       el('div', { class: 'toolbar' }, [
@@ -307,7 +314,7 @@ let toastTimer = null;
 export function toast(msg, kind = 'ok') {
   const t = document.getElementById('toast');
   t.className = 'toast' + (kind === 'bad' ? ' bad' : kind === 'warn' ? ' warn' : '');
-  t.textContent = msg;
+  t.textContent = tHelper(msg);
   t.classList.remove('hidden');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.add('hidden'), 4000);
