@@ -6,7 +6,13 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeRate, computePressure, measurementHealth } from "./defect-rate.mjs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import {
+  computeRate, computePressure, measurementHealth,
+  pressureUnits, normalizedRate, recordPressure, readPressureHistory, pressureHealth,
+} from "./defect-rate.mjs";
 
 const E = (date, agent, extra = {}) => ({ date, agent, desc: "x", spec: null, test: "t.mjs", ...extra });
 
@@ -77,4 +83,48 @@ test("здравето на измерването е зелено СЕГА (tre
   assert.equal(h.trendIgnored, false, "trend.jsonl не бива да е в .gitignore — иначе трендът има амнезия");
   assert.equal(h.trendExists, true, "файлът трябва да съществува, за да има къде да се натрупва");
   assert.deepEqual(h.problems, []);
+});
+
+// ── История на натиска (нормализираният процент, който не лъже при падащ знаменател) ──
+
+test("normalizedRate: дефекти на 100 ед. натиск; нулев натиск → null, не деление на нула", () => {
+  assert.equal(normalizedRate(53, { specs: 93, testFiles: 56 }), 35.6);
+  assert.equal(pressureUnits({ specs: 93, testFiles: 56 }), 149);
+  assert.equal(normalizedRate(5, { specs: 0, testFiles: 0 }), null, "без натиск процентът е НЕИЗМЕРИМ, не 0");
+});
+
+test("normalizedRate: ПАДАЩ натиск при равни дефекти ВДИГА процента (не може да се маскира)", () => {
+  const before = normalizedRate(10, { specs: 90, testFiles: 60 });   // 150 ед.
+  const after = normalizedRate(10, { specs: 40, testFiles: 20 });    // 60 ед. — някой е трил проверки
+  assert.ok(after > before, `свит знаменател трябва да личи: ${after} > ${before}`);
+});
+
+test("recordPressure: пише точка и е идемпотентен по месец (презапис, не дублиране)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "pressure-"));
+  const file = join(dir, "pressure.jsonl");
+  try {
+    recordPressure({ file, today: "2026-07-15", pressure: { specs: 90, injectionSpecs: 25, testFiles: 50 }, defects: 40 });
+    recordPressure({ file, today: "2026-07-30", pressure: { specs: 93, injectionSpecs: 26, testFiles: 56 }, defects: 53 });
+    const hist = readPressureHistory(file);
+    assert.equal(hist.length, 1, "два записа в СЪЩИЯ месец → една точка (последната)");
+    assert.equal(hist[0].defects, 53);
+    recordPressure({ file, today: "2026-08-02", pressure: { specs: 95, injectionSpecs: 26, testFiles: 58 }, defects: 2 });
+    assert.equal(readPressureHistory(file).length, 2, "нов месец → нова точка");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("pressureHealth: липсваща история → проблем; свежа точка → чисто; застаряла → проблем (TTL)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "pressure-"));
+  const file = join(dir, "p.jsonl");
+  try {
+    assert.ok(pressureHealth({ file, today: "2026-07-30" }).problems.length >= 1, "без файл → проблем");
+    writeFileSync(file, JSON.stringify({ month: "2026-07", date: "2026-07-30", specs: 93, injectionSpecs: 26, testFiles: 56, defects: 53 }) + "\n");
+    assert.deepEqual(pressureHealth({ file, today: "2026-08-10" }).problems, [], "свежа точка → чисто");
+    const stale = pressureHealth({ file, today: "2026-11-30" });
+    assert.ok(stale.problems.some((p) => /--record/.test(p)), "точка отвъд TTL → налага ново измерване");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("реалният pressure.jsonl е здрав днес (има точка, не е игнориран, в TTL)", () => {
+  assert.deepEqual(pressureHealth().problems, []);
 });
