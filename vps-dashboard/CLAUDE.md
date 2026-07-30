@@ -118,7 +118,7 @@ deploy/                  install.sh · vps-dashboard.service · nginx.conf.examp
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
                          forecast · slo · manage · security · investigate ·
                          observe · stack · ux · guard · deployfiles · ports · backupsched · diskusage · traffic · volrestore · i18n ·
-                         smoke (292 теста)
+                         smoke (294 теста)
 ```
 
 ## Конвенции (важни)
@@ -612,7 +612,7 @@ node -e "import('/opt/node22/lib/node_modules/playwright/index.mjs')…"
 отворен по дизайн. Ползвай `domcontentloaded`.
 
 ## Тестове
-292 теста, `node --test`, без мокове на системата — тестват се само детерминистични
+294 теста, `node --test`, без мокове на системата — тестват се само детерминистични
 чисти функции: пароли/сесии, TOTP (с контролните вектори на RFC 4226), парсване на
 `/proc`, рутера, allowlist-ите (unit имена, архиви, ufw правила, compose, dump),
 историята, сливането на конфига, файловия запис, SLO математиката (бюджет,
