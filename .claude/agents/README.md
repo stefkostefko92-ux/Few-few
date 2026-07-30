@@ -126,6 +126,12 @@ scope `tools` to least privilege (read-only auditors: Правният Разб�
 rest may write files/run scripts); give the `description` crisp triggers so the agent
 auto-selects; add a worked example + competence boundary; bump the version + append an
 `evolution` entry in `agents-dashboard/agents.json` whenever you change a definition.
+**Разхлабвай, не усилвай (модели 4.6+):** новите модели са проактивни и директни по
+подразбиране — при авторство/ъпгрейд НЕ добавяй „бъди старателен/агресивен/провери преди
+да приключиш" (причиняват свръх-многословност и ненужно tool-calling); замени „Default to
+using X" с „Use X when it helps", махни „If in doubt, use X". Ветеранската краткост е в
+`PROCEDURE.md` (инжектира се на всички) — не я преповтаряй в дефиницията.
+_(източник: Ръководство за Claude, Carbon Stealth юли 2026 §1.4, сверено срещу docs.claude.com)_
 
 ### Agents lab dashboard — `agents-dashboard/`
 
