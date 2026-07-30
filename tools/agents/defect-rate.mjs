@@ -13,11 +13,20 @@
 //   node tools/agents/defect-rate.mjs             # четим отчет
 //   node tools/agents/defect-rate.mjs --json      # машинен изход (табло/CI)
 //   node tools/agents/defect-rate.mjs --check     # fail-closed срещу измерване, което лъже
+//   node tools/agents/defect-rate.mjs --record    # запиши месечна снимка на натиска (pressure.jsonl)
 //
 // `--check` НЕ гейтва „много дефекти" — да намериш дефект е добро. Гейтва липсата на измерване:
-// дневник, чиито записи нямат регресия, и тренд-файл, който не е траен.
+// дневник, чиито записи нямат регресия, тренд-файл, който не е траен, и НАТИСК без история.
+//
+// ИСТОРИЯ НА НАТИСКА (2026-07-30). Дотук натискът (spec-ове + тестове) се показваше само като
+// ТЕКУЩО число — падащ натиск личеше само ако някой помни старите стойности. pressure.jsonl
+// (проследен в git) пази месечна снимка {month, specs, injectionSpecs, testFiles, defects} →
+// отчетът дава НОРМАЛИЗИРАН процент (дефекти на 100 ед. натиск; ед. натиск = spec + тестов файл)
+// и посока на самия натиск. `--record` е идемпотентен по месец (презаписва точката на текущия).
+// `--check` пада при липсващ/игнориран pressure.jsonl или точка по-стара от PRESSURE_TTL_DAYS —
+// същата TTL философия като version-freshness: изтече ли, гейтът НАЛАГА ново измерване.
 
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
@@ -26,12 +35,15 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
 const LEDGER = join(HERE, "evals", "errors.jsonl");
 const TREND = join(HERE, "evals", "trend.jsonl");
+const PRESSURE = join(HERE, "evals", "pressure.jsonl");
 const SPECS_DIR = join(HERE, "evals", "specs");
 const GITIGNORE = join(ROOT, ".gitignore");
+const PRESSURE_TTL_DAYS = 75; // месечни точки + толеранс — изтече ли, гейтът налага ново --record
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
 const CHECK = argv.includes("--check");
+const RECORD = argv.includes("--record");
 const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
 
 const readLines = (p) => (existsSync(p) ? readFileSync(p, "utf8").split("\n").filter(Boolean) : null);
@@ -84,6 +96,43 @@ export function computePressure() {
   return { specs: specs.length, injectionSpecs: injection, testFiles: tests.length };
 }
 
+// ── История на натиска ──────────────────────────────────────────────────────
+// Единица натиск = 1 eval spec ИЛИ 1 тестов файл (двата главни канала, които могат да НАМЕРЯТ
+// дефект). Нормализиран процент = дефекти този месец на 100 ед. натиск — числото, което НЕ може
+// да се разчете грешно при падащ натиск (знаменателят пада с него и процентът се вдига).
+export const pressureUnits = (p) => p.specs + p.testFiles;
+export const normalizedRate = (defects, p) => (pressureUnits(p) ? +(defects / pressureUnits(p) * 100).toFixed(1) : null);
+
+export function readPressureHistory(file = PRESSURE) {
+  return parseJsonl(file).filter((p) => p.month && typeof p.specs === "number" && typeof p.testFiles === "number");
+}
+
+// Идемпотентен запис: една точка на месец — повторен --record в същия месец презаписва точката.
+export function recordPressure({ file = PRESSURE, today = TODAY, pressure = computePressure(), defects = 0 } = {}) {
+  const month = monthOf(today);
+  const rest = readPressureHistory(file).filter((p) => p.month !== month);
+  const point = { month, date: today, ...pressure, defects };
+  const all = [...rest, point].sort((a, b) => (a.month < b.month ? -1 : 1));
+  writeFileSync(file, all.map((p) => JSON.stringify(p)).join("\n") + "\n");
+  return point;
+}
+
+// Здраве на историята: липсваща/игнорирана = няма измерване; застаряла = измерване по спомен.
+export function pressureHealth({ file = PRESSURE, today = TODAY } = {}) {
+  const problems = [];
+  const gi = existsSync(GITIGNORE) ? readFileSync(GITIGNORE, "utf8") : "";
+  if (gi.split("\n").some((l) => l.trim() === "tools/agents/evals/pressure.jsonl"))
+    problems.push("pressure.jsonl е в .gitignore — историята на натиска не преживява нов клон (амнезия).");
+  const hist = readPressureHistory(file);
+  if (!hist.length) problems.push("няма нито една точка в pressure.jsonl — пусни `defect-rate --record` (натиск без история не се чете).");
+  else {
+    const last = hist[hist.length - 1];
+    const age = Math.round((new Date(today) - new Date(last.date || last.month + "-01")) / 86400000);
+    if (age > PRESSURE_TTL_DAYS) problems.push(`последната точка на натиска е на ${age}д (лимит ${PRESSURE_TTL_DAYS}д) — пусни \`defect-rate --record\` (същата TTL логика като version-freshness).`);
+  }
+  return { history: hist, problems };
+}
+
 // Измерването е трайно само ако преживява нов клон/сесия. Тренд във .gitignore = амнезия.
 export function measurementHealth() {
   const problems = [];
@@ -101,12 +150,18 @@ async function main() {
   const health = measurementHealth();
   const trendPoints = parseJsonl(TREND).length;
 
+  if (RECORD) {
+    const point = recordPressure({ pressure, defects: rate.current });
+    console.log(`✎ pressure.jsonl: точка за ${point.month} — ${point.specs} spec-а · ${point.testFiles} теста · ${point.defects} дефекта (${normalizedRate(point.defects, point)} на 100 ед. натиск).`);
+  }
+
+  const pHealth = pressureHealth();
   const noRegression = rate.total - rate.withRegression;
-  const problems = [...health.problems];
+  const problems = [...health.problems, ...pHealth.problems];
   if (noRegression) problems.push(`${noRegression} записа в дневника без регресия — този клас грешка може да се върне тихо.`);
 
   if (JSON_OUT) {
-    await emitJsonNow({ date: TODAY, rate, pressure, trendPoints, measurement: health, problems }, CHECK && problems.length ? 1 : 0);
+    await emitJsonNow({ date: TODAY, rate, pressure, pressureHistory: pHealth.history, trendPoints, measurement: health, problems }, CHECK && problems.length ? 1 : 0);
   }
 
   console.log(`\n🌡  Дефектен процент на флота (термометър, не оценка)\n`);
@@ -119,6 +174,18 @@ async function main() {
   console.log(`\n  Натиск (какво изобщо МОЖЕ да намери дефект):`);
   console.log(`    ${pressure.specs} eval spec-а (от тях ${pressure.injectionSpecs} инжекционни) · ${pressure.testFiles} тестови файла`);
   console.log(`    \x1b[90mПадащ дефектен процент при ПАДАЩ натиск не е зрялост, а сляпо петно. Четѝ ги заедно.\x1b[0m`);
+
+  // История на натиска: нормализираният процент е числото, което НЕ лъже при падащ знаменател.
+  if (pHealth.history.length) {
+    console.log(`\n  История на натиска (дефекти на 100 ед. натиск; ед. = spec + тестов файл):`);
+    for (const p of pHealth.history)
+      console.log(`    ${p.month}  натиск ${pressureUnits(p)} (${p.specs}s+${p.testFiles}t) · ${p.defects} дефекта → ${normalizedRate(p.defects, p)}/100`);
+    if (pHealth.history.length >= 2) {
+      const [a, b] = pHealth.history.slice(-2);
+      const dir = pressureUnits(b) > pressureUnits(a) ? "расте" : pressureUnits(b) < pressureUnits(a) ? "\x1b[31mПАДА\x1b[0m" : "равен";
+      console.log(`    Посока на натиска: ${dir} (${pressureUnits(a)} → ${pressureUnits(b)})`);
+    } else console.log(`    \x1b[90m(1 точка — посока още не се чете; следващият месец пусни --record пак)\x1b[0m`);
+  }
   console.log(`\n  Поведенчески тренд: ${trendPoints} записани точки` +
     (trendPoints < 3 ? "  \x1b[90m(под 3 точки посоката още не се чете)\x1b[0m" : ""));
 
