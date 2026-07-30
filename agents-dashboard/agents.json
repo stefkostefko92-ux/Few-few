@@ -1052,7 +1052,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 252
+        "lessons": 249
       },
       "evolution": [
         {
@@ -2424,7 +2424,7 @@
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 111
+        "lessons": 110
       },
       "evolution": [
         {
@@ -3205,7 +3205,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 152
+        "lessons": 148
       },
       "evolution": [
         {
@@ -6587,7 +6587,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 134
+        "lessons": 129
       },
       "evolution": [
         {
@@ -8137,7 +8137,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 157
+        "lessons": 150
       },
       "evolution": [
         {
@@ -8866,7 +8866,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 122
+        "lessons": 120
       },
       "evolution": [
         {
@@ -9523,7 +9523,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 107
+        "lessons": 105
       },
       "evolution": [
         {
@@ -12367,7 +12367,7 @@
           "MAR (Регл. 596/2014) — пазарна злоупотреба: spoofing, wash trading, layering",
           "Практики за честен бектест: look-ahead/survivorship bias, walk-forward, такси+slippage"
         ],
-        "lessons": 124
+        "lessons": 121
       },
       "evolution": [
         {
@@ -12652,7 +12652,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 171
+        "lessons": 174
       },
       "evolution": [
         {
@@ -12711,6 +12711,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Claude Code хуковете са 30 събития (не ~28); списъкът включва ConfigChange (блокира про…\" (+5)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -13901,7 +13906,7 @@
           "Sample Ratio Mismatch (en.wikipedia.org/wiki/Sample_ratio_mismatch); статистика на онлайн експерименти",
           "Това репо: CLAUDE.md; границата SEO (откриваемост), Продавача (Stripe), Наблюдателят (системни метрики), Правния (закон)"
         ],
-        "lessons": 155
+        "lessons": 156
       },
       "evolution": [
         {
