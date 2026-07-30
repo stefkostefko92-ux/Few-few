@@ -16,7 +16,14 @@ const NET_SEND = /\b(curl|wget|nc|ncat|netcat|telnet|scp|sftp|rsync|ssh)\b|\/dev
 // всеки `node script.js` би вдигал фалшива тревога).
 const NET_INTERPRETER =
   /\b(node|deno|bun|python3?|perl|ruby|php)\b[^\n]*(-e|-c|--eval|--exec)?[^\n]*\b(fetch\s*\(|urllib|requests\.(get|post|put)|http\.client|net\/http|Net::HTTP|file_get_contents|curl_exec|XMLHttpRequest)/i;
-const isNetChannel = (s) => NET_SEND.test(s) || NET_INTERPRETER.test(s);
+// Red-team 2026-07-30 (F2): горният списък покриваше високонивовите клиенти, но НЕ суровите —
+// `node -e "require('https').request(...)"` и `python3 -c "smtplib.SMTP(...)"` не съдържаха нито един
+// от токените и целият интерпретаторен вектор оставаше отворен. Тук изискваме ЗАДЪЛЖИТЕЛНО флаг за
+// вграден код (-e/-c/--eval/-r), затова широки токени като `socket` не могат да вдигнат фалшива
+// тревога върху нормален `node server.js` (там няма -e).
+const NET_INTERPRETER_INLINE =
+  /\b(node|deno|bun|python3?|perl|ruby|php)\b[^\n]*\s-{1,2}(e|c|eval|exec|r)\b[^\n]*(require\s*\(\s*["']https?["']|\bhttps?\.request\b|\bhttp\.client\b|\bsmtplib\b|\bsocket\b|\burlopen\b|\baxios\b|\bnode-fetch\b|\bopen-uri\b|Net::(HTTP|SMTP)|\bsendmail\b)/i;
+const isNetChannel = (s) => NET_SEND.test(s) || NET_INTERPRETER.test(s) || NET_INTERPRETER_INLINE.test(s);
 // Референция към тайна env-променлива ($NAME или ${NAME}), която изглежда секретна.
 // Case-insensitive (red-team F2: $mytoken минаваше; малки букви също са тайна).
 // Red-team F3: списъкът пропускаше чести имена. Добавени PASS/PAT/SK/JWT/COOKIE/SESSION/KEY.
@@ -32,25 +39,60 @@ const SECRET_ENV_CODE =
 const ENV_FILE = /(cat|source|\.|<|--data(-binary)?\s+@|--data-urlencode\s+@|-d\s+@|-T|--upload-file)\s+[^\n]*\.env\b|@\.env\b/i;
 // Пълен env dump, пуснат нанякъде.
 // F2: лови и `$(printenv)` / `$(env)` субституция (не само pipe/redirect), + затварящи `)"'`.
-const ENV_DUMP = /\b(printenv|env)\b\s*(\||>|\)|["']|$)|\$\(\s*(printenv|env)\b/;
+// Red-team 2026-07-30 (F1): покривахме само `printenv`/`env`, но обвивката има още три начина да
+// изсипе ЦЯЛАТА среда — `export -p`, `declare -x` и голо `set`. Всеки от тях през пайп към curl
+// изнасяше всички тайни. Голото `set` изисква веднага пайп/редирект, защото `set -e`/`set -u` са
+// нормални и не бива да вдигат тревога.
+const ENV_DUMP_VERB = String.raw`printenv|env|export\s+-p|declare\s+-x`;
+const ENV_DUMP = new RegExp(
+  String.raw`\b(${ENV_DUMP_VERB})\b\s*(\||>|\)|["']|$)|\$\(\s*(${ENV_DUMP_VERB})\b|\bset\s*(\||>)`,
+);
 // F2: `curl --data @file` / `-T file` към мрежа, КОГАТО файлът изглежда чувствителен (пази near-zero-FP —
 // не флагва легитимен `curl -d @body.json`). Лови стейджната тайна в не-.env файл.
-const DATA_FILE_SEND = /(--data(-binary|-urlencode)?|-d|-T|--upload-file)\s+@?["']?\S*(secret|token|apikey|api[_-]?key|cred|password|passwd|\.env|\.pem|id_rsa|private[_-]?key)\S*/i;
+// Red-team 2026-07-30 (F3): списъкът с чувствителни имена беше преписан на ДВА места (тук и в
+// SENSITIVE_READ_PIPED) и в двата имаше само `id_rsa` — а ed25519 е ПОДРАЗБИРАЩИЯТ СЕ тип ssh ключ
+// от години, затова `cat ~/.ssh/id_ed25519 | curl -d @-` минаваше. Един фрагмент, два консуматора
+// (същият урок като единния източник за „какво е тайна").
+const SENSITIVE_NAME =
+  String.raw`secret|token|apikey|api[_-]?key|cred|password|passwd|\.env|\.pem|\.key|id_rsa|id_ed25519|id_ecdsa|id_dsa|\.ssh\/|private[_-]?key|\.npmrc|\.netrc|\.pgpass|kubeconfig|\.p12|\.pfx`;
+const DATA_FILE_SEND = new RegExp(
+  String.raw`(--data(-binary|-urlencode)?|-d|-T|--upload-file)\s+@?["']?\S*(${SENSITIVE_NAME})\S*`, "i",
+);
 
 // Red-team F5 (двустъпково стажиране): хуковете са БЕЗ състояние между извиквания, затова
 // `printenv > /tmp/s.txt` (ход 1) и `curl --data-binary @/tmp/s.txt` (ход 2) минаваха поотделно.
 // Не можем да свържем ходовете, но можем да срежем ВЕРИГАТА при ход 1: пълен env dump във ФАЙЛ
 // няма легитимна употреба в агентски контекст.
-const ENV_DUMP_TO_FILE = /\b(printenv|env)\s*(\||>|>>)\s*\S/;
+const ENV_DUMP_TO_FILE = new RegExp(String.raw`\b(${ENV_DUMP_VERB}|set)\s*(\||>|>>)\s*\S`);
 // Red-team F4: `cat secrets.json | curl --data-binary @-` — чувствителният файл е ВЛЯВО от пайпа,
 // затова DATA_FILE_SEND (който гледа само аргумента на curl) не го виждаше.
-const SENSITIVE_READ_PIPED =
-  /\b(cat|head|tail|base64|gpg|openssl|xxd|strings)\b[^\n|]*\b\S*(secret|token|apikey|api[_-]?key|cred|password|passwd|\.env|\.pem|id_rsa|private[_-]?key|\.npmrc|\.netrc)\S*[^\n|]*\|/i;
+const SENSITIVE_READ_PIPED = new RegExp(
+  String.raw`\b(cat|head|tail|base64|gpg|openssl|xxd|strings|jq)\b[^\n|]*\b\S*(${SENSITIVE_NAME})\S*[^\n|]*\|`, "i",
+);
+// Red-team 2026-07-30 (F6): `git push` към ИЗРИЧЕН чужд URL изнася цялата история (вкл. каквото е
+// стажирано), а `npm publish` я праща в публичен регистър. Нормалният ни поток е `git push -u origin
+// <клон>` — с ИМЕ на remote, без URL — затова изискването за схема/`git@` пази near-zero-FP.
+// ВАЖНО за фалшивите позитиви (намерен веднага при реална употреба): без анкер за КОМАНДНА ПОЗИЦИЯ
+// тези шаблони съвпадаха и когато командата е само СПОМЕНАТА в текстов аргумент — първият ми опит да
+// запиша този дефект в дневника с описание, съдържащо „npm publish", беше блокиран от самия предпазител.
+// Пишем български документи за инструментите постоянно, значи това е ежедневен FP. Затова изискваме
+// начало на команда (начало на низа или след ; && || | нов ред) — реалният вектор пак се лови.
+const CMD_START = String.raw`(?:^|[;&|]\s*|\n\s*)`;
+const FOREIGN_PUSH = new RegExp(CMD_START + String.raw`git\s+push\b[^\n;&|]*\b(https?:\/\/|git@|ssh:\/\/)`, "i");
+const PACKAGE_PUBLISH = new RegExp(CMD_START + String.raw`(npm|yarn|pnpm)\s+publish\b`, "i");
 
 export function detectBashExfil(command) {
   const s = String(command || "");
   // Проверките БЕЗ нужда от мрежов канал (режат веригата рано).
   if (ENV_DUMP_TO_FILE.test(s)) return "пълен env dump във файл (стажиране за по-късно изнасяне)";
+  // Red-team 2026-07-30 (F7): guard-secrets е PostToolUse(Write|Edit) и НЕ вижда запис през Bash
+  // (`cat > f <<EOF`, `tee`, `echo >`), затова литерален credential влизаше във файл без никакъв сигнал
+  // до commit-гейта. Литерална тайна в команда на агент няма легитимна употреба в нашия модел —
+  // тайните живеят на сървъра (mode 600) и НЕ минават през агента (виж CLAUDE.md) — затова блокираме
+  // независимо от канал. Ако е нужно наистина, човекът го прави ръчно извън агента.
+  for (const p of SECRET_RE) if (p.re.test(s)) return `литерален ${p.name} в команда (тайните не минават през агента)`;
+  if (FOREIGN_PUSH.test(s)) return "git push към изричен ЧУЖД URL (историята напуска нашия remote)";
+  if (PACKAGE_PUBLISH.test(s)) return "публикуване на пакет в публичен регистър";
   if (!isNetChannel(s)) return null;
   if (SENSITIVE_READ_PIPED.test(s)) return "чувствителен файл, четен в пайп към мрежов канал";
   for (const p of SECRET_RE) if (p.re.test(s)) return `литерален ${p.name} към мрежата`;

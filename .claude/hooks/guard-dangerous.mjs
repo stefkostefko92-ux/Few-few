@@ -20,11 +20,28 @@ export const CATASTROPHIC = [
   { re: /\b(curl|wget)\b[^\n]*\|\s*[^\n]*\b(sudo\s+)?((ba|z|k|da|a)?sh|python3?|node|perl|ruby|php)\b/i, why: "изтегляне и изпълнение на отдалечен скрипт (curl|sh)" },
   // `-so` е комбинирани флагове — затова `(-o|-O)` с интервал не хващаше най-честия вариант.
   { re: /\b(curl|wget)\b[^\n]*\s-[a-zA-Z]*[oO]\s*\S+[^\n]*(&&|;|\|\|)\s*(sudo\s+)?((ba|z|k|da|a)?sh|python3?|node|perl|ruby|php)\b/i, why: "изтегляне във файл и изпълнението му (curl -o … && sh)" },
-  { re: /\bgit\b[^\n]*\bpush\b[^\n]*--force\b(?![^\n]*--force-with-lease)[^\n]*\b(origin\s+)?(main|master)\b/i, why: "git push --force към main (ползвай --force-with-lease към feature клон)" },
+  // Red-team 2026-07-30 (F5b): шаблонът искаше ДЪЛГИЯ флаг `--force`, затова най-краткият и най-често
+  // писан вариант `git push -f origin main` минаваше необезпокоявано. Сега и `-f`, и `--force`.
+  { re: /\bgit\b[^\n]*\bpush\b[^\n]*(--force\b|\s-[a-zA-Z]*f\b)(?![^\n]*--force-with-lease)[^\n]*\b(origin\s+)?(main|master)\b/i, why: "git push --force/-f към main (ползвай --force-with-lease към feature клон)" },
 ];
+
+// Red-team 2026-07-30 (F5a): `rm -rf /` се хващаше, но `rm -r -f /` — НЕ, защото шаблонът искаше r и f
+// в ЕДНА флагова група. Разделените флагове са също толкова катастрофални и се пишат също толкова лесно.
+// Затова флаговете се събират от ВСИЧКИ групи и се проверяват заедно (регекс за целта + логика за флагове).
+export function isCatastrophicRm(cmd) {
+  const m = String(cmd || "").match(
+    /\brm\b((?:\s+-{1,2}[a-zA-Z-]+)*)\s+(?:--no-preserve-root\s+)?["']?(\/(?:\s|$|\*|["'])|~(?:\s|\/|$|["']))/i,
+  );
+  if (!m) return false;
+  const flags = m[1] || "";
+  const recursive = /-[a-zA-Z]*r/i.test(flags) || /--recursive/i.test(flags);
+  const force = /-[a-zA-Z]*f/i.test(flags) || /--force/i.test(flags);
+  return recursive && force;
+}
 
 export function isCatastrophic(cmd) {
   const s = String(cmd || "");
+  if (isCatastrophicRm(s)) return "rm -rf на корен/дом (вкл. разделени флагове)";
   for (const p of CATASTROPHIC) if (p.re.test(s)) return p.why;
   return null;
 }
