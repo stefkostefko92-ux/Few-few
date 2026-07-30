@@ -14,15 +14,17 @@ import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts, memPercent } from './history.js';
 import { evaluateBurn } from './slo.js';
 import { backupChecks } from './drill.js';
+import { scheduleChecks } from './backupsched.js';
 import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from './health.js';
 import { overview as redisOverview, evictionChecks } from './redis.js';
 import { safePath } from './accesslog.js';
 import { exposureMap, portChecks } from './ports.js';
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule }) {
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
+    this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
     this.accesslog = accesslog; // за дела 5xx от РЕАЛНИЯ трафик
     this.cfg = cfg;
     this.metrics = metrics;
@@ -364,6 +366,9 @@ export class AlertEngine {
 
     for (const b of this.burnChecks()) out.push(b);
     for (const b of backupChecks(this.cfg, this.drill)) out.push(b);
+    // Графикът на бекъпа е отделен сигнал от възрастта на бекъпа: включен график,
+    // който не се пуска, изглежда като покритие, а не е.
+    for (const b of scheduleChecks(this.cfg, this.backupSchedule)) out.push(b);
     for (const b of await this.flappingChecks()) out.push(b);
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);

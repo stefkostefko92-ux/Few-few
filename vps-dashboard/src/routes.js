@@ -46,6 +46,7 @@ import * as volumes from './volumes.js';
 import * as desktop from './desktop.js';
 import * as ports from './ports.js';
 import * as portchange from './portchange.js';
+import { receiveOffsite } from './backupsched.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -107,7 +108,10 @@ export const PEER_DENY = [
 
 // Изключения: маршрути, които peer-ът ТРЯБВА да ползва въпреки обхвата „read" —
 // огледалото на одита се ПРАЩА от него по дизайн (това е целта на изнасянето).
-export const PEER_ALLOW = [/^\/api\/audit\/mirror$/];
+// Копието на бекъпа СЕ ПРАЩА от съседа по дизайн — точно като огледалото на
+// одита. Останалите `/api/backups/*` мутации му остават забранени (той не пипа
+// нашия график и не пуска нашите бекъпи).
+export const PEER_ALLOW = [/^\/api\/audit\/mirror$/, /^\/api\/backups\/offsite\/receive$/];
 
 // Единственото изключение от списъка с разрешени адреси: GitHub чука отвън и
 // адресите му не са наши. Маршрутът носи защитата си сам (HMAC подпис).
@@ -1570,6 +1574,94 @@ export function buildRouter(ctx) {
         ctx.watchDrill?.(job.id, spec.dumpName);
         return job;
       }),
+      { mutating: true }
+    )
+  );
+
+  // ── Бекъпи: ГРАФИК + копие извън машината (3-2-1) ──────────────────────────
+  r.get('/api/backups/schedule', guard(J(() => ctx.backupSchedule.status(cfg))));
+  r.post(
+    '/api/backups/schedule',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const s = cfg.backups?.schedule || {};
+        const o = cfg.backups?.offsite || {};
+        const num = (v, fallback, min, max) => {
+          if (v === undefined || v === null || v === '') return fallback;
+          const n = Number(v);
+          if (!Number.isInteger(n) || n < min || n > max) {
+            throw Object.assign(new Error(`Числото трябва да е цяло ${min}–${max}`), { status: 400 });
+          }
+          return n;
+        };
+        const next = {
+          ...cfg.backups,
+          schedule: {
+            enabled: b.enabled === undefined ? s.enabled !== false : Boolean(b.enabled),
+            everyHours: num(b.everyHours, s.everyHours ?? 24, 1, 24 * 30),
+            atHour: num(b.atHour, s.atHour ?? 3, 0, 23),
+          },
+          offsite: {
+            ...o,
+            enabled: b.offsiteEnabled === undefined ? Boolean(o.enabled) : Boolean(b.offsiteEnabled),
+            perRun: num(b.perRun, o.perRun ?? 3, 1, 50),
+            maxMB: num(b.maxMB, o.maxMB ?? 4096, 1, 1024 * 100),
+            keep: num(b.keep, o.keep ?? 10, 1, 500),
+          },
+        };
+        saveConfig(cfg, { backups: next });
+        audit.log({
+          action: 'backup.schedule.set',
+          enabled: next.schedule.enabled,
+          atHour: next.schedule.atHour,
+          offsite: next.offsite.enabled,
+          user: req.user,
+        });
+        return ctx.backupSchedule.status(cfg);
+      }),
+      { mutating: true }
+    )
+  );
+  // „Пусни сега" минава през СЪЩИЯ път като планираният бекъп (записва се в
+  // историята на графика), за да не се разминават двата начина да се стигне до
+  // един и същ резултат.
+  r.post(
+    '/api/backups/schedule/run',
+    guard(
+      J(async (req) => {
+        audit.log({ action: 'backup.schedule.runNow', user: req.user });
+        ctx.runScheduledBackup?.(`ръчно (${req.user})`);
+        return { ok: true, started: true };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/backups/offsite/now',
+    guard(
+      J(async (req) => {
+        audit.log({ action: 'backup.offsite.now', user: req.user });
+        return { results: await ctx.offsite.shipAll() };
+      }),
+      { mutating: true }
+    )
+  );
+  // Приемащата страна. Тялото е СУРОВ поток (гигабайти), затова НЕ минава през
+  // readJson. Името на възела е ЕТИКЕТ от подателя, не доказана самоличност
+  // (`peerToken` е общ) — `assertNodeId` го свежда до безопасна частица от път.
+  r.post(
+    '/api/backups/offsite/receive',
+    guard(
+      J(async (req, res, params, url) =>
+        receiveOffsite(req, {
+          node: url.searchParams.get('node'),
+          name: url.searchParams.get('name'),
+          sha256: req.headers['x-csd-sha256'],
+          keep: Number(cfg.backups?.offsite?.keep) || 10,
+          dir: ctx.backupSchedule.offsite,
+        })
+      ),
       { mutating: true }
     )
   );

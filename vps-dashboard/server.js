@@ -20,6 +20,8 @@ import { RevokedSessions } from './src/revoked.js';
 import { serveStatic, sendError, clientIp } from './src/httpd.js';
 import * as desktop from './src/desktop.js';
 import { PortBaseline } from './src/ports.js';
+import { BackupSchedule, OffsiteShipper } from './src/backupsched.js';
+import { backupAllSpec } from './src/backups.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -39,7 +41,12 @@ const logminer = new LogMiner(cfg.paths.stateDir);
 const accesslog = new AccessLogReader(cfg.paths.stateDir);
 const drill = new DrillStore(cfg.paths.stateDir);
 const portBaseline = new PortBaseline(cfg.paths.stateDir);
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline });
+const backupSchedule = new BackupSchedule(cfg.paths.stateDir);
+// Копие на другия VPS. Обявен ТУК, преди графика, който го вика — иначе
+// препратката е в мъртва зона до края на модула.
+const offsite = new OffsiteShipper({ cfg, audit, schedule: backupSchedule });
+offsite.start();
+const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule });
 alerts.start();
 
 // Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
@@ -97,6 +104,40 @@ if (cfg.backups?.drillEnabled !== false) {
   setTimeout(check, 5 * 60000).unref?.(); // не на самия старт — сървърът да се вдигне
   const drillTimer = setInterval(check, 3600 * 1000);
   drillTimer.unref?.();
+}
+
+// Бекъпът се ПРАВИ сам. Същият часови каданс като пробата и по същата причина:
+// таймер за 24 часа не преживява рестарт, а конкретният час се улучва само ако
+// проверката е честа. Резултатът се записва при ПРИКЛЮЧВАНЕ на задачата.
+function runScheduledBackup(reason) {
+  let job;
+  try {
+    job = jobs.start(backupAllSpec(), { user: reason });
+  } catch {
+    // Зает ексклузивен ключ „backup" (тече проба или архив на томове) НЕ е провал
+    // на графика — записването му като провал вдига фалшива критична аларма и
+    // отлага истинския бекъп с цял каданс. Часовият таймер ще опита пак.
+    return;
+  }
+  const iv = setInterval(() => {
+    const j = jobs.get(job.id);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    backupSchedule.record({ ok: j.code === 0, output: j.output, code: j.code, reason });
+    // Свежият дъмп си струва да пътува веднага, а не да чака следващия каданс на
+    // изнасянето — точно между двете стои прозорецът, в който машината умира.
+    if (j.code === 0) offsite.shipAll().catch(() => {});
+  }, 5000);
+  iv.unref?.();
+}
+
+{
+  const check = () => {
+    if (backupSchedule.due(cfg)) runScheduledBackup('планиран бекъп');
+  };
+  setTimeout(check, 6 * 60000).unref?.();
+  const t = setInterval(check, 3600 * 1000);
+  t.unref?.();
 }
 
 // SLO дневникът расте по един ред на продукт на минута — режем го на 35 дни
@@ -185,6 +226,9 @@ const router = buildRouter({
   watchDrill,
   watchPortChange,
   portBaseline,
+  backupSchedule,
+  offsite,
+  runScheduledBackup,
   sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
   // Отменените сесии ПРЕЖИВЯВАТ рестарт. Докато този списък живееше в паметта,

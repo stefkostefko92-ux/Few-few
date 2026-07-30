@@ -3045,12 +3045,136 @@ async function renderSecurity() {
 }
 
 // ── Бекъпи ────────────────────────────────────────────────────────────────────────
+// График на бекъпа + копие извън машината.
+//
+// Дотук панелът СЛЕДЕШЕ бекъпа, но не го ПРАВЕШЕ: вдигаше критична аларма за
+// проблем, който сам може да реши, и чакаше човек да щракне. А всичко живееше на
+// същия диск — мъртъв диск взема и бекъпите.
+function scheduleCard(sch) {
+  const enabled = el('input', { type: 'checkbox' });
+  enabled.checked = Boolean(sch.enabled);
+  const atHour = el('input', { type: 'number', min: '0', max: '23', value: String(sch.atHour), style: 'width:80px' });
+  const everyHours = el('input', { type: 'number', min: '1', max: '720', value: String(sch.everyHours), style: 'width:90px' });
+  const offsite = el('input', { type: 'checkbox' });
+  offsite.checked = Boolean(sch.offsite?.enabled);
+
+  const last = sch.lastResult;
+  const kind = !sch.enabled ? 'warn' : last && !last.ok ? 'bad' : sch.lastOkAt ? 'ok' : 'warn';
+
+  const save = el('button', { class: 'btn btn-primary btn-sm', text: 'Запиши' });
+  save.onclick = async () => {
+    save.disabled = true;
+    try {
+      await api('/backups/schedule', {
+        method: 'POST',
+        body: {
+          enabled: enabled.checked,
+          atHour: Number(atHour.value),
+          everyHours: Number(everyHours.value),
+          offsiteEnabled: offsite.checked,
+        },
+      });
+      toast('Графикът е записан');
+      go('backups');
+    } catch (e) {
+      toast(e.message, 'bad');
+      save.disabled = false;
+    }
+  };
+
+  const peers = sch.offsite?.peers || [];
+  const received = sch.offsite?.received || [];
+
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'График и копие извън машината' }),
+      pill(kind, !sch.enabled ? 'само ръчно' : last && !last.ok ? 'последният се провали' : sch.lastOkAt ? 'работи' : 'още не е пускан'),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Часът е фиксиран (нощем), а не „на всеки 24 часа от последния път" — иначе бекъпът пълзи през деня и някой ден ' +
+      'пада върху деплой. Първото пускане чака нощния час нарочно; изпуснат час (спрян панел) се ДОГОНВА.' }),
+    el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+      el('label', { class: 'inline' }, [enabled, el('span', { text: ' включен' })]),
+      el('label', { class: 'inline' }, [el('span', { text: 'в час ' }), atHour]),
+      el('label', { class: 'inline' }, [el('span', { text: 'на всеки ' }), everyHours, el('span', { text: ' ч.' })]),
+      el('span', { class: 'grow' }),
+      el('button', {
+        class: 'btn btn-sm', text: '▶ Пусни сега',
+        onclick: async () => {
+          try { await api('/backups/schedule/run', { method: 'POST' }); toast('Бекъпът тръгна — виж „Задачи"'); }
+          catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+      save,
+    ]),
+    last
+      ? el('div', { class: 'metric-sub', style: last.ok ? '' : 'color:var(--danger)', text:
+          `Последно: ${fmtWhen(last.ts)} · ${last.ok ? 'успех' : `ПРОВАЛ (изход ${last.code ?? '?'})`}` +
+          `${last.reason ? ` · ${last.reason}` : ''}` })
+      : el('div', { class: 'metric-sub', text: 'Още не е пускан през графика.' }),
+
+    el('h3', { text: 'Копие на другия VPS (3-2-1)', style: 'margin-top:16px' }),
+    el('div', { class: 'metric-sub', text:
+      'Бекъп на същия диск не е бекъп: мъртъв диск взема и него, а компрометиран root го трие заедно с одита. ' +
+      'Изнасянето иска https — дъмпът е ЦЯЛАТА база (за medqr медицински данни), по открит текст не пътува дори ' +
+      'през частната мрежа на хостера.' }),
+    el('div', { class: 'toolbar' }, [
+      el('label', { class: 'inline' }, [offsite, el('span', { text: ' изнасяй навън' })]),
+      el('span', { class: 'grow' }),
+      el('button', {
+        class: 'btn btn-sm', text: '⇪ Изнеси сега',
+        onclick: async () => {
+          try {
+            const r = await api('/backups/offsite/now', { method: 'POST' });
+            for (const x of r.results || []) {
+              if (!x.ok) toast(`${x.peer}: ${x.error}`, 'bad');
+              else toast(`${x.peer}: изнесени ${x.sent.length}${x.skipped?.length ? `, пропуснати ${x.skipped.length}` : ''}`);
+            }
+            go('backups');
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+    ]),
+    peers.length
+      ? el('div', { class: 'table-wrap' }, [
+          tableEl(['Възел', 'Транспорт', 'Изнесени', 'Последно'], peers.map((p) =>
+            el('tr', {}, [
+              el('td', { text: p.id }),
+              el('td', {}, [pill(p.tls ? 'ok' : 'bad', p.tls ? 'https' : 'открит текст — отказвам')]),
+              el('td', { text: String(p.shipped) }),
+              el('td', { class: 'muted', text: p.lastAt ? fmtWhen(p.lastAt) : '—' }),
+            ])
+          )),
+        ])
+      : el('div', { class: 'empty', text: 'Няма конфигурирани peer-и — няма къде да се изнесе.' }),
+    received.length
+      ? el('div', {}, [
+          el('h3', { text: 'Получени копия от други възли', style: 'margin-top:14px' }),
+          el('div', { class: 'metric-sub', text:
+            'Пазят се ОТДЕЛНО от собствените снимки: смесени в една папка, чуждият дъмп става „най-новият бекъп" ' +
+            'на тази машина и гаси алармата за остарял СОБСТВЕН бекъп.' }),
+          el('div', { class: 'table-wrap' }, [
+            tableEl(['Възел', 'Файлове', 'Общо', 'Най-нов'], received.map((n) =>
+              el('tr', {}, [
+                el('td', { text: n.node }),
+                el('td', { text: String(n.count) }),
+                el('td', { text: fmtBytes(n.totalBytes) }),
+                el('td', { class: 'muted', text: n.newest ? `${n.newest.name} · ${fmtWhen(n.newest.mtime)}` : '—' }),
+              ])
+            )),
+          ]),
+        ])
+      : '',
+  ]);
+}
+
 async function renderBackups() {
   const view = document.getElementById('view');
-  const [b, h, vols] = await Promise.all([
+  const [b, h, vols, sch] = await Promise.all([
     api('/backups'),
     api('/backups/health').catch(() => null),
     api('/volumes').catch(() => null),
+    api('/backups/schedule').catch(() => null),
   ]);
   view.innerHTML = '';
 
@@ -3108,6 +3232,8 @@ async function renderBackups() {
       ])
     );
   }
+
+  if (sch) view.appendChild(scheduleCard(sch));
 
   // Томовете са отделна секция, защото са отделна ДУПКА: pg_dump хваща базата,
   // но записът в нея сочи към файл в том „uploads", който не се архивира никъде.

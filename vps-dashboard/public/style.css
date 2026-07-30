@@ -147,7 +147,10 @@ td.mono, .mono { font-family: var(--mono); }
 
 /* ── Инструменти/тулбар ─────────────────────────────────── */
 .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-.toolbar input[type="text"], .toolbar input[type="search"], .toolbar select {
+/* Двойка етикет+поле в лента. Без това редът се разпада, а несъществуващ клас не
+   вдига грешка никъде — същият капан като инлайн var(--…), който го няма. */
+.inline { display: inline-flex; align-items: center; gap: 6px; color: var(--txt-dim); font-size: 13px; }
+.toolbar input[type="text"], .toolbar input[type="search"], .toolbar input[type="number"], .toolbar select {
   background: var(--panel); border: 1px solid var(--line); color: var(--txt);
   padding: 7px 11px; border-radius: 8px; font-size: 13px;
 }
