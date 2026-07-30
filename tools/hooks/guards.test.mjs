@@ -31,10 +31,24 @@ test("guard-dangerous ПРОПУСКА нормалното (нула фалши
 test("guard-секрети лови високо-уверени ключове", () => {
   // Ключовете се сглобяват от части, за да НЕ са литерален секрет в изходния код
   // (иначе secret-scan флагва самия тест) — runtime низът пак съвпада с findSecret.
-  assert.equal(findSecret("const k='AKIA" + "1234567890ABCDEF'"), "AWS access key id");
+  assert.equal(findSecret("const k='AKIA" + "1234567890ABCDEF'"), "AWS Access Key ID");
   assert.ok(findSecret("sk_live_" + "a".repeat(24)));
   assert.ok(findSecret("-----BEGIN " + "PRIVATE KEY-----"));
   assert.ok(findSecret("ghp_" + "a".repeat(36)));
+  // 2026-07-30: НАШИТЕ credential-и липсваха от рънтайм списъка (8 срещу 18 в CI гейта) →
+  // guard-exfil разрешаваше изнасянето им. Тези четири са red-before-green за онзи дефект.
+  assert.ok(findSecret("sk-ant-api03-" + "A".repeat(40)), "Anthropic ключ трябва да се хваща");
+  assert.ok(findSecret("sk-proj-" + "A".repeat(40)), "OpenAI project ключ трябва да се хваща");
+  assert.ok(findSecret("SG." + "A".repeat(22) + "." + "B".repeat(43)), "SendGrid ключ");
+  assert.ok(findSecret("MTAx" + "A".repeat(21) + ".Gabcde." + "B".repeat(30)), "Discord bot token");
+});
+
+test("guard-secrets: JWT е COMMIT-ONLY — не блокира рънтайм (Bearer eyJ… е легитимен трафик)", () => {
+  // Съзнателна асиметрия: JWT в комит е реален изтек (CI гейтът го лови), но `Authorization:
+  // Bearer eyJ…` тече постоянно към наши API — рънтайм блок би бил фалшива тревога, а
+  // прекомерното блокиране кара хората да изключат предпазителя (.claude/hooks/README.md).
+  const jwt = "eyJ" + "a".repeat(12) + ".eyJ" + "b".repeat(12) + "." + "c".repeat(24);
+  assert.equal(findSecret(jwt), null, "рънтайм guard НЕ блокира JWT");
 });
 
 test("guard-secrets не вдига шум за нормален код", () => {

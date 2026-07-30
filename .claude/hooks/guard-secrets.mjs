@@ -7,17 +7,14 @@
 // Договор: stdin = JSON {tool_name, tool_input:{file_path, content|new_string}}. Регистриран като
 // PostToolUse matcher "Write|Edit".
 
-// Near-zero-FP шаблони (както в secret-scan): реален ключ, не споменаване.
-export const SECRET_RE = [
-  { re: /sk_live_[0-9a-zA-Z]{20,}/, name: "Stripe live secret" },
-  { re: /rk_live_[0-9a-zA-Z]{20,}/, name: "Stripe restricted live key" },
-  { re: /\bAKIA[0-9A-Z]{16}\b/, name: "AWS access key id" },
-  { re: /\bghp_[0-9A-Za-z]{36}\b/, name: "GitHub personal access token" },
-  { re: /\bgithub_pat_[0-9A-Za-z_]{60,}\b/, name: "GitHub fine-grained PAT" },
-  { re: /-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/, name: "private key (PEM)" },
-  { re: /\bxox[baprs]-[0-9A-Za-z-]{10,}/, name: "Slack token" },
-  { re: /\bAIza[0-9A-Za-z\-_]{35}\b/, name: "Google API key" },
-];
+// Near-zero-FP шаблони — от ЕДИНСТВЕНИЯ източник `tools/lib/secret-patterns.mjs`.
+// Дотук този списък беше преписан на ръка с коментар „както в secret-scan" и дрейфна до 8 срещу 18:
+// рънтайм предпазителите (този + guard-exfil + guard-prompt) пропускаха литерален Anthropic/OpenAI
+// ключ, Discord bot token, SendGrid, Twilio, GitHub OAuth, GOCSPX, Slack webhook и AWS secret.
+// Ползваме CREDENTIAL (не ALL): JWT остава само за commit гейта, защото `Authorization: Bearer eyJ…`
+// е ЛЕГИТИМЕН рънтайм трафик и блокирането му би било фалшива тревога (виж secret-patterns.mjs).
+import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
+export const SECRET_RE = CREDENTIAL;
 
 // Пътища, където фалшиви ключове са легитимни (фикстури/тестове/eval/scratch) → не вдигай шум.
 export const SKIP_PATH = /(^|\/)(evals?|fixtures?|__tests__|test|tests|\.tmp|scratchpad|node_modules)(\/|$)|\.(test|spec)\.[a-z]+$/i;

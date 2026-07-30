@@ -15,26 +15,12 @@ import { execSync } from "node:child_process";
 
 const RED = "\x1b[31m", YEL = "\x1b[33m", GRN = "\x1b[32m", DIM = "\x1b[2m", RST = "\x1b[0m";
 
-// Висок-сигнал шаблони за тайни (почти никога фалшиви). Име → regex.
-const RULES = [
-  ["Частен ключ (PEM/OpenSSH)", /-----BEGIN (?:RSA |EC |OPENSSH |PGP |DSA |ENCRYPTED )?PRIVATE KEY-----/],
-  ["AWS Access Key ID", /\bAKIA[0-9A-Z]{16}\b/],
-  ["AWS Secret (aws_secret_access_key)", /aws_secret_access_key\s*[:=]\s*['"]?[A-Za-z0-9/+]{40}\b/i],
-  ["Stripe live/restricted secret", /\b(?:sk|rk)_live_[0-9a-zA-Z]{16,}\b/],
-  ["GitHub PAT (classic)", /\bghp_[0-9A-Za-z]{36}\b/],
-  ["GitHub PAT (fine-grained)", /\bgithub_pat_[0-9A-Za-z_]{60,}\b/],
-  ["GitHub OAuth/App token", /\b(?:gho|ghu|ghs|ghr)_[0-9A-Za-z]{36}\b/],
-  ["Google API key", /\bAIza[0-9A-Za-z\-_]{35}\b/],
-  ["Google OAuth client secret", /\bGOCSPX-[0-9A-Za-z\-_]{20,}\b/],
-  ["Slack token", /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/],
-  ["Slack webhook", /https:\/\/hooks\.slack\.com\/services\/T[0-9A-Za-z]+\/B[0-9A-Za-z]+\/[0-9A-Za-z]+/],
-  ["OpenAI/Anthropic key", /\bsk-(?:ant-|proj-)?[0-9A-Za-z_-]{24,}\b/],
-  ["Discord bot token", /\b[MNO][A-Za-z0-9_-]{23,26}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}\b/],
-  ["Discord webhook", /https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/api\/webhooks\/\d{17,}\/[\w-]{60,}/],
-  ["Twilio API key", /\bSK[0-9a-fA-F]{32}\b/],
-  ["SendGrid key", /\bSG\.[0-9A-Za-z_-]{22}\.[0-9A-Za-z_-]{43}\b/],
-  ["JWT с вграден HS-secret (base64 payload)", /eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{20,}/],
-];
+// Висок-сигнал шаблони за тайни (почти никога фалшиви) — от ЕДИНСТВЕНИЯ източник
+// `tools/lib/secret-patterns.mjs`. Дотук списъкът живееше тук, а рънтайм предпазителите носеха свой,
+// преписан на ръка — и дрейфнаха (18 срещу 8). Този гейт ползва ALL (CREDENTIAL + COMMIT_ONLY: JWT
+// в комит е реален изтек); предпазителите ползват само CREDENTIAL. Parity: secret-parity.test.mjs.
+import { ALL, asTuples } from "../lib/secret-patterns.mjs";
+const RULES = asTuples(ALL);
 
 // Шумно правило (има фалшиви: .env.example, тестове, полета-имена) — само с --strict,
 // за ръчен по-дълбок одит, и НЕ върху example/test/doc/seed файлове. По подразбиране
