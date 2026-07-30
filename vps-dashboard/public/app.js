@@ -188,6 +188,7 @@ const SECTIONS = [
   { id: 'access', ico: '🔑', label: 'Достъп по IP', render: renderAccess },
   { id: 'webserver', ico: '🌐', label: 'Уеб сървър', render: renderWebserver },
   { id: 'backups', ico: '⇩', label: 'Бекъпи', render: renderBackups },
+  { id: 'disk', ico: '▤', label: 'Диск', render: renderDisk },
   { id: 'env', ico: '🗝', label: 'Променливи (.env)', render: renderEnv },
   { id: 'domains', ico: '🔒', label: 'Домейни и TLS', render: renderDomains },
   { id: 'cron', ico: '◷', label: 'Крон/таймери', render: renderCron },
@@ -321,6 +322,7 @@ const SECTION_ALIASES = {
   updates: 'ъпдейти обновявания apt upgrade',
   security: 'сигурност портове ssh tls сертификати',
   ports: 'портове изложеност ufw смяна на порт listening ss',
+  disk: 'диск място du journal vacuum docker кеш най-големи файлове папки',
   firewall: 'файъруол защитна стена ufw правила',
   integrity: 'целост отпечатък baseline промени etc конфигурация',
   fail2ban: 'фейлтубан банове блокирани ip jail забрана',
@@ -2084,6 +2086,133 @@ async function renderDesktop() {
       el('span', { class: 'muted', text: `порт 127.0.0.1:${d.port} · контейнер csd-desktop` }),
     ])
   );
+}
+
+// ── Кой яде диска ────────────────────────────────────────────────────────────
+// Прогнозата казва „дискът ще се напълни след 3.2 дни" и оставя човека на SSH
+// промпт да налучква с `du`. Тази секция е втората половина на отговора.
+async function renderDisk() {
+  const view = document.getElementById('view');
+  const d = await api('/disk');
+  view.innerHTML = '';
+
+  view.appendChild(
+    el('p', { class: 'section-desc', text:
+      'Сканирането е ЗАДАЧА, не заявка: `--max-depth` ограничава само какво се ОТПЕЧАТВА — `du` пак обхожда цялото ' +
+      'дърво, което на пълен диск е минути. Затова резултатът се кешира с дата, а прекъснато сканиране се показва ' +
+      'като прекъснато, не като отговор.' })
+  );
+
+  // Бързите числа — без задача.
+  view.appendChild(
+    el('div', { class: 'grid grid-2' }, [
+      el('div', { class: 'card' }, [
+        el('div', { class: 'card-head' }, [
+          el('h3', { text: 'Журнал (journald)' }),
+          d.journal.available ? pill(d.journal.bytes > 2 * 1024 ** 3 ? 'warn' : 'ok', fmtBytes(d.journal.bytes)) : pill('warn', 'няма'),
+        ]),
+        el('div', { class: 'metric-sub', text: d.journal.available ? d.journal.text : `journalctl не отговори: ${d.journal.error}` }),
+        d.journal.available ? journalVacuum() : '',
+      ]),
+      el('div', { class: 'card' }, [
+        el('h3', { text: 'Docker' }),
+        d.docker.available
+          ? el('div', { class: 'table-wrap' }, [
+              tableEl(['Вид', 'Общо', 'Активни', 'Размер', 'Освободимо'], d.docker.rows.map((r) =>
+                el('tr', {}, [
+                  el('td', { text: r.type }),
+                  el('td', { text: String(r.total ?? '—') }),
+                  el('td', { text: String(r.active ?? '—') }),
+                  el('td', { class: 'mono', text: r.size || '—' }),
+                  el('td', { class: 'mono muted', text: r.reclaimable || '—' }),
+                ])
+              )),
+            ])
+          : el('div', { class: 'empty', text: `docker не отговори: ${d.docker.error}` }),
+        el('div', { class: 'metric-sub', text:
+          'Тук НЯМА „system prune": `docker system prune -a --volumes` умее да изтрие томове с живи данни (качени ' +
+          'файлове, бази) и е най-честият начин човек да си направи инцидент, докато чисти място. Изтриването е ' +
+          'поименно, от секция „Docker".' }),
+        d.docker.available
+          ? el('div', { class: 'toolbar' }, [
+              el('button', {
+                class: 'btn btn-sm', text: '🧹 Изчисти build кеша',
+                onclick: () => runJob('/disk/builder-prune', {}, 'Чистене на Docker build кеша'),
+              }),
+            ])
+          : '',
+      ]),
+    ])
+  );
+
+  view.appendChild(scanCard(d));
+}
+
+function journalVacuum() {
+  const keep = el('input', { type: 'number', min: '16', max: '51200', value: '512', style: 'width:110px' });
+  return el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+    el('label', { class: 'inline' }, [el('span', { text: 'остави ' }), keep, el('span', { text: ' MB' })]),
+    el('button', {
+      class: 'btn btn-danger btn-sm', text: 'Свий журнала',
+      onclick: async () => {
+        const ok = await confirmDanger({
+          title: 'Свиване на журнала',
+          what: [
+            `Логовете над ${keep.value} MB се ИЗТРИВАТ безвъзвратно.`,
+            'Загубваш история за диагноза и за „нова грешка в журнала".',
+            'Действието е одитирано и иска повторно потвърждаване с парола.',
+          ],
+          expect: 'свий',
+          confirmLabel: 'Свий',
+        });
+        if (!ok) return;
+        runJob('/disk/vacuum', { keepMB: Number(keep.value) }, 'Свиване на журнала');
+      },
+    }),
+  ]);
+}
+
+function scanCard(d) {
+  const sel = el('select', {}, d.roots.map((r) => el('option', { value: r, text: r })));
+  const depth = el('input', { type: 'number', min: '1', max: '4', value: '2', style: 'width:70px' });
+  const minMB = el('input', { type: 'number', min: '1', max: '102400', value: '50', style: 'width:90px' });
+  const s = d.scan || {};
+  const rows = (list, label) =>
+    list?.length
+      ? el('div', { class: 'table-wrap', style: 'margin-top:10px' }, [
+          el('h3', { text: label }),
+          tableEl(['Размер', 'Път'], list.map((x) =>
+            el('tr', {}, [el('td', { class: 'mono', text: fmtBytes(x.bytes) }), el('td', { class: 'mono', text: x.path })])
+          )),
+        ])
+      : '';
+
+  return el('div', { class: 'card', style: 'margin-top:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Разбивка по папки и файлове' }),
+      s.at ? pill(s.complete ? 'ok' : 'warn', s.complete ? `сканирано ${fmtWhen(s.at)}` : 'ПРЕКЪСНАТО сканиране') : pill('dim', 'няма сканиране'),
+    ]),
+    el('div', { class: 'toolbar' }, [
+      sel,
+      el('label', { class: 'inline' }, [el('span', { text: 'дълбочина ' }), depth]),
+      el('label', { class: 'inline' }, [el('span', { text: 'файлове над ' }), minMB, el('span', { text: ' MB' })]),
+      el('span', { class: 'grow' }),
+      el('button', {
+        class: 'btn btn-primary btn-sm', text: '⌕ Сканирай',
+        onclick: () => runJob('/disk/scan', { root: sel.value, depth: Number(depth.value), minMB: Number(minMB.value) }, `Разбивка: ${sel.value}`),
+      }),
+    ]),
+    s.at
+      ? el('div', { class: 'metric-sub', text:
+          `Корен ${s.root} · дълбочина ${s.depth} · файлове над ${s.minMB} MB · изход ${s.code}` })
+      : el('div', { class: 'empty', text: 'Още няма сканиране. Изборът на корен е от ЗАТВОРЕН списък — произволен път би направил панела „изброй ми имената на всички файлове като root".' }),
+    !s.complete && s.at
+      ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
+          '⚠ Сканирането не е стигнало до край (таймаут или грешка). Долното е ЧАСТИЧНО — не го чети като пълна картина.' })
+      : '',
+    rows(s.dirs, 'Най-големи папки'),
+    rows(s.files, 'Най-големи файлове'),
+  ]);
 }
 
 // ── Портове: карта на ИЗЛОЖЕНОСТТА ────────────────────────────────────────────

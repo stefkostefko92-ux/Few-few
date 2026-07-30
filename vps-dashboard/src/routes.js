@@ -47,6 +47,7 @@ import * as desktop from './desktop.js';
 import * as ports from './ports.js';
 import * as portchange from './portchange.js';
 import { receiveOffsite } from './backupsched.js';
+import * as diskusage from './diskusage.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -1662,6 +1663,47 @@ export function buildRouter(ctx) {
           dir: ctx.backupSchedule.offsite,
         })
       ),
+      { mutating: true }
+    )
+  );
+
+  // ── Кой яде диска ──────────────────────────────────────────────────────────
+  r.get('/api/disk', guard(J(() => diskusage.overview(cfg, ctx.diskScan))));
+  r.post(
+    '/api/disk/scan',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = diskusage.scanSpec(cfg, { root: b.root, depth: b.depth, minMB: b.minMB });
+        audit.log({ action: 'disk.scan', ...spec.scan, user: req.user });
+        const job = jobs.start(spec, { user: req.user });
+        // Резултатът се разбира от изхода при ПРИКЛЮЧВАНЕ — прекъснатото
+        // сканиране не бива да се запише като пълна картина.
+        ctx.watchDiskScan?.(job.id, spec.scan);
+        return job;
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/disk/vacuum',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = diskusage.vacuumJournalSpec(b.keepMB);
+        audit.log({ action: 'disk.vacuumJournal', keepMB: Number(b.keepMB), user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/disk/builder-prune',
+    guard(
+      J(async (req) => {
+        audit.log({ action: 'disk.builderPrune', user: req.user });
+        return jobs.start(diskusage.pruneBuildCacheSpec(), { user: req.user });
+      }),
       { mutating: true }
     )
   );

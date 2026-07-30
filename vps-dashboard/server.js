@@ -21,6 +21,7 @@ import { serveStatic, sendError, clientIp } from './src/httpd.js';
 import * as desktop from './src/desktop.js';
 import { PortBaseline } from './src/ports.js';
 import { BackupSchedule, OffsiteShipper } from './src/backupsched.js';
+import { DiskScanStore } from './src/diskusage.js';
 import { backupAllSpec } from './src/backups.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,6 +43,7 @@ const accesslog = new AccessLogReader(cfg.paths.stateDir);
 const drill = new DrillStore(cfg.paths.stateDir);
 const portBaseline = new PortBaseline(cfg.paths.stateDir);
 const backupSchedule = new BackupSchedule(cfg.paths.stateDir);
+const diskScan = new DiskScanStore(cfg.paths.stateDir);
 // Копие на другия VPS. Обявен ТУК, преди графика, който го вика — иначе
 // препратката е в мъртва зона до края на модула.
 const offsite = new OffsiteShipper({ cfg, audit, schedule: backupSchedule });
@@ -140,6 +142,19 @@ function runScheduledBackup(reason) {
   t.unref?.();
 }
 
+// Разбивката на диска се записва при ПРИКЛЮЧВАНЕ и носи дали е ПЪЛНА. Прекъснато
+// сканиране (таймаут на пълен диск) с половин резултат би изглеждало като отговор
+// на въпроса „кой яде диска" — а е половин истина, което е по-лошо от никаква.
+function watchDiskScan(jobId, scan) {
+  const iv = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    diskScan.record({ ...scan, output: j.output, code: j.code });
+  }, 3000);
+  iv.unref?.();
+}
+
 // SLO дневникът расте по един ред на продукт на минута — режем го на 35 дни
 // (30-дневният прозорец + запас) веднъж на ден, иначе за година става 500 MB.
 const sloCompact = setInterval(() => slo.compact(), 24 * 3600 * 1000);
@@ -229,6 +244,8 @@ const router = buildRouter({
   backupSchedule,
   offsite,
   runScheduledBackup,
+  diskScan,
+  watchDiskScan,
   sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
   // Отменените сесии ПРЕЖИВЯВАТ рестарт. Докато този списък живееше в паметта,
