@@ -44,6 +44,8 @@ import * as health from './health.js';
 import * as redis from './redis.js';
 import * as volumes from './volumes.js';
 import * as desktop from './desktop.js';
+import * as ports from './ports.js';
+import * as portchange from './portchange.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -90,6 +92,9 @@ export const PEER_DENY = [
   // Десктопът е графична сесия НА нашата машина — съседът няма работа с нея,
   // нито да я пуска, нито да гледа през нея.
   /^\/api\/desktop(\/|$)/,
+  // Картата на изложеността е разузнаване, а смяната на порт е промяна по
+  // машината — и двете са наши, не на съседа.
+  /^\/api\/ports(\/|$)/,
   // Peer НИКОГА не бива да ни ползва като прокси към трети възел: иначе
   // компрометиран съсед, който знае само НАШИЯ входящ токен, стига до другите
   // ни възли с ТЕХНИТЕ токени, които ние пазим (confused deputy). Може и да
@@ -1455,6 +1460,59 @@ export function buildRouter(ctx) {
         const job = jobs.start(spec, { user: req.user });
         audit.log({ action: `desktop.${params.action}`, user: req.user });
         return job;
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Портове: карта на ИЗЛОЖЕНОСТТА ─────────────────────────────────────────
+  r.get('/api/ports', guard(J(() => ports.exposureMap(cfg))));
+  // „Приемам текущото състояние за нормално" — след това алармата е за НОВО
+  // изложен порт. Без базова линия „порт 443 е отворен" би гърмяло вечно.
+  r.post(
+    '/api/ports/accept',
+    guard(
+      J(async (req) => {
+        const map = await ports.exposureMap(cfg);
+        if (!map.available) throw Object.assign(new Error(`Не мога да прочета портовете: ${map.error}`), { status: 400 });
+        const st = ctx.portBaseline.accept(map.rows);
+        audit.log({ action: 'ports.acceptBaseline', count: st.accepted.length, user: req.user });
+        return { ok: true, ...st };
+      }),
+      { mutating: true }
+    )
+  );
+
+  // Смяна на порта на продукт — ДВЕ стъпки. Планът не пипа нищо.
+  r.post(
+    '/api/ports/change/plan',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return portchange.plan(cfg, { product: b.product, newPort: b.newPort });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/ports/change/apply',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const p = portchange.plan(cfg, { product: b.product, newPort: b.newPort });
+        if (!p.applicable) {
+          throw Object.assign(
+            new Error('Планът няма нито едно място за смяна (нито .env, нито vhost) — няма какво да приложа.'),
+            { status: 400 }
+          );
+        }
+        const job = jobs.start(portchange.applySpec(p), { user: req.user });
+        audit.log({ action: 'ports.change', product: p.product, from: p.currentPort, to: p.newPort, user: req.user });
+        // `healthChecks` се обновява САМО при успех на задачата — иначе панелът
+        // започва да вика порт, на който нищо не слуша, и вдига критична аларма
+        // за продукт, който всъщност си работи на стария порт.
+        ctx.watchPortChange?.(job.id, p);
+        return { ...job, plan: p };
       }),
       { mutating: true }
     )

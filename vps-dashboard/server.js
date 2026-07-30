@@ -2,7 +2,7 @@
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadConfig } from './src/config.js';
+import { loadConfig, saveConfig } from './src/config.js';
 import { Audit } from './src/audit.js';
 import { Jobs } from './src/jobs.js';
 import { MetricsCollector } from './src/metrics.js';
@@ -19,6 +19,7 @@ import { SudoGrants } from './src/sudo.js';
 import { RevokedSessions } from './src/revoked.js';
 import { serveStatic, sendError, clientIp } from './src/httpd.js';
 import * as desktop from './src/desktop.js';
+import { PortBaseline } from './src/ports.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,7 +38,8 @@ const slo = new SloStore(cfg.paths.stateDir);
 const logminer = new LogMiner(cfg.paths.stateDir);
 const accesslog = new AccessLogReader(cfg.paths.stateDir);
 const drill = new DrillStore(cfg.paths.stateDir);
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog });
+const portBaseline = new PortBaseline(cfg.paths.stateDir);
+const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline });
 alerts.start();
 
 // Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
@@ -116,6 +118,38 @@ jobs.onEnd = (job) => {
     .catch(() => {});
 };
 
+// Смяна на порт: `healthChecks` се обновява САМО след УСПЕШНА задача.
+//
+// Редът е важен и е нарочен. Обновим ли конфига предварително и веригата падне,
+// панелът започва да вика порт, на който нищо не слуша → критична аларма за
+// продукт, който всъщност си работи на стария порт. А точно доверието в алармите
+// е това, което не бива да се чупи.
+function watchPortChange(jobId, plan) {
+  const iv = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    if (j.code !== 0) {
+      audit.log({ action: 'ports.change.failed', product: plan.product, to: plan.newPort, code: j.code });
+      return;
+    }
+    const checks = (cfg.healthChecks || []).map((h) =>
+      h.name === plan.product ? { ...h, url: h.url.replace(`:${plan.currentPort}`, `:${plan.newPort}`) } : h
+    );
+    saveConfig(cfg, { healthChecks: checks });
+    audit.log({ action: 'ports.change.ok', product: plan.product, from: plan.currentPort, to: plan.newPort });
+    alerts
+      .event({
+        key: `ports:changed:${plan.product}`,
+        severity: 'info',
+        title: `${plan.product} мина на порт ${plan.newPort}`,
+        body: `Проверката на панела вече сочи ${plan.newPort}. Копията на пипнатите файлове са до тях със суфикс „.преди-смяна-на-порт".`,
+      })
+      .catch(() => {});
+  }, 3000);
+  iv.unref?.();
+}
+
 const pty = new PtySessions(audit);
 
 // Копие на одита към другия VPS (ако е включено) — хеш-веригата открива
@@ -149,6 +183,8 @@ const router = buildRouter({
   accesslog,
   drill,
   watchDrill,
+  watchPortChange,
+  portBaseline,
   sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
   // Отменените сесии ПРЕЖИВЯВАТ рестарт. Докато този списък живееше в паметта,

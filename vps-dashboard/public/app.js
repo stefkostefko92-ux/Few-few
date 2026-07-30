@@ -181,6 +181,7 @@ const SECTIONS = [
   { id: 'deploy', ico: '⇧', label: 'Деплой', render: renderDeploy },
   { id: 'updates', ico: '⟳', label: 'Ъпдейти', render: renderUpdates },
   { id: 'security', ico: '⛨', label: 'Сигурност', render: renderSecurity },
+  { id: 'ports', ico: '🔌', label: 'Портове', render: renderPorts },
   { id: 'firewall', ico: '🛡', label: 'Firewall', render: renderFirewall },
   { id: 'integrity', ico: '⛨', label: 'Целост на /etc', render: renderIntegrity },
   { id: 'fail2ban', ico: '⛔', label: 'fail2ban', render: renderFail2ban },
@@ -319,6 +320,7 @@ const SECTION_ALIASES = {
   deploy: 'деплой разгръщане release rollback архив zip',
   updates: 'ъпдейти обновявания apt upgrade',
   security: 'сигурност портове ssh tls сертификати',
+  ports: 'портове изложеност ufw смяна на порт listening ss',
   firewall: 'файъруол защитна стена ufw правила',
   integrity: 'целост отпечатък baseline промени etc конфигурация',
   fail2ban: 'фейлтубан банове блокирани ip jail забрана',
@@ -2084,6 +2086,148 @@ async function renderDesktop() {
   );
 }
 
+// ── Портове: карта на ИЗЛОЖЕНОСТТА ────────────────────────────────────────────
+// Старият изглед („Сигурност → Отворени портове") показваше адрес + процес. Вярно
+// и почти безполезно: не отговаряше на единствения въпрос, който има значение —
+// достъпен ли е този порт от интернет. Отговорът е сечение на две неща (на какво
+// слуша сокетът × какво пуска ufw) и има ТРИ състояния, не две. Третото е „не
+// знам" и то е задължително.
+async function renderPorts() {
+  const view = document.getElementById('view');
+  const d = await api('/ports');
+  view.innerHTML = '';
+
+  view.appendChild(
+    el('p', { class: 'section-desc', text:
+      'Изложен = слуша на всички интерфейси И защитната стена го пуска. Защитен = слуша навън, но ufw го спира. ' +
+      'Локален = слуша само на 127.0.0.1, недостъпен отвън по конструкция. „Не знам" е отделно състояние — ' +
+      'панел, който твърди „защитен", когато не е разпознал правило, е по-лош от панел, който мълчи.' })
+  );
+
+  if (!d.available) {
+    view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'empty', text: `Не мога да прочета портовете: ${d.error}` })]));
+    return;
+  }
+
+  const c = d.counts;
+  view.appendChild(
+    el('div', { class: 'grid grid-metrics' }, [
+      ['изложени', c.изложени, 'bad'], ['неизвестни', c.неизвестни, 'warn'],
+      ['защитени', c.защитени, 'ok'], ['локални', c.локални, 'dim'],
+    ].map(([label, n, kind]) =>
+      el('div', { class: 'card' }, [
+        el('div', { class: 'card-head' }, [el('h3', { text: label }), pill(kind, String(n))]),
+      ])
+    ))
+  );
+
+  const acceptBtn = el('button', { class: 'btn btn-primary btn-sm', text: '✓ Приеми текущото за нормално' });
+  acceptBtn.onclick = async () => {
+    if (!confirm(`Приемам ${c.изложени} изложени порта за нормални.\n\nСлед това всеки НОВО изложен порт вдига аларма.`)) return;
+    acceptBtn.disabled = true;
+    try { const r = await api('/ports/accept', { method: 'POST' }); toast(`Приети ${r.accepted.length} порта като база`); go('ports'); }
+    catch (e) { toast(e.message, 'bad'); acceptBtn.disabled = false; }
+  };
+  view.appendChild(
+    el('div', { class: 'toolbar' }, [
+      pill(d.firewall.available ? (d.firewall.active ? 'ok' : 'bad') : 'warn',
+        d.firewall.available ? (d.firewall.active ? 'ufw е включен' : 'ufw е ИЗКЛЮЧЕН') : 'ufw не отговори'),
+      d.firewall.unresolved.length
+        ? pill('warn', `${d.firewall.unresolved.length} неразпознати правила`)
+        : '',
+      el('span', { class: 'grow' }),
+      acceptBtn,
+    ])
+  );
+  if (d.firewall.unresolved.length) {
+    view.appendChild(el('div', { class: 'metric-sub', text:
+      `Правила, които не мога да преведа до порт: ${d.firewall.unresolved.join(', ')}. Затова портовете без ` +
+      'разпознато правило са „не знам", а не „защитен".' }));
+  }
+
+  const kindOf = (e) => (e === 'изложен' ? 'bad' : e === 'неизвестно' ? 'warn' : e === 'защитен' ? 'ok' : 'dim');
+  view.appendChild(
+    el('div', { class: 'table-wrap', style: 'margin-top:16px' }, [
+      tableEl(['Изложеност', 'Порт', 'Слуша на', 'Процес', 'Unit', 'Наш продукт', 'Защо'], d.rows.map((r) =>
+        el('tr', {}, [
+          el('td', {}, [pill(kindOf(r.exposure), r.exposure)]),
+          el('td', { class: 'mono', text: `${r.port}/${r.proto}` }),
+          el('td', { class: 'mono', text: r.addr }),
+          el('td', { text: r.process || '—' }),
+          el('td', { class: 'muted', text: r.unit || '—' }),
+          el('td', { text: r.owner || '—' }),
+          el('td', { class: 'muted', style: 'max-width:420px;overflow:hidden;text-overflow:ellipsis', title: r.why, text: r.why }),
+        ])
+      )),
+    ])
+  );
+  view.appendChild(el('div', { class: 'metric-sub', text:
+    'Затварянето става от секция „Firewall" — оттам минава предпазителят за SSH и одитът. Тази секция нарочно ' +
+    'само ПОКАЗВА: две места, които мутират стената, са едно място повече от нужното.' }));
+
+  view.appendChild(portChangeCard(d));
+}
+
+// Смяна на порта на продукт — план, после прилагане.
+function portChangeCard(d) {
+  const products = [...new Set(d.rows.map((r) => r.owner).filter((o) => o && o !== 'самият панел' && o !== 'десктоп'))];
+  const sel = el('select', { style: 'max-width:200px' }, [
+    el('option', { value: '', text: products.length ? '— избери продукт —' : '(няма познати продукти)' }),
+    ...products.map((p) => el('option', { value: p, text: p })),
+  ]);
+  const portInput = el('input', { type: 'text', placeholder: 'нов порт', style: 'width:110px' });
+  const out = el('div', { style: 'margin-top:12px' });
+
+  const showPlan = async () => {
+    out.innerHTML = '';
+    if (!sel.value) return toast('Избери продукт', 'bad');
+    let p;
+    try { p = await api('/ports/change/plan', { method: 'POST', body: { product: sel.value, newPort: Number(portInput.value) } }); }
+    catch (e) { return toast(e.message, 'bad'); }
+
+    out.appendChild(el('h3', { text: `План: ${p.product} ${p.currentPort} → ${p.newPort}` }));
+    out.appendChild(el('div', { class: 'metric-sub', text: 'Нищо още не е пипнато. Ето какво ще се промени:' }));
+    out.appendChild(el('ul', {}, p.steps.map((s) => el('li', { class: 'mono', text: s.what }))));
+    for (const w of p.warnings) {
+      out.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: `⚠ ${w}` }));
+    }
+    if (!p.applicable) {
+      out.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--danger)', text:
+        'Няма нито едно място за смяна — няма какво да приложа.' }));
+      return;
+    }
+    const apply = el('button', { class: 'btn btn-danger btn-sm', text: `Приложи (${p.currentPort} → ${p.newPort})` });
+    apply.onclick = async () => {
+      const ok = await confirmDanger({
+        title: `Смяна на порта на ${p.product}`,
+        what: [
+          ...p.steps.map((s) => s.what),
+          'Всеки пипнат файл получава копие със суфикс „.преди-смяна-на-порт".',
+          'Ако новият порт не отговори до 30 секунди, веригата се ВРЪЩА НАЗАД сама.',
+          'Проверката на панела се обновява САМО при успех.',
+        ],
+        expect: p.product,
+        confirmLabel: 'Смени порта',
+        delayMs: 2000,
+      });
+      if (!ok) return;
+      try { const job = await api('/ports/change/apply', { method: 'POST', body: { product: p.product, newPort: p.newPort } }); streamJob(job.id, job.title); }
+      catch (e) { toast(e.message, 'bad'); }
+    };
+    out.appendChild(el('div', { class: 'toolbar' }, [apply]));
+  };
+
+  return el('div', { class: 'card', style: 'margin-top:20px' }, [
+    el('h3', { text: 'Смяна на порта на продукт' }),
+    el('div', { class: 'metric-sub', text:
+      'Четири промени на четири места: .env на продукта → рестарт → vhost на уеб сървъра → проверката на панела. ' +
+      'Чупи се, защото хората правят три от тях — най-често забравят vhost-а (сайтът дава 502 при жив продукт) ' +
+      'или проверката (панелът вика стар порт и вдига критична аларма за работещ продукт).' }),
+    el('div', { class: 'toolbar' }, [sel, portInput, el('button', { class: 'btn btn-sm', text: 'Покажи плана', onclick: showPlan })]),
+    out,
+  ]);
+}
+
 // ── Firewall ───────────────────────────────────────────────────────────────────
 async function renderFirewall() {
   const view = document.getElementById('view');
@@ -2871,12 +3015,17 @@ async function renderSecurity() {
   );
   view.appendChild(
     el('div', { class: 'grid grid-2', style: 'margin-top:16px' }, [
+      // Тук стоеше същата таблица „адрес + процес". Две места, които показват едно
+      // и също нещо, значи едното ще остарее — а по-слабото се чете по-често.
       el('div', { class: 'card' }, [
         el('h3', { text: 'Отворени портове' }),
-        el('div', { class: 'table-wrap' }, [
-          tableEl(['Адрес', 'Процес'], (s.listening || []).map((l) =>
-            el('tr', {}, [el('td', { class: 'mono', text: l.local }), el('td', { class: 'muted', text: l.process })])
-          )),
+        // Без брояч: тук четенето е само през `ss` и на машина без iproute2 показва
+        // „0 слушащи сокета" при отворени портове. Грешното число е по-лошо от никое.
+        el('div', { class: 'metric-sub', text:
+          '„Адрес + процес" не отговаря на въпроса, който има значение — достъпен ли е портът отвън. ' +
+          'Това е сечение с правилата на стената и живее в секция „Портове".' }),
+        el('div', { class: 'toolbar' }, [
+          el('button', { class: 'btn btn-sm', text: '→ Карта на изложеността', onclick: () => go('ports') }),
         ]),
       ]),
       el('div', { class: 'card' }, [

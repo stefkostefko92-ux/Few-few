@@ -17,9 +17,11 @@ import { backupChecks } from './drill.js';
 import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from './health.js';
 import { overview as redisOverview, evictionChecks } from './redis.js';
 import { safePath } from './accesslog.js';
+import { exposureMap, portChecks } from './ports.js';
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline }) {
+    this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.accesslog = accesslog; // за дела 5xx от РЕАЛНИЯ трафик
     this.cfg = cfg;
@@ -366,6 +368,18 @@ export class AlertEngine {
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);
     for (const b of this.accessChecks()) out.push(b);
+    // Нов изложен порт. Алармата НЕ е „порт 443 е отворен" (той трябва да е) —
+    // а промяната спрямо приета базова линия, точно както рестарт-цикълът се
+    // мери по разлика.
+    if (this.portBaseline && this.cfg.ports?.enabled !== false) {
+      try {
+        const map = await exposureMap(this.cfg);
+        if (!map.available) this.stale?.set('ports:', map.error || 'ss не отговори');
+        else for (const c of portChecks(map, this.portBaseline)) out.push(c);
+      } catch (err) {
+        this.stale?.set('ports:', err.message);
+      }
+    }
     for (const b of this.notifyChecks()) out.push(b);
 
     if (t.certDays) {
