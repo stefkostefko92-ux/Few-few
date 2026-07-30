@@ -77,7 +77,7 @@ test('i18n: преводът не оставя кирилица в EN (без н
 
 // ── Шаблонният механизъм, поведенчески ───────────────────────────────────────
 // t() зависи от localStorage/window → тестваме извлечената логика 1:1.
-const NUM_RX = /\d+(?:[.,:]\d+)*(?:\s?(?:[KMGTP]i?B\/s|[KMGTP]i?B|ms)(?![\wа-я])|%)?/g;
+const NUM_RX = /\d+(?:[.,:]\d+)*(?:\s?(?:(?:[KMGTP]i?)?B\/s|(?:[KMGTP]i?)?B|ms)(?![\wа-я])|%)?/g;
 const maps = new Map(ENTRIES.map(([bg, en]) => [bg, en]));
 function translate(s) {
   const hit = maps.get(s);
@@ -107,6 +107,41 @@ test('i18n: шаблоните превеждат истинските дина�
   assert.equal(translate('82 MB от 20 TB'), '82 MB of 20 TB');
   assert.equal(translate('Праг за аларма: 2 дни.'), 'Alert threshold: 2 days.');
   assert.equal(translate('60 лоши от 60 проби · допустими 0 · p95 100 ms'), '60 bad out of 60 probes · allowed 0 · p95 100 ms');
+});
+
+// ── Стъпало 3: сървърните низове (данни-маркери) ─────────────────────────────
+const DATA_RX = /(?:[A-Za-z\/_](?:[A-Za-z0-9\/_.:@*+-]*[A-Za-z0-9\/_@*+-])?|\d+(?:[.,:]\d+)*)/g;
+function translateServer(s) {
+  const direct = translate(s);
+  if (direct !== s) return direct;
+  const values = [];
+  const pattern = s.replace(DATA_RX, (m) => {
+    values.push(m);
+    return `⟦${values.length - 1}⟧`;
+  });
+  const p = maps.get(pattern);
+  if (p) return p.replace(/⟦(\d+)⟧/g, (_, i) => values[Number(i)] ?? '');
+  return s;
+}
+
+test('i18n: сървърните низове се превеждат по данни-маркери', () => {
+  assert.equal(translateServer('Продукт не отговаря: zabobovdol'), 'Product not responding: zabobovdol');
+  assert.equal(translateServer('medqr: харчи бюджета за грешки твърде бързо'), 'medqr: burning the error budget too fast');
+  assert.equal(translateServer('Грешна парола.'), 'Wrong password.');
+  assert.equal(translateServer('Невалидно име на услуга'), 'Invalid service name');
+  assert.equal(translateServer('Слуша само на 127.0.0.1 — отвън е недостъпен по конструкция.'), 'Listens only on 127.0.0.1 — unreachable from outside by construction.');
+  // Наклонената черта е данни — „Дрейф/консистентност" минава през същия маркер.
+  assert.equal(translateServer('Дрейф/консистентност на ростера'), 'Roster drift/consistency');
+  // Двоеточието НЕ влиза в токена (иначе „zabobovdol:" гълта разделителя).
+  assert.equal(translateServer('Проба за възстановяване: poc.sqlite.gz'), 'Restore drill: poc.sqlite.gz');
+});
+
+test('i18n: съставните заглавия се превеждат по части', () => {
+  // „Възстановено: <заглавие>" — префиксът се превежда, остатъкът рекурсивно.
+  // Тук проверяваме, че двете части поотделно са в речника; сглобката е в t().
+  assert.equal(translate('Възстановено:'), 'Resolved:');
+  assert.equal(translateServer('Няма нито един бекъп'), 'There is not a single backup');
+  assert.equal(translate('Провалена задача:'), 'Failed job:');
 });
 
 test('i18n: непознат низ остава непокътнат (деградация към български)', () => {

@@ -3260,7 +3260,7 @@ function scheduleCard(sch) {
       // причина от сървъра), но всяка частица е.
       ? el('div', { class: 'metric-sub', style: last.ok ? '' : 'color:var(--danger)', text:
           `${t('Последно:')} ${t(fmtWhen(last.ts))} · ${last.ok ? t('успех') : t(`ПРОВАЛ (изход ${last.code ?? '?'})`)}` +
-          `${last.reason ? ` · ${last.reason}` : ''}` })
+          `${last.reason ? ` · ${t(last.reason)}` : ''}` })
       : el('div', { class: 'metric-sub', text: 'Още не е пускан през графика.' }),
 
     el('h3', { text: 'Копие на другия VPS (3-2-1)', style: 'margin-top:16px' }),
