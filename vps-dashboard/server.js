@@ -22,6 +22,7 @@ import * as desktop from './src/desktop.js';
 import { PortBaseline } from './src/ports.js';
 import { BackupSchedule, OffsiteShipper } from './src/backupsched.js';
 import { DiskScanStore } from './src/diskusage.js';
+import { TrafficStore } from './src/traffic.js';
 import { backupAllSpec } from './src/backups.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,11 +45,12 @@ const drill = new DrillStore(cfg.paths.stateDir);
 const portBaseline = new PortBaseline(cfg.paths.stateDir);
 const backupSchedule = new BackupSchedule(cfg.paths.stateDir);
 const diskScan = new DiskScanStore(cfg.paths.stateDir);
+const traffic = new TrafficStore(cfg.paths.stateDir);
 // Копие на другия VPS. Обявен ТУК, преди графика, който го вика — иначе
 // препратката е в мъртва зона до края на модула.
 const offsite = new OffsiteShipper({ cfg, audit, schedule: backupSchedule });
 offsite.start();
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule });
+const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic });
 alerts.start();
 
 // Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
@@ -155,6 +157,22 @@ function watchDiskScan(jobId, scan) {
   iv.unref?.();
 }
 
+// Трафикът се натрупва по РАЗЛИКИ на всяка минута. Броячите в /proc/net/dev се
+// нулират при рестарт, значи абсолютната стойност не е месечен сбор — а рядката
+// проба губи трафика между последната проба и рестарта.
+{
+  const tick = () => {
+    try {
+      traffic.sample(cfg);
+    } catch {
+      /* една пропусната проба не бива да чупи нищо */
+    }
+  };
+  setTimeout(tick, 5000).unref?.();
+  const t = setInterval(tick, 60 * 1000);
+  t.unref?.();
+}
+
 // SLO дневникът расте по един ред на продукт на минута — режем го на 35 дни
 // (30-дневният прозорец + запас) веднъж на ден, иначе за година става 500 MB.
 const sloCompact = setInterval(() => slo.compact(), 24 * 3600 * 1000);
@@ -246,6 +264,7 @@ const router = buildRouter({
   runScheduledBackup,
   diskScan,
   watchDiskScan,
+  traffic,
   sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
   sessions: new Map(), // активни сесии (jti → метаданни)
   // Отменените сесии ПРЕЖИВЯВАТ рестарт. Докато този списък живееше в паметта,

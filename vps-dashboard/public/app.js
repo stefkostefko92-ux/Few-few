@@ -3868,10 +3868,87 @@ async function renderRedis() {
 // ── Трафик (access log) ───────────────────────────────────────────────────────────
 // Журналът казва какво се е оплакало приложението. Този екран казва какво е
 // поискал СВЕТЪТ и колко е чакал — без него „сайтът е бавен" няма адрес.
+// Месечен трафик срещу квотата на хостера. Дупката е ПАРИЧНА: панелът мереше
+// моментните rx/tx и пазеше 7 дни, значи „минавам ли квотата този месец" се
+// научаваше от фактурата.
+function quotaCard(q) {
+  const quota = el('input', { type: 'number', min: '0', max: '10000', step: '0.5', placeholder: 'без квота', style: 'width:120px' });
+  if (q.quotaTB != null) quota.value = String(q.quotaTB);
+  const dir = el('select', {}, [
+    ['tx', 'изходящ (както таксува Hetzner)'],
+    ['rx', 'входящ'],
+    ['both', 'двете посоки'],
+  ].map(([v, t]) => el('option', { value: v, text: t, selected: q.direction === v ? 'selected' : undefined })));
+
+  const kind = !q.quotaBytes ? 'dim' : q.usedPct >= 100 ? 'bad' : q.usedPct >= 80 || (q.warmedUp && q.projectedPct >= 100) ? 'warn' : 'ok';
+
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: `Мрежов трафик за ${q.month} (квота на хостера)` }),
+      pill(kind, q.quotaBytes ? `${q.usedPct}% от ${q.quotaTB} TB` : 'без зададена квота'),
+    ]),
+    el('div', { class: 'grid grid-metrics' }, [
+      ['изходящ', q.tx], ['входящ', q.rx], ['брои се', q.used],
+    ].map(([label, v]) =>
+      el('div', {}, [el('div', { class: 'metric-sub', text: label }), el('div', { class: 'metric-val mono', text: fmtBytes(v) })])
+    )),
+    q.quotaBytes
+      ? el('div', { class: 'metric-sub', text:
+          `Изминали ${q.monthFraction}% от месеца, остават ${q.daysLeft} дни. ` +
+          (q.warmedUp
+            ? `Прогноза за края: ${fmtBytes(q.projected)} (${q.projectedPct}%)` +
+              (q.quotaAtDay ? ` · квотата пада на ${q.quotaAtDay}-о число.` : ' · квотата не се стига този месец.')
+            : 'Прогнозата МЪЛЧИ през първите 10% от месеца — един ден с деплой и синхронизация на бекъпи не е месечно темпо.') })
+      : el('div', { class: 'metric-sub', text: 'Задай квота, за да има с какво да се сравни. Без нея панелът само показва.' }),
+    // Честността за обхвата е част от числото, не бележка под линия.
+    el('div', { class: 'metric-sub', text:
+      `Броят се само физическите интерфейси (${(q.ifaces || []).join(', ') || 'няма'}) — трафикът на контейнер минава ` +
+      'и през docker0/veth, и през eth0, значи сборът от всички би броил всеки байт двойно. ' +
+      'Месецът е по UTC, както таксува хостерът.' }),
+    el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
+      '⚠ Числото е ДОЛНА граница, не отчетът на хостера: спрян панел не брои, а трафикът между последната проба ' +
+      `и рестарт се губи. Проби този месец: ${q.samples}${q.counterResets ? ` · открити нулирания на броячи: ${q.counterResets}` : ''}.` }),
+    el('div', { class: 'toolbar', style: 'margin-top:10px' }, [
+      el('label', { class: 'inline' }, [el('span', { text: 'квота ' }), quota, el('span', { text: ' TB' })]),
+      el('label', { class: 'inline' }, [el('span', { text: 'мери ' }), dir]),
+      el('span', { class: 'grow' }),
+      el('button', {
+        class: 'btn btn-primary btn-sm', text: 'Запиши',
+        onclick: async () => {
+          try {
+            await api('/traffic/quota', { method: 'POST', body: { quotaTB: quota.value === '' ? null : Number(quota.value), countDirection: dir.value } });
+            toast('Квотата е записана');
+            go('traffic');
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+    ]),
+    q.history?.length > 1
+      ? el('div', { class: 'table-wrap' }, [
+          tableEl(['Месец', 'Изходящ', 'Входящ', 'Проби'], q.history.map((h) =>
+            el('tr', {}, [
+              el('td', { class: 'mono', text: h.month }),
+              el('td', { class: 'mono', text: fmtBytes(h.tx) }),
+              el('td', { class: 'mono muted', text: fmtBytes(h.rx) }),
+              el('td', { class: 'muted', text: String(h.samples) }),
+            ])
+          )),
+        ])
+      : '',
+  ]);
+}
+
 async function renderTraffic() {
   const view = document.getElementById('view');
-  const [d, files] = await Promise.all([api('/accesslog'), api('/accesslog/files').catch(() => ({ files: [] }))]);
+  const [d, files, q] = await Promise.all([
+    api('/accesslog'),
+    api('/accesslog/files').catch(() => ({ files: [] })),
+    api('/traffic').catch(() => null),
+  ]);
   view.innerHTML = '';
+  // Квотата се рисува ПРЕДИ проверката за access log: тя не зависи от nginx, а
+  // ранният return иначе я скрива на всяка машина без уеб сървър.
+  if (q) view.appendChild(quotaCard(q));
   if (!d.available) {
     view.appendChild(el('div', { class: 'card' }, [el('div', { class: 'metric-sub', text: d.note })]));
     return;

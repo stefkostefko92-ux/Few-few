@@ -1708,6 +1708,34 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Месечен трафик срещу квотата ───────────────────────────────────────────
+  r.get('/api/traffic', guard(J(() => ctx.traffic.status(cfg))));
+  r.post(
+    '/api/traffic/quota',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const tb = b.quotaTB === '' || b.quotaTB === null || b.quotaTB === undefined ? null : Number(b.quotaTB);
+        if (tb !== null && (!Number.isFinite(tb) || tb <= 0 || tb > 10000)) {
+          throw Object.assign(new Error('Квотата трябва да е число 0–10000 TB (празно = без квота)'), { status: 400 });
+        }
+        const dir = b.countDirection;
+        if (dir !== undefined && !['tx', 'rx', 'both'].includes(dir)) {
+          throw Object.assign(new Error('Посоката е „tx", „rx" или „both"'), { status: 400 });
+        }
+        const next = {
+          ...cfg.traffic,
+          quotaTB: tb,
+          countDirection: dir || cfg.traffic?.countDirection || 'tx',
+        };
+        saveConfig(cfg, { traffic: next });
+        audit.log({ action: 'traffic.quota.set', quotaTB: tb, direction: next.countDirection, user: req.user });
+        return ctx.traffic.status(cfg);
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Домейни: изтичане на РЕГИСТРАЦИЯТА (RDAP) ──────────────────────────────
   r.get(
     '/api/domains/registration',
