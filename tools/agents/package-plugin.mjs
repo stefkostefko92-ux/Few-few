@@ -4,9 +4,13 @@
 // 2026-07-23): .claude-plugin/plugin.json (задължително само `name`), компонентните папки в plugin
 // ROOT; marketplace.json {name, owner, plugins[{name, source}]}.
 //
-// ТВЪРДО ОГРАНИЧЕНИЕ (по сигурност, от самата платформа): plugin-агентите НЕ носят hooks/
-// mcpServers/permissionMode → паметният цикъл (SubagentStart/Stop hooks) НЕ пътува с plugin-а.
-// Пакетираме ДЕФИНИЦИИ + SKILLS; hook-слоят остава проектен (.claude/settings.json).
+// ПОПРАВКА 2026-07-30: тук пишеше „ТВЪРДО ОГРАНИЧЕНИЕ … plugin-агентите НЕ носят hooks" — това е
+// НЕВЯРНО: plugin МОЖЕ да носи `hooks/hooks.json`. Изводът (не пакетираме) остава, но по друга,
+// истинската причина: имаме ЕДНО монорепо и ЕДИН собственик, значи проектната `.claude/`
+// конфигурация е по-простият и по-прегледен път — plugin-ът добавя слой версиониране и
+// разпространение, от който никой не се нуждае днес. Стойността му е при преизползване МЕЖДУ репа.
+// Пакетираме ДЕФИНИЦИИ + SKILLS; hook-слоят остава проектен (.claude/settings.json) по избор, не по
+// ограничение. Ако някога тръгнем към plugin — hooks/hooks.json ПЪТУВА и паметният цикъл е преносим.
 //
 //   node tools/agents/package-plugin.mjs           # сглобява dist/carbon-stealth-fleet/
 //   node tools/agents/package-plugin.mjs --check   # само валидира, без запис (за CI)

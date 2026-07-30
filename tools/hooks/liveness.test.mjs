@@ -83,6 +83,62 @@ const PAYLOADS = {
 
 const hooks = registeredHooks();
 
+// Пропуск в ПЪРВАТА версия на този тест (намерен от президентския одит): събирах само ИМЕНА на
+// файлове от settings.json, затова тестът щеше да е зелен и ако guard-exfil е регистриран за грешно
+// СЪБИТИЕ (напр. PostToolUse вместо PreToolUse → блокировката идва СЛЕД действието, безполезна) или
+// с matcher, който не покрива канала. Регистрацията е част от предпазителя, не подробност.
+const REGISTRATION = {
+  "memory-preload.mjs": { event: "SubagentStart" },
+  "memory-capture.mjs": { event: "SubagentStop" },
+  "dod-check.mjs": { event: "SubagentStop" },
+  "guard-prompt.mjs": { event: "UserPromptSubmit" },
+  "precompact-save.mjs": { event: "PreCompact" },
+  "session-dod.mjs": { event: "Stop" },
+  // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
+  "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
+  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/] },
+  "guard-secrets.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
+};
+
+/** Кое събитие и с какъв matcher е регистриран даден хук (истината е settings.json). */
+function registrationOf(file) {
+  const s = JSON.parse(readFileSync(join(ROOT, ".claude", "settings.json"), "utf8"));
+  const found = [];
+  for (const [event, entries] of Object.entries(s.hooks || {})) {
+    for (const e of entries || []) {
+      for (const h of e.hooks || []) {
+        if (String(h.command || "").includes(file)) found.push({ event, matcher: e.matcher || "" });
+      }
+    }
+  }
+  return found;
+}
+
+test("всеки хук е регистриран за ПРАВИЛНОТО събитие и покрива нужните инструменти", () => {
+  for (const [file, want] of Object.entries(REGISTRATION)) {
+    const regs = registrationOf(file);
+    assert.ok(regs.length, `${file}: не е регистриран за никакво събитие`);
+    const events = regs.map((r) => r.event);
+    assert.ok(events.includes(want.event),
+      `${file}: очаквам събитие ${want.event}, намерено ${events.join(",")} — грешното събитие прави предпазителя безполезен`);
+    if (want.matcher) {
+      const matchers = regs.filter((r) => r.event === want.event).map((r) => r.matcher).join(" | ");
+      assert.match(matchers, want.matcher, `${file}: matcher-ът не покрива ${want.matcher}`);
+      for (const extra of want.alsoMatcher || []) {
+        assert.match(matchers, extra, `${file}: matcher-ът не покрива ${extra} (непокрит изходен канал)`);
+      }
+    }
+  }
+});
+
+test("guard-exfil и guard-dangerous са на PreToolUse, НЕ на PostToolUse (иначе са безполезни)", () => {
+  for (const f of ["guard-exfil.mjs", "guard-dangerous.mjs"]) {
+    const events = registrationOf(f).map((r) => r.event);
+    assert.ok(events.includes("PreToolUse"), `${f} трябва да е PreToolUse`);
+    assert.ok(!events.includes("PostToolUse"), `${f} на PostToolUse би блокирал СЛЕД действието`);
+  }
+});
+
 test("всеки хук от settings.json съществува на диска и има payload в теста", () => {
   const onDisk = new Set(readdirSync(HOOKS).filter((f) => f.endsWith(".mjs")));
   assert.ok(hooks.length >= 9, `очаквам ≥9 регистрирани хука, намерени ${hooks.length}`);

@@ -15,6 +15,7 @@ import { readFileSync, existsSync, writeFileSync, renameSync, mkdirSync, rmdirSy
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { parseFallback, replaceFallback } from "../../tools/lib/dashboard-fallback.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -276,24 +277,15 @@ function updateDashboard(agentId, entry, evoDetail, verifiedCount = 1) {
   // 2) вграден FALLBACK в index.html (за file:// преглед)
   if (existsSync(DASH_HTML)) {
     try {
-      let h = readFileSync(DASH_HTML, "utf8");
-      const s = h.indexOf("const FALLBACK = {");
-      if (s === -1) return;
-      const b = h.indexOf("{", s);
-      // String-aware скоба-матчер: скоби ВЪТРЕ в JSON низове (напр. поука с "{id}")
-      // не бива да броят — иначе parse гърми тихо и FALLBACK замръзва (реален бъг).
-      let d = 0, i = b, e = -1, inStr = false, esc = false;
-      for (; i < h.length; i++) {
-        const c = h[i];
-        if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
-        if (c === '"') { inStr = true; continue; }
-        if (c === "{") d++; else if (c === "}") { d--; if (d === 0) { e = i; break; } }
-      }
-      if (e === -1) return;
-      const fb = JSON.parse(h.slice(b, e + 1));
+      const h = readFileSync(DASH_HTML, "utf8");
+      // String-aware локаторът живее в tools/lib/dashboard-fallback.mjs — вторият консуматор
+      // (sync-dashboard.mjs) щеше да го ПРЕПИШЕ, а преписаният парсер дрейфва (днешният урок с
+      // двата списъка за тайни и двата брояча на поуки). Скоби ВЪТРЕ в JSON низове (поука с „{id}“)
+      // не бива да се броят — иначе parse гърми тихо и FALLBACK замръзва (реален бъг, поправен веднъж).
+      const fb = parseFallback(h);
+      if (!fb) return;
       if (applyUpdate(fb, agentId, entry, evoDetail, verifiedCount)) {
-        h = h.slice(0, b) + JSON.stringify(fb, null, 2) + h.slice(e + 1);
-        atomicWrite(DASH_HTML, h);
+        atomicWrite(DASH_HTML, replaceFallback(h, fb));
       }
     } catch { /* ignore */ }
   }

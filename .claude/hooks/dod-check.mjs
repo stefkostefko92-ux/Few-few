@@ -46,6 +46,63 @@ export function collectToolUses(jsonl) {
   return uses;
 }
 
+// Съдържанието на tool_result записите, в РЕДА на появата им. Дотук хукът събираше само
+// tool_use (име+вход), затова знаеше че гейтът е ПУСНАТ, но не и че е МИНАЛ — агент можеше да
+// пусне гейта, той да падне червен, и DoD пак да каже „наред". Собствената ни доктрина е обратната:
+// „готово" = гейтът е РЕАЛНО зелен, не „предполагам минава".
+export function collectToolResults(jsonl) {
+  const out = [];
+  const text = (c) => {
+    if (typeof c === "string") return c;
+    if (Array.isArray(c)) return c.map(text).join("\n");
+    if (c && typeof c === "object") return text(c.text ?? c.content ?? "");
+    return "";
+  };
+  const walk = (o) => {
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) { o.forEach(walk); return; }
+    if (o.type === "tool_result") out.push(text(o.content));
+    for (const v of Object.values(o)) walk(v);
+  };
+  for (const line of String(jsonl).split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    try { walk(JSON.parse(t)); } catch { /* skip непарсим ред */ }
+  }
+  return out;
+}
+
+// Маркери, които НАШИТЕ гейтове печатат само при зелено/червено. Near-zero-FP: гледаме точни низове,
+// не „✗" (то се среща в легитимни одитни таблици). Броим ПОСЛЕДНОТО срещане на семейството —
+// пуснал гейта, видял червено, поправил, пуснал пак зелено е ПРАВИЛНИЯТ поток и не бива да блокира.
+const RESULT_MARKERS = [
+  { name: "гейтът на агентския слой", green: /СТАТУС: гейтът е зелен/, red: /СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН/ },
+  { name: "надзорът над екипа (oversee)", green: /СТАТУС: екипът е здрав/, red: /СТАТУС: има твърди проблеми/ },
+  { name: "тестовете", green: /^# fail 0$/m, red: /^# fail (?!0$)\d+$/m },
+  // ВНИМАНИЕ (собствен FP, хванат от теста): първият вариант търсеше „изтекл" и съвпадаше със
+  // ЗЕЛЕНИЯ ред „чисто — нула изтекли тайни". Маркерът трябва да е точният низ на провала
+  // (`secret-scan: N възможни тайни`), не дума, която се среща и в успешното съобщение.
+  { name: "secret-scan", green: /secret-scan: чисто/, red: /secret-scan: \d+ възможни тайни/ },
+];
+
+/** Гейт, чийто ПОСЛЕДЕН резултат в транскрипта е ЧЕРВЕН → работата не е „готова". */
+export function checkFailedGates(results) {
+  const bad = [];
+  for (const m of RESULT_MARKERS) {
+    let last = null;
+    for (const r of results) {
+      if (m.red.test(r)) last = "red";
+      else if (m.green.test(r)) last = "green";
+    }
+    if (last === "red") bad.push(m.name);
+  }
+  if (!bad.length) return null;
+  return {
+    files: ["(край на отговора)"],
+    gate: `последният резултат е ЧЕРВЕН за: ${bad.join(" · ")} — „готово" значи гейтът е РЕАЛНО зелен, не пуснат`,
+  };
+}
+
 // Bash пренасочване към файл се брои за „писане" (red-team F3: `cat > x.lua` заобикаляше гейта).
 // Хваща `> path`, `>> path`, `tee path`, heredoc `> path <<EOF`. Връща списък файлове.
 export function bashWrites(bashCmds) {
@@ -113,8 +170,14 @@ function main() {
   const violations = checkDoD(collectToolUses(jsonl), ROOT);
   const hv = checkHandoffViolation(lastAssistantText(jsonl), knownAgentIds(join(ROOT, ".claude", "agents")));
   if (hv) violations.push(hv);
+  // Гейт, ПУСНАТ но ЧЕРВЕН, дотук минаваше за изпълнен ангажимент. Отделен вид нарушение,
+  // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
+  const fg = checkFailedGates(collectToolResults(jsonl));
+  if (fg) violations.push({ ...fg, kind: "failed" });
   if (!violations.length) process.exit(0);
-  const msg = violations.map((v) => `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`).join("\n");
+  const msg = violations.map((v) => v.kind === "failed"
+    ? `DoD НЕ е изпълнен: ${v.gate}. Поправи причината и пусни отново, преди да приключиш.`
+    : `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`).join("\n");
   if (payload.stop_hook_active) { console.log(`⚠ dod-check (advisory, без повторно връщане): ${msg}`); process.exit(0); }
   console.error(msg);
   process.exit(2); // харнесът връща агента с инструкцията
