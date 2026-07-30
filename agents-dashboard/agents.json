@@ -14072,7 +14072,7 @@
           "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
           "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
         ],
-        "lessons": 93
+        "lessons": 99
       },
       "evolution": [
         {
@@ -14110,9 +14110,20 @@
           "date": "2026-07-28",
           "event": "v15.1 — учене",
           "detail": "Научи: Dixon-Coles ξ=0.0065 е в ПОЛОВИН-СЕДМИЧНИ единици, не дневни → ≈0.0019/ден, полуживот ≈… (+11 още)"
+        },
+        {
+          "version": "15.7.0",
+          "date": "2026-07-29",
+          "event": "v15.7 — учене",
+          "detail": "Научи: ξ time-decay в Dixon-Coles: оригиналното ξ=0.0065 е в ПОЛУ-седмични единици → ≈0.0019/д… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-29",
+          "type": "learning",
+          "summary": "Научи: „ξ time-decay в Dixon-Coles: оригиналното ξ=0.0065 е в ПОЛУ-седмични единици → ≈0.0019/д…\" (+5 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
