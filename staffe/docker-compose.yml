@@ -1,0 +1,113 @@
+# Staffe — stack di produzione su VPS: applicazione + PostgreSQL 16.
+# Avvio:  docker compose up -d --build      (guida completa in DEPLOY.md)
+#
+# I SEGRETI NON STANNO QUI: arrivano dal file .env accanto a questo file, che
+# vive solo sul server con permessi 600 e non entra mai nel repository né
+# nell'archivio di deploy. Le variabili senza valore di ripiego (`:?`) fermano
+# il deploy con un messaggio chiaro invece di partire con un valore debole.
+#
+# Nessuna porta è esposta su Internet: l'applicazione ascolta su 127.0.0.1 e il
+# TLS lo termina il reverse proxy (Nginx/Caddy) davanti. Il database non
+# pubblica alcuna porta: ci si arriva solo da dentro la rete del progetto.
+
+# Rotazione dei log: senza, i log di Docker crescono senza limite e riempiono il disco.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-staffe}
+      # Nessun valore di ripiego: il deploy si ferma se .env non definisce la password.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Imposta POSTGRES_PASSWORD nel file .env sul server (permessi 600)}
+      POSTGRES_DB: ${POSTGRES_DB:-staffe}
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-staffe} -d ${POSTGRES_DB:-staffe}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    # Nessuna porta pubblicata: il database resta raggiungibile solo da `app`.
+    # Per una sessione psql:  docker compose exec db psql -U staffe -d staffe
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    pids_limit: 200
+    networks:
+      - staffe-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      db:
+        # Si parte solo a database pronto: l'entrypoint applica lo schema.
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      TZ: UTC
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-staffe}:${POSTGRES_PASSWORD:?Imposta POSTGRES_PASSWORD nel file .env}@db:5432/${POSTGRES_DB:-staffe}?schema=public
+      # Fail fast: senza segreto di firma il deploy si ferma qui, non al primo login.
+      AUTH_SECRET: ${AUTH_SECRET:?Imposta AUTH_SECRET (almeno 32 caratteri) nel file .env — openssl rand -base64 48}
+      # Allegati (disegni, PDF, CAD, foto): volume dedicato, fuori dall'immagine
+      # e fuori da public/ — non sono file statici pubblici.
+      UPLOAD_DIR: /app/uploads
+      # Amministratore creato dal seed (solo al primo avvio).
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@staffe.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      # Notifiche e-mail (facoltative: se assenti restano solo in applicazione).
+      SMTP_URL: ${SMTP_URL:-}
+      NOTIFICHE_MITTENTE: ${NOTIFICHE_MITTENTE:-staffe@carbonstealth.eu}
+    volumes:
+      # Gli allegati sopravvivono a riavvii e ricostruzioni dell'immagine.
+      - uploads:/app/uploads
+    ports:
+      # Solo loopback: il dominio lo serve il reverse proxy sull'host.
+      # Su un altro server si cambia in .env:  APP_PORT=3301
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3300}:3000"
+    healthcheck:
+      # La sonda controlla anche il database: un processo vivo con la base dati
+      # irraggiungibile non è „sano" (risponde 503) e il rollback se ne accorge.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    # L'applicazione non ha bisogno di alcuna capability Linux e non deve
+    # poter elevare i privilegi (gira già come utente `node`, non root).
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    pids_limit: 400
+    networks:
+      - staffe-net
+
+volumes:
+  db-data:
+  uploads:
+
+networks:
+  staffe-net:
+    driver: bridge

@@ -59,6 +59,17 @@
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
   `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **staffe** (Staffe — WMS за асансьорни скоби): Docker Compose модел като
+  zabobovdol/eternaltouch — `app` + собствен PostgreSQL 16, всичко само на localhost зад
+  reverse proxy. Тайните живеят на стабилен път извън releases (`/opt/few-few/shared/staffe/.env`,
+  600) и се пренасят при всеки деплой. Compose проектът се казва `staffe`, затова новият
+  release поема **същите** контейнери и томове (`staffe_db-data`, `staffe_uploads`) — базата и
+  прикачените файлове (disegni, PDF, CAD, foto) преживяват деплоя. Бекъп на базата **преди**
+  миграция; схемата се прилага от `staffe/deploy/docker-entrypoint.sh` (версионирани миграции,
+  fail closed при провал); сийд само при първо пускане. Health на
+  `127.0.0.1:3300/api/health` — сондата проверява и базата, тоест жив процес с недостъпна
+  база се отчита като нездрав. Еднократно: DNS A запис за `staffe.carbonstealth.eu`,
+  `.env` (`DATABASE_URL`, `AUTH_SECRET` ≥32 знака), Nginx vhost + certbot → `staffe/DEPLOY.md`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -67,7 +78,10 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali staffe` | кои проекти да се разгръщат тук |
+| `STAFFE_SHARED` | `/opt/few-few/shared/staffe` | стабилен път за `.env` + бекъпи на staffe (извън releases) |
+| `STAFFE_HEALTH_URL` | `http://127.0.0.1:3300/api/health` | health на staffe (проверява и базата) |
+| `STAFFE_KEEP_BACKUPS` | `14` | колко бекъпа на базата да се пазят |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
