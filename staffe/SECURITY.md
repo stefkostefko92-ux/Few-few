@@ -59,11 +59,19 @@ voluto — è la leva d'emergenza in caso di compromissione).
 
 - **Minimizzazione**: si raccoglie ciò che serve a spedire e fatturare. Nessun
   tracciamento comportamentale, nessun cookie di profilazione, nessun servizio
-  terzo: l'unico cookie è quello tecnico di sessione, che non richiede consenso.
-- **Conservazione**: i documenti (ordini, movimenti, ricevimenti) si conservano
-  per gli obblighi civilistici e fiscali italiani; gli accessi e l'audit per un
-  periodo definito dal titolare. Le sessioni scadute si eliminano
-  (`purgeExpiredSessions`).
+  terzo. L'unico cookie è quello tecnico di sessione (`staffe_session`), che non
+  richiede consenso. Nel browser resta anche una voce di `localStorage`
+  (`staffe-tema`, chiaro/scuro): non è un cookie ma l'art. 5(3) ePrivacy copre
+  anche questo tipo di archiviazione — è esente perché è una preferenza di
+  interfaccia scritta solo su clic dell'utente, e non contiene dati personali.
+- **Conservazione**: i documenti gestionali (ordini, movimenti, ricevimenti) si
+  conservano per gli obblighi civilistici e fiscali italiani (dieci anni,
+  art. 2220 c.c.). La traccia di controllo e le sessioni hanno una durata
+  **eseguita dal codice, non solo dichiarata qui**: `POST /api/manutenzione`
+  (solo amministratore, da invocare con un lavoro pianificato) elimina le
+  sessioni scadute (`purgeExpiredSessions`) e le righe di audit più vecchie di
+  `AUDIT_RETENTION_GIORNI` (predefinito 730). *Una politica di conservazione
+  senza codice che la applica è un documento che dice il falso.*
 - **Diritti degli interessati**: i referenti di clienti e fornitori esercitano i
   propri diritti presso il titolare del trattamento; l'amministratore può
   rettificare o disattivare le anagrafiche. Le righe storiche dei documenti

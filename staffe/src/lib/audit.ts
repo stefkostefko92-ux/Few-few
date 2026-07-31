@@ -70,3 +70,36 @@ export async function audit(input: AuditInput): Promise<void> {
     console.error('[staffe] scrittura audit fallita:', err);
   }
 }
+
+/**
+ * Conservazione della traccia di controllo, in giorni.
+ *
+ * La traccia serve alla sicurezza, non è un archivio perpetuo: contiene chi ha
+ * fatto cosa e quando, cioè dati sull'attività di persone identificate. Tenerla
+ * per sempre viola il principio di limitazione della conservazione
+ * (art. 5(1)(e) GDPR) e nessun documento la salva se il codice non la cancella
+ * mai. Il valore è la scelta del titolare del trattamento: qui c'è un predefinito
+ * ragionevole, sovrascrivibile da `AUDIT_RETENTION_GIORNI`.
+ *
+ * ATTENZIONE — questo NON tocca i documenti gestionali (ordini, movimenti,
+ * ricevimenti): quelli hanno un obbligo di conservazione civilistico di dieci
+ * anni (art. 2220 c.c.) e vivono nelle proprie tabelle.
+ */
+export const AUDIT_RETENTION_GIORNI_DEFAULT = 730; // due anni
+
+export function retentionGiorni(): number {
+  const raw = Number.parseInt(process.env.AUDIT_RETENTION_GIORNI ?? '', 10);
+  // Un valore assurdo (zero, negativo, non numerico) non deve cancellare tutto:
+  // si ricade sul predefinito, con un minimo di 30 giorni.
+  if (!Number.isFinite(raw) || raw < 30) return AUDIT_RETENTION_GIORNI_DEFAULT;
+  return raw;
+}
+
+/** Elimina le righe di audit più vecchie della soglia. Restituisce quante. */
+export async function pruneAuditLog(giorni = retentionGiorni()): Promise<number> {
+  const limite = new Date(Date.now() - giorni * 86_400_000);
+  const { count } = await prisma.auditLog.deleteMany({
+    where: { createdAt: { lt: limite } },
+  });
+  return count;
+}
