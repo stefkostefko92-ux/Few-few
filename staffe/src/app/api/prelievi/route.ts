@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { created, meta, ok, pagination, readBody, route } from '@/lib/api';
 import { nextDocumentNumber } from '@/lib/sequence';
-import { suggestPickLocations } from '@/lib/stock';
+import { suggestPickLocations, type Allocazioni } from '@/lib/stock';
 import { creaPrelievoSchema, testoONull } from '@/lib/validation/vendite';
 import { erroreDati } from '../vendite/_lib';
 
@@ -88,10 +88,14 @@ export const POST = route(async (request: Request) => {
       locationId: string;
       qty: number;
     }> = [];
+    // Registro condiviso fra le righe: due righe dello stesso prodotto non
+    // devono ricevere due volte la stessa giacenza (le quantità si scaricano
+    // solo alla chiusura del prelievo, quindi il database non le „vede" ancora).
+    const allocate: Allocazioni = new Map();
     for (const riga of ordine.lines) {
       const residuo = riga.qty - riga.pickedQty;
       if (residuo <= 0) continue;
-      const suggerite = await suggestPickLocations(riga.productId, residuo, tx);
+      const suggerite = await suggestPickLocations(riga.productId, residuo, tx, allocate);
       for (const s of suggerite) {
         grezze.push({
           salesOrderLineId: riga.id,

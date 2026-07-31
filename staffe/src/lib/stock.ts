@@ -295,34 +295,77 @@ export async function checkLowStock(tx: Tx, productId: string): Promise<void> {
   });
 }
 
+export type PickSuggestion = {
+  locationId: string;
+  batchId: string | null;
+  qty: number;
+};
+
 /**
- * Suggerisce l'ubicazione da cui prelevare: prima quelle con meno pezzi liberi
- * (si svuotano i vani parziali), poi in ordine di percorso. Restituisce le
- * righe di prelievo già ordinate per il giro in magazzino.
+ * Registro delle quantità già assegnate ad altre righe della STESSA lista di
+ * prelievo, per chiave di giacenza. Chi genera una lista lo crea una volta e lo
+ * passa a ogni chiamata.
+ */
+export type Allocazioni = Map<string, number>;
+
+/**
+ * Suggerisce da dove prelevare: prima i vani con meno pezzi (si svuotano i
+ * parziali), poi il chiamante riordina per percorso.
+ *
+ * `allocate` non è un dettaglio: senza di esso due righe dello stesso prodotto
+ * nello stesso ordine riceverebbero entrambe la stessa giacenza, perché la
+ * seconda chiamata rilegge un magazzino che la prima non ha ancora toccato — le
+ * quantità si scaricano solo alla chiusura del prelievo. L'operatore andrebbe al
+ * vano e non troverebbe i pezzi; l'errore comparirebbe solo alla fine, come
+ * transazione fallita, invece che qui come „giacenza insufficiente".
+ *
+ * NOTA sull'impegnato: `reservedQty` NON viene sottratto di proposito. L'ordine
+ * che si sta prelevando è, di regola, quello che ha impegnato la merce; toglierla
+ * gli impedirebbe di prelevare la propria riserva. La difesa contro il prelievo
+ * della riserva altrui resta `decrease()` in transazione.
  */
 export async function suggestPickLocations(
   productId: string,
   qty: number,
   client: Tx | typeof prisma = prisma,
-): Promise<Array<{ locationId: string; batchId: string | null; qty: number }>> {
+  allocate?: Allocazioni,
+): Promise<PickSuggestion[]> {
   const items = await client.stockItem.findMany({
     where: { productId, qty: { gt: 0 } },
     include: { location: true },
     orderBy: [{ qty: 'asc' }],
   });
-  const out: Array<{ locationId: string; batchId: string | null; qty: number }> = [];
+
+  const out: PickSuggestion[] = [];
+  // Le assegnazioni si scrivono nel registro SOLO se la riga si copre tutta:
+  // una riga fallita non deve lasciare pezzi „prenotati" a metà e far fallire
+  // a catena le righe successive.
+  const provvisorie = new Map<string, number>();
   let residuo = qty;
+
   for (const item of items) {
     if (residuo <= 0) break;
     if (!item.location.active) continue;
-    const quota = Math.min(item.qty, residuo);
+
+    const chiave = stockKeyOf(productId, item.locationId, item.batchId);
+    const gia = allocate?.get(chiave) ?? 0;
+    const libero = item.qty - gia;
+    if (libero <= 0) continue;
+
+    const quota = Math.min(libero, residuo);
     out.push({ locationId: item.locationId, batchId: item.batchId, qty: quota });
+    provvisorie.set(chiave, gia + quota);
     residuo -= quota;
   }
+
   if (residuo > 0) {
     throw new StockError(
       `Giacenza insufficiente per il prelievo: mancano ${residuo} unità.`,
     );
+  }
+
+  if (allocate) {
+    for (const [chiave, valore] of provvisorie) allocate.set(chiave, valore);
   }
   return out;
 }
