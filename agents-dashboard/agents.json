@@ -8888,7 +8888,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 120
+        "lessons": 122
       },
       "evolution": [
         {
@@ -9196,9 +9196,20 @@
           "date": "2026-07-28",
           "event": "v13.8 — учене",
           "detail": "Научи: medqr/mobile/package.json е на @capacitor/core|android|ios ^6.2.0 — не Capacitor 7/8; ъ… (+6 още)"
+        },
+        {
+          "version": "14.0.0",
+          "date": "2026-07-31",
+          "event": "v14.0 — учене",
+          "detail": "Научи: В staffe/ (TS strict, moduleResolution:bundler) пакет с условни `exports` (browser/elec… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В staffe/ (TS strict, moduleResolution:bundler) пакет с условни `exports` (browser/elec…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
