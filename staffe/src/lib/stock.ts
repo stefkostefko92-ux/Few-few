@@ -1,0 +1,328 @@
+import { MovementType, Prisma, type StockMovement } from '@prisma/client';
+import { prisma } from './db';
+
+/**
+ * Motore delle giacenze — l'unico punto in cui la quantità in magazzino cambia.
+ *
+ * Ricevimenti, prelievi, trasferimenti, rettifiche e inventari passano tutti da
+ * qui. Nessun modulo scrive `StockItem.qty` direttamente: la giacenza deve
+ * sempre avere un movimento che la spiega, altrimenti la differenza inventariale
+ * diventa inspiegabile e la valorizzazione non torna.
+ */
+
+export class StockError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StockError';
+  }
+}
+
+/** Da dove esce e dove entra la merce, per ciascun tipo di movimento. */
+export type Direction = { needsFrom: boolean; needsTo: boolean };
+
+export function directionOf(type: MovementType): Direction {
+  switch (type) {
+    case 'RICEVIMENTO':
+    case 'RESO_CLIENTE':
+      return { needsFrom: false, needsTo: true };
+    case 'PRELIEVO':
+    case 'SPEDIZIONE':
+    case 'SCARTO':
+    case 'RESO_FORNITORE':
+      return { needsFrom: true, needsTo: false };
+    case 'TRASFERIMENTO':
+      return { needsFrom: true, needsTo: true };
+    case 'RETTIFICA':
+    case 'INVENTARIO':
+      // Correzione: `to` per un aumento, `from` per una diminuzione — mai entrambi.
+      return { needsFrom: false, needsTo: false };
+  }
+}
+
+export type MovementInput = {
+  productId: string;
+  qty: number;
+  type: MovementType;
+  fromLocationId?: string | null;
+  toLocationId?: string | null;
+  batchId?: string | null;
+  unitCostCents?: number;
+  reason?: string;
+  refType?: string;
+  refId?: string;
+  userId?: string | null;
+};
+
+/** Controlli che non richiedono il database — testabili in isolamento. */
+export function validateMovement(input: MovementInput): void {
+  if (!Number.isInteger(input.qty) || input.qty <= 0) {
+    throw new StockError('La quantità deve essere un intero positivo.');
+  }
+  const { needsFrom, needsTo } = directionOf(input.type);
+  if (needsFrom && !input.fromLocationId) {
+    throw new StockError('Ubicazione di partenza obbligatoria per questo movimento.');
+  }
+  if (needsTo && !input.toLocationId) {
+    throw new StockError('Ubicazione di destinazione obbligatoria per questo movimento.');
+  }
+  if (
+    input.type === 'TRASFERIMENTO' &&
+    input.fromLocationId === input.toLocationId
+  ) {
+    throw new StockError('Partenza e destinazione non possono coincidere.');
+  }
+  if (
+    (input.type === 'RETTIFICA' || input.type === 'INVENTARIO') &&
+    !!input.fromLocationId === !!input.toLocationId
+  ) {
+    throw new StockError(
+      'La rettifica richiede una sola ubicazione: di destinazione per un aumento, di partenza per una diminuzione.',
+    );
+  }
+}
+
+type Tx = Prisma.TransactionClient;
+
+/** Chiave di unicità della giacenza — unico posto in cui si compone. */
+export function stockKeyOf(
+  productId: string,
+  locationId: string,
+  batchId: string | null,
+): string {
+  return `${productId}:${locationId}:${batchId ?? '-'}`;
+}
+
+async function decrease(
+  tx: Tx,
+  productId: string,
+  locationId: string,
+  batchId: string | null,
+  qty: number,
+): Promise<void> {
+  const item = await tx.stockItem.findUnique({
+    where: { stockKey: stockKeyOf(productId, locationId, batchId) },
+  });
+  if (!item || item.qty < qty) {
+    throw new StockError(
+      `Giacenza insufficiente nell'ubicazione selezionata: disponibili ${item?.qty ?? 0}, richiesti ${qty}.`,
+    );
+  }
+  await tx.stockItem.update({
+    where: { id: item.id },
+    data: {
+      qty: { decrement: qty },
+      // L'impegnato non può superare la giacenza residua.
+      reservedQty: Math.min(item.reservedQty, item.qty - qty),
+    },
+  });
+}
+
+async function increase(
+  tx: Tx,
+  productId: string,
+  locationId: string,
+  batchId: string | null,
+  qty: number,
+): Promise<void> {
+  await tx.stockItem.upsert({
+    where: { stockKey: stockKeyOf(productId, locationId, batchId) },
+    create: {
+      stockKey: stockKeyOf(productId, locationId, batchId),
+      productId,
+      locationId,
+      batchId,
+      qty,
+    },
+    update: { qty: { increment: qty } },
+  });
+}
+
+/**
+ * Applica un movimento **dentro** una transazione già aperta. Da usare quando il
+ * movimento fa parte di un documento (ricevimento, prelievo): o si scrive tutto
+ * o non si scrive niente.
+ */
+export async function applyMovement(
+  tx: Tx,
+  input: MovementInput,
+): Promise<StockMovement> {
+  validateMovement(input);
+  const batchId = input.batchId ?? null;
+
+  if (input.fromLocationId) {
+    await decrease(tx, input.productId, input.fromLocationId, batchId, input.qty);
+  }
+  if (input.toLocationId) {
+    await increase(tx, input.productId, input.toLocationId, batchId, input.qty);
+  }
+
+  return tx.stockMovement.create({
+    data: {
+      productId: input.productId,
+      batchId,
+      fromLocationId: input.fromLocationId ?? null,
+      toLocationId: input.toLocationId ?? null,
+      qty: input.qty,
+      type: input.type,
+      unitCostCents: input.unitCostCents ?? 0,
+      reason: input.reason ?? null,
+      refType: input.refType ?? null,
+      refId: input.refId ?? null,
+      userId: input.userId ?? null,
+    },
+  });
+}
+
+/** Movimento singolo, con transazione propria. */
+export function moveStock(input: MovementInput): Promise<StockMovement> {
+  return prisma.$transaction(async (tx) => {
+    const movement = await applyMovement(tx, input);
+    await checkLowStock(tx, input.productId);
+    return movement;
+  });
+}
+
+export type StockSummary = {
+  qty: number;
+  reservedQty: number;
+  availableQty: number;
+};
+
+export async function stockOf(
+  productId: string,
+  client: Tx | typeof prisma = prisma,
+): Promise<StockSummary> {
+  const agg = await client.stockItem.aggregate({
+    where: { productId },
+    _sum: { qty: true, reservedQty: true },
+  });
+  const qty = agg._sum.qty ?? 0;
+  const reservedQty = agg._sum.reservedQty ?? 0;
+  return { qty, reservedQty, availableQty: qty - reservedQty };
+}
+
+/**
+ * Impegna la merce per un ordine confermato. L'impegnato resta fisicamente in
+ * ubicazione ma non è più vendibile: senza questo, due ordini vendono lo stesso
+ * pezzo e uno dei due clienti resta scoperto.
+ */
+export async function reserve(
+  tx: Tx,
+  productId: string,
+  qty: number,
+): Promise<void> {
+  const items = await tx.stockItem.findMany({
+    where: { productId },
+    orderBy: { qty: 'desc' },
+  });
+  let residuo = qty;
+  for (const item of items) {
+    if (residuo <= 0) break;
+    const libero = item.qty - item.reservedQty;
+    if (libero <= 0) continue;
+    const quota = Math.min(libero, residuo);
+    await tx.stockItem.update({
+      where: { id: item.id },
+      data: { reservedQty: { increment: quota } },
+    });
+    residuo -= quota;
+  }
+  if (residuo > 0) {
+    throw new StockError(
+      `Disponibilità insufficiente: mancano ${residuo} unità non ancora impegnate.`,
+    );
+  }
+}
+
+export async function release(
+  tx: Tx,
+  productId: string,
+  qty: number,
+): Promise<void> {
+  const items = await tx.stockItem.findMany({
+    where: { productId, reservedQty: { gt: 0 } },
+    orderBy: { reservedQty: 'desc' },
+  });
+  let residuo = qty;
+  for (const item of items) {
+    if (residuo <= 0) break;
+    const quota = Math.min(item.reservedQty, residuo);
+    await tx.stockItem.update({
+      where: { id: item.id },
+      data: { reservedQty: { decrement: quota } },
+    });
+    residuo -= quota;
+  }
+}
+
+/**
+ * Genera la notifica di sotto scorta / esaurito, senza duplicarla: se ne esiste
+ * già una non letta per lo stesso prodotto non se ne crea un'altra, altrimenti
+ * ogni prelievo riempie il centro notifiche di righe identiche.
+ */
+export async function checkLowStock(tx: Tx, productId: string): Promise<void> {
+  const product = await tx.product.findUnique({
+    where: { id: productId },
+    select: { id: true, sku: true, name: true, minStock: true },
+  });
+  if (!product) return;
+
+  const agg = await tx.stockItem.aggregate({
+    where: { productId },
+    _sum: { qty: true },
+  });
+  const qty = agg._sum.qty ?? 0;
+  if (qty > product.minStock) return;
+
+  const type = qty <= 0 ? 'ESAURITO' : 'SCORTA_MINIMA';
+  const esistente = await tx.notification.findFirst({
+    where: { entity: 'Product', entityId: product.id, type, readAt: null },
+  });
+  if (esistente) return;
+
+  await tx.notification.create({
+    data: {
+      type,
+      level: qty <= 0 ? 'CRITICO' : 'AVVISO',
+      title:
+        qty <= 0
+          ? `Esaurito: ${product.sku}`
+          : `Scorta minima: ${product.sku}`,
+      body: `${product.name} — giacenza ${qty}, minimo ${product.minStock}.`,
+      entity: 'Product',
+      entityId: product.id,
+    },
+  });
+}
+
+/**
+ * Suggerisce l'ubicazione da cui prelevare: prima quelle con meno pezzi liberi
+ * (si svuotano i vani parziali), poi in ordine di percorso. Restituisce le
+ * righe di prelievo già ordinate per il giro in magazzino.
+ */
+export async function suggestPickLocations(
+  productId: string,
+  qty: number,
+  client: Tx | typeof prisma = prisma,
+): Promise<Array<{ locationId: string; batchId: string | null; qty: number }>> {
+  const items = await client.stockItem.findMany({
+    where: { productId, qty: { gt: 0 } },
+    include: { location: true },
+    orderBy: [{ qty: 'asc' }],
+  });
+  const out: Array<{ locationId: string; batchId: string | null; qty: number }> = [];
+  let residuo = qty;
+  for (const item of items) {
+    if (residuo <= 0) break;
+    if (!item.location.active) continue;
+    const quota = Math.min(item.qty, residuo);
+    out.push({ locationId: item.locationId, batchId: item.batchId, qty: quota });
+    residuo -= quota;
+  }
+  if (residuo > 0) {
+    throw new StockError(
+      `Giacenza insufficiente per il prelievo: mancano ${residuo} unità.`,
+    );
+  }
+  return out;
+}

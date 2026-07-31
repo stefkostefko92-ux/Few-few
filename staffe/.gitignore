@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Segreti: mai nel repository né nell'archivio di deploy.
+.env
+.env.local
+.env.*.local
+
+# Allegati caricati (disegni, PDF, CAD, foto) — dati, non codice.
+/uploads/
+/public/uploads/
+
+.DS_Store

@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Tema in variabili: le stesse classi Tailwind rendono correttamente in chiaro
+ * e in scuro. I contrasti sono scelti per rispettare WCAG 2.1 AA (4,5:1 sul
+ * testo) — in magazzino si legge da lontano, con guanti e luce pessima.
+ */
+:root {
+  --bg: 248 250 252;
+  --surface: 255 255 255;
+  --muted: 241 245 249;
+  --border: 203 213 225;
+  --fg: 15 23 42;
+  --fg-muted: 71 85 105;
+  --brand: 3 105 161;
+  --brand-fg: 255 255 255;
+  --ok: 21 128 61;
+  --warn: 161 98 7;
+  --danger: 190 18 60;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: 2 6 23;
+  --surface: 15 23 42;
+  --muted: 30 41 59;
+  --border: 51 65 85;
+  --fg: 241 245 249;
+  --fg-muted: 148 163 184;
+  --brand: 56 189 248;
+  --brand-fg: 3 7 18;
+  --ok: 74 222 128;
+  --warn: 250 204 21;
+  --danger: 251 113 133;
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-bg text-fg antialiased;
+}
+
+/* Il focus deve essere sempre visibile: si lavora molto da tastiera e da
+   scanner, che invia i tasti come una tastiera. */
+:focus-visible {
+  @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-bg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Stampa: etichette e documenti escono senza cromo dell'applicazione. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

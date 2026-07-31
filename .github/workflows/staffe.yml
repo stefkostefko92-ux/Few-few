@@ -1,0 +1,49 @@
+name: staffe
+
+on:
+  push:
+    paths:
+      - 'staffe/**'
+      - '.github/workflows/staffe.yml'
+  pull_request:
+    paths:
+      - 'staffe/**'
+      - '.github/workflows/staffe.yml'
+
+concurrency:
+  group: staffe-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: staffe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: staffe/package-lock.json
+      - run: npm ci
+      # Prisma клиентът се генерира преди typecheck — иначе типовете на модела липсват.
+      - run: npm run prisma:generate
+        env:
+          # Не е тайна, не изглежда като тайна: `prisma generate` само чете формата
+          # на datasource url от schema.prisma (env("DATABASE_URL")), не отваря връзка.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/staffe_ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          # `next build` не иска жива база, но auth.ts хвърля fail-closed без
+          # AUTH_SECRET (≥32 знака) — фиктивна CI стойност, не тайна.
+          AUTH_SECRET: ci-build-placeholder-not-a-secret-ok-32chars
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/staffe_ci
