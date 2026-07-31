@@ -21,9 +21,11 @@ import { overview as redisOverview, evictionChecks } from './redis.js';
 import { safePath } from './accesslog.js';
 import { exposureMap, portChecks } from './ports.js';
 import { saveConfig } from './config.js';
+import { Guardians } from './guardians.js';
 
 export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic }) {
+    this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
@@ -386,6 +388,15 @@ export class AlertEngine {
     // който не се пуска, изглежда като покритие, а не е.
     for (const b of scheduleChecks(this.cfg, this.backupSchedule)) out.push(b);
     for (const b of trafficChecks(this.cfg, this.traffic)) out.push(b);
+    // Тихите пазачи: дрейф на /etc (по каданс, кеширано) + нови SSH входове.
+    if (this.cfg.guardians?.enabled !== false) {
+      for (const c of this.guardians.etcCheck(this.cfg.guardians)) out.push(c);
+      try {
+        for (const c of await this.guardians.sshCheck()) out.push(c);
+      } catch {
+        /* няма last/wtmp на тази машина — не гадаем */
+      }
+    }
     for (const b of await this.flappingChecks()) out.push(b);
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);
