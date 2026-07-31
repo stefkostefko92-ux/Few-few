@@ -5950,7 +5950,7 @@ const FALLBACK = {
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 146
+        "lessons": 149
       },
       "evolution": [
         {
@@ -6336,9 +6336,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v15.7 — учене",
           "detail": "Научи: systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У… (+12 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-07-31",
+          "event": "v16.0 — учене",
+          "detail": "Научи: В autodeploy.sh шаблонът `p=\\\"$(grep -E '^VAR=' .env | head -1 | cut -d= -f2)\\\"` под `s… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В autodeploy.sh шаблонът `p=\\\"$(grep -E '^VAR=' .env | head -1 | cut -d= -f2)\\\"` под `s…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
