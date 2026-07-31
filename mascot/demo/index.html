@@ -50,6 +50,9 @@
   .on-light { background: #C8DDA6; color: #0D4A02; }
   .on-brand { background: #297F04; color: #050706; }
   .card { max-width: 100%; border: 1px solid #3C3F28; border-radius: 12px; }
+  .sheet { display: flex; flex-wrap: wrap; gap: 12px; }
+  .sheet figure { width: 132px; }
+  .sheet img { border-radius: 12px; background: #050706; }
   .rules { display: flex; gap: 20px; flex-wrap: wrap; }
   .rule { width: 200px; }
   .rule div { border-radius: 10px; padding: 10px; background: #0D4A02; display: flex; justify-content: center; }
@@ -96,6 +99,31 @@
   <li><b>Шапка с дебелина</b>, сатен по плата и пискюл от нишки; <b>папийонка</b> с гънки и сатенен ръб.</li>
   <li><b>Искри</b> — три разминати блясъка, които правят кадъра „скъп“.</li>
 </ul>
+
+<h2>Изражения</h2>
+<p>
+  Маскотът не е една картинка, а <strong>система</strong>: изражението сменя само веждите, очите и
+  устата — тяло, очила, шапка и папийонка остават идентични (правило от дизайн-брифа, гейтнато).
+  Всяко изражение е един модул в <code>faces/</code>; готовите асети в <code>svg/expressions/</code>
+  и <code>&lt;JellyMascot expression="…"&gt;</code> се <strong>генерират</strong> от него.
+</p>
+<div class="sheet">
+  <figure><img src="../svg/jelly-mascot-full.svg" alt="Неутрално изражение" width="120" height="120"><figcaption><code>neutral</code></figcaption></figure>
+  <figure><img src="../svg/expressions/happy.svg" alt="Щастливо изражение" width="120" height="120"><figcaption><code>happy</code></figcaption></figure>
+  <figure><img src="../svg/expressions/wink.svg" alt="Намигване" width="120" height="120"><figcaption><code>wink</code></figcaption></figure>
+  <figure><img src="../svg/expressions/surprised.svg" alt="Изненадано изражение" width="120" height="120"><figcaption><code>surprised</code></figcaption></figure>
+  <figure><img src="../svg/expressions/focused.svg" alt="Съсредоточено изражение" width="120" height="120"><figcaption><code>focused</code></figcaption></figure>
+  <figure><img src="../svg/expressions/proud.svg" alt="Уверено изражение" width="120" height="120"><figcaption><code>proud</code></figcaption></figure>
+  <figure><img src="../svg/expressions/celebrate.svg" alt="Празнуващо изражение" width="120" height="120"><figcaption><code>celebrate</code></figcaption></figure>
+</div>
+
+<h2>Пози</h2>
+<p>Позата сменя само групата на ръцете (<code>poses/</code>) — същият механизъм, същите гаранции.</p>
+<div class="row">
+  <figure><img src="../svg/jelly-mascot-full.svg" alt="Поза в покой" width="150" height="150"><figcaption><code>rest</code></figcaption></figure>
+  <figure><img src="../svg/poses/wave.svg" alt="Маскотът маха с ръка" width="150" height="150"><figcaption><code>wave</code> — за поздрав/онбординг</figcaption></figure>
+</div>
+<pre>&lt;JellyMascot expression="celebrate" pose="wave" size={220} animated /&gt;</pre>
 
 <h2>Едноцветният знак</h2>
 <p>

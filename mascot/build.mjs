@@ -9,12 +9,16 @@
 //   node build.mjs            # записва react/JellyMascot.tsx
 //   node build.mjs --stdout   # само печата (ползва се от check.mjs)
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const TIERS = ["full", "medium", "icon"];
+
+/** Сменяемите части на маскота: лицето (три групи) и ръцете (позата). */
+export const FACE_PARTS = ["jm-brows", "jm-eyes", "jm-mouth"];
+export const POSE_PARTS = ["jm-arms"];
 
 /** Атрибути, които в JSX не се преименуват (namespace-и и a11y). */
 const KEEP_AS_IS = /^(aria-|data-|xmlns)/;
@@ -41,10 +45,19 @@ export function jsxAttrValue(name, value) {
   return "{`" + v + "`}";
 }
 
-/** Вътрешността на `<svg>` → JSX. Работи върху нашите файлове (без CDATA, без `>` в стойност). */
-export function svgBodyToJsx(svg, indent = "      ") {
+/**
+ * Вътрешността на `<svg>` → JSX. Работи върху нашите файлове (без CDATA, без `>` в стойност).
+ * `slots` заменя цели групи с JSX израз (напр. `jm-eyes` → `{face.eyes}`), за да може компонентът
+ * да сменя изражение и поза, без да носи по едно копие на целия маскот за всяко от тях.
+ */
+export function svgBodyToJsx(svg, indent = "      ", slots = {}) {
   const inner = svg.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
-  const stripped = inner.replace(/<title[\s\S]*?<\/title>\s*/g, "").replace(/<desc[\s\S]*?<\/desc>\s*/g, "");
+  let stripped = inner.replace(/<title[\s\S]*?<\/title>\s*/g, "").replace(/<desc[\s\S]*?<\/desc>\s*/g, "");
+  for (const [cls, expr] of Object.entries(slots)) {
+    const g = groupOf(stripped, cls);
+    if (!g) throw new Error(`слот „${cls}" липсва в SVG-то`);
+    stripped = stripped.replace(g, `<!--@@${expr}@@-->`);
+  }
 
   const out = stripped.replace(/<!--([\s\S]*?)-->/g, (_, body) => {
     if (body.includes("*/")) throw new Error("коментар с `*/` не може да стане JSX коментар");
@@ -57,11 +70,56 @@ export function svgBodyToJsx(svg, indent = "      ") {
     return `<${tag}${parts.length ? " " + parts.join(" ") : ""}${selfClose ? "/" : ""}>`;
   });
 
-  const lines = out.split("\n");
+  const lines = out.replace(/\{\/\*@@(.+?)@@\*\/\}/g, "{$1}").split("\n");
   while (lines.length && !lines[0].trim()) lines.shift();
   while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
   const base = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
   return lines.map((l) => (l.trim() ? indent + l.slice(base) : "")).join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+/**
+ * Извлича `<g class="…">…</g>` заедно с влаганията. Не е XML парсер — брои само `<g>`/`</g>`,
+ * което е достатъчно за нашите файлове и не изисква зависимост.
+ */
+export function groupOf(svg, className) {
+  const at = String(svg).indexOf(`class="${className}"`);
+  if (at < 0) return null;
+  const start = String(svg).lastIndexOf("<g", at);
+  if (start < 0) return null;
+  let depth = 0;
+  const re = /<(\/?)g\b[^>]*?(\/?)>/g;
+  re.lastIndex = start;
+  for (let m; (m = re.exec(svg)); ) {
+    if (m[2] === "/") continue;          // <g …/> — самозатваряща се група
+    depth += m[1] ? -1 : 1;
+    if (depth === 0) return svg.slice(start, m.index + m[0].length);
+  }
+  return null;
+}
+
+/** Частите (по клас) от модулен файл. Липсваща част = грешка, не тихо пропускане. */
+export function partsOf(svg, names) {
+  return Object.fromEntries(names.map((n) => {
+    const g = groupOf(svg, n);
+    if (!g) throw new Error(`модулът няма група „${n}"`);
+    return [n, g];
+  }));
+}
+
+/**
+ * Заменя части в базовия SVG. `idPrefix` пренасочва `url(#jm-…)` към градиентите на нивото
+ * (пълното ниво ползва `jm-`, средното `jmm-`) — иначе позата би сочила несъществуващ градиент.
+ */
+export function compose(baseSvg, parts, idPrefix = "jm") {
+  let out = baseSvg;
+  for (const [name, markup] of Object.entries(parts)) {
+    const current = groupOf(out, name);
+    if (!current) throw new Error(`базовият SVG няма група „${name}"`);
+    const indent = " ".repeat((out.slice(0, out.indexOf(current)).match(/\n( *)$/) || [, ""])[1].length);
+    const retargeted = markup.replace(/url\(#jm-/g, `url(#${idPrefix}-`);
+    out = out.replace(current, retargeted.split("\n").map((l, i) => (i === 0 || !l.trim() ? l : indent + l.replace(/^ {2}/, ""))).join("\n"));
+  }
+  return out;
 }
 
 /** Анимационният блок от `tokens.css` — вграден дословно, за да е компонентът самодостатъчен. */
@@ -133,8 +191,32 @@ ${inner}
 `;
 }
 
+/** Имената на модулите (без разширение), сортирани — редът да е детерминистичен. */
+export const moduleNames = (dir) => readdirSync(join(HERE, dir)).filter((f) => f.endsWith(".svg")).map((f) => f.replace(/\.svg$/, "")).sort();
+
+/** Генерираният вариант на базовия SVG с вградено изражение/поза + бележка, че е производен. */
+export function variantSvg(baseSvg, parts, label, source) {
+  return compose(baseSvg, parts)
+    .replace(/<title id="jm-title">[^<]*<\/title>/, `<title id="jm-title">Желирано маскотче — ${label}</title>`)
+    .replace("<title", `<!-- ⚠️  ГЕНЕРИРАН ФАЙЛ — не го редактирай на ръка.\n       Източник: svg/jelly-mascot-full.svg + ${source} · Генератор: \`node build.mjs\` -->\n  <title`);
+}
+
 export function generate(read = (p) => readFileSync(join(HERE, p), "utf8")) {
-  const tiers = Object.fromEntries(TIERS.map((t) => [t, svgBodyToJsx(read(`svg/jelly-mascot-${t}.svg`))]));
+  const SLOTS = { "jm-brows": "face.brows", "jm-eyes": "face.eyes", "jm-mouth": "face.mouth", "jm-arms": "arms" };
+  const tiers = Object.fromEntries(TIERS.map((t) => [
+    t,
+    svgBodyToJsx(read(`svg/jelly-mascot-${t}.svg`), "      ", t === "icon" ? {} : SLOTS),
+  ]));
+
+  const faceJsx = (svg) => Object.fromEntries(Object.entries(partsOf(svg, FACE_PARTS))
+    .map(([cls, markup]) => [cls.replace("jm-", ""), svgBodyToJsx(`<svg>${markup}</svg>`, "      ")]));
+  const faces = { neutral: faceJsx(read("svg/jelly-mascot-full.svg")) };
+  for (const name of moduleNames("faces")) faces[name] = faceJsx(read(`faces/${name}.svg`));
+
+  const armsJsx = (svg) => svgBodyToJsx(`<svg>${partsOf(svg, POSE_PARTS)["jm-arms"]}</svg>`, "      ");
+  const poses = { rest: armsJsx(read("svg/jelly-mascot-full.svg")) };
+  for (const name of moduleNames("poses")) poses[name] = armsJsx(read(`poses/${name}.svg`));
+
   const css = animationCss(read("tokens.css"));
   if (/[`$]/.test(css)) throw new Error("CSS с ` или $ би счупил template literal-а в компонента");
 
@@ -147,6 +229,8 @@ export function generate(read = (p) => readFileSync(join(HERE, p), "utf8")) {
 import { useId, type CSSProperties, type ReactElement } from "react";
 
 export type JellyMascotDetail = "full" | "medium" | "icon";
+export type JellyMascotExpression = ${Object.keys(faces).map((n) => `"${n}"`).join(" | ")};
+export type JellyMascotPose = ${Object.keys(poses).map((n) => `"${n}"`).join(" | ")};
 
 export interface JellyMascotProps {
   /** Ниво на детайл: \`full\` (герой), \`medium\` (среден размер/печат), \`icon\` (≤32 px, favicon). */
@@ -160,6 +244,13 @@ export interface JellyMascotProps {
   title?: string | null;
   /** Черен герой-фон вътре в SVG-то (както е в референцията). По подразбиране: прозрачен. */
   background?: "none" | "black";
+  /**
+   * Изражение. Сменя САМО веждите, очите и устата — тяло, очила, шапка и папийонка остават
+   * идентични (правило от дизайн-брифа). Иконното ниво няма изражения и остава неутрално.
+   */
+  expression?: JellyMascotExpression;
+  /** Поза (ръцете). Иконното ниво няма ръце и не се влияе. */
+  pose?: JellyMascotPose;
   /** Микро-анимация (полюшване, пулс на глоуто, мигане, махане на пискюла). */
   animated?: boolean;
   className?: string;
@@ -172,11 +263,32 @@ const ANIMATION_CSS = \`
 ${css}
 \`;
 
-interface TierProps {
-  uid: string;
+interface FaceParts {
+  brows: ReactElement;
+  eyes: ReactElement;
+  mouth: ReactElement;
 }
 
-${TIERS.map((t) => `function ${t[0].toUpperCase() + t.slice(1)}({ uid }: TierProps) {\n  return (\n    <>\n${tiers[t]}\n    </>\n  );\n}`).join("\n\n")}
+interface TierProps {
+  uid: string;
+  face: FaceParts;
+  arms: ReactElement;
+}
+
+/**
+ * Изражения: сменяемите модули на лицето (източник \`mascot/faces/*.svg\`). Не носят \`url(#…)\`
+ * препратки, затова не им трябва \`uid\` — важи и като правило, гейтнато в \`check.mjs\`.
+ */
+const FACES: Record<JellyMascotExpression, FaceParts> = {
+${Object.entries(faces).map(([name, parts]) => `  ${name}: {\n${["brows", "eyes", "mouth"].map((k) => `    ${k}: (\n      <>\n${parts[k]}\n      </>\n    ),`).join("\n")}\n  },`).join("\n")}
+};
+
+/** Пози: сменяемата група на ръцете (източник \`mascot/poses/*.svg\`). Ползва градиента на тялото. */
+const ARMS: Record<JellyMascotPose, (uid: string) => ReactElement> = {
+${Object.entries(poses).map(([name, jsx]) => `  ${name}: (uid) => (\n    <>\n${jsx}\n    </>\n  ),`).join("\n")}
+};
+
+${TIERS.map((t) => `function ${t[0].toUpperCase() + t.slice(1)}({ uid, face, arms }: TierProps) {\n  return (\n    <>\n${tiers[t]}\n    </>\n  );\n}`).join("\n\n")}
 
 const TIERS: Record<JellyMascotDetail, (p: TierProps) => ReactElement> = { full: Full, medium: Medium, icon: Icon };
 
@@ -185,6 +297,8 @@ export default function JellyMascot({
   size = 256,
   title = "Маскотът на Carbon Stealth",
   background = "none",
+  expression = "neutral",
+  pose = "rest",
   animated = false,
   className,
   style,
@@ -209,7 +323,7 @@ export default function JellyMascot({
       {!decorative && <title id={\`\${uid}-title\`}>{title}</title>}
       {animated && <style>{ANIMATION_CSS}</style>}
       {background === "black" && <rect width="512" height="512" fill="var(--jm-bg, #050706)" />}
-      <Tier uid={uid} />
+      <Tier uid={uid} face={FACES[expression]} arms={ARMS[pose](uid)} />
     </svg>
   );
 }
@@ -226,6 +340,25 @@ export function generateSocialCard(read = (p) => readFileSync(join(HERE, p), "ut
   return socialCard(read("svg/jelly-mascot-full.svg"));
 }
 
+/**
+ * Всички производни варианти: `{ "svg/expressions/happy.svg": "<svg…", … }`.
+ * Изражението и позата се вграждат в ПЪЛНОТО ниво — вариантите са герой-асети.
+ */
+export function generateVariants(read = (p) => readFileSync(join(HERE, p), "utf8")) {
+  const base = read("svg/jelly-mascot-full.svg");
+  const out = {};
+  for (const name of moduleNames("faces")) {
+    const src = read(`faces/${name}.svg`);
+    const label = (src.match(/<title[^>]*>([^<]*)<\/title>/) || [, name])[1].replace(/^Изражение „|" .*$/g, "");
+    out[`svg/expressions/${name}.svg`] = variantSvg(base, partsOf(src, FACE_PARTS), `изражение „${label}"`, `faces/${name}.svg`);
+  }
+  for (const name of moduleNames("poses")) {
+    const src = read(`poses/${name}.svg`);
+    out[`svg/poses/${name}.svg`] = variantSvg(base, partsOf(src, POSE_PARTS), `поза „${name}"`, `poses/${name}.svg`);
+  }
+  return out;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const code = generate();
   if (process.argv.includes("--stdout")) process.stdout.write(code);
@@ -233,6 +366,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     writeFileSync(join(HERE, "react/JellyMascot.tsx"), code);
     writeFileSync(join(HERE, "svg/jelly-mascot-full-animated.svg"), generateAnimatedSvg());
     writeFileSync(join(HERE, "svg/social-card.svg"), generateSocialCard());
-    console.log("✓ генерирани: react/JellyMascot.tsx · svg/jelly-mascot-full-animated.svg · svg/social-card.svg");
+    const variants = generateVariants();
+    for (const [rel, svg] of Object.entries(variants)) {
+      mkdirSync(join(HERE, dirname(rel)), { recursive: true });
+      writeFileSync(join(HERE, rel), svg);
+    }
+    console.log(`✓ генерирани: react/JellyMascot.tsx · svg/jelly-mascot-full-animated.svg · svg/social-card.svg · ${Object.keys(variants).length} варианта (изражения + пози)`);
   }
 }

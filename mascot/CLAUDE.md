@@ -16,10 +16,11 @@ npm run gate           # check.mjs + node --test + static-site-check на вит
 
 ## Закони на пакета
 
-1. **Източникът е `svg/jelly-mascot-{full,medium,icon,mono}.svg` + `tokens.css`.** Генерирани
-   (ръчната редакция там пада гейта, regenerate-and-diff): `react/JellyMascot.tsx`,
-   `svg/jelly-mascot-full-animated.svg` и `svg/social-card.svg`. Поправяш източника, после
-   `node build.mjs`.
+1. **Източникът е `svg/jelly-mascot-{full,medium,icon,mono}.svg` + `faces/*.svg` + `poses/*.svg`
+   + `tokens.css`.** Генерирани (ръчната редакция там пада гейта, regenerate-and-diff):
+   `react/JellyMascot.tsx`, `svg/jelly-mascot-full-animated.svg`, `svg/social-card.svg`,
+   `svg/expressions/*.svg`, `svg/poses/*.svg`. Поправяш източника, после `node build.mjs`.
+   **Ново изражение** = файл в `faces/` с трите групи; типът, асетът и вариантът идват сами.
 2. **Цвят се добавя в `tokens.json` ПЪРВО.** HEX стойност, която я няма там, пада гейта — навсякъде
    в `svg/` и `react/`.
 3. **Нивата не са козметика:** `medium` няма право на `<filter>` (блурът не оцелява при
@@ -33,13 +34,18 @@ npm run gate           # check.mjs + node --test + static-site-check на вит
 6. **Достъпност:** `role="img"` + `<title>`/`<desc>` през `aria-labelledby`; декоративна употреба →
    `title={null}` (компонентът излиза `aria-hidden`). Анимацията е нула при
    `prefers-reduced-motion`, нищо не мига над 3 Hz.
-7. **Мострите във витрината** (`demo/index.html`) трябва да съвпадат със снетата палитра — иначе
+7. **Модулите на лицето нямат `url(#…)`** — компонентът ги вмъква без уникални id-та, значи
+   препратката би сочила в празното. Гейтнато.
+8. **Мострите във витрината** (`demo/index.html`) трябва да съвпадат със снетата палитра — иначе
    демонстрацията тихо започва да лъже за бранда. Гейтнато.
 
 ## Подредба
 
 ```
 svg/       jelly-mascot-{full,medium,icon}.svg   ← истината
+faces/     <изражение>.svg                       ← модул: jm-brows + jm-eyes + jm-mouth
+poses/     <поза>.svg                            ← модул: jm-arms
+svg/       expressions/*.svg · poses/*.svg       ← ГЕНЕРИРАНИ варианти
 svg/       jelly-mascot-mono.svg                 ← едноцветен знак (currentColor, изрязано лице)
 svg/       jelly-mascot-full-animated.svg        ← ГЕНЕРИРАН (стиловете вътре → движи се и в <img>)
 svg/       social-card.svg                       ← ГЕНЕРИРАН (og:image 1200×630)

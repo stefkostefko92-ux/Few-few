@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
-  <title id="jm-title">Желирано маскотче с очила и академична шапка</title>
+  <!-- ⚠️  ГЕНЕРИРАН ФАЙЛ — не го редактирай на ръка.
+       Източник: svg/jelly-mascot-full.svg + faces/celebrate.svg · Генератор: `node build.mjs` -->
+  <title id="jm-title">Желирано маскотче — изражение „празнуващ"</title>
   <desc id="jm-desc">Полупрозрачно неоново-зелено желирано телце с вътрешни мехурчета, дебели черни кръгли очила, папийонка и черна академична шапка със златен пискюл, в студийна светлина на черен фон.</desc>
 
   <defs>
@@ -266,24 +268,18 @@
            и само те се разменят от `svg/faces/*.svg`, за да се получи изражение. Затова са
            байт-идентични между пълното и средното ниво — гейтнато. -->
       <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
-        <path d="M166 208C184 196 208 194 226 200"/>
-        <path d="M346 208C328 196 304 194 286 200"/>
+        <path d="M164 186C182 170 208 168 226 178"/>
+        <path d="M348 186C330 170 304 168 286 178"/>
       </g>
 
       <g class="jm-eyes">
-        <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-        <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-        <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-        <circle cx="312" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-        <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
-          <circle cx="202" cy="276" r="18"/>
-          <circle cx="312" cy="276" r="18"/>
+        <g fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="12" stroke-linecap="round">
+          <path d="M172 286C184 260 216 260 228 286"/>
+          <path d="M282 286C294 260 326 260 338 286"/>
         </g>
-        <g fill="var(--jm-white, #FFFFFF)">
-          <rect x="185" y="256" width="17" height="12" rx="5" transform="rotate(-24 193 262)"/>
-          <rect x="295" y="256" width="17" height="12" rx="5" transform="rotate(-24 303 262)"/>
-          <circle cx="211" cy="287" r="4" opacity="0.7"/>
-          <circle cx="321" cy="287" r="4" opacity="0.7"/>
+        <g fill="var(--jm-white, #FFFFFF)" opacity="0.5">
+          <circle cx="180" cy="274" r="3.4"/>
+          <circle cx="290" cy="274" r="3.4"/>
         </g>
       </g>
 
@@ -327,8 +323,8 @@
 
       <!-- Усмивка с мек отблясък отдолу (устата е вдлъбнатина, не линия). -->
       <g class="jm-mouth">
-        <path d="M234 332C242 346 266 346 274 332" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
-        <path d="M238 342C244 350 264 350 270 342" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+        <path d="M224 326C232 366 276 366 284 326C264 334 244 334 224 326Z" fill="var(--jm-ink, #0A0C0A)"/>
+        <path d="M238 350C244 360 264 360 270 350C260 346 248 346 238 350Z" fill="var(--jm-olive, #99E72A)" opacity="0.55"/>
       </g>
     </g>
 

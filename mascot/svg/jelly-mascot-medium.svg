@@ -114,7 +114,7 @@
     <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="url(#jmm-rim)" stroke-width="5"/>
 
     <g class="jm-face">
-      <g stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+      <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
         <path d="M166 208C184 196 208 194 226 200"/>
         <path d="M346 208C328 196 304 194 286 200"/>
       </g>
@@ -157,8 +157,10 @@
           <path d="M282 256L302 236" stroke-width="9" opacity="0.55"/>
         </g>
       </g>
-      <path d="M234 332C242 346 266 346 274 332" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
-      <path d="M238 342C244 350 264 350 270 342" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+      <g class="jm-mouth">
+        <path d="M234 332C242 346 266 346 274 332" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
+        <path d="M238 342C244 350 264 350 270 342" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+      </g>
     </g>
 
     <g class="jm-bowtie">

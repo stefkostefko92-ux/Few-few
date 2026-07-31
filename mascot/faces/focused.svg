@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title">
+  <title id="jm-title">Изражение „съсредоточен" — сменяемите модули на лицето</title>
+  <!--
+    МОДУЛ НА ЛИЦЕТО, не самостоятелен асет. Съдържа точно трите сменяеми групи
+    (`jm-brows` · `jm-eyes` · `jm-mouth`) в координатите на маскота (512×512).
+    `node build.mjs` ги вгражда в базовия SVG и произвежда `svg/expressions/focused.svg`.
+    Очилата, тялото и шапката НЕ се пипат оттук — само лицето.
+  -->
+
+  <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M166 202C186 194 208 196 226 204"/>
+    <path d="M348 202C328 194 306 196 288 204"/>
+  </g>
+
+  <g class="jm-eyes">
+    <ellipse cx="200" cy="276" rx="34" ry="22" fill="var(--jm-eye, #F4FAEA)"/>
+    <ellipse cx="310" cy="276" rx="34" ry="22" fill="var(--jm-eye, #F4FAEA)"/>
+    <circle cx="204" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
+    <circle cx="314" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
+    <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
+      <circle cx="204" cy="278" r="15"/>
+      <circle cx="314" cy="278" r="15"/>
+    </g>
+    <g fill="var(--jm-white, #FFFFFF)">
+      <rect x="190" y="266" width="14" height="9" rx="4" transform="rotate(-24 197 270)"/>
+      <rect x="300" y="266" width="14" height="9" rx="4" transform="rotate(-24 307 270)"/>
+    </g>
+  </g>
+
+  <g class="jm-mouth">
+    <path d="M236 336C246 341 264 341 274 336" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
+  </g>
+</svg>

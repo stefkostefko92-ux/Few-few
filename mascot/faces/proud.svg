@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title">
+  <title id="jm-title">Изражение „уверен" — сменяемите модули на лицето</title>
+  <!--
+    МОДУЛ НА ЛИЦЕТО, не самостоятелен асет. Съдържа точно трите сменяеми групи
+    (`jm-brows` · `jm-eyes` · `jm-mouth`) в координатите на маскота (512×512).
+    `node build.mjs` ги вгражда в базовия SVG и произвежда `svg/expressions/proud.svg`.
+    Очилата, тялото и шапката НЕ се пипат оттук — само лицето.
+  -->
+
+  <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M164 194C182 180 208 178 226 188"/>
+    <path d="M348 208C330 196 304 194 286 200"/>
+  </g>
+
+  <g class="jm-eyes">
+    <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+    <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+    <circle cx="198" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+    <circle cx="308" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+    <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
+      <circle cx="198" cy="270" r="18"/>
+      <circle cx="308" cy="270" r="18"/>
+    </g>
+    <g fill="var(--jm-white, #FFFFFF)">
+      <rect x="181" y="250" width="17" height="12" rx="5" transform="rotate(-24 189 256)"/>
+      <rect x="291" y="250" width="17" height="12" rx="5" transform="rotate(-24 299 256)"/>
+    </g>
+  </g>
+
+  <g class="jm-mouth">
+    <path d="M230 336C242 350 266 348 278 326" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
+  </g>
+</svg>

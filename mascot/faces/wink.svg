@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title">
+  <title id="jm-title">Изражение „намигване" — сменяемите модули на лицето</title>
+  <!--
+    МОДУЛ НА ЛИЦЕТО, не самостоятелен асет. Съдържа точно трите сменяеми групи
+    (`jm-brows` · `jm-eyes` · `jm-mouth`) в координатите на маскота (512×512).
+    `node build.mjs` ги вгражда в базовия SVG и произвежда `svg/expressions/wink.svg`.
+    Очилата, тялото и шапката НЕ се пипат оттук — само лицето.
+  -->
+
+  <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M166 208C184 196 208 194 226 200"/>
+    <path d="M348 196C330 182 304 180 286 190"/>
+  </g>
+
+  <g class="jm-eyes">
+    <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+    <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+    <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
+      <circle cx="202" cy="276" r="18"/>
+    </g>
+    <g fill="var(--jm-white, #FFFFFF)">
+      <rect x="185" y="256" width="17" height="12" rx="5" transform="rotate(-24 193 262)"/>
+      <circle cx="211" cy="287" r="4" opacity="0.7"/>
+    </g>
+    <path d="M286 282C296 262 324 262 334 282" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="11" stroke-linecap="round"/>
+  </g>
+
+  <g class="jm-mouth">
+    <path d="M232 332C242 348 268 346 278 330" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
+    <path d="M238 342C244 350 262 349 268 340" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+  </g>
+</svg>

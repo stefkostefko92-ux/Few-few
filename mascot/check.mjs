@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { generate, generateAnimatedSvg, generateSocialCard, TIERS } from "./build.mjs";
+import { generate, generateAnimatedSvg, generateSocialCard, generateVariants, groupOf, partsOf, moduleNames, FACE_PARTS, POSE_PARTS, TIERS } from "./build.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const R = (p) => readFileSync(join(HERE, p), "utf8");
@@ -70,21 +70,6 @@ export function wellFormed(svg) {
   return stack.length ? `незатворен таг <${stack[stack.length - 1]}>` : null;
 }
 
-/** Групата с даден клас — суровият ѝ текст (за сравнение между нивата). */
-export function groupOf(svg, className) {
-  const i = String(svg).indexOf(`class="${className}"`);
-  if (i < 0) return null;
-  const start = String(svg).lastIndexOf("<", i);
-  let depth = 0;
-  const re = /<(\/?)g\b[^>]*>/g;
-  re.lastIndex = start;
-  for (let m; (m = re.exec(svg)); ) {
-    depth += m[1] ? -1 : 1;
-    if (depth === 0) return svg.slice(start, m.index + m[0].length);
-  }
-  return null;
-}
-
 /** Носещите кръгове на дадена част (радиус ≥ minR) като „cx,cy,r" — без цвят и без непрозрачност. */
 export function bearingCircles(fragment, minR) {
   return [...String(fragment).matchAll(/<circle((?:\s+[:\w-]+\s*=\s*"[^"]*")*)/g)]
@@ -94,12 +79,37 @@ export function bearingCircles(fragment, minR) {
 }
 
 /** Всички проверки върху вече прочетените файлове. Чиста функция — тества се без диск. */
-export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generatedCard, demo }) {
+export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generatedCard, generatedVariants, modules, demo }) {
   const fail = [];
   const palette = paletteOf(tokens);
 
   if (generatedAnimated && svgs["jelly-mascot-full-animated.svg"] !== generatedAnimated) {
     fail.push("svg/jelly-mascot-full-animated.svg се разминава с генерирания (пълно ниво + анимацията от tokens.css) — пусни `node build.mjs`");
+  }
+
+  for (const [rel, expected] of Object.entries(generatedVariants || {})) {
+    const key = rel.replace(/^svg\//, "");
+    if (svgs[key] !== expected) fail.push(`svg/${key} се разминава с генерирания от модула — пусни \`node build.mjs\``);
+  }
+
+  // Модулите на лицето/позата: пълен комплект части и НУЛА препратки към градиенти в лицето
+  // (компонентът подава изражението без `uid`; `url(#…)` там би сочило в празното).
+  for (const [name, text] of Object.entries(modules?.faces || {})) {
+    for (const part of FACE_PARTS) {
+      if (!groupOf(text, part)) fail.push(`faces/${name}.svg: липсва групата „${part}" — изражението е непълно`);
+    }
+    if (/url\(#/.test(text)) fail.push(`faces/${name}.svg: съдържа url(#…) — модулите на лицето нямат уникални id-та и препратката ще сочи в празното`);
+    for (const hex of new Set(hexes(text))) {
+      if (!paletteOf(tokens).has(hex)) fail.push(`faces/${name}.svg: цвят ${hex} липсва в tokens.json`);
+    }
+  }
+  for (const [name, text] of Object.entries(modules?.poses || {})) {
+    for (const part of POSE_PARTS) {
+      if (!groupOf(text, part)) fail.push(`poses/${name}.svg: липсва групата „${part}"`);
+    }
+    for (const hex of new Set(hexes(text))) {
+      if (!paletteOf(tokens).has(hex)) fail.push(`poses/${name}.svg: цвят ${hex} липсва в tokens.json`);
+    }
   }
 
   if (generatedCard && svgs["social-card.svg"] !== generatedCard) {
@@ -194,8 +204,21 @@ export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generat
   return fail;
 }
 
+/** Всички SVG-та в `svg/` (включително `expressions/` и `poses/`), с ключ спрямо `svg/`. */
+function allSvgs() {
+  const out = {};
+  for (const entry of readdirSync(join(HERE, "svg"), { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      for (const f of readdirSync(join(HERE, "svg", entry.name))) {
+        if (f.endsWith(".svg")) out[`${entry.name}/${f}`] = R(`svg/${entry.name}/${f}`);
+      }
+    } else if (entry.name.endsWith(".svg")) out[entry.name] = R(`svg/${entry.name}`);
+  }
+  return out;
+}
+
 function main() {
-  const svgs = Object.fromEntries(readdirSync(join(HERE, "svg")).filter((f) => f.endsWith(".svg")).map((f) => [f, R(`svg/${f}`)]));
+  const svgs = allSvgs();
   for (const t of TIERS) {
     if (!svgs[`jelly-mascot-${t}.svg`]) {
       console.error(`✗ липсва svg/jelly-mascot-${t}.svg`);
@@ -210,6 +233,11 @@ function main() {
     generated: generate(),
     generatedAnimated: generateAnimatedSvg(),
     generatedCard: generateSocialCard(),
+    generatedVariants: generateVariants(),
+    modules: {
+      faces: Object.fromEntries(moduleNames("faces").map((n) => [n, R(`faces/${n}.svg`)])),
+      poses: Object.fromEntries(moduleNames("poses").map((n) => [n, R(`poses/${n}.svg`)])),
+    },
     demo: R("demo/index.html"),
   });
 
@@ -220,7 +248,7 @@ function main() {
     for (const f of fail) console.error(`  • ${f}`);
     console.error("");
   } else {
-    console.log(`✓ маскот: ${Object.keys(svgs).length} SVG · компонентът е в синхрон · палитрата е чиста · достъпност и правила за консистентност са спазени`);
+    console.log(`✓ маскот: ${Object.keys(svgs).length} SVG (${moduleNames("faces").length} изражения · ${moduleNames("poses").length} пози) · компонентът е в синхрон · палитрата е чиста · достъпност и правила за консистентност са спазени`);
   }
   process.exit(fail.length ? 1 : 0);
 }

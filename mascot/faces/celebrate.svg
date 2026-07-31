@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title">
+  <title id="jm-title">Изражение „празнуващ" — сменяемите модули на лицето</title>
+  <!--
+    МОДУЛ НА ЛИЦЕТО, не самостоятелен асет. Съдържа точно трите сменяеми групи
+    (`jm-brows` · `jm-eyes` · `jm-mouth`) в координатите на маскота (512×512).
+    `node build.mjs` ги вгражда в базовия SVG и произвежда `svg/expressions/celebrate.svg`.
+    Очилата, тялото и шапката НЕ се пипат оттук — само лицето.
+  -->
+
+  <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M164 186C182 170 208 168 226 178"/>
+    <path d="M348 186C330 170 304 168 286 178"/>
+  </g>
+
+  <g class="jm-eyes">
+    <g fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="12" stroke-linecap="round">
+      <path d="M172 286C184 260 216 260 228 286"/>
+      <path d="M282 286C294 260 326 260 338 286"/>
+    </g>
+    <g fill="var(--jm-white, #FFFFFF)" opacity="0.5">
+      <circle cx="180" cy="274" r="3.4"/>
+      <circle cx="290" cy="274" r="3.4"/>
+    </g>
+  </g>
+
+  <g class="jm-mouth">
+    <path d="M224 326C232 366 276 366 284 326C264 334 244 334 224 326Z" fill="var(--jm-ink, #0A0C0A)"/>
+    <path d="M238 350C244 360 264 360 270 350C260 346 248 346 238 350Z" fill="var(--jm-olive, #99E72A)" opacity="0.55"/>
+  </g>
+</svg>

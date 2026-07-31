@@ -12,7 +12,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { jsxAttrName, jsxAttrValue, svgBodyToJsx, animationCss, animatedSvg, socialCard, generate, generateAnimatedSvg, generateSocialCard } from "./build.mjs";
-import { hexes, paletteOf, wellFormed, groupOf, bearingCircles, audit, FORBIDDEN } from "./check.mjs";
+import { hexes, paletteOf, wellFormed, bearingCircles, audit, FORBIDDEN } from "./check.mjs";
+import { groupOf, partsOf, compose, moduleNames, FACE_PARTS } from "./build.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const R = (p) => readFileSync(join(HERE, p), "utf8");
@@ -146,6 +147,56 @@ test("audit: лови ръчно пипната социална карта", ()
   const base = { tsx: R("react/JellyMascot.tsx"), tokens: R("tokens.json"), generated: generate(), generatedAnimated: generateAnimatedSvg(), generatedCard: generateSocialCard() };
   const tampered = { ...svgs, "social-card.svg": svgs["social-card.svg"].replace('width="1200"', 'width="1201"') };
   assert.ok(audit({ ...base, svgs: tampered }).some((f) => /social-card/.test(f)));
+});
+
+test("groupOf/partsOf/compose: сменят части, без да пипат останалото", () => {
+  const base = '<svg>\n  <g class="jm-eyes"><circle r="1"/></g>\n  <g class="jm-mouth"><path d="A"/></g>\n</svg>';
+  assert.match(groupOf(base, "jm-eyes"), /circle/);
+  assert.equal(groupOf(base, "jm-nope"), null);
+  const out = compose(base, { "jm-eyes": '<g class="jm-eyes"><rect/></g>' });
+  assert.match(out, /<rect\/>/);
+  assert.match(out, /class="jm-mouth"/);
+  assert.doesNotMatch(out, /circle/);
+  assert.throws(() => partsOf("<svg/>", FACE_PARTS), /няма група/);
+});
+
+test("compose: пренасочва градиента към префикса на нивото", () => {
+  const out = compose('<svg><g class="jm-arms"/></svg>'.replace("/>", "></g>"), { "jm-arms": '<g class="jm-arms" stroke="url(#jm-body)"/>' }, "jmm");
+  assert.match(out, /url\(#jmm-body\)/);
+});
+
+test("audit: лови непълен модул на лицето и url(#…) в него", () => {
+  const svgs = Object.fromEntries(readdirSync(join(HERE, "svg")).filter((f) => f.endsWith(".svg")).map((f) => [f, R(`svg/${f}`)]));
+  const tokens = R("tokens.json");
+  const broken = audit({
+    svgs,
+    tsx: R("react/JellyMascot.tsx"),
+    tokens,
+    generated: generate(),
+    modules: { faces: { broken: '<svg><g class="jm-brows"/><g class="jm-eyes" fill="url(#jm-core)"/></svg>' }, poses: {} },
+  });
+  assert.ok(broken.some((f) => /липсва групата „jm-mouth"/.test(f)));
+  assert.ok(broken.some((f) => /url\(#…\)/.test(f)));
+});
+
+test("audit: лови ръчно пипнат вариант (изражение/поза)", () => {
+  const svgs = Object.fromEntries(readdirSync(join(HERE, "svg")).filter((f) => f.endsWith(".svg")).map((f) => [f, R(`svg/${f}`)]));
+  const fail = audit({
+    svgs: { ...svgs, "expressions/happy.svg": "<svg/>" },
+    tsx: R("react/JellyMascot.tsx"),
+    tokens: R("tokens.json"),
+    generated: generate(),
+    generatedVariants: { "svg/expressions/happy.svg": "<svg>друго</svg>" },
+  });
+  assert.ok(fail.some((f) => /expressions\/happy\.svg се разминава/.test(f)));
+});
+
+test("модулите на лицето са пълни и без препратки", () => {
+  for (const name of moduleNames("faces")) {
+    const svg = R(`faces/${name}.svg`);
+    assert.deepEqual(Object.keys(partsOf(svg, FACE_PARTS)), FACE_PARTS, `${name}: непълен модул`);
+    assert.doesNotMatch(svg, /url\(#/, `${name}: препратка към градиент в модул на лицето`);
+  }
 });
 
 test("audit: лови липсваща достъпност", () => {

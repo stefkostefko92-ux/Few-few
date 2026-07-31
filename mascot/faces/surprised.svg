@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title">
+  <title id="jm-title">Изражение „изненадан" — сменяемите модули на лицето</title>
+  <!--
+    МОДУЛ НА ЛИЦЕТО, не самостоятелен асет. Съдържа точно трите сменяеми групи
+    (`jm-brows` · `jm-eyes` · `jm-mouth`) в координатите на маскота (512×512).
+    `node build.mjs` ги вгражда в базовия SVG и произвежда `svg/expressions/surprised.svg`.
+    Очилата, тялото и шапката НЕ се пипат оттук — само лицето.
+  -->
+
+  <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M164 190C182 174 208 172 226 180"/>
+    <path d="M348 190C330 174 304 172 286 180"/>
+  </g>
+
+  <g class="jm-eyes">
+    <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+    <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+    <circle cx="201" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
+    <circle cx="311" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
+    <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="2.5" opacity="0.55">
+      <circle cx="201" cy="273" r="11.5"/>
+      <circle cx="311" cy="273" r="11.5"/>
+    </g>
+    <g fill="var(--jm-white, #FFFFFF)">
+      <rect x="189" y="260" width="13" height="9" rx="4" transform="rotate(-24 195 264)"/>
+      <rect x="299" y="260" width="13" height="9" rx="4" transform="rotate(-24 305 264)"/>
+    </g>
+  </g>
+
+  <g class="jm-mouth">
+    <ellipse cx="254" cy="340" rx="13" ry="16" fill="var(--jm-ink, #0A0C0A)"/>
+    <ellipse cx="254" cy="349" rx="7" ry="6" fill="var(--jm-olive, #99E72A)" opacity="0.35"/>
+  </g>
+</svg>
