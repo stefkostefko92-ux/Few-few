@@ -5786,7 +5786,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 149
+        "lessons": 151
       },
       "evolution": [
         {
@@ -6178,9 +6178,20 @@
           "date": "2026-07-31",
           "event": "v16.0 — учене",
           "detail": "Научи: В autodeploy.sh шаблонът `p=\\\"$(grep -E '^VAR=' .env | head -1 | cut -d= -f2)\\\"` под `s… (+2 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-07-31",
+          "event": "v16.2 — учене",
+          "detail": "Научи: DoD гейтът на VPS слоя е `node tools/vps/deploy-check.mjs <файл…>`; приема няколко файл… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „DoD гейтът на VPS слоя е `node tools/vps/deploy-check.mjs <файл…>`; приема няколко файл…\" (+1 още)"
+        },
         {
           "date": "2026-07-31",
           "type": "learning",
