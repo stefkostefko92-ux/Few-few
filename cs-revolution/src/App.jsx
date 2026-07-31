@@ -74,6 +74,14 @@ var LANGS = {
   lab_b1: { it: "Scansione e ricostruzione CAD di parti meccaniche", en: "Scanning and CAD reconstruction of mechanical parts", bg: "\u0421\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435 \u0438 CAD \u0440\u0435\u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f \u043d\u0430 \u043c\u0435\u0445\u0430\u043d\u0438\u0447\u043d\u0438 \u0447\u0430\u0441\u0442\u0438" },
   lab_b2: { it: "Stampa 3D: prototipi, ricambi, piccole serie (FDM)", en: "3D printing: prototypes, spare parts, small batches (FDM)", bg: "3D \u043f\u0435\u0447\u0430\u0442: \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0438, \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0438 \u0447\u0430\u0441\u0442\u0438, \u043c\u0430\u043b\u043a\u0438 \u0441\u0435\u0440\u0438\u0438 (FDM)" },
   lab_b3: { it: "Analisi di protocolli, firmware e dispositivi embedded", en: "Protocol, firmware and embedded device analysis", bg: "\u0410\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0438, \u0444\u044a\u0440\u043c\u0443\u0435\u0440 \u0438 embedded \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430" },
+  // Carbon attribute strip (Reverse Lab) — icon labels
+  lab_at1: { it: "Fibra di carbonio", en: "Carbon fiber", bg: "\u0412\u044a\u0433\u043b\u0435\u0440\u043e\u0434\u043d\u0438 \u0432\u043b\u0430\u043a\u043d\u0430" },
+  lab_at2: { it: "Leggero", en: "Lightweight", bg: "\u041b\u0435\u043a\u043e" },
+  lab_at3: { it: "Resistenza", en: "Strength", bg: "\u0417\u0434\u0440\u0430\u0432\u0438\u043d\u0430" },
+  lab_at4: { it: "Protezione", en: "Protection", bg: "\u0417\u0430\u0449\u0438\u0442\u0430" },
+  lab_at5: { it: "Automotive", en: "Automotive", bg: "Automotive" },
+  lab_at6: { it: "Performance", en: "Performance", bg: "Performance" },
+  lab_at7: { it: "Installazione", en: "Installation", bg: "\u041c\u043e\u043d\u0442\u0430\u0436" },
   lab_cta: { it: "PORTACI IL PEZZO \u2192", en: "BRING US THE PART \u2192", bg: "\u0414\u041e\u041d\u0415\u0421\u0418 \u041d\u0418 \u0427\u0410\u0421\u0422\u0422\u0410 \u2192" },
   // ── COVERAGE ──
   cov_tag: { it: "// COPERTURA", en: "// COVERAGE", bg: "// \u041f\u041e\u041a\u0420\u0418\u0422\u0418\u0415" },
@@ -3035,6 +3043,17 @@ export default function App(){
             })}
             <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"none",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
           </div>
+        </div>
+
+        {/* Carbon attribute strip — what a finished carbon part actually is.
+            Icons are lazy + explicitly sized so they can't shift layout. */}
+        <div className="cs-attr-strip" style={{marginTop:28,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(96px,1fr))",gap:2,border:"1px solid rgba(245,245,240,.06)"}}>
+          {[["carbon","lab_at1"],["leggero","lab_at2"],["resistenza","lab_at3"],["protezione","lab_at4"],["automotive","lab_at5"],["performance","lab_at6"],["installazione","lab_at7"]].map(function(a){
+            return <div key={a[0]} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:"18px 8px",borderRight:"1px solid rgba(245,245,240,.04)"}}>
+              <img src={"/icons/"+a[0]+".webp"} alt="" width={56} height={56} loading="lazy" decoding="async" style={{width:56,height:56,objectFit:"contain"}}/>
+              <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".18em",color:INK2,textTransform:"uppercase",textAlign:"center",lineHeight:1.5}}>{t(a[1])}</span>
+            </div>
+          })}
         </div>
       </section>
 
