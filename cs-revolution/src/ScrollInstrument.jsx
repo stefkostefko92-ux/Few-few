@@ -97,6 +97,7 @@ export default function ScrollInstrument() {
   var glowRef = useRef(null);
   var biteRef = useRef(null);
   var valueRef = useRef(null);
+  var readoutRef = useRef(null);
   var sectionTextRef = useRef(null);
   // Last known depth/velocity, kept OUTSIDE the effect below so a compact
   // (mobile breakpoint) state change — which re-renders this component and
@@ -127,6 +128,7 @@ export default function ScrollInstrument() {
       if (fillRef.current) fillRef.current.style.height = pct + "%";
       if (indicatorRef.current) indicatorRef.current.style.top = pct + "%";
       if (valueRef.current) valueRef.current.textContent = (depth * 100).toFixed(1);
+      if (readoutRef.current) readoutRef.current.style.opacity = depth > 0.015 ? '1' : '0';
       var v = velocity || 0;
       if (glowRef.current) {
         var alpha = Math.min(1, 0.22 + v * 0.65);
@@ -286,6 +288,7 @@ export default function ScrollInstrument() {
     if (fillRef.current) fillRef.current.style.height = pct + "%";
     if (indicatorRef.current) indicatorRef.current.style.top = pct + "%";
     if (valueRef.current) valueRef.current.textContent = (d * 100).toFixed(1);
+    if (readoutRef.current) readoutRef.current.style.opacity = d > 0.015 ? '1' : '0';
     if (glowRef.current) {
       var alpha = Math.min(1, 0.22 + v * 0.65);
       glowRef.current.style.opacity = alpha.toFixed(2);
@@ -378,10 +381,14 @@ export default function ScrollInstrument() {
               boxShadow: "0 0 3px rgba(" + CR + ",.5)"
             }}
           />
+          {/* Hidden at the very top: nothing is measured yet, and it would sit
+              on top of the hero's blueprint coordinates. Fades in on scroll. */}
           <div
+            ref={readoutRef}
             style={{
               position: "absolute", right: (compact ? 20 : 26), top: 0, transform: "translateY(-50%)",
-              textAlign: "right", whiteSpace: "nowrap"
+              textAlign: "right", whiteSpace: "nowrap",
+              opacity: 0, transition: "opacity .35s " + EASE
             }}
           >
             {!compact && (
