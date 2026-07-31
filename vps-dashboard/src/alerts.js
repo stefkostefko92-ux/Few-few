@@ -20,6 +20,7 @@ import { restartCounts, detectFlapping, domainExpiry, registrableDomain } from '
 import { overview as redisOverview, evictionChecks } from './redis.js';
 import { safePath } from './accesslog.js';
 import { exposureMap, portChecks } from './ports.js';
+import { saveConfig } from './config.js';
 
 export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic }) {
@@ -45,6 +46,7 @@ export class AlertEngine {
     // Здраве на каналите: последният опит за доставка. Аларма, която е излязла
     // от двигателя, но не е стигнала до никого, е равна на липсваща аларма.
     this.notifyHealth = null;
+    this.saveConfig = saveConfig; // за самоизтичащата поддръжка
     this.load();
   }
 
@@ -102,6 +104,18 @@ export class AlertEngine {
   silences() {
     const now = Date.now();
     return (this.cfg.alerts?.silences || []).filter((s) => s?.key && Number(s.until) > now);
+  }
+
+  // Режим „поддръжка": срочна пауза на ИЗВЕСТИЯТА за всичко. Алармите
+  // продължават да се смятат и да се виждат — спира само изходящото. Разликата
+  // със заглушаването: то е по ключ и хирургично; поддръжката е „работя по
+  // сървъра, не ми пращай вълната". Съзнателно БЕЗ sudo — обратимо, видимо
+  // (банер в панела), срочно (таван 8 часа) и одитирано, като заглушаването.
+  maintenance() {
+    const m = this.cfg.alerts?.maintenance;
+    if (!m?.until) return null;
+    if (Number(m.until) <= Date.now()) return null;
+    return m;
   }
 
   // ТОЧНО съвпадение по подразбиране. Мълчаливото съвпадение по префикс беше
@@ -984,7 +998,32 @@ export class AlertEngine {
     // Мъртвецът-ключ: външният наблюдател чака този пинг. Спре ли — вдига
     // тревога ВМЕСТО нас. Това е единствената защита срещу тихо умрял панел.
     this.ping({ ok: true });
+    await this.expireMaintenance();
     return { firing: this.listActive(), events };
+  }
+
+  // Изтекла поддръжка се чисти САМА и завършва с обобщение — човекът, който е
+  // забравил да я изключи, получава точно съобщението „приключи; ето какво е
+  // активно", а не вечна тишина.
+  async expireMaintenance() {
+    const m = this.cfg.alerts?.maintenance;
+    if (!m?.until || Number(m.until) > Date.now()) return;
+    const active = this.listActive();
+    const worst = active.filter((a) => a.severity === 'critical').length;
+    const suppressed = this.maintSuppressed || 0;
+    this.maintSuppressed = 0;
+    try {
+      this.saveConfig?.(this.cfg, { alerts: { ...this.cfg.alerts, maintenance: null } });
+    } catch {
+      this.cfg.alerts.maintenance = null;
+    }
+    this.audit?.log({ action: 'alerts.maintenance.expired', suppressed });
+    await this.event({
+      key: 'maintenance:done',
+      severity: worst ? 'critical' : 'info',
+      title: 'Поддръжката приключи',
+      body: `Потиснати известия: ${suppressed}. Активни аларми сега: ${active.length} (критични: ${worst}).${worst ? ' Виж панела.' : ''}`,
+    });
   }
 
   // Еднократно известие извън правилата (напр. провалена задача/деплой).
@@ -1005,6 +1044,17 @@ export class AlertEngine {
     this.log.push(entry);
     if (this.log.length > 200) this.log.shift();
     this.audit?.log({ action: `alert.${ev.type}`, key: ev.key, severity: ev.severity, title: ev.title });
+
+    // Поддръжка: НИЩО не тръгва навън (вкл. „възстановено" — след края
+    // обобщението казва какво е активно). Мъртвецът-ключ НЕ минава оттук —
+    // пингът към външния наблюдател продължава: поддръжката спира шума към
+    // човека, не пулса на пазача.
+    if (this.maintenance() && ev.type !== 'test') {
+      entry.maintenance = true;
+      entry.sent = [];
+      this.maintSuppressed = (this.maintSuppressed || 0) + 1;
+      return entry;
+    }
 
     // Заглушено: остава в дневника и в панела, само известието не тръгва.
     // Тихо изхвърляне без следа е начинът да не разбереш, че си сляп.

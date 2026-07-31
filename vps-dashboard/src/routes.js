@@ -1783,6 +1783,44 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Режим „поддръжка" ──────────────────────────────────────────────────────
+  r.get('/api/alerts/maintenance', guard(J(() => ({ maintenance: ctx.alerts.maintenance() }))));
+  r.post(
+    '/api/alerts/maintenance',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const minutes = Number(b.minutes);
+        // Таван 8 часа: поддръжка без край е начинът да забравиш, че си сляп —
+        // същото правило като при заглушаването (макс 7 дни, но там е по ключ).
+        if (!Number.isInteger(minutes) || minutes < 5 || minutes > 8 * 60) {
+          throw Object.assign(new Error('Продължителността е цяло число 5–480 минути'), { status: 400 });
+        }
+        const reason = String(b.reason || '').slice(0, 140);
+        const m = { until: Date.now() + minutes * 60000, reason, startedAt: Date.now(), user: req.user };
+        saveConfig(cfg, { alerts: { ...cfg.alerts, maintenance: m } });
+        ctx.alerts.maintSuppressed = 0;
+        audit.log({ action: 'alerts.maintenance.start', minutes, reason, user: req.user });
+        return { maintenance: m };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/alerts/maintenance/end',
+    guard(
+      J(async (req) => {
+        if (!cfg.alerts?.maintenance) return { maintenance: null };
+        // Ранният край минава по СЪЩИЯ път като изтичането — с обобщение.
+        cfg.alerts.maintenance.until = Date.now() - 1;
+        await ctx.alerts.expireMaintenance();
+        audit.log({ action: 'alerts.maintenance.end', user: req.user });
+        return { maintenance: null };
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Бекъп на САМИЯ панел ───────────────────────────────────────────────────
   r.get(
     '/api/backups/panel',

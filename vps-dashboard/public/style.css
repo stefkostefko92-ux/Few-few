@@ -345,3 +345,9 @@ tr.row-before td { background: rgba(255, 180, 84, 0.05); }
 }
 .lang-btn:hover { color: var(--txt); }
 .lang-btn.active { background: var(--panel); color: var(--txt); }
+
+/* ── Банер „поддръжка" ───────────────────────────────── */
+.maint-banner {
+  background: #3a2c12; color: var(--warn); padding: 8px 20px; font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}

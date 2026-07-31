@@ -405,6 +405,32 @@ function setConnStatus(status) {
 // през el()/toast() в ui.js. Смяната презарежда — виж i18n.js защо.
 document.documentElement.lang = getLang();
 translateDom(document.body);
+
+// Банер „поддръжка" — вижда се от ВСЯКА секция, не само от „Аларми". Опреснява
+// се на минута: банер, който остава след края, подвежда точно колкото липсващ.
+{
+  const banner = el('div', { id: 'maint-banner', class: 'maint-banner hidden' });
+  document.querySelector('.topbar')?.after(banner);
+  const refresh = async () => {
+    try {
+      const r = await api('/alerts/maintenance');
+      const m = r.maintenance;
+      banner.classList.toggle('hidden', !m);
+      if (m) {
+        banner.innerHTML = '';
+        banner.appendChild(el('span', { text:
+          `🔧 ${t('Режим „поддръжка" до')} ${new Date(m.until).toLocaleTimeString(langTagSafe())}` +
+          `${m.reason ? ` · ${m.reason}` : ''} — ${t('известията са на пауза, алармите се смятат')}` }));
+      }
+    } catch { /* невписан/мрежа — банерът не е критичен */ }
+  };
+  setInterval(refresh, 60000);
+  window.__refreshMaintBanner = refresh;
+  setTimeout(refresh, 1500);
+}
+function langTagSafe() {
+  return { bg: 'bg-BG', en: 'en-GB', it: 'it-IT' }[getLang()] || 'bg-BG';
+}
 {
   const wrap = el('div', { class: 'lang-switch', role: 'group', 'aria-label': 'Език / Language / Lingua' },
     languages().map((l) =>
@@ -985,10 +1011,56 @@ function awaitPill(ms) {
 }
 
 // ── Аларми ────────────────────────────────────────────────────────────────────
+// Режим „поддръжка" — пауза на ИЗВЕСТИЯТА, докато работиш по сървъра. Алармите
+// продължават да се смятат и виждат; спира само вълната към телефона.
+function maintenanceCard(m) {
+  const minutes = el('input', { type: 'number', min: '5', max: '480', value: '30', style: 'width:90px' });
+  const reason = el('input', { type: 'text', placeholder: 'причина (напр. деплой)', style: 'max-width:240px' });
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Режим „поддръжка"' }),
+      m ? pill('warn', `до ${new Date(m.until).toLocaleTimeString(langTagSafe())}`) : pill('dim', 'изключен'),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Пауза на ИЗВЕСТИЯТА за всичко (макс 8 часа) — алармите продължават да се смятат и да се виждат тук. ' +
+      'За разлика от заглушаването (по ключ), това е „работя по сървъра, не ми пращай вълната". ' +
+      'Мъртвецът-ключ продължава да пинга. След края идва обобщение какво е активно.' }),
+    m
+      ? el('div', { class: 'toolbar' }, [
+          el('span', { class: 'metric-sub', text: m.reason ? `Причина: ${m.reason}` : '' }),
+          el('span', { class: 'grow' }),
+          el('button', {
+            class: 'btn btn-primary btn-sm', text: '✓ Приключи сега (с обобщение)',
+            onclick: async () => {
+              try { await api('/alerts/maintenance/end', { method: 'POST' }); toast('Поддръжката приключи'); window.__refreshMaintBanner?.(); go('alerts'); }
+              catch (e) { toast(e.message, 'bad'); }
+            },
+          }),
+        ])
+      : el('div', { class: 'toolbar' }, [
+          el('label', { class: 'inline' }, [minutes, el('span', { text: ' минути' })]),
+          reason,
+          el('span', { class: 'grow' }),
+          el('button', {
+            class: 'btn btn-sm', text: '🔧 Започни поддръжка',
+            onclick: async () => {
+              try {
+                await api('/alerts/maintenance', { method: 'POST', body: { minutes: Number(minutes.value), reason: reason.value } });
+                toast('Известията са на пауза');
+                window.__refreshMaintBanner?.();
+                go('alerts');
+              } catch (e) { toast(e.message, 'bad'); }
+            },
+          }),
+        ]),
+  ]);
+}
+
 async function renderAlerts() {
   const view = document.getElementById('view');
-  const a = await api('/alerts');
+  const [a, maint] = await Promise.all([api('/alerts'), api('/alerts/maintenance').catch(() => ({ maintenance: null }))]);
   view.innerHTML = '';
+  view.appendChild(maintenanceCard(maint.maintenance));
 
   const chNames = { telegram: 'Telegram', ntfy: 'ntfy', webhook: 'Webhook', email: 'Имейл' };
   const anyChannel = Object.values(a.channels).some(Boolean);
