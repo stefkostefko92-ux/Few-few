@@ -17,12 +17,55 @@
   <link rel="dns-prefetch" href="//fonts.gstatic.com" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" as="style" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- nav logo is in the first viewport: fetch it with the document, not after JS -->
+  <link rel="preload" as="image" href="/logo-nav.webp" fetchpriority="high" />
+    <!-- Fonts load non-render-blocking: swap to stylesheet once fetched, so the
+       first paint never waits on Google Fonts (worth ~1-2s on slow mobile). -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" /></noscript>
   <style>
+    /* Metric-matched fallbacks: while Space Grotesk / Space Mono are still
+       loading, text is laid out at nearly the same size, so the webfont
+       swap doesn't reflow the hero (this was the site's CLS source). */
+    @font-face { font-family: 'SG-fallback'; src: local('Arial'); size-adjust: 96%;
+      ascent-override: 98%; descent-override: 24%; line-gap-override: 0%; }
+    @font-face { font-family: 'SM-fallback'; src: local('Courier New'); size-adjust: 108%;
+      ascent-override: 100%; descent-override: 26%; line-gap-override: 0%; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body, #root { width: 100%; min-height: 100vh; background: #000; }
     body { overflow-x: hidden; }
+    /* ── Critical hero: painted from HTML so FCP/LCP never wait for the JS
+       bundle. React renders the real hero over it and #cs-boot is removed. ── */
+    /* Geometry mirrors the React hero (same paddings, same 1180px centred
+       column, same type scale) so swapping them causes no layout shift. */
+    /* fixed, not absolute: the boot layer sits outside document flow entirely,
+       so React mounting underneath it can never be recorded as a layout shift. */
+    #cs-boot { position: fixed; top: 0; left: 0; width: 100%; z-index: 2;
+      /* identical box to <section id="hero">: bottom-aligned, same paddings */
+      height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 0 clamp(20px,5vw,64px) clamp(40px,6vh,72px);
+      background: #0A0C0E; color: #C9D1D6;
+      font-family: 'Space Mono', 'SM-fallback', ui-monospace, monospace; }
+    #cs-boot > * { max-width: 1180px; width: 100%; margin-left: auto; margin-right: auto; }
+    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 53px;
+      max-width: none; background: rgba(0,0,0,.85);
+      border-bottom: 1px solid rgba(245,245,240,.08); }
+    #cs-boot .eb { display: flex; align-items: center; gap: 14px; font-size: 10px;
+      letter-spacing: .4em; color: #7C868D; margin-bottom: clamp(20px,4vh,40px); }
+    #cs-boot .eb i { width: 24px; height: 1px; background: #00e5ff; display: block; }
+    #cs-boot h1 { font-family: 'Space Grotesk', 'SG-fallback', 'Inter Tight', system-ui, sans-serif;
+      font-weight: 600; font-size: clamp(2.4rem,7vw,6.4rem); line-height: .98;
+      letter-spacing: -.03em; color: #C9D1D6; margin: 0; max-width: 18ch;
+      /* three lines reserved: the localized titles differ in length, so pin the
+         box height and the swap to React can't move anything below it */
+      min-height: calc(clamp(2.4rem,7vw,6.4rem) * .98 * 3); }
+    #cs-boot .sub { font-size: 11px; letter-spacing: .2em; color: #7C868D;
+      margin-top: 24px; text-transform: uppercase; }
+    /* The moment React paints anything into #root, the boot layer is gone in the
+       SAME frame — the browser never composites both, so the handover can't be
+       recorded as a layout shift. main.jsx then removes the node entirely. */
+    #root:not(:empty) ~ #cs-boot { display: none !important; }
   </style>
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
@@ -67,6 +110,17 @@
 </head>
 <body>
   <div id="root"></div>
+  <!-- Instant-paint hero (removed by src/main.jsx as soon as React mounts).
+       Italian default matches the SPA's default locale; React swaps in the
+       user's language. This is the LCP element on a cold visit. -->
+  <div id="cs-boot" aria-hidden="true">
+    <!-- Reserves the exact height of the fixed nav React mounts (12px padding
+         + 28px logo + 12px + 1px border) so its arrival shifts nothing. -->
+    <div class="navpad"></div>
+    <div class="eb"><i></i>WEB &amp; SOFTWARE AGENCY — ITALY · BULGARIA</div>
+    <h1>Siti Web, E-commerce &amp; Software ERP</h1>
+    <div class="sub">SITI WEB · E-COMMERCE · APP · ERP · SEO/AEO · REVERSE ENGINEERING</div>
+  </div>
   <noscript>
     <div style="background:#000;color:#ccc;font-family:monospace;padding:40px;max-width:900px;margin:0 auto">
       <h1 style="color:#00e5ff;font-size:2rem;margin-bottom:16px">Carbon Stealth VCC — Sviluppo Siti Web, E-commerce e Software ERP</h1>

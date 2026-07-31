@@ -168,6 +168,17 @@ export default function HeroSignature() {
     var mounted = true;
     var cleanup = null;
 
+    // Defer the three.js chunk (~164 KB gzip) until the browser is idle, i.e.
+    // AFTER first paint / LCP. The CSS poster below carries the hero until then,
+    // so the signature effect still arrives — just without blocking the paint.
+    var idleId = null, idleTimer = null;
+    function whenIdle(fn) {
+      if (typeof requestIdleCallback === "function") idleId = requestIdleCallback(fn, { timeout: 2500 });
+      else idleTimer = setTimeout(fn, 1200);
+    }
+
+    whenIdle(function () {
+    if (!mounted) return;
     import("three").then(function (THREE) {
       if (!mounted || !el) return;
 
@@ -328,8 +339,14 @@ export default function HeroSignature() {
         if (el && el.contains(canvas)) el.removeChild(canvas);
       };
     });
+    });
 
-    return function () { mounted = false; if (cleanup) cleanup(); };
+    return function () {
+      mounted = false;
+      if (idleId && typeof cancelIdleCallback === "function") cancelIdleCallback(idleId);
+      if (idleTimer) clearTimeout(idleTimer);
+      if (cleanup) cleanup();
+    };
   }, []);
 
   // aria-hidden host, absolutely positioned behind hero copy (zIndex 1 —

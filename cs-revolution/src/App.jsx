@@ -1375,8 +1375,8 @@ const INK2 = "#7C868D";    // muted label/meta
 const WARN = "#FF6A3D";    // single warm "out-of-tolerance" signal, used rarely
 const LINE = "rgba(201,209,214,.08)"; // hairline furniture
 const EASE = "cubic-bezier(.22,1,.36,1)"; // one decisive ease-out, sitewide
-const DISP = "'Space Grotesk','Inter Tight',-apple-system,sans-serif"; // neo-grotesque display voice
-const MONO = "'Space Mono',ui-monospace,monospace"; // the instruments — dimensions, tolerances
+const DISP = "'Space Grotesk','SG-fallback','Inter Tight',-apple-system,sans-serif"; // neo-grotesque display voice
+const MONO = "'Space Mono','SM-fallback',ui-monospace,monospace"; // the instruments — dimensions, tolerances
 
 // ══════════ SYNTH ══════════
 // Audio removed
@@ -2827,7 +2827,7 @@ export default function App(){
 
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba(245,245,240,.08)",background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo.png" alt="Carbon Stealth VCC" style={{height:28,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={66} height={28} fetchPriority="high" decoding="async" style={{height:28,width:66,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
         <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"none",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{fps}FPS</span>
@@ -2843,7 +2843,7 @@ export default function App(){
       {/* MOBILE MENU OVERLAY */}
       <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24,backdropFilter:"blur(12px)"}}>
         <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},"Close menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>\u2715</div>
-        <img src="/logo.png" alt="CS" style={{height:36,marginBottom:12}}/>
+        <img src="/logo.png" alt="CS" width={85} height={36} style={{height:36,width:85,marginBottom:12}}/>
         {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
         <a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} className="cs-mobile-menu-item" style={{fontSize:13,letterSpacing:".3em",color:C,padding:"14px 32px",border:"1px solid rgba("+CR+",.3)",minWidth:220,textAlign:"center",textDecoration:"none"}}>{t("nav_test")}</a>
         <div style={{display:"flex",gap:6,marginTop:12}}>{["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:10,padding:"6px 12px",border:"1px solid "+(lang===l?"rgba("+CR+",.4)":"rgba(245,245,240,.08)"),background:lang===l?"rgba("+CR+",.12)":"transparent",color:lang===l?C:"#ccc"}}>{l.toUpperCase()}</span>})}</div>
@@ -3152,7 +3152,7 @@ export default function App(){
           {/* Brand column */}
           <div>
             <div style={{marginBottom:16}}>
-              <img src="/logo.png" alt="Carbon Stealth VCC" style={{height:40,objectFit:"contain",filter:"drop-shadow(0 0 8px rgba(0,229,255,0.25))"}}/>
+              <img src="/logo.png" alt="Carbon Stealth VCC" width={94} height={40} loading="lazy" style={{height:40,width:94,objectFit:"contain",filter:"drop-shadow(0 0 8px rgba(0,229,255,0.25))"}}/>
             </div>
             <p style={{fontSize:10,lineHeight:1.9,color:"#ddd",maxWidth:280,marginBottom:16}}>{t("ft_desc")}</p>
             <div style={{display:"flex",gap:10}}>
