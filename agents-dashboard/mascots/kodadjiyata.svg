@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Кодаджията">
+  <title>Кодаджията — Ревюър на код и ловец на бъгове</title>
+  <defs>
+    <radialGradient id="body-kodadjiyata" cx="30%" cy="25%" r="70%">
+      <stop offset="0%" stop-color="#a8d6c3"/>
+      <stop offset="45%" stop-color="#2f9e6f"/>
+      <stop offset="100%" stop-color="#18523a"/>
+    </radialGradient>
+    <filter id="glow-kodadjiyata" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Ореолът е ОТДЕЛЕН силует под тялото: филтър върху цялата фигура размазва и тъмните части. -->
+  <path d="M256 96 C336 96 398 158 404 236 C412 336 350 448 256 448 C162 448 100 336 108 236 C114 158 176 96 256 96Z" fill="#2f9e6f" filter="url(#glow-kodadjiyata)" opacity=".55"/>
+  <ellipse cx="256" cy="452" rx="126" ry="18" fill="#2f9e6f" opacity=".25"/>
+
+  <!-- Ръка + реквизит. Реквизитът се рисува в локална кутия 0..120 и се поставя ВЕДНЪЖ.
+       Мащабът и отместването са подбрани така, че да е ИЗВЪН силуета на тялото (то стига до x≈404)
+       и вътре в платното (макс. x = 392 + 120·0.82 ≈ 490) — първата версия го оставяше да пронизва корема. -->
+  <path d="M382 322 q26 -6 42 -22" fill="none" stroke="#227250" stroke-width="24" stroke-linecap="round"/>
+  <g transform="translate(392,250) scale(.82)"><rect x="0" y="46" width="86" height="13" rx="6" fill="#9fb0c4"/>
+    <path d="M86 30 a23 23 0 1 1 0 46 a15 15 0 1 0 0-46Z" fill="#cfd9e6"/>
+    <circle cx="8" cy="52" r="11" fill="#7ec3a6"/></g>
+
+  <path d="M256 96 C336 96 398 158 404 236 C412 336 350 448 256 448 C162 448 100 336 108 236 C114 158 176 96 256 96Z" fill="url(#body-kodadjiyata)"/>
+  <path d="M158 196 C182 150 220 132 250 138 C218 156 184 186 168 226Z" fill="#ffffff" opacity=".4"/>
+  <circle cx="186" cy="262" r="15" fill="#ffffff" opacity=".22"/><circle cx="181" cy="257" r="5" fill="#ffffff" opacity=".45"/><circle cx="306" cy="218" r="11" fill="#ffffff" opacity=".22"/><circle cx="302.3333333333333" cy="214.33333333333334" r="3.6666666666666665" fill="#ffffff" opacity=".45"/><circle cx="228" cy="336" r="19" fill="#ffffff" opacity=".22"/><circle cx="221.66666666666666" cy="329.6666666666667" r="6.333333333333333" fill="#ffffff" opacity=".45"/><circle cx="322" cy="344" r="13" fill="#ffffff" opacity=".22"/><circle cx="317.6666666666667" cy="339.6666666666667" r="4.333333333333333" fill="#ffffff" opacity=".45"/><circle cx="166" cy="352" r="9" fill="#ffffff" opacity=".22"/><circle cx="163" cy="349" r="3" fill="#ffffff" opacity=".45"/><circle cx="274" cy="404" r="12" fill="#ffffff" opacity=".22"/><circle cx="270" cy="400" r="4" fill="#ffffff" opacity=".45"/>
+
+  <ellipse cx="212" cy="256" rx="33" ry="35" fill="#0d1017"/>
+  <ellipse cx="300" cy="256" rx="33" ry="35" fill="#0d1017"/>
+  <circle cx="202" cy="244" r="11" fill="#ffffff"/><circle cx="290" cy="244" r="11" fill="#ffffff"/>
+  <circle cx="220" cy="270" r="5" fill="#ffffff" opacity=".7"/><circle cx="308" cy="270" r="5" fill="#ffffff" opacity=".7"/>
+  <g fill="none" stroke="#12161f" stroke-width="7">
+    <circle cx="212" cy="256" r="44"/><circle cx="300" cy="256" r="44"/>
+    <path d="M256 256 h0"/><path d="M168 248 l-24 -8"/><path d="M344 248 l24 -8"/>
+  </g>
+  <path d="M234 324 q22 24 44 0" fill="none" stroke="#12161f" stroke-width="8" stroke-linecap="round"/>
+  <path d="M256 366 l-25 -15 v30Z M256 366 l25 -15 v30Z" fill="#12161f"/>
+  <circle cx="256" cy="366" r="7.5" fill="#12161f"/>
+  <g transform="translate(256,132)">
+      <path d="M-78 14 C-78 -34 -44 -58 0 -58 C44 -58 78 -34 78 14Z" fill="#2f9e6f"/>
+      <path d="M-58 6 C-58 -30 -32 -46 -6 -46 C-22 -38 -40 -22 -44 6Z" fill="#ffffff" opacity=".28"/>
+      <path d="M-92 14 h184 a10 10 0 0 1-10 14 h-164 a10 10 0 0 1-10-14Z" fill="#216f4e"/>
+      <rect x="-6" y="-56" width="12" height="26" rx="6" fill="#7ec3a6"/></g>
+</svg>
