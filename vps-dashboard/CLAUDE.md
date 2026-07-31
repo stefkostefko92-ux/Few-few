@@ -123,7 +123,9 @@ src/
 public/                  index.html · app.js · ui.js · ansi.js · style.css
                          i18n.js + i18n-dict.js (езици BG/EN/IT — виж по-долу)
                          manifest.json · sw.js (PWA) · favicon.svg
-                         icons/ (act-* PNG за бутоните — виж GLYPH_ICONS в ui.js)
+                         icons/ (PNG комплект на собственика: act-* за бутоните
+                         през GLYPH_ICONS в ui.js · nav-* за секциите през
+                         img: в SECTIONS · ui-* за топбара в index.html)
 scripts/syntax-check.mjs zero-dep линтер
 deploy/                  install.sh · vps-dashboard.service · nginx.conf.example
                          desktop/docker-compose.yml (незадължителен десктоп)
