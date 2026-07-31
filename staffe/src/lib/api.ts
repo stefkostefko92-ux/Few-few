@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ZodError, type ZodSchema } from 'zod';
+import { ZodError, type output as ZodOutput, type ZodTypeAny } from 'zod';
 import { Prisma } from '@prisma/client';
 import { AuthError } from './auth';
 import { StockError } from './stock';
@@ -76,11 +76,20 @@ export function route<Args extends unknown[]>(
   };
 }
 
-/** Legge e valida il corpo JSON. Lancia `ZodError` → 422 con i campi in errore. */
-export async function readBody<T>(
+/**
+ * Legge e valida il corpo JSON. Lancia `ZodError` → 422 con i campi in errore.
+ *
+ * Il tipo restituito è quello di USCITA dello schema (`z.output`), non quello di
+ * ingresso. Con la firma generica su `T` (`ZodSchema<T>`) TypeScript deduceva il
+ * tipo d'INGRESSO: un campo con `.default()` risultava `possibly undefined`
+ * anche se dopo il parse c'è sempre, e con `.transform()`/`.coerce` il tipo
+ * dichiarato era addirittura diverso dal valore reale. Si finiva per evitare
+ * `.default()` o per aggiungere guardie contro un caso impossibile.
+ */
+export async function readBody<S extends ZodTypeAny>(
   request: Request,
-  schema: ZodSchema<T>,
-): Promise<T> {
+  schema: S,
+): Promise<ZodOutput<S>> {
   let raw: unknown;
   try {
     raw = await request.json();

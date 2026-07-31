@@ -329,6 +329,8 @@ export async function datiMovimenti(periodo: Periodo): Promise<EsitoMovimenti> {
 const STATI_VENDITA_ESCLUSI = ['BOZZA', 'PREVENTIVO', 'ANNULLATO'] as const;
 
 export type EsitoVendite = {
+  /** Falso quando i costi non sono stati letti: margine da NON mostrare. */
+  costiCalcolati: boolean;
   fatturatoCents: number;
   numeroOrdini: number;
   ordineMedioCents: number | null;
@@ -348,7 +350,16 @@ export type EsitoVendite = {
   perGiorno: Array<{ giorno: string; fatturatoCents: number }>;
 };
 
-export async function datiVendite(periodo: Periodo): Promise<EsitoVendite> {
+/**
+ * `conCosti: false` salta il calcolo del costo medio ponderato (una lettura
+ * dell'intero registro dei ricevimenti). Serve a chi non ha il permesso
+ * `costi:leggi` e al cruscotto, che il margine non lo mostra: il dato che non
+ * si mostra non si legge nemmeno dal database.
+ */
+export async function datiVendite(
+  periodo: Periodo,
+  { conCosti = true }: { conCosti?: boolean } = {},
+): Promise<EsitoVendite> {
   const [ordini, costi] = await Promise.all([
     prisma.salesOrder.findMany({
       where: {
@@ -381,7 +392,7 @@ export async function datiVendite(periodo: Periodo): Promise<EsitoVendite> {
         },
       },
     }),
-    costiMediPonderati(),
+    conCosti ? costiMediPonderati() : Promise.resolve(new Map<string, number>()),
   ]);
 
   let fatturatoCents = 0;
@@ -420,7 +431,9 @@ export async function datiVendite(periodo: Periodo): Promise<EsitoVendite> {
       const netto = netti[i];
       pezzi += riga.qty;
       cliente.pezzi += riga.qty;
-      costoCents += riga.qty * (costi.get(riga.product.id) ?? riga.product.costCents);
+      if (conCosti) {
+        costoCents += riga.qty * (costi.get(riga.product.id) ?? riga.product.costCents);
+      }
 
       const categoria = riga.product.category.name;
       const cat = perCategoria.get(categoria) ?? { pezzi: 0, fatturatoCents: 0 };
@@ -444,9 +457,14 @@ export async function datiVendite(periodo: Periodo): Promise<EsitoVendite> {
     perCliente.set(ordine.customer.id, cliente);
   }
 
-  const { margineCents, marginePercento } = margine(fatturatoCents, costoCents);
+  // Senza costi il margine non è zero: è NON CALCOLATO. Restituirlo come 0
+  // farebbe leggere «margine nullo» dove non c'è alcuna misura.
+  const { margineCents, marginePercento } = conCosti
+    ? margine(fatturatoCents, costoCents)
+    : { margineCents: 0, marginePercento: null };
 
   return {
+    costiCalcolati: conCosti,
     fatturatoCents,
     numeroOrdini: ordini.length,
     ordineMedioCents: ordini.length === 0 ? null : Math.round(fatturatoCents / ordini.length),
@@ -1038,8 +1056,9 @@ export async function datiCruscotto({
   }
 
   const [vendite, venditePrec, acquisti, acquistiPrec] = await Promise.all([
-    vedeVendite ? datiVendite(mese) : null,
-    vedeVendite ? datiVendite(mesePrecedente) : null,
+    // Il cruscotto non mostra il margine: i costi delle vendite non si leggono.
+    vedeVendite ? datiVendite(mese, { conCosti: false }) : null,
+    vedeVendite ? datiVendite(mesePrecedente, { conCosti: false }) : null,
     datiAcquisti(mese),
     datiAcquisti(mesePrecedente),
   ]);

@@ -160,7 +160,8 @@ export function tipoCanonico(ext: string): string {
 export function nomeFileSicuro(nome: string): string {
   const pulito = nome
     .replace(/[\\/]/g, '_')
-    // eslint-disable-next-line no-control-regex -- si tolgono proprio i caratteri di controllo
+    // Caratteri di controllo e virgolette: in `Content-Disposition` sarebbero
+    // un'iniezione di intestazione.
     .replace(/[\x00-\x1f\x7f"]/g, '')
     .trim();
   const finale = pulito.replace(/^\.+/, '').slice(0, 180);
@@ -254,7 +255,8 @@ export async function salvaAllegato(file: File): Promise<AllegatoSalvato> {
 
   const storageKey = `${randomUUID()}.${ext}`;
   const base = cartellaAllegati();
-  await mkdir(base, { recursive: true });
+  // Solo il processo dell'applicazione deve leggere l'archivio.
+  await mkdir(base, { recursive: true, mode: 0o750 });
   // `wx`: mai sovrascrivere un file esistente, nemmeno per collisione improbabile.
   await writeFile(percorsoDi(storageKey), byte, { flag: 'wx', mode: 0o640 });
 

@@ -2,7 +2,6 @@ import { requirePermission } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { StockError, applyMovement, checkLowStock, stockKeyOf } from '@/lib/stock';
-import { formatCents } from '@/lib/money';
 import { fail, ok, readBody, route } from '@/lib/api';
 import { chiusuraSchema } from '@/lib/validation/inventario';
 import {
@@ -153,7 +152,10 @@ export const POST = route(async (request: Request, ctx: Contesto) => {
             type: 'INVENTARIO_DISCREPANZA',
             level: livelloDiscrepanza(riepilogo),
             title: `Discrepanze inventario ${conteggio.number}`,
-            body: `${riepilogo.discordanti} righe con differenza · ${riepilogo.pezziInPiu} pezzi in più, ${riepilogo.pezziInMeno} in meno · impatto ${formatCents(riepilogo.valoreNettoCents)}.`,
+            // Niente importi nel corpo: la notifica la legge anche chi non ha
+            // `costi:leggi`. La valorizzazione sta nel rapporto, che il permesso
+            // lo controlla.
+            body: `${riepilogo.discordanti} righe con differenza · ${riepilogo.pezziInPiu} pezzi in più, ${riepilogo.pezziInMeno} in meno. Il dettaglio è nel rapporto del conteggio.`,
             entity: 'InventoryCount',
             entityId: conteggio.id,
           },

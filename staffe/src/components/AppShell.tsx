@@ -44,6 +44,11 @@ const NAVIGAZIONE: Gruppo[] = [
       { href: '/report', label: 'Report', permesso: 'report:leggi' },
       { href: '/notifiche', label: 'Notifiche', permesso: 'giacenze:leggi' },
       { href: '/impostazioni/utenti', label: 'Utenti', permesso: 'utenti:gestisci' },
+      {
+        href: '/impostazioni/audit',
+        label: 'Traccia di controllo',
+        permesso: 'audit:leggi',
+      },
     ],
   },
 ];
