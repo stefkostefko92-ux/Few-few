@@ -1063,7 +1063,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 252
+        "lessons": 254
       },
       "evolution": [
         {
@@ -1671,9 +1671,20 @@
           "date": "2026-07-31",
           "event": "v17.6 — учене",
           "detail": "Научи: В staffe/ правата за себестойност се прилагат в Server Component страниците (`vedeCosti… (+2 още)"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-07-31",
+          "event": "v17.8 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ се валидира машинно (tools/agents/handoff.mjs, гейтван от dod-che… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ се валидира машинно (tools/agents/handoff.mjs, гейтван от dod-che…\" (+1 още)"
+        },
         {
           "date": "2026-07-31",
           "type": "learning",
