@@ -134,7 +134,7 @@ export default async function PaginaFornitori({
                   <Td className="text-right tabular-nums">{formatQty(r.ordiniRicevuti)}</Td>
                   <Td className="text-right tabular-nums">
                     {r.leadTimeMedio == null ? (
-                      <NonCalcolabile titolo="Manca la data d'ordine o di ricevimento" />
+                      <NonCalcolabile titolo="Manca la data d’ordine o di ricevimento" />
                     ) : (
                       `${formatDecimale(r.leadTimeMedio, 1)} gg`
                     )}

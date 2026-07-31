@@ -67,7 +67,7 @@ export function AzioneTrasferisci({
     return (
       <div className="space-y-3 rounded border border-border bg-surface p-4">
         <p className="text-sm text-fg-muted">
-          Il prodotto non ha giacenza in nessuna ubicazione: non c&apos;è nulla da trasferire.
+          Il prodotto non ha giacenza in nessuna ubicazione: non c’è nulla da trasferire.
         </p>
         <Button variant="secondario" onClick={onAnnulla}>
           Chiudi

@@ -484,7 +484,7 @@ export function quantitaDiRiordino({
     const nota =
       maxStock >= rop
         ? `Riordino fino alla scorta massima ${maxStock}.`
-        : `Scorta massima ${maxStock} inferiore al punto di riordino ${rop}: si riordina fino al punto di riordino (rivedere i parametri dell'anagrafica).`;
+        : `Scorta massima ${maxStock} inferiore al punto di riordino ${rop}: si riordina fino al punto di riordino (rivedere i parametri dell’anagrafica).`;
     return { quantita: Math.max(0, Math.ceil(obiettivo - posizione)), obiettivo, nota };
   }
 

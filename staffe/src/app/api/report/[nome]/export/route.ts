@@ -75,12 +75,12 @@ export const GET = route(
     const { nome } = await contesto.params;
 
     if (!nomeValido(nome)) {
-      return fail(404, 'Report non disponibile per l\'esportazione.', 'non_trovato');
+      return fail(404, 'Report non disponibile per l’esportazione.', 'non_trovato');
     }
     if (REPORT_CON_COSTI.includes(nome) && !can(utente.role, 'costi:leggi')) {
       return fail(
         403,
-        "Questo report contiene i costi d'acquisto: permesso negato.",
+        'Questo report contiene i costi d’acquisto: permesso negato.',
         'vietato',
       );
     }

@@ -195,7 +195,7 @@ export default async function PaginaScorte({
         {daVedere.length > LIMITE_SCHERMO && (
           <p className="mt-2 text-sm text-fg-muted">
             Mostrati i primi {LIMITE_SCHERMO} articoli di {daVedere.length}, ordinati per valore.
-            L&apos;esportazione CSV contiene tutti i prodotti attivi.
+            L’esportazione CSV contiene tutti i prodotti attivi.
           </p>
         )}
       </section>
@@ -206,8 +206,8 @@ export default async function PaginaScorte({
         aggiunte={
           <>
             <Voce etichetta="Precedenza degli stati">
-              Uno stato per articolo, in quest&apos;ordine: esaurito, sotto scorta, giacenza
-              morta, regolare. Un articolo esaurito non è anche «morto»: senza pezzi non c&apos;è
+              Uno stato per articolo, in quest’ordine: esaurito, sotto scorta, giacenza
+              morta, regolare. Un articolo esaurito non è anche «morto»: senza pezzi non c’è
               capitale fermo.
             </Voce>
             <Voce etichetta="Soglia impostata">

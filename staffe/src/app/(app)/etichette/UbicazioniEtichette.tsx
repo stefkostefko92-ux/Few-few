@@ -123,7 +123,7 @@ export function UbicazioniEtichette() {
         {selezione.length === 0 ? (
           <EmptyState
             title="Nessuna ubicazione selezionata"
-            description="Cerca un'ubicazione sopra e aggiungila alla lista di stampa."
+            description="Cerca un’ubicazione sopra e aggiungila alla lista di stampa."
           />
         ) : (
           <>

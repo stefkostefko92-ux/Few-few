@@ -221,7 +221,7 @@ export function FormProdotto({
             label="Codice a barre"
             htmlFor="barcode"
             error={err('barcode')}
-            hint="EAN-13 o Code128 stampato sull'etichetta. Si può scansionare direttamente in questo campo."
+            hint="EAN-13 o Code128 stampato sull’etichetta. Si può scansionare direttamente in questo campo."
           >
             <Input
               id="barcode"
@@ -410,7 +410,7 @@ export function FormProdotto({
           </h2>
           <div className="grid gap-3 md:grid-cols-3">
             <Field
-              label="Costo d'acquisto (€)"
+              label="Costo d’acquisto (€)"
               htmlFor="costo"
               error={err('costCents')}
               hint="Formato italiano, due decimali: 12,50"
@@ -487,7 +487,7 @@ export function FormProdotto({
             label="Scorta minima"
             htmlFor="minStock"
             error={err('minStock')}
-            hint="Sotto questa soglia scatta l'avviso di riordino."
+            hint="Sotto questa soglia scatta l’avviso di riordino."
           >
             <Input
               id="minStock"

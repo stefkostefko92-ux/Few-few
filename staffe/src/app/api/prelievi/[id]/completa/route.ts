@@ -55,7 +55,7 @@ async function scaricaDaUbicazione(
   }
   if (residuo > 0) {
     throw new StockError(
-      `Giacenza insufficiente nell'ubicazione di prelievo: mancano ${residuo} unità.`,
+      `Giacenza insufficiente nell’ubicazione di prelievo: mancano ${residuo} unità.`,
     );
   }
 }

@@ -137,7 +137,7 @@ export default async function PaginaMovimenti({
         {dati.righe.length > LIMITE_SCHERMO && (
           <p className="mt-2 text-sm text-fg-muted">
             Mostrati i primi {LIMITE_SCHERMO} prodotti di {dati.righe.length}, ordinati per pezzi
-            usciti. L&apos;esportazione CSV contiene l&apos;elenco completo.
+            usciti. L’esportazione CSV contiene l’elenco completo.
           </p>
         )}
       </section>

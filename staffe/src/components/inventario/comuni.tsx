@@ -17,7 +17,7 @@ export function AccessoNegato({ cosa }: { cosa: string }) {
       <h1 className="text-lg font-semibold">Permesso negato</h1>
       <p className="mt-2 text-sm text-fg-muted">
         Il tuo ruolo non consente di consultare {cosa}. Se ti serve, chiedi
-        all&apos;amministratore.
+        all’amministratore.
       </p>
     </Card>
   );

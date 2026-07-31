@@ -164,7 +164,7 @@ export default async function PaginaGiacenze({
             <p className="text-2xl font-semibold tabular-nums">
               {formatCents(totali.valoreCents)}
             </p>
-            <p className="text-xs text-fg-muted">Quantità × costo d&apos;acquisto</p>
+            <p className="text-xs text-fg-muted">Quantità × costo d’acquisto</p>
           </Card>
         ) : (
           <Card>

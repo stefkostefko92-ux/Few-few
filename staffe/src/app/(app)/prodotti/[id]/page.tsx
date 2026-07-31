@@ -216,7 +216,7 @@ export default async function PaginaProdotto({
             </h2>
             <dl>
               {vedeCosti && (
-                <Dato etichetta="Costo d'acquisto">
+                <Dato etichetta="Costo d’acquisto">
                   {formatCents(prodotto.costCents)}
                 </Dato>
               )}

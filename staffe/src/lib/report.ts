@@ -53,7 +53,7 @@ export const DEFINIZIONI = {
     finestra: 'Data del movimento (StockMovement.createdAt) dentro il periodo scelto.',
     esclusioni: 'Trasferimenti interni; movimenti di prodotti cancellati (non esistono: si disattiva).',
     limiti:
-      'Al denominatore della rotazione c\'è la giacenza di OGGI, non la giacenza media del periodo: il sistema non conserva fotografie giornaliere delle scorte. Con giacenza attuale zero l\'indice non è definito (mostrato «—»), non «infinito».',
+      'Al denominatore della rotazione c’è la giacenza di OGGI, non la giacenza media del periodo: il sistema non conserva fotografie giornaliere delle scorte. Con giacenza attuale zero l’indice non è definito (mostrato «—»), non «infinito».',
   },
   vendite: {
     nome: 'Vendite',
@@ -62,7 +62,7 @@ export const DEFINIZIONI = {
     denominatore:
       'Ordine medio = fatturato ÷ numero di ordini del periodo (stessa selezione al numeratore e al denominatore).',
     finestra:
-      "Data dell'ordine (SalesOrder.orderedAt); se assente, data di creazione (createdAt).",
+      'Data dell’ordine (SalesOrder.orderedAt); se assente, data di creazione (createdAt).',
     esclusioni:
       'Ordini in stato Bozza, Preventivo e Annullato: un preventivo non è un ricavo.',
     limiti:
@@ -74,10 +74,10 @@ export const DEFINIZIONI = {
       'Spesa = imponibile degli ordini di acquisto del periodo: Σ righe (qty × costo unitario − sconto riga), più le spese di trasporto della testata. IVA esclusa.',
     denominatore: 'Ordine medio = spesa ÷ numero di ordini di acquisto del periodo.',
     finestra:
-      "Data dell'ordine (PurchaseOrder.orderedAt); se assente, data di creazione (createdAt).",
+      'Data dell’ordine (PurchaseOrder.orderedAt); se assente, data di creazione (createdAt).',
     esclusioni: 'Ordini in stato Bozza e Annullato.',
     limiti:
-      "È l'IMPEGNO di spesa dell'ordine, non la merce effettivamente ricevuta né la fattura del fornitore.",
+      'È l’IMPEGNO di spesa dell’ordine, non la merce effettivamente ricevuta né la fattura del fornitore.',
   },
   fornitori: {
     nome: 'Prestazione dei fornitori',
@@ -97,10 +97,10 @@ export const DEFINIZIONI = {
       'Esaurito = giacenza ≤ 0. Sotto scorta = giacenza > 0 e giacenza ≤ Product.minStock. Giacenza morta = giacenza > 0 e nessuna uscita da almeno N giorni (N impostabile, predefinito 90).',
     denominatore: 'Percentuali calcolate sul totale dei prodotti attivi.',
     finestra:
-      'Giacenza alla data odierna; per la giacenza morta si guarda la data dell\'ultima uscita, su tutto lo storico.',
+      'Giacenza alla data odierna; per la giacenza morta si guarda la data dell’ultima uscita, su tutto lo storico.',
     esclusioni: 'Prodotti disattivati.',
     limiti:
-      'La soglia minima è quella dell\'anagrafica: se minStock non è aggiornato, «sotto scorta» dice quanto è vecchio il parametro, non quanto serve la merce.',
+      'La soglia minima è quella dell’anagrafica: se minStock non è aggiornato, «sotto scorta» dice quanto è vecchio il parametro, non quanto serve la merce.',
   },
   previsioni: {
     nome: 'Previsioni di consumo e riordino',

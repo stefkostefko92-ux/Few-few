@@ -258,7 +258,7 @@ export default async function PaginaPrevisioni({
         {dati.righe.length > LIMITE_SCHERMO && (
           <p className="mt-2 text-sm text-fg-muted">
             Mostrati i primi {LIMITE_SCHERMO} prodotti di {dati.righe.length}, ordinati per
-            quantità suggerita. L&apos;esportazione CSV contiene l&apos;elenco completo.
+            quantità suggerita. L’esportazione CSV contiene l’elenco completo.
           </p>
         )}
       </section>
@@ -269,14 +269,14 @@ export default async function PaginaPrevisioni({
           <>
             <Voce etichetta="Parametri usati">
               Finestra {giorni} giorni · livello di servizio {livelloServizio}% (z ={' '}
-              {Z_LIVELLO_SERVIZIO[livelloServizio]}) · lead time dall&apos;anagrafica del
+              {Z_LIVELLO_SERVIZIO[livelloServizio]}) · lead time dall’anagrafica del
               fornitore (7 giorni quando manca).
             </Voce>
             <Voce etichetta="Confidenza">
               <strong>alta</strong>: almeno 60 giorni di finestra, 20 giorni movimentati e
               consumo regolare. <strong>media</strong>: almeno 30 giorni e 8 movimentati.{' '}
               <strong>bassa</strong>: serie irregolare o pochi dati. <strong>nulla</strong>:
-              nessuna previsione prodotta. Non è una probabilità: è un&apos;etichetta di
+              nessuna previsione prodotta. Non è una probabilità: è un’etichetta di
               affidabilità.
             </Voce>
             <Voce etichetta="Quando NON viene proposto nulla">

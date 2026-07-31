@@ -38,7 +38,7 @@ export default async function PaginaAcquisti({
     return <AccessoNegato cosa="i report" />;
   }
   if (!can(user.role, 'costi:leggi')) {
-    return <AccessoNegato cosa="il report degli acquisti (contiene i costi d'acquisto)" />;
+    return <AccessoNegato cosa="il report degli acquisti (contiene i costi d’acquisto)" />;
   }
 
   const sp = await searchParams;

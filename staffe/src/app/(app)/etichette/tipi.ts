@@ -4,7 +4,7 @@ export type FormatoFoglio = 'a4-griglia' | 'termica-62';
 
 export const FORMATO_LABELS: Record<FormatoFoglio, string> = {
   'a4-griglia': 'Foglio A4 — griglia 3×8 (70×37 mm)',
-  'termica-62': 'Termica 62 mm — un\'etichetta per pagina',
+  'termica-62': 'Termica 62 mm — un’etichetta per pagina',
 };
 
 export type VoceProdotto = {

@@ -109,7 +109,7 @@ async function decrease(
   });
   if (!item || item.qty < qty) {
     throw new StockError(
-      `Giacenza insufficiente nell'ubicazione selezionata: disponibili ${item?.qty ?? 0}, richiesti ${qty}.`,
+      `Giacenza insufficiente nell’ubicazione selezionata: disponibili ${item?.qty ?? 0}, richiesti ${qty}.`,
     );
   }
   await tx.stockItem.update({

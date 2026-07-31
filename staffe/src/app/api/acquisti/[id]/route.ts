@@ -52,7 +52,7 @@ export const PATCH = route(async (request: Request, { params }: Contesto) => {
   if (esistente.status !== 'BOZZA') {
     return fail(
       409,
-      "Solo un ordine in bozza può essere modificato. Annullare l'ordine e crearne uno nuovo.",
+      'Solo un ordine in bozza può essere modificato. Annullare l’ordine e crearne uno nuovo.',
       'stato',
     );
   }

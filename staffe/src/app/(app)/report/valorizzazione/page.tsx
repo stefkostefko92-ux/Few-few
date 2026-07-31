@@ -35,7 +35,7 @@ export default async function PaginaValorizzazione({
     return <AccessoNegato cosa="i report" />;
   }
   if (!can(user.role, 'costi:leggi')) {
-    return <AccessoNegato cosa="la valorizzazione del magazzino (contiene i costi d'acquisto)" />;
+    return <AccessoNegato cosa="la valorizzazione del magazzino (contiene i costi d’acquisto)" />;
   }
 
   const sp = await searchParams;
@@ -166,7 +166,7 @@ export default async function PaginaValorizzazione({
         {conGiacenza > LIMITE_SCHERMO && (
           <p className="mt-2 text-sm text-fg-muted">
             Mostrati i primi {LIMITE_SCHERMO} prodotti di {conGiacenza}. Il totale in alto è
-            calcolato su tutti; l&apos;esportazione CSV contiene l&apos;elenco completo.
+            calcolato su tutti; l’esportazione CSV contiene l’elenco completo.
           </p>
         )}
       </section>
