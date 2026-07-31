@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
+  <title id="jm-title">Желирано маскотче — иконен вариант</title>
+  <desc id="jm-desc">Микро-иконен вариант на маскота: плътни цветове, дебели рамки на очилата и опростена академична шапка, четим до 16 пиксела.</desc>
+
+  <!-- Ниво „икона": нула филтри, нула градиенти, нула мехурчета. Всичко, което изчезва под 24 px,
+       е махнато — остават силуетът, очилата, очите, устата, папийонката и шапката. Щрихите са
+       удебелени, защото при 16 px тънката линия става сива каша, а не линия. -->
+  <g class="jm-root">
+    <path class="jm-body" d="M256 138C352 138 414 206 414 292C414 366 376 420 322 444C302 454 280 460 256 460C232 460 210 454 190 444C136 420 98 366 98 292C98 206 160 138 256 138Z" fill="var(--jm-neon, #5AB60D)"/>
+    <path d="M256 460C232 460 210 454 190 444C160 430 132 406 116 374C154 396 202 408 256 408C310 408 358 396 396 374C380 406 352 430 322 444C302 454 280 460 256 460Z" fill="var(--jm-bottle, #297F04)"/>
+
+    <g class="jm-face">
+      <g class="jm-eyes">
+        <circle cx="196" cy="264" r="40" fill="var(--jm-eye, #F4FAEA)"/>
+        <circle cx="316" cy="264" r="40" fill="var(--jm-eye, #F4FAEA)"/>
+        <circle cx="198" cy="266" r="27" fill="var(--jm-ink, #0A0C0A)"/>
+        <circle cx="318" cy="266" r="27" fill="var(--jm-ink, #0A0C0A)"/>
+      </g>
+      <g class="jm-glasses" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="20" stroke-linecap="round">
+        <circle cx="196" cy="264" r="50"/>
+        <circle cx="316" cy="264" r="50"/>
+        <path d="M246 260H266"/>
+        <path d="M146 250L112 244"/>
+        <path d="M366 250L400 244"/>
+      </g>
+      <path d="M232 330C242 348 270 348 280 330" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="14" stroke-linecap="round"/>
+    </g>
+
+    <g class="jm-bowtie" fill="var(--jm-ink, #0A0C0A)">
+      <path d="M248 402L204 376V428L248 402Z"/>
+      <path d="M264 402L308 376V428L264 402Z"/>
+      <rect x="242" y="388" width="28" height="28" rx="9"/>
+    </g>
+
+    <g class="jm-cap" transform="translate(0 14) rotate(-6 256 104)">
+      <ellipse cx="256" cy="116" rx="70" ry="26" fill="var(--jm-ink, #0A0C0A)"/>
+      <path d="M256 56L400 100L256 144L112 100Z" fill="var(--jm-ink, #0A0C0A)"/>
+      <path d="M256 100C304 106 344 108 376 100C382 122 382 142 378 158" fill="none" stroke="var(--jm-gold, #D9A521)" stroke-width="12" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

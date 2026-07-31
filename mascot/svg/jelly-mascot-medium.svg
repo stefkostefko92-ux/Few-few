@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
+  <title id="jm-title">Желирано маскотче с очила и академична шапка (средно ниво на детайл)</title>
+  <desc id="jm-desc">Опростен вариант на маскота — без филтри и блурове, само плътни форми и градиенти. За среден размер, печат и лесна векторизация.</desc>
+
+  <!-- Ниво „средно": нула `filter` елементи (блурът не оцелява във всеки векторен конвейер и
+       поскъпва растеризацията), само градиенти и плътни форми. Силуетът и лицето са същите като
+       при пълния вариант — не се разминават, за да не се счупи разпознаваемостта. -->
+  <defs>
+    <radialGradient id="jmm-body" cx="36%" cy="26%" r="84%">
+      <stop offset="0%" stop-color="var(--jm-olive, #99E72A)"/>
+      <stop offset="46%" stop-color="var(--jm-neon, #5AB60D)"/>
+      <stop offset="86%" stop-color="var(--jm-bottle, #297F04)"/>
+      <stop offset="100%" stop-color="var(--jm-deep, #0D4A02)"/>
+    </radialGradient>
+    <radialGradient id="jmm-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--jm-olive, #99E72A)" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="var(--jm-olive, #99E72A)" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="var(--jm-neon, #5AB60D)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="jmm-gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--jm-gold-light, #F2D479)"/>
+      <stop offset="1" stop-color="var(--jm-gold, #D9A521)"/>
+    </linearGradient>
+    <clipPath id="jmm-clip">
+      <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z"/>
+    </clipPath>
+  </defs>
+
+  <g class="jm-root">
+    <g class="jm-arms" stroke="url(#jmm-body)" stroke-width="36" stroke-linecap="round" fill="none">
+      <path d="M138 356C114 368 98 384 90 400"/>
+      <path d="M374 356C398 368 414 384 422 400"/>
+    </g>
+
+    <path class="jm-body" d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="url(#jmm-body)"/>
+
+    <g clip-path="url(#jmm-clip)">
+      <ellipse cx="256" cy="382" rx="150" ry="118" fill="url(#jmm-core)"/>
+      <g class="jm-bubbles">
+        <circle cx="176" cy="332" r="9" fill="var(--jm-pale, #C8DDA6)" opacity="0.2"/>
+        <circle cx="176" cy="332" r="9" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="2" opacity="0.55"/>
+        <circle cx="242" cy="424" r="11" fill="var(--jm-pale, #C8DDA6)" opacity="0.2"/>
+        <circle cx="242" cy="424" r="11" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="2.4" opacity="0.55"/>
+        <circle cx="332" cy="356" r="10" fill="var(--jm-pale, #C8DDA6)" opacity="0.2"/>
+        <circle cx="332" cy="356" r="10" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="2.2" opacity="0.55"/>
+        <circle cx="296" cy="404" r="7" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="1.6" opacity="0.5"/>
+        <circle cx="212" cy="392" r="6" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="1.4" opacity="0.5"/>
+      </g>
+      <ellipse cx="182" cy="212" rx="52" ry="28" fill="var(--jm-white, #FFFFFF)" opacity="0.22" transform="rotate(-32 182 212)"/>
+    </g>
+
+    <g class="jm-face">
+      <g stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
+        <path d="M164 202C182 190 206 188 224 194"/>
+        <path d="M348 202C330 190 306 188 288 194"/>
+      </g>
+      <g class="jm-eyes">
+        <circle cx="200" cy="266" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+        <circle cx="312" cy="266" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+        <circle cx="202" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+        <circle cx="314" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+        <g fill="var(--jm-white, #FFFFFF)">
+          <circle cx="193" cy="261" r="8"/>
+          <circle cx="305" cy="261" r="8"/>
+        </g>
+      </g>
+      <g class="jm-glasses" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="13" stroke-linecap="round">
+        <circle cx="200" cy="266" r="48"/>
+        <circle cx="312" cy="266" r="48"/>
+        <path d="M249 260C253 253 259 253 263 260"/>
+        <path d="M152 254C138 246 126 244 114 246"/>
+        <path d="M360 254C374 246 386 244 398 246"/>
+      </g>
+      <path d="M236 322C244 336 268 336 276 322" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
+    </g>
+
+    <g class="jm-bowtie">
+      <path d="M250 400C234 386 220 376 208 375C202 388 202 412 208 425C220 424 234 414 250 400Z" fill="var(--jm-ink, #0A0C0A)"/>
+      <path d="M262 400C278 386 292 376 304 375C310 388 310 412 304 425C292 424 278 414 262 400Z" fill="var(--jm-ink, #0A0C0A)"/>
+      <rect x="246" y="389" width="20" height="22" rx="7" fill="var(--jm-ink-soft, #2A2E24)"/>
+    </g>
+
+    <g class="jm-cap" transform="translate(0 18) rotate(-6 256 110)">
+      <ellipse cx="256" cy="120" rx="66" ry="26" fill="var(--jm-ink, #0A0C0A)"/>
+      <path d="M256 62L390 100L256 138L122 100Z" fill="var(--jm-ink-soft, #2A2E24)"/>
+      <path d="M256 106L390 100L256 138L122 100Z" fill="var(--jm-ink, #0A0C0A)"/>
+      <circle cx="256" cy="100" r="6" fill="var(--jm-ink-soft, #2A2E24)"/>
+      <path d="M256 100C300 106 340 108 372 102C378 124 378 146 374 162" fill="none" stroke="url(#jmm-gold)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M362 160H386L380 196C378 202 370 202 368 196Z" fill="url(#jmm-gold)"/>
+    </g>
+  </g>
+</svg>

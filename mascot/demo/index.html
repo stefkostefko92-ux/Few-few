@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Маскот — желирано телце с очила | Carbon Stealth</title>
+<meta name="description" content="Витрина на маскота на Carbon Stealth: три нива на детайл, палитра, пребоядисване по бранд и достъпна микро-анимация.">
+<meta name="keywords" content="Carbon Stealth, маскот, SVG маскот, бранд асет, векторна икона, желиран герой, дизайн система">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../svg/jelly-mascot-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  body {
+    margin: 0;
+    padding: 32px 24px 64px;
+    background: var(--jm-bg);
+    color: var(--jm-pale);
+    font: 15px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  }
+  h1 { font-size: 24px; margin: 0 0 4px; color: var(--jm-olive); }
+  h2 { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--jm-soft-olive); margin: 40px 0 12px; }
+  p { max-width: 68ch; color: var(--jm-soft-olive); }
+  code { color: var(--jm-olive); }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end; }
+  figure { margin: 0; text-align: center; }
+  figcaption { font-size: 12px; color: var(--jm-soft-olive); margin-top: 8px; }
+  .sizes { display: flex; gap: 20px; align-items: flex-end; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sw { width: 116px; border: 1px solid var(--jm-glow-lime); border-radius: 8px; overflow: hidden; font-size: 11px; }
+  .sw i { display: block; height: 44px; }
+  .sw b { display: block; padding: 6px 8px; font-weight: 600; color: var(--jm-pale); }
+  .sw span { display: block; padding: 0 8px 8px; color: var(--jm-soft-olive); }
+  pre { background: #0D4A02; color: #C8DDA6; padding: 14px 16px; border-radius: 10px; overflow-x: auto; max-width: 68ch; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>Маскотът на Carbon Stealth</h1>
+<p>
+  Витрина на пакета <code>mascot/</code>. Всичко тук са същите файлове, които продуктите ползват —
+  страницата не е отделно копие. Виж <code>README.md</code> за вграждане в Next/React и в EJS/статичен сайт.
+</p>
+
+<h2>Трите нива на детайл</h2>
+<div class="row">
+  <figure>
+    <img src="../svg/jelly-mascot-full.svg" alt="Маскотът в пълен детайл — светещо желирано телце с мехурчета" width="240" height="240">
+    <figcaption><code>full</code> — герой-кадър, ореол, мехурчета</figcaption>
+  </figure>
+  <figure>
+    <img src="../svg/jelly-mascot-medium.svg" alt="Маскотът в среден детайл — без блурове" width="240" height="240">
+    <figcaption><code>medium</code> — без филтри, за печат/векторизация</figcaption>
+  </figure>
+  <figure>
+    <img src="../svg/jelly-mascot-icon.svg" alt="Маскотът в иконен вариант — плътни цветове" width="240" height="240">
+    <figcaption><code>icon</code> — плътни цветове, дебели рамки</figcaption>
+  </figure>
+</div>
+
+<h2>Иконата при реални размери</h2>
+<p>Тестът, който решава дали иконата е добра: чете ли се като маскот, когато е висока колкото един ред текст.</p>
+<div class="sizes">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 64 пиксела" width="64" height="64">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 32 пиксела" width="32" height="32">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 24 пиксела" width="24" height="24">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 16 пиксела" width="16" height="16">
+</div>
+
+<h2>Палитра</h2>
+<div class="swatches">
+  <div class="sw"><i style="background:#050706"></i><b>#050706</b><span>фон</span></div>
+  <div class="sw"><i style="background:#0D4A02"></i><b>#0D4A02</b><span>дълбока сянка</span></div>
+  <div class="sw"><i style="background:#297F04"></i><b>#297F04</b><span>среден тон</span></div>
+  <div class="sw"><i style="background:#5AB60D"></i><b>#5AB60D</b><span>основно тяло</span></div>
+  <div class="sw"><i style="background:#99E72A"></i><b>#99E72A</b><span>светещо ядро</span></div>
+  <div class="sw"><i style="background:#3C3F28"></i><b>#3C3F28</b><span>неутрал</span></div>
+  <div class="sw"><i style="background:#848D68"></i><b>#848D68</b><span>мек неутрал</span></div>
+  <div class="sw"><i style="background:#C8DDA6"></i><b>#C8DDA6</b><span>блясък</span></div>
+</div>
+
+<h2>Пребоядисване по бранд</h2>
+<p>
+  Формата е една, цветът е променлива. Задай <code>--jm-*</code> на родителя — SVG-то не се пипа.
+  Работи само при <strong>вграден</strong> SVG (React компонента или <code>&lt;%- include %&gt;</code> в
+  EJS): през <code>&lt;img&gt;</code> външният CSS изобщо не стига до документа на картинката и се
+  вижда падащата стойност от <code>var(--jm-…, #HEX)</code> — точно затова всеки цвят носи fallback.
+</p>
+<pre>&lt;JellyMascot detail="full" style={{ "--jm-neon": "#0DB6A8", "--jm-olive": "#2AE7D8" }} /&gt;
+
+/* или на ниво секция, за вграден SVG: */
+.brand-teal { --jm-neon: #0DB6A8; --jm-olive: #2AE7D8; }</pre>
+
+<h2>Анимация</h2>
+<p>
+  Класът <code>.jm-animated</code> (от <code>tokens.css</code>) добавя полюшване, пулс на глоуто, мигане
+  и махане на пискюла. Нищо не мига по-бързо от 3 Hz, а при
+  <code>prefers-reduced-motion: reduce</code> движението е нула — виж <code>tokens.css</code>.
+</p>
+
+</body>
+</html>

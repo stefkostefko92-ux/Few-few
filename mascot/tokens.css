@@ -1,0 +1,79 @@
+/* Цветовете на маскота като CSS променливи + опционалната микро-анимация.
+ *
+ * Всеки SVG носи fallback във всяко `var(--jm-…, #HEX)`, затова файловете работят и БЕЗ този
+ * файл (напр. като `<img src="…svg">`, където външният CSS изобщо не стига). Този файл е нужен
+ * само когато маскотът е ВГРАДЕН (inline) и искаш да пребоядисаш тялото/глоуто по бранд.
+ *
+ * Източник на стойностите: `tokens.json` (гейтван от `check.mjs` — не пиши HEX другаде).
+ */
+
+:root,
+.jm-scope {
+  /* Палитра, снета от референцията. */
+  --jm-bg: #050706;
+  --jm-deep: #0d4a02;
+  --jm-bottle: #297f04;
+  --jm-neon: #5ab60d;
+  --jm-olive: #99e72a;
+  --jm-glow-lime: #3c3f28;
+  --jm-soft-olive: #848d68;
+  --jm-pale: #c8dda6;
+
+  /* Разширения (аксесоари и пискюл) — виж `tokens.json`. */
+  --jm-ink: #0a0c0a;
+  --jm-ink-soft: #2a2e24;
+  --jm-eye: #f4faea;
+  --jm-white: #ffffff;
+  --jm-gold: #d9a521;
+  --jm-gold-light: #f2d479;
+}
+
+/* @animation:start — този блок се ВГРАЖДА дословно в React компонента от `build.mjs`.
+   Не го преименувай и не махай маркерите: `check.mjs` сверява, че вграденото копие съвпада. */
+.jm-animated .jm-root {
+  animation: jm-bob 3.6s ease-in-out infinite;
+  transform-origin: 256px 452px;
+}
+.jm-animated .jm-bloom,
+.jm-animated .jm-core {
+  animation: jm-pulse 2.6s ease-in-out infinite;
+}
+.jm-animated .jm-eyes {
+  animation: jm-blink 5.2s ease-in-out infinite;
+  transform-origin: 256px 266px;
+}
+.jm-animated .jm-tassel-bob {
+  animation: jm-swing 3.6s ease-in-out infinite;
+  transform-origin: 372px 104px;
+}
+
+@keyframes jm-bob {
+  0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
+  45% { transform: translateY(-10px) scaleY(1.015) scaleX(0.99); }
+  70% { transform: translateY(2px) scaleY(0.985) scaleX(1.012); }
+}
+@keyframes jm-pulse {
+  0%, 100% { opacity: 0.42; }
+  50% { opacity: 0.62; }
+}
+@keyframes jm-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
+}
+@keyframes jm-swing {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* Достъпност (закон в репото, не пожелание): нула движение при prefers-reduced-motion.
+   Нищо в анимацията не мига по-бързо от 3 Hz — епилептичен риск няма и при включено движение. */
+@media (prefers-reduced-motion: reduce) {
+  .jm-animated .jm-root,
+  .jm-animated .jm-bloom,
+  .jm-animated .jm-core,
+  .jm-animated .jm-eyes,
+  .jm-animated .jm-tassel-bob {
+    animation: none !important;
+  }
+}
+/* @animation:end */
