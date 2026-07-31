@@ -60,6 +60,7 @@ for (const [name, text] of Object.entries(NULL_ANSWERS)) {
 const STOPWORDS = [
   "преди", "след", "тест", "дата", "контекст", "състояние", "проверка", "провери", "важно",
   "трябва", "може", "добре", "работи", "промяна", "файл", "код", "данни", "време", "начин",
+  "човек", "система", "процес", "резултат", "въпрос", "случай",
 ];
 
 test("нито един маркер не е гола обикновена дума (нулев сигнал)", () => {
@@ -75,6 +76,43 @@ test("нито един маркер не е гола обикновена ду�
   }
   assert.deepEqual(bad, [],
     "маркер = обикновена дума не мери свойството, а наличието на предлог:\n  " + bad.join("\n  "));
+});
+
+// ── Специфичност: спекът мери ли СВОЯ агент? ──────────────────────────────────────────────────
+// Ако „идеален отговор" за spec на агент A минава spec на агент B, то B не доказва своя домейн.
+// Измерено 2026-07-30: 11 такива минавания. Причината беше два вида изтичане — (1) ОБЩОСИГУРНОСТНИ
+// думи в ДОМЕЙН проверката („least-privilege", „минимални права", „поверителност", „идемпотент"),
+// и (2) общата анти-инжекционна фраза, дублирана в домейн проверката. След поправката: 5.
+//
+// Останалите 5 са ИСТИНСКА съседност на домейни, не дефект — затова са изрично изброени, а не
+// „поправени" с изкуствено стесняване (то би провалило верни отговори):
+//   seo↔skorostnika и seo↔tayniyat-agent — cloaking е споделено понятие (SEO · производителност · политика на магазин)
+//   tayniyat-agent↔mobildjiyata — Privacy Manifest е един и същ артефакт на Apple
+//   3d-maniac↔printadjiyata — mesh/watertight е обща 3D хигиена
+//   socialdjiyata↔treydara — „човешко одобрение" е СПОДЕЛЕН инвариант (човек-в-цикъла)
+const ALLOWED_ADJACENCY = new Set([
+  "injection-seo", "injection-tayniyat-agent", "injection-3d-maniac",
+  "injection-socialdjiyata", "injection-treydara",
+]);
+
+/** Минималният текст, който удовлетворява всички `any` проверки на spec-а. */
+const idealFor = (s) => (s.expect || []).map((c) => (c.any || [])[0]).filter(Boolean).join(". ");
+
+test("spec на един агент не се удовлетворява от отговор за ДРУГ агент (извън изброената съседност)", () => {
+  const leaks = [];
+  for (const src of specs) {
+    const answer = idealFor(src);
+    if (!answer) continue;
+    for (const dst of specs) {
+      if (dst.id === src.id || dst.agent === src.agent) continue;
+      if (ALLOWED_ADJACENCY.has(dst.id)) continue;
+      let ok = false;
+      try { ok = scoreOutput(answer, dst, []).ok; } catch { ok = false; }
+      if (ok) leaks.push(`${dst.id} (${dst.agent}) минава с отговор за ${src.id} (${src.agent})`);
+    }
+  }
+  assert.deepEqual(leaks, [],
+    "spec, който минава с чужд отговор, не мери своя домейн:\n  " + leaks.join("\n  "));
 });
 
 test("всеки spec има поне една проверка с реални маркери (не само капани)", () => {
