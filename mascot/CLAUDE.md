@@ -7,7 +7,7 @@
 
 ```bash
 cd mascot
-node build.mjs         # svg/*.svg + tokens.css → react/JellyMascot.tsx
+node build.mjs         # svg/*.svg + tokens.css → react/JellyMascot.tsx + svg/…-full-animated.svg
 npm run gate           # check.mjs + node --test + static-site-check на витрината
 ```
 
@@ -15,8 +15,9 @@ npm run gate           # check.mjs + node --test + static-site-check на вит
 
 ## Закони на пакета
 
-1. **Източникът е `svg/*.svg`.** `react/JellyMascot.tsx` е генериран — ръчната редакция там пада
-   гейта (regenerate-and-diff). Поправяш SVG-то, после `node build.mjs`.
+1. **Източникът е `svg/jelly-mascot-{full,medium,icon}.svg` + `tokens.css`.** Генерирани (ръчната
+   редакция там пада гейта, regenerate-and-diff): `react/JellyMascot.tsx` и
+   `svg/jelly-mascot-full-animated.svg`. Поправяш източника, после `node build.mjs`.
 2. **Цвят се добавя в `tokens.json` ПЪРВО.** HEX стойност, която я няма там, пада гейта — навсякъде
    в `svg/` и `react/`.
 3. **Нивата не са козметика:** `medium` няма право на `<filter>` (блурът не оцелява при
@@ -34,6 +35,7 @@ npm run gate           # check.mjs + node --test + static-site-check на вит
 
 ```
 svg/       jelly-mascot-{full,medium,icon}.svg   ← истината
+svg/       jelly-mascot-full-animated.svg        ← ГЕНЕРИРАН (стиловете вътре → движи се и в <img>)
 tokens.json / tokens.css                          ← палитра (+ анимацията в CSS-а)
 react/JellyMascot.tsx                             ← ГЕНЕРИРАН
 build.mjs · check.mjs · check.test.mjs            ← генератор и гейт (zero-dep)
@@ -48,7 +50,10 @@ prompts.md                                        ← дизайн-брифът 
 - **Пребоядисване през `<img>` не работи** — външният CSS не стига до документа на картинката.
   Затова всеки цвят е `var(--jm-…, #HEX)` с падаща стойност: файлът изглежда правилно и без CSS.
 - Анимационният блок в `tokens.css` е между маркерите `@animation:start/end` и се **вгражда
-  дословно** в компонента. Не ги махай — генераторът пада.
+  дословно** в компонента и в анимирания SVG. Не ги махай — генераторът пада. Никакви ` или $ в
+  него (счупват template literal-а в компонента) — гейтнато.
+- CSS свойството `transform` **замества** SVG атрибута `transform`, не се добавя към него: затова
+  keyframe-ите на минаващия отблясък носят и `skewX(-14deg)`.
 - Растеризация: няма зависимост в пакета: ползвай Chromium (`--headless --screenshot`), вече е в средата.
 
 Пълната документация е в `README.md`; произходът на дизайна — в `prompts.md`.

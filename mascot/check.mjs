@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { generate, TIERS } from "./build.mjs";
+import { generate, generateAnimatedSvg, TIERS } from "./build.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const R = (p) => readFileSync(join(HERE, p), "utf8");
@@ -94,9 +94,13 @@ export function bearingCircles(fragment, minR) {
 }
 
 /** Всички проверки върху вече прочетените файлове. Чиста функция — тества се без диск. */
-export function audit({ svgs, tsx, tokens, generated, demo }) {
+export function audit({ svgs, tsx, tokens, generated, generatedAnimated, demo }) {
   const fail = [];
   const palette = paletteOf(tokens);
+
+  if (generatedAnimated && svgs["jelly-mascot-full-animated.svg"] !== generatedAnimated) {
+    fail.push("svg/jelly-mascot-full-animated.svg се разминава с генерирания (пълно ниво + анимацията от tokens.css) — пусни `node build.mjs`");
+  }
 
   if (generated !== tsx) {
     fail.push("react/JellyMascot.tsx се разминава с генерирания от svg/*.svg + tokens.css — пусни `node build.mjs` (файлът е генериран, не се редактира на ръка)");
@@ -119,6 +123,8 @@ export function audit({ svgs, tsx, tokens, generated, demo }) {
     if (!/<title\b/.test(text)) fail.push(`${name}: липсва <title> (достъпното име на маскота)`);
 
     // Сигурност (SECURITY.md): вграден SVG изпълнява скриптове в контекста на страницата.
+    // (`<style>` НЕ е в списъка — единственият стил тук е нашият генериран анимационен блок,
+    // който `check.mjs` сверява байт по байт срещу `tokens.css` няколко реда по-горе.)
     // Затова асетите са чист рисунък — гейтваме го, вместо да го обещаваме в документ.
     for (const [re, why] of FORBIDDEN) {
       if (re.test(text)) fail.push(`${name}: ${why} — асетът трябва да е чист рисунък (виж SECURITY.md)`);
@@ -181,7 +187,14 @@ function main() {
     }
   }
 
-  const fail = audit({ svgs, tsx: R("react/JellyMascot.tsx"), tokens: R("tokens.json"), generated: generate(), demo: R("demo/index.html") });
+  const fail = audit({
+    svgs,
+    tsx: R("react/JellyMascot.tsx"),
+    tokens: R("tokens.json"),
+    generated: generate(),
+    generatedAnimated: generateAnimatedSvg(),
+    demo: R("demo/index.html"),
+  });
 
   if (process.argv.includes("--json")) {
     console.log(JSON.stringify({ ok: fail.length === 0, failures: fail }, null, 2));

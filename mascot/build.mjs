@@ -71,6 +71,21 @@ export function animationCss(css) {
   return m[1].trim();
 }
 
+/**
+ * Пълното ниво + анимацията, вградена като `<style>` вътре в самия SVG.
+ *
+ * Защо съществува: външният CSS не стига до `<img src="…svg">`, значи анимацията работи само при
+ * ВГРАДЕН SVG. Продуктите, които не могат да вграждат (EJS партиали, статични страници, README),
+ * иначе получават неподвижна картинка. Тук стиловете пътуват ВЪТРЕ във файла и се движи навсякъде.
+ */
+export function animatedSvg(fullSvg, css) {
+  if (!fullSvg.includes("</defs>")) throw new Error("пълният SVG няма <defs> — няма къде да влезе стилът");
+  return fullSvg
+    .replace(/^<svg /, '<svg class="jm-animated" ')
+    .replace("<title", "<!-- ⚠️  ГЕНЕРИРАН ФАЙЛ — не го редактирай на ръка.\n       Източник: svg/jelly-mascot-full.svg + tokens.css · Генератор: `node build.mjs` -->\n  <title")
+    .replace("</defs>", `</defs>\n\n  <style>\n${css.split("\n").map((l) => (l.trim() ? "    " + l : "")).join("\n")}\n  </style>`);
+}
+
 export function generate(read = (p) => readFileSync(join(HERE, p), "utf8")) {
   const tiers = Object.fromEntries(TIERS.map((t) => [t, svgBodyToJsx(read(`svg/jelly-mascot-${t}.svg`))]));
   const css = animationCss(read("tokens.css"));
@@ -154,11 +169,17 @@ export default function JellyMascot({
 `;
 }
 
+/** Анимираният SVG от текущите източници (същият вход като `generate`). */
+export function generateAnimatedSvg(read = (p) => readFileSync(join(HERE, p), "utf8")) {
+  return animatedSvg(read("svg/jelly-mascot-full.svg"), animationCss(read("tokens.css")));
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const code = generate();
   if (process.argv.includes("--stdout")) process.stdout.write(code);
   else {
     writeFileSync(join(HERE, "react/JellyMascot.tsx"), code);
-    console.log("✓ react/JellyMascot.tsx — генериран от svg/*.svg + tokens.css");
+    writeFileSync(join(HERE, "svg/jelly-mascot-full-animated.svg"), generateAnimatedSvg());
+    console.log("✓ react/JellyMascot.tsx + svg/jelly-mascot-full-animated.svg — генерирани от svg/*.svg + tokens.css");
   }
 }

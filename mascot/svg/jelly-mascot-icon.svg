@@ -9,12 +9,16 @@
     <path class="jm-body" d="M256 138C352 138 414 206 414 292C414 366 376 420 322 444C302 454 280 460 256 460C232 460 210 454 190 444C136 420 98 366 98 292C98 206 160 138 256 138Z" fill="var(--jm-neon, #5AB60D)"/>
     <path d="M256 460C232 460 210 454 190 444C160 430 132 406 116 374C154 396 202 408 256 408C310 408 358 396 396 374C380 406 352 430 322 444C302 454 280 460 256 460Z" fill="var(--jm-bottle, #297F04)"/>
 
+    <path d="M256 138C200 138 156 160 130 194C160 176 204 166 256 166C308 166 352 176 382 194C356 160 312 138 256 138Z" fill="var(--jm-olive, #99E72A)"/>
+
     <g class="jm-face">
       <g class="jm-eyes">
         <circle cx="196" cy="264" r="40" fill="var(--jm-eye, #F4FAEA)"/>
         <circle cx="316" cy="264" r="40" fill="var(--jm-eye, #F4FAEA)"/>
         <circle cx="198" cy="266" r="27" fill="var(--jm-ink, #0A0C0A)"/>
         <circle cx="318" cy="266" r="27" fill="var(--jm-ink, #0A0C0A)"/>
+        <circle cx="189" cy="257" r="8" fill="var(--jm-white, #FFFFFF)"/>
+        <circle cx="309" cy="257" r="8" fill="var(--jm-white, #FFFFFF)"/>
       </g>
       <g class="jm-glasses" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="20" stroke-linecap="round">
         <circle cx="196" cy="264" r="50"/>

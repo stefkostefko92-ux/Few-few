@@ -11,7 +11,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { jsxAttrName, jsxAttrValue, svgBodyToJsx, animationCss, generate } from "./build.mjs";
+import { jsxAttrName, jsxAttrValue, svgBodyToJsx, animationCss, animatedSvg, generate, generateAnimatedSvg } from "./build.mjs";
 import { hexes, paletteOf, wellFormed, groupOf, bearingCircles, audit, FORBIDDEN } from "./check.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -108,6 +108,21 @@ test("audit: лови скрипт/събитиен атрибут/външна 
   }
   // `aria-labelledby` не е препратка — правилото не бива да го бърка с href.
   assert.ok(!FORBIDDEN.some(([re]) => re.test('<svg aria-labelledby="jm-title">')));
+});
+
+test("animatedSvg: вгражда стиловете и маркира корена", () => {
+  const out = animatedSvg('<svg viewBox="0 0 1 1">\n  <title>х</title>\n  <defs></defs>\n</svg>', ".jm-animated .jm-root { opacity: 1 }");
+  assert.match(out, /^<svg class="jm-animated"/);
+  assert.match(out, /<style>[\s\S]*jm-root[\s\S]*<\/style>/);
+  assert.throws(() => animatedSvg("<svg></svg>", "x"), /няма <defs>/);
+});
+
+test("audit: лови ръчно пипнат анимиран SVG", () => {
+  const svgs = Object.fromEntries(readdirSync(join(HERE, "svg")).filter((f) => f.endsWith(".svg")).map((f) => [f, R(`svg/${f}`)]));
+  const base = { tsx: R("react/JellyMascot.tsx"), tokens: R("tokens.json"), generated: generate(), generatedAnimated: generateAnimatedSvg() };
+  assert.deepEqual(audit({ ...base, svgs }), []);
+  const tampered = { ...svgs, "jelly-mascot-full-animated.svg": svgs["jelly-mascot-full-animated.svg"].replace("jm-bob 3.6s", "jm-bob 0.2s") };
+  assert.ok(audit({ ...base, svgs: tampered }).some((f) => /full-animated/.test(f)));
 });
 
 test("audit: лови липсваща достъпност", () => {

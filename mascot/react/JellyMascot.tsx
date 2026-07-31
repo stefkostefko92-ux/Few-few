@@ -46,6 +46,25 @@ const ANIMATION_CSS = `
   transform-origin: 372px 104px;
 }
 
+/* Мехурчетата се качват — трите плана с различна скорост, за да има паралакс в желето. */
+.jm-animated .jm-bubbles-near { animation: jm-rise 7s ease-in-out infinite; }
+.jm-animated .jm-bubbles-mid { animation: jm-rise 9s ease-in-out infinite 0.8s; }
+.jm-animated .jm-bubbles-far { animation: jm-rise 12s ease-in-out infinite 1.6s; }
+
+/* Отблясък, който минава по гланца веднъж на цикъл. */
+.jm-animated .jm-shimmer { animation: jm-sweep 9s ease-in-out infinite; }
+
+/* Искрите присветват разминато. */
+.jm-animated .jm-sparkle-a,
+.jm-animated .jm-sparkle-b,
+.jm-animated .jm-sparkle-c {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.jm-animated .jm-sparkle-a { animation: jm-twinkle 4.4s ease-in-out infinite; }
+.jm-animated .jm-sparkle-b { animation: jm-twinkle 5.6s ease-in-out infinite 1.1s; }
+.jm-animated .jm-sparkle-c { animation: jm-twinkle 6.8s ease-in-out infinite 2.3s; }
+
 @keyframes jm-bob {
   0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
   45% { transform: translateY(-10px) scaleY(1.015) scaleX(0.99); }
@@ -63,6 +82,22 @@ const ANIMATION_CSS = `
   0%, 100% { transform: rotate(0deg); }
   50% { transform: rotate(5deg); }
 }
+/* Мехурчетата ДРЕЙФАТ, не изчезват: цял план, който избледнява до нула, изпразва желето и
+   после изпуква обратно. Ниска амплитуда, непрозрачността никога не пада под 0.55. */
+@keyframes jm-rise {
+  0%, 100% { transform: translateY(7px); opacity: 0.55; }
+  50% { transform: translateY(-7px); opacity: 1; }
+}
+/* Скосяването е в самата анимация: CSS свойството transform замества SVG атрибута transform,
+   а не се добавя към него — без skewX тук лентата би се изправила при първия кадър. */
+@keyframes jm-sweep {
+  0%, 62% { transform: translateX(0) skewX(-14deg); }
+  100% { transform: translateX(760px) skewX(-14deg); }
+}
+@keyframes jm-twinkle {
+  0%, 70%, 100% { transform: scale(0.85); opacity: 0.5; }
+  82% { transform: scale(1.15); opacity: 1; }
+}
 
 /* Достъпност (закон в репото, не пожелание): нула движение при prefers-reduced-motion.
    Нищо в анимацията не мига по-бързо от 3 Hz — епилептичен риск няма и при включено движение. */
@@ -71,7 +106,14 @@ const ANIMATION_CSS = `
   .jm-animated .jm-bloom,
   .jm-animated .jm-core,
   .jm-animated .jm-eyes,
-  .jm-animated .jm-tassel-bob {
+  .jm-animated .jm-tassel-bob,
+  .jm-animated .jm-bubbles-near,
+  .jm-animated .jm-bubbles-mid,
+  .jm-animated .jm-bubbles-far,
+  .jm-animated .jm-shimmer,
+  .jm-animated .jm-sparkle-a,
+  .jm-animated .jm-sparkle-b,
+  .jm-animated .jm-sparkle-c {
     animation: none !important;
   }
 }
@@ -86,49 +128,86 @@ function Full({ uid }: TierProps) {
     <>
       <defs>
         {/* Тяло: ключова светлина горе-вляво → дълбока сянка долу-вдясно (подповърхностно разсейване). */}
-        <radialGradient id={`${uid}-body`} cx="36%" cy="26%" r="84%">
+        <radialGradient id={`${uid}-body`} cx="36%" cy="24%" r="86%">
           <stop offset="0%" stopColor="var(--jm-pale, #C8DDA6)"/>
-          <stop offset="18%" stopColor="var(--jm-olive, #99E72A)"/>
-          <stop offset="55%" stopColor="var(--jm-neon, #5AB60D)"/>
-          <stop offset="88%" stopColor="var(--jm-bottle, #297F04)"/>
+          <stop offset="16%" stopColor="var(--jm-olive, #99E72A)"/>
+          <stop offset="52%" stopColor="var(--jm-neon, #5AB60D)"/>
+          <stop offset="86%" stopColor="var(--jm-bottle, #297F04)"/>
           <stop offset="100%" stopColor="var(--jm-deep, #0D4A02)"/>
         </radialGradient>
 
         {/* Вътрешна емисия — най-силна в долната половина („свети отвътре", не отгоре). */}
         <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="1"/>
-          <stop offset="45%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.55"/>
+          <stop offset="42%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.5"/>
           <stop offset="100%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0"/>
         </radialGradient>
 
         {/* Подсветка под тялото (underglow) — лежи на пода зад силуета. */}
         <radialGradient id={`${uid}-underglow`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0.55"/>
+          <stop offset="0%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.6"/>
+          <stop offset="45%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0.35"/>
           <stop offset="100%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0"/>
         </radialGradient>
 
         {/* Rim light: нула отгоре-вляво, ярък кант долу-вдясно. */}
         <linearGradient id={`${uid}-rim`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0"/>
-          <stop offset="0.45" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.05"/>
+          <stop offset="0.42" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.05"/>
           <stop offset="1" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.95"/>
         </linearGradient>
 
-        {/* Горна дъга на шапката: плоскостта хваща светлина отляво. */}
-        <linearGradient id={`${uid}-board`} x1="0" y1="0" x2="1" y2="1">
+        {/* Гелов блик по темето: остър горе, стопен надолу. */}
+        <linearGradient id={`${uid}-gloss`} x1="0.2" y1="0" x2="0.5" y2="1">
+          <stop offset="0" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.5"/>
+          <stop offset="0.55" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.1"/>
+          <stop offset="1" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0"/>
+        </linearGradient>
+
+        {/* Стъклото на очилата: студен отблясък отгоре, прозрачно надолу. */}
+        <linearGradient id={`${uid}-glass`} x1="0.15" y1="0" x2="0.7" y2="1">
+          <stop offset="0" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.34"/>
+          <stop offset="0.45" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.06"/>
+          <stop offset="1" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.02"/>
+        </linearGradient>
+
+        {/* Хоризонтална лента, която минава през тялото (движещ се отблясък). */}
+        <linearGradient id={`${uid}-shimmer`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0"/>
+          <stop offset="0.5" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.5"/>
+          <stop offset="1" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0"/>
+        </linearGradient>
+
+        {/* Шапка: горната плоскост хваща светлина, ръбът е по-тъмен. */}
+        <linearGradient id={`${uid}-board`} x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0" stopColor="var(--jm-soft-olive, #848D68)" stopOpacity="0.55"/>
+          <stop offset="0.35" stopColor="var(--jm-ink-soft, #2A2E24)"/>
+          <stop offset="1" stopColor="var(--jm-ink, #0A0C0A)"/>
+        </linearGradient>
+        <linearGradient id={`${uid}-band`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--jm-ink-soft, #2A2E24)"/>
           <stop offset="1" stopColor="var(--jm-ink, #0A0C0A)"/>
         </linearGradient>
-
-        <linearGradient id={`${uid}-gold`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`${uid}-gold`} x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0" stopColor="var(--jm-gold-light, #F2D479)"/>
+          <stop offset="0.55" stopColor="var(--jm-gold, #D9A521)"/>
           <stop offset="1" stopColor="var(--jm-gold, #D9A521)"/>
         </linearGradient>
 
+        {/* Отражението в пода: силно до контакта, нула надолу. */}
+        <linearGradient id={`${uid}-floor-fade`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.55"/>
+          <stop offset="0.55" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.08"/>
+          <stop offset="1" stopColor="var(--jm-mask-black, #000000)"/>
+        </linearGradient>
+        <mask id={`${uid}-floor`}>
+          <rect x="0" y="452" width="512" height="120" fill={`url(#${uid}-floor-fade)`}/>
+        </mask>
+
         {/* Мек преход, за да не оставя долният кант хоризонтален шев по тялото. */}
         <linearGradient id={`${uid}-bottom-fade`} x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
-          <stop offset="0.45" stopColor="#000000"/>
-          <stop offset="0.85" stopColor="#FFFFFF"/>
+          <stop offset="0.45" stopColor="var(--jm-mask-black, #000000)"/>
+          <stop offset="0.85" stopColor="var(--jm-white, #FFFFFF)"/>
         </linearGradient>
         <mask id={`${uid}-bottom`}>
           <rect x="0" y="0" width="512" height="512" fill={`url(#${uid}-bottom-fade)`}/>
@@ -144,83 +223,135 @@ function Full({ uid }: TierProps) {
         <filter id={`${uid}-soft-s`} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="7"/>
         </filter>
+        <filter id={`${uid}-soft-xs`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5"/>
+        </filter>
+
+        {/*
+          Геловият вид не идва от още един бял елипс отгоре, а от РЕАЛНО осветление: размиваме
+          алфата в псевдо-релеф и пускаме огледален източник по него (feSpecularLighting), после
+          режем блясъка по силуета и го добавяме върху цвета. Това е разликата между „зелено кръгче
+          с блик" и тяло, което изглежда като материал.
+        */}
+        <filter id={`${uid}-gel`} x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="20" result="jm-relief"/>
+          <feSpecularLighting in="jm-relief" surfaceScale="3" specularConstant="1.1" specularExponent="90" lightingColor="#C8DDA6" result="jm-spec">
+            <fePointLight x="120" y="70" z="170"/>
+          </feSpecularLighting>
+          <feComposite in="jm-spec" in2="SourceAlpha" operator="in" result="jm-spec-cut"/>
+          <feComposite in="SourceGraphic" in2="jm-spec-cut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+        </filter>
+
+        {/*
+          Каустики: фрактален шум, изместен през себе си. Дава неравномерната вътрешна плътност на
+          желето — това, което различава течен материал от плътен цвят. Държи се на много ниска
+          непрозрачност; целта е усещане, не текстура.
+        */}
+        <filter id={`${uid}-caustics`} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="3" seed="7" result="jm-noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="jm-noise" scale="46" xChannelSelector="R" yChannelSelector="G"/>
+          <feGaussianBlur stdDeviation="5"/>
+        </filter>
       </defs>
 
       <g className="jm-root">
-        {/* 1. Подсветка (зад всичко). */}
-        <ellipse className="jm-glow" cx="256" cy="452" rx="176" ry="44" fill={`url(#${uid}-underglow)`} filter={`url(#${uid}-soft)`}/>
-        <path className="jm-bloom" d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="var(--jm-neon, #5AB60D)" opacity="0.45" filter={`url(#${uid}-soft)`}/>
-
-        {/* 2. Ръчички — зад тялото, за да „излизат" от него. */}
-        <g className="jm-arms" stroke={`url(#${uid}-body)`} strokeWidth="36" strokeLinecap="round" fill="none">
-          <path d="M138 356C114 368 98 384 90 400"/>
-          <path d="M374 356C398 368 414 384 422 400"/>
+        {/* 0. Отражение в пода — герой-кадърът стъпва на лъскава повърхност, не виси в нищото. */}
+        <g className="jm-floor" mask={`url(#${uid}-floor)`} opacity="0.7">
+          <g transform="translate(0 908) scale(1 -1)">
+            <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill={`url(#${uid}-body)`} filter={`url(#${uid}-soft-s)`}/>
+          </g>
         </g>
 
-        {/* 3. Тяло. */}
-        <path className="jm-body" d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill={`url(#${uid}-body)`}/>
+        {/* 1. Контактна сянка + подсветка (зад всичко). */}
+        <ellipse cx="256" cy="454" rx="132" ry="22" fill="var(--jm-mask-black, #000000)" opacity="0.75" filter={`url(#${uid}-soft-s)`}/>
+        <ellipse className="jm-glow" cx="256" cy="452" rx="182" ry="46" fill={`url(#${uid}-underglow)`} filter={`url(#${uid}-soft)`}/>
+        <path className="jm-bloom" d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="var(--jm-neon, #5AB60D)" opacity="0.45" filter={`url(#${uid}-soft)`}/>
 
-        {/* 4. Вътрешност — светещо ядро, мехурчета, специалитет. Всичко изрязано по силуета. */}
+        {/* 2. Ръчички — зад тялото, за да „излизат" от него; с кант отдолу, за да не са плоски. */}
+        <g className="jm-arms">
+          <g stroke={`url(#${uid}-body)`} strokeWidth="36" strokeLinecap="round" fill="none">
+            <path d="M138 356C114 368 98 384 90 400"/>
+            <path d="M374 356C398 368 414 384 422 400"/>
+          </g>
+          <g stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.5">
+            <path d="M132 374C112 384 98 396 92 408"/>
+            <path d="M380 374C400 384 414 396 420 408"/>
+          </g>
+        </g>
+
+        {/* 3. Тяло — с геловото осветление. */}
+        <path className="jm-body" d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill={`url(#${uid}-body)`} filter={`url(#${uid}-gel)`}/>
+
+        {/* 4. Вътрешност — всичко изрязано по силуета. */}
         <g clipPath={`url(#${uid}-clip)`}>
           {/* Вътрешна сянка по ръба: желето е плътно по контура и светло в средата — това,
                а не бликът отгоре, е което разчита окото като „полупрозрачно". */}
-          <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="none" stroke="var(--jm-deep, #0D4A02)" strokeWidth="46" opacity="0.55" filter={`url(#${uid}-soft-s)`}/>
-          <ellipse className="jm-core" cx="256" cy="382" rx="150" ry="118" fill={`url(#${uid}-core)`}/>
+          <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="none" stroke="var(--jm-deep, #0D4A02)" strokeWidth="40" opacity="0.45" filter={`url(#${uid}-soft-s)`}/>
+
+          <ellipse className="jm-core" cx="256" cy="382" rx="156" ry="124" fill={`url(#${uid}-core)`}/>
+          <ellipse className="jm-core" cx="252" cy="408" rx="92" ry="62" fill={`url(#${uid}-core)`} opacity="0.75"/>
+
+          {/* Каустики — неравномерна вътрешна плътност. */}
+          <g className="jm-caustics" opacity="0.3" filter={`url(#${uid}-caustics)`}>
+            <ellipse cx="248" cy="366" rx="118" ry="92" fill="var(--jm-olive, #99E72A)"/>
+            <ellipse cx="300" cy="300" rx="54" ry="44" fill="var(--jm-pale, #C8DDA6)" opacity="0.5"/>
+          </g>
 
           {/* Сянка от шапката върху темето. */}
           <ellipse cx="256" cy="152" rx="96" ry="26" fill="var(--jm-deep, #0D4A02)" opacity="0.55" filter={`url(#${uid}-soft-s)`}/>
 
-          {/* Мехурчета: неравномерни, по-нагъсто в долната половина. */}
+          {/* Мехурчета в три плана: далечните са размити и бледи, близките — остри, с връх и
+               отражение отдолу. Еднакво остри мехурчета изглеждат като точки ВЪРХУ топка, не
+               като обем В желе. */}
           <g className="jm-bubbles">
-            <circle cx="176" cy="332" r="9" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="176" cy="332" r="9" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.0" opacity="0.55"/>
-            <circle cx="172.9" cy="328.6" r="2.3" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="212" cy="392" r="6" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="212" cy="392" r="6" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.3" opacity="0.55"/>
-            <circle cx="210.0" cy="389.7" r="1.6" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="158" cy="392" r="4" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="158" cy="392" r="4" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="242" cy="424" r="11" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="242" cy="424" r="11" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.4" opacity="0.55"/>
-            <circle cx="238.3" cy="419.8" r="2.9" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="296" cy="404" r="7" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="296" cy="404" r="7" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.5" opacity="0.55"/>
-            <circle cx="293.6" cy="401.3" r="1.8" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="332" cy="356" r="10" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="332" cy="356" r="10" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.2" opacity="0.55"/>
-            <circle cx="328.6" cy="352.2" r="2.6" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="352" cy="410" r="5" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="352" cy="410" r="5" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="350.3" cy="408.1" r="1.3" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="196" cy="356" r="3.5" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="196" cy="356" r="3.5" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="276" cy="352" r="4.5" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="276" cy="352" r="4.5" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="320" cy="300" r="6" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="320" cy="300" r="6" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.3" opacity="0.55"/>
-            <circle cx="318.0" cy="297.7" r="1.6" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="150" cy="270" r="5" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="150" cy="270" r="5" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="148.3" cy="268.1" r="1.3" fill="var(--jm-white, #FFFFFF)" opacity="0.75"/>
-            <circle cx="368" cy="268" r="3.5" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="368" cy="268" r="3.5" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="228" cy="300" r="3" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="228" cy="300" r="3" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
-            <circle cx="300" cy="436" r="4" fill="var(--jm-pale, #C8DDA6)" opacity="0.18"/>
-            <circle cx="300" cy="436" r="4" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.1" opacity="0.55"/>
+            <g className="jm-bubbles-far" opacity="0.4" filter={`url(#${uid}-soft-xs)`}>
+              <circle cx="150" cy="270" r="7" fill="var(--jm-pale, #C8DDA6)" opacity="0.35"/>
+              <circle cx="368" cy="268" r="5" fill="var(--jm-pale, #C8DDA6)" opacity="0.3"/>
+              <circle cx="320" cy="300" r="9" fill="var(--jm-pale, #C8DDA6)" opacity="0.3"/>
+              <circle cx="228" cy="300" r="5" fill="var(--jm-pale, #C8DDA6)" opacity="0.3"/>
+              <circle cx="196" cy="356" r="6" fill="var(--jm-pale, #C8DDA6)" opacity="0.32"/>
+              <circle cx="300" cy="436" r="8" fill="var(--jm-pale, #C8DDA6)" opacity="0.3"/>
+            </g>
+            <g className="jm-bubbles-mid">
+              <circle cx="212" cy="392" r="8" fill="var(--jm-pale, #C8DDA6)" opacity="0.16"/>
+              <circle cx="212" cy="392" r="8" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.6" opacity="0.5"/>
+              <circle cx="209" cy="389" r="2.4" fill="var(--jm-white, #FFFFFF)" opacity="0.7"/>
+              <circle cx="332" cy="356" r="11" fill="var(--jm-pale, #C8DDA6)" opacity="0.16"/>
+              <circle cx="332" cy="356" r="11" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.5"/>
+              <circle cx="328" cy="352" r="3" fill="var(--jm-white, #FFFFFF)" opacity="0.7"/>
+              <circle cx="352" cy="410" r="6" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.4" opacity="0.45"/>
+              <circle cx="158" cy="392" r="5" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.3" opacity="0.45"/>
+            </g>
+            <g className="jm-bubbles-near">
+              <circle cx="176" cy="332" r="12" fill="var(--jm-pale, #C8DDA6)" opacity="0.14"/>
+              <circle cx="176" cy="332" r="12" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.4" opacity="0.6"/>
+              <circle cx="171" cy="327" r="3.6" fill="var(--jm-white, #FFFFFF)" opacity="0.85"/>
+              <circle cx="181" cy="339" r="4" fill="var(--jm-olive, #99E72A)" opacity="0.45"/>
+              <circle cx="244" cy="424" r="15" fill="var(--jm-pale, #C8DDA6)" opacity="0.14"/>
+              <circle cx="244" cy="424" r="15" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.6" opacity="0.6"/>
+              <circle cx="238" cy="418" r="4.4" fill="var(--jm-white, #FFFFFF)" opacity="0.85"/>
+              <circle cx="249" cy="432" r="5" fill="var(--jm-olive, #99E72A)" opacity="0.45"/>
+              <circle cx="296" cy="404" r="9" fill="var(--jm-pale, #C8DDA6)" opacity="0.14"/>
+              <circle cx="296" cy="404" r="9" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.55"/>
+              <circle cx="292" cy="400" r="2.8" fill="var(--jm-white, #FFFFFF)" opacity="0.8"/>
+            </g>
           </g>
 
-          {/* Голям мек блик горе-вляво + остър специалитет. */}
-          <ellipse cx="182" cy="212" rx="58" ry="34" fill="var(--jm-white, #FFFFFF)" opacity="0.16" transform="rotate(-32 182 212)" filter={`url(#${uid}-soft-s)`}/>
-          <ellipse cx="168" cy="196" rx="16" ry="10" fill="var(--jm-white, #FFFFFF)" opacity="0.55" transform="rotate(-32 168 196)"/>
+          {/* Долният ръб хваща подсветката — топъл лаймов кант отдолу. */}
+          <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="20" opacity="1" filter={`url(#${uid}-soft-s)`} mask={`url(#${uid}-bottom)`}/>
+
+          {/* Гелов блик по темето — форма на капка, не елипса; следва извивката на тялото. */}
+          <path className="jm-gloss" d="M150 236C154 190 196 160 244 160C258 160 266 166 262 174C254 188 214 196 190 226C176 244 172 262 162 264C152 266 148 254 150 236Z" fill={`url(#${uid}-gloss)`}/>
+          <ellipse cx="166" cy="194" rx="15" ry="9" fill="var(--jm-white, #FFFFFF)" opacity="0.75" transform="rotate(-34 166 194)"/>
+
+          {/* Движещ се отблясък по повърхността (мърда само при .jm-animated). */}
+          <rect className="jm-shimmer" x="-260" y="120" width="150" height="360" fill={`url(#${uid}-shimmer)`} opacity="0.35" transform="skewX(-14)"/>
+
           {/* Тъмен контур по долния десен ръб — дава обем на желето. */}
-          <ellipse cx="368" cy="418" rx="104" ry="76" fill="var(--jm-deep, #0D4A02)" opacity="0.22" filter={`url(#${uid}-soft)`}/>
+          <ellipse cx="374" cy="424" rx="96" ry="70" fill="var(--jm-deep, #0D4A02)" opacity="0.16" filter={`url(#${uid}-soft)`}/>
         </g>
 
-        {/* 5. Кант (rim light) по силуета + лаймов кант отдолу от подсветката. */}
-        <g clipPath={`url(#${uid}-clip)`}>
-          <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="16" opacity="0.95" filter={`url(#${uid}-soft-s)`} mask={`url(#${uid}-bottom)`}/>
-        </g>
+        {/* 5. Кант (rim light) по силуета. */}
         <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="none" stroke={`url(#${uid}-rim)`} strokeWidth="5"/>
 
         {/* 6. Лице. */}
@@ -231,24 +362,36 @@ function Full({ uid }: TierProps) {
             <path d="M348 202C330 190 306 188 288 194"/>
           </g>
 
-          {/* Очи. */}
+          {/* Очи: бяло с лека сянка от рамката отгоре, зеница с ирисов пръстен и два отблясъка. */}
           <g className="jm-eyes">
             <circle cx="200" cy="266" r="34" fill="var(--jm-eye, #F4FAEA)"/>
             <circle cx="312" cy="266" r="34" fill="var(--jm-eye, #F4FAEA)"/>
+            <g opacity="0.35" filter={`url(#${uid}-soft-xs)`}>
+              <path d="M170 254C180 240 220 240 230 254" fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="9"/>
+              <path d="M282 254C292 240 332 240 342 254" fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="9"/>
+            </g>
             <circle cx="202" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
             <circle cx="314" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+            <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
+              <circle cx="202" cy="270" r="18"/>
+              <circle cx="314" cy="270" r="18"/>
+            </g>
             <g fill="var(--jm-white, #FFFFFF)">
               <circle cx="193" cy="261" r="8"/>
               <circle cx="305" cy="261" r="8"/>
-              <circle cx="210" cy="280" r="4" opacity="0.6"/>
-              <circle cx="322" cy="280" r="4" opacity="0.6"/>
+              <circle cx="210" cy="280" r="4" opacity="0.7"/>
+              <circle cx="322" cy="280" r="4" opacity="0.7"/>
             </g>
           </g>
 
-          {/* Очила: дебели черни кръгли рамки + стъкла с лек блясък. */}
+          {/* Очила: стъкло с отблясък, дебела рамка с горен кант и мека сянка под нея. */}
           <g className="jm-glasses">
-            <circle cx="200" cy="266" r="48" fill="var(--jm-white, #FFFFFF)" opacity="0.07"/>
-            <circle cx="312" cy="266" r="48" fill="var(--jm-white, #FFFFFF)" opacity="0.07"/>
+            <circle cx="200" cy="266" r="48" fill={`url(#${uid}-glass)`}/>
+            <circle cx="312" cy="266" r="48" fill={`url(#${uid}-glass)`}/>
+            <g fill="none" stroke="var(--jm-mask-black, #000000)" strokeWidth="13" opacity="0.35" filter={`url(#${uid}-soft-xs)`} transform="translate(0 5)">
+              <circle cx="200" cy="266" r="48"/>
+              <circle cx="312" cy="266" r="48"/>
+            </g>
             <g fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="13" strokeLinecap="round">
               <circle cx="200" cy="266" r="48"/>
               <circle cx="312" cy="266" r="48"/>
@@ -256,38 +399,84 @@ function Full({ uid }: TierProps) {
               <path d="M152 254C138 246 126 244 114 246"/>
               <path d="M360 254C374 246 386 244 398 246"/>
             </g>
-            {/* Блясък по стъклата (къси наклонени черти). */}
-            <g stroke="var(--jm-white, #FFFFFF)" strokeWidth="7" strokeLinecap="round" opacity="0.5">
-              <path d="M176 246L192 232"/>
-              <path d="M288 246L304 232"/>
+            {/* Горен кант на рамката — метален отблясък, който я вади от плоското. */}
+            <g fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="3" strokeLinecap="round" opacity="0.7">
+              <path d="M164 234C176 224 190 220 204 220"/>
+              <path d="M276 234C288 224 302 220 316 220"/>
+            </g>
+            {/* Блясък по стъклата: широка и тясна черта, както в реален студиен кадър. */}
+            <g stroke="var(--jm-white, #FFFFFF)" strokeLinecap="round" fill="none">
+              <path d="M172 250L192 230" strokeWidth="9" opacity="0.55"/>
+              <path d="M182 262L196 248" strokeWidth="4" opacity="0.4"/>
+              <path d="M284 250L304 230" strokeWidth="9" opacity="0.55"/>
+              <path d="M294 262L308 248" strokeWidth="4" opacity="0.4"/>
             </g>
           </g>
 
-          {/* Усмивка. */}
+          {/* Усмивка с мек отблясък отдолу (устата е вдлъбнатина, не линия). */}
           <path d="M236 322C244 336 268 336 276 322" fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="9" strokeLinecap="round"/>
+          <path d="M240 332C246 340 266 340 272 332" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.45"/>
         </g>
 
-        {/* 7. Папийонка. */}
+        {/* 7. Папийонка — с гънки и сатенен блясък. */}
         <g className="jm-bowtie">
+          <g filter={`url(#${uid}-soft-xs)`} opacity="0.5">
+            <path d="M250 404C234 390 220 380 208 379C202 392 202 416 208 429C220 428 234 418 250 404Z" fill="var(--jm-mask-black, #000000)"/>
+            <path d="M262 404C278 390 292 380 304 379C310 392 310 416 304 429C292 428 278 418 262 404Z" fill="var(--jm-mask-black, #000000)"/>
+          </g>
           <path d="M250 400C234 386 220 376 208 375C202 388 202 412 208 425C220 424 234 414 250 400Z" fill="var(--jm-ink, #0A0C0A)"/>
           <path d="M262 400C278 386 292 376 304 375C310 388 310 412 304 425C292 424 278 414 262 400Z" fill="var(--jm-ink, #0A0C0A)"/>
-          <rect x="246" y="389" width="20" height="22" rx="7" fill="var(--jm-ink-soft, #2A2E24)"/>
-          <path d="M250 400C234 386 220 376 208 375C202 388 202 412 208 425C220 424 234 414 250 400ZM262 400C278 386 292 376 304 375C310 388 310 412 304 425C292 424 278 414 262 400Z" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.35"/>
-          <path d="M214 383C220 391 222 405 220 416" fill="none" stroke="var(--jm-ink-soft, #2A2E24)" strokeWidth="4" strokeLinecap="round" opacity="0.8"/>
-          <path d="M298 383C292 391 290 405 292 416" fill="none" stroke="var(--jm-ink-soft, #2A2E24)" strokeWidth="4" strokeLinecap="round" opacity="0.8"/>
+          <g fill="none" stroke="var(--jm-ink-soft, #2A2E24)" strokeWidth="3.5" strokeLinecap="round">
+            <path d="M214 383C220 391 222 405 220 416"/>
+            <path d="M298 383C292 391 290 405 292 416"/>
+            <path d="M228 386C233 393 234 406 232 414"/>
+            <path d="M284 386C279 393 278 406 280 414"/>
+          </g>
+          <g fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="2.5" strokeLinecap="round" opacity="0.7">
+            <path d="M246 396C238 390 226 382 214 379"/>
+            <path d="M266 396C274 390 286 382 298 379"/>
+          </g>
+          <rect x="246" y="389" width="20" height="22" rx="7" fill={`url(#${uid}-band)`}/>
+          <path d="M250 392C250 400 250 404 250 408" fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+          <path d="M250 400C234 386 220 376 208 375C202 388 202 412 208 425C220 424 234 414 250 400ZM262 400C278 386 292 376 304 375C310 388 310 412 304 425C292 424 278 414 262 400Z" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.6" opacity="0.3"/>
         </g>
 
-        {/* 8. Академична шапка — леко наклонена, „плава" над темето. */}
+        {/* 8. Академична шапка — с видима дебелина на дъската, сатен по плата и пискюл от нишки. */}
         <g className="jm-cap" transform="translate(0 18) rotate(-6 256 110)">
-          <ellipse cx="256" cy="120" rx="66" ry="26" fill="var(--jm-ink, #0A0C0A)"/>
-          <path d="M256 62L390 100L256 138L122 100Z" fill="var(--jm-ink, #0A0C0A)" opacity="0.9" transform="translate(0 9)"/>
+          <ellipse cx="256" cy="120" rx="66" ry="26" fill={`url(#${uid}-band)`}/>
+          <path d="M198 126C214 138 298 138 314 126" fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="2.5" opacity="0.35"/>
+          {/* Дебелина на дъската: същият ромб, изместен надолу, плюс видим страничен ръб. */}
+          <path d="M256 62L390 100L256 138L122 100Z" fill="var(--jm-ink, #0A0C0A)" transform="translate(0 10)"/>
+          <path d="M122 100L256 138L390 100L390 110L256 148L122 110Z" fill="var(--jm-ink, #0A0C0A)"/>
           <path d="M256 62L390 100L256 138L122 100Z" fill={`url(#${uid}-board)`}/>
-          <path d="M256 62L390 100L256 106L122 100Z" fill="var(--jm-ink-soft, #2A2E24)" opacity="0.5"/>
+          {/* Сатен по горната плоскост + светъл ръб откъм светлината. */}
+          <path d="M256 62L390 100L256 106L122 100Z" fill="var(--jm-soft-olive, #848D68)" opacity="0.16"/>
+          <path d="M256 62L390 100" fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="2" opacity="0.5"/>
+          <path d="M122 100L256 62" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.35"/>
           <circle cx="256" cy="100" r="6" fill="var(--jm-ink-soft, #2A2E24)"/>
-          {/* Пискюл: шнур през ръба на дъската и висящ помпон. */}
+          <circle cx="254" cy="98" r="2" fill="var(--jm-soft-olive, #848D68)" opacity="0.8"/>
+          {/* Пискюл: шнур през ръба на дъската и помпон от нишки. */}
           <path d="M256 100C300 106 340 108 372 102" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
-          <path className="jm-tassel" d="M372 102C378 124 378 146 374 162" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
-          <path className="jm-tassel-bob" d="M362 160H386L380 196C378 202 370 202 368 196Z" fill={`url(#${uid}-gold)`}/>
+          <path d="M256 100C300 106 340 108 372 102" fill="none" stroke="var(--jm-gold-light, #F2D479)" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+          <g className="jm-tassel">
+            <path d="M372 102C378 124 378 146 374 162" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
+            <g className="jm-tassel-bob">
+              <path d="M362 158H386L380 196C378 202 370 202 368 196Z" fill={`url(#${uid}-gold)`}/>
+              <g stroke="var(--jm-gold, #D9A521)" strokeWidth="1.4" opacity="0.75" fill="none">
+                <path d="M368 162L367 194"/>
+                <path d="M374 162L374 196"/>
+                <path d="M380 162L381 194"/>
+              </g>
+              <rect x="361" y="155" width="26" height="8" rx="4" fill="var(--jm-gold-light, #F2D479)"/>
+            </g>
+          </g>
+        </g>
+
+        {/* 9. Искри — три малки блясъка, които правят кадъра „скъп". */}
+        <g className="jm-sparkles" fill="var(--jm-pale, #C8DDA6)">
+          <path className="jm-sparkle-a" d="M416 176C418 190 421 193 434 196C421 199 418 202 416 216C414 202 411 199 398 196C411 193 414 190 416 176Z" opacity="0.85"/>
+          <path className="jm-sparkle-b" d="M74 336C75 345 77 347 86 349C77 351 75 353 74 362C73 353 71 351 62 349C71 347 73 345 74 336Z" opacity="0.6"/>
+          <path className="jm-sparkle-c" d="M330 132C331 139 333 141 340 142C333 144 331 146 330 153C329 146 327 144 320 142C327 141 329 139 330 132Z" opacity="0.5"/>
         </g>
       </g>
     </>
@@ -298,51 +487,113 @@ function Medium({ uid }: TierProps) {
   return (
     <>
       {/* Ниво „средно": нула `filter` елементи (блурът не оцелява във всеки векторен конвейер и
-           поскъпва растеризацията), само градиенти и плътни форми. Силуетът и лицето са същите като
-           при пълния вариант — не се разминават, за да не се счупи разпознаваемостта. */}
+           поскъпва растеризацията). Обемът се строи само с градиенти — меките преходи, които при
+           пълното ниво идват от блур, тук са направени със стопове до нула. Силуетът, лицето и
+           аксесоарите са същите като при пълното ниво: маскотът е един и същ, не роднина. */}
       <defs>
-        <radialGradient id={`${uid}-body`} cx="36%" cy="26%" r="84%">
-          <stop offset="0%" stopColor="var(--jm-olive, #99E72A)"/>
-          <stop offset="46%" stopColor="var(--jm-neon, #5AB60D)"/>
+        <radialGradient id={`${uid}-body`} cx="36%" cy="24%" r="86%">
+          <stop offset="0%" stopColor="var(--jm-pale, #C8DDA6)"/>
+          <stop offset="16%" stopColor="var(--jm-olive, #99E72A)"/>
+          <stop offset="52%" stopColor="var(--jm-neon, #5AB60D)"/>
           <stop offset="86%" stopColor="var(--jm-bottle, #297F04)"/>
           <stop offset="100%" stopColor="var(--jm-deep, #0D4A02)"/>
         </radialGradient>
         <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.85"/>
-          <stop offset="55%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.35"/>
+          <stop offset="0%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.9"/>
+          <stop offset="45%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.4"/>
           <stop offset="100%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0"/>
         </radialGradient>
-        <linearGradient id={`${uid}-gold`} x1="0" y1="0" x2="0" y2="1">
+        {/* Вътрешната сянка по ръба без блур: пръстеновиден градиент, стопен навътре. */}
+        <radialGradient id={`${uid}-edge`} cx="50%" cy="50%" r="50%">
+          <stop offset="0.62" stopColor="var(--jm-deep, #0D4A02)" stopOpacity="0"/>
+          <stop offset="0.88" stopColor="var(--jm-deep, #0D4A02)" stopOpacity="0.34"/>
+          <stop offset="1" stopColor="var(--jm-deep, #0D4A02)" stopOpacity="0.6"/>
+        </radialGradient>
+        <linearGradient id={`${uid}-gloss`} x1="0.2" y1="0" x2="0.5" y2="1">
+          <stop offset="0" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.62"/>
+          <stop offset="0.55" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.12"/>
+          <stop offset="1" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0"/>
+        </linearGradient>
+        <linearGradient id={`${uid}-rim`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0"/>
+          <stop offset="0.42" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.05"/>
+          <stop offset="1" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.9"/>
+        </linearGradient>
+        <linearGradient id={`${uid}-glass`} x1="0.15" y1="0" x2="0.7" y2="1">
+          <stop offset="0" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.3"/>
+          <stop offset="0.45" stopColor="var(--jm-pale, #C8DDA6)" stopOpacity="0.05"/>
+          <stop offset="1" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.02"/>
+        </linearGradient>
+        <linearGradient id={`${uid}-board`} x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0" stopColor="var(--jm-soft-olive, #848D68)" stopOpacity="0.5"/>
+          <stop offset="0.35" stopColor="var(--jm-ink-soft, #2A2E24)"/>
+          <stop offset="1" stopColor="var(--jm-ink, #0A0C0A)"/>
+        </linearGradient>
+        <linearGradient id={`${uid}-band`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--jm-ink-soft, #2A2E24)"/>
+          <stop offset="1" stopColor="var(--jm-ink, #0A0C0A)"/>
+        </linearGradient>
+        <linearGradient id={`${uid}-gold`} x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0" stopColor="var(--jm-gold-light, #F2D479)"/>
+          <stop offset="0.55" stopColor="var(--jm-gold, #D9A521)"/>
           <stop offset="1" stopColor="var(--jm-gold, #D9A521)"/>
         </linearGradient>
+        {/* Контактната сянка без блур: елипса с градиент до прозрачно. */}
+        <radialGradient id={`${uid}-contact`} cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="var(--jm-mask-black, #000000)" stopOpacity="0.7"/>
+          <stop offset="0.6" stopColor="var(--jm-mask-black, #000000)" stopOpacity="0.28"/>
+          <stop offset="1" stopColor="var(--jm-mask-black, #000000)" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id={`${uid}-underglow`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="var(--jm-olive, #99E72A)" stopOpacity="0.5"/>
+          <stop offset="45%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0.28"/>
+          <stop offset="100%" stopColor="var(--jm-neon, #5AB60D)" stopOpacity="0"/>
+        </radialGradient>
         <clipPath id={`${uid}-clip`}>
           <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z"/>
         </clipPath>
       </defs>
 
       <g className="jm-root">
-        <g className="jm-arms" stroke={`url(#${uid}-body)`} strokeWidth="36" strokeLinecap="round" fill="none">
-          <path d="M138 356C114 368 98 384 90 400"/>
-          <path d="M374 356C398 368 414 384 422 400"/>
+        <ellipse cx="256" cy="452" rx="140" ry="26" fill={`url(#${uid}-contact)`}/>
+        <ellipse className="jm-glow" cx="256" cy="450" rx="176" ry="42" fill={`url(#${uid}-underglow)`}/>
+
+        <g className="jm-arms">
+          <g stroke={`url(#${uid}-body)`} strokeWidth="36" strokeLinecap="round" fill="none">
+            <path d="M138 356C114 368 98 384 90 400"/>
+            <path d="M374 356C398 368 414 384 422 400"/>
+          </g>
+          <g stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.5">
+            <path d="M132 374C112 384 98 396 92 408"/>
+            <path d="M380 374C400 384 414 396 420 408"/>
+          </g>
         </g>
 
         <path className="jm-body" d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill={`url(#${uid}-body)`}/>
 
         <g clipPath={`url(#${uid}-clip)`}>
-          <ellipse cx="256" cy="382" rx="150" ry="118" fill={`url(#${uid}-core)`}/>
+          <ellipse cx="256" cy="382" rx="156" ry="124" fill={`url(#${uid}-core)`}/>
+          <ellipse cx="252" cy="408" rx="92" ry="62" fill={`url(#${uid}-core)`} opacity="0.7"/>
+          <ellipse cx="256" cy="300" rx="152" ry="154" fill={`url(#${uid}-edge)`}/>
+
           <g className="jm-bubbles">
-            <circle cx="176" cy="332" r="9" fill="var(--jm-pale, #C8DDA6)" opacity="0.2"/>
-            <circle cx="176" cy="332" r="9" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.55"/>
-            <circle cx="242" cy="424" r="11" fill="var(--jm-pale, #C8DDA6)" opacity="0.2"/>
-            <circle cx="242" cy="424" r="11" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.4" opacity="0.55"/>
-            <circle cx="332" cy="356" r="10" fill="var(--jm-pale, #C8DDA6)" opacity="0.2"/>
-            <circle cx="332" cy="356" r="10" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.2" opacity="0.55"/>
-            <circle cx="296" cy="404" r="7" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.6" opacity="0.5"/>
-            <circle cx="212" cy="392" r="6" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.4" opacity="0.5"/>
+            <circle cx="176" cy="332" r="12" fill="var(--jm-pale, #C8DDA6)" opacity="0.14"/>
+            <circle cx="176" cy="332" r="12" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.4" opacity="0.6"/>
+            <circle cx="171" cy="327" r="3.6" fill="var(--jm-white, #FFFFFF)" opacity="0.85"/>
+            <circle cx="244" cy="424" r="15" fill="var(--jm-pale, #C8DDA6)" opacity="0.14"/>
+            <circle cx="244" cy="424" r="15" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2.6" opacity="0.6"/>
+            <circle cx="238" cy="418" r="4.4" fill="var(--jm-white, #FFFFFF)" opacity="0.85"/>
+            <circle cx="296" cy="404" r="9" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.55"/>
+            <circle cx="332" cy="356" r="11" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.5"/>
+            <circle cx="212" cy="392" r="8" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.6" opacity="0.5"/>
+            <circle cx="352" cy="410" r="6" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="1.4" opacity="0.45"/>
           </g>
-          <ellipse cx="182" cy="212" rx="52" ry="28" fill="var(--jm-white, #FFFFFF)" opacity="0.22" transform="rotate(-32 182 212)"/>
+
+          <path className="jm-gloss" d="M150 236C154 190 196 160 244 160C258 160 266 166 262 174C254 188 214 196 190 226C176 244 172 262 162 264C152 266 148 254 150 236Z" fill={`url(#${uid}-gloss)`}/>
+          <ellipse cx="166" cy="194" rx="15" ry="9" fill="var(--jm-white, #FFFFFF)" opacity="0.7" transform="rotate(-34 166 194)"/>
         </g>
+
+        <path d="M256 148C346 148 406 212 406 294C406 362 372 412 322 436C302 446 280 452 256 452C232 452 210 446 190 436C140 412 106 362 106 294C106 212 166 148 256 148Z" fill="none" stroke={`url(#${uid}-rim)`} strokeWidth="5"/>
 
         <g className="jm-face">
           <g stroke="var(--jm-ink, #0A0C0A)" strokeWidth="9" strokeLinecap="round" fill="none">
@@ -354,34 +605,69 @@ function Medium({ uid }: TierProps) {
             <circle cx="312" cy="266" r="34" fill="var(--jm-eye, #F4FAEA)"/>
             <circle cx="202" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
             <circle cx="314" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+            <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
+              <circle cx="202" cy="270" r="18"/>
+              <circle cx="314" cy="270" r="18"/>
+            </g>
             <g fill="var(--jm-white, #FFFFFF)">
               <circle cx="193" cy="261" r="8"/>
               <circle cx="305" cy="261" r="8"/>
+              <circle cx="210" cy="280" r="4" opacity="0.7"/>
+              <circle cx="322" cy="280" r="4" opacity="0.7"/>
             </g>
           </g>
-          <g className="jm-glasses" fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="13" strokeLinecap="round">
-            <circle cx="200" cy="266" r="48"/>
-            <circle cx="312" cy="266" r="48"/>
-            <path d="M249 260C253 253 259 253 263 260"/>
-            <path d="M152 254C138 246 126 244 114 246"/>
-            <path d="M360 254C374 246 386 244 398 246"/>
+          <g className="jm-glasses">
+            <circle cx="200" cy="266" r="48" fill={`url(#${uid}-glass)`}/>
+            <circle cx="312" cy="266" r="48" fill={`url(#${uid}-glass)`}/>
+            <g fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="13" strokeLinecap="round">
+              <circle cx="200" cy="266" r="48"/>
+              <circle cx="312" cy="266" r="48"/>
+              <path d="M249 260C253 253 259 253 263 260"/>
+              <path d="M152 254C138 246 126 244 114 246"/>
+              <path d="M360 254C374 246 386 244 398 246"/>
+            </g>
+            <g fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="3" strokeLinecap="round" opacity="0.7">
+              <path d="M164 234C176 224 190 220 204 220"/>
+              <path d="M276 234C288 224 302 220 316 220"/>
+            </g>
+            <g stroke="var(--jm-white, #FFFFFF)" strokeLinecap="round" fill="none">
+              <path d="M172 250L192 230" strokeWidth="9" opacity="0.55"/>
+              <path d="M284 250L304 230" strokeWidth="9" opacity="0.55"/>
+            </g>
           </g>
           <path d="M236 322C244 336 268 336 276 322" fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="9" strokeLinecap="round"/>
+          <path d="M240 332C246 340 266 340 272 332" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.45"/>
         </g>
 
         <g className="jm-bowtie">
           <path d="M250 400C234 386 220 376 208 375C202 388 202 412 208 425C220 424 234 414 250 400Z" fill="var(--jm-ink, #0A0C0A)"/>
           <path d="M262 400C278 386 292 376 304 375C310 388 310 412 304 425C292 424 278 414 262 400Z" fill="var(--jm-ink, #0A0C0A)"/>
-          <rect x="246" y="389" width="20" height="22" rx="7" fill="var(--jm-ink-soft, #2A2E24)"/>
+          <g fill="none" stroke="var(--jm-ink-soft, #2A2E24)" strokeWidth="3.5" strokeLinecap="round">
+            <path d="M214 383C220 391 222 405 220 416"/>
+            <path d="M298 383C292 391 290 405 292 416"/>
+          </g>
+          <g fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="2.5" strokeLinecap="round" opacity="0.7">
+            <path d="M246 396C238 390 226 382 214 379"/>
+            <path d="M266 396C274 390 286 382 298 379"/>
+          </g>
+          <rect x="246" y="389" width="20" height="22" rx="7" fill={`url(#${uid}-band)`}/>
         </g>
 
         <g className="jm-cap" transform="translate(0 18) rotate(-6 256 110)">
-          <ellipse cx="256" cy="120" rx="66" ry="26" fill="var(--jm-ink, #0A0C0A)"/>
-          <path d="M256 62L390 100L256 138L122 100Z" fill="var(--jm-ink-soft, #2A2E24)"/>
-          <path d="M256 106L390 100L256 138L122 100Z" fill="var(--jm-ink, #0A0C0A)"/>
+          <ellipse cx="256" cy="120" rx="66" ry="26" fill={`url(#${uid}-band)`}/>
+          <path d="M122 100L256 138L390 100L390 110L256 148L122 110Z" fill="var(--jm-ink, #0A0C0A)"/>
+          <path d="M256 62L390 100L256 138L122 100Z" fill={`url(#${uid}-board)`}/>
+          <path d="M256 62L390 100L256 106L122 100Z" fill="var(--jm-soft-olive, #848D68)" opacity="0.16"/>
+          <path d="M122 100L256 62" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.35"/>
           <circle cx="256" cy="100" r="6" fill="var(--jm-ink-soft, #2A2E24)"/>
-          <path d="M256 100C300 106 340 108 372 102C378 124 378 146 374 162" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
-          <path d="M362 160H386L380 196C378 202 370 202 368 196Z" fill={`url(#${uid}-gold)`}/>
+          <path d="M256 100C300 106 340 108 372 102" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
+          <g className="jm-tassel">
+            <path d="M372 102C378 124 378 146 374 162" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
+            <g className="jm-tassel-bob">
+              <path d="M362 158H386L380 196C378 202 370 202 368 196Z" fill={`url(#${uid}-gold)`}/>
+              <rect x="361" y="155" width="26" height="8" rx="4" fill="var(--jm-gold-light, #F2D479)"/>
+            </g>
+          </g>
         </g>
       </g>
     </>
@@ -398,12 +684,16 @@ function Icon({ uid }: TierProps) {
         <path className="jm-body" d="M256 138C352 138 414 206 414 292C414 366 376 420 322 444C302 454 280 460 256 460C232 460 210 454 190 444C136 420 98 366 98 292C98 206 160 138 256 138Z" fill="var(--jm-neon, #5AB60D)"/>
         <path d="M256 460C232 460 210 454 190 444C160 430 132 406 116 374C154 396 202 408 256 408C310 408 358 396 396 374C380 406 352 430 322 444C302 454 280 460 256 460Z" fill="var(--jm-bottle, #297F04)"/>
 
+        <path d="M256 138C200 138 156 160 130 194C160 176 204 166 256 166C308 166 352 176 382 194C356 160 312 138 256 138Z" fill="var(--jm-olive, #99E72A)"/>
+
         <g className="jm-face">
           <g className="jm-eyes">
             <circle cx="196" cy="264" r="40" fill="var(--jm-eye, #F4FAEA)"/>
             <circle cx="316" cy="264" r="40" fill="var(--jm-eye, #F4FAEA)"/>
             <circle cx="198" cy="266" r="27" fill="var(--jm-ink, #0A0C0A)"/>
             <circle cx="318" cy="266" r="27" fill="var(--jm-ink, #0A0C0A)"/>
+            <circle cx="189" cy="257" r="8" fill="var(--jm-white, #FFFFFF)"/>
+            <circle cx="309" cy="257" r="8" fill="var(--jm-white, #FFFFFF)"/>
           </g>
           <g className="jm-glasses" fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="20" strokeLinecap="round">
             <circle cx="196" cy="264" r="50"/>

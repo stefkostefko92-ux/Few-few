@@ -30,6 +30,10 @@
   .sw i { display: block; height: 44px; }
   .sw b { display: block; padding: 6px 8px; font-weight: 600; color: var(--jm-pale); }
   .sw span { display: block; padding: 0 8px 8px; color: var(--jm-soft-olive); }
+  .light { background: #C8DDA6; border-radius: 12px; padding: 18px 22px; display: flex; gap: 20px; align-items: center; }
+  ul { max-width: 68ch; color: var(--jm-soft-olive); padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li b { color: var(--jm-pale); font-weight: 600; }
   pre { background: #0D4A02; color: #C8DDA6; padding: 14px 16px; border-radius: 10px; overflow-x: auto; max-width: 68ch; font-size: 13px; }
 </style>
 </head>
@@ -56,6 +60,20 @@
     <figcaption><code>icon</code> — плътни цветове, дебели рамки</figcaption>
   </figure>
 </div>
+
+<h2>Ефектите в „full“</h2>
+<ul>
+  <li><b>Гелово осветление</b> — не нарисуван блик, а истински огледален източник по релефа
+      (<code>feSpecularLighting</code> върху размита алфа). Това е разликата между зелено кръгче и материал.</li>
+  <li><b>Каустики</b> — фрактален шум, изместен през себе си: неравномерна вътрешна плътност, каквато има течност.</li>
+  <li><b>Мехурчета в три плана</b> — далечните размити и бледи, близките остри, с връх и отражение. Еднакво
+      остри мехурчета изглеждат като точки върху топка, не като обем в желе.</li>
+  <li><b>Вътрешна сянка по ръба</b> + светещо ядро — плътно по контура, светло в средата: така окото чете „полупрозрачно“.</li>
+  <li><b>Отражение в пода</b>, контактна сянка и подсветка — фигурата стъпва някъде, не виси в нищото.</li>
+  <li><b>Стъкла с отблясък</b>, метален кант на рамката и сянка под нея; зеница с ирисов пръстен и два блика.</li>
+  <li><b>Шапка с дебелина</b>, сатен по плата и пискюл от нишки; <b>папийонка</b> с гънки и сатенен ръб.</li>
+  <li><b>Искри</b> — три разминати блясъка, които правят кадъра „скъп“.</li>
+</ul>
 
 <h2>Иконата при реални размери</h2>
 <p>Тестът, който решава дали иконата е добра: чете ли се като маскот, когато е висока колкото един ред текст.</p>
@@ -90,12 +108,25 @@
 /* или на ниво секция, за вграден SVG: */
 .brand-teal { --jm-neon: #0DB6A8; --jm-olive: #2AE7D8; }</pre>
 
-<h2>Анимация</h2>
+<h2>На светъл фон</h2>
+<p>Кантът и плътните аксесоари трябва да държат силуета и когато фонът не работи за глоуто.</p>
+<div class="light">
+  <img src="../svg/jelly-mascot-medium.svg" alt="Маскотът върху светъл фон" width="150" height="150">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата върху светъл фон" width="64" height="64">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата върху светъл фон при 32 пиксела" width="32" height="32">
+</div>
+
+<h2>Анимация (живо)</h2>
 <p>
-  Класът <code>.jm-animated</code> (от <code>tokens.css</code>) добавя полюшване, пулс на глоуто, мигане
-  и махане на пискюла. Нищо не мига по-бързо от 3 Hz, а при
-  <code>prefers-reduced-motion: reduce</code> движението е нула — виж <code>tokens.css</code>.
+  Полюшване, пулс на глоуто, мигане, дрейф на мехурчетата, минаващ отблясък и присветващи искри.
+  Долният кадър е <code>svg/jelly-mascot-full-animated.svg</code> — генериран от пълното ниво + блока
+  в <code>tokens.css</code>, със стиловете <strong>вътре</strong> във файла, затова се движи дори през
+  <code>&lt;img&gt;</code>. При вграден SVG същото се пуска с класа <code>.jm-animated</code>.
 </p>
+<figure>
+  <img src="../svg/jelly-mascot-full-animated.svg" alt="Анимиран маскот — полюшване, пулс на светенето и присветващи искри" width="260" height="260">
+  <figcaption>нищо не мига по-бързо от 3 Hz · нула движение при <code>prefers-reduced-motion</code></figcaption>
+</figure>
 
 </body>
 </html>

@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
+<svg class="jm-animated" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
+  <!-- ⚠️  ГЕНЕРИРАН ФАЙЛ — не го редактирай на ръка.
+       Източник: svg/jelly-mascot-full.svg + tokens.css · Генератор: `node build.mjs` -->
   <title id="jm-title">Желирано маскотче с очила и академична шапка</title>
   <desc id="jm-desc">Полупрозрачно неоново-зелено желирано телце с вътрешни мехурчета, дебели черни кръгли очила, папийонка и черна академична шапка със златен пискюл, в студийна светлина на черен фон.</desc>
 
@@ -129,6 +131,97 @@
       <feGaussianBlur stdDeviation="5"/>
     </filter>
   </defs>
+
+  <style>
+    .jm-animated .jm-root {
+      animation: jm-bob 3.6s ease-in-out infinite;
+      transform-origin: 256px 452px;
+    }
+    .jm-animated .jm-bloom,
+    .jm-animated .jm-core {
+      animation: jm-pulse 2.6s ease-in-out infinite;
+    }
+    .jm-animated .jm-eyes {
+      animation: jm-blink 5.2s ease-in-out infinite;
+      transform-origin: 256px 266px;
+    }
+    .jm-animated .jm-tassel-bob {
+      animation: jm-swing 3.6s ease-in-out infinite;
+      transform-origin: 372px 104px;
+    }
+
+    /* Мехурчетата се качват — трите плана с различна скорост, за да има паралакс в желето. */
+    .jm-animated .jm-bubbles-near { animation: jm-rise 7s ease-in-out infinite; }
+    .jm-animated .jm-bubbles-mid { animation: jm-rise 9s ease-in-out infinite 0.8s; }
+    .jm-animated .jm-bubbles-far { animation: jm-rise 12s ease-in-out infinite 1.6s; }
+
+    /* Отблясък, който минава по гланца веднъж на цикъл. */
+    .jm-animated .jm-shimmer { animation: jm-sweep 9s ease-in-out infinite; }
+
+    /* Искрите присветват разминато. */
+    .jm-animated .jm-sparkle-a,
+    .jm-animated .jm-sparkle-b,
+    .jm-animated .jm-sparkle-c {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .jm-animated .jm-sparkle-a { animation: jm-twinkle 4.4s ease-in-out infinite; }
+    .jm-animated .jm-sparkle-b { animation: jm-twinkle 5.6s ease-in-out infinite 1.1s; }
+    .jm-animated .jm-sparkle-c { animation: jm-twinkle 6.8s ease-in-out infinite 2.3s; }
+
+    @keyframes jm-bob {
+      0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
+      45% { transform: translateY(-10px) scaleY(1.015) scaleX(0.99); }
+      70% { transform: translateY(2px) scaleY(0.985) scaleX(1.012); }
+    }
+    @keyframes jm-pulse {
+      0%, 100% { opacity: 0.42; }
+      50% { opacity: 0.62; }
+    }
+    @keyframes jm-blink {
+      0%, 92%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.08); }
+    }
+    @keyframes jm-swing {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(5deg); }
+    }
+    /* Мехурчетата ДРЕЙФАТ, не изчезват: цял план, който избледнява до нула, изпразва желето и
+       после изпуква обратно. Ниска амплитуда, непрозрачността никога не пада под 0.55. */
+    @keyframes jm-rise {
+      0%, 100% { transform: translateY(7px); opacity: 0.55; }
+      50% { transform: translateY(-7px); opacity: 1; }
+    }
+    /* Скосяването е в самата анимация: CSS свойството transform замества SVG атрибута transform,
+       а не се добавя към него — без skewX тук лентата би се изправила при първия кадър. */
+    @keyframes jm-sweep {
+      0%, 62% { transform: translateX(0) skewX(-14deg); }
+      100% { transform: translateX(760px) skewX(-14deg); }
+    }
+    @keyframes jm-twinkle {
+      0%, 70%, 100% { transform: scale(0.85); opacity: 0.5; }
+      82% { transform: scale(1.15); opacity: 1; }
+    }
+
+    /* Достъпност (закон в репото, не пожелание): нула движение при prefers-reduced-motion.
+       Нищо в анимацията не мига по-бързо от 3 Hz — епилептичен риск няма и при включено движение. */
+    @media (prefers-reduced-motion: reduce) {
+      .jm-animated .jm-root,
+      .jm-animated .jm-bloom,
+      .jm-animated .jm-core,
+      .jm-animated .jm-eyes,
+      .jm-animated .jm-tassel-bob,
+      .jm-animated .jm-bubbles-near,
+      .jm-animated .jm-bubbles-mid,
+      .jm-animated .jm-bubbles-far,
+      .jm-animated .jm-shimmer,
+      .jm-animated .jm-sparkle-a,
+      .jm-animated .jm-sparkle-b,
+      .jm-animated .jm-sparkle-c {
+        animation: none !important;
+      }
+    }
+  </style>
 
   <g class="jm-root">
     <!-- 0. Отражение в пода — герой-кадърът стъпва на лъскава повърхност, не виси в нищото. -->
