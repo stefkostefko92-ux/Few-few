@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { generate, generateAnimatedSvg, TIERS } from "./build.mjs";
+import { generate, generateAnimatedSvg, generateSocialCard, TIERS } from "./build.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const R = (p) => readFileSync(join(HERE, p), "utf8");
@@ -94,12 +94,16 @@ export function bearingCircles(fragment, minR) {
 }
 
 /** Всички проверки върху вече прочетените файлове. Чиста функция — тества се без диск. */
-export function audit({ svgs, tsx, tokens, generated, generatedAnimated, demo }) {
+export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generatedCard, demo }) {
   const fail = [];
   const palette = paletteOf(tokens);
 
   if (generatedAnimated && svgs["jelly-mascot-full-animated.svg"] !== generatedAnimated) {
     fail.push("svg/jelly-mascot-full-animated.svg се разминава с генерирания (пълно ниво + анимацията от tokens.css) — пусни `node build.mjs`");
+  }
+
+  if (generatedCard && svgs["social-card.svg"] !== generatedCard) {
+    fail.push("svg/social-card.svg се разминава с генерираната от пълното ниво — пусни `node build.mjs`");
   }
 
   if (generated !== tsx) {
@@ -164,6 +168,18 @@ export function audit({ svgs, tsx, tokens, generated, generatedAnimated, demo })
     }
   }
 
+  // Един силует за всички варианти. Иконата и едноцветният знак имат право да опростяват ВСИЧКО
+  // друго, но не и очертанието — то е първото, по което се разпознава маскот.
+  const bodies = new Map();
+  for (const [name, text] of Object.entries(svgs)) {
+    const m = text.match(/class="jm-body"[^>]*\sd="([^"]+)"/);
+    if (m) bodies.set(name, m[1]);
+  }
+  const canonical = bodies.get("jelly-mascot-full.svg");
+  for (const [name, d] of bodies) {
+    if (canonical && d !== canonical) fail.push(`${name}: силуетът се разминава с пълното ниво — маскотът е един, не роднини`);
+  }
+
   // „Medium" трябва да оцелява във векторни конвейери, „icon" — при 16 px.
   const medium = svgs["jelly-mascot-medium.svg"];
   const icon = svgs["jelly-mascot-icon.svg"];
@@ -193,6 +209,7 @@ function main() {
     tokens: R("tokens.json"),
     generated: generate(),
     generatedAnimated: generateAnimatedSvg(),
+    generatedCard: generateSocialCard(),
     demo: R("demo/index.html"),
   });
 

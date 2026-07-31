@@ -86,6 +86,53 @@ export function animatedSvg(fullSvg, css) {
     .replace("</defs>", `</defs>\n\n  <style>\n${css.split("\n").map((l) => (l.trim() ? "    " + l : "")).join("\n")}\n  </style>`);
 }
 
+/**
+ * Социална карта 1200×630 (og:image / Twitter card) — маскотът вляво, свободно поле вдясно.
+ *
+ * Защо генерирана: всеки продукт иска предпросмотър за споделяне и всеки път някой изнася PNG на
+ * ръка от текущата версия. Тук картата е ПРОИЗВОДНА на пълното ниво — сменя се маскотът, сменя се
+ * и картата, без ръчен експорт. Текстът НЕ е вграден: заглавието е на продукта, не на асета
+ * (и шрифт в SVG не се пренася надеждно) — оставено е място вдясно, върху което продуктът пише.
+ */
+export function socialCard(fullSvg) {
+  const inner = fullSvg
+    .replace(/^[\s\S]*?<svg[^>]*>/, "")
+    .replace(/<\/svg>\s*$/, "")
+    .replace(/<title[\s\S]*?<\/title>\s*/g, "")
+    .replace(/<desc[\s\S]*?<\/desc>\s*/g, "")
+    .trim()
+    .split("\n")
+    .map((l) => (l.trim() ? "    " + l : ""))
+    .join("\n");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="jm-card-title jm-card-desc">
+  <!-- ⚠️  ГЕНЕРИРАН ФАЙЛ — не го редактирай на ръка.
+       Източник: svg/jelly-mascot-full.svg · Генератор: \`node build.mjs\` -->
+  <title id="jm-card-title">Маскотът на Carbon Stealth — карта за споделяне</title>
+  <desc id="jm-card-desc">Тъмна карта 1200 на 630 пиксела: светещото желирано маскотче вляво и свободно поле вдясно за заглавие на продукта.</desc>
+
+  <defs>
+    <radialGradient id="jm-card-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--jm-neon, #5AB60D)" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="var(--jm-neon, #5AB60D)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="jm-card-line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="var(--jm-olive, #99E72A)" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="var(--jm-olive, #99E72A)" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="var(--jm-bg, #050706)"/>
+  <ellipse cx="350" cy="330" rx="470" ry="360" fill="url(#jm-card-glow)"/>
+  <rect x="700" y="300" width="360" height="3" rx="1.5" fill="url(#jm-card-line)"/>
+
+  <g transform="translate(78 46) scale(1.05)">
+${inner}
+  </g>
+</svg>
+`;
+}
+
 export function generate(read = (p) => readFileSync(join(HERE, p), "utf8")) {
   const tiers = Object.fromEntries(TIERS.map((t) => [t, svgBodyToJsx(read(`svg/jelly-mascot-${t}.svg`))]));
   const css = animationCss(read("tokens.css"));
@@ -174,12 +221,18 @@ export function generateAnimatedSvg(read = (p) => readFileSync(join(HERE, p), "u
   return animatedSvg(read("svg/jelly-mascot-full.svg"), animationCss(read("tokens.css")));
 }
 
+/** Социалната карта от текущите източници. */
+export function generateSocialCard(read = (p) => readFileSync(join(HERE, p), "utf8")) {
+  return socialCard(read("svg/jelly-mascot-full.svg"));
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const code = generate();
   if (process.argv.includes("--stdout")) process.stdout.write(code);
   else {
     writeFileSync(join(HERE, "react/JellyMascot.tsx"), code);
     writeFileSync(join(HERE, "svg/jelly-mascot-full-animated.svg"), generateAnimatedSvg());
-    console.log("✓ react/JellyMascot.tsx + svg/jelly-mascot-full-animated.svg — генерирани от svg/*.svg + tokens.css");
+    writeFileSync(join(HERE, "svg/social-card.svg"), generateSocialCard());
+    console.log("✓ генерирани: react/JellyMascot.tsx · svg/jelly-mascot-full-animated.svg · svg/social-card.svg");
   }
 }

@@ -11,7 +11,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { jsxAttrName, jsxAttrValue, svgBodyToJsx, animationCss, animatedSvg, generate, generateAnimatedSvg } from "./build.mjs";
+import { jsxAttrName, jsxAttrValue, svgBodyToJsx, animationCss, animatedSvg, socialCard, generate, generateAnimatedSvg, generateSocialCard } from "./build.mjs";
 import { hexes, paletteOf, wellFormed, groupOf, bearingCircles, audit, FORBIDDEN } from "./check.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -123,6 +123,29 @@ test("audit: лови ръчно пипнат анимиран SVG", () => {
   assert.deepEqual(audit({ ...base, svgs }), []);
   const tampered = { ...svgs, "jelly-mascot-full-animated.svg": svgs["jelly-mascot-full-animated.svg"].replace("jm-bob 3.6s", "jm-bob 0.2s") };
   assert.ok(audit({ ...base, svgs: tampered }).some((f) => /full-animated/.test(f)));
+});
+
+test("socialCard: вгражда пълното ниво в кадър 1200×630 със свое достъпно име", () => {
+  const card = socialCard('<svg viewBox="0 0 512 512">\n  <title id="jm-title">х</title>\n  <desc>у</desc>\n  <g class="jm-body"/>\n</svg>');
+  assert.match(card, /viewBox="0 0 1200 630"/);
+  assert.match(card, /jm-card-title/);
+  assert.doesNotMatch(card, /<title id="jm-title">/);
+  assert.match(card, /class="jm-body"/);
+});
+
+test("audit: лови разминат силует между вариантите", () => {
+  const svgs = Object.fromEntries(readdirSync(join(HERE, "svg")).filter((f) => f.endsWith(".svg")).map((f) => [f, R(`svg/${f}`)]));
+  const base = { tsx: R("react/JellyMascot.tsx"), tokens: R("tokens.json"), generated: generate(), generatedAnimated: generateAnimatedSvg(), generatedCard: generateSocialCard() };
+  assert.deepEqual(audit({ ...base, svgs }), []);
+  const drifted = { ...svgs, "jelly-mascot-icon.svg": svgs["jelly-mascot-icon.svg"].replace(/class="jm-body" d="[^"]+"/, 'class="jm-body" d="M0 0H1V1H0Z"') };
+  assert.ok(audit({ ...base, svgs: drifted }).some((f) => /силуетът се разминава/.test(f)));
+});
+
+test("audit: лови ръчно пипната социална карта", () => {
+  const svgs = Object.fromEntries(readdirSync(join(HERE, "svg")).filter((f) => f.endsWith(".svg")).map((f) => [f, R(`svg/${f}`)]));
+  const base = { tsx: R("react/JellyMascot.tsx"), tokens: R("tokens.json"), generated: generate(), generatedAnimated: generateAnimatedSvg(), generatedCard: generateSocialCard() };
+  const tampered = { ...svgs, "social-card.svg": svgs["social-card.svg"].replace('width="1200"', 'width="1201"') };
+  assert.ok(audit({ ...base, svgs: tampered }).some((f) => /social-card/.test(f)));
 });
 
 test("audit: лови липсваща достъпност", () => {

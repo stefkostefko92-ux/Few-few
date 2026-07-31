@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
+  <title id="jm-title">Желирано маскотче — едноцветен знак</title>
+  <desc id="jm-desc">Едноцветен вариант на маскота: плътен силует с изрязани очила, очи и уста. Наследява цвета от текста (currentColor) — за печат в един цвят, гравюра, воден знак и монохромни контексти.</desc>
+
+  <!--
+    Едноцветният знак НЕ е „същото, но сиво". Той е нарисуван като маска: тялото, шапката и
+    папийонката са плътни, а лицето е ИЗРЯЗАНО от тях. Затова работи навсякъде, където има само
+    едно мастило — печат, гравюра, шев, воден знак, фавикон в монохромна тема.
+
+    Цветът идва от `currentColor`: сложи `color:` на родителя (или `fill` на `<img>`-а няма да
+    подейства — тук е нужен ВГРАДЕН SVG). Нула HEX стойности, освен служебните черно/бяло на
+    маската, които не са цвят, а „скрито/видимо".
+
+    Силуетът е СЪЩИЯТ път като при пълното ниво — гейтнато в `check.mjs`.
+  -->
+  <!-- `svg:root` съвпада САМО когато файлът е самостоятелен документ (напр. `<img src>`): там
+       дава видим цвят по подразбиране. Вграден в HTML, коренът е `<html>`, правилото не важи и
+       знакът наследява `color` на страницата — един файл, две правилни поведения. -->
+  <style>
+    svg:root { color: var(--jm-olive, #99E72A); }
+  </style>
+
+  <defs>
+    <mask id="jm-mono-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="var(--jm-mask-black, #000000)"/>
+
+      <g fill="var(--jm-white, #FFFFFF)">
+        <path class="jm-body" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z"/>
+        <g class="jm-bowtie">
+          <path d="M248 404C232 390 218 380 206 379C200 392 200 416 206 429C218 428 232 418 248 404Z"/>
+          <path d="M260 404C276 390 290 380 302 379C308 392 308 416 302 429C290 428 276 418 260 404Z"/>
+          <rect x="244" y="393" width="20" height="22" rx="7"/>
+        </g>
+        <g class="jm-cap" transform="translate(0 10) rotate(-6 254 108)">
+          <ellipse cx="254" cy="118" rx="66" ry="26"/>
+          <path d="M254 60L388 98L254 136L120 98Z"/>
+          <path d="M386 106C392 126 392 144 390 158" fill="none" stroke="var(--jm-white, #FFFFFF)" stroke-width="7" stroke-linecap="round"/>
+          <path d="M380 154H402L396 190C394 196 388 196 386 190Z"/>
+        </g>
+      </g>
+
+      <!-- Изрязване: стъклата стават дупки, рамките се връщат в мастило, зениците остават. -->
+      <g class="jm-glasses">
+        <circle cx="200" cy="272" r="55" fill="var(--jm-mask-black, #000000)"/>
+        <circle cx="310" cy="272" r="55" fill="var(--jm-mask-black, #000000)"/>
+        <g fill="none" stroke="var(--jm-white, #FFFFFF)" stroke-width="14" stroke-linecap="round">
+          <circle cx="200" cy="272" r="48"/>
+          <circle cx="310" cy="272" r="48"/>
+          <path d="M248 266C252 259 258 259 262 266"/>
+          <path d="M152 260C138 252 126 250 114 252"/>
+          <path d="M358 260C372 252 384 250 396 252"/>
+        </g>
+      </g>
+      <g class="jm-eyes" fill="var(--jm-white, #FFFFFF)">
+        <circle cx="202" cy="276" r="20"/>
+        <circle cx="312" cy="276" r="20"/>
+      </g>
+
+      <!-- Папийонката потъва в силуета, ако не я отделим: изрязваме контур около нея. -->
+      <path d="M248 404C232 390 218 380 206 379C200 392 200 416 206 429C218 428 232 418 248 404ZM260 404C276 390 290 380 302 379C308 392 308 416 302 429C290 428 276 418 260 404Z" fill="none" stroke="var(--jm-mask-black, #000000)" stroke-width="7"/>
+      <rect x="244" y="393" width="20" height="22" rx="7" fill="none" stroke="var(--jm-mask-black, #000000)" stroke-width="5"/>
+
+      <!-- Устата и веждите — изрязани линии. -->
+      <g fill="none" stroke="var(--jm-mask-black, #000000)" stroke-width="11" stroke-linecap="round">
+        <path d="M234 332C242 346 266 346 274 332"/>
+        <path d="M166 208C184 196 208 194 226 200"/>
+        <path d="M346 208C328 196 304 194 286 200"/>
+      </g>
+    </mask>
+  </defs>
+
+  <rect width="512" height="512" fill="currentColor" mask="url(#jm-mono-mask)"/>
+</svg>

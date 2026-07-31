@@ -34,6 +34,28 @@
   ul { max-width: 68ch; color: var(--jm-soft-olive); padding-left: 20px; }
   li { margin-bottom: 6px; }
   li b { color: var(--jm-pale); font-weight: 600; }
+  .mono-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .mono-chip { padding: 16px; border-radius: 12px; display: flex; gap: 14px; align-items: flex-end; }
+  /* Едноцветният знак през CSS маска: формата идва от файла, цветът — от `currentColor`.
+     Работи и без вграждане, за разлика от <img>, където външният цвят не стига. */
+  .mono {
+    display: block;
+    background: currentColor;
+    -webkit-mask: url(../svg/jelly-mascot-mono.svg) center / contain no-repeat;
+    mask: url(../svg/jelly-mascot-mono.svg) center / contain no-repeat;
+  }
+  .mono-120 { width: 120px; height: 120px; }
+  .mono-48 { width: 48px; height: 48px; }
+  .on-dark { background: #050706; border: 1px solid #3C3F28; color: #C8DDA6; }
+  .on-light { background: #C8DDA6; color: #0D4A02; }
+  .on-brand { background: #297F04; color: #050706; }
+  .card { max-width: 100%; border: 1px solid #3C3F28; border-radius: 12px; }
+  .rules { display: flex; gap: 20px; flex-wrap: wrap; }
+  .rule { width: 200px; }
+  .rule div { border-radius: 10px; padding: 10px; background: #0D4A02; display: flex; justify-content: center; }
+  .rule p { font-size: 12px; margin: 8px 0 0; }
+  .yes { color: #99E72A; } .no { color: #848D68; }
+  .squish { transform: scaleX(1.25); } .tint { filter: hue-rotate(280deg) saturate(1.4); }
   pre { background: #0D4A02; color: #C8DDA6; padding: 14px 16px; border-radius: 10px; overflow-x: auto; max-width: 68ch; font-size: 13px; }
 </style>
 </head>
@@ -75,6 +97,34 @@
   <li><b>Искри</b> — три разминати блясъка, които правят кадъра „скъп“.</li>
 </ul>
 
+<h2>Едноцветният знак</h2>
+<p>
+  Не е „същото, но сиво": лицето е <strong>изрязано</strong> от плътния силует, затова знакът работи
+  там, където има само едно мастило — печат, гравюра, шев, воден знак, монохромна тема. Цветът идва
+  от <code>currentColor</code>, тоест от <code>color</code> на родителя (иска вграден SVG).
+</p>
+<div class="mono-row">
+  <div class="mono-chip on-dark"><img src="../svg/jelly-mascot-mono.svg" alt="Едноцветният знак върху тъмен фон" width="120" height="120"><img src="../svg/jelly-mascot-mono.svg" alt="Едноцветният знак при 48 пиксела" width="48" height="48"></div>
+  <div class="mono-chip on-light"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху светъл фон"></span><span class="mono mono-48" role="img" aria-label="Едноцветният знак при 48 пиксела върху светъл фон"></span></div>
+  <div class="mono-chip on-brand"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху бранд-зелено"></span></div>
+</div>
+<p style="font-size:13px">
+  Първият кадър е обикновен <code>&lt;img&gt;</code> — файлът носи видим цвят по подразбиране.
+  Вторият и третият са CSS маска
+  (<code>mask: url(jelly-mascot-mono.svg) center/contain; background: currentColor</code>) — така
+  един файл приема цвета на контекста, без да го вграждаш. Вграден SVG работи също. Ако маската е
+  празна тук, страницата е отворена през <code>file://</code> — браузърът блокира маски от друг
+  локален файл; вдигни я на сървър или ползвай вграден SVG.
+</p>
+
+<h2>Карта за споделяне (1200×630)</h2>
+<p>
+  <code>svg/social-card.svg</code> — <strong>генерирана</strong> от пълното ниво, не изнесена на ръка:
+  сменя се маскотът, сменя се и картата. Текстът нарочно липсва (заглавието е на продукта, а шрифт в
+  SVG не се пренася надеждно) — вдясно е оставено свободно поле.
+</p>
+<img class="card" src="../svg/social-card.svg" alt="Карта за споделяне: маскотът вляво, свободно поле вдясно" width="600" height="315">
+
 <h2>Иконата при реални размери</h2>
 <p>Тестът, който решава дали иконата е добра: чете ли се като маскот, когато е висока колкото един ред текст.</p>
 <div class="sizes">
@@ -107,6 +157,26 @@
 
 /* или на ниво секция, за вграден SVG: */
 .brand-teal { --jm-neon: #0DB6A8; --jm-olive: #2AE7D8; }</pre>
+
+<h2>Правила на употреба</h2>
+<div class="rules">
+  <div class="rule">
+    <div><img src="../svg/jelly-mascot-medium.svg" alt="Правилна употреба — непроменени пропорции" width="120" height="120"></div>
+    <p class="yes">✓ Пази пропорциите. Мащабирай еднакво по двете оси.</p>
+  </div>
+  <div class="rule">
+    <div><img class="squish" src="../svg/jelly-mascot-medium.svg" alt="Грешна употреба — разтеглен маскот" width="120" height="120"></div>
+    <p class="no">✗ Не разтягай. Силуетът е разпознаваемостта.</p>
+  </div>
+  <div class="rule">
+    <div><img class="tint" src="../svg/jelly-mascot-medium.svg" alt="Грешна употреба — произволен цвят през филтър" width="120" height="120"></div>
+    <p class="no">✗ Не пребоядисвай през CSS филтри — ползвай <code>--jm-*</code>.</p>
+  </div>
+  <div class="rule">
+    <div style="padding:0"><img src="../svg/jelly-mascot-medium.svg" alt="Чисто поле около знака" width="152" height="152" style="outline:1px dashed #848D68;outline-offset:-19px"></div>
+    <p class="yes">✓ Чисто поле ≥ ⅛ от височината от всяка страна (пунктирът).</p>
+  </div>
+</div>
 
 <h2>На светъл фон</h2>
 <p>Кантът и плътните аксесоари трябва да държат силуета и когато фонът не работи за глоуто.</p>
