@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Staffe">
+  <!-- Icona maskable: sfondo a tutta tela, glifo dentro la "safe zone" (cerchio
+       centrale all'80%) come richiesto dalla spec — l'OS ritaglia i bordi con
+       forme diverse (cerchio, squircle, ...) a seconda della piattaforma. -->
+  <rect width="512" height="512" fill="#0369a1"/>
+  <text x="256" y="300" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+        font-size="220" font-weight="700" fill="#ffffff" text-anchor="middle">S</text>
+</svg>

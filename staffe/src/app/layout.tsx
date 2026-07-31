@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { PwaRegister } from '@/components/PwaRegister';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -58,7 +59,11 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Registra il service worker (solo in produzione). Non rende nulla. */}
+        <PwaRegister />
+      </body>
     </html>
   );
 }

@@ -1,0 +1,26 @@
+{
+  "name": "Staffe — Gestionale di Magazzino",
+  "short_name": "Staffe",
+  "description": "Gestionale di magazzino per staffe e accessori di fissaggio per ascensori: giacenze, codici a barre, scanner, ordini.",
+  "lang": "it",
+  "start_url": "/pannello",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#0369a1",
+  "icons": [
+    {
+      "src": "/icone/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icone/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
