@@ -330,6 +330,22 @@ export function periodoDaParametri(
 }
 
 /**
+ * Numero intero preso da un parametro di query, riportato dentro i limiti
+ * ammessi. Un valore fuori scala (o non numerico) non deve produrre una query
+ * mostruosa né un errore silenzioso: si riporta al predefinito, e la soglia
+ * usata resta scritta a schermo.
+ */
+export function interoDaParametro(
+  valore: string | string[] | undefined,
+  { predefinito, min, max }: { predefinito: number; min: number; max: number },
+): number {
+  const grezzo = Array.isArray(valore) ? valore[0] : valore;
+  const n = Number.parseInt(grezzo ?? '', 10);
+  if (!Number.isFinite(n)) return predefinito;
+  return Math.min(max, Math.max(min, n));
+}
+
+/**
  * Periodo precedente di pari LUNGHEZZA IN GIORNI, per i confronti. Un mese in
  * corso confrontato con un mese intero mostrerebbe sempre un calo: sarebbe un
  * artefatto del calendario, non un fatto commerciale.
