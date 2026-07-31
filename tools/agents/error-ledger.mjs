@@ -24,7 +24,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const LEDGER = join(HERE, "evals", "errors.jsonl");
+// Пътят е override-ваем, за да е инструментът тестваем ИЗОЛИРАНО. Без това всеки тест на пътя
+// „add" би дописвал РЕАЛНИЯ дневник (хванато, преди да се случи). Същият урок като
+// CLAUDE_PROJECT_DIR в хуковете: инструмент, който пише, трябва да може да пише в пясъчник.
+const LEDGER = process.env.ERROR_LEDGER_PATH || join(HERE, "evals", "errors.jsonl");
 const SPECS_DIR = join(HERE, "evals", "specs");
 const AGENTS_DIR = join(HERE, "..", "..", ".claude", "agents");
 const argv = process.argv.slice(2);
@@ -68,8 +71,22 @@ const testExists = (p) => !!p && existsSync(join(REPO_ROOT, p));
 function runCli() {
   const cmd = argv.find((a) => !a.startsWith("--"));
   if (cmd === "add") {
-    const agent = val("--agent"), desc = val("--desc"), spec = val("--spec"), tst = val("--test");
-    if (!agent || !desc) { console.error("употреба: add --agent <id> --desc \"...\" [--spec <specId>] [--test <път>]"); process.exit(2); }
+    const agent = val("--agent"), spec = val("--spec"), tst = val("--test");
+    // `--desc-file` вместо `--desc`: описанието на дефект е дълъг български текст с кавички „ … “,
+    // а права кавичка в него чупи низа на обвивката/скрипта. Реален случай (2026-07-30): скриптът,
+    // с който записвах дефект, гръмна със SyntaxError, записът ТИХО не се случи, и комит съобщението
+    // после твърдеше по-голямо число записи, отколкото има. Файлът няма escaping, значи няма и клас
+    // грешки — текстът пътува байт за байт.
+    const descFile = val("--desc-file");
+    let desc = val("--desc");
+    if (descFile) {
+      if (!existsSync(descFile)) { console.error(`--desc-file: няма такъв файл: ${descFile}`); process.exit(2); }
+      desc = readFileSync(descFile, "utf8").trim();
+    }
+    if (!agent || !desc) {
+      console.error('употреба: add --agent <id> (--desc "…" | --desc-file <път>) [--spec <specId>] [--test <път>]');
+      process.exit(2);
+    }
     const ids = agentIds();
     if (ids && !ids.has(agent)) { console.error(`непознат агент „${agent}"`); process.exit(1); }
     if (spec && !specIds().has(spec)) { console.error(`spec „${spec}" не съществува — първо създай регресионния spec`); process.exit(1); }
