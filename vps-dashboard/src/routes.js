@@ -48,6 +48,7 @@ import * as ports from './ports.js';
 import * as portchange from './portchange.js';
 import { receiveOffsite } from './backupsched.js';
 import * as diskusage from './diskusage.js';
+import * as panelbackup from './panelbackup.js';
 import {
   SudoGrants, needsSudo, confirmSudo, SUDO_TTL_MS,
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
@@ -1134,7 +1135,7 @@ export function buildRouter(ctx) {
       J(async (req) => {
         const b = await readJson(req);
         const spec =
-          b.kind === 'restic' ? backups.resticSpec(cfg, b.mode === 'verify' ? 'verify' : 'backup') : backups.backupAllSpec();
+          b.kind === 'restic' ? backups.resticSpec(cfg, b.mode === 'verify' ? 'verify' : 'backup') : backups.backupAllSpec(cfg);
         audit.log({ action: 'backup.run', kind: b.kind || 'databases', mode: b.mode, user: req.user });
         return jobs.start(spec, { user: req.user });
       }),
@@ -1777,6 +1778,32 @@ export function buildRouter(ctx) {
         saveConfig(cfg, { traffic: next });
         audit.log({ action: 'traffic.quota.set', quotaTB: tb, direction: next.countDirection, user: req.user });
         return ctx.traffic.status(cfg);
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Бекъп на САМИЯ панел ───────────────────────────────────────────────────
+  r.get(
+    '/api/backups/panel',
+    guard(
+      J(() => ({
+        hasKey: Boolean(cfg.backups?.panelKey),
+        backups: panelbackup.listPanelBackups(),
+        restore: panelbackup.restoreInstructions(panelbackup.listPanelBackups()[0]?.name),
+      }))
+    )
+  );
+  // Показването на ключа е точно клас „разкриване на тайна" → sudo + одит, като
+  // `.env` с reveal=1. Ключът съществува, за да бъде ПРЕПИСАН извън машината —
+  // конфигът е вътре в архива и при мъртъв диск загива заедно с него.
+  r.post(
+    '/api/backups/panel/key',
+    guard(
+      J(async (req) => {
+        const { key, fresh } = panelbackup.ensurePanelKey(cfg, saveConfig);
+        audit.log({ action: 'backup.panelKey.reveal', fresh, user: req.user });
+        return { key, fresh };
       }),
       { mutating: true }
     )

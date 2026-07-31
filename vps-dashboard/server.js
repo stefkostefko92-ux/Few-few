@@ -24,6 +24,7 @@ import { BackupSchedule, OffsiteShipper } from './src/backupsched.js';
 import { DiskScanStore } from './src/diskusage.js';
 import { TrafficStore } from './src/traffic.js';
 import { backupAllSpec } from './src/backups.js';
+import { ensurePanelKey } from './src/panelbackup.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,6 +45,10 @@ const accesslog = new AccessLogReader(cfg.paths.stateDir);
 const drill = new DrillStore(cfg.paths.stateDir);
 const portBaseline = new PortBaseline(cfg.paths.stateDir);
 const backupSchedule = new BackupSchedule(cfg.paths.stateDir);
+// Ключът за шифрирания бекъп на самия панел: генерира се веднъж и се записва в
+// конфига. Собственикът трябва да го ПРЕПИШЕ извън машината (секция „Бекъпи") —
+// конфигът е вътре в архива, значи при мъртъв диск ключът загива с него.
+ensurePanelKey(cfg, saveConfig);
 const diskScan = new DiskScanStore(cfg.paths.stateDir);
 const traffic = new TrafficStore(cfg.paths.stateDir);
 // Копие на другия VPS. Обявен ТУК, преди графика, който го вика — иначе
@@ -116,7 +121,7 @@ if (cfg.backups?.drillEnabled !== false) {
 function runScheduledBackup(reason) {
   let job;
   try {
-    job = jobs.start(backupAllSpec(), { user: reason });
+    job = jobs.start(backupAllSpec(cfg), { user: reason });
   } catch {
     // Зает ексклузивен ключ „backup" (тече проба или архив на томове) НЕ е провал
     // на графика — записването му като провал вдига фалшива критична аларма и

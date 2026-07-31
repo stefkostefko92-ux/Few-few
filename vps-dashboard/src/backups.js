@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DUMP_DIR } from './databases.js';
+import { panelBackupLines } from './panelbackup.js';
 
 // САМО дъмпове на бази. Архивите на томове (`vol-*`/`dir-*`) живеят в същата
 // папка, но не са снимки на база: ако попаднат тук, „най-новият бекъп" става
@@ -30,7 +31,7 @@ export function listDumps() {
 
 // Снимка на ВСИЧКИ намерени бази с едно действие (SQLite + Postgres в Docker).
 // Пише в DUMP_DIR, компресира и чисти по-стари от 30 дни.
-export function backupAllSpec() {
+export function backupAllSpec(cfg = null) {
   const script = [
     'set -uo pipefail',
     `mkdir -p ${DUMP_DIR}`,
@@ -65,6 +66,9 @@ export function backupAllSpec() {
     '    done',
     '  done',
     'else echo "  (няма docker — пропускам)"; fi',
+    // Панелът снима и себе си — шифрирано (ключът пътува през env, не през
+    // shell реда: той влиза в одита и в изгледа на задачата).
+    ...(cfg ? panelBackupLines(cfg) : []),
     `echo "▸ Чистя снимки по-стари от 30 дни…"`,
     `find ${DUMP_DIR} -type f -mtime +30 -delete 2>/dev/null || true`,
     `ls -lh ${DUMP_DIR} | tail -20`,
@@ -73,6 +77,7 @@ export function backupAllSpec() {
   return {
     title: 'Снимка на всички бази',
     shell: script,
+    env: cfg?.backups?.panelKey ? { CSD_PANEL_KEY: cfg.backups.panelKey } : {},
     exclusive: 'backup',
     timeoutMs: 2 * 60 * 60 * 1000,
   };

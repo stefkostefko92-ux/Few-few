@@ -3387,6 +3387,51 @@ function volumeRestoreCard(archives, vols) {
   return out;
 }
 
+// Бекъпът на САМИЯ панел: конфигът (тайните) + паметта (одит, базови линии,
+// история). Иронията, която това затваря: панелът пазеше всичко освен себе си.
+function panelBackupCard(panel) {
+  const out = el('div', { style: 'margin-top:12px' });
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Бекъп на самия панел' }),
+      pill(panel.backups.length ? 'ok' : 'warn', panel.backups.length ? `${panel.backups.length} архива` : 'още няма'),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Конфигът (паролата, peer токенът, каналите — тайни, които не съществуват никъде другаде) и паметта на панела ' +
+      '(одит, базови линии, история) влизат в нощния бекъп като ШИФРИРАН архив и пътуват към другия VPS. ' +
+      'Ключът е в конфига — а конфигът е вътре в архива: при мъртъв диск ключът загива с него. ' +
+      'ЗАТОВА го препиши извън тази машина (мениджър на пароли) — без него offsite копието е нечетимо.' }),
+    panel.backups.length
+      ? el('div', { class: 'metric-sub', text:
+          `Най-нов: ${panel.backups[0].name} · ${fmtBytes(panel.backups[0].sizeBytes)} · ${fmtWhen(panel.backups[0].mtime)}` })
+      : el('div', { class: 'metric-sub', text: 'Ще се появи при следващия нощен бекъп (или „Пусни сега" отгоре).' }),
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-sm', text: '🔑 Покажи ключа (запиши го)',
+        onclick: async () => {
+          try {
+            const r = await api('/backups/panel/key', { method: 'POST' });
+            out.innerHTML = '';
+            out.appendChild(el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
+              '⚠ Препиши този ключ в мениджър на пароли ИЗВЪН машината. Показването е одитирано.' }));
+            out.appendChild(el('pre', { class: 'term-out', style: 'max-height:60px', text: r.key }));
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+      el('button', {
+        class: 'btn btn-sm', text: '⛑ Как се възстановява',
+        onclick: () => {
+          out.innerHTML = '';
+          out.appendChild(el('div', { class: 'metric-sub', text:
+            'Възстановяването е СЪЗНАТЕЛНО ръчно — то презаписва тайните на живия панел. От терминала:' }));
+          out.appendChild(el('pre', { class: 'term-out', style: 'max-height:200px', text: panel.restore }));
+        },
+      }),
+    ]),
+    out,
+  ]);
+}
+
 async function renderBackups() {
   const view = document.getElementById('view');
   const [b, h, vols, sch, archives] = await Promise.all([
@@ -3454,6 +3499,8 @@ async function renderBackups() {
   }
 
   if (sch) view.appendChild(scheduleCard(sch));
+  const panel = await api('/backups/panel').catch(() => null);
+  if (panel) view.appendChild(panelBackupCard(panel));
 
   // Томовете са отделна секция, защото са отделна ДУПКА: pg_dump хваща базата,
   // но записът в нея сочи към файл в том „uploads", който не се архивира никъде.

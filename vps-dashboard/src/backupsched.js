@@ -46,7 +46,7 @@ export function offsiteDir(stateDir) {
 
 // Какво си струва да пътува: логически дъмпове и архиви на томове. Затворен
 // списък, защото името влиза в път на приемника.
-const SHIP_RX = /^[\w][\w.-]{0,160}\.(sqlite\.gz|sql\.gz|tar\.gz)$/;
+const SHIP_RX = /^[\w][\w.-]{0,160}\.(sqlite\.gz|sql\.gz|tar\.gz|tar\.gz\.enc)$/;
 
 export function assertShipName(name) {
   const base = String(name || '');

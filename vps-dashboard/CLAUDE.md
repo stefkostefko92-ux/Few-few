@@ -92,6 +92,10 @@ src/
   backupsched.js         ГРАФИК на бекъпа (фиксиран час, догонване на изпуснат) +
                          изнасяне на копие към другия VPS (3-2-1, само по TLS,
                          проверка по sha256 на приемника)
+  panelbackup.js         бекъп на САМИЯ панел: /etc конфигът (тайните) + state
+                         (одит/базови линии/история) → шифриран archive (openssl
+                         aes-256, ключ през env), пътува offsite; ключът се
+                         преписва ИЗВЪН машината
   deploy.js              releases/архиви + autodeploy.sh + rollback + product health
   upload.js              качване на архив (стрийм + sha256 за autodeploy)
   agents.js              флот от agents.json + allowlist на агентските инструменти
@@ -117,8 +121,8 @@ deploy/                  install.sh · vps-dashboard.service · nginx.conf.examp
                          desktop/docker-compose.yml (незадължителен десктоп)
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
                          forecast · slo · manage · security · investigate ·
-                         observe · stack · ux · guard · deployfiles · ports · backupsched · diskusage · traffic · volrestore · i18n ·
-                         smoke (294 теста)
+                         observe · stack · ux · guard · deployfiles · ports · backupsched · diskusage · traffic · volrestore · i18n · panelbackup ·
+                         smoke (301 тест)
 ```
 
 ## Конвенции (важни)
@@ -481,6 +485,14 @@ test/                    unit · level1 · level2 · ansi · hardening · sessio
   знаем дали е цяло, приспива); името и възелът минават през затворен списък, защото
   влизат в път. Node сам слага `content-length` при `end(buffer)` — клонът 411 се
   тества със суров chunked сокет.
+- **Панелът снима и СЕБЕ СИ — шифрирано.** Конфигът (тайни, които не съществуват
+  никъде другаде) + state влизат в нощния бекъп като `panel-*.tar.gz.enc`
+  (openssl aes-256-cbc, pbkdf2). Ключът минава през env (`CSD_PANEL_KEY`), НИКОГА
+  през shell реда — той влиза в одита и в изгледа на задачата. Ключът е в конфига,
+  а конфигът е в архива → при мъртъв диск загива с него: показва се (зад sudo,
+  одитирано) за преписване ИЗВЪН машината. `offsite/` и `restore/` се изключват
+  (рекурсия + чужди дъмпове). Възстановяването е СЪЗНАТЕЛНО ръчно — презаписва
+  тайните на живия панел; панелът показва командата, не я изпълнява.
 - **Чуждите копия живеят ОТДЕЛНО** (`<stateDir>/offsite/<възел>/`). Смесени със
   собствените, чуждият дъмп става „най-новият бекъп" на тази машина и гаси алармата
   за остарял СОБСТВЕН бекъп — същият капан като с том-архивите. Папката се извежда
@@ -612,7 +624,7 @@ node -e "import('/opt/node22/lib/node_modules/playwright/index.mjs')…"
 отворен по дизайн. Ползвай `domcontentloaded`.
 
 ## Тестове
-294 теста, `node --test`, без мокове на системата — тестват се само детерминистични
+301 тест, `node --test`, без мокове на системата — тестват се само детерминистични
 чисти функции: пароли/сесии, TOTP (с контролните вектори на RFC 4226), парсване на
 `/proc`, рутера, allowlist-ите (unit имена, архиви, ufw правила, compose, dump),
 историята, сливането на конфига, файловия запис, SLO математиката (бюджет,
