@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { fail, ok, readBody, route } from '@/lib/api';
 import { prodottoAggiornaSchema } from '@/lib/validation/prodotti';
+import { selectMovimento } from '@/lib/costi';
 import { GIACENZA_ZERO, giacenzePerProdotto, ubicazioniDeiProdotti } from '@/components/prodotti/dati';
 
 type Contesto = { params: Promise<{ id: string }> };
@@ -29,7 +30,8 @@ export const GET = route(async (_request: Request, { params }: Contesto) => {
     ubicazioniDeiProdotti([id]),
     prisma.stockMovement.findMany({
       where: { productId: id },
-      include: {
+      select: {
+        ...selectMovimento(user.role),
         fromLocation: { select: { id: true, code: true } },
         toLocation: { select: { id: true, code: true } },
         user: { select: { id: true, name: true } },

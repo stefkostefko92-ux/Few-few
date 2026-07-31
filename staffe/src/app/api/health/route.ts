@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Sonda per il deploy e per il monitoraggio. Verifica anche il database:
- * un processo vivo con la base dati irraggiungibile non è „sano", e il
+ * un processo vivo con la base dati irraggiungibile non è «sano», e il
  * rollback automatico deve accorgersene.
  */
 export async function GET() {

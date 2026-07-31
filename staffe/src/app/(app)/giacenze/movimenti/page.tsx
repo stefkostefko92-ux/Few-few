@@ -162,7 +162,7 @@ export default async function PaginaMovimenti({
 
           <div className="flex items-end gap-3 md:col-span-5">
             <Button type="submit" variant="secondario">
-              Applica filtri
+              Filtra
             </Button>
             <Link
               href="/giacenze/movimenti"

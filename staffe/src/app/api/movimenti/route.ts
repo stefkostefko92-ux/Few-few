@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { created, fail, meta, ok, pagination, readBody, route } from '@/lib/api';
 import { moveStock, type MovementInput } from '@/lib/stock';
+import { selectMovimento } from '@/lib/costi';
 import { movimentoManualeSchema, TIPI_MOVIMENTO } from '@/lib/validation/prodotti';
 
 /**
@@ -26,7 +27,7 @@ function dataValida(v: string | null): Date | null {
 }
 
 export const GET = route(async (request: Request) => {
-  await requirePermission('giacenze:leggi');
+  const utente = await requirePermission('giacenze:leggi');
   const url = new URL(request.url);
   const p = pagination(url, 50);
 
@@ -57,7 +58,8 @@ export const GET = route(async (request: Request) => {
     prisma.stockMovement.count({ where }),
     prisma.stockMovement.findMany({
       where,
-      include: {
+      select: {
+        ...selectMovimento(utente.role),
         product: { select: { id: true, sku: true, name: true, uom: true } },
         batch: { select: { id: true, code: true } },
         fromLocation: { select: { id: true, code: true } },

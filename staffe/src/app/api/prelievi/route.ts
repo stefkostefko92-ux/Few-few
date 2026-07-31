@@ -90,7 +90,7 @@ export const POST = route(async (request: Request) => {
     }> = [];
     // Registro condiviso fra le righe: due righe dello stesso prodotto non
     // devono ricevere due volte la stessa giacenza (le quantità si scaricano
-    // solo alla chiusura del prelievo, quindi il database non le „vede" ancora).
+    // solo alla chiusura del prelievo, quindi il database non le «vede» ancora).
     const allocate: Allocazioni = new Map();
     for (const riga of ordine.lines) {
       const residuo = riga.qty - riga.pickedQty;

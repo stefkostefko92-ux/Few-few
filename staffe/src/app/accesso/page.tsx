@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth';
+import { destinazioneSicura } from '@/lib/redirect';
 import { LoginForm } from './LoginForm';
 
 export const metadata: Metadata = { title: 'Accesso' };
@@ -14,8 +15,7 @@ export default async function AccessoPage({
   if (user) redirect('/pannello');
 
   const { da } = await searchParams;
-  // Solo percorsi interni: un `da` che punta altrove sarebbe un redirect aperto.
-  const destinazione = da && da.startsWith('/') && !da.startsWith('//') ? da : '/pannello';
+  const destinazione = destinazioneSicura(da);
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">

@@ -47,7 +47,7 @@ export const POST = route(
     if (!visibile) return fail(404, 'Notifica non trovata.', 'non_trovato');
 
     if (letta) {
-      // Idempotente: ripremere „segna come letta" non deve fallire sul vincolo
+      // Idempotente: ripremere «segna come letta» non deve fallire sul vincolo
       // di unicità né spostare la data di lettura già registrata.
       await prisma.notificationRead.upsert({
         where: {

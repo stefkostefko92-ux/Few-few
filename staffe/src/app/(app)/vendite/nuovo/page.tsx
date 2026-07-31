@@ -38,7 +38,7 @@ export default async function NuovoOrdinePage() {
       {clienti.length === 0 ? (
         <EmptyState
           title="Nessun cliente in anagrafica"
-          description="Un ordine ha bisogno di un intestatario: creare prima il cliente."
+          description="Un ordine ha bisogno di un intestatario: crea prima il cliente."
           action={
             <Link href="/clienti/nuovo">
               <Button>Nuovo cliente</Button>

@@ -164,7 +164,7 @@ export default async function VenditePage({
       {ordini.length === 0 ? (
         <EmptyState
           title="Nessun ordine di vendita"
-          description="Cambiare i filtri oppure creare il primo ordine."
+          description="Cambia i filtri oppure crea il primo ordine."
           action={
             puoScrivere ? (
               <Link href="/vendite/nuovo">

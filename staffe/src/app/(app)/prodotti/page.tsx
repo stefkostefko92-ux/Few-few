@@ -163,7 +163,7 @@ export default async function PaginaProdotti({
               Mostra anche i prodotti disattivati
             </label>
             <Button type="submit" variant="secondario">
-              Applica filtri
+              Filtra
             </Button>
             <Link
               href="/prodotti"

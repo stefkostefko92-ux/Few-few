@@ -347,7 +347,7 @@ export function FiltroPeriodo({
       </div>
       {children}
       <Button type="submit" variant="secondario">
-        Applica
+        Filtra
       </Button>
     </form>
   );

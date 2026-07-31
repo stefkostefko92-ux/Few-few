@@ -70,7 +70,7 @@ type RigaForm = {
 };
 
 /** Le percentuali in punti base seguono la stessa aritmetica dei centesimi:
- *  „22" → 2200, „5,5" → 550. Nessun decimale in giro per il codice. */
+ *  «22» → 2200, «5,5» → 550. Nessun decimale in giro per il codice. */
 const percentualeInBp = parseEuroToCents;
 
 function centesimiInTesto(cents: number): string {

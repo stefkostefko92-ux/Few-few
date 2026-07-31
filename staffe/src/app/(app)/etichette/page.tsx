@@ -22,7 +22,7 @@ export default async function EtichettePage() {
         <PageHeader title="Etichette" />
         <EmptyState
           title="Permesso negato"
-          description="Il tuo ruolo non può stampare etichette."
+          description="Il tuo ruolo non consente di stampare etichette. Se ti serve, chiedi all’amministratore."
         />
       </>
     );

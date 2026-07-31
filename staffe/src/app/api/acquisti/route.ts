@@ -1,5 +1,6 @@
 import { requirePermission } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { selectRigaAcquisto } from '@/lib/costi';
 import { created, fail, meta, ok, pagination, readBody, route } from '@/lib/api';
 import { audit } from '@/lib/audit';
 import { nextDocumentNumber } from '@/lib/sequence';
@@ -15,7 +16,7 @@ import { creaOrdineAcquistoSchema, whereOrdiniAcquisto } from '@/lib/validation/
  */
 
 export const GET = route(async (request: Request) => {
-  await requirePermission('acquisti:leggi');
+  const utente = await requirePermission('acquisti:leggi');
 
   const url = new URL(request.url);
   const p = pagination(url);
@@ -35,9 +36,7 @@ export const GET = route(async (request: Request) => {
       take: p.take,
       include: {
         supplier: { select: { id: true, code: true, name: true } },
-        lines: {
-          select: { id: true, qty: true, receivedQty: true, unitCostCents: true, discountBp: true, vatRateBp: true },
-        },
+        lines: { select: selectRigaAcquisto(utente.role) },
         _count: { select: { receipts: true } },
       },
     }),

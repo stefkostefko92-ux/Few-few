@@ -6,7 +6,7 @@
  * L'errore torna già pronto per l'operatore: il server risponde in italiano
  * (`{ error: { message, code, details } }`) e quel messaggio si mostra così
  * com'è. `details` serve al caso dell'eccedenza di ricevimento, che va spiegata
- * riga per riga invece di essere ridotta a un „errore".
+ * riga per riga invece di essere ridotta a un «errore».
  */
 export type EsitoOk<T> = { ok: true; dati: T };
 export type EsitoErrore = {

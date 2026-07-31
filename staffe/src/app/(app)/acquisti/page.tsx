@@ -92,7 +92,7 @@ export default async function ElencoAcquistiPage({
     <>
       <PageHeader
         title="Ordini di acquisto"
-        description="Ciclo bozza → ordinato → ricevuto. La colonna „In arrivo“ è la merce ordinata e non ancora entrata."
+        description="Ciclo bozza → ordinato → ricevuto. La colonna «In arrivo» è la merce ordinata e non ancora entrata."
         actions={
           <Link href="/acquisti/nuovo">
             <Button>Nuovo ordine</Button>

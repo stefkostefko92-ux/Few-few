@@ -104,22 +104,50 @@ async function decrease(
   batchId: string | null,
   qty: number,
 ): Promise<void> {
-  const item = await tx.stockItem.findUnique({
-    where: { stockKey: stockKeyOf(productId, locationId, batchId) },
+  const stockKey = stockKeyOf(productId, locationId, batchId);
+
+  // La verifica e lo scarico sono UNA sola istruzione: `where` contiene già la
+  // condizione «ce n'è abbastanza».
+  //
+  // Leggere prima e scrivere poi non basta. PostgreSQL lavora in READ COMMITTED:
+  // due prelievi simultanei sullo stesso vano leggono entrambi 5, controllano
+  // entrambi 5 ≥ 3, e scaricano entrambi → giacenza −1. Merce che non esiste,
+  // venduta due volte. Qui invece il secondo `updateMany` non trova righe che
+  // soddisfino la condizione e fallisce, come deve.
+  const { count } = await tx.stockItem.updateMany({
+    where: { stockKey, qty: { gte: qty } },
+    data: { qty: { decrement: qty } },
   });
-  if (!item || item.qty < qty) {
+
+  if (count === 0) {
+    const item = await tx.stockItem.findUnique({
+      where: { stockKey },
+      select: { qty: true },
+    });
     throw new StockError(
       `Giacenza insufficiente nell’ubicazione selezionata: disponibili ${item?.qty ?? 0}, richiesti ${qty}.`,
     );
   }
-  await tx.stockItem.update({
-    where: { id: item.id },
-    data: {
-      qty: { decrement: qty },
-      // L'impegnato non può superare la giacenza residua.
-      reservedQty: Math.min(item.reservedQty, item.qty - qty),
-    },
+
+  // Invariante `reservedQty ≤ qty`. La riga è già bloccata dall'UPDATE qui
+  // sopra (il lock dura fino al commit), quindi leggerla adesso è sicuro.
+  //
+  // Prima questo riallineamento era nascosto DENTRO lo scarico, e valeva come
+  // una liberazione implicita dell'impegnato: chi poi chiamava `release()` —
+  // come fa la chiusura del prelievo — lo liberava una seconda volta, e
+  // l'impegnato scendeva del doppio. Ora si corregge solo se l'invariante è
+  // davvero rotto (es. una rettifica che abbassa la giacenza sotto l'impegnato),
+  // e non sostituisce mai una liberazione esplicita.
+  const dopo = await tx.stockItem.findUnique({
+    where: { stockKey },
+    select: { id: true, qty: true, reservedQty: true },
   });
+  if (dopo && dopo.reservedQty > dopo.qty) {
+    await tx.stockItem.update({
+      where: { id: dopo.id },
+      data: { reservedQty: dopo.qty },
+    });
+  }
 }
 
 async function increase(
@@ -226,10 +254,20 @@ export async function reserve(
     const libero = item.qty - item.reservedQty;
     if (libero <= 0) continue;
     const quota = Math.min(libero, residuo);
-    await tx.stockItem.update({
-      where: { id: item.id },
+
+    // Controllo ottimistico: si impegna solo se nel frattempo l'impegnato non è
+    // cambiato. Due conferme d'ordine simultanee leggevano entrambe „libero 5",
+    // impegnavano entrambe 5, e l'impegnato finiva a 10 su una giacenza di 5:
+    // merce promessa due volte, con un cliente scoperto alla spedizione.
+    const { count } = await tx.stockItem.updateMany({
+      where: { id: item.id, reservedQty: item.reservedQty },
       data: { reservedQty: { increment: quota } },
     });
+    if (count === 0) {
+      throw new StockError(
+        'La disponibilità è cambiata durante il salvataggio. Ricarica la pagina e riprova.',
+      );
+    }
     residuo -= quota;
   }
   if (residuo > 0) {
@@ -269,7 +307,7 @@ export async function release(
  * subito un altro identico.
  *
  * Quando la giacenza risale sopra il minimo l'avviso si CHIUDE da solo: un
- * centro notifiche che mostra ancora „esaurito" per merce riassortita insegna
+ * centro notifiche che mostra ancora «esaurito» per merce riassortita insegna
  * agli operatori a ignorarlo.
  */
 export async function checkLowStock(tx: Tx, productId: string): Promise<void> {
@@ -302,7 +340,7 @@ export async function checkLowStock(tx: Tx, productId: string): Promise<void> {
   const type: NotificationType = qty <= 0 ? 'ESAURITO' : 'SCORTA_MINIMA';
 
   // Se è già aperto un avviso dello stesso tipo non se ne crea un altro. Se è
-  // aperto quello dell'ALTRO tipo (da „scorta minima" si è passati a „esaurito",
+  // aperto quello dell'ALTRO tipo (da «scorta minima» si è passati a «esaurito»,
   // o viceversa) lo si chiude: la gravità è cambiata e va detta.
   const esistenti = await tx.notification.findMany({
     where: aperti,
@@ -351,7 +389,7 @@ export type Allocazioni = Map<string, number>;
  * seconda chiamata rilegge un magazzino che la prima non ha ancora toccato — le
  * quantità si scaricano solo alla chiusura del prelievo. L'operatore andrebbe al
  * vano e non troverebbe i pezzi; l'errore comparirebbe solo alla fine, come
- * transazione fallita, invece che qui come „giacenza insufficiente".
+ * transazione fallita, invece che qui come «giacenza insufficiente».
  *
  * NOTA sull'impegnato: `reservedQty` NON viene sottratto di proposito. L'ordine
  * che si sta prelevando è, di regola, quello che ha impegnato la merce; toglierla
@@ -372,7 +410,7 @@ export async function suggestPickLocations(
 
   const out: PickSuggestion[] = [];
   // Le assegnazioni si scrivono nel registro SOLO se la riga si copre tutta:
-  // una riga fallita non deve lasciare pezzi „prenotati" a metà e far fallire
+  // una riga fallita non deve lasciare pezzi «prenotati» a metà e far fallire
   // a catena le righe successive.
   const provvisorie = new Map<string, number>();
   let residuo = qty;

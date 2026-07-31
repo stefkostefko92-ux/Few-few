@@ -73,7 +73,7 @@ export const PATCH = route(async (request: Request, { params }: Contesto) => {
     if ((somma._sum.qty ?? 0) > 0) {
       return fail(
         409,
-        'L’ubicazione contiene ancora merce: trasferiscila prima di disattivarla.',
+        'L’ubicazione contiene ancora merce: trasferirla prima di disattivare l’ubicazione.',
         'giacenza',
       );
     }

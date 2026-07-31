@@ -26,8 +26,8 @@ export function Vietato({ azione }: { azione?: string }) {
       title="Permesso negato"
       description={
         azione
-          ? `Il tuo ruolo non consente di ${azione}. Rivolgiti a un amministratore.`
-          : 'Il tuo ruolo non consente di accedere a questa sezione. Rivolgiti a un amministratore.'
+          ? `Il tuo ruolo non consente di ${azione}. Se ti serve, chiedi all’amministratore.`
+          : 'Il tuo ruolo non consente di accedere a questa sezione. Se ti serve, chiedi all’amministratore.'
       }
     />
   );

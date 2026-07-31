@@ -70,7 +70,7 @@ test('due righe dello stesso prodotto non ricevono la stessa giacenza', async ()
 
   // La riga fallita NON deve aver consumato nulla: i 2 pezzi restano liberi.
   // (Prima si scriveva nel registro man mano, quindi il tentativo fallito
-  // „mangiava" comunque i pezzi e faceva fallire anche le righe successive.)
+  // «mangiava» comunque i pezzi e faceva fallire anche le righe successive.)
   const seconda = await suggestPickLocations('p1', 2, c, allocate);
   assert.deepEqual(seconda, [{ locationId: 'A', batchId: null, qty: 2 }]);
 });

@@ -18,7 +18,10 @@ export default async function ScannerPage() {
     return (
       <>
         <PageHeader title="Scanner" />
-        <EmptyState title="Permesso negato" description="Il tuo ruolo non può leggere le giacenze." />
+        <EmptyState
+          title="Permesso negato"
+          description="Il tuo ruolo non consente di consultare le giacenze. Se ti serve, chiedi all’amministratore."
+        />
       </>
     );
   }

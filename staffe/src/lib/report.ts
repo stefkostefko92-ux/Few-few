@@ -109,7 +109,7 @@ export const DEFINIZIONI = {
     denominatore:
       'Consumo medio giornaliero = quantità uscita nella finestra ÷ GIORNI della finestra (i giorni senza movimento contano come zero).',
     finestra:
-      'Uscite per ordine cliente (prelievo e spedizione) negli ultimi N giorni, N impostabile (predefinito 90).',
+      'Uscite per ordine di vendita (prelievo e spedizione) negli ultimi N giorni, N impostabile (predefinito 90).',
     esclusioni:
       'Scarti, resi a fornitore, trasferimenti e rettifiche: non sono domanda del cliente. Prodotti disattivati.',
     limiti:

@@ -152,7 +152,7 @@ export default async function PaginaPrevisioni({
         <SchedaKpi
           etichetta="Finestra"
           valore={`${giorni} gg`}
-          dettaglio="Uscite per ordine cliente (prelievo, spedizione)"
+          dettaglio="Uscite per ordine di vendita (prelievo, spedizione)"
         />
       </div>
 

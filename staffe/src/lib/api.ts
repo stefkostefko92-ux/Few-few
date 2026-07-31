@@ -61,13 +61,17 @@ export function route<Args extends unknown[]>(
       }
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === 'P2002') {
-          return fail(409, 'Esiste già un record con questo valore univoco.', 'duplicato');
+          return fail(409, 'Questo codice è già in uso: deve essere unico.', 'duplicato');
         }
         if (err.code === 'P2025') {
-          return fail(404, 'Record non trovato.', 'non_trovato');
+          return fail(404, 'Elemento non trovato.', 'non_trovato');
         }
         if (err.code === 'P2003') {
-          return fail(409, 'Riferimento non valido o record ancora collegato.', 'vincolo');
+          return fail(
+            409,
+            'Riferimento non valido, oppure l’elemento è ancora collegato ad altri documenti.',
+            'vincolo',
+          );
         }
       }
       console.error('[staffe] errore non gestito:', err);
@@ -98,7 +102,7 @@ export async function readBody<S extends ZodTypeAny>(
       {
         code: 'custom',
         path: [],
-        message: 'Corpo della richiesta non è JSON valido.',
+        message: 'Il corpo della richiesta non è un JSON valido.',
       },
     ]);
   }

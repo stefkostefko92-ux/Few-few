@@ -37,7 +37,7 @@ export default async function NuovoOrdinePage() {
         <PageHeader title="Nuovo ordine di acquisto" />
         <EmptyState
           title="Nessun fornitore attivo"
-          description="Registrare prima un fornitore in anagrafica, poi tornare qui."
+          description="Registra prima un fornitore in anagrafica, poi torna qui."
         />
       </>
     );

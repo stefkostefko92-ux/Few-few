@@ -94,7 +94,7 @@ export default async function ClientiPage({
 
       <Card className="mb-4 no-print">
         <form method="get" className="flex flex-wrap items-end gap-3">
-          <Field label="Cerca" htmlFor="f-q" hint="Codice, ragione sociale, P. IVA, città, e-mail.">
+          <Field label="Cerca" htmlFor="f-q" hint="Codice, ragione sociale, partita IVA, città, e-mail.">
             <Input id="f-q" name="q" type="search" defaultValue={q} />
           </Field>
           <Field label="Stato" htmlFor="f-attivi">
@@ -116,7 +116,7 @@ export default async function ClientiPage({
       {clienti.length === 0 ? (
         <EmptyState
           title="Nessun cliente"
-          description="Creare il primo cliente per poter emettere preventivi e ordini."
+          description="Crea il primo cliente per poter emettere preventivi e ordini."
           action={
             puoScrivere ? (
               <Link href="/clienti/nuovo">

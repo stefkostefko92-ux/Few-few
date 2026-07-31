@@ -25,7 +25,7 @@ import { chiama } from './client-api';
  * sola. Qui si prepara il contenuto e si mostra ciò che l'operatore deve vedere
  * PRIMA di salvare — soprattutto quando sta ricevendo più del dovuto.
  *
- * Il campo ubicazione è obbligatorio per riga: merce „ricevuta" senza posto è
+ * Il campo ubicazione è obbligatorio per riga: merce «ricevuta» senza posto è
  * merce che nessuno ritrova.
  */
 
@@ -567,7 +567,7 @@ export function RicevimentoForm({
             disabled={inCorso}
             onClick={() => void salva(true)}
           >
-            Confermo l’eccedenza e registro il ricevimento
+            Conferma l’eccedenza e registra il ricevimento
           </Button>
         </div>
       )}

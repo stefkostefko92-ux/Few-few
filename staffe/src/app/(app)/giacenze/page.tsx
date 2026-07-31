@@ -217,7 +217,7 @@ export default async function PaginaGiacenze({
 
           <div className="flex items-end gap-3 md:col-span-4">
             <Button type="submit" variant="secondario">
-              Applica filtri
+              Filtra
             </Button>
             <Link
               href="/giacenze"

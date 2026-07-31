@@ -67,7 +67,7 @@ export function ChiusuraInventario({
 
   return (
     <Card className="border-warn/50">
-      <h2 className="font-semibold">Confermi la chiusura di {numero}?</h2>
+      <h2 className="font-semibold">Chiudere l’inventario {numero}?</h2>
       <p className="mt-1 text-sm text-fg-muted">
         Ogni differenza genera un movimento di rettifica sulla giacenza reale.
         L’operazione non si annulla: un conteggio chiuso non si riapre.

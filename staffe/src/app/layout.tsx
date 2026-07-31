@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     'Gestionale di magazzino (WMS) per staffe e accessori di fissaggio per ascensori: giacenze in tempo reale, codici a barre, ordini di acquisto e vendita, prelievo e spedizione.',
   applicationName: 'Staffe',
-  // Regola del repository: almeno 5 parole chiave, una sempre „Carbon Stealth".
+  // Regola del repository: almeno 5 parole chiave, una sempre «Carbon Stealth».
   keywords: [
     'Carbon Stealth',
     'gestionale magazzino ascensori',

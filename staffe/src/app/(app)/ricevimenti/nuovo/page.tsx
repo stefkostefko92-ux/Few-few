@@ -72,7 +72,7 @@ export default async function NuovoRicevimentoPage({
         <PageHeader title="Nuovo ricevimento merce" />
         <EmptyState
           title="Nessuna ubicazione attiva"
-          description="Configurare almeno un’ubicazione: la merce ricevuta deve entrare in un posto preciso."
+          description="Configura almeno un’ubicazione: la merce ricevuta deve entrare in un posto preciso."
         />
       </>
     );

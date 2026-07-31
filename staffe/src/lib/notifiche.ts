@@ -19,7 +19,7 @@ export function visibiliDa(userId: string): Prisma.NotificationWhereInput {
 
 /**
  * Non letta = NON esiste una riga di lettura per questo utente. L'assenza della
- * riga è lo stato „da leggere": così un avviso generale letto da un collega
+ * riga è lo stato «da leggere»: così un avviso generale letto da un collega
  * resta da leggere per tutti gli altri.
  */
 export function filtroLettura(

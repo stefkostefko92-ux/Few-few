@@ -1029,7 +1029,7 @@ export async function datiCruscotto({
     merceInArrivo(),
     prisma.salesOrder.count({ where: { status: 'IMBALLATO' } }),
     // Sul cruscotto conta quanti avvisi sono ancora APERTI (condizione non
-    // rientrata), non quanti sono „da leggere": la lettura è personale, il
+    // rientrata), non quanti sono «da leggere»: la lettura è personale, il
     // cruscotto descrive lo stato del magazzino.
     prisma.notification.count({ where: { resolvedAt: null } }),
     prisma.stockMovement.findMany({
