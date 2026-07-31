@@ -146,10 +146,26 @@ export const NOTIFICATION_TONE: Record<NotificationLevel, Tone> = {
   CRITICO: 'errore',
 };
 
-const DATE = new Intl.DateTimeFormat('it-IT', { dateStyle: 'short' });
+/**
+ * Date con anno a QUATTRO cifre, ovunque.
+ *
+ * `dateStyle: 'short'` per l'italiano dà `31/07/26` (CLDR: `dd/MM/yy`), mentre
+ * i report e le esportazioni scrivono `31/07/2026`: lo stesso giorno appariva in
+ * due forme diverse a seconda della schermata. Su documenti di magazzino che si
+ * stampano e si archiviano per anni, l'anno a due cifre è anche ambiguo di per
+ * sé — un ricevimento del 2026 e uno del 2036 si leggono uguali.
+ */
+const DATE = new Intl.DateTimeFormat('it-IT', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
 const DATETIME = new Intl.DateTimeFormat('it-IT', {
-  dateStyle: 'short',
-  timeStyle: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
 });
 
 export function formatDate(d: Date | string | null | undefined): string {

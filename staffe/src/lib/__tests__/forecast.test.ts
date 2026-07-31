@@ -356,11 +356,14 @@ test('riepilogoTendenzeAcquisti compone frasi dai numeri, senza dati inventati',
     },
   ]);
   const testo = righe.join(' ');
-  assert.match(testo, /1 articoli su 3 sono sotto il punto di riordino/);
+  // Accordo singolare/plurale: con UN solo articolo la frase deve essere al
+  // singolare. Prima diceva «1 articoli … sono», e il test lo teneva in vita.
+  assert.match(testo, /1 articolo su 3 è sotto il punto di riordino/);
   assert.match(testo, /200 pezzi/);
   assert.match(testo, /STF-100 \(3 gg\)/);
-  assert.match(testo, /1 articoli in crescita, 1 in calo/);
-  assert.match(testo, /1 articoli non hanno avuto uscite/);
+  assert.match(testo, /1 articolo in crescita, 1 in calo/);
+  assert.match(testo, /1 articolo non ha avuto uscite/);
+  assert.doesNotMatch(testo, /\b1 articoli\b/);
 });
 
 test('riepilogoTendenzeAcquisti su elenco vuoto non produce affermazioni', () => {

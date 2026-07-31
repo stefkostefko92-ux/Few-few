@@ -1,3 +1,4 @@
+import { avere, essere, plurale } from './plurale';
 /**
  * Previsioni di consumo e riordino — funzioni PURE, senza database, senza rete
  * e senza modelli generativi.
@@ -653,7 +654,7 @@ export function riepilogoTendenzeAcquisti(
   righe.push(
     daRiordinare.length === 0
       ? `Nessun articolo sotto il punto di riordino su ${voci.length} analizzati.`
-      : `${daRiordinare.length} articoli su ${voci.length} sono sotto il punto di riordino, per un totale di ${pezziTotali} pezzi suggeriti.`,
+      : `${plurale(daRiordinare.length, 'articolo', 'articoli')} su ${voci.length} ${essere(daRiordinare.length)} sotto il punto di riordino, per un totale di ${plurale(pezziTotali, 'pezzo suggerito', 'pezzi suggeriti')}.`,
   );
 
   if (critici.length > 0) {
@@ -662,24 +663,24 @@ export function riepilogoTendenzeAcquisti(
       .map((v) => `${v.nome} (${v.copertura} gg)`)
       .join(', ');
     righe.push(
-      `Copertura sotto ${sogliaCoperturaCritica} giorni per ${critici.length} articoli — i più urgenti: ${primi}.`,
+      `Copertura sotto ${sogliaCoperturaCritica} giorni per ${plurale(critici.length, 'articolo', 'articoli')} — ${critici.length === 1 ? 'il più urgente' : 'i più urgenti'}: ${primi}.`,
     );
   }
 
   if (inCrescita.length > 0 || inCalo.length > 0) {
     righe.push(
-      `Tendenza dei consumi: ${inCrescita.length} articoli in crescita, ${inCalo.length} in calo, ${voci.length - inCrescita.length - inCalo.length} stabili o non stimabili.`,
+      `Tendenza dei consumi: ${plurale(inCrescita.length, 'articolo', 'articoli')} in crescita, ${inCalo.length} in calo, ${voci.length - inCrescita.length - inCalo.length} stabili o non stimabili.`,
     );
   }
 
   if (senzaConsumo.length > 0) {
     righe.push(
-      `${senzaConsumo.length} articoli non hanno avuto uscite nella finestra: capitale fermo da verificare.`,
+      `${plurale(senzaConsumo.length, 'articolo', 'articoli')} non ${avere(senzaConsumo.length)} avuto uscite nella finestra: capitale fermo da verificare.`,
     );
   }
   if (senzaDati.length > 0) {
     righe.push(
-      `${senzaDati.length} articoli hanno dati insufficienti: per questi non viene proposta alcuna quantità.`,
+      `${plurale(senzaDati.length, 'articolo', 'articoli')} ${avere(senzaDati.length)} dati insufficienti: per ${senzaDati.length === 1 ? 'questo' : 'questi'} non viene proposta alcuna quantità.`,
     );
   }
 
