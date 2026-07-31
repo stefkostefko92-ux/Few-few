@@ -27,6 +27,15 @@ info:
     **Paginazione**: le liste accettano `page` (default 1) e `perPage`
     (default variabile per rotta, tetto 200) come query string e rispondono
     con `meta: { page, perPage, total, totalPages }`.
+
+
+    **Visibilità dei costi**: la risposta dipende dal RUOLO di chi chiama. I
+    campi di costo d'acquisto (`unitCostCents` sui movimenti, sulle righe
+    d'ordine e sulle righe di ricevimento, più sconti e aliquota d'ordine)
+    vengono restituiti solo a chi ha il permesso `costi:leggi`
+    (`AMMINISTRATORE`, `VENDITE`). Per il ruolo `MAGAZZINO` quei campi sono
+    ASSENTI dalla risposta, non azzerati: un client non deve dedurre „costo
+    zero" dalla loro mancanza. La selezione è in `src/lib/costi.ts`.
   version: "0.1.0"
   license:
     name: UNLICENSED (proprietario — Carbon Stealth VCC)
