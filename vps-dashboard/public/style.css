@@ -359,4 +359,4 @@ tr.row-before td { background: rgba(255, 180, 84, 0.05); }
   object-fit: contain;
 }
 .ico-img.ico-gap { margin-right: 0.4em; }
-.icon-btn .ico-img { width: 18px; height: 18px; vertical-align: middle; }
+.icon-btn .ico-img { width: 20px; height: 20px; vertical-align: middle; }
