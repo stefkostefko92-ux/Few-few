@@ -7,6 +7,12 @@ import { NOTIFICATION_LABELS } from '@/lib/labels';
 import { formatQty } from '@/lib/money';
 import { Card, PageHeader } from '@/components/ui';
 import { AccessoNegato, Vuoto } from '@/components/report';
+import {
+  filtroLettura,
+  letturaDi,
+  selectNotifica,
+  visibiliDa,
+} from '@/lib/notifiche';
 import { ElencoNotifiche, type NotificaVista } from './ElencoNotifiche';
 
 export const metadata: Metadata = { title: 'Notifiche' };
@@ -46,9 +52,7 @@ export default async function PaginaNotifiche({
 
   // Visibilità: le notifiche generali (userId nullo) più le proprie. Mai quelle
   // di un collega — il filtro è nella query, non nell'interfaccia.
-  const visibili: Prisma.NotificationWhereInput = {
-    OR: [{ userId: null }, { userId: user.id }],
-  };
+  const visibili: Prisma.NotificationWhereInput = visibiliDa(user.id);
 
   const perTipo = await prisma.notification.groupBy({
     by: ['type'],
@@ -61,37 +65,27 @@ export default async function PaginaNotifiche({
   const where: Prisma.NotificationWhereInput = {
     ...visibili,
     ...(tipo ? { type: tipo as NotificationType } : {}),
-    ...(stato === 'non_lette'
-      ? { readAt: null }
-      : stato === 'lette'
-        ? { readAt: { not: null } }
-        : {}),
+    ...filtroLettura(user.id, stato),
   };
 
   const [righe, totale, nonLette] = await Promise.all([
     prisma.notification.findMany({
       where,
-      orderBy: [{ readAt: 'asc' }, { createdAt: 'desc' }],
+      // Prima gli avvisi ancora aperti, poi i più recenti.
+      orderBy: [{ resolvedAt: 'asc' }, { createdAt: 'desc' }],
       take: LIMITE,
-      select: {
-        id: true,
-        type: true,
-        level: true,
-        title: true,
-        body: true,
-        entity: true,
-        entityId: true,
-        readAt: true,
-        createdAt: true,
-      },
+      select: selectNotifica(user.id),
     }),
     prisma.notification.count({ where }),
-    prisma.notification.count({ where: { ...visibili, readAt: null } }),
+    prisma.notification.count({
+      where: { ...visibili, reads: { none: { userId: user.id } } },
+    }),
   ]);
 
-  const notifiche: NotificaVista[] = righe.map((n) => ({
+  const notifiche: NotificaVista[] = righe.map(({ reads, ...n }) => ({
     ...n,
-    readAt: n.readAt ? n.readAt.toISOString() : null,
+    readAt: letturaDi({ reads })?.toISOString() ?? null,
+    resolvedAt: n.resolvedAt ? n.resolvedAt.toISOString() : null,
     createdAt: n.createdAt.toISOString(),
   }));
 
@@ -159,11 +153,12 @@ export default async function PaginaNotifiche({
                 ))}
             </ul>
             <p className="mt-4 text-xs text-fg-muted">
-              Le notifiche di scorta minima ed esaurito nascono dai movimenti di magazzino e non
-              si ripetono finché la precedente resta da leggere.
+              Gli avvisi di scorta minima ed esaurito nascono dai movimenti di magazzino: non si
+              ripetono finché la condizione resta aperta e si chiudono da soli quando la giacenza
+              risale sopra il minimo.
             </p>
             <p className="mt-2 text-xs text-fg-muted">
-              Gli avvisi generali sono condivisi: segnarli letti vale per tutti gli operatori.
+              La lettura è personale: segnare letto un avviso generale non lo nasconde ai colleghi.
             </p>
           </Card>
         </aside>

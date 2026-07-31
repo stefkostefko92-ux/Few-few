@@ -457,10 +457,20 @@ CREATE TABLE "Notification" (
     "entity" TEXT,
     "entityId" TEXT,
     "userId" TEXT,
-    "readAt" TIMESTAMP(3),
+    "resolvedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "NotificationRead" (
+    "id" TEXT NOT NULL,
+    "notificationId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "readAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "NotificationRead_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -621,10 +631,19 @@ CREATE INDEX "AuditLog_entity_entityId_idx" ON "AuditLog"("entity", "entityId");
 CREATE INDEX "AuditLog_createdAt_idx" ON "AuditLog"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "Notification_userId_readAt_idx" ON "Notification"("userId", "readAt");
+CREATE INDEX "Notification_userId_resolvedAt_idx" ON "Notification"("userId", "resolvedAt");
 
 -- CreateIndex
 CREATE INDEX "Notification_type_createdAt_idx" ON "Notification"("type", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Notification_entity_entityId_resolvedAt_idx" ON "Notification"("entity", "entityId", "resolvedAt");
+
+-- CreateIndex
+CREATE INDEX "NotificationRead_userId_idx" ON "NotificationRead"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "NotificationRead_notificationId_userId_key" ON "NotificationRead"("notificationId", "userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "DocumentSequence_kind_year_key" ON "DocumentSequence"("kind", "year");
@@ -769,4 +788,10 @@ ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userI
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "NotificationRead" ADD CONSTRAINT "NotificationRead_notificationId_fkey" FOREIGN KEY ("notificationId") REFERENCES "Notification"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "NotificationRead" ADD CONSTRAINT "NotificationRead_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

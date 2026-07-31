@@ -115,10 +115,10 @@ export default async function PaginaPannello() {
             href="/spedizioni"
           />
         </div>
-        {dati.notificheNonLette > 0 && (
+        {dati.notificheAperte > 0 && (
           <p className="mt-3 text-sm">
             <Link href="/notifiche" className="font-medium text-brand hover:underline">
-              {dati.notificheNonLette} notifiche da leggere
+              {dati.notificheAperte} avvisi aperti
             </Link>
           </p>
         )}

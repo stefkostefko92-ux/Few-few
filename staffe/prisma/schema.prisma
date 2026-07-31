@@ -40,16 +40,17 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  sessions        Session[]
-  movements       StockMovement[]
-  purchaseOrders  PurchaseOrder[]
-  salesOrders     SalesOrder[]
-  goodsReceipts   GoodsReceipt[]
-  pickLists       PickList[]
-  inventoryCounts InventoryCount[]
-  attachments     Attachment[]
-  auditLogs       AuditLog[]
-  notifications   Notification[]
+  sessions          Session[]
+  movements         StockMovement[]
+  purchaseOrders    PurchaseOrder[]
+  salesOrders       SalesOrder[]
+  goodsReceipts     GoodsReceipt[]
+  pickLists         PickList[]
+  inventoryCounts   InventoryCount[]
+  attachments       Attachment[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  notificationReads NotificationRead[]
 
   @@index([role, active])
 }
@@ -669,22 +670,49 @@ enum NotificationLevel {
   CRITICO
 }
 
+/// Avviso operativo. Due stati DISTINTI, che prima erano confusi in un campo solo:
+///
+///  · `resolvedAt` — la CONDIZIONE è rientrata (la giacenza è risalita sopra il
+///    minimo). Riguarda il magazzino, è uguale per tutti.
+///  · `NotificationRead` — il singolo utente l'ha LETTA. Riguarda la persona.
+///
+/// Con un unico `readAt` condiviso, il primo operatore che segnava letto un
+/// avviso generale (`userId = null`) lo faceva sparire a TUTTI gli altri — e la
+/// deduplicazione, che si basava su „esiste un avviso non letto", ne creava
+/// subito un altro. Separare i due stati risolve entrambe le cose.
 model Notification {
-  id        String            @id @default(cuid())
-  type      NotificationType
-  level     NotificationLevel @default(INFO)
-  title     String
-  body      String?
-  entity    String?
-  entityId  String?
+  id         String            @id @default(cuid())
+  type       NotificationType
+  level      NotificationLevel @default(INFO)
+  title      String
+  body       String?
+  entity     String?
+  entityId   String?
   /// Nullo = destinata a tutti gli utenti con il ruolo competente.
-  userId    String?
-  user      User?             @relation(fields: [userId], references: [id])
-  readAt    DateTime?
-  createdAt DateTime          @default(now())
+  userId     String?
+  user       User?             @relation(fields: [userId], references: [id])
+  /// Valorizzato quando la condizione che l'ha generata non c'è più.
+  resolvedAt DateTime?
+  createdAt  DateTime          @default(now())
 
-  @@index([userId, readAt])
+  reads NotificationRead[]
+
+  @@index([userId, resolvedAt])
   @@index([type, createdAt])
+  @@index([entity, entityId, resolvedAt])
+}
+
+/// Stato di lettura PER UTENTE. L'assenza della riga significa „non letta".
+model NotificationRead {
+  id             String       @id @default(cuid())
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt         DateTime     @default(now())
+
+  @@unique([notificationId, userId])
+  @@index([userId])
 }
 
 /// Numerazione documenti per anno (OA/OV/RIC/PRL/SPD/INV). Riga singola per

@@ -977,7 +977,7 @@ export type EsitoCruscotto = {
   venditeAperte: number;
   merceInArrivo: number;
   spedizioniPronte: number;
-  notificheNonLette: number;
+  notificheAperte: number;
   venditeMese: { fatturatoCents: number; ordini: number };
   venditeMesePrecedente: { fatturatoCents: number; ordini: number };
   acquistiMese: { spesaCents: number; ordini: number };
@@ -1013,7 +1013,7 @@ export async function datiCruscotto({
     venditeAperte,
     arrivo,
     spedizioniPronte,
-    notificheNonLette,
+    notificheAperte,
     ultimi,
   ] = await Promise.all([
     prisma.product.findMany({
@@ -1028,7 +1028,10 @@ export async function datiCruscotto({
     }),
     merceInArrivo(),
     prisma.salesOrder.count({ where: { status: 'IMBALLATO' } }),
-    prisma.notification.count({ where: { readAt: null } }),
+    // Sul cruscotto conta quanti avvisi sono ancora APERTI (condizione non
+    // rientrata), non quanti sono „da leggere": la lettura è personale, il
+    // cruscotto descrive lo stato del magazzino.
+    prisma.notification.count({ where: { resolvedAt: null } }),
     prisma.stockMovement.findMany({
       orderBy: { createdAt: 'desc' },
       take: 10,
@@ -1073,7 +1076,7 @@ export async function datiCruscotto({
     venditeAperte,
     merceInArrivo: [...arrivo.values()].reduce((a, b) => a + b, 0),
     spedizioniPronte,
-    notificheNonLette,
+    notificheAperte,
     venditeMese: {
       fatturatoCents: vendite?.fatturatoCents ?? 0,
       ordini: vendite?.numeroOrdini ?? 0,

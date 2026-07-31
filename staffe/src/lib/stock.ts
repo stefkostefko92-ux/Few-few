@@ -1,4 +1,9 @@
-import { MovementType, Prisma, type StockMovement } from '@prisma/client';
+import {
+  MovementType,
+  Prisma,
+  type NotificationType,
+  type StockMovement,
+} from '@prisma/client';
 import { prisma } from './db';
 
 /**
@@ -256,9 +261,16 @@ export async function release(
 }
 
 /**
- * Genera la notifica di sotto scorta / esaurito, senza duplicarla: se ne esiste
- * già una non letta per lo stesso prodotto non se ne crea un'altra, altrimenti
- * ogni prelievo riempie il centro notifiche di righe identiche.
+ * Apre (o chiude) l'avviso di sotto scorta / esaurito per un prodotto.
+ *
+ * La deduplicazione guarda `resolvedAt`, cioè se la CONDIZIONE è ancora aperta —
+ * non se qualcuno l'ha letta. Legare i duplicati alla lettura significava che
+ * appena un operatore segnava letto l'avviso, il prelievo successivo ne creava
+ * subito un altro identico.
+ *
+ * Quando la giacenza risale sopra il minimo l'avviso si CHIUDE da solo: un
+ * centro notifiche che mostra ancora „esaurito" per merce riassortita insegna
+ * agli operatori a ignorarlo.
  */
 export async function checkLowStock(tx: Tx, productId: string): Promise<void> {
   const product = await tx.product.findUnique({
@@ -272,22 +284,44 @@ export async function checkLowStock(tx: Tx, productId: string): Promise<void> {
     _sum: { qty: true },
   });
   const qty = agg._sum.qty ?? 0;
-  if (qty > product.minStock) return;
+  const aperti = {
+    entity: 'Product',
+    entityId: product.id,
+    type: { in: ['SCORTA_MINIMA', 'ESAURITO'] as NotificationType[] },
+    resolvedAt: null,
+  };
 
-  const type = qty <= 0 ? 'ESAURITO' : 'SCORTA_MINIMA';
-  const esistente = await tx.notification.findFirst({
-    where: { entity: 'Product', entityId: product.id, type, readAt: null },
+  if (qty > product.minStock) {
+    await tx.notification.updateMany({
+      where: aperti,
+      data: { resolvedAt: new Date() },
+    });
+    return;
+  }
+
+  const type: NotificationType = qty <= 0 ? 'ESAURITO' : 'SCORTA_MINIMA';
+
+  // Se è già aperto un avviso dello stesso tipo non se ne crea un altro. Se è
+  // aperto quello dell'ALTRO tipo (da „scorta minima" si è passati a „esaurito",
+  // o viceversa) lo si chiude: la gravità è cambiata e va detta.
+  const esistenti = await tx.notification.findMany({
+    where: aperti,
+    select: { id: true, type: true },
   });
-  if (esistente) return;
+  if (esistenti.some((n) => n.type === type)) return;
+
+  if (esistenti.length > 0) {
+    await tx.notification.updateMany({
+      where: { id: { in: esistenti.map((n) => n.id) } },
+      data: { resolvedAt: new Date() },
+    });
+  }
 
   await tx.notification.create({
     data: {
       type,
       level: qty <= 0 ? 'CRITICO' : 'AVVISO',
-      title:
-        qty <= 0
-          ? `Esaurito: ${product.sku}`
-          : `Scorta minima: ${product.sku}`,
+      title: qty <= 0 ? `Esaurito: ${product.sku}` : `Scorta minima: ${product.sku}`,
       body: `${product.name} — giacenza ${qty}, minimo ${product.minStock}.`,
       entity: 'Product',
       entityId: product.id,

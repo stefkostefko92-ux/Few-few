@@ -23,7 +23,10 @@ export type NotificaVista = {
   body: string | null;
   entity: string | null;
   entityId: string | null;
+  /** Lettura PERSONALE di chi guarda: null = ancora da leggere. */
   readAt: string | null;
+  /** Condizione rientrata (es. giacenza risalita sopra il minimo). */
+  resolvedAt: string | null;
   createdAt: string;
 };
 
@@ -90,6 +93,12 @@ export function ElencoNotifiche({ notifiche }: { notifiche: NotificaVista[] }) {
                       {NOTIFICATION_LABELS[n.type]}
                     </Badge>
                     {!n.readAt && <Badge tone="corso">Da leggere</Badge>}
+                    {/* Un avviso rientrato resta leggibile ma non è più
+                        un'azione da fare: dirlo evita che si continui a
+                        riordinare merce già riassortita. */}
+                    {n.resolvedAt && (
+                      <Badge tone="ok">Rientrato {formatDateTime(n.resolvedAt)}</Badge>
+                    )}
                     <span className="text-xs text-fg-muted">
                       {formatDateTime(n.createdAt)}
                     </span>

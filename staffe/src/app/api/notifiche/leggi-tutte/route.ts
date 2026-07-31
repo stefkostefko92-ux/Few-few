@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { ok, route } from '@/lib/api';
+import { visibiliDa } from '@/lib/notifiche';
 
 /**
  * Segna come lette tutte le notifiche visibili all'utente, eventualmente di un
@@ -47,20 +48,29 @@ export const POST = route(async (request: Request) => {
   const corpo = schemaCorpo.parse(await corpoFacoltativo(request));
 
   const where: Prisma.NotificationWhereInput = {
-    OR: [{ userId: null }, { userId: utente.id }],
-    readAt: null,
+    ...visibiliDa(utente.id),
+    reads: { none: { userId: utente.id } },
     ...(corpo.tipo ? { type: corpo.tipo } : {}),
   };
 
-  const { count } = await prisma.notification.updateMany({
+  // La lettura è per utente: si inseriscono righe di lettura, non si tocca la
+  // notifica (che è condivisa con i colleghi).
+  const daLeggere = await prisma.notification.findMany({
     where,
-    data: { readAt: new Date() },
+    select: { id: true },
+  });
+
+  const { count } = await prisma.notificationRead.createMany({
+    data: daLeggere.map((n) => ({ notificationId: n.id, userId: utente.id })),
+    // Una richiesta ripetuta (doppio clic, due schede aperte) non deve fallire
+    // sul vincolo di unicità.
+    skipDuplicates: true,
   });
 
   // Il residuo si riconta: con il filtro per tipo non è detto che sia zero, e
   // un contatore dedotto invece che letto è un contatore che prima o poi mente.
   const nonLette = await prisma.notification.count({
-    where: { OR: [{ userId: null }, { userId: utente.id }], readAt: null },
+    where: { ...visibiliDa(utente.id), reads: { none: { userId: utente.id } } },
   });
 
   return ok({ lette: count, nonLette });

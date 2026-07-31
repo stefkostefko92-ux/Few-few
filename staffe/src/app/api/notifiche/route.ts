@@ -1,8 +1,13 @@
-import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { meta, ok, pagination, route } from '@/lib/api';
+import {
+  letturaDi,
+  selectNotifica,
+  visibiliDa,
+  whereNotifiche,
+} from '@/lib/notifiche';
 
 /**
  * Centro notifiche — elenco.
@@ -47,39 +52,31 @@ export const GET = route(async (request: Request) => {
   });
   const p = pagination(url, 50);
 
-  const where: Prisma.NotificationWhereInput = {
-    OR: [{ userId: null }, { userId: utente.id }],
-    ...(filtro.tipo ? { type: filtro.tipo } : {}),
-    ...(filtro.stato === 'non_lette'
-      ? { readAt: null }
-      : filtro.stato === 'lette'
-        ? { readAt: { not: null } }
-        : {}),
-  };
+  const where = whereNotifiche(utente.id, {
+    stato: filtro.stato,
+    tipo: filtro.tipo,
+  });
 
   const [righe, totale, nonLette] = await Promise.all([
     prisma.notification.findMany({
       where,
-      orderBy: [{ readAt: 'asc' }, { createdAt: 'desc' }],
+      // Prima le aperte, poi le più recenti: un avviso ancora valido conta più
+      // di uno già rientrato, indipendentemente da quando è nato.
+      orderBy: [{ resolvedAt: 'asc' }, { createdAt: 'desc' }],
       skip: p.skip,
       take: p.take,
-      select: {
-        id: true,
-        type: true,
-        level: true,
-        title: true,
-        body: true,
-        entity: true,
-        entityId: true,
-        readAt: true,
-        createdAt: true,
-      },
+      select: selectNotifica(utente.id),
     }),
     prisma.notification.count({ where }),
     prisma.notification.count({
-      where: { OR: [{ userId: null }, { userId: utente.id }], readAt: null },
+      where: { ...visibiliDa(utente.id), reads: { none: { userId: utente.id } } },
     }),
   ]);
 
-  return ok({ notifiche: righe, nonLette }, meta(p, totale));
+  const notifiche = righe.map(({ reads, ...n }) => ({
+    ...n,
+    readAt: letturaDi({ reads }),
+  }));
+
+  return ok({ notifiche, nonLette }, meta(p, totale));
 });

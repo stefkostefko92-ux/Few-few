@@ -2,17 +2,16 @@ import { z } from 'zod';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { fail, ok, route } from '@/lib/api';
+import { visibiliDa } from '@/lib/notifiche';
 
 /**
- * Segna una notifica come letta (o di nuovo da leggere).
+ * Segna una notifica come letta (o di nuovo da leggere) PER CHI LO CHIEDE.
  *
- * L'aggiornamento passa da `updateMany` con il filtro di visibilità: una
- * notifica di un altro utente non viene toccata e la risposta non rivela
- * nemmeno che esista (conteggio zero → 404, come se non ci fosse).
+ * La lettura è una riga in `NotificationRead`, non un campo sulla notifica: un
+ * avviso generale segnato letto da un operatore resta da leggere per i colleghi.
  *
- * Attenzione: le notifiche generali (`userId` nullo) hanno un solo campo
- * `readAt`, condiviso. Segnarle lette vale per tutti gli operatori — è un
- * limite dello schema, dichiarato anche nell'interfaccia.
+ * Si verifica prima la visibilità: la notifica di un altro utente non viene
+ * toccata e la risposta non rivela nemmeno che esista (404, come se non ci fosse).
  */
 
 const schemaCorpo = z.object({ letta: z.boolean().optional() });
@@ -41,15 +40,30 @@ export const POST = route(
     const corpo = schemaCorpo.parse(await corpoFacoltativo(request));
     const letta = corpo.letta ?? true;
 
-    const { count } = await prisma.notification.updateMany({
-      where: { id, OR: [{ userId: null }, { userId: utente.id }] },
-      data: { readAt: letta ? new Date() : null },
+    const visibile = await prisma.notification.findFirst({
+      where: { id, ...visibiliDa(utente.id) },
+      select: { id: true },
     });
+    if (!visibile) return fail(404, 'Notifica non trovata.', 'non_trovato');
 
-    if (count === 0) return fail(404, 'Notifica non trovata.', 'non_trovato');
+    if (letta) {
+      // Idempotente: ripremere „segna come letta" non deve fallire sul vincolo
+      // di unicità né spostare la data di lettura già registrata.
+      await prisma.notificationRead.upsert({
+        where: {
+          notificationId_userId: { notificationId: id, userId: utente.id },
+        },
+        create: { notificationId: id, userId: utente.id },
+        update: {},
+      });
+    } else {
+      await prisma.notificationRead.deleteMany({
+        where: { notificationId: id, userId: utente.id },
+      });
+    }
 
     const nonLette = await prisma.notification.count({
-      where: { OR: [{ userId: null }, { userId: utente.id }], readAt: null },
+      where: { ...visibiliDa(utente.id), reads: { none: { userId: utente.id } } },
     });
     return ok({ id, letta, nonLette });
   },
