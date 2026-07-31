@@ -28,7 +28,9 @@ test("всеки агент от регистъра има маскот", () => 
 
 test("няма сирачета (маскот без агент)", () => {
   const ids = new Set(agents().map((a) => `${a.id}.svg`));
-  const orphans = readdirSync(DIR).filter((f) => f.endsWith(".svg") && !ids.has(f));
+  // React компонентът и CSS-ът са легитимен изход на генератора, не сирачета.
+  const KEEP = new Set(["Mascot.tsx", "Mascot.css"]);
+  const orphans = readdirSync(DIR).filter((f) => !KEEP.has(f) && !ids.has(f));
   assert.deepEqual(orphans, []);
 });
 
@@ -50,7 +52,7 @@ test("SVG-то е валиден, самостоятелен документ", 
   for (const a of agents()) {
     const svg = readFileSync(join(DIR, `${a.id}.svg`), "utf8");
     assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/, `${a.id}: липсва xmlns`);
-    assert.match(svg, /viewBox="0 0 512 512"/, `${a.id}: очаквам квадратен viewBox`);
+    assert.match(svg, /viewBox="0 0 300 300"/, `${a.id}: очаквам координатната система на образеца`);
     assert.ok(svg.trimEnd().endsWith("</svg>"), `${a.id}: незатворен svg`);
     // Достъпност: екранен четец трябва да получи име, не „графика".
     assert.match(svg, /role="img"/, `${a.id}: липсва role`);

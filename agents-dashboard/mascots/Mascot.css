@@ -1,0 +1,53 @@
+/* АВТОГЕНЕРИРАН от tools/agents/mascots.mjs. Не редактирай на ръка.
+   Разликата спрямо образеца: drop-shadow слоевете четат --main, затова всеки агент свети в СВОЯ
+   цвят, вместо всички да са зелени. color-mix дава прозрачност без да режем hex-а на ръка. */
+.mascot{
+  width:var(--size);height:var(--size);
+  display:flex;justify-content:center;align-items:center;position:relative;
+  animation:mascotFloat 5s ease-in-out infinite;
+}
+.mascot svg{
+  overflow:visible;
+  filter:
+    drop-shadow(0 0 8px color-mix(in srgb,var(--main) 45%,transparent))
+    drop-shadow(0 0 22px color-mix(in srgb,var(--main) 25%,transparent))
+    drop-shadow(0 0 40px color-mix(in srgb,var(--main) 15%,transparent));
+  transition:transform .35s ease,filter .35s ease;
+}
+.mascot:hover svg{
+  transform:translateY(-5px) scale(1.03);
+  filter:
+    drop-shadow(0 0 12px color-mix(in srgb,var(--main) 65%,transparent))
+    drop-shadow(0 0 30px color-mix(in srgb,var(--main) 45%,transparent))
+    drop-shadow(0 0 70px color-mix(in srgb,var(--main) 25%,transparent));
+}
+@keyframes mascotFloat{
+  0%,100%{transform:translateY(0) rotate(-1deg)}
+  25%{transform:translateY(-6px) rotate(.6deg)}
+  50%{transform:translateY(-12px) rotate(1deg)}
+  75%{transform:translateY(-6px) rotate(-.6deg)}
+}
+.mascot::before{
+  content:"";position:absolute;inset:20%;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--main) 28%,transparent),transparent 70%);
+  filter:blur(35px);animation:pulse 3s ease-in-out infinite;pointer-events:none;
+}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.8;transform:scale(1.08)}}
+.mascot::after{
+  content:"";position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:52%;height:18px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(10px);
+  animation:shadowFloat 5s ease-in-out infinite;
+}
+@keyframes shadowFloat{0%,100%{width:52%;opacity:.45}50%{width:44%;opacity:.25}}
+.eye{transform-origin:center;animation:blink 5s infinite}
+.left-eye,.right-eye{animation-delay:.2s}
+@keyframes blink{0%,47%{transform:scaleY(1)}49%,51%{transform:scaleY(.08)}53%,100%{transform:scaleY(1)}}
+.mascot-glasses{transition:transform .25s ease;transform-origin:center}
+.mascot:hover .mascot-glasses{transform:translateY(-1px)}
+.mascot-glasses circle{transition:stroke .3s ease}
+.mascot:hover .mascot-glasses circle{stroke:#2d2d2d}
+/* Движението е украса, не смисъл — изключва се, когато потребителят го е поискал. */
+@media (prefers-reduced-motion:reduce){
+  .mascot,.mascot::before,.mascot::after,.eye{animation:none}
+  .mascot svg,.mascot:hover svg{transition:none;transform:none}
+}
