@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+api/logs/*.dat
+api/logs/monument-ip-*
+api/logs/ai-rate-*
+vendor/
+api/smtp-local.php

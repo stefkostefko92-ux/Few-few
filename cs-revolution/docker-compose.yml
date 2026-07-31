@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  cs-revolution:
+    build: .
+    container_name: cs-revolution
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    volumes:
+      - ./dist:/var/www/carbonstealth.eu/dist:ro
+    networks:
+      - cs-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  cs-net:
+    driver: bridge
