@@ -3,7 +3,7 @@
   "hooks": {
     "SubagentStart": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika",
         "hooks": [
           {
             "type": "command",
@@ -15,12 +15,50 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika",
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/dod-check.mjs\"",
+            "timeout": 15
+          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-capture.mjs\"",
             "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prompt.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/precompact-save.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-dod.mjs\"",
+            "timeout": 10
           }
         ]
       }
@@ -37,7 +75,7 @@
         ]
       },
       {
-        "matcher": "Bash|WebFetch",
+        "matcher": "Bash|WebFetch|WebSearch",
         "hooks": [
           {
             "type": "command",

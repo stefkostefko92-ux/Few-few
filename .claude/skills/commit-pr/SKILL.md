@@ -12,6 +12,7 @@ description: >-
 ## Преди commit — винаги
 ```bash
 node tools/security/secret-scan.mjs          # нула тайни/PII в diff-а (hard gate)
+node tools/agents/scope-check.mjs --staged   # монорепо закон №1: един продукт на промяна (hard gate; и в CI: scope.yml)
 # + пусни quality-gate на засегнатия продукт (виж skill quality-gate)
 ```
 
