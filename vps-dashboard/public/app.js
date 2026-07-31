@@ -1056,11 +1056,55 @@ function maintenanceCard(m) {
   ]);
 }
 
+// Седмичният дайджест — пулсът към човека. Тишината на алармите не доказва
+// здраве; веднъж седмично едно съобщение казва „жив съм и ето какво видях".
+function digestCard(d) {
+  const out = el('div', {});
+  const days = ['неделя', 'понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота'];
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Седмичен отчет' }),
+      pill(d.enabled ? 'ok' : 'dim', d.enabled ? `${days[d.weekday]} в ${d.hour}:00` : 'изключен'),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Панел, който се обажда само при проблем, е неразличим от панел, който е умрял тихо. Веднъж седмично по ' +
+      'каналите тръгва „жив съм и ето какво видях" — 0 критични също е информация. Минава ПОКРАЙ прага по канал ' +
+      '(отчетът е изрично поискан, не инцидент) и покрай notifyInfo.' }),
+    d.lastSentAt
+      // Сглобен от преведени части: „преди X мин" е кирилска интерполация и
+      // целият низ не би съвпаднал с шаблон.
+      ? el('div', { class: 'metric-sub', text: `${t('Последно пращане:')} ${t(fmtWhen(d.lastSentAt))}. ${t('Изпуснат слот се догонва.')}` })
+      : el('div', { class: 'metric-sub', text: 'Още не е пращан — ще тръгне в първия слот.' }),
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-sm', text: '👁 Прегледай (без пращане)',
+        onclick: () => {
+          out.innerHTML = '';
+          out.appendChild(el('pre', { class: 'term-out', style: 'max-height:280px', text: d.preview || '(празно)' }));
+        },
+      }),
+      el('button', {
+        class: 'btn btn-sm', text: '✉ Прати сега',
+        onclick: async () => {
+          try { await api('/alerts/digest/send', { method: 'POST' }); toast('Отчетът е пратен по каналите'); go('alerts'); }
+          catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+    ]),
+    out,
+  ]);
+}
+
 async function renderAlerts() {
   const view = document.getElementById('view');
-  const [a, maint] = await Promise.all([api('/alerts'), api('/alerts/maintenance').catch(() => ({ maintenance: null }))]);
+  const [a, maint, digest] = await Promise.all([
+    api('/alerts'),
+    api('/alerts/maintenance').catch(() => ({ maintenance: null })),
+    api('/alerts/digest').catch(() => null),
+  ]);
   view.innerHTML = '';
   view.appendChild(maintenanceCard(maint.maintenance));
+  if (digest) view.appendChild(digestCard(digest));
 
   const chNames = { telegram: 'Telegram', ntfy: 'ntfy', webhook: 'Webhook', email: 'Имейл' };
   const anyChannel = Object.values(a.channels).some(Boolean);

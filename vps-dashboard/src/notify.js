@@ -15,6 +15,9 @@ const SEV_RANK = { ok: 1, info: 1, warning: 2, critical: 3 };
 // получил алармата, но НЕ и нейното вдигане — най-лошата възможна комбинация.
 // Затова прагът се мери спрямо ПО-ТЕЖКОТО от текущата и предишната тежест.
 export function passesSeverity(alert, minSeverity) {
+  // Дайджестът е ИЗРИЧНО поискан (с включването си) и няма тежест — прагът по
+  // канал е за инциденти, не за седмичния пулс.
+  if (alert.force) return true;
   const min = SEV_RANK[String(minSeverity || '').toLowerCase()];
   if (!min) return true; // непознат/празен праг = без филтър
   const rank = Math.max(SEV_RANK[alert.severity] || 1, SEV_RANK[alert.wasSeverity] || 1);

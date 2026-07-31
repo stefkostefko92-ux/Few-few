@@ -1783,6 +1783,22 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Седмичен дайджест ──────────────────────────────────────────────────────
+  r.get(
+    '/api/alerts/digest',
+    guard(J(() => ({ ...ctx.alerts.digest.status(cfg), preview: ctx.alerts.digestText() })))
+  );
+  r.post(
+    '/api/alerts/digest/send',
+    guard(
+      J(async (req) => {
+        audit.log({ action: 'alerts.digest.sendNow', user: req.user });
+        return { text: await ctx.alerts.sendDigest() };
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Режим „поддръжка" ──────────────────────────────────────────────────────
   r.get('/api/alerts/maintenance', guard(J(() => ({ maintenance: ctx.alerts.maintenance() }))));
   r.post(

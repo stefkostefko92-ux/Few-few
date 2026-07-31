@@ -22,10 +22,13 @@ import { safePath } from './accesslog.js';
 import { exposureMap, portChecks } from './ports.js';
 import { saveConfig } from './config.js';
 import { Guardians } from './guardians.js';
+import { composeDigest, DigestSchedule } from './digest.js';
+import { backupAge } from './drill.js';
 
 export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic }) {
     this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
+    this.digest = new DigestSchedule(cfg.paths.stateDir); // седмичният пулс към човека
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
@@ -1010,6 +1013,7 @@ export class AlertEngine {
     // тревога ВМЕСТО нас. Това е единствената защита срещу тихо умрял панел.
     this.ping({ ok: true });
     await this.expireMaintenance();
+    await this.maybeDigest().catch(() => {});
     return { firing: this.listActive(), events };
   }
 
@@ -1035,6 +1039,84 @@ export class AlertEngine {
       title: 'Поддръжката приключи',
       body: `Потиснати известия: ${suppressed}. Активни аларми сега: ${active.length} (критични: ${worst}).${worst ? ' Виж панела.' : ''}`,
     });
+  }
+
+  // Седмичният дайджест: „тишината не доказва здраве". Съставя се от данните,
+  // които двигателят вече държи, и върви с force — прагът по канал е за
+  // инциденти, а дайджестът е изрично поискан пулс.
+  async maybeDigest(now = Date.now()) {
+    if (!this.digest.due(this.cfg, now)) return null;
+    return this.sendDigest(now);
+  }
+
+  // Съставянето е отделно от пращането — „Прегледай" в панела показва точно
+  // това, което би тръгнало, без да го праща.
+  digestText(now = Date.now()) {
+    const weekAgo = now - 7 * 24 * 3600000;
+    const recent = this.log.filter((e) => Date.parse(e.ts) > weekAgo && e.type === 'firing');
+    const counts = { critical: 0, warning: 0, info: 0 };
+    const byTitle = new Map();
+    for (const e of recent) {
+      counts[e.severity] = (counts[e.severity] || 0) + 1;
+      byTitle.set(e.title, (byTitle.get(e.title) || 0) + 1);
+    }
+    const age = backupAge(now);
+    const sched = this.backupSchedule?.status?.(this.cfg);
+    const drillOk = this.drill?.state?.lastOkAt ? Math.round((now - Date.parse(this.drill.state.lastOkAt)) / 86400000) : null;
+    const text = composeDigest({
+      nodeId: this.cfg.nodeId,
+      nodeName: this.cfg.nodeName,
+      checkIntervalSec: this.cfg.alerts?.checkIntervalSec ?? 60,
+      alertCounts: counts,
+      topAlerts: [...byTitle.entries()].map(([title, count]) => ({ title, count })).sort((a, b) => b.count - a.count),
+      activeNow: this.listActive().filter((a) => a.severity !== 'info'),
+      backup: {
+        hasBackup: age.hasBackup,
+        ageDays: age.ageDays,
+        maxAgeDays: Number(this.cfg.backups?.maxAgeDays ?? 2),
+        lastDrillOkDays: drillOk,
+        offsiteEnabled: Boolean(this.cfg.backups?.offsite?.enabled),
+        offsitePending: null, // броят чакащи иска обход на диска — редът казва само включено/изключено
+        offsiteShipped: sched?.offsite?.peers?.reduce((a, p) => a + (p.shipped || 0), 0) ?? 0,
+      },
+      traffic: this.traffic?.status?.(this.cfg, now) || null,
+      slo: this.sloWeek(now),
+      disks: [],
+      updates: null,
+      expiring: [],
+    });
+    return text;
+  }
+
+  async sendDigest(now = Date.now()) {
+    const text = this.digestText(now);
+    const results = await notify(this.cfg, { type: 'digest', key: 'digest', severity: 'info', title: 'Седмичен отчет', body: text, force: true });
+    this.digest.record(text);
+    this.audit?.log({ action: 'alerts.digest', delivered: results.filter((r) => r.ok && !r.skipped).length });
+    this.log.push({ ts: new Date().toISOString(), key: 'digest', type: 'digest', severity: 'info', title: 'Седмичен отчет', body: text, sent: results.filter((r) => r.ok && !r.skipped).map((r) => r.channel) });
+    this.save();
+    return text;
+  }
+
+  // Наличност по продукт за последните 7 дни — от собствените минутни агрегати.
+  sloWeek(now = Date.now()) {
+    if (!this.slo?.read) return [];
+    try {
+      const rows = this.slo.read(now - 7 * 86400000);
+      const target = Number(this.cfg.slo?.target) || 0.999;
+      const byName = new Map();
+      for (const r of rows) {
+        const acc = byName.get(r.name) || { total: 0, bad: 0 };
+        acc.total += r.total || 0;
+        acc.bad += r.bad || 0;
+        byName.set(r.name, acc);
+      }
+      return [...byName.entries()]
+        .filter(([, v]) => v.total > 0)
+        .map(([name, v]) => ({ name, target, availability: (v.total - v.bad) / v.total }));
+    } catch {
+      return [];
+    }
   }
 
   // Еднократно известие извън правилата (напр. провалена задача/деплой).
