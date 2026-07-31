@@ -6,6 +6,42 @@
 import { t, tf, langTag } from './i18n.js';
 const tHelper = t;
 
+// Иконите на действията: познат глиф В НАЧАЛОТО на текста на БУТОН се подменя с
+// картинка от /icons/. Подмяната е тук (не по call-sites) по същата причина, по
+// която преводът е тук: едно място покрива целия интерфейс. Ключовете в
+// i18n-dict.js остават С глифа — преводът върви първи, после рендерът подменя.
+// Навигацията НЕ минава оттук (иконата ѝ е отделен span.ico) — тя чака своя
+// комплект nav-*.
+const GLYPH_ICONS = {
+  '👁': 'act-view', '✉': 'act-send', '▶': 'act-play', '⏵': 'act-play', '▷': 'act-play',
+  '■': 'act-stop', '↻': 'act-restart', '↺': 'act-restart', '⟲': 'act-restart', '⟳': 'act-restart',
+  '⬇': 'act-download', '⇩': 'act-download', '⬆': 'act-upload', '⇪': 'act-upload', '⇧': 'act-upload',
+  '💾': 'act-save', '⌕': 'act-search', '🔎': 'act-search', '🔍': 'act-search',
+  '🔕': 'act-mute', '🧹': 'act-clean', '📁': 'act-folder', '🗀': 'act-folder', '📄': 'act-file',
+  '🔗': 'act-link', '↗': 'act-open', '←': 'act-back', '↩': 'act-back', '⛶': 'act-fullscreen',
+  '🔧': 'act-tools', '🔑': 'act-key', '🗝': 'act-key', '🔐': 'act-key-lock', '🔒': 'act-key-lock',
+  '🤖': 'act-robot', '⛑': 'act-helmet', '⚖': 'act-scales', 'ⓘ': 'act-info',
+};
+
+function iconize(node) {
+  const first = node.firstChild;
+  if (!first || first.nodeType !== Node.TEXT_NODE) return;
+  const s = first.nodeValue || '';
+  for (const [glyph, name] of Object.entries(GLYPH_ICONS)) {
+    if (!s.startsWith(glyph)) continue;
+    let rest = s.slice(glyph.length);
+    if (rest.startsWith('️')) rest = rest.slice(1); // variation selector след емоджи
+    rest = rest.replace(/^\s+/, '');
+    const img = document.createElement('img');
+    img.src = `/icons/${name}.png`;
+    img.alt = '';
+    img.className = 'ico-img' + (rest ? ' ico-gap' : '');
+    first.nodeValue = rest;
+    node.insertBefore(img, first);
+    return;
+  }
+}
+
 // Създава елемент. props: {class, text, html, style, onclick, ... останалите → атрибути}
 export function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
@@ -22,6 +58,7 @@ export function el(tag, props = {}, children = []) {
     else node.setAttribute(k, v);
   }
   appendChildren(node, children);
+  if (tag === 'button') iconize(node);
   return node;
 }
 
