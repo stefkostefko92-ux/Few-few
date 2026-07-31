@@ -93,6 +93,7 @@ em { font-style: normal; color: var(--accent); }
   font-size: 13.5px; text-align: left; width: 100%;
 }
 .nav button .ico { width: 18px; text-align: center; }
+.nav button .ico .ico-img { width: 16px; height: 16px; vertical-align: -0.18em; margin: 0; }
 .nav button:hover { background: var(--panel); color: var(--txt); }
 .nav button.active { background: var(--panel-2); color: var(--accent); font-weight: 600; }
 .sidebar-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding: 4px; }

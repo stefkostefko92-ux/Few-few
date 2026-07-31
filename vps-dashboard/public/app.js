@@ -170,37 +170,37 @@ const SECTIONS = [
   { id: 'slo', ico: '◑', label: 'Надеждност', render: renderSlo },
   { id: 'alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
   { id: 'diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
-  { id: 'investigate', ico: '🔍', label: 'Разследване', render: renderInvestigate },
+  { id: 'investigate', img: 'act-search', ico: '🔍', label: 'Разследване', render: renderInvestigate },
   { id: 'services', ico: '⚙', label: 'Услуги', render: renderServices },
   { id: 'docker', ico: '⬢', label: 'Docker', render: renderDocker },
   { id: 'compose', ico: '⧉', label: 'Compose', render: renderCompose },
   { id: 'databases', ico: '⛁', label: 'Бази', render: renderDatabases },
   { id: 'redis', ico: '⚡', label: 'Redis', render: renderRedis },
   { id: 'processes', ico: '≡', label: 'Процеси', render: renderProcesses },
-  { id: 'logs', ico: '☰', label: 'Логове', render: renderLogs },
+  { id: 'logs', img: 'act-file', ico: '☰', label: 'Логове', render: renderLogs },
   { id: 'traffic', ico: '📶', label: 'Трафик', render: renderTraffic },
-  { id: 'deploy', ico: '⇧', label: 'Деплой', render: renderDeploy },
-  { id: 'updates', ico: '⟳', label: 'Ъпдейти', render: renderUpdates },
+  { id: 'deploy', img: 'act-upload', ico: '⇧', label: 'Деплой', render: renderDeploy },
+  { id: 'updates', img: 'act-restart', ico: '⟳', label: 'Ъпдейти', render: renderUpdates },
   { id: 'security', ico: '⛨', label: 'Сигурност', render: renderSecurity },
   { id: 'ports', ico: '🔌', label: 'Портове', render: renderPorts },
   { id: 'firewall', ico: '🛡', label: 'Firewall', render: renderFirewall },
   { id: 'integrity', ico: '⛨', label: 'Целост на /etc', render: renderIntegrity },
   { id: 'fail2ban', ico: '⛔', label: 'fail2ban', render: renderFail2ban },
-  { id: 'access', ico: '🔑', label: 'Достъп по IP', render: renderAccess },
+  { id: 'access', img: 'act-key', ico: '🔑', label: 'Достъп по IP', render: renderAccess },
   { id: 'webserver', ico: '🌐', label: 'Уеб сървър', render: renderWebserver },
-  { id: 'backups', ico: '⇩', label: 'Бекъпи', render: renderBackups },
-  { id: 'disk', ico: '▤', label: 'Диск', render: renderDisk },
-  { id: 'env', ico: '🗝', label: 'Променливи (.env)', render: renderEnv },
+  { id: 'backups', img: 'act-download', ico: '⇩', label: 'Бекъпи', render: renderBackups },
+  { id: 'disk', img: 'act-save', ico: '▤', label: 'Диск', render: renderDisk },
+  { id: 'env', img: 'act-key-lock', ico: '🗝', label: 'Променливи (.env)', render: renderEnv },
   { id: 'domains', ico: '🔒', label: 'Домейни и TLS', render: renderDomains },
   { id: 'cron', ico: '◷', label: 'Крон/таймери', render: renderCron },
-  { id: 'files', ico: '🗀', label: 'Файлове', render: renderFiles },
+  { id: 'files', img: 'act-folder', ico: '🗀', label: 'Файлове', render: renderFiles },
   { id: 'desktop', ico: '🖥', label: 'Десктоп', render: renderDesktop },
   { id: 'terminal', ico: '⌘', label: 'Терминал', render: renderPty },
-  { id: 'runonce', ico: '▷', label: 'Еднократна команда', render: renderTerminal },
-  { id: 'agents', ico: '✦', label: 'Агенти', render: renderAgents },
+  { id: 'runonce', img: 'act-play', ico: '▷', label: 'Еднократна команда', render: renderTerminal },
+  { id: 'agents', img: 'act-robot', ico: '✦', label: 'Агенти', render: renderAgents },
   { id: 'jobs', ico: '⏻', label: 'Задачи', render: renderJobs },
   { id: 'audit', ico: '✎', label: 'Одит', render: renderAudit },
-  { id: 'settings', ico: '⚿', label: 'Настройки', render: renderSettings },
+  { id: 'settings', img: 'act-tools', ico: '⚿', label: 'Настройки', render: renderSettings },
   { id: 'power', ico: '⏼', label: 'Захранване', render: renderPower },
 ];
 
@@ -210,8 +210,12 @@ function buildNav() {
   clearCommands('nav');
   const gotoFor = Object.fromEntries(Object.entries(GOTO_KEYS).map(([k, v]) => [v, k]));
   for (const s of SECTIONS) {
+    // Секция с img ползва иконата от комплекта; останалите пазят глифа,
+    // докато дойде пълният nav-* лист.
     const b = el('button', { onclick: () => go(s.id) }, [
-      el('span', { class: 'ico', text: s.ico }),
+      s.img
+        ? el('span', { class: 'ico' }, [el('img', { class: 'ico-img', src: `/icons/${s.img}.png`, alt: '' })])
+        : el('span', { class: 'ico', text: s.ico }),
       el('span', { text: s.label }),
     ]);
     b.dataset.id = s.id;
