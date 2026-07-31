@@ -1,4 +1,5 @@
-import type { ComponentProps, ReactNode } from 'react';
+import { cloneElement, isValidElement } from 'react';
+import type { ComponentProps, ReactElement, ReactNode } from 'react';
 import type { Tone } from '@/lib/labels';
 
 /**
@@ -82,6 +83,18 @@ export function Select({
   );
 }
 
+/**
+ * Etichetta, aiuto ed errore di un campo.
+ *
+ * L'errore non è soltanto scritto sotto il campo: viene LEGATO al controllo con
+ * `aria-describedby` + `aria-invalid`. Senza quel legame la relazione «questo
+ * messaggio riguarda quel campo» esiste solo per chi la vede: uno screen reader
+ * legge l'input e poi, molto più tardi, un testo rosso staccato dal contesto. In
+ * un modulo prodotto con ~25 campi (`FormProdotto`) diventa illeggibile.
+ *
+ * Il legame si applica al figlio clonandolo, così le pagine non devono ripetere
+ * gli attributi a ogni campo — e non possono dimenticarli.
+ */
 export function Field({
   label,
   hint,
@@ -97,21 +110,44 @@ export function Field({
   required?: boolean;
   children: ReactNode;
 }) {
+  const idErrore = htmlFor ? `${htmlFor}-errore` : undefined;
+  const idAiuto = htmlFor ? `${htmlFor}-aiuto` : undefined;
+  const descritto = [error ? idErrore : null, hint && !error ? idAiuto : null]
+    .filter(Boolean)
+    .join(' ');
+
+  const controllo =
+    isValidElement(children) && descritto
+      ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+          'aria-describedby': descritto,
+          ...(error ? { 'aria-invalid': true } : {}),
+        })
+      : children;
+
   return (
     <div className="space-y-1">
       <label htmlFor={htmlFor} className="block text-sm font-medium text-fg">
         {label}
         {required && (
-          <span className="text-danger" aria-label="obbligatorio">
-            {' '}
-            *
-          </span>
+          <>
+            {/* `aria-label` su uno <span> generico non è affidabile: il testo
+                per lo screen reader va messo, non dichiarato. */}
+            <span className="text-danger" aria-hidden="true">
+              {' '}
+              *
+            </span>
+            <span className="sr-only"> (obbligatorio)</span>
+          </>
         )}
       </label>
-      {children}
-      {hint && !error && <p className="text-xs text-fg-muted">{hint}</p>}
+      {controllo}
+      {hint && !error && (
+        <p id={idAiuto} className="text-xs text-fg-muted">
+          {hint}
+        </p>
+      )}
       {error && (
-        <p className="text-xs text-danger" role="alert">
+        <p id={idErrore} className="text-xs text-danger" role="alert">
           {error}
         </p>
       )}

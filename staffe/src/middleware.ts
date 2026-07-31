@@ -11,7 +11,9 @@ import { SESSION_COOKIE } from '@/lib/auth-shared';
  * resta in `requireUser()` lato server, che è quello che decide davvero.
  */
 
-const PUBBLICHE = ['/accesso', '/api/auth/login', '/api/health'];
+// `/informativa` è pubblica di proposito: si legge PRIMA del primo accesso, ed è
+// il testo che spiega quali dati vengono registrati usando il gestionale.
+const PUBBLICHE = ['/accesso', '/informativa', '/api/auth/login', '/api/health'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

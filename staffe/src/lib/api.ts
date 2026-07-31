@@ -40,6 +40,29 @@ export function fail(
 }
 
 /**
+ * Registra un errore non previsto senza riversare nel log tutto ciò che si
+ * porta dietro.
+ *
+ * In produzione si scrivono solo tipo, codice e messaggio. Stampare l'oggetto
+ * intero è comodo in sviluppo, ma alcune eccezioni di Prisma includono gli
+ * ARGOMENTI della query — cioè i dati che stavamo scrivendo, referenti e
+ * recapiti compresi. Il log di solito ha più lettori e vita più lunga del
+ * database: è il posto sbagliato dove farli finire.
+ */
+function registraErrore(err: unknown): void {
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('[staffe] errore non gestito:', err);
+    return;
+  }
+  const e = err as { name?: string; code?: string; message?: string };
+  console.error(
+    `[staffe] errore non gestito: ${e?.name ?? 'Error'}` +
+      (e?.code ? ` (${e.code})` : '') +
+      (e?.message ? ` — ${e.message}` : ''),
+  );
+}
+
+/**
  * Involucro per ogni rotta API: traduce le eccezioni note in risposte HTTP
  * corrette e tutto il resto in un 500 muto (nessuna fuga di dettagli interni).
  */
@@ -74,7 +97,7 @@ export function route<Args extends unknown[]>(
           );
         }
       }
-      console.error('[staffe] errore non gestito:', err);
+      registraErrore(err);
       return fail(500, 'Errore interno del server.', 'interno');
     }
   };

@@ -1,12 +1,15 @@
 import { requirePermission } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { created, meta, ok, pagination, readBody, route } from '@/lib/api';
-import { audit } from '@/lib/audit';
+import { audit, soloCampi } from '@/lib/audit';
 import {
   creaFornitoreSchema,
   whereFornitori,
   type CreaFornitore,
 } from '@/lib/validation/acquisti';
+
+/** Campi gestionali ammessi nella traccia di controllo (niente dati personali). */
+const CAMPI_TRACCIATI = ['code', 'paymentTerms', 'leadTimeDays'] as const;
 
 /**
  * Anagrafica fornitori.
@@ -53,7 +56,9 @@ export const POST = route(async (request: Request) => {
     entity: 'Supplier',
     entityId: fornitore.id,
     summary: `Fornitore ${fornitore.code} — ${fornitore.name}`,
-    changes: dati,
+    // Solo i campi gestionali: i dati di contatto del referente NON vanno
+    // duplicati nella traccia, che nessuno può poi rettificare.
+    changes: soloCampi(dati, CAMPI_TRACCIATI),
   });
 
   return created(fornitore);

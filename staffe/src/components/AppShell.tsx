@@ -106,6 +106,14 @@ export function AppShell({
         <div className="border-t border-border px-4 py-3 text-sm">
           <p className="font-medium">{user.name}</p>
           <p className="text-xs text-fg-muted">{ROLE_LABELS[user.role]}</p>
+          {/* L'informativa sta dove l'operatore già guarda per capire «chi sono
+              io in questo sistema» — non sepolta in un piè di pagina. */}
+          <Link
+            href="/informativa"
+            className="mt-1 inline-block text-xs text-fg-muted underline hover:text-fg"
+          >
+            Trattamento dei dati
+          </Link>
           <LogoutButton />
         </div>
       </aside>

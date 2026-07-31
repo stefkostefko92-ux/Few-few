@@ -1,11 +1,14 @@
 import { requirePermission } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { fail, ok, readBody, route } from '@/lib/api';
-import { audit } from '@/lib/audit';
+import { audit, soloCampi } from '@/lib/audit';
 import {
   aggiornaFornitoreSchema,
   type CreaFornitore,
 } from '@/lib/validation/acquisti';
+
+/** Campi gestionali ammessi nella traccia di controllo (niente dati personali). */
+const CAMPI_TRACCIATI = ['code', 'active', 'paymentTerms', 'leadTimeDays'] as const;
 
 type Contesto = { params: Promise<{ id: string }> };
 
@@ -49,7 +52,7 @@ export const PATCH = route(async (request: Request, { params }: Contesto) => {
     entity: 'Supplier',
     entityId: id,
     summary: `Fornitore ${fornitore.code} aggiornato`,
-    changes: dati,
+    changes: soloCampi(dati, CAMPI_TRACCIATI),
   });
 
   return ok(fornitore);

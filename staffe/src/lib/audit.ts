@@ -43,6 +43,30 @@ export function sanitiseChanges(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
 }
 
+/**
+ * Tiene solo i campi indicati, scartando il resto.
+ *
+ * Serve per le anagrafiche: la traccia di controllo deve dire CHE COSA è
+ * cambiato, non conservare una seconda copia dei dati personali del referente.
+ * Scrivere l'oggetto validato per intero (`changes: dati`) ci infilava nome,
+ * e-mail, telefono e codice fiscale, e ce li lasciava per sempre: correggere o
+ * disattivare l'anagrafica non tocca la copia finita qui, quindi una rettifica
+ * (art. 16 GDPR) resterebbe a metà.
+ *
+ * `CAMPI_VIETATI` sopra risolve un altro problema (credenziali e token); questo
+ * è il principio di minimizzazione, art. 5(1)(c).
+ */
+export function soloCampi<T extends object, K extends keyof T>(
+  dati: T,
+  campi: readonly K[],
+): Partial<Pick<T, K>> {
+  const out: Partial<Pick<T, K>> = {};
+  for (const campo of campi) {
+    if (dati[campo] !== undefined) out[campo] = dati[campo];
+  }
+  return out;
+}
+
 export type AuditInput = {
   userId?: string | null;
   action: string;

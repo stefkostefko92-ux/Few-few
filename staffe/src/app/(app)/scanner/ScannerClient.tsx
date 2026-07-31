@@ -126,7 +126,31 @@ export function ScannerClient({ ruolo }: { ruolo: Role }) {
         <ScanInput onScan={cerca} />
       </Card>
 
-      {caricamento && <p className="text-sm text-fg-muted">Ricerca in corso…</p>}
+      {/*
+        Regione viva SEMPRE presente (non montata insieme al testo): gli screen
+        reader annunciano in modo affidabile solo i cambi di contenuto dentro
+        una regione già nel documento.
+
+        Dopo una scansione il fuoco resta nel campo e il risultato compare più
+        in basso: senza questo annuncio, per un operatore non vedente non
+        succede nulla di percepibile. Qui si riassume a voce ciò che gli altri
+        vedono nella scheda.
+      */}
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {caricamento
+          ? 'Ricerca in corso…'
+          : risultato?.tipo === 'prodotto'
+            ? `Prodotto ${risultato.dati.sku}, ${risultato.dati.name}. Giacenza ${risultato.dati.giacenza.qty} pezzi.`
+            : risultato?.tipo === 'ubicazione'
+              ? `Ubicazione ${risultato.dati.code}.`
+              : ''}
+      </p>
+
+      {caricamento && (
+        <p className="text-sm text-fg-muted" aria-hidden="true">
+          Ricerca in corso…
+        </p>
+      )}
 
       {errore && (
         <Card className="border-danger">
