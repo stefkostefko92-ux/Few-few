@@ -51,9 +51,13 @@ export default async function LocaleLayout({ children, params }: Props) {
     { href: `/${locale}/tutorials`, label: t.nav.tutorials, icon: 'tutorials' },
     { href: `/${locale}/news`, label: t.nav.news, icon: 'news' },
     { href: `/${locale}/submit`, label: t.nav.submit, icon: 'submit' },
+    { href: `/${locale}/faq`, label: t.nav.faq, icon: 'info' },
   ];
 
   const legal = [
+    { href: `/${locale}/team`, label: t.nav.team },
+    { href: `/${locale}/contact`, label: t.nav.contact },
+    { href: `/${locale}/support`, label: t.nav.support },
     { href: `/${locale}/impresum`, label: t.footer.impresum },
     { href: `/${locale}/privacy`, label: t.footer.privacy },
     { href: `/${locale}/terms`, label: t.footer.terms },
