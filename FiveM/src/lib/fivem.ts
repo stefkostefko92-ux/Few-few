@@ -262,15 +262,10 @@ export function detectFramework(resources: readonly string[] | undefined): Frame
   return 'UNKNOWN';
 }
 
-/** Етикетът, който показваме на потребителя. */
-export const FRAMEWORK_LABEL: Record<FrameworkId, string> = {
-  ESX: 'ESX',
-  QBCORE: 'QBCore',
-  QBOX: 'Qbox',
-  OX_CORE: 'ox_core',
-  STANDALONE: 'Собствена рамка',
-  UNKNOWN: 'Неизвестна',
-};
+// Етикетите на рамките живеят в РЕЧНИКА (`t.frameworks`), не тук: този модул е
+// езиково неутрален, а плоският запис изтичаше „Собствена рамка“ и „Неизвестна“
+// в английската версия — включително в meta description и в JSON-LD, тоест
+// сайтът твърдеше пред търсачките, че български текст е английски.
 
 // ── Обобщение на пингa ──────────────────────────────────────────────────────
 

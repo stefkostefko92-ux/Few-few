@@ -96,6 +96,14 @@ export const en: Dictionary = {
       'This server was found in the public Cfx.re list rather than submitted by its owner. If you represent the server and want to edit or remove the listing, write to us.',
     lastChecked: 'Last checked',
   },
+  frameworks: {
+    ESX: 'ESX',
+    QBCORE: 'QBCore',
+    QBOX: 'Qbox',
+    OX_CORE: 'ox_core',
+    STANDALONE: 'Custom framework',
+    UNKNOWN: 'Unknown',
+  },
   status: {
     online: 'players',
     offline: 'offline',

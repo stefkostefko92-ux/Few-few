@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ServerCard } from '@/components/ServerCard';
 import { getDictionary } from '@/i18n';
 import { isLocale, type Locale } from '@/i18n/config';
-import { FRAMEWORK_LABEL, type FrameworkId } from '@/lib/fivem';
+import type { FrameworkId } from '@/lib/fivem';
 import { breadcrumbJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 
@@ -48,9 +48,8 @@ const FILTERS: Record<string, { id: FrameworkId; intro: Record<Locale, string> }
 type Props = { params: Promise<{ locale: string; framework: string }> };
 
 function titleFor(locale: Locale, id: FrameworkId): string {
-  return locale === 'bg'
-    ? `${FRAMEWORK_LABEL[id]} сървъри в България`
-    : `${FRAMEWORK_LABEL[id]} servers in Bulgaria`;
+  const label = getDictionary(locale).frameworks[id];
+  return locale === 'bg' ? `${label} сървъри в България` : `${label} servers in Bulgaria`;
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -64,7 +63,7 @@ export async function generateMetadata({ params }: Props) {
     title: titleFor(locale, filter.id),
     description: filter.intro[locale],
     path: `/servers/framework/${framework}`,
-    keywords: [`${FRAMEWORK_LABEL[filter.id]} сървъри`, `FiveM ${FRAMEWORK_LABEL[filter.id]}`],
+    keywords: [`${titleFor(locale, filter.id)}`, `FiveM ${filter.id}`],
   });
 }
 
@@ -84,7 +83,7 @@ export default async function FrameworkPage({ params }: Props) {
         <Link href={`/${locale}`} className="underline underline-offset-2 hover:text-cyan-300">
           {t.server.breadcrumb}
         </Link>{' '}
-        / <span aria-current="page">{FRAMEWORK_LABEL[filter.id]}</span>
+        / <span aria-current="page">{t.frameworks[filter.id]}</span>
       </nav>
 
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">
@@ -118,7 +117,7 @@ export default async function FrameworkPage({ params }: Props) {
           __html: jsonLdString(
             breadcrumbJsonLd(locale, [
               { name: t.server.breadcrumb, path: '/' },
-              { name: FRAMEWORK_LABEL[filter.id], path: `/servers/framework/${framework}` },
+              { name: t.frameworks[filter.id], path: `/servers/framework/${framework}` },
             ]),
           ),
         }}

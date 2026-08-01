@@ -93,6 +93,14 @@ export const bg = {
       'Този сървър е открит от публичния списък на Cfx.re, а не подаден от собственика. Ако представляваш сървъра и искаш да го редактираш или да го свалим — пиши ни.',
     lastChecked: 'Последна проверка',
   },
+  frameworks: {
+    ESX: 'ESX',
+    QBCORE: 'QBCore',
+    QBOX: 'Qbox',
+    OX_CORE: 'ox_core',
+    STANDALONE: 'Собствена рамка',
+    UNKNOWN: 'Неизвестна',
+  },
   status: {
     online: 'играчи',
     offline: 'офлайн',

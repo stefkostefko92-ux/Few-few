@@ -5,7 +5,7 @@ import { Icon } from '@/components/Icon';
 
 import type { Dictionary } from '@/i18n';
 import type { Locale } from '@/i18n/config';
-import { FRAMEWORK_LABEL, formatPlayers, type FrameworkId } from '@/lib/fivem';
+import { formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
 import { isFeatured, type PublicServer } from '@/lib/servers';
 
@@ -58,7 +58,7 @@ export function ServerCard({
 
       <ul className="mt-3 flex flex-wrap gap-2 text-xs text-silver-500">
         <li className="flex items-center gap-1 rounded border border-white/10 px-2 py-0.5">
-          {FRAMEWORK_LABEL[server.framework as FrameworkId]}
+          {t.frameworks[server.framework as FrameworkId]}
         </li>
         <li className="flex items-center gap-1.5 rounded border border-white/10 px-2 py-0.5">
           <Badge name={server.whitelist ? 'whitelist' : 'open'} size={24} />

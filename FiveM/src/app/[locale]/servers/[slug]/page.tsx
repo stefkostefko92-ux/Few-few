@@ -7,7 +7,7 @@ import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
 import { getDictionary } from '@/i18n';
 import { isLocale } from '@/i18n/config';
-import { cfxJoinUrl, FRAMEWORK_LABEL, formatPlayers, type FrameworkId } from '@/lib/fivem';
+import { cfxJoinUrl, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
 import { breadcrumbJsonLd, jsonLdString, localeUrl, pageMetadata } from '@/lib/seo';
 import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
     title: `${server.name} — FiveM RP`,
     description:
       server.tagline ??
-      `${server.name}: ${FRAMEWORK_LABEL[server.framework as FrameworkId]}. ${t.home.description}`,
+      `${server.name}: ${t.frameworks[server.framework as FrameworkId]}. ${t.home.description}`,
     path: `/servers/${server.slug}`,
     keywords: [server.name, `${server.name} FiveM`],
   });
@@ -124,7 +124,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
           <dt className="text-silver-500">{t.server.framework}</dt>
           <dd className="flex items-center gap-2">
             <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={28} />
-            {FRAMEWORK_LABEL[server.framework as FrameworkId]}
+            {t.frameworks[server.framework as FrameworkId]}
           </dd>
         </div>
         <div>
