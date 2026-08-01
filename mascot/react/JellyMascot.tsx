@@ -612,6 +612,29 @@ function Full({ uid, face, arms }: TierProps) {
 
         {/* Силуетът: НЕ кръг. Леко яйцевидно тяло с тежка основа и едва забележим наклон наляво —
              кръгът е анонимен, а разпознаваемостта на маскот се крепи първо на силуета. */}
+        {/*
+          Подписът на бранда: шестоъгълна решетка ВЪТРЕ в желето. Не е декор върху него — вижда се
+          само там, където материалът свети, и изчезва към ръбовете. Това е разликата между „зелено
+          желе" и материал, който принадлежи на Carbon Stealth: въглеродът е шестоъгълна решетка.
+          Държи се на ~0.13 непрозрачност; ако се вижда като шарка, значи е сгрешено.
+        */}
+        <pattern id={`${uid}-lattice`} width="38.1" height="66" patternUnits="userSpaceOnUse" patternTransform="rotate(-9)">
+          <g fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="1.8">
+          <path d="M19.1 -11.0L0.0 0.0L0.0 22.0L19.1 33.0L38.1 22.0L38.1 0.0Z"/>
+          <path d="M0.0 22.0L-19.1 33.0L-19.1 55.0L0.0 66.0L19.1 55.0L19.1 33.0Z"/>
+          <path d="M38.1 22.0L19.1 33.0L19.1 55.0L38.1 66.0L57.2 55.0L57.2 33.0Z"/>
+          <path d="M19.1 55.0L0.0 66.0L0.0 88.0L19.1 99.0L38.1 88.0L38.1 66.0Z"/>
+          </g>
+        </pattern>
+        <radialGradient id={`${uid}-lattice-fade`} cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="var(--jm-white, #FFFFFF)"/>
+          <stop offset="0.55" stopColor="var(--jm-white, #FFFFFF)" stopOpacity="0.45"/>
+          <stop offset="1" stopColor="var(--jm-mask-black, #000000)"/>
+        </radialGradient>
+        <mask id={`${uid}-lattice-mask`}>
+          <ellipse cx="254" cy="360" rx="150" ry="130" fill={`url(#${uid}-lattice-fade)`}/>
+        </mask>
+
         <clipPath id={`${uid}-clip`}>
           <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z"/>
         </clipPath>
@@ -685,6 +708,11 @@ function Full({ uid, face, arms }: TierProps) {
 
           <ellipse className="jm-core" cx="254" cy="376" rx="150" ry="118" fill={`url(#${uid}-core)`}/>
           <ellipse className="jm-core" cx="250" cy="404" rx="90" ry="58" fill={`url(#${uid}-core)`} opacity="0.75"/>
+
+          {/* Въглеродната решетка — подписът на бранда, вграден в материала. */}
+          <g className="jm-lattice" mask={`url(#${uid}-lattice-mask)`} opacity="0.3">
+            <rect x="100" y="220" width="320" height="270" fill={`url(#${uid}-lattice)`}/>
+          </g>
 
           {/* Каустики — неравномерна вътрешна плътност. */}
           <g className="jm-caustics" opacity="0.3" filter={`url(#${uid}-caustics)`}>
@@ -817,11 +845,21 @@ function Full({ uid, face, arms }: TierProps) {
               <path d="M170 304C180 314 196 320 212 320"/>
               <path d="M280 304C290 314 306 320 322 320"/>
             </g>
-            <g stroke="var(--jm-white, #FFFFFF)" strokeLinecap="round" fill="none">
-              <path d="M172 256L192 236" strokeWidth="9" opacity="0.55"/>
-              <path d="M182 268L196 254" strokeWidth="4" opacity="0.4"/>
-              <path d="M282 256L302 236" strokeWidth="9" opacity="0.55"/>
-              <path d="M292 268L306 254" strokeWidth="4" opacity="0.4"/>
+            {/* Отражение на студийния прозорец: мек правоъгълник с прекъсване по средата (рамката
+                 на прозореца), не черта. Точно това окото разчита като „истинско стъкло". */}
+            <g className="jm-glass-window" fill="var(--jm-white, #FFFFFF)">
+              <g transform="rotate(-30 186 250)">
+                <rect x="170" y="240" width="30" height="12" rx="6" opacity="0.55"/>
+                <rect x="170" y="256" width="30" height="8" rx="4" opacity="0.3"/>
+              </g>
+              <g transform="rotate(-30 296 250)">
+                <rect x="280" y="240" width="30" height="12" rx="6" opacity="0.55"/>
+                <rect x="280" y="256" width="30" height="8" rx="4" opacity="0.3"/>
+              </g>
+            </g>
+            <g stroke="var(--jm-white, #FFFFFF)" strokeLinecap="round" fill="none" opacity="0.18">
+              <path d="M212 300L226 290" strokeWidth="3.5"/>
+              <path d="M322 300L336 290" strokeWidth="3.5"/>
             </g>
           </g>
 

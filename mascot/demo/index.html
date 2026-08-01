@@ -34,6 +34,16 @@
   ul { max-width: 68ch; color: var(--jm-soft-olive); padding-left: 20px; }
   li { margin-bottom: 6px; }
   li b { color: var(--jm-pale); font-weight: 600; }
+  .hero {
+    display: flex; align-items: center; gap: 34px; flex-wrap: wrap;
+    padding: 28px 30px; margin-bottom: 8px; border-radius: 20px;
+    background: radial-gradient(120% 140% at 18% 30%, #0D4A02 0%, #050706 62%);
+    border: 1px solid #3C3F28;
+  }
+  .hero h1 { font-size: 30px; margin: 0 0 8px; }
+  .hero p { margin: 0 0 14px; }
+  .hero .kit { display: flex; gap: 12px; align-items: flex-end; }
+  .hero .kit img { border-radius: 10px; }
   .mono-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
   .mono-chip { padding: 16px; border-radius: 12px; display: flex; gap: 14px; align-items: flex-end; }
   /* Едноцветният знак през CSS маска: формата идва от файла, цветът — от `currentColor`.
@@ -64,11 +74,25 @@
 </head>
 <body>
 
-<h1>Маскотът на Carbon Stealth</h1>
-<p>
-  Витрина на пакета <code>mascot/</code>. Всичко тук са същите файлове, които продуктите ползват —
-  страницата не е отделно копие. Виж <code>README.md</code> за вграждане в Next/React и в EJS/статичен сайт.
-</p>
+<div class="hero">
+  <img src="../svg/jelly-mascot-full-animated.svg" alt="Маскотът на Carbon Stealth — анимиран герой-кадър" width="260" height="260">
+  <div>
+    <h1>Маскотът на Carbon Stealth</h1>
+    <p>
+      Едно очертание, четири нива, седем изражения, две пози — от един източник, гейтнати.
+      Всичко на тази страница са същите файлове, които продуктите ползват; страницата не е копие.
+    </p>
+    <div class="kit">
+      <img src="../svg/expressions/happy.svg" alt="Изражение happy" width="64" height="64">
+      <img src="../svg/expressions/wink.svg" alt="Изражение wink" width="64" height="64">
+      <img src="../svg/poses/wave.svg" alt="Поза wave" width="64" height="64">
+      <img src="../svg/jelly-mascot-icon.svg" alt="Иконен вариант" width="48" height="48">
+      <img src="../svg/jelly-mascot-icon.svg" alt="Иконен вариант при 24 пиксела" width="24" height="24">
+      <span class="mono mono-48" role="img" aria-label="Едноцветният знак"></span>
+    </div>
+  </div>
+</div>
+<p>Виж <code>README.md</code> за вграждане в Next/React и в EJS/статичен сайт.</p>
 
 <h2>Трите нива на детайл</h2>
 <div class="row">
