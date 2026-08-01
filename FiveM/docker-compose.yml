@@ -1,0 +1,51 @@
+# Тайните НЕ влизат тук — идват от `.env` до този файл, с права 600.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: fivem
+      POSTGRES_DB: fivem
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fivem']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    # Портът е вързан за loopback: навън се излиза само през nginx с TLS.
+    ports:
+      - '127.0.0.1:3010:3000'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Трите периодични задачи вървят в СЪЩИЯ образ, но като отделен процес: ако
+  # една забие или изяде памет, сайтът продължава да отговаря.
+  cron:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    entrypoint: ['/bin/sh', '-c']
+    command: >
+      "while true; do npx tsx scripts/refresh-servers.ts || true; sleep 180; done &
+       while true; do npx tsx scripts/discover-servers.ts || true; sleep 2700; done &
+       while true; do npx tsx scripts/prune.ts || true; sleep 86400; done;
+       wait"
+
+volumes:
+  db:
