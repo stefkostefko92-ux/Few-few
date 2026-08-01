@@ -20,6 +20,12 @@
       <ellipse cx="238" cy="118" rx="150" ry="86" fill="var(--jm-olive, #99E72A)"/>
     </g>
 
+    <!-- Крачета и тук: семейната прилика при 32–64 px се пази от силуета, не от детайла. -->
+    <g class="jm-feet" fill="var(--jm-bottle, #297F04)">
+      <ellipse cx="196" cy="458" rx="44" ry="22"/>
+      <ellipse cx="312" cy="458" rx="44" ry="22"/>
+    </g>
+
     <g class="jm-face">
       <g class="jm-eyes">
         <circle cx="198" cy="272" r="40" fill="var(--jm-eye, #F4FAEA)"/>

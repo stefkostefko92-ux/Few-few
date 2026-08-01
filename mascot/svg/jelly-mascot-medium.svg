@@ -73,8 +73,8 @@
   </defs>
 
   <g class="jm-root">
-    <ellipse cx="254" cy="452" rx="136" ry="24" fill="url(#jmm-contact)"/>
-    <ellipse class="jm-glow" cx="254" cy="450" rx="172" ry="40" fill="url(#jmm-underglow)"/>
+    <ellipse cx="254" cy="486" rx="132" ry="20" fill="url(#jmm-contact)"/>
+    <ellipse class="jm-glow" cx="254" cy="480" rx="172" ry="38" fill="url(#jmm-underglow)"/>
 
     <g class="jm-arms">
       <g stroke="url(#jmm-body)" stroke-width="34" stroke-linecap="round" fill="none">
@@ -87,7 +87,21 @@
       </g>
     </g>
 
+
+
     <path class="jm-body" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="url(#jmm-body)"/>
+
+
+    <!-- Крачета: две малки стъпала под тялото. Характерът СТЪПВА — блоб без стъпала се чете
+         като предмет, не като герой. -->
+    <g class="jm-feet">
+      <ellipse cx="196" cy="462" rx="44" ry="22" fill="url(#jmm-body)"/>
+      <ellipse cx="312" cy="462" rx="44" ry="22" fill="url(#jmm-body)"/>
+      <path d="M164 468C174 478 192 482 210 480" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+      <path d="M280 468C290 478 308 482 326 480" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+      <ellipse cx="196" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+      <ellipse cx="312" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+    </g>
 
     <g clip-path="url(#jmm-clip)">
       <ellipse cx="254" cy="376" rx="150" ry="118" fill="url(#jmm-core)"/>
@@ -113,7 +127,7 @@
 
     <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="url(#jmm-rim)" stroke-width="5"/>
 
-    <g class="jm-face">
+    <g class="jm-face" transform="translate(0 10) rotate(-2.5 254 276) scale(0.92) translate(22 24)">
       <g class="jm-brows" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round" fill="none">
         <path d="M166 208C184 196 208 194 226 200"/>
         <path d="M346 208C328 196 304 194 286 200"/>
@@ -165,7 +179,7 @@
       </g>
     </g>
 
-    <g class="jm-bowtie">
+    <g class="jm-bowtie" transform="translate(0 8) rotate(-2 254 404) scale(0.94) translate(16 26)">
       <path d="M248 404C232 390 218 380 206 379C200 392 200 416 206 429C218 428 232 418 248 404Z" fill="var(--jm-ink, #0A0C0A)"/>
       <path d="M260 404C276 390 290 380 302 379C308 392 308 416 302 429C290 428 276 418 260 404Z" fill="var(--jm-ink, #0A0C0A)"/>
       <g fill="none" stroke="var(--jm-ink-soft, #2A2E24)" stroke-width="3.5" stroke-linecap="round">
@@ -179,7 +193,7 @@
       <rect x="244" y="393" width="20" height="22" rx="7" fill="url(#jmm-band)"/>
     </g>
 
-    <g class="jm-cap" transform="translate(0 10) rotate(-6 254 108)">
+    <g class="jm-cap" transform="translate(0 14) rotate(-9 254 108) scale(0.93) translate(19 9)">
       <ellipse cx="254" cy="118" rx="66" ry="26" fill="url(#jmm-band)"/>
       <path d="M198 132C214 142 294 142 310 132" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="3" opacity="0.4"/>
       <path d="M120 98L254 136L388 98L388 108L254 146L120 108Z" fill="var(--jm-ink, #0A0C0A)"/>

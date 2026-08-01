@@ -619,7 +619,7 @@ function Full({ uid, face, arms }: TierProps) {
           <stop offset="1" stopColor="var(--jm-mask-black, #000000)"/>
         </linearGradient>
         <mask id={`${uid}-floor`}>
-          <rect x="0" y="452" width="512" height="120" fill={`url(#${uid}-floor-fade)`}/>
+          <rect x="0" y="484" width="512" height="120" fill={`url(#${uid}-floor-fade)`}/>
         </mask>
 
         {/* Мек преход, за да не оставя долният кант хоризонтален шев по тялото. */}
@@ -704,15 +704,15 @@ function Full({ uid, face, arms }: TierProps) {
       <g className="jm-root">
         {/* 0. Отражение в пода — герой-кадърът стъпва на лъскава повърхност, не виси в нищото. */}
         <g className="jm-floor" mask={`url(#${uid}-floor)`} opacity="0.7">
-          <g transform="translate(0 904) scale(1 -1)">
+          <g transform="translate(0 968) scale(1 -1)">
             <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill={`url(#${uid}-body)`} filter={`url(#${uid}-soft-s)`}/>
           </g>
         </g>
 
         {/* 1. Контактна сянка, каустично петно и подсветка (зад всичко). */}
-        <ellipse cx="254" cy="452" rx="122" ry="20" fill="var(--jm-mask-black, #000000)" opacity="0.8" filter={`url(#${uid}-soft-s)`}/>
-        <ellipse className="jm-glow" cx="254" cy="452" rx="176" ry="44" fill={`url(#${uid}-underglow)`} filter={`url(#${uid}-soft)`}/>
-        <ellipse className="jm-caustic" cx="254" cy="456" rx="96" ry="17" fill={`url(#${uid}-caustic-pool)`} filter={`url(#${uid}-soft-s)`}/>
+        <ellipse cx="254" cy="486" rx="118" ry="16" fill="var(--jm-mask-black, #000000)" opacity="0.8" filter={`url(#${uid}-soft-s)`}/>
+        <ellipse className="jm-glow" cx="254" cy="480" rx="176" ry="42" fill={`url(#${uid}-underglow)`} filter={`url(#${uid}-soft)`}/>
+        <ellipse className="jm-caustic" cx="254" cy="488" rx="92" ry="14" fill={`url(#${uid}-caustic-pool)`} filter={`url(#${uid}-soft-s)`}/>
         <path className="jm-bloom" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="var(--jm-neon, #5AB60D)" opacity="0.45" filter={`url(#${uid}-soft)`}/>
 
         {/* 2. Ръчички — зад тялото, за да „излизат" от него; с кант отдолу, за да не са плоски. */}
@@ -720,6 +720,17 @@ function Full({ uid, face, arms }: TierProps) {
 
         {/* 3. Тяло — с геловото осветление и зърното. */}
         <path className="jm-body" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill={`url(#${uid}-body)`} filter={`url(#${uid}-gel)`}/>
+
+        {/* Крачета: две малки стъпала под тялото. Характерът СТЪПВА — блоб без стъпала се чете
+             като предмет, не като герой. */}
+        <g className="jm-feet">
+          <ellipse cx="196" cy="462" rx="44" ry="22" fill={`url(#${uid}-body)`}/>
+          <ellipse cx="312" cy="462" rx="44" ry="22" fill={`url(#${uid}-body)`}/>
+          <path d="M164 468C174 478 192 482 210 480" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.55"/>
+          <path d="M280 468C290 478 308 482 326 480" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.55"/>
+          <ellipse cx="196" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+          <ellipse cx="312" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+        </g>
 
         {/* 4. Вътрешност — всичко изрязано по силуета. */}
         <g clipPath={`url(#${uid}-clip)`}>
@@ -828,7 +839,7 @@ function Full({ uid, face, arms }: TierProps) {
 
         {/* 6. Лице. Наклонено с 2.5° около центъра на главата: лицето ЛЕЖИ по обема, а не е
              напечатано върху него. Наклонът е на групата, затова важи за всяко изражение. */}
-        <g className="jm-face" transform="rotate(-2.5 254 276)">
+        <g className="jm-face" transform="translate(0 10) rotate(-2.5 254 276) scale(0.92) translate(22 24)">
           {/* Вежди, очи и уста са СМЕНЯЕМИ МОДУЛИ (`jm-brows` · `jm-eyes` · `jm-mouth`): точно те
                и само те се разменят от `svg/faces/*.svg`, за да се получи изражение. Затова са
                байт-идентични между пълното и средното ниво — гейтнато. */}
@@ -889,7 +900,7 @@ function Full({ uid, face, arms }: TierProps) {
         </g>
 
         {/* 7. Папийонка — с гънки, сатенен блясък и зелен отскок по горния ръб. */}
-        <g className="jm-bowtie" transform="rotate(-2 254 404)">
+        <g className="jm-bowtie" transform="translate(0 8) rotate(-2 254 404) scale(0.94) translate(16 26)">
           <g filter={`url(#${uid}-soft-xs)`} opacity="0.5">
             <path d="M248 408C232 394 218 384 206 383C200 396 200 420 206 433C218 432 232 422 248 408Z" fill="var(--jm-mask-black, #000000)"/>
             <path d="M260 408C276 394 290 384 302 383C308 396 308 420 302 433C290 432 276 422 260 408Z" fill="var(--jm-mask-black, #000000)"/>
@@ -913,7 +924,7 @@ function Full({ uid, face, arms }: TierProps) {
 
         {/* 8. Академична шапка — дебелина на дъската, сатен по плата, зелен отскок по долния ръб
              (тялото свети НАГОРЕ към шапката) и пискюл от нишки с метален кант. */}
-        <g className="jm-cap" transform="translate(0 10) rotate(-6 254 108)">
+        <g className="jm-cap" transform="translate(0 14) rotate(-9 254 108) scale(0.93) translate(19 9)">
           <ellipse cx="254" cy="118" rx="66" ry="26" fill={`url(#${uid}-band)`}/>
           <path d="M196 124C212 136 296 136 312 124" fill="none" stroke="var(--jm-soft-olive, #848D68)" strokeWidth="2.5" opacity="0.35"/>
           <path d="M198 132C214 142 294 142 310 132" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="3" opacity="0.4"/>
@@ -1029,12 +1040,23 @@ function Medium({ uid, face, arms }: TierProps) {
       </defs>
 
       <g className="jm-root">
-        <ellipse cx="254" cy="452" rx="136" ry="24" fill={`url(#${uid}-contact)`}/>
-        <ellipse className="jm-glow" cx="254" cy="450" rx="172" ry="40" fill={`url(#${uid}-underglow)`}/>
+        <ellipse cx="254" cy="486" rx="132" ry="20" fill={`url(#${uid}-contact)`}/>
+        <ellipse className="jm-glow" cx="254" cy="480" rx="172" ry="38" fill={`url(#${uid}-underglow)`}/>
 
         {arms}
 
         <path className="jm-body" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill={`url(#${uid}-body)`}/>
+
+        {/* Крачета: две малки стъпала под тялото. Характерът СТЪПВА — блоб без стъпала се чете
+             като предмет, не като герой. */}
+        <g className="jm-feet">
+          <ellipse cx="196" cy="462" rx="44" ry="22" fill={`url(#${uid}-body)`}/>
+          <ellipse cx="312" cy="462" rx="44" ry="22" fill={`url(#${uid}-body)`}/>
+          <path d="M164 468C174 478 192 482 210 480" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.55"/>
+          <path d="M280 468C290 478 308 482 326 480" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.55"/>
+          <ellipse cx="196" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+          <ellipse cx="312" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+        </g>
 
         <g clipPath={`url(#${uid}-clip)`}>
           <ellipse cx="254" cy="376" rx="150" ry="118" fill={`url(#${uid}-core)`}/>
@@ -1060,7 +1082,7 @@ function Medium({ uid, face, arms }: TierProps) {
 
         <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke={`url(#${uid}-rim)`} strokeWidth="5"/>
 
-        <g className="jm-face">
+        <g className="jm-face" transform="translate(0 10) rotate(-2.5 254 276) scale(0.92) translate(22 24)">
           {face.brows}
           {face.eyes}
           <g className="jm-glasses">
@@ -1089,7 +1111,7 @@ function Medium({ uid, face, arms }: TierProps) {
           {face.mouth}
         </g>
 
-        <g className="jm-bowtie">
+        <g className="jm-bowtie" transform="translate(0 8) rotate(-2 254 404) scale(0.94) translate(16 26)">
           <path d="M248 404C232 390 218 380 206 379C200 392 200 416 206 429C218 428 232 418 248 404Z" fill="var(--jm-ink, #0A0C0A)"/>
           <path d="M260 404C276 390 290 380 302 379C308 392 308 416 302 429C290 428 276 418 260 404Z" fill="var(--jm-ink, #0A0C0A)"/>
           <g fill="none" stroke="var(--jm-ink-soft, #2A2E24)" strokeWidth="3.5" strokeLinecap="round">
@@ -1103,7 +1125,7 @@ function Medium({ uid, face, arms }: TierProps) {
           <rect x="244" y="393" width="20" height="22" rx="7" fill={`url(#${uid}-band)`}/>
         </g>
 
-        <g className="jm-cap" transform="translate(0 10) rotate(-6 254 108)">
+        <g className="jm-cap" transform="translate(0 14) rotate(-9 254 108) scale(0.93) translate(19 9)">
           <ellipse cx="254" cy="118" rx="66" ry="26" fill={`url(#${uid}-band)`}/>
           <path d="M198 132C214 142 294 142 310 132" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="3" opacity="0.4"/>
           <path d="M120 98L254 136L388 98L388 108L254 146L120 108Z" fill="var(--jm-ink, #0A0C0A)"/>
@@ -1144,6 +1166,12 @@ function Icon({ uid, face, arms }: TierProps) {
         <g clipPath={`url(#${uid}-clip)`}>
           <ellipse cx="254" cy="486" rx="190" ry="112" fill="var(--jm-bottle, #297F04)"/>
           <ellipse cx="238" cy="118" rx="150" ry="86" fill="var(--jm-olive, #99E72A)"/>
+        </g>
+
+        {/* Крачета и тук: семейната прилика при 32–64 px се пази от силуета, не от детайла. */}
+        <g className="jm-feet" fill="var(--jm-bottle, #297F04)">
+          <ellipse cx="196" cy="458" rx="44" ry="22"/>
+          <ellipse cx="312" cy="458" rx="44" ry="22"/>
         </g>
 
         <g className="jm-face">

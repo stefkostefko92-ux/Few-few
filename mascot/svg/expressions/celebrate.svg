@@ -89,7 +89,7 @@
       <stop offset="1" stop-color="var(--jm-mask-black, #000000)"/>
     </linearGradient>
     <mask id="jm-floor">
-      <rect x="0" y="452" width="512" height="120" fill="url(#jm-floor-fade)"/>
+      <rect x="0" y="484" width="512" height="120" fill="url(#jm-floor-fade)"/>
     </mask>
 
     <!-- Мек преход, за да не оставя долният кант хоризонтален шев по тялото. -->
@@ -174,15 +174,15 @@
   <g class="jm-root">
     <!-- 0. Отражение в пода — герой-кадърът стъпва на лъскава повърхност, не виси в нищото. -->
     <g class="jm-floor" mask="url(#jm-floor)" opacity="0.7">
-      <g transform="translate(0 904) scale(1 -1)">
+      <g transform="translate(0 968) scale(1 -1)">
         <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="url(#jm-body)" filter="url(#jm-soft-s)"/>
       </g>
     </g>
 
     <!-- 1. Контактна сянка, каустично петно и подсветка (зад всичко). -->
-    <ellipse cx="254" cy="452" rx="122" ry="20" fill="var(--jm-mask-black, #000000)" opacity="0.8" filter="url(#jm-soft-s)"/>
-    <ellipse class="jm-glow" cx="254" cy="452" rx="176" ry="44" fill="url(#jm-underglow)" filter="url(#jm-soft)"/>
-    <ellipse class="jm-caustic" cx="254" cy="456" rx="96" ry="17" fill="url(#jm-caustic-pool)" filter="url(#jm-soft-s)"/>
+    <ellipse cx="254" cy="486" rx="118" ry="16" fill="var(--jm-mask-black, #000000)" opacity="0.8" filter="url(#jm-soft-s)"/>
+    <ellipse class="jm-glow" cx="254" cy="480" rx="176" ry="42" fill="url(#jm-underglow)" filter="url(#jm-soft)"/>
+    <ellipse class="jm-caustic" cx="254" cy="488" rx="92" ry="14" fill="url(#jm-caustic-pool)" filter="url(#jm-soft-s)"/>
     <path class="jm-bloom" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="var(--jm-neon, #5AB60D)" opacity="0.45" filter="url(#jm-soft)"/>
 
     <!-- 2. Ръчички — зад тялото, за да „излизат" от него; с кант отдолу, за да не са плоски. -->
@@ -197,8 +197,22 @@
       </g>
     </g>
 
+
+
     <!-- 3. Тяло — с геловото осветление и зърното. -->
     <path class="jm-body" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="url(#jm-body)" filter="url(#jm-gel)"/>
+
+
+    <!-- Крачета: две малки стъпала под тялото. Характерът СТЪПВА — блоб без стъпала се чете
+         като предмет, не като герой. -->
+    <g class="jm-feet">
+      <ellipse cx="196" cy="462" rx="44" ry="22" fill="url(#jm-body)"/>
+      <ellipse cx="312" cy="462" rx="44" ry="22" fill="url(#jm-body)"/>
+      <path d="M164 468C174 478 192 482 210 480" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+      <path d="M280 468C290 478 308 482 326 480" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+      <ellipse cx="196" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+      <ellipse cx="312" cy="450" rx="36" ry="15" fill="var(--jm-deep, #0D4A02)" opacity="0.35"/>
+    </g>
 
     <!-- 4. Вътрешност — всичко изрязано по силуета. -->
     <g clip-path="url(#jm-clip)">
@@ -307,7 +321,7 @@
 
     <!-- 6. Лице. Наклонено с 2.5° около центъра на главата: лицето ЛЕЖИ по обема, а не е
          напечатано върху него. Наклонът е на групата, затова важи за всяко изражение. -->
-    <g class="jm-face" transform="rotate(-2.5 254 276)">
+    <g class="jm-face" transform="translate(0 10) rotate(-2.5 254 276) scale(0.92) translate(22 24)">
       <!-- Вежди, очи и уста са СМЕНЯЕМИ МОДУЛИ (`jm-brows` · `jm-eyes` · `jm-mouth`): точно те
            и само те се разменят от `svg/faces/*.svg`, за да се получи изражение. Затова са
            байт-идентични между пълното и средното ниво — гейтнато. -->
@@ -385,7 +399,7 @@
     </g>
 
     <!-- 7. Папийонка — с гънки, сатенен блясък и зелен отскок по горния ръб. -->
-    <g class="jm-bowtie" transform="rotate(-2 254 404)">
+    <g class="jm-bowtie" transform="translate(0 8) rotate(-2 254 404) scale(0.94) translate(16 26)">
       <g filter="url(#jm-soft-xs)" opacity="0.5">
         <path d="M248 408C232 394 218 384 206 383C200 396 200 420 206 433C218 432 232 422 248 408Z" fill="var(--jm-mask-black, #000000)"/>
         <path d="M260 408C276 394 290 384 302 383C308 396 308 420 302 433C290 432 276 422 260 408Z" fill="var(--jm-mask-black, #000000)"/>
@@ -409,7 +423,7 @@
 
     <!-- 8. Академична шапка — дебелина на дъската, сатен по плата, зелен отскок по долния ръб
          (тялото свети НАГОРЕ към шапката) и пискюл от нишки с метален кант. -->
-    <g class="jm-cap" transform="translate(0 10) rotate(-6 254 108)">
+    <g class="jm-cap" transform="translate(0 14) rotate(-9 254 108) scale(0.93) translate(19 9)">
       <ellipse cx="254" cy="118" rx="66" ry="26" fill="url(#jm-band)"/>
       <path d="M196 124C212 136 296 136 312 124" fill="none" stroke="var(--jm-soft-olive, #848D68)" stroke-width="2.5" opacity="0.35"/>
       <path d="M198 132C214 142 294 142 310 132" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="3" opacity="0.4"/>
