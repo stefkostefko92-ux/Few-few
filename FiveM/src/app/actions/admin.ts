@@ -167,6 +167,35 @@ export async function moderateReviewAction(formData: FormData): Promise<void> {
   revalidatePath('/', 'layout');
 }
 
+/**
+ * Отговор на СЪРВЪРА под ревюто. Условията го обещават от самото начало
+ * („може да поиска преглед или да публикува отговор; отговорът се показва под
+ * ревюто“), а път за създаване нямаше — обещание без изпълнител.
+ *
+ * Не е козметика: правото на отговор е противотежестта, която прави
+ * непроверените отзиви защитими (чл. 6, ал. 1, б. „ж“ и чл. 7, ал. 6 от
+ * Дир. 2005/29/ЕО). Минава през нас, а не директно от сървъра, защото нямаме
+ * акаунти — собственикът пише, ние публикуваме.
+ */
+export async function replyToReviewAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+
+  // Текстът е от собственика на сървъра, тоест недоверен: минава през
+  // `displayName` (маха управляващи и двупосочни символи) и през таван.
+  const raw = String(formData.get('reply') ?? '').trim();
+  const reply = raw === '' ? null : displayName(raw.slice(0, 1000), '');
+
+  await prisma.review.update({
+    where: { id },
+    data: { reply: reply || null, repliedAt: reply ? new Date() : null },
+  });
+  await audit('review-reply', id, reply ? 'публикуван отговор' : 'отговорът е свален');
+  revalidatePath('/', 'layout');
+}
+
 // ── Заявки за листване ──────────────────────────────────────────────────────
 
 /**
@@ -235,6 +264,15 @@ export async function rejectSubmissionAction(formData: FormData): Promise<void> 
   const id = String(formData.get('id') ?? '');
   if (!id) return;
 
+  /**
+   * Мотивът е ПОЛЕ, не подразбиране. Чл. 17(3) DSA иска решението да носи
+   * фактите и обстоятелствата ПО СЛУЧАЯ и конкретното приложено правило —
+   * общият списък „най-често заради…“ в шаблона не е мотив, а изброяване на
+   * възможности. Дефектът беше структурен: формата на модератора нямаше къде
+   * да се впише мотив, значи шаблонът нямаше как да го носи.
+   */
+  const reason = String(formData.get('reason') ?? '').trim().slice(0, 1000);
+
   // Същото заемане като при одобрението: без него всяко повторно щракване
   // праща нов отказен имейл на подателя.
   const claimed = await prisma.submission.updateMany({
@@ -249,9 +287,9 @@ export async function rejectSubmissionAction(formData: FormData): Promise<void> 
   // контактите на подателя НЕ са известни — тук имейлът е задължително поле.
   await sendMail({
     to: submission.contactEmail,
-    ...submissionDecision(submission.serverName, false),
+    ...submissionDecision(submission.serverName, false, reason),
   });
-  await audit('submission', submission.serverName, 'отказана');
+  await audit('submission', submission.serverName, `отказана: ${reason || '(без мотив)'}`);
   revalidatePath('/', 'layout');
 }
 
@@ -401,10 +439,20 @@ export async function handleReportAction(formData: FormData): Promise<void> {
     where: { id },
     data: { status: decision, handledAt: new Date() },
   });
-  await sendMail({
-    to: report.reporterEmail,
-    ...reportDecision(report.targetUrl, decision === 'APPROVED'),
-  });
-  await audit('report', report.targetUrl, decision === 'APPROVED' ? 'основателен' : 'неоснователен');
+  // Чл. 16(5) дължи уведомяване „при предоставени данни за контакт“. Сигналът
+  // по чл. 3–7 от Дир. 2011/93/ЕС може да е анонимен — тогава няма къде да се
+  // пише и това не е пропуск, а изричното изключение.
+  if (report.reporterEmail) {
+    await sendMail({
+      to: report.reporterEmail,
+      ...reportDecision(report.targetUrl, decision === 'APPROVED'),
+    });
+  }
+  await audit(
+    'report',
+    report.targetUrl,
+    `${decision === 'APPROVED' ? 'основателен' : 'неоснователен'}` +
+      `${report.reporterEmail ? '' : ' (анонимен — без уведомяване)'}`,
+  );
   revalidatePath('/', 'layout');
 }

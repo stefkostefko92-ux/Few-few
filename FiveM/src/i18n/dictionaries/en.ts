@@ -51,6 +51,7 @@ export const en: Dictionary = {
     emptyLead: 'The list is still filling up.',
     emptyCta: 'Add your server',
     emptyTail: '— submissions are reviewed by hand.',
+    rankingLink: 'How we rank servers (including paid promotion)',
     faqHeading: 'Frequently asked questions',
     discordCta: 'Ask in the community Discord',
     discordLead: 'Looking for the right server, or have a question?',
@@ -90,6 +91,7 @@ export const en: Dictionary = {
     reviewHelpTerms: 'Terms',
     reviewSubmit: 'Submit review',
     anonymous: 'anonymous',
+    replyLabel: 'Reply from the server',
     promoted: 'promoted (paid)',
     promotedShort: 'promoted',
     discovered: 'found automatically',
@@ -228,6 +230,9 @@ export const en: Dictionary = {
     emailHelp:
       'We use it only for the confirmation and the decision on this report. Legal basis: Art. 6(1)(c) GDPR (legal obligation under the DSA). Details are in the',
     emailHelpLink: 'privacy policy',
+    anonymousLabel: 'This report concerns an offence under Art. 3–7 of Dir. 2011/93/EU — I am not giving contact details',
+    anonymousHelp:
+      'Tick this only in that case. The law then does NOT require a name and email (Art. 16(2)(c) DSA) and you may leave them empty. We will not be able to send you a receipt or a decision — that is the cost of anonymity, not an omission on our side. In every other case contact details are needed.',
     goodFaith:
       'I declare in good faith that the information and allegations in this report are accurate and complete — Art. 16(2)(d).',
     submitButton: 'Send report',

@@ -52,7 +52,13 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
     title: t.home.title,
     description: t.home.description,
     path: '/',
-    keywords: getContent(locale).keywords,
+    // Началната има СВОИ ключови думи. Досега трите страници (начална,
+    // правила, туториали) споделяха едно множество и се състезаваха за едни и
+    // същи запитвания — сами си правехме канибализация в резултатите.
+    keywords:
+      locale === 'bg'
+        ? ['директория FiveM сървъри', 'онлайн статус FiveM', 'кой сървър е онлайн', 'whitelist сървъри']
+        : ['FiveM server directory', 'FiveM live status', 'which server is online', 'whitelisted servers'],
   });
 }
 
@@ -157,6 +163,18 @@ export default async function HomePage({ params, searchParams }: Props) {
         <h2 id="servers-heading" className="sr-only">
           {t.home.serverList}
         </h2>
+        {/* Чл. 7, ал. 4а от Дир. 2005/29/ЕО: параметрите на класирането трябва
+            да са в специален раздел, ПРЯКО достъпен от страницата с
+            резултатите. Общ линк „Условия“ в подвала не изпълнява това —
+            затова котвата води точно до раздела, а не до документа. */}
+        <p className="mb-4 text-sm text-silver-500">
+          <Link
+            href={`/${locale}/terms#kak-podrezhdame-sarvarite`}
+            className="text-cyan-300 underline underline-offset-2"
+          >
+            {t.home.rankingLink}
+          </Link>
+        </p>
         {servers.length === 0 && query ? (
           <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
             {t.filters.noMatch}

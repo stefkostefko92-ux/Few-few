@@ -6,7 +6,7 @@
  *   npm run prune          # пуска се по cron, веднъж дневно
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -20,6 +20,15 @@ export const RETENTION = {
   reportDays: 730,
   /** Отхвърлени ревюта: 6 месеца. */
   rejectedReviewDays: 183,
+  /**
+   * Одобрени ревюта на СВАЛЕН сървър: 6 месеца след свалянето.
+   *
+   * Политиката обещава „пазят се, докато сървърът е в директорията“, а
+   * `onDelete: Cascade` НЕ се задейства: свалянето на сървър е смяна на статус
+   * (`REJECTED`), не изтриване на реда. Тоест ревютата на свален сървър
+   * оставаха вечно — обещан срок без изпълнител, чл. 5, ал. 1, б. „д“ ОРЗД.
+   */
+  orphanReviewDays: 183,
   /** Часови снимки на посещаемостта: 90 дни. */
   snapshotDays: 90,
   /**
@@ -65,62 +74,106 @@ async function main() {
   const stale = before(RETENTION.streamerDays);
   const staleYouTube = before(RETENTION.youtubeStreamerDays);
   /** Общото условие „не е виждан на живо от X“ — `null` значи никога. */
-  const notLiveSince = (date: Date) => [{ lastLiveAt: null }, { lastLiveAt: { lt: date } }];
+  const notLiveSince = (date: Date) => [
+    { lastLiveAt: null },
+    { lastLiveAt: { lt: date } },
+  ];
 
-  const [submissions, reports, reviews, snapshots, streamers, youtube, manual, audits, logins, sessions] =
-    await prisma.$transaction([
-    prisma.submission.deleteMany({ where: { createdAt: { lt: before(RETENTION.submissionDays) } } }),
-    prisma.report.deleteMany({ where: { createdAt: { lt: before(RETENTION.reportDays) } } }),
-    prisma.review.deleteMany({
-      where: { status: 'REJECTED', createdAt: { lt: before(RETENTION.rejectedReviewDays) } },
+  const [
+    submissions,
+    reports,
+    reviews,
+    orphanReviews,
+    snapshots,
+    streamers,
+    youtube,
+    manual,
+    audits,
+    logins,
+    sessions,
+  ] = await prisma.$transaction([
+    prisma.submission.deleteMany({
+      where: { createdAt: { lt: before(RETENTION.submissionDays) } },
     }),
-    prisma.serverSnapshot.deleteMany({ where: { at: { lt: before(RETENTION.snapshotDays) } } }),
-      prisma.streamer.deleteMany({
-        where: {
-          manual: false,
-          platform: { not: 'YOUTUBE' },
-          status: { not: 'REJECTED' },
-          createdAt: { lt: stale },
-          OR: notLiveSince(stale),
+    prisma.report.deleteMany({
+      where: { createdAt: { lt: before(RETENTION.reportDays) } },
+    }),
+    prisma.review.deleteMany({
+      where: {
+        status: "REJECTED",
+        createdAt: { lt: before(RETENTION.rejectedReviewDays) },
+      },
+    }),
+    // Ревюта на свален сървър — виж `orphanReviewDays`.
+    prisma.review.deleteMany({
+      where: {
+        server: {
+          status: "REJECTED",
+          updatedAt: { lt: before(RETENTION.orphanReviewDays) },
         },
-      }),
-      // YouTube носи своя, по-кратък срок по договора на платформата.
-      prisma.streamer.deleteMany({
-        where: {
-          manual: false,
-          platform: 'YOUTUBE',
-          status: { not: 'REJECTED' },
-          createdAt: { lt: staleYouTube },
-          OR: notLiveSince(staleYouTube),
+      },
+    }),
+    prisma.serverSnapshot.deleteMany({
+      where: { at: { lt: before(RETENTION.snapshotDays) } },
+    }),
+    prisma.streamer.deleteMany({
+      where: {
+        manual: false,
+        platform: { not: "YOUTUBE" },
+        status: { not: "REJECTED" },
+        createdAt: { lt: stale },
+        OR: notLiveSince(stale),
+      },
+    }),
+    // YouTube носи своя, по-кратък срок по договора на платформата.
+    prisma.streamer.deleteMany({
+      where: {
+        manual: false,
+        platform: "YOUTUBE",
+        status: { not: "REJECTED" },
+        createdAt: { lt: staleYouTube },
+        OR: notLiveSince(staleYouTube),
+      },
+    }),
+    // Ръчните: срокът тече от последното пипане ОТ ЧОВЕК (`reviewedAt`), не
+    // от `updatedAt`. `updatedAt` е машинно поле — Prisma го пипа при всяко
+    // записване, включително от cron-а, тоест канал, който никой не е
+    // поглеждал от години, изглеждаше „проверен вчера“ и не падаше никога.
+    // Политиката обещава „365 дни след последната НАША проверка“.
+    prisma.streamer.deleteMany({
+      where: {
+        manual: true,
+        status: { not: "REJECTED" },
+        OR: [
+          { reviewedAt: { lt: before(RETENTION.manualStreamerDays) } },
+          {
+            reviewedAt: null,
+            createdAt: { lt: before(RETENTION.manualStreamerDays) },
+          },
+        ],
+      },
+    }),
+    prisma.auditLog.deleteMany({
+      where: { at: { lt: before(RETENTION.auditLogDays) } },
+    }),
+    prisma.loginAttempt.deleteMany({
+      where: {
+        at: {
+          lt: new Date(Date.now() - RETENTION.loginAttemptHours * 3_600_000),
         },
-      }),
-      // Ръчните: срокът тече от последното пипане ОТ ЧОВЕК (`reviewedAt`), не
-      // от `updatedAt`. `updatedAt` е машинно поле — Prisma го пипа при всяко
-      // записване, включително от cron-а, тоест канал, който никой не е
-      // поглеждал от години, изглеждаше „проверен вчера“ и не падаше никога.
-      // Политиката обещава „365 дни след последната НАША проверка“.
-      prisma.streamer.deleteMany({
-        where: {
-          manual: true,
-          status: { not: 'REJECTED' },
-          OR: [
-            { reviewedAt: { lt: before(RETENTION.manualStreamerDays) } },
-            { reviewedAt: null, createdAt: { lt: before(RETENTION.manualStreamerDays) } },
-          ],
-        },
-      }),
-      prisma.auditLog.deleteMany({ where: { at: { lt: before(RETENTION.auditLogDays) } } }),
-      prisma.loginAttempt.deleteMany({
-        where: { at: { lt: new Date(Date.now() - RETENTION.loginAttemptHours * 3_600_000) } },
-      }),
-      // Изтеклите сесии не са срок в политиката, а хигиена: мъртъв ред с хеш
-      // на токен няма за какво да стои.
-      prisma.adminSession.deleteMany({ where: { expiresAt: { lt: new Date() } } }),
-    ]);
+      },
+    }),
+    // Изтеклите сесии не са срок в политиката, а хигиена: мъртъв ред с хеш
+    // на токен няма за какво да стои.
+    prisma.adminSession.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    }),
+  ]);
 
   console.log(
     `Изчистени: ${submissions.count} заявки · ${reports.count} сигнала · ` +
-      `${reviews.count} отхвърлени ревюта · ${snapshots.count} снимки · ` +
+      `${reviews.count} отхвърлени + ${orphanReviews.count} осиротели ревюта · ` +
+      `${snapshots.count} снимки · ` +
       `${streamers.count + youtube.count + manual.count} канала ` +
       `(${youtube.count} YouTube по 30-дневното правило, ${manual.count} ръчни) · ` +
       `${audits.count} записа от дневника · ${logins.count} опита за вход · ` +
@@ -130,7 +183,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error('Изчистването се провали:', error);
+    console.error("Изчистването се провали:", error);
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());

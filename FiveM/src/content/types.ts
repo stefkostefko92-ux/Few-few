@@ -36,7 +36,13 @@ export type Tutorial = {
 export type ContentBundle = {
   rules: RuleSection[];
   tutorials: Tutorial[];
-  keywords: string[];
+  /**
+   * РАЗДЕЛНИ множества за правилата и туториалите. Едно споделено значи, че
+   * двете страници се състезават за едни и същи запитвания — сами си правим
+   * канибализация в резултатите.
+   */
+  rulesKeywords: string[];
+  tutorialsKeywords: string[];
 };
 
 export type LocalisedContent = Record<Locale, ContentBundle>;

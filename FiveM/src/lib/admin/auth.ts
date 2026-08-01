@@ -98,7 +98,30 @@ export function principalIp(lookup: (name: string) => string | null | undefined)
 async function principalHash(): Promise<string> {
   const store = await headers();
   const ip = principalIp((name) => store.get(name));
-  return sha256(`${ip}:${process.env.ADMIN_PASSWORD_HASH ?? ''}`);
+  return sha256(`${ip}:${pepper()}`);
+}
+
+/**
+ * „Пиперът“, който прави хеша на IP-то НЕОБРАТИМ — политиката твърди точно
+ * това. Без него `sha256(ip)` е несолен хеш на IPv4: цялото пространство е
+ * 4 милиарда стойности и се обръща за секунди с обикновена дъга.
+ *
+ * Затова липсващ `ADMIN_PASSWORD_HASH` вече НЕ пада тихо до празен низ:
+ * генерира се процесна стойност. Тя се губи при рестарт (броячът се нулира),
+ * но това е далеч по-добре от твърдение за необратимост, което не е вярно.
+ */
+let processPepper: string | null = null;
+function pepper(): string {
+  const configured = process.env.ADMIN_PASSWORD_HASH;
+  if (configured) return configured;
+  if (!processPepper) {
+    processPepper = randomBytes(32).toString('hex');
+    console.warn(
+      '[admin] няма ADMIN_PASSWORD_HASH — хешът на IP-то ползва процесна сол. ' +
+        'Броячът на опитите се нулира при рестарт.',
+    );
+  }
+  return processPepper;
 }
 
 /** Хешът е `соль:хеш` в шестнайсетичен вид — виж `npm run admin:hash`. */

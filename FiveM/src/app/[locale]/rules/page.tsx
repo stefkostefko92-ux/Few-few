@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props) {
     title: t.rules.title,
     description: t.rules.description,
     path: '/rules',
-    keywords: getContent(locale).keywords,
+    keywords: getContent(locale).rulesKeywords,
   });
 }
 

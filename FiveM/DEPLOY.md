@@ -13,7 +13,13 @@
    sudo nginx -t && sudo systemctl reload nginx
    sudo certbot --nginx -d fivembulgaria.carbonstealth.eu
    ```
-3. **Docker + Compose** на машината.
+3. **Ротация на дневниците** — политиката обявява 14 дни, а по подразбиране
+   Ubuntu пази nginx дневниците 14 СЕДМИЦИ. Без този файл текстът лъже:
+   ```bash
+   sudo cp /opt/few-few/current/FiveM/deploy/logrotate.conf /etc/logrotate.d/fivembulgaria
+   sudo logrotate -d /etc/logrotate.d/fivembulgaria   # проба
+   ```
+4. **Docker + Compose** на машината.
 
 ## Първо пускане
 

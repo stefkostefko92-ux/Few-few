@@ -89,9 +89,32 @@ export default async function ReportPage({ params, searchParams }: Props) {
           </p>
         </div>
 
+        {/* Чл. 16, ал. 2, б. „в“ DSA ИЗРИЧНО не изисква име и имейл при
+            уведомление за престъпленията по чл. 3–7 от Дир. 2011/93/ЕС.
+            Безусловно задължителните полета бяха по-ограничителни от закона и
+            възпираха точно най-тежкия сигнал — затова изключението стои ПРЕДИ
+            тях, а не скрито в дребен шрифт отдолу. */}
+        <div className="flex items-start gap-3 rounded-lg border border-white/15 p-3">
+          <input
+            id="anonymousAllowed"
+            name="anonymousAllowed"
+            type="checkbox"
+            className="mt-1"
+            aria-describedby="anon-help"
+          />
+          <div>
+            <label htmlFor="anonymousAllowed" className="font-medium">
+              {t.report.anonymousLabel}
+            </label>
+            <p id="anon-help" className="mt-1 text-sm text-silver-400">
+              {t.report.anonymousHelp}
+            </p>
+          </div>
+        </div>
+
         <div>
           <label htmlFor="reporterName">{t.report.nameLabel}</label>
-          <input id="reporterName" name="reporterName" required maxLength={120} className={field} />
+          <input id="reporterName" name="reporterName" maxLength={120} className={field} />
         </div>
 
         <div>
@@ -100,7 +123,6 @@ export default async function ReportPage({ params, searchParams }: Props) {
             id="reporterEmail"
             name="reporterEmail"
             type="email"
-            required
             maxLength={120}
             className={field}
             aria-describedby="email-help"

@@ -151,6 +151,14 @@ export default async function ServerPage({ params, searchParams }: Props) {
               ? t.server.noReviews
               : `${summary.average} / 5 ${t.server.ratingOf} ${summary.count} ${t.server.reviewsWord}`}
           </dd>
+          {/* Разкритието по чл. 7, ал. 6 от Дир. 2005/29/ЕО стои ДО оценката, а
+              не по-долу. Беше отдолу, но вмъкнатата графика го отдалечи с цял
+              екран — а изискването е за съществена информация НА мястото на
+              твърдението, не някъде на страницата. Позицията се сверява в JSX,
+              не по наличието на низа. */}
+          {summary.average !== null && (
+            <dd className="mt-1 text-xs text-silver-500">{t.server.ratingDisclaimer}</dd>
+          )}
         </div>
       </dl>
 
@@ -178,8 +186,6 @@ export default async function ServerPage({ params, searchParams }: Props) {
         peakLabel={t.server.chartPeak}
         emptyLabel={t.server.chartEmpty}
       />
-
-      <p className="mt-4 text-sm text-silver-500">{t.server.ratingDisclaimer}</p>
 
       {server.source === 'DISCOVERED' && (
         <p className="mt-4 rounded-lg border border-white/10 bg-ink-900/70 p-3 text-sm text-silver-400">
@@ -276,6 +282,25 @@ export default async function ServerPage({ params, searchParams }: Props) {
                   </div>
                   {item.body && (
                     <p className="mt-2 whitespace-pre-line text-silver-300">{item.body}</p>
+                  )}
+                  {/* Отговорът на сървъра — правото, което Общите условия
+                      обещават. Визуално подчинен на ревюто и изрично назован,
+                      за да не мине за втори отзив. */}
+                  {item.reply && (
+                    <div className="mt-3 border-s-2 border-cyan-700/60 ps-3">
+                      <p className="text-xs font-medium text-cyan-300">
+                        {t.server.replyLabel}
+                        {item.repliedAt && (
+                          <>
+                            {' · '}
+                            <time dateTime={item.repliedAt.toISOString()}>
+                              {item.repliedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB')}
+                            </time>
+                          </>
+                        )}
+                      </p>
+                      <p className="mt-1 whitespace-pre-line text-sm text-silver-300">{item.reply}</p>
+                    </div>
                   )}
                 </li>
               ))}

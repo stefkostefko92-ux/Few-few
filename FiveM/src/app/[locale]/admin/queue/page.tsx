@@ -4,6 +4,7 @@ import {
   approveSubmissionAction,
   handleReportAction,
   moderateReviewAction,
+  replyToReviewAction,
   rejectSubmissionAction,
 } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
@@ -72,6 +73,30 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
                     </form>
                   ))}
                 </div>
+                {/* Правото на отговор е обещано в Общите условия и е
+                    противотежестта, която прави непроверените отзиви
+                    защитими. Собственикът пише, ние публикуваме — нямаме
+                    акаунти. */}
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-sm text-cyan-300">
+                    Отговор от сървъра {review.reply ? '(публикуван)' : ''}
+                  </summary>
+                  <form action={replyToReviewAction} className="mt-2 space-y-2">
+                    <input type="hidden" name="id" value={review.id} />
+                    <textarea
+                      name="reply"
+                      rows={3}
+                      maxLength={1000}
+                      defaultValue={review.reply ?? ''}
+                      placeholder="Текстът, който собственикът на сървъра иска да се покаже под ревюто"
+                      className="w-full rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100"
+                    />
+                    <button className="rounded border border-white/15 px-3 py-1 text-sm hover:border-cyan-500">
+                      Запази отговора
+                    </button>
+                    <span className="ms-2 text-xs text-silver-500">празно поле = сваля отговора</span>
+                  </form>
+                </details>
               </li>
             ))}
           </ul>
@@ -104,8 +129,18 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
                     <input type="hidden" name="id" value={submission.id} />
                     <button className={yes}>Одобри и публикувай</button>
                   </form>
-                  <form action={rejectSubmissionAction}>
+                  {/* Мотивът е ЗАДЪЛЖИТЕЛЕН по чл. 17, ал. 3, б. „б“: решението
+                      трябва да носи фактите ПО СЛУЧАЯ. Без това поле шаблонът
+                      нямаше как да ги съдържа. */}
+                  <form action={rejectSubmissionAction} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="id" value={submission.id} />
+                    <input
+                      name="reason"
+                      required
+                      maxLength={1000}
+                      placeholder="Мотив за отказа (влиза в решението по чл. 17 DSA)"
+                      className="min-w-64 flex-1 rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100"
+                    />
                     <button className={no}>Откажи</button>
                   </form>
                 </div>

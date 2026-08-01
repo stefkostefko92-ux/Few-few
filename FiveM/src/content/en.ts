@@ -2,14 +2,22 @@ import type { ContentBundle } from './types';
 
 /** Превод на `bg.ts`. `id`-тата са ИДЕНТИЧНИ — те са котви в URL-а. */
 export const contentEn: ContentBundle = {
-  keywords: [
+  rulesKeywords: [
     'FiveM rules',
     'roleplay rules',
     'RDM VDM rules',
     'metagaming powergaming',
     'New Life Rule',
+    'GTA V roleplay rules',
+    'Carbon Stealth',
+  ],
+  tutorialsKeywords: [
     'FiveM tutorial',
     'how to play FiveM',
+    'install FiveM',
+    'how to join a FiveM server',
+    'roleplay first steps',
+    'ESX vs QBCore',
     'Carbon Stealth',
   ],
   rules: [

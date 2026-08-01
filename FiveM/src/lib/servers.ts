@@ -122,7 +122,17 @@ export async function getPublicServer(slug: string) {
         updatedAt: true,
         reviews: {
           where: { status: 'APPROVED' },
-          select: { id: true, rating: true, body: true, authorAlias: true, createdAt: true },
+          select: {
+            id: true,
+            rating: true,
+            body: true,
+            authorAlias: true,
+            createdAt: true,
+            // Отговорът на сървъра — обещан в Общите условия, значи трябва да
+            // напусне базата, за да се покаже под ревюто.
+            reply: true,
+            repliedAt: true,
+          },
           orderBy: { createdAt: 'desc' },
           take: REVIEWS_SHOWN,
         },

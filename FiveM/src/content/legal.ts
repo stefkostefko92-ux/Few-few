@@ -10,12 +10,25 @@ import type { Locale } from '@/i18n/config';
  * сверява ред по ред и нищо не се губи между езиците.
  */
 export type LegalBlock = { h?: string; p?: string; ul?: string[] };
-export type LegalDoc = { title: string; description: string; blocks: LegalBlock[] };
+/**
+ * `effective` НЕ е по избор. Правен текст без дата, от която е в сила, е
+ * самостоятелен дефект: читателят не знае коя редакция чете (чл. 12, ал. 1
+ * ОРЗД), а уведомяването за съществена промяна е недоказуемо (чл. 14, ал. 2
+ * DSA). В типа е задължително нарочно — иначе следващият документ ще го няма.
+ */
+export type LegalDoc = {
+  title: string;
+  description: string;
+  /** Дата, от която редакцията е в сила, ISO `ГГГГ-ММ-ДД`. */
+  effective: string;
+  blocks: LegalBlock[];
+};
 export type LegalSet = { privacy: LegalDoc; terms: LegalDoc; impresumLabels: Record<string, string> };
 
 const bg: LegalSet = {
   privacy: {
     title: 'Политика за поверителност',
+    effective: '2026-08-01',
     description:
       'Какви данни обработва FiveM BG, на какво основание, за колко време и кой още ги вижда. Без бисквитки за проследяване.',
     blocks: [
@@ -34,7 +47,7 @@ const bg: LegalSet = {
       },
       { h: 'Кой още вижда данните' },
       {
-        p: 'Доставчикът на сървърна инфраструктура (хостинг в ЕС) и доставчикът на електронна поща — и двамата действат като обработващи по чл. 28 ОРЗД. Не продаваме и не предоставяме данни за реклама. Ако кореспонденцията минава през доставчик извън ЕС/ЕИП, преносът се извършва въз основа на решение за адекватно ниво на защита или на стандартни договорни клаузи по чл. 46 ОРЗД; копие се предоставя при поискване.',
+        p: 'Доставчикът на сървърна инфраструктура е в ЕС. Изходящата поща минава през Resend (Resend, Inc., САЩ) — тоест ИМА пренос към трета държава, не хипотетично „ако“. Двамата действат като обработващи по чл. 28 ОРЗД. Преносът към САЩ се извършва въз основа на решението за адекватност по Рамката ЕС–САЩ за защита на данните или, ако доставчикът не е сертифициран по нея, на стандартни договорни клаузи по чл. 46 ОРЗД; копие се предоставя при поискване. Не продаваме и не предоставяме данни за реклама.',
       },
       { h: 'Какво НЕ събираме' },
       {
@@ -68,7 +81,7 @@ const bg: LegalSet = {
           'Не сваляме и не вграждаме профилни снимки. Причината е техническа и е в твоя полза: вградената снимка кара браузъра на всеки посетител да прави заявка към чуждия CDN, тоест платформата научава кой чете тази страница.',
           'Срок: 180 дни след последното засечено излъчване. За каналите от YouTube срокът е 30 дни — толкова допускат условията за разработчици на самата платформа (III.E.4.г), а те са по-строги от нашите. Ръчно добавените канали (TikTok) падат 365 дни след последната ни проверка. Изтриването е автоматично, всяка нощ.',
           'Не се прави профилиране и няма автоматизирано решение по чл. 22 ОРЗД. Канал, чийто език платформата не обявява като български, изобщо не се публикува автоматично — минава през човек. Заглавието на текущото предаване се показва едва след като човек е видял записа.',
-          'Данните от YouTube идват през YouTube API Services. За тях важи и политиката за поверителност на Google: https://policies.google.com/privacy',
+          'Данните от YouTube идват през YouTube API Services. Ползвайки страницата, се съгласяваш и с Условията на YouTube: https://www.youtube.com/t/terms · За обработката от Google важи политиката за поверителност на Google: https://policies.google.com/privacy',
         ],
       },
       { h: 'Защо интересът натежава — преценката, накратко' },
@@ -92,6 +105,7 @@ const bg: LegalSet = {
   },
   terms: {
     title: 'Общи условия',
+    effective: '2026-08-01',
     description:
       'Условия за ползване на директорията FiveM BG: листване, модерация, ревюта, класиране и сигнали за незаконно съдържание.',
     blocks: [
@@ -159,7 +173,7 @@ const bg: LegalSet = {
       'За органи по чл. 11 (Комисия за регулиране на съобщенията като координатор на цифровите услуги, Европейската комисия, Европейският съвет за цифрови услуги) и за получатели на услугата по чл. 12. Комуникацията не се обслужва изцяло от автоматизирани средства. Езици за комуникация:',
     dsaReport: 'Сигнал за незаконно съдържание се подава през формата за сигнали.',
     authorities: 'Контролни органи',
-    odr: 'Платформа на ЕК за онлайн решаване на спорове:',
+    odr: 'Помощ при спор с търговец в ЕС (платформата на ЕК за онлайн решаване на спорове е закрита от 20.07.2025):',
     trademarks: 'Марки',
   },
 };
@@ -167,6 +181,7 @@ const bg: LegalSet = {
 const en: LegalSet = {
   privacy: {
     title: 'Privacy policy',
+    effective: '2026-08-01',
     description:
       'What data FiveM BG processes, on what legal basis, for how long, and who else sees it. No tracking cookies.',
     blocks: [
@@ -185,7 +200,7 @@ const en: LegalSet = {
       },
       { h: 'Who else sees the data' },
       {
-        p: 'The server infrastructure provider (hosting in the EU) and the email provider — both acting as processors under Art. 28 GDPR. We do not sell or share data for advertising. If correspondence passes through a provider outside the EU/EEA, the transfer is based on an adequacy decision or standard contractual clauses under Art. 46 GDPR; a copy is available on request.',
+        p: 'The server infrastructure provider is in the EU. Outgoing email goes through Resend (Resend, Inc., USA) — so there IS a transfer to a third country, not a hypothetical “if”. Both act as processors under Art. 28 GDPR. The transfer to the USA is based on the adequacy decision under the EU–US Data Privacy Framework or, if the provider is not certified under it, on standard contractual clauses under Art. 46 GDPR; a copy is available on request. We do not sell or share data for advertising.',
       },
       { h: 'What we do NOT collect' },
       {
@@ -219,7 +234,7 @@ const en: LegalSet = {
           'We neither download nor embed profile pictures. The reason is technical and in your favour: an embedded picture makes every visitor’s browser call the third-party CDN, which tells the platform who reads this page.',
           'Retention: 180 days after the last detected broadcast. For YouTube channels it is 30 days — that is what the platform’s own developer policies allow (III.E.4.d), and they are stricter than ours. Manually added channels (TikTok) are dropped 365 days after our last check. Deletion is automatic, every night.',
           'No profiling and no automated decision under Art. 22 GDPR. A channel whose language the platform does not declare as Bulgarian is never published automatically — a person reviews it. The current stream title is shown only once a person has looked at the record.',
-          'Data from YouTube comes through the YouTube API Services. Google’s privacy policy applies to it as well: https://policies.google.com/privacy',
+          'Data from YouTube comes through the YouTube API Services. By using this page you also agree to the YouTube Terms of Service: https://www.youtube.com/t/terms · Google’s privacy policy applies to Google’s processing: https://policies.google.com/privacy',
         ],
       },
       { h: 'Why the interest prevails — the assessment, in short' },
@@ -243,6 +258,7 @@ const en: LegalSet = {
   },
   terms: {
     title: 'Terms of use',
+    effective: '2026-08-01',
     description:
       'Terms for using the FiveM BG directory: listings, moderation, reviews, ranking and reports of illegal content.',
     blocks: [
@@ -310,7 +326,7 @@ const en: LegalSet = {
       'For authorities under Art. 11 (the Bulgarian Communications Regulation Commission as Digital Services Coordinator, the European Commission, the European Board for Digital Services) and for recipients of the service under Art. 12. Communication is not handled exclusively by automated means. Languages:',
     dsaReport: 'Reports of illegal content are submitted through the report form.',
     authorities: 'Supervisory authorities',
-    odr: 'European Commission online dispute resolution platform:',
+    odr: 'Help with a dispute with an EU trader (the European Commission’s online dispute resolution platform closed on 20.07.2025):',
     trademarks: 'Trademarks',
   },
 };
