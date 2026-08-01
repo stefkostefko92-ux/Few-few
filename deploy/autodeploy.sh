@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali fivem}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -89,6 +89,16 @@ CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
 ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
+
+# fivem (FiveM Bulgaria — Docker Compose модел) — web слуша само на
+# 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
+# откриването на сървъри и стриймъри, и прочистването по срокове. Тайните живеят
+# в FiveM/.env на сървъра (mode 600) и се пренасят при всеки деплой.
+#
+# `PUBLIC_BASE_URL` ТРЯБВА да е `https://…`: под http сесийната бисквитка на
+# админ панела пада до слабата форма (без `__Host-`, без `secure`).
+FIVEM_HEALTH_URL="${FIVEM_HEALTH_URL:-http://127.0.0.1:3010/api/health}"
+FIVEM_DOMAIN="${FIVEM_DOMAIN:-fivembulgaria.carbonstealth.eu}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -542,6 +552,86 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3g') fivem — Docker Compose ───────────────────────────────────────────────
+# Продуктовата логика (бекъп → up → миграции → първоначално напълване) е в
+# FiveM/scripts/deploy.sh, за да живее при продукта. Тук е само това, което е
+# работа на оркестратора: пренасяне на .env, стабилен път за бекъпите и здраве.
+deploy_fivem() {
+  local d="$SRC/FiveM"
+  [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
+  log "Разгръщам fivem (Docker Compose)…"
+
+  # Тайните живеят на сървъра, не в архива.
+  if [ -f "$CURRENT_LINK/FiveM/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/FiveM/.env" "$d/.env"; ok "Пренесох FiveM/.env"
+  fi
+
+  # Пръв деплой без .env: генерирай, каквото може да се генерира. Паролата на
+  # панела се показва ВЕДНЪЖ — в базата и в .env стои само scrypt хешът ѝ.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма FiveM/.env — генерирам с random тайни."
+    local dbp adp hash
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+    adp="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9')"
+    # Хешът се смята с НАШИЯ скрипт, за да е точно във формата, който панелът чака.
+    hash="$( cd "$d" && npx --yes tsx scripts/admin-hash.ts "$adp" 2>/dev/null \
+             | grep -o '"[^"]*:[^"]*"' | tr -d '"' | head -1 )"
+    [ -n "$hash" ] || { warn "admin-hash не мина — оставям ADMIN_PASSWORD_HASH празен."; hash=""; }
+    cat > "$d/.env" <<EOF
+POSTGRES_PASSWORD=${dbp}
+DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
+PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
+ADMIN_PASSWORD_HASH=${hash}
+TRUST_PROXY_IP_HEADER=x-real-ip
+# Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
+# липсата се логва, но обещанието остава неизпълнено. Попълни го.
+RESEND_API_KEY=
+EMAIL_FROM=FiveM BG <no-reply@${FIVEM_DOMAIN}>
+# По избор — без тях съответната платформа просто се пропуска.
+TWITCH_CLIENT_ID=
+TWITCH_CLIENT_SECRET=
+KICK_CLIENT_ID=
+KICK_CLIENT_SECRET=
+KICK_CATEGORY_ID=
+YOUTUBE_API_KEY=
+FIVEM_PING_TIMEOUT_MS=4000
+FIVEM_PING_CONCURRENCY=6
+EOF
+    chmod 600 "$d/.env"
+    warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
+    warn "Попълни RESEND_API_KEY в FiveM/.env, иначе решенията по DSA не се изпращат."
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # Бекъпите на стабилен път извън releases — иначе умират с прочистването.
+  mkdir -p /opt/few-few/shared/fivem/backups
+  rm -rf "$d/backups"
+  ln -sfnT /opt/few-few/shared/fivem/backups "$d/backups"
+  ok "FiveM/backups -> /opt/few-few/shared/fivem/backups"
+
+  ( cd "$d" && bash scripts/deploy.sh )
+  if health "$FIVEM_HEALTH_URL" "fivem"; then
+    # Директорията се мени при всяко откриване → sitemap-ът остарява бързо.
+    fivem_indexnow
+  else
+    deploy_failed=1
+  fi
+}
+
+# IndexNow за fivem — през ОБЩИЯ инструмент на репото, не с втора ръчна
+# реализация: той знае конвенцията за keyLocation, чете sitemap-а и вече е
+# минал одит. Best-effort: провалът не вали деплоя.
+fivem_indexnow() {
+  local keyfile="$SRC/FiveM/public/indexnow-key.txt"
+  [ -f "$keyfile" ] || { warn "fivem: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "fivem: няма node на хоста — пропускам IndexNow."; return 0; }
+  if node "$SRC/tools/seo/indexnow.mjs" "https://$FIVEM_DOMAIN" --key-file "$keyfile" >/dev/null 2>&1; then
+    ok "fivem: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "fivem: IndexNow ping не мина (сайтът трябва да е публичен с /indexnow-key.txt)."
+  fi
+}
+
 # ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
@@ -710,6 +800,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    fivem|FiveM)          deploy_fivem ;;
     adblock)    deploy_adblock ;;
     *)          warn "Непознат проект: $p" ;;
   esac
