@@ -2457,7 +2457,7 @@
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 113
+        "lessons": 115
       },
       "evolution": [
         {
@@ -2843,9 +2843,20 @@
           "date": "2026-08-01",
           "event": "v15.7 — учене",
           "detail": "Научи: FiveM /info.json, /dynamic.json, /players.json точни полета потвърдени срещу citizenfx/… (+2 още)"
+        },
+        {
+          "version": "15.9.0",
+          "date": "2026-08-01",
+          "event": "v15.9 — учене",
+          "detail": "Научи: servers-frontend.fivem.net/api/servers/{streamRedir,stream,single} е МЪРТЪВ (404 за вси… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „servers-frontend.fivem.net/api/servers/{streamRedir,stream,single} е МЪРТЪВ (404 за вси…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-08-01",
           "type": "learning",
