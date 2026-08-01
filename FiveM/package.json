@@ -37,6 +37,7 @@
     "servers:refresh": "tsx scripts/refresh-servers.ts",
     "prune": "tsx scripts/prune.ts",
     "servers:discover": "tsx scripts/discover-servers.ts",
+    "streamers:discover": "tsx scripts/discover-streamers.ts",
     "admin:hash": "tsx scripts/admin-hash.ts"
   },
   "dependencies": {

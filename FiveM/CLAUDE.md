@@ -24,6 +24,8 @@ npm run build               # prisma generate + next build
 
 npm run prisma:migrate:dev  # миграции (изисква PostgreSQL)
 npm run servers:refresh     # пингва одобрените сървъри (пуска се по cron)
+npm run streamers:discover -- twitch kick   # стриймъри (cron, 10 мин)
+npm run streamers:discover -- youtube       # отделно: квотата е 100 ед./заявка
 npm run prune               # изтрива изтеклите данни (пуска се по cron, дневно)
 ```
 
@@ -53,6 +55,16 @@ src/lib/messages.ts     Кодове на грешки → български т
 src/lib/rate-limit.ts   Процесен таван по действие (анти-спам без IP).
 src/lib/rating.ts       averageRating/isFeatured — отделени от servers.ts, за
                         да са тестваеми без Prisma клиент.
+src/lib/snapshots.ts    ЧИСТО свиване на ServerSnapshot в кофи по час за
+                        графиката (МАКСИМУМ в кофата, не средно). Четенето е
+                        `playersLastDay` в servers.ts.
+src/lib/streamers.ts    ЧИСТИ функции за стриймърите: normalizeChannel
+                        (адрес/@име/голо име → ЕДИН ключ), profileUrl,
+                        isBulgarianLanguage, clampViewers, groupByPlatform.
+src/lib/streamers-query.ts  МРЕЖАТА към Twitch/Kick/YouTube. Липсващ ключ =
+                        пропусната платформа, не грешка.
+src/lib/streamers-db.ts Публичните заявки за стриймъри (само APPROVED).
+scripts/discover-streamers.ts  Cron: живи излъчвания по платформа.
 src/lib/seo.ts          SITE_URL, BASE_KEYWORDS, pageMetadata (canonical+OG),
                         siteJsonLd/serverListJsonLd/faqJsonLd, jsonLdString.
 src/app/page.tsx        Директорията + FAQ („отговор отпред“ за AI отговарачите).
@@ -128,6 +140,17 @@ scripts/prune.ts        Cron: изтрива по обявените в /privacy
   затова папката е и извън eslint. Нивата не са козметика: `icon` (≤32 px,
   шапката в навигацията и `app/icon.svg`), `medium` (без филтри — 404), `full`
   (герой-кадърът на началната). Клиентската граница е `src/components/Mascot.tsx`.
+- **Стриймърите СА лични данни — единственото такова място в схемата.** Зад
+  канала стои физическо лице, а данните НЕ идват от него (чл. 14 ОРЗД), затова:
+  публично автоматично влиза само това, което **платформата** е обявила за
+  българско (Twitch `language=bg`, Kick `language`); YouTube не обявява език на
+  излъчването, значи оттам всичко чака човек. Аватари не се свалят и не се
+  вграждат — вградена снимка кара браузъра на всеки посетител да звънне на чуждия
+  CDN, тоест платформата научава кой чете страницата ни.
+  **`status = REJECTED` е ЗАПИСАНОТО ВЪЗРАЖЕНИЕ по чл. 21, не „скрит“**:
+  `discover-streamers.ts` изрично отказва да го презапише, а `prune.ts` — да го
+  изтрие. Махнеш ли едното условие, cron-ът връща свалилия се човек до час и
+  обещанието „махаме до 72 часа“ става лъжа.
 - **Сроковете имат изпълнител.** `scripts/prune.ts` изтрива по същите срокове,
   които `/privacy` обявява. Промениш ли единия, промени и другия.
 - Правните текстове (`src/app/impresum`, `privacy`, `terms`, `report`) са писани

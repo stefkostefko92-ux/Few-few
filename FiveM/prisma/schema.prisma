@@ -211,6 +211,59 @@ model AuditLog {
   @@index([at])
 }
 
+enum StreamPlatform {
+  TWITCH
+  KICK
+  YOUTUBE
+  TIKTOK
+}
+
+/// Български стриймър на GTA V / FiveM RP.
+///
+/// ВНИМАНИЕ, тук ИМА лични данни — за разлика от останалата схема. Излъчването
+/// е публична, професионална изява, но зад канала стои физическо лице, значи
+/// ОРЗД важи и събирането НЕ е от самия субект (чл. 14). Затова:
+///
+///  - пази се само публично изявеното: канал, показвано име, заглавие на
+///    предаването, зрители. НЕ се пази нищо, което лицето не е показало само;
+///  - аватарът НЕ се сваля и НЕ се вгражда — иначе всеки посетител прави
+///    заявка към чужд CDN, тоест платформата научава кой чете нашия сайт;
+///  - `status = REJECTED` значи „възразил е“ (чл. 21) и откриването НИКОГА не
+///    го връща обратно. Изтриване без този запис би било безсмислено: следващият
+///    пробег на cron-а щеше да го възкреси до час.
+model Streamer {
+  id       String         @id @default(cuid())
+  platform StreamPlatform
+  /// Идентификаторът на канала в платформата — малки букви, без „@“ и без URL.
+  channel  String
+  /// Показваното име, както лицето само го е задало.
+  displayName String
+  /// Адресът на канала. Строи се от `channel`, но се пази, защото TikTok се
+  /// добавя ръчно и там няма как да се сглоби надеждно.
+  profileUrl  String
+
+  /// Езикът, обявен ОТ ПЛАТФОРМАТА за това излъчване. Празно значи „не знаем“.
+  language String?
+
+  status ModerationStatus @default(PENDING)
+  /// Добавен на ръка от панела (TikTok няма публично откриване).
+  manual Boolean @default(false)
+
+  // ── Жив статус (пише се само от scripts/discover-streamers.ts) ────────────
+  live       Boolean @default(false)
+  viewers    Int     @default(0)
+  /// Заглавието на текущото предаване — чужд текст, минава през `displayName`.
+  streamTitle String?
+  lastLiveAt DateTime?
+  lastSeenAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([platform, channel])
+  @@index([status, live, viewers])
+}
+
 /// Новини и туториали — SEO гръбнакът на сайта.
 model Post {
   id      String @id @default(cuid())

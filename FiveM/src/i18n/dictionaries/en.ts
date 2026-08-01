@@ -15,6 +15,7 @@ export const en: Dictionary = {
     servers: 'Servers',
     rules: 'Rules',
     tutorials: 'Tutorials',
+    streamers: 'Streamers',
     news: 'News',
     submit: 'Add a server',
     discord: 'Discord',
@@ -143,6 +144,37 @@ export const en: Dictionary = {
     h1: 'Tutorials',
     intro: 'From zero to your first character — step by step, no filler.',
     step: 'Step',
+  },
+  streamers: {
+    title: 'Bulgarian GTA V and FiveM RP streamers',
+    description:
+      'Who is streaming Bulgarian GTA V roleplay right now — Twitch, Kick, YouTube and TikTok in one place, with live status and viewer counts.',
+    h1: 'Bulgarian streamers',
+    intro:
+      'Who is streaming Bulgarian GTA V / FiveM roleplay right now. The list is refreshed automatically from the platforms themselves; TikTok has no public way to discover live streams, so those channels are added by hand.',
+    liveNow: 'live right now',
+    totalWord: 'channels in total',
+    live: 'LIVE',
+    offline: 'off air',
+    viewers: 'viewers',
+    lastLive: 'last live',
+    empty: 'No approved channels yet. Write to us if you stream Bulgarian GTA V roleplay.',
+    emptySection: 'No channels on this platform.',
+    watch: 'Watch',
+    platforms: {
+      TWITCH: 'Twitch',
+      KICK: 'Kick',
+      YOUTUBE: 'YouTube',
+      TIKTOK: 'TikTok',
+    },
+    manualNote: 'Added manually',
+    dataNotice:
+      'The channels listed here broadcast publicly and were found through the platforms’ official interfaces. We show only what the streamer has made public themselves: channel name, stream title and viewer count. We neither download nor embed profile pictures, so the platforms do not learn who reads this page.',
+    optOutTitle: 'Don’t want to be listed?',
+    optOut:
+      'Write to us and the channel is removed within 72 hours — we record the objection so automatic discovery cannot bring it back. This is your right under Art. 21 GDPR and we do not ask for a reason.',
+    optOutCta: 'Write to us',
+    privacyCta: 'How we process this data',
   },
   news: {
     title: 'FiveM news and tutorials',

@@ -44,6 +44,8 @@ services:
     command: >
       "while true; do npx tsx scripts/refresh-servers.ts || true; sleep 180; done &
        while true; do npx tsx scripts/discover-servers.ts || true; sleep 2700; done &
+       while true; do npx tsx scripts/discover-streamers.ts twitch kick || true; sleep 600; done &
+       while true; do npx tsx scripts/discover-streamers.ts youtube || true; sleep 7200; done &
        while true; do npx tsx scripts/prune.ts || true; sleep 86400; done;
        wait"
 

@@ -28,22 +28,22 @@ const INTEGRATIONS = [
     note: 'Откриване на български GTA V стриймъри: Helix /streams?game_id=32982&language=bg. Ключовете са безплатни от dev.twitch.tv.',
   },
   {
+    badge: 'kick',
+    name: 'Kick',
+    vars: ['KICK_CLIENT_ID', 'KICK_CLIENT_SECRET'],
+    note: 'api.kick.com/public/v1/livestreams с category_id + language=bg. Публичният списък kick.com/stream/livestreams/… НЕ е път без ключ — връща 403 „Request blocked by security policy“. По избор: KICK_CATEGORY_ID, ако сверѝш веднъж коя категория е GTA V.',
+  },
+  {
     badge: 'youtube',
     name: 'YouTube',
     vars: ['YOUTUBE_API_KEY'],
-    note: 'search.list с eventType=live. Квотата е тясна — 100 единици на заявка при 10 000 на ден.',
-  },
-  {
-    badge: 'cfx',
-    name: 'Kick',
-    vars: [],
-    note: 'Публичният списък не иска ключ. Официалното API иска OAuth и още не се ползва.',
+    note: 'search.list с eventType=live. Квотата е тясна — 100 единици на заявка при 10 000 на ден, затова върви на 2 часа. YouTube не обявява език на излъчването → намереното чака ръчен преглед, никога не влиза публично само.',
   },
   {
     badge: 'tiktok',
     name: 'TikTok',
     vars: [],
-    note: 'НЯМА публично откриване на живи излъчвания. Стриймърите тук се добавят само ръчно — това е ограничение на платформата, не наше.',
+    note: 'НЯМА публично откриване на живи излъчвания. Стриймърите тук се добавят само ръчно, от „Стриймъри“ — това е ограничение на платформата, не наше.',
   },
 ];
 

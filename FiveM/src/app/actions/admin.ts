@@ -15,8 +15,14 @@ import {
 } from '@/lib/admin/auth';
 import { prisma } from '@/lib/db';
 import { reportDecision, sendMail, submissionDecision } from '@/lib/email';
-import { parseCfxJoinCode, parseServerAddress, formatServerAddress } from '@/lib/fivem';
+import {
+  displayName,
+  parseCfxJoinCode,
+  parseServerAddress,
+  formatServerAddress,
+} from '@/lib/fivem';
 import { isValidSlug, slugify } from '@/lib/slug';
+import { normalizeChannel, profileUrl, STREAM_PLATFORMS } from '@/lib/streamers';
 
 import { readLocale } from './locale';
 
@@ -214,6 +220,80 @@ export async function rejectSubmissionAction(formData: FormData): Promise<void> 
     ...submissionDecision(submission.serverName, false),
   });
   await audit('submission', submission.serverName, 'отказана');
+  revalidatePath('/', 'layout');
+}
+
+// ── Стриймъри ───────────────────────────────────────────────────────────────
+
+/**
+ * Решението по канал. `REJECTED` НЕ е „скрит“ — това е записано възражение по
+ * чл. 21 ОРЗД и `scripts/discover-streamers.ts` изрично отказва да го
+ * презапише. Затова изтриването е отделно действие и не е препоръчителният път:
+ * изтрит запис се появява пак при следващия пробег на cron-а.
+ */
+export async function moderateStreamerAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = String(formData.get('id') ?? '');
+  const decision = String(formData.get('decision') ?? '');
+  if (!id || (decision !== 'APPROVED' && decision !== 'REJECTED' && decision !== 'PENDING')) return;
+
+  const streamer = await prisma.streamer.update({
+    where: { id },
+    data: { status: decision },
+    select: { platform: true, channel: true },
+  });
+  await audit('streamer', `${streamer.platform}/${streamer.channel}`, decision);
+  revalidatePath('/', 'layout');
+}
+
+const streamerSchema = z.object({
+  platform: z.enum(STREAM_PLATFORMS),
+  channel: z.string().trim().min(1).max(64),
+  displayName: z.string().trim().max(80).optional(),
+});
+
+/**
+ * Ръчно добавяне. Единственият път за TikTok — там няма публично откриване на
+ * живи излъчвания, което е ограничение на платформата, не наше решение.
+ */
+export async function addStreamerAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const text = (name: string) => {
+    const value = formData.get(name);
+    return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined;
+  };
+
+  const parsed = streamerSchema.safeParse({
+    platform: text('platform') ?? 'TIKTOK',
+    channel: text('channel') ?? '',
+    displayName: text('displayName'),
+  });
+  if (!parsed.success) return;
+
+  const channel = normalizeChannel(parsed.data.platform, parsed.data.channel);
+  if (!channel) return;
+
+  const name = displayName(parsed.data.displayName ?? channel, channel);
+  const url = profileUrl(parsed.data.platform, channel);
+
+  await prisma.streamer.upsert({
+    where: { platform_channel: { platform: parsed.data.platform, channel } },
+    // Ръчното добавяне не отменя възражение: съществуващ запис получава само
+    // името и белега „ръчен“, статусът остава какъвто е бил.
+    update: { displayName: name, profileUrl: url, manual: true },
+    create: {
+      platform: parsed.data.platform,
+      channel,
+      displayName: name,
+      profileUrl: url,
+      manual: true,
+      status: 'APPROVED',
+    },
+  });
+
+  await audit('streamer-add', `${parsed.data.platform}/${channel}`, 'ръчно');
   revalidatePath('/', 'layout');
 }
 

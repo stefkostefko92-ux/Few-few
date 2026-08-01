@@ -55,6 +55,23 @@ const bg: LegalSet = {
       {
         p: 'Ревютата са анонимни и нямаме как да свържем автор с акаунт. Ако си автор и искаш изтриване, посочи текста и датата — ще намерим записа и ще го изтрием (чл. 11, ал. 2 ОРЗД).',
       },
+      { h: 'Стриймъри — данни, които НЕ сме получили от вас' },
+      {
+        p: 'Страницата „Стриймъри“ показва канали, които излъчват публично български GTA V / FiveM roleplay. Каналите се откриват през официалните интерфейси на Twitch, Kick и YouTube; в TikTok няма публично откриване, затова там каналите се добавят на ръка. Зад канала стои физическо лице, значи това са лични данни, събрани НЕ от самото лице — задължителната информация по чл. 14 ОРЗД е тук.',
+      },
+      {
+        ul: [
+          'Категории данни: име на канала, показвано име, адрес на канала, заглавие на текущото предаване, брой зрители и обявеният от платформата език. Всичко това е публично изявено от самия стриймър в момента на излъчването.',
+          'Източник: публичните интерфейси на Twitch (helix/streams), Kick (public/v1/livestreams) и YouTube (Data API v3), както и ръчно въвеждане от нас за TikTok.',
+          'Основание: чл. 6, ал. 1, б. „е“ ОРЗД — законен интерес на общността да намери български roleplay съдържание, и на самите стриймъри да бъдат намерени. Обработваме само публично излъчена професионална изява, не поведение в частния живот.',
+          'Не сваляме и не вграждаме профилни снимки. Причината е техническа и е в твоя полза: вградената снимка кара браузъра на всеки посетител да прави заявка към чуждия CDN, тоест платформата научава кой чете тази страница.',
+          'Срок: 180 дни след последното засечено излъчване, след което записът се изтрива автоматично. Ръчно добавените канали (TikTok) се пазят, докато са актуални.',
+          'Не се прави профилиране и няма автоматизирано решение по чл. 22 ОРЗД. Канал, чийто език платформата не обявява като български, изобщо не се публикува автоматично — минава през човек.',
+        ],
+      },
+      {
+        p: 'Право на възражение (чл. 21 ОРЗД): пиши ни и махаме канала до 72 часа, без да искаме обяснение. Заедно с това записваме възражението — иначе автоматичното откриване би върнало канала обратно до час. Този запис съдържа само платформата и името на канала и съществува единствено за да те държи вън от списъка; той е и мярката по чл. 5, ал. 1, б. „е“, която прави свалянето трайно.',
+      },
       { h: 'Твоите права' },
       {
         p: 'Достъп, поправка, изтриване, ограничаване, възражение и преносимост (чл. 15–21 ОРЗД). Имаш право на жалба до Комисията за защита на личните данни (КЗЛД, cpdp.bg).',
@@ -169,6 +186,23 @@ const en: LegalSet = {
       },
       {
         p: 'Reviews are anonymous and we cannot link an author to an account. If you are an author and want your review deleted, quote the text and the date — we will find the record and delete it (Art. 11(2) GDPR).',
+      },
+      { h: 'Streamers — data we did NOT obtain from you' },
+      {
+        p: 'The “Streamers” page lists channels publicly broadcasting Bulgarian GTA V / FiveM roleplay. Channels are discovered through the official interfaces of Twitch, Kick and YouTube; TikTok offers no public discovery, so those channels are added by hand. A natural person stands behind each channel, so this is personal data not obtained from the data subject — the information required by Art. 14 GDPR is here.',
+      },
+      {
+        ul: [
+          'Categories of data: channel name, display name, channel URL, current stream title, viewer count and the language declared by the platform. All of it is made public by the streamer themselves at the moment of broadcasting.',
+          'Source: the public interfaces of Twitch (helix/streams), Kick (public/v1/livestreams) and YouTube (Data API v3), plus manual entry by us for TikTok.',
+          'Basis: Art. 6(1)(f) GDPR — the community’s legitimate interest in finding Bulgarian roleplay content, and the streamers’ own interest in being found. We process only publicly broadcast professional activity, not private-life behaviour.',
+          'We neither download nor embed profile pictures. The reason is technical and in your favour: an embedded picture makes every visitor’s browser call the third-party CDN, which tells the platform who reads this page.',
+          'Retention: 180 days after the last detected broadcast, after which the record is deleted automatically. Manually added channels (TikTok) are kept while they remain current.',
+          'No profiling and no automated decision under Art. 22 GDPR. A channel whose language the platform does not declare as Bulgarian is never published automatically — a person reviews it.',
+        ],
+      },
+      {
+        p: 'Right to object (Art. 21 GDPR): write to us and the channel is removed within 72 hours, no reason asked. Along with that we record the objection — otherwise automatic discovery would bring the channel back within the hour. That record holds only the platform and the channel name and exists solely to keep you off the list; it is also the Art. 5(1)(f) measure that makes the removal durable.',
       },
       { h: 'Your rights' },
       {

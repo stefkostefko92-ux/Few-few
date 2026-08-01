@@ -22,6 +22,16 @@ export const RETENTION = {
   rejectedReviewDays: 183,
   /** Часови снимки на посещаемостта: 90 дни. */
   snapshotDays: 90,
+  /**
+   * Канали на стриймъри, невиждани на живо: 180 дни. Това са лични данни на
+   * физически лица — канал, който вече не излъчва български GTA V, няма
+   * основание да стои. Изключения (нарочни, не пропуск):
+   *  - `status = REJECTED` е ЗАПИСАНОТО ВЪЗРАЖЕНИЕ по чл. 21 ОРЗД; изтрие ли
+   *    се, cron-ът връща човека обратно до час. Пази се, докато има откриване;
+   *  - `manual` са добавените на ръка (TikTok няма откриване на живо изобщо,
+   *    тоест „не е виждан на живо“ там не значи нищо).
+   */
+  streamerDays: 180,
 } as const;
 
 function before(days: number, now = Date.now()): Date {
@@ -29,18 +39,29 @@ function before(days: number, now = Date.now()): Date {
 }
 
 async function main() {
-  const [submissions, reports, reviews, snapshots] = await prisma.$transaction([
+  const stale = before(RETENTION.streamerDays);
+  const [submissions, reports, reviews, snapshots, streamers] = await prisma.$transaction([
     prisma.submission.deleteMany({ where: { createdAt: { lt: before(RETENTION.submissionDays) } } }),
     prisma.report.deleteMany({ where: { createdAt: { lt: before(RETENTION.reportDays) } } }),
     prisma.review.deleteMany({
       where: { status: 'REJECTED', createdAt: { lt: before(RETENTION.rejectedReviewDays) } },
     }),
     prisma.serverSnapshot.deleteMany({ where: { at: { lt: before(RETENTION.snapshotDays) } } }),
+    prisma.streamer.deleteMany({
+      where: {
+        manual: false,
+        status: { not: 'REJECTED' },
+        createdAt: { lt: stale },
+        // Никога виждан на живо ИЛИ последно на живо преди срока.
+        OR: [{ lastLiveAt: null }, { lastLiveAt: { lt: stale } }],
+      },
+    }),
   ]);
 
   console.log(
     `Изчистени: ${submissions.count} заявки · ${reports.count} сигнала · ` +
-      `${reviews.count} отхвърлени ревюта · ${snapshots.count} снимки.`,
+      `${reviews.count} отхвърлени ревюта · ${snapshots.count} снимки · ` +
+      `${streamers.count} неактивни канала.`,
   );
 }
 

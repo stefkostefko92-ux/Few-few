@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/servers/framework/ox_core', changeFrequency: 'daily', priority: 0.8 },
     { path: '/rules', changeFrequency: 'monthly', priority: 0.9 },
     { path: '/tutorials', changeFrequency: 'monthly', priority: 0.9 },
+    { path: '/streamers', changeFrequency: 'hourly', priority: 0.7 },
     { path: '/faq', changeFrequency: 'monthly', priority: 0.8 },
     { path: '/news', changeFrequency: 'daily', priority: 0.7 },
     { path: '/team', changeFrequency: 'yearly', priority: 0.4 },

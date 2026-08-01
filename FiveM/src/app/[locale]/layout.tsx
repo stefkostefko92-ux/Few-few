@@ -50,6 +50,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     { href: `/${locale}`, label: t.nav.servers, icon: 'servers' },
     { href: `/${locale}/rules`, label: t.nav.rules, icon: 'rules' },
     { href: `/${locale}/tutorials`, label: t.nav.tutorials, icon: 'tutorials' },
+    { href: `/${locale}/streamers`, label: t.nav.streamers, icon: 'share' },
     { href: `/${locale}/news`, label: t.nav.news, icon: 'news' },
     { href: `/${locale}/submit`, label: t.nav.submit, icon: 'submit' },
     { href: `/${locale}/faq`, label: t.nav.faq, icon: 'info' },
