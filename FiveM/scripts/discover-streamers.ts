@@ -50,7 +50,7 @@ async function upsert(found: FoundStream, now: Date): Promise<'created' | 'updat
   const where = { platform_channelKey: key };
   const existing = await prisma.streamer.findUnique({
     where,
-    select: { id: true, status: true },
+    select: { id: true, status: true, streamTitle: true },
   });
 
   // Възразилият остава свален и НИЩО не се записва по него — нито времето на
@@ -70,9 +70,29 @@ async function upsert(found: FoundStream, now: Date): Promise<'created' | 'updat
   };
 
   if (existing) {
-    // Статусът НЕ се пипа при обновяване: веднъж преценен от човек, остава.
-    await prisma.streamer.update({ where, data: live });
-    return 'updated';
+    /**
+     * Статусът НЕ се пипа при обновяване: веднъж преценен от човек, остава.
+     * `reviewedAt` обаче се НУЛИРА при СМЯНА на заглавието — и това е защитата,
+     * не козметика.
+     *
+     * Гейтът „чуждият свободен текст излиза само след човешки преглед“ чете
+     * `reviewedAt`. Ако само се вдига и никога не пада, човек одобрява веднъж, а
+     * стриймърът след това сменя заглавието на каквото си иска и то излиза под
+     * нашия домейн до 10 минути, без никой да го е видял. Тоест контролът върху
+     * това какво публикуваме преминава изцяло у чуждо лице.
+     *
+     * Нулира се САМО при промяна: иначе всеки пробег на 10 минути би връщал в
+     * опашка канали, по които нищо не се е случило.
+     */
+    const titleChanged = existing.streamTitle !== found.streamTitle;
+    // Записът е УСЛОВЕН (`updateMany` с `status: not REJECTED`), не безусловен:
+    // между четенето горе и записа тук панелът може да е свалил канала по
+    // чл. 21, а безусловният `update` щеше да върне името, адреса и езика му.
+    const touched = await prisma.streamer.updateMany({
+      where: { ...key, status: { not: 'REJECTED' } },
+      data: titleChanged ? { ...live, reviewedAt: null } : live,
+    });
+    return touched.count === 0 ? 'blocked' : 'updated';
   }
 
   await prisma.streamer.create({

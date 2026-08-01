@@ -61,6 +61,13 @@ const TAG_ICON: Record<string, string> = {
   тематичен: 'new',
 };
 
+/**
+ * `Object.hasOwn`, не `??`: етикетите са свободен текст от подателя, а обектният
+ * литерал носи прототипа си. Етикет `constructor` връщаше функция и я рендираше
+ * като име на икона (`#icon-function Object() { [native code] }`); `toString` и
+ * `valueOf` — същото. Тези ключове не са `undefined`, значи `??` не ги хваща.
+ */
 export function tagIcon(tag: string): string | null {
-  return TAG_ICON[tag.trim().toLowerCase()] ?? null;
+  const key = tag.trim().toLowerCase();
+  return Object.hasOwn(TAG_ICON, key) ? TAG_ICON[key] : null;
 }

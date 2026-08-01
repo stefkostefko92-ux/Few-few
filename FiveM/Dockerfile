@@ -23,6 +23,18 @@ COPY --from=builder --chown=app:app /app/.next ./.next
 COPY --from=builder --chown=app:app /app/public ./public
 COPY --from=builder --chown=app:app /app/node_modules ./node_modules
 COPY --from=builder --chown=app:app /app/package.json ./package.json
+# `next.config.mjs` се чете от `next start` в РЪНТАЙМ, не само при билд, и без
+# него в образа изтичаше `X-Powered-By: Next.js`.
+#
+# Измерено A/B с два `next start` (иначе е лесно да се сбърка в двете посоки):
+#   без файла → `X-Powered-By: Next.js` присъства
+#   с файла   → липсва
+# Четирите защитни хедъра (`X-Content-Type-Options`, `X-Frame-Options`,
+# `Referrer-Policy`, `Permissions-Policy`) идват от `headers()` и се ПЕЧАТ в
+# `.next` при билда — те са налични и без този ред. Тоест дефектът беше
+# по-тесен от „губим хедърите“, но реален: `poweredByHeader` и `images` се
+# четат от конфига в рънтайм.
+COPY --from=builder --chown=app:app /app/next.config.mjs ./next.config.mjs
 COPY --from=builder --chown=app:app /app/prisma ./prisma
 COPY --from=builder --chown=app:app /app/scripts ./scripts
 COPY --from=builder --chown=app:app /app/src ./src

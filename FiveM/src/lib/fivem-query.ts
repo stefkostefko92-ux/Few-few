@@ -17,6 +17,8 @@
 
 import { lookup } from 'node:dns/promises';
 
+import { CFX_API_BASE } from './cfx';
+
 import {
   buildStatus,
   classifyProbeBody,
@@ -58,13 +60,28 @@ export async function resolvePublicIpv4(host: string): Promise<string> {
   }
   const records = await lookup(host, { all: true, verbatim: true });
   if (records.length === 0) throw new Error(`Хостът не се резолвира: ${host}`);
-  for (const record of records) {
-    if (record.family === 6) throw new Error(`IPv6 не се поддържа: ${host}`);
+
+  /**
+   * IPv6 записите се ПРОПУСКАТ, не отхвърлят хоста. Разликата е измерена: по
+   * 40 реални FiveM хоста 10 бяха отказвани САМО защото имат AAAA — всеки зад
+   * Cloudflare е двустеков. Тоест старото `if (family === 6) throw` правеше
+   * четвърт от живите сървъри вечно „няма отговор“.
+   *
+   * Сигурността не страда: ние никога не се свързваме по IPv6, защото връщаме
+   * IPv4 адрес и заявката отива към него. AAAA запис, до който не отиваме, не
+   * е SSRF вектор.
+   */
+  const ipv4 = records.filter((record) => record.family === 4);
+  if (ipv4.length === 0) throw new Error(`Хостът има само IPv6, а IPv6 не се поддържа: ${host}`);
+
+  // ВСЕКИ IPv4 се проверява, не само първият: DNS може да върне и публичен, и
+  // частен адрес, а вторият пробег би хванал другия ред.
+  for (const record of ipv4) {
     if (!isValidIpv4(record.address) || isPrivateIpv4(record.address)) {
       throw new Error(`Хостът сочи към частна мрежа: ${host} → ${record.address}`);
     }
   }
-  return records[0].address;
+  return ipv4[0].address;
 }
 
 type FetchOutcome =
@@ -108,8 +125,17 @@ export async function readCapped(res: Response): Promise<string | null> {
 }
 
 /**
- * Една заявка към чужд сървър. `ip` е вече проверен; `hostHeader` носи
- * оригиналното име, за да работят сървърите зад vhost.
+ * Една заявка към чужд сървър. `ip` е вече проверен.
+ *
+ * ВНИМАНИЕ, `hostHeader` НЕ работи и това е измерено, не предположено:
+ * undici (fetch-ът на Node 22) МАХА зададения `host` хедър и слага Host от
+ * URL-а, тоест чуждият сървър вижда `Host: <ip>:<port>`. Обявената по-рано
+ * „поддръжка на vhost“ не съществува. Оставяме го подаден, защото не вреди, но
+ * НЕ разчитай на него: сървър, който маршрутизира по име, ще отговори с
+ * грешния vhost или с 404.
+ *
+ * Поправката, ако някога потрябва, е `node:http.request({ headers: { Host } })`
+ * — той изпраща хедъра. Днес не е нужна: FiveM сървърите слушат на IP:порт.
  */
 async function fetchProbe(ip: string, port: number, path: string, hostHeader: string): Promise<FetchOutcome> {
   try {
@@ -203,15 +229,20 @@ function safeParse<T>(
 /**
  * Резолвира `cfx.re/join/<code>` към „host:port“.
  *
- * ВНИМАНИЕ: endpoint-ът `servers-frontend.fivem.net` е **неофициален** и
- * недокументиран от CFX — може да смени формата си без предупреждение.
- * Затова четенето е защитно (всяко поле е по избор) и провалът е мек:
- * връщаме `null`, а модераторът въвежда адреса ръчно. Ползва се САМО от
- * модераторския път, никога от cron-а — обемът е част от добросъвестността.
+ * ВНИМАНИЕ: `servers-frontend.fivem.net` е **МЪРТЪВ** и този код го биеше.
+ * Измерено с реален join код (`j4r9zmk`, взет от живия списък) на 01.08.2026:
+ * старият хост връща `404 not found`, а `frontend.cfx-services.net` връща 200
+ * с `Data.connectEndPoints`. Тоест функцията винаги връщаше `null` и сървър,
+ * подаден само с cfx код, никога не получаваше адрес — оттам и мигането
+ * онлайн/офлайн. Същият хост е и в `cfx.ts`; един източник, не два.
+ *
+ * Договорът остава неофициален и недокументиран, затова четенето е защитно
+ * (всяко поле е по избор) и провалът е мек: `null`, а модераторът въвежда
+ * адреса ръчно. Ползва се САМО от модераторския път, никога от cron-а.
  */
 export async function resolveJoinCode(code: string): Promise<ServerAddress | null> {
   try {
-    const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${code}`, {
+    const res = await fetch(`${CFX_API_BASE}/single/${encodeURIComponent(code)}`, {
       signal: AbortSignal.timeout(timeoutMs()),
       headers: { 'user-agent': USER_AGENT, accept: 'application/json' },
       cache: 'no-store',

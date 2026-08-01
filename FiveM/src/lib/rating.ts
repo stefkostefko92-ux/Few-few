@@ -1,5 +1,12 @@
 /** Чисти сметки около листинга — без Prisma, за да са тестваеми без база. */
 
+/**
+ * Таванът на платената промоция в дни. Живее ТУК, а не в `actions/admin.ts`:
+ * файл с `'use server'` може да експортира САМО async функции, тоест константа
+ * там вали билда. Хванато от `npm run build` — lint и typecheck минаха.
+ */
+export const MAX_FEATURED_DAYS = 365;
+
 /** Средна оценка, закръглена до 0.1. `null`, когато няма ревюта. */
 export function averageRating(reviews: ReadonlyArray<{ rating: number }>): number | null {
   if (reviews.length === 0) return null;

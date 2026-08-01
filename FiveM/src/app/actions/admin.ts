@@ -21,6 +21,7 @@ import {
   parseServerAddress,
   formatServerAddress,
 } from '@/lib/fivem';
+import { MAX_FEATURED_DAYS } from '@/lib/rating';
 import { isValidSlug, slugify } from '@/lib/slug';
 import { channelKey, normalizeChannel, profileUrl, STREAM_PLATFORMS } from '@/lib/streamers';
 
@@ -73,7 +74,11 @@ export async function setFeaturedAction(formData: FormData): Promise<void> {
 
   const id = String(formData.get('id') ?? '');
   const days = Number(formData.get('days') ?? 0);
-  if (!id || !Number.isFinite(days)) return;
+  // `Number.isFinite` пропускаше `1e15`: `new Date(Date.now() + 1e15 * DAY_MS)`
+  // е `Invalid Date`, а `toISOString()` върху него хвърля `RangeError` — насред
+  // мутация, зад която стоят пари. `max={365}` в полето е само клиентски и не
+  // важи за директен POST.
+  if (!id || !Number.isInteger(days) || days < 0 || days > MAX_FEATURED_DAYS) return;
 
   const featuredUntil = days > 0 ? new Date(Date.now() + days * DAY_MS) : null;
   const server = await prisma.server.update({
@@ -177,6 +182,21 @@ export async function approveSubmissionAction(formData: FormData): Promise<void>
   const submission = await prisma.submission.findUnique({ where: { id } });
   if (!submission) return;
 
+  /**
+   * Заявката се ЗАЕМА атомарно, преди да се създаде каквото и да е. Без това
+   * действието не беше идемпотентно: back-бутон, двойно щракване или повторен
+   * POST със същата сесия минаваха втори път, а уникалният ключ не помага —
+   * `cfxJoinCode` е `String?` и Postgres третира всеки NULL като различен,
+   * тоест заявка само с адрес се публикуваше ДВА пъти (втория с друг slug) и
+   * подателят получаваше два имейла „публикуван“. Третото щракване гърмеше с
+   * необработен `P2002` на slug-а.
+   */
+  const claimed = await prisma.submission.updateMany({
+    where: { id, status: 'PENDING' },
+    data: { status: 'APPROVED' },
+  });
+  if (claimed.count === 0) return;
+
   const joinCode = parseCfxJoinCode(submission.cfxJoinCode);
   const address = parseServerAddress(submission.address);
 
@@ -187,7 +207,12 @@ export async function approveSubmissionAction(formData: FormData): Promise<void>
   await prisma.server.create({
     data: {
       slug: taken ? `${slug}-${submission.id.slice(0, 6)}` : slug,
-      name: submission.serverName,
+      // Името идва от АНОНИМЕН подател и досега влизаше дословно в публичния
+      // списък, в JSON-LD и в темата на изходящия имейл. `jsonLdString` екранира
+      // `<`, но не и двупосочните маркери (U+202E), с които името може да обърне
+      // текста наоколо. Правилото на продукта е недоверен низ да минава през
+      // `displayName` — тук не минаваше.
+      name: displayName(submission.serverName, 'Сървър'),
       cfxJoinCode: joinCode,
       address: address ? formatServerAddress(address) : null,
       discordUrl: submission.discordUrl,
@@ -197,7 +222,6 @@ export async function approveSubmissionAction(formData: FormData): Promise<void>
     },
   });
 
-  await prisma.submission.update({ where: { id }, data: { status: 'APPROVED' } });
   await sendMail({
     to: submission.contactEmail,
     ...submissionDecision(submission.serverName, true),
@@ -211,10 +235,16 @@ export async function rejectSubmissionAction(formData: FormData): Promise<void> 
   const id = String(formData.get('id') ?? '');
   if (!id) return;
 
-  const submission = await prisma.submission.update({
-    where: { id },
+  // Същото заемане като при одобрението: без него всяко повторно щракване
+  // праща нов отказен имейл на подателя.
+  const claimed = await prisma.submission.updateMany({
+    where: { id, status: 'PENDING' },
     data: { status: 'REJECTED' },
   });
+  if (claimed.count === 0) return;
+
+  const submission = await prisma.submission.findUnique({ where: { id } });
+  if (!submission) return;
   // Мотивирано решение по чл. 17 DSA. Задължението отпада само когато
   // контактите на подателя НЕ са известни — тук имейлът е задължително поле.
   await sendMail({
@@ -248,9 +278,26 @@ export async function moderateStreamerAction(formData: FormData): Promise<void> 
 
   const current = await prisma.streamer.findUnique({
     where: { id },
-    select: { platform: true, channel: true },
+    select: { platform: true, channel: true, status: true },
   });
   if (!current) return;
+
+  /**
+   * Свалянето по чл. 21 НЕ се отменя с едно щракване. Панелът рисува бутон за
+   * всяко състояние, различно от текущото, тоест „публичен“ стоеше до свален
+   * запис — а той вече е с изчистени име и адрес. Едно погрешно щракване
+   * публикуваше празна карта с `<a href="">` И сваляше блокадата в cron-а, тоест
+   * до 10 минути данните на възразилия се връщаха. Връщането е решение, което
+   * иска нов, изричен път, а не съседен бутон.
+   */
+  if (current.status === 'REJECTED' && decision !== 'REJECTED') {
+    await audit(
+      'streamer',
+      `${current.platform}/${current.channel}`,
+      `отказано връщане към ${decision} — записът е свален по възражение`,
+    );
+    return;
+  }
 
   const silenced =
     decision === 'REJECTED'

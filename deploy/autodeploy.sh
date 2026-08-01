@@ -99,6 +99,10 @@ ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
 # админ панела пада до слабата форма (без `__Host-`, без `secure`).
 FIVEM_HEALTH_URL="${FIVEM_HEALTH_URL:-http://127.0.0.1:3010/api/health}"
 FIVEM_DOMAIN="${FIVEM_DOMAIN:-fivembulgaria.carbonstealth.eu}"
+# Тайните и бекъпите живеят ИЗВЪН releases (моделът на nexus): в release папката
+# прекъснат пробег ги губи, а следващият генерира нова парола за база върху вече
+# инициализиран том — Postgres я игнорира и деплоят пада чак на миграцията.
+FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -561,23 +565,54 @@ deploy_fivem() {
   [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
   log "Разгръщам fivem (Docker Compose)…"
 
-  # Тайните живеят на сървъра, не в архива.
-  if [ -f "$CURRENT_LINK/FiveM/.env" ] && [ ! -f "$d/.env" ]; then
-    cp -a "$CURRENT_LINK/FiveM/.env" "$d/.env"; ok "Пренесох FiveM/.env"
+  # Тайните живеят на СТАБИЛЕН път извън releases и се симлинкват в release-а
+  # (моделът на nexus). Държани в самата release папка, те се губеха при
+  # прекъснат пробег: следващият генерираше НОВ `POSTGRES_PASSWORD` върху вече
+  # инициализиран том, а Postgres игнорира паролата при непразен PGDATA —
+  # `pg_isready` не се удостоверява, значи чакането светеше зелено и чак
+  # миграцията падаше с auth грешка.
+  mkdir -p "$FIVEM_STATE_DIR"
+  chmod 700 "$FIVEM_STATE_DIR"
+
+  # Еднократна миграция от стария модел: .env още в текущия release.
+  if [ ! -f "$FIVEM_STATE_DIR/.env" ] && [ -f "$CURRENT_LINK/FiveM/.env" ] && [ ! -L "$CURRENT_LINK/FiveM/.env" ]; then
+    cp -a "$CURRENT_LINK/FiveM/.env" "$FIVEM_STATE_DIR/.env"
+    chmod 600 "$FIVEM_STATE_DIR/.env"
+    ok "Преместих FiveM/.env в $FIVEM_STATE_DIR"
   fi
 
-  # Пръв деплой без .env: генерирай, каквото може да се генерира. Паролата на
-  # панела се показва ВЕДНЪЖ — в базата и в .env стои само scrypt хешът ѝ.
-  if [ ! -f "$d/.env" ]; then
+  # Пръв деплой: генерирай, каквото може да се генерира.
+  if [ ! -f "$FIVEM_STATE_DIR/.env" ]; then
     warn "Няма FiveM/.env — генерирам с random тайни."
     local dbp adp hash
-    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
-    adp="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9')"
-    # Хешът се смята с НАШИЯ скрипт, за да е точно във формата, който панелът чака.
-    hash="$( cd "$d" && npx --yes tsx scripts/admin-hash.ts "$adp" 2>/dev/null \
-             | grep -o '"[^"]*:[^"]*"' | tr -d '"' | head -1 )"
-    [ -n "$hash" ] || { warn "admin-hash не мина — оставям ADMIN_PASSWORD_HASH празен."; hash=""; }
-    cat > "$d/.env" <<EOF
+    # ВНИМАНИЕ: под `set -e` присвояване от командна замяна НАСЛЕДЯВА нейния
+    # изход и убива скрипта — проверката на следващия ред е недостижима.
+    # Затова всяко от тези присвоявания носи `|| true`.
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' || true)"
+    adp="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' || true)"
+    [ -n "$dbp" ] && [ -n "$adp" ] || die "openssl не даде случайни стойности — спирам, вместо да пиша слаби тайни."
+
+    # Хешът се смята с ЧИСТ node, не с `npx tsx`: на този етап образът още не е
+    # строен, `node_modules` в release папката НЯМА, а `npx --yes` би дърпал от
+    # мрежата насред деплой. Паролата минава през ОКОЛНАТА СРЕДА, не през
+    # аргументи — argv се чете от всеки през `ps`.
+    hash=""
+    if command -v node >/dev/null 2>&1; then
+      hash="$(ADM="$adp" node -e '
+        const { randomBytes, scryptSync } = require("node:crypto");
+        const salt = randomBytes(16).toString("hex");
+        process.stdout.write(salt + ":" + scryptSync(process.env.ADM, salt, 64).toString("hex"));
+      ' 2>/dev/null || true)"
+    fi
+    if [ -z "$hash" ]; then
+      warn "Няма node на хоста — ADMIN_PASSWORD_HASH остава празен, панелът е ЗАТВОРЕН."
+      warn "Генерирай го после с: cd $d && npm run admin:hash -- \"дълга парола\""
+    fi
+
+    # Файлът се създава ПРАЗЕН и с права 600 ПРЕДИ да влезе съдържание —
+    # иначе стои 644 в прозореца между записа и `chmod`.
+    install -m 600 /dev/null "$FIVEM_STATE_DIR/.env"
+    cat > "$FIVEM_STATE_DIR/.env" <<EOF
 POSTGRES_PASSWORD=${dbp}
 DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
 PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
@@ -597,17 +632,17 @@ YOUTUBE_API_KEY=
 FIVEM_PING_TIMEOUT_MS=4000
 FIVEM_PING_CONCURRENCY=6
 EOF
-    chmod 600 "$d/.env"
-    warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
-    warn "Попълни RESEND_API_KEY в FiveM/.env, иначе решенията по DSA не се изпращат."
+    [ -n "$hash" ] && warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
+    warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
   fi
-  chmod 600 "$d/.env" 2>/dev/null || true
+  chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
+  ln -sfn "$FIVEM_STATE_DIR/.env" "$d/.env"
 
-  # Бекъпите на стабилен път извън releases — иначе умират с прочистването.
-  mkdir -p /opt/few-few/shared/fivem/backups
+  # Бекъпите също са на стабилен път — иначе умират с прочистването на releases.
+  mkdir -p "$FIVEM_STATE_DIR/backups"
   rm -rf "$d/backups"
-  ln -sfnT /opt/few-few/shared/fivem/backups "$d/backups"
-  ok "FiveM/backups -> /opt/few-few/shared/fivem/backups"
+  ln -sfnT "$FIVEM_STATE_DIR/backups" "$d/backups"
+  ok "FiveM/.env и backups → $FIVEM_STATE_DIR"
 
   ( cd "$d" && bash scripts/deploy.sh )
   if health "$FIVEM_HEALTH_URL" "fivem"; then

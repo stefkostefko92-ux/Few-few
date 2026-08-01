@@ -102,18 +102,30 @@ console.log(
 // ── 4. И с подправена бисквитка ─────────────────────────────────────────────
 let forgedOk = false;
 if (captured) {
-  const headers = { ...captured.headers, cookie: `fivem-admin=${'0'.repeat(64)}` };
-  const res = await fetch(captured.url, {
-    method: 'POST',
-    headers,
-    body: captured.body,
-    redirect: 'manual',
-  });
-  await res.text();
-  forgedOk = (await snapshot()) === baseline;
-  console.log(
-    `4) С подправена бисквитка → ${res.status} · базата ${forgedOk ? 'НЕ се промени ✓' : 'СЕ ПРОМЕНИ ✗'}`,
-  );
+  // Името на бисквитката се ВЗИМА от заснетата заявка, не се пише на ръка.
+  // Беше зашито `fivem-admin`, а по HTTPS продукцията ползва
+  // `__Host-fivem-admin` — тоест стъпката пращаше бисквитка, която сървърът
+  // изобщо не търси, отказът беше „няма сесия“, а тестът я броеше за
+  // „подправената сесия не мина“. Куха проверка, влизаща в крайния резултат.
+  const name = /(^|;\s*)(__Host-)?fivem-admin=/.exec(captured.headers.cookie ?? '');
+  if (!name) {
+    console.log('4) ПРОПУСНАТА: в заснетата заявка няма сесийна бисквитка — няма какво да се подправи.');
+    forgedOk = false;
+  } else {
+    const cookieName = `${name[2] ?? ''}fivem-admin`;
+    const res = await fetch(captured.url, {
+      method: 'POST',
+      headers: { ...captured.headers, cookie: `${cookieName}=${'0'.repeat(64)}` },
+      body: captured.body,
+      redirect: 'manual',
+    });
+    await res.text();
+    forgedOk = (await snapshot()) === baseline;
+    console.log(
+      `4) С подправена бисквитка (${cookieName}) → ${res.status} · базата ` +
+        `${forgedOk ? 'НЕ се промени ✓' : 'СЕ ПРОМЕНИ ✗'}`,
+    );
+  }
 }
 
 const proven = loggedIn && harnessWorks && afterAnon === baseline && forgedOk;

@@ -94,12 +94,19 @@ async function main() {
           OR: notLiveSince(staleYouTube),
         },
       }),
-      // Ръчните: срокът тече от последното пипане от човек, не от ефира.
+      // Ръчните: срокът тече от последното пипане ОТ ЧОВЕК (`reviewedAt`), не
+      // от `updatedAt`. `updatedAt` е машинно поле — Prisma го пипа при всяко
+      // записване, включително от cron-а, тоест канал, който никой не е
+      // поглеждал от години, изглеждаше „проверен вчера“ и не падаше никога.
+      // Политиката обещава „365 дни след последната НАША проверка“.
       prisma.streamer.deleteMany({
         where: {
           manual: true,
           status: { not: 'REJECTED' },
-          updatedAt: { lt: before(RETENTION.manualStreamerDays) },
+          OR: [
+            { reviewedAt: { lt: before(RETENTION.manualStreamerDays) } },
+            { reviewedAt: null, createdAt: { lt: before(RETENTION.manualStreamerDays) } },
+          ],
         },
       }),
       prisma.auditLog.deleteMany({ where: { at: { lt: before(RETENTION.auditLogDays) } } }),

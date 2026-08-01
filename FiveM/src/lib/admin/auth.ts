@@ -50,11 +50,19 @@ const WINDOW_MINUTES = 15;
 /**
  * ВТОРА линия срещу тавана по принципал. Принципалът се чете от хедър, а
  * хедър може да е подхвърлен — значи таванът по принципал сам по себе си е
- * толкова силен, колкото прокси-конфигурацията. Глобалният таван е нарочно
- * висок: той не бива да заключва собственика при нормална работа, а само да
- * спре разбиване с ротиран хедър.
+ * толкова силен, колкото прокси-конфигурацията.
+ *
+ * ВНИМАНИЕ, тази линия е ЗАБАВЯНЕ, не ОТКАЗ, и разликата е съществена. Първата
+ * версия отказваше вход при 60 глобални неуспеха за 15 минути — тоест анонимен
+ * нападател с ~4 заявки в минута държеше СОБСТВЕНИКА вън от панела безсрочно.
+ * Това замразява модерацията, а с нея и сроковете по чл. 16, ал. 5 DSA и
+ * обещаните 72 часа по чл. 21 ОРЗД: защитата ставаше по-скъпа от нападението.
+ *
+ * Забавянето струва на нападателя (при scrypt зад него разбиването и без това
+ * не върви), а вярната парола винаги минава.
  */
-const MAX_ATTEMPTS_GLOBAL = 60;
+const GLOBAL_SOFT_LIMIT = 60;
+const GLOBAL_DELAY_MS = 2000;
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
@@ -109,19 +117,28 @@ export function verifyPassword(password: string): boolean {
 }
 
 /**
- * Двоен таван: по принципал (строг) И глобален (хлабав). Само първият не стига
- * — той се крепи на хедър, а хедърът може да е подхвърлен; само вторият не
- * стига — чужд човек изяжда опитите и заключва собственика.
+ * ТВЪРДИЯТ гейт е само по принципал. Хедърът, от който идва принципалът, се
+ * презаписва от нашето прокси (`X-Real-IP`), значи не е подправяем отвън.
+ *
+ * Глобалният брояч НЕ отказва — виж `GLOBAL_SOFT_LIMIT`. Той се чете отделно
+ * от `globalPressure()` и се превръща в изчакване.
  */
 export async function tooManyAttempts(): Promise<boolean> {
   const since = new Date(Date.now() - WINDOW_MINUTES * 60_000);
-  const [byPrincipal, total] = await prisma.$transaction([
-    prisma.loginAttempt.count({
-      where: { ipHash: await principalHash(), ok: false, at: { gte: since } },
-    }),
-    prisma.loginAttempt.count({ where: { ok: false, at: { gte: since } } }),
-  ]);
-  return byPrincipal >= MAX_ATTEMPTS || total >= MAX_ATTEMPTS_GLOBAL;
+  const failed = await prisma.loginAttempt.count({
+    where: { ipHash: await principalHash(), ok: false, at: { gte: since } },
+  });
+  return failed >= MAX_ATTEMPTS;
+}
+
+/**
+ * Изчакване при масиран обстрел. Връща милисекундите, които `loginAction`
+ * трябва да изчака ПРЕДИ проверката на паролата. Нула при нормална работа.
+ */
+export async function globalPressureDelayMs(): Promise<number> {
+  const since = new Date(Date.now() - WINDOW_MINUTES * 60_000);
+  const total = await prisma.loginAttempt.count({ where: { ok: false, at: { gte: since } } });
+  return total >= GLOBAL_SOFT_LIMIT ? GLOBAL_DELAY_MS : 0;
 }
 
 export async function recordAttempt(ok: boolean): Promise<void> {

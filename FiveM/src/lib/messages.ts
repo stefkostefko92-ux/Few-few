@@ -10,8 +10,17 @@ import type { Dictionary } from '@/i18n';
  */
 export type FormErrorCode = keyof Dictionary['errors'];
 
-/** Непознат код никога не се показва дословно — пада към общото съобщение. */
+/**
+ * Непознат код никога не се показва дословно — пада към общото съобщение.
+ *
+ * Търсенето е през `Object.hasOwn`, не през `??`, и това не е педантизъм:
+ * обектният литерал носи прототипа си, значи `?error=__proto__` връщаше
+ * `Object.prototype` — обект, не низ — и React Server Component-ът гърмеше с
+ * „Objects are not valid as a React child“, тоест **500 на публична страница
+ * от стойност в URL-а**. `?error=constructor` пък връщаше функция и рисуваше
+ * празен банер. `??` не е защита срещу това: тези ключове НЕ са `undefined`.
+ */
 export function errorMessage(code: string | undefined, t: Dictionary): string | null {
   if (!code) return null;
-  return t.errors[code as FormErrorCode] ?? t.errors.invalid;
+  return Object.hasOwn(t.errors, code) ? t.errors[code as FormErrorCode] : t.errors.invalid;
 }
