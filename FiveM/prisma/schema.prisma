@@ -134,6 +134,30 @@ model Submission {
   @@index([status, createdAt])
 }
 
+/// Сигнал за незаконно съдържание по чл. 16 от Регламент (ЕС) 2022/2065 (DSA).
+/// Четирите елемента по чл. 16(2) са задължителни полета — механизмът трябва
+/// да ги УЛЕСНЯВА, не просто да приема свободен имейл.
+model Report {
+  id String @id @default(cuid())
+
+  /// Точният адрес на съдържанието (чл. 16(2)(б)).
+  targetUrl String
+  /// Защо подателят смята съдържанието за незаконно (чл. 16(2)(а)).
+  reason    String
+  /// Име и имейл на подателя (чл. 16(2)(в)).
+  reporterName  String
+  reporterEmail String
+  /// Декларация за добросъвестност и точност (чл. 16(2)(г)).
+  goodFaith Boolean
+
+  status    ModerationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  /// Кога е взето решение — от него тече уведомяването по чл. 16(5).
+  handledAt DateTime?
+
+  @@index([status, createdAt])
+}
+
 /// Новини и туториали — SEO гръбнакът на сайта.
 model Post {
   id      String @id @default(cuid())

@@ -4,60 +4,51 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
-import { parseCfxJoinCode, parseServerAddress, formatServerAddress } from '@/lib/fivem';
+import { formatServerAddress, parseCfxJoinCode, parseServerAddress } from '@/lib/fivem';
+import { withinGlobalRateLimit } from '@/lib/rate-limit';
+import type { FormErrorCode } from '@/lib/messages';
 
 /**
  * Заявка за листване. Влиза в модераторска опашка — нищо не става публично
- * автоматично.
- *
- * Анти-спам БЕЗ проследяване (продуктово обещание: не пазим IP):
- *  - honeypot поле, което истински човек не вижда;
- *  - таван на заявките за целия процес в минута.
- * Съзнателен компромис: тавана може да удари и честен подател при внезапна
- * вълна — цената е „опитай пак след минута“, не досие с IP адреси.
+ * автоматично. Основание за имейла: чл. 6, ал. 1, б. „б“ и „е“ ОРЗД (стъпки по
+ * искане на подателя + законен интерес да поддържаме директорията).
  */
-const MAX_SUBMISSIONS_PER_MINUTE = 20;
-let windowStart = 0;
-let windowCount = 0;
-
-function withinRateLimit(now = Date.now()): boolean {
-  if (now - windowStart > 60_000) {
-    windowStart = now;
-    windowCount = 0;
-  }
-  windowCount += 1;
-  return windowCount <= MAX_SUBMISSIONS_PER_MINUTE;
-}
-
 const httpsUrl = z
   .string()
   .trim()
   .max(200)
-  .url('Линкът трябва да е пълен адрес (https://…)')
-  .refine((value) => value.startsWith('https://'), 'Линкът трябва да е https://');
+  .url()
+  .refine((value) => value.startsWith('https://'));
 
 const submissionSchema = z
   .object({
-    serverName: z.string().trim().min(2, 'Името е задължително').max(80),
+    serverName: z.string().trim().min(2).max(80),
     cfxJoinCode: z.string().trim().max(120).optional(),
     address: z.string().trim().max(120).optional(),
     discordUrl: httpsUrl.optional(),
-    contactEmail: z.string().trim().max(120).email('Невалиден имейл'),
+    contactEmail: z.string().trim().max(120).email(),
     note: z.string().trim().max(1000).optional(),
   })
-  .refine((data) => Boolean(data.cfxJoinCode || data.address), {
-    message: 'Нужен е cfx.re код или адрес host:port',
-    path: ['cfxJoinCode'],
-  });
+  .refine((data) => Boolean(data.cfxJoinCode || data.address));
 
-function fail(message: string): never {
-  redirect(`/submit?error=${encodeURIComponent(message)}`);
+/** Полето → код на грешката, за да знае формата кое поле да маркира. */
+const FIELD_ERROR: Record<string, FormErrorCode> = {
+  serverName: 'required_name',
+  contactEmail: 'required_email',
+  cfxJoinCode: 'required_target',
+  address: 'invalid_address',
+  discordUrl: 'invalid_url',
+};
+
+function fail(code: FormErrorCode, field?: string): never {
+  const suffix = field ? `&field=${encodeURIComponent(field)}` : '';
+  redirect(`/submit?error=${code}${suffix}`);
 }
 
 export async function submitServerAction(formData: FormData): Promise<void> {
   // Honeypot: попълнено поле = бот.
   if (String(formData.get('website') ?? '').length > 0) redirect('/submit?ok=1');
-  if (!withinRateLimit()) fail('Твърде много заявки в момента. Опитай пак след минута.');
+  if (!withinGlobalRateLimit('submit')) fail('rate_limit');
 
   /** Празното поле е „непопълнено“, не „празен низ“. */
   const field = (name: string): string | undefined => {
@@ -74,15 +65,18 @@ export async function submitServerAction(formData: FormData): Promise<void> {
     contactEmail: field('contactEmail'),
     note: field('note'),
   });
-  if (!parsed.success) fail(parsed.error.issues[0]?.message ?? 'Проверѝ попълненото.');
+  if (!parsed.success) {
+    const path = String(parsed.error.issues[0]?.path[0] ?? '');
+    fail(FIELD_ERROR[path] ?? 'required_target', path || undefined);
+  }
 
   const data = parsed.data;
 
   const joinCode = data.cfxJoinCode ? parseCfxJoinCode(data.cfxJoinCode) : null;
-  if (data.cfxJoinCode && !joinCode) fail('Невалиден cfx.re код.');
+  if (data.cfxJoinCode && !joinCode) fail('invalid_cfx', 'cfxJoinCode');
 
   const address = data.address ? parseServerAddress(data.address) : null;
-  if (data.address && !address) fail('Невалиден адрес. Формат: host:port (например 1.2.3.4:30120).');
+  if (data.address && !address) fail('invalid_address', 'address');
 
   try {
     await prisma.submission.create({
@@ -90,13 +84,15 @@ export async function submitServerAction(formData: FormData): Promise<void> {
         serverName: data.serverName,
         cfxJoinCode: joinCode,
         address: address ? formatServerAddress(address) : null,
-        discordUrl: data.discordUrl || null,
+        discordUrl: data.discordUrl ?? null,
         contactEmail: data.contactEmail,
-        note: data.note || null,
+        note: data.note ?? null,
       },
     });
-  } catch {
-    fail('Не успяхме да запишем заявката. Опитай пак по-късно.');
+  } catch (error) {
+    // Глътната грешка без лог значи мълчалив провал в продукция.
+    console.error('[submit] записът на заявката се провали', error);
+    fail('storage');
   }
 
   redirect('/submit?ok=1');

@@ -40,10 +40,37 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
       orderBy: [{ featuredUntil: 'desc' }, { online: 'desc' }, { players: 'desc' }, { name: 'asc' }],
       take: 200,
     });
-  } catch {
+  } catch (error) {
+    console.error('[servers] списъкът не се прочете', error);
     return [];
   }
 }
+
+/**
+ * Обобщението се смята с отделен `aggregate` върху ВСИЧКИ одобрени ревюта.
+ * Ако се четеше от `reviews.length`, числото щеше да е капнато на `take` —
+ * тоест сайтът щеше публично да твърди „4.6 / 5 от 20“ при 100 ревюта.
+ */
+export async function reviewSummary(serverId: string): Promise<{ average: number | null; count: number }> {
+  try {
+    const result = await prisma.review.aggregate({
+      where: { serverId, status: 'APPROVED' },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+    const average = result._avg.rating;
+    return {
+      average: average === null ? null : Math.round(average * 10) / 10,
+      count: result._count._all,
+    };
+  } catch (error) {
+    console.error('[servers] обобщението на ревютата се провали', error);
+    return { average: null, count: 0 };
+  }
+}
+
+/** Колко ревюта показваме на страницата (обобщението не зависи от това). */
+export const REVIEWS_SHOWN = 20;
 
 export async function getPublicServer(slug: string) {
   try {
@@ -51,6 +78,7 @@ export async function getPublicServer(slug: string) {
       where: { slug, status: 'APPROVED' },
       select: {
         ...publicServerSelect,
+        id: true,
         description: true,
         discordUrl: true,
         websiteUrl: true,
@@ -61,11 +89,12 @@ export async function getPublicServer(slug: string) {
           where: { status: 'APPROVED' },
           select: { id: true, rating: true, body: true, authorAlias: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
-          take: 20,
+          take: REVIEWS_SHOWN,
         },
       },
     });
-  } catch {
+  } catch (error) {
+    console.error('[servers] сървърът не се прочете', error);
     return null;
   }
 }

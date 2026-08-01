@@ -2,7 +2,7 @@
   "name": "fivem-bulgaria",
   "version": "0.1.0",
   "private": true,
-  "description": "FiveM Bulgaria — официалната директория на българските FiveM RP сървъри: жив статус, ревюта и туториали.",
+  "description": "FiveM Bulgaria — независимата директория на българските FiveM RP сървъри: жив статус, ревюта и туториали.",
   "license": "UNLICENSED",
   "author": "Carbon Stealth VCC",
   "homepage": "https://fivembulgaria.carbonstealth.eu",
@@ -34,7 +34,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
-    "servers:refresh": "tsx scripts/refresh-servers.ts"
+    "servers:refresh": "tsx scripts/refresh-servers.ts",
+    "prune": "tsx scripts/prune.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

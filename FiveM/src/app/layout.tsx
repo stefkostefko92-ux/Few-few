@@ -64,25 +64,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
             <p>
               © {new Date().getFullYear()} {SITE_NAME} · продукт на{' '}
-              <a href="https://carbonstealth.eu" className="text-fivem-400 hover:underline">
+              <a
+                href="https://carbonstealth.eu"
+                className="text-fivem-400 underline underline-offset-2"
+              >
                 Carbon Stealth VCC
               </a>
             </p>
-            <ul className="flex gap-4">
+            <ul className="flex flex-wrap gap-4">
               <li>
-                <Link href="/privacy" className="hover:text-fivem-400">
+                <Link href="/impresum" className="underline underline-offset-2 hover:text-fivem-400">
+                  Импресум
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="underline underline-offset-2 hover:text-fivem-400">
                   Поверителност
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-fivem-400">
+                <Link href="/terms" className="underline underline-offset-2 hover:text-fivem-400">
                   Условия
+                </Link>
+              </li>
+              <li>
+                <Link href="/report" className="underline underline-offset-2 hover:text-fivem-400">
+                  Сигнал
                 </Link>
               </li>
             </ul>
           </div>
-          <p className="mx-auto mt-4 max-w-5xl text-xs text-slate-500">
-            Независим проект. Не е свързан с Rockstar Games, Take-Two Interactive или Cfx.re.
+          {/* Контрастът тук е проверен: slate-400 върху fivem-950 = 7.65:1.
+              slate-500 дава 4.12:1 и пада под 4.5:1 (WCAG 1.4.3) — точно на
+              реда с търговско-марковия дисклеймър, който трябва да е видим. */}
+          <p className="mx-auto mt-4 max-w-5xl text-sm text-slate-400">
+            Независим проект. Не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или
+            Cfx.re. GTA V, Grand Theft Auto и Rockstar Games са марки на Take-Two Interactive
+            Software, Inc.; FiveM и Cfx.re са марки на съответните им притежатели. Употребата им тук
+            е само за обозначаване на платформата, за която се отнася съдържанието.
           </p>
         </footer>
 

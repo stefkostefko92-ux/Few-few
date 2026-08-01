@@ -34,7 +34,11 @@ export function stripColorCodes(input: string): string {
 export function displayName(raw: string | null | undefined, fallback = 'Без име'): string {
   if (!raw) return fallback;
   // Управляващите символи падат нарочно — идват от чужд сървър.
-  const cleaned = stripColorCodes(raw).replace(/[\u0000-\u001f\u007f]/g, '');
+  const cleaned = stripColorCodes(raw)
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    // Нулево-широки и двупосочни маркери: с тях чуждо име може да обърне
+    // реда на текста наоколо или да се престори на друго.
+    .replace(/[\u200b-\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069\ufeff]/g, '');
   return cleaned.slice(0, 80) || fallback;
 }
 
@@ -269,11 +273,15 @@ export function buildStatus(
   outcome: ProbeOutcome = dynamic ? 'ONLINE' : 'OFFLINE',
 ): ServerStatus {
   const framework = detectFramework(info?.resources);
-  if (!dynamic) {
+  if (!dynamic || outcome !== 'ONLINE') {
     return { outcome, online: false, players: 0, maxPlayers: 0, hostname: null, framework };
   }
-  const maxPlayers = dynamic.sv_maxclients ?? 0;
-  const players = Math.min(dynamic.clients ?? 0, maxPlayers || Number.MAX_SAFE_INTEGER);
+  const maxPlayers = clampCount(dynamic.sv_maxclients ?? 0);
+  // Твърдият таван важи ВИНАГИ. `Math.min(x, cap || MAX_SAFE_INTEGER)` се
+  // самоизключва, щом чуждият сървър пропусне `sv_maxclients` (falsy 0 отваря
+  // безкрайния клон) — и `clients: 999999999999` препълва Postgres int4,
+  // което сваля целия cron пробег, не само този сървър.
+  const players = Math.min(clampCount(dynamic.clients ?? 0), maxPlayers || MAX_PLAYER_COUNT);
   return {
     outcome: 'ONLINE',
     online: true,
@@ -282,6 +290,17 @@ export function buildStatus(
     hostname: dynamic.hostname ? displayName(dynamic.hostname) : null,
     framework,
   };
+}
+
+/**
+ * Таванът на всяка бройка от чужд сървър. FiveM поддържа до 2048 слота;
+ * всичко над това е грешка или лъжа, а не рекорд.
+ */
+export const MAX_PLAYER_COUNT = 2048;
+
+function clampCount(value: number): number {
+  if (!Number.isFinite(value) || value < 0) return 0;
+  return Math.min(Math.trunc(value), MAX_PLAYER_COUNT);
 }
 
 /** „7/64 играчи“, „статусът е скрит“ или „офлайн“. */

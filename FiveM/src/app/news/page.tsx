@@ -21,7 +21,8 @@ async function listPosts() {
       orderBy: { publishedAt: 'desc' },
       take: 50,
     });
-  } catch {
+  } catch (error) {
+    console.error('[news] списъкът не се прочете', error);
     return [];
   }
 }

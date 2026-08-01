@@ -16,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     { url: absoluteUrl('/news'), changeFrequency: 'daily', priority: 0.7 },
     { url: absoluteUrl('/submit'), changeFrequency: 'monthly', priority: 0.5 },
+    { url: absoluteUrl('/impresum'), changeFrequency: 'yearly', priority: 0.3 },
     { url: absoluteUrl('/privacy'), changeFrequency: 'yearly', priority: 0.2 },
     { url: absoluteUrl('/terms'), changeFrequency: 'yearly', priority: 0.2 },
   ];
@@ -47,8 +48,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
       })),
     ];
-  } catch {
+  } catch (error) {
     // Без база пак връщаме валиден sitemap — по-добре непълен, отколкото 500.
+    // Логваме: иначе срутването до 5 URL-а се кешира за час, без никаква следа.
+    console.error('[sitemap] динамичните адреси не се прочетоха', error);
     return staticEntries;
   }
 }

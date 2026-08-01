@@ -12,7 +12,8 @@ async function getPost(slug: string) {
     return await prisma.post.findFirst({
       where: { slug, publishedAt: { not: null, lte: new Date() } },
     });
-  } catch {
+  } catch (error) {
+    console.error('[post] статията не се прочете', error);
     return null;
   }
 }
