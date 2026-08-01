@@ -2387,7 +2387,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 83
+        "lessons": 86
       },
       "evolution": [
         {
@@ -2431,9 +2431,20 @@
           "date": "2026-07-29",
           "event": "v16.8 — учене",
           "detail": "Научи: oversee `dups: 0` е СЛЯПОТА, не чистота — детекторът е лексикален Jaccard над думи >3 з… (+5 още)"
+        },
+        {
+          "version": "17.1.0",
+          "date": "2026-08-01",
+          "event": "v17.1 — учене",
+          "detail": "Научи: Prisma генерира enum като union от същите литерали, значи ръчно написан union със същит… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Prisma генерира enum като union от същите литерали, значи ръчно написан union със същит…\" (+2 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
