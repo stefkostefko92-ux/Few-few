@@ -1,5 +1,6 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { cookies, headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import { prisma } from '@/lib/db';
 
@@ -207,6 +208,18 @@ export async function isAdmin(): Promise<boolean> {
     data: { lastSeenAt: new Date() },
   });
   return true;
+}
+
+/**
+ * Guard за админ СТРАНИЦА (не за действие). Пренасочва към вход вместо да
+ * хвърля — в страница това е правилното поведение. Беше преписан байт в байт в
+ * петте админ страници; проверката на достъп заслужава едно име и едно място.
+ *
+ * НЕ замества `requireAdmin()`: там целта е мутацията да НЕ се случи, затова
+ * той хвърля. Двете не са взаимозаменяеми.
+ */
+export async function requireAdminPage(locale: string): Promise<void> {
+  if (!(await isAdmin())) redirect(`/${locale}/admin/login`);
 }
 
 /**

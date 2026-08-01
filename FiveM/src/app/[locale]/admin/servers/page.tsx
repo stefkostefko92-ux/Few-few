@@ -1,11 +1,9 @@
-import { redirect } from 'next/navigation';
 
 import { editServerAction, setFeaturedAction } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
-import { isAdmin } from '@/lib/admin/auth';
+import { requireAdminPage } from '@/lib/admin/auth';
 import { prisma } from '@/lib/db';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
+import { getDictionary, resolveLocale } from '@/i18n';
 import type { FrameworkId } from '@/lib/fivem';
 import { FRAMEWORK_ICON, STATUS_ICON } from '@/lib/icons';
 import { isFeatured } from '@/lib/rating';
@@ -19,8 +17,8 @@ type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: 
 
 export default async function AdminServers({ params, searchParams }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
-  if (!(await isAdmin())) redirect(`/${locale}/admin/login`);
+  const locale = resolveLocale(raw);
+  await requireAdminPage(locale);
 
   const t = getDictionary(locale);
   const { q } = await searchParams;

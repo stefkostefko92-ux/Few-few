@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
+import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { getContent } from '@/content';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
-import { breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { getDictionary, resolveLocale } from '@/i18n';
+import { breadcrumbJsonLd, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 86_400;
 
@@ -19,7 +19,7 @@ type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   return pageMetadata({
     locale,
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function RulesPage({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const { rules } = getContent(locale);
 
@@ -116,17 +116,10 @@ export default async function RulesPage({ params }: Props) {
         </Link>
       </p>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            breadcrumbJsonLd(locale, [
+      <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.nav.servers, path: '/' },
               { name: t.rules.h1, path: '/rules' },
-            ]),
-          ),
-        }}
-      />
+            ])} />
     </article>
   );
 }

@@ -1,9 +1,8 @@
 import Link from 'next/link';
 
 import { getLegal } from '@/content/legal';
-import { getDictionary } from '@/i18n';
+import { getDictionary, resolveLocale } from '@/i18n';
 import { CONTACT_LANGUAGES_LABEL } from '@/lib/site';
-import { isLocale } from '@/i18n/config';
 import { pageMetadata } from '@/lib/seo';
 import { ADDRESS_ONE_LINE, DISCORD_INVITE, PUBLISHER } from '@/lib/site';
 
@@ -13,7 +12,7 @@ type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const l = getLegal(locale).impresumLabels;
   return pageMetadata({ locale, title: l.title, description: l.lead, path: '/impresum' });
 }
@@ -23,7 +22,7 @@ export async function generateMetadata({ params }: Props) {
 // данните живеят тук, а не само на carbonstealth.eu.
 export default async function ImpresumPage({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const l = getLegal(locale).impresumLabels;
 

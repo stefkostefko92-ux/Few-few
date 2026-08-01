@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
+import { JsonLd } from '@/components/JsonLd';
 import { ServerCard } from '@/components/ServerCard';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
-import { breadcrumbJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
+import { getDictionary, resolveLocale } from '@/i18n';
+import { breadcrumbJsonLd, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +35,7 @@ const COPY = {
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const copy = COPY[locale];
   return pageMetadata({
     locale,
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function WhitelistPage({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const copy = COPY[locale];
   const servers = await listPublicServers({ whitelist: true });
@@ -83,21 +83,11 @@ export default async function WhitelistPage({ params }: Props) {
         </ul>
       )}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(locale, servers)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            breadcrumbJsonLd(locale, [
+      <JsonLd data={serverListJsonLd(locale, servers)} />
+      <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.server.breadcrumb, path: '/' },
               { name: t.filters.whitelist, path: '/servers/whitelist' },
-            ]),
-          ),
-        }}
-      />
+            ])} />
     </div>
   );
 }

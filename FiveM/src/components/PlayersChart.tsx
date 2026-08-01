@@ -31,7 +31,10 @@ export function PlayersChart({
         aria-label={`${label}: ${peakLabel} ${peak}`}
       >
         {values.map((value, index) => {
-          const height = peak === 0 ? 0 : Math.max(2, (value / peak) * (H - 4));
+          // `peak` е гарантирано > 0: нулевият случай вече е върнал по-горе.
+          // Тернарът тук беше недостижим клон, тоест мъртва защита, която
+          // изглежда като жива.
+          const height = Math.max(2, (value / peak) * (H - 4));
           return (
             <rect
               key={index}

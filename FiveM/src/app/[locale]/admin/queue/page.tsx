@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { resolveLocale } from '@/i18n';
 
 import {
   approveSubmissionAction,
@@ -8,9 +8,8 @@ import {
   rejectSubmissionAction,
 } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
-import { isAdmin } from '@/lib/admin/auth';
+import { requireAdminPage } from '@/lib/admin/auth';
 import { prisma } from '@/lib/db';
-import { isLocale } from '@/i18n/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,8 +18,8 @@ const no = 'rounded border border-white/15 px-3 py-1 text-sm hover:border-red-50
 
 export default async function AdminQueue({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
-  if (!(await isAdmin())) redirect(`/${locale}/admin/login`);
+  const locale = resolveLocale(raw);
+  await requireAdminPage(locale);
 
   const [reviews, submissions, reports] = await Promise.all([
     prisma.review.findMany({

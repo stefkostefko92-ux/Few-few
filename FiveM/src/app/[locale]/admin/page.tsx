@@ -1,17 +1,16 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { resolveLocale } from '@/i18n';
 
 import { Badge } from '@/components/Badge';
-import { isAdmin } from '@/lib/admin/auth';
+import { requireAdminPage } from '@/lib/admin/auth';
 import { prisma } from '@/lib/db';
-import { isLocale } from '@/i18n/config';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
-  if (!(await isAdmin())) redirect(`/${locale}/admin/login`);
+  const locale = resolveLocale(raw);
+  await requireAdminPage(locale);
 
   const [servers, featured, pendingReviews, pendingSubs, pendingReports, discovered, audit] =
     await Promise.all([

@@ -1,12 +1,13 @@
 import Link from 'next/link';
 
+import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { Mascot } from '@/components/Mascot';
 import { ServerCard } from '@/components/ServerCard';
 import { getContent } from '@/content';
-import { getDictionary } from '@/i18n';
-import { isLocale, type Locale } from '@/i18n/config';
-import { faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
+import { getDictionary, resolveLocale } from '@/i18n';
+import { type Locale } from '@/i18n/config';
+import { faqJsonLd, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 import { DISCORD_INVITE } from '@/lib/site';
 
@@ -45,7 +46,7 @@ function faqFor(locale: Locale) {
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   return pageMetadata({
     locale,
@@ -64,7 +65,7 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
 
 export default async function HomePage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
 
   const { q, sort } = await searchParams;
@@ -224,14 +225,8 @@ export default async function HomePage({ params, searchParams }: Props) {
         </dl>
       </section>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd(faq)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(locale, servers)) }}
-      />
+      <JsonLd data={faqJsonLd(faq)} />
+      <JsonLd data={serverListJsonLd(locale, servers)} />
     </>
   );
 }

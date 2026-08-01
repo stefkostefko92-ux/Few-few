@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 
+import { JsonLd } from '@/components/JsonLd';
 import { prisma } from '@/lib/db';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
-import { articleJsonLd, breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { getDictionary, resolveLocale } from '@/i18n';
+import { articleJsonLd, breadcrumbJsonLd, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 300;
 
@@ -22,7 +22,7 @@ async function getPost(slug: string, locale: string) {
 
 export async function generateMetadata({ params }: Params) {
   const { locale: raw, slug } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const post = await getPost(slug, locale);
   if (!post) return pageMetadata({ locale, title: t.news.notFound, description: '', noindex: true });
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Params) {
 
 export default async function PostPage({ params }: Params) {
   const { locale: raw, slug } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const post = await getPost(slug, locale);
   if (!post) notFound();
@@ -60,21 +60,11 @@ export default async function PostPage({ params }: Params) {
       {/* Съдържанието е наше и се рендира като чист текст — без dangerouslySetInnerHTML. */}
       <div className="mt-6 whitespace-pre-line text-silver-300">{post.body}</div>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(articleJsonLd(locale, post)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            breadcrumbJsonLd(locale, [
+      <JsonLd data={articleJsonLd(locale, post)} />
+      <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.news.h1, path: '/news' },
               { name: post.title, path: `/news/${post.slug}` },
-            ]),
-          ),
-        }}
-      />
+            ])} />
     </article>
   );
 }

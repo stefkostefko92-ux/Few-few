@@ -1,7 +1,8 @@
+import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { getPages } from '@/content/pages';
-import { isLocale } from '@/i18n/config';
-import { faqJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { faqJsonLd, pageMetadata } from '@/lib/seo';
+import { resolveLocale } from '@/i18n';
 
 export const revalidate = 86_400;
 
@@ -9,14 +10,14 @@ type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const page = getPages(locale).faq;
   return pageMetadata({ locale, title: page.title, description: page.description, path: '/faq' });
 }
 
 export default async function FaqPage({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const page = getPages(locale).faq;
 
   return (
@@ -38,14 +39,7 @@ export default async function FaqPage({ params }: Props) {
         ))}
       </dl>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            faqJsonLd(page.entries.map((entry) => ({ question: entry.q, answer: entry.a }))),
-          ),
-        }}
-      />
+      <JsonLd data={faqJsonLd(page.entries.map((entry) => ({ question: entry.q, answer: entry.a })))} />
     </article>
   );
 }

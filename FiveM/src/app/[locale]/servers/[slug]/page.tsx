@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { submitReviewAction } from '@/app/actions/review';
+import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
+import { getDictionary, resolveLocale } from '@/i18n';
 import { cfxJoinUrl, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
-import { breadcrumbJsonLd, jsonLdString, localeUrl, pageMetadata } from '@/lib/seo';
+import { breadcrumbJsonLd, localeUrl, pageMetadata } from '@/lib/seo';
 import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
 import {
   getPublicServer,
@@ -29,7 +29,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { locale: raw, slug } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const server = await getPublicServer(slug);
   if (!server) {
@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
 
 export default async function ServerPage({ params, searchParams }: Props) {
   const { locale: raw, slug } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const { review, error } = await searchParams;
 
@@ -378,18 +378,11 @@ export default async function ServerPage({ params, searchParams }: Props) {
         </form>
       </section>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            breadcrumbJsonLd(locale, [
+      <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.server.breadcrumb, path: '/' },
               { name: server.name, path: `/servers/${server.slug}` },
-            ]),
-          ),
-        }}
-      />
+            ])} />
     </article>
   );
 }

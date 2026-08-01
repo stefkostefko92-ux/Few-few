@@ -1,9 +1,9 @@
 import Link from 'next/link';
+import { resolveLocale } from '@/i18n';
 
 import { logoutAction } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
 import { isAdmin } from '@/lib/admin/auth';
-import { isLocale } from '@/i18n/config';
 
 // Панелът чете живи данни при всяка заявка и никога не се кешира.
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export default async function AdminLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const authed = await isAdmin();
 
   const nav = [

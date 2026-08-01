@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
+import { getDictionary, resolveLocale } from '@/i18n';
 import { prisma } from '@/lib/db';
 import { pageMetadata } from '@/lib/seo';
 
@@ -11,7 +10,7 @@ type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   return pageMetadata({
     locale,
@@ -38,7 +37,7 @@ async function listPosts(locale: string) {
 
 export default async function NewsPage({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const posts = await listPosts(locale);
 

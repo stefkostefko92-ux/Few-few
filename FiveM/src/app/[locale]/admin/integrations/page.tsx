@@ -1,8 +1,7 @@
-import { redirect } from 'next/navigation';
+import { resolveLocale } from '@/i18n';
 
 import { Badge } from '@/components/Badge';
-import { isAdmin } from '@/lib/admin/auth';
-import { isLocale } from '@/i18n/config';
+import { requireAdminPage } from '@/lib/admin/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +52,8 @@ export default async function AdminIntegrations({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
-  if (!(await isAdmin())) redirect(`/${locale}/admin/login`);
+  const locale = resolveLocale(raw);
+  await requireAdminPage(locale);
 
   // Чете се САМО наличието. Стойността не напуска процеса.
   const present = (name: string) => Boolean(process.env[name]);

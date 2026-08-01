@@ -1,8 +1,8 @@
 import { loginAction } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
 import { isAdmin } from '@/lib/admin/auth';
-import { isLocale } from '@/i18n/config';
 import { redirect } from 'next/navigation';
+import { resolveLocale } from '@/i18n';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +19,7 @@ type Props = {
 
 export default async function LoginPage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const { error } = await searchParams;
   if (await isAdmin()) redirect(`/${locale}/admin`);
 

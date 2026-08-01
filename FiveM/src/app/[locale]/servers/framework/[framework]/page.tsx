@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { JsonLd } from '@/components/JsonLd';
 import { ServerCard } from '@/components/ServerCard';
-import { getDictionary } from '@/i18n';
-import { isLocale, type Locale } from '@/i18n/config';
+import { getDictionary, resolveLocale } from '@/i18n';
+import { type Locale } from '@/i18n/config';
 import type { FrameworkId } from '@/lib/fivem';
-import { breadcrumbJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
+import { breadcrumbJsonLd, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
@@ -54,7 +55,7 @@ function titleFor(locale: Locale, id: FrameworkId): string {
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw, framework } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const filter = FILTERS[framework];
   if (!filter) return pageMetadata({ locale, title: '404', description: '', noindex: true });
 
@@ -69,7 +70,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function FrameworkPage({ params }: Props) {
   const { locale: raw, framework } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const filter = FILTERS[framework];
   if (!filter) notFound();
@@ -107,21 +108,11 @@ export default async function FrameworkPage({ params }: Props) {
         </ul>
       )}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(locale, servers)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            breadcrumbJsonLd(locale, [
+      <JsonLd data={serverListJsonLd(locale, servers)} />
+      <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.server.breadcrumb, path: '/' },
               { name: t.frameworks[filter.id], path: `/servers/framework/${framework}` },
-            ]),
-          ),
-        }}
-      />
+            ])} />
     </div>
   );
 }

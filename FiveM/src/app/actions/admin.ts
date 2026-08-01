@@ -7,6 +7,7 @@ import { z } from 'zod';
 import {
   audit,
   endSession,
+  globalPressureDelayMs,
   recordAttempt,
   requireAdmin,
   startSession,
@@ -45,6 +46,13 @@ export async function loginAction(formData: FormData): Promise<void> {
   if (await tooManyAttempts()) {
     redirect(`/${locale}/admin/login?error=rate`);
   }
+
+  // Втората линия е ЗАБАВЯНЕ, не отказ: при масиран обстрел всеки опит струва
+  // две секунди, включително на нападателя, но вярната парола ВИНАГИ минава.
+  // Отказът тук би значил, че анонимен човек заключва собственика — точно
+  // затова глобалният брояч не е гейт.
+  const delay = await globalPressureDelayMs();
+  if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
 
   if (!verifyPassword(password)) {
     await recordAttempt(false);

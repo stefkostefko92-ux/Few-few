@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
+import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
-import { breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { getDictionary, resolveLocale } from '@/i18n';
+import { breadcrumbJsonLd, pageMetadata } from '@/lib/seo';
 import { PUBLISHER } from '@/lib/site';
 import { PLATFORM_BADGE, type StreamPlatformId } from '@/lib/streamers';
 import { listPublicStreamers, streamerCounts, type PublicStreamer } from '@/lib/streamers-db';
@@ -16,7 +16,7 @@ type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   return pageMetadata({
     locale,
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function StreamersPage({ params }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
 
   const [groups, counts] = await Promise.all([listPublicStreamers(), streamerCounts()]);
@@ -109,17 +109,10 @@ export default async function StreamersPage({ params }: Props) {
         </p>
       </section>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            breadcrumbJsonLd(locale, [
+      <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.nav.servers, path: '/' },
               { name: t.streamers.h1, path: '/streamers' },
-            ]),
-          ),
-        }}
-      />
+            ])} />
     </div>
   );
 }

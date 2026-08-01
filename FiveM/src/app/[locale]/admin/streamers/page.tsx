@@ -1,10 +1,9 @@
-import { redirect } from 'next/navigation';
+import { resolveLocale } from '@/i18n';
 
 import { addStreamerAction, moderateStreamerAction } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
-import { isAdmin } from '@/lib/admin/auth';
+import { requireAdminPage } from '@/lib/admin/auth';
 import { prisma } from '@/lib/db';
-import { isLocale } from '@/i18n/config';
 import { PLATFORM_BADGE, STREAM_PLATFORMS, type StreamPlatformId } from '@/lib/streamers';
 
 export const dynamic = 'force-dynamic';
@@ -24,8 +23,8 @@ export default async function AdminStreamers({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
-  if (!(await isAdmin())) redirect(`/${locale}/admin/login`);
+  const locale = resolveLocale(raw);
+  await requireAdminPage(locale);
 
   const streamers = await prisma.streamer.findMany({
     // Чакащите са най-отгоре: те са работата, която панелът дължи на човека.

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { bestLocale, isLocale, LOCALES } from '@/i18n/config';
+import { bestLocale, isLocale } from '@/i18n/config';
 
 /**
  * Езикът живее в URL-а (`/bg/...`, `/en/...`), не в бисквитка: така всяка
@@ -29,4 +29,3 @@ export const config = {
   matcher: ['/((?!api|_next|.*\\..*|sitemap.xml|robots.txt).*)'],
 };
 
-export const SUPPORTED = LOCALES;

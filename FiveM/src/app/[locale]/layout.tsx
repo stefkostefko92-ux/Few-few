@@ -3,12 +3,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { JsonLd } from '@/components/JsonLd';
 import { Icon } from '@/components/Icon';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Mascot } from '@/components/Mascot';
 import { HTML_LANG, isLocale, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n';
-import { BASE_KEYWORDS, jsonLdString, SITE_NAME, SITE_URL, siteJsonLd } from '@/lib/seo';
+import { BASE_KEYWORDS, SITE_NAME, SITE_URL, siteJsonLd } from '@/lib/seo';
 import { DISCORD_INVITE } from '@/lib/site';
 
 import '../globals.css';
@@ -165,10 +166,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           <p className="mx-auto mt-4 max-w-6xl text-sm text-silver-500">{t.footer.disclaimer}</p>
         </footer>
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLdString(siteJsonLd(locale)) }}
-        />
+        <JsonLd data={siteJsonLd(locale)} />
       </body>
     </html>
   );

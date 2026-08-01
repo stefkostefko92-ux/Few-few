@@ -1,8 +1,7 @@
 import Link from 'next/link';
 
 import { submitReportAction } from '@/app/actions/report';
-import { getDictionary } from '@/i18n';
-import { isLocale } from '@/i18n/config';
+import { getDictionary, resolveLocale } from '@/i18n';
 import { errorMessage } from '@/lib/messages';
 import { pageMetadata } from '@/lib/seo';
 import { PUBLISHER } from '@/lib/site';
@@ -16,7 +15,7 @@ const field = 'mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   return pageMetadata({
     locale,
@@ -29,7 +28,7 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
 
 export default async function ReportPage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
-  const locale = isLocale(raw) ? raw : 'bg';
+  const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const { ok, error, url } = await searchParams;
   const message = errorMessage(error, t);
