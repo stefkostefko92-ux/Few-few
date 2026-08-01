@@ -10,7 +10,7 @@ import { isLocale } from '@/i18n/config';
 import { cfxJoinUrl, FRAMEWORK_LABEL, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
 import { breadcrumbJsonLd, jsonLdString, localeUrl, pageMetadata } from '@/lib/seo';
-import { FRAMEWORK_ICON, STATUS_ICON } from '@/lib/icons';
+import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
 import { getPublicServer, isFeatured, REVIEWS_SHOWN, reviewSummary } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
@@ -143,6 +143,24 @@ export default async function ServerPage({ params, searchParams }: Props) {
           </dd>
         </div>
       </dl>
+
+      {server.tags.length > 0 && (
+        <ul className="mt-6 flex flex-wrap gap-2 text-sm text-silver-400">
+          {server.tags.map((tag) => {
+            const icon = tagIcon(tag);
+            return (
+              <li
+                key={tag}
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1"
+              >
+                {/* Етикетите са свободен текст — липсваща икона е нормално. */}
+                {icon && <Badge name={icon} size={24} />}
+                {tag}
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <p className="mt-4 text-sm text-silver-500">{t.server.ratingDisclaimer}</p>
 
