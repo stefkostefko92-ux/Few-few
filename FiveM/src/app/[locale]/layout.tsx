@@ -3,8 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import logo from '../../../public/brand/logo.png';
-
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Mascot } from '@/components/Mascot';
 import { HTML_LANG, isLocale, type Locale } from '@/i18n/config';
@@ -78,7 +76,18 @@ export default async function LocaleLayout({ children, params }: Props) {
             className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4"
           >
             <Link href={`/${locale}`} className="flex items-center">
-              <Image src={logo} alt={SITE_NAME} priority className="h-8 w-auto" />
+              {/* Пътят е низ, а не статичен импорт: типът на `*.png` идва от
+                  `next-env.d.ts`, който се генерира от `next build` и е
+                  git-ignored — а гейтът пуска typecheck ПРЕДИ build, тоест в
+                  CI импортът няма тип. Размерът е реалният на файла. */}
+              <Image
+                src="/brand/logo.png"
+                alt={SITE_NAME}
+                width={1280}
+                height={324}
+                priority
+                className="h-8 w-auto"
+              />
             </Link>
 
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-silver-400">
