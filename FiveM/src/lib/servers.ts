@@ -37,7 +37,15 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
         ...(filter.whitelist === undefined ? {} : { whitelist: filter.whitelist }),
       },
       select: publicServerSelect,
-      orderBy: [{ featuredUntil: 'desc' }, { online: 'desc' }, { players: 'desc' }, { name: 'asc' }],
+      orderBy: [
+        // `nulls: 'last'` е задължително: Postgres подрежда NULL ПЪРВО при DESC,
+        // тоест непромотираните сървъри изместваха промотирания най-отдолу —
+        // точно обратното на обявеното в условията („Как подреждаме сървърите“).
+        { featuredUntil: { sort: 'desc', nulls: 'last' } },
+        { online: 'desc' },
+        { players: 'desc' },
+        { name: 'asc' },
+      ],
       take: 200,
     });
   } catch (error) {

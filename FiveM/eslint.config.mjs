@@ -12,7 +12,10 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    ignores: ['node_modules/**', '.next/**', 'next-env.d.ts'],
+    // `src/components/mascot/` е КОПИЕ на генериран файл от пакета `mascot/`.
+    // Не се редактира тук (поправката е в източника + `node mascot/build.mjs`),
+    // затова и не се линтва тук — иначе гейтът иска промяна, която е забранена.
+    ignores: ['node_modules/**', '.next/**', 'next-env.d.ts', 'src/components/mascot/**'],
   },
 ];
 

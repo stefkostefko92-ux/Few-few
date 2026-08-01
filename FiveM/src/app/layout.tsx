@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { Mascot } from '@/components/Mascot';
 import { BASE_KEYWORDS, jsonLdString, SITE_NAME, SITE_URL, siteJsonLd } from '@/lib/seo';
 
 import './globals.css';
@@ -41,7 +42,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             aria-label="Основна навигация"
             className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4"
           >
-            <Link href="/" className="text-lg font-semibold tracking-tight">
+            <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+              {/* Иконното ниво на маскота: плътни цветове и дебели рамки —
+                  единственото, което остава четимо под 32 px. */}
+              <Mascot detail="icon" size={30} title={null} />
               FiveM<span className="text-fivem-400">Bulgaria</span>
             </Link>
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-300">

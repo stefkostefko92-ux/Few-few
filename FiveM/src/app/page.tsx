@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { Mascot } from '@/components/Mascot';
 import { ServerCard } from '@/components/ServerCard';
 import { faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
@@ -20,7 +21,7 @@ const FAQ = [
   {
     question: 'Как да вляза в български FiveM RP сървър?',
     answer:
-      'Нужна е легална копие на GTA V и инсталиран FiveM клиент от fivem.net. След това избираш сървър от списъка тук и натискаш „Влез“ — линкът cfx.re/join отваря клиента и те свързва директно.',
+      'Нужно е легално копие на GTA V и инсталиран FiveM клиент от fivem.net. След това избираш сървър от списъка тук и натискаш „Влез“ — линкът cfx.re/join отваря клиента и те свързва директно.',
   },
   {
     question: 'Какво е ESX, QBCore и Qbox?',
@@ -46,19 +47,35 @@ export default async function HomePage() {
 
   return (
     <>
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Българските FiveM RP сървъри — на едно място
-        </h1>
-        <p className="mt-3 max-w-2xl text-slate-300">
-          Жив списък със статуса на всеки сървър: онлайн ли е, колко души играят, на каква рамка върви и
-          има ли whitelist. Данните се четат директно от самите сървъри.
-        </p>
-        {servers.length > 0 && (
-          <p className="mt-4 text-sm text-slate-400">
-            {online.length} онлайн от {servers.length} · {totalPlayers} играчи в момента
+      <section className="flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Българските FiveM RP сървъри — на едно място
+          </h1>
+          <p className="mt-3 max-w-2xl text-slate-300">
+            Жив списък със статуса на всеки сървър: онлайн ли е, колко души играят, на каква рамка
+            върви и има ли whitelist. Данните се четат директно от самите сървъри.
           </p>
-        )}
+          {servers.length > 0 && (
+            <p className="mt-4 text-sm text-slate-400">
+              {online.length} онлайн от {servers.length} · {totalPlayers} играчи в момента
+            </p>
+          )}
+        </div>
+
+        {/* Герой-кадър: пълното ниво (градиенти, ореол, мехурчета) си струва само
+            над 128 px. Погледът следи курсора, а анимацията мълчи при
+            prefers-reduced-motion — и двете са вградени в компонента. */}
+        <Mascot
+          detail="full"
+          size={168}
+          pose="wave"
+          expression="happy"
+          gaze="follow"
+          animated
+          title={null}
+          className="shrink-0"
+        />
       </section>
 
       <nav aria-label="Филтри" className="mt-6 flex flex-wrap gap-2 text-sm">
