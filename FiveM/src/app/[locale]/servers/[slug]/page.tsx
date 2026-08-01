@@ -11,7 +11,14 @@ import { cfxJoinUrl, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
 import { breadcrumbJsonLd, jsonLdString, localeUrl, pageMetadata } from '@/lib/seo';
 import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
-import { getPublicServer, isFeatured, REVIEWS_SHOWN, reviewSummary } from '@/lib/servers';
+import {
+  getPublicServer,
+  isFeatured,
+  playersLastDay,
+  REVIEWS_SHOWN,
+  reviewSummary,
+} from '@/lib/servers';
+import { PlayersChart } from '@/components/PlayersChart';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +56,10 @@ export default async function ServerPage({ params, searchParams }: Props) {
   const server = await getPublicServer(slug);
   if (!server) notFound();
 
-  const summary = await reviewSummary(server.id);
+  const [summary, history] = await Promise.all([
+    reviewSummary(server.id),
+    playersLastDay(server.id),
+  ]);
   const joinUrl = server.cfxJoinCode ? cfxJoinUrl(server.cfxJoinCode) : null;
   const iconUrl =
     server.cfxJoinCode && server.iconVersion !== null
@@ -161,6 +171,13 @@ export default async function ServerPage({ params, searchParams }: Props) {
           })}
         </ul>
       )}
+
+      <PlayersChart
+        values={history}
+        label={t.server.chartLabel}
+        peakLabel={t.server.chartPeak}
+        emptyLabel={t.server.chartEmpty}
+      />
 
       <p className="mt-4 text-sm text-silver-500">{t.server.ratingDisclaimer}</p>
 

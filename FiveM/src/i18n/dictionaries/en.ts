@@ -94,6 +94,9 @@ export const en: Dictionary = {
     discovered: 'found automatically',
     discoveredNote:
       'This server was found in the public Cfx.re list rather than submitted by its owner. If you represent the server and want to edit or remove the listing, write to us.',
+    chartLabel: 'Players over the last 24 hours',
+    chartPeak: 'peak',
+    chartEmpty: 'Not enough history for this server yet.',
     lastChecked: 'Last checked',
   },
   frameworks: {
