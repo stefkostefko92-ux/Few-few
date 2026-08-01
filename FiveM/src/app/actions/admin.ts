@@ -14,6 +14,7 @@ import {
   verifyPassword,
 } from '@/lib/admin/auth';
 import { prisma } from '@/lib/db';
+import { reportDecision, sendMail, submissionDecision } from '@/lib/email';
 import { parseCfxJoinCode, parseServerAddress, formatServerAddress } from '@/lib/fivem';
 import { isValidSlug, slugify } from '@/lib/slug';
 
@@ -189,6 +190,10 @@ export async function approveSubmissionAction(formData: FormData): Promise<void>
   });
 
   await prisma.submission.update({ where: { id }, data: { status: 'APPROVED' } });
+  await sendMail({
+    to: submission.contactEmail,
+    ...submissionDecision(submission.serverName, true),
+  });
   await audit('submission', submission.serverName, 'одобрена и публикувана');
   revalidatePath('/', 'layout');
 }
@@ -197,8 +202,18 @@ export async function rejectSubmissionAction(formData: FormData): Promise<void> 
   await requireAdmin();
   const id = String(formData.get('id') ?? '');
   if (!id) return;
-  await prisma.submission.update({ where: { id }, data: { status: 'REJECTED' } });
-  await audit('submission', id, 'отказана');
+
+  const submission = await prisma.submission.update({
+    where: { id },
+    data: { status: 'REJECTED' },
+  });
+  // Мотивирано решение по чл. 17 DSA. Задължението отпада само когато
+  // контактите на подателя НЕ са известни — тук имейлът е задължително поле.
+  await sendMail({
+    to: submission.contactEmail,
+    ...submissionDecision(submission.serverName, false),
+  });
+  await audit('submission', submission.serverName, 'отказана');
   revalidatePath('/', 'layout');
 }
 
@@ -212,10 +227,14 @@ export async function handleReportAction(formData: FormData): Promise<void> {
   if (!id || (decision !== 'APPROVED' && decision !== 'REJECTED')) return;
 
   // `handledAt` не е козметика: от него тече уведомяването по чл. 16(5) DSA.
-  await prisma.report.update({
+  const report = await prisma.report.update({
     where: { id },
     data: { status: decision, handledAt: new Date() },
   });
-  await audit('report', id, decision === 'APPROVED' ? 'основателен' : 'неоснователен');
+  await sendMail({
+    to: report.reporterEmail,
+    ...reportDecision(report.targetUrl, decision === 'APPROVED'),
+  });
+  await audit('report', report.targetUrl, decision === 'APPROVED' ? 'основателен' : 'неоснователен');
   revalidatePath('/', 'layout');
 }

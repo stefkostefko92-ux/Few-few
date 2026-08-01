@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
+import { reportReceipt, sendMail } from '@/lib/email';
 import { withinGlobalRateLimit } from '@/lib/rate-limit';
 import { readLocale } from './locale';
 
@@ -62,6 +63,11 @@ export async function submitReportAction(formData: FormData): Promise<void> {
     console.error('[report] записът се провали', error);
     redirect(`/${locale}/report?error=storage`);
   }
+
+  // Потвърждението е задължение по чл. 16, ал. 4 DSA и няма забавяне.
+  // Неизпратен имейл не отменя приетия сигнал — затова резултатът се логва,
+  // а не се проверява.
+  await sendMail({ to: parsed.data.reporterEmail, ...reportReceipt(parsed.data.targetUrl) });
 
   redirect(`/${locale}/report?ok=1`);
 }
