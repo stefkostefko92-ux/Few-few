@@ -4,199 +4,316 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Маскот — желирано телце с очила | Carbon Stealth</title>
-<meta name="description" content="Витрина на маскота на Carbon Stealth: три нива на детайл, палитра, пребоядисване по бранд и достъпна микро-анимация.">
+<meta name="description" content="Бранд витрина на маскота на Carbon Stealth: жива площадка с изражения и пози, четири нива на детайл, палитра, едноцветен знак и правила на употреба.">
 <meta name="keywords" content="Carbon Stealth, маскот, SVG маскот, бранд асет, векторна икона, желиран герой, дизайн система">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../svg/jelly-mascot-icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../tokens.css">
+
+<!-- Предзареждане на вариантите: площадката сменя кадъра мигновено, а гейтът проверява, че
+     всеки от тези пътища наистина съществува (счупена препратка = червено CI). -->
+<link rel="preload" as="image" href="../svg/expressions/happy.svg">
+<link rel="preload" as="image" href="../svg/expressions/wink.svg">
+<link rel="preload" as="image" href="../svg/expressions/surprised.svg">
+<link rel="preload" as="image" href="../svg/expressions/focused.svg">
+<link rel="preload" as="image" href="../svg/expressions/proud.svg">
+<link rel="preload" as="image" href="../svg/expressions/celebrate.svg">
+<link rel="preload" as="image" href="../svg/poses/wave.svg">
+<link rel="preload" as="image" href="../svg/poses/point.svg">
+
 <style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
-    padding: 32px 24px 64px;
     background: var(--jm-bg);
     color: var(--jm-pale);
-    font: 15px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    font: 15px/1.65 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  h1 { font-size: 24px; margin: 0 0 4px; color: var(--jm-olive); }
-  h2 { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--jm-soft-olive); margin: 40px 0 12px; }
-  p { max-width: 68ch; color: var(--jm-soft-olive); }
-  code { color: var(--jm-olive); }
-  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* Лента отгоре: знакът, името, връзка към документацията. */
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px;
+    background: #050706;
+    border-bottom: 1px solid #1a2416;
+  }
+  .bar .mark { width: 28px; height: 28px; }
+  .bar b { font-size: 14px; letter-spacing: .02em; color: var(--jm-pale); }
+  .bar span { color: var(--jm-soft-olive); font-size: 13px; }
+  .bar a { margin-left: auto; color: var(--jm-olive); text-decoration: none; font-size: 13px; }
+  .bar a:hover { text-decoration: underline; }
+
+  /* Герой. */
+  .hero {
+    position: relative; display: flex; align-items: center; gap: 44px; flex-wrap: wrap;
+    padding: 56px 0 44px;
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: -10% -30% 10% -30%; z-index: -1;
+    background: radial-gradient(46% 60% at 26% 44%, #0D4A02 0%, transparent 70%);
+  }
+  .hero h1 { font-size: clamp(28px, 4.4vw, 44px); line-height: 1.12; margin: 0 0 12px; letter-spacing: -.02em; color: var(--jm-pale); }
+  .hero h1 em { font-style: normal; color: var(--jm-olive); }
+  .hero p { margin: 0 0 20px; max-width: 46ch; color: var(--jm-soft-olive); }
+  .facts { display: flex; gap: 26px; flex-wrap: wrap; }
+  .facts div b { display: block; font-size: 22px; color: var(--jm-olive); line-height: 1.2; }
+  .facts div span { font-size: 12px; color: var(--jm-soft-olive); letter-spacing: .04em; text-transform: uppercase; }
+
+  h2 {
+    font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--jm-soft-olive); margin: 56px 0 14px;
+  }
+  h2::before { content: "— "; color: var(--jm-olive); }
+  p { max-width: 72ch; color: var(--jm-soft-olive); }
+  code { color: var(--jm-olive); font-size: .92em; }
+  strong { color: var(--jm-pale); }
+
+  /* Площадка. */
+  .play { display: grid; grid-template-columns: minmax(280px, 400px) 1fr; gap: 28px; align-items: start; }
+  .stage {
+    display: grid; place-items: center; min-height: 360px; padding: 20px;
+    border: 1px solid #24301c; border-radius: 18px;
+    background: radial-gradient(70% 70% at 50% 45%, #0b1408 0%, #050706 72%);
+    transition: background 240ms ease;
+  }
+  .stage[data-bg="light"] { background: #C8DDA6; }
+  .stage[data-bg="brand"] { background: radial-gradient(70% 70% at 50% 45%, #297F04 0%, #0D4A02 78%); }
+  .stage img { width: var(--preview, 240px); height: var(--preview, 240px); transition: width 160ms ease, height 160ms ease; }
+  .controls { display: flex; flex-direction: column; gap: 16px; }
+  .field > label { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--jm-soft-olive); margin-bottom: 7px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    font: inherit; font-size: 13px; cursor: pointer;
+    padding: 6px 13px; border-radius: 999px;
+    color: var(--jm-pale); background: #101a0c; border: 1px solid #24301c;
+    transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+  .chip:hover { border-color: var(--jm-olive); }
+  .chip[aria-pressed="true"] { background: #99E72A; border-color: #99E72A; color: #0b1408; font-weight: 600; }
+  .chip:focus-visible { outline: 2px solid var(--jm-pale); outline-offset: 2px; }
+  input[type="range"] { width: 220px; accent-color: #99E72A; }
+  .note { font-size: 12px; color: var(--jm-soft-olive); }
+
+  pre {
+    background: #0b1408; color: var(--jm-pale); border: 1px solid #24301c;
+    padding: 14px 16px; border-radius: 12px; overflow-x: auto; font-size: 13px; margin: 0;
+  }
+  pre .tag { color: var(--jm-olive); }
+  pre .attr { color: var(--jm-soft-olive); }
+
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; }
   figure { margin: 0; text-align: center; }
   figcaption { font-size: 12px; color: var(--jm-soft-olive); margin-top: 8px; }
+  .sheet { display: flex; flex-wrap: wrap; gap: 12px; }
+  .sheet figure { width: 128px; }
   .sizes { display: flex; gap: 20px; align-items: flex-end; }
+
   .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
-  .sw { width: 116px; border: 1px solid var(--jm-glow-lime); border-radius: 8px; overflow: hidden; font-size: 11px; }
+  .sw { width: 116px; border: 1px solid var(--jm-glow-lime); border-radius: 10px; overflow: hidden; font-size: 11px; }
   .sw i { display: block; height: 44px; }
   .sw b { display: block; padding: 6px 8px; font-weight: 600; color: var(--jm-pale); }
   .sw span { display: block; padding: 0 8px 8px; color: var(--jm-soft-olive); }
-  .light { background: #C8DDA6; border-radius: 12px; padding: 18px 22px; display: flex; gap: 20px; align-items: center; }
-  ul { max-width: 68ch; color: var(--jm-soft-olive); padding-left: 20px; }
-  li { margin-bottom: 6px; }
-  li b { color: var(--jm-pale); font-weight: 600; }
-  .hero {
-    display: flex; align-items: center; gap: 34px; flex-wrap: wrap;
-    padding: 28px 30px; margin-bottom: 8px; border-radius: 20px;
-    background: radial-gradient(120% 140% at 18% 30%, #0D4A02 0%, #050706 62%);
-    border: 1px solid #3C3F28;
-  }
-  .hero h1 { font-size: 30px; margin: 0 0 8px; }
-  .hero p { margin: 0 0 14px; }
-  .hero .kit { display: flex; gap: 12px; align-items: flex-end; }
-  .hero .kit img { border-radius: 10px; }
-  .mono-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-  .mono-chip { padding: 16px; border-radius: 12px; display: flex; gap: 14px; align-items: flex-end; }
-  /* Едноцветният знак през CSS маска: формата идва от файла, цветът — от `currentColor`.
-     Работи и без вграждане, за разлика от <img>, където външният цвят не стига. */
+
+  .mono-row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .mono-chip { padding: 16px; border-radius: 14px; display: flex; gap: 14px; align-items: flex-end; }
+  .on-dark { background: #050706; border: 1px solid #24301c; color: var(--jm-pale); }
+  .on-light { background: #C8DDA6; color: #0D4A02; }
+  .on-brand { background: #297F04; color: #050706; }
   .mono {
-    display: block;
-    background: currentColor;
+    display: block; background: currentColor;
     -webkit-mask: url(../svg/jelly-mascot-mono.svg) center / contain no-repeat;
     mask: url(../svg/jelly-mascot-mono.svg) center / contain no-repeat;
   }
   .mono-120 { width: 120px; height: 120px; }
   .mono-48 { width: 48px; height: 48px; }
-  .on-dark { background: #050706; border: 1px solid #3C3F28; color: #C8DDA6; }
-  .on-light { background: #C8DDA6; color: #0D4A02; }
-  .on-brand { background: #297F04; color: #050706; }
-  .card { max-width: 100%; border: 1px solid #3C3F28; border-radius: 12px; }
-  .sheet { display: flex; flex-wrap: wrap; gap: 12px; }
-  .sheet figure { width: 132px; }
-  .sheet img { border-radius: 12px; background: #050706; }
+
+  .card { max-width: 100%; border: 1px solid #24301c; border-radius: 14px; }
+  .light { background: #C8DDA6; border-radius: 14px; padding: 18px 22px; display: flex; gap: 20px; align-items: center; }
   .rules { display: flex; gap: 20px; flex-wrap: wrap; }
   .rule { width: 200px; }
-  .rule div { border-radius: 10px; padding: 10px; background: #0D4A02; display: flex; justify-content: center; }
+  .rule > div { border-radius: 12px; padding: 10px; background: #0b1408; border: 1px solid #24301c; display: flex; justify-content: center; }
   .rule p { font-size: 12px; margin: 8px 0 0; }
-  .yes { color: #99E72A; } .no { color: #848D68; }
+  .yes { color: var(--jm-olive); } .no { color: var(--jm-soft-olive); }
   .squish { transform: scaleX(1.25); } .tint { filter: hue-rotate(280deg) saturate(1.4); }
-  pre { background: #0D4A02; color: #C8DDA6; padding: 14px 16px; border-radius: 10px; overflow-x: auto; max-width: 68ch; font-size: 13px; }
+  ul { max-width: 72ch; color: var(--jm-soft-olive); padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li b { color: var(--jm-pale); font-weight: 600; }
+
+  /* Появяване при скрол. Скриваме САМО ако JS работи (`html.js`) — иначе страница без скрипт
+     би останала празна. Плюс предпазен таймер по-долу: ефект, който не се е задействал, не бива
+     да скрива съдържание. */
+  .js .reveal { opacity: 0; transform: translateY(14px); transition: opacity 520ms ease, transform 520ms cubic-bezier(.22,1,.36,1); }
+  .js .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; transition: none; } }
+  @media (max-width: 760px) { .play { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <img src="../svg/jelly-mascot-full-animated.svg" alt="Маскотът на Carbon Stealth — анимиран герой-кадър" width="260" height="260">
+<header class="bar">
+  <span class="mono mark" role="img" aria-label="Знакът на маскота"></span>
+  <b>Маскот</b><span>· Carbon Stealth</span>
+  <a href="../README.md">README →</a>
+</header>
+
+<div class="wrap">
+
+<section class="hero">
+  <img src="../svg/jelly-mascot-full-animated.svg" alt="Маскотът на Carbon Stealth — анимиран герой-кадър" width="300" height="300">
   <div>
-    <h1>Маскотът на Carbon Stealth</h1>
+    <h1>Един маскот.<br><em>Един източник.</em></h1>
     <p>
-      Едно очертание, четири нива, седем изражения, две пози — от един източник, гейтнати.
-      Всичко на тази страница са същите файлове, които продуктите ползват; страницата не е копие.
+      Четири нива на детайл, седем изражения, три пози, едноцветен знак и карта за споделяне —
+      всичко произведено от една геометрия и гейтнато в CI. Страницата не е копие: показва точно
+      файловете, които продуктите ползват.
     </p>
-    <div class="kit">
-      <img src="../svg/expressions/happy.svg" alt="Изражение happy" width="64" height="64">
-      <img src="../svg/expressions/wink.svg" alt="Изражение wink" width="64" height="64">
-      <img src="../svg/poses/wave.svg" alt="Поза wave" width="64" height="64">
-      <img src="../svg/jelly-mascot-icon.svg" alt="Иконен вариант" width="48" height="48">
-      <img src="../svg/jelly-mascot-icon.svg" alt="Иконен вариант при 24 пиксела" width="24" height="24">
-      <span class="mono mono-48" role="img" aria-label="Едноцветният знак"></span>
+    <div class="facts">
+      <div><b>4</b><span>нива</span></div>
+      <div><b>7</b><span>изражения</span></div>
+      <div><b>3</b><span>пози</span></div>
+      <div><b>0</b><span>зависимости</span></div>
     </div>
   </div>
-</div>
-<p>Виж <code>README.md</code> за вграждане в Next/React и в EJS/статичен сайт.</p>
+</section>
 
-<h2>Трите нива на детайл</h2>
-<div class="row">
+<h2 class="reveal">Площадка</h2>
+<p class="reveal">
+  Същите файлове, сменяни на живо. В React изражението и позата се комбинират свободно
+  (<code>expression</code> × <code>pose</code>); тук готовите файлове са по един на изражение и по
+  един на поза, затова изборът на поза показва нея.
+</p>
+<div class="play reveal">
+  <div class="stage" id="stage" data-bg="dark">
+    <img id="preview" src="../svg/jelly-mascot-full.svg" alt="Преглед на маскота с избраните настройки" width="240" height="240">
+  </div>
+
+  <div class="controls">
+    <div class="field">
+      <label id="lbl-expr">Изражение</label>
+      <div class="chips" role="group" aria-labelledby="lbl-expr" id="expr">
+        <button class="chip" type="button" data-value="neutral" aria-pressed="true">neutral</button>
+        <button class="chip" type="button" data-value="happy" aria-pressed="false">happy</button>
+        <button class="chip" type="button" data-value="wink" aria-pressed="false">wink</button>
+        <button class="chip" type="button" data-value="surprised" aria-pressed="false">surprised</button>
+        <button class="chip" type="button" data-value="focused" aria-pressed="false">focused</button>
+        <button class="chip" type="button" data-value="proud" aria-pressed="false">proud</button>
+        <button class="chip" type="button" data-value="celebrate" aria-pressed="false">celebrate</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lbl-pose">Поза</label>
+      <div class="chips" role="group" aria-labelledby="lbl-pose" id="pose">
+        <button class="chip" type="button" data-value="rest" aria-pressed="true">rest</button>
+        <button class="chip" type="button" data-value="wave" aria-pressed="false">wave</button>
+        <button class="chip" type="button" data-value="point" aria-pressed="false">point</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lbl-tier">Ниво</label>
+      <div class="chips" role="group" aria-labelledby="lbl-tier" id="tier">
+        <button class="chip" type="button" data-value="full" aria-pressed="true">full</button>
+        <button class="chip" type="button" data-value="medium" aria-pressed="false">medium</button>
+        <button class="chip" type="button" data-value="icon" aria-pressed="false">icon</button>
+        <button class="chip" type="button" data-value="animated" aria-pressed="false">animated</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lbl-bg">Фон</label>
+      <div class="chips" role="group" aria-labelledby="lbl-bg" id="bg">
+        <button class="chip" type="button" data-value="dark" aria-pressed="true">тъмен</button>
+        <button class="chip" type="button" data-value="light" aria-pressed="false">светъл</button>
+        <button class="chip" type="button" data-value="brand" aria-pressed="false">бранд</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="size">Размер · <span id="size-out">240</span> px</label>
+      <input id="size" type="range" min="24" max="380" value="240" step="4">
+    </div>
+
+    <pre id="snippet"><span class="tag">&lt;JellyMascot</span> <span class="attr">detail</span>="full" <span class="attr">expression</span>="neutral" <span class="attr">pose</span>="rest" <span class="attr">size</span>={240} <span class="tag">/&gt;</span></pre>
+    <p class="note" id="file-note">файл: <code>svg/jelly-mascot-full.svg</code></p>
+  </div>
+</div>
+
+<h2 class="reveal">Изражения</h2>
+<p class="reveal">
+  Изражението сменя <strong>само</strong> веждите, очите и устата — тяло, очила, шапка и папийонка
+  остават идентични. Всяко е един модул в <code>faces/</code>; асетите, типът в компонента и
+  вариантите се <strong>генерират</strong> от него.
+</p>
+<div class="sheet reveal">
+  <figure><img src="../svg/jelly-mascot-full.svg" alt="Неутрално изражение" width="116" height="116"><figcaption><code>neutral</code></figcaption></figure>
+  <figure><img src="../svg/expressions/happy.svg" alt="Щастливо изражение" width="116" height="116"><figcaption><code>happy</code></figcaption></figure>
+  <figure><img src="../svg/expressions/wink.svg" alt="Намигване" width="116" height="116"><figcaption><code>wink</code></figcaption></figure>
+  <figure><img src="../svg/expressions/surprised.svg" alt="Изненадано изражение" width="116" height="116"><figcaption><code>surprised</code></figcaption></figure>
+  <figure><img src="../svg/expressions/focused.svg" alt="Съсредоточено изражение" width="116" height="116"><figcaption><code>focused</code></figcaption></figure>
+  <figure><img src="../svg/expressions/proud.svg" alt="Уверено изражение" width="116" height="116"><figcaption><code>proud</code></figcaption></figure>
+  <figure><img src="../svg/expressions/celebrate.svg" alt="Празнуващо изражение" width="116" height="116"><figcaption><code>celebrate</code></figcaption></figure>
+</div>
+
+<h2 class="reveal">Пози</h2>
+<p class="reveal">Позата сменя само групата на ръцете (<code>poses/</code>) — същият механизъм, същите гаранции.</p>
+<div class="row reveal">
+  <figure><img src="../svg/jelly-mascot-full.svg" alt="Поза в покой" width="140" height="140"><figcaption><code>rest</code></figcaption></figure>
+  <figure><img src="../svg/poses/wave.svg" alt="Маскотът маха с ръка" width="140" height="140"><figcaption><code>wave</code> — поздрав, onboarding</figcaption></figure>
+  <figure><img src="../svg/poses/point.svg" alt="Маскотът сочи нагоре-вдясно" width="140" height="140"><figcaption><code>point</code> — „погледни тук"</figcaption></figure>
+</div>
+
+<h2 class="reveal">Нивата на детайл</h2>
+<div class="row reveal">
   <figure>
-    <img src="../svg/jelly-mascot-full.svg" alt="Маскотът в пълен детайл — светещо желирано телце с мехурчета" width="240" height="240">
-    <figcaption><code>full</code> — герой-кадър, ореол, мехурчета</figcaption>
+    <img src="../svg/jelly-mascot-full.svg" alt="Маскотът в пълен детайл" width="200" height="200">
+    <figcaption><code>full</code> — герой-кадър, ≥128 px</figcaption>
   </figure>
   <figure>
-    <img src="../svg/jelly-mascot-medium.svg" alt="Маскотът в среден детайл — без блурове" width="240" height="240">
-    <figcaption><code>medium</code> — без филтри, за печат/векторизация</figcaption>
+    <img src="../svg/jelly-mascot-medium.svg" alt="Маскотът в среден детайл" width="200" height="200">
+    <figcaption><code>medium</code> — нула филтри, за печат</figcaption>
   </figure>
   <figure>
-    <img src="../svg/jelly-mascot-icon.svg" alt="Маскотът в иконен вариант — плътни цветове" width="240" height="240">
-    <figcaption><code>icon</code> — плътни цветове, дебели рамки</figcaption>
+    <img src="../svg/jelly-mascot-icon.svg" alt="Маскотът в иконен вариант" width="200" height="200">
+    <figcaption><code>icon</code> — плътни цветове, ≤32 px</figcaption>
   </figure>
 </div>
 
-<h2>Ефектите в „full“</h2>
-<ul>
-  <li><b>Гелово осветление</b> — не нарисуван блик, а истински огледален източник по релефа
-      (<code>feSpecularLighting</code> върху размита алфа). Това е разликата между зелено кръгче и материал.</li>
-  <li><b>Каустики</b> — фрактален шум, изместен през себе си: неравномерна вътрешна плътност, каквато има течност.</li>
-  <li><b>Мехурчета в три плана</b> — далечните размити и бледи, близките остри, с връх и отражение. Еднакво
-      остри мехурчета изглеждат като точки върху топка, не като обем в желе.</li>
-  <li><b>Вътрешна сянка по ръба</b> + светещо ядро — плътно по контура, светло в средата: така окото чете „полупрозрачно“.</li>
-  <li><b>Отражение в пода</b>, контактна сянка и подсветка — фигурата стъпва някъде, не виси в нищото.</li>
-  <li><b>Стъкла с отблясък</b>, метален кант на рамката и сянка под нея; зеница с ирисов пръстен и два блика.</li>
-  <li><b>Шапка с дебелина</b>, сатен по плата и пискюл от нишки; <b>папийонка</b> с гънки и сатенен ръб.</li>
-  <li><b>Искри</b> — три разминати блясъка, които правят кадъра „скъп“.</li>
-</ul>
-
-<h2>Изражения</h2>
-<p>
-  Маскотът не е една картинка, а <strong>система</strong>: изражението сменя само веждите, очите и
-  устата — тяло, очила, шапка и папийонка остават идентични (правило от дизайн-брифа, гейтнато).
-  Всяко изражение е един модул в <code>faces/</code>; готовите асети в <code>svg/expressions/</code>
-  и <code>&lt;JellyMascot expression="…"&gt;</code> се <strong>генерират</strong> от него.
-</p>
-<div class="sheet">
-  <figure><img src="../svg/jelly-mascot-full.svg" alt="Неутрално изражение" width="120" height="120"><figcaption><code>neutral</code></figcaption></figure>
-  <figure><img src="../svg/expressions/happy.svg" alt="Щастливо изражение" width="120" height="120"><figcaption><code>happy</code></figcaption></figure>
-  <figure><img src="../svg/expressions/wink.svg" alt="Намигване" width="120" height="120"><figcaption><code>wink</code></figcaption></figure>
-  <figure><img src="../svg/expressions/surprised.svg" alt="Изненадано изражение" width="120" height="120"><figcaption><code>surprised</code></figcaption></figure>
-  <figure><img src="../svg/expressions/focused.svg" alt="Съсредоточено изражение" width="120" height="120"><figcaption><code>focused</code></figcaption></figure>
-  <figure><img src="../svg/expressions/proud.svg" alt="Уверено изражение" width="120" height="120"><figcaption><code>proud</code></figcaption></figure>
-  <figure><img src="../svg/expressions/celebrate.svg" alt="Празнуващо изражение" width="120" height="120"><figcaption><code>celebrate</code></figcaption></figure>
-</div>
-
-<h2>Пози</h2>
-<p>Позата сменя само групата на ръцете (<code>poses/</code>) — същият механизъм, същите гаранции.</p>
-<div class="row">
-  <figure><img src="../svg/jelly-mascot-full.svg" alt="Поза в покой" width="150" height="150"><figcaption><code>rest</code></figcaption></figure>
-  <figure><img src="../svg/poses/wave.svg" alt="Маскотът маха с ръка" width="150" height="150"><figcaption><code>wave</code> — за поздрав/онбординг</figcaption></figure>
-</div>
-<pre>&lt;JellyMascot expression="celebrate" pose="wave" size={220} animated /&gt;</pre>
-
-<h2>Погледът</h2>
-<p>
-  Зениците са отделна група във всяко изражение. Анимираният кадър долу се
-  <strong>оглежда сам</strong> (две кратки поглеждания на всеки ~11 s), а в React
-  <code>gaze="follow"</code> кара погледа да следи курсора — без нито един ререндер, само две CSS
-  променливи. При <code>prefers-reduced-motion</code> и двете са нула.
-</p>
-<pre>&lt;JellyMascot gaze="follow" expression="focused" /&gt;</pre>
-
-<h2>Едноцветният знак</h2>
-<p>
-  Не е „същото, но сиво": лицето е <strong>изрязано</strong> от плътния силует, затова знакът работи
-  там, където има само едно мастило — печат, гравюра, шев, воден знак, монохромна тема. Цветът идва
-  от <code>currentColor</code>, тоест от <code>color</code> на родителя (иска вграден SVG).
-</p>
-<div class="mono-row">
-  <div class="mono-chip on-dark"><img src="../svg/jelly-mascot-mono.svg" alt="Едноцветният знак върху тъмен фон" width="120" height="120"><img src="../svg/jelly-mascot-mono.svg" alt="Едноцветният знак при 48 пиксела" width="48" height="48"></div>
-  <div class="mono-chip on-light"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху светъл фон"></span><span class="mono mono-48" role="img" aria-label="Едноцветният знак при 48 пиксела върху светъл фон"></span></div>
-  <div class="mono-chip on-brand"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху бранд-зелено"></span></div>
-</div>
-<p style="font-size:13px">
-  Първият кадър е обикновен <code>&lt;img&gt;</code> — файлът носи видим цвят по подразбиране.
-  Вторият и третият са CSS маска
-  (<code>mask: url(jelly-mascot-mono.svg) center/contain; background: currentColor</code>) — така
-  един файл приема цвета на контекста, без да го вграждаш. Вграден SVG работи също. Ако маската е
-  празна тук, страницата е отворена през <code>file://</code> — браузърът блокира маски от друг
-  локален файл; вдигни я на сървър или ползвай вграден SVG.
-</p>
-
-<h2>Карта за споделяне (1200×630)</h2>
-<p>
-  <code>svg/social-card.svg</code> — <strong>генерирана</strong> от пълното ниво, не изнесена на ръка:
-  сменя се маскотът, сменя се и картата. Текстът нарочно липсва (заглавието е на продукта, а шрифт в
-  SVG не се пренася надеждно) — вдясно е оставено свободно поле.
-</p>
-<img class="card" src="../svg/social-card.svg" alt="Карта за споделяне: маскотът вляво, свободно поле вдясно" width="600" height="315">
-
-<h2>Иконата при реални размери</h2>
-<p>Тестът, който решава дали иконата е добра: чете ли се като маскот, когато е висока колкото един ред текст.</p>
-<div class="sizes">
+<h2 class="reveal">Иконата при реални размери</h2>
+<p class="reveal">Тестът, който решава дали иконата е добра: чете ли се като маскот, когато е висока колкото един ред текст.</p>
+<div class="sizes reveal">
   <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 64 пиксела" width="64" height="64">
   <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 32 пиксела" width="32" height="32">
   <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 24 пиксела" width="24" height="24">
   <img src="../svg/jelly-mascot-icon.svg" alt="Иконата при 16 пиксела" width="16" height="16">
 </div>
 
-<h2>Палитра</h2>
-<div class="swatches">
+<h2 class="reveal">Какво прави „full“ материал, а не кръгче</h2>
+<ul class="reveal">
+  <li><b>Гелово осветление</b> — истински огледален източник по релефа (<code>feSpecularLighting</code>), не нарисуван блик.</li>
+  <li><b>Каустики и зърно</b> — неравномерна вътрешна плътност и едва доловим шум: кадърът се чете като заснет материал.</li>
+  <li><b>Въглеродна решетка в материала</b> — шестоъгълна мрежа, видима само където желето свети. Подписът на бранда, не декор.</li>
+  <li><b>Мехурчета в три плана</b> — далечните размити, близките остри, с тъмна дъга отгоре и светла отдолу.</li>
+  <li><b>Отражение на студийния прозорец</b> в стъклата — правоъгълник с прекъсване, не черта.</li>
+  <li><b>Отражение в пода, каустично петно и контактни сенки</b> — фигурата стъпва някъде, не виси.</li>
+  <li><b>Дисперсия по канта</b> — два отместени щриха от двата края на палитрата, както пречупва стъкло.</li>
+</ul>
+
+<h2 class="reveal">Погледът</h2>
+<p class="reveal">
+  Зениците са отделна група във всяко изражение. Анимираният кадър се <strong>оглежда сам</strong>
+  (две кратки поглеждания на ~11 s), а в React <code>gaze="follow"</code> кара погледа да следи
+  курсора — без нито един ререндер, само две CSS променливи. При
+  <code>prefers-reduced-motion</code> и двете са нула.
+</p>
+<pre class="reveal">&lt;JellyMascot gaze="follow" expression="focused" /&gt;</pre>
+
+<h2 class="reveal">Палитра</h2>
+<div class="swatches reveal">
   <div class="sw"><i style="background:#050706"></i><b>#050706</b><span>фон</span></div>
   <div class="sw"><i style="background:#0D4A02"></i><b>#0D4A02</b><span>дълбока сянка</span></div>
   <div class="sw"><i style="background:#297F04"></i><b>#297F04</b><span>среден тон</span></div>
@@ -207,20 +324,40 @@
   <div class="sw"><i style="background:#C8DDA6"></i><b>#C8DDA6</b><span>блясък</span></div>
 </div>
 
-<h2>Пребоядисване по бранд</h2>
-<p>
-  Формата е една, цветът е променлива. Задай <code>--jm-*</code> на родителя — SVG-то не се пипа.
-  Работи само при <strong>вграден</strong> SVG (React компонента или <code>&lt;%- include %&gt;</code> в
-  EJS): през <code>&lt;img&gt;</code> външният CSS изобщо не стига до документа на картинката и се
-  вижда падащата стойност от <code>var(--jm-…, #HEX)</code> — точно затова всеки цвят носи fallback.
+<h2 class="reveal">Едноцветният знак</h2>
+<p class="reveal">
+  Не е „същото, но сиво": лицето е <strong>изрязано</strong> от плътния силует, затова знакът работи
+  там, където има само едно мастило — печат, гравюра, шев, воден знак, монохромна тема. Цветът идва
+  от <code>currentColor</code>.
 </p>
-<pre>&lt;JellyMascot detail="full" style={{ "--jm-neon": "#0DB6A8", "--jm-olive": "#2AE7D8" }} /&gt;
+<div class="mono-row reveal">
+  <div class="mono-chip on-dark"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху тъмен фон"></span><span class="mono mono-48" role="img" aria-label="Едноцветният знак при 48 пиксела"></span></div>
+  <div class="mono-chip on-light"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху светъл фон"></span><span class="mono mono-48" role="img" aria-label="Едноцветният знак при 48 пиксела върху светъл фон"></span></div>
+  <div class="mono-chip on-brand"><span class="mono mono-120" role="img" aria-label="Едноцветният знак върху бранд-зелено"></span></div>
+</div>
+<p class="note reveal">
+  Кадрите са CSS маска (<code>mask: url(jelly-mascot-mono.svg); background: currentColor</code>) —
+  един файл приема цвета на контекста. Ако полетата са празни, страницата е отворена през
+  <code>file://</code>: браузърът блокира маски от друг локален файл. Вдигни я на сървър или
+  вгради SVG-то.
+</p>
 
-/* или на ниво секция, за вграден SVG: */
-.brand-teal { --jm-neon: #0DB6A8; --jm-olive: #2AE7D8; }</pre>
+<h2 class="reveal">Карта за споделяне (1200×630)</h2>
+<p class="reveal">
+  <code>svg/social-card.svg</code> — <strong>генерирана</strong> от пълното ниво, не изнесена на
+  ръка: сменя се маскотът, сменя се и картата. Текстът остава на продукта, затова вдясно е празно.
+</p>
+<img class="card reveal" src="../svg/social-card.svg" alt="Карта за споделяне: маскотът вляво, свободно поле вдясно" width="640" height="336">
 
-<h2>Правила на употреба</h2>
-<div class="rules">
+<h2 class="reveal">На светъл фон</h2>
+<div class="light reveal">
+  <img src="../svg/jelly-mascot-medium.svg" alt="Маскотът върху светъл фон" width="140" height="140">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата върху светъл фон" width="64" height="64">
+  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата върху светъл фон при 32 пиксела" width="32" height="32">
+</div>
+
+<h2 class="reveal">Правила на употреба</h2>
+<div class="rules reveal">
   <div class="rule">
     <div><img src="../svg/jelly-mascot-medium.svg" alt="Правилна употреба — непроменени пропорции" width="120" height="120"></div>
     <p class="yes">✓ Пази пропорциите. Мащабирай еднакво по двете оси.</p>
@@ -235,29 +372,95 @@
   </div>
   <div class="rule">
     <div style="padding:0"><img src="../svg/jelly-mascot-medium.svg" alt="Чисто поле около знака" width="152" height="152" style="outline:1px dashed #848D68;outline-offset:-19px"></div>
-    <p class="yes">✓ Чисто поле ≥ ⅛ от височината от всяка страна (пунктирът).</p>
+    <p class="yes">✓ Чисто поле ≥ ⅛ от височината от всяка страна.</p>
   </div>
 </div>
 
-<h2>На светъл фон</h2>
-<p>Кантът и плътните аксесоари трябва да държат силуета и когато фонът не работи за глоуто.</p>
-<div class="light">
-  <img src="../svg/jelly-mascot-medium.svg" alt="Маскотът върху светъл фон" width="150" height="150">
-  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата върху светъл фон" width="64" height="64">
-  <img src="../svg/jelly-mascot-icon.svg" alt="Иконата върху светъл фон при 32 пиксела" width="32" height="32">
 </div>
 
-<h2>Анимация (живо)</h2>
-<p>
-  Полюшване, пулс на глоуто, мигане, дрейф на мехурчетата, минаващ отблясък и присветващи искри.
-  Долният кадър е <code>svg/jelly-mascot-full-animated.svg</code> — генериран от пълното ниво + блока
-  в <code>tokens.css</code>, със стиловете <strong>вътре</strong> във файла, затова се движи дори през
-  <code>&lt;img&gt;</code>. При вграден SVG същото се пуска с класа <code>.jm-animated</code>.
-</p>
-<figure>
-  <img src="../svg/jelly-mascot-full-animated.svg" alt="Анимиран маскот — полюшване, пулс на светенето и присветващи искри" width="260" height="260">
-  <figcaption>нищо не мига по-бързо от 3 Hz · нула движение при <code>prefers-reduced-motion</code></figcaption>
-</figure>
+<script>
+  document.documentElement.classList.add("js");
+
+  // Площадката сменя ГОТОВИ файлове (без вграждане) — затова работи и през file://.
+  const files = {
+    neutral: "../svg/jelly-mascot-full.svg",
+    happy: "../svg/expressions/happy.svg",
+    wink: "../svg/expressions/wink.svg",
+    surprised: "../svg/expressions/surprised.svg",
+    focused: "../svg/expressions/focused.svg",
+    proud: "../svg/expressions/proud.svg",
+    celebrate: "../svg/expressions/celebrate.svg",
+    wave: "../svg/poses/wave.svg",
+    point: "../svg/poses/point.svg",
+    medium: "../svg/jelly-mascot-medium.svg",
+    icon: "../svg/jelly-mascot-icon.svg",
+    animated: "../svg/jelly-mascot-full-animated.svg",
+  };
+  const state = { expression: "neutral", pose: "rest", tier: "full", bg: "dark", size: 240 };
+  const preview = document.getElementById("preview");
+  const stage = document.getElementById("stage");
+  const snippet = document.getElementById("snippet");
+  const fileNote = document.getElementById("file-note");
+
+  function fileFor() {
+    if (state.tier !== "full") return files[state.tier];
+    if (state.pose !== "rest") return files[state.pose];
+    return files[state.expression];
+  }
+
+  function render() {
+    const file = fileFor();
+    if (!preview.getAttribute("src").endsWith(file.slice(2))) preview.setAttribute("src", file);
+    stage.dataset.bg = state.bg;
+    stage.style.setProperty("--preview", state.size + "px");
+    document.getElementById("size-out").textContent = state.size;
+    const detail = state.tier === "animated" ? "full" : state.tier;
+    const animated = state.tier === "animated" ? " animated" : "";
+    snippet.innerHTML =
+      '<span class="tag">&lt;JellyMascot</span> <span class="attr">detail</span>="' + detail +
+      '" <span class="attr">expression</span>="' + state.expression +
+      '" <span class="attr">pose</span>="' + state.pose +
+      '" <span class="attr">size</span>={' + state.size + "}" + animated +
+      ' <span class="tag">/&gt;</span>';
+    fileNote.innerHTML = "файл: <code>" + file.slice(3) + "</code>";
+  }
+
+  for (const group of ["expr", "pose", "tier", "bg"]) {
+    const key = group === "expr" ? "expression" : group;
+    document.getElementById(group).addEventListener("click", (event) => {
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      state[key] = chip.dataset.value;
+      for (const other of event.currentTarget.querySelectorAll(".chip")) {
+        other.setAttribute("aria-pressed", String(other === chip));
+      }
+      render();
+    });
+  }
+  document.getElementById("size").addEventListener("input", (event) => {
+    state.size = Number(event.target.value);
+    render();
+  });
+  render();
+
+  // Появяване при скрол. При намалено движение секциите просто стоят видими (CSS го поема).
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) { entry.target.classList.add("in"); io.unobserve(entry.target); }
+      }
+    }, { rootMargin: "0px 0px -12% 0px" });
+    for (const el of document.querySelectorAll(".reveal")) io.observe(el);
+  } else {
+    for (const el of document.querySelectorAll(".reveal")) el.classList.add("in");
+  }
+
+  // Предпазна мрежа: каквото и да се случи с наблюдателя, след 1.2 s всичко е видимо.
+  // Ефект, който се е счупил, няма право да скрие съдържание.
+  setTimeout(() => {
+    for (const el of document.querySelectorAll(".reveal")) el.classList.add("in");
+  }, 1200);
+</script>
 
 </body>
 </html>

@@ -172,7 +172,7 @@ export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generat
   // Витрината преписва палитрата на ръка (визуални мостри) — гейтваме, че преписът съвпада,
   // иначе демонстрацията тихо започва да лъже за бранда.
   if (demo) {
-    const block = demo.match(/<div class="swatches">([\s\S]*?)\n<\/div>/);
+    const block = demo.match(/<div class="swatches[^"]*">([\s\S]*?)\n<\/div>/);
     if (!block) fail.push("demo/index.html: липсва секцията с мострите на палитрата");
     else {
       const shown = [...new Set(hexes(block[1]))].sort();

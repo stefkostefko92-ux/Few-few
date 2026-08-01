@@ -8,7 +8,7 @@ import { useEffect, useId, useRef, type CSSProperties, type ReactElement } from 
 
 export type JellyMascotDetail = "full" | "medium" | "icon";
 export type JellyMascotExpression = "neutral" | "celebrate" | "focused" | "happy" | "proud" | "surprised" | "wink";
-export type JellyMascotPose = "rest" | "wave";
+export type JellyMascotPose = "rest" | "point" | "wave";
 
 export interface JellyMascotProps {
   /** Ниво на детайл: `full` (герой), `medium` (среден размер/печат), `icon` (≤32 px, favicon). */
@@ -484,6 +484,27 @@ const ARMS: Record<JellyMascotPose, (uid: string) => ReactElement> = {
               <path d="M374 372C394 382 408 394 414 406"/>
             </g>
           </g>
+    </>
+  ),
+  point: (uid) => (
+    <>
+      <g className="jm-arms">
+          <g stroke={`url(#${uid}-body)`} strokeWidth="34" strokeLinecap="round" fill="none">
+            <path d="M144 356C120 368 102 384 94 400"/>
+            <path d="M364 346C394 330 412 300 416 268"/>
+          </g>
+          <g stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.5">
+            <path d="M370 360C394 344 408 320 412 296"/>
+          </g>
+          {/* Ръката: свит юмрук и един изпънат пръст. Силуетът на жеста трябва да се чете и на 32 px. */}
+          <g className="jm-hand">
+            <path d="M396 254C396 234 408 220 424 220C440 220 452 234 452 254C452 272 440 284 424 284C408 284 396 272 396 254Z" fill={`url(#${uid}-body)`}/>
+            <path d="M430 224C436 206 442 186 446 170" fill="none" stroke={`url(#${uid}-body)`} strokeWidth="26" strokeLinecap="round"/>
+            <path d="M436 214C440 200 444 186 447 174" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4" strokeLinecap="round" opacity="0.6"/>
+            <path d="M402 244C404 234 410 228 418 228" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="4.5" strokeLinecap="round" opacity="0.65"/>
+            <path d="M404 266C410 278 418 284 428 284" fill="none" stroke="var(--jm-deep, #0D4A02)" strokeWidth="3.5" strokeLinecap="round" opacity="0.4"/>
+          </g>
+        </g>
     </>
   ),
   wave: (uid) => (
