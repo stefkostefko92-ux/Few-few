@@ -1,8 +1,9 @@
 # FiveM Bulgaria
 
 Директория на българските **FiveM** (GTA V multiplayer) roleplay сървъри: жив
-статус, брой играчи, рамка (ESX/QBCore/Qbox), whitelist, Discord, ревюта и
-туториали на български.
+статус, брой играчи, рамка (ESX/QBCore/Qbox), whitelist, Discord, ревюта,
+правила и туториали на български — плюс кой излъчва български GTA V roleplay в
+момента (Twitch, Kick, YouTube, TikTok). Пълна английска версия.
 
 Продукт на [Carbon Stealth VCC](https://carbonstealth.eu). Независим проект —
 не е свързан с Rockstar Games, Take-Two Interactive или Cfx.re.

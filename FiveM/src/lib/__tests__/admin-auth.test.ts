@@ -19,6 +19,26 @@ function hashFor(password: string): string {
   return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`;
 }
 
+/**
+ * Възстановяването на env е в `finally` и минава през `delete`, а не през
+ * присвояване. Две причини, и двете хапят тихо:
+ *  1. без `finally` провален assert по средата оставя променената стойност и я
+ *     наследява СЛЕДВАЩИЯТ тест — тогава пада той, а виновникът е друг;
+ *  2. `process.env.X = undefined` в Node записва низа „undefined“, не изтрива
+ *     ключа. Тоест „възстанових го“ всъщност оставя боклук.
+ */
+function withEnv(value: string | undefined, body: () => void): void {
+  const previous = process.env.ADMIN_PASSWORD_HASH;
+  try {
+    if (value === undefined) delete process.env.ADMIN_PASSWORD_HASH;
+    else process.env.ADMIN_PASSWORD_HASH = value;
+    body();
+  } finally {
+    if (previous === undefined) delete process.env.ADMIN_PASSWORD_HASH;
+    else process.env.ADMIN_PASSWORD_HASH = previous;
+  }
+}
+
 // ── Принципалът на тавана за вход ───────────────────────────────────────────
 
 /**
@@ -44,45 +64,41 @@ test('липсващ или празен хедър дава един и същ 
 });
 
 test('вярната парола минава, грешната не', () => {
-  const previous = process.env.ADMIN_PASSWORD_HASH;
-  process.env.ADMIN_PASSWORD_HASH = hashFor('дълга-парола-за-теста');
-
-  assert.equal(verifyPassword('дълга-парола-за-теста'), true);
-  assert.equal(verifyPassword('дълга-парола-за-тесто'), false);
-  assert.equal(verifyPassword(''), false);
-
-  process.env.ADMIN_PASSWORD_HASH = previous;
+  withEnv(hashFor('дълга-парола-за-теста'), () => {
+    assert.equal(verifyPassword('дълга-парола-за-теста'), true);
+    assert.equal(verifyPassword('дълга-парола-за-тесто'), false);
+    assert.equal(verifyPassword(''), false);
+  });
 });
 
 test('без конфигуриран хеш НИКОЯ парола не минава', () => {
-  const previous = process.env.ADMIN_PASSWORD_HASH;
-
   // Незададен: панелът трябва да е затворен, а не отворен за всички.
-  delete process.env.ADMIN_PASSWORD_HASH;
-  assert.equal(verifyPassword('каквото и да е'), false);
-  assert.equal(verifyPassword(''), false);
+  withEnv(undefined, () => {
+    assert.equal(verifyPassword('каквото и да е'), false);
+    assert.equal(verifyPassword(''), false);
+  });
 
   // Празен низ и боклук без разделител — същото.
-  process.env.ADMIN_PASSWORD_HASH = '';
-  assert.equal(verifyPassword(''), false);
-  process.env.ADMIN_PASSWORD_HASH = 'няма-двоеточие';
-  assert.equal(verifyPassword('няма-двоеточие'), false);
-
-  process.env.ADMIN_PASSWORD_HASH = previous;
+  withEnv('', () => assert.equal(verifyPassword(''), false));
+  withEnv('няма-двоеточие', () => assert.equal(verifyPassword('няма-двоеточие'), false));
 });
 
 test('повреден хеш не хвърля, а отказва', () => {
-  const previous = process.env.ADMIN_PASSWORD_HASH;
-
   // Различна дължина на хеша щеше да гръмне `timingSafeEqual`, а изключение
   // в път за автентикация е отказ на услуга, не отказ на достъп.
-  process.env.ADMIN_PASSWORD_HASH = 'сол:aabb';
-  assert.equal(verifyPassword('каквото и да е'), false);
+  withEnv('сол:aabb', () => assert.equal(verifyPassword('каквото и да е'), false));
+  withEnv('сол:не-е-шестнайсетично', () => assert.equal(verifyPassword('каквото и да е'), false));
+});
 
-  process.env.ADMIN_PASSWORD_HASH = 'сол:не-е-шестнайсетично';
-  assert.equal(verifyPassword('каквото и да е'), false);
-
-  process.env.ADMIN_PASSWORD_HASH = previous;
+test('възстановяването на env наистина изтрива, не записва „undefined“', () => {
+  // Регресия за самия харнес: `process.env.X = undefined` в Node записва низа
+  // „undefined“. Тест, който „чисти“ така, оставя боклук за следващия.
+  const previous = process.env.ADMIN_PASSWORD_HASH;
+  delete process.env.ADMIN_PASSWORD_HASH;
+  withEnv('сол:aabb', () => assert.equal(verifyPassword('x'), false));
+  assert.equal(process.env.ADMIN_PASSWORD_HASH, undefined, 'остана стойност след withEnv');
+  assert.ok(!('ADMIN_PASSWORD_HASH' in process.env), 'ключът трябва да е изтрит, не празен');
+  if (previous !== undefined) process.env.ADMIN_PASSWORD_HASH = previous;
 });
 
 test('еднакви пароли с различна сол дават различни хешове', () => {
