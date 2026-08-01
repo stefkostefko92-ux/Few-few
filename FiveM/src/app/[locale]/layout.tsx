@@ -1,118 +1,135 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
+import logo from '../../../public/brand/logo.png';
+
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Mascot } from '@/components/Mascot';
+import { HTML_LANG, isLocale, type Locale } from '@/i18n/config';
+import { getDictionary } from '@/i18n';
 import { BASE_KEYWORDS, jsonLdString, SITE_NAME, SITE_URL, siteJsonLd } from '@/lib/seo';
 
-import './globals.css';
+import '../globals.css';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: `${SITE_NAME} — всички български FiveM сървъри на едно място`,
-    template: `%s · ${SITE_NAME}`,
-  },
-  description:
-    'Жива директория на българските FiveM RP сървъри: онлайн статус, брой играчи, рамка (ESX/QBCore/Qbox), правила и Discord. Плюс туториали за начинаещи.',
-  keywords: BASE_KEYWORDS,
-  applicationName: SITE_NAME,
-  authors: [{ name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' }],
-  publisher: 'Carbon Stealth VCC',
-};
+type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
-const NAV = [
-  { href: '/', label: 'Сървъри' },
-  { href: '/news', label: 'Новини и туториали' },
-  { href: '/submit', label: 'Добави сървър' },
-];
+// Нарочно БЕЗ `generateStaticParams`: с него Next пререндира и страниците със
+// ЖИВ статус на билд (при празна база → празен списък, докато не изтече
+// revalidate). Езиците са само два и се резолвират на заявка — цената е нула.
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  if (!isLocale(raw)) return {};
+  const t = getDictionary(raw);
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: `${SITE_NAME} — ${t.meta.tagline}`, template: `%s · ${SITE_NAME}` },
+    description: t.home.description,
+    keywords: BASE_KEYWORDS[raw],
+    applicationName: SITE_NAME,
+    authors: [{ name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' }],
+    publisher: 'Carbon Stealth VCC',
+  };
+}
+
+export default async function LocaleLayout({ children, params }: Props) {
+  const { locale: raw } = await params;
+  if (!isLocale(raw)) notFound();
+  const locale: Locale = raw;
+  const t = getDictionary(locale);
+
+  const nav = [
+    { href: `/${locale}`, label: t.nav.servers },
+    { href: `/${locale}/rules`, label: t.nav.rules },
+    { href: `/${locale}/tutorials`, label: t.nav.tutorials },
+    { href: `/${locale}/news`, label: t.nav.news },
+    { href: `/${locale}/submit`, label: t.nav.submit },
+  ];
+
+  const legal = [
+    { href: `/${locale}/impresum`, label: t.footer.impresum },
+    { href: `/${locale}/privacy`, label: t.footer.privacy },
+    { href: `/${locale}/terms`, label: t.footer.terms },
+    { href: `/${locale}/report`, label: t.footer.report },
+  ];
+
   return (
-    <html lang="bg">
+    <html lang={HTML_LANG[locale]}>
       <body className="min-h-dvh flex flex-col">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:m-3 focus:rounded focus:bg-fivem-500 focus:px-3 focus:py-2 focus:text-fivem-950"
+          className="sr-only focus:not-sr-only focus:absolute focus:m-3 focus:rounded focus:bg-cyan-500 focus:px-3 focus:py-2 focus:text-ink-950"
         >
-          Към съдържанието
+          {t.nav.skipToContent}
         </a>
 
         <header className="border-b border-white/10">
+          {/* Трикольорът от логото — тънка лента, за да не се повтаря знамето. */}
+          <div className="flag-rule h-[3px]" aria-hidden="true" />
           <nav
-            aria-label="Основна навигация"
-            className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4"
+            aria-label={t.nav.main}
+            className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4"
           >
-            <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-              {/* Иконното ниво на маскота: плътни цветове и дебели рамки —
-                  единственото, което остава четимо под 32 px. */}
-              <Mascot detail="icon" size={30} title={null} />
-              FiveM<span className="text-fivem-400">Bulgaria</span>
+            <Link href={`/${locale}`} className="flex items-center">
+              <Image src={logo} alt={SITE_NAME} priority className="h-8 w-auto" />
             </Link>
-            <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-300">
-              {NAV.map((item) => (
+
+            <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-silver-400">
+              {nav.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:text-fivem-400">
+                  <Link href={item.href} className="hover:text-cyan-300">
                     {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
+
+            <div className="ms-auto">
+              <LanguageSwitch locale={locale} label={t.nav.language} />
+            </div>
           </nav>
         </header>
 
-        <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+        <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
           {children}
         </main>
 
-        <footer className="border-t border-white/10 px-4 py-8 text-sm text-slate-400">
-          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
-            <p>
-              © {new Date().getFullYear()} {SITE_NAME} · продукт на{' '}
+        <footer className="border-t border-white/10 px-4 py-8 text-sm text-silver-500">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
+            <p className="flex items-center gap-2">
+              <Mascot detail="icon" size={22} title={null} />© {new Date().getFullYear()} {SITE_NAME}{' '}
+              · {t.footer.product}{' '}
               <a
                 href="https://carbonstealth.eu"
-                className="text-fivem-400 underline underline-offset-2"
+                className="text-cyan-300 underline underline-offset-2"
               >
                 Carbon Stealth VCC
               </a>
             </p>
             <ul className="flex flex-wrap gap-4">
-              <li>
-                <Link href="/impresum" className="underline underline-offset-2 hover:text-fivem-400">
-                  Импресум
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="underline underline-offset-2 hover:text-fivem-400">
-                  Поверителност
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="underline underline-offset-2 hover:text-fivem-400">
-                  Условия
-                </Link>
-              </li>
-              <li>
-                <Link href="/report" className="underline underline-offset-2 hover:text-fivem-400">
-                  Сигнал
-                </Link>
-              </li>
+              {legal.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="underline underline-offset-2 hover:text-cyan-300">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
-          {/* Контрастът тук е проверен: slate-400 върху fivem-950 = 7.65:1.
-              slate-500 дава 4.12:1 и пада под 4.5:1 (WCAG 1.4.3) — точно на
-              реда с търговско-марковия дисклеймър, който трябва да е видим. */}
-          <p className="mx-auto mt-4 max-w-5xl text-sm text-slate-400">
-            Независим проект. Не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или
-            Cfx.re. GTA V, Grand Theft Auto и Rockstar Games са марки на Take-Two Interactive
-            Software, Inc.; FiveM и Cfx.re са марки на съответните им притежатели. Употребата им тук
-            е само за обозначаване на платформата, за която се отнася съдържанието.
-          </p>
+          {/* Контрастът е проверен: silver-500 върху ink-950 минава 4.5:1. */}
+          <p className="mx-auto mt-4 max-w-6xl text-sm text-silver-500">{t.footer.disclaimer}</p>
         </footer>
 
         <script
           type="application/ld+json"
-          // Съдържанието е наше, не идва от потребител.
-          dangerouslySetInnerHTML={{ __html: jsonLdString(siteJsonLd()) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString(siteJsonLd(locale)) }}
         />
       </body>
     </html>

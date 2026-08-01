@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
 import { withinGlobalRateLimit } from '@/lib/rate-limit';
+import { readLocale } from './locale';
 
 /**
  * Сигнал за незаконно съдържание — чл. 16 от Регламент (ЕС) 2022/2065 (DSA).
@@ -23,8 +24,9 @@ const reportSchema = z.object({
 });
 
 export async function submitReportAction(formData: FormData): Promise<void> {
-  if (String(formData.get('website') ?? '').length > 0) redirect('/report?ok=1');
-  if (!withinGlobalRateLimit('report')) redirect('/report?error=rate_limit');
+  const locale = readLocale(formData);
+  if (String(formData.get('website') ?? '').length > 0) redirect(`/${locale}/report?ok=1`);
+  if (!withinGlobalRateLimit('report')) redirect(`/${locale}/report?error=rate_limit`);
 
   const value = (name: string) => {
     const raw = formData.get(name);
@@ -41,7 +43,9 @@ export async function submitReportAction(formData: FormData): Promise<void> {
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
-    redirect(`/report?error=invalid&field=${encodeURIComponent(String(issue?.path[0] ?? ''))}`);
+    redirect(
+      `/${locale}/report?error=invalid&field=${encodeURIComponent(String(issue?.path[0] ?? ''))}`,
+    );
   }
 
   try {
@@ -56,8 +60,8 @@ export async function submitReportAction(formData: FormData): Promise<void> {
     });
   } catch (error) {
     console.error('[report] записът се провали', error);
-    redirect('/report?error=storage');
+    redirect(`/${locale}/report?error=storage`);
   }
 
-  redirect('/report?ok=1');
+  redirect(`/${locale}/report?ok=1`);
 }

@@ -1,117 +1,21 @@
+import { LegalArticle } from '@/components/LegalArticle';
+import { getLegal } from '@/content/legal';
+import { isLocale } from '@/i18n/config';
 import { pageMetadata } from '@/lib/seo';
-import { PUBLISHER } from '@/lib/site';
 
-export const metadata = pageMetadata({
-  title: 'Общи условия',
-  description:
-    'Условия за ползване на директорията FiveM Bulgaria: листване, модерация, ревюта, класиране и сигнали за незаконно съдържание.',
-  path: '/terms',
-});
+export const revalidate = 86_400;
 
-const link = 'text-fivem-400 underline underline-offset-2';
+type Props = { params: Promise<{ locale: string }> };
 
-export default function TermsPage() {
-  return (
-    <div className="max-w-2xl space-y-4 text-slate-200">
-      <h1 className="text-3xl font-semibold tracking-tight">Общи условия</h1>
+export async function generateMetadata({ params }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const doc = getLegal(locale).terms;
+  return pageMetadata({ locale, title: doc.title, description: doc.description, path: '/terms' });
+}
 
-      <p>
-        FiveM Bulgaria е независима директория на български FiveM сървъри, поддържана от{' '}
-        {PUBLISHER.legalName} (данни в{' '}
-        <a href="/impresum" className={link}>
-          импресума
-        </a>
-        ). Проектът не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или Cfx.re и
-        не предоставя игрови сървъри.
-      </p>
-
-      <h2 className="pt-4 text-xl font-semibold">Листване на сървър</h2>
-      <ul className="list-disc space-y-2 pl-5">
-        <li>Основното листване е безплатно и минава през ръчна модерация.</li>
-        <li>
-          Предлагаме и <strong>платено промотиране</strong> — то само променя мястото в подредбата и
-          е обозначено със значка „промотиран (платено)“ и в списъка, и на страницата на сървъра.
-          Промотирането не влияе на статуса, броя играчи или ревютата.
-        </li>
-        <li>
-          Подателят декларира, че има право да представлява сървъра и че подадените текстове и
-          линкове са негови или има разрешение за тях.
-        </li>
-        <li>
-          Сървър, който не желае да е в директорията, пише на{' '}
-          <a href={`mailto:${PUBLISHER.email}`} className={link}>
-            {PUBLISHER.email}
-          </a>{' '}
-          и го сваляме.
-        </li>
-      </ul>
-
-      <h2 className="pt-4 text-xl font-semibold">Как подреждаме сървърите</h2>
-      <p>Подредбата в списъка се определя от четири параметъра, в този ред:</p>
-      <ol className="list-decimal space-y-1 pl-5">
-        <li>платено промотиране (валидно и обозначено);</li>
-        <li>онлайн статус, прочетен от публичните endpoint-и на сървъра;</li>
-        <li>брой играчи в момента;</li>
-        <li>азбучен ред при равенство.</li>
-      </ol>
-      <p>
-        Оценките от ревюта <strong>не</strong> влияят на подредбата. Не приемаме плащане за оценка или
-        за скриване на ревю.
-      </p>
-
-      <h2 className="pt-4 text-xl font-semibold">Как модерираме</h2>
-      <p>
-        Всяка заявка, ревю и сигнал се преглеждат <strong>от човек</strong> — не ползваме
-        автоматизирано вземане на решения. Отказваме или сваляме съдържание при: незаконно
-        съдържание, продажба на чужда интелектуална собственост, реклама на читове или услуги в
-        нарушение на правилата на платформата, подвеждащи данни за сървъра, обиди и лични данни на
-        трети лица. Обичайният срок за преглед е до 7 работни дни.
-      </p>
-      <p>
-        При отказ или сваляне на листинг изпращаме на подадения имейл мотивирано решение по чл. 17 от
-        Регламент (ЕС) 2022/2065: какво е ограничението и обхватът му, фактите и обстоятелствата,
-        дали е ползвано автоматизирано средство, кое правило или законово основание е приложено и как
-        може да се оспори решението — с отговор на{' '}
-        <a href={`mailto:${PUBLISHER.email}`} className={link}>
-          {PUBLISHER.email}
-        </a>{' '}
-        и с право на жалба до Комисията за регулиране на съобщенията като координатор на цифровите
-        услуги и до съда.
-      </p>
-
-      <h2 className="pt-4 text-xl font-semibold">Ревюта</h2>
-      <p>
-        Ревютата са мнения на посетители и се публикуват след преглед. Не проверяваме дали авторът
-        наистина е играл на сървъра — затова не са проверени отзиви и не са класация. Махаме обиди,
-        лични данни, реклама и очевидно фалшиви оценки. Ние не пишем ревюта и не възлагаме писането
-        им.
-      </p>
-      <p>
-        Сървър, за когото е публикувано ревю, може да поиска преглед или да публикува отговор на{' '}
-        <a href={`mailto:${PUBLISHER.email}`} className={link}>
-          {PUBLISHER.email}
-        </a>
-        ; отговорът се показва под ревюто.
-      </p>
-
-      <h2 className="pt-4 text-xl font-semibold">Сигнали за незаконно съдържание</h2>
-      <p>
-        Сигнал се подава през{' '}
-        <a href="/report" className={link}>
-          формата за сигнали
-        </a>{' '}
-        (чл. 16 от Регламент (ЕС) 2022/2065). Изпращаме потвърждение за получаване, разглеждаме
-        сигнала своевременно, добросъвестно и без произвол, и те уведомяваме за решението заедно с
-        информация за възможностите за оспорване — отговор до нас, жалба до Комисията за регулиране
-        на съобщенията и защита по съдебен ред.
-      </p>
-
-      <h2 className="pt-4 text-xl font-semibold">Отговорност</h2>
-      <p>
-        Статусът на сървърите се чете автоматично от техните публични endpoint-и и може да е
-        неактуален или непълен. Не отговаряме за съдържанието, правилата или поведението на трети
-        сървъри и за вреди от ползването им.
-      </p>
-    </div>
-  );
+export default async function TermsPage({ params }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  return <LegalArticle doc={getLegal(locale).terms} />;
 }

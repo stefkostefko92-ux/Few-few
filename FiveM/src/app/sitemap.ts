@@ -1,25 +1,42 @@
 import type { MetadataRoute } from 'next';
 
+import { LOCALES } from '@/i18n/config';
 import { prisma } from '@/lib/db';
-import { absoluteUrl } from '@/lib/seo';
+import { localeUrl } from '@/lib/seo';
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticEntries: MetadataRoute.Sitemap = [
-    { url: absoluteUrl('/'), changeFrequency: 'hourly', priority: 1 },
-    { url: absoluteUrl('/servers/whitelist'), changeFrequency: 'daily', priority: 0.8 },
-    ...['esx', 'qbcore', 'qbox', 'ox_core'].map((framework) => ({
-      url: absoluteUrl(`/servers/framework/${framework}`),
-      changeFrequency: 'daily' as const,
-      priority: 0.8,
-    })),
-    { url: absoluteUrl('/news'), changeFrequency: 'daily', priority: 0.7 },
-    { url: absoluteUrl('/submit'), changeFrequency: 'monthly', priority: 0.5 },
-    { url: absoluteUrl('/impresum'), changeFrequency: 'yearly', priority: 0.3 },
-    { url: absoluteUrl('/privacy'), changeFrequency: 'yearly', priority: 0.2 },
-    { url: absoluteUrl('/terms'), changeFrequency: 'yearly', priority: 0.2 },
+  /** Пътища без езиков префикс — умножават се по езиците. */
+  const paths: Array<{ path: string; changeFrequency: 'hourly' | 'daily' | 'monthly' | 'yearly'; priority: number }> = [
+    { path: '/', changeFrequency: 'hourly', priority: 1 },
+    { path: '/servers/whitelist', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/servers/framework/esx', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/servers/framework/qbcore', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/servers/framework/qbox', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/servers/framework/ox_core', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/rules', changeFrequency: 'monthly', priority: 0.9 },
+    { path: '/tutorials', changeFrequency: 'monthly', priority: 0.9 },
+    { path: '/news', changeFrequency: 'daily', priority: 0.7 },
+    { path: '/submit', changeFrequency: 'monthly', priority: 0.5 },
+    { path: '/impresum', changeFrequency: 'yearly', priority: 0.3 },
+    { path: '/privacy', changeFrequency: 'yearly', priority: 0.2 },
+    { path: '/terms', changeFrequency: 'yearly', priority: 0.2 },
   ];
+
+  /** Всеки адрес носи езиковите си близнаци — иначе двата езика се конкурират. */
+  const alternates = (path: string) => ({
+    languages: Object.fromEntries(LOCALES.map((locale) => [locale, localeUrl(locale, path)])),
+  });
+
+  const staticEntries: MetadataRoute.Sitemap = LOCALES.flatMap((locale) =>
+    paths.map((entry) => ({
+      url: localeUrl(locale, entry.path),
+      changeFrequency: entry.changeFrequency,
+      priority: entry.priority,
+      alternates: alternates(entry.path),
+    })),
+  );
 
   try {
     const [servers, posts] = await Promise.all([
@@ -35,18 +52,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [
       ...staticEntries,
-      ...servers.map((server) => ({
-        url: absoluteUrl(`/servers/${server.slug}`),
-        lastModified: server.updatedAt,
-        changeFrequency: 'daily' as const,
-        priority: 0.8,
-      })),
-      ...posts.map((post) => ({
-        url: absoluteUrl(`/news/${post.slug}`),
-        lastModified: post.updatedAt,
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-      })),
+      ...LOCALES.flatMap((locale) => [
+        ...servers.map((server) => ({
+          url: localeUrl(locale, `/servers/${server.slug}`),
+          lastModified: server.updatedAt,
+          changeFrequency: 'daily' as const,
+          priority: 0.8,
+          alternates: alternates(`/servers/${server.slug}`),
+        })),
+        ...posts.map((post) => ({
+          url: localeUrl(locale, `/news/${post.slug}`),
+          lastModified: post.updatedAt,
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+          alternates: alternates(`/news/${post.slug}`),
+        })),
+      ]),
     ];
   } catch (error) {
     // Без база пак връщаме валиден sitemap — по-добре непълен, отколкото 500.

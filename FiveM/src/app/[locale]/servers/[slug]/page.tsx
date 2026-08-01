@@ -1,115 +1,148 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { submitReviewAction } from '@/app/actions/review';
+import { getDictionary } from '@/i18n';
+import { isLocale } from '@/i18n/config';
 import { cfxJoinUrl, FRAMEWORK_LABEL, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
-import { absoluteUrl, breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { breadcrumbJsonLd, jsonLdString, localeUrl, pageMetadata } from '@/lib/seo';
 import { getPublicServer, isFeatured, REVIEWS_SHOWN, reviewSummary } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
 
-type Params = {
-  params: Promise<{ slug: string }>;
+type Props = {
+  params: Promise<{ locale: string; slug: string }>;
   searchParams: Promise<{ review?: string; error?: string }>;
 };
 
-export async function generateMetadata({ params }: Pick<Params, 'params'>) {
-  const { slug } = await params;
+export async function generateMetadata({ params }: Pick<Props, 'params'>) {
+  const { locale: raw, slug } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
   const server = await getPublicServer(slug);
-  if (!server) return pageMetadata({ title: 'Сървърът не е намерен', description: '', noindex: true });
+  if (!server) {
+    return pageMetadata({ locale, title: t.news.notFound, description: '', noindex: true });
+  }
 
   return pageMetadata({
-    title: `${server.name} — FiveM RP сървър`,
+    locale,
+    title: `${server.name} — FiveM RP`,
     description:
       server.tagline ??
-      `${server.name}: български FiveM roleplay сървър на ${FRAMEWORK_LABEL[server.framework as FrameworkId]}. Статус, играчи, правила и Discord.`,
+      `${server.name}: ${FRAMEWORK_LABEL[server.framework as FrameworkId]}. ${t.home.description}`,
     path: `/servers/${server.slug}`,
     keywords: [server.name, `${server.name} FiveM`],
   });
 }
 
-export default async function ServerPage({ params, searchParams }: Params) {
-  const { slug } = await params;
+export default async function ServerPage({ params, searchParams }: Props) {
+  const { locale: raw, slug } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
   const { review, error } = await searchParams;
+
   const server = await getPublicServer(slug);
   if (!server) notFound();
 
   const summary = await reviewSummary(server.id);
   const joinUrl = server.cfxJoinCode ? cfxJoinUrl(server.cfxJoinCode) : null;
+  const iconUrl =
+    server.cfxJoinCode && server.iconVersion !== null
+      ? `https://frontend.cfx-services.net/api/servers/icon/${server.cfxJoinCode}/${server.iconVersion}.png`
+      : null;
   const featured = isFeatured(server);
-  const message = errorMessage(error);
+  const message = errorMessage(error, t);
+  const reportHref = `/${locale}/report?url=${encodeURIComponent(
+    localeUrl(locale, `/servers/${server.slug}`),
+  )}`;
 
   // ВНИМАНИЕ: тук НЯМА `aggregateRating`. Оценките са от анонимни, непроверени
-  // ревюта — издаването им към търсачките и AI отговарачите като структуриран
-  // рейтинг е твърдение, което не можем да подкрепим (чл. 7, пар. 6 от Дир.
-  // 2005/29/ЕО иска да се каже дали и как проверяваме отзивите). Схемата се
-  // добавя чак когато има реална проверка на автора.
+  // ревюта — издаването им към търсачките като структуриран рейтинг е
+  // твърдение, което не можем да подкрепим.
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: server.name,
-    url: absoluteUrl(`/servers/${server.slug}`),
+    url: localeUrl(locale, `/servers/${server.slug}`),
     description: server.tagline ?? undefined,
+    inLanguage: locale,
   };
 
   return (
-    <article>
-      <nav aria-label="Пътека" className="text-sm text-slate-400">
-        <Link href="/" className="underline underline-offset-2 hover:text-fivem-400">
-          Сървъри
+    <article className="max-w-3xl">
+      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-500">
+        <Link href={`/${locale}`} className="underline underline-offset-2 hover:text-cyan-300">
+          {t.server.breadcrumb}
         </Link>{' '}
         / <span aria-current="page">{server.name}</span>
       </nav>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
+        {iconUrl && (
+          <Image
+            src={iconUrl}
+            alt=""
+            width={48}
+            height={48}
+            className="rounded-lg border border-white/10"
+            unoptimized
+          />
+        )}
         <h1 className="text-3xl font-semibold tracking-tight">{server.name}</h1>
         {featured && (
-          <span className="rounded bg-fivem-600/20 px-2 py-0.5 text-xs text-fivem-400">
-            промотиран (платено)
+          <span className="rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">
+            {t.server.promoted}
+          </span>
+        )}
+        {server.source === 'DISCOVERED' && (
+          <span className="rounded border border-white/15 px-2 py-0.5 text-xs text-silver-500">
+            {t.server.discovered}
           </span>
         )}
       </div>
-      {server.tagline && <p className="mt-2 text-slate-300">{server.tagline}</p>}
+      {server.tagline && <p className="mt-2 text-silver-400">{server.tagline}</p>}
 
       <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-slate-400">Статус</dt>
+          <dt className="text-silver-500">{t.server.status}</dt>
           <dd>
-            {formatPlayers({
-              outcome: server.lastProbe,
-              players: server.players,
-              maxPlayers: server.maxPlayers,
-            })}
+            {formatPlayers(
+              { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
+              t.status,
+            )}
           </dd>
         </div>
         <div>
-          <dt className="text-slate-400">Рамка</dt>
+          <dt className="text-silver-500">{t.server.framework}</dt>
           <dd>{FRAMEWORK_LABEL[server.framework as FrameworkId]}</dd>
         </div>
         <div>
-          <dt className="text-slate-400">Достъп</dt>
-          <dd>{server.whitelist ? 'whitelist (с одобрение)' : 'свободен вход'}</dd>
+          <dt className="text-silver-500">{t.server.access}</dt>
+          <dd>{server.whitelist ? t.server.whitelisted : t.server.open}</dd>
         </div>
         <div>
-          <dt className="text-slate-400">Оценка</dt>
+          <dt className="text-silver-500">{t.server.rating}</dt>
           <dd>
             {summary.average === null
-              ? 'още няма ревюта'
-              : `${summary.average} / 5 от ${summary.count} ревюта`}
+              ? t.server.noReviews
+              : `${summary.average} / 5 ${t.server.ratingOf} ${summary.count} ${t.server.reviewsWord}`}
           </dd>
         </div>
       </dl>
 
-      <p className="mt-4 text-sm text-slate-400">
-        Оценките са мнения на посетители. Не проверяваме дали авторът наистина е играл на сървъра;
-        публикуваме след ръчен преглед и махаме очевидно фалшивите. Не приемаме плащане за оценка.
-      </p>
+      <p className="mt-4 text-sm text-silver-500">{t.server.ratingDisclaimer}</p>
+
+      {server.source === 'DISCOVERED' && (
+        <p className="mt-4 rounded-lg border border-white/10 bg-ink-900/70 p-3 text-sm text-silver-400">
+          {t.server.discoveredNote}
+        </p>
+      )}
 
       {server.lastProbe === 'HIDDEN' && (
-        <p className="mt-4 rounded-lg border border-white/10 bg-fivem-900/60 p-3 text-sm text-slate-300">
-          Собственикът е скрил публичния статус на сървъра (<code>sv_requestParanoia</code>). Това не
-          означава, че сървърът е офлайн — просто не можем да четем броя играчи.
+        <p className="mt-4 rounded-lg border border-white/10 bg-ink-900/70 p-3 text-sm text-silver-400">
+          {t.server.hiddenNotice}
         </p>
       )}
 
@@ -118,27 +151,27 @@ export default async function ServerPage({ params, searchParams }: Params) {
           <a
             href={joinUrl}
             rel="nofollow noopener"
-            className="rounded-lg bg-fivem-500 px-4 py-2 font-medium text-fivem-950 hover:bg-fivem-400"
+            className="rounded-lg bg-cyan-500 px-4 py-2 font-medium text-ink-950 hover:bg-cyan-400"
           >
-            Влез в сървъра
+            {t.server.join}
           </a>
         )}
         {server.discordUrl && (
           <a
             href={server.discordUrl}
             rel="nofollow noopener ugc"
-            className="rounded-lg border border-white/15 px-4 py-2 hover:border-fivem-500"
+            className="rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
           >
-            Discord
+            {t.server.discord}
           </a>
         )}
         {server.websiteUrl && (
           <a
             href={server.websiteUrl}
             rel="nofollow noopener ugc"
-            className="rounded-lg border border-white/15 px-4 py-2 hover:border-fivem-500"
+            className="rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
           >
-            Сайт
+            {t.server.website}
           </a>
         )}
       </div>
@@ -146,25 +179,25 @@ export default async function ServerPage({ params, searchParams }: Params) {
       {server.description && (
         <section className="mt-10">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold">За сървъра</h2>
+            <h2 className="text-xl font-semibold">{t.server.about}</h2>
             <Link
-              href={`/report?url=${encodeURIComponent(absoluteUrl(`/servers/${server.slug}`))}`}
-              className="text-sm text-slate-400 underline underline-offset-2 hover:text-fivem-400"
+              href={reportHref}
+              className="text-sm text-silver-500 underline underline-offset-2 hover:text-cyan-300"
             >
-              ⚑ Сигнал за това съдържание
+              {t.server.reportContent}
             </Link>
           </div>
-          {/* Текстът е подаден от собственика — рендира се като ЧИСТ ТЕКСТ, без HTML/Markdown. */}
-          <p className="mt-3 whitespace-pre-line text-slate-300">{server.description}</p>
+          {/* Текстът е подаден от собственика — чист текст, без HTML/Markdown. */}
+          <p className="mt-3 whitespace-pre-line text-silver-400">{server.description}</p>
         </section>
       )}
 
-      <section className="mt-10" id="ревю">
-        <h2 className="text-xl font-semibold">Ревюта</h2>
+      <section className="mt-10" id="reviews">
+        <h2 className="text-xl font-semibold">{t.server.reviews}</h2>
 
         {review === 'ok' && (
-          <p role="status" className="mt-3 rounded-lg border border-fivem-600 bg-fivem-900 p-3">
-            Благодарим. Ревюто влиза в опашка за преглед и се публикува след одобрение.
+          <p role="status" className="mt-3 rounded-lg border border-cyan-600 bg-ink-900 p-3">
+            {t.server.reviewOk}
           </p>
         )}
         {message && (
@@ -174,46 +207,49 @@ export default async function ServerPage({ params, searchParams }: Params) {
         )}
 
         {server.reviews.length === 0 ? (
-          <p className="mt-3 text-slate-300">Още няма одобрени ревюта за този сървър.</p>
+          <p className="mt-3 text-silver-400">{t.server.reviewsEmpty}</p>
         ) : (
           <>
             <ul className="mt-4 space-y-4">
               {server.reviews.map((item) => (
                 <li key={item.id} className="rounded-lg border border-white/10 p-4">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="text-sm text-slate-400">
-                      {item.rating} / 5 · {item.authorAlias ?? 'анонимен'}
+                    <p className="text-sm text-silver-500">
+                      {item.rating} / 5 · {item.authorAlias ?? t.server.anonymous}
                     </p>
                     <Link
-                      href={`/report?url=${encodeURIComponent(absoluteUrl(`/servers/${server.slug}#ревю`))}`}
-                      className="text-xs text-slate-400 underline underline-offset-2 hover:text-fivem-400"
+                      href={reportHref}
+                      className="text-xs text-silver-500 underline underline-offset-2 hover:text-cyan-300"
                     >
-                      ⚑ Сигнал
+                      {t.server.reportShort}
                     </Link>
                   </div>
-                  {item.body && <p className="mt-2 whitespace-pre-line text-slate-200">{item.body}</p>}
+                  {item.body && (
+                    <p className="mt-2 whitespace-pre-line text-silver-300">{item.body}</p>
+                  )}
                 </li>
               ))}
             </ul>
             {summary.count > REVIEWS_SHOWN && (
-              <p className="mt-3 text-sm text-slate-400">
-                Показваме последните {REVIEWS_SHOWN} от общо {summary.count}.
+              <p className="mt-3 text-sm text-silver-500">
+                {t.server.reviewsShownOf} {REVIEWS_SHOWN} {t.server.reviewsOfTotal} {summary.count}.
               </p>
             )}
           </>
         )}
 
         <form action={submitReviewAction} className="mt-8 max-w-md space-y-4">
-          <h3 className="font-medium">Остави ревю</h3>
+          <h3 className="font-medium">{t.server.leaveReview}</h3>
           <input type="hidden" name="slug" value={server.slug} />
+          <input type="hidden" name="locale" value={locale} />
 
           <div>
-            <label htmlFor="rating">Оценка (1–5)</label>
+            <label htmlFor="rating">{t.server.ratingLabel}</label>
             <select
               id="rating"
               name="rating"
               defaultValue="5"
-              className="mt-1 w-full rounded-lg border border-white/15 bg-fivem-900 px-3 py-2 text-slate-100"
+              className="mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
             >
               {[5, 4, 3, 2, 1].map((value) => (
                 <option key={value} value={value}>
@@ -224,30 +260,29 @@ export default async function ServerPage({ params, searchParams }: Params) {
           </div>
 
           <div>
-            <label htmlFor="authorAlias">Псевдоним (по избор)</label>
+            <label htmlFor="authorAlias">{t.server.aliasLabel}</label>
             <input
               id="authorAlias"
               name="authorAlias"
               maxLength={40}
-              className="mt-1 w-full rounded-lg border border-white/15 bg-fivem-900 px-3 py-2 text-slate-100"
+              className="mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
             />
           </div>
 
           <div>
-            <label htmlFor="body">Мнение</label>
+            <label htmlFor="body">{t.server.bodyLabel}</label>
             <textarea
               id="body"
               name="body"
               rows={4}
               maxLength={2000}
-              className="mt-1 w-full rounded-lg border border-white/15 bg-fivem-900 px-3 py-2 text-slate-100"
+              className="mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
               aria-describedby="review-help"
             />
-            <p id="review-help" className="mt-1 text-sm text-slate-400">
-              Не искаме и не пазим име, имейл или IP адрес. Не публикувай лични данни на други хора.
-              Ревюто се преглежда ръчно преди публикуване — виж{' '}
-              <Link href="/terms" className="text-fivem-400 underline underline-offset-2">
-                Общите условия
+            <p id="review-help" className="mt-1 text-sm text-silver-500">
+              {t.server.reviewHelp}{' '}
+              <Link href={`/${locale}/terms`} className="text-cyan-300 underline underline-offset-2">
+                {t.server.reviewHelpTerms}
               </Link>
               .
             </p>
@@ -255,15 +290,15 @@ export default async function ServerPage({ params, searchParams }: Params) {
 
           {/* Honeypot — скрит за хора, видим за ботове. */}
           <div aria-hidden="true" className="hidden">
-            <label htmlFor="website">Не попълвай това поле</label>
+            <label htmlFor="website">{t.submit.honeypot}</label>
             <input id="website" name="website" tabIndex={-1} autoComplete="off" />
           </div>
 
           <button
             type="submit"
-            className="rounded-lg border border-white/15 px-4 py-2 hover:border-fivem-500"
+            className="rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
           >
-            Изпрати ревюто
+            {t.server.reviewSubmit}
           </button>
         </form>
       </section>
@@ -273,8 +308,8 @@ export default async function ServerPage({ params, searchParams }: Params) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLdString(
-            breadcrumbJsonLd([
-              { name: 'Сървъри', path: '/' },
+            breadcrumbJsonLd(locale, [
+              { name: t.server.breadcrumb, path: '/' },
               { name: server.name, path: `/servers/${server.slug}` },
             ]),
           ),

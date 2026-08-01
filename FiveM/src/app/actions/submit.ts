@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { formatServerAddress, parseCfxJoinCode, parseServerAddress } from '@/lib/fivem';
 import { withinGlobalRateLimit } from '@/lib/rate-limit';
 import type { FormErrorCode } from '@/lib/messages';
+import { readLocale } from './locale';
 
 /**
  * Заявка за листване. Влиза в модераторска опашка — нищо не става публично
@@ -40,15 +41,16 @@ const FIELD_ERROR: Record<string, FormErrorCode> = {
   discordUrl: 'invalid_url',
 };
 
-function fail(code: FormErrorCode, field?: string): never {
+function fail(locale: string, code: FormErrorCode, field?: string): never {
   const suffix = field ? `&field=${encodeURIComponent(field)}` : '';
-  redirect(`/submit?error=${code}${suffix}`);
+  redirect(`/${locale}/submit?error=${code}${suffix}`);
 }
 
 export async function submitServerAction(formData: FormData): Promise<void> {
+  const locale = readLocale(formData);
   // Honeypot: попълнено поле = бот.
-  if (String(formData.get('website') ?? '').length > 0) redirect('/submit?ok=1');
-  if (!withinGlobalRateLimit('submit')) fail('rate_limit');
+  if (String(formData.get('website') ?? '').length > 0) redirect(`/${locale}/submit?ok=1`);
+  if (!withinGlobalRateLimit('submit')) fail(locale, 'rate_limit');
 
   /** Празното поле е „непопълнено“, не „празен низ“. */
   const field = (name: string): string | undefined => {
@@ -67,16 +69,16 @@ export async function submitServerAction(formData: FormData): Promise<void> {
   });
   if (!parsed.success) {
     const path = String(parsed.error.issues[0]?.path[0] ?? '');
-    fail(FIELD_ERROR[path] ?? 'required_target', path || undefined);
+    fail(locale, FIELD_ERROR[path] ?? 'required_target', path || undefined);
   }
 
   const data = parsed.data;
 
   const joinCode = data.cfxJoinCode ? parseCfxJoinCode(data.cfxJoinCode) : null;
-  if (data.cfxJoinCode && !joinCode) fail('invalid_cfx', 'cfxJoinCode');
+  if (data.cfxJoinCode && !joinCode) fail(locale, 'invalid_cfx', 'cfxJoinCode');
 
   const address = data.address ? parseServerAddress(data.address) : null;
-  if (data.address && !address) fail('invalid_address', 'address');
+  if (data.address && !address) fail(locale, 'invalid_address', 'address');
 
   try {
     await prisma.submission.create({
@@ -92,8 +94,8 @@ export async function submitServerAction(formData: FormData): Promise<void> {
   } catch (error) {
     // Глътната грешка без лог значи мълчалив провал в продукция.
     console.error('[submit] записът на заявката се провали', error);
-    fail('storage');
+    fail(locale, 'storage');
   }
 
-  redirect('/submit?ok=1');
+  redirect(`/${locale}/submit?ok=1`);
 }

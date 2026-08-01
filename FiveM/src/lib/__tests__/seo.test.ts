@@ -4,13 +4,16 @@ import { test } from 'node:test';
 import { averageRating, isFeatured } from '../rating';
 import { BASE_KEYWORDS, faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
 
-test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“', () => {
-  assert.ok(BASE_KEYWORDS.length >= 5);
-  assert.ok(BASE_KEYWORDS.includes('Carbon Stealth'));
+test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“ — на ВСЕКИ език', () => {
+  for (const locale of ['bg', 'en'] as const) {
+    assert.ok(BASE_KEYWORDS[locale].length >= 5, `${locale}: под 5 ключови думи`);
+    assert.ok(BASE_KEYWORDS[locale].includes('Carbon Stealth'), `${locale}: липсва Carbon Stealth`);
+  }
 });
 
 test('всяка страница носи базовите ключови думи без дубли', () => {
   const meta = pageMetadata({
+    locale: 'bg',
     title: 'Т',
     description: 'О',
     path: '/servers/x',
@@ -19,19 +22,26 @@ test('всяка страница носи базовите ключови ду�
   const keywords = meta.keywords as string[];
   assert.ok(keywords.includes('нещо'));
   assert.equal(keywords.filter((k) => k === 'Carbon Stealth').length, 1);
-  assert.match(String(meta.alternates?.canonical), /\/servers\/x$/);
+  assert.match(String(meta.alternates?.canonical), /\/bg\/servers\/x$/);
+  // Всяка страница изброява езиковите си близнаци — иначе двата езика се
+  // конкурират за едно и също запитване.
+  const languages = meta.alternates?.languages as Record<string, string>;
+  assert.match(languages.en, /\/en\/servers\/x$/);
+  assert.ok(languages['x-default']);
 });
 
 test('noindex се задава само когато е поискан', () => {
-  assert.equal(pageMetadata({ title: 'T', description: 'D' }).robots, undefined);
-  assert.deepEqual(pageMetadata({ title: 'T', description: 'D', noindex: true }).robots, {
+  assert.equal(pageMetadata({ locale: 'bg', title: 'T', description: 'D' }).robots, undefined);
+  assert.deepEqual(pageMetadata({ locale: 'bg', title: 'T', description: 'D', noindex: true }).robots, {
     index: false,
     follow: false,
   });
 });
 
 test('JSON-LD не може да затвори <script> (XSS от име на сървър)', () => {
-  const payload = serverListJsonLd([{ slug: 'x', name: '</script><img src=x onerror=alert(1)>' }]);
+  const payload = serverListJsonLd('bg', [
+    { slug: 'x', name: '</script><img src=x onerror=alert(1)>' },
+  ]);
   const serialized = jsonLdString(payload);
   assert.ok(!serialized.includes('</script>'));
   assert.ok(serialized.includes('\\u003c'));

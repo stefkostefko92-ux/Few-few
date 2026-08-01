@@ -1,36 +1,49 @@
+import Link from 'next/link';
+
 import { submitReportAction } from '@/app/actions/report';
+import { getDictionary } from '@/i18n';
+import { isLocale } from '@/i18n/config';
 import { errorMessage } from '@/lib/messages';
 import { pageMetadata } from '@/lib/seo';
 import { PUBLISHER } from '@/lib/site';
 
-export const metadata = pageMetadata({
-  title: 'Сигнал за незаконно съдържание',
-  description:
-    'Подай сигнал за незаконно съдържание в директорията по чл. 16 от Регламент (ЕС) 2022/2065 (Законодателен акт за цифровите услуги).',
-  path: '/report',
-  noindex: true,
-});
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; url?: string }>;
+};
 
-type Props = { searchParams: Promise<{ ok?: string; error?: string; url?: string }> };
+const field = 'mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100';
 
-const field = 'mt-1 w-full rounded-lg border border-white/15 bg-fivem-900 px-3 py-2 text-slate-100';
+export async function generateMetadata({ params }: Pick<Props, 'params'>) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
+  return pageMetadata({
+    locale,
+    title: t.report.title,
+    description: t.report.description,
+    path: '/report',
+    noindex: true,
+  });
+}
 
-export default async function ReportPage({ searchParams }: Props) {
+export default async function ReportPage({ params, searchParams }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
   const { ok, error, url } = await searchParams;
-  const message = errorMessage(error);
+  const message = errorMessage(error, t);
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Сигнал за незаконно съдържание</h1>
-      <p className="mt-3 text-slate-300">
-        Формата е механизмът за уведомяване по чл. 16 от Регламент (ЕС) 2022/2065. Разглеждаме всеки
-        сигнал своевременно и без произвол, изпращаме потвърждение за получаване и след решението те
-        уведомяваме заедно с информация за възможностите за оспорване.
-      </p>
+      <h1 className="text-3xl font-semibold tracking-tight">
+        <span className="text-chrome">{t.report.h1}</span>
+      </h1>
+      <p className="mt-3 text-silver-400">{t.report.intro}</p>
 
       {ok && (
-        <p role="status" className="mt-6 rounded-lg border border-fivem-600 bg-fivem-900 p-3">
-          Получихме сигнала. Изпратихме потвърждение на посочения имейл и ще пишем след решението.
+        <p role="status" className="mt-6 rounded-lg border border-cyan-600 bg-ink-900 p-3">
+          {t.report.ok}
         </p>
       )}
       {message && (
@@ -40,8 +53,10 @@ export default async function ReportPage({ searchParams }: Props) {
       )}
 
       <form action={submitReportAction} className="mt-8 space-y-5">
+        <input type="hidden" name="locale" value={locale} />
+
         <div>
-          <label htmlFor="targetUrl">Точен адрес на съдържанието</label>
+          <label htmlFor="targetUrl">{t.report.urlLabel}</label>
           <input
             id="targetUrl"
             name="targetUrl"
@@ -52,13 +67,13 @@ export default async function ReportPage({ searchParams }: Props) {
             className={field}
             aria-describedby="target-help"
           />
-          <p id="target-help" className="mt-1 text-sm text-slate-400">
-            Копирай адреса от лентата на браузъра — чл. 16, ал. 2, б. „б“.
+          <p id="target-help" className="mt-1 text-sm text-silver-500">
+            {t.report.urlHelp}
           </p>
         </div>
 
         <div>
-          <label htmlFor="reason">Защо смяташ съдържанието за незаконно</label>
+          <label htmlFor="reason">{t.report.reasonLabel}</label>
           <textarea
             id="reason"
             name="reason"
@@ -69,18 +84,18 @@ export default async function ReportPage({ searchParams }: Props) {
             className={field}
             aria-describedby="reason-help"
           />
-          <p id="reason-help" className="mt-1 text-sm text-slate-400">
-            Достатъчно обоснована и подробна обосновка — чл. 16, ал. 2, б. „а“.
+          <p id="reason-help" className="mt-1 text-sm text-silver-500">
+            {t.report.reasonHelp}
           </p>
         </div>
 
         <div>
-          <label htmlFor="reporterName">Име</label>
+          <label htmlFor="reporterName">{t.report.nameLabel}</label>
           <input id="reporterName" name="reporterName" required maxLength={120} className={field} />
         </div>
 
         <div>
-          <label htmlFor="reporterEmail">Имейл</label>
+          <label htmlFor="reporterEmail">{t.report.emailLabel}</label>
           <input
             id="reporterEmail"
             name="reporterEmail"
@@ -90,12 +105,11 @@ export default async function ReportPage({ searchParams }: Props) {
             className={field}
             aria-describedby="email-help"
           />
-          <p id="email-help" className="mt-1 text-sm text-slate-400">
-            Ползваме го само за потвърждението и за решението по този сигнал. Основание: чл. 6, ал. 1,
-            б. „в“ ОРЗД (правно задължение по DSA). Подробности — в{' '}
-            <a href="/privacy" className="text-fivem-400 underline underline-offset-2">
-              политиката за поверителност
-            </a>
+          <p id="email-help" className="mt-1 text-sm text-silver-500">
+            {t.report.emailHelp}{' '}
+            <Link href={`/${locale}/privacy`} className="text-cyan-300 underline underline-offset-2">
+              {t.report.emailHelpLink}
+            </Link>
             .
           </p>
         </div>
@@ -109,35 +123,34 @@ export default async function ReportPage({ searchParams }: Props) {
             className="mt-1 h-4 w-4"
             aria-describedby="goodfaith-help"
           />
-          <label htmlFor="goodFaith" id="goodfaith-help" className="text-sm text-slate-300">
-            Декларирам добросъвестно, че информацията и твърденията в този сигнал са точни и пълни —
-            чл. 16, ал. 2, б. „г“.
+          <label htmlFor="goodFaith" id="goodfaith-help" className="text-sm text-silver-400">
+            {t.report.goodFaith}
           </label>
         </div>
 
         {/* Honeypot — скрит за хора, видим за ботове. */}
         <div aria-hidden="true" className="hidden">
-          <label htmlFor="website">Не попълвай това поле</label>
+          <label htmlFor="website">{t.submit.honeypot}</label>
           <input id="website" name="website" tabIndex={-1} autoComplete="off" />
         </div>
 
         <button
           type="submit"
-          className="rounded-lg bg-fivem-500 px-4 py-2 font-medium text-fivem-950 hover:bg-fivem-400"
+          className="rounded-lg bg-cyan-500 px-4 py-2 font-medium text-ink-950 hover:bg-cyan-400"
         >
-          Изпрати сигнала
+          {t.report.submitButton}
         </button>
       </form>
 
-      <p className="mt-8 text-sm text-slate-400">
-        Ако предпочиташ имейл:{' '}
+      <p className="mt-8 text-sm text-silver-500">
+        {t.report.mailFallback}{' '}
         <a
           href={`mailto:${PUBLISHER.email}`}
-          className="text-fivem-400 underline underline-offset-2"
+          className="text-cyan-300 underline underline-offset-2"
         >
           {PUBLISHER.email}
         </a>
-        . Сигналите с изчерпателна обосновка и точен адрес се обработват най-бързо.
+        . {t.report.mailTail}
       </p>
     </div>
   );

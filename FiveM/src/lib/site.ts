@@ -27,4 +27,7 @@ export const PUBLISHER = {
 export const ADDRESS_ONE_LINE = `${PUBLISHER.address.street}, гр. ${PUBLISHER.address.locality} ${PUBLISHER.address.postalCode}, обл. ${PUBLISHER.address.region}, ${PUBLISHER.address.country}`;
 
 /** Езиците, на които обслужваме контактните точки по DSA чл. 11 и чл. 12. */
-export const CONTACT_LANGUAGES = 'български и английски';
+export const CONTACT_LANGUAGES_LABEL: Record<'bg' | 'en', string> = {
+  bg: 'български и английски',
+  en: 'Bulgarian and English',
+};

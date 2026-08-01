@@ -1,66 +1,99 @@
 import Link from 'next/link';
 
 import { ServerCard } from '@/components/ServerCard';
+import { getDictionary } from '@/i18n';
+import { isLocale } from '@/i18n/config';
 import { breadcrumbJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = pageMetadata({
-  title: 'Whitelist FiveM сървъри в България',
-  description:
-    'Български FiveM RP сървъри с whitelist — приемат нови играчи само след одобрение. По-сериозна ролева игра и по-малко нарушители.',
-  path: '/servers/whitelist',
-  keywords: ['whitelist FiveM сървър', 'сериозен RP сървър', 'heavy RP България'],
-});
+type Props = { params: Promise<{ locale: string }> };
 
-export default async function WhitelistPage() {
+const COPY = {
+  bg: {
+    title: 'Whitelist FiveM сървъри в България',
+    description:
+      'Български FiveM RP сървъри с whitelist — приемат нови играчи само след одобрение. По-сериозна ролева игра и по-малко нарушители.',
+    intro:
+      'Whitelist сървърът приема нови играчи само след одобрение — обикновено кандидатстване в Discord с история на героя. Целта е по-сериозна ролева игра и по-малко нарушители.',
+    empty: 'Още няма листнат whitelist сървър.',
+    cta: 'Добави своя',
+    keywords: ['whitelist FiveM сървър', 'сериозен RP сървър', 'heavy RP България'],
+  },
+  en: {
+    title: 'Whitelisted FiveM servers in Bulgaria',
+    description:
+      'Bulgarian FiveM RP servers with a whitelist — new players are accepted only after approval. More serious roleplay and fewer rule breakers.',
+    intro:
+      'A whitelisted server accepts new players only after approval — usually an application in Discord with a character backstory. The point is more serious roleplay and fewer rule breakers.',
+    empty: 'No whitelisted server listed yet.',
+    cta: 'Add yours',
+    keywords: ['whitelist FiveM server', 'serious RP server', 'heavy RP Bulgaria'],
+  },
+} as const;
+
+export async function generateMetadata({ params }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const copy = COPY[locale];
+  return pageMetadata({
+    locale,
+    title: copy.title,
+    description: copy.description,
+    path: '/servers/whitelist',
+    keywords: [...copy.keywords],
+  });
+}
+
+export default async function WhitelistPage({ params }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
+  const copy = COPY[locale];
   const servers = await listPublicServers({ whitelist: true });
 
   return (
     <div>
-      <nav aria-label="Пътека" className="text-sm text-slate-400">
-        <Link href="/" className="hover:text-fivem-400">
-          Сървъри
+      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-500">
+        <Link href={`/${locale}`} className="underline underline-offset-2 hover:text-cyan-300">
+          {t.server.breadcrumb}
         </Link>{' '}
-        / <span aria-current="page">Whitelist</span>
+        / <span aria-current="page">{t.filters.whitelist}</span>
       </nav>
 
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-        Whitelist FiveM сървъри в България
+        <span className="text-chrome">{copy.title}</span>
       </h1>
-      <p className="mt-3 max-w-2xl text-slate-300">
-        Whitelist сървърът приема нови играчи само след одобрение — обикновено кандидатстване в
-        Discord с история на героя. Целта е по-сериозна ролева игра и по-малко нарушители.
-      </p>
+      <p className="mt-3 max-w-2xl text-silver-400">{copy.intro}</p>
 
       {servers.length === 0 ? (
-        <p className="mt-8 text-slate-300">
-          Още няма листнат whitelist сървър.{' '}
-          <Link href="/submit" className="text-fivem-400 hover:underline">
-            Добави своя
+        <p className="mt-8 text-silver-400">
+          {copy.empty}{' '}
+          <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">
+            {copy.cta}
           </Link>
           .
         </p>
       ) : (
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {servers.map((server) => (
-            <ServerCard key={server.slug} server={server} />
+            <ServerCard key={server.slug} server={server} locale={locale} t={t} />
           ))}
         </ul>
       )}
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(servers)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(locale, servers)) }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLdString(
-            breadcrumbJsonLd([
-              { name: 'Сървъри', path: '/' },
-              { name: 'Whitelist', path: '/servers/whitelist' },
+            breadcrumbJsonLd(locale, [
+              { name: t.server.breadcrumb, path: '/' },
+              { name: t.filters.whitelist, path: '/servers/whitelist' },
             ]),
           ),
         }}

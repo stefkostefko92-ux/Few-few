@@ -2,63 +2,85 @@ import Link from 'next/link';
 
 import { Mascot } from '@/components/Mascot';
 import { ServerCard } from '@/components/ServerCard';
+import { getContent } from '@/content';
+import { getDictionary } from '@/i18n';
+import { isLocale, type Locale } from '@/i18n/config';
 import { faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 
 // Живият статус се мени постоянно — не се кешира между заявките.
 export const dynamic = 'force-dynamic';
 
-export const metadata = pageMetadata({
-  title: 'Български FiveM RP сървъри — жив списък със статус и играчи',
-  description:
-    'Всички български FiveM RP сървъри на едно място: онлайн статус, брой играчи, рамка (ESX, QBCore, Qbox), whitelist, Discord и правила. Обновява се автоматично.',
-  path: '/',
-  keywords: ['списък FiveM сървъри', 'FiveM сървъри онлайн', 'българско roleplay'],
-});
+type Props = { params: Promise<{ locale: string }> };
 
-/** „Отговор отпред“ — това е, което AI отговарачите цитират (AEO). */
-const FAQ = [
-  {
-    question: 'Как да вляза в български FiveM RP сървър?',
-    answer:
-      'Нужно е легално копие на GTA V и инсталиран FiveM клиент от fivem.net. След това избираш сървър от списъка тук и натискаш „Влез“ — линкът cfx.re/join отваря клиента и те свързва директно.',
-  },
-  {
-    question: 'Какво е ESX, QBCore и Qbox?',
-    answer:
-      'Това са рамките, върху които сървърът гради ролевата игра — работа, пари, инвентар, документи. ESX е най-старата и разпространена, QBCore е по-модерна, Qbox е неин форк с по-строга производителност. За играча разликата се усеща в менютата и в икономиката.',
-  },
-  {
-    question: 'Какво значи whitelist сървър?',
-    answer:
-      'Whitelist сървърът приема нови играчи само след одобрение — обикновено кандидатстване в Discord с история на героя. Целта е по-сериозна ролева игра и по-малко нарушители.',
-  },
-  {
-    question: 'Как да добавя своя сървър в списъка?',
-    answer:
-      'През формата „Добави сървър“. Заявката влиза в модераторска опашка и се публикува след ръчна проверка — така списъкът остава чист от мъртви и фалшиви сървъри.',
-  },
-];
+/**
+ * „Отговор отпред“ за AI отговарачите (AEO): въпросите се хранят от СЪЩИТЕ
+ * правила и туториали, които сайтът показва — не се пишат втори път, значи не
+ * могат да се разминат с тях.
+ */
+function faqFor(locale: Locale) {
+  const content = getContent(locale);
+  const rp = content.rules.find((section) => section.id === 'roleplay');
+  const pick = (id: string) => rp?.items.find((item) => item.id === id);
+  const join = content.tutorials.find((tutorial) => tutorial.id === 'join');
+  const frameworks = content.tutorials.find((tutorial) => tutorial.id === 'frameworks');
 
-export default async function HomePage() {
+  const entries = [
+    join && { question: join.title, answer: join.steps[0].body },
+    frameworks && {
+      question: frameworks.title,
+      answer: frameworks.steps.map((step) => `${step.title}: ${step.body}`).join(' '),
+    },
+    pick('nlr') && { question: pick('nlr')!.title, answer: pick('nlr')!.body },
+    pick('rdm') && { question: pick('rdm')!.title, answer: pick('rdm')!.body },
+  ];
+
+  return entries.filter((item): item is { question: string; answer: string } => Boolean(item));
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
+  return pageMetadata({
+    locale,
+    title: t.home.title,
+    description: t.home.description,
+    path: '/',
+    keywords: getContent(locale).keywords,
+  });
+}
+
+export default async function HomePage({ params }: Props) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
+
   const servers = await listPublicServers();
   const online = servers.filter((server) => server.online);
   const totalPlayers = online.reduce((sum, server) => sum + server.players, 0);
+  const faq = faqFor(locale);
+
+  const filters = [
+    { href: `/${locale}/servers/framework/esx`, label: 'ESX' },
+    { href: `/${locale}/servers/framework/qbcore`, label: 'QBCore' },
+    { href: `/${locale}/servers/framework/qbox`, label: 'Qbox' },
+    { href: `/${locale}/servers/framework/ox_core`, label: 'ox_core' },
+    { href: `/${locale}/servers/whitelist`, label: t.filters.whitelist },
+  ];
 
   return (
     <>
       <section className="flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Българските FiveM RP сървъри — на едно място
+            <span className="text-chrome">{t.home.h1}</span>
           </h1>
-          <p className="mt-3 max-w-2xl text-slate-300">
-            Жив списък със статуса на всеки сървър: онлайн ли е, колко души играят, на каква рамка
-            върви и има ли whitelist. Данните се четат директно от самите сървъри.
-          </p>
+          <p className="mt-3 max-w-2xl text-silver-400">{t.home.intro}</p>
           {servers.length > 0 && (
-            <p className="mt-4 text-sm text-slate-400">
-              {online.length} онлайн от {servers.length} · {totalPlayers} играчи в момента
+            <p className="mt-4 text-sm text-silver-500">
+              {online.length} {t.home.statsOnline} {servers.length} · {totalPlayers}{' '}
+              {t.home.statsPlayers}
             </p>
           )}
         </div>
@@ -78,18 +100,12 @@ export default async function HomePage() {
         />
       </section>
 
-      <nav aria-label="Филтри" className="mt-6 flex flex-wrap gap-2 text-sm">
-        {[
-          { href: '/servers/framework/esx', label: 'ESX' },
-          { href: '/servers/framework/qbcore', label: 'QBCore' },
-          { href: '/servers/framework/qbox', label: 'Qbox' },
-          { href: '/servers/framework/ox_core', label: 'ox_core' },
-          { href: '/servers/whitelist', label: 'Whitelist' },
-        ].map((filter) => (
+      <nav aria-label={t.home.filters} className="mt-6 flex flex-wrap gap-2 text-sm">
+        {filters.map((filter) => (
           <Link
             key={filter.href}
             href={filter.href}
-            className="rounded-lg border border-white/15 px-3 py-1.5 hover:border-fivem-500 hover:text-fivem-400"
+            className="rounded-lg border border-white/15 px-3 py-1.5 hover:border-cyan-500 hover:text-cyan-300"
           >
             {filter.label}
           </Link>
@@ -98,20 +114,20 @@ export default async function HomePage() {
 
       <section className="mt-10" aria-labelledby="servers-heading">
         <h2 id="servers-heading" className="sr-only">
-          Списък със сървъри
+          {t.home.serverList}
         </h2>
         {servers.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/15 p-6 text-slate-300">
-            Списъкът още се пълни.{' '}
-            <Link href="/submit" className="text-fivem-400 hover:underline">
-              Добави своя сървър
+          <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
+            {t.home.emptyLead}{' '}
+            <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">
+              {t.home.emptyCta}
             </Link>{' '}
-            — заявките се преглеждат ръчно.
+            {t.home.emptyTail}
           </p>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {servers.map((server) => (
-              <ServerCard key={server.slug} server={server} />
+              <ServerCard key={server.slug} server={server} locale={locale} t={t} />
             ))}
           </ul>
         )}
@@ -119,13 +135,13 @@ export default async function HomePage() {
 
       <section className="mt-14" aria-labelledby="faq-heading">
         <h2 id="faq-heading" className="text-2xl font-semibold tracking-tight">
-          Чести въпроси
+          {t.home.faqHeading}
         </h2>
         <dl className="mt-6 space-y-6">
-          {FAQ.map((item) => (
+          {faq.map((item) => (
             <div key={item.question}>
               <dt className="font-medium">{item.question}</dt>
-              <dd className="mt-1 text-slate-300">{item.answer}</dd>
+              <dd className="mt-1 text-silver-400">{item.answer}</dd>
             </div>
           ))}
         </dl>
@@ -133,11 +149,11 @@ export default async function HomePage() {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd(FAQ)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd(faq)) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(servers)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(serverListJsonLd(locale, servers)) }}
       />
     </>
   );

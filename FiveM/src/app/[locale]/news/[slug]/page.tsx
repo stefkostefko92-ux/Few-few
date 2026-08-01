@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation';
 
 import { prisma } from '@/lib/db';
+import { getDictionary } from '@/i18n';
+import { isLocale } from '@/i18n/config';
 import { articleJsonLd, breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 300;
 
-type Params = { params: Promise<{ slug: string }> };
+type Params = { params: Promise<{ locale: string; slug: string }> };
 
 async function getPost(slug: string) {
   try {
@@ -19,11 +21,14 @@ async function getPost(slug: string) {
 }
 
 export async function generateMetadata({ params }: Params) {
-  const { slug } = await params;
+  const { locale: raw, slug } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
   const post = await getPost(slug);
-  if (!post) return pageMetadata({ title: 'Статията не е намерена', description: '', noindex: true });
+  if (!post) return pageMetadata({ locale, title: t.news.notFound, description: '', noindex: true });
 
   return pageMetadata({
+    locale,
     title: post.title,
     description: post.excerpt,
     path: `/news/${post.slug}`,
@@ -32,37 +37,39 @@ export async function generateMetadata({ params }: Params) {
 }
 
 export default async function PostPage({ params }: Params) {
-  const { slug } = await params;
+  const { locale: raw, slug } = await params;
+  const locale = isLocale(raw) ? raw : 'bg';
+  const t = getDictionary(locale);
   const post = await getPost(slug);
   if (!post) notFound();
 
   return (
     <article className="max-w-2xl">
       <h1 className="text-3xl font-semibold tracking-tight">{post.title}</h1>
-      <p className="mt-2 text-sm text-slate-400">
+      <p className="mt-2 text-sm text-silver-500">
         {post.author}
         {post.publishedAt && (
           <>
             {' · '}
             <time dateTime={post.publishedAt.toISOString()}>
-              {post.publishedAt.toLocaleDateString('bg-BG')}
+              {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB')}
             </time>
           </>
         )}
       </p>
       {/* Съдържанието е наше и се рендира като чист текст — без dangerouslySetInnerHTML. */}
-      <div className="mt-6 whitespace-pre-line text-slate-200">{post.body}</div>
+      <div className="mt-6 whitespace-pre-line text-silver-300">{post.body}</div>
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(articleJsonLd(post)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(articleJsonLd(locale, post)) }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLdString(
-            breadcrumbJsonLd([
-              { name: 'Новини и туториали', path: '/news' },
+            breadcrumbJsonLd(locale, [
+              { name: t.news.h1, path: '/news' },
               { name: post.title, path: `/news/${post.slug}` },
             ]),
           ),

@@ -13,6 +13,8 @@ export const publicServerSelect = {
   tags: true,
   online: true,
   lastProbe: true,
+  source: true,
+  iconVersion: true,
   players: true,
   maxPlayers: true,
   lastOnlineAt: true,

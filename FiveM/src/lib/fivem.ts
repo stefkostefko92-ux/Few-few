@@ -39,7 +39,27 @@ export function displayName(raw: string | null | undefined, fallback = 'Без �
     // Нулево-широки и двупосочни маркери: с тях чуждо име може да обърне
     // реда на текста наоколо или да се престори на друго.
     .replace(/[\u200b-\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069\ufeff]/g, '');
-  return cleaned.slice(0, 80) || fallback;
+  return trimToLength(cleaned, 80) || fallback;
+}
+
+/**
+ * Реже до `max` ЕДИНИЦИ КОД, но никога по средата на сурогатна двойка.
+ * Имената на чуждите сървъри са пълни с емоджи; рязането на сляпо оставя
+ * самотен сурогат — невалиден UTF-16, който после чупи сериализацията към
+ * базата („unexpected end of hex escape“) и сваля целия пробег.
+ */
+export function trimToLength(input: string, max: number): string {
+  if (input.length <= max) return stripLoneSurrogates(input);
+  const cut = input.slice(0, max);
+  const last = cut.charCodeAt(cut.length - 1);
+  // Висок сурогат накрая значи разцепена двойка — махаме го.
+  const safe = last >= 0xd800 && last <= 0xdbff ? cut.slice(0, -1) : cut;
+  return stripLoneSurrogates(safe);
+}
+
+/** Маха всеки сурогат без партньор, независимо къде е. */
+function stripLoneSurrogates(input: string): string {
+  return input.replace(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, '');
 }
 
 // ── Cfx.re join код ─────────────────────────────────────────────────────────
@@ -303,18 +323,23 @@ function clampCount(value: number): number {
   return Math.min(Math.trunc(value), MAX_PLAYER_COUNT);
 }
 
-/** „7/64 играчи“, „статусът е скрит“ или „офлайн“. */
+/**
+ * Текстът на статуса. Думите идват от речника — иначе английската версия щеше
+ * да показва български статус, което е точно видът дупка, заради който правим
+ * речника типизиран.
+ */
 export function formatPlayers(
   status: Pick<ServerStatus, 'outcome' | 'players' | 'maxPlayers'>,
+  words: { online: string; offline: string; hidden: string; unreachable: string },
 ): string {
   switch (status.outcome) {
     case 'ONLINE':
-      return `${status.players}/${status.maxPlayers || '?'} играчи`;
+      return `${status.players}/${status.maxPlayers || '?'} ${words.online}`;
     case 'HIDDEN':
-      return 'статусът е скрит';
+      return words.hidden;
     case 'UNREACHABLE':
-      return 'няма отговор';
+      return words.unreachable;
     default:
-      return 'офлайн';
+      return words.offline;
   }
 }

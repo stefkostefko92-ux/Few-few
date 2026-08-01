@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { withinGlobalRateLimit } from '@/lib/rate-limit';
 import type { FormErrorCode } from '@/lib/messages';
+import { readLocale } from './locale';
 
 /**
  * Ревю от посетител. Съществуването на този път е правно съществено: без него
@@ -22,16 +23,19 @@ const reviewSchema = z.object({
   authorAlias: z.string().trim().max(40).optional(),
 });
 
-function fail(slug: string, code: FormErrorCode): never {
-  redirect(`/servers/${encodeURIComponent(slug)}?error=${code}#ревю`);
+function fail(locale: string, slug: string, code: FormErrorCode): never {
+  redirect(`/${locale}/servers/${encodeURIComponent(slug)}?error=${code}#reviews`);
 }
 
 export async function submitReviewAction(formData: FormData): Promise<void> {
+  const locale = readLocale(formData);
   const slug = String(formData.get('slug') ?? '').slice(0, 60);
-  if (!slug) redirect('/');
+  if (!slug) redirect(`/${locale}`);
 
-  if (String(formData.get('website') ?? '').length > 0) redirect(`/servers/${slug}?review=ok`);
-  if (!withinGlobalRateLimit('review')) fail(slug, 'rate_limit');
+  if (String(formData.get('website') ?? '').length > 0) {
+    redirect(`/${locale}/servers/${slug}?review=ok`);
+  }
+  if (!withinGlobalRateLimit('review')) fail(locale, slug, 'rate_limit');
 
   const value = (name: string) => {
     const raw = formData.get(name);
@@ -44,7 +48,7 @@ export async function submitReviewAction(formData: FormData): Promise<void> {
     body: value('body'),
     authorAlias: value('authorAlias'),
   });
-  if (!parsed.success) fail(slug, 'invalid_rating');
+  if (!parsed.success) fail(locale, slug, 'invalid_rating');
 
   // `redirect()` работи чрез хвърляне на NEXT_REDIRECT — затова НИКОГА не се
   // вика вътре в `try`, който има `catch`: собственият ни catch би го глътнал
@@ -72,8 +76,8 @@ export async function submitReviewAction(formData: FormData): Promise<void> {
     console.error('[review] записът се провали', error);
   }
 
-  if (stored === 'missing') redirect('/');
-  if (stored === 'failed') fail(slug, 'storage');
+  if (stored === 'missing') redirect(`/${locale}`);
+  if (stored === 'failed') fail(locale, slug, 'storage');
 
-  redirect(`/servers/${slug}?review=ok`);
+  redirect(`/${locale}/servers/${slug}?review=ok`);
 }

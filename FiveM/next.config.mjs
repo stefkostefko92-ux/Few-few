@@ -2,6 +2,13 @@
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  images: {
+    // Без `sharp` в зависимостите оптимизаторът на Next пада в продукция.
+    // Логото е един статичен PNG — не си струва зависимостта.
+    unoptimized: true,
+    // Иконите на сървърите идват от Cfx.re; само този хост, нищо друго.
+    remotePatterns: [{ protocol: 'https', hostname: 'frontend.cfx-services.net' }],
+  },
   async headers() {
     return [
       {

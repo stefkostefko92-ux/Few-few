@@ -4,15 +4,44 @@
 
 :root {
   color-scheme: dark;
+
+  /* Маскотът се пребоядисва по бранда през собствените си променливи —
+     пакетът е направен точно за това. Зеленото от Carbon Stealth отстъпва на
+     цианa от логото, силуетът остава същият. */
+  --jm-deep: #08303c;
+  --jm-bottle: #106880;
+  --jm-neon: #20a8c0;
+  --jm-olive: #60e0f0;
+  --jm-pale: #a7f0fa;
+  --jm-soft-olive: #7f8f96;
+  --jm-glow-lime: #16232d;
 }
 
 body {
-  @apply bg-fivem-950 text-slate-100 font-ui antialiased;
+  @apply bg-ink-950 text-silver-200 font-ui antialiased;
 }
 
 /* Видим фокус навсякъде — клавиатурната навигация е изискване (EAA/WCAG 2.4.7). */
 :focus-visible {
-  @apply outline-none ring-2 ring-fivem-400 ring-offset-2 ring-offset-fivem-950;
+  @apply outline-none ring-2 ring-cyan-300 ring-offset-2 ring-offset-ink-950;
+}
+
+/* Металният надпис от логото, като текст: същата сребърна стълбица. */
+.text-chrome {
+  background: linear-gradient(180deg, #f8f8f8 0%, #d0d0d0 45%, #8a8a8a 55%, #f0f0f0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Трикольорът от логото — тънка лента, не декорация върху текст. */
+.flag-rule {
+  background: linear-gradient(
+    180deg,
+    theme('colors.flag.white') 0 33.33%,
+    theme('colors.flag.green') 33.33% 66.66%,
+    theme('colors.flag.red') 66.66% 100%
+  );
 }
 
 /* Уважаваме системната настройка за намалено движение. */
