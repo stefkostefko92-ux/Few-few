@@ -15,7 +15,10 @@
 
 import { execSync } from "node:child_process";
 
-const INFRA = new Set(["tools", ".claude", ".github", ".githooks", "agents-dashboard", "deploy", "docs"]);
+// `research/` е документация (пазарни проучвания), не продукт: няма deps, няма CI, няма ред в
+// продуктовата таблица на кореновия CLAUDE.md. Без него гейтът броеше проучването и продукта,
+// който то обосновава, за „два продукта" и хващаше несъществуващ scope-creep (PR #163).
+const INFRA = new Set(["tools", ".claude", ".github", ".githooks", "agents-dashboard", "deploy", "docs", "research"]);
 
 // Чиста логика — тестваема: списък файлове → {products:[…], infra:bool, ok}.
 // `root` (по избор): репо-коренът — АБСОЛЮТНИТЕ пътища се релативизират спрямо него, преди да се
