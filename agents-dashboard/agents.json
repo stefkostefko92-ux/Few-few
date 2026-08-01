@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 236
+        "lessons": 243
       },
       "evolution": [
         {
@@ -554,9 +554,20 @@
           "date": "2026-08-01",
           "event": "v17.7 — учене",
           "detail": "Научи: Мярката „запазваме минимален запис, за да не върнем свалилия се човек\" (suppression lis… (+5 още)"
+        },
+        {
+          "version": "18.4.0",
+          "date": "2026-08-01",
+          "event": "v18.4 — учене",
+          "detail": "Научи: Каноничното id на VPS агента е `vps-adjiyata`, не `vps-adzhiyata` — транслитерацията на… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Каноничното id на VPS агента е `vps-adjiyata`, не `vps-adzhiyata` — транслитерацията на…\" (+6 още)"
+        },
         {
           "date": "2026-08-01",
           "type": "learning",
