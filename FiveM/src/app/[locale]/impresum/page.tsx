@@ -5,7 +5,7 @@ import { getDictionary } from '@/i18n';
 import { CONTACT_LANGUAGES_LABEL } from '@/lib/site';
 import { isLocale } from '@/i18n/config';
 import { pageMetadata } from '@/lib/seo';
-import { ADDRESS_ONE_LINE, PUBLISHER } from '@/lib/site';
+import { ADDRESS_ONE_LINE, DISCORD_INVITE, PUBLISHER } from '@/lib/site';
 
 export const revalidate = 86_400;
 
@@ -63,6 +63,14 @@ export default async function ImpresumPage({ params }: Props) {
           <span>
             <a className={link} href={`mailto:${PUBLISHER.email}`}>
               {PUBLISHER.email}
+            </a>
+          </span>
+        </div>
+        <div className={row}>
+          <span className={key}>Discord</span>
+          <span>
+            <a className={link} href={DISCORD_INVITE} rel="noopener nofollow">
+              {DISCORD_INVITE.replace('https://', '')}
             </a>
           </span>
         </div>

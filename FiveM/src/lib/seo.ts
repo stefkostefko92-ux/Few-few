@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { DEFAULT_LOCALE, LOCALES, OG_LOCALE, type Locale } from '@/i18n/config';
+import { DISCORD_INVITE } from '@/lib/site';
 
 export const SITE_NAME = 'FiveM BG';
 export const SITE_URL = (process.env.PUBLIC_BASE_URL ?? 'https://fivembulgaria.carbonstealth.eu').replace(
@@ -112,6 +113,9 @@ export function siteJsonLd(locale: Locale) {
         name: SITE_NAME,
         url: SITE_URL,
         logo: absoluteUrl('/brand/logo.png'),
+        // `sameAs` е сигналът, по който търсачките свързват сайта с профилите
+        // му. Досега липсваше, защото нямаше какво да сочи.
+        sameAs: [DISCORD_INVITE],
         description:
           locale === 'bg'
             ? 'Директория на българските FiveM roleplay сървъри с жив статус, правила, туториали и ревюта.'

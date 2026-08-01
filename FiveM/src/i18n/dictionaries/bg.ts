@@ -14,6 +14,7 @@ export const bg = {
     tutorials: 'Туториали',
     news: 'Новини',
     submit: 'Добави сървър',
+    discord: 'Discord',
     skipToContent: 'Към съдържанието',
     main: 'Основна навигация',
     language: 'Език',
@@ -24,6 +25,7 @@ export const bg = {
     privacy: 'Поверителност',
     terms: 'Условия',
     report: 'Сигнал',
+    discord: 'Discord на общността',
     disclaimer:
       'Независим проект. Не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или Cfx.re. GTA V, Grand Theft Auto и Rockstar Games са марки на Take-Two Interactive Software, Inc.; FiveM и Cfx.re са марки на съответните им притежатели. Употребата им тук е само за обозначаване на платформата, за която се отнася съдържанието.',
   },
@@ -42,6 +44,8 @@ export const bg = {
     emptyCta: 'Добави своя сървър',
     emptyTail: '— заявките се преглеждат ръчно.',
     faqHeading: 'Чести въпроси',
+    discordCta: 'Питай в Discord на общността',
+    discordLead: 'Търсиш сървър по мярка или имаш въпрос?',
   },
   server: {
     breadcrumb: 'Сървъри',

@@ -7,6 +7,7 @@ import { getDictionary } from '@/i18n';
 import { isLocale, type Locale } from '@/i18n/config';
 import { faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
+import { DISCORD_INVITE } from '@/lib/site';
 
 // Живият статус се мени постоянно — не се кешира между заявките.
 export const dynamic = 'force-dynamic';
@@ -131,6 +132,20 @@ export default async function HomePage({ params }: Props) {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mt-14 rounded-xl border border-cyan-700/40 bg-cyan-900/10 p-5">
+        <p className="text-silver-300">
+          {t.home.discordLead}{' '}
+          <a
+            href={DISCORD_INVITE}
+            rel="noopener nofollow"
+            className="font-medium text-cyan-300 underline underline-offset-2"
+          >
+            {t.home.discordCta}
+          </a>
+          .
+        </p>
       </section>
 
       <section className="mt-14" aria-labelledby="faq-heading">

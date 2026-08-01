@@ -17,6 +17,7 @@ export const en: Dictionary = {
     tutorials: 'Tutorials',
     news: 'News',
     submit: 'Add a server',
+    discord: 'Discord',
     skipToContent: 'Skip to content',
     main: 'Main navigation',
     language: 'Language',
@@ -27,6 +28,7 @@ export const en: Dictionary = {
     privacy: 'Privacy',
     terms: 'Terms',
     report: 'Report',
+    discord: 'Community Discord',
     disclaimer:
       'An independent project. Not affiliated with Rockstar Games, Take-Two Interactive Software, Inc. or Cfx.re. GTA V, Grand Theft Auto and Rockstar Games are trademarks of Take-Two Interactive Software, Inc.; FiveM and Cfx.re are trademarks of their respective owners. They are used here solely to identify the platform this content refers to.',
   },
@@ -45,6 +47,8 @@ export const en: Dictionary = {
     emptyCta: 'Add your server',
     emptyTail: '— submissions are reviewed by hand.',
     faqHeading: 'Frequently asked questions',
+    discordCta: 'Ask in the community Discord',
+    discordLead: 'Looking for the right server, or have a question?',
   },
   server: {
     breadcrumb: 'Servers',

@@ -8,6 +8,7 @@ import { Mascot } from '@/components/Mascot';
 import { HTML_LANG, isLocale, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n';
 import { BASE_KEYWORDS, jsonLdString, SITE_NAME, SITE_URL, siteJsonLd } from '@/lib/seo';
+import { DISCORD_INVITE } from '@/lib/site';
 
 import '../globals.css';
 
@@ -100,7 +101,16 @@ export default async function LocaleLayout({ children, params }: Props) {
               ))}
             </ul>
 
-            <div className="ms-auto">
+            <div className="ms-auto flex items-center gap-4">
+              {/* Външна покана: `noopener` е задължителен, `nofollow` — защото
+                  не предаваме тежест на чужд домейн. */}
+              <a
+                href={DISCORD_INVITE}
+                rel="noopener nofollow"
+                className="text-sm text-silver-400 hover:text-cyan-300"
+              >
+                {t.nav.discord}
+              </a>
               <LanguageSwitch locale={locale} label={t.nav.language} />
             </div>
           </nav>
@@ -123,6 +133,15 @@ export default async function LocaleLayout({ children, params }: Props) {
               </a>
             </p>
             <ul className="flex flex-wrap gap-4">
+              <li>
+                <a
+                  href={DISCORD_INVITE}
+                  rel="noopener nofollow"
+                  className="underline underline-offset-2 hover:text-cyan-300"
+                >
+                  {t.footer.discord}
+                </a>
+              </li>
               {legal.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="underline underline-offset-2 hover:text-cyan-300">
