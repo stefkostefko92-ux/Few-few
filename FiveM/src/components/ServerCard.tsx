@@ -1,18 +1,12 @@
 import Link from 'next/link';
 
+import { Icon } from '@/components/Icon';
+
 import type { Dictionary } from '@/i18n';
 import type { Locale } from '@/i18n/config';
 import { FRAMEWORK_LABEL, formatPlayers, type FrameworkId } from '@/lib/fivem';
+import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
 import { isFeatured, type PublicServer } from '@/lib/servers';
-
-function StatusDot({ online }: { online: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`inline-block h-2 w-2 rounded-full ${online ? 'bg-cyan-300' : 'bg-silver-600'}`}
-    />
-  );
-}
 
 export function ServerCard({
   server,
@@ -42,7 +36,8 @@ export function ServerCard({
           </Link>
         </h2>
         {featured && (
-          <span className="rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">
+          <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">
+            <Icon group="status" name="promoted" size={12} />
             {t.server.promotedShort}
           </span>
         )}
@@ -51,23 +46,31 @@ export function ServerCard({
       {server.tagline && <p className="mt-1 text-sm text-silver-400">{server.tagline}</p>}
 
       <p className="mt-3 flex items-center gap-2 text-sm text-silver-300">
-        <StatusDot online={server.online} />
-        {/* Статусът е дублиран текстово — цветът сам по себе си не е информация (WCAG 1.4.1). */}
+        {/* Иконата е декорация: статусът е и текст, защото цветът и формата
+            сами по себе си не са информация (WCAG 1.4.1). */}
+        <Icon group="status" name={STATUS_ICON[server.lastProbe]} size={16} />
         <span>{status}</span>
       </p>
 
       <ul className="mt-3 flex flex-wrap gap-2 text-xs text-silver-500">
-        <li className="rounded border border-white/10 px-2 py-0.5">
+        <li className="flex items-center gap-1 rounded border border-white/10 px-2 py-0.5">
+          <Icon group="framework" name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={13} />
           {FRAMEWORK_LABEL[server.framework as FrameworkId]}
         </li>
-        <li className="rounded border border-white/10 px-2 py-0.5">
+        <li className="flex items-center gap-1 rounded border border-white/10 px-2 py-0.5">
+          <Icon group="tag" name={server.whitelist ? 'whitelist' : 'open'} size={13} />
           {server.whitelist ? t.filters.whitelist : t.server.open}
         </li>
-        {server.tags.slice(0, 4).map((tag) => (
-          <li key={tag} className="rounded border border-white/10 px-2 py-0.5">
-            {tag}
-          </li>
-        ))}
+        {server.tags.slice(0, 4).map((tag) => {
+          const icon = tagIcon(tag);
+          return (
+            <li key={tag} className="flex items-center gap-1 rounded border border-white/10 px-2 py-0.5">
+              {/* Етикетите са свободен текст — липсваща икона е нормално. */}
+              {icon && <Icon group="tag" name={icon} size={13} />}
+              {tag}
+            </li>
+          );
+        })}
       </ul>
     </li>
   );

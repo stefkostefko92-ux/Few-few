@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { Icon } from '@/components/Icon';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Mascot } from '@/components/Mascot';
 import { HTML_LANG, isLocale, type Locale } from '@/i18n/config';
@@ -45,11 +46,11 @@ export default async function LocaleLayout({ children, params }: Props) {
   const t = getDictionary(locale);
 
   const nav = [
-    { href: `/${locale}`, label: t.nav.servers },
-    { href: `/${locale}/rules`, label: t.nav.rules },
-    { href: `/${locale}/tutorials`, label: t.nav.tutorials },
-    { href: `/${locale}/news`, label: t.nav.news },
-    { href: `/${locale}/submit`, label: t.nav.submit },
+    { href: `/${locale}`, label: t.nav.servers, icon: 'servers' },
+    { href: `/${locale}/rules`, label: t.nav.rules, icon: 'rules' },
+    { href: `/${locale}/tutorials`, label: t.nav.tutorials, icon: 'tutorials' },
+    { href: `/${locale}/news`, label: t.nav.news, icon: 'news' },
+    { href: `/${locale}/submit`, label: t.nav.submit, icon: 'submit' },
   ];
 
   const legal = [
@@ -94,7 +95,8 @@ export default async function LocaleLayout({ children, params }: Props) {
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-silver-400">
               {nav.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:text-cyan-300">
+                  <Link href={item.href} className="flex items-center gap-1.5 hover:text-cyan-300">
+                    <Icon group="ui" name={item.icon} size={15} />
                     {item.label}
                   </Link>
                 </li>
@@ -107,8 +109,9 @@ export default async function LocaleLayout({ children, params }: Props) {
               <a
                 href={DISCORD_INVITE}
                 rel="noopener nofollow"
-                className="text-sm text-silver-400 hover:text-cyan-300"
+                className="flex items-center gap-1.5 text-sm text-silver-400 hover:text-cyan-300"
               >
+                <Icon group="brand" name="discord" size={16} />
                 {t.nav.discord}
               </a>
               <LanguageSwitch locale={locale} label={t.nav.language} />
@@ -137,8 +140,9 @@ export default async function LocaleLayout({ children, params }: Props) {
                 <a
                   href={DISCORD_INVITE}
                   rel="noopener nofollow"
-                  className="underline underline-offset-2 hover:text-cyan-300"
+                  className="flex items-center gap-1.5 underline underline-offset-2 hover:text-cyan-300"
                 >
+                  <Icon group="brand" name="discord" size={15} />
                   {t.footer.discord}
                 </a>
               </li>

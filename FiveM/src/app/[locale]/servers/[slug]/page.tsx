@@ -3,11 +3,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { submitReviewAction } from '@/app/actions/review';
+import { Icon } from '@/components/Icon';
 import { getDictionary } from '@/i18n';
 import { isLocale } from '@/i18n/config';
 import { cfxJoinUrl, FRAMEWORK_LABEL, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
 import { breadcrumbJsonLd, jsonLdString, localeUrl, pageMetadata } from '@/lib/seo';
+import { FRAMEWORK_ICON, STATUS_ICON } from '@/lib/icons';
 import { getPublicServer, isFeatured, REVIEWS_SHOWN, reviewSummary } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
@@ -92,12 +94,14 @@ export default async function ServerPage({ params, searchParams }: Props) {
         )}
         <h1 className="text-3xl font-semibold tracking-tight">{server.name}</h1>
         {featured && (
-          <span className="rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">
+          <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">
+            <Icon group="status" name="promoted" size={13} />
             {t.server.promoted}
           </span>
         )}
         {server.source === 'DISCOVERED' && (
-          <span className="rounded border border-white/15 px-2 py-0.5 text-xs text-silver-500">
+          <span className="flex items-center gap-1 rounded border border-white/15 px-2 py-0.5 text-xs text-silver-500">
+            <Icon group="status" name="discovered" size={13} />
             {t.server.discovered}
           </span>
         )}
@@ -107,7 +111,8 @@ export default async function ServerPage({ params, searchParams }: Props) {
       <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-silver-500">{t.server.status}</dt>
-          <dd>
+          <dd className="flex items-center gap-2">
+            <Icon group="status" name={STATUS_ICON[server.lastProbe]} size={16} />
             {formatPlayers(
               { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
               t.status,
@@ -116,7 +121,10 @@ export default async function ServerPage({ params, searchParams }: Props) {
         </div>
         <div>
           <dt className="text-silver-500">{t.server.framework}</dt>
-          <dd>{FRAMEWORK_LABEL[server.framework as FrameworkId]}</dd>
+          <dd className="flex items-center gap-2">
+            <Icon group="framework" name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={16} />
+            {FRAMEWORK_LABEL[server.framework as FrameworkId]}
+          </dd>
         </div>
         <div>
           <dt className="text-silver-500">{t.server.access}</dt>
@@ -151,8 +159,9 @@ export default async function ServerPage({ params, searchParams }: Props) {
           <a
             href={joinUrl}
             rel="nofollow noopener"
-            className="rounded-lg bg-cyan-500 px-4 py-2 font-medium text-ink-950 hover:bg-cyan-400"
+            className="flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 font-medium text-ink-950 hover:bg-cyan-400"
           >
+            <Icon group="ui" name="join" size={16} />
             {t.server.join}
           </a>
         )}
@@ -160,8 +169,9 @@ export default async function ServerPage({ params, searchParams }: Props) {
           <a
             href={server.discordUrl}
             rel="nofollow noopener ugc"
-            className="rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
+            className="flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
           >
+            <Icon group="brand" name="discord" size={16} />
             {t.server.discord}
           </a>
         )}
@@ -169,8 +179,9 @@ export default async function ServerPage({ params, searchParams }: Props) {
           <a
             href={server.websiteUrl}
             rel="nofollow noopener ugc"
-            className="rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
+            className="flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2 hover:border-cyan-500"
           >
+            <Icon group="ui" name="external" size={16} />
             {t.server.website}
           </a>
         )}
