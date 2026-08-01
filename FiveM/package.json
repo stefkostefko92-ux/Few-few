@@ -36,7 +36,8 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "servers:refresh": "tsx scripts/refresh-servers.ts",
     "prune": "tsx scripts/prune.ts",
-    "servers:discover": "tsx scripts/discover-servers.ts"
+    "servers:discover": "tsx scripts/discover-servers.ts",
+    "admin:hash": "tsx scripts/admin-hash.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

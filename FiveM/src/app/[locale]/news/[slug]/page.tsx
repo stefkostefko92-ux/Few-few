@@ -9,10 +9,10 @@ export const revalidate = 300;
 
 type Params = { params: Promise<{ locale: string; slug: string }> };
 
-async function getPost(slug: string) {
+async function getPost(slug: string, locale: string) {
   try {
     return await prisma.post.findFirst({
-      where: { slug, publishedAt: { not: null, lte: new Date() } },
+      where: { slug, locale, publishedAt: { not: null, lte: new Date() } },
     });
   } catch (error) {
     console.error('[post] статията не се прочете', error);
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Params) {
   const { locale: raw, slug } = await params;
   const locale = isLocale(raw) ? raw : 'bg';
   const t = getDictionary(locale);
-  const post = await getPost(slug);
+  const post = await getPost(slug, locale);
   if (!post) return pageMetadata({ locale, title: t.news.notFound, description: '', noindex: true });
 
   return pageMetadata({
@@ -40,7 +40,7 @@ export default async function PostPage({ params }: Params) {
   const { locale: raw, slug } = await params;
   const locale = isLocale(raw) ? raw : 'bg';
   const t = getDictionary(locale);
-  const post = await getPost(slug);
+  const post = await getPost(slug, locale);
   if (!post) notFound();
 
   return (

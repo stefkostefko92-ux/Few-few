@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.post.findMany({
         where: { publishedAt: { not: null, lte: new Date() } },
-        select: { slug: true, updatedAt: true },
+        select: { slug: true, updatedAt: true, locale: true },
       }),
     ]);
 
@@ -64,13 +64,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.8,
           alternates: alternates(`/servers/${server.slug}`),
         })),
-        ...posts.map((post) => ({
-          url: localeUrl(locale, `/news/${post.slug}`),
-          lastModified: post.updatedAt,
-          changeFrequency: 'monthly' as const,
-          priority: 0.6,
-          alternates: alternates(`/news/${post.slug}`),
-        })),
+        // Постът излиза САМО за своя език: без това sitemap-ът обявяваше един и
+        // същ български текст като отделна английска версия.
+        ...posts
+          .filter((post) => post.locale === locale)
+          .map((post) => ({
+            url: localeUrl(locale, `/news/${post.slug}`),
+            lastModified: post.updatedAt,
+            changeFrequency: 'monthly' as const,
+            priority: 0.6,
+          })),
       ]),
     ];
   } catch (error) {

@@ -22,10 +22,10 @@ export async function generateMetadata({ params }: Props) {
   });
 }
 
-async function listPosts() {
+async function listPosts(locale: string) {
   try {
     return await prisma.post.findMany({
-      where: { publishedAt: { not: null, lte: new Date() } },
+      where: { locale, publishedAt: { not: null, lte: new Date() } },
       select: { slug: true, title: true, excerpt: true, publishedAt: true },
       orderBy: { publishedAt: 'desc' },
       take: 50,
@@ -40,7 +40,7 @@ export default async function NewsPage({ params }: Props) {
   const { locale: raw } = await params;
   const locale = isLocale(raw) ? raw : 'bg';
   const t = getDictionary(locale);
-  const posts = await listPosts();
+  const posts = await listPosts(locale);
 
   return (
     <div>
