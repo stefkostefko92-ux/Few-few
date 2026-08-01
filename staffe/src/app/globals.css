@@ -47,6 +47,47 @@ body {
   @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-bg;
 }
 
+/*
+ * Barra laterale: a fisarmonica sul telefono, sempre aperta da `lg` in su.
+ * Lo stato aperto di <details> non è esprimibile con una media query, quindi
+ * da desktop si forza la visibilità del contenuto e si nasconde il riassunto.
+ */
+.menu-laterale > summary::-webkit-details-marker {
+  display: none;
+}
+.menu-laterale > summary::after {
+  content: '▾';
+  float: right;
+}
+.menu-laterale[open] > summary::after {
+  content: '▴';
+}
+
+@media (min-width: 1024px) {
+  .menu-laterale > summary {
+    display: none;
+  }
+  /* Da desktop la navigazione è sempre presente, anche a <details> chiuso.
+     I browser nascondono quel contenuto in DUE modi diversi a seconda della
+     versione — `display: none` sui figli (vecchio) oppure
+     `content-visibility: hidden` su `::details-content` (Chrome recente) —
+     quindi vanno neutralizzati entrambi. Con il solo override sui figli la
+     barra laterale spariva del tutto su Chromium moderno. */
+  .menu-laterale > *:not(summary) {
+    display: block;
+  }
+}
+
+/* Regola separata: se il browser non conosce `::details-content` scarta solo
+   questa, non l'intero blocco qui sopra. */
+@media (min-width: 1024px) {
+  .menu-laterale::details-content {
+    content-visibility: visible;
+    display: block;
+    block-size: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -30,10 +30,19 @@ export default async function EtichettePage() {
 
   return (
     <>
-      <PageHeader
-        title="Etichette"
-        description="Seleziona prodotti o ubicazioni e stampa le etichette con codice a barre."
-      />
+      {/*
+        `no-print`: su un foglio adesivo la griglia deve partire dall'origine
+        del foglio. Il titolo stampato spingeva tutte le etichette più in basso
+        e ogni codice a barre finiva a cavallo fra due adesivi — il foglio si
+        butta. Vale anche per il layout dell'applicazione, già escluso in
+        `AppShell`.
+      */}
+      <div className="no-print">
+        <PageHeader
+          title="Etichette"
+          description="Seleziona prodotti o ubicazioni e stampa le etichette con codice a barre."
+        />
+      </div>
       <EtichettePageClient
         puoLeggereProdotti={puoLeggereProdotti}
         puoLeggereUbicazioni={puoLeggereUbicazioni}

@@ -176,6 +176,12 @@ export function ProdottiEtichette() {
             }
             @page { size: ${formato === 'a4-griglia' ? 'A4' : '62mm auto'}; margin: 0; }
             @media print {
+              /* Con margine di pagina zero la griglia deve partire davvero da
+                 0,0. Il riempimento del guscio applicativo (main px-4 py-6) la
+                 spostava di ~1,5 rem: su un foglio adesivo basta questo per far
+                 finire ogni codice a barre a cavallo fra due etichette. */
+              body { margin: 0 !important; }
+              #contenuto { padding: 0 !important; }
               .etichette-stampa[data-formato="a4-griglia"] {
                 display: grid;
                 grid-template-columns: repeat(3, 70mm);

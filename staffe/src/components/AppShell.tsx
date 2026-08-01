@@ -77,6 +77,21 @@ export function AppShell({
           <ThemeToggle />
         </div>
 
+      {/*
+        Su telefono il menu è CHIUSO di default. Aperto occupava circa mille
+        pixel sopra il contenuto: l'addetto doveva scorrere l'intero elenco di
+        voci per arrivare allo scanner, cioè proprio lo schermo che usa in
+        corsia, con una mano sola e i guanti. Da `lg` in su la barra laterale
+        torna sempre visibile (regole in `globals.css`).
+
+        È un `<details>` nativo: nessun JavaScript, apertura da tastiera e
+        stato annunciato dai lettori di schermo senza ARIA aggiunto a mano.
+      */}
+      <details className="menu-laterale">
+        <summary className="cursor-pointer list-none border-t border-border px-4 py-3 text-sm font-medium">
+          Menu
+        </summary>
+
         <nav aria-label="Navigazione principale" className="px-2 pb-4">
           {NAVIGAZIONE.map((gruppo) => {
             const voci = gruppo.voci.filter((v) => can(user.role, v.permesso));
@@ -116,6 +131,7 @@ export function AppShell({
           </Link>
           <LogoutButton />
         </div>
+      </details>
       </aside>
 
       <div className="flex min-h-screen flex-col">

@@ -177,6 +177,11 @@ export function UbicazioniEtichette() {
             }
             @page { size: ${formato === 'a4-griglia' ? 'A4' : '62mm auto'}; margin: 0; }
             @media print {
+              /* Vedi ProdottiEtichette: con margine di pagina zero la griglia
+                 deve partire da 0,0, altrimenti il riempimento del guscio
+                 disallinea tutte le etichette adesive. */
+              body { margin: 0 !important; }
+              #contenuto { padding: 0 !important; }
               .etichette-stampa[data-formato="a4-griglia"] {
                 display: grid;
                 grid-template-columns: repeat(3, 70mm);
