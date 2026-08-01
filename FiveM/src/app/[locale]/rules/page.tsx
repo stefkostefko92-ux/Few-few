@@ -1,11 +1,19 @@
 import Link from 'next/link';
 
+import { Badge } from '@/components/Badge';
 import { getContent } from '@/content';
 import { getDictionary } from '@/i18n';
 import { isLocale } from '@/i18n/config';
 import { breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 86_400;
+
+/** Обемна значка на всеки раздел — трите слоя правила се различават с поглед. */
+const SECTION_BADGE: Record<string, string> = {
+  platform: 'cfx',
+  rockstar: 'server',
+  roleplay: 'heavy-rp',
+};
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -49,7 +57,10 @@ export default async function RulesPage({ params }: Props) {
 
       {rules.map((section) => (
         <section key={section.id} id={section.id} className="mt-12 scroll-mt-24">
-          <h2 className="text-2xl font-semibold tracking-tight">{section.title}</h2>
+          <h2 className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+            <Badge name={SECTION_BADGE[section.id] ?? 'rules'} size={40} />
+            {section.title}
+          </h2>
           <p className="mt-2 text-silver-400">{section.intro}</p>
 
           <ul className="mt-6 space-y-8">

@@ -1,11 +1,20 @@
 import Link from 'next/link';
 
+import { Badge } from '@/components/Badge';
 import { getContent } from '@/content';
 import { getDictionary } from '@/i18n';
 import { isLocale } from '@/i18n/config';
 import { breadcrumbJsonLd, howToJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 86_400;
+
+const TUTORIAL_BADGE: Record<string, string> = {
+  install: 'download',
+  join: 'online',
+  'first-minutes': 'profile',
+  frameworks: 'settings',
+  troubleshooting: 'warning',
+};
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -49,7 +58,10 @@ export default async function TutorialsPage({ params }: Props) {
 
       {tutorials.map((tutorial) => (
         <section key={tutorial.id} id={tutorial.id} className="mt-12 scroll-mt-24">
-          <h2 className="text-2xl font-semibold tracking-tight">{tutorial.title}</h2>
+          <h2 className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+            <Badge name={TUTORIAL_BADGE[tutorial.id] ?? 'rules'} size={40} />
+            {tutorial.title}
+          </h2>
           <p className="mt-2 text-silver-400">{tutorial.summary}</p>
 
           <ol className="mt-6 space-y-6">

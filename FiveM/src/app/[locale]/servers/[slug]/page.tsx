@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { submitReviewAction } from '@/app/actions/review';
+import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
 import { getDictionary } from '@/i18n';
 import { isLocale } from '@/i18n/config';
@@ -112,7 +113,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
         <div>
           <dt className="text-silver-500">{t.server.status}</dt>
           <dd className="flex items-center gap-2">
-            <Icon group="status" name={STATUS_ICON[server.lastProbe]} size={16} />
+            <Badge name={STATUS_ICON[server.lastProbe]} size={28} />
             {formatPlayers(
               { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
               t.status,
@@ -122,13 +123,16 @@ export default async function ServerPage({ params, searchParams }: Props) {
         <div>
           <dt className="text-silver-500">{t.server.framework}</dt>
           <dd className="flex items-center gap-2">
-            <Icon group="framework" name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={16} />
+            <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={28} />
             {FRAMEWORK_LABEL[server.framework as FrameworkId]}
           </dd>
         </div>
         <div>
           <dt className="text-silver-500">{t.server.access}</dt>
-          <dd>{server.whitelist ? t.server.whitelisted : t.server.open}</dd>
+          <dd className="flex items-center gap-2">
+            <Badge name={server.whitelist ? 'whitelist' : 'open'} size={28} />
+            {server.whitelist ? t.server.whitelisted : t.server.open}
+          </dd>
         </div>
         <div>
           <dt className="text-silver-500">{t.server.rating}</dt>

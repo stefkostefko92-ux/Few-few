@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { Badge } from '@/components/Badge';
 import { Mascot } from '@/components/Mascot';
 import { ServerCard } from '@/components/ServerCard';
 import { getContent } from '@/content';
@@ -63,11 +64,11 @@ export default async function HomePage({ params }: Props) {
   const faq = faqFor(locale);
 
   const filters = [
-    { href: `/${locale}/servers/framework/esx`, label: 'ESX' },
-    { href: `/${locale}/servers/framework/qbcore`, label: 'QBCore' },
-    { href: `/${locale}/servers/framework/qbox`, label: 'Qbox' },
-    { href: `/${locale}/servers/framework/ox_core`, label: 'ox_core' },
-    { href: `/${locale}/servers/whitelist`, label: t.filters.whitelist },
+    { href: `/${locale}/servers/framework/esx`, label: 'ESX', badge: 'esx' },
+    { href: `/${locale}/servers/framework/qbcore`, label: 'QBCore', badge: 'qbcore' },
+    { href: `/${locale}/servers/framework/qbox`, label: 'Qbox', badge: 'qbox' },
+    { href: `/${locale}/servers/framework/ox_core`, label: 'ox_core', badge: 'ox-core' },
+    { href: `/${locale}/servers/whitelist`, label: t.filters.whitelist, badge: 'whitelist' },
   ];
 
   return (
@@ -106,8 +107,9 @@ export default async function HomePage({ params }: Props) {
           <Link
             key={filter.href}
             href={filter.href}
-            className="rounded-lg border border-white/15 px-3 py-1.5 hover:border-cyan-500 hover:text-cyan-300"
+            className="flex items-center gap-2 rounded-lg border border-white/15 py-1.5 pe-3 ps-2 hover:border-cyan-500 hover:text-cyan-300"
           >
+            <Badge name={filter.badge} size={28} />
             {filter.label}
           </Link>
         ))}
