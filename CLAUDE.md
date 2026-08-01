@@ -32,6 +32,7 @@ file holds only what is true across all products. Keep it that way.
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
+| `staffe/` | Staffe — гестионале за склад (WMS) за асансьорни скоби | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · JWT (jose) · PWA | IT · staffe.carbonstealth.eu · баркод/QR · вътрешен инструмент (noindex) |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`

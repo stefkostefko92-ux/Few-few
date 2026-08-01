@@ -1,0 +1,33 @@
+# Cosa NON entra nel contesto di build (né quindi nei layer dell'immagine).
+# Regola d'oro: nessun segreto e nessun dato caricato dentro l'immagine.
+
+node_modules
+.next
+out
+build
+*.tsbuildinfo
+next-env.d.ts
+
+# Segreti: mai in un layer. Le variabili arrivano a runtime dal .env del server.
+.env
+.env.*
+
+# Allegati caricati (disegni, PDF, CAD, foto): sono dati, vivono in un volume.
+uploads/
+public/uploads/
+
+# Cronologia e strumenti di sviluppo: inutili in produzione.
+.git
+.gitignore
+.editorconfig
+.vscode
+npm-debug.log*
+
+# Documentazione e file di deploy che non servono dentro il contenitore.
+CLAUDE.md
+DEPLOY.md
+SECURITY.md
+README.md
+Dockerfile
+docker-compose.yml
+.dockerignore

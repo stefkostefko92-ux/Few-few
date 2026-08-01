@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali staffe}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -89,6 +89,17 @@ CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
 ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
+
+# staffe (WMS за асансьорни скоби — Docker Compose модел, като zabobovdol/eternaltouch).
+# app слуша само на 127.0.0.1:3300 зад Nginx/Caddy; PostgreSQL 16 НЕ публикува порт.
+# Тайните живеят в staffe/.env (600) на стабилен път извън releases и се пренасят при
+# всеки деплой; при пръв деплой се генерират случайни (админ паролата се показва веднъж).
+# Бекъп (pg_dump) ПРЕДИ миграция, health на /api/health, откат към предишния release.
+STAFFE_SHARED="${STAFFE_SHARED:-/opt/few-few/shared/staffe}"
+STAFFE_HEALTH_URL_SET="${STAFFE_HEALTH_URL:+1}"
+STAFFE_HEALTH_URL="${STAFFE_HEALTH_URL:-http://127.0.0.1:3300/api/health}"
+STAFFE_FORCE_SEED="${STAFFE_FORCE_SEED:-0}"
+STAFFE_KEEP_BACKUPS="${STAFFE_KEEP_BACKUPS:-14}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -178,6 +189,108 @@ deploy_zabobovdol() {
     [ -n "$p" ] && url="http://127.0.0.1:${p}/"
   fi
   health "$url" "zabobovdol" || deploy_failed=1
+}
+
+# ── 3a') staffe — Docker Compose (app + PostgreSQL 16) ────────────────────────
+# Compose проектът се казва „staffe" (по името на папката) → всеки нов release
+# поема СЪЩИТЕ контейнери и томове (staffe_db-data, staffe_uploads): данните и
+# качените файлове преживяват деплоя. Схемата се прилага от entrypoint-а на
+# контейнера (migrate deploy, а докато няма миграции — db push без data loss).
+deploy_staffe() {
+  local d="$SRC/staffe"
+  [ -d "$d" ] || { warn "Няма staffe/ в архива — пропускам."; return; }
+  log "Разгръщам staffe (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай го преди да продължиш."
+  mkdir -p "$STAFFE_SHARED/backups"
+
+  # 1) Тайните живеят на сървъра. Каноничното им място е $STAFFE_SHARED/.env
+  # (извън releases, за да не умрат с прочистването им); предишният release е
+  # резервен източник за сървъри, настроени преди тази промяна.
+  if [ ! -f "$d/.env" ] && [ -f "$STAFFE_SHARED/.env" ]; then
+    cp -a "$STAFFE_SHARED/.env" "$d/.env"; ok "Пренесох staffe/.env (от $STAFFE_SHARED)"
+  fi
+  if [ ! -f "$d/.env" ] && [ -f "$CURRENT_LINK/staffe/.env" ]; then
+    cp -a "$CURRENT_LINK/staffe/.env" "$d/.env"; ok "Пренесох staffe/.env (от предишния release)"
+  fi
+  # Пръв деплой без .env: генерирай случайни тайни (иначе compose спира с `:?`).
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма staffe/.env — генерирам с random secrets."
+    local dbp auth adp
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+    auth="$(openssl rand -base64 48 | tr -d '\n')"
+    adp="$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9')"
+    cat > "$d/.env" <<EOF
+# Staffe — segreti di produzione. Generati automaticamente da deploy/autodeploy.sh.
+# Questo file vive SOLO sul server (permessi 600): mai nel repository.
+POSTGRES_USER=staffe
+POSTGRES_PASSWORD=${dbp}
+POSTGRES_DB=staffe
+AUTH_SECRET=${auth}
+APP_BIND=127.0.0.1
+APP_PORT=3300
+SEED_ADMIN_EMAIL=admin@staffe.local
+SEED_ADMIN_PASSWORD=${adp}
+SMTP_URL=
+NOTIFICHE_MITTENTE=staffe@carbonstealth.eu
+EOF
+    warn "staffe: администратор admin@staffe.local, парола: ${adp} — запиши я в password manager СЕГА и я смени при първи вход."
+  fi
+  chmod 600 "$d/.env"
+  install -m 600 "$d/.env" "$STAFFE_SHARED/.env"   # канонично копие извън releases
+
+  # 2) Бекъп на базата ПРЕДИ миграциите (само ако вече върви db контейнер).
+  # Без възстановима точка не мигрираме — деплоят спира с грешка.
+  if [ -n "$( cd "$d" && docker compose ps -q db 2>/dev/null || true )" ]; then
+    local bak="$STAFFE_SHARED/backups/staffe-pre-$TS.sql.gz"
+    if ( cd "$d" && docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' ) | gzip -c > "$bak"; then
+      ok "staffe: бекъп преди миграция → $bak"
+      ls -1t "$STAFFE_SHARED"/backups/staffe-pre-*.sql.gz 2>/dev/null \
+        | tail -n +$((STAFFE_KEEP_BACKUPS + 1)) | xargs -r rm -f
+    else
+      rm -f "$bak"
+      deploy_failed=1
+      warn "staffe: pg_dump преди миграция се провали — НЕ мигрирам (старата версия остава жива)."
+      return
+    fi
+  else
+    log "staffe: няма работеща база (пръв деплой?) — няма какво да се бекъпва."
+  fi
+
+  # 3) Билд + вдигане. Миграциите се прилагат в entrypoint-а при старт.
+  ( cd "$d" && docker compose up -d --build --remove-orphans )
+
+  # 4) Health: портът се авто-засича от .env (APP_PORT), освен ако не е зададен изрично.
+  local url="$STAFFE_HEALTH_URL"
+  if [ -z "${STAFFE_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
+    # `|| true`: без него липсващ APP_PORT (grep → изход 1) убива скрипта заради
+    # `set -o pipefail` + `set -e`, вместо да падне на стойността по подразбиране.
+    local p; p="$( { grep -E '^APP_PORT=' "$d/.env" 2>/dev/null || true; } | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/api/health"
+  fi
+  if health "$url" "staffe"; then
+    # Сийд САМО при първо пускане (маркерът е извън releases). STAFFE_FORCE_SEED=1
+    # го пуска пак — сийдът трябва да е идемпотентен (upsert), затова не трие нищо.
+    if [ "$STAFFE_FORCE_SEED" = "1" ] || [ ! -f "$STAFFE_SHARED/.seeded" ]; then
+      log "staffe: сийд (демо каталог + ubicazioni + потребители)…"
+      if ( cd "$d" && docker compose exec -T app npm run db:seed ); then
+        touch "$STAFFE_SHARED/.seeded"; ok "staffe: сийдът мина."
+      else
+        warn "staffe: сийдът се провали (възможно е prisma/seed.ts още да липсва). Приложението работи; ръчно: cd $d && docker compose exec app npm run db:seed"
+      fi
+    fi
+  else
+    deploy_failed=1
+    warn "staffe health провал — връщам предишния release."
+    local prev="$CURRENT_LINK/staffe"
+    if [ -f "$prev/docker-compose.yml" ] && [ "$(readlink -f "$prev")" != "$(readlink -f "$d")" ]; then
+      ( cd "$prev" && docker compose up -d --build --remove-orphans ) \
+        || warn "staffe: откатът не успя — виж 'cd $prev && docker compose logs app'."
+      health "$url" "staffe (след откат)" \
+        || warn "staffe: и предишната версия не отговаря. Ако новата е мигрирала схемата, възстанови базата от $STAFFE_SHARED/backups (виж staffe/DEPLOY.md → Rollback)."
+    else
+      warn "staffe: няма предишен release за връщане (пръв деплой?) — виж 'cd $d && docker compose logs app'."
+    fi
+  fi
 }
 
 # ── 3b) medqr — systemd ───────────────────────────────────────────────────────
@@ -703,6 +816,7 @@ indexnow_ping() {
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
+    staffe)     deploy_staffe ;;
     medqr)      deploy_medqr ;;
     vizitka)    deploy_vizitka ;;
     ospedali)   deploy_ospedali ;;

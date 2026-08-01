@@ -1,0 +1,727 @@
+// Staffe — gestionale di magazzino (WMS) per staffe e accessori per ascensori.
+// Carbon Stealth VCC · PostgreSQL + Prisma.
+//
+// CONVENZIONI NON NEGOZIABILI (valgono in tutto il prodotto):
+//  · Denaro   → sempre Int in CENTESIMI di euro (`...Cents`). Mai Float/Number
+//               con virgola: gli errori di arrotondamento sui prezzi sono bug fiscali.
+//  · IVA/sconti → Int in PUNTI BASE (`...Bp`): 2200 = 22%, 550 = 5,5%.
+//  · Quantità → Int nell'unità di misura del prodotto (`Product.uom`). Il
+//               magazzino conta pezzi/metri/chili interi: niente decimali.
+//  · Giacenza → NON è un campo di Product. È la somma di `StockItem.qty` ed è
+//               derivata dal registro `StockMovement`. Un solo luogo di verità.
+//  · Cancellazioni → si disattiva (`active = false`), non si cancella: ordini e
+//               movimenti storici devono restare leggibili (tracciabilità).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────── Utenti e accessi ───────────────────────────────
+
+enum Role {
+  AMMINISTRATORE // accesso completo
+  MAGAZZINO // ricezione, prelievo, imballaggio, scansione, inventario
+  VENDITE // preventivi, ordini, clienti, fatture, giacenze, report
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(MAGAZZINO)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions          Session[]
+  movements         StockMovement[]
+  purchaseOrders    PurchaseOrder[]
+  salesOrders       SalesOrder[]
+  goodsReceipts     GoodsReceipt[]
+  pickLists         PickList[]
+  inventoryCounts   InventoryCount[]
+  attachments       Attachment[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  notificationReads NotificationRead[]
+
+  @@index([role, active])
+}
+
+/// Il token è un JWT (jose) nel cookie httpOnly; questa riga esiste per poterlo
+/// REVOCARE: il `jti` del token deve corrispondere a una sessione viva.
+/// JWT senza revoca = logout finto e sessione rubata valida fino alla scadenza.
+model Session {
+  id        String    @id @default(cuid())
+  jti       String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ─────────────────────────────── Anagrafiche ───────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  code        String   @unique // STAFFE_GUIDA, STAFFE_PARETE, ...
+  name        String // nome italiano mostrato all'utente
+  description String?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+}
+
+model Supplier {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  vatNumber    String? // partita IVA
+  taxCode      String? // codice fiscale
+  email        String?
+  phone        String?
+  contactName  String?
+  addressLine  String?
+  city         String?
+  postalCode   String?
+  province     String?
+  country      String   @default("IT")
+  paymentTerms String? // es. "30 gg d.f.f.m."
+  leadTimeDays Int      @default(7)
+  notes        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products       Product[]
+  purchaseOrders PurchaseOrder[]
+  goodsReceipts  GoodsReceipt[]
+
+  @@index([active, name])
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  vatNumber       String?
+  taxCode         String?
+  sdiCode         String? // codice destinatario fatturazione elettronica
+  pec             String?
+  email           String?
+  phone           String?
+  contactName     String?
+  addressLine     String?
+  city            String?
+  postalCode      String?
+  province        String?
+  country         String   @default("IT")
+  shipAddressLine String?
+  shipCity        String?
+  shipPostalCode  String?
+  shipProvince    String?
+  shipCountry     String?
+  paymentTerms    String?
+  discountBp      Int      @default(0) // sconto di listino in punti base
+  notes           String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  salesOrders SalesOrder[]
+
+  @@index([active, name])
+}
+
+// ─────────────────────────────── Prodotti ───────────────────────────────
+
+enum Uom {
+  PZ // pezzi
+  MT // metri
+  KG // chilogrammi
+  CF // confezioni
+}
+
+enum Material {
+  ACCIAIO_ZINCATO
+  ACCIAIO_INOX
+  ACCIAIO_VERNICIATO
+  ALLUMINIO
+  GHISA
+  ALTRO
+}
+
+model Product {
+  id                String    @id @default(cuid())
+  sku               String    @unique
+  barcode           String?   @unique // EAN-13 / Code128 stampato sull'etichetta
+  name              String
+  description       String?
+  categoryId        String
+  category          Category  @relation(fields: [categoryId], references: [id])
+  material          Material  @default(ACCIAIO_ZINCATO)
+  finish            String? // zincatura a caldo, verniciatura RAL 9006, ...
+  uom               Uom       @default(PZ)
+  weightGrams       Int       @default(0)
+  lengthMm          Int?
+  widthMm           Int?
+  heightMm          Int?
+  thicknessMm       Int?
+  /// Modelli di ascensore / guide compatibili (ricercabile).
+  compatibility     String?
+  brand             String?
+  costCents         Int       @default(0) // costo d'acquisto
+  priceCents        Int       @default(0) // prezzo di vendita, IVA esclusa
+  vatRateBp         Int       @default(2200) // 22% IVA ordinaria italiana
+  supplierId        String?
+  supplier          Supplier? @relation(fields: [supplierId], references: [id])
+  minStock          Int       @default(0)
+  maxStock          Int?
+  defaultLocationId String?
+  defaultLocation   Location? @relation("ProductDefaultLocation", fields: [defaultLocationId], references: [id])
+  batchTracked      Boolean   @default(false)
+  notes             String?
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  stockItems          StockItem[]
+  movements           StockMovement[]
+  batches             Batch[]
+  purchaseOrderLines  PurchaseOrderLine[]
+  salesOrderLines     SalesOrderLine[]
+  goodsReceiptLines   GoodsReceiptLine[]
+  pickListLines       PickListLine[]
+  inventoryCountLines InventoryCountLine[]
+  attachments         Attachment[]
+
+  @@index([categoryId, active])
+  @@index([name])
+  @@index([supplierId])
+}
+
+// ─────────────────────────────── Ubicazioni ───────────────────────────────
+
+enum LocationKind {
+  STOCCAGGIO
+  RICEVIMENTO
+  SPEDIZIONE
+  QUARANTENA
+  PRODUZIONE
+}
+
+/// Gerarchia fisica: Zona → Corsia → Scaffale → Ripiano → Vano.
+/// `code` è l'etichetta stampata e scansionata (es. "A-02-S3-R1-V4").
+model Location {
+  id        String       @id @default(cuid())
+  code      String       @unique
+  zone      String
+  aisle     String
+  rack      String
+  shelf     String
+  bin       String
+  kind      LocationKind @default(STOCCAGGIO)
+  /// Ordine di percorrenza per il prelievo: la lista si ordina per questo campo,
+  /// così l'operatore attraversa il magazzino una volta sola.
+  pickOrder Int          @default(0)
+  capacity  Int?
+  active    Boolean      @default(true)
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  stockItems          StockItem[]
+  movementsFrom       StockMovement[]      @relation("MovementFrom")
+  movementsTo         StockMovement[]      @relation("MovementTo")
+  goodsReceiptLines   GoodsReceiptLine[]
+  pickListLines       PickListLine[]
+  inventoryCountLines InventoryCountLine[]
+  defaultForProducts  Product[]            @relation("ProductDefaultLocation")
+
+  @@index([zone, aisle, rack, shelf, bin])
+  @@index([pickOrder])
+}
+
+// ─────────────────────────────── Giacenze ───────────────────────────────
+
+model Batch {
+  id          String    @id @default(cuid())
+  code        String
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  supplierLot String?
+  receivedAt  DateTime  @default(now())
+  expiresAt   DateTime?
+  notes       String?
+
+  stockItems        StockItem[]
+  movements         StockMovement[]
+  goodsReceiptLines GoodsReceiptLine[]
+
+  @@unique([productId, code])
+}
+
+/// Giacenza per (prodotto × ubicazione × lotto). `reservedQty` è impegnata da
+/// ordini confermati e NON è disponibile: disponibile = qty − reservedQty.
+model StockItem {
+  id String @id @default(cuid())
+
+  /// Chiave di unicità materializzata: "prodotto:ubicazione:lotto" (lotto "-"
+  /// quando assente). Serve perché in PostgreSQL due NULL non sono uguali:
+  /// un `@@unique([productId, locationId, batchId])` con `batchId` nullo NON
+  /// impedirebbe righe doppie per lo stesso prodotto senza lotto, e la giacenza
+  /// si spezzerebbe in due record che nessuno somma.
+  stockKey String @unique
+
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id])
+  batchId     String?
+  batch       Batch?   @relation(fields: [batchId], references: [id])
+  qty         Int      @default(0)
+  reservedQty Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId, locationId])
+  @@index([locationId])
+}
+
+enum MovementType {
+  RICEVIMENTO
+  PRELIEVO
+  TRASFERIMENTO
+  RETTIFICA
+  RESO_CLIENTE
+  RESO_FORNITORE
+  INVENTARIO
+  SPEDIZIONE
+  SCARTO
+}
+
+/// Registro immutabile: ogni variazione di giacenza lascia una riga.
+/// Non si modifica e non si cancella — si compensa con un movimento opposto.
+model StockMovement {
+  id             String       @id @default(cuid())
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  batchId        String?
+  batch          Batch?       @relation(fields: [batchId], references: [id])
+  fromLocationId String?
+  fromLocation   Location?    @relation("MovementFrom", fields: [fromLocationId], references: [id])
+  toLocationId   String?
+  toLocation     Location?    @relation("MovementTo", fields: [toLocationId], references: [id])
+  qty            Int
+  type           MovementType
+  unitCostCents  Int          @default(0) // valorizzazione al momento del movimento
+  reason         String?
+  /// Documento che ha generato il movimento (es. "GoodsReceipt" + id).
+  refType        String?
+  refId          String?
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([productId, createdAt])
+  @@index([type, createdAt])
+  @@index([refType, refId])
+}
+
+// ─────────────────────────────── Acquisti ───────────────────────────────
+
+enum PurchaseOrderStatus {
+  BOZZA
+  ORDINATO
+  RICEVUTO_PARZIALE
+  RICEVUTO
+  ANNULLATO
+}
+
+model PurchaseOrder {
+  id            String              @id @default(cuid())
+  number        String              @unique // OA-2026-0001
+  supplierId    String
+  supplier      Supplier            @relation(fields: [supplierId], references: [id])
+  status        PurchaseOrderStatus @default(BOZZA)
+  orderedAt     DateTime?
+  expectedAt    DateTime?
+  receivedAt    DateTime?
+  shippingCents Int                 @default(0)
+  notes         String?
+  createdById   String?
+  createdBy     User?               @relation(fields: [createdById], references: [id])
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  lines       PurchaseOrderLine[]
+  receipts    GoodsReceipt[]
+  attachments Attachment[]
+
+  @@index([status, orderedAt])
+  @@index([supplierId])
+}
+
+model PurchaseOrderLine {
+  id            String        @id @default(cuid())
+  orderId       String
+  order         PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product       @relation(fields: [productId], references: [id])
+  qty           Int
+  receivedQty   Int           @default(0)
+  unitCostCents Int
+  discountBp    Int           @default(0)
+  vatRateBp     Int           @default(2200)
+  note          String?
+
+  receiptLines GoodsReceiptLine[]
+
+  @@index([orderId])
+}
+
+model GoodsReceipt {
+  id              String         @id @default(cuid())
+  number          String         @unique // RIC-2026-0001
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  supplierId      String
+  supplier        Supplier       @relation(fields: [supplierId], references: [id])
+  invoiceNumber   String?
+  receivedAt      DateTime       @default(now())
+  notes           String?
+  userId          String?
+  user            User?          @relation(fields: [userId], references: [id])
+  createdAt       DateTime       @default(now())
+
+  lines       GoodsReceiptLine[]
+  attachments Attachment[]
+
+  @@index([supplierId, receivedAt])
+}
+
+model GoodsReceiptLine {
+  id             String             @id @default(cuid())
+  receiptId      String
+  receipt        GoodsReceipt       @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  purchaseLineId String?
+  purchaseLine   PurchaseOrderLine? @relation(fields: [purchaseLineId], references: [id])
+  productId      String
+  product        Product            @relation(fields: [productId], references: [id])
+  locationId     String
+  location       Location           @relation(fields: [locationId], references: [id])
+  batchId        String?
+  batch          Batch?             @relation(fields: [batchId], references: [id])
+  qty            Int
+  unitCostCents  Int                @default(0)
+  note           String?
+
+  @@index([receiptId])
+}
+
+// ─────────────────────────────── Vendite ───────────────────────────────
+
+enum SalesOrderStatus {
+  BOZZA
+  PREVENTIVO
+  CONFERMATO
+  IN_PRELIEVO
+  IMBALLATO
+  SPEDITO
+  CONSEGNATO
+  ANNULLATO
+}
+
+model SalesOrder {
+  id            String           @id @default(cuid())
+  number        String           @unique // OV-2026-0001
+  customerId    String
+  customer      Customer         @relation(fields: [customerId], references: [id])
+  status        SalesOrderStatus @default(BOZZA)
+  orderedAt     DateTime?
+  confirmedAt   DateTime?
+  shippedAt     DateTime?
+  deliveredAt   DateTime?
+  shippingCents Int              @default(0)
+  discountBp    Int              @default(0)
+  notes         String?
+  createdById   String?
+  createdBy     User?            @relation(fields: [createdById], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  lines       SalesOrderLine[]
+  pickLists   PickList[]
+  shipments   Shipment[]
+  attachments Attachment[]
+
+  @@index([status, orderedAt])
+  @@index([customerId])
+}
+
+model SalesOrderLine {
+  id             String     @id @default(cuid())
+  orderId        String
+  order          SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product    @relation(fields: [productId], references: [id])
+  qty            Int
+  pickedQty      Int        @default(0)
+  unitPriceCents Int
+  discountBp     Int        @default(0)
+  vatRateBp      Int        @default(2200)
+  note           String?
+
+  pickLines PickListLine[]
+
+  @@index([orderId])
+}
+
+enum PickListStatus {
+  APERTA
+  IN_CORSO
+  COMPLETATA
+  ANNULLATA
+}
+
+model PickList {
+  id           String         @id @default(cuid())
+  number       String         @unique // PRL-2026-0001
+  salesOrderId String
+  salesOrder   SalesOrder     @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  status       PickListStatus @default(APERTA)
+  assignedToId String?
+  assignedTo   User?          @relation(fields: [assignedToId], references: [id])
+  startedAt    DateTime?
+  completedAt  DateTime?
+  notes        String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  lines PickListLine[]
+
+  @@index([status])
+}
+
+model PickListLine {
+  id               String         @id @default(cuid())
+  pickListId       String
+  pickList         PickList       @relation(fields: [pickListId], references: [id], onDelete: Cascade)
+  salesOrderLineId String
+  salesOrderLine   SalesOrderLine @relation(fields: [salesOrderLineId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product        @relation(fields: [productId], references: [id])
+  locationId       String
+  location         Location       @relation(fields: [locationId], references: [id])
+  qty              Int
+  pickedQty        Int            @default(0)
+  /// Vero solo dopo la scansione del codice a barre del prodotto: la verifica
+  /// è ciò che distingue un prelievo controllato da una spunta a memoria.
+  verified         Boolean        @default(false)
+  sortIndex        Int            @default(0)
+
+  @@index([pickListId, sortIndex])
+}
+
+model Shipment {
+  id             String     @id @default(cuid())
+  number         String     @unique // SPD-2026-0001
+  salesOrderId   String
+  salesOrder     SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  carrier        String?
+  trackingNumber String?
+  packagesCount  Int        @default(1)
+  weightGrams    Int        @default(0)
+  packedAt       DateTime?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  notes          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([salesOrderId])
+}
+
+// ─────────────────────────────── Inventario ───────────────────────────────
+
+enum InventoryCountType {
+  CICLICO
+  TOTALE
+}
+
+enum InventoryCountStatus {
+  APERTO
+  IN_CORSO
+  CHIUSO
+  ANNULLATO
+}
+
+model InventoryCount {
+  id        String               @id @default(cuid())
+  number    String               @unique // INV-2026-0001
+  type      InventoryCountType   @default(CICLICO)
+  status    InventoryCountStatus @default(APERTO)
+  startedAt DateTime             @default(now())
+  closedAt  DateTime?
+  notes     String?
+  userId    String?
+  user      User?                @relation(fields: [userId], references: [id])
+
+  lines InventoryCountLine[]
+
+  @@index([status])
+}
+
+model InventoryCountLine {
+  id          String         @id @default(cuid())
+  countId     String
+  count       InventoryCount @relation(fields: [countId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product        @relation(fields: [productId], references: [id])
+  locationId  String
+  location    Location       @relation(fields: [locationId], references: [id])
+  /// Giacenza a sistema nel momento in cui la riga è stata generata.
+  expectedQty Int
+  countedQty  Int?
+  verified    Boolean        @default(false)
+  note        String?
+
+  @@unique([countId, productId, locationId])
+  @@index([countId])
+}
+
+// ─────────────────────────────── Allegati, audit, notifiche ───────────────────────────────
+
+enum AttachmentKind {
+  DISEGNO
+  FOTO
+  PDF
+  CAD
+  ISTRUZIONI
+  ALTRO
+}
+
+model Attachment {
+  id              String         @id @default(cuid())
+  kind            AttachmentKind @default(ALTRO)
+  filename        String
+  mimeType        String
+  sizeBytes       Int
+  /// Chiave nello storage su disco (mai un percorso costruito dall'utente).
+  storageKey      String         @unique
+  productId       String?
+  product         Product?       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  salesOrderId    String?
+  salesOrder      SalesOrder?    @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  goodsReceiptId  String?
+  goodsReceipt    GoodsReceipt?  @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+  uploadedById    String?
+  uploadedBy      User?          @relation(fields: [uploadedById], references: [id])
+  createdAt       DateTime       @default(now())
+
+  @@index([productId])
+}
+
+/// Traccia di controllo: chi ha cambiato cosa e quando. Non contiene password,
+/// token o dati personali oltre l'identificativo dell'utente.
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String // CREATE | UPDATE | DELETE | LOGIN | LOGOUT | ADJUST | ...
+  entity    String
+  entityId  String?
+  summary   String?
+  changes   Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  SCORTA_MINIMA
+  ESAURITO
+  ACQUISTO_RICEVUTO
+  SPEDIZIONE_PRONTA
+  NUOVO_ORDINE
+  INVENTARIO_DISCREPANZA
+}
+
+enum NotificationLevel {
+  INFO
+  AVVISO
+  CRITICO
+}
+
+/// Avviso operativo. Due stati DISTINTI, che prima erano confusi in un campo solo:
+///
+///  · `resolvedAt` — la CONDIZIONE è rientrata (la giacenza è risalita sopra il
+///    minimo). Riguarda il magazzino, è uguale per tutti.
+///  · `NotificationRead` — il singolo utente l'ha LETTA. Riguarda la persona.
+///
+/// Con un unico `readAt` condiviso, il primo operatore che segnava letto un
+/// avviso generale (`userId = null`) lo faceva sparire a TUTTI gli altri — e la
+/// deduplicazione, che si basava su „esiste un avviso non letto", ne creava
+/// subito un altro. Separare i due stati risolve entrambe le cose.
+model Notification {
+  id         String            @id @default(cuid())
+  type       NotificationType
+  level      NotificationLevel @default(INFO)
+  title      String
+  body       String?
+  entity     String?
+  entityId   String?
+  /// Nullo = destinata a tutti gli utenti con il ruolo competente.
+  userId     String?
+  user       User?             @relation(fields: [userId], references: [id])
+  /// Valorizzato quando la condizione che l'ha generata non c'è più.
+  resolvedAt DateTime?
+  createdAt  DateTime          @default(now())
+
+  reads NotificationRead[]
+
+  @@index([userId, resolvedAt])
+  @@index([type, createdAt])
+  @@index([entity, entityId, resolvedAt])
+}
+
+/// Stato di lettura PER UTENTE. L'assenza della riga significa „non letta".
+model NotificationRead {
+  id             String       @id @default(cuid())
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt         DateTime     @default(now())
+
+  @@unique([notificationId, userId])
+  @@index([userId])
+}
+
+/// Numerazione documenti per anno (OA/OV/RIC/PRL/SPD/INV). Riga singola per
+/// (tipo, anno): l'incremento avviene dentro la transazione del documento.
+model DocumentSequence {
+  id         String @id @default(cuid())
+  kind       String
+  year       Int
+  lastNumber Int    @default(0)
+
+  @@unique([kind, year])
+}

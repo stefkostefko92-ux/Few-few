@@ -1,0 +1,1954 @@
+openapi: 3.1.0
+info:
+  title: Staffe API
+  description: >-
+    REST API на Staffe — gestionale di magazzino (WMS) per staffe e accessori
+    di fissaggio per ascensori. Estratta dal codice reale in `src/app/api/**`
+    (Next.js 15 App Router route handlers) — nessun endpoint qui descritto è
+    ipotetico.
+
+
+    **Formato risposta** (`src/lib/api.ts`, un solo contratto per tutte le
+    rotte): successo `{ "data": ..., "meta"?: ... }`; errore
+    `{ "error": { "message": "...", "code": "...", "details"?: ... } }`. Il
+    messaggio di errore è in italiano ed è mostrabile all'operatore così
+    com'è.
+
+
+    **Autenticazione**: cookie di sessione httpOnly `staffe_session` (JWT
+    firmato, `jose`), impostato da `POST /api/auth/login`. Non esiste header
+    `Authorization` — il client deve inviare il cookie (`credentials:
+    'include'` da browser). Le rotte protette rispondono `401` senza sessione
+    valida e `403` se la sessione è valida ma il ruolo non ha il permesso
+    richiesto (matrice in `src/lib/rbac.ts`, applicata con
+    `requirePermission()`).
+
+
+    **Paginazione**: le liste accettano `page` (default 1) e `perPage`
+    (default variabile per rotta, tetto 200) come query string e rispondono
+    con `meta: { page, perPage, total, totalPages }`.
+
+
+    **Visibilità dei costi**: la risposta dipende dal RUOLO di chi chiama. I
+    campi di costo d'acquisto (`unitCostCents` sui movimenti, sulle righe
+    d'ordine e sulle righe di ricevimento, più sconti e aliquota d'ordine)
+    vengono restituiti solo a chi ha il permesso `costi:leggi`
+    (`AMMINISTRATORE`, `VENDITE`). Per il ruolo `MAGAZZINO` quei campi sono
+    ASSENTI dalla risposta, non azzerati: un client non deve dedurre „costo
+    zero" dalla loro mancanza. La selezione è in `src/lib/costi.ts`.
+  version: "0.1.0"
+  license:
+    name: UNLICENSED (proprietario — Carbon Stealth VCC)
+servers:
+  - url: https://staffe.carbonstealth.eu
+    description: Produzione
+  - url: http://localhost:3000
+    description: Sviluppo locale
+
+security:
+  - cookieAuth: []
+
+tags:
+  - name: auth
+    description: Login/logout
+  - name: prodotti
+    description: Catalogo prodotti e categorie
+  - name: ubicazioni
+    description: Gerarchia fisica del magazzino
+  - name: giacenze
+    description: Naliciность в реално време и movimenti manuali
+  - name: fornitori
+    description: Anagrafica fornitori
+  - name: clienti
+    description: Anagrafica clienti
+  - name: acquisti
+    description: Ordini di acquisto
+  - name: ricevimenti
+    description: Ricevimento merce
+  - name: vendite
+    description: Ordini di vendita
+  - name: prelievi
+    description: Liste di prelievo (picking)
+  - name: spedizioni
+    description: Spedizioni
+  - name: inventario
+    description: Conteggi di inventario
+  - name: report
+    description: Esportazione report (CSV)
+  - name: notifiche
+    description: Centro notifiche
+  - name: utenti
+    description: Gestione utenti e ruoli
+  - name: audit
+    description: Traccia di controllo (sola lettura)
+  - name: allegati
+    description: File allegati ai documenti
+  - name: varie
+    description: Barcode, ricerca globale, etichette, health
+
+paths:
+  # ─────────────────────────── Auth ───────────────────────────
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Accesso
+      security: []
+      description: Pubblica. Imposta il cookie `staffe_session` httpOnly in caso di successo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 1 }
+      responses:
+        "200":
+          description: Login riuscito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      role: { $ref: "#/components/schemas/Role" }
+        "401":
+          description: Credenziali non valide (messaggio unico, non rivela se è l'indirizzo o la password)
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: Uscita — revoca la sessione corrente e cancella il cookie
+      responses:
+        "200":
+          description: Uscita eseguita (idempotente anche senza sessione)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: object, properties: { uscita: { type: boolean } } }
+
+  # ─────────────────────────── Varie ───────────────────────────
+  /api/health:
+    get:
+      tags: [varie]
+      summary: Sonda di salute (deploy/monitoraggio)
+      security: []
+      description: Verifica anche il database con `SELECT 1`.
+      responses:
+        "200":
+          description: Sano
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { stato: { type: string, enum: [ok] }, database: { type: string, enum: [ok] } }
+        "503":
+          description: Database irraggiungibile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { stato: { type: string, enum: [degradato] }, database: { type: string, enum: [irraggiungibile] } }
+
+  /api/barcode:
+    get:
+      tags: [varie]
+      summary: Genera un simbolo SVG (code128 / EAN-13 / QR)
+      description: Dietro autenticazione (`requireUser`) — non genera in massa senza login.
+      parameters:
+        - in: query
+          name: testo
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 300 }
+        - in: query
+          name: tipo
+          required: true
+          schema: { type: string, enum: [code128, ean13, qr] }
+      responses:
+        "200":
+          description: Simbolo SVG
+          content:
+            image/svg+xml: { schema: { type: string } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/ricerca:
+    get:
+      tags: [varie]
+      summary: Ricerca globale (prodotti, ubicazioni, ordini di acquisto/vendita)
+      description: Richiede solo sessione valida (`requireUser`). Max 5 risultati per tipo.
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Minimo 2 caratteri; sotto restituisce lista vuota.
+      responses:
+        "200":
+          description: Risultati misti
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tipo: { type: string, enum: [prodotto, ubicazione, ordine-acquisto, ordine-vendita] }
+                        titolo: { type: string }
+                        sottotitolo: { type: string }
+                        href: { type: string }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+
+  /api/categorie:
+    get:
+      tags: [prodotti]
+      summary: Elenco categorie merceologiche (sola lettura)
+      description: "Permesso: `prodotti:leggi`."
+      parameters:
+        - in: query
+          name: attive
+          schema: { type: string, enum: ["0", "1"] }
+          description: "`0` include anche le categorie disattivate (default: solo attive)."
+      responses:
+        "200": { $ref: "#/components/responses/DataArray" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+
+  /api/etichette/prodotti:
+    get:
+      tags: [varie]
+      summary: Elenco prodotti attivi per la stampa etichette
+      description: "Permesso: `prodotti:leggi`."
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+
+  /api/etichette/ubicazioni:
+    get:
+      tags: [varie]
+      summary: Elenco ubicazioni attive per la stampa etichette da scaffale
+      description: "Permesso: `ubicazioni:leggi`."
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+
+  # ─────────────────────────── Prodotti ───────────────────────────
+  /api/prodotti:
+    get:
+      tags: [prodotti]
+      summary: Elenco catalogo (paginato, con giacenza aggregata)
+      description: >-
+        Permesso: `prodotti:leggi`. `costCents` esce solo per chi ha
+        `costi:leggi` (il magazziniere non lo vede).
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { in: query, name: categoriaId, schema: { type: string } }
+        - { in: query, name: fornitoreId, schema: { type: string } }
+        - { in: query, name: attivi, schema: { type: string, enum: ["0", "1"] } }
+        - in: query
+          name: stato
+          schema: { type: string, enum: [tutti, sotto, esaurito, ok] }
+          description: Stato scorta rispetto a `minStock`.
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [prodotti]
+      summary: Crea un prodotto
+      description: "Permesso: `prodotti:scrivi`."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ProdottoCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/prodotti/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [prodotti]
+      summary: Dettaglio prodotto (giacenza, ubicazioni, ultimi 20 movimenti, allegati)
+      description: "Permesso: `prodotti:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [prodotti]
+      summary: Modifica un prodotto (parziale)
+      description: >-
+        Permesso: `prodotti:scrivi`. Il vincolo `maxStock ≥ minStock` è
+        verificato anche sui valori risultanti dopo la modifica parziale.
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ProdottoAggiorna" } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+    delete:
+      tags: [prodotti]
+      summary: Disattiva un prodotto (non cancella)
+      description: >-
+        Permesso: `prodotti:scrivi`. Rifiuta con `409` se il prodotto ha
+        ancora giacenza fisica in magazzino.
+      responses:
+        "200":
+          description: Disattivato
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: object, properties: { id: { type: string }, active: { type: boolean, enum: [false] } } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+
+  # ─────────────────────────── Ubicazioni ───────────────────────────
+  /api/ubicazioni:
+    get:
+      tags: [ubicazioni]
+      summary: Elenco ubicazioni (con occupazione)
+      description: "Permesso: `ubicazioni:leggi`."
+      parameters:
+        - { in: query, name: attive, schema: { type: string, enum: ["0", "1"] } }
+        - { in: query, name: tipo, schema: { $ref: "#/components/schemas/LocationKind" } }
+        - { in: query, name: zona, schema: { type: string } }
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [ubicazioni]
+      summary: Crea un'ubicazione
+      description: "Permesso: `ubicazioni:scrivi`."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/UbicazioneCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/ubicazioni/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [ubicazioni]
+      summary: Dettaglio ubicazione (contenuto, ultimi 20 movimenti, occupazione)
+      description: "Permesso: `ubicazioni:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [ubicazioni]
+      summary: Modifica un'ubicazione (parziale)
+      description: >-
+        Permesso: `ubicazioni:scrivi`. Rifiuta la disattivazione (`active:
+        false`) con `409` se l'ubicazione contiene ancora merce.
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/UbicazioneAggiorna" } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  # ─────────────────────────── Giacenze / movimenti ───────────────────────────
+  /api/giacenze:
+    get:
+      tags: [giacenze]
+      summary: Giacenze vive, per prodotto con dettaglio per ubicazione
+      description: >-
+        Permesso: `giacenze:leggi`. `costCents`/`valoreCents` escono solo per
+        chi ha `costi:leggi`.
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { in: query, name: categoriaId, schema: { type: string } }
+        - { in: query, name: fornitoreId, schema: { type: string } }
+        - { in: query, name: attivi, schema: { type: string, enum: ["0", "1"] } }
+        - { in: query, name: ubicazioneId, schema: { type: string } }
+        - { in: query, name: stato, schema: { type: string, enum: [tutti, sotto, esaurito, ok] } }
+        - { in: query, name: sottoScorta, schema: { type: string, enum: ["1"] } }
+        - { in: query, name: esaurito, schema: { type: string, enum: ["1"] } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+
+  /api/movimenti:
+    get:
+      tags: [giacenze]
+      summary: Registro dei movimenti di magazzino (libro mastro)
+      description: "Permesso: `giacenze:leggi`."
+      parameters:
+        - { in: query, name: tipo, schema: { $ref: "#/components/schemas/MovementType" } }
+        - { in: query, name: prodottoId, schema: { type: string } }
+        - { in: query, name: ubicazioneId, schema: { type: string } }
+        - { in: query, name: da, schema: { type: string, format: date } }
+        - { in: query, name: a, schema: { type: string, format: date }, description: Inclusiva (fino a fine giornata). }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [giacenze]
+      summary: Movimento manuale — trasferimento o rettifica
+      description: >-
+        Accetta solo i due movimenti che nascono da una decisione
+        dell'operatore (ricevimenti/prelievi/spedizioni li scrivono i loro
+        documenti). Permesso: `giacenze:muovi` per `TRASFERIMENTO`,
+        `giacenze:rettifica` (più stretto) per `RETTIFICA`. La quantità
+        cambia sempre in transazione tramite il motore delle giacenze
+        (`moveStock`), che rifiuta i saldi negativi (`409`).
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/MovimentoManuale" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409":
+          description: Giacenza insufficiente, ubicazione disattivata o prodotto disattivato
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  # ─────────────────────────── Fornitori ───────────────────────────
+  /api/fornitori:
+    get:
+      tags: [fornitori]
+      summary: Elenco fornitori
+      description: "Permesso: `acquisti:leggi` (anche il magazziniere deve sapere da chi arriva la merce)."
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { in: query, name: attivo, schema: { type: string, enum: ["si", "no", "tutti"] } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [fornitori]
+      summary: Crea un fornitore
+      description: "Permesso: `anagrafiche:scrivi`."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/FornitoreCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/fornitori/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [fornitori]
+      summary: Dettaglio fornitore (con prodotti attivi collegati)
+      description: "Permesso: `acquisti:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [fornitori]
+      summary: Modifica un fornitore (parziale)
+      description: "Permesso: `anagrafiche:scrivi`."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/FornitoreAggiorna" } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+    delete:
+      tags: [fornitori]
+      summary: Disattiva un fornitore (non cancella)
+      description: "Permesso: `anagrafiche:scrivi`. Idempotente se già disattivato."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+
+  # ─────────────────────────── Clienti ───────────────────────────
+  /api/clienti:
+    get:
+      tags: [clienti]
+      summary: Elenco clienti
+      description: "Permesso: `vendite:leggi`."
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { in: query, name: attivi, schema: { type: string, enum: ["si", "no", "tutti"] } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [clienti]
+      summary: Crea un cliente
+      description: "Permesso: `anagrafiche:scrivi`. Se `code` manca, si genera `CLI-0001` progressivo."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ClienteCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/clienti/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [clienti]
+      summary: Dettaglio cliente (con statistiche di fatturato sugli ordini validi)
+      description: "Permesso: `vendite:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [clienti]
+      summary: Modifica un cliente (parziale)
+      description: "Permesso: `anagrafiche:scrivi`."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ClienteAggiorna" } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+    delete:
+      tags: [clienti]
+      summary: Disattiva un cliente (non cancella)
+      description: "Permesso: `anagrafiche:scrivi`. Rifiuta con `409` se il cliente ha ordini ancora aperti."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+
+  # ─────────────────────────── Acquisti ───────────────────────────
+  /api/acquisti:
+    get:
+      tags: [acquisti]
+      summary: Elenco ordini di acquisto
+      description: "Permesso: `acquisti:leggi`."
+      parameters:
+        - { in: query, name: stato, schema: { $ref: "#/components/schemas/PurchaseOrderStatus" } }
+        - { in: query, name: fornitore, schema: { type: string } }
+        - { in: query, name: dal, schema: { type: string, format: date } }
+        - { in: query, name: al, schema: { type: string, format: date } }
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [acquisti]
+      summary: Crea un ordine di acquisto (nasce sempre in BOZZA)
+      description: "Permesso: `acquisti:scrivi`. Il numero (`OA-AAAA-NNNN`) si assegna in transazione."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/OrdineAcquistoCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/acquisti/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [acquisti]
+      summary: Dettaglio ordine di acquisto (righe, ricevimenti collegati)
+      description: "Permesso: `acquisti:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [acquisti]
+      summary: Modifica un ordine di acquisto — solo se in BOZZA
+      description: "Permesso: `acquisti:scrivi`. Se `righe` è presente, sostituisce l'intero corpo dell'ordine."
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/OrdineAcquistoAggiorna" } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/acquisti/{id}/conferma:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [acquisti]
+      summary: Conferma l'ordine — BOZZA → ORDINATO
+      description: "Permesso: `acquisti:scrivi`."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expectedAt: { type: string, format: date-time, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/acquisti/{id}/annulla:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [acquisti]
+      summary: Annulla l'ordine — solo prima che entri merce
+      description: "Permesso: `acquisti:scrivi`. Con righe già ricevute, usare un reso al fornitore."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo: { type: string, maxLength: 300, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+
+  # ─────────────────────────── Ricevimenti ───────────────────────────
+  /api/ricevimenti:
+    get:
+      tags: [ricevimenti]
+      summary: Elenco ricevimenti merce
+      description: "Permesso: `acquisti:leggi`."
+      parameters:
+        - { in: query, name: fornitore, schema: { type: string } }
+        - { in: query, name: dal, schema: { type: string, format: date } }
+        - { in: query, name: al, schema: { type: string, format: date } }
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [ricevimenti]
+      summary: Registra un ricevimento merce (unico ingresso della merce)
+      description: >-
+        Permesso: `ricevimenti:scrivi`. Tutto in una transazione: numero
+        documento, righe, movimenti `RICEVIMENTO`, avanzamento dell'ordine di
+        acquisto collegato, notifica. Se la quantità supera l'ordinato,
+        rifiuta con `409` finché `consentiEccedenza` non è `true`.
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/RicevimentoCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409":
+          description: Ordine in bozza/annullato, o eccedenza non confermata (`details` elenca le righe in eccedenza)
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/ricevimenti/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [ricevimenti]
+      summary: "Dettaglio ricevimento (non modificabile: registrare correzioni come nuovo movimento)"
+      description: "Permesso: `acquisti:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+
+  # ─────────────────────────── Vendite ───────────────────────────
+  /api/vendite:
+    get:
+      tags: [vendite]
+      summary: Elenco ordini di vendita (con totali calcolati)
+      description: "Permesso: `vendite:leggi`."
+      parameters:
+        - { in: query, name: stato, schema: { $ref: "#/components/schemas/SalesOrderStatus" } }
+        - { in: query, name: cliente, schema: { type: string } }
+        - { in: query, name: da, schema: { type: string, format: date } }
+        - { in: query, name: a, schema: { type: string, format: date } }
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [vendite]
+      summary: Crea un ordine di vendita (nasce come BOZZA o PREVENTIVO, non impegna merce)
+      description: >-
+        Permesso: `vendite:scrivi`. Il client manda righe grezze
+        (`productId`/`qty`), mai totali: prezzo/sconto/IVA di default
+        vengono dal `Product`/`Customer` se non specificati in riga.
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/OrdineVenditaCrea" } }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/vendite/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [vendite]
+      summary: Dettaglio ordine di vendita (con disponibilità riga per riga)
+      description: "Permesso: `vendite:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [vendite]
+      summary: Modifica un ordine di vendita
+      description: >-
+        Permesso: `vendite:scrivi`. Le righe si riscrivono solo se lo stato è
+        ancora BOZZA/PREVENTIVO; a ordine confermato si possono aggiornare
+        solo le note.
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/OrdineVenditaAggiorna" } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/vendite/{id}/conferma:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [vendite]
+      summary: Conferma l'ordine — impegna la merce (reserve)
+      description: >-
+        Permesso: `vendite:scrivi`. Solo bozza/preventivo. Se la
+        disponibilità non basta per una riga, la transazione fallisce
+        interamente con `409`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { notes: { type: string, maxLength: 2000, nullable: true } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/vendite/{id}/annulla:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [vendite]
+      summary: Annulla l'ordine — libera l'impegno non ancora prelevato
+      description: >-
+        Permesso: `vendite:scrivi`. Non annullabile dopo l'imballaggio/spedizione
+        (la merce è già uscita: serve un reso da cliente).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [motivo]
+              properties: { motivo: { type: string, minLength: 3, maxLength: 500 } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  # ─────────────────────────── Prelievi ───────────────────────────
+  /api/prelievi:
+    get:
+      tags: [prelievi]
+      summary: Elenco liste di prelievo
+      description: "Permesso: `prelievi:leggi`."
+      parameters:
+        - { in: query, name: stato, schema: { type: string, enum: [APERTA, IN_CORSO, COMPLETATA, ANNULLATA] } }
+        - { in: query, name: ordine, schema: { type: string } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [prelievi]
+      summary: Genera una lista di prelievo da un ordine di vendita confermato
+      description: >-
+        Permesso: `prelievi:scrivi`. Le righe si ordinano per
+        `Location.pickOrder` — l'operatore attraversa il magazzino una volta
+        sola. Rifiuta se esiste già una lista aperta per lo stesso ordine.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salesOrderId]
+              properties:
+                salesOrderId: { type: string }
+                assignedToId: { type: string, nullable: true }
+                notes: { type: string, maxLength: 1000, nullable: true }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/prelievi/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [prelievi]
+      summary: Dettaglio lista di prelievo (righe in ordine di percorrenza)
+      description: "Permesso: `prelievi:leggi`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+
+  /api/prelievi/{id}/riga/{rigaId}/verifica:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+      - in: path
+        name: rigaId
+        required: true
+        schema: { type: string }
+    post:
+      tags: [prelievi]
+      summary: Verifica una riga di prelievo (scansione o motivo manuale)
+      description: >-
+        Permesso: `prelievi:scrivi`. `verified` diventa vero solo dopo una
+        scansione (`barcode`) che corrisponde al prodotto. Senza scansione è
+        obbligatorio un `motivo` di almeno 5 caratteri.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                barcode: { type: string, maxLength: 120, nullable: true }
+                pickedQty: { type: integer, minimum: 0, maximum: 1000000 }
+                motivo: { type: string, maxLength: 500, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422":
+          description: Dati non validi, oppure codice scansionato non corrispondente al prodotto della riga
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+
+  /api/prelievi/{id}/completa:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [prelievi]
+      summary: Completa il prelievo — scarica la giacenza, libera l'impegno, avanza l'ordine
+      description: >-
+        Permesso: `prelievi:scrivi`. Tutto in una transazione. Se restano
+        righe prelevate ma non verificate con scansione, richiede
+        `motivoNonVerificate` di almeno 5 caratteri.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivoNonVerificate: { type: string, maxLength: 500, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  # ─────────────────────────── Spedizioni ───────────────────────────
+  /api/spedizioni:
+    get:
+      tags: [spedizioni]
+      summary: Elenco spedizioni
+      description: "Permesso: `vendite:leggi`."
+      parameters:
+        - { in: query, name: stato, schema: { type: string, enum: [da_imballare, pronte, spedite, consegnate] } }
+        - { $ref: "#/components/parameters/q" }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [spedizioni]
+      summary: Crea una spedizione da un ordine confermato/in prelievo/imballato
+      description: "Permesso: `spedizioni:scrivi`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salesOrderId]
+              properties:
+                salesOrderId: { type: string }
+                carrier: { type: string, maxLength: 120, nullable: true }
+                trackingNumber: { type: string, maxLength: 120, nullable: true }
+                packagesCount: { type: integer, minimum: 1, maximum: 9999 }
+                weightGrams: { type: integer, minimum: 0, maximum: 100000000 }
+                notes: { type: string, maxLength: 1000, nullable: true }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/spedizioni/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    patch:
+      tags: [spedizioni]
+      summary: Aggiorna stato/dati della spedizione (imballata / spedita / consegnata)
+      description: >-
+        Permesso: `spedizioni:scrivi`. Passare a `SPEDITA` richiede un
+        tracking number e scarica la merce ancora ferma in una baia di
+        spedizione; passare a `CONSEGNATA` richiede che sia già partita.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                carrier: { type: string, maxLength: 120, nullable: true }
+                trackingNumber: { type: string, maxLength: 120, nullable: true }
+                packagesCount: { type: integer, minimum: 1, maximum: 9999 }
+                weightGrams: { type: integer, minimum: 0, maximum: 100000000 }
+                notes: { type: string, maxLength: 1000, nullable: true }
+                stato: { type: string, enum: [IMBALLATA, SPEDITA, CONSEGNATA] }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  # ─────────────────────────── Inventario ───────────────────────────
+  /api/inventario:
+    get:
+      tags: [inventario]
+      summary: Elenco conteggi di inventario
+      description: "Permesso: `inventario:leggi`."
+      parameters:
+        - { in: query, name: stato, schema: { type: string, enum: [APERTO, IN_CORSO, CHIUSO, ANNULLATO] } }
+        - { in: query, name: tipo, schema: { type: string, enum: [CICLICO, TOTALE] } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [inventario]
+      summary: Apre un conteggio (fotografa la giacenza attesa)
+      description: >-
+        Permesso: `inventario:scrivi`. Il conteggio ciclico richiede almeno
+        un criterio (zona, categoria o elenco prodotti); il totale no. Tetto
+        5000 righe generate.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [CICLICO, TOTALE], default: CICLICO }
+                zone: { type: string, maxLength: 40, nullable: true }
+                categoryId: { type: string, nullable: true }
+                productIds: { type: array, maxItems: 500, items: { type: string } }
+                notes: { type: string, maxLength: 1000, nullable: true }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/inventario/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [inventario]
+      summary: Dettaglio conteggio (righe in ordine di percorrenza)
+      description: >-
+        Permesso: `inventario:leggi`. `costCents` per riga esce solo per chi
+        ha `costi:leggi`.
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [inventario]
+      summary: Aggiorna note/stato manuale del conteggio (non la chiusura)
+      description: "Permesso: `inventario:scrivi`. Un conteggio CHIUSO/ANNULLATO non è più modificabile."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [IN_CORSO, ANNULLATO] }
+                notes: { type: string, maxLength: 1000, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+
+  /api/inventario/{id}/righe:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    patch:
+      tags: [inventario]
+      summary: Salva le quantità contate (a gruppi, per ubicazione)
+      description: >-
+        Permesso: `inventario:scrivi`. `verified` è vero solo dopo la
+        scansione del codice a barre. Il primo salvataggio porta il
+        conteggio da APERTO a IN_CORSO.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [righe]
+              properties:
+                righe:
+                  type: array
+                  minItems: 1
+                  maxItems: 200
+                  items:
+                    type: object
+                    required: [lineId, countedQty]
+                    properties:
+                      lineId: { type: string }
+                      countedQty: { type: integer, minimum: 0, maximum: 9999999, nullable: true }
+                      verified: { type: boolean }
+                      note: { type: string, maxLength: 300, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+    post:
+      tags: [inventario]
+      summary: Aggiunge una riga per merce trovata dove non attesa
+      description: >-
+        Permesso: `inventario:scrivi`. Indicare `productId` **oppure**
+        `codice` (SKU/barcode dallo scanner), non entrambi. L'atteso si
+        rilegge dalla giacenza corrente al momento della creazione.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [locationId, countedQty]
+              properties:
+                productId: { type: string, nullable: true }
+                codice: { type: string, maxLength: 40, nullable: true }
+                locationId: { type: string }
+                countedQty: { type: integer, minimum: 0, maximum: 9999999 }
+                verified: { type: boolean }
+                note: { type: string, maxLength: 300, nullable: true }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409":
+          description: La riga esiste già per questo (prodotto, ubicazione)
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/inventario/{id}/chiudi:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [inventario]
+      summary: Chiude l'inventario — genera i movimenti di rettifica in transazione
+      description: >-
+        Permesso: `inventario:scrivi`. Per ogni riga con differenza scrive un
+        movimento `INVENTARIO` (mai una scrittura diretta su `StockItem`).
+        Non riapribile dopo la chiusura. Con righe non contate, richiede
+        `forza: true` per procedere.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { forza: { type: boolean, default: false } }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422":
+          description: Righe non contate presenti e `forza` non impostato
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+
+  # ─────────────────────────── Report ───────────────────────────
+  /api/report/{nome}/export:
+    parameters:
+      - in: path
+        name: nome
+        required: true
+        schema:
+          type: string
+          enum: [valorizzazione, movimenti, vendite, acquisti, fornitori, scorte, previsioni]
+    get:
+      tags: [report]
+      summary: Esporta un report in CSV (formato italiano, `;`, BOM UTF-8)
+      description: >-
+        Permesso: `report:leggi`; per `valorizzazione` e `scorte`
+        (report che espongono i costi) serve anche `costi:leggi` (`403`
+        altrimenti).
+      parameters:
+        - in: query
+          name: periodo
+          schema: { type: string, enum: ["7g", "30g", "90g", anno, tutto, personalizzato] }
+        - { in: query, name: da, schema: { type: string, format: date } }
+        - { in: query, name: a, schema: { type: string, format: date } }
+        - { in: query, name: formato, schema: { type: string, enum: [csv], default: csv } }
+        - { in: query, name: giorni, schema: { type: integer, minimum: 7, maximum: 730, default: 90 }, description: Usato dai report `movimenti`/`previsioni`/`scorte`. }
+        - { in: query, name: servizio, schema: { type: number, enum: [90, 95, 97.5, 99], default: 95 }, description: Livello di servizio per il report `previsioni`. }
+      responses:
+        "200":
+          description: File CSV
+          content:
+            text/csv: { schema: { type: string } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404":
+          description: Nome report non riconosciuto
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+
+  # ─────────────────────────── Notifiche ───────────────────────────
+  /api/notifiche:
+    get:
+      tags: [notifiche]
+      summary: Centro notifiche — elenco (generali visibili al ruolo + personali dell'utente)
+      description: Richiede solo sessione valida.
+      parameters:
+        - in: query
+          name: stato
+          schema: { type: string, enum: [tutte, non_lette, lette], default: non_lette }
+        - in: query
+          name: tipo
+          schema:
+            type: string
+            enum: [SCORTA_MINIMA, ESAURITO, ACQUISTO_RICEVUTO, SPEDIZIONE_PRONTA, NUOVO_ORDINE, INVENTARIO_DISCREPANZA]
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200":
+          description: Notifiche + contatore non lette
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      notifiche: { type: array, items: { type: object } }
+                      nonLette: { type: integer }
+                  meta: { $ref: "#/components/schemas/Meta" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+
+  /api/notifiche/{id}/letta:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [notifiche]
+      summary: Segna una notifica come letta/da leggere (per l'utente corrente)
+      description: >-
+        Richiede solo sessione valida. Corpo facoltativo (assente = "segna
+        come letta"). Restituisce `404` se la notifica non è visibile
+        all'utente (mai rivela che esista una notifica altrui).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { letta: { type: boolean } }
+      responses:
+        "200":
+          description: Aggiornata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      letta: { type: boolean }
+                      nonLette: { type: integer }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+
+  /api/notifiche/leggi-tutte:
+    post:
+      tags: [notifiche]
+      summary: Segna come lette tutte le notifiche visibili (eventualmente di un solo tipo)
+      description: Richiede solo sessione valida.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tipo:
+                  type: string
+                  enum: [SCORTA_MINIMA, ESAURITO, ACQUISTO_RICEVUTO, SPEDIZIONE_PRONTA, NUOVO_ORDINE, INVENTARIO_DISCREPANZA]
+      responses:
+        "200":
+          description: Numero notifiche segnate come lette
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties: { lette: { type: integer }, nonLette: { type: integer } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+
+  # ─────────────────────────── Utenti ───────────────────────────
+  /api/utenti:
+    get:
+      tags: [utenti]
+      summary: Elenco utenti
+      description: "Permesso: `utenti:gestisci`. `passwordHash` non esce mai."
+      parameters:
+        - { $ref: "#/components/parameters/q" }
+        - { in: query, name: ruolo, schema: { $ref: "#/components/schemas/Role" } }
+        - { in: query, name: stato, schema: { type: string, enum: [attivi, disattivati, tutti] } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+    post:
+      tags: [utenti]
+      summary: Crea un utente
+      description: "Permesso: `utenti:gestisci`. Rifiuta con `409` se l'e-mail esiste già (attiva o disattivata)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, role, password]
+              properties:
+                name: { type: string, minLength: 2, maxLength: 120 }
+                email: { type: string, format: email, maxLength: 200 }
+                role: { $ref: "#/components/schemas/Role" }
+                password:
+                  type: string
+                  minLength: 12
+                  maxLength: 200
+                  description: Almeno 12 caratteri (NIST-style, no regole di composizione).
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/utenti/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [utenti]
+      summary: Dettaglio utente
+      description: "Permesso: `utenti:gestisci`."
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    patch:
+      tags: [utenti]
+      summary: Modifica nome/ruolo/stato — disattivazione o cambio ruolo revocano le sessioni vive
+      description: >-
+        Permesso: `utenti:gestisci`. Rifiuta con `409` se l'attore tenta di
+        disattivare/declassare se stesso, o se sarebbe l'ultimo
+        amministratore attivo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2, maxLength: 120 }
+                role: { $ref: "#/components/schemas/Role" }
+                active: { type: boolean }
+      responses:
+        "200": { $ref: "#/components/responses/Dati" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "409": { $ref: "#/components/responses/Conflitto" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/utenti/{id}/password:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    post:
+      tags: [utenti]
+      summary: Reimposta la password di un utente (l'amministratore) — revoca tutte le sessioni vive
+      description: "Permesso: `utenti:gestisci`. La password non viene mai registrata, nemmeno nell'audit."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties: { password: { type: string, minLength: 12, maxLength: 200 } }
+      responses:
+        "200":
+          description: Password reimpostata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties: { id: { type: string }, sessioniRevocate: { type: integer } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  # ─────────────────────────── Audit ───────────────────────────
+  /api/audit:
+    get:
+      tags: [audit]
+      summary: Consultazione della traccia di controllo (sola lettura)
+      description: "Permesso: `audit:leggi`."
+      parameters:
+        - { in: query, name: userId, schema: { type: string } }
+        - { in: query, name: entity, schema: { type: string, maxLength: 60 } }
+        - { in: query, name: action, schema: { type: string, maxLength: 60 } }
+        - { in: query, name: da, schema: { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$" } }
+        - { in: query, name: a, schema: { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$" } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+
+  # ─────────────────────────── Allegati ───────────────────────────
+  /api/allegati:
+    get:
+      tags: [allegati]
+      summary: Elenco allegati di UN documento
+      description: >-
+        Richiede sessione valida. Indicare esattamente uno tra `productId`,
+        `purchaseOrderId`, `salesOrderId`, `goodsReceiptId`; il permesso di
+        lettura dipende dal tipo di documento a cui l'allegato è appeso
+        (es. `prodotti:leggi` per un prodotto, `acquisti:leggi` per un
+        ordine di acquisto).
+      parameters:
+        - { in: query, name: productId, schema: { type: string } }
+        - { in: query, name: purchaseOrderId, schema: { type: string } }
+        - { in: query, name: salesOrderId, schema: { type: string } }
+        - { in: query, name: goodsReceiptId, schema: { type: string } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/perPage" }
+      responses:
+        "200": { $ref: "#/components/responses/ListaPaginata" }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+    post:
+      tags: [allegati]
+      summary: Carica un allegato (multipart/form-data)
+      description: >-
+        Richiede sessione valida + permesso di scrittura del documento
+        collegato. La chiave di archiviazione è generata dal server (mai il
+        nome inviato dal client). Formati/dimensione ammessi in
+        `src/lib/uploads.ts`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                kind: { type: string, enum: [DISEGNO, FOTO, PDF, CAD, ISTRUZIONI, ALTRO] }
+                productId: { type: string }
+                purchaseOrderId: { type: string }
+                salesOrderId: { type: string }
+                goodsReceiptId: { type: string }
+      responses:
+        "201": { $ref: "#/components/responses/Creato" }
+        "400":
+          description: Form non multipart, oppure nessun file caricato
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+        "422": { $ref: "#/components/responses/Validazione" }
+
+  /api/allegati/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/id" }
+    get:
+      tags: [allegati]
+      summary: Scarica l'allegato
+      description: >-
+        Richiede sessione valida + permesso di lettura del documento
+        collegato. Servito con `Content-Disposition: attachment` e tipo MIME
+        canonico (mai quello dichiarato da chi l'ha caricato).
+      responses:
+        "200":
+          description: Contenuto del file
+          content:
+            "application/octet-stream": { schema: { type: string, format: binary } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+    delete:
+      tags: [allegati]
+      summary: Rimuove l'allegato (riga + file)
+      description: Richiede sessione valida + permesso di scrittura del documento collegato.
+      responses:
+        "200":
+          description: Rimosso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { data: { type: object, properties: { id: { type: string } } } }
+        "401": { $ref: "#/components/responses/NonAutenticato" }
+        "403": { $ref: "#/components/responses/Vietato" }
+        "404": { $ref: "#/components/responses/NonTrovato" }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: staffe_session
+      description: JWT firmato (HS256, `jose`) in cookie httpOnly + sameSite=lax + secure (produzione).
+
+  parameters:
+    id:
+      in: path
+      name: id
+      required: true
+      schema: { type: string }
+      description: Identificativo (`cuid`).
+    q:
+      in: query
+      name: q
+      schema: { type: string }
+      description: Testo libero di ricerca.
+    page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    perPage:
+      in: query
+      name: perPage
+      schema: { type: integer, minimum: 1, maximum: 200 }
+      description: Il default varia per rotta (25 o 50); tetto assoluto 200.
+
+  responses:
+    Dati:
+      description: Successo
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: { data: { type: object } }
+    Creato:
+      description: Creato
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: { data: { type: object } }
+    DataArray:
+      description: Successo (array)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: { data: { type: array, items: { type: object } } }
+    ListaPaginata:
+      description: Successo (elenco paginato)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data: { type: array, items: { type: object } }
+              meta: { $ref: "#/components/schemas/Meta" }
+    NonAutenticato:
+      description: Sessione mancante o non valida
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+    Vietato:
+      description: Sessione valida ma permesso mancante
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+    NonTrovato:
+      description: Risorsa non trovata
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+    Conflitto:
+      description: Conflitto di stato/vincolo (es. transizione di stato non ammessa, giacenza insufficiente, vincolo referenziale)
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+    Validazione:
+      description: Corpo/parametri non validi (Zod)
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } }
+
+  schemas:
+    Meta:
+      type: object
+      properties:
+        page: { type: integer }
+        perPage: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [message, code]
+          properties:
+            message: { type: string, description: Messaggio in italiano, mostrabile all'operatore così com'è. }
+            code: { type: string, description: "Codice macchina, es. `non_autenticato`, `vietato`, `validazione`, `non_trovato`, `duplicato`, `giacenza`, `stato`." }
+            details: {}
+
+    Role:
+      type: string
+      enum: [AMMINISTRATORE, MAGAZZINO, VENDITE]
+
+    Uom:
+      type: string
+      enum: [PZ, MT, KG, CF]
+
+    Material:
+      type: string
+      enum: [ACCIAIO_ZINCATO, ACCIAIO_INOX, ACCIAIO_VERNICIATO, ALLUMINIO, GHISA, ALTRO]
+
+    LocationKind:
+      type: string
+      enum: [STOCCAGGIO, RICEVIMENTO, SPEDIZIONE, QUARANTENA, PRODUZIONE]
+
+    MovementType:
+      type: string
+      enum: [RICEVIMENTO, PRELIEVO, TRASFERIMENTO, RETTIFICA, RESO_CLIENTE, RESO_FORNITORE, INVENTARIO, SPEDIZIONE, SCARTO]
+
+    PurchaseOrderStatus:
+      type: string
+      enum: [BOZZA, ORDINATO, RICEVUTO_PARZIALE, RICEVUTO, ANNULLATO]
+
+    SalesOrderStatus:
+      type: string
+      enum: [BOZZA, PREVENTIVO, CONFERMATO, IN_PRELIEVO, IMBALLATO, SPEDITO, CONSEGNATO, ANNULLATO]
+
+    ProdottoCrea:
+      type: object
+      required: [sku, name, categoryId]
+      properties:
+        sku: { type: string, minLength: 1, maxLength: 40 }
+        barcode: { type: string, maxLength: 40, nullable: true }
+        name: { type: string, minLength: 2, maxLength: 200 }
+        description: { type: string, maxLength: 2000, nullable: true }
+        categoryId: { type: string }
+        material: { $ref: "#/components/schemas/Material" }
+        finish: { type: string, maxLength: 120, nullable: true }
+        uom: { $ref: "#/components/schemas/Uom" }
+        weightGrams: { type: integer, minimum: 0, default: 0 }
+        lengthMm: { type: integer, minimum: 0, nullable: true }
+        widthMm: { type: integer, minimum: 0, nullable: true }
+        heightMm: { type: integer, minimum: 0, nullable: true }
+        thicknessMm: { type: integer, minimum: 0, nullable: true }
+        compatibility: { type: string, maxLength: 500, nullable: true }
+        brand: { type: string, maxLength: 120, nullable: true }
+        costCents: { type: integer, minimum: 0, default: 0, description: "Costo d'acquisto in centesimi di euro." }
+        priceCents: { type: integer, minimum: 0, default: 0, description: Prezzo di vendita in centesimi, IVA esclusa. }
+        vatRateBp: { type: integer, enum: [2200, 1000, 500, 400], default: 2200, description: "Aliquota IVA in punti base (2200 = 22%)." }
+        supplierId: { type: string, nullable: true }
+        minStock: { type: integer, minimum: 0, default: 0 }
+        maxStock: { type: integer, minimum: 0, nullable: true, description: "Deve essere ≥ minStock se presente." }
+        defaultLocationId: { type: string, nullable: true }
+        batchTracked: { type: boolean, default: false }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        active: { type: boolean, default: true }
+
+    ProdottoAggiorna:
+      allOf:
+        - { $ref: "#/components/schemas/ProdottoCrea" }
+      description: Tutti i campi di `ProdottoCrea`, tutti facoltativi (aggiornamento parziale).
+
+    UbicazioneCrea:
+      type: object
+      required: [code, zone, aisle, rack, shelf, bin]
+      properties:
+        code: { type: string, pattern: "^[A-Za-z0-9._-]+$", maxLength: 40, description: "Etichetta stampata/scansionata; salvata in maiuscolo." }
+        zone: { type: string, minLength: 1, maxLength: 20 }
+        aisle: { type: string, minLength: 1, maxLength: 20 }
+        rack: { type: string, minLength: 1, maxLength: 20 }
+        shelf: { type: string, minLength: 1, maxLength: 20 }
+        bin: { type: string, minLength: 1, maxLength: 20 }
+        kind: { $ref: "#/components/schemas/LocationKind" }
+        pickOrder: { type: integer, minimum: 0, default: 0, description: Ordine di percorrenza per il prelievo. }
+        capacity: { type: integer, minimum: 0, nullable: true }
+        notes: { type: string, maxLength: 1000, nullable: true }
+        active: { type: boolean, default: true }
+
+    UbicazioneAggiorna:
+      allOf:
+        - { $ref: "#/components/schemas/UbicazioneCrea" }
+      description: Tutti i campi facoltativi (aggiornamento parziale).
+
+    MovimentoManuale:
+      oneOf:
+        - type: object
+          required: [type, productId, qty, fromLocationId, toLocationId]
+          properties:
+            type: { type: string, enum: [TRASFERIMENTO] }
+            productId: { type: string }
+            qty: { type: integer, minimum: 1 }
+            fromLocationId: { type: string }
+            toLocationId: { type: string, description: Deve essere diverso da `fromLocationId`. }
+            batchId: { type: string, nullable: true }
+            reason: { type: string, maxLength: 300, nullable: true }
+        - type: object
+          required: [type, productId, qty, locationId, verso, reason]
+          properties:
+            type: { type: string, enum: [RETTIFICA] }
+            productId: { type: string }
+            qty: { type: integer, minimum: 1 }
+            locationId: { type: string }
+            verso: { type: string, enum: [aumento, diminuzione] }
+            batchId: { type: string, nullable: true }
+            reason: { type: string, minLength: 3, maxLength: 300, description: Obbligatorio — spiega la differenza inventariale. }
+
+    FornitoreCrea:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 32, pattern: "^[A-Za-z0-9._-]+$", description: Salvato in maiuscolo. }
+        name: { type: string, minLength: 2, maxLength: 160 }
+        vatNumber: { type: string, maxLength: 20, nullable: true }
+        taxCode: { type: string, maxLength: 20, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, maxLength: 40, nullable: true }
+        contactName: { type: string, maxLength: 120, nullable: true }
+        addressLine: { type: string, maxLength: 200, nullable: true }
+        city: { type: string, maxLength: 80, nullable: true }
+        postalCode: { type: string, maxLength: 12, nullable: true }
+        province: { type: string, maxLength: 4, nullable: true }
+        country: { type: string, minLength: 2, maxLength: 2, default: IT }
+        paymentTerms: { type: string, maxLength: 120, nullable: true }
+        leadTimeDays: { type: integer, minimum: 0, maximum: 365, default: 7 }
+        notes: { type: string, maxLength: 2000, nullable: true }
+
+    FornitoreAggiorna:
+      allOf:
+        - { $ref: "#/components/schemas/FornitoreCrea" }
+      properties:
+        active: { type: boolean }
+      description: Tutti i campi facoltativi (aggiornamento parziale) + `active`.
+
+    ClienteCrea:
+      type: object
+      required: [name]
+      properties:
+        code: { type: string, pattern: "^[A-Z0-9._-]{2,40}$", nullable: true, description: Se assente, generato come `CLI-0001` progressivo. }
+        name: { type: string, minLength: 2, maxLength: 200 }
+        vatNumber: { type: string, nullable: true }
+        taxCode: { type: string, nullable: true }
+        sdiCode: { type: string, nullable: true, description: "Codice destinatario fatturazione elettronica, 6-7 caratteri." }
+        pec: { type: string, format: email, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, maxLength: 40, nullable: true }
+        contactName: { type: string, maxLength: 120, nullable: true }
+        addressLine: { type: string, maxLength: 200, nullable: true }
+        city: { type: string, maxLength: 120, nullable: true }
+        postalCode: { type: string, pattern: "^\\d{5}$", nullable: true }
+        province: { type: string, pattern: "^[A-Z]{2}$", nullable: true }
+        country: { type: string, pattern: "^[A-Z]{2}$" }
+        shipAddressLine: { type: string, maxLength: 200, nullable: true }
+        shipCity: { type: string, maxLength: 120, nullable: true }
+        shipPostalCode: { type: string, pattern: "^\\d{5}$", nullable: true }
+        shipProvince: { type: string, pattern: "^[A-Z]{2}$", nullable: true }
+        shipCountry: { type: string, pattern: "^[A-Z]{2}$", nullable: true }
+        paymentTerms: { type: string, maxLength: 120, nullable: true }
+        discountBp: { type: integer, minimum: 0, maximum: 10000, description: "Sconto di listino in punti base." }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        active: { type: boolean }
+
+    ClienteAggiorna:
+      allOf:
+        - { $ref: "#/components/schemas/ClienteCrea" }
+      description: Tutti i campi facoltativi (aggiornamento parziale).
+
+    RigaOrdineAcquisto:
+      type: object
+      required: [productId, qty, unitCostCents]
+      properties:
+        productId: { type: string }
+        qty: { type: integer, minimum: 1, maximum: 1000000 }
+        unitCostCents: { type: integer, minimum: 0, maximum: 100000000 }
+        discountBp: { type: integer, minimum: 0, maximum: 10000, default: 0 }
+        vatRateBp: { type: integer, minimum: 0, maximum: 10000, default: 2200 }
+        note: { type: string, maxLength: 200, nullable: true }
+
+    OrdineAcquistoCrea:
+      type: object
+      required: [supplierId, righe]
+      properties:
+        supplierId: { type: string }
+        expectedAt: { type: string, format: date-time, nullable: true }
+        shippingCents: { type: integer, minimum: 0, default: 0 }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        righe:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/RigaOrdineAcquisto" }
+
+    OrdineAcquistoAggiorna:
+      type: object
+      description: Solo mentre l'ordine è in BOZZA. Se `righe` è presente sostituisce l'intero corpo dell'ordine.
+      properties:
+        supplierId: { type: string }
+        expectedAt: { type: string, format: date-time, nullable: true }
+        shippingCents: { type: integer, minimum: 0 }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        righe:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/RigaOrdineAcquisto" }
+
+    RigaRicevimento:
+      type: object
+      required: [productId, locationId, qty]
+      properties:
+        productId: { type: string }
+        purchaseLineId: { type: string, nullable: true, description: Riga d'ordine collegata; assente per un ricevimento senza ordine. }
+        locationId: { type: string }
+        qty: { type: integer, minimum: 1, maximum: 1000000 }
+        unitCostCents: { type: integer, minimum: 0, maximum: 100000000, description: "Facoltativo: se assente, il server usa il costo della riga d'ordine, poi quello di listino del prodotto." }
+        lotto: { type: string, maxLength: 60, nullable: true, description: Obbligatorio se il prodotto è `batchTracked`, vietato altrimenti. }
+        scadenza: { type: string, format: date-time, nullable: true }
+        note: { type: string, maxLength: 200, nullable: true }
+
+    RicevimentoCrea:
+      type: object
+      description: Richiede `purchaseOrderId` oppure `supplierId` (almeno uno).
+      required: [righe]
+      properties:
+        purchaseOrderId: { type: string, nullable: true }
+        supplierId: { type: string, nullable: true }
+        invoiceNumber: { type: string, maxLength: 60, nullable: true }
+        receivedAt: { type: string, format: date-time, nullable: true }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        consentiEccedenza: { type: boolean, default: false, description: "Deve essere `true` per confermare una quantità ricevuta superiore all'ordinato." }
+        righe:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/RigaRicevimento" }
+
+    RigaOrdineVendita:
+      type: object
+      required: [productId, qty]
+      properties:
+        productId: { type: string }
+        qty: { type: integer, minimum: 1, maximum: 1000000 }
+        unitPriceCents: { type: integer, minimum: 0, maximum: 99999999, description: "Facoltativo: se assente, il server usa `Product.priceCents`." }
+        discountBp: { type: integer, minimum: 0, maximum: 10000, description: "Facoltativo: se assente, il server usa `Customer.discountBp`." }
+        vatRateBp: { type: integer, minimum: 0, maximum: 10000, description: "Facoltativo: se assente, il server usa `Product.vatRateBp`." }
+        note: { type: string, maxLength: 500, nullable: true }
+
+    OrdineVenditaCrea:
+      type: object
+      required: [customerId, lines]
+      properties:
+        customerId: { type: string }
+        status: { type: string, enum: [BOZZA, PREVENTIVO] }
+        orderedAt: { type: string, format: date-time, nullable: true }
+        shippingCents: { type: integer, minimum: 0 }
+        discountBp: { type: integer, minimum: 0, maximum: 10000 }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/RigaOrdineVendita" }
+
+    OrdineVenditaAggiorna:
+      type: object
+      description: >-
+        Le righe si riscrivono solo mentre l'ordine è BOZZA/PREVENTIVO; a
+        ordine confermato si possono aggiornare solo le note.
+      properties:
+        customerId: { type: string }
+        status: { type: string, enum: [BOZZA, PREVENTIVO] }
+        orderedAt: { type: string, format: date-time, nullable: true }
+        shippingCents: { type: integer, minimum: 0 }
+        discountBp: { type: integer, minimum: 0, maximum: 10000 }
+        notes: { type: string, maxLength: 2000, nullable: true }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/RigaOrdineVendita" }

@@ -168,7 +168,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-30",
+    "updated": "2026-07-31",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -212,7 +212,7 @@ const FALLBACK = {
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 224
+        "lessons": 228
       },
       "evolution": [
         {
@@ -706,9 +706,20 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v16.5 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира РЕДОВО, не абзацно: tools/agents/handoff.mjs:53-58 чете ст…"
+        },
+        {
+          "version": "16.9.0",
+          "date": "2026-07-31",
+          "event": "v16.9 — учене",
+          "detail": "Научи: EAA скоуп-гейт има трети случай след B2B витрина и микропредприятие: ВЪТРЕШЕН инструмен… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „EAA скоуп-гейт има трети случай след B2B витрина и микропредприятие: ВЪТРЕШЕН инструмен…\" (+3 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -1216,7 +1227,7 @@ const FALLBACK = {
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 249
+        "lessons": 254
       },
       "evolution": [
         {
@@ -1818,9 +1829,31 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v17.3 — учене",
           "detail": "Научи: Поука с file:line в паметта на агент гние тихо — репо гейтовете не я проверяват. `node … (+2 още)"
+        },
+        {
+          "version": "17.6.0",
+          "date": "2026-07-31",
+          "event": "v17.6 — учене",
+          "detail": "Научи: В staffe/ правата за себестойност се прилагат в Server Component страниците (`vedeCosti… (+2 още)"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-07-31",
+          "event": "v17.8 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ се валидира машинно (tools/agents/handoff.mjs, гейтван от dod-che… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ се валидира машинно (tools/agents/handoff.mjs, гейтван от dod-che…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В staffe/ правата за себестойност се прилагат в Server Component страниците (`vedeCosti…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -4438,7 +4471,7 @@ const FALLBACK = {
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 121
+        "lessons": 124
       },
       "evolution": [
         {
@@ -4812,9 +4845,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v16.0 — учене",
           "detail": "Научи: ICU MessageFormat третира ASCII апострофа ' като escape-знак — в италиански/френски низ… (+11 още)"
+        },
+        {
+          "version": "16.3.0",
+          "date": "2026-07-31",
+          "event": "v16.3 — учене",
+          "detail": "Научи: В staffe/ (IT е език-източник, не превод) разграничението giacenza=физически налично / … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В staffe/ (IT е език-източник, не превод) разграничението giacenza=физически налично / …\" (+2 още) · 3 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -5950,7 +5994,7 @@ const FALLBACK = {
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 146
+        "lessons": 151
       },
       "evolution": [
         {
@@ -6336,9 +6380,31 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v15.7 — учене",
           "detail": "Научи: systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У… (+12 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-07-31",
+          "event": "v16.0 — учене",
+          "detail": "Научи: В autodeploy.sh шаблонът `p=\\\"$(grep -E '^VAR=' .env | head -1 | cut -d= -f2)\\\"` под `s… (+2 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-07-31",
+          "event": "v16.2 — учене",
+          "detail": "Научи: DoD гейтът на VPS слоя е `node tools/vps/deploy-check.mjs <файл…>`; приема няколко файл… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „DoD гейтът на VPS слоя е `node tools/vps/deploy-check.mjs <файл…>`; приема няколко файл…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В autodeploy.sh шаблонът `p=\\\"$(grep -E '^VAR=' .env | head -1 | cut -d= -f2)\\\"` под `s…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -9030,7 +9096,7 @@ const FALLBACK = {
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 120
+        "lessons": 122
       },
       "evolution": [
         {
@@ -9338,9 +9404,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v13.8 — учене",
           "detail": "Научи: medqr/mobile/package.json е на @capacitor/core|android|ios ^6.2.0 — не Capacitor 7/8; ъ… (+6 още)"
+        },
+        {
+          "version": "14.0.0",
+          "date": "2026-07-31",
+          "event": "v14.0 — учене",
+          "detail": "Научи: В staffe/ (TS strict, moduleResolution:bundler) пакет с условни `exports` (browser/elec… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В staffe/ (TS strict, moduleResolution:bundler) пакет с условни `exports` (browser/elec…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -13389,7 +13466,7 @@ const FALLBACK = {
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 149
+        "lessons": 151
       },
       "evolution": [
         {
@@ -13445,9 +13522,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: tj-actions/changed-files (CVE-2025-30066, март 2025): атакуващ пренаписа 350+ git тагов… (+9 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-07-31",
+          "event": "v14.9 — учене",
+          "detail": "Научи: В staffe/ auth.ts.secret() хвърля fail-closed без AUTH_SECRET (>=32 знака); prisma gene… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „В staffe/ auth.ts.secret() хвърля fail-closed без AUTH_SECRET (>=32 знака); prisma gene…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -14070,7 +14158,7 @@ const FALLBACK = {
           "Sample Ratio Mismatch (en.wikipedia.org/wiki/Sample_ratio_mismatch); статистика на онлайн експерименти",
           "Това репо: CLAUDE.md; границата SEO (откриваемост), Продавача (Stripe), Наблюдателят (системни метрики), Правния (закон)"
         ],
-        "lessons": 156
+        "lessons": 164
       },
       "evolution": [
         {
@@ -14108,9 +14196,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v15.5 — учене",
           "detail": "Научи: GA4 behavioral modeling (consent mode) има твърди прагове за допустимост: property-то т… (+12 още)"
+        },
+        {
+          "version": "16.3.0",
+          "date": "2026-07-31",
+          "event": "v16.3 — учене",
+          "detail": "Научи: Определението на метриката трябва да е ДАННИ (регистър обект), не проза в компонента — … (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-31",
+          "type": "learning",
+          "summary": "Научи: „Определението на метриката трябва да е ДАННИ (регистър обект), не проза в компонента — …\" (+7 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",

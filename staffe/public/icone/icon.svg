@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Staffe">
+  <rect width="512" height="512" rx="96" fill="#0369a1"/>
+  <text x="256" y="330" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+        font-size="300" font-weight="700" fill="#ffffff" text-anchor="middle">S</text>
+</svg>
