@@ -1,0 +1,151 @@
+// FiveM Bulgaria — схема на директорията.
+// Правило: тук НЕ влизат лични данни на играчи. players.json на сървърите
+// връща имена и identifiers (steam:/license:/discord:) — те не се четат, не се
+// съхраняват и не се показват. Пазим само агрегираната бройка.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Framework {
+  ESX
+  QBCORE
+  QBOX
+  OX_CORE
+  STANDALONE
+  UNKNOWN
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Резултат от последния пинг. HIDDEN значи жив сървър с вдигнат
+/// `sv_requestParanoia` (връща „Nope.“ вместо JSON) — НЕ е офлайн.
+enum ProbeOutcome {
+  ONLINE
+  OFFLINE
+  HIDDEN
+  UNREACHABLE
+}
+
+/// Сървър в директорията. Създава се от заявка (PENDING) и става публичен
+/// само след ръчно одобрение (APPROVED).
+model Server {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  tagline     String?
+  description String?
+
+  /// „cfx.re/join/<code>“ кодът (без домейна). Основният идентификатор на
+  /// сървъра — адресът се резолвира от него.
+  cfxJoinCode String? @unique
+  /// Резолвиран адрес „host:port“ (по подразбиране порт 30120). Може да е
+  /// въведен ръчно, ако сървърът няма Cfx код.
+  address     String?
+
+  discordUrl String?
+  websiteUrl String?
+  bannerUrl  String?
+
+  framework Framework @default(UNKNOWN)
+  whitelist Boolean   @default(false)
+  language  String    @default("bg")
+  /// Свободни етикети: „heavy-rp“, „икономика“, „drift“, „нов“ …
+  tags      String[]  @default([])
+
+  status   ModerationStatus @default(PENDING)
+  /// Платено/промотирано подреждане най-отгоре, докато не изтече.
+  featuredUntil DateTime?
+
+  // ── Жив статус (пише се само от scripts/refresh-servers.ts) ───────────────
+  online     Boolean      @default(false)
+  lastProbe  ProbeOutcome @default(OFFLINE)
+  players    Int          @default(0)
+  maxPlayers Int          @default(0)
+  /// Последният момент, в който сървърът е отговорил успешно.
+  lastOnlineAt DateTime?
+  /// Последният опит за пингване (успешен или не).
+  lastCheckedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reviews   Review[]
+  snapshots ServerSnapshot[]
+
+  @@index([status, online, players])
+  @@index([status, featuredUntil])
+}
+
+/// Часова снимка на посещаемостта — за графиката „играчи през деня“.
+/// Само числа, нула лични данни.
+model ServerSnapshot {
+  id       String   @id @default(cuid())
+  serverId String
+  server   Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  at       DateTime @default(now())
+  players  Int
+  online   Boolean
+
+  @@index([serverId, at])
+}
+
+/// Ревю от посетител. Влиза в модераторска опашка (PENDING) — публикува се
+/// ръчно. Не пазим IP, user agent или каквото и да е проследяване.
+model Review {
+  id       String @id @default(cuid())
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  rating     Int
+  body       String?
+  /// Свободен псевдоним, въведен от автора. Не е акаунт, не е верифициран.
+  authorAlias String?
+
+  status    ModerationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  @@index([serverId, status])
+}
+
+/// Заявка за листване/партньорство от собственик на сървър. Имейлът е
+/// единствената лична данна тук — за връзка по повод заявката.
+model Submission {
+  id          String  @id @default(cuid())
+  serverName  String
+  cfxJoinCode String?
+  address     String?
+  discordUrl  String?
+  contactEmail String
+  note        String?
+
+  status    ModerationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  @@index([status, createdAt])
+}
+
+/// Новини и туториали — SEO гръбнакът на сайта.
+model Post {
+  id      String @id @default(cuid())
+  slug    String @unique
+  title   String
+  excerpt String
+  body    String
+  author  String @default("Екипът на FiveM Bulgaria")
+
+  publishedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+
+  @@index([publishedAt])
+}

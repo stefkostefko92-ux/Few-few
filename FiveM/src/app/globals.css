@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-fivem-950 text-slate-100 font-ui antialiased;
+}
+
+/* Видим фокус навсякъде — клавиатурната навигация е изискване (EAA/WCAG 2.4.7). */
+:focus-visible {
+  @apply outline-none ring-2 ring-fivem-400 ring-offset-2 ring-offset-fivem-950;
+}
+
+/* Уважаваме системната настройка за намалено движение. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

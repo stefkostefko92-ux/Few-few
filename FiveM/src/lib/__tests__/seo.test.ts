@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+
+import { averageRating, isFeatured } from '../rating';
+import { BASE_KEYWORDS, faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
+
+test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“', () => {
+  assert.ok(BASE_KEYWORDS.length >= 5);
+  assert.ok(BASE_KEYWORDS.includes('Carbon Stealth'));
+});
+
+test('всяка страница носи базовите ключови думи без дубли', () => {
+  const meta = pageMetadata({
+    title: 'Т',
+    description: 'О',
+    path: '/servers/x',
+    keywords: ['Carbon Stealth', 'нещо'],
+  });
+  const keywords = meta.keywords as string[];
+  assert.ok(keywords.includes('нещо'));
+  assert.equal(keywords.filter((k) => k === 'Carbon Stealth').length, 1);
+  assert.match(String(meta.alternates?.canonical), /\/servers\/x$/);
+});
+
+test('noindex се задава само когато е поискан', () => {
+  assert.equal(pageMetadata({ title: 'T', description: 'D' }).robots, undefined);
+  assert.deepEqual(pageMetadata({ title: 'T', description: 'D', noindex: true }).robots, {
+    index: false,
+    follow: false,
+  });
+});
+
+test('JSON-LD не може да затвори <script> (XSS от име на сървър)', () => {
+  const payload = serverListJsonLd([{ slug: 'x', name: '</script><img src=x onerror=alert(1)>' }]);
+  const serialized = jsonLdString(payload);
+  assert.ok(!serialized.includes('</script>'));
+  assert.ok(serialized.includes('\\u003c'));
+});
+
+test('FAQ JSON-LD има правилната форма', () => {
+  const ld = faqJsonLd([{ question: 'В?', answer: 'О.' }]);
+  assert.equal(ld['@type'], 'FAQPage');
+  assert.equal(ld.mainEntity[0].acceptedAnswer.text, 'О.');
+});
+
+test('средната оценка се закръгля до 0.1', () => {
+  assert.equal(averageRating([]), null);
+  assert.equal(averageRating([{ rating: 5 }, { rating: 4 }]), 4.5);
+  assert.equal(averageRating([{ rating: 5 }, { rating: 4 }, { rating: 4 }]), 4.3);
+});
+
+test('промотирането изтича', () => {
+  const now = new Date('2026-01-10T00:00:00Z');
+  assert.equal(isFeatured({ featuredUntil: new Date('2026-01-11T00:00:00Z') }, now), true);
+  assert.equal(isFeatured({ featuredUntil: new Date('2026-01-09T00:00:00Z') }, now), false);
+  assert.equal(isFeatured({ featuredUntil: null }, now), false);
+});
