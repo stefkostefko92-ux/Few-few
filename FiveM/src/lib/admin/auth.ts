@@ -23,7 +23,15 @@ import { prisma } from '@/lib/db';
  *    страницата закъснява с една мутация.
  */
 
-const COOKIE = '__Host-fivem-admin';
+/**
+ * Представката `__Host-` е най-строгата (иска Secure, Path=/ и никакъв Domain)
+ * — но точно затова браузърът я ОТХВЪРЛЯ ТИХО по обикновен HTTP. Резултатът
+ * би бил „вход, който не се оплаква и не работи“. Затова силната представка се
+ * ползва само когато сайтът наистина върви по HTTPS; иначе пада до обикновено
+ * име, а `secure` следва същото условие.
+ */
+const OVER_HTTPS = (process.env.PUBLIC_BASE_URL ?? '').startsWith('https://');
+const COOKIE = OVER_HTTPS ? '__Host-fivem-admin' : 'fivem-admin';
 const SESSION_HOURS = 8;
 const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 15;
@@ -79,7 +87,7 @@ export async function startSession(): Promise<void> {
   const store = await cookies();
   store.set(COOKIE, token, {
     httpOnly: true,
-    secure: true,
+    secure: OVER_HTTPS,
     sameSite: 'lax',
     path: '/',
     expires: expiresAt,
