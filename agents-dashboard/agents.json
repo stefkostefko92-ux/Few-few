@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 269
+        "lessons": 273
       },
       "evolution": [
         {
@@ -1723,9 +1723,20 @@
           "date": "2026-08-01",
           "event": "v19.3 — учене",
           "detail": "Научи: Глобален (не по принципал) таван на опитите за вход ПРЕДИ проверката на паролата е DoS … (+1 още)"
+        },
+        {
+          "version": "19.7.0",
+          "date": "2026-08-01",
+          "event": "v19.7 — учене",
+          "detail": "Научи: Node fetch (undici, Node 22.22.2) МАХА зададения `host` хедър — сървърът вижда Host на … (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Node fetch (undici, Node 22.22.2) МАХА зададения `host` хедър — сървърът вижда Host на …\" (+3 още)"
+        },
         {
           "date": "2026-08-01",
           "type": "learning",
