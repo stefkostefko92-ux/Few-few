@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { retint, rgb2hsl, themeFor, applyTheme, namespaceIds, BODY_TOKENS } from "./mascot-theme.mjs";
+import { retint, rgb2hsl, themeFor, applyTheme, namespaceIds, BODY_TOKENS, inlineBlock, withInlineBlock, INLINE_MARKERS } from "./mascot-theme.mjs";
 import { withMutation, replaceOnce } from "../lib/mutation.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -23,11 +23,12 @@ const agents = () => {
 };
 const hex2rgb01 = (h) => { const s = h.replace("#", ""); return [0, 2, 4].map((i) => parseInt(s.slice(i, i + 2), 16) / 255); };
 
-test("всеки агент има маскот в двете нива", () => {
+test("всеки агент има маскот и в трите нива", () => {
   const missing = [];
   for (const a of agents()) {
-    if (!existsSync(join(DIR, `${a.id}.svg`))) missing.push(`${a.id}.svg`);
-    if (!existsSync(join(DIR, `${a.id}-icon.svg`))) missing.push(`${a.id}-icon.svg`);
+    for (const f of [`${a.id}.svg`, `${a.id}-icon.svg`, `${a.id}-animated.svg`]) {
+      if (!existsSync(join(DIR, f))) missing.push(f);
+    }
   }
   assert.deepEqual(missing, []);
 });
@@ -108,6 +109,72 @@ test("таблото ползва маскота като облик на аге
   const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
   assert.match(html, /mascots\/\$\{encodeURIComponent\(id\)\}-icon\.svg/, "iconSVG трябва да сочи маскота");
   assert.match(html, /function iconFallback/, "резервният линеен вариант остава, ако папката липсва");
+});
+
+// ── вграденият жив маскот в профила ──────────────────────────────────────────────────────────
+// Профилът показва АНИМИРАНИЯ маскот вграден инлайн — само така курсорът може да води погледа.
+// Долните проверки пазят точно това, което мерих в браузъра: тема, поглед, анимация, побиране.
+
+test("вграденият блок носи анимацията и куката за погледа", () => {
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  const block = html.slice(html.indexOf(INLINE_MARKERS.MARK_START), html.indexOf(INLINE_MARKERS.MARK_END));
+  assert.ok(block.includes("jm-pupils"), "без .jm-pupils погледът няма какво да мести");
+  assert.ok(block.includes("--jm-gaze-x"), "анимираният вариант е този с гледащите зеници");
+  assert.ok(/@keyframes|animation:/.test(block), "вграден е СТАТИЧНИЯТ маскот — профилът ще е замръзнал");
+  assert.ok(block.includes("prefers-reduced-motion"), "пакетът трябва да носи и спирачката за движение");
+});
+
+test("темите за 28-те агента са в блока, а startMascot няма нито един цвят", () => {
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  const ctx = {
+    tokens, sources: {}, agents: agents(),
+  };
+  // Само темите — геометрията идва от файла, тук сверяваме че всеки агент присъства.
+  const themes = Object.fromEntries(ctx.agents.map((a) => [a.id, themeFor(a.accent, tokens)]));
+  const m = html.match(/const MASCOT_THEMES = (\{.*?\});/s);
+  assert.ok(m, "MASCOT_THEMES липсва във вградения блок");
+  assert.deepEqual(JSON.parse(m[1]), themes, "темите в таблото се разминават с генератора");
+
+  // Второ пресмятане на цвета в браузъра щеше да дрейфне от това в Node при първата поправка.
+  const fn = html.slice(html.indexOf("function startMascot("));
+  // Коментарите се махат ПРЕДИ проверката: първата ми версия падна върху „PR #162" в коментар —
+  // детектор, който чете проза вместо код, е същата грешка, която ловим на трето място в тази сесия.
+  const body = fn.slice(0, fn.indexOf("\n}\n") + 2).replace(/\/\/[^\n]*/g, "");
+  assert.ok(!/#[0-9A-Fa-f]{3,8}\b/.test(body), `startMascot не бива да носи цвят: ${body.match(/#[0-9A-Fa-f]{3,8}/)}`);
+});
+
+test("SVG-то се побира в кутията — иначе от героя се вижда само шапката", () => {
+  // Реален дефект, хванат в браузъра: `.mascot` е висока 232px, а SVG-то носи width/height=512,
+  // затова преливаше и профилът показваше само академичната шапка.
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  const rule = html.match(/\.mascot svg \{([^}]*)\}/);
+  assert.ok(rule, "липсва правило за размера на вградения маскот");
+  assert.match(rule[1], /height:\s*100%/, "височината трябва да води (кутията е фиксирана)");
+  assert.match(rule[1], /width:\s*auto/, "ширината следва, за да не се сплеска героят");
+});
+
+test("погледът се откача при затваряне — иначе всяко отваряне трупа слушател", () => {
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  assert.match(html, /function stopMascot\(\)[^\n]*mascotCleanup\(\)/, "stopMascot трябва да вика чистача");
+  assert.match(html, /mascotCleanup = \(\) => window\.removeEventListener\("mousemove"/);
+});
+
+test("--check ПАДА, когато вграденият блок в таблото застоява", () => {
+  const html = join(ROOT, "agents-dashboard", "index.html");
+  // Мутираме темата на агент — точно това, което се разсинхронизира при смяна на акцент.
+  const status = withMutation(html, replaceOnce("const MASCOT_THEMES = {", 'const MASCOT_THEMES = {"_":{},'), () =>
+    spawnSync(process.execPath, [TOOL, "--check"], { cwd: ROOT, encoding: "utf8" }).status);
+  assert.equal(status, 1, "застоял вграден маскот трябва да вдигне гейта");
+});
+
+test("inlineBlock е чиста функция — един и същ вход дава един и същ изход (гейтът иска стабилност)", () => {
+  const src = readFileSync(join(ROOT, "mascot", "svg", "jelly-mascot-full-animated.svg"), "utf8");
+  const ctx = { tokens, sources: { animated: src }, agents: agents() };
+  assert.equal(inlineBlock(ctx), inlineBlock(ctx));
+  const html = `x\n${INLINE_MARKERS.MARK_START}\nстаро\n${INLINE_MARKERS.MARK_END}\ny`;
+  assert.ok(withInlineBlock(html, inlineBlock(ctx)).startsWith("x\n"));
+  assert.ok(withInlineBlock(html, inlineBlock(ctx)).endsWith("y"));
+  assert.equal(withInlineBlock("без маркери", "нов"), "без маркери", "без маркери не пипаме файла");
 });
 
 test("проверката е в състава на гейта и е задължителна", () => {

@@ -88,7 +88,14 @@ export function namespaceIds(svg, prefix) {
     .replace(/(xlink:href|href)="#([^"]+)"/g, (m, attr, id) => `${attr}="#${prefix}-${id}"`);
 }
 
-const LEVELS = { full: "jelly-mascot-full.svg", icon: "jelly-mascot-icon.svg" };
+// `animated` носи вградения <style> на пакета: bob, пулс, мигане, люлеещ се пискюл, издигащи се
+// мехурчета — и `.jm-pupils`, който се мести от `--jm-gaze-x/y`. Точно затова профилът в таблото
+// ползва ТОЗИ вариант, вграден инлайн: така курсорът може да води погледа, без нито един ререндер.
+const LEVELS = {
+  full: "jelly-mascot-full.svg",
+  icon: "jelly-mascot-icon.svg",
+  animated: "jelly-mascot-full-animated.svg",
+};
 
 export function mascotFor(agent, level, tokens, sources) {
   const vars = themeFor(agent.accent, tokens);
@@ -112,6 +119,38 @@ function load() {
 const wanted = ({ tokens, sources, agents }) => agents.flatMap((a) =>
   Object.keys(LEVELS).map((lvl) => [`${a.id}${lvl === "full" ? "" : "-" + lvl}.svg`, mascotFor(a, lvl, tokens, sources)]));
 
+// ── вграденият блок в таблото ────────────────────────────────────────────────────────────────
+// Профилът показва АНИМИРАНИЯ маскот, а не картинка: само вграден SVG може да получи погледа от
+// курсора (`--jm-gaze-x/y`). Но 28 вградени копия биха надули файла и биха се сблъскали по `id`.
+// Затова вграждаме ГЕОМЕТРИЯТА веднъж и подаваме само ЦВЕТА за конкретния агент — точно за това е
+// направена токен системата на маскота.
+// Темите се смятат ТУК (Node), не в браузъра: втора имплементация на пребоядисването щеше да
+// дрейфне от тази при първата поправка. Гейтът сравнява вградения блок с генератора.
+const MARK_START = "/* MASCOT-INLINE:START — генериран от tools/agents/mascot-theme.mjs, не редактирай */";
+const MARK_END = "/* MASCOT-INLINE:END */";
+
+export function inlineBlock({ tokens, sources, agents }) {
+  const themes = Object.fromEntries(agents.map((a) => [a.id, themeFor(a.accent, tokens)]));
+  // Геометрията е обща, затова `id`-тата се префиксват веднъж с неутрален префикс. В профила
+  // живее най-много ЕДИН маскот наведнъж, значи сблъсък няма.
+  const svg = namespaceIds(sources.animated, "jmx")
+    .replace(/<title[^>]*>[\s\S]*?<\/title>/, "<title>Маскотът на агента</title>");
+  return [
+    MARK_START,
+    `const MASCOT_SVG = ${JSON.stringify(svg)};`,
+    `const MASCOT_THEMES = ${JSON.stringify(themes)};`,
+    MARK_END,
+  ].join("\n");
+}
+
+/** Подменя блока в index.html. Връща новия текст (или същия, ако маркерите липсват). */
+export function withInlineBlock(html, block) {
+  const s = html.indexOf(MARK_START), e = html.indexOf(MARK_END);
+  if (s === -1 || e === -1) return html;
+  return html.slice(0, s) + block + html.slice(e + MARK_END.length);
+}
+export const INLINE_MARKERS = { MARK_START, MARK_END };
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   if (!existsSync(MASCOT)) {
     console.error("\x1b[31m✗ липсва mascot/ — маскотът идва от пакета, не се рисува тук.\x1b[0m");
@@ -119,7 +158,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   const ctx = load();
   const want = wanted(ctx);
+  const HTML = join(ROOT, "agents-dashboard", "index.html");
+  const block = inlineBlock(ctx);
   if (CHECK) {
+    const html = readFileSync(HTML, "utf8");
+    if (!html.includes(MARK_START)) {
+      console.error("\x1b[31m✗ таблото няма MASCOT-INLINE блок\x1b[0m — профилът не може да покаже жив маскот.");
+      process.exit(1);
+    }
+    if (withInlineBlock(html, block) !== html) {
+      console.error("\x1b[31m✗ вграденият маскот в таблото е застоял\x1b[0m (маскотът или акцент е сменен).");
+      console.error("  Пусни: node tools/agents/mascot-theme.mjs");
+      process.exit(1);
+    }
     const missing = want.filter(([f]) => !existsSync(join(OUT_DIR, f))).map(([f]) => f);
     const stale = want.filter(([f, body]) => existsSync(join(OUT_DIR, f)) &&
       readFileSync(join(OUT_DIR, f), "utf8") !== body).map(([f]) => f);
@@ -137,5 +188,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   mkdirSync(OUT_DIR, { recursive: true });
   for (const [f, body] of want) writeFileSync(join(OUT_DIR, f), body);
-  console.log(`\x1b[32m✓ ${want.length} файла\x1b[0m (${ctx.agents.length} агента × ${Object.keys(LEVELS).length} нива) → agents-dashboard/mascots/`);
+  const html = readFileSync(HTML, "utf8");
+  const next = withInlineBlock(html, block);
+  if (next === html && !html.includes(MARK_START)) {
+    console.error("\x1b[33m⚠ таблото няма MASCOT-INLINE маркери — вграденият маскот НЕ е обновен.\x1b[0m");
+  } else if (next !== html) {
+    writeFileSync(HTML, next);
+  }
+  console.log(`\x1b[32m✓ ${want.length} файла\x1b[0m (${ctx.agents.length} агента × ${Object.keys(LEVELS).length} нива) + вграден маскот в таблото`);
 }
