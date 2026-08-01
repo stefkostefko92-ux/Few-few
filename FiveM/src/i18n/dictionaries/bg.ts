@@ -109,6 +109,14 @@ export const bg = {
   },
   filters: {
     whitelist: 'Whitelist',
+    search: 'Търси сървър по име',
+    searchButton: 'Търси',
+    sortDefault: 'По подразбиране',
+    sortPlayers: 'По играчи',
+    sortName: 'По име',
+    sortLabel: 'Подредба',
+    found: 'намерени',
+    noMatch: 'Няма сървър с това име.',
     all: 'Всички',
   },
   rules: {

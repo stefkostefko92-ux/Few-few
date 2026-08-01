@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 import { prisma } from './db';
-import { compareServers } from './rating';
+import { compareFeatured, compareServers } from './rating';
 
 /** Публичните полета на сървър — нищо повече не напуска базата. */
 export const publicServerSelect = {
@@ -29,7 +29,14 @@ export type PublicServer = Prisma.ServerGetPayload<{ select: typeof publicServer
  * Базата може да е недостъпна (build без БД) — тогава връщаме празен списък,
  * вместо да падне цялата страница.
  */
-export type ServerFilter = { framework?: PublicServer['framework']; whitelist?: boolean };
+export type ServerSort = 'default' | 'players' | 'name';
+export type ServerFilter = {
+  framework?: PublicServer['framework'];
+  whitelist?: boolean;
+  /** Свободен текст от посетителя — минава само през `contains`, не в raw SQL. */
+  query?: string;
+  sort?: ServerSort;
+};
 
 export async function listPublicServers(filter: ServerFilter = {}): Promise<PublicServer[]> {
   try {
@@ -38,6 +45,7 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
         status: 'APPROVED',
         ...(filter.framework ? { framework: filter.framework } : {}),
         ...(filter.whitelist === undefined ? {} : { whitelist: filter.whitelist }),
+        ...(filter.query ? { name: { contains: filter.query, mode: 'insensitive' as const } } : {}),
       },
       select: publicServerSelect,
       orderBy: [
@@ -54,6 +62,17 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
     // Крайната подредба е в `compareServers`: SQL-ът не може да изрази
     // „промотиран, но само докато е валидно“, а `featuredUntil DESC` вдига и
     // изтеклите — с ранг, но без значка.
+    // Избраната подредба НЕ отменя промотирането: платеното място е обявено в
+    // условията, значи не бива да изчезва, защото посетителят е натиснал
+    // „по име“. Изборът подрежда ВЪТРЕ в двете групи.
+    if (filter.sort === 'players') {
+      return rows.sort(
+        (a, b) => compareFeatured(a, b) || b.players - a.players || a.name.localeCompare(b.name, 'bg'),
+      );
+    }
+    if (filter.sort === 'name') {
+      return rows.sort((a, b) => compareFeatured(a, b) || a.name.localeCompare(b.name, 'bg'));
+    }
     return rows.sort((a, b) => compareServers(a, b));
   } catch (error) {
     console.error('[servers] списъкът не се прочете', error);
@@ -114,4 +133,4 @@ export async function getPublicServer(slug: string) {
   }
 }
 
-export { averageRating, compareServers, isFeatured } from './rating';
+export { averageRating, compareFeatured, compareServers, isFeatured } from './rating';

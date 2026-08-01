@@ -13,7 +13,10 @@ import { DISCORD_INVITE } from '@/lib/site';
 // Живият статус се мени постоянно — не се кешира между заявките.
 export const dynamic = 'force-dynamic';
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
+};
 
 /**
  * „Отговор отпред“ за AI отговарачите (AEO): въпросите се хранят от СЪЩИТЕ
@@ -40,7 +43,7 @@ function faqFor(locale: Locale) {
   return entries.filter((item): item is { question: string; answer: string } => Boolean(item));
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { locale: raw } = await params;
   const locale = isLocale(raw) ? raw : 'bg';
   const t = getDictionary(locale);
@@ -53,12 +56,15 @@ export async function generateMetadata({ params }: Props) {
   });
 }
 
-export default async function HomePage({ params }: Props) {
+export default async function HomePage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
   const locale = isLocale(raw) ? raw : 'bg';
   const t = getDictionary(locale);
 
-  const servers = await listPublicServers();
+  const { q, sort } = await searchParams;
+  const query = q?.trim().slice(0, 60) || undefined;
+  const chosen = sort === 'players' || sort === 'name' ? sort : 'default';
+  const servers = await listPublicServers({ query, sort: chosen });
   const online = servers.filter((server) => server.online);
   const totalPlayers = online.reduce((sum, server) => sum + server.players, 0);
   const faq = faqFor(locale);
@@ -115,11 +121,47 @@ export default async function HomePage({ params }: Props) {
         ))}
       </nav>
 
+      <form className="mt-6 flex flex-wrap items-end gap-2" role="search">
+        <label className="flex flex-1 flex-col gap-1 text-sm sm:max-w-xs">
+          <span className="text-silver-500">{t.filters.search}</span>
+          <input
+            name="q"
+            defaultValue={query ?? ''}
+            maxLength={60}
+            className="rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-silver-500">{t.filters.sortLabel}</span>
+          <select
+            name="sort"
+            defaultValue={chosen}
+            className="rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
+          >
+            <option value="default">{t.filters.sortDefault}</option>
+            <option value="players">{t.filters.sortPlayers}</option>
+            <option value="name">{t.filters.sortName}</option>
+          </select>
+        </label>
+        <button className="rounded-lg border border-white/15 px-4 py-2 text-sm hover:border-cyan-500 hover:text-cyan-300">
+          {t.filters.searchButton}
+        </button>
+        {query && (
+          <span className="text-sm text-silver-500">
+            {servers.length} {t.filters.found}
+          </span>
+        )}
+      </form>
+
       <section className="mt-10" aria-labelledby="servers-heading">
         <h2 id="servers-heading" className="sr-only">
           {t.home.serverList}
         </h2>
-        {servers.length === 0 ? (
+        {servers.length === 0 && query ? (
+          <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
+            {t.filters.noMatch}
+          </p>
+        ) : servers.length === 0 ? (
           <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
             {t.home.emptyLead}{' '}
             <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { averageRating, compareServers, isFeatured } from '../rating';
+import { averageRating, compareFeatured, compareServers, isFeatured } from '../rating';
 import { BASE_KEYWORDS, faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
 
 test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“ — на ВСЕКИ език', () => {
@@ -87,4 +87,17 @@ test('изтекла промоция НЕ държи ранг (недеклар
 
   const order = [expired, free, active].sort((a, b) => compareServers(a, b, now)).map((s) => s.name);
   assert.deepEqual(order, ['Активен', 'Безплатен', 'Изтекъл']);
+});
+
+test('избраната подредба не отменя платеното промотиране', () => {
+  // Платеното място е обявено в условията — не бива да изчезва, защото
+  // посетителят е натиснал „по име“. Изборът подрежда ВЪТРЕ в двете групи.
+  const now = new Date('2026-08-01T00:00:00Z');
+  const promoted = { featuredUntil: new Date('2026-09-01T00:00:00Z'), name: 'Я последен по азбука' };
+  const free = { featuredUntil: null, name: 'А първи по азбука' };
+
+  const byName = [free, promoted].sort(
+    (a, b) => compareFeatured(a, b, now) || a.name.localeCompare(b.name, 'bg'),
+  );
+  assert.equal(byName[0].name, 'Я последен по азбука');
 });

@@ -83,16 +83,16 @@ export default async function ServerPage({ params, searchParams }: Props) {
       </nav>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        {iconUrl && (
-          <Image
-            src={iconUrl}
-            alt=""
-            width={48}
-            height={48}
-            className="rounded-lg border border-white/10"
-            unoptimized
-          />
-        )}
+        {/* Голямата част от откритите сървъри нямат икона в Cfx.re — заместител,
+            за да не зее празно място до името. */}
+        <Image
+          src={iconUrl ?? '/brand/placeholder-server.png'}
+          alt=""
+          width={48}
+          height={48}
+          className="rounded-lg border border-white/10"
+          unoptimized
+        />
         <h1 className="text-3xl font-semibold tracking-tight">{server.name}</h1>
         {featured && (
           <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">

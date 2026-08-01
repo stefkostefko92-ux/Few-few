@@ -112,6 +112,14 @@ export const en: Dictionary = {
   },
   filters: {
     whitelist: 'Whitelist',
+    search: 'Search server by name',
+    searchButton: 'Search',
+    sortDefault: 'Default',
+    sortPlayers: 'By players',
+    sortName: 'By name',
+    sortLabel: 'Sort',
+    found: 'found',
+    noMatch: 'No server with that name.',
     all: 'All',
   },
   rules: {

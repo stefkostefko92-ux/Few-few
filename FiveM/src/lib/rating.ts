@@ -27,6 +27,19 @@ export function compareServers<T extends { featuredUntil: Date | null; online: b
   return a.name.localeCompare(b.name, 'bg');
 }
 
+/**
+ * Само промотирането. Изнесено отделно, защото всяка подредба, която
+ * посетителят избере, трябва да го уважи — платеното място е обявено в
+ * условията и не бива да изчезва при натискане на „по име“.
+ */
+export function compareFeatured<T extends { featuredUntil: Date | null }>(
+  a: T,
+  b: T,
+  now = new Date(),
+): number {
+  return (isFeatured(b, now) ? 1 : 0) - (isFeatured(a, now) ? 1 : 0);
+}
+
 /** Промотиран ли е сървърът в този момент. */
 export function isFeatured(server: { featuredUntil: Date | null }, now = new Date()): boolean {
   return server.featuredUntil !== null && server.featuredUntil.getTime() > now.getTime();
