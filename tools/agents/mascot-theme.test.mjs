@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { retint, rgb2hsl, themeFor, applyTheme, namespaceIds, BODY_TOKENS, inlineBlock, withInlineBlock, INLINE_MARKERS } from "./mascot-theme.mjs";
+import { retint, rgb2hsl, themeFor, applyTheme, namespaceIds, BODY_TOKENS, hueSpread, inlineBlock, withInlineBlock, INLINE_MARKERS } from "./mascot-theme.mjs";
 import { withMutation, replaceOnce } from "../lib/mutation.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -41,6 +41,60 @@ test("пребоядисването пази СВЕТЛОТАТА (тя нос�
   assert.ok(Math.abs(lRamp - lOut) < 0.02, `светлотата трябва да се запази: ${lRamp} → ${lOut}`);
   const [hAcc] = rgb2hsl(...hex2rgb01("#e11d48"));
   assert.ok(Math.abs(hOut - hAcc) < 1, `тонът трябва да е на агента: ${hAcc} → ${hOut}`);
+});
+
+// ── тонът се разлива ─────────────────────────────────────────────────────────────────────────
+// Един тон на петте спирки прави 28 плоски мармаладчета. Освен това ИЗХВЪРЛЯ информация: самата
+// рампа на маскота върви от 111° в сянката до 83° в светлината. Долните тестове пазят разлива
+// да съществува, да е в правилната ПОСОКА и да не разкъса героя на два несвързани цвята.
+
+test("рампата на маскота САМА не е едноцветна — това е причината разливът да съществува", () => {
+  const base = { ...tokens.sampled, ...tokens.extended };
+  const h = (k) => rgb2hsl(...hex2rgb01(base[k].hex))[0];
+  assert.ok(Math.abs(h("deep") - h("pale")) > 20,
+    `източникът трябва да носи разлив, иначе правилото е измислено: ${h("deep")}° → ${h("pale")}°`);
+  // Посоката е физическата: осветените тънки части се топлят (към ~40°), сянката изстива.
+  assert.ok(h("pale") < h("deep"), "рампата трябва да се движи КЪМ топлото нагоре по светлотата");
+});
+
+test("всеки акцент получава реален разлив — включително вече топлите", () => {
+  for (const a of agents()) {
+    const s = Math.abs(hueSpread(a.accent));
+    assert.ok(s >= 34 && s <= 90, `${a.id} (${a.accent}): разлив ${s}° извън [34, 90]`);
+  }
+  // Оранжевият акцент е капанът: той Е топлото, значи „завърти към топлото" дава нула.
+  assert.ok(Math.abs(hueSpread("#f26322")) >= 34, "оранжев акцент НЕ бива да остане едноцветен");
+});
+
+test("телцето носи поне два тона, но остава ЕДНО тяло", () => {
+  for (const a of agents()) {
+    const v = themeFor(a.accent, tokens);
+    const h = (k) => rgb2hsl(...hex2rgb01(v[`--jm-${k}`]))[0];
+    const arc = (x, y) => Math.abs(((x - y + 540) % 360) - 180);
+    assert.ok(arc(h("deep"), h("pale")) > 25, `${a.id}: разливът изчезна — телцето е плоско`);
+    assert.ok(arc(h("deep"), h("pale")) < 110, `${a.id}: краищата се разпаднаха на два героя`);
+  }
+});
+
+test("емисията свети: горните спирки вдигат светлота, обемните три я пазят", () => {
+  const v = themeFor("#e11d48", tokens);
+  const base = { ...tokens.sampled, ...tokens.extended };
+  const L = (hex) => rgb2hsl(...hex2rgb01(hex))[2];
+  for (const k of ["deep", "bottle", "neon"]) {
+    assert.ok(Math.abs(L(base[k].hex) - L(v[`--jm-${k}`])) < 0.02,
+      `${k} носи ОБЕМА — светлотата му трябва да е непокътната`);
+  }
+  for (const k of ["olive", "pale"]) {
+    assert.ok(L(v[`--jm-${k}`]) > L(base[k].hex) + 0.02,
+      `${k} пълни ядрото/подсветката/ореола — без вдигане няма светене отвътре`);
+  }
+});
+
+test("сиянието НАВЪН е в таблото и следва акцента, не е зашито", () => {
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  const rule = html.match(/\.mascot svg \{([^}]*)\}/)[1];
+  assert.match(rule, /drop-shadow/, "профилът трябва да носи сияние");
+  assert.match(rule, /var\(--ac\)/, "сиянието трябва да е в цвета на АГЕНТА, не фиксирано");
 });
 
 test("пребоядисва се само ТЯЛОТО — аксесоарите остават на героя", () => {

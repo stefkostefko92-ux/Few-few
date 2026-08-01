@@ -54,12 +54,38 @@ export function hsl2rgb(h, s, l) {
   return t.map((v) => v + m);
 }
 
-/** Спирка от рампата → същата светлота, тонът на агента. */
-export function retint(rampHex, accentHex) {
+/** Спирка от рампата → същата светлота, тонът на агента.
+ *  `shift` върти тона спрямо акцента, `emit` вдига светлота/наситеност (емисия, не обем). */
+export function retint(rampHex, accentHex, shift = 0, emit = 0) {
   const [, s0, l0] = rgb2hsl(...hex2rgb(rampHex));
   const [ha, sa] = rgb2hsl(...hex2rgb(accentHex));
-  const s = Math.min(1, s0 * 0.55 + sa * 0.55);
-  return rgb2hex(...hsl2rgb(ha, s, l0));
+  const s = Math.min(1, (s0 * 0.55 + sa * 0.55) * (1 + emit * 0.7));
+  const l = Math.min(0.97, l0 + emit * (1 - l0) * 0.55);
+  return rgb2hex(...hsl2rgb((ha + shift + 360) % 360, s, l));
+}
+
+// ── защо тонът се РАЗЛИВА, а не стои на едно място ───────────────────────────────────────────
+// Един тон на всичките пет спирки прави телцето едноцветно — 28 еднакво плоски мармаладчета.
+// Истинското желе не е такова: дългите вълни проникват по-надълбоко, затова осветените, тънки
+// части се топлят, а дълбоката сянка изстива. Затова носим тона на агента като ОС, а спирките
+// го въртят около нея — към топлото нагоре по рампата, от топлото надолу. Всяко телце носи два
+// цвята, а разликата между агентите расте, защото различните акценти се въртят различно.
+const WARM = 40;                       // оранжевото, към което тегли подповърхностното разсейване
+const SPREAD = { deep: -0.34, bottle: -0.18, neon: 0, olive: 0.26, pale: 0.46 };
+// Емисията живее в горните спирки: точно те пълнят ядрото, подсветката, каустиката и ореола
+// (`jm-core`, `jm-underglow`, `jm-caustic-pool`, `jm-bloom` в маскота). Вдигната светлота там =
+// светене отвътре, без да пипаме нито един филтър и без да пипаме обема на тялото.
+const EMIT = { olive: 0.34, pale: 0.2 };
+
+/** Колко градуса да е разливът за даден акцент — винаги реален, никога нула. */
+export function hueSpread(accentHex) {
+  const [h] = rgb2hsl(...hex2rgb(accentHex));
+  const d = ((WARM - h + 540) % 360) - 180;      // накъде е топлото по КЪСАТА дъга
+  const dir = Math.sign(d) || 1;
+  // Долната граница пази от изражданe: акцент, който вече е оранжев, иначе би дал нулев разлив
+  // и точно оранжевите агенти щяха да останат едноцветни. Горната пази героя да е един и същ —
+  // над ~90° двата края спират да четат като едно тяло.
+  return dir * Math.min(90, Math.max(34, Math.abs(d)));
 }
 
 /** Кои токени са ТЯЛО (пребоядисват се) и кои са ГЕРОЙ (остават). */
@@ -67,8 +93,12 @@ export const BODY_TOKENS = ["deep", "bottle", "neon", "olive", "pale", "soft-oli
 
 export function themeFor(accent, tokens) {
   const base = { ...tokens.sampled, ...tokens.extended };
+  const spread = hueSpread(accent);
   const out = {};
-  for (const k of BODY_TOKENS) if (base[k]) out[`--jm-${k}`] = retint(base[k].hex, accent);
+  for (const k of BODY_TOKENS) {
+    if (!base[k]) continue;
+    out[`--jm-${k}`] = retint(base[k].hex, accent, spread * (SPREAD[k] || 0), EMIT[k] || 0);
+  }
   return out;
 }
 
