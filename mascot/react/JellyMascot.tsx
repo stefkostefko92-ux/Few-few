@@ -4,7 +4,7 @@
 //
 // Маскотът на Carbon Stealth: полупрозрачно желирано телце с очила, папийонка и академична шапка.
 // Нула зависимости извън React. Копирай папката `react/` в продукта, който го ползва.
-import { useId, type CSSProperties, type ReactElement } from "react";
+import { useEffect, useId, useRef, type CSSProperties, type ReactElement } from "react";
 
 export type JellyMascotDetail = "full" | "medium" | "icon";
 export type JellyMascotExpression = "neutral" | "celebrate" | "focused" | "happy" | "proud" | "surprised" | "wink";
@@ -29,11 +29,54 @@ export interface JellyMascotProps {
   expression?: JellyMascotExpression;
   /** Поза (ръцете). Иконното ниво няма ръце и не се влияе. */
   pose?: JellyMascotPose;
+  /**
+   * Поглед: `still` (по подразбиране, зениците стоят), `follow` (следят курсора).
+   * `follow` не предизвиква ререндери — пише CSS променливи направо върху елемента — и
+   * мълчи при `prefers-reduced-motion: reduce`.
+   */
+  gaze?: "still" | "follow";
   /** Микро-анимация (полюшване, пулс на глоуто, мигане, махане на пискюла). */
   animated?: boolean;
   className?: string;
   /** Пребоядисване по бранд: подай CSS променливите `--jm-*` (виж `tokens.json`). */
   style?: CSSProperties;
+}
+
+const GAZE_RANGE = 6; // единици от 512 — колкото да е живо, не кривогледо
+
+/**
+ * Следене на курсора без ререндер: слушателят пише само две CSS променливи върху SVG-то.
+ * Пасивен слушател на `window` (не на елемента — иначе погледът реагира само върху маскота),
+ * измерването е в `requestAnimationFrame`, а при намалено движение изобщо не се закача.
+ */
+function useGaze(ref: { current: SVGSVGElement | null }, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame = 0;
+    const onMove = (event: PointerEvent) => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const svg = ref.current;
+        if (!svg) return;
+        const box = svg.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        const dx = (event.clientX - (box.left + box.width / 2)) / (box.width / 2);
+        const dy = (event.clientY - (box.top + box.height / 2)) / (box.height / 2);
+        const clamp = (v: number) => Math.max(-1, Math.min(1, v)) * GAZE_RANGE;
+        svg.style.setProperty("--jm-gaze-x", `${clamp(dx).toFixed(2)}px`);
+        svg.style.setProperty("--jm-gaze-y", `${clamp(dy).toFixed(2)}px`);
+      });
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [ref, enabled]);
 }
 
 /** Анимацията живее в `mascot/tokens.css` и се вгражда тук, за да е компонентът самодостатъчен. */
@@ -54,6 +97,15 @@ const ANIMATION_CSS = `
   animation: jm-swing 3.6s ease-in-out infinite;
   transform-origin: 372px 104px;
 }
+
+/* Погледът: зениците се местят от две променливи. При .jm-animated маскотът се оглежда сам
+   (бавно, с дълги паузи); React компонентът може да ги подава и от курсора (props gaze="follow"),
+   без нито един ререндер — пише директно CSS променливите. */
+.jm-pupils {
+  transform: translate(var(--jm-gaze-x, 0px), var(--jm-gaze-y, 0px));
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.jm-animated .jm-pupils { animation: jm-gaze 11s ease-in-out infinite; }
 
 /* Мехурчетата се качват — трите плана с различна скорост, за да има паралакс в желето. */
 .jm-animated .jm-bubbles-near { animation: jm-rise 7s ease-in-out infinite; }
@@ -103,6 +155,15 @@ const ANIMATION_CSS = `
   0%, 62% { transform: translateX(0) skewX(-14deg); }
   100% { transform: translateX(760px) skewX(-14deg); }
 }
+/* Оглеждане: две кратки „поглеждания" настрани, останалото време — право напред.
+   Амплитудата е 5 единици от 512 — колкото да е живо, не да е кривогледо. */
+@keyframes jm-gaze {
+  0%, 26%, 100% { transform: translate(0, 0); }
+  32%, 42% { transform: translate(5px, -1px); }
+  50%, 60% { transform: translate(0, 0); }
+  66%, 76% { transform: translate(-5px, 1px); }
+  84% { transform: translate(0, 0); }
+}
 @keyframes jm-twinkle {
   0%, 70%, 100% { transform: scale(0.85); opacity: 0.5; }
   82% { transform: scale(1.15); opacity: 1; }
@@ -122,8 +183,14 @@ const ANIMATION_CSS = `
   .jm-animated .jm-shimmer,
   .jm-animated .jm-sparkle-a,
   .jm-animated .jm-sparkle-b,
-  .jm-animated .jm-sparkle-c {
+  .jm-animated .jm-sparkle-c,
+  .jm-animated .jm-pupils {
     animation: none !important;
+  }
+  /* Следенето на курсора също спира — движението е нула, не „по-малко". */
+  .jm-pupils {
+    transform: none !important;
+    transition: none !important;
   }
 }
 `;
@@ -159,11 +226,13 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
       <g className="jm-eyes">
               <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
               <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-              <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-              <circle cx="312" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-              <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
-                <circle cx="202" cy="276" r="18"/>
-                <circle cx="312" cy="276" r="18"/>
+                <g className="jm-pupils">
+                <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+                <circle cx="312" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+                <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
+                  <circle cx="202" cy="276" r="18"/>
+                  <circle cx="312" cy="276" r="18"/>
+                </g>
               </g>
               <g fill="var(--jm-white, #FFFFFF)">
                 <rect x="185" y="256" width="17" height="12" rx="5" transform="rotate(-24 193 262)"/>
@@ -195,9 +264,11 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
     eyes: (
       <>
       <g className="jm-eyes">
-          <g fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="12" strokeLinecap="round">
-            <path d="M172 286C184 260 216 260 228 286"/>
-            <path d="M282 286C294 260 326 260 338 286"/>
+            <g className="jm-pupils">
+            <g fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="12" strokeLinecap="round">
+              <path d="M172 286C184 260 216 260 228 286"/>
+              <path d="M282 286C294 260 326 260 338 286"/>
+            </g>
           </g>
           <g fill="var(--jm-white, #FFFFFF)" opacity="0.5">
             <circle cx="180" cy="274" r="3.4"/>
@@ -229,11 +300,13 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
       <g className="jm-eyes">
           <ellipse cx="200" cy="276" rx="34" ry="22" fill="var(--jm-eye, #F4FAEA)"/>
           <ellipse cx="310" cy="276" rx="34" ry="22" fill="var(--jm-eye, #F4FAEA)"/>
-          <circle cx="204" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
-          <circle cx="314" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
-          <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
-            <circle cx="204" cy="278" r="15"/>
-            <circle cx="314" cy="278" r="15"/>
+            <g className="jm-pupils">
+            <circle cx="204" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
+            <circle cx="314" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
+            <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
+              <circle cx="204" cy="278" r="15"/>
+              <circle cx="314" cy="278" r="15"/>
+            </g>
           </g>
           <g fill="var(--jm-white, #FFFFFF)">
             <rect x="190" y="266" width="14" height="9" rx="4" transform="rotate(-24 197 270)"/>
@@ -262,9 +335,11 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
     eyes: (
       <>
       <g className="jm-eyes">
-          <g fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="11" strokeLinecap="round">
-            <path d="M176 282C186 262 214 262 224 282"/>
-            <path d="M286 282C296 262 324 262 334 282"/>
+            <g className="jm-pupils">
+            <g fill="none" stroke="var(--jm-ink, #0A0C0A)" strokeWidth="11" strokeLinecap="round">
+              <path d="M176 282C186 262 214 262 224 282"/>
+              <path d="M286 282C296 262 324 262 334 282"/>
+            </g>
           </g>
           <g fill="var(--jm-white, #FFFFFF)" opacity="0.5">
             <circle cx="182" cy="272" r="3"/>
@@ -296,11 +371,13 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
       <g className="jm-eyes">
           <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
           <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-          <circle cx="198" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-          <circle cx="308" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-          <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
-            <circle cx="198" cy="270" r="18"/>
-            <circle cx="308" cy="270" r="18"/>
+            <g className="jm-pupils">
+            <circle cx="198" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+            <circle cx="308" cy="270" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+            <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
+              <circle cx="198" cy="270" r="18"/>
+              <circle cx="308" cy="270" r="18"/>
+            </g>
           </g>
           <g fill="var(--jm-white, #FFFFFF)">
             <rect x="181" y="250" width="17" height="12" rx="5" transform="rotate(-24 189 256)"/>
@@ -331,11 +408,13 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
       <g className="jm-eyes">
           <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
           <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-          <circle cx="201" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
-          <circle cx="311" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
-          <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="2.5" opacity="0.55">
-            <circle cx="201" cy="273" r="11.5"/>
-            <circle cx="311" cy="273" r="11.5"/>
+            <g className="jm-pupils">
+            <circle cx="201" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
+            <circle cx="311" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
+            <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="2.5" opacity="0.55">
+              <circle cx="201" cy="273" r="11.5"/>
+              <circle cx="311" cy="273" r="11.5"/>
+            </g>
           </g>
           <g fill="var(--jm-white, #FFFFFF)">
             <rect x="189" y="260" width="13" height="9" rx="4" transform="rotate(-24 195 264)"/>
@@ -366,9 +445,11 @@ const FACES: Record<JellyMascotExpression, FaceParts> = {
       <>
       <g className="jm-eyes">
           <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-          <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-          <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
-            <circle cx="202" cy="276" r="18"/>
+            <g className="jm-pupils">
+            <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+            <g fill="none" stroke="var(--jm-neon, #5AB60D)" strokeWidth="3" opacity="0.55">
+              <circle cx="202" cy="276" r="18"/>
+            </g>
           </g>
           <g fill="var(--jm-white, #FFFFFF)">
             <rect x="185" y="256" width="17" height="12" rx="5" transform="rotate(-24 193 262)"/>
@@ -673,16 +754,32 @@ function Full({ uid, face, arms }: TierProps) {
           {/* Движещ се отблясък по повърхността (мърда само при .jm-animated). */}
           <rect className="jm-shimmer" x="-260" y="110" width="150" height="370" fill={`url(#${uid}-shimmer)`} opacity="0.35" transform="skewX(-14)"/>
 
+          {/* Рамене: там, където ръката излиза от тялото, желето потъмнява. Без това ръцете
+               изглеждат залепени отзад, а не част от масата. */}
+          <g className="jm-shoulders" filter={`url(#${uid}-soft-s)`} opacity="0.36">
+            <ellipse cx="140" cy="358" rx="26" ry="20" fill="var(--jm-deep, #0D4A02)"/>
+            <ellipse cx="370" cy="358" rx="26" ry="20" fill="var(--jm-deep, #0D4A02)"/>
+          </g>
+
+          {/* Контактна сянка под папийонката: тя лежи ВЪРХУ тялото, не плува пред него. */}
+          <ellipse cx="254" cy="416" rx="58" ry="17" fill="var(--jm-deep, #0D4A02)" opacity="0.26" filter={`url(#${uid}-soft-s)`}/>
+
           {/* Тъмен контур по долния десен ръб — дава обем на желето. */}
           <ellipse cx="364" cy="412" rx="96" ry="70" fill="var(--jm-deep, #0D4A02)" opacity="0.16" filter={`url(#${uid}-soft)`}/>
         </g>
 
-        {/* 5. Кантове: топъл долу-вдясно (главният) и студен горе-вляво (трета светлина). */}
+        {/* 5. Кантове: топъл долу-вдясно (главният), студен горе-вляво (трета светлина) и
+             дисперсия — два едва отместени щриха от двата края на палитрата, както пречупва стъкло. */}
+        <g className="jm-dispersion" opacity="0.5" filter={`url(#${uid}-soft-xs)`}>
+          <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-olive, #99E72A)" strokeWidth="3" transform="translate(2 -1)"/>
+          <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="3" transform="translate(-1 2)"/>
+        </g>
         <path d="M112 268C120 190 172 126 252 126C288 126 318 138 342 158" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="4" strokeLinecap="round" opacity="0.45" filter={`url(#${uid}-soft-xs)`}/>
         <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke={`url(#${uid}-rim)`} strokeWidth="5"/>
 
-        {/* 6. Лице. */}
-        <g className="jm-face">
+        {/* 6. Лице. Наклонено с 2.5° около центъра на главата: лицето ЛЕЖИ по обема, а не е
+             напечатано върху него. Наклонът е на групата, затова важи за всяко изражение. */}
+        <g className="jm-face" transform="rotate(-2.5 254 276)">
           {/* Вежди, очи и уста са СМЕНЯЕМИ МОДУЛИ (`jm-brows` · `jm-eyes` · `jm-mouth`): точно те
                и само те се разменят от `svg/faces/*.svg`, за да се получи изражение. Затова са
                байт-идентични между пълното и средното ниво — гейтнато. */}
@@ -733,7 +830,7 @@ function Full({ uid, face, arms }: TierProps) {
         </g>
 
         {/* 7. Папийонка — с гънки, сатенен блясък и зелен отскок по горния ръб. */}
-        <g className="jm-bowtie">
+        <g className="jm-bowtie" transform="rotate(-2 254 404)">
           <g filter={`url(#${uid}-soft-xs)`} opacity="0.5">
             <path d="M248 408C232 394 218 384 206 383C200 396 200 420 206 433C218 432 232 422 248 408Z" fill="var(--jm-mask-black, #000000)"/>
             <path d="M260 408C276 394 290 384 302 383C308 396 308 420 302 433C290 432 276 422 260 408Z" fill="var(--jm-mask-black, #000000)"/>
@@ -770,6 +867,7 @@ function Full({ uid, face, arms }: TierProps) {
           <path d="M120 98L254 60" fill="none" stroke="var(--jm-pale, #C8DDA6)" strokeWidth="2" opacity="0.35"/>
           <circle cx="254" cy="98" r="6" fill="var(--jm-ink-soft, #2A2E24)"/>
           <circle cx="252" cy="96" r="2" fill="var(--jm-soft-olive, #848D68)" opacity="0.8"/>
+          <path d="M256 104C300 110 340 112 372 106" fill="none" stroke="var(--jm-mask-black, #000000)" strokeWidth="7" strokeLinecap="round" opacity="0.45" filter={`url(#${uid}-soft-xs)`}/>
           <path d="M254 98C298 104 338 106 370 100" fill="none" stroke={`url(#${uid}-gold)`} strokeWidth="6" strokeLinecap="round"/>
           <path d="M254 98C298 104 338 106 370 100" fill="none" stroke="var(--jm-white, #FFFFFF)" strokeWidth="1.6" strokeLinecap="round" opacity="0.45"/>
           <g className="jm-tassel">
@@ -1034,6 +1132,7 @@ export default function JellyMascot({
   background = "none",
   expression = "neutral",
   pose = "rest",
+  gaze = "still",
   animated = false,
   className,
   style,
@@ -1042,9 +1141,12 @@ export default function JellyMascot({
   const uid = `jm${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const Tier = TIERS[detail];
   const decorative = title === null;
+  const ref = useRef<SVGSVGElement | null>(null);
+  useGaze(ref, gaze === "follow");
 
   return (
     <svg
+      ref={ref}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"
       width={size}
@@ -1056,7 +1158,7 @@ export default function JellyMascot({
       aria-labelledby={decorative ? undefined : `${uid}-title`}
     >
       {!decorative && <title id={`${uid}-title`}>{title}</title>}
-      {animated && <style>{ANIMATION_CSS}</style>}
+      {(animated || gaze === "follow") && <style>{ANIMATION_CSS}</style>}
       {background === "black" && <rect width="512" height="512" fill="var(--jm-bg, #050706)" />}
       <Tier uid={uid} face={FACES[expression]} arms={ARMS[pose](uid)} />
     </svg>

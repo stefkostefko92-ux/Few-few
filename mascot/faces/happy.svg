@@ -13,9 +13,11 @@
   </g>
 
   <g class="jm-eyes">
-    <g fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="11" stroke-linecap="round">
-      <path d="M176 282C186 262 214 262 224 282"/>
-      <path d="M286 282C296 262 324 262 334 282"/>
+      <g class="jm-pupils">
+      <g fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="11" stroke-linecap="round">
+        <path d="M176 282C186 262 214 262 224 282"/>
+        <path d="M286 282C296 262 324 262 334 282"/>
+      </g>
     </g>
     <g fill="var(--jm-white, #FFFFFF)" opacity="0.5">
       <circle cx="182" cy="272" r="3"/>

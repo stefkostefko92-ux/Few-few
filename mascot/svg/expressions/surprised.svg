@@ -254,16 +254,32 @@
       <!-- Движещ се отблясък по повърхността (мърда само при .jm-animated). -->
       <rect class="jm-shimmer" x="-260" y="110" width="150" height="370" fill="url(#jm-shimmer)" opacity="0.35" transform="skewX(-14)"/>
 
+      <!-- Рамене: там, където ръката излиза от тялото, желето потъмнява. Без това ръцете
+           изглеждат залепени отзад, а не част от масата. -->
+      <g class="jm-shoulders" filter="url(#jm-soft-s)" opacity="0.36">
+        <ellipse cx="140" cy="358" rx="26" ry="20" fill="var(--jm-deep, #0D4A02)"/>
+        <ellipse cx="370" cy="358" rx="26" ry="20" fill="var(--jm-deep, #0D4A02)"/>
+      </g>
+
+      <!-- Контактна сянка под папийонката: тя лежи ВЪРХУ тялото, не плува пред него. -->
+      <ellipse cx="254" cy="416" rx="58" ry="17" fill="var(--jm-deep, #0D4A02)" opacity="0.26" filter="url(#jm-soft-s)"/>
+
       <!-- Тъмен контур по долния десен ръб — дава обем на желето. -->
       <ellipse cx="364" cy="412" rx="96" ry="70" fill="var(--jm-deep, #0D4A02)" opacity="0.16" filter="url(#jm-soft)"/>
     </g>
 
-    <!-- 5. Кантове: топъл долу-вдясно (главният) и студен горе-вляво (трета светлина). -->
+    <!-- 5. Кантове: топъл долу-вдясно (главният), студен горе-вляво (трета светлина) и
+         дисперсия — два едва отместени щриха от двата края на палитрата, както пречупва стъкло. -->
+    <g class="jm-dispersion" opacity="0.5" filter="url(#jm-soft-xs)">
+      <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="3" transform="translate(2 -1)"/>
+      <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="3" transform="translate(-1 2)"/>
+    </g>
     <path d="M112 268C120 190 172 126 252 126C288 126 318 138 342 158" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="4" stroke-linecap="round" opacity="0.45" filter="url(#jm-soft-xs)"/>
     <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="url(#jm-rim)" stroke-width="5"/>
 
-    <!-- 6. Лице. -->
-    <g class="jm-face">
+    <!-- 6. Лице. Наклонено с 2.5° около центъра на главата: лицето ЛЕЖИ по обема, а не е
+         напечатано върху него. Наклонът е на групата, затова важи за всяко изражение. -->
+    <g class="jm-face" transform="rotate(-2.5 254 276)">
       <!-- Вежди, очи и уста са СМЕНЯЕМИ МОДУЛИ (`jm-brows` · `jm-eyes` · `jm-mouth`): точно те
            и само те се разменят от `svg/faces/*.svg`, за да се получи изражение. Затова са
            байт-идентични между пълното и средното ниво — гейтнато. -->
@@ -275,11 +291,13 @@
       <g class="jm-eyes">
         <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
         <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-        <circle cx="201" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
-        <circle cx="311" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
-        <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="2.5" opacity="0.55">
-          <circle cx="201" cy="273" r="11.5"/>
-          <circle cx="311" cy="273" r="11.5"/>
+          <g class="jm-pupils">
+          <circle cx="201" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
+          <circle cx="311" cy="273" r="14" fill="var(--jm-ink, #0A0C0A)"/>
+          <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="2.5" opacity="0.55">
+            <circle cx="201" cy="273" r="11.5"/>
+            <circle cx="311" cy="273" r="11.5"/>
+          </g>
         </g>
         <g fill="var(--jm-white, #FFFFFF)">
           <rect x="189" y="260" width="13" height="9" rx="4" transform="rotate(-24 195 264)"/>
@@ -333,7 +351,7 @@
     </g>
 
     <!-- 7. Папийонка — с гънки, сатенен блясък и зелен отскок по горния ръб. -->
-    <g class="jm-bowtie">
+    <g class="jm-bowtie" transform="rotate(-2 254 404)">
       <g filter="url(#jm-soft-xs)" opacity="0.5">
         <path d="M248 408C232 394 218 384 206 383C200 396 200 420 206 433C218 432 232 422 248 408Z" fill="var(--jm-mask-black, #000000)"/>
         <path d="M260 408C276 394 290 384 302 383C308 396 308 420 302 433C290 432 276 422 260 408Z" fill="var(--jm-mask-black, #000000)"/>
@@ -370,6 +388,7 @@
       <path d="M120 98L254 60" fill="none" stroke="var(--jm-pale, #C8DDA6)" stroke-width="2" opacity="0.35"/>
       <circle cx="254" cy="98" r="6" fill="var(--jm-ink-soft, #2A2E24)"/>
       <circle cx="252" cy="96" r="2" fill="var(--jm-soft-olive, #848D68)" opacity="0.8"/>
+      <path d="M256 104C300 110 340 112 372 106" fill="none" stroke="var(--jm-mask-black, #000000)" stroke-width="7" stroke-linecap="round" opacity="0.45" filter="url(#jm-soft-xs)"/>
       <path d="M254 98C298 104 338 106 370 100" fill="none" stroke="url(#jm-gold)" stroke-width="6" stroke-linecap="round"/>
       <path d="M254 98C298 104 338 106 370 100" fill="none" stroke="var(--jm-white, #FFFFFF)" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/>
       <g class="jm-tassel">

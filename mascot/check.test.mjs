@@ -191,11 +191,12 @@ test("audit: лови ръчно пипнат вариант (изражение
   assert.ok(fail.some((f) => /expressions\/happy\.svg се разминава/.test(f)));
 });
 
-test("модулите на лицето са пълни и без препратки", () => {
+test("модулите на лицето са пълни, без препратки и с адресируеми зеници", () => {
   for (const name of moduleNames("faces")) {
     const svg = R(`faces/${name}.svg`);
     assert.deepEqual(Object.keys(partsOf(svg, FACE_PARTS)), FACE_PARTS, `${name}: непълен модул`);
     assert.doesNotMatch(svg, /url\(#/, `${name}: препратка към градиент в модул на лицето`);
+    assert.ok(groupOf(svg, "jm-pupils"), `${name}: липсва jm-pupils — погледът няма какво да движи`);
   }
 });
 

@@ -121,11 +121,13 @@
       <g class="jm-eyes">
         <circle cx="200" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
         <circle cx="310" cy="272" r="34" fill="var(--jm-eye, #F4FAEA)"/>
-        <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-        <circle cx="312" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-        <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
-          <circle cx="202" cy="276" r="18"/>
-          <circle cx="312" cy="276" r="18"/>
+          <g class="jm-pupils">
+          <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+          <circle cx="312" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
+          <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
+            <circle cx="202" cy="276" r="18"/>
+            <circle cx="312" cy="276" r="18"/>
+          </g>
         </g>
         <g fill="var(--jm-white, #FFFFFF)">
           <rect x="185" y="256" width="17" height="12" rx="5" transform="rotate(-24 193 262)"/>

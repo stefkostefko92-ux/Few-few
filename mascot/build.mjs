@@ -226,7 +226,7 @@ export function generate(read = (p) => readFileSync(join(HERE, p), "utf8")) {
 //
 // Маскотът на Carbon Stealth: полупрозрачно желирано телце с очила, папийонка и академична шапка.
 // Нула зависимости извън React. Копирай папката \`react/\` в продукта, който го ползва.
-import { useId, type CSSProperties, type ReactElement } from "react";
+import { useEffect, useId, useRef, type CSSProperties, type ReactElement } from "react";
 
 export type JellyMascotDetail = "full" | "medium" | "icon";
 export type JellyMascotExpression = ${Object.keys(faces).map((n) => `"${n}"`).join(" | ")};
@@ -251,11 +251,54 @@ export interface JellyMascotProps {
   expression?: JellyMascotExpression;
   /** Поза (ръцете). Иконното ниво няма ръце и не се влияе. */
   pose?: JellyMascotPose;
+  /**
+   * Поглед: \`still\` (по подразбиране, зениците стоят), \`follow\` (следят курсора).
+   * \`follow\` не предизвиква ререндери — пише CSS променливи направо върху елемента — и
+   * мълчи при \`prefers-reduced-motion: reduce\`.
+   */
+  gaze?: "still" | "follow";
   /** Микро-анимация (полюшване, пулс на глоуто, мигане, махане на пискюла). */
   animated?: boolean;
   className?: string;
   /** Пребоядисване по бранд: подай CSS променливите \`--jm-*\` (виж \`tokens.json\`). */
   style?: CSSProperties;
+}
+
+const GAZE_RANGE = 6; // единици от 512 — колкото да е живо, не кривогледо
+
+/**
+ * Следене на курсора без ререндер: слушателят пише само две CSS променливи върху SVG-то.
+ * Пасивен слушател на \`window\` (не на елемента — иначе погледът реагира само върху маскота),
+ * измерването е в \`requestAnimationFrame\`, а при намалено движение изобщо не се закача.
+ */
+function useGaze(ref: { current: SVGSVGElement | null }, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame = 0;
+    const onMove = (event: PointerEvent) => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const svg = ref.current;
+        if (!svg) return;
+        const box = svg.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        const dx = (event.clientX - (box.left + box.width / 2)) / (box.width / 2);
+        const dy = (event.clientY - (box.top + box.height / 2)) / (box.height / 2);
+        const clamp = (v: number) => Math.max(-1, Math.min(1, v)) * GAZE_RANGE;
+        svg.style.setProperty("--jm-gaze-x", \`\${clamp(dx).toFixed(2)}px\`);
+        svg.style.setProperty("--jm-gaze-y", \`\${clamp(dy).toFixed(2)}px\`);
+      });
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [ref, enabled]);
 }
 
 /** Анимацията живее в \`mascot/tokens.css\` и се вгражда тук, за да е компонентът самодостатъчен. */
@@ -299,6 +342,7 @@ export default function JellyMascot({
   background = "none",
   expression = "neutral",
   pose = "rest",
+  gaze = "still",
   animated = false,
   className,
   style,
@@ -307,9 +351,12 @@ export default function JellyMascot({
   const uid = \`jm\${useId().replace(/[^a-zA-Z0-9_-]/g, "")}\`;
   const Tier = TIERS[detail];
   const decorative = title === null;
+  const ref = useRef<SVGSVGElement | null>(null);
+  useGaze(ref, gaze === "follow");
 
   return (
     <svg
+      ref={ref}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"
       width={size}
@@ -321,7 +368,7 @@ export default function JellyMascot({
       aria-labelledby={decorative ? undefined : \`\${uid}-title\`}
     >
       {!decorative && <title id={\`\${uid}-title\`}>{title}</title>}
-      {animated && <style>{ANIMATION_CSS}</style>}
+      {(animated || gaze === "follow") && <style>{ANIMATION_CSS}</style>}
       {background === "black" && <rect width="512" height="512" fill="var(--jm-bg, #050706)" />}
       <Tier uid={uid} face={FACES[expression]} arms={ARMS[pose](uid)} />
     </svg>

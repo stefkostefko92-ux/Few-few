@@ -51,6 +51,15 @@
   transform-origin: 372px 104px;
 }
 
+/* Погледът: зениците се местят от две променливи. При .jm-animated маскотът се оглежда сам
+   (бавно, с дълги паузи); React компонентът може да ги подава и от курсора (props gaze="follow"),
+   без нито един ререндер — пише директно CSS променливите. */
+.jm-pupils {
+  transform: translate(var(--jm-gaze-x, 0px), var(--jm-gaze-y, 0px));
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.jm-animated .jm-pupils { animation: jm-gaze 11s ease-in-out infinite; }
+
 /* Мехурчетата се качват — трите плана с различна скорост, за да има паралакс в желето. */
 .jm-animated .jm-bubbles-near { animation: jm-rise 7s ease-in-out infinite; }
 .jm-animated .jm-bubbles-mid { animation: jm-rise 9s ease-in-out infinite 0.8s; }
@@ -99,6 +108,15 @@
   0%, 62% { transform: translateX(0) skewX(-14deg); }
   100% { transform: translateX(760px) skewX(-14deg); }
 }
+/* Оглеждане: две кратки „поглеждания" настрани, останалото време — право напред.
+   Амплитудата е 5 единици от 512 — колкото да е живо, не да е кривогледо. */
+@keyframes jm-gaze {
+  0%, 26%, 100% { transform: translate(0, 0); }
+  32%, 42% { transform: translate(5px, -1px); }
+  50%, 60% { transform: translate(0, 0); }
+  66%, 76% { transform: translate(-5px, 1px); }
+  84% { transform: translate(0, 0); }
+}
 @keyframes jm-twinkle {
   0%, 70%, 100% { transform: scale(0.85); opacity: 0.5; }
   82% { transform: scale(1.15); opacity: 1; }
@@ -118,8 +136,14 @@
   .jm-animated .jm-shimmer,
   .jm-animated .jm-sparkle-a,
   .jm-animated .jm-sparkle-b,
-  .jm-animated .jm-sparkle-c {
+  .jm-animated .jm-sparkle-c,
+  .jm-animated .jm-pupils {
     animation: none !important;
+  }
+  /* Следенето на курсора също спира — движението е нула, не „по-малко". */
+  .jm-pupils {
+    transform: none !important;
+    transition: none !important;
   }
 }
 /* @animation:end */

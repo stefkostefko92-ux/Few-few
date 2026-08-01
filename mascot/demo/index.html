@@ -125,6 +125,15 @@
 </div>
 <pre>&lt;JellyMascot expression="celebrate" pose="wave" size={220} animated /&gt;</pre>
 
+<h2>Погледът</h2>
+<p>
+  Зениците са отделна група във всяко изражение. Анимираният кадър долу се
+  <strong>оглежда сам</strong> (две кратки поглеждания на всеки ~11 s), а в React
+  <code>gaze="follow"</code> кара погледа да следи курсора — без нито един ререндер, само две CSS
+  променливи. При <code>prefers-reduced-motion</code> и двете са нула.
+</p>
+<pre>&lt;JellyMascot gaze="follow" expression="focused" /&gt;</pre>
+
 <h2>Едноцветният знак</h2>
 <p>
   Не е „същото, но сиво": лицето е <strong>изрязано</strong> от плътния силует, затова знакът работи

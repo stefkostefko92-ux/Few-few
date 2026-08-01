@@ -15,11 +15,13 @@
   <g class="jm-eyes">
     <ellipse cx="200" cy="276" rx="34" ry="22" fill="var(--jm-eye, #F4FAEA)"/>
     <ellipse cx="310" cy="276" rx="34" ry="22" fill="var(--jm-eye, #F4FAEA)"/>
-    <circle cx="204" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
-    <circle cx="314" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
-    <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
-      <circle cx="204" cy="278" r="15"/>
-      <circle cx="314" cy="278" r="15"/>
+      <g class="jm-pupils">
+      <circle cx="204" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
+      <circle cx="314" cy="278" r="18" fill="var(--jm-ink, #0A0C0A)"/>
+      <g fill="none" stroke="var(--jm-neon, #5AB60D)" stroke-width="3" opacity="0.55">
+        <circle cx="204" cy="278" r="15"/>
+        <circle cx="314" cy="278" r="15"/>
+      </g>
     </g>
     <g fill="var(--jm-white, #FFFFFF)">
       <rect x="190" y="266" width="14" height="9" rx="4" transform="rotate(-24 197 270)"/>

@@ -98,6 +98,7 @@ export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generat
     for (const part of FACE_PARTS) {
       if (!groupOf(text, part)) fail.push(`faces/${name}.svg: липсва групата „${part}" — изражението е непълно`);
     }
+    if (!groupOf(text, "jm-pupils")) fail.push(`faces/${name}.svg: липсва „jm-pupils" — погледът (idle + следене на курсора) мърда точно тази група и без нея изражението остава вкаменено`);
     if (/url\(#/.test(text)) fail.push(`faces/${name}.svg: съдържа url(#…) — модулите на лицето нямат уникални id-та и препратката ще сочи в празното`);
     for (const hex of new Set(hexes(text))) {
       if (!paletteOf(tokens).has(hex)) fail.push(`faces/${name}.svg: цвят ${hex} липсва в tokens.json`);
@@ -142,6 +143,10 @@ export function audit({ svgs, tsx, tokens, generated, generatedAnimated, generat
     // Затова асетите са чист рисунък — гейтваме го, вместо да го обещаваме в документ.
     for (const [re, why] of FORBIDDEN) {
       if (re.test(text)) fail.push(`${name}: ${why} — асетът трябва да е чист рисунък (виж SECURITY.md)`);
+    }
+
+    if (/class="jm-eyes"/.test(text) && !/class="jm-pupils"/.test(text) && !name.startsWith("jelly-mascot-icon") && !name.startsWith("jelly-mascot-mono")) {
+      fail.push(`${name}: очите нямат „jm-pupils" — погледът няма какво да движи`);
     }
 
     for (const cls of ["jm-body", "jm-eyes", "jm-glasses", "jm-bowtie", "jm-cap"]) {
