@@ -1,0 +1,34 @@
+name: mascot
+
+on:
+  push:
+    paths:
+      - 'mascot/**'
+      - '.github/workflows/mascot.yml'
+  pull_request:
+    paths:
+      - 'mascot/**'
+      - '.github/workflows/mascot.yml'
+
+concurrency:
+  group: mascot-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Пакетът е с нула зависимости — няма `npm ci`, няма node_modules, няма билд.
+      # Гейтът е: генерираният компонент в синхрон ли е с SVG-тата, чиста ли е палитрата,
+      # спазени ли са правилата за нивата, достъпността и сигурността на асета.
+      - name: Гейт на маскота
+        working-directory: mascot
+        run: npm run gate
