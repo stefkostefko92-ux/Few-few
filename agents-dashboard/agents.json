@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 273
+        "lessons": 274
       },
       "evolution": [
         {
@@ -1729,9 +1729,20 @@
           "date": "2026-08-01",
           "event": "v19.7 — учене",
           "detail": "Научи: Node fetch (undici, Node 22.22.2) МАХА зададения `host` хедър — сървърът вижда Host на … (+3 още)"
+        },
+        {
+          "version": "19.8.0",
+          "date": "2026-08-01",
+          "event": "v19.8 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира детерминистично: задължителни са От/Към (id от agents.json…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ се валидира детерминистично: задължителни са От/Към (id от agents.json…\""
+        },
         {
           "date": "2026-08-01",
           "type": "learning",
