@@ -5,39 +5,39 @@
   <defs>
     <!-- Тяло: ключова светлина горе-вляво → дълбока сянка долу-вдясно (подповърхностно разсейване). -->
     <radialGradient id="tayniyat-agent-full-jm-body" cx="36%" cy="24%" r="86%">
-      <stop offset="0%" stop-color="var(--jm-pale, #f0b9a0)"/>
-      <stop offset="16%" stop-color="var(--jm-olive, #ff603e)"/>
-      <stop offset="52%" stop-color="var(--jm-neon, #b70c0c)"/>
-      <stop offset="86%" stop-color="var(--jm-bottle, #7d0614)"/>
-      <stop offset="100%" stop-color="var(--jm-deep, #490313)"/>
+      <stop offset="0%" stop-color="var(--jm-pale, #c29d83)"/>
+      <stop offset="16%" stop-color="var(--jm-olive, #d86e3f)"/>
+      <stop offset="52%" stop-color="var(--jm-neon, #843324)"/>
+      <stop offset="86%" stop-color="var(--jm-bottle, #641c17)"/>
+      <stop offset="100%" stop-color="var(--jm-deep, #451012)"/>
     </radialGradient>
 
     <!-- Вътрешна емисия — най-силна в долната половина („свети отвътре", не отгоре). -->
     <radialGradient id="tayniyat-agent-full-jm-core" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="var(--jm-olive, #ff603e)" stop-opacity="1"/>
-      <stop offset="42%" stop-color="var(--jm-olive, #ff603e)" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="var(--jm-neon, #b70c0c)" stop-opacity="0"/>
+      <stop offset="0%" stop-color="var(--jm-olive, #d86e3f)" stop-opacity="1"/>
+      <stop offset="42%" stop-color="var(--jm-olive, #d86e3f)" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="var(--jm-neon, #843324)" stop-opacity="0"/>
     </radialGradient>
 
     <!-- Подсветка под тялото (underglow) — лежи на пода зад силуета. -->
     <radialGradient id="tayniyat-agent-full-jm-underglow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="var(--jm-olive, #ff603e)" stop-opacity="0.6"/>
-      <stop offset="45%" stop-color="var(--jm-neon, #b70c0c)" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="var(--jm-neon, #b70c0c)" stop-opacity="0"/>
+      <stop offset="0%" stop-color="var(--jm-olive, #d86e3f)" stop-opacity="0.6"/>
+      <stop offset="45%" stop-color="var(--jm-neon, #843324)" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="var(--jm-neon, #843324)" stop-opacity="0"/>
     </radialGradient>
 
     <!-- Каустика на пода: светлината, минала през желето, се фокусира в ярко петно под него. -->
     <radialGradient id="tayniyat-agent-full-jm-caustic-pool" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="var(--jm-pale, #f0b9a0)" stop-opacity="0.85"/>
-      <stop offset="35%" stop-color="var(--jm-olive, #ff603e)" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="var(--jm-olive, #ff603e)" stop-opacity="0"/>
+      <stop offset="0%" stop-color="var(--jm-pale, #c29d83)" stop-opacity="0.85"/>
+      <stop offset="35%" stop-color="var(--jm-olive, #d86e3f)" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="var(--jm-olive, #d86e3f)" stop-opacity="0"/>
     </radialGradient>
 
     <!-- Rim light: нула отгоре-вляво, ярък кант долу-вдясно. -->
     <linearGradient id="tayniyat-agent-full-jm-rim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="var(--jm-pale, #f0b9a0)" stop-opacity="0"/>
-      <stop offset="0.42" stop-color="var(--jm-pale, #f0b9a0)" stop-opacity="0.05"/>
-      <stop offset="1" stop-color="var(--jm-pale, #f0b9a0)" stop-opacity="0.95"/>
+      <stop offset="0" stop-color="var(--jm-pale, #c29d83)" stop-opacity="0"/>
+      <stop offset="0.42" stop-color="var(--jm-pale, #c29d83)" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="var(--jm-pale, #c29d83)" stop-opacity="0.95"/>
     </linearGradient>
 
     <!-- Гелов блик по темето: остър горе, стопен надолу. -->
@@ -49,8 +49,8 @@
 
     <!-- Стъклото на очилата: студен отблясък отгоре, прозрачно надолу. -->
     <linearGradient id="tayniyat-agent-full-jm-glass" x1="0.15" y1="0" x2="0.7" y2="1">
-      <stop offset="0" stop-color="var(--jm-pale, #f0b9a0)" stop-opacity="0.34"/>
-      <stop offset="0.45" stop-color="var(--jm-pale, #f0b9a0)" stop-opacity="0.06"/>
+      <stop offset="0" stop-color="var(--jm-pale, #c29d83)" stop-opacity="0.34"/>
+      <stop offset="0.45" stop-color="var(--jm-pale, #c29d83)" stop-opacity="0.06"/>
       <stop offset="1" stop-color="var(--jm-white, #FFFFFF)" stop-opacity="0.02"/>
     </linearGradient>
 
@@ -63,7 +63,7 @@
 
     <!-- Шапка: горната плоскост хваща светлина, ръбът е по-тъмен. -->
     <linearGradient id="tayniyat-agent-full-jm-board" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0" stop-color="var(--jm-soft-olive, #b54040)" stop-opacity="0.55"/>
+      <stop offset="0" stop-color="var(--jm-soft-olive, #6f5e5b)" stop-opacity="0.55"/>
       <stop offset="0.35" stop-color="var(--jm-ink-soft, #2A2E24)"/>
       <stop offset="1" stop-color="var(--jm-ink, #0A0C0A)"/>
     </linearGradient>
@@ -108,7 +108,7 @@
       Държи се на ~0.13 непрозрачност; ако се вижда като шарка, значи е сгрешено.
     -->
     <pattern id="tayniyat-agent-full-jm-lattice" width="38.1" height="66" patternUnits="userSpaceOnUse" patternTransform="rotate(-9)">
-      <g fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="1.8">
+      <g fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="1.8">
       <path d="M19.1 -11.0L0.0 0.0L0.0 22.0L19.1 33.0L38.1 22.0L38.1 0.0Z"/>
       <path d="M0.0 22.0L-19.1 33.0L-19.1 55.0L0.0 66.0L19.1 55.0L19.1 33.0Z"/>
       <path d="M38.1 22.0L19.1 33.0L19.1 55.0L38.1 66.0L57.2 55.0L57.2 33.0Z"/>
@@ -181,7 +181,7 @@
     <ellipse cx="254" cy="486" rx="118" ry="16" fill="var(--jm-mask-black, #000000)" opacity="0.8" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
     <ellipse class="jm-glow" cx="254" cy="480" rx="176" ry="42" fill="url(#tayniyat-agent-full-jm-underglow)" filter="url(#tayniyat-agent-full-jm-soft)"/>
     <ellipse class="jm-caustic" cx="254" cy="488" rx="92" ry="14" fill="url(#tayniyat-agent-full-jm-caustic-pool)" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
-    <path class="jm-bloom" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="var(--jm-neon, #b70c0c)" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft)"/>
+    <path class="jm-bloom" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="var(--jm-neon, #843324)" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft)"/>
 
     <!-- 2. Ръчички — зад тялото, за да „излизат" от него; с кант отдолу, за да не са плоски. -->
     <g class="jm-arms">
@@ -189,7 +189,7 @@
         <path d="M144 356C120 368 102 384 94 400"/>
         <path d="M368 356C392 368 410 384 418 400"/>
       </g>
-      <g stroke="var(--jm-olive, #ff603e)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5">
+      <g stroke="var(--jm-olive, #d86e3f)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5">
         <path d="M138 372C118 382 104 394 98 406"/>
         <path d="M374 372C394 382 408 394 414 406"/>
       </g>
@@ -206,17 +206,17 @@
     <g class="jm-feet">
       <ellipse cx="196" cy="462" rx="44" ry="22" fill="url(#tayniyat-agent-full-jm-body)"/>
       <ellipse cx="312" cy="462" rx="44" ry="22" fill="url(#tayniyat-agent-full-jm-body)"/>
-      <path d="M164 468C174 478 192 482 210 480" fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
-      <path d="M280 468C290 478 308 482 326 480" fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
-      <ellipse cx="196" cy="450" rx="36" ry="15" fill="var(--jm-deep, #490313)" opacity="0.35"/>
-      <ellipse cx="312" cy="450" rx="36" ry="15" fill="var(--jm-deep, #490313)" opacity="0.35"/>
+      <path d="M164 468C174 478 192 482 210 480" fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+      <path d="M280 468C290 478 308 482 326 480" fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+      <ellipse cx="196" cy="450" rx="36" ry="15" fill="var(--jm-deep, #451012)" opacity="0.35"/>
+      <ellipse cx="312" cy="450" rx="36" ry="15" fill="var(--jm-deep, #451012)" opacity="0.35"/>
     </g>
 
     <!-- 4. Вътрешност — всичко изрязано по силуета. -->
     <g clip-path="url(#tayniyat-agent-full-jm-clip)">
       <!-- Вътрешна сянка по ръба: желето е плътно по контура и светло в средата — това,
            а не бликът отгоре, е което разчита окото като „полупрозрачно". -->
-      <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="var(--jm-deep, #490313)" stroke-width="40" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
+      <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="var(--jm-deep, #451012)" stroke-width="40" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
 
       <ellipse class="jm-core" cx="254" cy="376" rx="150" ry="118" fill="url(#tayniyat-agent-full-jm-core)"/>
       <ellipse class="jm-core" cx="250" cy="404" rx="90" ry="58" fill="url(#tayniyat-agent-full-jm-core)" opacity="0.75"/>
@@ -228,58 +228,58 @@
 
       <!-- Каустики — неравномерна вътрешна плътност. -->
       <g class="jm-caustics" opacity="0.3" filter="url(#tayniyat-agent-full-jm-caustics)">
-        <ellipse cx="246" cy="360" rx="116" ry="90" fill="var(--jm-olive, #ff603e)"/>
-        <ellipse cx="298" cy="296" rx="52" ry="42" fill="var(--jm-pale, #f0b9a0)" opacity="0.5"/>
+        <ellipse cx="246" cy="360" rx="116" ry="90" fill="var(--jm-olive, #d86e3f)"/>
+        <ellipse cx="298" cy="296" rx="52" ry="42" fill="var(--jm-pale, #c29d83)" opacity="0.5"/>
       </g>
 
       <!-- Пречупване: светлината, влязла отдолу, се събира в тънка дъга по вътрешната стена. -->
-      <path d="M148 388C186 432 322 432 360 388" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="7" opacity="0.32" filter="url(#tayniyat-agent-full-jm-soft-xs)"/>
+      <path d="M148 388C186 432 322 432 360 388" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="7" opacity="0.32" filter="url(#tayniyat-agent-full-jm-soft-xs)"/>
 
       <!-- Сянка от шапката върху темето. -->
-      <ellipse cx="254" cy="140" rx="92" ry="22" fill="var(--jm-deep, #490313)" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
+      <ellipse cx="254" cy="140" rx="92" ry="22" fill="var(--jm-deep, #451012)" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
 
       <!-- Мехурчета в три плана: далечните са размити и бледи, близките — остри, с тъмна дъга
            отгоре и светла отдолу (така пречупва истинско мехурче). Еднакво остри мехурчета
            изглеждат като точки ВЪРХУ топка, не като обем В желе. -->
       <g class="jm-bubbles">
         <g class="jm-bubbles-far" opacity="0.4" filter="url(#tayniyat-agent-full-jm-soft-xs)">
-          <circle cx="152" cy="272" r="7" fill="var(--jm-pale, #f0b9a0)" opacity="0.35"/>
-          <circle cx="362" cy="270" r="5" fill="var(--jm-pale, #f0b9a0)" opacity="0.3"/>
-          <ellipse cx="318" cy="302" rx="10" ry="8" fill="var(--jm-pale, #f0b9a0)" opacity="0.3"/>
-          <circle cx="228" cy="302" r="5" fill="var(--jm-pale, #f0b9a0)" opacity="0.3"/>
-          <circle cx="198" cy="356" r="6" fill="var(--jm-pale, #f0b9a0)" opacity="0.32"/>
-          <ellipse cx="292" cy="430" rx="9" ry="7" fill="var(--jm-pale, #f0b9a0)" opacity="0.3"/>
-          <circle cx="166" cy="410" r="4" fill="var(--jm-pale, #f0b9a0)" opacity="0.28"/>
+          <circle cx="152" cy="272" r="7" fill="var(--jm-pale, #c29d83)" opacity="0.35"/>
+          <circle cx="362" cy="270" r="5" fill="var(--jm-pale, #c29d83)" opacity="0.3"/>
+          <ellipse cx="318" cy="302" rx="10" ry="8" fill="var(--jm-pale, #c29d83)" opacity="0.3"/>
+          <circle cx="228" cy="302" r="5" fill="var(--jm-pale, #c29d83)" opacity="0.3"/>
+          <circle cx="198" cy="356" r="6" fill="var(--jm-pale, #c29d83)" opacity="0.32"/>
+          <ellipse cx="292" cy="430" rx="9" ry="7" fill="var(--jm-pale, #c29d83)" opacity="0.3"/>
+          <circle cx="166" cy="410" r="4" fill="var(--jm-pale, #c29d83)" opacity="0.28"/>
         </g>
         <g class="jm-bubbles-mid">
-          <circle cx="214" cy="392" r="8" fill="var(--jm-pale, #f0b9a0)" opacity="0.16"/>
-          <circle cx="214" cy="392" r="8" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="1.6" opacity="0.5"/>
+          <circle cx="214" cy="392" r="8" fill="var(--jm-pale, #c29d83)" opacity="0.16"/>
+          <circle cx="214" cy="392" r="8" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="1.6" opacity="0.5"/>
           <circle cx="211" cy="389" r="2.4" fill="var(--jm-white, #FFFFFF)" opacity="0.7"/>
-          <ellipse cx="328" cy="356" rx="12" ry="10" fill="var(--jm-pale, #f0b9a0)" opacity="0.16"/>
-          <ellipse cx="328" cy="356" rx="12" ry="10" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="2" opacity="0.5"/>
+          <ellipse cx="328" cy="356" rx="12" ry="10" fill="var(--jm-pale, #c29d83)" opacity="0.16"/>
+          <ellipse cx="328" cy="356" rx="12" ry="10" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="2" opacity="0.5"/>
           <circle cx="324" cy="352" r="3" fill="var(--jm-white, #FFFFFF)" opacity="0.7"/>
-          <circle cx="344" cy="404" r="6" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="1.4" opacity="0.45"/>
-          <circle cx="164" cy="386" r="5" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="1.3" opacity="0.45"/>
+          <circle cx="344" cy="404" r="6" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="1.4" opacity="0.45"/>
+          <circle cx="164" cy="386" r="5" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="1.3" opacity="0.45"/>
           <circle cx="270" cy="352" r="2.4" fill="var(--jm-white, #FFFFFF)" opacity="0.55"/>
           <circle cx="238" cy="332" r="2" fill="var(--jm-white, #FFFFFF)" opacity="0.45"/>
         </g>
         <g class="jm-bubbles-near">
-          <circle cx="180" cy="330" r="12" fill="var(--jm-pale, #f0b9a0)" opacity="0.14"/>
-          <circle cx="180" cy="330" r="12" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="2.4" opacity="0.6"/>
+          <circle cx="180" cy="330" r="12" fill="var(--jm-pale, #c29d83)" opacity="0.14"/>
+          <circle cx="180" cy="330" r="12" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="2.4" opacity="0.6"/>
           <path d="M170 335C173 344 187 344 190 335" fill="none" stroke="var(--jm-white, #FFFFFF)" stroke-width="2.6" stroke-linecap="round" opacity="0.7"/>
           <circle cx="175" cy="325" r="3.4" fill="var(--jm-white, #FFFFFF)" opacity="0.85"/>
-          <circle cx="246" cy="420" r="15" fill="var(--jm-pale, #f0b9a0)" opacity="0.14"/>
-          <circle cx="246" cy="420" r="15" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="2.6" opacity="0.6"/>
+          <circle cx="246" cy="420" r="15" fill="var(--jm-pale, #c29d83)" opacity="0.14"/>
+          <circle cx="246" cy="420" r="15" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="2.6" opacity="0.6"/>
           <path d="M234 426C238 437 254 437 258 426" fill="none" stroke="var(--jm-white, #FFFFFF)" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
           <circle cx="240" cy="414" r="4.2" fill="var(--jm-white, #FFFFFF)" opacity="0.85"/>
-          <circle cx="298" cy="398" r="9" fill="var(--jm-pale, #f0b9a0)" opacity="0.14"/>
-          <circle cx="298" cy="398" r="9" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="2" opacity="0.55"/>
+          <circle cx="298" cy="398" r="9" fill="var(--jm-pale, #c29d83)" opacity="0.14"/>
+          <circle cx="298" cy="398" r="9" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="2" opacity="0.55"/>
           <circle cx="294" cy="394" r="2.8" fill="var(--jm-white, #FFFFFF)" opacity="0.8"/>
         </g>
       </g>
 
       <!-- Долният ръб хваща подсветката — топъл лаймов кант отдолу. -->
-      <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="20" opacity="1" filter="url(#tayniyat-agent-full-jm-soft-s)" mask="url(#tayniyat-agent-full-jm-bottom)"/>
+      <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="20" opacity="1" filter="url(#tayniyat-agent-full-jm-soft-s)" mask="url(#tayniyat-agent-full-jm-bottom)"/>
 
       <!-- Гелов блик по темето — форма на капка, не елипса; следва извивката на тялото. -->
       <path class="jm-gloss" d="M152 232C156 184 200 146 246 144C260 143 268 150 264 158C256 172 216 184 192 216C178 236 174 256 164 258C154 260 150 250 152 232Z" fill="url(#tayniyat-agent-full-jm-gloss)"/>
@@ -287,8 +287,8 @@
 
       <!-- Бузи: топлото светене под очите прави лицето живо, а не залепено върху топка. -->
       <g class="jm-cheeks" filter="url(#tayniyat-agent-full-jm-soft-s)" opacity="0.5">
-        <ellipse cx="166" cy="330" rx="30" ry="16" fill="var(--jm-olive, #ff603e)"/>
-        <ellipse cx="348" cy="330" rx="30" ry="16" fill="var(--jm-olive, #ff603e)"/>
+        <ellipse cx="166" cy="330" rx="30" ry="16" fill="var(--jm-olive, #d86e3f)"/>
+        <ellipse cx="348" cy="330" rx="30" ry="16" fill="var(--jm-olive, #d86e3f)"/>
       </g>
 
       <!-- Движещ се отблясък по повърхността (мърда само при .jm-animated). -->
@@ -297,24 +297,24 @@
       <!-- Рамене: там, където ръката излиза от тялото, желето потъмнява. Без това ръцете
            изглеждат залепени отзад, а не част от масата. -->
       <g class="jm-shoulders" filter="url(#tayniyat-agent-full-jm-soft-s)" opacity="0.36">
-        <ellipse cx="140" cy="358" rx="26" ry="20" fill="var(--jm-deep, #490313)"/>
-        <ellipse cx="370" cy="358" rx="26" ry="20" fill="var(--jm-deep, #490313)"/>
+        <ellipse cx="140" cy="358" rx="26" ry="20" fill="var(--jm-deep, #451012)"/>
+        <ellipse cx="370" cy="358" rx="26" ry="20" fill="var(--jm-deep, #451012)"/>
       </g>
 
       <!-- Контактна сянка под папийонката: тя лежи ВЪРХУ тялото, не плува пред него. -->
-      <ellipse cx="254" cy="416" rx="58" ry="17" fill="var(--jm-deep, #490313)" opacity="0.26" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
+      <ellipse cx="254" cy="416" rx="58" ry="17" fill="var(--jm-deep, #451012)" opacity="0.26" filter="url(#tayniyat-agent-full-jm-soft-s)"/>
 
       <!-- Тъмен контур по долния десен ръб — дава обем на желето. -->
-      <ellipse cx="364" cy="412" rx="96" ry="70" fill="var(--jm-deep, #490313)" opacity="0.16" filter="url(#tayniyat-agent-full-jm-soft)"/>
+      <ellipse cx="364" cy="412" rx="96" ry="70" fill="var(--jm-deep, #451012)" opacity="0.16" filter="url(#tayniyat-agent-full-jm-soft)"/>
     </g>
 
     <!-- 5. Кантове: топъл долу-вдясно (главният), студен горе-вляво (трета светлина) и
          дисперсия — два едва отместени щриха от двата края на палитрата, както пречупва стъкло. -->
     <g class="jm-dispersion" opacity="0.5" filter="url(#tayniyat-agent-full-jm-soft-xs)">
-      <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="3" transform="translate(2 -1)"/>
-      <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="3" transform="translate(-1 2)"/>
+      <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="3" transform="translate(2 -1)"/>
+      <path d="M402 268C408 328 396 374 366 408" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="3" transform="translate(-1 2)"/>
     </g>
-    <path d="M112 268C120 190 172 126 252 126C288 126 318 138 342 158" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="4" stroke-linecap="round" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-xs)"/>
+    <path d="M112 268C120 190 172 126 252 126C288 126 318 138 342 158" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="4" stroke-linecap="round" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-xs)"/>
     <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="none" stroke="url(#tayniyat-agent-full-jm-rim)" stroke-width="5"/>
 
     <!-- 6. Лице. Наклонено с 2.5° около центъра на главата: лицето ЛЕЖИ по обема, а не е
@@ -334,7 +334,7 @@
           <g class="jm-pupils">
           <circle cx="202" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
           <circle cx="312" cy="276" r="21" fill="var(--jm-ink, #0A0C0A)"/>
-          <g fill="none" stroke="var(--jm-neon, #b70c0c)" stroke-width="3" opacity="0.55">
+          <g fill="none" stroke="var(--jm-neon, #843324)" stroke-width="3" opacity="0.55">
             <circle cx="202" cy="276" r="18"/>
             <circle cx="312" cy="276" r="18"/>
           </g>
@@ -355,8 +355,8 @@
         <!-- Сянката, която рамката хвърля върху бялото на окото — принадлежи на ОЧИЛАТА,
              не на очите: иначе всяко изражение трябва да я преписва. -->
         <g opacity="0.35" filter="url(#tayniyat-agent-full-jm-soft-xs)">
-          <path d="M170 260C180 246 220 246 230 260" fill="none" stroke="var(--jm-soft-olive, #b54040)" stroke-width="9"/>
-          <path d="M280 260C290 246 330 246 340 260" fill="none" stroke="var(--jm-soft-olive, #b54040)" stroke-width="9"/>
+          <path d="M170 260C180 246 220 246 230 260" fill="none" stroke="var(--jm-soft-olive, #6f5e5b)" stroke-width="9"/>
+          <path d="M280 260C290 246 330 246 340 260" fill="none" stroke="var(--jm-soft-olive, #6f5e5b)" stroke-width="9"/>
         </g>
         <g fill="none" stroke="var(--jm-mask-black, #000000)" stroke-width="13" opacity="0.35" filter="url(#tayniyat-agent-full-jm-soft-xs)" transform="translate(0 5)">
           <circle cx="200" cy="272" r="48"/>
@@ -369,11 +369,11 @@
           <path d="M152 260C138 252 126 250 114 252"/>
           <path d="M358 260C372 252 384 250 396 252"/>
         </g>
-        <g fill="none" stroke="var(--jm-soft-olive, #b54040)" stroke-width="3" stroke-linecap="round" opacity="0.7">
+        <g fill="none" stroke="var(--jm-soft-olive, #6f5e5b)" stroke-width="3" stroke-linecap="round" opacity="0.7">
           <path d="M164 240C176 230 190 226 204 226"/>
           <path d="M274 240C286 230 300 226 314 226"/>
         </g>
-        <g fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="3" stroke-linecap="round" opacity="0.45">
+        <g fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="3" stroke-linecap="round" opacity="0.45">
           <path d="M170 304C180 314 196 320 212 320"/>
           <path d="M280 304C290 314 306 320 322 320"/>
         </g>
@@ -398,7 +398,7 @@
       <!-- Усмивка с мек отблясък отдолу (устата е вдлъбнатина, не линия). -->
       <g class="jm-mouth">
         <path d="M234 332C242 346 266 346 274 332" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="9" stroke-linecap="round"/>
-        <path d="M238 342C244 350 264 350 270 342" fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+        <path d="M238 342C244 350 264 350 270 342" fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
       </g>
     </g>
 
@@ -416,30 +416,30 @@
         <path d="M226 390C231 397 232 410 230 418"/>
         <path d="M282 390C277 397 276 410 278 418"/>
       </g>
-      <g fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="2.5" stroke-linecap="round" opacity="0.5">
+      <g fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="2.5" stroke-linecap="round" opacity="0.5">
         <path d="M244 400C236 394 224 386 212 383"/>
         <path d="M264 400C272 394 284 386 296 383"/>
       </g>
       <rect x="244" y="393" width="20" height="22" rx="7" fill="url(#tayniyat-agent-full-jm-band)"/>
-      <path d="M248 396C248 404 248 408 248 412" fill="none" stroke="var(--jm-soft-olive, #b54040)" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-      <path d="M248 404C232 390 218 380 206 379C200 392 200 416 206 429C218 428 232 418 248 404ZM260 404C276 390 290 380 302 379C308 392 308 416 302 429C290 428 276 418 260 404Z" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="1.6" opacity="0.3"/>
+      <path d="M248 396C248 404 248 408 248 412" fill="none" stroke="var(--jm-soft-olive, #6f5e5b)" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+      <path d="M248 404C232 390 218 380 206 379C200 392 200 416 206 429C218 428 232 418 248 404ZM260 404C276 390 290 380 302 379C308 392 308 416 302 429C290 428 276 418 260 404Z" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="1.6" opacity="0.3"/>
     </g>
 
     <!-- 8. Академична шапка — дебелина на дъската, сатен по плата, зелен отскок по долния ръб
          (тялото свети НАГОРЕ към шапката) и пискюл от нишки с метален кант. -->
     <g class="jm-cap" transform="translate(0 14) rotate(-9 254 108) scale(0.93) translate(19 9)">
       <ellipse cx="254" cy="118" rx="66" ry="26" fill="url(#tayniyat-agent-full-jm-band)"/>
-      <path d="M196 124C212 136 296 136 312 124" fill="none" stroke="var(--jm-soft-olive, #b54040)" stroke-width="2.5" opacity="0.35"/>
-      <path d="M198 132C214 142 294 142 310 132" fill="none" stroke="var(--jm-olive, #ff603e)" stroke-width="3" opacity="0.4"/>
+      <path d="M196 124C212 136 296 136 312 124" fill="none" stroke="var(--jm-soft-olive, #6f5e5b)" stroke-width="2.5" opacity="0.35"/>
+      <path d="M198 132C214 142 294 142 310 132" fill="none" stroke="var(--jm-olive, #d86e3f)" stroke-width="3" opacity="0.4"/>
       <path d="M254 60L388 98L254 136L120 98Z" fill="var(--jm-ink, #0A0C0A)" transform="translate(0 10)"/>
       <path d="M120 98L254 136L388 98L388 108L254 146L120 108Z" fill="var(--jm-ink, #0A0C0A)"/>
-      <path d="M120 108L254 146L254 136L120 98Z" fill="var(--jm-olive, #ff603e)" opacity="0.12"/>
+      <path d="M120 108L254 146L254 136L120 98Z" fill="var(--jm-olive, #d86e3f)" opacity="0.12"/>
       <path d="M254 60L388 98L254 136L120 98Z" fill="url(#tayniyat-agent-full-jm-board)"/>
-      <path d="M254 60L388 98L254 104L120 98Z" fill="var(--jm-soft-olive, #b54040)" opacity="0.16"/>
-      <path d="M254 60L388 98" fill="none" stroke="var(--jm-soft-olive, #b54040)" stroke-width="2" opacity="0.5"/>
-      <path d="M120 98L254 60" fill="none" stroke="var(--jm-pale, #f0b9a0)" stroke-width="2" opacity="0.35"/>
+      <path d="M254 60L388 98L254 104L120 98Z" fill="var(--jm-soft-olive, #6f5e5b)" opacity="0.16"/>
+      <path d="M254 60L388 98" fill="none" stroke="var(--jm-soft-olive, #6f5e5b)" stroke-width="2" opacity="0.5"/>
+      <path d="M120 98L254 60" fill="none" stroke="var(--jm-pale, #c29d83)" stroke-width="2" opacity="0.35"/>
       <circle cx="254" cy="98" r="6" fill="var(--jm-ink-soft, #2A2E24)"/>
-      <circle cx="252" cy="96" r="2" fill="var(--jm-soft-olive, #b54040)" opacity="0.8"/>
+      <circle cx="252" cy="96" r="2" fill="var(--jm-soft-olive, #6f5e5b)" opacity="0.8"/>
       <path d="M256 104C300 110 340 112 372 106" fill="none" stroke="var(--jm-mask-black, #000000)" stroke-width="7" stroke-linecap="round" opacity="0.45" filter="url(#tayniyat-agent-full-jm-soft-xs)"/>
       <path d="M254 98C298 104 338 106 370 100" fill="none" stroke="url(#tayniyat-agent-full-jm-gold)" stroke-width="6" stroke-linecap="round"/>
       <path d="M254 98C298 104 338 106 370 100" fill="none" stroke="var(--jm-white, #FFFFFF)" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/>
@@ -459,7 +459,7 @@
     </g>
 
     <!-- 9. Искри — три малки блясъка, които правят кадъра „скъп". -->
-    <g class="jm-sparkles" fill="var(--jm-pale, #f0b9a0)">
+    <g class="jm-sparkles" fill="var(--jm-pale, #c29d83)">
       <path class="jm-sparkle-a" d="M416 176C418 190 421 193 434 196C421 199 418 202 416 216C414 202 411 199 398 196C411 193 414 190 416 176Z" opacity="0.85"/>
       <path class="jm-sparkle-b" d="M74 336C75 345 77 347 86 349C77 351 75 353 74 362C73 353 71 351 62 349C71 347 73 345 74 336Z" opacity="0.6"/>
       <path class="jm-sparkle-c" d="M330 132C331 139 333 141 340 142C333 144 331 146 330 153C329 146 327 144 320 142C327 141 329 139 330 132Z" opacity="0.5"/>

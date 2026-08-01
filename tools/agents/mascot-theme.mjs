@@ -56,11 +56,26 @@ export function hsl2rgb(h, s, l) {
 
 /** Спирка от рампата → същата светлота, тонът на агента.
  *  `shift` върти тона спрямо акцента, `emit` вдига светлота/наситеност (емисия, не обем). */
-export function retint(rampHex, accentHex, shift = 0, emit = 0) {
+export function retint(rampHex, accentHex, shift = 0, emit = 0, satTarget = 1, tilt = 0, lift = 0) {
   const [, s0, l0] = rgb2hsl(...hex2rgb(rampHex));
-  const [ha, sa] = rgb2hsl(...hex2rgb(accentHex));
-  const s = Math.min(1, (s0 * 0.55 + sa * 0.55) * (1 + emit * 0.7));
-  const l = Math.min(0.97, l0 + emit * (1 - l0) * 0.55);
+  const [ha] = rgb2hsl(...hex2rgb(accentHex));
+  // Профилът на рампата се пази (дълбокото е наситено, бледото — не), а целта го мащабира.
+  // Преди тук се смесваше наситеността на АКЦЕНТА и резултатът се лепеше в тавана: 16 от 28
+  // телца излизаха над 0.9 и целият флот беше от един и същи бонбонен материал.
+  const s = Math.min(1, s0 * satTarget * (1 + emit * 0.7));
+  // Две различни неща, затова са два параметъра:
+  //   `tilt` върти рампата около средата ѝ → мени КОНТРАСТА (плътно желе срещу прозрачно);
+  //   `lift` вдига цялата рампа → мени ЯРКОСТТА на телцето (мрачно срещу въздушно).
+  // Само с наклон размахът на светлотата през флота беше измерено 0.00 — средната спирка е
+  // неподвижната точка на въртенето, значи всички телца светеха еднакво силно.
+  // `lift` е РАВНОМЕРНО изместване: така контрастът (той носи обема) оцелява точно, а телцето
+  // просто става по-мрачно или по-въздушно. Първата версия го претегляше с (1-|l-0.5|), което
+  // вдигаше средната спирка повече от горната и изяждаше преднината на емисията — хванато от теста.
+  // Таванът на ТЯЛОТО е под тавана на цвета нарочно: емисията се добавя СЛЕД него и трябва да ѝ
+  // остане накъде да расте. При 0.955 най-светлите телца опираха в тавана още преди емисията и
+  // губеха вътрешното си светене — тестът го хвана при sat=1.12 tilt=+0.31 lift=+0.16.
+  const l1 = Math.max(0.035, Math.min(0.9, l0 + tilt * (l0 - 0.38) + lift));
+  const l = Math.min(0.97, l1 + emit * (1 - l1) * 0.55);
   return rgb2hex(...hsl2rgb((ha + shift + 360) % 360, s, l));
 }
 
@@ -91,15 +106,96 @@ export function hueSpread(accentHex) {
 /** Кои токени са ТЯЛО (пребоядисват се) и кои са ГЕРОЙ (остават). */
 export const BODY_TOKENS = ["deep", "bottle", "neon", "olive", "pale", "soft-olive", "glow-lime"];
 
-export function themeFor(accent, tokens) {
+// ── защо тонът на маскота НЕ е просто акцентът ───────────────────────────────────────────────
+// Измерено върху истинския регистър: 17 от 28 акцента стоят на под 12° от съседа си, пет двойки
+// са на под 1° (Геймъра 235° и Дискорджията 235°; Продавача 243° и Анализаторът 243°), а шест
+// агента се тъпчат в 235–252°. Едновременно 56° и 49° от кръга стоят ПРАЗНИ. Колкото и да
+// разливаме тона ВЪТРЕ в телцето, шест виолетови си остават „лилавите" — разликата, която липсва,
+// е между агентите, не вътре в агента.
+// Затова тоновете се пре-разпределят: редът се пази (червеното си остава при червеното), но всеки
+// получава свой процеп на кръга. Акцентът остава идентичността на агента в интерфейса; маскотът
+// носи ПРОИЗВОДЕН цвят, който е разпознаваемо от същото семейство, но не се слива със съседа.
+
+/** Разстила стойности по [lo, hi] по РАНГ — редът се пази, струпванията се разтварят.
+ *  Същият номер като при тоновете, но за права ос (наситеност, наклон на светлотата). */
+export function spreadByRank(values, lo, hi) {
+  const n = values.length;
+  if (n === 1) return [(lo + hi) / 2];
+  const out = new Array(n);
+  values.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0])
+    .forEach(([, i], k) => { out[i] = lo + (hi - lo) * (k / (n - 1)); });
+  return out;
+}
+
+/** Равномерно разпределя тонове по кръга, БЕЗ да разбърква реда, с минимално общо завъртане. */
+export function declusterHues(hues) {
+  const n = hues.length;
+  if (n < 2) return hues.slice();
+  const order = hues.map((h, i) => [h, i]).sort((a, b) => a[0] - b[0]);
+  const step = 360 / n;
+  // Отместването се избира така, че сумата от завъртанията да е най-малка — иначе цялата палитра
+  // би се завъртяла и червените агенти биха станали оранжеви без никаква причина.
+  let best = 0, bestCost = Infinity;
+  for (let off = 0; off < 360; off += 0.5) {
+    let cost = 0;
+    for (let k = 0; k < n; k++) {
+      const d = ((off + k * step - order[k][0] + 540) % 360) - 180;
+      cost += d * d;
+    }
+    if (cost < bestCost) { bestCost = cost; best = off; }
+  }
+  const out = new Array(n);
+  for (let k = 0; k < n; k++) out[order[k][1]] = ((best + k * step) % 360 + 360) % 360;
+  return out;
+}
+
+/** Едно телце. `opts.hue` замества тона на акцента; останалите разширяват характера. */
+export function themeFor(accent, tokens, opts = {}) {
   const base = { ...tokens.sampled, ...tokens.extended };
-  const spread = hueSpread(accent);
+  const [h0, s0, l0] = rgb2hsl(...hex2rgb(accent));
+  const hue = opts.hue ?? h0;
+  // Анкерът, от който тръгва всяка спирка: тонът е производен, но наситеността и светлотата
+  // остават на АГЕНТА — там е втората ос на разликата (сиво-синият VPS срещу неоновия Продавач).
+  const anchor = rgb2hex(...hsl2rgb(hue, s0, l0));
+  const spread = hueSpread(anchor);
+  // Трите оси на разликата. По подразбиране идват от самия акцент, но флотът ги подава РАЗСТЛАНИ
+  // (виж `fleetThemes`) — измерено беше, че иначе размахът на светлотата през 28-те телца е 0.00,
+  // тоест всички светят еднакво силно и се различават само по тон.
+  const satTarget = opts.satTarget ?? (0.55 + s0 * 0.5);
+  const tilt = opts.tilt ?? 0;
+  const lift = opts.lift ?? (l0 - 0.55) * 0.4;
+  const emitGain = 0.6 + (opts.satTarget ?? s0) * 0.7;
   const out = {};
   for (const k of BODY_TOKENS) {
     if (!base[k]) continue;
-    out[`--jm-${k}`] = retint(base[k].hex, accent, spread * (SPREAD[k] || 0), EMIT[k] || 0);
+    out[`--jm-${k}`] = retint(base[k].hex, anchor, spread * (SPREAD[k] || 0),
+      (EMIT[k] || 0) * emitGain, satTarget, tilt, lift);
   }
   return out;
+}
+
+/** Целият флот наведнъж — единственият начин да се пре-разпредели тон, който е свойство на СБОРА. */
+export function fleetThemes(agentsIn, tokens) {
+  // Подредбата по id прави резултата независим от реда в регистъра. Без това два агента с ЕДИН И
+  // СЪЩ тон (Геймъра и Дискорджията са и двамата на 235°) си разменяха процепите при всяко
+  // пренареждане и целият флот се пребоядисваше без причина.
+  const agents = [...agentsIn].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const hsl = agents.map((a) => rgb2hsl(...hex2rgb(a.accent)));
+  const hues = declusterHues(hsl.map((x) => x[0]));
+  // Всяка ос се разстила по РАНГ: агентът пази характера си спрямо останалите (най-сивият остава
+  // най-сив), но флотът покрива целия обхват, вместо да се тъпче в единия край.
+  //   наситеност → от землисто-мътно до стъклено-неоново
+  //   яркост     → от мрачно, плътно желе до въздушно, пастелно
+  const sats = spreadByRank(hsl.map((x) => x[1]), 0.5, 1.12);
+  const lifts = spreadByRank(hsl.map((x) => x[2]), -0.16, 0.16);
+  // Контрастът НЕ идва от акцента: няма негово свойство, което да го носи честно. Затова върви по
+  // златното сечение върху реда по ТОН — така съседите по цвят гарантирано се различават по
+  // плътност, вместо да се редят като плавна дъга.
+  const byHue = hues.map((h, i) => [h, i]).sort((a, b) => a[0] - b[0]).map(([, i]) => i);
+  const tilts = new Array(agents.length);
+  byHue.forEach((idx, k) => { tilts[idx] = ((k * 0.6180339887) % 1) * 0.62 - 0.31; });
+  return Object.fromEntries(agents.map((a, i) => [a.id, themeFor(a.accent, tokens,
+    { hue: hues[i], satTarget: sats[i], tilt: tilts[i], lift: lifts[i] })]));
 }
 
 /** Заменя падащите стойности в `var(--jm-x, #HEX)` с цвета на агента.
@@ -127,8 +223,8 @@ const LEVELS = {
   animated: "jelly-mascot-full-animated.svg",
 };
 
-export function mascotFor(agent, level, tokens, sources) {
-  const vars = themeFor(agent.accent, tokens);
+export function mascotFor(agent, level, tokens, sources, vars = null) {
+  vars = vars || themeFor(agent.accent, tokens);
   let svg = sources[level];
   svg = applyTheme(svg, vars);
   svg = namespaceIds(svg, `${agent.id}-${level}`);
@@ -146,8 +242,13 @@ function load() {
   const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
   return { tokens, sources, agents: reg.agents || reg };
 }
-const wanted = ({ tokens, sources, agents }) => agents.flatMap((a) =>
-  Object.keys(LEVELS).map((lvl) => [`${a.id}${lvl === "full" ? "" : "-" + lvl}.svg`, mascotFor(a, lvl, tokens, sources)]));
+// Темите се смятат за ЦЕЛИЯ флот наведнъж — пре-разпределението на тона е свойство на сбора,
+// не на отделния агент, и не може да се получи от `themeFor` в изолация.
+const wanted = ({ tokens, sources, agents }) => {
+  const themes = fleetThemes(agents, tokens);
+  return agents.flatMap((a) => Object.keys(LEVELS).map((lvl) =>
+    [`${a.id}${lvl === "full" ? "" : "-" + lvl}.svg`, mascotFor(a, lvl, tokens, sources, themes[a.id])]));
+};
 
 // ── вграденият блок в таблото ────────────────────────────────────────────────────────────────
 // Профилът показва АНИМИРАНИЯ маскот, а не картинка: само вграден SVG може да получи погледа от
@@ -160,7 +261,7 @@ const MARK_START = "/* MASCOT-INLINE:START — генериран от tools/age
 const MARK_END = "/* MASCOT-INLINE:END */";
 
 export function inlineBlock({ tokens, sources, agents }) {
-  const themes = Object.fromEntries(agents.map((a) => [a.id, themeFor(a.accent, tokens)]));
+  const themes = fleetThemes(agents, tokens);
   // Геометрията е обща, затова `id`-тата се префиксват веднъж с неутрален префикс. В профила
   // живее най-много ЕДИН маскот наведнъж, значи сблъсък няма.
   const svg = namespaceIds(sources.animated, "jmx")

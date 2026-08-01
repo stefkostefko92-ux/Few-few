@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { retint, rgb2hsl, themeFor, applyTheme, namespaceIds, BODY_TOKENS, hueSpread, inlineBlock, withInlineBlock, INLINE_MARKERS } from "./mascot-theme.mjs";
+import { retint, rgb2hsl, themeFor, fleetThemes, declusterHues, spreadByRank, applyTheme, namespaceIds, BODY_TOKENS, hueSpread, inlineBlock, withInlineBlock, INLINE_MARKERS } from "./mascot-theme.mjs";
 import { withMutation, replaceOnce } from "../lib/mutation.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -76,18 +76,77 @@ test("телцето носи поне два тона, но остава ЕДН
   }
 });
 
-test("емисията свети: горните спирки вдигат светлота, обемните три я пазят", () => {
-  const v = themeFor("#e11d48", tokens);
+test("емисията добавя светлина — сверено срещу СЪЩОТО тяло без нея", () => {
+  // Два пъти сбърках базата на този тест: първо мерех срещу изходната палитра абсолютно, после
+  // срещу нейните разлики. И двете са грешен ориентир — тъмното телце има тъмно pale, а нарочно
+  // мекото телце има малка разлика, и двете са ВЕРНИ. Единствената честна база е същото тяло със
+  // същите параметри, но с изключена емисия. Затова сверяваме чистата функция срещу себе си.
   const base = { ...tokens.sampled, ...tokens.extended };
   const L = (hex) => rgb2hsl(...hex2rgb01(hex))[2];
-  for (const k of ["deep", "bottle", "neon"]) {
-    assert.ok(Math.abs(L(base[k].hex) - L(v[`--jm-${k}`])) < 0.02,
-      `${k} носи ОБЕМА — светлотата му трябва да е непокътната`);
+  for (const [sat, tilt, lift] of [[0.5, -0.31, -0.16], [1.12, 0.31, 0.16], [0.8, 0, 0]]) {
+    for (const k of ["olive", "pale"]) {
+      const off = retint(base[k].hex, "#2f9e6f", 20, 0, sat, tilt, lift);
+      const on = retint(base[k].hex, "#2f9e6f", 20, 0.3, sat, tilt, lift);
+      assert.ok(L(on) > L(off) + 0.01,
+        `${k} при sat=${sat} tilt=${tilt} lift=${lift}: емисията не добавя нищо`);
+    }
   }
-  for (const k of ["olive", "pale"]) {
-    assert.ok(L(v[`--jm-${k}`]) > L(base[k].hex) + 0.02,
-      `${k} пълни ядрото/подсветката/ореола — без вдигане няма светене отвътре`);
+});
+
+test("редът на рампата оцелява във всяко телце — иначе обемът се обръща", () => {
+  const th = fleetThemes(agents(), tokens);
+  const L = (hex) => rgb2hsl(...hex2rgb01(hex))[2];
+  for (const a of agents()) {
+    const ls = ["deep", "bottle", "neon", "olive", "pale"].map((k) => L(th[a.id][`--jm-${k}`]));
+    for (let i = 1; i < ls.length; i++) {
+      assert.ok(ls[i] > ls[i - 1], `${a.id}: рампата се обърна на позиция ${i} (${ls.join(" → ")})`);
+    }
   }
+});
+
+test("яркостта вече се различава, но контрастът остава в лентата (обемът оцелява)", () => {
+  // Отказахме се от „светлотата е непокътната", защото измерено размахът на яркостта през флота
+  // беше 0.00 — всички телца светеха еднакво силно. Обемът обаче стои на КОНТРАСТА, не на
+  // абсолютната стойност, затова гейтваме него.
+  const th = fleetThemes(agents(), tokens);
+  const L = (hex) => rgb2hsl(...hex2rgb01(hex))[2];
+  const bright = [], contrast = [];
+  for (const a of agents()) {
+    const c = L(th[a.id]["--jm-pale"]) - L(th[a.id]["--jm-deep"]);
+    assert.ok(c > 0.35 && c < 0.85, `${a.id}: контраст ${c.toFixed(2)} извън лентата — телцето се сплеска`);
+    contrast.push(c);
+    bright.push(L(th[a.id]["--jm-neon"]));
+  }
+  const span = (v) => Math.max(...v) - Math.min(...v);
+  assert.ok(span(bright) > 0.2, `флотът трябва да се различава по яркост, размах: ${span(bright).toFixed(2)}`);
+  assert.ok(span(contrast) > 0.15, `и по плътност, размах: ${span(contrast).toFixed(2)}`);
+});
+
+test("флотът покрива кръга — нула струпвания под 8°", () => {
+  // Причината изобщо да пипаме тона: 17 от 28 акцента бяха на под 12° от съседа си, пет двойки под
+  // 1°. Това е разликата, която липсваше — между агентите, не вътре в агента.
+  const th = fleetThemes(agents(), tokens);
+  const hs = agents().map((a) => rgb2hsl(...hex2rgb01(th[a.id]["--jm-neon"]))[0]).sort((x, y) => x - y);
+  const gaps = hs.map((h, i) => ((hs[(i + 1) % hs.length] - h) + 360) % 360);
+  assert.equal(gaps.filter((g) => g < 8).length, 0, `струпвания: ${gaps.filter((g) => g < 8).length}`);
+  assert.ok(Math.max(...gaps) < 30, `празна дъга ${Math.round(Math.max(...gaps))}° — кръгът не е покрит`);
+});
+
+test("наситеността НЕ се лепи в тавана — флотът е от различни материали", () => {
+  const th = fleetThemes(agents(), tokens);
+  const sats = agents().map((a) => rgb2hsl(...hex2rgb01(th[a.id]["--jm-neon"]))[1]);
+  assert.ok(sats.filter((s) => s > 0.9).length <= 8,
+    `${sats.filter((s) => s > 0.9).length} от 28 в тавана — всички стават еднакво бонбонени`);
+  assert.ok(Math.max(...sats) - Math.min(...sats) > 0.35, "нужен е реален размах на наситеността");
+});
+
+test("подредбата на регистъра не мени резултата — темата е на АГЕНТА, не на реда", () => {
+  // Пре-разпределението е свойство на СБОРА, значи е лесно да зависи от реда по невнимание — и
+  // тогава добавянето на агент би пребоядисало всички останали при всяко пренареждане.
+  const A = agents();
+  const a = fleetThemes(A, tokens);
+  const b = fleetThemes([...A].reverse(), tokens);
+  for (const x of A) assert.deepEqual(a[x.id], b[x.id], `${x.id} се мени според реда в регистъра`);
 });
 
 test("сиянието НАВЪН е в таблото и следва акцента, не е зашито", () => {
@@ -184,7 +243,7 @@ test("темите за 28-те агента са в блока, а startMascot 
     tokens, sources: {}, agents: agents(),
   };
   // Само темите — геометрията идва от файла, тук сверяваме че всеки агент присъства.
-  const themes = Object.fromEntries(ctx.agents.map((a) => [a.id, themeFor(a.accent, tokens)]));
+  const themes = fleetThemes(ctx.agents, tokens);
   const m = html.match(/const MASCOT_THEMES = (\{.*?\});/s);
   assert.ok(m, "MASCOT_THEMES липсва във вградения блок");
   assert.deepEqual(JSON.parse(m[1]), themes, "темите в таблото се разминават с генератора");
