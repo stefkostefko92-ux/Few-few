@@ -96,6 +96,12 @@
   @keyframes glitch { 0% { text-shadow: -2.5px 0 #ff2d6b, 2.5px 0 #17e0ff; } 45% { text-shadow: 2px 0 #ff2d6b, -2px 0 #17e0ff; } 100% { text-shadow: none; } }
   .idx { font: 800 clamp(32px,4vw,50px)/1 ui-monospace,monospace; letter-spacing: -.05em; color: #131f2b; -webkit-text-stroke: 1.6px #26384a; font-variant-numeric: tabular-nums; transition: color .16s, -webkit-text-stroke-color .16s; }
   .recico { width: 52px; height: 52px; border: 2px solid var(--ac); display: grid; place-items: center; box-shadow: 0 0 22px -6px var(--ac) inset; } .recico svg { width: 27px; height: 27px; }
+  /* Маскотът заема мястото на бившата линейна икона. Наследява размера от контейнера си,
+     затова навсякъде, където е стояла икона 24–27px, стои маскот със същия отпечатък. */
+  .agico { width: 1.6em; height: 1.6em; display: inline-block; vertical-align: -0.35em; object-fit: contain; }
+  .recico .agico { width: 40px; height: 40px; vertical-align: 0; }
+  .picon .agico { width: 1.5em; height: 1.5em; }
+  .t-n .agico, .cmph .agico { width: 1.4em; height: 1.4em; }
   .recmain { min-width: 0; }
   .recmain h3 { margin: 0; font: 700 clamp(18px,2.5vw,27px)/1.04 system-ui; letter-spacing: -.012em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .recmain .ptag { font: 700 9.5px/1 ui-monospace,monospace; letter-spacing: .16em; text-transform: uppercase; color: #04121a; background: var(--ac); padding: 4px 7px; }
@@ -14473,7 +14479,19 @@ const ICON = {
   "_default": '<circle cx="12" cy="12" r="8"/>',
 };
 function iconInner(id) { return ICON[id] || ICON._default; }
-function iconSVG(id, stroke, sw) { return `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw || 1.9}" stroke-linecap="round" stroke-linejoin="round">${iconInner(id)}</svg>`; }
+/* Обликът на агента е МАСКОТЪТ (mascot/, PR #162), пребоядисан в неговия акцент от
+   `tools/agents/mascot-theme.mjs`. Подписът остава същият, за да не се пипат деветте места,
+   които го викат; `sw` вече не значи нищо (маскотът е плътен, не линеен).
+   Отделен ФАЙЛ, не вграден SVG: 28 вградени копия биха делили `id`-тата си и всички щяха да се
+   рисуват с градиента на първия (реален дефект, хванат при пробата). Файлът е самостоятелен —
+   работи и през `file://`, без CSS отвън.
+   `ICON`/`iconInner` остават като резерв, ако маскотът липсва (напр. таблото е отворено само
+   като index.html, без папката mascots/). */
+function iconSVG(id, stroke, sw) {
+  return `<img class="agico" src="./mascots/${encodeURIComponent(id)}-icon.svg" alt="" aria-hidden="true" loading="lazy"` +
+    ` onerror="this.replaceWith(Object.assign(document.createElement('span'),{innerHTML:iconFallback('${id}','${stroke}',${sw || 1.9})}))">`;
+}
+function iconFallback(id, stroke, sw) { return `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw || 1.9}" stroke-linecap="round" stroke-linejoin="round">${iconInner(id)}</svg>`; }
 
 /* ---------- зареждане ---------- */
 let DATA = FALLBACK;
