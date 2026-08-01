@@ -30,24 +30,66 @@ import { prisma } from '@/lib/db';
  * ползва само когато сайтът наистина върви по HTTPS; иначе пада до обикновено
  * име, а `secure` следва същото условие.
  */
+/**
+ * ВНИМАНИЕ: `seo.ts` пада към продукционния домейн, когато `PUBLIC_BASE_URL`
+ * липсва — тук НЕ пада. Разминаването е нарочно: там липсващият адрес значи
+ * грозен canonical, тук значи мълчаливо слаба сесийна бисквитка. Продукция без
+ * `PUBLIC_BASE_URL` вече не минава тихо — вика се в лога при всеки старт.
+ */
 const OVER_HTTPS = (process.env.PUBLIC_BASE_URL ?? '').startsWith('https://');
+if (!OVER_HTTPS && process.env.NODE_ENV === 'production') {
+  console.error(
+    '[admin] PUBLIC_BASE_URL не е https:// — сесийната бисквитка е БЕЗ `__Host-` и БЕЗ `secure`. ' +
+      'Това е приемливо само на машина за разработка.',
+  );
+}
 const COOKIE = OVER_HTTPS ? '__Host-fivem-admin' : 'fivem-admin';
 const SESSION_HOURS = 8;
 const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 15;
+/**
+ * ВТОРА линия срещу тавана по принципал. Принципалът се чете от хедър, а
+ * хедър може да е подхвърлен — значи таванът по принципал сам по себе си е
+ * толкова силен, колкото прокси-конфигурацията. Глобалният таван е нарочно
+ * висок: той не бива да заключва собственика при нормална работа, а само да
+ * спре разбиване с ротиран хедър.
+ */
+const MAX_ATTEMPTS_GLOBAL = 60;
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-/** IP-то никога не се пази в чист вид — само хеш, само за брояча. */
+/**
+ * IP-то никога не се пази в чист вид — само хеш, само за брояча.
+ *
+ * Чете се ЕДИН хедър и той е този, който НАШЕТО прокси презаписва:
+ * `proxy_set_header X-Real-IP $remote_addr` (виж `DEPLOY.md`). Това не е вкус —
+ * предишният вариант четеше и `cf-connecting-ip`, и `x-forwarded-for`, а нито
+ * един от двата не се пипа от конфигурацията ни, тоест и двата идваха направо
+ * от клиента. Последицата беше двупосочна и доказана: с ротиран хедър таванът
+ * на опитите изчезва, а с хедър, сочещ IP-то на собственика, панелът се
+ * заключва за него. Име на хедър, който сами не презаписваме, е вход, не факт.
+ *
+ * `TRUST_PROXY_IP_HEADER` позволява друго име, ако прокси-то е различно —
+ * съзнателен избор на оператора, вписан в `.env`, не подразбиране.
+ */
+export function trustedIpHeader(): string {
+  return (process.env.TRUST_PROXY_IP_HEADER ?? 'x-real-ip').toLowerCase();
+}
+
+/**
+ * Чистата половина — тества се без заявка. `lookup` е четенето на хедър.
+ * Взима се ЕДИН хедър, никога „първият, който има стойност“: точно веригата от
+ * резервни варианти правеше тавана заобиколим.
+ */
+export function principalIp(lookup: (name: string) => string | null | undefined): string {
+  return lookup(trustedIpHeader())?.trim() || 'local';
+}
+
 async function principalHash(): Promise<string> {
   const store = await headers();
-  const ip =
-    store.get('cf-connecting-ip') ??
-    store.get('x-real-ip') ??
-    store.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'local';
+  const ip = principalIp((name) => store.get(name));
   return sha256(`${ip}:${process.env.ADMIN_PASSWORD_HASH ?? ''}`);
 }
 
@@ -66,12 +108,20 @@ export function verifyPassword(password: string): boolean {
   }
 }
 
+/**
+ * Двоен таван: по принципал (строг) И глобален (хлабав). Само първият не стига
+ * — той се крепи на хедър, а хедърът може да е подхвърлен; само вторият не
+ * стига — чужд човек изяжда опитите и заключва собственика.
+ */
 export async function tooManyAttempts(): Promise<boolean> {
   const since = new Date(Date.now() - WINDOW_MINUTES * 60_000);
-  const failed = await prisma.loginAttempt.count({
-    where: { ipHash: await principalHash(), ok: false, at: { gte: since } },
-  });
-  return failed >= MAX_ATTEMPTS;
+  const [byPrincipal, total] = await prisma.$transaction([
+    prisma.loginAttempt.count({
+      where: { ipHash: await principalHash(), ok: false, at: { gte: since } },
+    }),
+    prisma.loginAttempt.count({ where: { ok: false, at: { gte: since } } }),
+  ]);
+  return byPrincipal >= MAX_ATTEMPTS || total >= MAX_ATTEMPTS_GLOBAL;
 }
 
 export async function recordAttempt(ok: boolean): Promise<void> {

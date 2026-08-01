@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes, scryptSync } from 'node:crypto';
 import { test } from 'node:test';
 
-import { verifyPassword } from '../admin/auth';
+import { principalIp, trustedIpHeader, verifyPassword } from '../admin/auth';
 
 /**
  * Защитата на панела е единственото в продукта, зад което стоят пари
@@ -18,6 +18,30 @@ function hashFor(password: string): string {
   const salt = randomBytes(16).toString('hex');
   return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`;
 }
+
+// ── Принципалът на тавана за вход ───────────────────────────────────────────
+
+/**
+ * РЕГРЕСИЯ на блокер. Принципалът се четеше от ВЕРИГА хедъри
+ * (`cf-connecting-ip` → `x-real-ip` → `x-forwarded-for`), а нашата nginx
+ * конфигурация презаписва само `X-Real-IP`. Другите два идваха направо от
+ * клиента, значи: ротиран хедър ⇒ таванът изчезва; хедър с IP-то на
+ * собственика ⇒ панелът се заключва за него. Чете се ЕДИН хедър и той е този,
+ * който сами презаписваме.
+ */
+test('принципалът чете САМО довереното име на хедър', () => {
+  const forged = { 'cf-connecting-ip': '1.2.3.4', 'x-forwarded-for': '5.6.7.8' } as Record<string, string>;
+  assert.equal(principalIp((name) => forged[name] ?? null), 'local', 'подхвърлен хедър е бил приет');
+
+  const real: Record<string, string> = { ...forged, 'x-real-ip': '9.9.9.9' };
+  assert.equal(principalIp((name) => real[name] ?? null), '9.9.9.9');
+});
+
+test('липсващ или празен хедър дава един и същ принципал, не случаен', () => {
+  assert.equal(principalIp(() => null), 'local');
+  assert.equal(principalIp(() => '   '), 'local');
+  assert.equal(trustedIpHeader(), 'x-real-ip');
+});
 
 test('вярната парола минава, грешната не', () => {
   const previous = process.env.ADMIN_PASSWORD_HASH;

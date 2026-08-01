@@ -58,9 +58,17 @@ const bg: PagesBundle = {
           'Формата за сигнали — за незаконно съдържание; тя завежда сигнала официално.',
         ],
       },
+      { h: 'Адресите' },
+      {
+        ul: [
+          'Общи въпроси и партньорства: info@carbonstealth.eu',
+          'Лични данни, упражняване на права по ОРЗД и сваляне на канал от „Стриймъри“: privacy@carbonstealth.eu',
+          'Discord на общността — линкът е в подвала на всяка страница.',
+        ],
+      },
       { h: 'Срокове' },
       {
-        p: 'Заявките за листване се преглеждат до 7 работни дни. Сигналите по DSA получават потвърждение веднага и решение възможно най-бързо. За искания по ОРЗД срокът е един месец.',
+        p: 'Заявките за листване се преглеждат до 7 работни дни. Сигналите по DSA получават потвърждение веднага и решение възможно най-бързо. За искания по ОРЗД законният срок е един месец, но за сваляне на канал от „Стриймъри“ сме се обвързали с по-кратък: до 72 часа в работни дни, без да искаме обяснение.',
       },
     ],
   },
@@ -206,9 +214,17 @@ const en: PagesBundle = {
           'The report form — for illegal content; it logs the report officially.',
         ],
       },
+      { h: 'The addresses' },
+      {
+        ul: [
+          'General questions and partnerships: info@carbonstealth.eu',
+          'Personal data, exercising GDPR rights and removing a channel from “Streamers”: privacy@carbonstealth.eu',
+          'Community Discord — the link is in the footer of every page.',
+        ],
+      },
       { h: 'Response times' },
       {
-        p: 'Listing submissions are reviewed within 7 working days. DSA reports get an immediate confirmation and a decision as soon as possible. GDPR requests are answered within one month.',
+        p: 'Listing submissions are reviewed within 7 working days. DSA reports get an immediate confirmation and a decision as soon as possible. The statutory deadline for GDPR requests is one month, but for removing a channel from “Streamers” we have committed to a shorter one: within 72 hours on working days, no reason asked.',
       },
     ],
   },

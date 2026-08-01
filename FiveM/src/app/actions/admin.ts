@@ -22,7 +22,7 @@ import {
   formatServerAddress,
 } from '@/lib/fivem';
 import { isValidSlug, slugify } from '@/lib/slug';
-import { normalizeChannel, profileUrl, STREAM_PLATFORMS } from '@/lib/streamers';
+import { channelKey, normalizeChannel, profileUrl, STREAM_PLATFORMS } from '@/lib/streamers';
 
 import { readLocale } from './locale';
 
@@ -38,8 +38,10 @@ export async function loginAction(formData: FormData): Promise<void> {
   const locale = readLocale(formData);
   const password = String(formData.get('password') ?? '');
 
+  // Блокираният опит НЕ се записва. Записваше се, а това плъзгаше прозореца
+  // напред при всеки следващ опит: нападател с шест заявки на минута държеше
+  // собственика заключен вечно. Прозорецът трябва да може да се източи.
   if (await tooManyAttempts()) {
-    await recordAttempt(false);
     redirect(`/${locale}/admin/login?error=rate`);
   }
 
@@ -230,6 +232,12 @@ export async function rejectSubmissionAction(formData: FormData): Promise<void> 
  * чл. 21 ОРЗД и `scripts/discover-streamers.ts` изрично отказва да го
  * презапише. Затова изтриването е отделно действие и не е препоръчителният път:
  * изтрит запис се появява пак при следващия пробег на cron-а.
+ *
+ * ПРИ ОТКАЗ ПРОФИЛЪТ СЕ ИЗЧИСТВА. Задържането на статус беше недостатъчно:
+ * името, адресът, заглавието на предаването и броят зрители оставаха в базата,
+ * докато политиката обещава „само платформата и името на канала“. Тоест
+ * обработването НЕ беше прекратено (чл. 21, ал. 3), а текстът лъжеше. Остава
+ * точно толкова, колкото прави свалянето трайно.
  */
 export async function moderateStreamerAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -238,12 +246,34 @@ export async function moderateStreamerAction(formData: FormData): Promise<void> 
   const decision = String(formData.get('decision') ?? '');
   if (!id || (decision !== 'APPROVED' && decision !== 'REJECTED' && decision !== 'PENDING')) return;
 
-  const streamer = await prisma.streamer.update({
+  const current = await prisma.streamer.findUnique({
     where: { id },
-    data: { status: decision },
     select: { platform: true, channel: true },
   });
-  await audit('streamer', `${streamer.platform}/${streamer.channel}`, decision);
+  if (!current) return;
+
+  const silenced =
+    decision === 'REJECTED'
+      ? {
+          // Каналът остава като заглушаващ запис; всичко останало си отива.
+          displayName: '',
+          profileUrl: '',
+          streamTitle: null,
+          language: null,
+          viewers: 0,
+          live: false,
+          lastLiveAt: null,
+          lastSeenAt: null,
+        }
+      : {};
+
+  await prisma.streamer.update({
+    where: { id },
+    data: { status: decision, reviewedAt: new Date(), ...silenced },
+  });
+  // Целта в дневника е каналът, не името: следата трябва да докаже решението,
+  // без да съживява данните, които току-що изтрихме.
+  await audit('streamer', `${current.platform}/${current.channel}`, decision);
   revalidatePath('/', 'layout');
 }
 
@@ -278,18 +308,31 @@ export async function addStreamerAction(formData: FormData): Promise<void> {
   const name = displayName(parsed.data.displayName ?? channel, channel);
   const url = profileUrl(parsed.data.platform, channel);
 
+  // Ръчното добавяне НЕ отменя възражение и не го „презарежда“ с данни:
+  // upsert-ът щеше да върне името и адреса върху заглушен запис, тоест да
+  // отмени точно това, което свалянето изтри. Търси се по `channelKey` — по
+  // `channel` разликата в регистъра вкарваше нов ред и възражението отпадаше.
+  const key = { platform: parsed.data.platform, channelKey: channelKey(channel) };
+  const existing = await prisma.streamer.findUnique({
+    where: { platform_channelKey: key },
+    select: { id: true, status: true },
+  });
+  if (existing?.status === 'REJECTED') {
+    await audit('streamer-add', `${parsed.data.platform}/${channel}`, 'отказано: свален по възражение');
+    return;
+  }
+
   await prisma.streamer.upsert({
-    where: { platform_channel: { platform: parsed.data.platform, channel } },
-    // Ръчното добавяне не отменя възражение: съществуващ запис получава само
-    // името и белега „ръчен“, статусът остава какъвто е бил.
-    update: { displayName: name, profileUrl: url, manual: true },
+    where: { platform_channelKey: key },
+    update: { displayName: name, profileUrl: url, manual: true, reviewedAt: new Date() },
     create: {
-      platform: parsed.data.platform,
+      ...key,
       channel,
       displayName: name,
       profileUrl: url,
       manual: true,
       status: 'APPROVED',
+      reviewedAt: new Date(),
     },
   });
 

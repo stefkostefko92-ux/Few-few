@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  channelKey,
   clampViewers,
   compareStreamers,
   groupByPlatform,
@@ -29,9 +30,46 @@ test('цял адрес, „@име“ и голо име дават ЕДИН к
   }
 });
 
-test('YouTube пази регистъра — UCxxx и ucxxx са РАЗЛИЧНИ канала', () => {
+test('YouTube пази регистъра в АДРЕСА — UCxxx и ucxxx сочат различни страници', () => {
   assert.equal(normalizeChannel('YOUTUBE', 'UCabcDEF123'), 'UCabcDEF123');
   assert.equal(normalizeChannel('YOUTUBE', 'https://www.youtube.com/@BulgarRP'), 'BulgarRP');
+});
+
+test('РЕГРЕСИЯ: ключът за уникалност НЕ различава регистър — иначе свален канал се връща', () => {
+  // Докато уникалността беше по `channel`, „UCabc“ и „ucabc“ бяха два реда:
+  // единият свален по чл. 21, другият — нов и публичен.
+  assert.equal(channelKey(normalizeChannel('YOUTUBE', 'UCabc123')!), 'ucabc123');
+  assert.equal(channelKey(normalizeChannel('YOUTUBE', 'ucABC123')!), 'ucabc123');
+  assert.equal(
+    channelKey(normalizeChannel('YOUTUBE', 'https://www.youtube.com/channel/UCabc123')!),
+    channelKey(normalizeChannel('YOUTUBE', 'ucabc123')!),
+  );
+});
+
+test('РЕГРЕСИЯ: адрес с подраздел дава СВОЯ канал, не последната част от пътя', () => {
+  // Взимаше се последната част → „twitch.tv/galaxyrp/videos“ ставаше канал
+  // „videos“, тоест линк към чужд/несъществуващ канал.
+  assert.equal(normalizeChannel('TWITCH', 'https://www.twitch.tv/galaxyrp/videos'), 'galaxyrp');
+  assert.equal(normalizeChannel('KICK', 'https://kick.com/kickbg/clips'), 'kickbg');
+  assert.equal(normalizeChannel('TWITCH', 'https://www.twitch.tv/galaxyrp/clip/AbcDef'), 'galaxyrp');
+  assert.equal(
+    normalizeChannel('YOUTUBE', 'https://www.youtube.com/channel/UCabc/streams'),
+    'UCabc',
+  );
+  assert.equal(normalizeChannel('YOUTUBE', 'https://www.youtube.com/c/BulgarRP'), 'BulgarRP');
+  assert.equal(normalizeChannel('YOUTUBE', 'https://www.youtube.com/user/BulgarRP'), 'BulgarRP');
+});
+
+test('РЕГРЕСИЯ: служебен път не става канал', () => {
+  for (const bad of [
+    'https://www.twitch.tv/videos/1234567',
+    'https://www.twitch.tv/directory/game/Grand%20Theft%20Auto%20V',
+    'https://www.youtube.com/watch',
+    'videos',
+    '@clips',
+  ]) {
+    assert.equal(normalizeChannel('TWITCH', bad), null, `прие „${bad}“`);
+  }
 });
 
 test('боклук не става канал', () => {

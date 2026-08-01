@@ -95,6 +95,10 @@ async function twitchToken(id: string, secret: string): Promise<string | null> {
         grant_type: 'client_credentials',
       }),
       cache: 'no-store',
+      // Тук по тялото пътува ТАЙНА. `fetch` по подразбиране следва пренасочване
+      // и повтаря POST-а към новия адрес — тоест едно 307 от чужда страна
+      // праща ключа където тя посочи. Отказваме пренасочването изцяло.
+      redirect: 'error',
     });
     if (!res.ok) {
       console.error(`[streamers] Twitch отказа токен: ${res.status}`);
@@ -165,6 +169,10 @@ async function kickToken(id: string, secret: string): Promise<string | null> {
         grant_type: 'client_credentials',
       }),
       cache: 'no-store',
+      // Тук по тялото пътува ТАЙНА. `fetch` по подразбиране следва пренасочване
+      // и повтаря POST-а към новия адрес — тоест едно 307 от чужда страна
+      // праща ключа където тя посочи. Отказваме пренасочването изцяло.
+      redirect: 'error',
     });
     if (!res.ok) {
       console.error(`[streamers] Kick отказа токен: ${res.status}`);

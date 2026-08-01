@@ -40,7 +40,9 @@ export function PlayersChart({
               width={8}
               height={height}
               rx={2}
-              className={value === peak ? 'fill-cyan-300' : 'fill-cyan-700'}
+              // cyan-600, не cyan-700: измерено, `#106880` дава ≈2,9:1 срещу
+              // `ink-800` — под 3:1 по 1.4.11 за нетекстово съдържание.
+              className={value === peak ? 'fill-cyan-300' : 'fill-cyan-600'}
             />
           );
         })}

@@ -23,15 +23,38 @@ export const RETENTION = {
   /** Часови снимки на посещаемостта: 90 дни. */
   snapshotDays: 90,
   /**
-   * Канали на стриймъри, невиждани на живо: 180 дни. Това са лични данни на
-   * физически лица — канал, който вече не излъчва български GTA V, няма
-   * основание да стои. Изключения (нарочни, не пропуск):
-   *  - `status = REJECTED` е ЗАПИСАНОТО ВЪЗРАЖЕНИЕ по чл. 21 ОРЗД; изтрие ли
-   *    се, cron-ът връща човека обратно до час. Пази се, докато има откриване;
-   *  - `manual` са добавените на ръка (TikTok няма откриване на живо изобщо,
-   *    тоест „не е виждан на живо“ там не значи нищо).
+   * Канали на стриймъри, невиждани на живо. Срокът е ПО ПЛАТФОРМА, не един
+   * общ, защото платформата налага свой и той бие нашия:
+   *
+   *  - **YouTube: 30 дни.** YouTube API Services Developer Policies, III.E.4.d —
+   *    данни от API-то се изтриват или опресняват най-късно на 30 календарни
+   *    дни. 180 дни щеше да е нарушение на договора, не просто щедрост.
+   *  - Twitch и Kick: 180 дни. Договорът на Twitch говори за 24-часов кеш —
+   *    сверѝ го РЪЧНО на legal.twitch.com преди пускане (страницата е
+   *    JS-рендирана и не се чете автоматично) и свали срока, ако се потвърди.
+   *
+   * Изключения (нарочни, не пропуск): `status = REJECTED` е ЗАПИСАНОТО
+   * ВЪЗРАЖЕНИЕ по чл. 21 ОРЗД — изтрие ли се, cron-ът връща човека обратно до
+   * 10 минути. Пази се, докато съществува автоматичното откриване.
    */
   streamerDays: 180,
+  youtubeStreamerDays: 30,
+  /**
+   * Ръчно добавените (TikTok) нямат жив статус, тоест „не е виждан на живо“
+   * там не значи нищо. Затова срокът тече от последното ПИПАНЕ от човек:
+   * 365 дни без потвърждение и записът пада. Без това „пазим ги, докато са
+   * актуални“ е обещание без изпълнител.
+   */
+  manualStreamerDays: 365,
+  /** Одитният дневник: 24 месеца. Той пази и канала на възразилия. */
+  auditLogDays: 730,
+  /**
+   * Броячът на опитите за вход: 24 часа — точно колкото обявява `/privacy`.
+   * Дотук нямаше изтриващ механизъм, тоест хешираните IP-та се трупаха вечно
+   * срещу обявен срок. Обещан срок без изпълнител е нарушение на чл. 5, ал. 1,
+   * б. „д“, независимо че данната е хеш.
+   */
+  loginAttemptHours: 24,
 } as const;
 
 function before(days: number, now = Date.now()): Date {
@@ -40,28 +63,61 @@ function before(days: number, now = Date.now()): Date {
 
 async function main() {
   const stale = before(RETENTION.streamerDays);
-  const [submissions, reports, reviews, snapshots, streamers] = await prisma.$transaction([
+  const staleYouTube = before(RETENTION.youtubeStreamerDays);
+  /** Общото условие „не е виждан на живо от X“ — `null` значи никога. */
+  const notLiveSince = (date: Date) => [{ lastLiveAt: null }, { lastLiveAt: { lt: date } }];
+
+  const [submissions, reports, reviews, snapshots, streamers, youtube, manual, audits, logins, sessions] =
+    await prisma.$transaction([
     prisma.submission.deleteMany({ where: { createdAt: { lt: before(RETENTION.submissionDays) } } }),
     prisma.report.deleteMany({ where: { createdAt: { lt: before(RETENTION.reportDays) } } }),
     prisma.review.deleteMany({
       where: { status: 'REJECTED', createdAt: { lt: before(RETENTION.rejectedReviewDays) } },
     }),
     prisma.serverSnapshot.deleteMany({ where: { at: { lt: before(RETENTION.snapshotDays) } } }),
-    prisma.streamer.deleteMany({
-      where: {
-        manual: false,
-        status: { not: 'REJECTED' },
-        createdAt: { lt: stale },
-        // Никога виждан на живо ИЛИ последно на живо преди срока.
-        OR: [{ lastLiveAt: null }, { lastLiveAt: { lt: stale } }],
-      },
-    }),
-  ]);
+      prisma.streamer.deleteMany({
+        where: {
+          manual: false,
+          platform: { not: 'YOUTUBE' },
+          status: { not: 'REJECTED' },
+          createdAt: { lt: stale },
+          OR: notLiveSince(stale),
+        },
+      }),
+      // YouTube носи своя, по-кратък срок по договора на платформата.
+      prisma.streamer.deleteMany({
+        where: {
+          manual: false,
+          platform: 'YOUTUBE',
+          status: { not: 'REJECTED' },
+          createdAt: { lt: staleYouTube },
+          OR: notLiveSince(staleYouTube),
+        },
+      }),
+      // Ръчните: срокът тече от последното пипане от човек, не от ефира.
+      prisma.streamer.deleteMany({
+        where: {
+          manual: true,
+          status: { not: 'REJECTED' },
+          updatedAt: { lt: before(RETENTION.manualStreamerDays) },
+        },
+      }),
+      prisma.auditLog.deleteMany({ where: { at: { lt: before(RETENTION.auditLogDays) } } }),
+      prisma.loginAttempt.deleteMany({
+        where: { at: { lt: new Date(Date.now() - RETENTION.loginAttemptHours * 3_600_000) } },
+      }),
+      // Изтеклите сесии не са срок в политиката, а хигиена: мъртъв ред с хеш
+      // на токен няма за какво да стои.
+      prisma.adminSession.deleteMany({ where: { expiresAt: { lt: new Date() } } }),
+    ]);
 
   console.log(
     `Изчистени: ${submissions.count} заявки · ${reports.count} сигнала · ` +
       `${reviews.count} отхвърлени ревюта · ${snapshots.count} снимки · ` +
-      `${streamers.count} неактивни канала.`,
+      `${streamers.count + youtube.count + manual.count} канала ` +
+      `(${youtube.count} YouTube по 30-дневното правило, ${manual.count} ръчни) · ` +
+      `${audits.count} записа от дневника · ${logins.count} опита за вход · ` +
+      `${sessions.count} изтекли сесии.`,
   );
 }
 

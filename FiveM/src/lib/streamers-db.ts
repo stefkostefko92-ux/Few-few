@@ -14,6 +14,14 @@ export const publicStreamerSelect = {
   viewers: true,
   streamTitle: true,
   lastLiveAt: true,
+  /**
+   * Не е козметично поле. `streamTitle` е СВОБОДЕН ЧУЖД ТЕКСТ от платформата и
+   * се показва само след като човек е гледал записа — иначе заглавие на чуждо
+   * предаване (обидно, незаконно или с лични данни на трети хора) се публикува
+   * на наша страница, без никой да го е видял. Ние сме издателят тук, не
+   * посредник: чл. 6 DSA не пази съдържание, което сами сме избрали и качили.
+   */
+  reviewedAt: true,
 } satisfies Prisma.StreamerSelect;
 
 export type PublicStreamer = Prisma.StreamerGetPayload<{ select: typeof publicStreamerSelect }>;

@@ -35,7 +35,7 @@ export const en: Dictionary = {
     report: 'Report',
     discord: 'Community Discord',
     disclaimer:
-      'An independent project. Not affiliated with Rockstar Games, Take-Two Interactive Software, Inc. or Cfx.re. GTA V, Grand Theft Auto and Rockstar Games are trademarks of Take-Two Interactive Software, Inc.; FiveM and Cfx.re are trademarks of their respective owners. They are used here solely to identify the platform this content refers to.',
+      'An independent project. Not affiliated with Rockstar Games, Take-Two Interactive Software, Inc. or Cfx.re. GTA V, Grand Theft Auto and Rockstar Games are trademarks of Take-Two Interactive Software, Inc.; FiveM and Cfx.re are trademarks of their respective owners; Twitch, Kick, YouTube and TikTok are trademarks of their respective owners. They are used here solely to identify the platform this content refers to.',
   },
   home: {
     title: 'Bulgarian FiveM RP servers — live list with status and players',
@@ -174,6 +174,7 @@ export const en: Dictionary = {
     optOut:
       'Write to us and the channel is removed within 72 hours — we record the objection so automatic discovery cannot bring it back. This is your right under Art. 21 GDPR and we do not ask for a reason.',
     optOutCta: 'Write to us',
+    optOutSubject: 'Objection under Art. 21 GDPR — remove my channel from FiveM BG',
     privacyCta: 'How we process this data',
   },
   news: {

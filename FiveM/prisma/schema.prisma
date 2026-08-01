@@ -234,8 +234,13 @@ enum StreamPlatform {
 model Streamer {
   id       String         @id @default(cuid())
   platform StreamPlatform
-  /// Идентификаторът на канала в платформата — малки букви, без „@“ и без URL.
+  /// Идентификаторът на канала в платформата, без „@“ и без URL. Регистърът се
+  /// ПАЗИ, защото при YouTube `UCabc` и `ucabc` са различни адреси.
   channel  String
+  /// Същото, но винаги с малки букви — ТОВА е ключът за уникалност. Ако
+  /// уникалността беше по `channel`, свален по чл. 21 канал можеше да се върне
+  /// с друг регистър на буквите: нов ред, нов статус, отпаднало възражение.
+  channelKey String
   /// Показваното име, както лицето само го е задало.
   displayName String
   /// Адресът на канала. Строи се от `channel`, но се пази, защото TikTok се
@@ -248,6 +253,10 @@ model Streamer {
   status ModerationStatus @default(PENDING)
   /// Добавен на ръка от панела (TikTok няма публично откриване).
   manual Boolean @default(false)
+  /// Кога ЧОВЕК последно е гледал този запис. Не е козметика: свободният чужд
+  /// текст (`streamTitle`) се показва само след това — иначе заглавие на чуждо
+  /// предаване влиза на наша страница, без никой да го е видял.
+  reviewedAt DateTime?
 
   // ── Жив статус (пише се само от scripts/discover-streamers.ts) ────────────
   live       Boolean @default(false)
@@ -260,7 +269,7 @@ model Streamer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([platform, channel])
+  @@unique([platform, channelKey])
   @@index([status, live, viewers])
 }
 

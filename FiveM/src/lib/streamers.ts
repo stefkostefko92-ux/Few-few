@@ -20,31 +20,77 @@ export const PLATFORM_BADGE: Record<StreamPlatformId, string> = {
 };
 
 /**
+ * Части от пътя, които НЕ са канал. Без този списък
+ * `https://www.twitch.tv/videos/12345` даваше канал „12345“, а
+ * `https://kick.com/някой/clips` — канал „clips“: тоест въведеш ли адрес на
+ * клип или видео, в базата влизаше линк към ЧУЖД или несъществуващ канал.
+ */
+const NOT_A_CHANNEL = new Set([
+  'videos',
+  'video',
+  'clips',
+  'clip',
+  'directory',
+  'watch',
+  'live',
+  'shorts',
+  'about',
+  'streams',
+  'schedule',
+  'featured',
+  'playlists',
+  'community',
+]);
+
+/**
  * Нормализира канала. Панелът приема каквото собственикът е копирал — цял
  * адрес, „@handle“ или голо име — и трите трябва да дадат ЕДИН ключ, иначе
- * `@@unique([platform, channel])` пуска дубликати на един и същи човек.
+ * `@@unique([platform, channelKey])` пуска дубликати на един и същи човек.
+ *
+ * Взима се ПЪРВАТА смислена част от пътя, не последната: каналът стои най-отпред
+ * (`twitch.tv/<канал>/videos`), а последната част е подраздел.
  */
 export function normalizeChannel(platform: StreamPlatformId, raw: string): string | null {
   let value = raw.trim();
   if (value === '') return null;
 
-  // Цял адрес → последната смислена част от пътя.
   const url = value.match(/^https?:\/\/[^/]+\/(.+)$/i);
   if (url) {
     const path = url[1].split(/[?#]/)[0].replace(/\/+$/, '');
     const parts = path.split('/').filter(Boolean);
-    // youtube.com/@handle, youtube.com/c/name, youtube.com/channel/UC…
-    value = parts[parts.length - 1] ?? '';
+    if (parts.length === 0) return null;
+
+    // youtube.com/channel/UC…, /c/name, /user/name — там каналът е ВТОРИ.
+    const first = parts[0].toLowerCase();
+    const picked =
+      platform === 'YOUTUBE' && ['channel', 'c', 'user'].includes(first) ? parts[1] : parts[0];
+    if (!picked) return null;
+    if (NOT_A_CHANNEL.has(picked.toLowerCase().replace(/^@/, ''))) return null;
+    value = picked;
   }
 
   value = value.replace(/^@/, '').trim();
   if (value === '') return null;
+  if (NOT_A_CHANNEL.has(value.toLowerCase())) return null;
 
-  // YouTube ID-тата различават главни от малки букви (UCxxx ≠ ucxxx), затова
-  // само там регистърът се пази. Другите платформи са case-insensitive.
-  const normalized = platform === 'YOUTUBE' ? value : value.toLowerCase();
-  if (!/^[A-Za-z0-9._-]{2,64}$/.test(normalized)) return null;
-  return normalized;
+  // Регистърът се ПАЗИ (за YouTube `UCxxx` ≠ `ucxxx` са различни канала и
+  // адресът трябва да е точен), но уникалността се проверява по `channelKey`
+  // — виж по-долу защо това не е едно и също.
+  if (!/^[A-Za-z0-9._-]{2,64}$/.test(value)) return null;
+  return platform === 'YOUTUBE' ? value : value.toLowerCase();
+}
+
+/**
+ * Ключът за уникалност и за ЗАГЛУШАВАНЕТО. Винаги малки букви, за всички
+ * платформи — включително YouTube, където адресът пази регистъра.
+ *
+ * Разликата не е педантизъм: докато уникалността беше по `channel`, свален по
+ * чл. 21 канал `UCabc` можеше да бъде вкаран отново като `ucabc` — нов ред,
+ * нов статус, и възражението тихо отпада. Ключът трябва да е по-груб от
+ * адреса, за да не може разцепването на регистъра да заобиколи свалянето.
+ */
+export function channelKey(channel: string): string {
+  return channel.toLowerCase();
 }
 
 /** Адресът на канала. TikTok също се сглобява, но там входът е ръчен. */

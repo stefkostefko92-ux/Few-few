@@ -150,6 +150,40 @@
 | `tiktok.png` | има го | секция TikTok |
 | `kick.png` | **липсва** | секция Kick — единственото, което спира страницата да е пълна |
 
+## 8. Растерните значки са изрязани с грешно отместване — за прерисуване
+
+**Това е най-голямото открито нещо и е в доставения пакет, не при вграждането.**
+Около 45 от 81 файла в `public/icons/badges/` съдържат съседната икона от общия
+лист, често заедно с текстовия ѝ етикет. Проверено файл по файл срещу
+`Complete_Icon_Pack` — същите крайове са и в архива, тоест грешката е при
+рязането на листа.
+
+**Спрени от употреба (в `badges/_broken/`, виж README-то там).** Тези показват
+логото на ЧУЖДА марка под чуждо име — това не е козметика:
+`twitch` · `tiktok` · `youtube` · `facebook` · `instagram` · `x` · `reddit` ·
+`github` · `patreon` · `cfx`. Целият ред е изместен с една клетка.
+`steam.png` и `discord.png` от същия ред са верни и работят.
+
+**В употреба, но с грозен изрез** (декоративни са — вървят до текст, `alt=""`):
+`18plus` · `arrow-left` · `arrow-right` · `arrow-up` · `calendar` · `close` ·
+`court` · `crafting` · `discovered` · `download` · `drift` · `economy` ·
+`gangs` · `heavy-rp` · `housing` · `jobs` · `light-rp` · `medic` · `menu` ·
+`notification` · `offline-badge` · `online-badge` · `police` · `premium` ·
+`profile` · `promoted` · `racing` · `search` · `settings` · `slots` ·
+`success` · `transport` · `tuning` · `upload` · `verified` · `verified-badge` ·
+`warning`
+
+**Верни и готови** (за сверка при прерисуване): `about` · `boost` · `contact` ·
+`discord` · `donate` · `esx` · `faq` · `fivem` · `hidden` · `home` · `hot` ·
+`logo` · `logo-mono` · `new` · `offline` · `online` · `open` · `ox-core` ·
+`players` · `qbcore` · `qbox` · `rules` · `server` · `staff` · `standalone` ·
+`steam` · `support` · `team` · `unknown` · `unreachable` · `vip` · `whitelist` ·
+`18plus-badge` · `arrow-down`
+
+Изискването е същото като за останалите: 256×256, прозрачен фон, **само** своята
+икона в кадъра, **без текстов етикет** върху изображението. Сложиш ли поправен
+файл на мястото му, вдига се без промяна по кода.
+
 ## Кое НЕ ти трябва
 
 - Икона за самия маскот — вече е код (`src/components/mascot/`), в три нива.

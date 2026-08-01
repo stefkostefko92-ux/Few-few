@@ -29,6 +29,7 @@ const bg: LegalSet = {
           'Ревю: оценка, текст и избран псевдоним. Основание: чл. 6, ал. 1, б. „е“. Не искаме име, имейл или IP адрес към ревюто. Публикуваните се пазят, докато сървърът е в директорията; отхвърлените се изтриват след 6 месеца.',
           'Сигнал по DSA: име, имейл, адрес на съдържанието и обосновка. Основание: чл. 6, ал. 1, б. „в“ (правно задължение по Регламент (ЕС) 2022/2065). Срок: 24 месеца.',
           'Технически дневник на уеб сървъра: IP адрес, време, заявен адрес — само за сигурност и диагностика, чл. 6, ал. 1, б. „е“. Срок: 14 дни. Този дневник не се свързва с конкретно ревю или заявка.',
+          'Брояч на опитите за вход в администраторския панел: НЕОБРАТИМ ХЕШ на IP адреса (не самият адрес), време и дали опитът е успешен. Единствената му цел е таванът на опитите да е по подател, а не общ — общият таван позволява един човек да заключи собственика. Основание: чл. 6, ал. 1, б. „е“. Срок: 24 часа, изтрива се автоматично.',
         ],
       },
       { h: 'Кой още вижда данните' },
@@ -65,12 +66,23 @@ const bg: LegalSet = {
           'Източник: публичните интерфейси на Twitch (helix/streams), Kick (public/v1/livestreams) и YouTube (Data API v3), както и ръчно въвеждане от нас за TikTok.',
           'Основание: чл. 6, ал. 1, б. „е“ ОРЗД — законен интерес на общността да намери български roleplay съдържание, и на самите стриймъри да бъдат намерени. Обработваме само публично излъчена професионална изява, не поведение в частния живот.',
           'Не сваляме и не вграждаме профилни снимки. Причината е техническа и е в твоя полза: вградената снимка кара браузъра на всеки посетител да прави заявка към чуждия CDN, тоест платформата научава кой чете тази страница.',
-          'Срок: 180 дни след последното засечено излъчване, след което записът се изтрива автоматично. Ръчно добавените канали (TikTok) се пазят, докато са актуални.',
-          'Не се прави профилиране и няма автоматизирано решение по чл. 22 ОРЗД. Канал, чийто език платформата не обявява като български, изобщо не се публикува автоматично — минава през човек.',
+          'Срок: 180 дни след последното засечено излъчване. За каналите от YouTube срокът е 30 дни — толкова допускат условията за разработчици на самата платформа (III.E.4.г), а те са по-строги от нашите. Ръчно добавените канали (TikTok) падат 365 дни след последната ни проверка. Изтриването е автоматично, всяка нощ.',
+          'Не се прави профилиране и няма автоматизирано решение по чл. 22 ОРЗД. Канал, чийто език платформата не обявява като български, изобщо не се публикува автоматично — минава през човек. Заглавието на текущото предаване се показва едва след като човек е видял записа.',
+          'Данните от YouTube идват през YouTube API Services. За тях важи и политиката за поверителност на Google: https://policies.google.com/privacy',
         ],
       },
+      { h: 'Защо интересът натежава — преценката, накратко' },
       {
-        p: 'Право на възражение (чл. 21 ОРЗД): пиши ни и махаме канала до 72 часа, без да искаме обяснение. Заедно с това записваме възражението — иначе автоматичното откриване би върнало канала обратно до час. Този запис съдържа само платформата и името на канала и съществува единствено за да те държи вън от списъка; той е и мярката по чл. 5, ал. 1, б. „е“, която прави свалянето трайно.',
+        p: 'Законният интерес по чл. 6, ал. 1, б. „е“ не е декларация, а преценка, затова е тук. ЗА: излъчването е публична професионална изява, направена нарочно видима, и списък кой излъчва български roleplay е в интерес и на зрителите, и на самите стриймъри. ПРОТИВ: данните не идват от лицето, а страницата ги събира на едно място и я подаваме за индексиране — това усилва видимостта отвъд разумните очаквания на един стриймър (Съобр. 47). Затова обхватът е стеснен до публично излъченото, няма аватари, няма профилиране, няма исторически архив на предаванията, а свалянето е безусловно и без обяснение. Ако си непълнолетен, кажи ни — при дете тежестта пада на другата страна (Съобр. 38) и махаме канала веднага.',
+      },
+      {
+        p: 'Не уведомяваме всеки стриймър поотделно: каналите се откриват автоматично и нямаме адрес за връзка с тях. Информацията се предоставя публично тук, което чл. 14, ал. 5, б. „б“ допуска при несъразмерни усилия — а самата секция е налична преди първата публикация и при всяко нейно четене, тоест в срока по чл. 14, ал. 3. За ръчно добавените канали (TikTok) дерогацията е най-слаба, затова там се стремим да пишем и лично.',
+      },
+      {
+        p: 'Право на възражение (чл. 21 ОРЗД): пиши ни на privacy@carbonstealth.eu и махаме канала до 72 часа в работни дни, без да искаме обяснение. Заедно с това запазваме минимален ЗАГЛУШАВАЩ запис — само платформата и името на канала — защото без него автоматичното откриване връща канала до 10 минути. Показваното име, адресът, заглавието на предаването и броят зрители се изтриват в момента на свалянето. Основанието на заглушаващия запис е чл. 6, ал. 1, б. „в“ във връзка с чл. 21, ал. 3 (изпълнение на самото възражение) и чл. 5, ал. 2 (отчетност); пази се, докато съществува автоматичното откриване.',
+      },
+      {
+        p: 'Отделно водим одитен дневник кой какво е решил (действие, засегнат канал, дата) — включително свалянията. Основание: чл. 6, ал. 1, б. „в“ и б. „е“ (отчетност и защита от произволна модерация). Срок: 24 месеца.',
       },
       { h: 'Твоите права' },
       {
@@ -106,6 +118,13 @@ const bg: LegalSet = {
       },
       {
         p: 'При отказ или сваляне на листинг изпращаме на подадения имейл мотивирано решение по чл. 17 от Регламент (ЕС) 2022/2065: какво е ограничението и обхватът му, фактите и обстоятелствата, дали е ползвано автоматизирано средство, кое правило или законово основание е приложено и как може да се оспори решението — с отговор до нас и с право на жалба до Комисията за регулиране на съобщенията като координатор на цифровите услуги и до съда.',
+      },
+      { h: 'Стриймъри' },
+      {
+        p: 'Страницата „Стриймъри“ се пълни АВТОМАТИЧНО от официалните интерфейси на Twitch, Kick и YouTube; каналите от TikTok се добавят на ръка. Тук ние сме издателят, не посредник — не хостваме подадено чуждо съдържание, а избираме какво да покажем. Затова: публично автоматично влиза само канал, чийто език самата платформа е обявила за български; заглавието на текущото предаване (свободен чужд текст) се показва едва след като човек е видял записа; всичко останало чака преглед. Канал се сваля по искане до 72 часа в работни дни, без обяснение — виж „Стриймъри“ в политиката за поверителност.',
+      },
+      {
+        p: 'Twitch, Kick, YouTube и TikTok са марки на съответните им притежатели. Употребата на имената и знаците им тук е само за обозначаване на платформата, на която се излъчва; проектът не е свързан с тях и не е одобрен от тях. Данните от YouTube идват през YouTube API Services.',
       },
       { h: 'Ревюта' },
       {
@@ -161,6 +180,7 @@ const en: LegalSet = {
           'Review: rating, text and chosen nickname. Basis: Art. 6(1)(f). We do not ask for a name, email or IP address with a review. Published reviews are kept while the server is listed; rejected ones are deleted after 6 months.',
           'DSA report: name, email, the content’s address and the explanation. Basis: Art. 6(1)(c) (legal obligation under Regulation (EU) 2022/2065). Retention: 24 months.',
           'Web server technical log: IP address, time, requested path — for security and diagnostics only, Art. 6(1)(f). Retention: 14 days. This log is not linked to a specific review or submission.',
+          'Admin panel login counter: an IRREVERSIBLE HASH of the IP address (not the address itself), the time and whether the attempt succeeded. Its only purpose is to make the attempt limit per-sender rather than global — a global limit lets one person lock the owner out. Basis: Art. 6(1)(f). Retention: 24 hours, deleted automatically.',
         ],
       },
       { h: 'Who else sees the data' },
@@ -197,12 +217,23 @@ const en: LegalSet = {
           'Source: the public interfaces of Twitch (helix/streams), Kick (public/v1/livestreams) and YouTube (Data API v3), plus manual entry by us for TikTok.',
           'Basis: Art. 6(1)(f) GDPR — the community’s legitimate interest in finding Bulgarian roleplay content, and the streamers’ own interest in being found. We process only publicly broadcast professional activity, not private-life behaviour.',
           'We neither download nor embed profile pictures. The reason is technical and in your favour: an embedded picture makes every visitor’s browser call the third-party CDN, which tells the platform who reads this page.',
-          'Retention: 180 days after the last detected broadcast, after which the record is deleted automatically. Manually added channels (TikTok) are kept while they remain current.',
-          'No profiling and no automated decision under Art. 22 GDPR. A channel whose language the platform does not declare as Bulgarian is never published automatically — a person reviews it.',
+          'Retention: 180 days after the last detected broadcast. For YouTube channels it is 30 days — that is what the platform’s own developer policies allow (III.E.4.d), and they are stricter than ours. Manually added channels (TikTok) are dropped 365 days after our last check. Deletion is automatic, every night.',
+          'No profiling and no automated decision under Art. 22 GDPR. A channel whose language the platform does not declare as Bulgarian is never published automatically — a person reviews it. The current stream title is shown only once a person has looked at the record.',
+          'Data from YouTube comes through the YouTube API Services. Google’s privacy policy applies to it as well: https://policies.google.com/privacy',
         ],
       },
+      { h: 'Why the interest prevails — the assessment, in short' },
       {
-        p: 'Right to object (Art. 21 GDPR): write to us and the channel is removed within 72 hours, no reason asked. Along with that we record the objection — otherwise automatic discovery would bring the channel back within the hour. That record holds only the platform and the channel name and exists solely to keep you off the list; it is also the Art. 5(1)(f) measure that makes the removal durable.',
+        p: 'A legitimate interest under Art. 6(1)(f) is an assessment, not a declaration, so here it is. FOR: broadcasting is public professional activity, deliberately made visible, and a list of who streams Bulgarian roleplay serves both viewers and the streamers themselves. AGAINST: the data does not come from the person, this page gathers it in one place, and we submit that page for indexing — which amplifies visibility beyond a streamer’s reasonable expectations (Recital 47). That is why the scope is narrowed to what was publicly broadcast, with no avatars, no profiling and no historical archive of broadcasts, and why removal is unconditional and needs no reason. If you are a minor, tell us — where a child is concerned the balance tips the other way (Recital 38) and we remove the channel immediately.',
+      },
+      {
+        p: 'We do not notify each streamer individually: channels are discovered automatically and we have no contact address for them. The information is instead made publicly available here, which Art. 14(5)(b) permits where individual notice would involve disproportionate effort — and this section exists before the first publication and at every reading of it, i.e. within the period set by Art. 14(3). For manually added channels (TikTok) the derogation is weakest, so there we also try to write personally.',
+      },
+      {
+        p: 'Right to object (Art. 21 GDPR): write to privacy@carbonstealth.eu and the channel is removed within 72 hours on working days, no reason asked. Along with that we keep a minimal SUPPRESSION record — the platform and the channel name only — because without it automatic discovery brings the channel back within 10 minutes. The display name, URL, stream title and viewer count are erased at the moment of removal. The suppression record rests on Art. 6(1)(c) in conjunction with Art. 21(3) (giving effect to the objection itself) and Art. 5(2) (accountability); it is kept for as long as automatic discovery exists.',
+      },
+      {
+        p: 'Separately we keep an audit log of who decided what (action, affected channel, date) — removals included. Basis: Art. 6(1)(c) and (f) (accountability and protection against arbitrary moderation). Retention: 24 months.',
       },
       { h: 'Your rights' },
       {
@@ -238,6 +269,13 @@ const en: LegalSet = {
       },
       {
         p: 'If a listing is refused or removed, we send a statement of reasons to the email provided, under Art. 17 of Regulation (EU) 2022/2065: the restriction and its scope, the facts and circumstances, whether automated means were used, which rule or legal ground was applied, and how the decision can be challenged — by replying to us, and with the right to complain to the Bulgarian Communications Regulation Commission as Digital Services Coordinator and to seek judicial redress.',
+      },
+      { h: 'Streamers' },
+      {
+        p: 'The “Streamers” page fills AUTOMATICALLY from the official interfaces of Twitch, Kick and YouTube; TikTok channels are added by hand. Here we are the publisher, not an intermediary — we do not host submitted third-party content, we choose what to show. Therefore: only a channel whose language the platform itself has declared Bulgarian is published automatically; the current stream title (free third-party text) appears only once a person has seen the record; everything else waits for review. A channel is removed on request within 72 hours on working days, no reason asked — see “Streamers” in the privacy policy.',
+      },
+      {
+        p: 'Twitch, Kick, YouTube and TikTok are trademarks of their respective owners. Their names and marks are used here solely to identify the platform being broadcast on; the project is not affiliated with them and is not endorsed by them. Data from YouTube comes through the YouTube API Services.',
       },
       { h: 'Reviews' },
       {

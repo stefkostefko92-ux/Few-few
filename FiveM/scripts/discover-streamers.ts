@@ -23,7 +23,12 @@
 import { PrismaClient } from '@prisma/client';
 
 import { DISCOVERY, type FoundStream } from '../src/lib/streamers-query';
-import { isStreamPlatform, STREAM_PLATFORMS, type StreamPlatformId } from '../src/lib/streamers';
+import {
+  channelKey,
+  isStreamPlatform,
+  STREAM_PLATFORMS,
+  type StreamPlatformId,
+} from '../src/lib/streamers';
 
 const prisma = new PrismaClient();
 
@@ -39,18 +44,19 @@ function requested(argv: string[]): string[] {
 }
 
 async function upsert(found: FoundStream, now: Date): Promise<'created' | 'updated' | 'blocked'> {
-  const where = { platform_channel: { platform: found.platform, channel: found.channel } };
+  // Търсенето е по `channelKey` (малки букви): разлика само в регистъра НЕ бива
+  // да прави нов ред, иначе свален по чл. 21 канал се връща под друго изписване.
+  const key = { platform: found.platform, channelKey: channelKey(found.channel) };
+  const where = { platform_channelKey: key };
   const existing = await prisma.streamer.findUnique({
     where,
     select: { id: true, status: true },
   });
 
-  // Възразилият остава свален. Обновява се само времето на последно виждане —
-  // за да е видно в панела, че блокът още работи срещу жив канал.
-  if (existing?.status === 'REJECTED') {
-    await prisma.streamer.update({ where, data: { lastSeenAt: now } });
-    return 'blocked';
-  }
+  // Възразилият остава свален и НИЩО не се записва по него — нито времето на
+  // последно виждане. Заглушаващият запис е платформа + канал; всяко поле
+  // отгоре е обработване, което чл. 21, ал. 3 изисква да е прекратено.
+  if (existing?.status === 'REJECTED') return 'blocked';
 
   const live = {
     displayName: found.displayName,
@@ -71,7 +77,7 @@ async function upsert(found: FoundStream, now: Date): Promise<'created' | 'updat
 
   await prisma.streamer.create({
     data: {
-      platform: found.platform,
+      ...key,
       channel: found.channel,
       status: found.declaredBulgarian ? 'APPROVED' : 'PENDING',
       manual: false,
@@ -108,9 +114,9 @@ async function main() {
     }
 
     // Всичко от тази платформа, което не е в партидата, слиза от „на живо“.
-    const seen = found.map((stream) => stream.channel);
+    const seen = found.map((stream) => channelKey(stream.channel));
     const offline = await prisma.streamer.updateMany({
-      where: { platform: platform as StreamPlatformId, live: true, channel: { notIn: seen } },
+      where: { platform: platform as StreamPlatformId, live: true, channelKey: { notIn: seen } },
       data: { live: false, viewers: 0, streamTitle: null },
     });
 

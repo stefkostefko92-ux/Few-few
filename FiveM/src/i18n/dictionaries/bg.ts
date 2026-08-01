@@ -32,7 +32,7 @@ export const bg = {
     report: 'Сигнал',
     discord: 'Discord на общността',
     disclaimer:
-      'Независим проект. Не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или Cfx.re. GTA V, Grand Theft Auto и Rockstar Games са марки на Take-Two Interactive Software, Inc.; FiveM и Cfx.re са марки на съответните им притежатели. Употребата им тук е само за обозначаване на платформата, за която се отнася съдържанието.',
+      'Независим проект. Не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или Cfx.re. GTA V, Grand Theft Auto и Rockstar Games са марки на Take-Two Interactive Software, Inc.; FiveM и Cfx.re са марки на съответните им притежатели; Twitch, Kick, YouTube и TikTok са марки на съответните им притежатели. Употребата им тук е само за обозначаване на платформата, за която се отнася съдържанието.',
   },
   home: {
     title: 'Български FiveM RP сървъри — жив списък със статус и играчи',
@@ -172,6 +172,7 @@ export const bg = {
     optOut:
       'Пиши ни и махаме канала до 72 часа — записваме възражението, така че автоматичното откриване да не те върне обратно. Това е право по чл. 21 ОРЗД и не искаме обяснение.',
     optOutCta: 'Пиши ни',
+    optOutSubject: 'Възражение по чл. 21 ОРЗД — свалете канала ми от FiveM BG',
     privacyCta: 'Как обработваме тези данни',
   },
   news: {

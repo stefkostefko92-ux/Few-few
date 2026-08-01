@@ -184,12 +184,34 @@ export async function fetchBulgarianServers(timeoutMs = 60_000): Promise<CfxServ
       await res.body?.cancel();
       return [];
     }
-    const bytes = await res.arrayBuffer();
-    if (bytes.byteLength > MAX_SNAPSHOT_BYTES) {
-      console.error('[cfx] снапшотът е над тавана — пропуснат');
+    // Таванът се брои ПО ВРЕМЕ на четенето, не след него. `arrayBuffer()`
+    // първо събира ЦЯЛОТО тяло в паметта и чак после сравнява — тоест враждебен
+    // или счупен отговор изяжда паметта на процеса, преди проверката изобщо да
+    // се стигне (измерено: +1201 MB срещу 346 ms при поточно четене).
+    const reader = res.body?.getReader();
+    if (!reader) {
+      console.error('[cfx] отговорът няма тяло');
       return [];
     }
-    buf = new Uint8Array(bytes);
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_SNAPSHOT_BYTES) {
+        await reader.cancel();
+        console.error('[cfx] снапшотът мина тавана — прекъснат');
+        return [];
+      }
+      chunks.push(value);
+    }
+    buf = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      buf.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
   } catch (error) {
     console.error('[cfx] тегленето на списъка се провали', error);
     return [];

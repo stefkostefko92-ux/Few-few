@@ -5,6 +5,7 @@ import { Icon } from '@/components/Icon';
 import { getDictionary } from '@/i18n';
 import { isLocale } from '@/i18n/config';
 import { breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { PUBLISHER } from '@/lib/site';
 import { PLATFORM_BADGE, type StreamPlatformId } from '@/lib/streamers';
 import { listPublicStreamers, streamerCounts, type PublicStreamer } from '@/lib/streamers-db';
 
@@ -88,13 +89,16 @@ export default async function StreamersPage({ params }: Props) {
         <h2 className="mt-5 text-lg font-medium text-silver-100">{t.streamers.optOutTitle}</h2>
         <p className="mt-2 text-sm text-silver-400">{t.streamers.optOut}</p>
         <p className="mt-3 flex flex-wrap gap-4 text-sm">
-          <Link
-            href={`/${locale}/contact`}
+          {/* ПРЯК `mailto`, не линк към „Контакти“: чл. 12(2) иска пътят за
+              упражняване на право да е УЛЕСНЕН, а страницата с контакти беше
+              задънена — рендира само текстови блокове, без нито един адрес. */}
+          <a
+            href={`mailto:${PUBLISHER.emailPrivacy}?subject=${encodeURIComponent(t.streamers.optOutSubject)}`}
             className="flex items-center gap-1.5 text-cyan-300 underline underline-offset-2"
           >
             <Icon group="ui" name="flag" size={15} />
-            {t.streamers.optOutCta}
-          </Link>
+            {t.streamers.optOutCta} — {PUBLISHER.emailPrivacy}
+          </a>
           <Link
             href={`/${locale}/privacy`}
             className="flex items-center gap-1.5 text-cyan-300 underline underline-offset-2"
@@ -167,7 +171,8 @@ function StreamerCard({
         )}
       </p>
 
-      {streamer.streamTitle && (
+      {/* Заглавието излиза само след ЧОВЕШКИ преглед — виж `publicStreamerSelect`. */}
+      {streamer.reviewedAt && streamer.streamTitle && (
         <p className="mt-2 line-clamp-2 text-sm text-silver-400">{streamer.streamTitle}</p>
       )}
 
