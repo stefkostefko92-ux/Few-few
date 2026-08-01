@@ -86,7 +86,9 @@ export function pageMetadata({
       title,
       description,
       url,
-      images: [{ url: absoluteUrl('/brand/logo.png'), width: 1280, height: 324, alt: SITE_NAME }],
+      // Специална OG карта 1200×630: логото (1280×324) е твърде широко и
+      // тясно — при споделяне се реже отгоре и отдолу.
+      images: [{ url: absoluteUrl('/brand/og-default.png'), width: 1200, height: 630, alt: SITE_NAME }],
     },
     twitter: { card: 'summary_large_image', title, description },
   };
@@ -112,7 +114,7 @@ export function siteJsonLd(locale: Locale) {
         '@id': `${SITE_URL}/#organization`,
         name: SITE_NAME,
         url: SITE_URL,
-        logo: absoluteUrl('/brand/logo.png'),
+        logo: absoluteUrl('/brand/logo-square.png'),
         // `sameAs` е сигналът, по който търсачките свързват сайта с профилите
         // му. Досега липсваше, защото нямаше какво да сочи.
         sameAs: [DISCORD_INVITE],

@@ -36,6 +36,7 @@ export async function generateMetadata({
     applicationName: SITE_NAME,
     authors: [{ name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' }],
     publisher: 'Carbon Stealth VCC',
+    icons: { apple: '/brand/apple-touch-icon.png' },
   };
 }
 
