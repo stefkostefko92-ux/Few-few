@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { averageRating, isFeatured } from '../rating';
+import { averageRating, compareServers, isFeatured } from '../rating';
 import { BASE_KEYWORDS, faqJsonLd, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
 
 test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“ — на ВСЕКИ език', () => {
@@ -64,4 +64,27 @@ test('промотирането изтича', () => {
   assert.equal(isFeatured({ featuredUntil: new Date('2026-01-11T00:00:00Z') }, now), true);
   assert.equal(isFeatured({ featuredUntil: new Date('2026-01-09T00:00:00Z') }, now), false);
   assert.equal(isFeatured({ featuredUntil: null }, now), false);
+});
+
+test('изтекла промоция НЕ държи ранг (недеклариран платен ранг)', () => {
+  // Регресия: подредбата беше само в SQL (`featuredUntil DESC`), който вдига и
+  // изтеклите. Резултатът: изтекъл спонсор стои над безплатен сървър със 180
+  // играчи, но БЕЗ значка „промотиран“ — платен ранг, който не е обявен.
+  const now = new Date('2026-08-01T00:00:00Z');
+  const expired = {
+    featuredUntil: new Date('2026-07-01T00:00:00Z'),
+    online: false,
+    players: 0,
+    name: 'Изтекъл',
+  };
+  const free = { featuredUntil: null, online: true, players: 180, name: 'Безплатен' };
+  const active = {
+    featuredUntil: new Date('2026-09-01T00:00:00Z'),
+    online: true,
+    players: 3,
+    name: 'Активен',
+  };
+
+  const order = [expired, free, active].sort((a, b) => compareServers(a, b, now)).map((s) => s.name);
+  assert.deepEqual(order, ['Активен', 'Безплатен', 'Изтекъл']);
 });

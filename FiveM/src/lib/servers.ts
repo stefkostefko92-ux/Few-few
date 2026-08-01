@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 import { prisma } from './db';
+import { compareServers } from './rating';
 
 /** Публичните полета на сървър — нищо повече не напуска базата. */
 export const publicServerSelect = {
@@ -32,7 +33,7 @@ export type ServerFilter = { framework?: PublicServer['framework']; whitelist?: 
 
 export async function listPublicServers(filter: ServerFilter = {}): Promise<PublicServer[]> {
   try {
-    return await prisma.server.findMany({
+    const rows = await prisma.server.findMany({
       where: {
         status: 'APPROVED',
         ...(filter.framework ? { framework: filter.framework } : {}),
@@ -50,6 +51,10 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
       ],
       take: 200,
     });
+    // Крайната подредба е в `compareServers`: SQL-ът не може да изрази
+    // „промотиран, но само докато е валидно“, а `featuredUntil DESC` вдига и
+    // изтеклите — с ранг, но без значка.
+    return rows.sort((a, b) => compareServers(a, b));
   } catch (error) {
     console.error('[servers] списъкът не се прочете', error);
     return [];
@@ -109,4 +114,4 @@ export async function getPublicServer(slug: string) {
   }
 }
 
-export { averageRating, isFeatured } from './rating';
+export { averageRating, compareServers, isFeatured } from './rating';

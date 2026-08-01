@@ -7,6 +7,26 @@ export function averageRating(reviews: ReadonlyArray<{ rating: number }>): numbe
   return Math.round((sum / reviews.length) * 10) / 10;
 }
 
+/**
+ * Подредбата на публичния списък. Живее ТУК, а не само в `orderBy`, защото
+ * SQL-ът не може да изрази „промотиран, но само докато не е изтекло“:
+ * `featuredUntil DESC` вдига и изтеклите. Резултатът беше сървър с изтекла
+ * промоция, който държи първо място БЕЗ значка „промотиран (платено)“ — тоест
+ * платен ранг, който не е обявен, точно обратното на условията.
+ */
+export function compareServers<T extends { featuredUntil: Date | null; online: boolean; players: number; name: string }>(
+  a: T,
+  b: T,
+  now = new Date(),
+): number {
+  const fa = isFeatured(a, now) ? 1 : 0;
+  const fb = isFeatured(b, now) ? 1 : 0;
+  if (fa !== fb) return fb - fa;
+  if (a.online !== b.online) return a.online ? -1 : 1;
+  if (a.players !== b.players) return b.players - a.players;
+  return a.name.localeCompare(b.name, 'bg');
+}
+
 /** Промотиран ли е сървърът в този момент. */
 export function isFeatured(server: { featuredUntil: Date | null }, now = new Date()): boolean {
   return server.featuredUntil !== null && server.featuredUntil.getTime() > now.getTime();
