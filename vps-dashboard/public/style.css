@@ -1,0 +1,362 @@
+/* Carbon Stealth VPS Dashboard — тъмна тема, нула външни ресурси. */
+:root {
+  --bg: #0b0f14;
+  --bg-2: #10161e;
+  --panel: #141c26;
+  --panel-2: #1a2430;
+  --line: #223044;
+  --txt: #dbe4ef;
+  --txt-dim: #8798ab;
+  --accent: #33e6a0;
+  --accent-2: #2bb3ff;
+  --warn: #ffb347;
+  --danger: #ff5c6c;
+  --ok: #33e6a0;
+  --radius: 10px;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.hidden { display: none !important; }
+a { color: var(--accent-2); }
+em { font-style: normal; color: var(--accent); }
+
+/* ── Бутони ─────────────────────────────────────────────── */
+.btn {
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--txt);
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover { background: var(--panel); border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: #04120b; border-color: var(--accent); font-weight: 600; }
+.btn-primary:hover { filter: brightness(1.08); background: var(--accent); }
+.btn-danger { border-color: var(--danger); color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-warn { border-color: var(--warn); color: var(--warn); }
+.btn-ghost { background: transparent; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.icon-btn {
+  background: transparent; border: none; color: var(--txt-dim);
+  font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+}
+.icon-btn:hover { color: var(--accent); background: var(--panel); }
+
+/* ── Вход ───────────────────────────────────────────────── */
+.login { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(circle at 30% 20%, #16202c, var(--bg)); }
+.login-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 32px; width: 320px; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 20px 60px #0008;
+}
+.login-card .brand { font-size: 20px; font-weight: 700; }
+.login-sub { color: var(--txt-dim); margin: -8px 0 6px; }
+.login-card label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--txt-dim); }
+.login-card input {
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--txt);
+  padding: 9px 11px; border-radius: 8px; font-size: 14px;
+}
+.login-card input:focus { outline: none; border-color: var(--accent); }
+.login-err { color: var(--danger); font-size: 13px; min-height: 18px; }
+.logo { color: var(--accent); }
+
+/* ── Оформление ─────────────────────────────────────────── */
+.app { display: grid; grid-template-columns: 240px 1fr; height: 100vh; }
+.sidebar {
+  background: var(--bg-2); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; padding: 16px 12px; gap: 14px; overflow-y: auto;
+}
+.sidebar .brand { font-size: 16px; font-weight: 700; padding: 4px 8px; }
+.node-switch { display: flex; flex-direction: column; gap: 5px; padding: 8px; background: var(--panel); border-radius: 8px; border: 1px solid var(--line); }
+.node-switch label { font-size: 11px; color: var(--txt-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.node-switch select {
+  background: var(--bg-2); color: var(--txt); border: 1px solid var(--line);
+  padding: 6px 8px; border-radius: 6px; font-size: 13px;
+}
+.node-status { font-size: 11px; color: var(--txt-dim); }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav button {
+  display: flex; align-items: center; gap: 10px; background: transparent; border: none;
+  color: var(--txt-dim); padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 13.5px; text-align: left; width: 100%;
+}
+.nav button .ico { width: 18px; text-align: center; }
+.nav button .ico .ico-img { width: 16px; height: 16px; vertical-align: -0.18em; margin: 0; }
+.nav button:hover { background: var(--panel); color: var(--txt); }
+.nav button.active { background: var(--panel-2); color: var(--accent); font-weight: 600; }
+.sidebar-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding: 4px; }
+.ver { font-size: 11px; color: var(--txt-dim); }
+
+.main { display: flex; flex-direction: column; overflow: hidden; }
+.topbar {
+  display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+  border-bottom: 1px solid var(--line); background: var(--bg-2);
+}
+.topbar h1 { font-size: 17px; margin: 0; font-weight: 600; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+#menu-toggle { display: none; }
+.badge { background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px; padding: 3px 12px; font-size: 12px; color: var(--txt-dim); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--txt-dim); box-shadow: 0 0 0 0 #0000; }
+.dot.live { background: var(--ok); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 #33e6a066; } 70% { box-shadow: 0 0 0 6px #33e6a000; } }
+.view { padding: 20px; overflow-y: auto; flex: 1; }
+
+/* ── Карти/грид ─────────────────────────────────────────── */
+.grid { display: grid; gap: 16px; }
+.grid-metrics { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.card h3 { margin: 0; font-size: 13px; color: var(--txt-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.card-head { display: flex; align-items: center; justify-content: space-between; }
+.metric-val { font-size: 30px; font-weight: 700; font-family: var(--mono); }
+.metric-val small { font-size: 15px; color: var(--txt-dim); font-weight: 400; }
+.metric-sub { font-size: 12px; color: var(--txt-dim); }
+.spark { width: 100%; height: 46px; display: block; }
+.bar { height: 8px; background: var(--bg-2); border-radius: 6px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 6px; }
+.bar.warn > i { background: linear-gradient(90deg, var(--warn), var(--danger)); }
+
+/* ── Таблици ────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--txt-dim); font-weight: 600; background: var(--bg-2); position: sticky; top: 0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.03em; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--panel-2); }
+td.mono, .mono { font-family: var(--mono); }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.pill-ok { background: #0f3527; color: var(--ok); }
+.pill-bad { background: #3a1620; color: var(--danger); }
+.pill-warn { background: #3a2c12; color: var(--warn); }
+.pill-dim { background: var(--panel-2); color: var(--txt-dim); }
+.row-actions { display: flex; gap: 6px; }
+
+/* ── Инструменти/тулбар ─────────────────────────────────── */
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+/* Двойка етикет+поле в лента. Без това редът се разпада, а несъществуващ клас не
+   вдига грешка никъде — същият капан като инлайн var(--…), който го няма. */
+.inline { display: inline-flex; align-items: center; gap: 6px; color: var(--txt-dim); font-size: 13px; }
+.toolbar input[type="text"], .toolbar input[type="search"], .toolbar input[type="number"], .toolbar select {
+  background: var(--panel); border: 1px solid var(--line); color: var(--txt);
+  padding: 7px 11px; border-radius: 8px; font-size: 13px;
+}
+.toolbar input:focus, .toolbar select:focus { outline: none; border-color: var(--accent); }
+.grow { flex: 1; }
+.muted { color: var(--txt-dim); }
+.section-desc { color: var(--txt-dim); margin: 0 0 16px; font-size: 13px; }
+
+/* ── Терминал/лог ───────────────────────────────────────── */
+.term-out, .log-out {
+  background: #060a0f; border: 1px solid var(--line); border-radius: 8px;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: #cdd9e5;
+  padding: 12px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.log-out { height: 60vh; }
+
+/* Терминалният екран НЕ пренася редове — пренесеният ред разваля подредбата на
+   всяка TUI програма (htop/top рисуват в колони). Вместо това се скролва. */
+.term-screen {
+  white-space: pre;
+  overflow: auto;
+  line-height: 1.35;
+}
+
+/* Лентата в таблична клетка няма собствено съдържание → без минимална ширина
+   се смачква до точка. */
+td .bar { min-width: 110px; }
+
+/* Модификатори за терминала — задължителни на телефон (виртуалната клавиатура
+   няма Ctrl/Esc/Tab/стрелки), полезни и на десктоп. */
+.keybar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.keycap { font-family: var(--mono); min-width: 44px; min-height: 34px; }
+@media (max-width: 820px) {
+  /* Палец-зона: лентата да е достъпна с една ръка. */
+  .keycap { min-width: 52px; min-height: 44px; font-size: 13px; }
+}
+.term-in {
+  display: flex; gap: 8px; margin-top: 10px;
+}
+.term-in input {
+  flex: 1; background: #060a0f; border: 1px solid var(--line); color: var(--accent);
+  font-family: var(--mono); padding: 10px 12px; border-radius: 8px; font-size: 13px;
+}
+.term-in input:focus { outline: none; border-color: var(--accent); }
+
+/* ── Модал ──────────────────────────────────────────────── */
+.modal { position: fixed; inset: 0; background: #000a; display: grid; place-items: center; z-index: 50; padding: 20px; }
+.modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; width: min(900px, 96vw); max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
+.modal-actions { display: flex; align-items: center; gap: 8px; }
+.modal .term-out { margin: 0; border: none; border-radius: 0; flex: 1; max-height: 78vh; }
+
+/* ── Агенти ─────────────────────────────────────────────── */
+.agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.agent-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px; }
+.agent-card .a-head { display: flex; align-items: center; gap: 10px; }
+.agent-card .a-emoji { font-size: 24px; }
+.agent-card .a-name { font-weight: 600; }
+.agent-card .a-title { font-size: 12px; color: var(--txt-dim); }
+.agent-card .a-tag { font-size: 12px; color: var(--txt-dim); margin: 8px 0 0; }
+.agent-card .a-meta { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+/* ── Toast ──────────────────────────────────────────────── */
+.toast { position: fixed; bottom: 22px; right: 22px; background: var(--panel-2); border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 12px 18px; border-radius: 8px; z-index: 60; box-shadow: 0 10px 30px #0008; max-width: 380px; }
+.toast.bad { border-left-color: var(--danger); }
+.toast.warn { border-left-color: var(--warn); }
+
+/* ── Команден палет (Ctrl/Cmd+K) ────────────────────────── */
+.palette {
+  border: 1px solid var(--line); background: var(--panel); color: var(--txt);
+  border-radius: 12px; padding: 0; width: min(620px, 94vw); max-height: 70vh;
+  box-shadow: 0 24px 70px #000a;
+}
+.palette::backdrop { background: #000b; }
+.palette #palette-input {
+  width: 100%; border: none; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--txt); font-size: 15px; padding: 15px 18px; outline: none;
+}
+.palette-list { max-height: 46vh; overflow-y: auto; padding: 6px; }
+.palette-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: transparent; border: none; color: var(--txt); padding: 9px 12px;
+  border-radius: 8px; cursor: pointer; font-size: 13.5px;
+}
+.palette-item:hover, .palette-item.active { background: var(--panel-2); }
+.palette-item.active { box-shadow: inset 2px 0 0 var(--accent); }
+.pi-label { flex: 1; }
+.pi-section { color: var(--txt-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.palette-hint { border-top: 1px solid var(--line); padding: 8px 14px; font-size: 11px; color: var(--txt-dim); }
+kbd {
+  font-family: var(--mono); font-size: 10.5px; background: var(--bg-2); color: var(--txt-dim);
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px;
+}
+
+/* ── Потвърждение за опасно действие ────────────────────── */
+.confirm-dlg {
+  border: 1px solid var(--danger); background: var(--panel); color: var(--txt);
+  border-radius: 12px; padding: 20px; width: min(520px, 94vw); box-shadow: 0 24px 70px #000a;
+}
+.confirm-dlg::backdrop { background: #000b; }
+.confirm-dlg h3 { margin: 0 0 10px; font-size: 16px; }
+.confirm-what { background: var(--bg-2); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px; color: var(--txt-dim); }
+.confirm-dlg label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 12px; }
+.confirm-dlg input {
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--txt);
+  padding: 9px 11px; border-radius: 8px; font-family: var(--mono);
+}
+.confirm-dlg input:focus { outline: none; border-color: var(--danger); }
+
+/* ── Скелетон при зареждане (вместо спинър) ─────────────── */
+.skeleton { display: grid; gap: 12px; }
+.sk-row { height: 46px; border-radius: 8px; background: var(--panel); position: relative; overflow: hidden; }
+.sk-row.tall { height: 132px; }
+.sk-row::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, #ffffff0d, transparent);
+  transform: translateX(-100%); animation: sk 1.4s infinite;
+}
+@keyframes sk { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .sk-row::after { animation: none; }
+  .dot.live { animation: none; }
+}
+
+/* Дълги логове/таблици: браузърът пропуска чертането на невидимото —
+   виртуализация с нула JS. */
+.log-out, .term-out { content-visibility: auto; contain-intrinsic-size: auto 60vh; }
+tbody tr { content-visibility: auto; contain-intrinsic-size: auto 38px; }
+
+/* Числата да не местят оформлението, докато се обновяват на живо. */
+.metric-val, td.mono, .mono { font-variant-numeric: tabular-nums; }
+
+/* Само за екранни четци (връзка/статус) — визуално скрито, но озвучено. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Печат „данните са остарели" — контролен панел никога не бива да лъже, че е жив. */
+.stale {
+  background: #3a2c12; color: var(--warn); border: 1px solid var(--warn);
+  border-radius: 20px; padding: 3px 12px; font-size: 12px;
+}
+
+/* Индикатор за връзка: три състояния, без стробоскоп. */
+.dot.connecting { background: var(--warn); }
+.dot.down { background: var(--danger); }
+
+.loading { color: var(--txt-dim); padding: 30px; text-align: center; }
+.empty { color: var(--txt-dim); padding: 20px; text-align: center; font-style: italic; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
+.kv dt { color: var(--txt-dim); }
+.kv dd { margin: 0; font-family: var(--mono); }
+.crumbs { font-family: var(--mono); font-size: 12px; color: var(--txt-dim); word-break: break-all; }
+.crumbs a { cursor: pointer; }
+
+/* ── Адаптивно ──────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; z-index: 40; width: 240px; height: 100%; transform: translateX(-100%); transition: transform 0.2s; }
+  .sidebar.open { transform: translateX(0); }
+  #menu-toggle { display: block; }
+}
+
+/* ── Разследване: интерактивна графика ─────────────────────────────────────── */
+.chart-big { border-radius: 6px; cursor: crosshair; }
+.chart-tip {
+  position: absolute;
+  z-index: 5;
+  padding: 6px 9px;
+  background: rgba(12, 16, 22, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: 11px/1.5 var(--mono);
+  color: var(--txt);
+  white-space: pre;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+/* Редовете ПРЕДИ момента са уликите — открояват се от следствията след него. */
+tr.row-before td { background: rgba(255, 180, 84, 0.05); }
+
+/* Групови действия — лентата се появява само когато има избрано. */
+.bulk-bar { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; margin: 8px 0; }
+.bulk-pick { cursor: pointer; }
+
+/* ── Езиков превключвател ────────────────────────────── */
+.lang-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.lang-btn {
+  background: none; border: none; color: var(--txt-dim); padding: 5px 9px;
+  font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.lang-btn:hover { color: var(--txt); }
+.lang-btn.active { background: var(--panel); color: var(--txt); }
+
+/* ── Банер „поддръжка" ───────────────────────────────── */
+.maint-banner {
+  background: #3a2c12; color: var(--warn); padding: 8px 20px; font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ── Икони на действията (подменени глифове в бутоните) ── */
+.ico-img {
+  width: 1.15em; height: 1.15em; vertical-align: -0.22em;
+  object-fit: contain;
+}
+.ico-img.ico-gap { margin-right: 0.4em; }
+.icon-btn .ico-img { width: 20px; height: 20px; vertical-align: middle; }

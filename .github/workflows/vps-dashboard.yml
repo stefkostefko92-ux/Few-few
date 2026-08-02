@@ -1,0 +1,41 @@
+name: vps-dashboard
+
+on:
+  push:
+    paths:
+      - 'vps-dashboard/**'
+      - '.github/workflows/vps-dashboard.yml'
+  pull_request:
+    paths:
+      - 'vps-dashboard/**'
+      - '.github/workflows/vps-dashboard.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vps-dashboard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: vps-dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # Нула зависимости → без npm ci и без npm кеш (няма lockfile).
+      - run: npm run lint
+      - run: npm test
+      # Проверка, че деплой скриптовете са валиден bash + минават deploy-check.
+      - name: bash syntax
+        run: bash -n deploy/install.sh
+      - name: deploy-check (zero-dep линтер)
+        run: node ../tools/vps/deploy-check.mjs deploy/install.sh
