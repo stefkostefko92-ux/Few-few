@@ -1,4 +1,4 @@
-# CLAUDE.md — vps-dashboard
+# CLAUDE.md — vpsdash
 
 **Carbon Stealth VPS Dashboard** — пълен контролен панел за VPS сървърите с графичен
 интерфейс. Управлява **всичко** от един екран: метрики на живо, systemd услуги,
@@ -17,7 +17,7 @@ Docker, процеси, journal логове, деплой (по канона н
 
 ## Команди (quality gate)
 ```bash
-cd vps-dashboard
+cd vpsdash
 npm run lint     # node --check на всеки .js/.mjs (scripts/syntax-check.mjs)
 npm test         # node --test test/*.test.js
 npm start        # прод (иска /etc/vps-dashboard/config.json)

@@ -72,7 +72,7 @@ access_log /var/log/nginx/access.log timed;
 
 ## Бърз старт (локално, dev)
 ```bash
-cd vps-dashboard
+cd vpsdash
 npm run dev          # печата еднократна парола; отвори http://127.0.0.1:7700
 ```
 
@@ -90,7 +90,7 @@ sudo certbot --nginx -d vps1.carbonstealth.eu
 #    и в config.json сложи "trustProxy": true
 ```
 Оттам нататък деплоят е автоматичен през канона на репото: `deploy/autodeploy.sh`
-разгръща и `vps-dashboard` (rsync + рестарт; конфигът/state оцеляват).
+разгръща и `vpsdash` (rsync + рестарт; конфигът/state оцеляват).
 
 ## Двата VPS-а (federation)
 На **всеки** сървър инсталирай панела и им дай общ `peerToken`:

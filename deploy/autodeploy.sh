@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vps-dashboard}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -577,8 +577,8 @@ EOF
 # услугата няма да тръгне: пусни веднъж deploy/install.sh за да го създаде. Health +
 # rollback като medqr/mastilko. is-active 401 брои за „жив" (ping иска сесия).
 deploy_vpsdashboard() {
-  local d="$SRC/vps-dashboard"
-  [ -d "$d" ] || { warn "Няма vps-dashboard/ в архива — пропускам."; return; }
+  local d="$SRC/vpsdash"
+  [ -d "$d" ] || { warn "Няма vpsdash/ в архива — пропускам."; return; }
   log "Разгръщам vps-dashboard (systemd, Node, нула зависимости)…"
   command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
@@ -816,7 +816,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     adblock)    deploy_adblock ;;
-    vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
+    vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

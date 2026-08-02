@@ -33,7 +33,7 @@ file holds only what is true across all products. Keep it that way.
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
-| `vps-dashboard/` | Carbon Stealth VPS Dashboard — пълен контролен панел за сървъра (метрики, systemd, Docker, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал, агентски флот) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · federation между двата VPS · owner: VPS-аджията |
+| `vpsdash/` | Carbon Stealth VPS Dashboard — пълен контролен панел за сървъра (метрики, systemd, Docker, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал, агентски флот) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · federation между двата VPS · owner: VPS-аджията |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,

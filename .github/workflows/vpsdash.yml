@@ -1,20 +1,20 @@
-name: vps-dashboard
+name: vpsdash
 
 on:
   push:
     paths:
-      - 'vps-dashboard/**'
-      - '.github/workflows/vps-dashboard.yml'
+      - 'vpsdash/**'
+      - '.github/workflows/vpsdash.yml'
   pull_request:
     paths:
-      - 'vps-dashboard/**'
-      - '.github/workflows/vps-dashboard.yml'
+      - 'vpsdash/**'
+      - '.github/workflows/vpsdash.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: vps-dashboard-${{ github.ref }}
+  group: vpsdash-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
         node: [20, 22]
     defaults:
       run:
-        working-directory: vps-dashboard
+        working-directory: vpsdash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
