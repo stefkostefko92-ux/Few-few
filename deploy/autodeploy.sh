@@ -188,7 +188,11 @@ deploy_zabobovdol() {
   # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
   local url="$ZBD_HEALTH_URL"
   if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    # `| head -1` кара `grep` да получи SIGPIPE, а под `set -o pipefail` това е
+    # статус 141 за целия пайплайн; присвояване от командна замяна го НАСЛЕДЯВА
+    # и под `set -e` убива деплоя. Резервната стойност е спирачката (същият
+    # дефект събори FiveM пробега през `grep -q`).
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')" || p=""
     [ -n "$p" ] && url="http://127.0.0.1:${p}/"
   fi
   health "$url" "zabobovdol" || deploy_failed=1
@@ -785,7 +789,11 @@ deploy_adblock() {
   rm -f "${site}.bak-$TS"
 
   # 4) Reload без downtime (graceful). Предпочитаме systemd, иначе caddy reload.
-  if command -v systemctl >/dev/null && systemctl list-unit-files 2>/dev/null | grep -q "^${CADDY_SERVICE}.service"; then
+  # `grep -c`, не `grep -q`: `-q` излиза при първото съвпадение, `systemctl`
+  # отляво получава SIGPIPE и под `pipefail` пайплайнът е 141 → условието е
+  # НЕВЯРНО дори когато услугата съществува, и reload-ът пада в резервния път.
+  # `-c` изчерпва входа (няма SIGPIPE) и пак дава 1 при нула съвпадения.
+  if command -v systemctl >/dev/null && systemctl list-unit-files 2>/dev/null | grep -c "^${CADDY_SERVICE}.service" >/dev/null; then
     systemctl reload "$CADDY_SERVICE" || systemctl restart "$CADDY_SERVICE"
   else
     caddy reload --config "$CADDY_MAIN" --adapter caddyfile
