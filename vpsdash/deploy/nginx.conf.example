@@ -1,8 +1,12 @@
 # Nginx reverse proxy за VPS Dashboard — TLS + SSE + (по избор) втори слой Basic-auth.
 # Панелът слуша само на 127.0.0.1:7700. Този vhost го публикува на домейн с HTTPS.
 #
-# 1) Смени server_name с твоя домейн (напр. vps1.carbonstealth.eu).
+# 1) Смени server_name с твоя домейн (напр. vps1.carbonstealth.eu) — на ДВЕТЕ
+#    места (блока на 80 и блока на 443). Забравеният втори е най-честата причина
+#    certbot да каже „Could not find a virtual host".
 # 2) Пусни: certbot --nginx -d vps1.carbonstealth.eu
+#    Преди боен опит: същата команда с --dry-run (staging, НЕ гори лимита от
+#    5 провалени валидации на час — след него не издава дори при верен DNS).
 # 3) (препоръчително) Basic-auth пред панела:
 #      apt-get install -y apache2-utils
 #      htpasswd -c /etc/nginx/vps-dashboard.htpasswd admin
@@ -14,6 +18,19 @@
 server {
     listen 80;
     server_name vps1.carbonstealth.eu;
+
+    # ACME проверката се сервира ИЗРИЧНО и ПРЕДИ всичко останало. `^~` бие всеки
+    # префиксен location, значи нито редиректът долу, нито `proxy_pass` към мъртъв
+    # панел (502/503) могат да я изядат. Без този блок валидацията зависи от това
+    # кой location случайно е хванал заявката — а Let's Encrypt вижда само че е
+    # получил нещо, което не е challenge файлът, и отказва.
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type "text/plain";
+        allow all;          # ако има allow/deny по-горе — тук не важи
+        auth_basic off;     # Basic-auth пред ACME пътя = провалена валидация
+    }
+
     location / { return 301 https://$host$request_uri; }
 }
 
@@ -34,6 +51,14 @@ server {
     # Втори слой защита (по избор) — разкоментирай след htpasswd:
     # auth_basic "Carbon Stealth VPS";
     # auth_basic_user_file /etc/nginx/vps-dashboard.htpasswd;
+
+    # Подновяването минава пак през порт 80, но ако някога мине през 443 —
+    # същият изричен блок, за да не го хване auth_basic отгоре.
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type "text/plain";
+        auth_basic off;
+    }
 
     # Хедъри за сигурност. X-Frame-Options / X-Content-Type-Options /
     # Referrer-Policy / CSP панелът си ги слага сам (server.js) — тук е само
