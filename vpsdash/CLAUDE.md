@@ -127,8 +127,8 @@ public/                  index.html · app.js · ui.js · ansi.js · style.css
                          през GLYPH_ICONS в ui.js · nav-* за секциите през
                          img: в SECTIONS · ui-* за топбара в index.html)
 scripts/syntax-check.mjs zero-dep линтер
-deploy/                  install.sh · vps-dashboard.service · nginx.conf.example
-                         desktop/docker-compose.yml (незадължителен десктоп)
+deploy/                  install.sh · set-password.sh · vps-dashboard.service ·
+                         nginx.conf.example · desktop/docker-compose.yml
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
                          forecast · slo · manage · security · investigate ·
                          observe · stack · ux · guard · deployfiles · ports · backupsched · diskusage · traffic · volrestore · i18n · panelbackup ·
