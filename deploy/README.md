@@ -59,6 +59,18 @@
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
   `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **fivem** (FiveM Bulgaria): Docker Compose модел като zabobovdol. Пренася `FiveM/.env`
+  (при пръв деплой го **генерира** с random `POSTGRES_PASSWORD` и random админ парола —
+  паролата се показва ВЕДНЪЖ в изхода, в `.env` стои само scrypt хешът ѝ), симлинква
+  `FiveM/backups` към `/opt/few-few/shared/fivem/backups`, после `FiveM/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията (празен бекъп = спиране), `up -d --build`, чакане на
+  базата, `prisma migrate deploy`, и първоначално напълване от публичния списък на Cfx.re
+  **само при празна таблица**. Health на `127.0.0.1:3010/api/health`; при успех — IndexNow
+  ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
+  Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
+  `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
+  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `FiveM/DEPLOY.md`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -67,7 +79,9 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali fivem` | кои проекти да се разгръщат тук |
+| `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
+| `FIVEM_DOMAIN` | `fivembulgaria.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |

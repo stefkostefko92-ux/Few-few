@@ -168,7 +168,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-30",
+    "updated": "2026-08-01",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -212,7 +212,7 @@ const FALLBACK = {
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 224
+        "lessons": 267
       },
       "evolution": [
         {
@@ -706,9 +706,64 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v16.5 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира РЕДОВО, не абзацно: tools/agents/handoff.mjs:53-58 чете ст…"
+        },
+        {
+          "version": "17.1.0",
+          "date": "2026-08-01",
+          "event": "v17.1 — учене",
+          "detail": "Научи: DSA чл. 17(1) отпада само когато електронните контакти на подателя НЕ са известни — зат… (+5 още)"
+        },
+        {
+          "version": "17.7.0",
+          "date": "2026-08-01",
+          "event": "v17.7 — учене",
+          "detail": "Научи: Мярката „запазваме минимален запис, за да не върнем свалилия се човек\" (suppression lis… (+5 още)"
+        },
+        {
+          "version": "18.4.0",
+          "date": "2026-08-01",
+          "event": "v18.4 — учене",
+          "detail": "Научи: Каноничното id на VPS агента е `vps-adjiyata`, не `vps-adzhiyata` — транслитерацията на… (+6 още)"
+        },
+        {
+          "version": "19.6.0",
+          "date": "2026-08-01",
+          "event": "v19.6 — учене",
+          "detail": "Научи: Общи условия могат да обещаят ПРОЦЕДУРНО право (право на отговор под ревю, обжалване, п… (+11 още)"
+        },
+        {
+          "version": "20.8.0",
+          "date": "2026-08-01",
+          "event": "v20.8 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ има ФИКСИРАНИ имена на полета и dod-check пада при синоними: задължите… (+11 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ има ФИКСИРАНИ имена на полета и dod-check пада при синоними: задължите…\" (+11 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Общи условия могат да обещаят ПРОЦЕДУРНО право (право на отговор под ревю, обжалване, п…\" (+11 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Каноничното id на VPS агента е `vps-adjiyata`, не `vps-adzhiyata` — транслитерацията на…\" (+6 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Мярката „запазваме минимален запис, за да не върнем свалилия се човек\" (suppression lis…\" (+5 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „DSA чл. 17(1) отпада само когато електронните контакти на подателя НЕ са известни — зат…\" (+5 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -1216,7 +1271,7 @@ const FALLBACK = {
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 249
+        "lessons": 274
       },
       "evolution": [
         {
@@ -1818,9 +1873,97 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v17.3 — учене",
           "detail": "Научи: Поука с file:line в паметта на агент гние тихо — репо гейтовете не я проверяват. `node … (+2 още)"
+        },
+        {
+          "version": "17.7.0",
+          "date": "2026-08-01",
+          "event": "v17.7 — учене",
+          "detail": "Научи: Node fetch(url) с ХОСТНЕЙМ винаги резолвира наново при connect — предварителен dns.look… (+3 още)"
+        },
+        {
+          "version": "17.9.0",
+          "date": "2026-08-01",
+          "event": "v17.9 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ има ШЕСТ задължителни полета, не четири: От/Към · Статус · Находки · И… (+1 още)"
+        },
+        {
+          "version": "18.5.0",
+          "date": "2026-08-01",
+          "event": "v18.5 — учене",
+          "detail": "Научи: Мъртво поле в Prisma схема се класифицира по това КОЯ половина липсва: без писач (Serve… (+5 още)"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-08-01",
+          "event": "v18.8 — учене",
+          "detail": "Научи: Env променлива, документирана в .env.example, но нечетена в кода, е декларация за намер… (+2 още)"
+        },
+        {
+          "version": "19.1.0",
+          "date": "2026-08-01",
+          "event": "v19.1 — учене",
+          "detail": "Научи: Гейт от вида „поле X се показва само ако timestamp Y е ненулево“ се чупи, когато cron п… (+2 още)"
+        },
+        {
+          "version": "19.3.0",
+          "date": "2026-08-01",
+          "event": "v19.3 — учене",
+          "detail": "Научи: Глобален (не по принципал) таван на опитите за вход ПРЕДИ проверката на паролата е DoS … (+1 още)"
+        },
+        {
+          "version": "19.7.0",
+          "date": "2026-08-01",
+          "event": "v19.7 — учене",
+          "detail": "Научи: Node fetch (undici, Node 22.22.2) МАХА зададения `host` хедър — сървърът вижда Host на … (+3 още)"
+        },
+        {
+          "version": "19.8.0",
+          "date": "2026-08-01",
+          "event": "v19.8 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира детерминистично: задължителни са От/Към (id от agents.json…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ се валидира детерминистично: задължителни са От/Към (id от agents.json…\""
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Node fetch (undici, Node 22.22.2) МАХА зададения `host` хедър — сървърът вижда Host на …\" (+3 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Глобален (не по принципал) таван на опитите за вход ПРЕДИ проверката на паролата е DoS …\" (+1 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Гейт от вида „поле X се показва само ако timestamp Y е ненулево“ се чупи, когато cron п…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Env променлива, документирана в .env.example, но нечетена в кода, е декларация за намер…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Мъртво поле в Prisma схема се класифицира по това КОЯ половина липсва: без писач (Serve…\" (+5 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ има ШЕСТ задължителни полета, не четири: От/Към · Статус · Находки · И…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Node fetch(url) с ХОСТНЕЙМ винаги резолвира наново при connect — предварителен dns.look…\" (+3 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -2430,7 +2573,7 @@ const FALLBACK = {
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 83
+        "lessons": 86
       },
       "evolution": [
         {
@@ -2474,9 +2617,20 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v16.8 — учене",
           "detail": "Научи: oversee `dups: 0` е СЛЯПОТА, не чистота — детекторът е лексикален Jaccard над думи >3 з… (+5 още)"
+        },
+        {
+          "version": "17.1.0",
+          "date": "2026-08-01",
+          "event": "v17.1 — учене",
+          "detail": "Научи: Prisma генерира enum като union от същите литерали, значи ръчно написан union със същит… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „Prisma генерира enum като union от същите литерали, значи ръчно написан union със същит…\" (+2 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -2588,7 +2742,7 @@ const FALLBACK = {
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 110
+        "lessons": 115
       },
       "evolution": [
         {
@@ -2968,9 +3122,31 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v15.4 — учене",
           "detail": "Научи: Верификатор (Кодаджията или друг) може да цитира несъществуващ файл (achievements.ts вм…"
+        },
+        {
+          "version": "15.7.0",
+          "date": "2026-08-01",
+          "event": "v15.7 — учене",
+          "detail": "Научи: FiveM /info.json, /dynamic.json, /players.json точни полета потвърдени срещу citizenfx/… (+2 още)"
+        },
+        {
+          "version": "15.9.0",
+          "date": "2026-08-01",
+          "event": "v15.9 — учене",
+          "detail": "Научи: servers-frontend.fivem.net/api/servers/{streamRedir,stream,single} е МЪРТЪВ (404 за вси… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „servers-frontend.fivem.net/api/servers/{streamRedir,stream,single} е МЪРТЪВ (404 за вси…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „FiveM /info.json, /dynamic.json, /players.json точни полета потвърдени срещу citizenfx/…\" (+2 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -3369,7 +3545,7 @@ const FALLBACK = {
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 148
+        "lessons": 152
       },
       "evolution": [
         {
@@ -3779,9 +3955,31 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v14.6 — учене",
           "detail": "Научи: tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…"
+        },
+        {
+          "version": "14.8.0",
+          "date": "2026-08-01",
+          "event": "v14.8 — учене",
+          "detail": "Научи: В FiveM/ продукта (fivembulgaria.carbonstealth.eu) няма индексируеми filter routes за f… (+1 още)"
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-08-01",
+          "event": "v15.0 — учене",
+          "detail": "Научи: FiveM/ (fivembulgaria.carbonstealth.eu) — discoverability layer е образцов: pageMetadat… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „FiveM/ (fivembulgaria.carbonstealth.eu) — discoverability layer е образцов: pageMetadat…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „В FiveM/ продукта (fivembulgaria.carbonstealth.eu) няма индексируеми filter routes за f…\" (+1 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -5950,7 +6148,7 @@ const FALLBACK = {
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 146
+        "lessons": 155
       },
       "evolution": [
         {
@@ -6336,9 +6534,31 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v15.7 — учене",
           "detail": "Научи: systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У… (+12 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-08-01",
+          "event": "v16.2 — учене",
+          "detail": "Научи: В bash под `set -e` просто присвояване с командна замяна (`v=\\\"$(cmd | ...)\\\"`) НАСЛЕДЯ… (+4 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-08-01",
+          "event": "v16.6 — учене",
+          "detail": "Научи: В bash под `set -e` просто присвояване с командна замяна (`v=\\\"$(cmd | ...)\\\"`) НАСЛЕДЯ… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „В bash под `set -e` просто присвояване с командна замяна (`v=\\\"$(cmd | ...)\\\"`) НАСЛЕДЯ…\" (+3 още)"
+        },
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „В bash под `set -e` просто присвояване с командна замяна (`v=\\\"$(cmd | ...)\\\"`) НАСЛЕДЯ…\" (+4 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -13575,7 +13795,7 @@ const FALLBACK = {
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 154
+        "lessons": 156
       },
       "evolution": [
         {
@@ -13625,9 +13845,20 @@ const FALLBACK = {
           "date": "2026-07-30",
           "event": "v15.4 — учене",
           "detail": "Научи: В Few-few монорепото 6 от 8 CLI-релевантни хука (.claude/hooks/*.mjs с PreToolUse/PostT… (+1 още)"
+        },
+        {
+          "version": "15.6.0",
+          "date": "2026-08-01",
+          "event": "v15.6 — учене",
+          "detail": "Научи: В FiveM/ zod схемите в src/app/actions/*.ts (submissionSchema/reviewSchema/reportSchema… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-01",
+          "type": "learning",
+          "summary": "Научи: „В FiveM/ zod схемите в src/app/actions/*.ts (submissionSchema/reviewSchema/reportSchema…\" (+1 още)"
+        },
         {
           "date": "2026-07-30",
           "type": "learning",

@@ -1,0 +1,42 @@
+name: FiveM CI
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["FiveM/**", ".github/workflows/fivem.yml"]
+  pull_request:
+    paths: ["FiveM/**", ".github/workflows/fivem.yml"]
+
+concurrency:
+  group: fivem-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FiveM
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: FiveM/package-lock.json
+      - run: npm ci
+      # Prisma клиентът се генерира преди typecheck — иначе типовете липсват.
+      - run: npm run prisma:generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          # Билдът не се свързва с база (страниците с БД са dynamic и падат
+          # меко), но Prisma иска валиден URL, за да не шуми в лога.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
