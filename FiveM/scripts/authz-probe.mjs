@@ -48,9 +48,22 @@ if (error) {
 
 const page = await browser.newPage();
 let captured = null;
+let pending = Promise.resolve();
+/**
+ * `allHeaders()`, НЕ `headers()`. Синхронният `headers()` на Playwright не
+ * връща `cookie` — тоест заснетата заявка нямаше сесийна бисквитка изобщо.
+ * Последицата беше двойна и коварна: стъпка 4 нямаше какво да подправи, а
+ * стъпка 3 „доказваше“ отказ на заявка, която и без това е без бисквитка.
+ * Инструментът за проверка сам беше сляп.
+ */
 page.on('request', (req) => {
   if (req.method() === 'POST' && req.url().includes('/admin/streamers')) {
-    captured = { url: req.url(), headers: req.headers(), body: req.postData() };
+    pending = req
+      .allHeaders()
+      .then((headers) => {
+        captured = { url: req.url(), headers, body: req.postData() };
+      })
+      .catch(() => {});
   }
 });
 
@@ -69,6 +82,7 @@ await page.goto(`${BASE}/bg/admin/streamers`, { waitUntil: 'domcontentloaded' })
 const before = await snapshot();
 await page.getByRole('button', { name: 'свален по възражение' }).first().click();
 await page.waitForTimeout(3000);
+await pending;
 const afterClick = await snapshot();
 const harnessWorks = afterClick !== before && captured !== null;
 console.log(
