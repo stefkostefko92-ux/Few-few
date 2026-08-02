@@ -27,6 +27,10 @@ npm run servers:refresh     # пингва одобрените сървъри (
 npm run streamers:discover -- twitch kick   # стриймъри (cron, 10 мин)
 npm run streamers:discover -- youtube       # отделно: квотата е 100 ед./заявка
 npm run prune               # изтрива изтеклите данни (пуска се по cron, дневно)
+
+# Срещу ЖИВ инстанс (не са в гейта — искат сайт и база):
+node scripts/smoke.mjs                                # 37 адреса + JSON-LD + панел + правни котви
+PROBE_ADMIN_PASSWORD="…" node scripts/authz-probe.mjs # авторизация с положителна контрола
 ```
 
 Env: виж `.env.example`. Няма тайни в кода — само през env на сървъра.
