@@ -5,14 +5,27 @@
 
 ## Еднократно, преди първия деплой
 
-1. **DNS** — A/AAAA запис за `fivembulgaria.carbonstealth.eu` към VPS-а.
+1. **DNS — ПЪРВО това, преди certbot.** A (и AAAA само ако сървърът наистина
+   отговаря по IPv6) за `fivembulgaria.carbonstealth.eu` към VPS-а. Без запис
+   certbot пада с `NXDOMAIN ... During secondary validation`, а Let's Encrypt
+   брои неуспешните опити (5/час на домейн) — не пускай certbot „за проба“.
+   Сверявай преди него, не след:
+   ```bash
+   dig +short A fivembulgaria.carbonstealth.eu    # трябва да върне IP-то на VPS-а
+   curl -sI http://fivembulgaria.carbonstealth.eu/api/health | head -1   # 200 ОТВЪН
+   ```
 2. **Nginx** — блокът е готов файл в репото, не откъс в документация:
    ```bash
    sudo cp /opt/few-few/current/FiveM/deploy/nginx.conf /etc/nginx/sites-available/fivembulgaria
-   sudo ln -s /etc/nginx/sites-available/fivembulgaria /etc/nginx/sites-enabled/
+   # `-sfn`, не `-s`: второто пускане на реда гърми с „File exists“ и спира
+   # веригата с `&&` след него. Стъпката трябва да е повторяема.
+   sudo ln -sfn /etc/nginx/sites-available/fivembulgaria /etc/nginx/sites-enabled/fivembulgaria
    sudo nginx -t && sudo systemctl reload nginx
    sudo certbot --nginx -d fivembulgaria.carbonstealth.eu
    ```
+   `nginx -t` показва `protocol options redefined` и `ssl_stapling ignored` за
+   ЧУЖДИТЕ сайт-блокове на машината — те не идват от този файл и не пречат;
+   гледай последния ред (`test is successful`).
 3. **Ротация на дневниците** — политиката обявява 14 дни, а по подразбиране
    Ubuntu пази nginx дневниците 14 СЕДМИЦИ. Без този файл текстът лъже:
    ```bash
@@ -34,6 +47,14 @@ sudo PROJECTS="fivem" bash /root/few-few-*/deploy/autodeploy.sh
 
 Веднага след това **попълни `RESEND_API_KEY`** и пусни пак — без него
 уведомленията по чл. 16 и чл. 17 DSA не тръгват.
+
+**Панелът НЕ пуска вход, докато TLS не е издаден — и това не е дефект.**
+`autodeploy` пише `PUBLIC_BASE_URL=https://…`, значи сесийната бисквитка е
+`__Host-fivem-admin` със `Secure`; браузър по обикновен `http://` я отхвърля, и
+формата за вход изглежда счупена (връща те на `/admin/login` без грешка). Редът
+е: DNS → certbot → вход. **Не** го „поправяй“, като смениш `PUBLIC_BASE_URL` на
+`http://` — това сваля бисквитката до слабата форма завинаги, а после лесно се
+забравя.
 
 Ръчният път (ако предпочиташ сам да напишеш тайните):
 
