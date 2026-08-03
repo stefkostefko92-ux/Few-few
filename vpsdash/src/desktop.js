@@ -38,7 +38,12 @@ export function desktopPort(cfg) {
 export function composeFile(cfg) {
   const candidates = [
     cfg?.desktop?.composeFile,
-    path.join(cfg?.paths?.currentLink || '/opt/few-few/current', 'vps-dashboard', 'deploy', 'desktop', 'docker-compose.yml'),
+    // И ДВЕТЕ имена на папката в релийза. Тя се казваше `vps-dashboard`, сега е
+    // `vpsdash` — а стари релийзи под `current` носят старото. Един закован низ
+    // тук значи, че преименуване в репото тихо изключва десктопа: първият
+    // кандидат просто не съществува и никой не казва защо.
+    ...['vpsdash', 'vps-dashboard'].map((dir) =>
+      path.join(cfg?.paths?.currentLink || '/opt/few-few/current', dir, 'deploy', 'desktop', 'docker-compose.yml')),
     // Спрямо САМИЯ модул — работи при всяко APP_DIR и в dev режим. Зашитият
     // `/opt/vps-dashboard` беше същата грешка, която вече поправихме в unit
     // файла: предполага една-единствена инсталация.
